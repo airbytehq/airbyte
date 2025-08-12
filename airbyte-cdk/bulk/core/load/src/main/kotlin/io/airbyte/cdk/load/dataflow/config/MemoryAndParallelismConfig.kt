@@ -8,28 +8,40 @@ import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Secondary
 import jakarta.inject.Singleton
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 
 /**
  * This class configures the parallelism and the memory consumption for the dataflow job.
  * - maxConcurrentAggregates configures the number of ongoing aggregates.
- * - maxConcurrentFlushes configures the number of concurrent flushes.
+ * - maxBufferedFlushes configures the number of aggregates being buffered if another flush is in
+ * progress.
  * - maxEstBytesPerAgg configures the estimated size of each aggregate.
  * - The max memory consumption is (maxEstBytesPerAgg * maxConcurrentAggregates) +
- * (maxEstBytesPerAgg * maxConcurrentFlushes). Example with default values: (70,000,000 * 5) +
- * (70,000,000 * 5) = 350,000,000 + 350,000,000 = 700,000,000 bytes (approx 0.7 GB).
+ * (maxEstBytesPerAgg * 2). Example with default values: (70,000,000 * 5) + (70,000,000 * 2) =
+ * 350,000,000 + 140,000,000 = 490,000,000 bytes (approx 0.49 GB).
  * - stalenessDeadlinePerAggMs is how long we will wait to flush an aggregate if it is not
  * fulfilling the requirement of entry count or max memory.
  * - maxRecordsPerAgg configures the max number of records in an aggregate.
  * - initConcurrentOperation configures the concurrency in the init phase
  */
 data class MemoryAndParallelismConfig(
-    val maxConcurrentAggregates: Int = 5,
-    val maxConcurrentFlushes: Int = 5,
-    val stalenessDeadlinePerAggMs: Duration = Duration.parse("5m"),
+    val maxOpenAggregates: Int = 5,
+    val maxBufferedAggregates: Int = 5,
+    val stalenessDeadlinePerAggMs: Duration = 5.minutes,
     val maxRecordsPerAgg: Long = 100_000L,
     val maxEstBytesPerAgg: Long = 70_000_000L,
-    val initConcurrentOperation: Int = 10,
-)
+    val lifecycleMaxConcurrentOperation: Int = 10,
+) {
+    init {
+        require(maxOpenAggregates > 0) { "maxOpenAggregates must be greater than 0" }
+        require(maxBufferedAggregates > 0) { "maxBufferedFlushes must be greater than 0" }
+        require(maxRecordsPerAgg > 0) { "maxRecordsPerAgg must be greater than 0" }
+        require(maxEstBytesPerAgg > 0) { "maxEstBytesPerAgg must be greater than 0" }
+        require(lifecycleMaxConcurrentOperation > 0) {
+            "initConcurrentOperation must be greater than 0"
+        }
+    }
+}
 
 @Factory
 class MemoryAndParallelismConfigFactory {

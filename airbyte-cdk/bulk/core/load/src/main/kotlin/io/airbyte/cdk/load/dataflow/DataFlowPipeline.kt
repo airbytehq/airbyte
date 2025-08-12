@@ -31,7 +31,7 @@ class DataFlowPipeline(
             .onStart { startHandler.run() }
             .map(parse::apply)
             .transform { aggregate.apply(it, this) }
-            .buffer(capacity = memoryAndParallelismConfig.maxConcurrentFlushes)
+            .buffer(capacity = memoryAndParallelismConfig.maxBufferedAggregates)
             .map(flush::apply)
             .map(state::apply)
             .onCompletion { completionHandler.apply(it) }
