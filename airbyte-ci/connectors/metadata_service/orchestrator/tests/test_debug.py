@@ -7,9 +7,9 @@ from dagster import build_op_context
 from dagster_slack import SlackResource
 from metadata_service.constants import METADATA_FILE_NAME, METADATA_FOLDER
 from orchestrator import GITHUB_RESOURCE_TREE, METADATA_RESOURCE_TREE, REGISTRY_ENTRY_RESOURCE_TREE
-from orchestrator.assets.github import github_metadata_file_md5s, stale_gcs_latest_metadata_file
+from orchestrator.assets.github import github_metadata_file_md5s
 from orchestrator.assets.registry import persisted_oss_registry
-from orchestrator.assets.registry_entry import metadata_entry, registry_entry
+from orchestrator.assets.registry_entry import metadata_entry
 from orchestrator.config import REPORT_FOLDER
 from orchestrator.resources.gcp import gcp_gcs_client, gcs_directory_blobs, gcs_file_manager
 
@@ -27,7 +27,6 @@ def debug_github_folders():
         }
     )
     github_md5s = github_metadata_file_md5s(context).value
-    stale_gcs_latest_metadata_file(context, github_md5s).value
 
 
 def debug_badges():
@@ -46,7 +45,6 @@ def debug_badges():
 
 
 def debug_registry_entry():
-
     resources = {
         "gcp_gcs_client": gcp_gcs_client.configured(
             {
