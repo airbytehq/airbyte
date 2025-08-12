@@ -24,7 +24,7 @@ class AggregateStore(
 
     private val maxConcurrentAggregates = memoryAndParallelismConfig.maxOpenAggregates
     private val stalenessDeadlinePerAggMs =
-        memoryAndParallelismConfig.stalenessDeadlinePerAggMs.inWholeMilliseconds
+        memoryAndParallelismConfig.stalenessDeadlinePerAgg.inWholeMilliseconds
     private val maxRecordsPerAgg = memoryAndParallelismConfig.maxRecordsPerAgg
     private val maxEstBytesPerAgg = memoryAndParallelismConfig.maxEstBytesPerAgg
 

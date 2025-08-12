@@ -55,7 +55,7 @@ class DestinationLifecycle(
     private fun initializeIndividualStreams(): List<StreamLoader> {
         val initDispatcher: CoroutineDispatcher =
             Dispatchers.Default.limitedParallelism(
-                memoryAndParallelismConfig.lifecycleMaxConcurrentOperation
+                memoryAndParallelismConfig.maxConcurrentLifecycleOperations
             )
 
         return runBlocking {
@@ -84,7 +84,7 @@ class DestinationLifecycle(
     private fun finalizeIndividualStreams(streamLoaders: List<StreamLoader>) {
         val finalizeDispatcher: CoroutineDispatcher =
             Dispatchers.Default.limitedParallelism(
-                memoryAndParallelismConfig.lifecycleMaxConcurrentOperation
+                memoryAndParallelismConfig.maxConcurrentLifecycleOperations
             )
 
         runBlocking {

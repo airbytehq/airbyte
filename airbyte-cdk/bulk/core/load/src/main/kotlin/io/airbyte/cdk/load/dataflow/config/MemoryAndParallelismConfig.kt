@@ -27,18 +27,18 @@ import kotlin.time.Duration.Companion.minutes
 data class MemoryAndParallelismConfig(
     val maxOpenAggregates: Int = 5,
     val maxBufferedAggregates: Int = 5,
-    val stalenessDeadlinePerAggMs: Duration = 5.minutes,
+    val stalenessDeadlinePerAgg: Duration = 5.minutes,
     val maxRecordsPerAgg: Long = 100_000L,
     val maxEstBytesPerAgg: Long = 70_000_000L,
-    val lifecycleMaxConcurrentOperation: Int = 10,
+    val maxConcurrentLifecycleOperations: Int = 10,
 ) {
     init {
         require(maxOpenAggregates > 0) { "maxOpenAggregates must be greater than 0" }
         require(maxBufferedAggregates > 0) { "maxBufferedFlushes must be greater than 0" }
         require(maxRecordsPerAgg > 0) { "maxRecordsPerAgg must be greater than 0" }
         require(maxEstBytesPerAgg > 0) { "maxEstBytesPerAgg must be greater than 0" }
-        require(lifecycleMaxConcurrentOperation > 0) {
-            "initConcurrentOperation must be greater than 0"
+        require(maxConcurrentLifecycleOperations > 0) {
+            "maxConcurrentLifecycleOperations must be greater than 0"
         }
     }
 }
