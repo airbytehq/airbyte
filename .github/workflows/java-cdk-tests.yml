@@ -44,11 +44,11 @@ jobs:
     outputs:
       java: ${{ steps.changes-in-bulk.outputs.java }}
 
-    steps: # The `changes` step needs to be named `changes-in-bulk` to match the output name.
+    steps:
       - name: Checkout Airbyte
         if: github.event_name != 'pull_request'
         uses: actions/checkout@v4
-      - id: changes
+      - id: changes-in-bulk
         uses: dorny/paths-filter@v2
         with:
           filters: |
@@ -58,7 +58,7 @@ jobs:
   run-check-bulk-cdk-version:
     needs:
       - changes-in-bulk
-    if: ${{ needs.changes-in-bulk.outputs.java == 'true' }}
+    if: needs.changes-in-bulk.outputs.java == 'true'
     runs-on: linux-24.04
     name: Bulk CDK version check
     timeout-minutes: 2
