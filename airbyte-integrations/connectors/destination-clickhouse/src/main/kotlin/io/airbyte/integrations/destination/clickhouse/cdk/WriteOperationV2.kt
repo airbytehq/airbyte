@@ -5,7 +5,7 @@
 package io.airbyte.integrations.destination.clickhouse.cdk
 
 import io.airbyte.cdk.Operation
-import io.airbyte.cdk.load.lifecycle.DestinationLifecycle
+import io.airbyte.cdk.load.dataflow.DestinationLifecycle
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 // @Primary

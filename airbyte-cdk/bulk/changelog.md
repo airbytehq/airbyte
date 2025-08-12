@@ -1,3 +1,9 @@
+## Version 0.1.12
+
+**Load CDK**
+
+* **Changed:** Add teardown to the dataflow pipeline.
+
 ## Version 0.1.11
 
 **Load CDK**
