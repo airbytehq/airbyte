@@ -15,6 +15,7 @@ compileTestFixturesKotlin {
     }
 }
 
+// Test
 compileTestKotlin {
     compilerOptions {
         jvmTarget = JvmTarget.JVM_21
