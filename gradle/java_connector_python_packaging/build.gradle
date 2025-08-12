@@ -227,4 +227,30 @@ configure(subprojects.findAll {it.path.startsWith(":airbyte-integrations:connect
         errorOutput = System.err
         ignoreExitValue = false
     }
+
+    it.tasks.register(PUBLISH_PYTHON_PACKAGE_TO_GCS_TASK_NAME) {
+        dependsOn = ["buildPythonPackage"]
+        group = "custom"
+        description = "Publishes a python package for the connector to GCS"
+
+        doLast {
+            def platform = detectPlatform()
+            def connectorProjectNameWithUnderscores = connectorProjectNameWithUnderscores()
+            def javaRuntimeProjectNameWithUnderscores = javaRuntimeProjectNameWithUnderscores()
+
+            def connectorPythonProjectDir = file(CONNECTOR_PYTHON_PROJECT_DIR)
+            def packageFile = file("${connectorPythonProjectDir}/dist/${connectorProjectNameWithUnderscores}-0.0.1-py3-none-any.whl")
+
+            def javaRuntimePythonProjectDir = file(JAVA_RUNTIME_PYTHON_PROJECT_DIR)
+            def javaRuntimePackageFile = file("${javaRuntimePythonProjectDir}/dist/${javaRuntimeProjectNameWithUnderscores}_${platform}-0.0.1-py3-none-any.whl")
+
+            exec {
+                commandLine 'gcloud', 'storage', 'cp', packageFile, "gs://${PYTHON_PACKAGES_GCS_BUCKET}/${connectorProjectNameWithUnderscores}/"
+            }
+
+            exec {
+                commandLine 'gcloud', 'storage', 'cp', javaRuntimePackageFile, "gs://${JAVA_RUNTIME_GCS_BUCKET_PATH}/"
+            }
+        }
+    }
 }
