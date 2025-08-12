@@ -154,6 +154,7 @@ jobs:
 
       - name: Upload connector metadata [On merge to master]
         id: upload-connector-metadata-master
+        if: github.event_name == 'push'
         shell: bash
         run: ./poe-tasks/upload-connector-metadata.sh --name ${{ matrix.connector }} --main-release
         env:
@@ -194,6 +195,7 @@ jobs:
 
       - name: Upload connector metadata [Manual]
         id: upload-connector-metadata-manual
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
         shell: bash
         run: ./poe-tasks/upload-connector-metadata.sh --name ${{ matrix.connector }} ${{ inputs.publish-options }}
         env:
