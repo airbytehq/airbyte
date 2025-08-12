@@ -79,4 +79,3 @@ def test_check_connection_handles_exceptions(mocker, config, exception, expected
     status_ok, error = TEST_INSTANCE.check_connection(logger=None, config=config)
     assert not status_ok
     assert error == expected_error_msg
-

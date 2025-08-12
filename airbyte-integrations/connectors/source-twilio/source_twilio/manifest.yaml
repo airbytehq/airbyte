@@ -1,4 +1,3 @@
-
 version: 1.3.1
 
 type: DeclarativeSource
@@ -52,7 +51,7 @@ definitions:
       - type: AddFields
         fields:
           - type: AddedFieldDefinition
-            path: [ date_created ]
+            path: [date_created]
             value: >-
               {{
                 format_datetime(
@@ -64,7 +63,7 @@ definitions:
                 else record.get('date_created')
               }}
           - type: AddedFieldDefinition
-            path: [ date_updated ]
+            path: [date_updated]
             value: >-
               {{
                 format_datetime(
@@ -228,7 +227,7 @@ spec:
         minimum: 1
         maximum: 40
         default: 3
-        examples: [ 1, 2, 3 ]
+        examples: [1, 2, 3]
         order: 5
         description: The number of worker threads to use for the sync.
 
@@ -238,137 +237,137 @@ schemas:
       auth_token:
         description: The authentication token for the account
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       date_created:
         description: The timestamp when the account was created
         format: date-time
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       date_updated:
         description: The timestamp when the account was last updated
         format: date-time
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       friendly_name:
         description: A user-defined friendly name for the account
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       owner_account_sid:
         description: The SID of the owner account
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       sid:
         description: The unique identifier for the account
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       status:
         description: The current status of the account
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       subresource_uris:
         description: URIs for accessing various subresources related to the account
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         additionalProperties: true
         properties:
           addresses:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           conferences:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           signing_keys:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           transcriptions:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           connect_apps:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           sip:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           authorized_connect_apps:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           usage:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           keys:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           applications:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           recordings:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           short_codes:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           calls:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           notifications:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           incoming_phone_numbers:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           queues:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           messages:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           outgoing_caller_ids:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           available_phone_numbers:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           balance:
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
       type:
         description: The type of the account
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       uri:
         description: The URI for accessing the account resource
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
     type: object
     additionalProperties: true
     $schema: http://json-schema.org/schema#
@@ -378,71 +377,73 @@ schemas:
       sid:
         description: The unique identifier for the conversation.
         type:
-          - 'null'
+          - "null"
           - string
       account_sid:
         description: The unique identifier for the account associated with the conversation.
         type:
-          - 'null'
+          - "null"
           - string
       chat_service_sid:
-        description: The SID (Service Identifier) for the chat service to which the
+        description:
+          The SID (Service Identifier) for the chat service to which the
           conversation belongs.
         type:
-          - 'null'
+          - "null"
           - string
       messaging_service_sid:
         description: The SID for the messaging service associated with the conversation.
         type:
-          - 'null'
+          - "null"
           - string
       friendly_name:
         description: A human-readable name assigned to the conversation.
         type:
-          - 'null'
+          - "null"
           - string
       unique_name:
         description: A unique name assigned to the conversation for easy identification.
         type:
-          - 'null'
+          - "null"
           - string
       attributes:
         description: Additional attributes or metadata associated with the conversation.
         type:
-          - 'null'
+          - "null"
           - string
       date_created:
         description: The date and time when the conversation was created.
         format: date-time
         type:
-          - 'null'
+          - "null"
           - string
       date_updated:
         description: The date and time when the conversation was last updated.
         format: date-time
         type:
-          - 'null'
+          - "null"
           - string
       state:
         description: The current state of the conversation (e.g., active, inactive).
         type:
-          - 'null'
+          - "null"
           - string
       timers:
         description: Information about timers set for the conversation.
         type:
-          - 'null'
+          - "null"
           - object
       bindings:
         description: Information about the communication channels bound to the conversation.
         type:
-          - 'null'
+          - "null"
           - object
       url:
-        description: The URL endpoint for accessing or interacting with the conversation
+        description:
+          The URL endpoint for accessing or interacting with the conversation
           data.
         type:
-          - 'null'
+          - "null"
           - string
     type: object
     additionalProperties: true
@@ -456,59 +457,59 @@ schemas:
       sid:
         description: Unique identifier for the flow.
         type:
-          - 'null'
+          - "null"
           - string
       account_sid:
         description: Unique identifier for the account associated with the flow.
         type:
-          - 'null'
+          - "null"
           - string
       date_created:
         description: Date and time when the flow was created.
         format: date-time
         type:
-          - 'null'
+          - "null"
           - string
       date_updated:
         description: Date and time when the flow was last updated.
         format: date-time
         type:
-          - 'null'
+          - "null"
           - string
       friendly_name:
         description: A user-friendly name given to the flow.
         type:
-          - 'null'
+          - "null"
           - string
       status:
         description: Status of the flow (e.g., active, inactive).
         type:
           - string
-          - 'null'
+          - "null"
         enum:
           - published
           - draft
       version:
         description: Version number of the flow.
         type:
-          - 'null'
+          - "null"
           - integer
       url:
         description: URL endpoint for the flow.
         type:
-          - 'null'
+          - "null"
           - string
       links:
         description: Represents links related to the flow data.
         type:
-          - 'null'
+          - "null"
           - object
         additionalProperties: true
         properties:
           steps:
             description: Link to the steps included in the flow.
             type:
-              - 'null'
+              - "null"
               - string
 
   verify_services:
@@ -516,189 +517,202 @@ schemas:
     title: Verify - Services Schema
     additionalProperties: true
     type:
-      - 'null'
+      - "null"
       - object
     properties:
       default_template_sid:
-        description: The unique identifier for the default template used for verification
+        description:
+          The unique identifier for the default template used for verification
           messages.
         type:
-          - 'null'
+          - "null"
           - string
       tts_name:
         description: The name used for text-to-speech (TTS) in verification calls.
         type:
-          - 'null'
+          - "null"
           - string
       psd2_enabled:
-        description: Indicates if PSD2 (Payment Services Directive 2) verification
+        description:
+          Indicates if PSD2 (Payment Services Directive 2) verification
           is enabled.
         type:
-          - 'null'
+          - "null"
           - boolean
       do_not_share_warning_enabled:
-        description: Indicates if the 'do not share' warning is enabled for verification
+        description:
+          Indicates if the 'do not share' warning is enabled for verification
           codes.
         type:
-          - 'null'
+          - "null"
           - boolean
       mailer_sid:
-        description: Unique identifier for the mailer service associated with the
+        description:
+          Unique identifier for the mailer service associated with the
           verify service.
         type:
-          - 'null'
+          - "null"
           - string
       friendly_name:
         description: A user-friendly name for the verify service.
         type:
-          - 'null'
+          - "null"
           - string
       url:
         description: The URL associated with the verify service.
         type:
-          - 'null'
+          - "null"
           - string
       account_sid:
-        description: Unique identifier for the account associated with the verify
+        description:
+          Unique identifier for the account associated with the verify
           service.
         type:
-          - 'null'
+          - "null"
           - string
       date_updated:
         description: The date and time when the verify service was last updated.
         type:
-          - 'null'
+          - "null"
           - string
       totp:
-        description: Object containing configuration settings for Time-based One-Time
+        description:
+          Object containing configuration settings for Time-based One-Time
           Password (TOTP) verification method.
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           time_step:
             description: The time step interval for generating TOTP codes.
             type:
-              - 'null'
+              - "null"
               - number
           skew:
             description: The time skew allowed for TOTP code validation.
             type:
-              - 'null'
+              - "null"
               - number
           code_length:
-            description: The number of digits in the TOTP (Time-based One-Time Password)
+            description:
+              The number of digits in the TOTP (Time-based One-Time Password)
               code.
             type:
-              - 'null'
+              - "null"
               - number
           issuer:
             description: The issuer name included in TOTP messages.
             type:
-              - 'null'
+              - "null"
               - string
       code_length:
         description: The number of digits in the verification code sent to users.
         type:
-          - 'null'
+          - "null"
           - number
       custom_code_enabled:
         description: Indicates whether custom verification codes are enabled.
         type:
-          - 'null'
+          - "null"
           - boolean
       sid:
         description: Unique identifier for the verify service.
         type:
-          - 'null'
+          - "null"
           - string
       push:
-        description: Object containing configuration settings for push verification
+        description:
+          Object containing configuration settings for push verification
           method.
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           apn_credential_sid:
-            description: Unique identifier for the APN (Apple Push Notification) credential
+            description:
+              Unique identifier for the APN (Apple Push Notification) credential
               associated with the verify service.
             type:
-              - 'null'
+              - "null"
               - string
           include_date:
             description: Indicates if the date should be included in push notifications.
             type:
-              - 'null'
+              - "null"
               - boolean
           fcm_credential_sid:
-            description: Unique identifier for the FCM (Firebase Cloud Messaging)
+            description:
+              Unique identifier for the FCM (Firebase Cloud Messaging)
               credential associated with the verify service.
             type:
-              - 'null'
+              - "null"
               - string
       date_created:
         description: The date and time when the verify service was created.
         type:
-          - 'null'
+          - "null"
           - string
       dtmf_input_required:
         description: Indicates whether DTMF input is required during verification.
         type:
-          - 'null'
+          - "null"
           - boolean
       skip_sms_to_landlines:
-        description: Indicates whether SMS messages are skipped for landline numbers
+        description:
+          Indicates whether SMS messages are skipped for landline numbers
           during verification.
         type:
-          - 'null'
+          - "null"
           - boolean
       lookup_enabled:
         description: Indicates if phone number lookup is enabled for the verify service.
         type:
-          - 'null'
+          - "null"
           - boolean
       links:
         description: Object containing related hyperlinks for verify_services data.
         type:
-          - 'null'
+          - "null"
           - object
         properties:
           verification_checks:
             description: Links related to verification checks for the verify service.
             type:
-              - 'null'
+              - "null"
               - string
           rate_limits:
             description: Links related to rate limits for the verify service.
             type:
-              - 'null'
+              - "null"
               - string
           entities:
             description: Links related to entities associated with the verify service.
             type:
-              - 'null'
+              - "null"
               - string
           access_tokens:
             description: Links related to access tokens for the verify service.
             type:
-              - 'null'
+              - "null"
               - string
           verifications:
-            description: Links related to verifications performed using the verify
+            description:
+              Links related to verifications performed using the verify
               service.
             type:
-              - 'null'
+              - "null"
               - string
           webhooks:
             description: Links related to webhooks for the verify service.
             type:
-              - 'null'
+              - "null"
               - string
           messaging_configurations:
-            description: Links related to messaging configurations for the verify
+            description:
+              Links related to messaging configurations for the verify
               service.
             type:
-              - 'null'
+              - "null"
               - string
 
   services:
@@ -706,395 +720,400 @@ schemas:
     title: Services Schema
     additionalProperties: true
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       account_sid:
         description: The unique identifier of the account related to the service.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       consumption_report_interval:
         description: The interval at which consumption reports are generated.
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       date_created:
         description: The date and time when the service was created.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       date_updated:
         description: The date and time when the service was last updated.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       default_channel_creator_role_sid:
         description: The default role assigned to the creator of a channel.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       default_channel_role_sid:
         description: The default role assigned to all users in a channel.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       default_service_role_sid:
         description: The default role assigned to users of the service.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       friendly_name:
         description: A user-friendly name given to the service.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       limits:
         description: Limits applied to the service.
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           channel_members:
             description: Maximum number of members allowed in a channel.
             type:
-            - 'null'
-            - number
+              - "null"
+              - number
           user_channels:
             description: Maximum number of channels a user can belong to.
             type:
-            - 'null'
-            - number
+              - "null"
+              - number
       links:
         description: Links to different resources related to the service.
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           channels:
             description: Links related to channels.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           users:
             description: Links related to users.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           roles:
             description: Links related to roles.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           bindings:
             description: Links related to bindings.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
       notifications:
         description: Notification settings for users.
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           users:
             description: Users to receive notifications.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
       post_webhook_url:
         description: URL for the post webhook.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       pre_webhook_url:
         description: URL for the pre webhook.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       pre_webhook_retry_count:
         description: Number of retries for the pre webhook.
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       post_webhook_retry_count:
         description: Number of retries for the post webhook.
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       reachability_enabled:
         description: Flag indicating if reachability is enabled.
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       read_status_enabled:
         description: Flag indicating if read status is enabled.
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       sid:
         description: The unique identifier of the service.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       typing_indicator_timeout:
         description: Timeout duration for typing indicators.
         type:
-        - 'null'
-        - number
+          - "null"
+          - number
       url:
         description: URL of the service.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       webhook_filters:
         description: Filters for webhooks.
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           type:
-          - 'null'
-          - string
+            - "null"
+            - string
       webhook_method:
         description: HTTP method used for webhooks.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       media:
         description: Media settings for the service.
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           size_limit_mb:
             description: Maximum size limit for media in megabytes.
             type:
-            - 'null'
-            - number
+              - "null"
+              - number
           compatibility_message:
             description: Message to display for incompatible media.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
 
   trunks:
     $schema: http://json-schema.org/schema#
     title: Trunks Schema
     additionalProperties: true
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       sid:
         description: The unique identifier for the trunk.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       account_sid:
         description: The unique identifier of the account associated with the trunk.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       domain_name:
         description: The domain name associated with the trunk.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       disaster_recovery_method:
         description: The method used for disaster recovery for this trunk.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       disaster_recovery_url:
         description: The URL set up for disaster recovery in case of trunk failure.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       friendly_name:
         description: A user-friendly name for the trunk.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       secure:
         description: Indicates whether the trunk connection is secure.
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       cnam_lookup_enabled:
-        description: Indicates whether Caller ID Name (CNAM) lookup is enabled for
+        description:
+          Indicates whether Caller ID Name (CNAM) lookup is enabled for
           this trunk.
         type:
-        - 'null'
-        - boolean
+          - "null"
+          - boolean
       recording:
         description: Settings related to call recording on the trunk.
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           mode:
             description: The mode used for recording calls on this trunk.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           trim:
             description: Indicates whether recorded calls should be trimmed.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
       transfer_mode:
         description: The mode used for call transfer on this trunk.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       transfer_caller_id:
         description: The Caller ID used when transferring calls through this trunk.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       auth_type:
         description: The authentication type used for this trunk.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       auth_type_set:
         description: A set of authentication types associated with the trunk.
         type:
-        - 'null'
-        - array
+          - "null"
+          - array
         items:
           auth_type:
             description: The authentication type used for each item in the set.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
       date_created:
         description: The date and time the trunk was created.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       date_updated:
         description: The date and time the trunk was last updated.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
         format: date-time
       url:
         description: The URL of the trunk.
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       links:
         description: Links to related resources associated with the trunk.
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           origination_urls:
-            description: Endpoint for managing origination URLs associated with the
+            description:
+              Endpoint for managing origination URLs associated with the
               trunk.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           credential_lists:
-            description: Endpoint for managing credential lists associated with the
+            description:
+              Endpoint for managing credential lists associated with the
               trunk.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           ip_access_control_lists:
-            description: Endpoint for managing IP Access Control Lists (ACLs) associated
+            description:
+              Endpoint for managing IP Access Control Lists (ACLs) associated
               with the trunk.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
           phone_numbers:
             description: Endpoint for managing phone numbers associated with the trunk.
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
 
   users:
     $schema: http://json-schema.org/schema#
     title: Users Schema
     additionalProperties: true
     type:
-    - 'null'
-    - object
+      - "null"
+      - object
     properties:
       is_notifiable:
         description: Indicates whether the user is set to receive notifications
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       date_updated:
         description: The date and time when the user was last updated
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       is_online:
         description: Indicates whether the user is currently online
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       friendly_name:
         description: A user-friendly name for the user
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       account_sid:
         description: The unique identifier for the user's account
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       url:
         description: URL to access the user's detailed information
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       date_created:
         description: The date and time when the user was created
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       role_sid:
         description: The unique identifier for the role assigned to the user
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       sid:
         description: The unique identifier for the user
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       attributes:
         description: Additional attributes or metadata associated with the user
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       identity:
         description: The identity or username of the user
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       chat_service_sid:
-        description: The unique identifier for the chat service the user is associated
+        description:
+          The unique identifier for the chat service the user is associated
           with
         type:
-        - 'null'
-        - string
+          - "null"
+          - string
       links:
         description: Contains URLs to related resources for the user data.
         type:
-        - 'null'
-        - object
+          - "null"
+          - object
         properties:
           user_conversations:
             description: URL to retrieve the conversations associated with the user
             type:
-            - 'null'
-            - string
+              - "null"
+              - string
