@@ -1,4 +1,8 @@
+import groovy.text.SimpleTemplateEngine
 import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
+import org.yaml.snakeyaml.Yaml
+
+import java.nio.file.Files
 
 def detectPlatform() {
     if(DefaultNativePlatform.currentOperatingSystem.isWindows()) {
@@ -24,4 +28,187 @@ def registerGlobalTask(String taskName) {
     }
 }
 
+ext {
+    BUILD_PYTHON_PACKAGE_TASK_NAME = "buildPythonPackage"
+    PUBLISH_PYTHON_PACKAGE_TASK_NAME = "publishPythonPackage"
+    PUBLISH_PYTHON_PACKAGE_TO_GCS_TASK_NAME = "publishPythonPackageToGcs"
+    CONNECTOR_PYTHON_PROJECT_DIR = "build/connector_python_package"
+    JAVA_RUNTIME_PYTHON_PROJECT_DIR = "build/java_runtime_python_package"
+    METADATA_FILE_PATH = "metadata.yaml"
+    JAVA_RUNTIME_DIR_NAME = "runtime"
+    PYTHON_PACKAGES_GCS_BUCKET = "pyairbyte-java-connectors-python-package-jose-test"
+    JAVA_RUNTIME_GCS_BUCKET_PATH = "${PYTHON_PACKAGES_GCS_BUCKET}/java_runtime"
+}
 
+[BUILD_PYTHON_PACKAGE_TASK_NAME, PUBLISH_PYTHON_PACKAGE_TASK_NAME, PUBLISH_PYTHON_PACKAGE_TO_GCS_TASK_NAME].each { registerGlobalTask(it) }
+
+configure(subprojects.findAll {it.path.startsWith(":airbyte-integrations:connectors:")}) {
+    it.tasks.register(BUILD_PYTHON_PACKAGE_TASK_NAME) {
+        dependsOn = ["assemble"]
+        group = "custom"
+        description = "Builds Python packages for the connector. " +
+                "This will build two packages: one for the connector itself and one for the Java runtime."
+        doLast {
+            def connectorType = project.name.split('-')[0]
+            def connectorName = project.name.split('-')[1..-1].join('-')
+            def connectorPackageName = project.name.replace('-', '_')
+            def connectorProjectName = connectorProjectName()
+            def javaRuntimePackageName = connectorPackageName + "_java"
+            def javaRuntimeProjectName = javaRuntimeProjectName()
+            def javaRuntimeWheelName = "airbyte_" + javaRuntimePackageName
+            def javaRuntimeDirNameInPackage = JAVA_RUNTIME_DIR_NAME
+
+            def valueMappingsForTemplates = [
+                    CONNECTOR_TYPE : connectorType,
+                    CONNECTOR_NAME : connectorName,
+                    CONNECTOR_PACKAGE_NAME : connectorPackageName,
+                    CONNECTOR_PROJECT_NAME : connectorProjectName,
+                    CONNECTOR_VERSION: getConnectorVersion(),
+                    JAVA_RUNTIME_DIR_NAME: javaRuntimeDirNameInPackage,
+                    PLATFORM: detectPlatform(),
+                    JAVA_RUNTIME_PACKAGE_NAME: javaRuntimePackageName,
+                    JAVA_RUNTIME_PROJECT_NAME: javaRuntimeProjectName,
+                    JAVA_RUNTIME_WHEEL_NAME: javaRuntimeWheelName,
+                    JAVA_RUNTIME_GCS_BUCKET_PATH: JAVA_RUNTIME_GCS_BUCKET_PATH
+            ]
+            def connectorPythonProjectDir = file(CONNECTOR_PYTHON_PROJECT_DIR)
+            connectorPythonProjectDir.deleteDir()
+            mkdir(connectorPythonProjectDir)
+
+            def connectorPackageDir = file("${connectorPythonProjectDir}/${connectorPackageName}")
+            if (connectorPackageDir.exists()) connectorPackageDir.deleteDir()
+            mkdir(connectorPackageDir)
+
+            buildPythonPackage(connectorPythonProjectDir, connectorPackageDir, valueMappingsForTemplates)
+
+            def javaRuntimePythonProjectDir = file(JAVA_RUNTIME_PYTHON_PROJECT_DIR)
+            javaRuntimePythonProjectDir.deleteDir()
+            mkdir(javaRuntimePythonProjectDir)
+
+            def javaRuntimePackageDir = file("${javaRuntimePythonProjectDir}/${javaRuntimePackageName}")
+            if (javaRuntimePackageDir.exists()) javaRuntimePackageDir.deleteDir()
+            mkdir(javaRuntimePackageDir)
+
+            buildJavaRuntimePackage(javaRuntimePythonProjectDir, javaRuntimePackageDir, valueMappingsForTemplates, javaRuntimeDirNameInPackage)
+        }
+    }
+
+    ext.getConnectorPackageName = {
+        return project.name.replace('-', '_')
+    }
+
+    ext.buildJavaRuntimePackage = { File javaRuntimePythonProjectDir, File javaRuntimePackageDir,  Map valueMapping, String javaRuntimeDirNameInPackage ->
+        def templateEngine = new SimpleTemplateEngine()
+        processTemplate(
+                templateEngine,
+                "gradle/java_connector_python_packaging/templates/java_runtime/pyproject.template.toml",
+                javaRuntimePythonProjectDir,
+                "pyproject.toml",
+                valueMapping
+        )
+
+        processTemplate(
+                templateEngine,
+                "gradle/java_connector_python_packaging/templates/java_runtime/MANIFEST.template.in",
+                javaRuntimePythonProjectDir,
+                "MANIFEST.in",
+                valueMapping
+        )
+
+        createEmptyInitFile(javaRuntimePackageDir)
+
+        exec {
+            workingDir = javaRuntimePackageDir
+            commandLine = [
+                    "jlink", "--add-modules", "ALL-MODULE-PATH",
+                    "--strip-debug", "--no-header-files", "--no-man-pages", "--compress=2",
+                    "--output", "${javaRuntimeDirNameInPackage}",
+            ]
+        }
+
+        exec {
+            workingDir = javaRuntimePythonProjectDir
+            commandLine = [
+                    "python", "-m", "build",
+            ]
+        }
+    }
+
+    ext.buildPythonPackage = { File connectorPythonProjectDir, File connectorPackageDir,  Map valueMapping ->
+        def templateEngine = new SimpleTemplateEngine()
+        processTemplate(
+                templateEngine,
+                "gradle/java_connector_python_packaging/templates/connector/pyproject.template.toml",
+                connectorPythonProjectDir,
+                "pyproject.toml",
+                valueMapping
+        )
+
+        processTemplate(
+                templateEngine,
+                "gradle/java_connector_python_packaging/templates/connector/MANIFEST.template.in",
+                connectorPythonProjectDir,
+                "MANIFEST.in",
+                valueMapping
+        )
+
+        processTemplate(
+                templateEngine,
+                "gradle/java_connector_python_packaging/templates/connector/run.template.py",
+                connectorPackageDir,
+                "run.py",
+                valueMapping
+        )
+
+        createEmptyInitFile(connectorPackageDir)
+
+        //extract the tar file to the package directory
+        exec {
+            commandLine = ["tar", "xf", "build/distributions/airbyte-app.tar", "--strip-components=1" , "-C", connectorPackageDir.toString()]
+        }
+
+        exec {
+            workingDir = connectorPythonProjectDir
+            commandLine = [
+                    "python", "-m", "build",
+            ]
+        }
+    }
+
+    ext.connectorProjectName = {
+        return "airbyte-" + project.name
+    }
+
+    ext.javaRuntimeProjectName = {
+        return "airbyte-" + project.name + "-java"
+    }
+
+    ext.connectorProjectNameWithUnderscores = {
+        return connectorProjectName().replace('-', '_')
+    }
+
+    ext.javaRuntimeProjectNameWithUnderscores = {
+        return javaRuntimeProjectName().replace('-', '_')
+    }
+    ext.createEmptyInitFile = { File dir ->
+        file("${dir}/__init__.py").createNewFile()
+    }
+
+    ext.getConnectorVersion = { String metadataFilePath = METADATA_FILE_PATH ->
+        def connectorManifest = Files.newInputStream(file(metadataFilePath).toPath())
+        try {
+            def connectorManifestContent = new Yaml().load(connectorManifest) as Map
+            def connectorVersion = connectorManifestContent.data.dockerImageTag
+            return connectorVersion
+        } finally {
+            connectorManifest.close()
+        }
+    }
+
+    ext.processTemplate = {  SimpleTemplateEngine templateEngine, String templatePathRelativeToProjectRoot, File outputDir, String outputFileName, Map valueMapping ->
+        def template = rootProject.file(templatePathRelativeToProjectRoot)
+        def processedText = templateEngine.createTemplate(template).make(valueMapping).toString()
+        def outputFile = file("${outputDir}/${outputFileName}")
+        outputFile.text = processedText
+    }
+}
