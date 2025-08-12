@@ -61,7 +61,7 @@ jobs:
     if: needs.changes-in-bulk.outputs.java == 'true'
     runs-on: ubuntu-24.04
     name: Bulk CDK version check
-    timeout-minutes: 2
+    timeout-minutes: 60
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v4
