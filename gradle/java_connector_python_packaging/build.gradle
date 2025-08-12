@@ -12,4 +12,16 @@ def detectPlatform() {
     throw GradleException("Unsupported OS: ${DefaultNativePlatform.currentOperatingSystem}")
 }
 
+def registerGlobalTask(String taskName) {
+    tasks.register(taskName) {
+        group = "custom"
+        description = "Global $taskName task that runs $taskName in all subprojects"
+        ":airbyte-integrations:connectors:"
+
+        def connectorProjects = subprojects.findAll { it.path.startsWith(":airbyte-integrations:connectors:") }
+        println "Registering global task $taskName for ${connectorProjects.size()} connector projects: ${connectorProjects.name.join(', ')}"
+        dependsOn connectorProjects.collect { it.tasks.named(taskName) }
+    }
+}
+
 
