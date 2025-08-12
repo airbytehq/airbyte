@@ -14,9 +14,6 @@ import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.DestinationRecordSource
 import io.airbyte.cdk.load.message.Undefined
-import io.airbyte.protocol.models.v0.AirbyteMessage
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage
-import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
@@ -35,7 +32,8 @@ class DataFlowPipelineInputFlowTest {
         val inputFlow = flowOf<DestinationMessage>(checkpointMessage)
         val stateStore = mockk<StateStore>(relaxed = true)
         val stateKeyClient = mockk<StateKeyClient>()
-        val dataFlowPipelineInputFlow = DataFlowPipelineInputFlow(inputFlow, stateStore, stateKeyClient)
+        val dataFlowPipelineInputFlow =
+            DataFlowPipelineInputFlow(inputFlow, stateStore, stateKeyClient)
 
         // When
         val result = dataFlowPipelineInputFlow.toList()
@@ -53,29 +51,32 @@ class DataFlowPipelineInputFlowTest {
         every { stream.airbyteValueProxyFieldAccessors } returns emptyArray()
         val message = mockk<DestinationRecordSource>()
         every { message.fileReference } returns null
-        val destinationRecord = DestinationRecord(
-            stream,
-            message,
-            1L,
-            null,
-            UUID.randomUUID(),
-        )
+        val destinationRecord =
+            DestinationRecord(
+                stream,
+                message,
+                1L,
+                null,
+                UUID.randomUUID(),
+            )
         val inputFlow = flowOf<DestinationMessage>(destinationRecord)
         val stateStore = mockk<StateStore>()
         val stateKeyClient = mockk<StateKeyClient>()
         val partitionKey = PartitionKey("partitionKey")
         every { stateKeyClient.getPartitionKey(any()) } returns partitionKey
-        val dataFlowPipelineInputFlow = DataFlowPipelineInputFlow(inputFlow, stateStore, stateKeyClient)
+        val dataFlowPipelineInputFlow =
+            DataFlowPipelineInputFlow(inputFlow, stateStore, stateKeyClient)
 
         // When
         val result = dataFlowPipelineInputFlow.toList()
 
         // Then
         assertEquals(1, result.size)
-        val expected = DataFlowStageIO(
-            raw = destinationRecord.asDestinationRecordRaw(),
-            partitionKey = partitionKey,
-        )
+        val expected =
+            DataFlowStageIO(
+                raw = destinationRecord.asDestinationRecordRaw(),
+                partitionKey = partitionKey,
+            )
         assertEquals(expected, result[0])
     }
 
@@ -86,7 +87,8 @@ class DataFlowPipelineInputFlowTest {
         val inputFlow = flowOf<DestinationMessage>(undefinedMessage)
         val stateStore = mockk<StateStore>()
         val stateKeyClient = mockk<StateKeyClient>()
-        val dataFlowPipelineInputFlow = DataFlowPipelineInputFlow(inputFlow, stateStore, stateKeyClient)
+        val dataFlowPipelineInputFlow =
+            DataFlowPipelineInputFlow(inputFlow, stateStore, stateKeyClient)
 
         // When
         val result = dataFlowPipelineInputFlow.toList()
