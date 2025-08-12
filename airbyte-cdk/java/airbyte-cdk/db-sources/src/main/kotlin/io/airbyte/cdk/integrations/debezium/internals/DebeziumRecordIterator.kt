@@ -79,7 +79,6 @@ class DebeziumRecordIterator<T>(
         // keep trying until the publisher is closed or until the queue is empty. the latter case is
         // possible when the publisher has shutdown but the consumer has not yet processed all
         // messages it emitted.
-        val instantBeforeSync = Instant.now()
         while (!MoreBooleans.isTruthy(publisherStatusSupplier.get()) || !queue.isEmpty()) {
             val next: ChangeEvent<String?, String?>?
             val waitTime =
