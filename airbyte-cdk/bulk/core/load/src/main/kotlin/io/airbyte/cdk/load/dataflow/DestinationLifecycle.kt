@@ -2,10 +2,9 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.load.lifecycle
+package io.airbyte.cdk.load.dataflow
 
 import io.airbyte.cdk.load.command.DestinationCatalog
-import io.airbyte.cdk.load.dataflow.DataFlowPipeline
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -34,6 +33,8 @@ class DestinationLifecycle(
         runBlocking { pipeline.run() }
 
         finalizeIndividualStreams(streamLoaders)
+
+        teardownDestination()
     }
 
     private fun initializeDestination() {
@@ -83,6 +84,14 @@ class DestinationLifecycle(
                     }
                 }
                 .awaitAll()
+        }
+    }
+
+    private fun teardownDestination() {
+        runBlocking {
+            log.info { "Tearing down the destination" }
+            destinationInitializer.teardown()
+            log.info { "Destination torn down" }
         }
     }
 }
