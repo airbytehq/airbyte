@@ -63,7 +63,7 @@ def _get_specs_secrets_from_registry_entries(entries: list[PolymorphicRegistryEn
 
 
 @sentry_sdk.trace
-def _persist_secrets_to_gcs(specs_secrets: Set[str], bucket: storage.Bucket) -> tuple[bool, Optional[str]]:
+def _persist_secrets_to_gcs(specs_secrets: Set[str], bucket: storage.Bucket) -> None:
     """Persist the specs secrets to GCS."""
 
     # TODO: Remove the dev bucket set up once registry artificts have been validated and then add the bucket as a parameter
@@ -79,18 +79,17 @@ def _persist_secrets_to_gcs(specs_secrets: Set[str], bucket: storage.Bucket) -> 
         specs_secrets_mask_blob.upload_from_string(yaml.dump({"properties": sorted(list(specs_secrets))}))
     except Exception as e:
         logger.error(f"Error uploading specs secrets mask to GCS: {e}")
-        return False, str(e)
-    return True, None
+        raise e
 
 
-def generate_and_persist_specs_secrets_mask(bucket_name: str) -> tuple[bool, Optional[str]]:
+def generate_and_persist_specs_secrets_mask(bucket_name: str) -> None:
     """Generate and persist the specs secrets mask to GCS.
 
     Args:
         bucket_name (str): The name of the bucket to persist the specs secrets mask to.
 
     Returns:
-        tuple[bool, Optional[str]]: A tuple containing a boolean indicating success and an optional error message.
+        None
     """
 
     client = get_gcs_storage_client()
@@ -101,10 +100,8 @@ def generate_and_persist_specs_secrets_mask(bucket_name: str) -> tuple[bool, Opt
 
     all_specs_secrets = _get_specs_secrets_from_registry_entries(all_entries)
 
-    persisted, error_message = _persist_secrets_to_gcs(all_specs_secrets, bucket)
-
-    if not persisted:
+    try:
+        _persist_secrets_to_gcs(all_specs_secrets, bucket)
+    except Exception as e:
         message = f"*🤖 🔴 _Specs Secrets Mask Generation_ FAILED*:\nFailed to generate and persist `{SPECS_SECRETS_MASK_FILE_NAME}` to registry GCS bucket."
         send_slack_message(PUBLISH_UPDATE_CHANNEL, message)
-
-    return persisted, error_message

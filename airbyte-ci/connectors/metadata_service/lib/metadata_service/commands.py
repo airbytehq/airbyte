@@ -23,8 +23,6 @@ from metadata_service.specs_secrets_mask import generate_and_persist_specs_secre
 from metadata_service.stale_metadata_report import generate_and_publish_stale_metadata_report
 from metadata_service.validators.metadata_validator import PRE_UPLOAD_VALIDATORS, ValidatorOptions, validate_and_load
 
-setup_sentry()
-
 
 def setup_logging(debug: bool = False):
     """Configure logging for the CLI."""
@@ -72,6 +70,7 @@ def log_metadata_deletion_info(metadata_deletion_info: MetadataDeleteInfo):
 @click.option("--debug", is_flag=True, help="Enable debug logging", default=False)
 def metadata_service(debug: bool):
     """Top-level command group with logging configuration."""
+    setup_sentry()
     setup_logging(debug)
 
 
@@ -173,16 +172,8 @@ def generate_connector_registry(bucket_name: str, registry_type: str):
 
     logger.info(f"Starting {registry_type} registry generation and upload process.")
     try:
-        persisted, error_message = generate_and_persist_connector_registry(bucket_name, registry_type)
-
-        sentry_sdk.set_tag("operation_success", persisted)
-
-        if persisted:
-            logger.info(f"Successfully generated and persisted {registry_type} registry to GCS.")
-        else:
-            sentry_sdk.set_tag("error_message", error_message)
-            logger.error(f"Error generating {registry_type} registry: {error_message}")
-            exit(1)
+        generate_and_persist_connector_registry(bucket_name, registry_type)
+        sentry_sdk.set_tag("operation_success", True)
     except Exception as e:
         sentry_sdk.set_tag("operation_success", False)
         sentry_sdk.capture_exception(e)
@@ -200,16 +191,8 @@ def generate_specs_secrets_mask(bucket_name: str):
 
     logger.info("Starting specs secrets mask generation and upload process.")
     try:
-        persisted, error_message = generate_and_persist_specs_secrets_mask(bucket_name)
-
-        sentry_sdk.set_tag("operation_success", persisted)
-
-        if persisted:
-            logger.info(f"Successfully generated and persisted specs secrets mask to GCS bucket: {bucket_name}")
-        else:
-            sentry_sdk.set_tag("error_message", error_message)
-            logger.error(f"Error generating specs secrets mask: {error_message}")
-            exit(1)
+        generate_and_persist_specs_secrets_mask(bucket_name)
+        sentry_sdk.set_tag("operation_success", True)
     except Exception as e:
         sentry_sdk.set_tag("operation_success", False)
         sentry_sdk.capture_exception(e)

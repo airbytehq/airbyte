@@ -12,12 +12,9 @@ sentry_logger = logging.getLogger("sentry")
 
 def setup_sentry():
     """
-    Setup the sentry SDK for Dagster if SENTRY_DSN is defined for the environment.
+    Setup the sentry SDK if SENTRY_DSN is defined for the environment.
 
     Additionally TRACES_SAMPLE_RATE can be set 0-1 otherwise will default to 0.
-
-    Manually sets up a bunch of the default integrations and disables logging of dagster
-    to quiet things down.
     """
     from sentry_sdk.integrations.argv import ArgvIntegration
     from sentry_sdk.integrations.atexit import AtexitIntegration

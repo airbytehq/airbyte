@@ -115,7 +115,7 @@ def _apply_release_candidates(
     except AttributeError:
         return latest_registry_entry
 
-    # Ensure that the release candidate is newer than the latest registry entry
+    # If the relase candidate is older than the latest registry entry, don't apply the release candidate and return the latest registry entry
     if semver.Version.parse(release_candidate_registry_entry.dockerImageTag) < semver.Version.parse(
         latest_registry_entry["dockerImageTag"]
     ):
@@ -245,7 +245,7 @@ def _get_release_candidate_registry_entries(bucket: storage.Bucket, registry_typ
         logger.info(f"Reading blob: {blob.name}")
         registry_dict = json.loads(safe_read_gcs_file(blob))
         try:
-            if "source-" in blob.name:
+            if "/source-" in blob.name:
                 registry_model = ConnectorRegistrySourceDefinition.parse_obj(registry_dict)
             else:
                 registry_model = ConnectorRegistryDestinationDefinition.parse_obj(registry_dict)
@@ -296,7 +296,7 @@ def _get_latest_connector_metrics(bucket: storage.Bucket) -> dict:
 
 
 @sentry_sdk.trace
-def _persist_registry_to_json(registry: ConnectorRegistryV0, registry_name: str, bucket: storage.Bucket) -> Union[bool, Optional[str]]:
+def _persist_registry(registry: ConnectorRegistryV0, registry_name: str, bucket: storage.Bucket) -> None:
     """Persist the registry to a json file on GCS bucket
 
     Args:
@@ -305,8 +305,7 @@ def _persist_registry_to_json(registry: ConnectorRegistryV0, registry_name: str,
         bucket (storage.Bucket): The GCS bucket.
 
     Returns:
-        bool: True if the registry was persisted successfully, False otherwise.
-        Optional[str]: The error message if the registry was not persisted successfully.
+        None
     """
 
     # TODO: Remove the dev bucket set up once registry artificts have been validated and then add the bucket as a parameter. This block exists so we can write the registry artifacts to the dev bucket for validation.
@@ -326,13 +325,13 @@ def _persist_registry_to_json(registry: ConnectorRegistryV0, registry_name: str,
         blob = bucket.blob(registry_file_path)
         blob.upload_from_string(registry_json.encode("utf-8"), content_type="application/json")
         logger.info(f"Successfully uploaded {registry_name} registry to {registry_file_path}")
-        return True, None
+        return
     except Exception as e:
         logger.error(f"Error persisting {registry_file_name} to json: {str(e)}")
-        return False, str(e)
+        raise e
 
 
-def generate_and_persist_connector_registry(bucket_name: str, registry_type: str) -> tuple[bool, Optional[str]]:
+def generate_and_persist_connector_registry(bucket_name: str, registry_type: str) -> None:
     """Generate and persist the registry to a json file on GCS bucket.
 
     Args:
@@ -364,10 +363,9 @@ def generate_and_persist_connector_registry(bucket_name: str, registry_type: str
         latest_registry_entries, latest_connector_metrics, docker_repository_to_rc_registry_entry
     )
 
-    persisted, error_message = _persist_registry_to_json(connector_registry, registry_type, registry_bucket)
-
-    if not persisted:
+    try:
+        _persist_registry(connector_registry, registry_type, registry_bucket)
+    except Exception as e:
         message = f"*🤖 🔴 _Registry Generation_ FAILED*:\nFailed to generate and persist {registry_type} registry."
         send_slack_message(PUBLISH_UPDATE_CHANNEL, message)
-
-    return persisted, error_message
+        raise e
