@@ -1,4 +1,4 @@
-version: 6.41.5
+version: 6.48.15
 
 type: DeclarativeSource
 
@@ -2358,18 +2358,10 @@ definitions:
           type: JsonDecoder
         paginator:
           type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: size
-            inject_into: request_parameter
-          page_token_option:
-            type: RequestOption
-            field_name: page
-            inject_into: request_parameter
           pagination_strategy:
-            type: PageIncrement
-            page_size: 100
-            start_from_page: 1
+            type: CursorPagination
+            cursor_value: "{{ response.total_items }}"
+            stop_condition: "{{ not response._embedded.reservations }}"
         requester:
           $ref: "#/definitions/base_requester"
           path: pms/reservations
@@ -2480,24 +2472,6 @@ definitions:
           field_pointers:
             - - _embedded
               - channel
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: updatedAt
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "1900-01-01T00:00:00+00:00"
-          datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
-        start_time_option:
-          type: RequestOption
-          field_name: updatedSince
-          inject_into: request_parameter
-        cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S%z"
     tax_policies:
       type: DeclarativeStream
       name: tax_policies
@@ -3080,19 +3054,10 @@ definitions:
           type: JsonDecoder
         paginator:
           type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: size
-            inject_into: request_parameter
-          page_token_option:
-            type: RequestOption
-            field_name: page
-            inject_into: request_parameter
           pagination_strategy:
-            type: PageIncrement
-            page_size: 100
-            start_from_page: 1
-            inject_on_first_request: true
+            type: CursorPagination
+            cursor_value: "{{ response.total_items }}"
+            stop_condition: "{{ not response._embedded.reservations }}"
         requester:
           $ref: "#/definitions/base_requester"
           path: v2/pms/reservations
@@ -4647,21 +4612,6 @@ definitions:
         type: SimpleRetriever
         decoder:
           type: JsonDecoder
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: size
-            inject_into: request_parameter
-          page_token_option:
-            type: RequestOption
-            field_name: page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 100
-            start_from_page: 1
-            inject_on_first_request: true
         requester:
           $ref: "#/definitions/base_requester"
           path: pms/reservations
@@ -4695,6 +4645,9 @@ definitions:
                     backoff_time_in_seconds: 305
           request_headers:
             accept: application/json
+          request_parameters:
+            size: "100"
+            scroll: "1"
         record_selector:
           type: RecordSelector
           extractor:
@@ -4702,15 +4655,6 @@ definitions:
             field_path:
               - _links
               - self
-        partition_router:
-          type: ListPartitionRouter
-          values:
-            - "1"
-          cursor_field: scroll
-          request_option:
-            type: RequestOption
-            field_name: scroll
-            inject_into: request_parameter
       primary_key:
         - href
       schema_loader:
@@ -5541,21 +5485,6 @@ definitions:
         type: SimpleRetriever
         decoder:
           type: JsonDecoder
-        paginator:
-          type: DefaultPaginator
-          page_size_option:
-            type: RequestOption
-            field_name: size
-            inject_into: request_parameter
-          page_token_option:
-            type: RequestOption
-            field_name: page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 100
-            start_from_page: 1
-            inject_on_first_request: true
         requester:
           $ref: "#/definitions/base_requester"
           path: v2/pms/reservations
@@ -5589,6 +5518,9 @@ definitions:
                     backoff_time_in_seconds: 305
           request_headers:
             accept: application/json
+          request_parameters:
+            size: "100"
+            scroll: "1"
         record_selector:
           type: RecordSelector
           extractor:
@@ -5596,15 +5528,6 @@ definitions:
             field_path:
               - _links
               - self
-        partition_router:
-          type: ListPartitionRouter
-          values:
-            - "1"
-          cursor_field: scroll
-          request_option:
-            type: RequestOption
-            field_name: scroll
-            inject_into: request_parameter
       primary_key:
         - href
       schema_loader:
@@ -7246,7 +7169,7 @@ metadata:
       responsesAreSuccessful: true
     reservations:
       hasRecords: true
-      streamHash: ef4f3761ef29139f9e4f5be4e7ad8819256ee697
+      streamHash: eea32eb9b78de8c92ebb928e7d7c4d48c61023f2
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -7302,7 +7225,7 @@ metadata:
       responsesAreSuccessful: true
     reservations_v2:
       hasRecords: true
-      streamHash: 63b219a524f9633fc3bbcd4d1eaa8322e72504b8
+      streamHash: a024843e6de1dad41bd4367445ab79765a735d6b
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -7421,7 +7344,7 @@ metadata:
       responsesAreSuccessful: true
     reservations_scroll:
       hasRecords: true
-      streamHash: 7ea079e10e9221e93e40fcbb54c662ca1b64447b
+      streamHash: 2ac9f8d18984675042bda300e65b47712b0f17a2
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -7484,7 +7407,7 @@ metadata:
       responsesAreSuccessful: true
     reservations_v2_scroll:
       hasRecords: true
-      streamHash: e2258786249661145b3c77498ba5fa460dff517f
+      streamHash: a7e18408c924b6cfaa536a6dd23e7267990447b7
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true

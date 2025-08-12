@@ -102,6 +102,7 @@ Authentication Docs: https://developer.trackhs.com/docs/authentication#authentic
 
 | Version          | Date       | Subject        |
 |------------------|------------|----------------|
+| 4.2.0 | 2025-06-30 | Improved reservations & reservations_v2 scroll index handling |
 | 4.1.0 | 2025-06-30 | Fix error handler, add scroll parameter for reservations endpoints, add booking fees endpoint, schema updates |
 | 4.0.0 | 2025-03-30 | Prune units schema; fix docs; update error handler; diable connector auto schema determination |
 | 3.0.0 | 2025-02-26 | Drop redundant streams & omit unneeded sensitive fields from accounting_* streams |
