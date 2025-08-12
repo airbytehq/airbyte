@@ -14,7 +14,6 @@ from orchestrator.config import (
     REGISTRIES_FOLDER,
     REPORT_FOLDER,
 )
-from orchestrator.jobs.metadata import generate_stale_gcs_latest_metadata_file
 from orchestrator.jobs.registry import (
     add_new_metadata_partitions,
     remove_stale_metadata_partitions,
@@ -79,20 +78,26 @@ METADATA_RESOURCE_TREE = {
     ),
     "latest_metadata_file_blobs": gcs_directory_blobs.configured(
         {"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": METADATA_FOLDER, "match_regex": f".*latest/{METADATA_FILE_NAME}$"}
-    )
+    ),
 }
 
 DATA_WAREHOUSE_RESOURCE_TREE = {
     **GCS_RESOURCE_TREE,
     "latest_metrics_gcs_blob": gcs_directory_blobs.configured(
-        {"gcs_bucket": ANALYTICS_BUCKET, "prefix": ANALYTICS_FOLDER, "match_regex": f".*.jsonl$", "only_one": True, "sort_key": "name", "reverse_sort": True}
+        {
+            "gcs_bucket": ANALYTICS_BUCKET,
+            "prefix": ANALYTICS_FOLDER,
+            "match_regex": f".*.jsonl$",
+            "only_one": True,
+            "sort_key": "name",
+            "reverse_sort": True,
+        }
     ),
 }
 
 REGISTRY_RESOURCE_TREE = {
     **SLACK_RESOURCE_TREE,
     **GCS_RESOURCE_TREE,
-
     "latest_oss_registry_gcs_blob": gcs_file_blob.configured(
         {"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": REGISTRIES_FOLDER, "gcs_filename": "oss_registry.json"}
     ),
@@ -163,11 +168,6 @@ SCHEDULES = [
         execution_timezone="US/Pacific",
         job=remove_stale_metadata_partitions,
     ),
-    ScheduleDefinition(
-        cron_schedule="0 * * * *",  # Every hour
-        execution_timezone="US/Pacific",
-        job=generate_stale_gcs_latest_metadata_file,
-    ),
 ]
 
 JOBS = [
@@ -178,7 +178,6 @@ JOBS = [
     add_new_metadata_partitions,
     remove_stale_metadata_partitions,
     remove_latest_metadata_partitions,
-    generate_stale_gcs_latest_metadata_file,
 ]
 
 """
