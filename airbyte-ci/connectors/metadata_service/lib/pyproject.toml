@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "metadata-service"
-version = "0.27.0"
+version = "0.27.1"
 description = ""
 authors = ["Airbyte <contact@airbyte.io>"]
 readme = "README.md"
