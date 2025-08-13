@@ -6,7 +6,7 @@ package io.airbyte.cdk.load.dataflow.stages
 
 import io.airbyte.cdk.load.dataflow.DataFlowStageIO
 import io.airbyte.cdk.load.dataflow.state.PartitionHistogram
-import io.airbyte.cdk.load.dataflow.state.StateStore
+import io.airbyte.cdk.load.dataflow.state.StateHistogramStore
 import io.mockk.mockk
 import io.mockk.verify
 import kotlin.test.assertFailsWith
@@ -16,12 +16,11 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class StateStageTest {
-    private lateinit var stateStore: StateStore
+    private val stateStore: StateHistogramStore = mockk(relaxed = true)
     private lateinit var stateStage: StateStage
 
     @BeforeEach
     fun setup() {
-        stateStore = mockk<StateStore>(relaxed = true)
         stateStage = StateStage(stateStore)
     }
 
