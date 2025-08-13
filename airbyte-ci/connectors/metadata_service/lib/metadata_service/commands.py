@@ -18,6 +18,7 @@ from metadata_service.gcs_upload import (
     upload_metadata_to_gcs,
 )
 from metadata_service.registry import generate_and_persist_connector_registry
+from metadata_service.registry_entry import generate_and_persist_registry_entry
 from metadata_service.sentry import setup_sentry
 from metadata_service.specs_secrets_mask import generate_and_persist_specs_secrets_mask
 from metadata_service.stale_metadata_report import generate_and_publish_stale_metadata_report
@@ -199,4 +200,28 @@ def generate_specs_secrets_mask(bucket_name: str):
         sentry_sdk.set_tag("operation_success", False)
         sentry_sdk.capture_exception(e)
         logger.error(f"FATAL ERROR: An error occurred when generating and persisting the specs secrets mask: {str(e)}")
+        exit(1)
+
+
+@metadata_service.command(help="Generate the registry entry and persist it to GCS.")
+@click.argument("bucket-name", type=click.STRING, required=True)
+@click.argument("metadata-file-path", type=click.Path(exists=True, path_type=pathlib.Path), required=True)
+@click.argument("spec-path", type=click.Path(exists=True, path_type=pathlib.Path), required=True)
+@click.argument("registry-type", type=click.Choice(VALID_REGISTRIES), required=True)
+@sentry_sdk.trace
+def generate_registry_entry(bucket_name: str, metadata_file_path: pathlib.Path, spec_path: pathlib.Path, registry_type: str):
+    # Set Sentry context for the generate_registry_entry command
+    sentry_sdk.set_tag("command", "generate_registry_entry")
+    sentry_sdk.set_tag("bucket_name", bucket_name)
+    sentry_sdk.set_tag("metadata_file_path", str(metadata_file_path))
+
+    logger.info("Starting registry entry generation and upload process.")
+    try:
+        generate_and_persist_registry_entry(bucket_name, metadata_file_path, spec_path, registry_type)
+        sentry_sdk.set_tag("operation_success", True)
+        logger.info("Registry entry generation and upload process completed successfully.")
+    except Exception as e:
+        sentry_sdk.set_tag("operation_success", False)
+        sentry_sdk.capture_exception(e)
+        logger.error(f"FATAL ERROR: An error occurred when generating and persisting the registry entry: {str(e)}")
         exit(1)
