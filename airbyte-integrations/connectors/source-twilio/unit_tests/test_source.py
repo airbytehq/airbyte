@@ -29,23 +29,24 @@ TEST_INSTANCE = SourceTwilio(config, None, None)
     (
         (
             ConnectionError("Connection aborted"),
-            "Unable to connect to Twilio API with the provided credentials - ConnectionError('Connection aborted')",
+            "Encountered an error while checking availability of stream accounts. Error: Connection aborted",
         ),
         (
             TimeoutError("Socket timed out"),
-            "Unable to connect to Twilio API with the provided credentials - TimeoutError('Socket timed out')",
+            "Encountered an error while checking availability of stream accounts. Error: Socket timed out",
         ),
         (
             DefaultBackoffException(
                 None, None, "Unexpected exception in error handler: 401 Client Error: Unauthorized for url: https://api.twilio.com/"
             ),
-            "Unable to connect to Twilio API with the provided credentials - "
-            "DefaultBackoffException('Unexpected exception in error handler: Unexpected exception in error handler: 401 Client Error: Unauthorized for url: https://api.twilio.com/')",
+            "Encountered an error while checking availability of stream accounts. "
+            "Error: DefaultBackoffException: Unexpected exception in error handler: 401 Client Error: Unauthorized for url: https://api.twilio.com/",
         ),
     ),
 )
 def test_check_connection_handles_exceptions(mocker, config, exception, expected_error_msg):
     mocker.patch.object(requests.Session, "send", Mock(side_effect=exception))
-    status_ok, error = TEST_INSTANCE.check_connection(logger=None, config=config)
+    logger_mock = Mock()
+    status_ok, error = TEST_INSTANCE.check_connection(logger=logger_mock, config=config)
     assert not status_ok
     assert error == expected_error_msg
