@@ -4,7 +4,15 @@
 
 * **Changed:** Extract CDK logs DB version during Check for all JDBC databases.
 
+## Version 0.1.16
+
+**Load CDK**
+
+* **Changed:** Ensure sequential state emission. Remove flushed state/partition keys.
+
 ## Version 0.1.14
+
+**Load CDK**
 
 * **Changed:** Add agent.
 
