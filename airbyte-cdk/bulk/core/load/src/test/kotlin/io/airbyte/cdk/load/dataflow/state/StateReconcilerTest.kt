@@ -106,55 +106,39 @@ class StateReconcilerTest {
     }
 
     @Test
-    fun `run should start coroutine that periodically flushes complete states`() = runTest {
-        // Given
-        every { stateStore.getNextComplete() } returns null
-
-        // When
-        stateReconciler.run()
-
-        // Advance time by 30 seconds to trigger first flush
-        advanceTimeBy(30.seconds)
-
-        // Then
-        verify(atLeast = 1) { stateStore.getNextComplete() }
-    }
-
-    @Test
     fun `run should continue flushing states at regular intervals`() = runTest {
         // Given
         every { stateStore.getNextComplete() } returns null
 
         // When
-        stateReconciler.run()
+        stateReconciler.run(this.backgroundScope)
 
         // Advance time to trigger multiple flushes
         advanceTimeBy(30.seconds) // First flush
         advanceTimeBy(30.seconds) // Second flush
         advanceTimeBy(30.seconds) // Third flush
+        advanceTimeBy(1.seconds) // Padding to let the last flush run
 
         // Then
         verify(atLeast = 3) { stateStore.getNextComplete() }
     }
 
     @Test
-    fun `disable should cancel and join the running job`() = runTest {
+    fun `disable should cancel the job and no more flushes should occur`() = runTest {
         // Given
         every { stateStore.getNextComplete() } returns null
 
         // Start the reconciler
-        stateReconciler.run()
+        stateReconciler.run(this.backgroundScope)
 
         // When
         stateReconciler.disable()
 
         // Then
-        // The job should be cancelled and the coroutine should stop
-        // We can verify this by advancing time and ensuring no more flushes occur
         advanceTimeBy(60.seconds)
-        
+
         // Should have had initial flushes but then stopped after disable
-        verify(atMost = 2) { stateStore.getNextComplete() }
+        verify(exactly = 0) { stateStore.getNextComplete() }
     }
 
     @Test

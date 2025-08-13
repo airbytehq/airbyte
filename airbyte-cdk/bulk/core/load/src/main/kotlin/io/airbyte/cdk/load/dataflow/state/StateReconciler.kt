@@ -24,9 +24,9 @@ class StateReconciler(
     private val iterationDuration: Duration = 30.seconds
     private lateinit var job: Job
 
-    fun run() {
+    fun run(scope: CoroutineScope = CoroutineScope(Dispatchers.IO)) {
         job =
-            CoroutineScope(Dispatchers.IO).launch {
+            scope.launch {
                 while (true) {
                     delay(iterationDuration)
                     flushCompleteStates()
