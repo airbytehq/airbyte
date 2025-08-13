@@ -6274,8 +6274,9 @@ definitions:
           record_filter:
             type: RecordFilter
             condition: >-
-              {{ (record['ownerRevenue'] | default(0) | int > 0) and
-              (record['id'] != record['reservationId']) }}
+              {{ (record._embedded.reservation.quoteBreakdown.grossRent | float
+              > 0) or (record._embedded.reservation.quoteBreakdown.guestFees |
+              float > 0) }}
           schema_normalization: Default
       primary_key:
         - id
@@ -6287,9 +6288,6 @@ definitions:
         - type: RemoveFields
           field_pointers:
             - - _links
-        - type: RemoveFields
-          field_pointers:
-            - - _embedded
     units_types_pricing_parent:
       type: DeclarativeStream
       name: units_types_pricing_parent
@@ -7504,7 +7502,7 @@ metadata:
       responsesAreSuccessful: true
     folios_transactions:
       hasRecords: true
-      streamHash: 99e7003abcece7d302aa125f239462dc17ec27fd
+      streamHash: 502376b6b85102cf7e8916465cedbe5c1c66f18a
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -7630,7 +7628,7 @@ metadata:
       responsesAreSuccessful: true
     folios_transactions_parent:
       hasRecords: true
-      streamHash: 44b58d471f5aa56077808f1946d22b4277af0c84
+      streamHash: c8dabe88822e0758ad7df0c99236fa2b3776159d
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
