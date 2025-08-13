@@ -354,7 +354,7 @@ def _get_connector_type_from_registry_entry(registry_entry: dict) -> TaggedRegis
         raise Exception("Could not determine connector type from registry entry")
 
 
-def _get_registry_entry_paths(metadata_dict: dict, registry_type: str) -> List[str]:
+def _get_registry_entry_blob_paths(metadata_dict: dict, registry_type: str) -> List[str]:
     """
     Builds the registry entry paths for the registry entries.
 
@@ -435,15 +435,12 @@ def generate_and_persist_registry_entry(
     if not metadata_dict["data"]["registryOverrides"][registry_type]["enabled"]:
         logger.warning(f"Registry type {registry_type} is not enabled, skipping")
 
-        registry_entry_paths = _get_registry_entry_paths(metadata_dict, registry_type)
+        registry_entry_blob_paths = _get_registry_entry_blob_paths(metadata_dict, registry_type)
         metadata_data = metadata_dict["data"]
 
         overridden_metadata_data = _apply_metadata_overrides(metadata_data, registry_type, bucket_name)
 
-        # TODO: Figure out how to pass spec to this command
-        if spec_path:
-            # overridden_metadata_data["spec"] = _get_and_parse_json_file(spec_path)
-            overridden_metadata_data["spec"] = {}
+        overridden_metadata_data["spec"] = _get_and_parse_json_file(spec_path)
 
         _, ConnectorModel = _get_connector_type_from_registry_entry(overridden_metadata_data)
         registry_model = ConnectorModel.parse_obj(overridden_metadata_data)
@@ -451,9 +448,9 @@ def generate_and_persist_registry_entry(
         # Persist the registry entry to the GCS bucket.
         persisted_paths = []
         try:
-            for registry_entry_path in registry_entry_paths:
-                _persist_connector_registry_entry(bucket_name, registry_model, registry_entry_path)
-                persisted_paths.append(registry_entry_path)
+            for registry_entry_blob_path in registry_entry_blob_paths:
+                _persist_connector_registry_entry(bucket_name, registry_model, registry_entry_blob_path)
+                persisted_paths.append(registry_entry_blob_path)
         except Exception as e:
             logger.error(f"Error persisting connector registry entry to: {e}")
             if persisted_paths:
