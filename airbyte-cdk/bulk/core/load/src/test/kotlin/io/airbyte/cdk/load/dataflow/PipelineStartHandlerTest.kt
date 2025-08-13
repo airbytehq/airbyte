@@ -18,8 +18,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 @ExtendWith(MockKExtension::class)
 class PipelineStartHandlerTest {
 
-    @MockK
-    private lateinit var reconciler: StateReconciler
+    @MockK private lateinit var reconciler: StateReconciler
 
     private lateinit var pipelineStartHandler: PipelineStartHandler
 
@@ -31,13 +30,13 @@ class PipelineStartHandlerTest {
     @Test
     fun `run should call reconciler run method`() {
         // Given
-        every { reconciler.run() } just Runs
+
+        every { reconciler.run(any()) } just Runs
 
         // When
         pipelineStartHandler.run()
 
         // Then
-        verify(exactly = 1) { reconciler.run() }
+        verify(exactly = 1) { reconciler.run(any()) }
     }
-
 }

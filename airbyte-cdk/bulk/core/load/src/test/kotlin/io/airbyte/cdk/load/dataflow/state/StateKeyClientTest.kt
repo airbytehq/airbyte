@@ -5,12 +5,11 @@
 package io.airbyte.cdk.load.dataflow.state
 
 import io.airbyte.cdk.load.message.CheckpointMessage
-import io.airbyte.cdk.load.state.CheckpointId
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.mockk.every
 import io.mockk.mockk
-import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
+import org.junit.jupiter.api.Test
 
 class StateKeyClientTest {
 
@@ -33,19 +32,21 @@ class StateKeyClientTest {
         // Given
         val client = SelfDescribingStateKeyClient()
         val message = mockk<CheckpointMessage>()
-        
+
         every { message.checkpointOrdinalRaw } returns 42
-        every { message.checkpointPartitionIds } returns listOf("partition-1", "partition-2", "partition-3")
+        every { message.checkpointPartitionIds } returns
+            listOf("partition-1", "partition-2", "partition-3")
 
         // When
         val result = client.getStateKey(message)
 
         // Then
-        val expectedPartitions = listOf(
-            PartitionKey("partition-1"),
-            PartitionKey("partition-2"), 
-            PartitionKey("partition-3")
-        )
+        val expectedPartitions =
+            listOf(
+                PartitionKey("partition-1"),
+                PartitionKey("partition-2"),
+                PartitionKey("partition-3")
+            )
         assertEquals(StateKey(42L, expectedPartitions), result)
     }
 
@@ -98,7 +99,10 @@ class StateKeyClientTest {
 
         // Then
         assertEquals(PartitionKey("1"), partitionKey1) // Initial value
-        assertEquals(StateKey(1L, listOf(PartitionKey("1"))), stateKey1) // Incremented to 2 internally
+        assertEquals(
+            StateKey(1L, listOf(PartitionKey("1"))),
+            stateKey1
+        ) // Incremented to 2 internally
         assertEquals(PartitionKey("2"), partitionKey2) // Current value after increment
     }
 
@@ -107,7 +111,7 @@ class StateKeyClientTest {
         // Given
         val client = SelfDescribingStateKeyClient()
         val message = mockk<CheckpointMessage>()
-        
+
         every { message.checkpointOrdinalRaw } returns 100
         every { message.checkpointPartitionIds } returns emptyList()
 
@@ -123,7 +127,7 @@ class StateKeyClientTest {
         // Given
         val client = SelfDescribingStateKeyClient()
         val message = mockk<CheckpointMessage>()
-        
+
         every { message.checkpointOrdinalRaw } returns 5
         every { message.checkpointPartitionIds } returns listOf("single-partition")
 

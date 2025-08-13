@@ -8,8 +8,6 @@ import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.mockk.Runs
-import io.mockk.coEvery
-import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
@@ -17,24 +15,21 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
 import io.mockk.verifyOrder
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import kotlin.time.Duration.Companion.seconds
 
 @ExtendWith(MockKExtension::class)
 @OptIn(ExperimentalCoroutinesApi::class)
 class StateReconcilerTest {
 
-    @MockK
-    private lateinit var stateStore: StateStore
+    @MockK private lateinit var stateStore: StateStore
 
-    @MockK
-    private lateinit var consumer: OutputConsumer
+    @MockK private lateinit var consumer: OutputConsumer
 
     private lateinit var stateReconciler: StateReconciler
 
@@ -58,12 +53,8 @@ class StateReconcilerTest {
         every { checkpointMessage3.asProtocolMessage() } returns protocolMessage3
         every { consumer.accept(any<AirbyteMessage>()) } just Runs
 
-        every { stateStore.getNextComplete() } returnsMany listOf(
-            checkpointMessage1,
-            checkpointMessage2,
-            checkpointMessage3,
-            null
-        )
+        every { stateStore.getNextComplete() } returnsMany
+            listOf(checkpointMessage1, checkpointMessage2, checkpointMessage3, null)
 
         // When
         stateReconciler.flushCompleteStates()
@@ -153,11 +144,8 @@ class StateReconcilerTest {
         every { checkpointMessage2.asProtocolMessage() } returns protocolMessage2
         every { consumer.accept(any<AirbyteMessage>()) } just Runs
 
-        every { stateStore.getNextComplete() } returnsMany listOf(
-            checkpointMessage1,
-            checkpointMessage2,
-            null
-        )
+        every { stateStore.getNextComplete() } returnsMany
+            listOf(checkpointMessage1, checkpointMessage2, null)
 
         // When
         stateReconciler.flushCompleteStates()

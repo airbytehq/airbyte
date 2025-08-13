@@ -10,20 +10,18 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.verify
+import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import kotlin.test.assertEquals
-import kotlin.test.assertNull
 
 @ExtendWith(MockKExtension::class)
 class StateStoreTest {
 
-    @MockK
-    private lateinit var keyClient: StateKeyClient
+    @MockK private lateinit var keyClient: StateKeyClient
 
-    @MockK
-    private lateinit var histogramStore: StateHistogramStore
+    @MockK private lateinit var histogramStore: StateHistogramStore
 
     private lateinit var stateStore: StateStore
 
@@ -147,7 +145,7 @@ class StateStoreTest {
         // Then
         assertEquals(checkpointMessage, result)
         verify { histogramStore.isComplete(stateKey) }
-        
+
         // Verify state was removed
         val secondResult = stateStore.getNextComplete()
         assertNull(secondResult)
@@ -213,7 +211,7 @@ class StateStoreTest {
 
         // When
         val result1 = stateStore.getNextComplete() // should be null because state 1 is incomplete
-        
+
         // Make state 1 complete now
         every { histogramStore.isComplete(stateKey1) } returns true
         val result2 = stateStore.getNextComplete() // should return state 1

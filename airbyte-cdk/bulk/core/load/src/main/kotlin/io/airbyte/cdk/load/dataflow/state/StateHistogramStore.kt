@@ -34,8 +34,6 @@ class StateHistogramStore {
 
     fun remove(key: StateKey) {
         expected.remove(key)
-        key.partitionKeys.forEach {
-            flushed.remove(it)
-        }
+        key.partitionKeys.forEach { flushed.remove(it) }
     }
 }

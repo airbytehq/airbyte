@@ -29,24 +29,22 @@ import org.junit.jupiter.api.extension.ExtendWith
 @ExtendWith(MockKExtension::class)
 class PipelineCompletionHandlerTest {
 
-    @MockK
-    private lateinit var aggStore: AggregateStore
+    @MockK private lateinit var aggStore: AggregateStore
 
-    @MockK
-    private lateinit var stateHistogramStore: StateHistogramStore
+    @MockK private lateinit var stateHistogramStore: StateHistogramStore
 
-    @MockK
-    private lateinit var reconciler: StateReconciler
+    @MockK private lateinit var reconciler: StateReconciler
 
     private lateinit var pipelineCompletionHandler: PipelineCompletionHandler
 
     @BeforeEach
     fun setUp() {
-        pipelineCompletionHandler = PipelineCompletionHandler(
-            aggStore = aggStore,
-            stateHistogramStore = stateHistogramStore,
-            reconciler = reconciler
-        )
+        pipelineCompletionHandler =
+            PipelineCompletionHandler(
+                aggStore = aggStore,
+                stateHistogramStore = stateHistogramStore,
+                reconciler = reconciler
+            )
     }
 
     @Test
@@ -55,9 +53,8 @@ class PipelineCompletionHandlerTest {
         val testException = RuntimeException("Test exception")
 
         // When & Then
-        val thrownException = assertThrows<RuntimeException> {
-            pipelineCompletionHandler.apply(testException)
-        }
+        val thrownException =
+            assertThrows<RuntimeException> { pipelineCompletionHandler.apply(testException) }
 
         assertEquals("Test exception", thrownException.message)
     }
@@ -70,21 +67,23 @@ class PipelineCompletionHandlerTest {
         val mockHistogram1 = mockk<PartitionHistogram>()
         val mockHistogram2 = mockk<PartitionHistogram>()
 
-        val aggregateEntry1 = AggregateEntry(
-            value = mockAggregate1,
-            partitionHistogram = mockHistogram1,
-            stalenessTrigger = mockk(),
-            recordCountTrigger = mockk(),
-            estimatedBytesTrigger = mockk()
-        )
+        val aggregateEntry1 =
+            AggregateEntry(
+                value = mockAggregate1,
+                partitionHistogram = mockHistogram1,
+                stalenessTrigger = mockk(),
+                recordCountTrigger = mockk(),
+                estimatedBytesTrigger = mockk()
+            )
 
-        val aggregateEntry2 = AggregateEntry(
-            value = mockAggregate2,
-            partitionHistogram = mockHistogram2,
-            stalenessTrigger = mockk(),
-            recordCountTrigger = mockk(),
-            estimatedBytesTrigger = mockk()
-        )
+        val aggregateEntry2 =
+            AggregateEntry(
+                value = mockAggregate2,
+                partitionHistogram = mockHistogram2,
+                stalenessTrigger = mockk(),
+                recordCountTrigger = mockk(),
+                estimatedBytesTrigger = mockk()
+            )
 
         every { aggStore.getAll() } returns listOf(aggregateEntry1, aggregateEntry2)
         coEvery { mockAggregate1.flush() } just Runs
@@ -129,13 +128,14 @@ class PipelineCompletionHandlerTest {
         val mockHistogram = mockk<PartitionHistogram>()
         val flushException = RuntimeException("Flush failed")
 
-        val aggregateEntry = AggregateEntry(
-            value = mockAggregate,
-            partitionHistogram = mockHistogram,
-            stalenessTrigger = mockk(),
-            recordCountTrigger = mockk(),
-            estimatedBytesTrigger = mockk()
-        )
+        val aggregateEntry =
+            AggregateEntry(
+                value = mockAggregate,
+                partitionHistogram = mockHistogram,
+                stalenessTrigger = mockk(),
+                recordCountTrigger = mockk(),
+                estimatedBytesTrigger = mockk()
+            )
 
         every { aggStore.getAll() } returns listOf(aggregateEntry)
         coEvery { mockAggregate.flush() } throws flushException
@@ -143,9 +143,7 @@ class PipelineCompletionHandlerTest {
         every { reconciler.flushCompleteStates() } just Runs
 
         // When & Then
-        assertThrows<RuntimeException> {
-            pipelineCompletionHandler.apply(null)
-        }
+        assertThrows<RuntimeException> { pipelineCompletionHandler.apply(null) }
 
         coVerify(exactly = 1) { mockAggregate.flush() }
         // Note: acceptFlushedCounts should not be called if flush fails
