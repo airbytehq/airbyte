@@ -5834,9 +5834,6 @@ definitions:
         - type: RemoveFields
           field_pointers:
             - - _links
-        - type: RemoveFields
-          field_pointers:
-            - - _embedded
     maintenance_work_orders:
       type: DeclarativeStream
       name: maintenance_work_orders
@@ -7594,7 +7591,7 @@ metadata:
       responsesAreSuccessful: true
     accounting_transactions:
       hasRecords: true
-      streamHash: 4966753d7bd488d2ff542428f09b47d4affe9220
+      streamHash: b3542497fbbfc850b96e7ced0fd6586589b4eec9
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
