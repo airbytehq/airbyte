@@ -708,17 +708,8 @@ def test_upload_metadata_to_gcs_with_manifest_files(
     expected_manifest_file_path = metadata_file_path.parent / MANIFEST_FILE_NAME
     expected_components_py_file_path = metadata_file_path.parent / COMPONENTS_PY_FILE_NAME
 
-    # Mock file paths to conditionally exist
-    original_exists = Path.exists
-
-    def fake_exists(self):
-        if self == expected_manifest_file_path:
-            return manifest_exists
-        if self == expected_components_py_file_path:
-            return components_py_exists
-        return original_exists(self)
-
-    monkeypatch.setattr(Path, "exists", fake_exists)
+    mocker.patch.object(expected_manifest_file_path, "exists", return_value=manifest_exists)
+    mocker.patch.object(expected_components_py_file_path, "exists", return_value=components_py_exists)
 
     # mock create_zip_and_get_sha256
     mocker.patch.object(gcs_upload, "create_zip_and_get_sha256", mocker.Mock(return_value="fake_zip_sha256"))
