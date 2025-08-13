@@ -4430,6 +4430,91 @@ definitions:
         - type: RemoveFields
           field_pointers:
             - - _embedded
+    folios_transactions:
+      type: DeclarativeStream
+      name: folios_transactions
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: pms/folios/{{ stream_partition.folio_id | int }}/transactions
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    predicate: >-
+                      {{ response.status == 409 and response.detail == 'Invalid
+                      page provided' }}
+                    http_codes: []
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    predicate: "{{ response.status == 429 }}"
+                    http_codes: []
+                    error_message: >-
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 305
+          request_headers:
+            accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - folioTransactions
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/folios_transactions_parent"
+              parent_key: id
+              partition_field: folio_id
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/folios_transactions"
+      transformations:
+        - type: RemoveFields
+          field_pointers:
+            - - _links
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - folio_id
+              value: "{{ stream_interval.folio_id }}"
     owners_pii_redacted:
       type: DeclarativeStream
       name: owners_pii_redacted
@@ -6125,6 +6210,86 @@ definitions:
         - type: RemoveFields
           field_pointers:
             - - _links
+    folios_transactions_parent:
+      type: DeclarativeStream
+      name: folios_transactions_parent
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: size
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: pms/folios
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    predicate: >-
+                      {{ response.status == 409 and response.detail == 'Invalid
+                      page provided' }}
+                    http_codes: []
+                    error_message: >-
+                      Track's inappropriate 409 for page numbers too high.
+                      Nothing to do but continue to work with the vendor.
+              - type: DefaultErrorHandler
+                max_retries: 3
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RATE_LIMITED
+                    predicate: "{{ response.status == 429 }}"
+                    http_codes: []
+                    error_message: >-
+                      Track rate limit (10,000 requests per 5 minutes) met,
+                      waiting 5 minutes and 5 seconds to reset.
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 305
+          request_headers:
+            accept: application/json
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - _embedded
+              - folios
+          record_filter:
+            type: RecordFilter
+            condition: >-
+              {{ (record['ownerRevenue'] | default(0) | int > 0) and
+              (record['id'] != record['reservationId']) }}
+          schema_normalization: Default
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/folios_transactions_parent"
+      transformations:
+        - type: RemoveFields
+          field_pointers:
+            - - _links
+        - type: RemoveFields
+          field_pointers:
+            - - _embedded
     units_types_pricing_parent:
       type: DeclarativeStream
       name: units_types_pricing_parent
@@ -6878,6 +7043,8 @@ streams:
   - $ref: "#/definitions/streams/folios"
   - $ref: "#/definitions/streams/folios_logs"
   - $ref: "#/definitions/streams/folios_rules"
+  - $ref: "#/definitions/streams/folios_transactions"
+  - $ref: "#/definitions/streams/folios_transactions_parent"
   - $ref: "#/definitions/streams/fractionals"
   - $ref: "#/definitions/streams/fractionals_inventory"
   - $ref: "#/definitions/streams/fractionals_owners"
@@ -7335,6 +7502,13 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
+    folios_transactions:
+      hasRecords: true
+      streamHash: 99e7003abcece7d302aa125f239462dc17ec27fd
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     owners_pii_redacted:
       hasRecords: true
       streamHash: c3c6e4699af6f36068b3827bd59567398e45c41a
@@ -7450,6 +7624,13 @@ metadata:
     travel_insurance_products:
       hasRecords: true
       streamHash: e25d49699eb55659538ce4623b5c5556d438dd71
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    folios_transactions_parent:
+      hasRecords: true
+      streamHash: 44b58d471f5aa56077808f1946d22b4277af0c84
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -7571,6 +7752,7 @@ metadata:
     users_pii_redacted: false
     accounting_accounts: false
     accounting_deposits: false
+    folios_transactions: false
     owners_pii_redacted: false
     reservations_scroll: false
     maintenance_problems: false
@@ -7588,6 +7770,7 @@ metadata:
     housekeeping_clean_types: false
     housekeeping_work_orders: false
     travel_insurance_products: false
+    folios_transactions_parent: false
     units_types_pricing_parent: false
     units_charge_pricing_parent: false
     units_type_daily_pricing_v2: false
@@ -22789,6 +22972,2321 @@ schemas:
           - array
           - "null"
     additionalProperties: true
+  folios_transactions:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      memo:
+        type:
+          - string
+          - "null"
+      lines:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            description:
+              type:
+                - string
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            amount:
+              type:
+                - string
+                - "null"
+            itemId:
+              type:
+                - number
+                - "null"
+            unitId:
+              type:
+                - number
+                - "null"
+            account:
+              type:
+                - string
+                - "null"
+            quantity:
+              type:
+                - string
+                - "null"
+            unitName:
+              type:
+                - string
+                - "null"
+            accountId:
+              type:
+                - number
+                - "null"
+            netAmount:
+              type:
+                - string
+                - "null"
+            taxAmount:
+              type:
+                - string
+                - "null"
+            unitAmount:
+              type:
+                - string
+                - "null"
+            taxOnMarkUp:
+              type:
+                - boolean
+                - "null"
+            remittanceBillId:
+              type:
+                - number
+                - "null"
+      payer:
+        type:
+          - string
+          - "null"
+      amount:
+        type:
+          - string
+          - "null"
+      unitId:
+        type:
+          - number
+          - "null"
+      txnDate:
+        type:
+          - string
+          - "null"
+      currency:
+        type:
+          - string
+          - "null"
+      folio_id:
+        type:
+          - number
+          - "null"
+      isVoided:
+        type:
+          - boolean
+          - "null"
+      subTotal:
+        type:
+          - string
+          - "null"
+      _embedded:
+        type:
+          - object
+          - "null"
+        properties:
+          unit:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - number
+                  - "null"
+              area:
+                type:
+                  - number
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              phone:
+                type:
+                  - string
+                  - "null"
+              roles:
+                type:
+                  - array
+                  - "null"
+              _links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  self:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      href:
+                        type:
+                          - string
+                          - "null"
+              custom:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  pms_units_source_unit_id:
+                    type:
+                      - string
+                      - "null"
+              floors:
+                type:
+                  - number
+                  - "null"
+              nodeId:
+                type:
+                  - number
+                  - "null"
+              postal:
+                type:
+                  - string
+                  - "null"
+              region:
+                type:
+                  - string
+                  - "null"
+              typeId:
+                type:
+                  - number
+                  - "null"
+              country:
+                type:
+                  - string
+                  - "null"
+              maxPets:
+                type:
+                  - number
+                  - "null"
+              bedTypes:
+                type:
+                  - array
+                  - "null"
+              bedrooms:
+                type:
+                  - number
+                  - "null"
+              isActive:
+                type:
+                  - boolean
+                  - "null"
+              latitude:
+                type:
+                  - string
+                  - "null"
+              locality:
+                type:
+                  - string
+                  - "null"
+              timezone:
+                type:
+                  - string
+                  - "null"
+              unitCode:
+                type:
+                  - string
+                  - "null"
+              _embedded:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      id:
+                        type:
+                          - number
+                          - "null"
+                      name:
+                        type:
+                          - string
+                          - "null"
+                      roles:
+                        type:
+                          - array
+                          - "null"
+                      _links:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          self:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              href:
+                                type:
+                                  - string
+                                  - "null"
+                      custom:
+                        type:
+                          - array
+                          - "null"
+                      updated:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          content:
+                            type:
+                              - string
+                              - "null"
+                          pricing:
+                            type:
+                              - string
+                              - "null"
+                          availability:
+                            type:
+                              - string
+                              - "null"
+                      bedTypes:
+                        type:
+                          - array
+                          - "null"
+                      bedrooms:
+                        type:
+                          - number
+                          - "null"
+                      isActive:
+                        type:
+                          - boolean
+                          - "null"
+                      typeCode:
+                        type:
+                          - string
+                          - "null"
+                      _embedded:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          lodgingType:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              _links:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  self:
+                                    type:
+                                      - object
+                                      - "null"
+                                    properties:
+                                      href:
+                                        type:
+                                          - string
+                                          - "null"
+                      createdAt:
+                        type:
+                          - string
+                          - "null"
+                      createdBy:
+                        type:
+                          - string
+                          - "null"
+                      shortName:
+                        type:
+                          - string
+                          - "null"
+                      updatedAt:
+                        type:
+                          - string
+                          - "null"
+                      updatedBy:
+                        type:
+                          - string
+                          - "null"
+                      isBookable:
+                        type:
+                          - boolean
+                          - "null"
+                      gatewaysIds:
+                        type:
+                          - array
+                          - "null"
+                      petFriendly:
+                        type:
+                          - boolean
+                          - "null"
+                      useBedTypes:
+                        type:
+                          - boolean
+                          - "null"
+                      amenitiesIds:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - number
+                            - "null"
+                      documentsIds:
+                        type:
+                          - array
+                          - "null"
+                      isAccessible:
+                        type:
+                          - boolean
+                          - "null"
+                      quickCheckin:
+                        type:
+                          - boolean
+                          - "null"
+                      allowOversell:
+                        type:
+                          - boolean
+                          - "null"
+                      eventsAllowed:
+                        type:
+                          - boolean
+                          - "null"
+                      lodgingTypeId:
+                        type:
+                          - number
+                          - "null"
+                      oversellLimit:
+                        type:
+                          - number
+                          - "null"
+                      quickCheckout:
+                        type:
+                          - boolean
+                          - "null"
+                      allowUnitRates:
+                        type:
+                          - boolean
+                          - "null"
+                      folioException:
+                        type:
+                          - boolean
+                          - "null"
+                      smokingAllowed:
+                        type:
+                          - boolean
+                          - "null"
+                      childrenAllowed:
+                        type:
+                          - boolean
+                          - "null"
+                      hasEarlyCheckin:
+                        type:
+                          - boolean
+                          - "null"
+                      hasLateCheckout:
+                        type:
+                          - boolean
+                          - "null"
+                      securityDeposit:
+                        type:
+                          - string
+                          - "null"
+                      guaranteePoliciesIds:
+                        type:
+                          - array
+                          - "null"
+                      insuranceProductsIds:
+                        type:
+                          - array
+                          - "null"
+                      useRoomConfiguration:
+                        type:
+                          - boolean
+                          - "null"
+                      cancellationPoliciesIds:
+                        type:
+                          - array
+                          - "null"
+                  node:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      id:
+                        type:
+                          - number
+                          - "null"
+                      name:
+                        type:
+                          - string
+                          - "null"
+                      phone:
+                        type:
+                          - string
+                          - "null"
+                      roles:
+                        type:
+                          - array
+                          - "null"
+                      _links:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          self:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              href:
+                                type:
+                                  - string
+                                  - "null"
+                      custom:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          pms_nodes_concierge_email:
+                            type:
+                              - string
+                              - "null"
+                          pms_nodes_concierge_phone:
+                            type:
+                              - string
+                              - "null"
+                          pms_nodes_concierge_information:
+                            type:
+                              - string
+                              - "null"
+                          pms_nodes_owner_relations_email:
+                            type:
+                              - string
+                              - "null"
+                      postal:
+                        type:
+                          - string
+                          - "null"
+                      region:
+                        type:
+                          - string
+                          - "null"
+                      typeId:
+                        type:
+                          - number
+                          - "null"
+                      country:
+                        type:
+                          - string
+                          - "null"
+                      maxPets:
+                        type:
+                          - number
+                          - "null"
+                      locality:
+                        type:
+                          - string
+                          - "null"
+                      parentId:
+                        type:
+                          - number
+                          - "null"
+                      timezone:
+                        type:
+                          - string
+                          - "null"
+                      _embedded:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              _links:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  self:
+                                    type:
+                                      - object
+                                      - "null"
+                                    properties:
+                                      href:
+                                        type:
+                                          - string
+                                          - "null"
+                          parent:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              _links:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  self:
+                                    type:
+                                      - object
+                                      - "null"
+                                    properties:
+                                      href:
+                                        type:
+                                          - string
+                                          - "null"
+                          localOffice:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              _links:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  self:
+                                    type:
+                                      - object
+                                      - "null"
+                                    properties:
+                                      href:
+                                        type:
+                                          - string
+                                          - "null"
+                          taxDistrict:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              _links:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  self:
+                                    type:
+                                      - object
+                                      - "null"
+                                    properties:
+                                      href:
+                                        type:
+                                          - string
+                                          - "null"
+                      createdAt:
+                        type:
+                          - string
+                          - "null"
+                      createdBy:
+                        type:
+                          - string
+                          - "null"
+                      updatedAt:
+                        type:
+                          - string
+                          - "null"
+                      updatedBy:
+                        type:
+                          - string
+                          - "null"
+                      websiteUrl:
+                        type:
+                          - string
+                          - "null"
+                      checkinTime:
+                        type:
+                          - string
+                          - "null"
+                      gatewaysIds:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - number
+                            - "null"
+                      petFriendly:
+                        type:
+                          - boolean
+                          - "null"
+                      amenitiesIds:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - number
+                            - "null"
+                      checkoutTime:
+                        type:
+                          - string
+                          - "null"
+                      documentsIds:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - number
+                            - "null"
+                      isAccessible:
+                        type:
+                          - boolean
+                          - "null"
+                      quickCheckin:
+                        type:
+                          - boolean
+                          - "null"
+                      eventsAllowed:
+                        type:
+                          - boolean
+                          - "null"
+                      localOfficeId:
+                        type:
+                          - number
+                          - "null"
+                      quickCheckout:
+                        type:
+                          - boolean
+                          - "null"
+                      streetAddress:
+                        type:
+                          - string
+                          - "null"
+                      taxDistrictId:
+                        type:
+                          - number
+                          - "null"
+                      smokingAllowed:
+                        type:
+                          - boolean
+                          - "null"
+                      childrenAllowed:
+                        type:
+                          - boolean
+                          - "null"
+                      hasEarlyCheckin:
+                        type:
+                          - boolean
+                          - "null"
+                      hasLateCheckout:
+                        type:
+                          - boolean
+                          - "null"
+                      minimumAgeLimit:
+                        type:
+                          - number
+                          - "null"
+                      earlyCheckinTime:
+                        type:
+                          - string
+                          - "null"
+                      lateCheckoutTime:
+                        type:
+                          - string
+                          - "null"
+                      guaranteePoliciesIds:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - number
+                            - "null"
+                      insuranceProductsIds:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - number
+                            - "null"
+                      cancellationPoliciesIds:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - number
+                            - "null"
+                  cleanStatus:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      type:
+                        type:
+                          - string
+                          - "null"
+                      id:
+                        type:
+                          - number
+                          - "null"
+                      code:
+                        type:
+                          - string
+                          - "null"
+                      name:
+                        type:
+                          - string
+                          - "null"
+                      _links:
+                        type:
+                          - array
+                          - "null"
+                      isActive:
+                        type:
+                          - boolean
+                          - "null"
+                  localOffice:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      id:
+                        type:
+                          - number
+                          - "null"
+                      name:
+                        type:
+                          - string
+                          - "null"
+                      email:
+                        type:
+                          - string
+                          - "null"
+                      phone:
+                        type:
+                          - string
+                          - "null"
+                      _links:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          self:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              href:
+                                type:
+                                  - string
+                                  - "null"
+                      region:
+                        type:
+                          - string
+                          - "null"
+                      country:
+                        type:
+                          - string
+                          - "null"
+                      latitude:
+                        type:
+                          - string
+                          - "null"
+                      locality:
+                        type:
+                          - string
+                          - "null"
+                      createdAt:
+                        type:
+                          - string
+                          - "null"
+                      createdBy:
+                        type:
+                          - string
+                          - "null"
+                      longitude:
+                        type:
+                          - string
+                          - "null"
+                      updatedAt:
+                        type:
+                          - string
+                          - "null"
+                      updatedBy:
+                        type:
+                          - string
+                          - "null"
+                      directions:
+                        type:
+                          - string
+                          - "null"
+                      postalCode:
+                        type:
+                          - string
+                          - "null"
+                      streetAddress:
+                        type:
+                          - string
+                          - "null"
+                      extendedAddress:
+                        type:
+                          - string
+                          - "null"
+                  lodgingType:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      id:
+                        type:
+                          - number
+                          - "null"
+                      code:
+                        type:
+                          - string
+                          - "null"
+                      name:
+                        type:
+                          - string
+                          - "null"
+                      _links:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          self:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              href:
+                                type:
+                                  - string
+                                  - "null"
+                      isActive:
+                        type:
+                          - boolean
+                          - "null"
+                      createdAt:
+                        type:
+                          - string
+                          - "null"
+                      createdBy:
+                        type:
+                          - string
+                          - "null"
+                      updatedAt:
+                        type:
+                          - string
+                          - "null"
+                      updatedBy:
+                        type:
+                          - string
+                          - "null"
+                      homeawayType:
+                        type:
+                          - string
+                          - "null"
+                      marriottType:
+                        type:
+                          - string
+                          - "null"
+                      airbnbRoomType:
+                        type:
+                          - string
+                          - "null"
+                      airbnbTypeGroup:
+                        type:
+                          - string
+                          - "null"
+                      airbnbTypeCategory:
+                        type:
+                          - string
+                          - "null"
+                  taxDistrict:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      id:
+                        type:
+                          - number
+                          - "null"
+                      name:
+                        type:
+                          - string
+                          - "null"
+                      _links:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          self:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              href:
+                                type:
+                                  - string
+                                  - "null"
+                      isActive:
+                        type:
+                          - boolean
+                          - "null"
+                      _embedded:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          shortTermPolicy:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              _links:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  self:
+                                    type:
+                                      - object
+                                      - "null"
+                                    properties:
+                                      href:
+                                        type:
+                                          - string
+                                          - "null"
+                      createdAt:
+                        type:
+                          - string
+                          - "null"
+                      createdBy:
+                        type:
+                          - string
+                          - "null"
+                      taxMarkup:
+                        type:
+                          - boolean
+                          - "null"
+                      updatedAt:
+                        type:
+                          - string
+                          - "null"
+                      updatedBy:
+                        type:
+                          - string
+                          - "null"
+                      breakpoint:
+                        type:
+                          - number
+                          - "null"
+                      hasBreakpoint:
+                        type:
+                          - boolean
+                          - "null"
+                      shortTermPolicyId:
+                        type:
+                          - number
+                          - "null"
+              createdAt:
+                type:
+                  - string
+                  - "null"
+              createdBy:
+                type:
+                  - string
+                  - "null"
+              isLimited:
+                type:
+                  - boolean
+                  - "null"
+              longitude:
+                type:
+                  - string
+                  - "null"
+              shortName:
+                type:
+                  - string
+                  - "null"
+              updatedAt:
+                type:
+                  - string
+                  - "null"
+              updatedBy:
+                type:
+                  - string
+                  - "null"
+              composites:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    unitId:
+                      type:
+                        - number
+                        - "null"
+              isBookable:
+                type:
+                  - boolean
+                  - "null"
+              websiteUrl:
+                type:
+                  - string
+                  - "null"
+              checkinTime:
+                type:
+                  - string
+                  - "null"
+              gatewaysIds:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - number
+                    - "null"
+              petFriendly:
+                type:
+                  - boolean
+                  - "null"
+              useBedTypes:
+                type:
+                  - boolean
+                  - "null"
+              amenitiesIds:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - number
+                    - "null"
+              checkoutTime:
+                type:
+                  - string
+                  - "null"
+              documentsIds:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - number
+                    - "null"
+              isAccessible:
+                type:
+                  - boolean
+                  - "null"
+              maxOccupancy:
+                type:
+                  - number
+                  - "null"
+              quickCheckin:
+                type:
+                  - boolean
+                  - "null"
+              cleanStatusId:
+                type:
+                  - number
+                  - "null"
+              eventsAllowed:
+                type:
+                  - boolean
+                  - "null"
+              fullBathrooms:
+                type:
+                  - number
+                  - "null"
+              halfBathrooms:
+                type:
+                  - number
+                  - "null"
+              localOfficeId:
+                type:
+                  - number
+                  - "null"
+              lodgingTypeId:
+                type:
+                  - number
+                  - "null"
+              quickCheckout:
+                type:
+                  - boolean
+                  - "null"
+              streetAddress:
+                type:
+                  - string
+                  - "null"
+              taxDistrictId:
+                type:
+                  - number
+                  - "null"
+              folioException:
+                type:
+                  - boolean
+                  - "null"
+              smokingAllowed:
+                type:
+                  - boolean
+                  - "null"
+              childrenAllowed:
+                type:
+                  - boolean
+                  - "null"
+              hasEarlyCheckin:
+                type:
+                  - boolean
+                  - "null"
+              hasLateCheckout:
+                type:
+                  - boolean
+                  - "null"
+              minimumAgeLimit:
+                type:
+                  - number
+                  - "null"
+              securityDeposit:
+                type:
+                  - string
+                  - "null"
+              earlyCheckinTime:
+                type:
+                  - string
+                  - "null"
+              lateCheckoutTime:
+                type:
+                  - string
+                  - "null"
+              availabilityOrder:
+                type:
+                  - number
+                  - "null"
+              guaranteePoliciesIds:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - number
+                    - "null"
+              insuranceProductsIds:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - number
+                    - "null"
+              useRoomConfiguration:
+                type:
+                  - boolean
+                  - "null"
+              threeQuarterBathrooms:
+                type:
+                  - number
+                  - "null"
+              cancellationPoliciesIds:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - number
+                    - "null"
+              travelInsuranceProductId:
+                type:
+                  - number
+                  - "null"
+          children:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                id:
+                  type:
+                    - number
+                    - "null"
+                lines:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      type:
+                        type:
+                          - string
+                          - "null"
+                      description:
+                        type:
+                          - string
+                          - "null"
+                      id:
+                        type:
+                          - number
+                          - "null"
+                      amount:
+                        type:
+                          - string
+                          - "null"
+                      itemId:
+                        type:
+                          - number
+                          - "null"
+                      unitId:
+                        type:
+                          - number
+                          - "null"
+                      account:
+                        type:
+                          - string
+                          - "null"
+                      quantity:
+                        type:
+                          - string
+                          - "null"
+                      unitName:
+                        type:
+                          - string
+                          - "null"
+                      accountId:
+                        type:
+                          - number
+                          - "null"
+                      netAmount:
+                        type:
+                          - string
+                          - "null"
+                      taxAmount:
+                        type:
+                          - string
+                          - "null"
+                      unitAmount:
+                        type:
+                          - string
+                          - "null"
+                      taxOnMarkUp:
+                        type:
+                          - boolean
+                          - "null"
+                      remittanceBillId:
+                        type:
+                          - number
+                          - "null"
+                _links:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    self:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        href:
+                          type:
+                            - string
+                            - "null"
+                amount:
+                  type:
+                    - string
+                    - "null"
+                unitId:
+                  type:
+                    - number
+                    - "null"
+                txnDate:
+                  type:
+                    - string
+                    - "null"
+                currency:
+                  type:
+                    - string
+                    - "null"
+                isVoided:
+                  type:
+                    - boolean
+                    - "null"
+                parentId:
+                  type:
+                    - number
+                    - "null"
+                subTotal:
+                  type:
+                    - string
+                    - "null"
+                _embedded:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    unit:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        _links:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            self:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                href:
+                                  type:
+                                    - string
+                                    - "null"
+                    parent:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        _links:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            self:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                href:
+                                  type:
+                                    - string
+                                    - "null"
+                    reservation:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        _links:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            self:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                href:
+                                  type:
+                                    - string
+                                    - "null"
+                companyId:
+                  type:
+                    - number
+                    - "null"
+                createdAt:
+                  type:
+                    - string
+                    - "null"
+                createdBy:
+                  type:
+                    - string
+                    - "null"
+                isPending:
+                  type:
+                    - boolean
+                    - "null"
+                taxAmount:
+                  type:
+                    - string
+                    - "null"
+                taxExempt:
+                  type:
+                    - boolean
+                    - "null"
+                updatedAt:
+                  type:
+                    - string
+                    - "null"
+                updatedBy:
+                  type:
+                    - string
+                    - "null"
+                isDeferred:
+                  type:
+                    - boolean
+                    - "null"
+                ownerTransaction:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    id:
+                      type:
+                        - number
+                        - "null"
+                    folioId:
+                      type:
+                        - number
+                        - "null"
+                    ownerId:
+                      type:
+                        - number
+                        - "null"
+                    statementId:
+                      type:
+                        - number
+                        - "null"
+          paymentType:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              id:
+                type:
+                  - number
+                  - "null"
+              label:
+                type:
+                  - string
+                  - "null"
+              _links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  self:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      href:
+                        type:
+                          - string
+                          - "null"
+              handle:
+                type:
+                  - string
+                  - "null"
+              isActive:
+                type:
+                  - boolean
+                  - "null"
+              _embedded:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  account:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      description:
+                        type:
+                          - string
+                          - "null"
+                      id:
+                        type:
+                          - number
+                          - "null"
+                      code:
+                        type:
+                          - string
+                          - "null"
+                      name:
+                        type:
+                          - string
+                          - "null"
+                      _links:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          self:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              href:
+                                type:
+                                  - string
+                                  - "null"
+                      category:
+                        type:
+                          - string
+                          - "null"
+                      isActive:
+                        type:
+                          - boolean
+                          - "null"
+                      createdAt:
+                        type:
+                          - string
+                          - "null"
+                      createdBy:
+                        type:
+                          - string
+                          - "null"
+                      updatedAt:
+                        type:
+                          - string
+                          - "null"
+                      updatedBy:
+                        type:
+                          - string
+                          - "null"
+                      achEnabled:
+                        type:
+                          - boolean
+                          - "null"
+                      accountType:
+                        type:
+                          - string
+                          - "null"
+                      enableRefunds:
+                        type:
+                          - boolean
+                          - "null"
+                      currentBalance:
+                        type:
+                          - string
+                          - "null"
+                      recursiveBalance:
+                        type:
+                          - string
+                          - "null"
+                      allowOwnerPayments:
+                        type:
+                          - boolean
+                          - "null"
+                      defaultRefundAccount:
+                        type:
+                          - boolean
+                          - "null"
+              accountId:
+                type:
+                  - number
+                  - "null"
+              createdAt:
+                type:
+                  - string
+                  - "null"
+              createdBy:
+                type:
+                  - string
+                  - "null"
+              updatedAt:
+                type:
+                  - string
+                  - "null"
+              updatedBy:
+                type:
+                  - string
+                  - "null"
+          reservation:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - number
+                  - "null"
+              _links:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  self:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      href:
+                        type:
+                          - string
+                          - "null"
+              nights:
+                type:
+                  - number
+                  - "null"
+              status:
+                type:
+                  - string
+                  - "null"
+              unitId:
+                type:
+                  - number
+                  - "null"
+              softEnd:
+                type:
+                  - string
+                  - "null"
+              bookedAt:
+                type:
+                  - string
+                  - "null"
+              isLocked:
+                type:
+                  - boolean
+                  - "null"
+              _embedded:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  unit:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      id:
+                        type:
+                          - number
+                          - "null"
+                      area:
+                        type:
+                          - number
+                          - "null"
+                      name:
+                        type:
+                          - string
+                          - "null"
+                      phone:
+                        type:
+                          - string
+                          - "null"
+                      roles:
+                        type:
+                          - array
+                          - "null"
+                      _links:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          self:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              href:
+                                type:
+                                  - string
+                                  - "null"
+                      custom:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          pms_units_source_unit_id:
+                            type:
+                              - string
+                              - "null"
+                      floors:
+                        type:
+                          - number
+                          - "null"
+                      nodeId:
+                        type:
+                          - number
+                          - "null"
+                      postal:
+                        type:
+                          - string
+                          - "null"
+                      region:
+                        type:
+                          - string
+                          - "null"
+                      typeId:
+                        type:
+                          - number
+                          - "null"
+                      country:
+                        type:
+                          - string
+                          - "null"
+                      maxPets:
+                        type:
+                          - number
+                          - "null"
+                      bedTypes:
+                        type:
+                          - array
+                          - "null"
+                      bedrooms:
+                        type:
+                          - number
+                          - "null"
+                      isActive:
+                        type:
+                          - boolean
+                          - "null"
+                      latitude:
+                        type:
+                          - string
+                          - "null"
+                      locality:
+                        type:
+                          - string
+                          - "null"
+                      timezone:
+                        type:
+                          - string
+                          - "null"
+                      unitCode:
+                        type:
+                          - string
+                          - "null"
+                      _embedded:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              _links:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  self:
+                                    type:
+                                      - object
+                                      - "null"
+                                    properties:
+                                      href:
+                                        type:
+                                          - string
+                                          - "null"
+                          node:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              _links:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  self:
+                                    type:
+                                      - object
+                                      - "null"
+                                    properties:
+                                      href:
+                                        type:
+                                          - string
+                                          - "null"
+                          cleanStatus:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              _links:
+                                type:
+                                  - array
+                                  - "null"
+                          localOffice:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              _links:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  self:
+                                    type:
+                                      - object
+                                      - "null"
+                                    properties:
+                                      href:
+                                        type:
+                                          - string
+                                          - "null"
+                          lodgingType:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              _links:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  self:
+                                    type:
+                                      - object
+                                      - "null"
+                                    properties:
+                                      href:
+                                        type:
+                                          - string
+                                          - "null"
+                          taxDistrict:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              _links:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  self:
+                                    type:
+                                      - object
+                                      - "null"
+                                    properties:
+                                      href:
+                                        type:
+                                          - string
+                                          - "null"
+                      createdAt:
+                        type:
+                          - string
+                          - "null"
+                      createdBy:
+                        type:
+                          - string
+                          - "null"
+                      isLimited:
+                        type:
+                          - boolean
+                          - "null"
+                      longitude:
+                        type:
+                          - string
+                          - "null"
+                      shortName:
+                        type:
+                          - string
+                          - "null"
+                      updatedAt:
+                        type:
+                          - string
+                          - "null"
+                      updatedBy:
+                        type:
+                          - string
+                          - "null"
+                      composites:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            type:
+                              type:
+                                - string
+                                - "null"
+                            unitId:
+                              type:
+                                - number
+                                - "null"
+                      isBookable:
+                        type:
+                          - boolean
+                          - "null"
+                      websiteUrl:
+                        type:
+                          - string
+                          - "null"
+                      checkinTime:
+                        type:
+                          - string
+                          - "null"
+                      gatewaysIds:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - number
+                            - "null"
+                      petFriendly:
+                        type:
+                          - boolean
+                          - "null"
+                      useBedTypes:
+                        type:
+                          - boolean
+                          - "null"
+                      amenitiesIds:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - number
+                            - "null"
+                      checkoutTime:
+                        type:
+                          - string
+                          - "null"
+                      documentsIds:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - number
+                            - "null"
+                      isAccessible:
+                        type:
+                          - boolean
+                          - "null"
+                      maxOccupancy:
+                        type:
+                          - number
+                          - "null"
+                      quickCheckin:
+                        type:
+                          - boolean
+                          - "null"
+                      cleanStatusId:
+                        type:
+                          - number
+                          - "null"
+                      eventsAllowed:
+                        type:
+                          - boolean
+                          - "null"
+                      fullBathrooms:
+                        type:
+                          - number
+                          - "null"
+                      halfBathrooms:
+                        type:
+                          - number
+                          - "null"
+                      localOfficeId:
+                        type:
+                          - number
+                          - "null"
+                      lodgingTypeId:
+                        type:
+                          - number
+                          - "null"
+                      quickCheckout:
+                        type:
+                          - boolean
+                          - "null"
+                      streetAddress:
+                        type:
+                          - string
+                          - "null"
+                      taxDistrictId:
+                        type:
+                          - number
+                          - "null"
+                      folioException:
+                        type:
+                          - boolean
+                          - "null"
+                      smokingAllowed:
+                        type:
+                          - boolean
+                          - "null"
+                      childrenAllowed:
+                        type:
+                          - boolean
+                          - "null"
+                      hasEarlyCheckin:
+                        type:
+                          - boolean
+                          - "null"
+                      hasLateCheckout:
+                        type:
+                          - boolean
+                          - "null"
+                      minimumAgeLimit:
+                        type:
+                          - number
+                          - "null"
+                      securityDeposit:
+                        type:
+                          - string
+                          - "null"
+                      earlyCheckinTime:
+                        type:
+                          - string
+                          - "null"
+                      lateCheckoutTime:
+                        type:
+                          - string
+                          - "null"
+                      availabilityOrder:
+                        type:
+                          - number
+                          - "null"
+                      guaranteePoliciesIds:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - number
+                            - "null"
+                      insuranceProductsIds:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - number
+                            - "null"
+                      useRoomConfiguration:
+                        type:
+                          - boolean
+                          - "null"
+                      threeQuarterBathrooms:
+                        type:
+                          - number
+                          - "null"
+                      cancellationPoliciesIds:
+                        type:
+                          - array
+                          - "null"
+                        items:
+                          type:
+                            - number
+                            - "null"
+                      travelInsuranceProductId:
+                        type:
+                          - number
+                          - "null"
+              createdAt:
+                type:
+                  - string
+                  - "null"
+              occupants:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  "1":
+                    type:
+                      - number
+                      - "null"
+                  "2":
+                    type:
+                      - number
+                      - "null"
+              softStart:
+                type:
+                  - string
+                  - "null"
+              updatedAt:
+                type:
+                  - string
+                  - "null"
+              arrivalDate:
+                type:
+                  - string
+                  - "null"
+              arrivalTime:
+                type:
+                  - string
+                  - "null"
+              earlyArrival:
+                type:
+                  - boolean
+                  - "null"
+              isUnitLocked:
+                type:
+                  - boolean
+                  - "null"
+              departureDate:
+                type:
+                  - string
+                  - "null"
+              departureTime:
+                type:
+                  - string
+                  - "null"
+              lateDeparture:
+                type:
+                  - boolean
+                  - "null"
+              isUnitAssigned:
+                type:
+                  - boolean
+                  - "null"
+              isUnitTypeLocked:
+                type:
+                  - boolean
+                  - "null"
+              requiredSecurityDeposit:
+                type:
+                  - string
+                  - "null"
+              remainingSecurityDeposit:
+                type:
+                  - number
+                  - "null"
+      contactId:
+        type:
+          - number
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      createdBy:
+        type:
+          - string
+          - "null"
+      depositId:
+        type:
+          - number
+          - "null"
+      isPending:
+        type:
+          - boolean
+          - "null"
+      taxAmount:
+        type:
+          - string
+          - "null"
+      taxExempt:
+        type:
+          - boolean
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      updatedBy:
+        type:
+          - string
+          - "null"
+      isAuthOnly:
+        type:
+          - boolean
+          - "null"
+      isDeferred:
+        type:
+          - boolean
+          - "null"
+      vaultToken:
+        type:
+          - string
+          - "null"
+      paymentTypeId:
+        type:
+          - number
+          - "null"
+      folioTransaction:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          nights:
+            type:
+              - number
+              - "null"
+          folioId:
+            type:
+              - number
+              - "null"
+          chargeId:
+            type:
+              - number
+              - "null"
+          isManual:
+            type:
+              - boolean
+              - "null"
+          roomNight:
+            type:
+              - string
+              - "null"
+          reservationFeeId:
+            type:
+              - number
+              - "null"
+          isSecurityDeposit:
+            type:
+              - boolean
+              - "null"
+          securityDepositResolved:
+            type:
+              - boolean
+              - "null"
+      ownerTransaction:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type:
+              - number
+              - "null"
+          folioId:
+            type:
+              - number
+              - "null"
+          ownerId:
+            type:
+              - number
+              - "null"
+          statementId:
+            type:
+              - number
+              - "null"
+    additionalProperties: true
   owners_pii_redacted:
     type: object
     $schema: http://json-schema.org/schema#
@@ -28240,6 +30738,119 @@ schemas:
       allowExternalNotification:
         type:
           - boolean
+          - "null"
+    additionalProperties: true
+  folios_transactions_parent:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      id:
+        type: number
+      name:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      endDate:
+        type:
+          - string
+          - "null"
+      posAllow:
+        type:
+          - boolean
+          - "null"
+      posLimit:
+        type:
+          - string
+          - "null"
+      accountId:
+        type:
+          - number
+          - "null"
+      contactId:
+        type:
+          - number
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+      createdBy:
+        type:
+          - string
+          - "null"
+      startDate:
+        type:
+          - string
+          - "null"
+      taxExempt:
+        type:
+          - boolean
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      updatedBy:
+        type:
+          - string
+          - "null"
+      closedDate:
+        type:
+          - string
+          - "null"
+      checkInDate:
+        type:
+          - string
+          - "null"
+      checkOutDate:
+        type:
+          - string
+          - "null"
+      hasException:
+        type:
+          - boolean
+          - "null"
+      ownerRevenue:
+        type:
+          - string
+          - "null"
+      generatedName:
+        type:
+          - string
+          - "null"
+      reservationId:
+        type:
+          - number
+          - "null"
+      travelAgentId:
+        type:
+          - number
+          - "null"
+      currentBalance:
+        type:
+          - string
+          - "null"
+      agentCommission:
+        type:
+          - string
+          - "null"
+      ownerCommission:
+        type:
+          - string
+          - "null"
+      realizedBalance:
+        type:
+          - string
           - "null"
     additionalProperties: true
   units_types_pricing_parent:
