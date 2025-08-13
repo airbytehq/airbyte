@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/source-plaid
   githubIssueLabel: source-plaid
   icon: plaid.svg
-  license: MIT
+  license: ELv2
   name: Plaid
   remoteRegistries:
     pypi:

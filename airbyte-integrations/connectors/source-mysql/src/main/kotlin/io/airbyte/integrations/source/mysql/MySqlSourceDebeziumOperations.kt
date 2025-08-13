@@ -6,19 +6,32 @@ package io.airbyte.integrations.source.mysql
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
+import com.fasterxml.jackson.databind.node.FloatNode
+import com.fasterxml.jackson.databind.node.NullNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.databind.node.TextNode
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.data.BinaryCodec
+import io.airbyte.cdk.data.DoubleCodec
+import io.airbyte.cdk.data.FloatCodec
+import io.airbyte.cdk.data.JsonCodec
+import io.airbyte.cdk.data.JsonEncoder
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.data.LongCodec
+import io.airbyte.cdk.data.NullCodec
 import io.airbyte.cdk.data.OffsetDateTimeCodec
 import io.airbyte.cdk.data.TextCodec
 import io.airbyte.cdk.discover.CommonMetaField
 import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.jdbc.BinaryStreamFieldType
+import io.airbyte.cdk.jdbc.BytesFieldType
+import io.airbyte.cdk.jdbc.FloatFieldType
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.LongFieldType
 import io.airbyte.cdk.jdbc.StringFieldType
+import io.airbyte.cdk.output.sockets.FieldValueEncoder
+import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.cdc.AbortDebeziumWarmStartState
 import io.airbyte.cdk.read.cdc.CdcPartitionReaderDebeziumOperations
@@ -85,19 +98,50 @@ class MySqlSourceDebeziumOperations(
         // Use either `before` or `after` as the record data, depending on the nature of the change.
         val data: ObjectNode = (if (isDelete) before else after) as ObjectNode
         // Turn string representations of numbers into BigDecimals.
+
+        val resultRow: NativeRecordPayload = mutableMapOf()
         for (field in stream.schema) {
             when (field.type.airbyteSchemaType) {
                 LeafAirbyteSchemaType.INTEGER,
                 LeafAirbyteSchemaType.NUMBER -> {
-                    val textNode: TextNode = data[field.id] as? TextNode ?: continue
-                    val bigDecimal = BigDecimal(textNode.textValue()).stripTrailingZeros()
-                    data.put(field.id, bigDecimal)
+                    val textNode: TextNode? = data[field.id] as? TextNode /*?: continue*/
+                    if (textNode != null) {
+                        val bigDecimal = BigDecimal(textNode.textValue()).stripTrailingZeros()
+                        data.put(field.id, bigDecimal)
+                    }
                 }
                 LeafAirbyteSchemaType.JSONB -> {
-                    val textNode: TextNode = data[field.id] as? TextNode ?: continue
-                    data.set<JsonNode>(field.id, Jsons.readTree(textNode.textValue()))
+                    val textNode: TextNode? = data[field.id] as? TextNode /*?: continue*/
+                    if (textNode != null) {
+                        data.set<JsonNode>(field.id, Jsons.readTree(textNode.textValue()))
+                    }
                 }
-                else -> continue
+                else -> {
+                    /* no-op */
+                }
+            }
+            data[field.id] ?: continue
+            when (data[field.id]) {
+                is NullNode -> {
+                    resultRow[field.id] = FieldValueEncoder(null, NullCodec)
+                }
+                else -> {
+                    val codec: JsonCodec<*> =
+                        when (field.type) {
+                            FloatFieldType ->
+                                if (data[field.id] is FloatNode) FloatCodec else DoubleCodec
+                            BytesFieldType,
+                            BinaryStreamFieldType ->
+                                if (data[field.id].isBinary) BinaryCodec else TextCodec
+                            else -> field.type.jsonEncoder as JsonCodec<*>
+                        }
+                    @Suppress("UNCHECKED_CAST")
+                    resultRow[field.id] =
+                        FieldValueEncoder(
+                            codec.decode(data[field.id]),
+                            codec as JsonCodec<Any>,
+                        )
+                }
             }
         }
         // Set _ab_cdc_updated_at and _ab_cdc_deleted_at meta-field values.
@@ -110,27 +154,46 @@ class MySqlSourceDebeziumOperations(
             CommonMetaField.CDC_UPDATED_AT.id,
             transactionTimestampJsonNode,
         )
+        resultRow[CommonMetaField.CDC_UPDATED_AT.id] =
+            FieldValueEncoder(transactionOffsetDateTime, OffsetDateTimeCodec)
+
         data.set<JsonNode>(
             CommonMetaField.CDC_DELETED_AT.id,
             if (isDelete) transactionTimestampJsonNode else Jsons.nullNode(),
         )
+        @Suppress("UNCHECKED_CAST")
+        resultRow[CommonMetaField.CDC_DELETED_AT.id] =
+            FieldValueEncoder(
+                if (isDelete) transactionOffsetDateTime else null,
+                (if (isDelete) OffsetDateTimeCodec else NullCodec) as JsonEncoder<Any>
+            )
+
         // Set _ab_cdc_log_file and _ab_cdc_log_pos meta-field values.
         val position = MySqlSourceCdcPosition(source["file"].asText(), source["pos"].asLong())
         data.set<JsonNode>(
             MySqlSourceCdcMetaFields.CDC_LOG_FILE.id,
             TextCodec.encode(position.fileName)
         )
+        resultRow[MySqlSourceCdcMetaFields.CDC_LOG_FILE.id] =
+            FieldValueEncoder(position.fileName, TextCodec)
+
         data.set<JsonNode>(
             MySqlSourceCdcMetaFields.CDC_LOG_POS.id,
             LongCodec.encode(position.position)
         )
+        resultRow[MySqlSourceCdcMetaFields.CDC_LOG_POS.id] =
+            FieldValueEncoder(position.position, LongCodec)
+
         // Set the _ab_cdc_cursor meta-field value.
         data.set<JsonNode>(
             MySqlSourceCdcMetaFields.CDC_CURSOR.id,
             LongCodec.encode(position.cursorValue)
         )
+        resultRow[MySqlSourceCdcMetaFields.CDC_CURSOR.id] =
+            FieldValueEncoder(position.cursorValue, LongCodec)
+
         // Return a DeserializedRecord instance.
-        return DeserializedRecord(data, changes = emptyMap())
+        return DeserializedRecord(resultRow, emptyMap()) // TEMP
     }
 
     override fun findStreamNamespace(key: DebeziumRecordKey, value: DebeziumRecordValue): String? =
@@ -278,7 +341,7 @@ class MySqlSourceDebeziumOperations(
                 try {
                     // Syntax for MySQL version < 8.4
                     return parseBinaryLogStatus(stmt, "SHOW MASTER STATUS")
-                } catch (e: SQLSyntaxErrorException) {
+                } catch (_: SQLSyntaxErrorException) {
                     // Syntax for MySQL version >= 8.4
                     return parseBinaryLogStatus(stmt, "SHOW BINARY LOG STATUS")
                 }
@@ -405,7 +468,7 @@ class MySqlSourceDebeziumOperations(
                 .withDefault()
                 .withConnector(MySqlConnector::class.java)
                 .withDebeziumName(databaseName)
-                .withHeartbeats(configuration.debeziumHeartbeatInterval)
+                .withHeartbeats(configuration.debeziumHeartbeatInterval) // TEMP
                 // This to make sure that binary data represented as a base64-encoded String.
                 // https://debezium.io/documentation/reference/2.2/connectors/mysql.html#mysql-property-binary-handling-mode
                 .with("binary.handling.mode", "base64")

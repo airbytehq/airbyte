@@ -58,6 +58,7 @@ The Amplitude connector ideally should gracefully handle Amplitude API limitatio
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------| :------------------------------------------------------- |:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.7.18 | 2025-06-28 | [62135](https://github.com/airbytehq/airbyte/pull/62135) | Update dependencies |
 | 0.7.17 | 2025-06-21 | [61897](https://github.com/airbytehq/airbyte/pull/61897) | Update dependencies |
 | 0.7.16 | 2025-06-15 | [60600](https://github.com/airbytehq/airbyte/pull/60600) | Update dependencies |
 | 0.7.15 | 2025-05-23 | [60887](https://github.com/airbytehq/airbyte/pull/60887) | Fix cohorts extractor field_path |

@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.fold
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.runBlocking
 
 @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", justification = "Kotlin async continuation")
 class ObjectStorageDestinationState(
@@ -38,10 +39,14 @@ class ObjectStorageDestinationState(
     private val fileNumbersByPath: ConcurrentHashMap<String, AtomicLong> = ConcurrentHashMap()
     private val matcher =
         pathFactory.getPathMatcher(stream, suffixPattern = OPTIONAL_ORDINAL_SUFFIX_PATTERN)
+    private val counters = ConcurrentHashMap<String, AtomicLong>()
 
     companion object {
         const val OPTIONAL_ORDINAL_SUFFIX_PATTERN = "(-[0-9]+)?"
     }
+
+    fun getPartCounter(path: String): AtomicLong =
+        counters.computeIfAbsent(path) { runBlocking(Dispatchers.IO) { getPartIdCounter(path) } }
 
     /**
      * Returns (generationId, object) for all objects that should be cleaned up.

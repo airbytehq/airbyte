@@ -11,7 +11,7 @@ data:
   dockerRepository: farosai/airbyte-harness-source
   githubIssueLabel: farosai/airbyte-harness-source
   icon: harness.svg
-  license: MIT
+  license: ELv2
   name: Harness
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/harness

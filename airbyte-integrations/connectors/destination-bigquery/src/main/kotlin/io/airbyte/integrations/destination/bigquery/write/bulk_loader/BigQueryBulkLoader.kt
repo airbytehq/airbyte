@@ -43,8 +43,11 @@ class BigQueryBulkLoader(
         val csvOptions =
             CsvOptions.newBuilder()
                 .setSkipLeadingRows(1)
-                .setAllowQuotedNewLines(true) // safe for long JSON strings
+                // safe for long JSON strings
+                .setAllowQuotedNewLines(true)
                 .setAllowJaggedRows(true)
+                // Accept e.g. null characters in strings
+                .setPreserveAsciiControlCharacters(true)
                 .build()
 
         val configuration =

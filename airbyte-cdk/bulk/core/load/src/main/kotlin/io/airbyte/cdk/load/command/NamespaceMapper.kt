@@ -32,18 +32,21 @@ class NamespaceMapper(
     private val hasPrefix = !streamPrefix.isNullOrBlank()
     private val prefix = streamPrefix ?: ""
 
-    private val template: Template? =
-        if (
-            namespaceDefinitionType == NamespaceDefinitionType.CUSTOM_FORMAT &&
-                !namespaceFormat.isNullOrBlank()
-        ) {
-            val parts = namespaceFormat.split("\${SOURCE_NAMESPACE}", limit = 2)
-            Template(parts[0], parts.getOrElse(1) { "" })
-        } else null
-
     private data class Key(val ns: String?, val name: String) {
         private val hc: Int = 31 * (ns?.hashCode() ?: 0) + name.hashCode()
         override fun hashCode() = hc
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as Key
+
+            if (hc != other.hc) return false
+            if (ns != other.ns) return false
+            if (name != other.name) return false
+
+            return true
+        }
     }
 
     private val cache = ConcurrentHashMap<Key, DestinationStream.Descriptor>(128)
@@ -66,7 +69,8 @@ class NamespaceMapper(
             when (namespaceDefinitionType) {
                 NamespaceDefinitionType.SOURCE -> sourceNamespace
                 NamespaceDefinitionType.DESTINATION -> null // default
-                NamespaceDefinitionType.CUSTOM_FORMAT -> template?.build(sourceNamespace)
+                NamespaceDefinitionType.CUSTOM_FORMAT ->
+                    formatNamespace(sourceNamespace, namespaceFormat)
             }
 
         val mappedName =
@@ -80,17 +84,12 @@ class NamespaceMapper(
         return DestinationStream.Descriptor(namespace = mappedNs, name = mappedName)
     }
 
-    private class Template(private val pre: String, private val post: String) {
-        fun build(sourceNs: String?): String? {
-            val ns = sourceNs ?: ""
-            if (pre.isEmpty() && post.isEmpty()) return ns.ifBlank { null }
-            val result =
-                buildString(pre.length + ns.length + post.length) {
-                    append(pre)
-                    append(ns)
-                    append(post)
-                }
-            return result.ifBlank { null }
-        }
+    private fun formatNamespace(sourceNamespace: String?, namespaceFormat: String?): String? {
+        if (namespaceFormat.isNullOrBlank()) return null
+
+        val replaceWith = sourceNamespace?.takeIf { it.isNotBlank() } ?: ""
+        val result = namespaceFormat.replace("\${SOURCE_NAMESPACE}", replaceWith)
+
+        return result.ifBlank { null }
     }
 }

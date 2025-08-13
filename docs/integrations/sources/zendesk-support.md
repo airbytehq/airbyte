@@ -189,6 +189,14 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.10.7 | 2025-08-09 | [64867](https://github.com/airbytehq/airbyte/pull/64867) | Update dependencies |
+| 4.10.6 | 2025-08-02 | [64366](https://github.com/airbytehq/airbyte/pull/64366) | Update dependencies |
+| 4.10.5 | 2025-07-26 | [64067](https://github.com/airbytehq/airbyte/pull/64067) | Update dependencies |
+| 4.10.4 | 2025-07-20 | [63673](https://github.com/airbytehq/airbyte/pull/63673) | Update dependencies |
+| 4.10.3 | 2025-07-12 | [63238](https://github.com/airbytehq/airbyte/pull/63238) | Update dependencies |
+| 4.10.2 | 2025-07-05 | [62691](https://github.com/airbytehq/airbyte/pull/62691) | Update dependencies |
+| 4.10.1 | 2025-06-28 | [60736](https://github.com/airbytehq/airbyte/pull/60736) | Update dependencies |
+| 4.10.0 | 2025-06-26 | [62099](https://github.com/airbytehq/airbyte/pull/62099) | Promoting release candidate 4.10.0-rc.1 to a main version. |
 | 4.10.0-rc.1 | 2025-06-17 | [61599](https://github.com/airbytehq/airbyte/pull/61599)     | Migrate to manifest-only format.                                                                                                                                                                                                   |
 | 4.9.1       | 2025-05-10 | [60014](https://github.com/airbytehq/airbyte/pull/60014) | Update dependencies                                                                                                                                                                                                                |
 | 4.9.0       | 2025-05-05 | [56419](https://github.com/airbytehq/airbyte/pull/56419) | Adapt file-transfer records to latest protocol, requires platform >= 1.7.0, destination-s3 >= 1.8.0                                                                                                                                |
