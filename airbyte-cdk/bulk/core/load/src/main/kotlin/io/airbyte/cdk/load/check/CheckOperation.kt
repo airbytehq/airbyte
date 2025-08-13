@@ -22,6 +22,7 @@ private val logger = KotlinLogging.logger {}
 @Singleton
 @Requires(property = Operation.PROPERTY, value = "check")
 @Requires(env = ["destination"])
+// test
 class CheckOperation<T : ConfigurationSpecification, C : DestinationConfiguration>(
     val configJsonObjectSupplier: ConfigurationSpecificationSupplier<T>,
     val configFactory: DestinationConfigurationFactory<T, C>,
