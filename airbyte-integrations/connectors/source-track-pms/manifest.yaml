@@ -6274,9 +6274,10 @@ definitions:
           record_filter:
             type: RecordFilter
             condition: >-
-              {{ (record._embedded.reservation.quoteBreakdown.grossRent | float
-              > 0) or (record._embedded.reservation.quoteBreakdown.guestFees |
-              float > 0) }}
+              {{  (record._embedded.reservation.quoteBreakdown.grandTotal |
+              float > 0) or
+              (record._embedded.reservation.quoteBreakdown.payments | float > 0)
+              }}
           schema_normalization: Default
       primary_key:
         - id
@@ -7502,7 +7503,7 @@ metadata:
       responsesAreSuccessful: true
     folios_transactions:
       hasRecords: true
-      streamHash: 502376b6b85102cf7e8916465cedbe5c1c66f18a
+      streamHash: 6f440996d63e36609213138d0599a7ad8279bf95
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -7628,7 +7629,7 @@ metadata:
       responsesAreSuccessful: true
     folios_transactions_parent:
       hasRecords: true
-      streamHash: c8dabe88822e0758ad7df0c99236fa2b3776159d
+      streamHash: 91a6a21b22cdfc3bfd8deaec37caa229ce79449c
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
