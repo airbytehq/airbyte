@@ -193,18 +193,20 @@ Helm install spits out instructions for how to set up the port forward. Go ahead
 <TabItem value='helm-1' label='Helm chart V1' default>
 
 ```bash
-export POD_NAME=$(kubectl get pods --namespace airbyte -l "app.kubernetes.io/name=webapp" -o jsonpath="{.items[0].metadata.name}")
-  export CONTAINER_PORT=$(kubectl get pod --namespace airbyte $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
-  echo "Visit http://127.0.0.1:8080 to use your application"
-  kubectl --namespace airbyte port-forward $POD_NAME 8080:$CONTAINER_PORT
+Get the application URL by running these commands:
+
+echo "Visit http://127.0.0.1:8080 to use your application"
+kubectl -n airbyte port-forward deployment/airbyte-server 8080:8001
 ```
 
 </TabItem>
 <TabItem value='helm-2' label='Helm chart V2' default>
 
 ```bash
+Get the application URL by running these commands:
+
 echo "Visit http://127.0.0.1:8080 to use your application"
-kubectl -n airbyte-v2 port-forward deployment/airbyte-webapp 8080:8080
+kubectl -n airbyte-v2 port-forward deployment/airbyte-server 8080:8001
 ```
 
 </TabItem>
