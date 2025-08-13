@@ -168,6 +168,5 @@ def test_ads_insights_default_breakdowns_based_on_config_input(default_ads_insig
         config["default_ads_insights_action_breakdowns"] = default_ads_insights_action_breakdowns
     source = SourceFacebookMarketing()
     streams = source.streams(config)
-    ads_insights_streams = [stream for stream in streams if "ads_insights" in stream.name]
-    for stream in ads_insights_streams:
-        assert stream.request_params()["action_breakdowns"] == expected_action_breakdowns
+    ads_insights_stream = [stream for stream in streams if "ads_insights" == stream.name][0]
+    assert ads_insights_stream.request_params()["action_breakdowns"] == expected_action_breakdowns

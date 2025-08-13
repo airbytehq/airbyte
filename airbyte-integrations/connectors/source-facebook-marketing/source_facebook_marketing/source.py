@@ -78,8 +78,6 @@ class SourceFacebookMarketing(AbstractSource):
             else AdsInsights.action_breakdowns
         )
         config.default_ads_insights_action_breakdowns = default_ads_insights_action_breakdowns
-        if config.default_ads_insights_action_breakdowns == [] and not config.action_breakdowns_allow_empty:
-            config.action_breakdowns_allow_empty = True
 
         if config.start_date:
             config.start_date = pendulum.instance(config.start_date)
@@ -159,8 +157,6 @@ class SourceFacebookMarketing(AbstractSource):
             insights_lookback_window=config.insights_lookback_window,
             insights_job_timeout=config.insights_job_timeout,
             filter_statuses=[status.value for status in [*ValidAdStatuses]],
-            action_breakdowns=config.default_ads_insights_action_breakdowns,
-            action_breakdowns_allow_empty=config.action_breakdowns_allow_empty,
         )
         streams = [
             AdAccount(api=api, account_ids=config.account_ids),
@@ -186,7 +182,13 @@ class SourceFacebookMarketing(AbstractSource):
                 fetch_thumbnail_images=config.fetch_thumbnail_images,
                 page_size=config.page_size,
             ),
-            AdsInsights(page_size=config.page_size, **insights_args),
+            AdsInsights(
+                page_size=config.page_size,
+                action_breakdowns=config.default_ads_insights_action_breakdowns,
+                # in case user input is an empty list of action_breakdowns we allow empty breakdowns
+                action_breakdowns_allow_empty=config.default_ads_insights_action_breakdowns == [],
+                **insights_args,
+            ),
             AdsInsightsAgeAndGender(page_size=config.page_size, **insights_args),
             AdsInsightsCountry(page_size=config.page_size, **insights_args),
             AdsInsightsRegion(page_size=config.page_size, **insights_args),

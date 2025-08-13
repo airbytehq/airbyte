@@ -177,7 +177,7 @@ To ensure reliable performance, you'll need to request "Advanced Access."
 </FieldAnchor>
 
 <FieldAnchor field="default_ads_insights_action_breakdowns">
-8. (Optional) If needed you can chanhe default action breakdowns for Built-in Ads Insights Streams(not custom ones). This value is shared for all Built-in Ads Insights streams.
+8. (Optional) If needed, you can change default action breakdowns for Built-in Ads Insights stream. Remove all if you need to make it empty list or change default values.
 </FieldAnchor>
 
 <FieldAnchor field="custom_insights">
@@ -356,7 +356,7 @@ This response indicates that the Facebook Graph API requires you to reduce the f
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.5.10  | 2025-08-13 | [64679](https://github.com/airbytehq/airbyte/pull/64679) | Allow overriding action breakdowns for default Ads Insights streams                                                                                                                                                                                                                               |
+| 3.5.10  | 2025-08-13 | [64679](https://github.com/airbytehq/airbyte/pull/64679) | Allow overriding action breakdowns for default Ads Insights stream.                                                                                                                                                                                                                               |
 | 3.5.9   | 2025-08-09 | [64679](https://github.com/airbytehq/airbyte/pull/64679) | Update dependencies                                                                                                                                                                                                                                                                               |
 | 3.5.8   | 2025-08-02 | [64406](https://github.com/airbytehq/airbyte/pull/64406) | Update dependencies                                                                                                                                                                                                                                                                               |
 | 3.5.7   | 2025-07-26 | [63934](https://github.com/airbytehq/airbyte/pull/63934) | Update dependencies                                                                                                                                                                                                                                                                               |
