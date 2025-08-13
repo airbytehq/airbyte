@@ -129,7 +129,8 @@ class TestTwilioStream:
         test_headers = {"Retry-After": expected}
         requests_mock.get(url, headers=test_headers)
         response = requests.get(url)
-        result = stream.backoff_time(response)
+        response.status_code = 429
+        result = stream.get_backoff_strategy().backoff_time(response, 1)
         assert result == float(expected)
 
     @pytest.mark.parametrize(
