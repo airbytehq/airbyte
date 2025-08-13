@@ -264,13 +264,11 @@ def test_invalid_metadata_file_path(mock_send_slack, registry_type):
 @pytest.mark.parametrize("registry_type", ["oss", "cloud"])
 @patch("metadata_service.registry_entry.send_slack_message")
 @patch("metadata_service.registry_entry._apply_metadata_overrides")
-def test_invalid_spec_file_path(mock_apply_overrides, mock_send_slack, registry_scenario, registry_type):
+def test_invalid_spec_file_path(mock_apply_overrides, mock_send_slack, temp_files, registry_type):
     """Test exception handling when spec file path doesn't exist or is invalid."""
 
-    # Arrange - Use enabled scenario to get past metadata validation
-    if not registry_scenario["enabled"] or registry_scenario["registry_type"] != registry_type:
-        pytest.skip(f"Skipping scenario: {registry_scenario}")
-
+    # Arrange - Use enabled temp files
+    metadata_path, _ = temp_files
     invalid_spec_path = pathlib.Path("/nonexistent/spec.json")
     bucket_name = "test-bucket"
 
@@ -281,7 +279,7 @@ def test_invalid_spec_file_path(mock_apply_overrides, mock_send_slack, registry_
     with pytest.raises(FileNotFoundError):
         generate_and_persist_registry_entry(
             bucket_name=bucket_name,
-            metadata_file_path=registry_scenario["metadata_path"],
+            metadata_file_path=metadata_path,
             spec_path=invalid_spec_path,
             registry_type=registry_type,
         )
