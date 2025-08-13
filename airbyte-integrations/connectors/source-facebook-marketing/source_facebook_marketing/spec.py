@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import logging
+from argparse import Action
 from datetime import datetime, timezone
 from enum import Enum
 from typing import List, Literal, Optional, Set, Union
@@ -260,9 +261,21 @@ class ConnectorConfig(BaseConfig):
         description="Set to active if you want to fetch the thumbnail_url and store the result in thumbnail_data_url for each Ad Creative.",
     )
 
+    default_ads_insights_action_breakdowns: Optional[List[ValidActionBreakdowns]] = Field(
+        title="Action breakdowns for the Built-in Ads Insights streams",
+        order=8,
+        default=[
+            "action_type",
+            "action_target_id",
+            "action_destination",
+        ],
+        type="array",
+        description="Action breakdowns for the Built-in Ads Insights streams that will be used in the request. You can override default values or remove them to make it empty if needed. This value is shared for all Ads Insights streams.",
+    )
+
     custom_insights: Optional[List[InsightConfig]] = Field(
         title="Custom Insights",
-        order=8,
+        order=9,
         description=(
             "A list which contains ad statistics entries, each entry must have a name and can contains fields, "
             'breakdowns or action_breakdowns. Click on "add" to fill this field.'

@@ -72,6 +72,15 @@ class SourceFacebookMarketing(AbstractSource):
 
         config = ConnectorConfig.parse_obj(config)
 
+        default_ads_insights_action_breakdowns = (
+            config.default_ads_insights_action_breakdowns
+            if config.default_ads_insights_action_breakdowns is not None
+            else AdsInsights.action_breakdowns
+        )
+        config.default_ads_insights_action_breakdowns = default_ads_insights_action_breakdowns
+        if config.default_ads_insights_action_breakdowns == [] and not config.action_breakdowns_allow_empty:
+            config.action_breakdowns_allow_empty = True
+
         if config.start_date:
             config.start_date = pendulum.instance(config.start_date)
 
@@ -150,6 +159,8 @@ class SourceFacebookMarketing(AbstractSource):
             insights_lookback_window=config.insights_lookback_window,
             insights_job_timeout=config.insights_job_timeout,
             filter_statuses=[status.value for status in [*ValidAdStatuses]],
+            action_breakdowns=config.default_ads_insights_action_breakdowns,
+            action_breakdowns_allow_empty=config.action_breakdowns_allow_empty,
         )
         streams = [
             AdAccount(api=api, account_ids=config.account_ids),
