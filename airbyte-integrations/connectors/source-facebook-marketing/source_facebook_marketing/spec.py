@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import logging
-from argparse import Action
 from datetime import datetime, timezone
 from enum import Enum
 from typing import List, Literal, Optional, Set, Union
