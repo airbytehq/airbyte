@@ -18,6 +18,7 @@ export default {
         "v-1.2",
         "v-1.1",
         "v-1.0",
+        "breaking-changes",
         {
           type: "category",
           label: "Historical release notes",
