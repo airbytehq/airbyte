@@ -12,7 +12,6 @@ import io.mockk.mockk
 import io.mockk.verify
 import java.io.ByteArrayInputStream
 import kotlinx.coroutines.flow.FlowCollector
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 
@@ -72,7 +71,7 @@ class DestinationMessageInputFlowTest {
         coVerify(exactly = 1) { collector.emit(message2) }
     }
 
-        @Test
+    @Test
     fun `should not emit if no record is present`() = runTest {
         // Given
         val inputStream = ByteArrayInputStream("".toByteArray())
@@ -88,15 +87,3 @@ class DestinationMessageInputFlowTest {
         coVerify(exactly = 0) { collector.emit(any()) } // Ensure no other message is emitted
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
