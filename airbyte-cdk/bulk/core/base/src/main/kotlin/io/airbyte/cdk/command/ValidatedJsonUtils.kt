@@ -52,7 +52,15 @@ object ValidatedJsonUtils {
     ): List<T> {
         val jsonList: List<JsonNode> = if (tree.isArray) tree.toList() else listOf(tree)
         val schemaNode: JsonNode = generator.generateJsonSchema(elementClass)
-        val schemaValidator = SchemaValidator(null, schemaNode)
+        
+        // Special handling for ConfiguredAirbyteStream to allow null namespaces
+        val modifiedSchemaNode = if (elementClass.simpleName == "ConfiguredAirbyteStream") {
+            allowNullNamespaceInSchema(schemaNode)
+        } else {
+            schemaNode
+        }
+        
+        val schemaValidator = SchemaValidator(null, modifiedSchemaNode)
         for (element in jsonList) {
             val validationData = ValidationData<Void>()
             schemaValidator.validate(element, validationData)
@@ -174,5 +182,30 @@ object ValidatedJsonUtils {
         walk(root)
         // Return the transformed object.
         return root
+    }
+
+    private fun allowNullNamespaceInSchema(schemaNode: JsonNode): JsonNode {
+        if (schemaNode.isObject) {
+            val objectNode = schemaNode.deepCopy() as ObjectNode
+            val properties = objectNode.get("properties")
+            if (properties != null && properties.isObject) {
+                val propertiesNode = properties as ObjectNode
+                val stream = propertiesNode.get("stream")
+                if (stream != null && stream.isObject) {
+                    val streamNode = stream as ObjectNode
+                    val streamProperties = streamNode.get("properties")
+                    if (streamProperties != null && streamProperties.isObject) {
+                        val streamPropertiesNode = streamProperties as ObjectNode
+                        val namespace = streamPropertiesNode.get("namespace")
+                        if (namespace != null && namespace.isObject) {
+                            val namespaceNode = namespace as ObjectNode
+                            namespaceNode.put("nullable", true)
+                        }
+                    }
+                }
+            }
+            return objectNode
+        }
+        return schemaNode
     }
 }
