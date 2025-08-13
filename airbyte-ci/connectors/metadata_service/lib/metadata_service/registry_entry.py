@@ -392,7 +392,9 @@ def _get_registry_entry_blob_paths(metadata_dict: dict, registry_type: str) -> L
         release_candidate_registry_entry_path = (
             f"{METADATA_FOLDER}/{metadata_dict['data']['dockerRepository']}/release_candidate/{registry_type}.json"
         )
-
+        versioned_registry_entry_path = (
+            f"{METADATA_FOLDER}/{metadata_dict['data']['dockerRepository']}/{metadata_dict['data']['dockerImageTag']}/{registry_type}.json"
+        )
         registry_entry_paths.append(release_candidate_registry_entry_path)
 
     elif "-dev" in metadata_dict["data"]["dockerImageTag"]:
@@ -496,6 +498,8 @@ def generate_and_persist_registry_entry(
         logger.info(
             f"Registry type {registry_type} is not enabled for `{metadata_dict['data']['dockerRepository']}`, skipping generation and upload."
         )
+        message = f"*🤖 ⚫ _Registry Entry Generation_ NOOP*:\n_Note: Connector is not enabled on {registry_type} registry. No action required._\nRegistry Entry: `{registry_type}.json`\nConnector: `{metadata_dict['data']['dockerRepository']}`\nGCS Bucket: `{bucket_name}`."
+        send_slack_message(PUBLISH_UPDATE_CHANNEL, message)
 
     # For latest versions that are disabled, delete any existing registry entry to remove it from the registry
     if (
@@ -511,6 +515,3 @@ def generate_and_persist_registry_entry(
         existing_registry_entry = bucket.blob(latest_registry_entry_path)
         if existing_registry_entry.exists():
             bucket.delete_blob(latest_registry_entry_path)
-
-        message = f"*🤖 🗑️ _Disabled Registry Entry Deletion_ SUCCESS*:\nNote: Connector is not enabled on {registry_type} registry. Deleted existing registry entry.\nRegistry Entry: `{registry_type}.json`\nConnector: `{metadata_dict['data']['dockerRepository']}`\nGCS Bucket: `{bucket_name}`\nPath: `{latest_registry_entry_path}`"
-        send_slack_message(PUBLISH_UPDATE_CHANNEL, message)
