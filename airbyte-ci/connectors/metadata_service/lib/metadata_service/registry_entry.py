@@ -6,6 +6,7 @@
 import datetime
 import json
 import logging
+import os
 import pathlib
 from typing import List, Optional, Tuple, Union
 
@@ -23,13 +24,17 @@ from metadata_service.constants import (
     METADATA_CDN_BASE_URL,
     METADATA_FILE_NAME,
     METADATA_FOLDER,
+    PUBLISH_UPDATE_CHANNEL,
 )
 from metadata_service.helpers.gcs import get_gcs_storage_client, safe_read_gcs_file
 from metadata_service.helpers.object_helpers import deep_copy_params, default_none_to_dict
+from metadata_service.helpers.slack import send_slack_message
 from metadata_service.models.generated import ConnectorRegistryDestinationDefinition, ConnectorRegistrySourceDefinition
 from metadata_service.registry import ConnectorTypePrimaryKey, ConnectorTypes
 
 logger = logging.getLogger(__name__)
+
+DEV_BUCKET = "dev-airbyte-cloud-connector-metadata-service"
 
 
 PolymorphicRegistryEntry = Union[ConnectorRegistrySourceDefinition, ConnectorRegistryDestinationDefinition]
@@ -37,9 +42,6 @@ TaggedRegistryEntry = Tuple[ConnectorTypes, PolymorphicRegistryEntry]
 
 
 def _apply_metadata_overrides(metadata_data: dict, registry_type: str, bucket_name: str) -> dict:
-    gcs_client = get_gcs_storage_client()
-    bucket = gcs_client.bucket(bucket_name)
-
     connector_type = metadata_data["connectorType"]
 
     overridden_metadata_data = _apply_overrides_from_registry(metadata_data, registry_type)
@@ -81,11 +83,13 @@ def _apply_metadata_overrides(metadata_data: dict, registry_type: str, bucket_na
     overridden_metadata_data = _apply_ab_internal_defaults(overridden_metadata_data)
 
     # apply icon url and releases
-    icon_blob = _get_icon_blob_from_gcs(bucket, metadata_data)
+    icon_blob = _get_icon_blob_from_gcs(bucket_name, metadata_data)
     icon_url = _get_public_url_for_gcs_file(icon_blob.bucket.name, icon_blob.name, METADATA_CDN_BASE_URL)
 
     overridden_metadata_data["iconUrl"] = icon_url
     overridden_metadata_data["releases"] = _apply_connector_releases(overridden_metadata_data)
+
+    return overridden_metadata_data
 
 
 @deep_copy_params
@@ -134,6 +138,7 @@ def _apply_generated_fields(metadata_data: dict, bucket_name: str) -> dict:
     return generated_fields
 
 
+@sentry_sdk.trace
 @deep_copy_params
 def _apply_package_info_fields(metadata_data: dict, bucket_name: str) -> dict:
     """Apply package info fields to the metadata data field.
@@ -153,15 +158,16 @@ def _apply_package_info_fields(metadata_data: dict, bucket_name: str) -> dict:
         f"{CONNECTOR_DEPENDENCY_FOLDER}/{sanitized_connector_technical_name}/{connector_version}/{CONNECTOR_DEPENDENCY_FILE_NAME}"
     )
 
-    logger.info(f"{dependencies_path}")
-
     try:
-        gcs_client = get_gcs_storage_client()
+        logger.info(
+            f"Getting dependencies blob for `{sanitized_connector_technical_name}` `{connector_version}` at path `{dependencies_path}`"
+        )
+        gcs_client = get_gcs_storage_client(gcs_creds=os.environ.get("GCS_CREDENTIALS"))
         bucket = gcs_client.bucket(bucket_name)
         dependencies_blob = bucket.blob(dependencies_path)
         dependencies_json = json.loads(safe_read_gcs_file(dependencies_blob))
     except Exception as e:
-        logger.warning(f"Error reading dependencies file for {sanitized_connector_technical_name} {connector_version}: {e}")
+        logger.warning(f"Error reading dependencies file for `{sanitized_connector_technical_name}`: {e}")
         raise
 
     cdk_version = None
@@ -172,6 +178,8 @@ def _apply_package_info_fields(metadata_data: dict, bucket_name: str) -> dict:
 
     package_info_fields = metadata_data.get("packageInfo") or {}
     package_info_fields = set_with(package_info_fields, "cdk_version", cdk_version, default_none_to_dict)
+
+    logger.info("Added package info fields.")
 
     return package_info_fields
 
@@ -272,12 +280,13 @@ def _get_and_parse_yaml_file(file_path: pathlib.Path) -> dict:
     """
 
     try:
-        logger.info(f"Getting and parsing file: {file_path}")
+        logger.debug(f"Getting and parsing YAML file: `{file_path}`")
         with open(file_path, "r") as f:
             file_dict = yaml.safe_load(f)
     except Exception as e:
         logger.error(f"Error parsing file: {e}")
         raise
+    logger.info("Parsed YAML file.")
     return file_dict
 
 
@@ -291,16 +300,18 @@ def _get_and_parse_json_file(file_path: pathlib.Path) -> dict:
         dict: The file dictionary.
     """
     try:
-        logger.info(f"Getting and parsing file: {file_path}")
+        logger.debug(f"Getting and parsing JSON file: `{file_path}`")
         with open(file_path, "r") as f:
             file_dict = json.load(f)
     except Exception as e:
-        logger.error(f"Error parsing file: {e}")
+        logger.error(f"Error parsing JSON file: `{file_path}`: {e}")
         raise
+    logger.info("Parsed JSON file.")
     return file_dict
 
 
-def _get_icon_blob_from_gcs(bucket: storage.Bucket, metadata_entry: dict) -> storage.Blob:
+@sentry_sdk.trace
+def _get_icon_blob_from_gcs(bucket_name: str, metadata_entry: dict) -> storage.Blob:
     """Get the icon blob from the GCS bucket.
 
     Args:
@@ -310,13 +321,15 @@ def _get_icon_blob_from_gcs(bucket: storage.Bucket, metadata_entry: dict) -> sto
     Returns:
         storage.Blob: The icon blob.
     """
-    connector_docker_repository = metadata_entry["data"]["dockerRepository"]
+    connector_docker_repository = metadata_entry["dockerRepository"]
     icon_file_path = f"{METADATA_FOLDER}/{connector_docker_repository}/latest/{ICON_FILE_NAME}"
     try:
         logger.info(f"Getting icon blob for {connector_docker_repository}")
+        gcs_client = get_gcs_storage_client(gcs_creds=os.environ.get("GCS_CREDENTIALS"))
+        bucket = gcs_client.bucket(bucket_name)
         icon_blob = bucket.blob(icon_file_path)
         if not icon_blob.exists():
-            raise ValueError(f"Icon file not found for {connector_docker_repository}")
+            raise ValueError(f"Icon file not found for `{connector_docker_repository}`")
     except Exception as e:
         logger.error(f"Error getting icon blob: {e}")
         raise
@@ -402,8 +415,8 @@ def _persist_connector_registry_entry(bucket_name: str, registry_entry: Polymorp
     """
     try:
         logger.info(f"Persisting connector registry entry to {registry_entry_path}")
-        gcs_client = get_gcs_storage_client()
-        bucket = gcs_client.bucket(bucket_name)
+        gcs_client = get_gcs_storage_client(gcs_creds=os.environ.get("GCS_DEV_CREDENTIALS"))
+        bucket = gcs_client.bucket(DEV_BUCKET)
         registry_entry_blob = bucket.blob(registry_entry_path)
         registry_entry_blob.upload_from_string(registry_entry.json(exclude_none=True))
     except Exception as e:
@@ -411,11 +424,7 @@ def _persist_connector_registry_entry(bucket_name: str, registry_entry: Polymorp
         raise
 
 
-"""
-poetry run metadata_service generate-registry-entry dev-airbyte-cloud-connector-metadata-service /Users/patricknilan/airbyte/airbyte/airbyte-integrations/connectors/source-pokeapi/metadata.yaml /Users/patricknilan/airbyte/airbyte/airbyte-integrations/connectors/source-pokeapi/metadata.yaml cloud
-"""
-
-
+@sentry_sdk.trace
 def generate_and_persist_registry_entry(
     bucket_name: str, metadata_file_path: pathlib.Path, spec_path: pathlib.Path, registry_type: str
 ) -> None:
@@ -431,36 +440,56 @@ def generate_and_persist_registry_entry(
     # It can be assumed the metadata file has already been validated before getting to this stage.
     metadata_dict = _get_and_parse_yaml_file(metadata_file_path)
 
-    # If the connector is not enabled on the given registry, skip generateing and persisting the registry entry.
-    if not metadata_dict["data"]["registryOverrides"][registry_type]["enabled"]:
-        logger.warning(f"Registry type {registry_type} is not enabled, skipping")
+    message = f"*🤖 🟡 _Registry Entry Generation_ STARTED*:\nRegistry Entry: `{registry_type}.json`\nConnector: `{metadata_dict['data']['dockerRepository']}`\nGCS Bucket: `{bucket_name}`."
+    send_slack_message(PUBLISH_UPDATE_CHANNEL, message)
 
+    # If the connector is not enabled on the given registry, skip generateing and persisting the registry entry.
+    if metadata_dict["data"]["registryOverrides"][registry_type]["enabled"]:
         registry_entry_blob_paths = _get_registry_entry_blob_paths(metadata_dict, registry_type)
+
         metadata_data = metadata_dict["data"]
 
-        overridden_metadata_data = _apply_metadata_overrides(metadata_data, registry_type, bucket_name)
+        try:
+            overridden_metadata_data = _apply_metadata_overrides(metadata_data, registry_type, bucket_name)
+        except Exception as e:
+            logger.error(f"Error applying metadata overrides: {e}")
+            message = f"*🤖 🔴 _Registry Entry Generation_ FAILED*:\nRegistry Entry: `{registry_type}.json`\nConnector: `{metadata_data['dockerRepository']}`\nGCS Bucket: `{bucket_name}`."
+            send_slack_message(PUBLISH_UPDATE_CHANNEL, message)
+            raise
 
+        logger.info("Parsing spec file.")
         overridden_metadata_data["spec"] = _get_and_parse_json_file(spec_path)
+        logger.info("Spec file parsed and added to metadata.")
 
-        _, ConnectorModel = _get_connector_type_from_registry_entry(overridden_metadata_data)
-        registry_model = ConnectorModel.parse_obj(overridden_metadata_data)
+        logger.info("Parsing registry entry model.")
+        _, RegistryEntryModel = _get_connector_type_from_registry_entry(overridden_metadata_data)
+        registry_entry_model = RegistryEntryModel.parse_obj(overridden_metadata_data)
+        logger.info("Registry entry model parsed.")
 
         # Persist the registry entry to the GCS bucket.
-        persisted_paths = []
-        try:
-            for registry_entry_blob_path in registry_entry_blob_paths:
-                _persist_connector_registry_entry(bucket_name, registry_model, registry_entry_blob_path)
-                persisted_paths.append(registry_entry_blob_path)
-        except Exception as e:
-            logger.error(f"Error persisting connector registry entry to: {e}")
-            if persisted_paths:
-                bucket = get_gcs_storage_client().bucket(bucket_name)
-                for path in persisted_paths:
-                    try:
-                        bucket.delete_blob(path)
-                    except Exception as cleanup_error:
-                        logger.warning(f"Failed to clean up {path}: {cleanup_error}")
-            raise
+        for registry_entry_blob_path in registry_entry_blob_paths:
+            try:
+                logger.info(
+                    f"Persisting `{metadata_data['dockerRepository']}` {registry_type} registry entry to `{registry_entry_blob_path}`"
+                )
+                _persist_connector_registry_entry(bucket_name, registry_entry_model, registry_entry_blob_path)
+                message = f"*🤖 🟢 _Registry Entry Generation_ SUCCESS*:\nRegistry Entry: `{registry_type}.json`\nConnector: `{metadata_data['dockerRepository']}`\nGCS Bucket: `{bucket_name}`\nPath: `{registry_entry_blob_path}`."
+                send_slack_message(PUBLISH_UPDATE_CHANNEL, message)
+                logger.info("Success.")
+            except Exception as e:
+                logger.error(f"Error persisting connector registry entry to: {e}")
+                message = f"*🤖 🔴 _Registry Entry Generation_ FAILED*:\nRegistry Entry: `{registry_type}.json`\nConnector: `{metadata_data['dockerRepository']}`\nGCS Bucket: `{bucket_name}`\nPath: `{registry_entry_blob_path}`."
+                send_slack_message(PUBLISH_UPDATE_CHANNEL, message)
+                bucket = get_gcs_storage_client(gcs_creds=os.environ.get("GCS_DEV_CREDENTIALS")).bucket(DEV_BUCKET)
+                try:
+                    bucket.delete_blob(registry_entry_blob_path)
+                except Exception as cleanup_error:
+                    logger.warning(f"Failed to clean up {registry_entry_blob_path}: {cleanup_error}")
+                raise
+    else:
+        logger.info(
+            f"Registry type {registry_type} is not enabled for `{metadata_dict['data']['dockerRepository']}`, skipping generation and upload."
+        )
 
     # For latest versions that are disabled, delete any existing registry entry to remove it from the registry
     if (
@@ -470,7 +499,7 @@ def generate_and_persist_registry_entry(
             f"{registry_type} is not enabled: deleting existing {registry_type} registry entry for {metadata_dict['data']['dockerRepository']} at latest path."
         )
         latest_registry_entry_path = f"{METADATA_FOLDER}/{metadata_dict['data']['dockerRepository']}/latest/{registry_type}.json"
-        bucket = get_gcs_storage_client().bucket(bucket_name)
+        bucket = get_gcs_storage_client(gcs_creds=os.environ.get("GCS_DEV_CREDENTIALS")).bucket(DEV_BUCKET)
         existing_registry_entry = bucket.blob(latest_registry_entry_path)
         if existing_registry_entry.exists():
             bucket.delete_blob(latest_registry_entry_path)
