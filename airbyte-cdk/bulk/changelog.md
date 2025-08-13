@@ -1,9 +1,3 @@
-## Version 0.1.16
-
-**Load CDK**
-
-* **Change:** Add tests in the test suite for the dataflow pipeline.
-
 ## Version 0.1.15
 
 **Extract CDK**
