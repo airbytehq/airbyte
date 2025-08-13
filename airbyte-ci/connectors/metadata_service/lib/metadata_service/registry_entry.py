@@ -229,7 +229,7 @@ def _apply_ab_internal_defaults(metadata_data: dict) -> dict:
 
 @deep_copy_params
 def _apply_connector_releases(metadata: dict) -> Optional[pd.DataFrame]:
-    documentation_url = metadata.get("documentationUrl")
+    documentation_url = metadata["documentationUrl"]
     final_registry_releases = {}
     releases = metadata.get("releases")
     if releases is not None and releases.get("breakingChanges"):
