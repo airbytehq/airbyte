@@ -11,7 +11,7 @@ application {
 airbyteBulkConnector {
     core = 'extract'
     toolkits = ['extract-jdbc', 'extract-cdc', 'source-tests']
-    cdk = '0.601'
+    cdk = 'local'
 }
 
 dependencies {
