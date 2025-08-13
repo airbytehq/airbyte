@@ -472,16 +472,22 @@ def generate_and_persist_registry_entry(
                 logger.info(
                     f"Persisting `{metadata_data['dockerRepository']}` {registry_type} registry entry to `{registry_entry_blob_path}`"
                 )
+
                 _persist_connector_registry_entry(bucket_name, registry_entry_model, registry_entry_blob_path)
+
                 message = f"*🤖 🟢 _Registry Entry Generation_ SUCCESS*:\nRegistry Entry: `{registry_type}.json`\nConnector: `{metadata_data['dockerRepository']}`\nGCS Bucket: `{bucket_name}`\nPath: `{registry_entry_blob_path}`."
                 send_slack_message(PUBLISH_UPDATE_CHANNEL, message)
+
                 logger.info("Success.")
+
             except Exception as e:
                 logger.error(f"Error persisting connector registry entry to: {e}")
+
                 message = f"*🤖 🔴 _Registry Entry Generation_ FAILED*:\nRegistry Entry: `{registry_type}.json`\nConnector: `{metadata_data['dockerRepository']}`\nGCS Bucket: `{bucket_name}`\nPath: `{registry_entry_blob_path}`."
                 send_slack_message(PUBLISH_UPDATE_CHANNEL, message)
-                bucket = get_gcs_storage_client(gcs_creds=os.environ.get("GCS_DEV_CREDENTIALS")).bucket(DEV_BUCKET)
+
                 try:
+                    bucket = get_gcs_storage_client(gcs_creds=os.environ.get("GCS_DEV_CREDENTIALS")).bucket(DEV_BUCKET)
                     bucket.delete_blob(registry_entry_blob_path)
                 except Exception as cleanup_error:
                     logger.warning(f"Failed to clean up {registry_entry_blob_path}: {cleanup_error}")
@@ -498,8 +504,13 @@ def generate_and_persist_registry_entry(
         logger.info(
             f"{registry_type} is not enabled: deleting existing {registry_type} registry entry for {metadata_dict['data']['dockerRepository']} at latest path."
         )
+
         latest_registry_entry_path = f"{METADATA_FOLDER}/{metadata_dict['data']['dockerRepository']}/latest/{registry_type}.json"
+
         bucket = get_gcs_storage_client(gcs_creds=os.environ.get("GCS_DEV_CREDENTIALS")).bucket(DEV_BUCKET)
         existing_registry_entry = bucket.blob(latest_registry_entry_path)
         if existing_registry_entry.exists():
             bucket.delete_blob(latest_registry_entry_path)
+
+        message = f"*🤖 🗑️ _Disabled Registry Entry Deletion_ SUCCESS*:\nNote: Connector is not enabled on {registry_type} registry. Deleted existing registry entry.\nRegistry Entry: `{registry_type}.json`\nConnector: `{metadata_dict['data']['dockerRepository']}`\nGCS Bucket: `{bucket_name}`\nPath: `{latest_registry_entry_path}`"
+        send_slack_message(PUBLISH_UPDATE_CHANNEL, message)
