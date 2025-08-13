@@ -6,7 +6,11 @@ import javax.xml.xpath.XPathFactory
 import org.w3c.dom.Document
 
 allprojects {
+<<<<<<< HEAD
     version = "0.1.16"
+=======
+    version = "0.1.13"
+>>>>>>> 6770ab1ee1f (Rev version.)
     apply plugin: 'java-library'
     apply plugin: 'maven-publish'
 
