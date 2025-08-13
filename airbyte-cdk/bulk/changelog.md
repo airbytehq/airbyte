@@ -1,8 +1,14 @@
-## Version 0.1.15
+## Version 0.1.16
 
 **Load CDK**
 
 * **Change:** Add tests in the test suite for the dataflow pipeline.
+
+## Version 0.1.15
+
+**Extract CDK**
+
+* **Changed:** Extract CDK logs DB version during Check for all JDBC databases.
 
 ## Version 0.1.14
 
