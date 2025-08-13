@@ -464,5 +464,149 @@
             "console": "integratedTerminal",
             "python": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/.venv/bin/python"
         },
+        {
+            "name": "AWS IAM: Read Access Keys Only",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/main.py",
+            "args": [
+                "read",
+                "--config",
+                "integration_tests/sample_config.json",
+                "--catalog",
+                "integration_tests/access_keys_catalog.json"
+            ],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/.venv/bin/python"
+        },
+        {
+            "name": "AWS IAM: Read Secrets Manager Secrets Only",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/main.py",
+            "args": [
+                "read",
+                "--config",
+                "integration_tests/sample_config.json",
+                "--catalog",
+                "integration_tests/secretsmanager_secrets_catalog.json"
+            ],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/.venv/bin/python"
+        },
+        {
+            "name": "AWS IAM: Read Secrets Manager Secrets Only (Simple)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/main.py",
+            "args": [
+                "read",
+                "--config",
+                "integration_tests/sample_config.json",
+                "--catalog",
+                "integration_tests/secretsmanager_secrets_simple_catalog.json"
+            ],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/.venv/bin/python"
+        },
+        {
+            "name": "AWS IAM: Read KMS Keys Only",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/main.py",
+            "args": [
+                "read",
+                "--config",
+                "integration_tests/sample_config.json",
+                "--catalog",
+                "integration_tests/kms_keys_catalog.json"
+            ],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/.venv/bin/python"
+        },
+        {
+            "name": "AWS IAM: Read Credential Report Only",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/main.py",
+            "args": [
+                "read",
+                "--config",
+                "integration_tests/sample_config.json",
+                "--catalog",
+                "integration_tests/credential_report_catalog.json"
+            ],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/.venv/bin/python"
+        },
+        {
+            "name": "AWS IAM: Read EKS Clusters Only",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/main.py",
+            "args": [
+                "read",
+                "--config",
+                "integration_tests/sample_config.json",
+                "--catalog",
+                "integration_tests/eks_clusters_catalog.json"
+            ],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/.venv/bin/python"
+        },
+        {
+            "name": "AWS IAM: Read S3 Buckets Only",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/main.py",
+            "args": [
+                "read",
+                "--config",
+                "integration_tests/sample_config.json",
+                "--catalog",
+                "integration_tests/s3_buckets_catalog.json"
+            ],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/.venv/bin/python"
+        },
+        {
+            "name": "AWS IAM: Read Lambda Functions Only",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/main.py",
+            "args": [
+                "read",
+                "--config",
+                "integration_tests/sample_config.json",
+                "--catalog",
+                "integration_tests/lambda_functions_catalog.json"
+            ],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/.venv/bin/python"
+        },
+        {
+            "name": "AWS IAM: Read EC2 Instances Only",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/main.py",
+            "args": [
+                "read",
+                "--config",
+                "integration_tests/sample_config.json",
+                "--catalog",
+                "integration_tests/ec2_instances_catalog.json"
+            ],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/.venv/bin/python"
+        },
     ]
 }

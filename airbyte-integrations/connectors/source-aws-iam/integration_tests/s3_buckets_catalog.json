@@ -1,0 +1,245 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "s3_bucket",
+        "json_schema": {
+          "type": "object",
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "bucket_name": {
+              "type": "string",
+              "description": "The name of the S3 bucket"
+            },
+            "creation_date": {
+              "type": ["null", "string"],
+              "format": "date-time",
+              "description": "Date when the bucket was created"
+            },
+            "region": {
+              "type": ["null", "string"],
+              "description": "AWS region where the bucket is located"
+            },
+            "owner": {
+              "type": ["null", "object"],
+              "description": "Bucket owner information",
+              "properties": {
+                "display_name": {
+                  "type": ["null", "string"]
+                },
+                "id": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "versioning_status": {
+              "type": ["null", "string"],
+              "description": "Bucket versioning status (Enabled, Suspended, null)"
+            },
+            "mfa_delete": {
+              "type": ["null", "string"],
+              "description": "MFA delete status (Enabled, Disabled, null)"
+            },
+            "encryption": {
+              "type": ["null", "object"],
+              "description": "Server-side encryption configuration",
+              "properties": {
+                "rules": {
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "apply_server_side_encryption_by_default": {
+                        "type": ["null", "object"],
+                        "properties": {
+                          "sse_algorithm": {
+                            "type": ["null", "string"]
+                          },
+                          "kms_master_key_id": {
+                            "type": ["null", "string"]
+                          }
+                        }
+                      },
+                      "bucket_key_enabled": {
+                        "type": ["null", "boolean"]
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "public_access_block": {
+              "type": ["null", "object"],
+              "description": "Public access block configuration",
+              "properties": {
+                "block_public_acls": {
+                  "type": ["null", "boolean"]
+                },
+                "ignore_public_acls": {
+                  "type": ["null", "boolean"]
+                },
+                "block_public_policy": {
+                  "type": ["null", "boolean"]
+                },
+                "restrict_public_buckets": {
+                  "type": ["null", "boolean"]
+                }
+              }
+            },
+            "lifecycle_configuration": {
+              "type": ["null", "object"],
+              "description": "Bucket lifecycle configuration",
+              "properties": {
+                "rules": {
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": ["null", "string"]
+                      },
+                      "status": {
+                        "type": ["null", "string"]
+                      },
+                      "filter": {
+                        "type": ["null", "object"]
+                      },
+                      "expiration": {
+                        "type": ["null", "object"]
+                      },
+                      "transitions": {
+                        "type": ["null", "array"]
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "tags": {
+              "type": ["null", "array"],
+              "description": "Bucket tags",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "key": {
+                    "type": ["null", "string"]
+                  },
+                  "value": {
+                    "type": ["null", "string"]
+                  }
+                }
+              }
+            },
+            "logging": {
+              "type": ["null", "object"],
+              "description": "Bucket access logging configuration",
+              "properties": {
+                "target_bucket": {
+                  "type": ["null", "string"]
+                },
+                "target_prefix": {
+                  "type": ["null", "string"]
+                },
+                "target_grants": {
+                  "type": ["null", "array"]
+                }
+              }
+            },
+            "website_configuration": {
+              "type": ["null", "object"],
+              "description": "Static website hosting configuration",
+              "properties": {
+                "index_document": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "suffix": {
+                      "type": ["null", "string"]
+                    }
+                  }
+                },
+                "error_document": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "key": {
+                      "type": ["null", "string"]
+                    }
+                  }
+                },
+                "redirect_all_requests_to": {
+                  "type": ["null", "object"]
+                },
+                "routing_rules": {
+                  "type": ["null", "array"]
+                }
+              }
+            },
+            "cors_configuration": {
+              "type": ["null", "object"],
+              "description": "Cross-origin resource sharing (CORS) configuration",
+              "properties": {
+                "cors_rules": {
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "allowed_headers": {
+                        "type": ["null", "array"],
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "allowed_methods": {
+                        "type": ["null", "array"],
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "allowed_origins": {
+                        "type": ["null", "array"],
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "expose_headers": {
+                        "type": ["null", "array"],
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "max_age_seconds": {
+                        "type": ["null", "integer"]
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "notification_configuration": {
+              "type": ["null", "object"],
+              "description": "Event notification configuration",
+              "properties": {
+                "topic_configurations": {
+                  "type": ["null", "array"]
+                },
+                "queue_configurations": {
+                  "type": ["null", "array"]
+                },
+                "lambda_configurations": {
+                  "type": ["null", "array"]
+                },
+                "event_bridge_configuration": {
+                  "type": ["null", "object"]
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

@@ -1,0 +1,106 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "kms_key",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "KeyId": {"type": "string"},
+            "Arn": {"type": "string"},
+            "CreationDate": {"type": ["string", "null"], "format": "date-time"},
+            "Enabled": {"type": "boolean"},
+            "Description": {"type": ["string", "null"]},
+            "KeyUsage": {"type": ["string", "null"]},
+            "KeyState": {"type": ["string", "null"]},
+            "DeletionDate": {"type": ["string", "null"], "format": "date-time"},
+            "ValidTo": {"type": ["string", "null"], "format": "date-time"},
+            "Origin": {"type": ["string", "null"]},
+            "CustomKeyStoreId": {"type": ["string", "null"]},
+            "CloudHsmClusterId": {"type": ["string", "null"]},
+            "ExpirationModel": {"type": ["string", "null"]},
+            "KeyManager": {"type": ["string", "null"]},
+            "CustomerMasterKeySpec": {"type": ["string", "null"]},
+            "KeySpec": {"type": ["string", "null"]},
+            "EncryptionAlgorithms": {
+              "type": ["array", "null"],
+              "items": {"type": "string"}
+            },
+            "SigningAlgorithms": {
+              "type": ["array", "null"],
+              "items": {"type": "string"}
+            },
+            "MultiRegion": {"type": ["boolean", "null"]},
+            "MultiRegionConfiguration": {
+              "type": ["object", "null"],
+              "properties": {
+                "MultiRegionKeyType": {"type": ["string", "null"]},
+                "PrimaryKey": {
+                  "type": ["object", "null"],
+                  "properties": {
+                    "Arn": {"type": ["string", "null"]},
+                    "Region": {"type": ["string", "null"]}
+                  }
+                },
+                "ReplicaKeys": {
+                  "type": ["array", "null"],
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "Arn": {"type": ["string", "null"]},
+                      "Region": {"type": ["string", "null"]}
+                    }
+                  }
+                }
+              }
+            },
+            "PendingDeletionWindowInDays": {"type": ["integer", "null"]},
+            "MacAlgorithms": {
+              "type": ["array", "null"],
+              "items": {"type": "string"}
+            },
+            "XksKeyConfiguration": {
+              "type": ["object", "null"],
+              "properties": {
+                "Id": {"type": ["string", "null"]}
+              }
+            },
+            "Tags": {
+              "type": ["array", "null"],
+              "items": {
+                "type": "object",
+                "properties": {
+                  "TagKey": {"type": "string"},
+                  "TagValue": {"type": "string"}
+                }
+              }
+            },
+            "Aliases": {
+              "type": ["array", "null"],
+              "items": {
+                "type": "object",
+                "properties": {
+                  "AliasName": {"type": "string"},
+                  "AliasArn": {"type": "string"},
+                  "TargetKeyId": {"type": "string"},
+                  "CreationDate": {"type": ["string", "null"], "format": "date-time"},
+                  "LastUpdatedDate": {"type": ["string", "null"], "format": "date-time"}
+                }
+              }
+            },
+            "Region": {"type": "string"}
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "default_cursor_field": [],
+        "source_defined_primary_key": [["KeyId"]],
+        "namespace": null
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["KeyId"]]
+    }
+  ]
+}
