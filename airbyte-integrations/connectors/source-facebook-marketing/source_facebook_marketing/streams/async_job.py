@@ -199,6 +199,7 @@ class InsightAsyncJob(AsyncJob):
         edge_object: Union[AdAccount, Campaign, AdSet, Ad],
         params: Mapping[str, Any],
         job_timeout: Duration,
+        stream_start_date: Optional[pendulum.DateTime] = None,
         **kwargs,
     ):
         """Initialize
@@ -206,6 +207,7 @@ class InsightAsyncJob(AsyncJob):
         :param api: FB API
         :param edge_object: Account, Campaign, AdSet or Ad
         :param params: job params, required to start/restart job
+        :param stream_start_date: start date from the stream configuration
         """
         super().__init__(**kwargs)
         self._params = dict(params)
@@ -214,6 +216,7 @@ class InsightAsyncJob(AsyncJob):
             "until": self._interval.end.to_date_string(),
         }
         self._job_timeout = job_timeout
+        self._stream_start_date = stream_start_date
 
         self._edge_object = edge_object
         self._job: Optional[AdReportRun] = None
@@ -253,6 +256,14 @@ class InsightAsyncJob(AsyncJob):
         # get objects from attribution window as well (28 day + 1 current day)
         new_start = self._interval.start - pendulum.duration(days=28 + 1)
         new_start = validate_start_date(new_start)
+
+        # Respect the stream's start_date boundary
+        if self._stream_start_date and new_start < self._stream_start_date:
+            new_start = self._stream_start_date
+            logger.info(
+                f"Lookback window is greater than the stream's configured start_date, using {self._stream_start_date}"
+            )
+
         params["time_range"].update(since=new_start.to_date_string())
         params.update(fields=[pk_name], level=level)
         params.pop("time_increment")  # query all days
@@ -267,6 +278,7 @@ class InsightAsyncJob(AsyncJob):
                 params=self._params,
                 interval=self._interval,
                 job_timeout=self._job_timeout,
+                stream_start_date=self._stream_start_date,
             )
             for pk in ids
         ]
