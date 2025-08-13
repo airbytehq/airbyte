@@ -22,7 +22,7 @@ data class PartitionKey(
     val id: String,
 )
 
-open class Histogram<T>(open val map: ConcurrentMap<T, Long> = ConcurrentHashMap()) {
+open class Histogram<T>(private val map: ConcurrentMap<T, Long> = ConcurrentHashMap()) {
     fun increment(key: T): Histogram<T> {
         return this.apply { map.merge(key, 1, Long::plus) }
     }
@@ -30,6 +30,8 @@ open class Histogram<T>(open val map: ConcurrentMap<T, Long> = ConcurrentHashMap
     fun merge(other: Histogram<T>): Histogram<T> {
         return this.apply { other.map.forEach { map.merge(it.key, it.value, Long::plus) } }
     }
+
+    fun get(key: T): Long? = map[key]
 
     fun remove(key: T): Long? = map.remove(key)
 }
