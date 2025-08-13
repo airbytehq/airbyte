@@ -19,6 +19,7 @@ from metadata_service.gcs_upload import (
 )
 from metadata_service.registry import generate_and_persist_connector_registry
 from metadata_service.registry_entry import generate_and_persist_registry_entry
+from metadata_service.registry_report import generate_and_persist_registry_report
 from metadata_service.sentry import setup_sentry
 from metadata_service.specs_secrets_mask import generate_and_persist_specs_secrets_mask
 from metadata_service.stale_metadata_report import generate_and_publish_stale_metadata_report
@@ -224,4 +225,24 @@ def generate_registry_entry(bucket_name: str, metadata_file_path: pathlib.Path, 
         sentry_sdk.set_tag("operation_success", False)
         sentry_sdk.capture_exception(e)
         logger.error(f"FATAL ERROR: An error occurred when generating and persisting the registry entry: {str(e)}")
+        exit(1)
+
+
+@metadata_service.command(help="Generate the registry report and persist it to GCS.")
+@click.argument("bucket-name", type=click.STRING, required=True)
+@sentry_sdk.trace
+def generate_registry_report(bucket_name: str):
+    # Set Sentry context for the generate_specs_secrets_mask command
+    sentry_sdk.set_tag("command", "generate_registry_report")
+    sentry_sdk.set_tag("bucket_name", bucket_name)
+
+    logger.info("Starting registry report generation and upload process.")
+    try:
+        generate_and_persist_registry_report(bucket_name)
+        sentry_sdk.set_tag("operation_success", True)
+        logger.info("Registry report generation and upload process completed successfully.")
+    except Exception as e:
+        sentry_sdk.set_tag("operation_success", False)
+        sentry_sdk.capture_exception(e)
+        logger.error(f"FATAL ERROR: An error occurred when generating and persisting the registry report: {str(e)}")
         exit(1)
