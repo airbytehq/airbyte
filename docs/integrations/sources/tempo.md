@@ -39,6 +39,12 @@ This connector outputs the following streams:
 - [Customers](https://apidocs.tempo.io/#tag/Customers)
 - [Worklogs](https://apidocs.tempo.io/#tag/Worklogs)
 - [Workload Schemes](https://apidocs.tempo.io/#tag/Workload-Schemes)
+- [Plans](https://apidocs.tempo.io/#tag/Plans)
+- [Team](https://apidocs.tempo.io/#tag/Team)
+- [Timesheet Approvals](https://apidocs.tempo.io/#tag/Timesheet-Approvals)
+- [Holiday Schemes](https://apidocs.tempo.io/#tag/Holiday-Schemes)
+- [Holidays](https://apidocs.tempo.io/#tag/Holiday-Schemes/operation/getHolidays)
+- [Holiday Schemes Members](https://apidocs.tempo.io/#tag/Holiday-Schemes/operation/getWorkloadSchemeMembers)
 
 If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 
@@ -49,6 +55,7 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------- |
+| 0.4.25 | 2025-06-18 | [canonical/17](https://github.com/canonical/airbyte/pull/17) | Add new streams |
 | 0.4.24 | 2025-06-14 | [60566](https://github.com/airbytehq/airbyte/pull/60566) | Update dependencies |
 | 0.4.23 | 2025-05-11 | [60209](https://github.com/airbytehq/airbyte/pull/60209) | Update dependencies |
 | 0.4.22 | 2025-05-04 | [59636](https://github.com/airbytehq/airbyte/pull/59636) | Update dependencies |
