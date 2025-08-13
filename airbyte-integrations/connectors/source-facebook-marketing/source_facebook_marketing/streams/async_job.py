@@ -260,9 +260,7 @@ class InsightAsyncJob(AsyncJob):
         # Respect the stream's start_date boundary
         if self._stream_start_date and new_start < self._stream_start_date:
             new_start = self._stream_start_date
-            logger.info(
-                f"Lookback window is greater than the stream's configured start_date, using {self._stream_start_date}"
-            )
+            logger.info(f"Lookback window is greater than the stream's configured start_date, using {self._stream_start_date}")
 
         params["time_range"].update(since=new_start.to_date_string())
         params.update(fields=[pk_name], level=level)
