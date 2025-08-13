@@ -43,6 +43,10 @@ import static org.postgresql.PGProperty.CURRENT_SCHEMA;
 import static org.postgresql.PGProperty.PREPARE_THRESHOLD;
 import static org.postgresql.PGProperty.TCP_KEEP_ALIVE;
 
+import com.azure.core.credential.AccessToken;
+import com.azure.core.credential.TokenRequestContext;
+import com.azure.identity.ClientSecretCredential;
+import com.azure.identity.ClientSecretCredentialBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
@@ -157,6 +161,10 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   public static final String SSL_MODE_PREFER = "prefer";
   public static final String SSL_MODE_DISABLE = "disable";
   public static final String SSL_MODE_REQUIRE = "require";
+
+  public static final String ENTRA_SERVICE_PRINCIPAL_AUTH = "entra_service_principal_auth";
+  public static final String ENTRA_TENANT_ID = "entra_tenant_id";
+  public static final String ENTRA_CLIENT_ID = "entra_client_id";
 
   public static final Map<PGProperty, String> JDBC_CONNECTION_PARAMS = ImmutableMap.of(
       // Initialize parameters with prepareThreshold=0 to mitigate pgbouncer errors
@@ -343,6 +351,37 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     return catalog;
   }
 
+  private String getPassword(JsonNode jdbcConfig) {
+
+    Boolean useSpAuth = jdbcConfig.has(ENTRA_SERVICE_PRINCIPAL_AUTH) && jdbcConfig.get(ENTRA_SERVICE_PRINCIPAL_AUTH).booleanValue();
+
+    if (useSpAuth) {
+      String tenantId = jdbcConfig.has(ENTRA_TENANT_ID) ? jdbcConfig.get(ENTRA_TENANT_ID).asText() : null;
+      String clientId = jdbcConfig.has(ENTRA_CLIENT_ID) ? jdbcConfig.get(ENTRA_CLIENT_ID).asText() : null;
+      String clientSecret = jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null;
+
+      ClientSecretCredential credential = new ClientSecretCredentialBuilder()
+          .clientId(clientId)
+          .clientSecret(clientSecret)
+          .tenantId(tenantId)
+          .build();
+
+      TokenRequestContext request = new TokenRequestContext()
+          .addScopes("https://ossrdbms-aad.database.windows.net/.default");
+
+      AccessToken accessToken = credential
+          .getToken(request)
+          .retry(3L)
+          .blockOptional()
+          .orElseThrow(() -> new RuntimeException("Failed to retrieve token for Entra service principal"));
+
+      return accessToken.getToken();
+
+    } else {
+      return jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null;
+    }
+  }
+
   @Override
   public JdbcDatabase createDatabase(final JsonNode sourceConfig) throws SQLException {
     final JsonNode jdbcConfig = toDatabaseConfig(sourceConfig);
@@ -350,7 +389,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     // Create the data source
     final DataSource dataSource = DataSourceFactory.create(
         jdbcConfig.has(JdbcUtils.USERNAME_KEY) ? jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText() : null,
-        jdbcConfig.has(JdbcUtils.PASSWORD_KEY) ? jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText() : null,
+        getPassword(sourceConfig),
         driverClassName,
         jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText(),
         connectionProperties,
