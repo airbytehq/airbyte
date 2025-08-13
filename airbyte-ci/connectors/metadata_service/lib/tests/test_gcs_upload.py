@@ -708,17 +708,21 @@ def test_upload_metadata_to_gcs_with_manifest_files(
     expected_manifest_file_path = metadata_file_path.parent / MANIFEST_FILE_NAME
     expected_components_py_file_path = metadata_file_path.parent / COMPONENTS_PY_FILE_NAME
 
-    # Mock file paths to conditionally exist
-    original_exists = Path.exists
+    # Work with the existing global Path.exists mock by temporarily extending it
+    # Store the current mock function so we can restore it later
+    current_fake_exists = Path.exists
 
-    def fake_exists(self):
+    def extended_fake_exists(self):
+        # Handle our test-specific files first
         if self == expected_manifest_file_path:
             return manifest_exists
         if self == expected_components_py_file_path:
             return components_py_exists
-        return original_exists(self)
+        # Delegate to the existing global mock for everything else (docs, etc.)
+        return current_fake_exists(self)
 
-    monkeypatch.setattr(Path, "exists", fake_exists)
+    # Temporarily replace the global mock with our extended version
+    monkeypatch.setattr(Path, "exists", extended_fake_exists)
 
     # mock create_zip_and_get_sha256
     mocker.patch.object(gcs_upload, "create_zip_and_get_sha256", mocker.Mock(return_value="fake_zip_sha256"))
