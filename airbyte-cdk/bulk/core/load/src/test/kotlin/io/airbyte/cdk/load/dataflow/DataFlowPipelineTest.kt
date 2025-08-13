@@ -29,7 +29,7 @@ class DataFlowPipelineTest {
         )
 
     @Test
-    fun `test pipeline execution flow`() = runTest {
+    fun `pipeline execution flow`() = runTest {
         // Given
         val initialIO = mockk<DataFlowStageIO>()
         val input = flowOf(initialIO)

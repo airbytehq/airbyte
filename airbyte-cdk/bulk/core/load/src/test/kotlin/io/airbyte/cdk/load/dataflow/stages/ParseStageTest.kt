@@ -21,6 +21,7 @@ import io.mockk.junit5.MockKExtension
 import io.mockk.verify
 import java.util.UUID
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertSame
@@ -65,7 +66,7 @@ class ParseStageTest {
 
     @Test
     fun `given valid input, when apply is called, then it should munge the raw record and update the IO object`() =
-        runBlocking {
+        runTest {
             // Given
             val input =
                 DataFlowStageIO(raw = rawRecord, partitionKey = PartitionKey("test-partition"))

@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test
 
 class SizeTriggerTest {
     @Test
-    fun `test trigger not fired when under threshold`() {
+    fun `trigger not fired when under threshold`() {
         val trigger = SizeTrigger(100)
         trigger.increment(50)
         assertFalse(trigger.isComplete())
@@ -19,7 +19,7 @@ class SizeTriggerTest {
     }
 
     @Test
-    fun `test trigger fired when at threshold`() {
+    fun `trigger fired when at threshold`() {
         val trigger = SizeTrigger(100)
         trigger.increment(100)
         assertTrue(trigger.isComplete())
@@ -27,7 +27,7 @@ class SizeTriggerTest {
     }
 
     @Test
-    fun `test trigger fired when over threshold`() {
+    fun `trigger fired when over threshold`() {
         val trigger = SizeTrigger(100)
         trigger.increment(150)
         assertTrue(trigger.isComplete())
@@ -35,7 +35,7 @@ class SizeTriggerTest {
     }
 
     @Test
-    fun `test multiple increments`() {
+    fun `multiple increments`() {
         val trigger = SizeTrigger(100)
         trigger.increment(50)
         assertFalse(trigger.isComplete())

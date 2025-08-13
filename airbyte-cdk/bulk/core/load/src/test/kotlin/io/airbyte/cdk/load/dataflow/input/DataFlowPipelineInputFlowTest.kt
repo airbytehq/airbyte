@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test
 
 class DataFlowPipelineInputFlowTest {
     @Test
-    fun `test checkpoint message`() = runBlocking {
+    fun `checkpoint message`() = runBlocking {
         // Given
         val checkpointMessage = mockk<CheckpointMessage>()
         val inputFlow = flowOf<DestinationMessage>(checkpointMessage)
@@ -44,7 +44,7 @@ class DataFlowPipelineInputFlowTest {
     }
 
     @Test
-    fun `test destination record`() = runBlocking {
+    fun `destination record`() = runBlocking {
         // Given
         val stream = mockk<DestinationStream>()
         every { stream.schema } returns mockk()
@@ -81,7 +81,7 @@ class DataFlowPipelineInputFlowTest {
     }
 
     @Test
-    fun `test other message`() = runBlocking {
+    fun `other message`() = runBlocking {
         // Given
         val undefinedMessage = Undefined
         val inputFlow = flowOf<DestinationMessage>(undefinedMessage)

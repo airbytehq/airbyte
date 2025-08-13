@@ -39,14 +39,14 @@ class PipelineCompletionHandlerTest {
     }
 
     @Test
-    fun `test apply with exception`() = runTest {
+    fun `apply with exception`() = runTest {
         val exception = RuntimeException("test exception")
 
         assertThrows<RuntimeException> { handler.apply(exception) }
     }
 
     @Test
-    fun `test apply successful completion`() = runTest {
+    fun `apply successful completion`() = runTest {
         val aggregator1 = mockk<Aggregate>(relaxed = true)
         val histogram1 = PartitionHistogram()
         val entry1 = createAggregateEntry(aggregator1, histogram1)

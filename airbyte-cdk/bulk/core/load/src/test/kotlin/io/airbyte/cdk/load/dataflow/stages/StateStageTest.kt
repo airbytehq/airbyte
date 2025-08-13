@@ -26,7 +26,7 @@ class StateStageTest {
     }
 
     @Test
-    fun `test apply happy path`() = runTest {
+    fun `apply happy path`() = runTest {
         // Arrange
         val histogram = mockk<PartitionHistogram>()
         val input = DataFlowStageIO(partitionHistogram = histogram)
@@ -40,7 +40,7 @@ class StateStageTest {
     }
 
     @Test
-    fun `test apply with null partition histogram throws exception`() = runTest {
+    fun `apply with null partition histogram throws exception`() = runTest {
         val input = DataFlowStageIO(partitionHistogram = null)
         assertFailsWith<NullPointerException> { stateStage.apply(input) }
         verify(exactly = 0) { stateStore.acceptFlushedCounts(any()) }

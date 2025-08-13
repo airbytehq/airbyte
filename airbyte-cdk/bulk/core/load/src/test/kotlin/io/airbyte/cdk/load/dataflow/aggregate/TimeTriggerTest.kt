@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test
 class TimeTriggerTest {
 
     @Test
-    fun `test time trigger logic`() {
+    fun `time trigger logic`() {
         val triggerSize = 1000L // 1 second
         val trigger = TimeTrigger(triggerSize)
 
@@ -34,7 +34,7 @@ class TimeTriggerTest {
     }
 
     @Test
-    fun `test updating timestamp resets the trigger`() {
+    fun `updating timestamp resets the trigger`() {
         val triggerSize = 1000L
         val trigger = TimeTrigger(triggerSize)
 

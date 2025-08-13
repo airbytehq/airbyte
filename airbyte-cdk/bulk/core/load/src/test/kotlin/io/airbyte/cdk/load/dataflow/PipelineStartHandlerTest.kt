@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test
 
 class PipelineStartHandlerTest {
     @Test
-    fun `test run`() {
+    fun `run`() {
         // Given
         val reconciler = mockk<StateReconciler>(relaxed = true)
         val pipelineStartHandler = PipelineStartHandler(reconciler)

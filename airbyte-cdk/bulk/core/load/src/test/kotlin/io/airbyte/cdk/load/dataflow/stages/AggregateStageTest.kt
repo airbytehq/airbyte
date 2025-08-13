@@ -69,4 +69,98 @@ class AggregateStageTest {
             )
         }
     }
+
+    @Test
+    fun `should not emit if no complete aggregate is ready`() = runTest {
+        val streamDescriptor = DestinationStream.Descriptor("test_namespace", "test_name")
+        val emittedAtMs = 1L
+        val partitionKey = PartitionKey("partition_id_1")
+        val recordDto =
+            RecordDTO(
+                fields = emptyMap(),
+                partitionKey = partitionKey,
+                sizeBytes = 100L,
+                emittedAtMs = emittedAtMs
+            )
+
+        val streamMock =
+            mockk<DestinationStream> { every { mappedDescriptor } returns streamDescriptor }
+        val rawMock = mockk<DestinationRecordRaw> { every { stream } returns streamMock }
+        val input = DataFlowStageIO(raw = rawMock, munged = recordDto)
+
+        coEvery { store.acceptFor(streamDescriptor, recordDto) } returns Unit
+        coEvery { store.removeNextComplete(emittedAtMs) } returns null // No aggregate ready
+
+        val outputFlow = mockk<FlowCollector<DataFlowStageIO>>(relaxed = true)
+
+        stage.apply(input, outputFlow)
+
+        coVerify { store.acceptFor(streamDescriptor, recordDto) }
+        coVerify { store.removeNextComplete(emittedAtMs) }
+        coVerify(exactly = 0) { outputFlow.emit(any()) } // Verify no emission
+    }
+
+    @Test
+    fun `should emit multiple times if multiple complete aggregates are ready`() = runTest {
+        val streamDescriptor = DestinationStream.Descriptor("test_namespace", "test_name")
+        val emittedAtMs = 1L
+        val partitionKey = PartitionKey("partition_id_1")
+        val recordDto =
+            RecordDTO(
+                fields = emptyMap(),
+                partitionKey = partitionKey,
+                sizeBytes = 100L,
+                emittedAtMs = emittedAtMs
+            )
+
+        val streamMock =
+            mockk<DestinationStream> { every { mappedDescriptor } returns streamDescriptor }
+        val rawMock = mockk<DestinationRecordRaw> { every { stream } returns streamMock }
+        val input = DataFlowStageIO(raw = rawMock, munged = recordDto)
+
+        val mockAggregate1 = mockk<Aggregate>()
+        val mockPartitionHistogram1 = mockk<PartitionHistogram>()
+        val aggregateEntry1 =
+            mockk<AggregateEntry> {
+                every { value } returns mockAggregate1
+                every { partitionHistogram } returns mockPartitionHistogram1
+            }
+
+        val mockAggregate2 = mockk<Aggregate>()
+        val mockPartitionHistogram2 = mockk<PartitionHistogram>()
+        val aggregateEntry2 =
+            mockk<AggregateEntry> {
+                every { value } returns mockAggregate2
+                every { partitionHistogram } returns mockPartitionHistogram2
+            }
+
+        coEvery { store.acceptFor(streamDescriptor, recordDto) } returns Unit
+        coEvery { store.removeNextComplete(emittedAtMs) } returns
+            aggregateEntry1 andThen
+            aggregateEntry2 andThen
+            null
+
+        val outputFlow = mockk<FlowCollector<DataFlowStageIO>>(relaxed = true)
+
+        stage.apply(input, outputFlow)
+
+        coVerify { store.acceptFor(streamDescriptor, recordDto) }
+        coVerify { store.removeNextComplete(emittedAtMs) }
+        coVerify(exactly = 1) {
+            outputFlow.emit(
+                DataFlowStageIO(
+                    aggregate = mockAggregate1,
+                    partitionHistogram = mockPartitionHistogram1
+                )
+            )
+        }
+        coVerify(exactly = 1) {
+            outputFlow.emit(
+                DataFlowStageIO(
+                    aggregate = mockAggregate2,
+                    partitionHistogram = mockPartitionHistogram2
+                )
+            )
+        }
+    }
 }
