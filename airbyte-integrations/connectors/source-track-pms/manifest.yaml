@@ -6268,13 +6268,6 @@ definitions:
             field_path:
               - _embedded
               - folios
-          record_filter:
-            type: RecordFilter
-            condition: >-
-              {{  (record._embedded.reservation.quoteBreakdown.grandTotal |
-              float > 0) or
-              (record._embedded.reservation.quoteBreakdown.payments | float > 0)
-              }}
           schema_normalization: Default
       primary_key:
         - id
@@ -7500,7 +7493,7 @@ metadata:
       responsesAreSuccessful: true
     folios_transactions:
       hasRecords: true
-      streamHash: 6f440996d63e36609213138d0599a7ad8279bf95
+      streamHash: d20e2cc3cfccd7ddb981f9197cf8d6df56e518f3
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -7626,7 +7619,7 @@ metadata:
       responsesAreSuccessful: true
     folios_transactions_parent:
       hasRecords: true
-      streamHash: 91a6a21b22cdfc3bfd8deaec37caa229ce79449c
+      streamHash: 55a7d9503d084e230cad9fdef6a314ee07312a93
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
