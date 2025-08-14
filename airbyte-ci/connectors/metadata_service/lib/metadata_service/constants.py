@@ -47,3 +47,17 @@ SPECS_SECRETS_MASK_FILE_NAME = "specs_secrets_mask.yaml"
 
 CONNECTOR_DEPENDENCY_FOLDER = "connector_dependencies"
 CONNECTOR_DEPENDENCY_FILE_NAME = "dependencies.json"
+
+
+def get_public_url_for_gcs_file(bucket_name: str, file_path: str, cdn_url: Optional[str] = None) -> str:
+    """Get the public URL to a file in the GCS bucket.
+
+    Args:
+        bucket_name: The name of the GCS bucket.
+        file_path: The path to the file in the bucket.
+        cdn_url: The base URL of the CDN that serves the bucket.
+
+    Returns:
+        The public URL to the file.
+    """
+    return f"{cdn_url}/{file_path}" if cdn_url else f"{DEFAULT_ASSET_URL}/{bucket_name}/{file_path}"
