@@ -43,12 +43,14 @@ TEST_CONFIG.update(
 
 TEST_INSTANCE = SourceTwilio(TEST_CONFIG, None, None)
 
+
 def find_stream(stream_name, config, state=None):
     streams = SourceTwilio(config, None, state).streams(config=config)
     for stream in streams:
         if stream.name == stream_name:
             return stream
     raise ValueError(f"Stream {stream_name} not found")
+
 
 def read_full_refresh(stream_instance):
     res = []
@@ -266,11 +268,7 @@ class TestIncrementalTwilioStream:
 
 
 class TestTwilioNestedStream:
-    CONFIG = {
-        "account_sid": "AC_TEST",
-        "auth_token": "secret",
-        "start_date": "2022-01-01T00:00:00Z"
-    }
+    CONFIG = {"account_sid": "AC_TEST", "auth_token": "secret", "start_date": "2022-01-01T00:00:00Z"}
 
     # Add this test when message media is migrated to low code
     # @pytest.mark.parametrize(
@@ -302,29 +300,19 @@ class TestTwilioNestedStream:
                 {
                     "sid": "AC123",
                     "date_created": "2022-01-01T00:00:00Z",
-                    "subresource_uris": {
-                        "addresses": "/2010-04-01/Accounts/AC123/Addresses.json"
-                    },
+                    "subresource_uris": {"addresses": "/2010-04-01/Accounts/AC123/Addresses.json"},
                 }
             ]
         }
         requests_mock.get(f"{BASE}/Accounts.json", json=accounts_json, status_code=200)
 
         # 2) Child: Addresses (collection key must match the stream name: "addresses")
-        addresses_json = {
-            "addresses": [
-                {"sid": "AD1", "account_sid": "AC123"}
-            ]
-        }
+        addresses_json = {"addresses": [{"sid": "AD1", "account_sid": "AC123"}]}
         requests_mock.get(f"{BASE}/Accounts/AC123/Addresses.json", json=addresses_json, status_code=200)
 
         # 3) Grandchild: DependentPhoneNumbers (collection key must be "dependent_phone_numbers")
         if stream_name == "dependent_phone_numbers":
-            dpn_json = {
-                "dependent_phone_numbers": [
-                    {"sid": "PN1", "account_sid": "AC123"}
-                ]
-            }
+            dpn_json = {"dependent_phone_numbers": [{"sid": "PN1", "account_sid": "AC123"}]}
             requests_mock.get(
                 f"{BASE}/Accounts/AC123/Addresses/AD1/DependentPhoneNumbers.json",
                 json=dpn_json,
