@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Uploads the metadata (+SBOM+spec cache) to GCS. Can also upload the java jar for java connectors.
-# Usage: ./poe-tasks/upload-connector-metadata.sh --name destination-bigquery [--pre-release] [--main-release] [--publish-java-jar]
+# Uploads the metadata (+SBOM+spec cache) to GCS. Can also upload the java tar for java connectors.
+# Usage: ./poe-tasks/upload-connector-metadata.sh --name destination-bigquery [--pre-release] [--main-release] [--publish-java-tar]
 # You must have three environment variables set (GCS_CREDENTIALS, METADATA_SERVICE_GCS_CREDENTIALS, SPEC_CACHE_GCS_CREDENTIALS),
 # each containing a JSON-formatted GCP service account key.
 # SPEC_CACHE_GCS_CREDENTIALS needs write access to `gs://$spec_cache_bucket/specs`.
