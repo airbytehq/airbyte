@@ -77,17 +77,6 @@ streams:
     name: tasks
     retriever:
       type: SimpleRetriever
-      decoder:
-        type: JsonDecoder
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestPath
-        pagination_strategy:
-          type: CursorPagination
-          cursor_value: "{{ response.links.next}}"
-          stop_condition: "{{ not response.links.next}}"
-          page_size: null
       requester:
         type: HttpRequester
         url: "{{ config['base_url']}}/api/v2/tasks"
@@ -131,6 +120,14 @@ streams:
           ordering: "-updated"
           fields[Task]: >-
             id,updated,created,__web_url__,deleted,is_active,inactive_date,due,due_after,pm_date,tolerance_start,tolerance_end,invoiced_date,name,description,scope_of_works,address,coord_lat,coord_lng,access_note,access_window,access_procedure,access_schedule,access_code,internal_note,workorder_url,technician_note,partner_uid,priority,sla_incident_notification_at,sla_due_inprogress,sla_due_inspected,charge_type,notes,invoice_note,estimated_duration,authorisation_name,authorisation_ref,authorisation_date,contractor_note,progress_total,progress_performed,status_changed_inprogress,status_changed_inspected,status_changed_complete,scheduled_at,app_link,timezone,callout,extra_fields,category,servicegroup,client,property,billingcard,assigned_to,assigned_office,technician,round,branch,costcentre,parent_task,author,contractor,contractor_assigned_technician,contractor_authorisation_limit,updated_by,status,zone,project,sla,get_absolute_url,is_editable
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.links.next}}"
+          stop_condition: "{{ not response.links.next}}"
       record_selector:
         type: RecordSelector
         extractor:
