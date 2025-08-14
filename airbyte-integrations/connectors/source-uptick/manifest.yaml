@@ -882,7 +882,6 @@ streams:
           type: CursorPagination
           cursor_value: "{{ response.links.next}}"
           stop_condition: "{{ not response.links.next}}"
-          page_size: null
       requester:
         type: HttpRequester
         url: "{{ config['base_url']}}/api/v2/taskcategories"
@@ -973,7 +972,6 @@ streams:
           type: CursorPagination
           cursor_value: "{{ response.links.next}}"
           stop_condition: "{{ not response.links.next}}"
-          page_size: null
       requester:
         type: HttpRequester
         url: "{{ config['base_url']}}/api/v2/clients"
@@ -1574,7 +1572,6 @@ streams:
           type: CursorPagination
           cursor_value: "{{ response.links.next}}"
           stop_condition: "{{ not response.links.next}}"
-          page_size: null
       requester:
         type: HttpRequester
         url: "{{ config['base_url']}}/api/v2/clientgroups"
@@ -1747,7 +1744,6 @@ streams:
           type: CursorPagination
           cursor_value: "{{ response.links.next}}"
           stop_condition: "{{ not response.links.next}}"
-          page_size: null
       requester:
         type: HttpRequester
         url: "{{ config['base_url']}}/api/v2/properties"
@@ -2140,7 +2136,6 @@ streams:
           type: CursorPagination
           cursor_value: "{{ response.links.next}}"
           stop_condition: "{{ not response.links.next}}"
-          page_size: null
       requester:
         type: HttpRequester
         url: "{{ config['base_url']}}/api/v2/invoices"
@@ -2426,7 +2421,6 @@ streams:
           type: CursorPagination
           cursor_value: "{{ response.links.next}}"
           stop_condition: "{{ not response.links.next}}"
-          page_size: null
       requester:
         type: HttpRequester
         url: "{{ config['base_url']}}/api/v2/projects"
@@ -2676,7 +2670,6 @@ streams:
           type: CursorPagination
           cursor_value: "{{ response.links.next}}"
           stop_condition: "{{ not response.links.next}}"
-          page_size: null
       requester:
         type: HttpRequester
         url: "{{ config['base_url']}}/api/v2/servicequotes"
@@ -2956,7 +2949,6 @@ streams:
           type: CursorPagination
           cursor_value: "{{ response.links.next}}"
           stop_condition: "{{ not response.links.next}}"
-          page_size: null
       requester:
         type: HttpRequester
         url: "{{ config['base_url']}}/api/v2/defectquotes"
@@ -3206,7 +3198,6 @@ streams:
           type: CursorPagination
           cursor_value: "{{ response.links.next}}"
           stop_condition: "{{ not response.links.next}}"
-          page_size: null
       requester:
         type: HttpRequester
         url: "{{ config['base_url']}}/api/v2/suppliers"
@@ -3396,7 +3387,6 @@ streams:
           type: CursorPagination
           cursor_value: "{{ response.links.next}}"
           stop_condition: "{{ not response.links.next}}"
-          page_size: null
       requester:
         type: HttpRequester
         url: "{{ config['base_url']}}/api/v2/purchaseorders"
@@ -3642,7 +3632,6 @@ streams:
           type: CursorPagination
           cursor_value: "{{ response.links.next}}"
           stop_condition: "{{ not response.links.next}}"
-          page_size: null
       requester:
         type: HttpRequester
         url: "{{ config['base_url']}}/api/v2/assets"
@@ -3943,7 +3932,6 @@ streams:
           type: CursorPagination
           cursor_value: "{{ response.links.next}}"
           stop_condition: "{{ not response.links.next}}"
-          page_size: null
       requester:
         type: HttpRequester
         url: "{{ config['base_url']}}/api/v2/routines"
@@ -4123,7 +4111,6 @@ streams:
           type: CursorPagination
           cursor_value: "{{ response.links.next}}"
           stop_condition: "{{ not response.links.next}}"
-          page_size: null
       requester:
         type: HttpRequester
         url: "{{ config['base_url']}}/api/v2/billingcards"
@@ -4274,7 +4261,6 @@ streams:
           type: CursorPagination
           cursor_value: "{{ response.links.next}}"
           stop_condition: "{{ not response.links.next}}"
-          page_size: null
       requester:
         type: HttpRequester
         url: "{{ config['base_url']}}/api/v2/purchaseorderbills"
@@ -4424,7 +4410,6 @@ streams:
           type: CursorPagination
           cursor_value: "{{ response.links.next}}"
           stop_condition: "{{ not response.links.next}}"
-          page_size: null
       requester:
         type: HttpRequester
         url: "{{ config['base_url']}}/api/v2/purchaseorderdockets"
@@ -4537,7 +4522,6 @@ streams:
           type: CursorPagination
           cursor_value: "{{ response.links.next}}"
           stop_condition: "{{ not response.links.next}}"
-          page_size: null
       requester:
         type: HttpRequester
         url: "{{ config['base_url']}}/api/v2/invoicelineitems"
