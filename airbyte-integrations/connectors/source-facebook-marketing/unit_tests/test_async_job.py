@@ -429,7 +429,7 @@ class TestInsightAsyncJob:
         # Set up a scenario where job is from Aug 5th, but stream start_date is Aug 1st
         job_date = today.replace(month=8, day=5)
         stream_start_date = today.replace(month=8, day=1)
-        
+
         params = {"time_increment": 1, "breakdowns": ["product_id"]}
         job = InsightAsyncJob(
             api=api,
@@ -439,26 +439,26 @@ class TestInsightAsyncJob:
             job_timeout=pendulum.duration(minutes=60),
             stream_start_date=stream_start_date,  # This is the key part
         )
-        
+
         # Mock the get_insights call to return some campaign IDs
         mocker.patch.object(
             AdAccount,
-            "get_insights", 
+            "get_insights",
             return_value=[{"campaign_id": 1}, {"campaign_id": 2}],
         )
-        
+
         small_jobs = job.split_job()
-        
+
         # Verify that the discovery query used stream_start_date (Aug 1) instead of 29 days back (July 7)
         AdAccount.get_insights.assert_called_once()
         call_args = AdAccount.get_insights.call_args[1]  # Get keyword arguments
-        
+
         expected_since = stream_start_date.to_date_string()  # Should be "2024-08-01" (or current year)
         actual_since = call_args["params"]["time_range"]["since"]
-        
+
         assert actual_since == expected_since, f"Expected discovery query to start from {expected_since}, but got {actual_since}"
         assert len(small_jobs) == 2
-        
+
         # Verify that child jobs also receive the stream_start_date
         for small_job in small_jobs:
             assert small_job._stream_start_date == stream_start_date
@@ -467,7 +467,7 @@ class TestInsightAsyncJob:
         """Test that split job falls back to 29-day lookback when no start_date boundary is provided"""
         today = pendulum.today(tz=pendulum.tz.UTC).date()
         job_date = today.replace(month=8, day=5)
-        
+
         params = {"time_increment": 1, "breakdowns": ["product_id"]}
         job = InsightAsyncJob(
             api=api,
@@ -477,24 +477,24 @@ class TestInsightAsyncJob:
             job_timeout=pendulum.duration(minutes=60),
             # No stream_start_date provided
         )
-        
+
         # Mock the get_insights call
         mocker.patch.object(
             AdAccount,
-            "get_insights", 
+            "get_insights",
             return_value=[{"campaign_id": 1}],
         )
-        
+
         small_jobs = job.split_job()
-        
+
         # Verify that without start_date boundary, it uses the full 29-day lookback
         AdAccount.get_insights.assert_called_once()
         call_args = AdAccount.get_insights.call_args[1]
-        
+
         # Should go back 29 days from job_date
         expected_since_date = job_date - pendulum.duration(days=29)
         actual_since = call_args["params"]["time_range"]["since"]
-        
+
         # The exact date might differ due to validate_start_date, but it should be much earlier than job_date
         actual_since_date = pendulum.parse(actual_since).date()
         assert actual_since_date < job_date - pendulum.duration(days=20), "Should use significant lookback when no boundary set"
