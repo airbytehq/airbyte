@@ -12,7 +12,7 @@ A single sync might have some tables configured for Full Refresh replication and
 
 The Airbyte Protocol outputs records from sources. Records from `UPDATE` and `DELETE` statements appear the same way as records from `INSERT` statements. We support different options for how to sync this data into destinations using primary keys, so you can choose to append this data, delete in place, etc.
 
-We add some metadata columns for CDC sources which all begin with the `_ab_cdc_` prefix. The actual columns syced will vary per srouce, but might look like:
+We add some metadata columns for CDC sources which all begin with the `_ab_cdc_` prefix. The actual columns synced will vary per source, but might look like:
 
 - `_ab_cdc_lsn` of `_ab_cdc_cursor` the point in the log where the record was retrieved
 - `_ab_cdc_log_file` & `_ab_cdc_log_pos` \(specific to mysql source\) is the file name and position in the file where the record was retrieved
