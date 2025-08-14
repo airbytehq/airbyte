@@ -1,0 +1,182 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "ec2_instance",
+        "json_schema": {
+          "type": "object",
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "InstanceId": {
+              "type": "string",
+              "description": "The ID of the instance"
+            },
+            "ImageId": {
+              "type": ["string", "null"],
+              "description": "The ID of the AMI used to launch the instance"
+            },
+            "State": {
+              "type": ["object", "null"],
+              "description": "The current state of the instance",
+              "properties": {
+                "Code": {"type": ["integer", "null"]},
+                "Name": {"type": ["string", "null"]}
+              }
+            },
+            "PrivateDnsName": {
+              "type": ["string", "null"],
+              "description": "The private DNS hostname of the instance"
+            },
+            "PublicDnsName": {
+              "type": ["string", "null"],
+              "description": "The public DNS name of the instance"
+            },
+            "InstanceType": {
+              "type": ["string", "null"],
+              "description": "The instance type"
+            },
+            "Platform": {
+              "type": ["string", "null"],
+              "description": "The platform of the instance"
+            },
+            "SubnetId": {
+              "type": ["string", "null"],
+              "description": "The ID of the subnet in which the instance is running"
+            },
+            "VpcId": {
+              "type": ["string", "null"],
+              "description": "The ID of the VPC in which the instance is running"
+            },
+            "PrivateIpAddress": {
+              "type": ["string", "null"],
+              "description": "The private IPv4 address of the instance"
+            },
+            "PublicIpAddress": {
+              "type": ["string", "null"],
+              "description": "The public IPv4 address of the instance"
+            },
+            "Architecture": {
+              "type": ["string", "null"],
+              "description": "The architecture of the image"
+            },
+            "RootDeviceType": {
+              "type": ["string", "null"],
+              "description": "The root device type used by the AMI"
+            },
+            "RootDeviceName": {
+              "type": ["string", "null"],
+              "description": "The device name of the root device volume"
+            },
+            "BlockDeviceMappings": {
+              "type": ["array", "null"],
+              "description": "Any block device mapping entries for the instance",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "DeviceName": {"type": ["string", "null"]},
+                  "Ebs": {
+                    "type": ["object", "null"],
+                    "properties": {
+                      "VolumeId": {"type": ["string", "null"]},
+                      "Status": {"type": ["string", "null"]},
+                      "AttachTime": {"type": ["string", "null"], "format": "date-time"},
+                      "DeleteOnTermination": {"type": ["boolean", "null"]}
+                    }
+                  }
+                }
+              }
+            },
+            "VirtualizationType": {
+              "type": ["string", "null"],
+              "description": "The virtualization type of the instance"
+            },
+            "Tags": {
+              "type": ["array", "null"],
+              "description": "Any tags assigned to the instance",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "Key": {"type": ["string", "null"]},
+                  "Value": {"type": ["string", "null"]}
+                }
+              }
+            },
+            "SecurityGroups": {
+              "type": ["array", "null"],
+              "description": "The security groups for the instance",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "GroupName": {"type": ["string", "null"]},
+                  "GroupId": {"type": ["string", "null"]}
+                }
+              }
+            },
+            "IamInstanceProfile": {
+              "type": ["object", "null"],
+              "description": "The IAM instance profile associated with the instance",
+              "properties": {
+                "Arn": {"type": ["string", "null"]},
+                "Id": {"type": ["string", "null"]}
+              }
+            },
+            "EbsOptimized": {
+              "type": ["boolean", "null"],
+              "description": "Indicates whether the instance is optimized for Amazon EBS I/O"
+            },
+            "LaunchTime": {
+              "type": ["string", "null"],
+              "format": "date-time",
+              "description": "The time the instance was launched"
+            },
+            "Monitoring": {
+              "type": ["object", "null"],
+              "description": "The monitoring for the instance",
+              "properties": {
+                "State": {"type": ["string", "null"]}
+              }
+            },
+            "Hypervisor": {
+              "type": ["string", "null"],
+              "description": "The hypervisor type of the instance"
+            },
+            "NetworkInterfaces": {
+              "type": ["array", "null"],
+              "description": "The network interfaces for the instance",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "NetworkInterfaceId": {"type": ["string", "null"]},
+                  "SubnetId": {"type": ["string", "null"]},
+                  "VpcId": {"type": ["string", "null"]},
+                  "Description": {"type": ["string", "null"]},
+                  "Status": {"type": ["string", "null"]},
+                  "MacAddress": {"type": ["string", "null"]},
+                  "PrivateIpAddress": {"type": ["string", "null"]}
+                }
+              }
+            },
+            "MetadataOptions": {
+              "type": ["object", "null"],
+              "description": "The metadata options for the instance",
+              "properties": {
+                "State": {"type": ["string", "null"]},
+                "HttpTokens": {"type": ["string", "null"]},
+                "HttpEndpoint": {"type": ["string", "null"]}
+              }
+            },
+            "Region": {
+              "type": "string",
+              "description": "AWS region where the instance is located"
+            }
+          }
+        },
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "iam_access_key",
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "AccessKeyId": {"type": "string"},
+            "UserName": {"type": "string"},
+            "UserArn": {"type": "string"},
+            "Status": {"type": "string", "enum": ["Active", "Inactive"]},
+            "CreateDate": {"type": "string", "format": "date-time"},
+            "LastUsedDate": {"type": ["string", "null"], "format": "date-time"},
+            "LastUsedRegion": {"type": ["string", "null"]},
+            "LastUsedServiceName": {"type": ["string", "null"]}
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "default_cursor_field": [],
+        "source_defined_primary_key": [["AccessKeyId"]],
+        "namespace": null
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["AccessKeyId"]]
+    }
+  ]
+}

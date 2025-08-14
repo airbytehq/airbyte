@@ -1,5 +1,5 @@
 {
-  "role_arn": "arn:aws:iam::174522763890:role/FabrixScannerReadOnly",
-  "external_id": "99225dda35cd4c5791c2f16a",
+  "role_arn": "arn:aws:iam::038462792154:role/FabrixScannerReadOnly",
+  "external_id": "14df3af3a20f422a85e9a5ab",
   "num_workers": 10
 }

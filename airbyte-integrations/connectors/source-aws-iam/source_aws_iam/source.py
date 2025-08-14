@@ -22,6 +22,7 @@ from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger
 # Local imports
 # Import streams (exclude deprecated SSOAdmin streams)
 from .streams import (
+    IAMAccessKeysStream,
     IAMSAMLProvidersStream,
     IAMGroupInlinePoliciesStream,
     IAMGroupPolicyBindingsStream,
@@ -35,6 +36,13 @@ from .streams import (
     IAMUserInlinePoliciesStream,
     IAMUserPolicyBindingsStream,
     IAMUsersStream,
+    IAMCredentialReportStream,
+    SecretsManagerSecretsStream,
+    KMSKeysStream,
+    EKSClustersStream,
+    S3BucketsStream,
+    LambdaFunctionsStream,
+    EC2InstancesStream,
     IdentityCenterGroupMembershipStream,
     IdentityCenterGroupStream,
     IdentityCenterInstanceStream,
@@ -155,6 +163,16 @@ class SourceAwsIam(ConcurrentSourceAdapter):
             return self._get_client_with_assume_role(aws_service="identitystore", role_arn=role_arn, external_id=external_id, region=region)
 
         return boto3.client("identitystore")
+
+    def _get_secretsmanager_client(self, config: Mapping[str, Any]):
+        role_arn = config.get("role_arn")
+        external_id = config.get("external_id")
+        region = config.get("aws_region", 'us-east-1')
+
+        if role_arn:
+            return self._get_client_with_assume_role(aws_service="secretsmanager", role_arn=role_arn, external_id=external_id, region=region)
+
+        return boto3.client("secretsmanager", region_name=region)
     
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
@@ -169,15 +187,18 @@ class SourceAwsIam(ConcurrentSourceAdapter):
         iam_client = self._get_iam_client(config)
         sso_admin_client = self._get_sso_admin_client(config)
         identitystore_client = self._get_identitystore_client(config)
+        secretsmanager_client = self._get_secretsmanager_client(config)
         
         # Create base streams
         base_streams = [
+            IAMAccessKeysStream(iam_client),
             IAMPoliciesStream(iam_client),
             IAMRolesStream(iam_client),
             IAMUserInlinePoliciesStream(iam_client),
             IAMGroupsStream(iam_client),
             IAMSAMLProvidersStream(iam_client),
             IAMUsersStream(iam_client),
+            IAMCredentialReportStream(iam_client),
             IAMRoleInlinePoliciesStream(iam_client),
             IAMGroupInlinePoliciesStream(iam_client),
             IAMInlinePoliciesStream(iam_client),
@@ -185,6 +206,30 @@ class SourceAwsIam(ConcurrentSourceAdapter):
             IAMRolePolicyBindingsStream(iam_client),
             IAMGroupPolicyBindingsStream(iam_client),
             IAMGroupUserMembershipStream(iam_client),
+        ]
+        # Add Secrets Manager streams
+        base_streams += [
+            SecretsManagerSecretsStream(config),
+        ]
+        # Add KMS streams
+        base_streams += [
+            KMSKeysStream(config),
+        ]
+        # Add S3 streams
+        base_streams += [
+            S3BucketsStream(config),
+        ]
+        # Add Lambda streams
+        base_streams += [
+            LambdaFunctionsStream(config),
+        ]
+        # Add EC2 streams
+        base_streams += [
+            EC2InstancesStream(config),
+        ]
+        # Add EKS streams
+        base_streams += [
+            EKSClustersStream(config),
         ]
         # Add Identity Center streams
         base_streams += [

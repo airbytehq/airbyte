@@ -1,0 +1,142 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "lambda_function",
+        "json_schema": {
+          "type": "object",
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "FunctionName": {
+              "type": "string",
+              "description": "The name of the Lambda function"
+            },
+            "FunctionArn": {
+              "type": "string",
+              "description": "The Amazon Resource Name (ARN) of the function"
+            },
+            "Runtime": {
+              "type": ["string", "null"],
+              "description": "The runtime environment for the Lambda function"
+            },
+            "Role": {
+              "type": ["string", "null"],
+              "description": "The function's execution role"
+            },
+            "Handler": {
+              "type": ["string", "null"],
+              "description": "The function that Lambda calls to begin executing your function"
+            },
+            "CodeSize": {
+              "type": ["integer", "null"],
+              "description": "The size of the function's deployment package, in bytes"
+            },
+            "Description": {
+              "type": ["string", "null"],
+              "description": "The function's description"
+            },
+            "Timeout": {
+              "type": ["integer", "null"],
+              "description": "The amount of time in seconds that Lambda allows a function to run before stopping it"
+            },
+            "MemorySize": {
+              "type": ["integer", "null"],
+              "description": "The amount of memory available to the function at runtime"
+            },
+            "LastModified": {
+              "type": ["string", "null"],
+              "format": "date-time",
+              "description": "The date and time that the function was last updated"
+            },
+            "CodeSha256": {
+              "type": ["string", "null"],
+              "description": "The SHA256 hash of the function's deployment package"
+            },
+            "Version": {
+              "type": ["string", "null"],
+              "description": "The version of the Lambda function"
+            },
+            "VpcConfig": {
+              "type": ["object", "null"],
+              "description": "The function's networking configuration",
+              "properties": {
+                "SubnetIds": {
+                  "type": ["array", "null"],
+                  "items": {"type": "string"}
+                },
+                "SecurityGroupIds": {
+                  "type": ["array", "null"],
+                  "items": {"type": "string"}
+                },
+                "VpcId": {
+                  "type": ["string", "null"]
+                }
+              }
+            },
+            "Environment": {
+              "type": ["object", "null"],
+              "description": "The function's environment variables",
+              "properties": {
+                "Variables": {
+                  "type": ["object", "null"],
+                  "additionalProperties": {"type": "string"}
+                }
+              }
+            },
+            "KMSKeyArn": {
+              "type": ["string", "null"],
+              "description": "The KMS key that's used to encrypt the function's environment variables"
+            },
+            "TracingConfig": {
+              "type": ["object", "null"],
+              "description": "The function's X-Ray tracing configuration",
+              "properties": {
+                "Mode": {
+                  "type": ["string", "null"]
+                }
+              }
+            },
+            "Layers": {
+              "type": ["array", "null"],
+              "description": "The function's layers",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "Arn": {"type": ["string", "null"]},
+                  "CodeSize": {"type": ["integer", "null"]}
+                }
+              }
+            },
+            "State": {
+              "type": ["string", "null"],
+              "description": "The current state of the function"
+            },
+            "PackageType": {
+              "type": ["string", "null"],
+              "description": "The type of deployment package"
+            },
+            "Architectures": {
+              "type": ["array", "null"],
+              "description": "The instruction set architecture that the function supports",
+              "items": {"type": "string"}
+            },
+            "Tags": {
+              "type": ["object", "null"],
+              "description": "The function's tags",
+              "additionalProperties": {"type": "string"}
+            },
+            "Region": {
+              "type": "string",
+              "description": "AWS region where the function is located"
+            }
+          }
+        },
+        "supported_sync_modes": [
+          "full_refresh"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

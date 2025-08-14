@@ -1,0 +1,172 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "eks_cluster",
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false,
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "name": {"type": "string"},
+            "arn": {"type": "string"},
+            "createdAt": {"type": ["string", "null"], "format": "date-time"},
+            "version": {"type": ["string", "null"]},
+            "endpoint": {"type": ["string", "null"]},
+            "roleArn": {"type": ["string", "null"]},
+            "resourcesVpcConfig": {
+              "type": ["object", "null"],
+              "properties": {
+                "subnetIds": {
+                  "type": ["array", "null"],
+                  "items": {"type": "string"}
+                },
+                "securityGroupIds": {
+                  "type": ["array", "null"],
+                  "items": {"type": "string"}
+                },
+                "clusterSecurityGroupId": {"type": ["string", "null"]},
+                "vpcId": {"type": ["string", "null"]},
+                "endpointConfigResponse": {
+                  "type": ["object", "null"],
+                  "properties": {
+                    "privateAccess": {"type": ["boolean", "null"]},
+                    "publicAccess": {"type": ["boolean", "null"]},
+                    "publicAccessCidrs": {
+                      "type": ["array", "null"],
+                      "items": {"type": "string"}
+                    }
+                  }
+                }
+              }
+            },
+            "kubernetesNetworkConfig": {
+              "type": ["object", "null"],
+              "properties": {
+                "serviceIpv4Cidr": {"type": ["string", "null"]},
+                "serviceIpv6Cidr": {"type": ["string", "null"]},
+                "ipFamily": {"type": ["string", "null"]}
+              }
+            },
+            "logging": {
+              "type": ["object", "null"],
+              "properties": {
+                "clusterLogging": {
+                  "type": ["array", "null"],
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "types": {
+                        "type": ["array", "null"],
+                        "items": {"type": "string"}
+                      },
+                      "enabled": {"type": ["boolean", "null"]}
+                    }
+                  }
+                }
+              }
+            },
+            "identity": {
+              "type": ["object", "null"],
+              "properties": {
+                "oidc": {
+                  "type": ["object", "null"],
+                  "properties": {
+                    "issuer": {"type": ["string", "null"]}
+                  }
+                }
+              }
+            },
+            "status": {"type": ["string", "null"]},
+            "certificateAuthority": {
+              "type": ["object", "null"],
+              "properties": {
+                "data": {"type": ["string", "null"]}
+              }
+            },
+            "clientRequestToken": {"type": ["string", "null"]},
+            "platformVersion": {"type": ["string", "null"]},
+            "tags": {
+              "type": ["object", "null"],
+              "additionalProperties": {"type": "string"}
+            },
+            "encryptionConfig": {
+              "type": ["array", "null"],
+              "items": {
+                "type": "object",
+                "properties": {
+                  "resources": {
+                    "type": ["array", "null"],
+                    "items": {"type": "string"}
+                  },
+                  "provider": {
+                    "type": ["object", "null"],
+                    "properties": {
+                      "keyArn": {"type": ["string", "null"]}
+                    }
+                  }
+                }
+              }
+            },
+            "connectorConfig": {
+              "type": ["object", "null"],
+              "properties": {
+                "activationId": {"type": ["string", "null"]},
+                "activationCode": {"type": ["string", "null"]},
+                "activationExpiry": {"type": ["string", "null"], "format": "date-time"},
+                "provider": {"type": ["string", "null"]},
+                "roleArn": {"type": ["string", "null"]}
+              }
+            },
+            "id": {"type": ["string", "null"]},
+            "health": {
+              "type": ["object", "null"],
+              "properties": {
+                "issues": {
+                  "type": ["array", "null"],
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "code": {"type": ["string", "null"]},
+                      "message": {"type": ["string", "null"]},
+                      "resourceIds": {
+                        "type": ["array", "null"],
+                        "items": {"type": "string"}
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "outpostConfig": {
+              "type": ["object", "null"],
+              "properties": {
+                "outpostArns": {
+                  "type": ["array", "null"],
+                  "items": {"type": "string"}
+                },
+                "controlPlaneInstanceType": {"type": ["string", "null"]},
+                "controlPlanePlacement": {
+                  "type": ["object", "null"],
+                  "properties": {
+                    "groupName": {"type": ["string", "null"]}
+                  }
+                }
+              }
+            },
+            "accessConfig": {
+              "type": ["object", "null"],
+              "properties": {
+                "bootstrapClusterCreatorAdminPermissions": {"type": ["boolean", "null"]},
+                "authenticationMode": {"type": ["string", "null"]}
+              }
+            },
+            "region": {"type": "string"}
+          }
+        }
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}
