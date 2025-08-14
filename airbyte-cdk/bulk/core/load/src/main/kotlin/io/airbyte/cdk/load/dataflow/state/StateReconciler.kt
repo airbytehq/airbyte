@@ -10,7 +10,6 @@ import jakarta.inject.Singleton
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
@@ -24,9 +23,9 @@ class StateReconciler(
     private val iterationDuration: Duration = 30.seconds
     private lateinit var job: Job
 
-    fun run() {
+    fun run(scope: CoroutineScope) {
         job =
-            CoroutineScope(Dispatchers.IO).launch {
+            scope.launch {
                 while (true) {
                     delay(iterationDuration)
                     flushCompleteStates()
