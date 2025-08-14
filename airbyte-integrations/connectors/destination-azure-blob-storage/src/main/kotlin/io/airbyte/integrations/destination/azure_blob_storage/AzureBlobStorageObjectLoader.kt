@@ -9,6 +9,7 @@ import io.airbyte.cdk.load.write.object_storage.ObjectLoader
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Value
 import javax.inject.Singleton
+import kotlin.math.min
 
 @Singleton
 class AzureBlobStorageObjectLoader(
@@ -25,6 +26,13 @@ class AzureBlobStorageObjectLoader(
     override val maxMemoryRatioReservedForParts: Double = config.maxMemoryRatioReservedForParts
     override val objectSizeBytes: Long = config.objectSizeBytes
     override val partSizeBytes: Long = config.partSizeBytes
+    override fun socketPartSizeBytes(numberOfSockets: Int): Long {
+        return min((numberOfSockets * 4), 20) * 1024L * 1024
+    }
+
+    override fun socketUploadParallelism(numberOfSockets: Int): Int {
+        return min((numberOfSockets * 4), 25)
+    }
 }
 
 @Requires(property = "airbyte.destination.core.file-transfer.enabled", value = "false")

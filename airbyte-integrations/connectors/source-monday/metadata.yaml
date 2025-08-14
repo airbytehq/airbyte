@@ -6,11 +6,11 @@ data:
     hosts:
       - api.monday.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.60.0@sha256:8a01d4fabdc7cbee92a583cc30fe08bb8ebba0e8d54569920d29378772b31699
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.60.12@sha256:b236b4ff8351a7d7f0ff7f938bbf0ab7b455c4c9e6e7cc93933f4aa9201d66cb
   connectorSubtype: api
   connectorType: source
   definitionId: 80a54ea2-9959-4040-aac1-eee42423ec9b
-  dockerImageTag: 2.4.2
+  dockerImageTag: 2.4.4
   releases:
     rolloutConfiguration:
       enableProgressiveRollout: false

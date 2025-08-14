@@ -63,6 +63,8 @@ The Confluence connector should not run into Confluence API limitations under no
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 1.0.16 | 2025-08-09 | [64777](https://github.com/airbytehq/airbyte/pull/64777) | Update dependencies |
+| 1.0.15 | 2025-08-02 | [64318](https://github.com/airbytehq/airbyte/pull/64318) | Update dependencies |
 | 1.0.14 | 2025-07-26 | [63958](https://github.com/airbytehq/airbyte/pull/63958) | Update dependencies |
 | 1.0.13 | 2025-07-19 | [63597](https://github.com/airbytehq/airbyte/pull/63597) | Update dependencies |
 | 1.0.12 | 2025-07-12 | [63027](https://github.com/airbytehq/airbyte/pull/63027) | Update dependencies |
