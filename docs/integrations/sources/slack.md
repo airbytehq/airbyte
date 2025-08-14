@@ -24,7 +24,7 @@ If you are using a legacy Slack API Key, you can skip this section.
 :::
 
 :::warning
-Channel Messages and Threads streams have different API Budget Requests Policy, it's one request per minute. To handle it, you can create a separate connection for those streams. Please visit [Rate limiting section](https://docs.airbyte.com/integrations/sources/slack#rate-limiting) for more info.
+Source Slack has a different API Budget Requests Policy for the Channel Messages and Threads streams (one request per minute). We suggest you create a separate connection for those streams so that you do not experience slower syncs across all Slack streams. Please visit [Rate limiting section](https://docs.airbyte.com/integrations/sources/slack#rate-limiting) for more info.
 :::
 
 To create a Slack App, read this [tutorial](https://api.slack.com/tutorials/tracks/getting-a-token) on how to create an app, or follow these instructions. 
