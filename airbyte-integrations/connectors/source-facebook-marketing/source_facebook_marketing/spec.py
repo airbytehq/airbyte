@@ -264,9 +264,9 @@ class ConnectorConfig(BaseConfig):
         title="Action breakdowns for the Built-in Ads Insight stream",
         order=8,
         default=[
-            "action_type",
-            "action_target_id",
-            "action_destination",
+            AdsInsights.ActionBreakdowns.action_type,
+            AdsInsights.ActionBreakdowns.action_target_id,
+            AdsInsights.ActionBreakdowns.action_destination,
         ],
         type="array",
         description="Action breakdowns for the Built-in Ads Insights stream that will be used in the request. You can override default values or remove them to make it empty if needed.",
