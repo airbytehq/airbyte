@@ -41,6 +41,8 @@ definitions:
       request_headers:
         User-Agent: Airbyte
     SimpleRetriever:
+      requester:
+        $ref: "#/definitions/linked/HttpRequester"
       paginator:
         type: DefaultPaginator
         page_token_option:
@@ -49,6 +51,12 @@ definitions:
           type: CursorPagination
           cursor_value: "{{ response.links.next}}"
           stop_condition: "{{ not response.links.next}}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
     DeclarativeStream:
       incremental_sync:
         type: DatetimeBasedCursor
