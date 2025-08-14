@@ -44,6 +44,7 @@ fire inspection software.
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.11 | 2025-08-14 | [64942](https://github.com/airbytehq/airbyte/pull/64942) | Fix docker image entrypoint for platform syncs |
 | 0.0.9 | 2025-08-13 | [64170](https://github.com/airbytehq/airbyte/pull/64170) | adds cursor pagination, incremental sync and rate limiting |
 | 0.0.8 | 2025-08-09 | [64845](https://github.com/airbytehq/airbyte/pull/64845) | Update dependencies |
 | 0.0.7 | 2025-08-02 | [64403](https://github.com/airbytehq/airbyte/pull/64403) | Update dependencies |

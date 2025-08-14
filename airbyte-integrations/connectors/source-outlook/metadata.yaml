@@ -16,7 +16,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 886bdbfe-7935-4d96-b097-e3c1db73b951
-  dockerImageTag: 0.0.2
+  dockerImageTag: 0.0.3
   dockerRepository: airbyte/source-outlook
   githubIssueLabel: source-outlook
   icon: icon.svg
