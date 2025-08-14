@@ -83,7 +83,7 @@ After creating your app, you’ll need to enable the Marketing API to begin maki
 - Click **Add Product**.
 - Find and select **Marketing API** from the list of available products.
 
-📚 **Further Reading:** For an overview of the Marketing API, see: [https://developers.facebook.com/docs/marketing-apis](https://developers.facebook.com/docs/marketing-apis)
+📚 **Further Reading:** For an overview of the Marketing API, see: [Meta's API documentation](https://developers.facebook.com/docs/marketing-apis)
 
 
 ### 4. Generate an Access Token
