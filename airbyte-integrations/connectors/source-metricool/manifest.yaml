@@ -1,0 +1,3143 @@
+version: 6.48.15
+
+type: DeclarativeSource
+
+description: >-
+  The Metricool connector enables you to extract comprehensive social media
+  analytics data from multiple platforms through Metricool’s unified API. This
+  connector supports data extraction from Facebook, Instagram, TikTok, LinkedIn,
+  Twitter (X), and YouTube, providing detailed insights into your social media
+  performance.
+
+
+  Key Features:
+
+  - Multi-Platform Support: Extract data from 6 major social media platforms in
+  a single connector
+
+  - Comprehensive Analytics: Access post-level metrics, timeline data,
+  competitor analysis, and content performance
+
+  - Flexible Date Range: Configure custom date ranges for data extraction
+  (defaults to 60 days if not specified)
+
+  - Multiple Content Types: Supports various content formats including posts,
+  reels, stories, and videos
+
+
+  Supported Data Streams:
+
+  - Brand Information: Basic account and profile data
+
+  - Content Analytics: Posts, reels, stories, and videos with engagement metrics
+
+  - Timeline Data: Historical performance metrics tracked over time
+
+  - Competitor Analysis: Available for Facebook and Instagram
+
+check:
+  type: CheckStream
+  stream_names:
+    - facebook_stories
+
+definitions:
+  streams:
+    brands:
+      type: DeclarativeStream
+      name: brands
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /admin/simpleProfiles
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/brands"
+    facebook_competitors:
+      type: DeclarativeStream
+      name: facebook_competitors
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/analytics/competitors/facebook
+          http_method: GET
+          request_parameters:
+            to: >-
+              {{
+              str_to_datetime(config['end_date']).strftime('%Y-%m-%dT00:00:00')
+              if config['end_date'] else now_utc().strftime('%Y-%m-%dT00:00:00')
+              }}
+            from: >-
+              {{ ( (
+              str_to_datetime(config['start_date']).strftime('%Y-%m-%dT00:00:00')
+              if str_to_datetime(config['start_date']) <
+              str_to_datetime(config['end_date']) else
+              (str_to_datetime(config['end_date']) -
+              duration('P1D')).strftime('%Y-%m-%dT00:00:00') ) if
+              config['start_date'] else (str_to_datetime(config['end_date']) -
+              duration('P1D')).strftime('%Y-%m-%dT00:00:00') ) if
+              config['end_date'] else ( config['start_date'] if
+              config['start_date'] else (now_utc() -
+              duration('P60D')).strftime('%Y-%m-%dT00:00:00') ) }}
+            limit: "100"
+            userId: "{{ config[\"user_id\"] }}"
+            timezone: Etc/UTC
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config['blog_ids'] }}"
+          cursor_field: blog_id
+          request_option:
+            type: RequestOption
+            field_name: blogId
+            inject_into: request_parameter
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/facebook_competitors"
+    facebook_stories:
+      type: DeclarativeStream
+      name: facebook_stories
+      primary_key:
+        - blogId
+        - storyId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/analytics/stories/facebook
+          http_method: GET
+          request_parameters:
+            to: >-
+              {{ config['end_date'] if config['end_date'] else
+              now_utc().strftime('%Y-%m-%dT00:00:00') }}
+            from: >-
+              {{ ( ( config['start_date'] if
+              str_to_datetime(config['start_date']) <
+              str_to_datetime(config['end_date']) else
+              (str_to_datetime(config['end_date']) -
+              duration('P1D')).strftime('%Y-%m-%dT00:00:00') ) if
+              config['start_date'] else (str_to_datetime(config['end_date']) -
+              duration('P1D')).strftime('%Y-%m-%dT00:00:00') ) if
+              config['end_date'] else ( config['start_date'] if
+              config['start_date'] else (now_utc() -
+              duration('P60D')).strftime('%Y-%m-%dT00:00:00') ) }}
+            userId: "{{ config[\"user_id\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config[\"blog_ids\"] }}"
+          cursor_field: blog_id
+          request_option:
+            type: RequestOption
+            field_name: blogId
+            inject_into: request_parameter
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - blogId
+              value: "{{ stream_partition['blog_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/facebook_stories"
+    facebook_posts:
+      type: DeclarativeStream
+      name: facebook_posts
+      primary_key:
+        - blogId
+        - postId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /stats/facebook/posts
+          http_method: GET
+          request_parameters:
+            end: >-
+              {{ str_to_datetime(config['end_date']).strftime('%Y%m%d') if
+              config['end_date'] else now_utc().strftime('%Y%m%d') }}
+            start: >-
+              {{ ( ( str_to_datetime(config['start_date']).strftime('%Y%m%d') if
+              str_to_datetime(config['start_date']) <
+              str_to_datetime(config['end_date']) else
+              (str_to_datetime(config['end_date']) -
+              duration('P1D')).strftime('%Y%m%d') ) if config['start_date'] else
+              (str_to_datetime(config['end_date']) -
+              duration('P1D')).strftime('%Y%m%d') ) if config['end_date'] else (
+              config['start_date'] if config['start_date'] else (now_utc() -
+              duration('P60D')).strftime('%Y%m%d') ) }}
+            userId: "{{ config['user_id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config['blog_ids'] }}"
+          cursor_field: blog_id
+          request_option:
+            type: RequestOption
+            field_name: blogId
+            inject_into: request_parameter
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/facebook_posts"
+    facebook_reels:
+      type: DeclarativeStream
+      name: facebook_reels
+      primary_key:
+        - blogId
+        - reelId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/analytics/reels/facebook
+          http_method: GET
+          request_parameters:
+            to: >-
+              {{ config['end_date'] if config['end_date'] else
+              now_utc().strftime('%Y-%m-%dT00:00:00') }}
+            from: >-
+              {{ ( ( config['start_date'] if
+              str_to_datetime(config['start_date']) <
+              str_to_datetime(config['end_date']) else
+              (str_to_datetime(config['end_date']) -
+              duration('P1D')).strftime('%Y-%m-%dT00:00:00') ) if
+              config['start_date'] else (str_to_datetime(config['end_date']) -
+              duration('P1D')).strftime('%Y-%m-%dT00:00:00') ) if
+              config['end_date'] else ( config['start_date'] if
+              config['start_date'] else (now_utc() -
+              duration('P60D')).strftime('%Y-%m-%dT00:00:00') ) }}
+            userId: "{{ config[\"user_id\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config[\"blog_ids\"] }}"
+          cursor_field: blog_id
+          request_option:
+            type: RequestOption
+            field_name: blogId
+            inject_into: request_parameter
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - blogId
+              value: "{{ stream_partition['blog_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/facebook_reels"
+    facebook_stories_timelines:
+      type: DeclarativeStream
+      name: facebook_stories_timelines
+      primary_key:
+        - datetime
+        - blogId
+        - metric
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/analytics/timelines
+          http_method: GET
+          request_parameters:
+            userId: "{{ config[\"user_id\"] }}"
+            network: facebook
+            subject: stories
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - "*"
+              - values
+              - "*"
+        partition_router:
+          - type: ListPartitionRouter
+            values: "{{ config[\"blog_ids\"] }}"
+            cursor_field: blog_id
+            request_option:
+              type: RequestOption
+              field_name: blogId
+              inject_into: request_parameter
+          - type: ListPartitionRouter
+            values:
+              - count
+            cursor_field: metric
+            request_option:
+              type: RequestOption
+              field_name: metric
+              inject_into: request_parameter
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: datetime
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ ( ( config['start_date'] if str_to_datetime(config['start_date'])
+            < str_to_datetime(config['end_date']) else
+            (str_to_datetime(config['end_date']) -
+            duration('P1D')).strftime('%Y-%m-%dT00:00:00Z') ) if
+            config['start_date'] else (str_to_datetime(config['end_date']) -
+            duration('P1D')).strftime('%Y-%m-%dT00:00:00Z') ) if
+            config['end_date'] else ( config['start_date'] if
+            config['start_date'] else (now_utc() -
+            duration('P60D')).strftime('%Y-%m-%dT00:00:00Z') ) }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: from
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: to
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config['end_date'] if config['end_date'] else
+            now_utc().strftime('%Y-%m-%dT00:00:00Z') }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - metric
+              value: "{{ stream_partition['metric'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - blogId
+              value: "{{ stream_partition['blog_id'] }}\r\n"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - datetime
+              value: >-
+                {{
+                str_to_datetime(record['dateTime']).strftime('%Y-%m-%dT%H:00:00Z')
+                }}
+        - type: RemoveFields
+          field_pointers:
+            - - dateTime
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/facebook_stories_timelines"
+    facebook_posts_timelines:
+      type: DeclarativeStream
+      name: facebook_posts_timelines
+      primary_key:
+        - datetime
+        - blogId
+        - metric
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/analytics/timelines
+          http_method: GET
+          request_parameters:
+            userId: "{{ config[\"user_id\"] }}"
+            network: facebook
+            subject: posts
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - "*"
+              - values
+              - "*"
+        partition_router:
+          - type: ListPartitionRouter
+            values: "{{ config[\"blog_ids\"] }}"
+            cursor_field: blog_id
+            request_option:
+              type: RequestOption
+              field_name: blogId
+              inject_into: request_parameter
+          - type: ListPartitionRouter
+            values:
+              - count
+              - reactions
+              - interactions
+              - engagement
+              - clicks
+              - likes
+              - shares
+              - comments
+              - impressions
+              - impressionspaid
+              - impressionsorganic
+              - impressionsunique
+              - impressionsuniquepaid
+              - impressionsuniqueorganic
+              - videoviews
+              - videoviewspaid
+              - videoviewsorganic
+              - videoavgtimewatched
+              - linkclicks
+              - spend
+            cursor_field: metric
+            request_option:
+              type: RequestOption
+              field_name: metric
+              inject_into: request_parameter
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: datetime
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ ( ( config['start_date'] if str_to_datetime(config['start_date'])
+            < str_to_datetime(config['end_date']) else
+            (str_to_datetime(config['end_date']) -
+            duration('P1D')).strftime('%Y-%m-%dT00:00:00Z') ) if
+            config['start_date'] else (str_to_datetime(config['end_date']) -
+            duration('P1D')).strftime('%Y-%m-%dT00:00:00Z') ) if
+            config['end_date'] else ( config['start_date'] if
+            config['start_date'] else (now_utc() -
+            duration('P60D')).strftime('%Y-%m-%dT00:00:00Z') ) }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: from
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: to
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config['end_date'] if config['end_date'] else
+            now_utc().strftime('%Y-%m-%dT00:00:00Z') }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - metric
+              value: "{{ stream_partition['metric'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - blogId
+              value: "{{ stream_partition['blog_id'] }}\r\n"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - datetime
+              value: >-
+                {{
+                str_to_datetime(record['dateTime']).strftime('%Y-%m-%dT%H:00:00Z')
+                }}
+        - type: RemoveFields
+          field_pointers:
+            - - dateTime
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/facebook_posts_timelines"
+    facebook_reels_timelines:
+      type: DeclarativeStream
+      name: facebook_reels_timelines
+      primary_key:
+        - datetime
+        - blogId
+        - metric
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/analytics/timelines
+          http_method: GET
+          request_parameters:
+            userId: "{{ config[\"user_id\"] }}"
+            network: facebook
+            subject: reels
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - "*"
+              - values
+              - "*"
+        partition_router:
+          - type: ListPartitionRouter
+            values: "{{ config[\"blog_ids\"] }}"
+            cursor_field: blog_id
+            request_option:
+              type: RequestOption
+              field_name: blogId
+              inject_into: request_parameter
+          - type: ListPartitionRouter
+            values:
+              - blue_reels_play_count
+              - post_impressions_unique
+              - post_video_avg_time_watched
+              - post_video_view_time
+              - post_video_likes_by_reaction_type
+              - post_video_social_actions
+              - interactions
+              - engagement
+              - count
+            cursor_field: metric
+            request_option:
+              type: RequestOption
+              field_name: metric
+              inject_into: request_parameter
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: datetime
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ ( ( config['start_date'] if str_to_datetime(config['start_date'])
+            < str_to_datetime(config['end_date']) else
+            (str_to_datetime(config['end_date']) -
+            duration('P1D')).strftime('%Y-%m-%dT00:00:00Z') ) if
+            config['start_date'] else (str_to_datetime(config['end_date']) -
+            duration('P1D')).strftime('%Y-%m-%dT00:00:00Z') ) if
+            config['end_date'] else ( config['start_date'] if
+            config['start_date'] else (now_utc() -
+            duration('P60D')).strftime('%Y-%m-%dT00:00:00Z') ) }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: from
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: to
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config['end_date'] if config['end_date'] else
+            now_utc().strftime('%Y-%m-%dT00:00:00Z') }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - metric
+              value: "{{ stream_partition['metric'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - blogId
+              value: "{{ stream_partition['blog_id'] }}\r\n"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - datetime
+              value: >-
+                {{
+                str_to_datetime(record['dateTime']).strftime('%Y-%m-%dT%H:00:00Z')
+                }}
+        - type: RemoveFields
+          field_pointers:
+            - - dateTime
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/facebook_reels_timelines"
+    instagram_competitors:
+      type: DeclarativeStream
+      name: instagram_competitors
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/analytics/competitors/instagram
+          http_method: GET
+          request_parameters:
+            to: >-
+              {{
+              str_to_datetime(config['end_date']).strftime('%Y-%m-%dT00:00:00')
+              if config['end_date'] else now_utc().strftime('%Y-%m-%dT00:00:00')
+              }}
+            from: >-
+              {{ ( (
+              str_to_datetime(config['start_date']).strftime('%Y-%m-%dT00:00:00')
+              if str_to_datetime(config['start_date']) <
+              str_to_datetime(config['end_date']) else
+              (str_to_datetime(config['end_date']) -
+              duration('P1D')).strftime('%Y-%m-%dT00:00:00') ) if
+              config['start_date'] else (str_to_datetime(config['end_date']) -
+              duration('P1D')).strftime('%Y-%m-%dT00:00:00') ) if
+              config['end_date'] else ( config['start_date'] if
+              config['start_date'] else (now_utc() -
+              duration('P60D')).strftime('%Y-%m-%dT00:00:00') ) }}
+            limit: "100"
+            userId: "{{ config[\"user_id\"] }}"
+            timezone: Etc/UTC
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config['blog_ids'] }}"
+          cursor_field: blog_id
+          request_option:
+            type: RequestOption
+            field_name: blogId
+            inject_into: request_parameter
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/instagram_competitors"
+    instagram_stories:
+      type: DeclarativeStream
+      name: instagram_stories
+      primary_key:
+        - blogId
+        - postId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /stats/instagram/stories
+          http_method: GET
+          request_parameters:
+            end: >-
+              {{ str_to_datetime(config['end_date']).strftime('%Y%m%d') if
+              config['end_date'] else now_utc().strftime('%Y%m%d') }}
+            start: >-
+              {{ ( ( str_to_datetime(config['start_date']).strftime('%Y%m%d') if
+              str_to_datetime(config['start_date']) <
+              str_to_datetime(config['end_date']) else
+              (str_to_datetime(config['end_date']) -
+              duration('P1D')).strftime('%Y%m%d') ) if config['start_date'] else
+              (str_to_datetime(config['end_date']) -
+              duration('P1D')).strftime('%Y%m%d') ) if config['end_date'] else (
+              config['start_date'] if config['start_date'] else (now_utc() -
+              duration('P60D')).strftime('%Y%m%d') ) }}
+            userId: "{{ config[\"user_id\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config['blog_ids'] }}"
+          cursor_field: blog_id
+          request_option:
+            type: RequestOption
+            field_name: blogId
+            inject_into: request_parameter
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/instagram_stories"
+    instagram_posts:
+      type: DeclarativeStream
+      name: instagram_posts
+      primary_key:
+        - blogId
+        - postId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /stats/instagram/posts
+          http_method: GET
+          request_parameters:
+            end: >-
+              {{ str_to_datetime(config['end_date']).strftime('%Y%m%d') if
+              config['end_date'] else now_utc().strftime('%Y%m%d') }}
+            start: >-
+              {{ ( ( str_to_datetime(config['start_date']).strftime('%Y%m%d') if
+              str_to_datetime(config['start_date']) <
+              str_to_datetime(config['end_date']) else
+              (str_to_datetime(config['end_date']) -
+              duration('P1D')).strftime('%Y%m%d') ) if config['start_date'] else
+              (str_to_datetime(config['end_date']) -
+              duration('P1D')).strftime('%Y%m%d') ) if config['end_date'] else (
+              config['start_date'] if config['start_date'] else (now_utc() -
+              duration('P60D')).strftime('%Y%m%d') ) }}
+            userId: "{{ config['user_id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config['blog_ids'] }}"
+          cursor_field: blog_id
+          request_option:
+            type: RequestOption
+            field_name: blogId
+            inject_into: request_parameter
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/instagram_posts"
+    instagram_reels:
+      type: DeclarativeStream
+      name: instagram_reels
+      primary_key:
+        - blogId
+        - reelId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /stats/instagram/reels
+          http_method: GET
+          request_parameters:
+            end: >-
+              {{ str_to_datetime(config['end_date']).strftime('%Y%m%d') if
+              config['end_date'] else now_utc().strftime('%Y%m%d') }}
+            start: >-
+              {{ ( ( str_to_datetime(config['start_date']).strftime('%Y%m%d') if
+              str_to_datetime(config['start_date']) <
+              str_to_datetime(config['end_date']) else
+              (str_to_datetime(config['end_date']) -
+              duration('P1D')).strftime('%Y%m%d') ) if config['start_date'] else
+              (str_to_datetime(config['end_date']) -
+              duration('P1D')).strftime('%Y%m%d') ) if config['end_date'] else (
+              config['start_date'] if config['start_date'] else (now_utc() -
+              duration('P60D')).strftime('%Y%m%d') ) }}
+            userId: "{{ config['user_id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config['blog_ids'] }}"
+          cursor_field: blog_id
+          request_option:
+            type: RequestOption
+            field_name: blogId
+            inject_into: request_parameter
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/instagram_reels"
+    instagram_stories_timelines:
+      type: DeclarativeStream
+      name: instagram_stories_timelines
+      primary_key:
+        - datetime
+        - blogId
+        - metric
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/analytics/timelines
+          http_method: GET
+          request_parameters:
+            userId: "{{ config[\"user_id\"] }}"
+            network: instagram
+            subject: stories
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - "*"
+              - values
+              - "*"
+        partition_router:
+          - type: ListPartitionRouter
+            values: "{{ config[\"blog_ids\"] }}"
+            cursor_field: blog_id
+            request_option:
+              type: RequestOption
+              field_name: blogId
+              inject_into: request_parameter
+          - type: ListPartitionRouter
+            values:
+              - count
+              - exits
+              - impressions
+              - reach
+              - replies
+              - tapsforward
+              - tapsback
+              - impressionspaid
+              - reachpaid
+            cursor_field: metric
+            request_option:
+              type: RequestOption
+              field_name: metric
+              inject_into: request_parameter
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: datetime
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ ( ( config['start_date'] if str_to_datetime(config['start_date'])
+            < str_to_datetime(config['end_date']) else
+            (str_to_datetime(config['end_date']) -
+            duration('P1D')).strftime('%Y-%m-%dT00:00:00Z') ) if
+            config['start_date'] else (str_to_datetime(config['end_date']) -
+            duration('P1D')).strftime('%Y-%m-%dT00:00:00Z') ) if
+            config['end_date'] else ( config['start_date'] if
+            config['start_date'] else (now_utc() -
+            duration('P60D')).strftime('%Y-%m-%dT00:00:00Z') ) }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: from
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: to
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config['end_date'] if config['end_date'] else
+            now_utc().strftime('%Y-%m-%dT00:00:00Z') }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - metric
+              value: "{{ stream_partition['metric'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - blogId
+              value: "{{ stream_partition['blog_id'] }}\r\n"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - datetime
+              value: >-
+                {{
+                str_to_datetime(record['dateTime']).strftime('%Y-%m-%dT%H:00:00Z')
+                }}
+        - type: RemoveFields
+          field_pointers:
+            - - dateTime
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/instagram_stories_timelines"
+    instagram_posts_timelines:
+      type: DeclarativeStream
+      name: instagram_posts_timelines
+      primary_key:
+        - datetime
+        - blogId
+        - metric
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/analytics/timelines
+          http_method: GET
+          request_parameters:
+            userId: "{{ config[\"user_id\"] }}"
+            network: instagram
+            subject: posts
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - "*"
+              - values
+              - "*"
+        partition_router:
+          - type: ListPartitionRouter
+            values: "{{ config[\"blog_ids\"] }}"
+            cursor_field: blog_id
+            request_option:
+              type: RequestOption
+              field_name: blogId
+              inject_into: request_parameter
+          - type: ListPartitionRouter
+            values:
+              - count
+              - comments
+              - likes
+              - saved
+              - shares
+              - clicks
+              - engagement
+              - impressions
+              - reach
+              - interactions
+              - videoviews
+              - views
+              - impressionspaid
+              - reachpaid
+              - videoviewspaid
+              - postclickspaid
+              - postinteractionspaid
+              - spend
+            cursor_field: metric
+            request_option:
+              type: RequestOption
+              field_name: metric
+              inject_into: request_parameter
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: datetime
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ ( ( config['start_date'] if str_to_datetime(config['start_date'])
+            < str_to_datetime(config['end_date']) else
+            (str_to_datetime(config['end_date']) -
+            duration('P1D')).strftime('%Y-%m-%dT00:00:00Z') ) if
+            config['start_date'] else (str_to_datetime(config['end_date']) -
+            duration('P1D')).strftime('%Y-%m-%dT00:00:00Z') ) if
+            config['end_date'] else ( config['start_date'] if
+            config['start_date'] else (now_utc() -
+            duration('P60D')).strftime('%Y-%m-%dT00:00:00Z') ) }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: from
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: to
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config['end_date'] if config['end_date'] else
+            now_utc().strftime('%Y-%m-%dT00:00:00Z') }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - metric
+              value: "{{ stream_partition['metric'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - blogId
+              value: "{{ stream_partition['blog_id'] }}\r\n"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - datetime
+              value: >-
+                {{
+                str_to_datetime(record['dateTime']).strftime('%Y-%m-%dT%H:00:00Z')
+                }}
+        - type: RemoveFields
+          field_pointers:
+            - - dateTime
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/instagram_posts_timelines"
+    instagram_reels_timelines:
+      type: DeclarativeStream
+      name: instagram_reels_timelines
+      primary_key:
+        - datetime
+        - blogId
+        - metric
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/analytics/timelines
+          http_method: GET
+          request_parameters:
+            userId: "{{ config[\"user_id\"] }}"
+            network: instagram
+            subject: reels
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - "*"
+              - values
+              - "*"
+        partition_router:
+          - type: ListPartitionRouter
+            values: "{{ config[\"blog_ids\"] }}"
+            cursor_field: blog_id
+            request_option:
+              type: RequestOption
+              field_name: blogId
+              inject_into: request_parameter
+          - type: ListPartitionRouter
+            values:
+              - count
+              - comments
+              - likes
+              - saved
+              - shares
+              - clicks
+              - engagement
+              - impressions
+              - reach
+              - interactions
+              - videoviews
+              - views
+              - impressionspaid
+              - reachpaid
+              - videoviewspaid
+              - postclickspaid
+              - postinteractionspaid
+              - spend
+            cursor_field: metric
+            request_option:
+              type: RequestOption
+              field_name: metric
+              inject_into: request_parameter
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: datetime
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ ( ( config['start_date'] if str_to_datetime(config['start_date'])
+            < str_to_datetime(config['end_date']) else
+            (str_to_datetime(config['end_date']) -
+            duration('P1D')).strftime('%Y-%m-%dT00:00:00Z') ) if
+            config['start_date'] else (str_to_datetime(config['end_date']) -
+            duration('P1D')).strftime('%Y-%m-%dT00:00:00Z') ) if
+            config['end_date'] else ( config['start_date'] if
+            config['start_date'] else (now_utc() -
+            duration('P60D')).strftime('%Y-%m-%dT00:00:00Z') ) }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: from
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: to
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config['end_date'] if config['end_date'] else
+            now_utc().strftime('%Y-%m-%dT00:00:00Z') }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - metric
+              value: "{{ stream_partition['metric'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - blogId
+              value: "{{ stream_partition['blog_id'] }}\r\n"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - datetime
+              value: >-
+                {{
+                str_to_datetime(record['dateTime']).strftime('%Y-%m-%dT%H:00:00Z')
+                }}
+        - type: RemoveFields
+          field_pointers:
+            - - dateTime
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/instagram_reels_timelines"
+    tiktok_posts:
+      type: DeclarativeStream
+      name: tiktok_posts
+      primary_key:
+        - blogId
+        - videoId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/analytics/posts/tiktok
+          http_method: GET
+          request_parameters:
+            to: >-
+              {{ config['end_date'] if config['end_date'] else
+              now_utc().strftime('%Y-%m-%dT00:00:00') }}
+            from: >-
+              {{ ( ( config['start_date'] if
+              str_to_datetime(config['start_date']) <
+              str_to_datetime(config['end_date']) else
+              (str_to_datetime(config['end_date']) -
+              duration('P1D')).strftime('%Y-%m-%dT00:00:00') ) if
+              config['start_date'] else (str_to_datetime(config['end_date']) -
+              duration('P1D')).strftime('%Y-%m-%dT00:00:00') ) if
+              config['end_date'] else ( config['start_date'] if
+              config['start_date'] else (now_utc() -
+              duration('P60D')).strftime('%Y-%m-%dT00:00:00') ) }}
+            userId: "{{ config[\"user_id\"] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config[\"blog_ids\"] }}"
+          cursor_field: blog_id
+          request_option:
+            type: RequestOption
+            field_name: blogId
+            inject_into: request_parameter
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - blogId
+              value: "{{ stream_partition['blog_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tiktok_posts"
+    tiktok_video_timelines:
+      type: DeclarativeStream
+      name: tiktok_video_timelines
+      primary_key:
+        - datetime
+        - blogId
+        - metric
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/analytics/timelines
+          http_method: GET
+          request_parameters:
+            userId: "{{ config[\"user_id\"] }}"
+            network: tiktok
+            subject: video
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - "*"
+              - values
+              - "*"
+        partition_router:
+          - type: ListPartitionRouter
+            values: "{{ config[\"blog_ids\"] }}"
+            cursor_field: blog_id
+            request_option:
+              type: RequestOption
+              field_name: blogId
+              inject_into: request_parameter
+          - type: ListPartitionRouter
+            values:
+              - videos
+              - views
+              - comments
+              - shares
+              - interactions
+              - likes
+              - reach
+              - engagement
+              - impressionSources
+              - averageVideoViews
+            cursor_field: metric
+            request_option:
+              type: RequestOption
+              field_name: metric
+              inject_into: request_parameter
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: datetime
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ ( ( config['start_date'] if str_to_datetime(config['start_date'])
+            < str_to_datetime(config['end_date']) else
+            (str_to_datetime(config['end_date']) -
+            duration('P1D')).strftime('%Y-%m-%dT00:00:00Z') ) if
+            config['start_date'] else (str_to_datetime(config['end_date']) -
+            duration('P1D')).strftime('%Y-%m-%dT00:00:00Z') ) if
+            config['end_date'] else ( config['start_date'] if
+            config['start_date'] else (now_utc() -
+            duration('P60D')).strftime('%Y-%m-%dT00:00:00Z') ) }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: from
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: to
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config['end_date'] if config['end_date'] else
+            now_utc().strftime('%Y-%m-%dT00:00:00Z') }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - metric
+              value: "{{ stream_partition['metric'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - blogId
+              value: "{{ stream_partition['blog_id'] }}\r\n"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - datetime
+              value: >-
+                {{
+                str_to_datetime(record['dateTime']).strftime('%Y-%m-%dT%H:00:00Z')
+                }}
+        - type: RemoveFields
+          field_pointers:
+            - - dateTime
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tiktok_video_timelines"
+    tiktok_account_timelines:
+      type: DeclarativeStream
+      name: tiktok_account_timelines
+      primary_key:
+        - datetime
+        - blogId
+        - metric
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/analytics/timelines
+          http_method: GET
+          request_parameters:
+            userId: "{{ config[\"user_id\"] }}"
+            network: tiktok
+            subject: account
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - "*"
+              - values
+              - "*"
+        partition_router:
+          - type: ListPartitionRouter
+            values: "{{ config[\"blog_ids\"] }}"
+            cursor_field: blog_id
+            request_option:
+              type: RequestOption
+              field_name: blogId
+              inject_into: request_parameter
+          - type: ListPartitionRouter
+            values:
+              - video_views
+              - profile_views
+              - followers_count
+              - followers_delta_count
+              - likes
+              - comments
+              - shares
+            cursor_field: metric
+            request_option:
+              type: RequestOption
+              field_name: metric
+              inject_into: request_parameter
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: datetime
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ ( ( config['start_date'] if str_to_datetime(config['start_date'])
+            < str_to_datetime(config['end_date']) else
+            (str_to_datetime(config['end_date']) -
+            duration('P1D')).strftime('%Y-%m-%dT00:00:00Z') ) if
+            config['start_date'] else (str_to_datetime(config['end_date']) -
+            duration('P1D')).strftime('%Y-%m-%dT00:00:00Z') ) if
+            config['end_date'] else ( config['start_date'] if
+            config['start_date'] else (now_utc() -
+            duration('P60D')).strftime('%Y-%m-%dT00:00:00Z') ) }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: from
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: to
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config['end_date'] if config['end_date'] else
+            now_utc().strftime('%Y-%m-%dT00:00:00Z') }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - metric
+              value: "{{ stream_partition['metric'] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - blogId
+              value: "{{ stream_partition['blog_id'] }}\r\n"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - datetime
+              value: >-
+                {{
+                str_to_datetime(record['dateTime']).strftime('%Y-%m-%dT%H:00:00Z')
+                }}
+        - type: RemoveFields
+          field_pointers:
+            - - dateTime
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tiktok_account_timelines"
+    linkedin_posts:
+      type: DeclarativeStream
+      name: linkedin_posts
+      primary_key:
+        - postId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /stats/linkedin/posts
+          http_method: GET
+          request_parameters:
+            end: >-
+              {{ str_to_datetime(config['end_date']).strftime('%Y%m%d') if
+              config['end_date'] else now_utc().strftime('%Y%m%d') }}
+            start: >-
+              {{ ( ( str_to_datetime(config['start_date']).strftime('%Y%m%d') if
+              str_to_datetime(config['start_date']) <
+              str_to_datetime(config['end_date']) else
+              (str_to_datetime(config['end_date']) -
+              duration('P1D')).strftime('%Y%m%d') ) if config['start_date'] else
+              (str_to_datetime(config['end_date']) -
+              duration('P1D')).strftime('%Y%m%d') ) if config['end_date'] else (
+              config['start_date'] if config['start_date'] else (now_utc() -
+              duration('P60D')).strftime('%Y%m%d') ) }}
+            userId: "{{ config['user_id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config['blog_ids'] }}"
+          cursor_field: blog_id
+          request_option:
+            type: RequestOption
+            field_name: blogId
+            inject_into: request_parameter
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/linkedin_posts"
+    twitter_posts:
+      type: DeclarativeStream
+      name: twitter_posts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /stats/twitter/posts
+          http_method: GET
+          request_parameters:
+            end: >-
+              {{ str_to_datetime(config['end_date']).strftime('%Y%m%d') if
+              config['end_date'] else now_utc().strftime('%Y%m%d') }}
+            start: >-
+              {{ ( ( str_to_datetime(config['start_date']).strftime('%Y%m%d') if
+              str_to_datetime(config['start_date']) <
+              str_to_datetime(config['end_date']) else
+              (str_to_datetime(config['end_date']) -
+              duration('P1D')).strftime('%Y%m%d') ) if config['start_date'] else
+              (str_to_datetime(config['end_date']) -
+              duration('P1D')).strftime('%Y%m%d') ) if config['end_date'] else (
+              config['start_date'] if config['start_date'] else (now_utc() -
+              duration('P60D')).strftime('%Y%m%d') ) }}
+            userId: "{{ config['user_id'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config['blog_ids'] }}"
+          cursor_field: blog_id
+          request_option:
+            type: RequestOption
+            field_name: blogId
+            inject_into: request_parameter
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/twitter_posts"
+    youtube_posts:
+      type: DeclarativeStream
+      name: youtube_posts
+      primary_key:
+        - videoId
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/analytics/posts/youtube
+          http_method: GET
+          request_parameters:
+            to: >-
+              {{
+              str_to_datetime(config['end_date']).strftime('%Y-%m-%dT00:00:00')
+              if config['end_date'] else now_utc().strftime('%Y-%m-%dT00:00:00')
+              }}
+            from: >-
+              {{ ( (
+              str_to_datetime(config['start_date']).strftime('%Y-%m-%dT00:00:00')
+              if str_to_datetime(config['start_date']) <
+              str_to_datetime(config['end_date']) else
+              (str_to_datetime(config['end_date']) -
+              duration('P1D')).strftime('%Y-%m-%dT00:00:00') ) if
+              config['start_date'] else (str_to_datetime(config['end_date']) -
+              duration('P1D')).strftime('%Y-%m-%dT00:00:00') ) if
+              config['end_date'] else ( config['start_date'] if
+              config['start_date'] else (now_utc() -
+              duration('P60D')).strftime('%Y-%m-%dT00:00:00') ) }}
+            userId: "{{ config['user_id'] }}"
+            postsType: publishedInRange
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config['blog_ids'] }}"
+          cursor_field: blog_id
+          request_option:
+            type: RequestOption
+            field_name: blogId
+            inject_into: request_parameter
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - blogId
+              value: "{{ stream_partition['blog_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/youtube_posts"
+  base_requester:
+    type: HttpRequester
+    url_base: https://app.metricool.com/api
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"user_token\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: X-Mc-Auth
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/brands"
+  - $ref: "#/definitions/streams/facebook_competitors"
+  - $ref: "#/definitions/streams/facebook_stories"
+  - $ref: "#/definitions/streams/facebook_posts"
+  - $ref: "#/definitions/streams/facebook_reels"
+  - $ref: "#/definitions/streams/facebook_stories_timelines"
+  - $ref: "#/definitions/streams/facebook_posts_timelines"
+  - $ref: "#/definitions/streams/facebook_reels_timelines"
+  - $ref: "#/definitions/streams/instagram_competitors"
+  - $ref: "#/definitions/streams/instagram_stories"
+  - $ref: "#/definitions/streams/instagram_posts"
+  - $ref: "#/definitions/streams/instagram_reels"
+  - $ref: "#/definitions/streams/instagram_stories_timelines"
+  - $ref: "#/definitions/streams/instagram_posts_timelines"
+  - $ref: "#/definitions/streams/instagram_reels_timelines"
+  - $ref: "#/definitions/streams/tiktok_posts"
+  - $ref: "#/definitions/streams/tiktok_video_timelines"
+  - $ref: "#/definitions/streams/tiktok_account_timelines"
+  - $ref: "#/definitions/streams/linkedin_posts"
+  - $ref: "#/definitions/streams/twitter_posts"
+  - $ref: "#/definitions/streams/youtube_posts"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - user_token
+      - user_id
+      - blog_ids
+    properties:
+      user_token:
+        type: string
+        description: >-
+          User token to authenticate API requests. Find it in the Account
+          Settings menu, API section of your Metricool account.
+        name: user_token
+        order: 0
+        title: User Token
+        airbyte_secret: true
+      user_id:
+        type: string
+        description: Account ID
+        order: 1
+        title: User ID
+      blog_ids:
+        type: array
+        description: Brand IDs
+        order: 2
+        title: Blog IDs
+      start_date:
+        type: string
+        description: >-
+          If not set, defaults to 60 days back. If below "End Date", defaults to
+          1 day before "End Date"
+        order: 3
+        title: Start Date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      end_date:
+        type: string
+        description: If not set, defaults to current datetime.
+        order: 4
+        title: End Date
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    brands: false
+    facebook_competitors: false
+    facebook_stories: false
+    facebook_posts: false
+    facebook_reels: false
+    facebook_stories_timelines: false
+    facebook_posts_timelines: false
+    facebook_reels_timelines: false
+    instagram_competitors: false
+    instagram_stories: true
+    instagram_posts: true
+    instagram_reels: true
+    instagram_stories_timelines: false
+    instagram_posts_timelines: false
+    instagram_reels_timelines: false
+    tiktok_posts: false
+    tiktok_video_timelines: false
+    tiktok_account_timelines: false
+    linkedin_posts: false
+    twitter_posts: true
+    youtube_posts: true
+  testedStreams:
+    brands:
+      hasRecords: true
+      streamHash: 545bcf16c569c8b66493ec57a334991809676a53
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    facebook_competitors:
+      hasRecords: true
+      streamHash: 61ea3fe77fb2463e21b401a09f031a0024105486
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    facebook_stories:
+      hasRecords: true
+      streamHash: 8d47c90487e0d69cbdbfe18fe02bd087b0390927
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    facebook_posts:
+      hasRecords: true
+      streamHash: 0196e6875a513bc0802acfce558fbe7b3b9044cd
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    facebook_reels:
+      hasRecords: true
+      streamHash: f403966444d7c5e65219724757b9e7bab379c3dc
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    facebook_stories_timelines:
+      hasRecords: true
+      streamHash: 0f51aa3788b9178c869bf794625f53c8c8b24a36
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    facebook_posts_timelines:
+      hasRecords: true
+      streamHash: aef36d32dc167816b4567abd047f8194b677280c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    facebook_reels_timelines:
+      hasRecords: true
+      streamHash: 82802b9f57e160290effd03cc87ee0da5c0c2fb4
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    instagram_competitors:
+      hasRecords: true
+      streamHash: 62931cae673847edb5d43a65547416e21a517a2f
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    instagram_stories:
+      hasRecords: true
+      streamHash: f27860af714c065f7e43524442fcd08c169a5e51
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    instagram_posts:
+      hasRecords: true
+      streamHash: 638cdbf3b0e0dcb9be2498b99e8d6cab7e1dbd11
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    instagram_reels:
+      hasRecords: true
+      streamHash: a158c7e01d6dc4280856e1d955ca8d9fa66d70c2
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    instagram_stories_timelines:
+      hasRecords: true
+      streamHash: 0a9a07b9bf59980ed74e0b9ce048c14d2415ecc6
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    instagram_posts_timelines:
+      hasRecords: true
+      streamHash: 7044b76ad6b184830204e07bc785c4e273c991e7
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    instagram_reels_timelines:
+      hasRecords: true
+      streamHash: e5c8a2db0a3ab58347b935a421166d7f64d07cf8
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    tiktok_posts:
+      hasRecords: true
+      streamHash: d754cfb384885c086f7fcb3edb0d82a466603f08
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    tiktok_video_timelines:
+      hasRecords: true
+      streamHash: d8e050bbc553a7ed9024a50d496ea117db5f5ca9
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    tiktok_account_timelines:
+      hasRecords: true
+      streamHash: c3c4257f4cce292e854ac2e5941359b4a5a8fea1
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    linkedin_posts:
+      hasRecords: true
+      streamHash: 7c0ef3460f0dcea804c5d96b9ea14f7cdbe283da
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    twitter_posts:
+      hasRecords: true
+      streamHash: bd7aae4c12155340081d50197a9504772dba254e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    youtube_posts:
+      hasRecords: true
+      streamHash: dde6772c1721f10298c51ea6ff3f54199fc8ccf6
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist:
+    docsUrl: https://app.metricool.com/resources/apidocs/index.html
+    openapiSpecUrl: https://abn-digital.github.io/public-documents/metricool_swagger.json
+
+schemas:
+  brands:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      deleted:
+        type:
+          - boolean
+          - "null"
+      engagementRatio:
+        type:
+          - number
+          - "null"
+      facebook:
+        type:
+          - string
+          - "null"
+      facebookAds:
+        type:
+          - string
+          - "null"
+      facebookPageId:
+        type:
+          - string
+          - "null"
+      fbBusinessId:
+        type:
+          - string
+          - "null"
+      firstConnectionDate:
+        type:
+          - number
+          - "null"
+      hash:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - number
+          - "null"
+      instagram:
+        type:
+          - string
+          - "null"
+      isShared:
+        type:
+          - boolean
+          - "null"
+      joinDate:
+        type:
+          - number
+          - "null"
+      label:
+        type:
+          - string
+          - "null"
+      linkedinCompany:
+        type:
+          - string
+          - "null"
+      ownerUserId:
+        type:
+          - number
+          - "null"
+      ownerUsername:
+        type:
+          - string
+          - "null"
+      picture:
+        type:
+          - string
+          - "null"
+      pinterest:
+        type:
+          - string
+          - "null"
+      role:
+        type:
+          - string
+          - "null"
+      tiktok:
+        type:
+          - string
+          - "null"
+      tiktokads:
+        type:
+          - string
+          - "null"
+      timezone:
+        type:
+          - string
+          - "null"
+      userId:
+        type:
+          - number
+          - "null"
+      youtube:
+        type:
+          - string
+          - "null"
+  facebook_competitors:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      displayName:
+        type:
+          - string
+          - "null"
+      favorite:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      isDemo:
+        type:
+          - boolean
+          - "null"
+      picture:
+        type:
+          - string
+          - "null"
+      provider:
+        type:
+          - string
+          - "null"
+      providerId:
+        type:
+          - string
+          - "null"
+      screenName:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  facebook_stories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      blogId:
+        type: number
+      created:
+        type:
+          - object
+          - "null"
+        properties:
+          dateTime:
+            type:
+              - string
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+      mediaId:
+        type:
+          - string
+          - "null"
+      mediaType:
+        type:
+          - string
+          - "null"
+      pageId:
+        type:
+          - string
+          - "null"
+      storyId:
+        type: string
+      storyUrl:
+        type:
+          - string
+          - "null"
+      thumbnailUrl:
+        type:
+          - string
+          - "null"
+    required:
+      - blogId
+      - storyId
+  facebook_posts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      blogId:
+        type: number
+      clicks:
+        type:
+          - number
+          - "null"
+      comments:
+        type:
+          - number
+          - "null"
+      created:
+        type:
+          - number
+          - "null"
+      engagement:
+        type:
+          - number
+          - "null"
+      facebookPulicPageIdsCache:
+        type:
+          - object
+          - "null"
+      impressions:
+        type:
+          - number
+          - "null"
+      impressionsOrganic:
+        type:
+          - number
+          - "null"
+      impressionsPaid:
+        type:
+          - number
+          - "null"
+      impressionsUnique:
+        type:
+          - number
+          - "null"
+      impressionsUniqueOrganic:
+        type:
+          - number
+          - "null"
+      impressionsUniquePaid:
+        type:
+          - number
+          - "null"
+      link:
+        type:
+          - string
+          - "null"
+      linkclicks:
+        type:
+          - number
+          - "null"
+      pageId:
+        type:
+          - string
+          - "null"
+      picture:
+        type:
+          - string
+          - "null"
+      postId:
+        type: string
+      reactions:
+        type:
+          - number
+          - "null"
+      shares:
+        type:
+          - number
+          - "null"
+      spend:
+        type:
+          - number
+          - "null"
+      text:
+        type:
+          - string
+          - "null"
+      timestamp:
+        type:
+          - number
+          - "null"
+      videoTimeWatched:
+        type:
+          - number
+          - "null"
+      videoViews:
+        type:
+          - number
+          - "null"
+      videoViewsOrganic:
+        type:
+          - number
+          - "null"
+      videoViewsPaid:
+        type:
+          - number
+          - "null"
+    required:
+      - blogId
+      - postId
+  facebook_reels:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      blogId:
+        type: number
+      blueReelsPlayCount:
+        type:
+          - number
+          - "null"
+      created:
+        type:
+          - object
+          - "null"
+        properties:
+          dateTime:
+            type:
+              - string
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+      engagement:
+        type:
+          - number
+          - "null"
+      length:
+        type:
+          - number
+          - "null"
+      pageId:
+        type:
+          - string
+          - "null"
+      postImpressionsUnique:
+        type:
+          - number
+          - "null"
+      postVideoAvgTimeWatchedSeconds:
+        type:
+          - number
+          - "null"
+      postVideoReactions:
+        type:
+          - number
+          - "null"
+      postVideoSocialActions:
+        type:
+          - number
+          - "null"
+      postVideoViewTimeSeconds:
+        type:
+          - number
+          - "null"
+      reelId:
+        type: string
+      reelUrl:
+        type:
+          - string
+          - "null"
+      thumbnailUrl:
+        type:
+          - string
+          - "null"
+      videoUrl:
+        type:
+          - string
+          - "null"
+    required:
+      - blogId
+      - reelId
+  facebook_stories_timelines:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      blogId:
+        type: number
+      datetime:
+        type: string
+      metric:
+        type: string
+      value:
+        type:
+          - number
+          - "null"
+    required:
+      - datetime
+      - blogId
+      - metric
+  facebook_posts_timelines:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      blogId:
+        type: number
+      datetime:
+        type: string
+      metric:
+        type: string
+      value:
+        type:
+          - number
+          - "null"
+    required:
+      - datetime
+      - blogId
+      - metric
+  facebook_reels_timelines:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      blogId:
+        type: number
+      datetime:
+        type: string
+      metric:
+        type: string
+      value:
+        type:
+          - number
+          - "null"
+    required:
+      - datetime
+      - blogId
+      - metric
+  instagram_competitors:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      comments:
+        type:
+          - number
+          - "null"
+      cost:
+        type:
+          - number
+          - "null"
+      costPerInteraction:
+        type:
+          - number
+          - "null"
+      displayName:
+        type:
+          - string
+          - "null"
+      engagement:
+        type:
+          - number
+          - "null"
+      favorite:
+        type:
+          - boolean
+          - "null"
+      followers:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      isDemo:
+        type:
+          - boolean
+          - "null"
+      likes:
+        type:
+          - number
+          - "null"
+      picture:
+        type:
+          - string
+          - "null"
+      posts:
+        type:
+          - number
+          - "null"
+      provider:
+        type:
+          - string
+          - "null"
+      providerId:
+        type:
+          - string
+          - "null"
+      reels:
+        type:
+          - number
+          - "null"
+      screenName:
+        type:
+          - string
+          - "null"
+      updated:
+        type:
+          - number
+          - "null"
+    required:
+      - id
+  instagram_stories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      blogId:
+        type: number
+      businessId:
+        type:
+          - string
+          - "null"
+      content:
+        type:
+          - string
+          - "null"
+      exits:
+        type:
+          - number
+          - "null"
+      impressions:
+        type:
+          - number
+          - "null"
+      mediaUrl:
+        type:
+          - string
+          - "null"
+      owner:
+        type:
+          - string
+          - "null"
+      permalink:
+        type:
+          - string
+          - "null"
+      postId:
+        type: string
+      reach:
+        type:
+          - number
+          - "null"
+      replies:
+        type:
+          - number
+          - "null"
+      tapsBack:
+        type:
+          - number
+          - "null"
+      tapsForward:
+        type:
+          - number
+          - "null"
+      thumbnailUrl:
+        type:
+          - string
+          - "null"
+      timestamp:
+        type:
+          - number
+          - "null"
+    required:
+      - blogId
+      - postId
+  instagram_posts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      blogId:
+        type: number
+      businessId:
+        type:
+          - string
+          - "null"
+      clicks:
+        type:
+          - number
+          - "null"
+      comments:
+        type:
+          - number
+          - "null"
+      content:
+        type:
+          - string
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      engagement:
+        type:
+          - number
+          - "null"
+      filter:
+        type:
+          - string
+          - "null"
+      imageUrl:
+        type:
+          - string
+          - "null"
+      impressions:
+        type:
+          - number
+          - "null"
+      impressionsTotal:
+        type:
+          - number
+          - "null"
+      interactions:
+        type:
+          - number
+          - "null"
+      likes:
+        type:
+          - number
+          - "null"
+      postId:
+        type: string
+      reach:
+        type:
+          - number
+          - "null"
+      saved:
+        type:
+          - number
+          - "null"
+      shares:
+        type:
+          - number
+          - "null"
+      timestamp:
+        type:
+          - number
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      userId:
+        type:
+          - string
+          - "null"
+      videoViewsTotal:
+        type:
+          - number
+          - "null"
+      views:
+        type:
+          - number
+          - "null"
+    required:
+      - blogId
+      - postId
+  instagram_reels:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      blogId:
+        type: number
+      businessId:
+        type:
+          - string
+          - "null"
+      clicks:
+        type:
+          - number
+          - "null"
+      comments:
+        type:
+          - number
+          - "null"
+      content:
+        type:
+          - string
+          - "null"
+      created:
+        type:
+          - string
+          - "null"
+      engagement:
+        type:
+          - number
+          - "null"
+      filter:
+        type:
+          - string
+          - "null"
+      imageUrl:
+        type:
+          - string
+          - "null"
+      impressions:
+        type:
+          - number
+          - "null"
+      impressionsPaid:
+        type:
+          - number
+          - "null"
+      impressionsTotal:
+        type:
+          - number
+          - "null"
+      interactions:
+        type:
+          - number
+          - "null"
+      likes:
+        type:
+          - number
+          - "null"
+      postClicksPaid:
+        type:
+          - number
+          - "null"
+      postInteractionsPaid:
+        type:
+          - number
+          - "null"
+      reach:
+        type:
+          - number
+          - "null"
+      reachPaid:
+        type:
+          - number
+          - "null"
+      reelId:
+        type: string
+      saved:
+        type:
+          - number
+          - "null"
+      shares:
+        type:
+          - number
+          - "null"
+      spend:
+        type:
+          - number
+          - "null"
+      timestamp:
+        type:
+          - number
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+      userId:
+        type:
+          - string
+          - "null"
+      videoViews:
+        type:
+          - number
+          - "null"
+      videoViewsPaid:
+        type:
+          - number
+          - "null"
+      videoViewsTotal:
+        type:
+          - number
+          - "null"
+      views:
+        type:
+          - number
+          - "null"
+    required:
+      - blogId
+      - reelId
+  instagram_stories_timelines:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      blogId:
+        type: number
+      datetime:
+        type: string
+      metric:
+        type: string
+      value:
+        type:
+          - number
+          - "null"
+    required:
+      - datetime
+      - blogId
+      - metric
+  instagram_posts_timelines:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      blogId:
+        type: number
+      datetime:
+        type: string
+      metric:
+        type: string
+      value:
+        type:
+          - number
+          - "null"
+    required:
+      - datetime
+      - blogId
+      - metric
+  instagram_reels_timelines:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      blogId:
+        type: number
+      datetime:
+        type: string
+      metric:
+        type: string
+      value:
+        type:
+          - number
+          - "null"
+    required:
+      - datetime
+      - blogId
+      - metric
+  tiktok_posts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      averageTimeWatched:
+        type:
+          - number
+          - "null"
+      blogId:
+        type: number
+      commentCount:
+        type:
+          - number
+          - "null"
+      coverImageUrl:
+        type:
+          - string
+          - "null"
+      createTime:
+        type:
+          - string
+          - "null"
+      duration:
+        type:
+          - number
+          - "null"
+      embedLink:
+        type:
+          - string
+          - "null"
+      engagement:
+        type:
+          - number
+          - "null"
+      fullVideoWatchedRate:
+        type:
+          - number
+          - "null"
+      height:
+        type:
+          - number
+          - "null"
+      impressionSources:
+        type:
+          - object
+          - "null"
+        properties:
+          follow:
+            type:
+              - number
+              - "null"
+          forYou:
+            type:
+              - number
+              - "null"
+          personalProfile:
+            type:
+              - number
+              - "null"
+          search:
+            type:
+              - number
+              - "null"
+          sound:
+            type:
+              - number
+              - "null"
+      likeCount:
+        type:
+          - number
+          - "null"
+      openId:
+        type:
+          - string
+          - "null"
+      reach:
+        type:
+          - number
+          - "null"
+      shareCount:
+        type:
+          - number
+          - "null"
+      shareUrl:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      totalTimeWatched:
+        type:
+          - number
+          - "null"
+      videoDescription:
+        type:
+          - string
+          - "null"
+      videoId:
+        type: string
+      viewCount:
+        type:
+          - number
+          - "null"
+      width:
+        type:
+          - number
+          - "null"
+    required:
+      - blogId
+      - videoId
+  tiktok_video_timelines:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      blogId:
+        type: number
+      datetime:
+        type: string
+      metric:
+        type: string
+      value:
+        type:
+          - number
+          - "null"
+    required:
+      - datetime
+      - blogId
+      - metric
+  tiktok_account_timelines:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      blogId:
+        type: number
+      datetime:
+        type: string
+      metric:
+        type: string
+      value:
+        type:
+          - number
+          - "null"
+    required:
+      - datetime
+      - blogId
+      - metric
+  linkedin_posts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+      blogId:
+        type:
+          - number
+          - "null"
+      clicks:
+        type:
+          - number
+          - "null"
+      comment:
+        type:
+          - string
+          - "null"
+      comments:
+        type:
+          - number
+          - "null"
+      companyId:
+        type:
+          - string
+          - "null"
+      created:
+        type:
+          - number
+          - "null"
+      createdTimestamp:
+        type:
+          - number
+          - "null"
+      engagement:
+        type:
+          - number
+          - "null"
+      impressions:
+        type:
+          - number
+          - "null"
+      likes:
+        type:
+          - number
+          - "null"
+      picture:
+        type:
+          - string
+          - "null"
+      postId:
+        type: string
+      shares:
+        type:
+          - number
+          - "null"
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - postId
+  twitter_posts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      blogId:
+        type:
+          - number
+          - "null"
+      created:
+        type:
+          - number
+          - "null"
+      createdAt:
+        type:
+          - number
+          - "null"
+      favoriteCount:
+        type:
+          - number
+          - "null"
+      favorites:
+        type:
+          - number
+          - "null"
+      hasMedia:
+        type:
+          - boolean
+          - "null"
+      hasPhoto:
+        type:
+          - boolean
+          - "null"
+      hasTags:
+        type:
+          - boolean
+          - "null"
+      hasUrls:
+        type:
+          - boolean
+          - "null"
+      hasVideo:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      idStr:
+        type:
+          - string
+          - "null"
+      isRetweet:
+        type:
+          - boolean
+          - "null"
+      lang:
+        type:
+          - string
+          - "null"
+      linkClicks:
+        type:
+          - number
+          - "null"
+      metricsV2:
+        type:
+          - object
+          - "null"
+        properties:
+          organic_impressions:
+            type:
+              - number
+              - "null"
+          organic_likes:
+            type:
+              - number
+              - "null"
+          organic_replies:
+            type:
+              - number
+              - "null"
+          promoted_impressions:
+            type:
+              - number
+              - "null"
+          promoted_likes:
+            type:
+              - number
+              - "null"
+          promoted_replies:
+            type:
+              - number
+              - "null"
+          total_engagement:
+            type:
+              - number
+              - "null"
+          total_impressions:
+            type:
+              - number
+              - "null"
+          total_likes:
+            type:
+              - number
+              - "null"
+          total_replies:
+            type:
+              - number
+              - "null"
+      promoted:
+        type:
+          - boolean
+          - "null"
+      retweet:
+        type:
+          - boolean
+          - "null"
+      retweetCount:
+        type:
+          - number
+          - "null"
+      retweets:
+        type:
+          - number
+          - "null"
+      text:
+        type:
+          - string
+          - "null"
+      tweetId:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - number
+          - "null"
+      userId:
+        type:
+          - number
+          - "null"
+      userName:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  youtube_posts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      averageViewDuration:
+        type:
+          - number
+          - "null"
+      blogId:
+        type:
+          - number
+          - "null"
+      comments:
+        type:
+          - number
+          - "null"
+      dislikes:
+        type:
+          - number
+          - "null"
+      hasRevenueData:
+        type:
+          - boolean
+          - "null"
+      likes:
+        type:
+          - number
+          - "null"
+      publishedAt:
+        type:
+          - object
+          - "null"
+        properties:
+          dateTime:
+            type:
+              - string
+              - "null"
+          timezone:
+            type:
+              - string
+              - "null"
+      shares:
+        type:
+          - number
+          - "null"
+      thumbnailUrl:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      videoId:
+        type: string
+      views:
+        type:
+          - number
+          - "null"
+      watchMinutes:
+        type:
+          - number
+          - "null"
+      watchUrl:
+        type:
+          - string
+          - "null"
+    required:
+      - videoId
