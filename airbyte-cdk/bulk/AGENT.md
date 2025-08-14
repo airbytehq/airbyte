@@ -18,5 +18,6 @@ When module is mentioned, it refers to this [folder](.)
     - update the [changelog.md](changelog.md) where we need to add a description for the new version
     - If the version has already been bumped on the local branch, we shouldn't bump it again
 - We format our code by running the command `pre-commit run --all-files` from the root of the project
+- when writing a test function, the function name can't start with test because it is redundant
 
 When you are done with a change always run the format and update the changelog if needed.

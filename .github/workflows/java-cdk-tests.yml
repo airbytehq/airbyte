@@ -53,7 +53,7 @@ jobs:
         with:
           filters: |
             java:
-              - 'airbyte-cdk/bulk/**/*'
+              - 'airbyte-cdk/bulk/**/**/src/main/**/*'
 
   run-check-bulk-cdk-version:
     needs:
