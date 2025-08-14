@@ -14,7 +14,6 @@ import io.airbyte.cdk.command.SourceConfigurationFactory
 import io.airbyte.cdk.output.DataChannelMedium.STDIO
 import io.airbyte.cdk.output.sockets.DATA_CHANNEL_PROPERTY_PREFIX
 import io.airbyte.cdk.ssh.SshConnectionOptions
-import io.airbyte.cdk.ssh.SshNoTunnelMethod
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
@@ -57,7 +56,9 @@ data class PostgresSourceConfiguration(
     private class MicronautFactory {
         @Singleton
         fun postgresSourceConfig(
-            factory: SourceConfigurationFactory<PostgresSourceConfigurationSpecification, PostgresSourceConfiguration>,
+            factory:
+                SourceConfigurationFactory<
+                    PostgresSourceConfigurationSpecification, PostgresSourceConfiguration>,
             supplier: ConfigurationSpecificationSupplier<PostgresSourceConfigurationSpecification>
         ) = factory.make(supplier.get())
     }
@@ -86,7 +87,8 @@ constructor(
     @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.medium}") val dataChannelMedium: String = STDIO.name,
     @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.socket-paths}")
     val socketPaths: List<String> = emptyList(),
-) :SourceConfigurationFactory<
+) :
+    SourceConfigurationFactory<
         PostgresSourceConfigurationSpecification, PostgresSourceConfiguration> {
     override fun makeWithoutExceptionHandling(
         pojo: PostgresSourceConfigurationSpecification,
@@ -118,7 +120,6 @@ constructor(
         val sshOpts: SshConnectionOptions =
             SshConnectionOptions.fromAdditionalProperties(pojo.getAdditionalProperties())
 
-
         /*// Configure SSL encryption.
         if (
             pojo.getEncryptionValue() is EncryptionPreferred &&
@@ -134,7 +135,8 @@ constructor(
         io.airbyte.integrations.source.mysql.log.info { "SSL mode: ${sslJdbcProperties["sslMode"]}" }*/
 
         // Configure cursor.
-        val incremental: IncrementalConfiguration = fromIncrementalSpec(pojo.getIncrementalConfigurationSpecificationValue())
+        val incremental: IncrementalConfiguration =
+            fromIncrementalSpec(pojo.getIncrementalConfigurationSpecificationValue())
 
         // Build JDBC URL.
         val address = "%s:%d"
@@ -151,12 +153,10 @@ constructor(
 
         val maxDBConnections: Int? = pojo.max_db_connections
 
-        log.info {
-            "maxDBConnections: $maxDBConnections. socket paths: ${socketPaths.size}"
-        }
+        log.info { "maxDBConnections: $maxDBConnections. socket paths: ${socketPaths.size}" }
 
-        //If max_db_connections is set, we use it.
-        //Otherwise, we use the number of socket paths provided.
+        // If max_db_connections is set, we use it.
+        // Otherwise, we use the number of socket paths provided.
         val maxConcurrency: Int = maxDBConnections ?: socketPaths.size
         log.info { "Effective concurrency: $maxConcurrency" }
 
