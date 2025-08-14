@@ -4484,6 +4484,8 @@ definitions:
                     backoff_time_in_seconds: 305
           request_headers:
             accept: application/json
+          request_parameters:
+            showVoids: "1"
         record_selector:
           type: RecordSelector
           extractor:
@@ -5817,6 +5819,8 @@ definitions:
                     backoff_time_in_seconds: 305
           request_headers:
             accept: application/json
+          request_parameters:
+            showVoids: "1"
         record_selector:
           type: RecordSelector
           extractor:
@@ -7493,7 +7497,7 @@ metadata:
       responsesAreSuccessful: true
     folios_transactions:
       hasRecords: true
-      streamHash: d20e2cc3cfccd7ddb981f9197cf8d6df56e518f3
+      streamHash: 7466e7caf2a6561f8850e5dd5989bb0b94df35ae
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -7584,7 +7588,7 @@ metadata:
       responsesAreSuccessful: true
     accounting_transactions:
       hasRecords: true
-      streamHash: b3542497fbbfc850b96e7ced0fd6586589b4eec9
+      streamHash: a93ad7377d04d30996b2a9e82fe5d93e4e0e304b
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
