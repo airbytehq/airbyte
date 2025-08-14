@@ -42,45 +42,11 @@ TEST_CONFIG.update(
     }
 )
 
-TEST_INSTANCE = SourceTwilio()
+TEST_INSTANCE = SourceTwilio(TEST_CONFIG, None, None)
 
 
 class TestTwilioStream:
     CONFIG = {"authenticator": TEST_CONFIG.get("authenticator")}
-
-    @pytest.mark.parametrize(
-        "stream_cls, expected",
-        [
-            (Accounts, "accounts"),
-        ],
-    )
-    def test_data_field(self, stream_cls, expected):
-        stream = stream_cls(**self.CONFIG)
-        result = stream.data_field
-        assert result == expected
-
-    @pytest.mark.parametrize(
-        "stream_cls, expected",
-        [
-            (Accounts, ["name"]),
-        ],
-    )
-    def test_changeable_fields(self, stream_cls, expected):
-        with patch.object(Accounts, "changeable_fields", ["name"]):
-            stream = stream_cls(**self.CONFIG)
-            result = stream.changeable_fields
-            assert result == expected
-
-    @pytest.mark.parametrize(
-        "stream_cls, expected",
-        [
-            (Accounts, "Accounts.json"),
-        ],
-    )
-    def test_path(self, stream_cls, expected):
-        stream = stream_cls(**self.CONFIG)
-        result = stream.path()
-        assert result == expected
 
     @pytest.mark.parametrize(
         "stream_cls, test_response, expected",
