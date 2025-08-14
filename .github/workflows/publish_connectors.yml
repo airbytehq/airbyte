@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - dbgold17/fix-connector-publish-workflow
     paths:
       - "airbyte-integrations/connectors/**/metadata.yaml"
   workflow_call:
@@ -168,16 +169,16 @@ jobs:
             echo "Using a dev tag for a pre-release build: ${tag_override}"
           fi
 
-      # - name: Build and publish Python and Manifest-Only connectors images [On merge to master]
-      #   id: build-and-publish-python-manifest-only-connectors-images-master
-      #   if: github.event_name == 'push' && steps.connector-metadata.outputs.connector-language != 'java'
-      #   uses: ./.github/actions/connector-image-build-push
-      #   with:
-      #     connector-name: ${{ matrix.connector }}
-      #     push-latest: ${{ steps.get-connector-options.outputs.push-latest }}
-      #     dry-run: "false"
-      #     docker-hub-username: ${{ secrets.DOCKER_HUB_USERNAME }}
-      #     docker-hub-password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+      - name: Build and publish Python and Manifest-Only connectors images [On merge to master]
+        id: build-and-publish-python-manifest-only-connectors-images-master
+        if: github.event_name == 'push' && steps.connector-metadata.outputs.connector-language != 'java'
+        uses: ./.github/actions/connector-image-build-push
+        with:
+          connector-name: ${{ matrix.connector }}
+          push-latest: ${{ steps.get-connector-options.outputs.push-latest }}
+          dry-run: "false"
+          docker-hub-username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          docker-hub-password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
       - name: Publish connectors [On merge to master]
         # JVM docker images are published beforehand so Airbyte-CI only does registry publishing.
@@ -219,17 +220,17 @@ jobs:
         shell: bash
         run: ./poe-tasks/build-and-publish-java-connectors-with-tag.sh  ${{ inputs.publish-options }} --name ${{ matrix.connector }} --publish
 
-      # - name: Build and publish Python and Manifest-Only connectors images [manual]
-      #   id: build-and-publish-python-manifest-only-connectors-images-manual
-      #   if: (github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call') && steps.connector-metadata.outputs.connector-language != 'java'
-      #   uses: ./.github/actions/connector-image-build-push
-      #   with:
-      #     connector-name: ${{ matrix.connector }}
-      #     push-latest: ${{ steps.get-connector-options.outputs.push-latest }}
-      #     tag-override: ${{ steps.get-connector-options.outputs.tag-override }}
-      #     dry-run: "false"
-      #     docker-hub-username: ${{ secrets.DOCKER_HUB_USERNAME }}
-      #     docker-hub-password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+      - name: Build and publish Python and Manifest-Only connectors images [manual]
+        id: build-and-publish-python-manifest-only-connectors-images-manual
+        if: (github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call') && steps.connector-metadata.outputs.connector-language != 'java'
+        uses: ./.github/actions/connector-image-build-push
+        with:
+          connector-name: ${{ matrix.connector }}
+          push-latest: ${{ steps.get-connector-options.outputs.push-latest }}
+          tag-override: ${{ steps.get-connector-options.outputs.tag-override }}
+          dry-run: "false"
+          docker-hub-username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          docker-hub-password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
       - name: Publish connectors [manual]
         id: publish-connectors-manual
