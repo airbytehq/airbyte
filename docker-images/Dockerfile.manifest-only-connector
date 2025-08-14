@@ -28,6 +28,5 @@ RUN if [ -f components.py ]; then cp components.py ./source_declarative_manifest
 
 # Set user and entrypoint explicitly
 # This is the same as defined in the source-declarative-manifest base image
-USER airbyte
-ENV AIRBYTE_ENTRYPOINT="python /airbyte/integration_code/main.py"
-ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
+ENV AIRBYTE_ENTRYPOINT="python ./main.py"
+ENTRYPOINT ["python", "./main.py"]
