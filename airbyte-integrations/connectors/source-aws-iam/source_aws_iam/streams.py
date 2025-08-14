@@ -2365,34 +2365,39 @@ class S3BucketsStream(BaseS3Stream):
         # Start with basic bucket information
         bucket_metadata = {
             "Name": bucket_name,
-            "CreationDate": creation_date
+            "CreationDate": creation_date,
+            "Region": None,  # Skip region detection due to potential access issues
+            "LocationConstraint": None
         }
 
-        # Get bucket region first (needed for some operations)
+        # Get S3 client for bucket operations
         client = self._get_s3_client()
-        location_response = client.get_bucket_location(Bucket=bucket_name)
-        region = location_response.get("LocationConstraint") or "us-east-1"
-        bucket_metadata["Region"] = region
-        bucket_metadata["LocationConstraint"] = location_response.get("LocationConstraint")
 
         # Get versioning configuration
-        versioning_response = client.get_bucket_versioning(Bucket=bucket_name)
-        bucket_metadata["Versioning"] = {
-            "Status": versioning_response.get("Status"),
-            "MfaDelete": versioning_response.get("MfaDelete")
-        }
+        try:
+            versioning_response = client.get_bucket_versioning(Bucket=bucket_name)
+            bucket_metadata["Versioning"] = {
+                "Status": versioning_response.get("Status"),
+                "MfaDelete": versioning_response.get("MfaDelete")
+            }
+        except client.exceptions.ClientError as e:
+            error_code = e.response['Error']['Code']
+            if error_code in ['AccessDenied']:
+                # Access denied for this bucket configuration - skip it
+                logging.info(f"Access denied for bucket versioning on {bucket_name}, skipping")
+                bucket_metadata["Versioning"] = None
+            else:
+                # Re-raise unexpected errors
+                raise
 
         # Get encryption configuration
         try:
             encryption_response = client.get_bucket_encryption(Bucket=bucket_name)
             bucket_metadata["Encryption"] = encryption_response.get("ServerSideEncryptionConfiguration")
-        except client.exceptions.NoSuchBucket:
-            # Re-raise for real errors
-            raise
         except client.exceptions.ClientError as e:
             error_code = e.response['Error']['Code']
-            if error_code in ['NoSuchEncryptionConfiguration', 'ServerSideEncryptionConfigurationNotFoundError']:
-                # Expected when bucket has no encryption configured
+            if error_code in ['NoSuchEncryptionConfiguration', 'ServerSideEncryptionConfigurationNotFoundError', 'AccessDenied']:
+                # Expected when bucket has no encryption configured or access denied
                 bucket_metadata["Encryption"] = None
             else:
                 # Re-raise unexpected errors
@@ -2402,13 +2407,10 @@ class S3BucketsStream(BaseS3Stream):
         try:
             pab_response = client.get_public_access_block(Bucket=bucket_name)
             bucket_metadata["PublicAccessBlock"] = pab_response.get("PublicAccessBlockConfiguration")
-        except client.exceptions.NoSuchBucket:
-            # Re-raise for real errors
-            raise
         except client.exceptions.ClientError as e:
             error_code = e.response['Error']['Code']
-            if error_code in ['NoSuchPublicAccessBlockConfiguration']:
-                # Expected when bucket has no public access block configured
+            if error_code in ['NoSuchPublicAccessBlockConfiguration', 'AccessDenied']:
+                # Expected when bucket has no public access block configured or access denied
                 bucket_metadata["PublicAccessBlock"] = None
             else:
                 # Re-raise unexpected errors
@@ -2418,13 +2420,10 @@ class S3BucketsStream(BaseS3Stream):
         try:
             lifecycle_response = client.get_bucket_lifecycle_configuration(Bucket=bucket_name)
             bucket_metadata["Lifecycle"] = {"Rules": lifecycle_response.get("Rules")}
-        except client.exceptions.NoSuchBucket:
-            # Re-raise for real errors
-            raise
         except client.exceptions.ClientError as e:
             error_code = e.response['Error']['Code']
-            if error_code in ['NoSuchLifecycleConfiguration']:
-                # Expected when bucket has no lifecycle configured
+            if error_code in ['NoSuchLifecycleConfiguration', 'AccessDenied']:
+                # Expected when bucket has no lifecycle configured or access denied
                 bucket_metadata["Lifecycle"] = None
             else:
                 # Re-raise unexpected errors
@@ -2434,28 +2433,34 @@ class S3BucketsStream(BaseS3Stream):
         try:
             tagging_response = client.get_bucket_tagging(Bucket=bucket_name)
             bucket_metadata["Tagging"] = {"TagSet": tagging_response.get("TagSet")}
-        except client.exceptions.NoSuchBucket:
-            # Re-raise for real errors
-            raise
         except client.exceptions.ClientError as e:
             error_code = e.response['Error']['Code']
-            if error_code in ['NoSuchTagSet']:
-                # Expected when bucket has no tags
+            if error_code in ['NoSuchTagSet', 'AccessDenied']:
+                # Expected when bucket has no tags or access denied
                 bucket_metadata["Tagging"] = None
             else:
                 # Re-raise unexpected errors
                 raise
 
         # Get logging configuration
-        logging_response = client.get_bucket_logging(Bucket=bucket_name)
-        logging_config = logging_response.get("LoggingEnabled")
-        if logging_config:
-            bucket_metadata["Logging"] = {
-                "TargetBucket": logging_config.get("TargetBucket"),
-                "TargetPrefix": logging_config.get("TargetPrefix")
-            }
-        else:
-            bucket_metadata["Logging"] = None
+        try:
+            logging_response = client.get_bucket_logging(Bucket=bucket_name)
+            logging_config = logging_response.get("LoggingEnabled")
+            if logging_config:
+                bucket_metadata["Logging"] = {
+                    "TargetBucket": logging_config.get("TargetBucket"),
+                    "TargetPrefix": logging_config.get("TargetPrefix")
+                }
+            else:
+                bucket_metadata["Logging"] = None
+        except client.exceptions.ClientError as e:
+            error_code = e.response['Error']['Code']
+            if error_code in ['AccessDenied']:
+                # Access denied for logging configuration
+                bucket_metadata["Logging"] = None
+            else:
+                # Re-raise unexpected errors
+                raise
 
         # Get website configuration
         try:
@@ -2464,13 +2469,10 @@ class S3BucketsStream(BaseS3Stream):
                 "IndexDocument": website_response.get("IndexDocument"),
                 "ErrorDocument": website_response.get("ErrorDocument")
             }
-        except client.exceptions.NoSuchBucket:
-            # Re-raise for real errors
-            raise
         except client.exceptions.ClientError as e:
             error_code = e.response['Error']['Code']
-            if error_code in ['NoSuchWebsiteConfiguration']:
-                # Expected when bucket is not configured for website hosting
+            if error_code in ['NoSuchWebsiteConfiguration', 'AccessDenied']:
+                # Expected when bucket is not configured for website hosting or access denied
                 bucket_metadata["Website"] = None
             else:
                 # Re-raise unexpected errors
@@ -2480,25 +2482,31 @@ class S3BucketsStream(BaseS3Stream):
         try:
             cors_response = client.get_bucket_cors(Bucket=bucket_name)
             bucket_metadata["CORS"] = {"CORSRules": cors_response.get("CORSRules")}
-        except client.exceptions.NoSuchBucket:
-            # Re-raise for real errors
-            raise
         except client.exceptions.ClientError as e:
             error_code = e.response['Error']['Code']
-            if error_code in ['NoSuchCORSConfiguration']:
-                # Expected when bucket has no CORS configured
+            if error_code in ['NoSuchCORSConfiguration', 'AccessDenied']:
+                # Expected when bucket has no CORS configured or access denied
                 bucket_metadata["CORS"] = None
             else:
                 # Re-raise unexpected errors
                 raise
 
         # Get notification configuration
-        notification_response = client.get_bucket_notification_configuration(Bucket=bucket_name)
-        bucket_metadata["NotificationConfiguration"] = {
-            "TopicConfigurations": notification_response.get("TopicConfigurations"),
-            "QueueConfigurations": notification_response.get("QueueConfigurations"),
-            "LambdaConfigurations": notification_response.get("LambdaConfigurations")
-        }
+        try:
+            notification_response = client.get_bucket_notification_configuration(Bucket=bucket_name)
+            bucket_metadata["NotificationConfiguration"] = {
+                "TopicConfigurations": notification_response.get("TopicConfigurations"),
+                "QueueConfigurations": notification_response.get("QueueConfigurations"),
+                "LambdaConfigurations": notification_response.get("LambdaConfigurations")
+            }
+        except client.exceptions.ClientError as e:
+            error_code = e.response['Error']['Code']
+            if error_code in ['AccessDenied']:
+                # Access denied for notification configuration
+                bucket_metadata["NotificationConfiguration"] = None
+            else:
+                # Re-raise unexpected errors
+                raise
 
         logging.info(f"Successfully processed S3 bucket {bucket_name}")
         yield serialize_datetime(bucket_metadata)
@@ -2881,6 +2889,47 @@ class BaseEC2Stream(Stream):
             'ca-central-1', 'sa-east-1'
         ]
 
+    def _get_account_id(self):
+        """Get the AWS account ID using STS."""
+        if not hasattr(self, '_account_id'):
+            try:
+                role_arn = self.config.get("role_arn")
+                external_id = self.config.get("external_id")
+                
+                if role_arn:
+                    # Use STS with assume role
+                    sts_client = boto3.client("sts")
+                    assume_role_kwargs = {
+                        "RoleArn": role_arn,
+                        "RoleSessionName": "airbyte-account-lookup"
+                    }
+                    if external_id:
+                        assume_role_kwargs["ExternalId"] = external_id
+                        
+                    credentials = sts_client.assume_role(**assume_role_kwargs)["Credentials"]
+                    
+                    # Create a new session with the assumed role credentials
+                    session = boto3.Session(
+                        aws_access_key_id=credentials["AccessKeyId"],
+                        aws_secret_access_key=credentials["SecretAccessKey"],
+                        aws_session_token=credentials["SessionToken"]
+                    )
+                    sts_client = session.client("sts")
+                else:
+                    # Use default credentials
+                    sts_client = boto3.client("sts")
+                
+                # Get caller identity to extract account ID
+                response = sts_client.get_caller_identity()
+                self._account_id = response["Account"]
+                logging.info(f"Retrieved AWS account ID: {self._account_id}")
+                
+            except Exception as e:
+                logging.error(f"Failed to get AWS account ID: {str(e)}")
+                raise
+                
+        return self._account_id
+
 
 class EC2InstancesStream(BaseEC2Stream):
     """Stream to read AWS EC2 instances metadata across all regions."""
@@ -2892,6 +2941,7 @@ class EC2InstancesStream(BaseEC2Stream):
             "type": "object",
             "properties": {
                 "InstanceId": {"type": "string"},
+                "Arn": {"type": "string"},
                 "ImageId": {"type": ["string", "null"]},
                 "State": {
                     "type": ["object", "null"],
@@ -3118,6 +3168,10 @@ class EC2InstancesStream(BaseEC2Stream):
                     # Add region information to the metadata
                     instance["Region"] = region
                     
+                    # Add ARN for the instance
+                    account_id = self._get_account_id()
+                    instance["Arn"] = f"arn:aws:ec2:{region}:{account_id}:instance/{instance_id}"
+                    
                     logging.info(f"Successfully processed EC2 instance {instance_id} in region {region}")
                     yield serialize_datetime(instance)
                     return
@@ -3136,4 +3190,10 @@ class EC2InstancesStream(BaseEC2Stream):
                 for reservation in page.get("Reservations", []):
                     for instance in reservation.get("Instances", []):
                         instance["Region"] = region
+                        
+                        # Add ARN for the instance
+                        account_id = self._get_account_id()
+                        instance_id = instance.get("InstanceId")
+                        instance["Arn"] = f"arn:aws:ec2:{region}:{account_id}:instance/{instance_id}"
+                        
                         yield serialize_datetime(instance)
