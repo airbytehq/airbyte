@@ -30,3 +30,4 @@ RUN if [ -f components.py ]; then cp components.py ./source_declarative_manifest
 # This is the same as defined in the source-declarative-manifest base image
 ENV AIRBYTE_ENTRYPOINT="python ./main.py"
 ENTRYPOINT ["python", "./main.py"]
+RUN echo "This should be broken!!!"
