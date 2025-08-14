@@ -18,7 +18,10 @@ from metadata_service.gcs_upload import (
     upload_metadata_to_gcs,
 )
 from metadata_service.registry import generate_and_persist_connector_registry
+<<<<<<< HEAD
 from metadata_service.registry_entry import generate_and_persist_registry_entry
+=======
+>>>>>>> pnilan/metadata-service/enable-registry-schedule
 from metadata_service.sentry import setup_sentry
 from metadata_service.specs_secrets_mask import generate_and_persist_specs_secrets_mask
 from metadata_service.stale_metadata_report import generate_and_publish_stale_metadata_report
