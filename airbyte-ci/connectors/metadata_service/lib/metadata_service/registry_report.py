@@ -96,22 +96,22 @@ def _test_summary_url(row: pd.DataFrame) -> str | None:
     return get_public_url_for_gcs_file("unused", path, METADATA_CDN_BASE_URL)
 
 
-def _ab_internal_sl(row: pd.DataFrame) -> str | None:
+def _ab_internal_sl(row: pd.DataFrame) -> int | None:
     ab_internal = row.get("ab_internal_oss")
     if not isinstance(ab_internal, dict) or "sl" not in ab_internal:
         return None
     sl = ab_internal["sl"]
-    if not isinstance(sl, str):
+    if not isinstance(sl, int):
         raise Exception(f"expected sl to be string; got {type(sl)} ({sl})")
     return sl
 
 
-def _ab_internal_ql(row: pd.DataFrame) -> str | None:
+def _ab_internal_ql(row: pd.DataFrame) -> int | None:
     ab_internal = row.get("ab_internal_oss")
     if not isinstance(ab_internal, dict) or "ql" not in ab_internal:
         return None
     ql = ab_internal["ql"]
-    if not isinstance(ql, str):
+    if not isinstance(ql, int):
         raise Exception(f"expected ql to be string; got {type(ql)} ({ql})")
     return ql
 
@@ -229,7 +229,7 @@ def _github_connector_folders() -> List[str]:
 
 
 def _load_registry(bucket: storage.Bucket, filename: str) -> ConnectorRegistryV0:
-    latest_cloud_registry_gcs_blob = bucket.blob(REGISTRIES_FOLDER, filename)
+    latest_cloud_registry_gcs_blob = bucket.blob(f"{REGISTRIES_FOLDER}/{filename}")
     json_string = latest_cloud_registry_gcs_blob.download_as_string().decode("utf-8")
     latest_cloud_registry_dict = json.loads(json_string)
     return ConnectorRegistryV0.parse_obj(latest_cloud_registry_dict)

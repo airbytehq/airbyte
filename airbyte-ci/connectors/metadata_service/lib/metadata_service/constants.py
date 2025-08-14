@@ -3,6 +3,7 @@
 #
 
 import datetime
+from typing import Optional
 
 CONNECTORS_PATH = "airbyte-integrations/connectors"
 METADATA_FILE_NAME = "metadata.yaml"
