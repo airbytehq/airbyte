@@ -112,8 +112,6 @@ streams:
           backoff_strategies:
             - type: WaitTimeFromHeader
               header: Retry-After
-              regex: ""
-              max_waiting_time_in_seconds: null
         request_headers:
           User-Agent: Airbyte
         request_parameters:
@@ -920,8 +918,6 @@ streams:
           backoff_strategies:
             - type: WaitTimeFromHeader
               header: Retry-After
-              regex: ""
-              max_waiting_time_in_seconds: null
         request_headers:
           User-Agent: Airbyte
         request_parameters:
@@ -1013,8 +1009,6 @@ streams:
           backoff_strategies:
             - type: WaitTimeFromHeader
               header: Retry-After
-              regex: ""
-              max_waiting_time_in_seconds: null
         request_headers:
           User-Agent: Airbyte
         request_parameters:
@@ -1616,8 +1610,6 @@ streams:
           backoff_strategies:
             - type: WaitTimeFromHeader
               header: Retry-After
-              regex: ""
-              max_waiting_time_in_seconds: null
         request_headers:
           User-Agent: Airbyte
         request_parameters:
@@ -1791,8 +1783,6 @@ streams:
           backoff_strategies:
             - type: WaitTimeFromHeader
               header: Retry-After
-              regex: ""
-              max_waiting_time_in_seconds: null
         request_headers:
           User-Agent: Airbyte
         request_parameters:
@@ -2186,8 +2176,6 @@ streams:
           backoff_strategies:
             - type: WaitTimeFromHeader
               header: Retry-After
-              regex: ""
-              max_waiting_time_in_seconds: null
         request_headers:
           User-Agent: Airbyte
         request_parameters:
@@ -2474,8 +2462,6 @@ streams:
           backoff_strategies:
             - type: WaitTimeFromHeader
               header: Retry-After
-              regex: ""
-              max_waiting_time_in_seconds: null
         request_headers:
           User-Agent: Airbyte
         request_parameters:
@@ -2726,8 +2712,6 @@ streams:
           backoff_strategies:
             - type: WaitTimeFromHeader
               header: Retry-After
-              regex: ""
-              max_waiting_time_in_seconds: null
         request_headers:
           User-Agent: Airbyte
         request_parameters:
@@ -3008,8 +2992,6 @@ streams:
           backoff_strategies:
             - type: WaitTimeFromHeader
               header: Retry-After
-              regex: ""
-              max_waiting_time_in_seconds: null
         request_headers:
           User-Agent: Airbyte
         request_parameters:
@@ -3260,8 +3242,6 @@ streams:
           backoff_strategies:
             - type: WaitTimeFromHeader
               header: Retry-After
-              regex: ""
-              max_waiting_time_in_seconds: null
         request_headers:
           User-Agent: Airbyte
         request_parameters:
@@ -3452,8 +3432,6 @@ streams:
           backoff_strategies:
             - type: WaitTimeFromHeader
               header: Retry-After
-              regex: ""
-              max_waiting_time_in_seconds: null
         request_headers:
           User-Agent: Airbyte
         request_parameters:
@@ -3700,8 +3678,6 @@ streams:
           backoff_strategies:
             - type: WaitTimeFromHeader
               header: Retry-After
-              regex: ""
-              max_waiting_time_in_seconds: null
         request_headers:
           User-Agent: Airbyte
         request_parameters:
@@ -4003,8 +3979,6 @@ streams:
           backoff_strategies:
             - type: WaitTimeFromHeader
               header: Retry-After
-              regex: ""
-              max_waiting_time_in_seconds: null
         request_headers:
           User-Agent: Airbyte
         request_parameters:
@@ -4185,8 +4159,6 @@ streams:
           backoff_strategies:
             - type: WaitTimeFromHeader
               header: Retry-After
-              regex: ""
-              max_waiting_time_in_seconds: null
         request_headers:
           User-Agent: Airbyte
         request_parameters:
@@ -4338,8 +4310,6 @@ streams:
           backoff_strategies:
             - type: WaitTimeFromHeader
               header: Retry-After
-              regex: ""
-              max_waiting_time_in_seconds: null
         request_headers:
           User-Agent: Airbyte
         request_parameters:
@@ -4490,8 +4460,6 @@ streams:
           backoff_strategies:
             - type: WaitTimeFromHeader
               header: Retry-After
-              regex: ""
-              max_waiting_time_in_seconds: null
         request_headers:
           User-Agent: Airbyte
         request_parameters:
@@ -4605,8 +4573,6 @@ streams:
           backoff_strategies:
             - type: WaitTimeFromHeader
               header: Retry-After
-              regex: ""
-              max_waiting_time_in_seconds: null
         request_headers:
           User-Agent: Airbyte
         request_parameters:
