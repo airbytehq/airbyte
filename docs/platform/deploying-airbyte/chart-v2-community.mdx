@@ -428,7 +428,7 @@ You do not need to restore your database except in exceptional circumstances. On
 
 These examples assume your namespace is still `airbyte` and your database pod name is still `airbyte-db-0`.
 
-1. Copy the SQL backup file into your poid's /tmp directory.
+1. Copy the SQL backup file into your pod's /tmp directory.
 
     ```bash
     kubectl cp ./airbyte_backup.sql airbyte/airbyte-db-0:/tmp/airbyte_backup.sql
