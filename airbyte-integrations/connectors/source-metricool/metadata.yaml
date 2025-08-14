@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e4e1ed94-f374-47fe-8dfa-872fb9935fbe
-  dockerImageTag: 0.0.3
+  dockerImageTag: 0.0.2
   dockerRepository: airbyte/source-metricool
   githubIssueLabel: source-metricool
   icon: icon.svg
