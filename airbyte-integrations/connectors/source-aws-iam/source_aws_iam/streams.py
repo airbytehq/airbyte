@@ -2195,6 +2195,7 @@ class S3BucketsStream(BaseS3Stream):
             "type": "object",
             "properties": {
                 "Name": {"type": "string"},
+                "Arn": {"type": "string"},
                 "CreationDate": {"type": ["string", "null"], "format": "date-time"},
                 "Region": {"type": ["string", "null"]},
                 "LocationConstraint": {"type": ["string", "null"]},
@@ -2365,6 +2366,7 @@ class S3BucketsStream(BaseS3Stream):
         # Start with basic bucket information
         bucket_metadata = {
             "Name": bucket_name,
+            "Arn": f"arn:aws:s3:::{bucket_name}",
             "CreationDate": creation_date,
             "Region": None,  # Skip region detection due to potential access issues
             "LocationConstraint": None
