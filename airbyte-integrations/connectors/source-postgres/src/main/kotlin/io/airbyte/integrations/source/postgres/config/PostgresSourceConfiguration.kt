@@ -149,7 +149,16 @@ constructor(
             throw ConfigErrorException("Checkpoint Target Interval should be positive")
         }
 
-        val concurrency: Int = pojo.concurrency ?: 1
+        val maxDBConnections: Int? = pojo.max_db_connections
+
+        log.info {
+            "maxDBConnections: $maxDBConnections. socket paths: ${socketPaths.size}"
+        }
+
+        //If max_db_connections is set, we use it.
+        //Otherwise, we use the number of socket paths provided.
+        val maxConcurrency: Int = maxDBConnections ?: socketPaths.size
+        log.info { "Effective concurrency: $maxConcurrency" }
 
         return PostgresSourceConfiguration(
             realHost = realHost,
@@ -160,7 +169,7 @@ constructor(
             jdbcProperties = jdbcProperties,
             namespaces = pojo.schemas?.toSet() ?: emptySet(),
             incrementalConfiguration = incremental,
-            maxConcurrency = concurrency,
+            maxConcurrency = maxConcurrency,
             checkpointTargetInterval = checkpointTargetInterval,
             checkPrivileges = pojo.checkPrivileges ?: true,
         )
