@@ -11,6 +11,13 @@ import org.junit.jupiter.api.Test
 class StringInterpolationTest {
 
     @Test
+    internal fun `test given string without interpolation when eval then return same string`() {
+        val string = "this is a string"
+        val interpolatedValue = StringInterpolator().interpolate(string, emptyMap())
+        assertEquals(string, interpolatedValue)
+    }
+
+    @Test
     internal fun `test given if statement true when eval then return proper value`() {
         val interpolatedValue =
             StringInterpolator()
@@ -68,16 +75,42 @@ class StringInterpolationTest {
     @Test
     internal fun `test given ObjectNode when eval then extract values from ObjectNode`() {
         val objectNode =
-            Jsons.objectNode().apply {
-                this.putObject("modificationMetadata").put("readOnlyValue", false)
-            }
+            Jsons.readTree("""{"modificationMetadata": {"readOnlyValue": "readonly"}}""")
 
         val interpolatedValue =
             StringInterpolator()
                 .interpolate(
                     """{{ response.get("modificationMetadata").get("readOnlyValue") }}""",
-                    mapOf("response" to objectNode)
+                    mapOf("response" to objectNode.toInterpolationContext())
                 )
-        assertEquals("false", interpolatedValue)
+        assertEquals("readonly", interpolatedValue)
+    }
+
+    @Test
+    internal fun `test given ObjectNode with get accessor when eval then return value`() {
+        val objectNode =
+            Jsons.readTree("""{"modificationMetadata": {"readOnlyValue": "readonly"}}""")
+
+        val interpolatedValue =
+            StringInterpolator()
+                .interpolate(
+                    """{{ response["modificationMetadata"]["readOnlyValue"] }}""",
+                    mapOf("response" to objectNode.toInterpolationContext())
+                )
+        assertEquals("readonly", interpolatedValue)
+    }
+
+    @Test
+    internal fun `test given ObjectNode with condition when eval then compare the value of the node and not the node itself`() {
+        val objectNode =
+            Jsons.readTree("""{"modificationMetadata": {"readOnlyValue": "readonly"}}""")
+
+        val interpolatedValue =
+            StringInterpolator()
+                .interpolate(
+                    """{{ response["modificationMetadata"]["readOnlyValue"] == "readonly" }}""",
+                    mapOf("response" to objectNode.toInterpolationContext())
+                )
+        assertEquals("true", interpolatedValue)
     }
 }

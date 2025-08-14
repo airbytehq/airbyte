@@ -70,7 +70,7 @@ _SCHEMA_TYPE_IDENTIFIERS = dpath.get(obj=_MANIFEST, glob=["definitions", "schema
                     {"data": [{"rowData": [{"values": [{"formattedValue": "h1"}, {"formattedValue": "h1"}, {"formattedValue": "h3"}]}]}]}
                 ]
             },
-            [{"values": [{"formattedValue": "h3"}]}],
+            [{"values": [{"formattedValue": "h1_A1"}, {"formattedValue": "h1_B1"}, {"formattedValue": "h3"}]}],
         ),
         (
             {
@@ -78,7 +78,7 @@ _SCHEMA_TYPE_IDENTIFIERS = dpath.get(obj=_MANIFEST, glob=["definitions", "schema
                     {"data": [{"rowData": [{"values": [{"formattedValue": "h1"}, {"formattedValue": "h3"}, {"formattedValue": "h3"}]}]}]}
                 ]
             },
-            [{"values": [{"formattedValue": "h1"}]}],
+            [{"values": [{"formattedValue": "h1"}, {"formattedValue": "h3_B1"}, {"formattedValue": "h3_C1"}]}],
         ),
         (
             {
@@ -117,8 +117,14 @@ def test_dpath_schema_extractor(body, expected_records: List):
             {"values": [{"formattedValue": "h1"}, {"formattedValue": "h2"}, {"formattedValue": "h3"}]},
             [(0, "h1", {"formattedValue": "h1"}), (1, "h2", {"formattedValue": "h2"}), (2, "h3", {"formattedValue": "h3"})],
         ),
-        ({"values": [{"formattedValue": "h1"}, {"formattedValue": "h1"}, {"formattedValue": "h3"}]}, [(2, "h3", {"formattedValue": "h3"})]),
-        ({"values": [{"formattedValue": "h1"}, {"formattedValue": "h3"}, {"formattedValue": "h3"}]}, [(0, "h1", {"formattedValue": "h1"})]),
+        (
+            {"values": [{"formattedValue": "h1"}, {"formattedValue": "h1"}, {"formattedValue": "h3"}]},
+            [(0, "h1_A1", {"formattedValue": "h1"}), (1, "h1_B1", {"formattedValue": "h1"}), (2, "h3", {"formattedValue": "h3"})],
+        ),
+        (
+            {"values": [{"formattedValue": "h1"}, {"formattedValue": "h3"}, {"formattedValue": "h3"}]},
+            [(0, "h1", {"formattedValue": "h1"}), (1, "h3_B1", {"formattedValue": "h3"}), (2, "h3_C1", {"formattedValue": "h3"})],
+        ),
         ({"values": [{"formattedValue": "h1"}, {"formattedValue": ""}, {"formattedValue": "h3"}]}, [(0, "h1", {"formattedValue": "h1"})]),
         ({"values": [{"formattedValue": ""}, {"formattedValue": ""}, {"formattedValue": ""}]}, []),
         (
@@ -268,3 +274,24 @@ def test_multiple_flags_with_special_characters():
         )
         == "50th_percentile"
     )
+
+
+def test_dpath_schema_matching_extractor_without_properties_to_match():
+    """
+    Test that DpathSchemaMatchingExtractor can be instantiated without the
+    "properties_to_match" parameter in cases where it is not provided.
+    """
+    parameters_without_properties = {
+        "values_to_match_key": "values",
+        "schema_type_identifier": {"key_pointer": ["formattedValue"], "schema_pointer": ["values"]},
+    }
+
+    # This should not raise an exception
+    extractor = DpathSchemaMatchingExtractor(
+        field_path=_FIELD_PATH, config=config, decoder=decoder_json, parameters=parameters_without_properties
+    )
+
+    # Verify that the extractor was created successfully
+    assert extractor is not None
+    assert extractor._values_to_match_key == "values"
+    assert extractor._indexed_properties_to_match == {}

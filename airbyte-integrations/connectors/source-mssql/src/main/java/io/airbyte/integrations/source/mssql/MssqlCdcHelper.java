@@ -33,6 +33,11 @@ public class MssqlCdcHelper {
   // Test execution latency is lower when heartbeats are more frequent.
   private static final Duration HEARTBEAT_INTERVAL_IN_TESTS = Duration.ofSeconds(1L);
 
+  private static final Duration POLL_INTERVAL = Duration.ofSeconds(5L);
+
+  // The poll.interval.ms must be lower than the heartbeat.interval.ms
+  private static final Duration POLL_INTERVAL_IN_TESTS = Duration.ofMillis(500L);
+
   public enum ReplicationMethod {
     STANDARD,
     CDC
@@ -103,6 +108,14 @@ public class MssqlCdcHelper {
             ? HEARTBEAT_INTERVAL_IN_TESTS
             : HEARTBEAT_INTERVAL;
     props.setProperty("heartbeat.interval.ms", Long.toString(heartbeatInterval.toMillis()));
+
+    // Set poll.interval.ms to 5s. This parameter will determine how long Debezium will wait before
+    // querying for new data. It must be lower than heartbeat.interval.ms
+    final Duration pollInterval =
+        (database.getSourceConfig().has("is_test") && database.getSourceConfig().get("is_test").asBoolean())
+            ? POLL_INTERVAL_IN_TESTS
+            : POLL_INTERVAL;
+    props.setProperty("poll.interval.ms", Long.toString(pollInterval.toMillis()));
 
     if (config.has("ssl_method")) {
       final JsonNode sslConfig = config.get("ssl_method");

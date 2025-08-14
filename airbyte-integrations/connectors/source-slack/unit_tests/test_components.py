@@ -1,21 +1,23 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
+import json
 from unittest.mock import MagicMock
 
-import pendulum
 import pytest
 from source_slack import SourceSlack
 from source_slack.components.channel_members_extractor import ChannelMembersExtractor
 from source_slack.components.join_channels import ChannelsRetriever, JoinChannelsStream
+from source_slack.components.threads_partition_router import ThreadsPartitionRouter
 
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordSelector
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
+from airbyte_cdk.sources.streams.call_rate import MovingWindowCallRatePolicy, UnlimitedCallRatePolicy
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
-from airbyte_protocol.models import SyncMode
 
 
 def get_stream_by_name(stream_name, config):
-    streams = SourceSlack().streams(config=config)
+    streams = SourceSlack(catalog={}, config=config, state={}).streams(config=config)
     for stream in streams:
         if stream.name == stream_name:
             return stream
@@ -24,7 +26,8 @@ def get_stream_by_name(stream_name, config):
 
 def test_channel_members_extractor(token_config):
     response_mock = MagicMock()
-    response_mock.json.return_value = {"members": ["U023BECGF", "U061F7AUR", "W012A3CDE"]}
+    members_data = {"members": ["U023BECGF", "U061F7AUR", "W012A3CDE"]}
+    response_mock.content = json.dumps(members_data).encode("utf-8")
     records = ChannelMembersExtractor(config=token_config, parameters={}, field_path=["members"]).extract_records(response=response_mock)
     assert records == [{"member_id": "U023BECGF"}, {"member_id": "U061F7AUR"}, {"member_id": "W012A3CDE"}]
 
@@ -94,3 +97,97 @@ def test_join_channel_read(requests_mock, token_config, joined_channel, caplog, 
     assert mocked_request.called
     assert mocked_request.last_request._request.body == b'{"channel": "channel 2"}'
     assert log_message in caplog.text
+
+
+@pytest.mark.parametrize(
+    "threads_stream_state, expected_parent_state",
+    (
+        ({}, {}),
+        (
+            {"float_ts": 7270247822.0},
+            # lookback window applied
+            {"float_ts": 7270161422.0},
+        ),
+        (
+            {
+                "states": [
+                    {
+                        "partition": {"float_ts": "1683104542.931169", "parent_slice": {"channel": "C04KX3KEZ54", "parent_slice": {}}},
+                        "cursor": {"float_ts": "1753263869"},
+                    },
+                    {
+                        "partition": {"float_ts": "1683104590.931169", "parent_slice": {"channel": "C04KX3KEZ54", "parent_slice": {}}},
+                        "cursor": {"float_ts": "1753263870"},
+                    },
+                    {
+                        "partition": {"float_ts": "1683104590.931169", "parent_slice": {"channel": "C04KX3KEZ54", "parent_slice": {}}},
+                        "cursor": {"float_ts": "1753263849"},
+                    },
+                ]
+            },
+            # lookback window applied
+            {"float_ts": 1753177470.0},
+        ),
+    ),
+    ids=["no_state", "old_format_state", "new_format_state"],
+)
+def test_threads_partition_router(token_config, threads_stream_state, expected_parent_state):
+    stream = get_stream_by_name("threads", token_config)
+    threads_partition_router = stream.retriever.stream_slicer._partition_router
+    threads_partition_router.set_initial_state(stream_state=threads_stream_state)
+    assert threads_partition_router.parent_stream_configs[0].stream.state["state"] == expected_parent_state
+
+
+@pytest.mark.parametrize(
+    "response_status_code, api_response, expected_policy",
+    (
+        (
+            429,
+            [
+                # first call rate limited
+                {"headers": {"Retry-After": "1"}, "text": "rate limited", "status_code": 429},
+                # refreshed limits on second call
+                {"json": {"messages": []}, "status_code": 200},
+            ],
+            MovingWindowCallRatePolicy,
+        ),
+        (
+            200,
+            [
+                # no rate limits
+                {"json": {"messages": []}, "status_code": 200},
+            ],
+            UnlimitedCallRatePolicy,
+        ),
+    ),
+    ids=["rate_limited_policy", "no_rate_limits_policy"],
+)
+def test_threads_and_messages_api_budget(response_status_code, api_response, expected_policy, token_config, requests_mock):
+    stream = get_stream_by_name("threads", token_config)
+    assert len(stream.retriever.requester._http_client._api_budget._policies) == 1
+    assert isinstance(stream.retriever.requester._http_client._api_budget._policies[0], UnlimitedCallRatePolicy)
+
+    messages = [{"ts": 1577866844}, {"ts": 1577877406}]
+
+    requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/conversations.replies",
+        api_response,
+    )
+    requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/conversations.history?limit=1000&channel=airbyte-for-beginners",
+        [{"json": {"messages": messages}}, {"json": {"messages": []}}],
+    )
+    requests_mock.register_uri(
+        "GET",
+        "https://slack.com/api/conversations.history?limit=1000&channel=good-reads",
+        [{"json": {"messages": messages}}, {"json": {"messages": []}}],
+    )
+
+    stream_slice = list(stream.stream_slices(sync_mode=SyncMode.incremental, stream_state={}))[0]
+
+    list(stream.retriever.read_records(records_schema={}, stream_slice=stream_slice))
+
+    assert len(stream.retriever.requester._http_client._api_budget._policies) == 1
+    assert isinstance(stream.retriever.requester._http_client._api_budget._policies[0], expected_policy)

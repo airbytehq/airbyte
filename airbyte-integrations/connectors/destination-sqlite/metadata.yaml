@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/destination-sqlite
   githubIssueLabel: destination-sqlite
   icon: sqlite.svg
-  license: MIT
+  license: ELv2
   name: Local SQLite
   registryOverrides:
     cloud:

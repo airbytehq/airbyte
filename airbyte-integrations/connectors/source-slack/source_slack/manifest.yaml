@@ -31,6 +31,13 @@ definitions:
     type: BearerAuthenticator
     api_token: "{{ config['credentials']['access_token'] }}"
 
+  authenticator:
+    type: SelectiveAuthenticator
+    authenticator_selection_path: ["credentials", "option_title"]
+    authenticators:
+      Default OAuth2.0 authorization: "#/definitions/access_token_auth"
+      API Token Credentials: "#/definitions/api_token_auth"
+
   requester:
     type: HttpRequester
     url_base: https://slack.com/api/
@@ -63,7 +70,7 @@ definitions:
     extractor:
       type: DpathExtractor
       field_path:
-        - "{{ parameters['field_path'] }}"
+        - "{{ parameters['extractor_field_path'] }}"
 
   retriever:
     type: SimpleRetriever
@@ -113,20 +120,29 @@ definitions:
     $parameters:
       name: users
       path: users.list
-      field_path: members
+      extractor_field_path: members
 
   channels_stream:
     primary_key: "id"
     $parameters:
       name: channels
       path: conversations.list
-      field_path: channels
+      extractor_field_path: channels
     schema_loader:
       $ref: "#/definitions/schema_loader"
     retriever:
       class_name: "source_slack.components.join_channels.ChannelsRetriever"
       requester:
         $ref: "#/definitions/requester"
+        use_cache: true
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 10
+          backoff_strategies:
+            - type: "WaitTimeFromHeader"
+              header: "retry-after"
+            - type: "WaitTimeFromHeader"
+              header: "Retry-After"
         request_parameters:
           types: "{{ 'public_channel,private_channel' if config['include_private_channels'] == true else 'public_channel' }}"
       record_selector:
@@ -159,7 +175,7 @@ definitions:
     $parameters:
       name: channel_members
       path: conversations.members
-      field_path: members
+      extractor_field_path: members
     primary_key:
       - member_id
       - channel_id
@@ -184,16 +200,33 @@ definitions:
     $parameters:
       name: channel_messages
       path: conversations.history
-      field_path: messages
+      extractor_field_path: messages
     primary_key:
       - channel_id
       - ts
     retriever:
       $ref: "#/definitions/retriever"
       requester:
-        $ref: "#/definitions/requester"
+        type: CustomRequester
+        class_name: "source_slack.components.slack_api_budget.MessagesAndThreadsHttpRequester"
+        url_match: "https://slack.com/api/conversations.history?.+"
+        url_base: https://slack.com/api/
+        path: "{{ parameters['path'] }}"
+        http_method: GET
         request_parameters:
           inclusive: "True"
+        request_headers: {}
+        authenticator:
+          $ref: "#/definitions/authenticator"
+        request_body_json: {}
+        error_handler:
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: "WaitTimeFromHeader"
+              header: "retry-after"
+            - type: "WaitTimeFromHeader"
+              header: "Retry-After"
+        use_cache: true
       record_selector:
         $ref: "#/definitions/selector"
       paginator:
@@ -207,7 +240,7 @@ definitions:
               $parameters:
                 name: channels
                 path: conversations.list
-                field_path: channels
+                extractor_field_path: channels
             parent_key: id
             partition_field: channel
             request_option:
@@ -218,7 +251,7 @@ definitions:
       cursor_field: float_ts
       cursor_datetime_formats:
         - "%s_as_float"
-      step: P100D
+      step: "P{{ config.get('channel_messages_window_size', 100) }}D"
       cursor_granularity: PT1S
       lookback_window: "P{{ config.get('lookback_window', 0) }}D"
       datetime_format: "%s_as_float"
@@ -248,13 +281,98 @@ definitions:
               - channel_id
             value: "{{ stream_partition.get('channel') }}"
 
+  threads_stream:
+    $ref: "#/definitions/stream_base"
+    $parameters:
+      name: threads
+      path: conversations.replies
+      extractor_field_path: messages
+    primary_key:
+      - channel_id
+      - ts
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        type: CustomRequester
+        class_name: "source_slack.components.slack_api_budget.MessagesAndThreadsHttpRequester"
+        url_match: "https://slack.com/api/conversations.replies?.+"
+        url_base: https://slack.com/api/
+        path: "{{ parameters['path'] }}"
+        http_method: GET
+        request_parameters:
+          channel: "{{ stream_partition['parent_slice']['channel'] }}"
+        request_headers: {}
+        authenticator:
+          $ref: "#/definitions/authenticator"
+        request_body_json: {}
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 20
+          backoff_strategies:
+            - type: "WaitTimeFromHeader"
+              header: "retry-after"
+            - type: "WaitTimeFromHeader"
+              header: "Retry-After"
+      record_selector:
+        $ref: "#/definitions/selector"
+      paginator:
+        $ref: "#/definitions/default_paginator"
+      partition_router:
+        type: CustomPartitionRouter
+        class_name: source_slack.components.threads_partition_router.ThreadsPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/channel_messages_stream"
+            # One complication is that threads can be updated at Any time in the future. Therefore, if we wanted to comprehensively sync data
+            # i.e: get every single response in a thread, we'd have to read every message in the slack instance every time we ran a sync,
+            # because otherwise there is no way to guarantee that a thread deep in the past didn't receive a new message.
+            # incremental_dependency set to true to read parent state incrementally with custom substream partition router
+            incremental_dependency: true
+            parent_key: ts
+            partition_field: float_ts
+            request_option:
+              type: RequestOption
+              field_name: "ts"
+              inject_into: "request_parameter"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      lookback_window: "P{{ config.get('lookback_window', 0) }}D"
+      cursor_field: "float_ts"
+      cursor_datetime_formats:
+        - "%s"
+      datetime_format: "%s"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') if not config.get('end_date') else format_datetime(config.get('end_date'), '%Y-%m-%dT%H:%M:%SZ')}}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - float_ts
+            value: "{{ record['ts']|float }}"
+          - path:
+              - channel_id
+            value: "{{ stream_partition['parent_slice']['channel'] }}"
+
 streams:
   - "#/definitions/users_stream"
   - "#/definitions/channels_stream"
   - "#/definitions/channel_members_stream"
   - "#/definitions/channel_messages_stream"
+  - "#/definitions/threads_stream"
 
 check:
   type: CheckStream
   stream_names:
     - users
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 2) }}"
+  max_concurrency: 10

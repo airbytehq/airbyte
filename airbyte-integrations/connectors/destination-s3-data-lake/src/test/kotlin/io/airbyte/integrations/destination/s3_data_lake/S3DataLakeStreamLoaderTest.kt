@@ -148,7 +148,7 @@ internal class S3DataLakeStreamLoaderTest {
         }
         val icebergUtil: IcebergUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
-            every { createTable(any(), any(), any(), any()) } returns table
+            every { createTable(any(), any(), any()) } returns table
             every { toIcebergSchema(any()) } answers
                 {
                     stream.schema.withAirbyteMeta(true).toIcebergSchema(emptyList())
@@ -248,13 +248,12 @@ internal class S3DataLakeStreamLoaderTest {
         }
         val icebergUtil: IcebergUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
-            every { createTable(any(), any(), any(), any()) } returns table
+            every { createTable(any(), any(), any()) } returns table
             every { toIcebergSchema(any()) } answers
                 {
                     stream.schema.withAirbyteMeta(true).toIcebergSchema(emptyList())
                 }
-            every { constructGenerationIdSuffix(any() as Long) } returns ""
-            every { assertGenerationIdSuffixIsOfValidFormat(any()) } just runs
+            every { constructGenerationIdSuffix(any<DestinationStream>()) } returns ""
         }
         val streamLoader =
             S3DataLakeStreamLoader(
@@ -402,13 +401,12 @@ internal class S3DataLakeStreamLoaderTest {
         }
         val icebergUtil: IcebergUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
-            every { createTable(any(), any(), any(), any()) } returns table
+            every { createTable(any(), any(), any()) } returns table
             every { toIcebergSchema(any()) } answers
                 {
                     stream.schema.withAirbyteMeta(true).toIcebergSchema(listOf(primaryKeys))
                 }
-            every { constructGenerationIdSuffix(any() as Long) } returns ""
-            every { assertGenerationIdSuffixIsOfValidFormat(any()) } just runs
+            every { constructGenerationIdSuffix(any<DestinationStream>()) } returns ""
         }
         val streamLoader =
             S3DataLakeStreamLoader(

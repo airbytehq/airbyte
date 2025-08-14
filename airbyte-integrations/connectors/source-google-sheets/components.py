@@ -6,13 +6,13 @@ from __future__ import annotations
 
 import logging
 import re
+from collections import Counter
 from dataclasses import dataclass
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import dpath
 import requests
 import unidecode
-from pydantic.v1 import BaseModel, Extra
 
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
@@ -22,6 +22,19 @@ from airbyte_cdk.sources.types import Config, StreamSlice
 
 
 logger = logging.getLogger("airbyte")
+
+
+def sheet_column_label(col_index: int) -> str:
+    """
+    Convert a 0-based column index to a Google Sheets-style column letter (A, B, ..., Z, AA, AB, ...).
+    """
+    label = ""
+    col_index += 1  # Convert to 1-based index
+    while col_index > 0:
+        col_index -= 1
+        label = chr(65 + (col_index % 26)) + label
+        col_index //= 26
+    return label
 
 
 class RangePartitionRouter(SinglePartitionRouter):
@@ -36,7 +49,7 @@ class RangePartitionRouter(SinglePartitionRouter):
         self.parameters = parameters
         self.sheet_row_count = parameters.get("row_count", 0)
         self.sheet_id = parameters.get("sheet_id")
-        self.batch_size = parameters.get("batch_size")
+        self.batch_size = parameters.get("batch_size", 1000000)
 
     def stream_slices(self) -> Iterable[StreamSlice]:
         start_range = 2  # skip 1 row, as expected column (fields) names there
@@ -93,13 +106,11 @@ class RawSchemaParser:
             i.e: every cell contains a value and the first cell which does not contain a value denotes the end
             of the headers.
         2. Makes name conversion if required.
-        3. Removes duplicated fields from the schema.
+        3. Deduplicates fields from the schema by appending cell positions to duplicate headers.
         Return a list of tuples with correct property index (by found in array), value and raw_schema
         """
         raw_schema_properties = self._extract_data(raw_schema_data, schema_pointer, default=[])
-        duplicate_fields = set()
         parsed_schema_values = []
-        seen_values = set()
         # Gather all sanitisation flags from config
         config = getattr(self, "config", {})
         flags = {
@@ -121,15 +132,17 @@ class RawSchemaParser:
             elif names_conversion:
                 raw_schema_property_value = safe_name_conversion(raw_schema_property_value)
 
-            if raw_schema_property_value in seen_values:
-                duplicate_fields.add(raw_schema_property_value)
-            seen_values.add(raw_schema_property_value)
             parsed_schema_values.append((property_index, raw_schema_property_value, raw_schema_property))
 
-        if duplicate_fields:
-            parsed_schema_values = [
-                parsed_schema_value for parsed_schema_value in parsed_schema_values if parsed_schema_value[1] not in duplicate_fields
-            ]
+        # Deduplicate by appending cell position if duplicates exist
+        header_counts = Counter(p[1] for p in parsed_schema_values)
+        duplicates = {k for k, v in header_counts.items() if v > 1}
+        for i in range(len(parsed_schema_values)):
+            property_index, value, prop = parsed_schema_values[i]
+            if value in duplicates:
+                col_letter = sheet_column_label(property_index)
+                new_value = f"{value}_{col_letter}1"
+                parsed_schema_values[i] = (property_index, new_value, prop)
 
         return parsed_schema_values
 
@@ -187,8 +200,9 @@ class DpathSchemaMatchingExtractor(DpathExtractor, RawSchemaParser):
         self._values_to_match_key = parameters["values_to_match_key"]
         schema_type_identifier = parameters["schema_type_identifier"]
         names_conversion = self.config.get("names_conversion", False)
+        properties_to_match = parameters.get("properties_to_match", {})
         self._indexed_properties_to_match = self.extract_properties_to_match(
-            parameters["properties_to_match"], schema_type_identifier, names_conversion=names_conversion
+            properties_to_match, schema_type_identifier, names_conversion=names_conversion
         )
 
     def extract_properties_to_match(self, properties_to_match, schema_type_identifier, names_conversion):

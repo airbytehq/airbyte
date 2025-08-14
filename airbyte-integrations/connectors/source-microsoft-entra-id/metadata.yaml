@@ -13,15 +13,15 @@ data:
       enabled: false
       packageName: airbyte-source-microsoft-entra-id
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.57.3@sha256:a193ed90a8b69ea54d148db7cb556e8c7e840ad22eb101d7cedc0190d64a9595
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.60.12@sha256:b236b4ff8351a7d7f0ff7f938bbf0ab7b455c4c9e6e7cc93933f4aa9201d66cb
   connectorSubtype: api
   connectorType: source
   definitionId: 337930a3-778a-413e-99cf-e79a3fca1c74
-  dockerImageTag: 0.0.25
+  dockerImageTag: 0.0.30
   dockerRepository: airbyte/source-microsoft-entra-id
   githubIssueLabel: source-microsoft-entra-id
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Microsoft Entra Id
   releaseDate: 2024-10-18
   releaseStage: alpha

@@ -53,7 +53,8 @@ class BigQueryRecordFormatter(
 ) {
 
     fun formatRecord(record: DestinationRecordRaw): String {
-        val enrichedRecord = record.asEnrichedDestinationRecordAirbyteValue()
+        val enrichedRecord =
+            record.asEnrichedDestinationRecordAirbyteValue(respectLegacyUnions = true)
 
         val outputRecord = mutableMapOf<String, Any?>()
         val enrichedFieldsToIterate =

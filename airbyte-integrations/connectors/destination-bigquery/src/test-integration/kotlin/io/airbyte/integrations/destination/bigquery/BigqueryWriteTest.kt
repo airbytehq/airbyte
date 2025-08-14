@@ -30,11 +30,11 @@ abstract class BigqueryWriteTest(
     dataDumper: DestinationDataDumper,
     expectedRecordMapper: ExpectedRecordMapper,
     isStreamSchemaRetroactive: Boolean,
-    preserveUndeclaredFields: Boolean,
-    commitDataIncrementallyToEmptyDestination: Boolean,
+    commitDataIncrementallyToEmptyDestinationOnAppend: Boolean,
     dedupBehavior: DedupBehavior?,
     nullEqualsUnset: Boolean,
     allTypesBehavior: AllTypesBehavior,
+    coercesLegacyUnions: Boolean,
 ) :
     BasicFunctionalityIntegrationTest(
         configContents = configContents,
@@ -48,10 +48,12 @@ abstract class BigqueryWriteTest(
         schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         unionBehavior = UnionBehavior.PASS_THROUGH,
-        preserveUndeclaredFields = preserveUndeclaredFields,
+        coercesLegacyUnions = coercesLegacyUnions,
         supportFileTransfer = false,
         commitDataIncrementally = false,
-        commitDataIncrementallyToEmptyDestination = commitDataIncrementallyToEmptyDestination,
+        commitDataIncrementallyToEmptyDestinationOnAppend =
+            commitDataIncrementallyToEmptyDestinationOnAppend,
+        commitDataIncrementallyToEmptyDestinationOnDedupe = false,
         allTypesBehavior = allTypesBehavior,
         nullEqualsUnset = nullEqualsUnset,
         configUpdater = BigqueryConfigUpdater,
@@ -66,11 +68,11 @@ abstract class BigqueryRawTablesWriteTest(
         BigqueryRawTableDataDumper,
         UncoercedExpectedRecordMapper,
         isStreamSchemaRetroactive = false,
-        preserveUndeclaredFields = true,
-        commitDataIncrementallyToEmptyDestination = false,
+        commitDataIncrementallyToEmptyDestinationOnAppend = false,
         dedupBehavior = null,
         nullEqualsUnset = false,
         Untyped,
+        coercesLegacyUnions = false,
     )
 
 abstract class BigqueryDirectLoadWriteTest(
@@ -85,8 +87,7 @@ abstract class BigqueryDirectLoadWriteTest(
             .compose(RootLevelTimestampsToUtcMapper)
             .compose(IntegralNumberRecordMapper),
         isStreamSchemaRetroactive = true,
-        preserveUndeclaredFields = false,
-        commitDataIncrementallyToEmptyDestination = true,
+        commitDataIncrementallyToEmptyDestinationOnAppend = true,
         dedupBehavior =
             DedupBehavior(
                 cdcDeletionMode =
@@ -110,6 +111,7 @@ abstract class BigqueryDirectLoadWriteTest(
             numberIsFixedPointPrecision38Scale9 = true,
             timeWithTimezoneBehavior = SimpleValueBehavior.STRONGLY_TYPE,
         ),
+        coercesLegacyUnions = true,
     )
 
 class StandardInsertRawOverrideRawTables :

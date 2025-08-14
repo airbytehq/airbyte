@@ -22,7 +22,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/pipedrive
   githubIssueLabel: source-pipedrive
   icon: pipedrive.svg
-  license: MIT
+  license: ELv2
   name: Pipedrive
   releases:
     breakingChanges:

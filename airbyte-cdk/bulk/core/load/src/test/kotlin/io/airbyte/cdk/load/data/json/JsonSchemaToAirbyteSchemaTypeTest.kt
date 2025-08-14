@@ -32,9 +32,7 @@ import org.junit.jupiter.api.Test
 
 class JsonSchemaToAirbyteSchemaTypeTest {
     private fun ofType(type: String): ObjectNode {
-        val node = JsonNodeFactory.instance.objectNode()
-        node.putArray("type").add("null").add(type)
-        return node
+        return JsonNodeFactory.instance.objectNode().put("type", type)
     }
 
     private val defaultJsonSchemaToAirbyteType = JsonSchemaToAirbyteType(UnionBehavior.DEFAULT)
@@ -160,15 +158,14 @@ class JsonSchemaToAirbyteSchemaTypeTest {
 
     @Test
     fun testArrayWithSingleSchema() {
-        val schemaNode = ofType("array")
-        val itemsNode = schemaNode.putObject("items")
-        itemsNode.putArray("type").add("null").add("string")
+        val schemaNode = JsonNodeFactory.instance.objectNode().put("type", "array")
+        val itemsNode = schemaNode.putObject("items").put("type", "string") as ObjectNode
         val airbyteType = defaultJsonSchemaToAirbyteType.convert(schemaNode)
         Assertions.assertTrue(airbyteType is ArrayType)
         val arrayType = airbyteType as ArrayType
         Assertions.assertEquals(FieldType(StringType, true), arrayType.items)
 
-        itemsNode.putArray("type").add("null").add("integer")
+        itemsNode.put("type", "integer")
         val airbyteType2 = defaultJsonSchemaToAirbyteType.convert(schemaNode)
         Assertions.assertTrue(airbyteType2 is ArrayType)
         val arrayType2 = airbyteType2 as ArrayType
@@ -280,7 +277,7 @@ class JsonSchemaToAirbyteSchemaTypeTest {
         val schemaNode = JsonNodeFactory.instance.objectNode()
         schemaNode.putArray("type").add("object").add("array")
         schemaNode.putObject("properties").replace("field1", ofType("string"))
-        schemaNode.putObject("items").putArray("type").add("null").add("integer")
+        schemaNode.putObject("items").put("type", "integer")
         val airbyteType = defaultJsonSchemaToAirbyteType.convert(schemaNode)
         Assertions.assertTrue(airbyteType is UnionType)
         val unionType = airbyteType as UnionType
@@ -302,7 +299,7 @@ class JsonSchemaToAirbyteSchemaTypeTest {
         val schemaNode = JsonNodeFactory.instance.objectNode()
         schemaNode.putArray("type").add("object").add("array")
         schemaNode.putObject("properties").replace("field1", ofType("string"))
-        schemaNode.putObject("items").putArray("type").add("null").add("integer")
+        schemaNode.putObject("items").put("type", "integer")
         val airbyteType = legacyJsonSchemaToAirbyteType.convert(schemaNode)
         Assertions.assertTrue(airbyteType is UnionType)
         val unionType = airbyteType as UnionType
