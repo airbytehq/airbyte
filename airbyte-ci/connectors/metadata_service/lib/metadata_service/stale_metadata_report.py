@@ -13,7 +13,6 @@ import pandas as pd
 import requests
 import yaml
 from github import Auth, Github
-from google.cloud import storage
 
 from metadata_service.helpers.gcs import get_gcs_storage_client
 from metadata_service.helpers.slack import send_slack_message
@@ -167,7 +166,6 @@ def _get_latest_metadata_entries_on_gcs(bucket_name: str) -> Mapping[str, Any]:
 
     latest_metadata_entries_on_gcs = {}
     for blob in blobs:
-        assert isinstance(blob, storage.Blob)
         metadata_dict = yaml.safe_load(blob.download_as_bytes().decode("utf-8"))
         connector_metadata = ConnectorMetadataDefinitionV0.parse_obj(metadata_dict)
         latest_metadata_entries_on_gcs[connector_metadata.data.dockerRepository] = connector_metadata.data.dockerImageTag
