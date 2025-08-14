@@ -89,6 +89,10 @@ const config = {
         ]
       : []),
   ],
+  i18n: {
+    defaultLocale: 'en',
+    locales: ['en'],
+  },
   // The preset is the "main" docs instance, though in reality, most content does not live under this preset. See the plugins array below, which defines the behavior of each docs instance.
   presets: [
     [
