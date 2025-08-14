@@ -100,7 +100,8 @@ For more information, see [the Twilio docs for rate limitations](https://support
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------| :------------------------------------------------------- |:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.13.0 | 2025-08-14 | [64929](https://github.com/airbytehq/airbyte/pull/64929) | Promoting release candidate 0.13.0-rc.1 to a main version. |
+| 0.14.0-rc.1 | 2025-08-14 | [64880](https://github.com/airbytehq/airbyte/pull/64880) | Migrated all full refresh streams that have no parent streams                                                                                                          |
+| 0.13.0      | 2025-08-14 | [64929](https://github.com/airbytehq/airbyte/pull/64929) | Promoting release candidate 0.13.0-rc.1 to a main version. |
 | 0.13.0-rc.1 | 2025-08-11 | [64877](https://github.com/airbytehq/airbyte/pull/64877) | Update CDK to v6                                                                                                                                                       |
 | 0.12.1      | 2025-06-15 | [56258](https://github.com/airbytehq/airbyte/pull/56258) | Update dependencies                                                                                                                                                    |
 | 0.12.0      | 2025-05-13 | [49097](https://github.com/airbytehq/airbyte/pull/49097) | Fix per partition states for nested streams                                                                                                                            |
