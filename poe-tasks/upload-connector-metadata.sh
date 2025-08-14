@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Uploads the metadata (+SBOM+spec cache) to GCS.
-# Usage: ./poe-tasks/upload-connector-metadata.sh --name destination-bigquery [--pre-release] [--main-release]
+# Uploads the metadata (+SBOM+spec cache) to GCS. Can also upload the java jar for java connectors.
+# Usage: ./poe-tasks/upload-connector-metadata.sh --name destination-bigquery [--pre-release] [--main-release] [--publish-java-jar]
 # You must have three environment variables set (GCS_CREDENTIALS, METADATA_SERVICE_GCS_CREDENTIALS, SPEC_CACHE_GCS_CREDENTIALS),
 # each containing a JSON-formatted GCP service account key.
 # SPEC_CACHE_GCS_CREDENTIALS needs write access to `gs://$spec_cache_bucket/specs`.
@@ -112,5 +112,11 @@ else
   # yes, it's --prerelease and not --pre-release
   metadata_upload_prerelease_flag="--prerelease $docker_tag"
 fi
+
+java_tar_path=""
+if $publish_java_tar; then
+  java_tar_path="${CONNECTORS_DIR}/${connector}/build/distributions/airbyte-app.tar"
+else
+fi
 # Under the hood, this reads the GCS_CREDENTIALS environment variable
-poetry run --directory $METADATA_SERVICE_PATH metadata_service upload "$meta" "$DOCS_ROOT/" "$metadata_bucket" $metadata_upload_prerelease_flag
+poetry run --directory $METADATA_SERVICE_PATH metadata_service upload "$meta" "$DOCS_ROOT/" "$metadata_bucket" $metadata_upload_prerelease_flag $java_tar_path
