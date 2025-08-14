@@ -268,7 +268,6 @@ class ConnectorConfig(BaseConfig):
             AdsInsights.ActionBreakdowns.action_target_id,
             AdsInsights.ActionBreakdowns.action_destination,
         ],
-        type="array",
         description="Action breakdowns for the Built-in Ads Insights stream that will be used in the request. You can override default values or remove them to make it empty if needed.",
     )
 
