@@ -821,7 +821,8 @@ definitions:
       type: DeclarativeStream
       name: product_availability
       primary_key:
-        - ID
+        - ID        # Product ID (required)
+        - Location  # Location name (required)
       retriever:
         type: SimpleRetriever
         requester:
@@ -5304,9 +5305,7 @@ schemas:
           - number
           - "null"
       Location:
-        type:
-          - string
-          - "null"
+        type: string
       Name:
         type:
           - string
@@ -5329,6 +5328,7 @@ schemas:
           - "null"
     required:
       - ID
+      - Location  # Add this to required fields
 
 api_budget:
   type: HTTPAPIBudget
