@@ -207,7 +207,12 @@ jobs:
         id: upload-connector-metadata-master
         if: github.event_name == 'push'
         shell: bash
-        run: ./poe-tasks/upload-connector-metadata.sh --name ${{ matrix.connector }} --main-release
+        run: |
+          publish_java_tar_flag=""
+          if [ "${{ steps.connector-metadata.outputs.connector-language }}" = "java" ]; then
+            publish_java_tar_flag="--publish-java-tar"
+          fi
+          ./poe-tasks/upload-connector-metadata.sh --name ${{ matrix.connector }} --main-release $publish_java_tar_flag
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
           SPEC_CACHE_GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
@@ -258,7 +263,12 @@ jobs:
         id: upload-connector-metadata-manual
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
         shell: bash
-        run: ./poe-tasks/upload-connector-metadata.sh --name ${{ matrix.connector }} ${{ inputs.publish-options }}
+        run: |
+          publish_java_tar_flag=""
+          if [ "${{ steps.connector-metadata.outputs.connector-language }}" = "java" ]; then
+            publish_java_tar_flag="--publish-java-tar"
+          fi
+        ./poe-tasks/upload-connector-metadata.sh --name ${{ matrix.connector }} ${{ inputs.publish-options }} $publish_java_tar_flag
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
           SPEC_CACHE_GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
