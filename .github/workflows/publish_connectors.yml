@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - master
-      - dbgold17/fix-connector-publish-workflow
     paths:
       - "airbyte-integrations/connectors/**/metadata.yaml"
   workflow_call:
