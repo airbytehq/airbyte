@@ -8,7 +8,7 @@ on:
         required: false
         type: string
   schedule:
-    - cron: '*/5 * * * *'  # Run every 5 minutes
+    - cron: "*/5 * * * *"  # Run every 5 minutes
 
 permissions:
   contents: read
