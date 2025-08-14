@@ -77,14 +77,16 @@ def test_component():
 
 
 @pytest.fixture
-def temp_metadata_directory(tmp_path, valid_metadata_upload_files, manifest_exists, components_py_exists, temp_manifest_content, temp_components_content):
+def temp_metadata_directory(
+    tmp_path, valid_metadata_upload_files, manifest_exists, components_py_exists, temp_manifest_content, temp_components_content
+):
     """Create a temporary directory structure with optional manifest and components files based on test parameters."""
     # Copy base metadata.yaml from existing fixture to temp directory
     base_metadata_file = valid_metadata_upload_files[0]
     temp_metadata_path = tmp_path / "metadata.yaml"
 
     # Copy the content from the base metadata file
-    with open(base_metadata_file, 'r') as f:
+    with open(base_metadata_file, "r") as f:
         temp_metadata_path.write_text(f.read())
 
     # Conditionally create manifest.yaml based on test parameter
@@ -111,7 +113,7 @@ def mock_git_operations(mocker):
         commit_sha="abc123def456",
         commit_timestamp=datetime(2024, 1, 1, 0, 0, 0),
         commit_author="Test Author",
-        commit_author_email="test@example.com"
+        commit_author_email="test@example.com",
     )
     mocker.patch("metadata_service.gcs_upload._get_git_info_for_file", return_value=mock_git_info)
     return mock_git_info
@@ -749,9 +751,9 @@ def test_upload_metadata_to_gcs_release_candidate(mocker, get_fixture_path, tmp_
 @pytest.mark.parametrize(
     "manifest_exists, components_py_exists",
     [
-        (True, True),    # Both files exist
-        (True, False),   # Only manifest exists
-        (False, True),   # Only components.py exists
+        (True, True),  # Both files exist
+        (True, False),  # Only manifest exists
+        (False, True),  # Only components.py exists
         (False, False),  # Neither file exists
     ],
 )
@@ -771,20 +773,20 @@ def test_upload_metadata_to_gcs_with_manifest_files(
 
     # Mock the _safe_load_metadata_file function to bypass YAML parsing issues in test environment
     sample_metadata = {
-        'metadataSpecVersion': '1.0',
-        'data': {
-            'name': 'Test Connector',
-            'definitionId': '12345678-1234-1234-1234-123456789012',
-            'connectorType': 'source',
-            'dockerRepository': 'airbyte/source-exists-test',
-            'dockerImageTag': '0.1.0',
-            'documentationUrl': 'https://docs.airbyte.com/test',
-            'license': 'MIT',
-            'githubIssueLabel': 'source-test',
-            'connectorSubtype': 'api',
-            'releaseStage': 'alpha',
-            'tags': ['language:python']
-        }
+        "metadataSpecVersion": "1.0",
+        "data": {
+            "name": "Test Connector",
+            "definitionId": "12345678-1234-1234-1234-123456789012",
+            "connectorType": "source",
+            "dockerRepository": "airbyte/source-exists-test",
+            "dockerImageTag": "0.1.0",
+            "documentationUrl": "https://docs.airbyte.com/test",
+            "license": "MIT",
+            "githubIssueLabel": "source-test",
+            "connectorSubtype": "api",
+            "releaseStage": "alpha",
+            "tags": ["language:python"],
+        },
     }
     mocker.patch("metadata_service.gcs_upload._safe_load_metadata_file", return_value=sample_metadata)
 
