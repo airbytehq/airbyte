@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
+
 # This script builds and optionally publishes Java connector Docker images.
+# Usage: ./build-and-publish-java-connectors-with-tag.sh --name <name> [--pre-release] [--main-release] [--publish]
 #
 # Flag descriptions:
 #   --main-release: Publishes images with the exact version from metadata.yaml.
@@ -14,87 +16,21 @@
 #                   and only shows what would be published without actually publishing.
 #
 # Usage examples:
-#   ./get-modified-connectors.sh --prev-commit --json | ./build-and-publish-java-connectors-with-tag.sh
+#   ./build-and-publish-java-connectors-with-tag.sh --name destination-bigquery --pre-release --publish
 #
 # Specific to this script:
 #   1) Default (pre-release) on a single connector
 #   ./build-and-publish-java-connectors-with-tag.sh foo-conn
 #   ./build-and-publish-java-connectors-with-tag.sh --name=foo-conn
 #
-#   2) Explicit main-release with multiple connectors
-#   ./build-and-publish-java-connectors-with-tag.sh --main-release foo-conn bar-conn
-#
-#   3) Pre-release (dev tag) via JSON pipe
-#   echo '{"connector":["foo-conn","bar-conn"]}' | ./build-and-publish-java-connectors-with-tag.sh --pre-release
-#
-#   4) Mixed: positional + pre-release
+#   2) Mixed: positional + pre-release
 #   ./build-and-publish-java-connectors-with-tag.sh --pre-release foo-conn
 #
-#   5) Enable actual publishing (default is dry-run mode)
+#   3) Enable actual publishing (default is dry-run mode)
 #   ./build-and-publish-java-connectors-with-tag.sh --publish foo-conn
 set -euo pipefail
 
-CONNECTORS_DIR="airbyte-integrations/connectors"
-
-# ------ Defaults & arg parsing -------
-publish_mode="pre-release"
-do_publish=false
-connectors=()
-
-while [[ $# -gt 0 ]]; do
-  case "$1" in
-    -h|--help)
-      sed -n '1,34p' "$0"
-      exit 0
-      ;;
-    --main-release)
-      publish_mode="main-release"
-      shift
-      ;;
-    --pre-release)
-      publish_mode="pre-release"
-      shift
-      ;;
-    --publish)
-      do_publish=true
-      shift
-      ;;
-    --name=*)
-      connectors=("${1#*=}")
-      shift
-      ;;
-    --name)
-      connectors=("$2")
-      shift 2
-      ;;
-    --*)
-      echo "Error: Unknown flag $1" >&2
-      exit 1
-      ;;
-    *)
-      connectors+=("$1")
-      shift
-      ;;
-  esac
-done
-
-# ---------- helper: collect connector names ----------
-get_connectors() {
-  if [ "${#connectors[@]}" -gt 0 ]; then
-      # only look at non-empty strings
-      for c in "${connectors[@]}"; do
-          [[ -n "$c" ]] && printf "%s\n" "$c"
-      done
-  else
-    # read JSON from stdin
-    if [ -t 0 ]; then
-      echo "Error:  No --name given and nothing piped to stdin." >&2
-      exit 1
-    fi
-    # select only non-empty strings out of the JSON array
-    jq -r '.connector[] | select(. != "")'
-  fi
-}
+source "${BASH_SOURCE%/*}/lib/util.sh"
 
 dockerhub_tag_exists() {
   local image="$1"   # e.g. airbyte/destination-postgres
@@ -128,52 +64,50 @@ dockerhub_tag_exists() {
   exit 1
 }
 
-generate_dev_tag() {
-  local base="$1"
-  # force a 10-char short hash to match existing airbyte-ci behaviour.
-  local hash
-  hash=$(git rev-parse --short=10 HEAD)
-  echo "${base}-dev.${hash}"
-}
+source "${BASH_SOURCE%/*}/lib/parse_args.sh"
+connector=$(get_only_connector)
 
-# ---------- main loop ----------
-while read -r connector; do
-  meta="${CONNECTORS_DIR}/${connector}/metadata.yaml"
-  if [[ ! -f "$meta" ]]; then
-    echo "Error: metadata.yaml not found for ${connector}" >&2
-    exit 1
+meta="${CONNECTORS_DIR}/${connector}/metadata.yaml"
+if [[ ! -f "$meta" ]]; then
+  echo "Error: metadata.yaml not found for ${connector}" >&2
+  exit 1
+fi
+
+# Check if this is a Java connector
+if ! grep -qE 'language:\s*java' "$meta"; then
+  echo "ℹ️  Skipping ${connector} — this script only supports JVM connectors for now."
+  continue
+fi
+
+base_tag=$(yq -r '.data.dockerImageTag' "$meta")
+if [[ -z "$base_tag" || "$base_tag" == "null" ]]; then
+  echo "Error:  dockerImageTag missing in ${meta}" >&2
+  exit 1
+fi
+
+if [[ "$publish_mode" == "main-release" ]]; then
+  docker_tag="$base_tag"
+else
+  docker_tag=$(generate_dev_tag "$base_tag")
+fi
+
+if $do_publish; then
+  echo "Building & publishing ${connector} with tag ${docker_tag}"
+
+  if dockerhub_tag_exists "airbyte/${connector}" "$docker_tag"; then
+    echo "ℹ️  Skipping publish — tag airbyte/${connector}:${docker_tag} already exists."
+    exit
   fi
 
-  base_tag=$(yq -r '.data.dockerImageTag' "$meta")
-  if [[ -z "$base_tag" || "$base_tag" == "null" ]]; then
-    echo "Error:  dockerImageTag missing in ${meta}" >&2
-    exit 1
-  fi
-
-  if [[ "$publish_mode" == "main-release" ]]; then
-    docker_tag="$base_tag"
-  else
-    docker_tag=$(generate_dev_tag "$base_tag")
-  fi
-
-  if $do_publish; then
-    echo "Building & publishing ${connector} with tag ${docker_tag}"
-
-    if dockerhub_tag_exists "airbyte/${connector}" "$docker_tag"; then
-      echo "ℹ️  Skipping publish — tag airbyte/${connector}:${docker_tag} already exists."
-      continue
-    fi
-
-    echo "airbyte/${connector}:${docker_tag} image does not exists on Docker. Publishing..."
-    ./gradlew -Pdocker.publish \
-              -DciMode=true \
-              -Psbom=false \
-              -Pdocker.tag="${docker_tag}" \
-              ":${CONNECTORS_DIR//\//:}:${connector}:assemble"
-  else
-    echo "DRY RUN: Would build & publish ${connector} with tag ${docker_tag}"
-  fi
-done < <(get_connectors)
+  echo "airbyte/${connector}:${docker_tag} image does not exists on Docker. Publishing..."
+  ./gradlew -Pdocker.publish \
+            -DciMode=true \
+            -Psbom=false \
+            -Pdocker.tag="${docker_tag}" \
+            ":${CONNECTORS_DIR//\//:}:${connector}:assemble"
+else
+  echo "DRY RUN: Would build & publish ${connector} with tag ${docker_tag}"
+fi
 if $do_publish; then
   echo "Done building & publishing."
 else

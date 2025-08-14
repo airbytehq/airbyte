@@ -642,7 +642,7 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config.get(\"start_date\", \"2011-09-01\") }}"
           datetime_format: "%Y-%m-%d"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:00:00.0000000%z"
         end_time_option:
           type: RequestOption
           field_name: end_time
@@ -755,7 +755,7 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config.get(\"start_date\", \"2011-09-01\") }}"
           datetime_format: "%Y-%m-%d"
-        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        datetime_format: "%Y-%m-%dT00:00:00"
         end_time_option:
           type: RequestOption
           field_name: end_time
@@ -939,7 +939,7 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config.get(\"start_date\", \"2011-09-01\") }}"
           datetime_format: "%Y-%m-%d"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:00:00.0000000%z"
         end_time_option:
           type: RequestOption
           field_name: end_time
@@ -1376,7 +1376,7 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config.get(\"start_date\", \"2011-09-01\") }}"
           datetime_format: "%Y-%m-%d"
-        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        datetime_format: "%Y-%m-%dT00:00:00"
         end_time_option:
           type: RequestOption
           field_name: end_time
@@ -2267,7 +2267,7 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config.get(\"start_date\", \"2011-09-01\") }}"
           datetime_format: "%Y-%m-%d"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:00:00"
         end_time_option:
           type: RequestOption
           field_name: end_time
@@ -2704,7 +2704,7 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config.get(\"start_date\", \"2011-09-01\") }}"
           datetime_format: "%Y-%m-%d"
-        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        datetime_format: "%Y-%m-%dT00:00:00"
         end_time_option:
           type: RequestOption
           field_name: end_time
@@ -3595,7 +3595,7 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config.get(\"start_date\", \"2011-09-01\") }}"
           datetime_format: "%Y-%m-%d"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        datetime_format: "%Y-%m-%dT%H:00:00.0000000%z"
         end_time_option:
           type: RequestOption
           field_name: end_time
@@ -4032,7 +4032,7 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config.get(\"start_date\", \"2011-09-01\") }}"
           datetime_format: "%Y-%m-%d"
-        datetime_format: "%Y-%m-%dT%H:%M:%S"
+        datetime_format: "%Y-%m-%dT00:00:00"
         end_time_option:
           type: RequestOption
           field_name: end_time

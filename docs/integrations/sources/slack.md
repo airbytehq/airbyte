@@ -23,6 +23,10 @@ The following instructions guide you through creating a Slack app. Airbyte can o
 If you are using a legacy Slack API Key, you can skip this section.
 :::
 
+:::warning
+Source Slack has a different API Budget Requests Policy for the Channel Messages and Threads streams (one request per minute). We suggest you create a separate connection for those streams so that you do not experience slower syncs across all Slack streams. Please visit [Rate limiting section](https://docs.airbyte.com/integrations/sources/slack#rate-limiting) for more info.
+:::
+
 To create a Slack App, read this [tutorial](https://api.slack.com/tutorials/tracks/getting-a-token) on how to create an app, or follow these instructions. 
 
 1. Go to your [Apps](https://api.slack.com/apps)
@@ -150,9 +154,13 @@ Expand to see details about Slack connector limitations and troubleshooting.
 
 Slack has [rate limit restrictions](https://api.slack.com/docs/rate-limits).
 
+###### Rate Limits for Channel Messages and Threads streams: 
+Slack API [rate limits](https://api.slack.com/changelog/2025-05-terms-rate-limit-update-and-faq#what) for the [conversations.replies](https://api.slack.com/methods/conversations.replies) and [conversations.history](https://api.slack.com/methods/conversations.history) endpoints are now limited to one request per minute. Due to the new Source Slack policy, syncs of Channel Messages and Threads streams can be slow. If you want to sync data from Users, Channels and Channel Members streams in Source Slack more quickly, we recommended you create a separate connection for Channel Messages and Threads streams and other streams which observe a different rate limit policy. Please note that Users, Channels and Channel Members streams are not being read with the one request per minute policy, so their read time is only depends on how much data should be extracted.
+
 ### Troubleshooting
 
 - Check out common troubleshooting issues for the Slack source connector on our Airbyte Forum [here](https://github.com/airbytehq/airbyte/discussions).
+
 
 </details>
 
@@ -166,6 +174,9 @@ Slack has [rate limit restrictions](https://api.slack.com/docs/rate-limits).
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.2.0-rc.6 | 2025-08-14 | [64553](https://github.com/airbytehq/airbyte/pull/64553) | Add API budget for Threads and Channel Messages streams.                                                                                                               |
+| 2.2.0-rc.5 | 2025-08-06 | [64530](https://github.com/airbytehq/airbyte/pull/64530) | Set use_cache = true for Channels and Channel Messages streams.                                                                                                        |
+| 2.2.0-rc.4 | 2025-08-04 | [64486](https://github.com/airbytehq/airbyte/pull/64486) | Add backoff strategy for Channels stream.                                                                                                                              |
 | 2.2.0-rc.3 | 2025-07-29 | [64107](https://github.com/airbytehq/airbyte/pull/64107) | Add custom partition router.                                                                                                                                           |
 | 2.2.0-rc.2 | 2025-07-23 | [63732](https://github.com/airbytehq/airbyte/pull/63732) | Enable progressive rollout.                                                                                                                                            |
 | 2.2.0-rc.1 | 2025-07-23 | [63278](https://github.com/airbytehq/airbyte/pull/63278) | Migrate Threads stream to manifest.                                                                                                                                    |
