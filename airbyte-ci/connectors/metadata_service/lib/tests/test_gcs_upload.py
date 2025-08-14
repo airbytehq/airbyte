@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
@@ -19,6 +20,7 @@ from metadata_service.constants import (
     RELEASE_CANDIDATE_GCS_FOLDER_NAME,
 )
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
+from metadata_service.models.generated.GitInfo import GitInfo
 from metadata_service.models.transform import to_json_sanitized_dict
 from metadata_service.validators.metadata_validator import ValidatorOptions
 
@@ -105,8 +107,6 @@ def temp_metadata_directory(
 @pytest.fixture
 def mock_git_operations(mocker):
     """Mock Git operations to avoid repository issues with temporary files."""
-    from metadata_service.models.generated.GitInfo import GitInfo
-    from datetime import datetime
 
     # Create a proper GitInfo Pydantic model instance
     mock_git_info = GitInfo(
