@@ -102,6 +102,8 @@ jobs:
         # v1
         uses: snok/install-poetry@76e04a911780d5b312d89783f7b1cd627778900a
         with:
+          # There are a few uses of `poetry run --directory` in various scripts.
+          # If we upgrade to 2.x, those need to be switched to `--project`.
           version: 1.8.5
 
       - name: Install the latest version of uv

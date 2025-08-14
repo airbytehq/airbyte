@@ -113,4 +113,6 @@ else
   metadata_upload_prerelease_flag="--prerelease $docker_tag"
 fi
 # Under the hood, this reads the GCS_CREDENTIALS environment variable
+# Note: --directory works here because publish_connectors.yml installs poetry 1.x.
+# If we upgrade to 2.x, this needs to be `--project $METADATA_SERVICE_PATH`.
 poetry run --directory $METADATA_SERVICE_PATH metadata_service upload "$meta" "$DOCS_ROOT/" "$metadata_bucket" $metadata_upload_prerelease_flag

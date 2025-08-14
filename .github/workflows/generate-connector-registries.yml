@@ -142,8 +142,8 @@ jobs:
           poetry run metadata_service generate-specs-secrets-mask prod-airbyte-cloud-connector-metadata-service
 
       - name: Generate connector registry report
-        working-directory: airbyte-ci/connectors/metadata_service/lib
         shell: bash
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
-        run: poetry run metadata_service generate-registry-report dev-airbyte-cloud-connector-metadata-service
+        # Note: --project because we're on poetry 2.x
+        run: poetry run --project airbyte-ci/connectors/metadata_service/lib metadata_service generate-registry-report dev-airbyte-cloud-connector-metadata-service
