@@ -9,6 +9,7 @@ export default {
         id: "readme",
       },
       items: [
+        "v-1.8",
         "v-1.7",
         "v-1.6",
         "v-1.5",
@@ -17,6 +18,7 @@ export default {
         "v-1.2",
         "v-1.1",
         "v-1.0",
+        "breaking-changes",
         {
           type: "category",
           label: "Historical release notes",
