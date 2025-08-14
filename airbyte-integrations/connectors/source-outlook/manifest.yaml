@@ -1,0 +1,619 @@
+version: 6.60.9
+
+type: DeclarativeSource
+
+description: >-
+  Outlook is the email service provided by Microsoft. This connector enables you
+  to sync emails, mailboxes, and conversations from Microsoft Outlook/Exchange
+  Online using Microsoft Graph API with delegated permissions for multi-tenant
+  support.
+
+check:
+  type: CheckStream
+  stream_names:
+    - messages
+
+definitions:
+  streams:
+    profile:
+      type: DeclarativeStream
+      name: profile
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        requester:
+          type: HttpRequester
+          url: https://graph.microsoft.com/v1.0/me
+          http_method: GET
+          authenticator:
+            $ref: "#/definitions/base_authenticator"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/schema#
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            mail:
+              type:
+                - string
+                - "null"
+            jobTitle:
+              type:
+                - string
+                - "null"
+            displayName:
+              type:
+                - string
+                - "null"
+            officeLocation:
+              type:
+                - string
+                - "null"
+            userPrincipalName:
+              type:
+                - string
+                - "null"
+          additionalProperties: true
+    mailboxes:
+      type: DeclarativeStream
+      name: mailboxes
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          $ref: "#/definitions/base_paginator"
+        requester:
+          type: HttpRequester
+          url: https://graph.microsoft.com/v1.0/me/mailFolders
+          http_method: GET
+          authenticator:
+            $ref: "#/definitions/base_authenticator"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - value
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/schema#
+          required:
+            - id
+          properties:
+            id:
+              type: string
+            displayName:
+              type:
+                - string
+                - "null"
+            parentFolderId:
+              type:
+                - string
+                - "null"
+            totalItemCount:
+              type:
+                - number
+                - "null"
+            unreadItemCount:
+              type:
+                - number
+                - "null"
+            childFolderCount:
+              type:
+                - number
+                - "null"
+          additionalProperties: true
+    messages:
+      type: DeclarativeStream
+      name: messages
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: $top
+            inject_into: request_parameter
+          page_token_option:
+            type: RequestOption
+            field_name: $skiptoken
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: >-
+              {{ response.get('@odata.nextLink', '').split('$skiptoken=')[-1] if
+              response.get('@odata.nextLink') else '' }}
+            stop_condition: "{{ not response.get('@odata.nextLink') }}"
+        requester:
+          $ref: "#/definitions/base_requester"
+          url: https://graph.microsoft.com/v1.0/me/messages
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - value
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/schema#
+          required:
+            - id
+          properties:
+            id:
+              type: string
+            from:
+              type:
+                - object
+                - "null"
+              properties:
+                emailAddress:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    address:
+                      type:
+                        - string
+                        - "null"
+            isRead:
+              type:
+                - boolean
+                - "null"
+            subject:
+              type:
+                - string
+                - "null"
+            importance:
+              type:
+                - string
+                - "null"
+            bodyPreview:
+              type:
+                - string
+                - "null"
+            sentDateTime:
+              type:
+                - string
+                - "null"
+              format: date-time
+            toRecipients:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  emailAddress:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      name:
+                        type:
+                          - string
+                          - "null"
+                      address:
+                        type:
+                          - string
+                          - "null"
+            conversationId:
+              type:
+                - string
+                - "null"
+            hasAttachments:
+              type:
+                - boolean
+                - "null"
+            receivedDateTime:
+              type:
+                - string
+                - "null"
+              format: date-time
+            internetMessageId:
+              type:
+                - string
+                - "null"
+          additionalProperties: true
+    messages_details:
+      type: DeclarativeStream
+      name: messages_details
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        requester:
+          type: HttpRequester
+          url: >-
+            https://graph.microsoft.com/v1.0/me/messages/{{
+            stream_partition['message_id'] }}
+          http_method: GET
+          authenticator:
+            $ref: "#/definitions/base_authenticator"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream: "#/definitions/streams/messages"
+              parent_key: id
+              partition_field: message_id
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/schema#
+          required:
+            - id
+          properties:
+            id:
+              type: string
+            body:
+              type:
+                - object
+                - "null"
+              properties:
+                content:
+                  type:
+                    - string
+                    - "null"
+                contentType:
+                  type:
+                    - string
+                    - "null"
+            from:
+              type:
+                - object
+                - "null"
+              properties:
+                emailAddress:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    address:
+                      type:
+                        - string
+                        - "null"
+            isRead:
+              type:
+                - boolean
+                - "null"
+            subject:
+              type:
+                - string
+                - "null"
+            importance:
+              type:
+                - string
+                - "null"
+            attachments:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  size:
+                    type:
+                      - number
+                      - "null"
+                  contentType:
+                    type:
+                      - string
+                      - "null"
+            bodyPreview:
+              type:
+                - string
+                - "null"
+            ccRecipients:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  emailAddress:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      name:
+                        type:
+                          - string
+                          - "null"
+                      address:
+                        type:
+                          - string
+                          - "null"
+            sentDateTime:
+              type:
+                - string
+                - "null"
+              format: date-time
+            toRecipients:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  emailAddress:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      name:
+                        type:
+                          - string
+                          - "null"
+                      address:
+                        type:
+                          - string
+                          - "null"
+            bccRecipients:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  emailAddress:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      name:
+                        type:
+                          - string
+                          - "null"
+                      address:
+                        type:
+                          - string
+                          - "null"
+            conversationId:
+              type:
+                - string
+                - "null"
+            hasAttachments:
+              type:
+                - boolean
+                - "null"
+            receivedDateTime:
+              type:
+                - string
+                - "null"
+              format: date-time
+            internetMessageId:
+              type:
+                - string
+                - "null"
+          additionalProperties: true
+    conversations:
+      type: DeclarativeStream
+      name: conversations
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        paginator:
+          $ref: "#/definitions/base_paginator"
+        requester:
+          type: HttpRequester
+          url: https://graph.microsoft.com/v1.0/me/messages
+          http_method: GET
+          authenticator:
+            $ref: "#/definitions/base_authenticator"
+          request_parameters:
+            $select: conversationId
+            $groupby: conversationId
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - value
+      primary_key:
+        - conversationId
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          type: object
+          $schema: http://json-schema.org/schema#
+          required:
+            - conversationId
+          properties:
+            conversationId:
+              type: string
+          additionalProperties: true
+  base_authenticator:
+    type: OAuthAuthenticator
+    client_id: "{{ config['client_id'] }}"
+    grant_type: refresh_token
+    client_secret: "{{ config['client_secret'] }}"
+    refresh_token: "{{ config['refresh_token'] }}"
+    expires_in_name: expires_in
+    access_token_name: access_token
+    refresh_request_body:
+      scope: >-
+        https://graph.microsoft.com/Mail.Read
+        https://graph.microsoft.com/User.Read
+    token_refresh_endpoint: >-
+      https://login.microsoftonline.com/{{ config.get('tenant_id', 'common')
+      }}/oauth2/v2.0/token
+  base_requester:
+    type: HttpRequester
+    authenticator:
+      $ref: "#/definitions/base_authenticator"
+    request_parameters:
+      $select: >-
+        id,subject,from,toRecipients,ccRecipients,bccRecipients,receivedDateTime,sentDateTime,bodyPreview,importance,isRead,hasAttachments,internetMessageId,conversationId
+  base_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      field_name: $skiptoken
+      inject_into: request_parameter
+    pagination_strategy:
+      type: CursorPagination
+      cursor_value: >-
+        {{ response.get('@odata.nextLink', '').split('$skiptoken=')[-1] if
+        response.get('@odata.nextLink') else '' }}
+      stop_condition: "{{ not response.get('@odata.nextLink') }}"
+
+streams:
+  - $ref: "#/definitions/streams/profile"
+  - $ref: "#/definitions/streams/mailboxes"
+  - $ref: "#/definitions/streams/messages"
+  - $ref: "#/definitions/streams/messages_details"
+  - $ref: "#/definitions/streams/conversations"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - client_id
+      - client_secret
+      - refresh_token
+    properties:
+      client_id:
+        type: string
+        description: The Client ID of your Microsoft Azure application
+        name: client_id
+        order: 0
+        title: OAuth Client ID
+        airbyte_secret: true
+      tenant_id:
+        type: string
+        description: >-
+          Azure AD Tenant ID (optional for multi-tenant apps, defaults to
+          'common')
+        order: 3
+        title: Tenant ID (Optional)
+        default: common
+        airbyte_secret: false
+      client_secret:
+        type: string
+        description: The Client Secret of your Microsoft Azure application
+        name: client_secret
+        order: 1
+        title: OAuth Client Secret
+        airbyte_secret: true
+      refresh_token:
+        type: string
+        description: Refresh token obtained from Microsoft OAuth flow
+        order: 2
+        title: Refresh Token
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  assist:
+    docsUrl: https://docs.microsoft.com/en-us/graph/api/resources/mail-api-overview
+  testedStreams:
+    profile:
+      hasRecords: true
+      streamHash: de8ec9652feea6f68ec8f01e4eaf55d9eedd699c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    messages:
+      hasRecords: true
+      streamHash: fa1bd97935f082f221bf5a6f167cf70d1179300a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    mailboxes:
+      hasRecords: true
+      streamHash: 6f0d1bfff4c347b58286ac9aab4122ac4a311081
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    conversations:
+      hasRecords: true
+      streamHash: 163d9e70bdd06a96992a53995e564a761af1237f
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    messages_details:
+      hasRecords: true
+      streamHash: fc9ca9148f1ec7f8275d492984ee2e4c2bb0448a
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    profile: true
+    messages: true
+    mailboxes: true
+    conversations: true
+    messages_details: true
+  applied_migrations:
+    - migration: HttpRequesterUrlBaseToUrl
+      to_version: 1.0.1
+      migrated_at: "2025-08-13T22:29:11.022287+00:00"
+      from_version: 1.0.0
+    - migration: HttpRequesterPathToUrl
+      to_version: 1.0.1
+      migrated_at: "2025-08-13T22:29:11.023533+00:00"
+      from_version: 1.0.0
