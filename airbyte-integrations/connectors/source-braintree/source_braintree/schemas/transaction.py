@@ -45,6 +45,19 @@ class SubscriptionDetails(BaseModel):
     billing_period_end_date: Optional[date]
     billing_period_start_date: Optional[date]
 
+class LiabilityShift(BaseModel):
+    conditions: List[str]
+    responsible_party: str
+
+class RiskData(BaseModel):
+    decision: str
+    decision_reasons: Optional[List[str]]
+    device_data_captured: bool
+    fraud_service_provider: str
+    id: str
+    liability_shift: Optional[LiabilityShift]
+    transaction_risk_score: str
+
 
 class Transaction(BaseModel):
     acquirer_reference_number: str
@@ -101,6 +114,7 @@ class Transaction(BaseModel):
     refunded_transaction_id: str
     response_emv_data: str
     retrieval_reference_number: str
+    risk_data: Optional[RiskData]
     samsung_pay_card_details: SamsungPayCard
     sca_exemption_requested: str
     service_fee_amount: Decimal
