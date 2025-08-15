@@ -113,9 +113,7 @@
                 "type": "doc",
                 "id": "move-data/elt-data-activation"
               },
-              "items": [
-                "move-data/rejected-records"
-              ]
+              "items": ["move-data/rejected-records"]
             },
             "using-airbyte/sync-files-and-records"
           ]
@@ -351,9 +349,7 @@
             "type": "doc",
             "id": "operator-guides/upgrading-airbyte"
           },
-          "items": [
-            "managing-airbyte/connector-updates"
-          ]
+          "items": ["managing-airbyte/connector-updates"]
         },
         {
           "type": "category",
