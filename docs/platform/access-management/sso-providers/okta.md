@@ -42,7 +42,9 @@ Follow these steps to set up SSO in Airbyte Cloud.
 
       ![Screenshot of Okta app integration creation modal](./assets/okta-create-new-app-integration.png)
 
-2. In Okta, set the following parameters for your app integration.
+2. Click **Next**.
+
+3. Set the following parameters for your app integration.
 
     - **App integration name**: `Airbyte` (or something similar)
 
