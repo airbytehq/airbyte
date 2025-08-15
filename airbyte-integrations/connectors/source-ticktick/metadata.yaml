@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 6b9d55ac-d9fa-4444-9ee9-81c6c97f8bdb
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.2
   dockerRepository: airbyte/source-ticktick
   githubIssueLabel: source-ticktick
   icon: icon.svg
