@@ -1,15 +1,18 @@
-version: 6.41.5
+version: 6.48.15
 
 type: DeclarativeSource
 
-description: Get ad analytics from all Mercado Ads placements
+description: >-
+  Get ad analytics from all Mercado Ads placements. Follow [this
+  guide](https://developers.mercadolibre.com.ar/en_us/authentication-and-authorization)
+  to get the OAuth credentials. Make sure to give the ["Publicidad de un
+  producto"](https://developers.mercadolibre.com.ar/es_ar/permisos-funcionales?nocache=true&password=permisos#Publicidad)
+  read permission to fetch ad data.
 
 check:
   type: CheckStream
   stream_names:
     - brand_advertisers
-    - display_advertisers
-    - product_advertisers
 
 definitions:
   streams:
