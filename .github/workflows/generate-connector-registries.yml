@@ -98,8 +98,8 @@ jobs:
         run: |
           poetry run metadata_service generate-connector-registry prod-airbyte-cloud-connector-metadata-service oss
 
-  generate-specs-secrets-mask:
-    name: Generate Specs Secrets Mask
+  post-registry-generation:
+    name: Post registry generation steps
     runs-on: ubuntu-24.04
     needs: [generate-cloud-registry, generate-oss-registry]
 
