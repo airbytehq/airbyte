@@ -315,7 +315,6 @@ jobs:
       - name: Generate Cloud Registry Entry [Manual]
         id: generate-cloud-registry-entry-manual
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
-        working-directory: airbyte-ci/connectors/metadata_service/lib
         shell: bash
         run: |
           echo "Generating Cloud registry entry for ${{ matrix.connector }}"
