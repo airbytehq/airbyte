@@ -216,14 +216,14 @@ jobs:
       - name: Generate OSS Registry Entry [On merge to master]
         id: generate-oss-registry-entry-master
         if: github.event_name == 'push'
-        working-directory: airbyte-ci/connectors/metadata_service/lib
         shell: bash
         run: |
           echo "Generating OSS registry entry for ${{ matrix.connector }}"
-          poetry run metadata_service generate-registry-entry \
+          poetry run --directory airbyte-ci/connectors/metadata_service/lib \
+            metadata_service generate-registry-entry \
             prod-airbyte-cloud-connector-metadata-service \
-            "../../airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
-            "../../../spec.json" \
+            "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
+            "spec.json" \
             oss
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
@@ -232,22 +232,14 @@ jobs:
       - name: Generate Cloud Registry Entry [On merge to master]
         id: generate-cloud-registry-entry-master
         if: github.event_name == 'push'
-        working-directory: airbyte-ci/connectors/metadata_service/lib
         shell: bash
         run: |
           echo "Generating Cloud registry entry for ${{ matrix.connector }}"
-          # Use spec.cloud.json if it exists and is different from spec.json, otherwise use spec.json
-          if [ -f "../../../spec.cloud.json" ] && ! diff "../../../spec.json" "../../../spec.cloud.json" > /dev/null 2>&1; then
-            SPEC_FILE="../../../spec.cloud.json"
-            echo "Using cloud-specific spec file: spec.cloud.json"
-          else
-            SPEC_FILE="../../../spec.json"
-            echo "Using standard spec file: spec.json"
-          fi
-          poetry run metadata_service generate-registry-entry \
+          poetry run --directory airbyte-ci/connectors/metadata_service/lib \
+            metadata_service generate-registry-entry \
             prod-airbyte-cloud-connector-metadata-service \
-            "../../airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
-            "$SPEC_FILE" \
+            "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
+            "spec.cloud.json" \
             cloud
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
@@ -307,14 +299,14 @@ jobs:
       - name: Generate OSS Registry Entry [Manual]
         id: generate-oss-registry-entry-manual
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
-        working-directory: airbyte-ci/connectors/metadata_service/lib
         shell: bash
         run: |
           echo "Generating OSS registry entry for ${{ matrix.connector }}"
-          poetry run metadata_service generate-registry-entry \
+          poetry run --directory airbyte-ci/connectors/metadata_service/lib \
+            metadata_service generate-registry-entry \
             prod-airbyte-cloud-connector-metadata-service \
-            "../../airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
-            "../../../spec.json" \
+            "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
+            "spec.json" \
             oss
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
@@ -327,18 +319,11 @@ jobs:
         shell: bash
         run: |
           echo "Generating Cloud registry entry for ${{ matrix.connector }}"
-          # Use spec.cloud.json if it exists and is different from spec.json, otherwise use spec.json
-          if [ -f "../../../spec.cloud.json" ] && ! diff "../../../spec.json" "../../../spec.cloud.json" > /dev/null 2>&1; then
-            SPEC_FILE="../../../spec.cloud.json"
-            echo "Using cloud-specific spec file: spec.cloud.json"
-          else
-            SPEC_FILE="../../../spec.json"
-            echo "Using standard spec file: spec.json"
-          fi
-          poetry run metadata_service generate-registry-entry \
+          poetry run --directory airbyte-ci/connectors/metadata_service/lib \
+            metadata_service generate-registry-entry \
             prod-airbyte-cloud-connector-metadata-service \
-            "../../airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
-            "$SPEC_FILE" \
+            "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
+            "spec.cloud.json" \
             cloud
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
