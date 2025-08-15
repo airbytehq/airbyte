@@ -25,6 +25,7 @@ from metadata_service.constants import (
     METADATA_FILE_NAME,
     METADATA_FOLDER,
     PUBLISH_UPDATE_CHANNEL,
+    get_public_url_for_gcs_file,
 )
 from metadata_service.helpers.gcs import get_gcs_storage_client, safe_read_gcs_file
 from metadata_service.helpers.object_helpers import deep_copy_params, default_none_to_dict
@@ -84,7 +85,7 @@ def _apply_metadata_overrides(metadata_data: dict, registry_type: str, bucket_na
 
     # apply icon url and releases
     icon_blob = _get_icon_blob_from_gcs(bucket_name, metadata_data)
-    icon_url = _get_public_url_for_gcs_file(icon_blob.bucket.name, icon_blob.name, METADATA_CDN_BASE_URL)
+    icon_url = get_public_url_for_gcs_file(icon_blob.bucket.name, icon_blob.name, METADATA_CDN_BASE_URL)
 
     overridden_metadata_data["iconUrl"] = icon_url
     overridden_metadata_data["releases"] = _apply_connector_releases(overridden_metadata_data)
@@ -334,20 +335,6 @@ def _get_icon_blob_from_gcs(bucket_name: str, metadata_entry: dict) -> storage.B
         logger.error(f"Error getting icon blob: {e}")
         raise
     return icon_blob
-
-
-def _get_public_url_for_gcs_file(bucket_name: str, file_path: str, cdn_url: Optional[str] = None) -> str:
-    """Get the public URL to a file in the GCS bucket.
-
-    Args:
-        bucket_name: The name of the GCS bucket.
-        file_path: The path to the file in the bucket.
-        cdn_url: The base URL of the CDN that serves the bucket.
-
-    Returns:
-        The public URL to the file.
-    """
-    return f"{cdn_url}/{file_path}" if cdn_url else f"{DEFAULT_ASSET_URL}/{bucket_name}/{file_path}"
 
 
 def _get_connector_type_from_registry_entry(registry_entry: dict) -> TaggedRegistryEntry:
