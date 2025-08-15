@@ -7,6 +7,7 @@ package io.airbyte.integrations.source.mysql
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airvyte.cdk.db.jdbc.JdbcUtils
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.read.And
@@ -459,6 +460,7 @@ class MySqlJdbcConcurrentPartitionsCreator<
     partitionFactory: JdbcPartitionFactory<A, S, P>,
 ) : JdbcPartitionsCreator<A, S, P>(partition, partitionFactory) {
     private val log = KotlinLogging.logger {}
+    private var maxChunkSize: Long = Long.MAX_VALUE
     val tableEstimateQuery =
         "SELECT DATA_LENGTH FROM information_schema.TABLES t WHERE TABLE_SCHEMA = '%s' AND TABLE_NAME = '%s'"
 
@@ -507,6 +509,14 @@ class MySqlJdbcConcurrentPartitionsCreator<
             log.info { "Unable to get table estimate size" }
             return listOf(JdbcNonResumablePartitionReader(partition))
         }
+
+        if (sharedState.configuration.get(JdbcUtils.HOST_KEY).asText().lowercase().contains("psdb.cloud")) {
+            maxChunkSize = 100_000
+        }
+
+        // TODO: convert rows to bytes comparison
+        // partitionByteLimit = Long.min(maxChunkSize * rowByteSize, sharedState.targetPartitionByteSize)
+        // is rowbytesize just for a sampled row, ideally avg?
 
         log.info { "Table memory size estimated at ${tableByteSizeEstimate shr 20} MiB." }
         log.info { "Target partition size is ${sharedState.targetPartitionByteSize shr 20} MiB." }
