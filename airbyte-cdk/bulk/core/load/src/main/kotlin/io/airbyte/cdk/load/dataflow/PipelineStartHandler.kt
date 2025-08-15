@@ -7,6 +7,8 @@ package io.airbyte.cdk.load.dataflow
 import io.airbyte.cdk.load.dataflow.state.StateReconciler
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 
 @Singleton
 class PipelineStartHandler(
@@ -17,6 +19,6 @@ class PipelineStartHandler(
     fun run() {
         log.info { "Destination Pipeline Starting..." }
 
-        reconciler.run()
+        reconciler.run(CoroutineScope(Dispatchers.IO))
     }
 }
