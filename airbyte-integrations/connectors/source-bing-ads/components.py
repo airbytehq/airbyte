@@ -1,21 +1,20 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+import csv
+import gzip
 from copy import deepcopy
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from functools import cached_property
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Generator
+from io import StringIO
+from typing import Any, Dict, Generator, Iterable, List, Mapping, MutableMapping, Optional
 
-import csv
-import gzip
-from io import BytesIO, StringIO
-
+from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.schema import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
-from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 
 
 PARENT_SLICE_KEY: str = "parent_slice"
@@ -451,12 +450,7 @@ class BingAdsGzipCsvDecoder(Decoder):
             csv_reader = csv.DictReader(StringIO(text_content))
 
             for row in csv_reader:
-                # Filter out metadata rows
-                if row.get("Type") not in ["Format Version", "Account"]:
-                    # Add Account Id field
-                    if "Account Id" not in row:
-                        row["Account Id"] = None  # Will be filled by transformation
-                    yield row
+                yield row
 
         except (gzip.BadGzipFile, OSError):
             # If GZip decompression fails, try parsing as plain CSV
@@ -465,12 +459,7 @@ class BingAdsGzipCsvDecoder(Decoder):
                 csv_reader = csv.DictReader(StringIO(text_content))
 
                 for row in csv_reader:
-                    # Filter out metadata rows
-                    if row.get("Type") not in ["Format Version", "Account"]:
-                        # Add Account Id field
-                        if "Account Id" not in row:
-                            row["Account Id"] = None  # Will be filled by transformation
-                        yield row
+                    yield row
 
             except Exception as e:
                 # If both fail, log the error and yield empty
