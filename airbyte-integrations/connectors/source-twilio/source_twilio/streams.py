@@ -520,20 +520,6 @@ class Services(TwilioStream):
         return "Services"
 
 
-class VerifyServices(TwilioStream):
-    """
-    https://www.twilio.com/docs/chat/rest/service-resource#read-multiple-service-resources
-    """
-
-    # Unlike other endpoints, this one won't accept requests where pageSize >100
-    page_size = 100
-    data_field = "services"
-    url_base = TWILIO_VERIFY_BASE_V2
-
-    def path(self, **kwargs):
-        return "Services"
-
-
 class Roles(TwilioNestedStream):
     """
     https://www.twilio.com/docs/chat/rest/role-resource#read-multiple-role-resources
@@ -554,17 +540,6 @@ class Transcriptions(TwilioNestedStream):
     """https://www.twilio.com/docs/voice/api/recording-transcription?code-sample=code-read-list-all-transcriptions&code-language=curl&code-sdk-version=json#read-multiple-transcription-resources"""
 
     parent_stream = Accounts
-
-
-class Trunks(TwilioStream):
-    """
-    https://www.twilio.com/docs/sip-trunking/api/trunk-resource#trunk-properties
-    """
-
-    url_base = TWILIO_TRUNKING_URL_BASE
-
-    def path(self, **kwargs):
-        return "Trunks"
 
 
 class Queues(TwilioNestedStream):
