@@ -3,7 +3,7 @@
 # Uploads the java tar for java connectors.
 # Usage: ./poe-tasks/upload-java-connector-tar-file.sh --name destination-bigquery [--pre-release] [--main-release]
 # You must have set the env var GCS_CREDENTIALS, which contains a JSON-formatted GCP service account key.
-# GCS_CREDENTIALS needs write access to `gs://$metadata_bucket/files/resources/java`.
+# GCS_CREDENTIALS needs write access to `gs://$metadata_bucket/resources/java`.
 set -euo pipefail
 
 source "${BASH_SOURCE%/*}/lib/util.sh"
@@ -32,4 +32,4 @@ else
 fi
 
 gcloud_activate_service_account "$GCS_CREDENTIALS"
-gcloud storage cp "$tar_file_path" "gs://${metadata_bucket}/files/resources/java/${connector}/${docker_tag}/"
+gcloud storage cp "$tar_file_path" "gs://${metadata_bucket}/resources/java/${connector}/${docker_tag}/"
