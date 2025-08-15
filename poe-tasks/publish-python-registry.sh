@@ -162,6 +162,7 @@ fi
 
 echo "Package name: $PACKAGE_NAME"
 echo "Version: $VERSION"
+echo
 
 # Check if package already exists
 if [[ $(curl -s -o /dev/null -w "%{http_code}" "$REGISTRY_CHECK_URL/$PACKAGE_NAME/$VERSION/json") == "200" ]]; then
@@ -176,13 +177,12 @@ fi
 if [[ -f "pyproject.toml" ]]; then
     echo "Detected Poetry project"
 
-    VENV_DIR=.build-publish-venv
-    POETRY_VERSION=2.1.3
-
     # runs automatically on script error or exit
     cleanup() {
-        mv pyproject.toml.bak pyproject.toml
-        echo "Restored original pyproject.toml"
+        if [[ -f pyproject.toml.bak ]]; then
+            mv pyproject.toml.bak pyproject.toml
+            echo "Restored original pyproject.toml"
+        fi
     }
     trap cleanup EXIT   
 
