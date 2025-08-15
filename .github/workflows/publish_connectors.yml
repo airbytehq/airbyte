@@ -149,6 +149,7 @@ jobs:
         if: github.event_name == 'push' && steps.connector-metadata.outputs.connector-language == 'java'
         shell: bash
         run: ./poe-tasks/upload-java-connector-tar-file.sh --name ${{ matrix.connector }} --main-release
+        # we allow it to fail because we are testing this step. We should remove this once we are sure it works.
         continue-on-error: true
 
       - name: Determine build and publish options
@@ -231,6 +232,7 @@ jobs:
         if: (github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call') && steps.connector-metadata.outputs.connector-language == 'java'
         shell: bash
         run: ./poe-tasks/upload-java-connector-tar-file.sh --name ${{ matrix.connector }} ${{ inputs.publish-options }}
+        # we allow it to fail because we are testing this step. We should remove this once we are sure it works.
         continue-on-error: true
 
       - name: Build and publish Python and Manifest-Only connectors images [manual]
