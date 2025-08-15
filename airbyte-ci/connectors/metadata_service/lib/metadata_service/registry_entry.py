@@ -368,7 +368,7 @@ def _get_connector_type_from_registry_entry(registry_entry: dict) -> TaggedRegis
         raise Exception("Could not determine connector type from registry entry")
 
 
-def _get_registry_entry_blob_paths(metadata_dict: dict, registry_type: str) -> List[str]:
+def _get_registry_entry_blob_paths(metadata_dict: dict, registry_type: str, pre_release_tag: str | None) -> List[str]:
     """
     Builds the registry entry paths for the registry entries.
 
@@ -380,7 +380,11 @@ def _get_registry_entry_blob_paths(metadata_dict: dict, registry_type: str) -> L
         List[str]: The registry entry paths.
     """
     registry_entry_paths = []
-    if "-rc" not in metadata_dict["data"]["dockerImageTag"] and "-dev" not in metadata_dict["data"]["dockerImageTag"]:
+    if pre_release_tag is not None:
+        dev_registry_entry_path = f"{METADATA_FOLDER}/{metadata_dict['data']['dockerRepository']}/{pre_release_tag}/{registry_type}.json"
+        registry_entry_paths.append(dev_registry_entry_path)
+
+    elif "-rc" not in metadata_dict["data"]["dockerImageTag"]:
         latest_registry_entry_path = f"{METADATA_FOLDER}/{metadata_dict['data']['dockerRepository']}/latest/{registry_type}.json"
         versioned_registry_entry_path = (
             f"{METADATA_FOLDER}/{metadata_dict['data']['dockerRepository']}/{metadata_dict['data']['dockerImageTag']}/{registry_type}.json"
@@ -397,12 +401,6 @@ def _get_registry_entry_blob_paths(metadata_dict: dict, registry_type: str) -> L
             f"{METADATA_FOLDER}/{metadata_dict['data']['dockerRepository']}/{metadata_dict['data']['dockerImageTag']}/{registry_type}.json"
         )
         registry_entry_paths.append(release_candidate_registry_entry_path)
-
-    elif "-dev" in metadata_dict["data"]["dockerImageTag"]:
-        dev_registry_entry_path = (
-            f"{METADATA_FOLDER}/{metadata_dict['data']['dockerRepository']}/{metadata_dict['data']['dockerImageTag']}/{registry_type}.json"
-        )
-        registry_entry_paths.append(dev_registry_entry_path)
 
     return registry_entry_paths
 
@@ -429,7 +427,7 @@ def _persist_connector_registry_entry(bucket_name: str, registry_entry: Polymorp
 
 @sentry_sdk.trace
 def generate_and_persist_registry_entry(
-    bucket_name: str, metadata_file_path: pathlib.Path, spec_path: pathlib.Path, registry_type: str
+    bucket_name: str, metadata_file_path: pathlib.Path, spec_path: pathlib.Path, registry_type: str, pre_release_tag: str | None
 ) -> None:
     """Generate and persist the connector registry entry to the GCS bucket.
 
@@ -438,6 +436,7 @@ def generate_and_persist_registry_entry(
         metadata_file_path (pathlib.Path): The path to the metadata file.
         spec_path (pathlib.Path): The path to the spec file.
         registry_type (str): The registry type.
+        pre_release_tag (str): The prerelease image tag ("1.2.3-dev.abcde12345"), or None. If set to None, will use the image tag from the metadata file.
     """
 
     # It can be assumed the metadata file has already been validated before getting to this stage.
@@ -448,7 +447,7 @@ def generate_and_persist_registry_entry(
 
     # If the connector is not enabled on the given registry, skip generateing and persisting the registry entry.
     if metadata_dict["data"]["registryOverrides"][registry_type]["enabled"]:
-        registry_entry_blob_paths = _get_registry_entry_blob_paths(metadata_dict, registry_type)
+        registry_entry_blob_paths = _get_registry_entry_blob_paths(metadata_dict, registry_type, pre_release_tag)
 
         metadata_data = metadata_dict["data"]
 
