@@ -9,12 +9,12 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: dfd88b22-b603-4c3d-aad7-3701784586b1
-  dockerImageTag: 6.2.28
+  dockerImageTag: 6.2.30
   dockerRepository: airbyte/source-faker
   documentationUrl: https://docs.airbyte.com/integrations/sources/faker
   githubIssueLabel: source-faker
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Sample Data
   registryOverrides:
     cloud:

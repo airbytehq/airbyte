@@ -12,7 +12,7 @@ A single sync might have some tables configured for Full Refresh replication and
 
 The Airbyte Protocol outputs records from sources. Records from `UPDATE` and `DELETE` statements appear the same way as records from `INSERT` statements. We support different options for how to sync this data into destinations using primary keys, so you can choose to append this data, delete in place, etc.
 
-We add some metadata columns for CDC sources which all begin with the `_ab_cdc_` prefix. The actual columns syced will vary per srouce, but might look like:
+We add some metadata columns for CDC sources which all begin with the `_ab_cdc_` prefix. The actual columns synced will vary per source, but might look like:
 
 - `_ab_cdc_lsn` of `_ab_cdc_cursor` the point in the log where the record was retrieved
 - `_ab_cdc_log_file` & `_ab_cdc_log_pos` \(specific to mysql source\) is the file name and position in the file where the record was retrieved
@@ -24,30 +24,33 @@ We add some metadata columns for CDC sources which all begin with the `_ab_cdc_`
 - CDC incremental is only supported for tables with primary keys for most sources. A CDC source can still choose to replicate tables without primary keys as Full Refresh or a non-CDC source can be configured for the same database to replicate the tables without primary keys using standard incremental replication.
 - Data must be in tables, not views.
 - The modifications you are trying to capture must be made using `DELETE`/`INSERT`/`UPDATE`. For example, changes made from `TRUNCATE`/`ALTER` won't appear in logs and therefore in your destination.
+- Newly created tables/collections in your schema will cause the CDC snapshot to be ahead of what Airbyte has in the connection state. A refresh is required after any new table/collection is added.
 - There are database-specific limitations. See the documentation pages for individual connectors for more information.
 - The final table will not show the records whose most recent entry has been deleted, as denoted by _ab_cdc_deleted_at.
 
-### Adding New Schemas
+### Adding New Schemas/Columns
+
 When using CDC, each schema included in the sync will first undergo an initial snapshot (equivalent to a full refresh).
 
-If you create a new schema that is not yet being synced, **it must first be snapshotted** before CDC can begin tracking changes.
+If you create a new schema/column that is not yet being synced, **it must first be snapshotted** before CDC can begin tracking changes.
 Upon schema updates, you should see a _**Schema changes detected**_ notice in the _Schema_ section.
-If the schema is not visible, click _**Refresh source schema**_ to retrieve the latest structure from your source.
+If the schema/column is not visible, click _**Refresh source schema**_ to retrieve the latest structure from your source.
 
-CDC tracks changes only for tables that are included in the sync. To add a new table:
-1. Review and approve the new schema changes.
-2. Enable the newly added schema(s).
-3. Navigate to the _Status_ page, locate your newly added stream, click the three dots (⋮) next to it, and choose _**Refresh Stream**_ to trigger a snapshot of the new schema(s).
+CDC tracks changes only for schemas that are included in the sync. To add a new schema/column:
+1. Review and approve the new changes.
+2. Enable the newly added schema(s)/column(s).
+3. Navigate to the _Status_ page and trigger a refresh:
+    - **For new schemas**: Locate the newly added schema, click the three dots (⋮) next to it, and choose _Refresh Stream_.
+    - **For new columns**: Locate the schema containing the new column(s), click the three dots (⋮) next to it, and choose _Refresh Stream_.
 
 To avoid unintentional sync issues, we recommend enabling `Approve all schema changes myself` under the
-_Detect and propagate schema changes_ in the _Setting_ section. This prevents newly added tables from being included in the sync without a proper snapshot, 
+_Detect and propagate schema changes_ in the _Setting_ section. This prevents newly added detected changes from being included in the sync without a proper snapshot,
 reducing the risk of LSN issues and sync failures.
 
 :::tip
 
-Creating a new schema in a CDC-enabled database does **not** automatically enable CDC for the tables within that schema.
-We recommend manually verifying that CDC is enabled on any newly created tables. Use the appropriate CDC commands for 
-your source database to ensure CDC is correctly configured.
+Adding new schemas/columns to a CDC-enabled database does **not** automatically enable CDC tracking on them.
+We recommend manually verifying that CDC is enabled on any newly added database objects. Since each source database uses different commands to configure and verify CDC, be sure to follow the appropriate steps for your specific database.
 For an example of how to enable CDC on a new schema in MSSQL, visit our [MSSQL Troubleshooting](https://docs.airbyte.com/integrations/sources/mssql/mssql-troubleshooting) page.
 
 :::
@@ -58,10 +61,13 @@ For an example of how to enable CDC on a new schema in MSSQL, visit our [MSSQL T
 - [MySQL](/integrations/sources/mysql)
 - [Microsoft SQL Server / MSSQL](/integrations/sources/mssql)
 - [MongoDB](/integrations/sources/mongodb-v2)
+- [Oracle DB](/integrations/enterprise-connectors/source-oracle-enterprise)
+- [SAP HANA](/integrations/enterprise-connectors/source-sap-hana)
+- [IBM Db2](/integrations/enterprise-connectors/source-db2)
 
 ## Coming Soon
 
-- Oracle DB
+
 - Please [create a ticket](https://github.com/airbytehq/airbyte/issues/new/choose) if you need CDC support on another database!
 
 ## Additional information

@@ -121,6 +121,9 @@ If the 50,000 limit is too stringent, contact Marketo support for a quota increa
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                          |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------|
+| 1.4.31 | 2025-08-09 | [64729](https://github.com/airbytehq/airbyte/pull/64729) | Update dependencies |
+| 1.4.30 | 2025-08-02 | [64262](https://github.com/airbytehq/airbyte/pull/64262) | Update dependencies |
+| 1.4.29 | 2025-07-26 | [63912](https://github.com/airbytehq/airbyte/pull/63912) | Update dependencies |
 | 1.4.28 | 2025-07-12 | [63152](https://github.com/airbytehq/airbyte/pull/63152) | Update dependencies |
 | 1.4.27 | 2025-07-05 | [61142](https://github.com/airbytehq/airbyte/pull/61142) | Update dependencies |
 | 1.4.26 | 2025-05-28 | [60823](https://github.com/airbytehq/airbyte/pull/60823) | Fix Attribute Errors on `Leads` stream |

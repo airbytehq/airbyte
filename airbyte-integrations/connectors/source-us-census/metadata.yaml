@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/source-us-census
   githubIssueLabel: source-us-census
   icon: uscensus.svg
-  license: MIT
+  license: ELv2
   name: US Census
   remoteRegistries:
     pypi:
