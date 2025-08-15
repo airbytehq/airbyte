@@ -71,8 +71,8 @@ Create client credentials so Airbyte can talk to your application.
     - **Email domain**: The full email domain of users who sign in to Entra ID. For example, `airbyte.io`.
 
         :::note
-        If you use multiple email domains, contact Airbyte's [support team](https://support.airbyte.com) to complete SSO setup.
-        :::
+      If you use multiple email domains, only enter one domain here. Contact Airbyte's [support team](https://support.airbyte.com) to have them add additional domains after you're done.
+      :::
 
     - **Client ID**: Find this in the Essentials section of your Entra ID application's homepage.
 
@@ -90,13 +90,17 @@ Create client credentials so Airbyte can talk to your application.
 
 4. Click **Save changes**.
 
-5. Test SSO to make sure people can access Airbyte. You or a colleague should complete the following steps.
+5. Test SSO to make sure people can access Airbyte. **Stay logged in so you don't lock yourself out** and ask a colleague to complete the following steps.
 
     1. Sign out of Airbyte.
 
     2. On the Airbyte login page, click **Continue with SSO**, enter your company identifier, and click **Continue with SSO**. The Entra ID sign in page appears.
 
     3. Sign into Entra ID. Entra ID then forwards you back to Airbyte, which logs you in.
+
+    :::note
+    If you were already logged into your company’s IdP somewhere else, you might not see a login screen. In this case, Airbyte forwards you directly to Airbyte's logged-in area.
+    :::
 
 If you successfully set up SSO, but your users can't log into Airbyte, verify that they have access to the Airbyte application you created in Entra ID.
 
