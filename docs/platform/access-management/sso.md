@@ -7,7 +7,7 @@ products: oss-enterprise, cloud-teams
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
 
-Use Open ID Connect (OIDC) and generic OIDC to log into Airbyte using an Identity Provider (IdP) like Okta or Entra ID/Active Directory.
+Use Open ID Connect (OIDC) to log into Airbyte using an Identity Provider (IdP) like Okta or Entra ID/Active Directory.
 
 ## Set up single sign on
 
