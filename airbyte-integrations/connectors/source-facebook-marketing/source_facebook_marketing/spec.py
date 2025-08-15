@@ -260,9 +260,20 @@ class ConnectorConfig(BaseConfig):
         description="Set to active if you want to fetch the thumbnail_url and store the result in thumbnail_data_url for each Ad Creative.",
     )
 
+    default_ads_insights_action_breakdowns: Optional[List[ValidActionBreakdowns]] = Field(
+        title="Action breakdowns for the Built-in Ads Insight stream",
+        order=8,
+        default=[
+            AdsInsights.ActionBreakdowns.action_type,
+            AdsInsights.ActionBreakdowns.action_target_id,
+            AdsInsights.ActionBreakdowns.action_destination,
+        ],
+        description="Action breakdowns for the Built-in Ads Insights stream that will be used in the request. You can override default values or remove them to make it empty if needed.",
+    )
+
     custom_insights: Optional[List[InsightConfig]] = Field(
         title="Custom Insights",
-        order=8,
+        order=9,
         description=(
             "A list which contains ad statistics entries, each entry must have a name and can contains fields, "
             'breakdowns or action_breakdowns. Click on "add" to fill this field.'
