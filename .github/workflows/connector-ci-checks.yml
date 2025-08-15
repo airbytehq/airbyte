@@ -430,6 +430,13 @@ jobs:
       - name: Install uv
         if: matrix.connector
         uses: astral-sh/setup-uv@v6
+
+      - name: Install Poe
+        if: matrix.connector
+        run: |
+          # Install Poe so we can run the connector tasks:
+          uv tool install poethepoet
+
       - name: Install QA Checks
         if: matrix.connector
         run: |
@@ -440,6 +447,18 @@ jobs:
         run: |
           connector_name=${{ matrix.connector }}
           connectors-qa run --name ${connector_name%-strict-encrypt}
+
+      - name: Detect Python CDK Prerelease Versions
+        if: matrix.connector
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: |
+          # Exit with code 1 if the CDK is not pinned to a standard version.
+          # This is a no-op for non-Python connectors.
+          if [[ $(poe -qq get-language) == "python" ]]; then
+            poe detect-cdk-prerelease
+          else
+            echo "Skipping CDK pre-release check for non-Python connector."
+          fi
 
   connector-ci-checks-summary:
     name: Aggregate Results
