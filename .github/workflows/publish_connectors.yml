@@ -149,6 +149,8 @@ jobs:
         if: github.event_name == 'push' && steps.connector-metadata.outputs.connector-language == 'java'
         shell: bash
         run: ./poe-tasks/upload-java-connector-tar-file.sh --name ${{ matrix.connector }} --main-release
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
         # we allow it to fail because we are testing this step. We should remove this once we are sure it works.
         continue-on-error: true
 
@@ -232,6 +234,8 @@ jobs:
         if: (github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call') && steps.connector-metadata.outputs.connector-language == 'java'
         shell: bash
         run: ./poe-tasks/upload-java-connector-tar-file.sh --name ${{ matrix.connector }} ${{ inputs.publish-options }}
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
         # we allow it to fail because we are testing this step. We should remove this once we are sure it works.
         continue-on-error: true
 
