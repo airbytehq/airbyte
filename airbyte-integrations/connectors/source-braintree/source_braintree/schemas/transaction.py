@@ -61,6 +61,7 @@ class RiskData(BaseModel):
     transaction_risk_score: str
 
 
+
 class Transaction(BaseModel):
     acquirer_reference_number: str
     additional_processor_response: str
