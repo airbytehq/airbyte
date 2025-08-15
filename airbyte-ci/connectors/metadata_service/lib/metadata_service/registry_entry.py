@@ -284,7 +284,7 @@ def _get_and_parse_yaml_file(file_path: pathlib.Path) -> dict:
         with open(file_path, "r") as f:
             file_dict = yaml.safe_load(f)
     except Exception as e:
-        logger.error(f"Error parsing file: {e}")
+        logger.exception(f"Error parsing file")
         raise
     logger.info("Parsed YAML file.")
     return file_dict
@@ -304,7 +304,7 @@ def _get_and_parse_json_file(file_path: pathlib.Path) -> dict:
         with open(file_path, "r") as f:
             file_dict = json.load(f)
     except Exception as e:
-        logger.error(f"Error parsing JSON file: `{file_path}`: {e}")
+        logger.exception(f"Error parsing JSON file: `{file_path}`")
         raise
     logger.info("Parsed JSON file.")
     return file_dict
@@ -331,7 +331,7 @@ def _get_icon_blob_from_gcs(bucket_name: str, metadata_entry: dict) -> storage.B
         if not icon_blob.exists():
             raise ValueError(f"Icon file not found for `{connector_docker_repository}`")
     except Exception as e:
-        logger.error(f"Error getting icon blob: {e}")
+        logger.exception(f"Error getting icon blob")
         raise
     return icon_blob
 
@@ -422,7 +422,7 @@ def _persist_connector_registry_entry(bucket_name: str, registry_entry: Polymorp
         registry_entry_blob = bucket.blob(registry_entry_path)
         registry_entry_blob.upload_from_string(registry_entry.json(exclude_none=True))
     except Exception as e:
-        logger.error(f"Error persisting connector registry entry: {e}")
+        logger.exception(f"Error persisting connector registry entry")
         raise
 
 
@@ -454,7 +454,7 @@ def generate_and_persist_registry_entry(
         try:
             overridden_metadata_data = _apply_metadata_overrides(metadata_data, registry_type, bucket_name)
         except Exception as e:
-            logger.error(f"Error applying metadata overrides: {e}")
+            logger.exception(f"Error applying metadata overrides")
             message = f"*🤖 🔴 _Registry Entry Generation_ FAILED*:\nRegistry Entry: `{registry_type}.json`\nConnector: `{metadata_data['dockerRepository']}`\nGCS Bucket: `{bucket_name}`."
             send_slack_message(PUBLISH_UPDATE_CHANNEL, message)
             raise
@@ -483,7 +483,7 @@ def generate_and_persist_registry_entry(
                 logger.info("Success.")
 
             except Exception as e:
-                logger.error(f"Error persisting connector registry entry to: {e}")
+                logger.exception(f"Error persisting connector registry entry to")
 
                 message = f"*🤖 🔴 _Registry Entry Generation_ FAILED*:\nRegistry Entry: `{registry_type}.json`\nConnector: `{metadata_data['dockerRepository']}`\nGCS Bucket: `{bucket_name}`\nPath: `{registry_entry_blob_path}`."
                 send_slack_message(PUBLISH_UPDATE_CHANNEL, message)

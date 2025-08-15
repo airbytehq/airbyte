@@ -129,7 +129,7 @@ def publish_stale_metadata_report(bucket_name: str):
             click.secho(f"Stale metadata report for bucket: {bucket_name} completed successfully", fg="green")
         logger.debug("Stale metadata report generation and publishing process completed.")
     except Exception as e:
-        logger.error(f"A fatal error occurred when generating and publishing the stale metadata report: '{e}'")
+        logger.exception(f"A fatal error occurred when generating and publishing the stale metadata report")
         click.secho(f"FATAL ERROR: The stale metadata report could not be published: '{e}'", fg="red")
         exit(1)
 
@@ -179,7 +179,7 @@ def generate_connector_registry(bucket_name: str, registry_type: str):
     except Exception as e:
         sentry_sdk.set_tag("operation_success", False)
         sentry_sdk.capture_exception(e)
-        logger.error(f"FATAL ERROR: An error occurred when generating and persisting the {registry_type} registry: {str(e)}")
+        logger.exception(f"FATAL ERROR: An error occurred when generating and persisting the {registry_type} registry")
         exit(1)
 
 
@@ -199,7 +199,7 @@ def generate_specs_secrets_mask(bucket_name: str):
     except Exception as e:
         sentry_sdk.set_tag("operation_success", False)
         sentry_sdk.capture_exception(e)
-        logger.error(f"FATAL ERROR: An error occurred when generating and persisting the specs secrets mask: {str(e)}")
+        logger.exception(f"FATAL ERROR: An error occurred when generating and persisting the specs secrets mask")
         exit(1)
 
 
@@ -223,5 +223,5 @@ def generate_registry_entry(bucket_name: str, metadata_file_path: pathlib.Path, 
     except Exception as e:
         sentry_sdk.set_tag("operation_success", False)
         sentry_sdk.capture_exception(e)
-        logger.error(f"FATAL ERROR: An error occurred when generating and persisting the registry entry: {str(e)}")
+        logger.exception(f"FATAL ERROR: An error occurred when generating and persisting the registry entry")
         exit(1)
