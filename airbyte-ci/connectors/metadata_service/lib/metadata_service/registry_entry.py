@@ -158,6 +158,8 @@ def _apply_package_info_fields(metadata_data: dict, bucket_name: str) -> dict:
         f"{CONNECTOR_DEPENDENCY_FOLDER}/{sanitized_connector_technical_name}/{connector_version}/{CONNECTOR_DEPENDENCY_FILE_NAME}"
     )
 
+    package_info_fields = metadata_data.get("packageInfo") or {}
+
     try:
         logger.info(
             f"Getting dependencies blob for `{sanitized_connector_technical_name}` `{connector_version}` at path `{dependencies_path}`"
@@ -165,19 +167,18 @@ def _apply_package_info_fields(metadata_data: dict, bucket_name: str) -> dict:
         gcs_client = get_gcs_storage_client(gcs_creds=os.environ.get("GCS_CREDENTIALS"))
         bucket = gcs_client.bucket(bucket_name)
         dependencies_blob = bucket.blob(dependencies_path)
-        dependencies_json = json.loads(safe_read_gcs_file(dependencies_blob))
+        dependencies_blob_contents = safe_read_gcs_file(dependencies_blob)
+        if dependencies_blob_contents is not None:
+            dependencies_json = json.loads(dependencies_blob_contents)
+            cdk_version = None
+            for package in dependencies_json.get("dependencies", []):
+                if package.get("package_name") == "airbyte-cdk":
+                    cdk_version = package.get("version")
+                    break
+            package_info_fields = set_with(package_info_fields, "cdk_version", cdk_version, default_none_to_dict)
     except Exception as e:
         logger.warning(f"Error reading dependencies file for `{sanitized_connector_technical_name}`: {e}")
         raise
-
-    cdk_version = None
-    for package in dependencies_json.get("dependencies", []):
-        if package.get("package_name") == "airbyte-cdk":
-            cdk_version = package.get("version")
-            break
-
-    package_info_fields = metadata_data.get("packageInfo") or {}
-    package_info_fields = set_with(package_info_fields, "cdk_version", cdk_version, default_none_to_dict)
 
     logger.info("Added package info fields.")
 
