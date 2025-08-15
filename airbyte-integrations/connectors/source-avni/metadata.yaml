@@ -16,7 +16,7 @@ data:
     baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
   connectorType: source
   definitionId: 5d297ac7-355e-4a04-be75-a5e7e175fc4e
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   dockerRepository: airbyte/source-avni
   githubIssueLabel: source-avni
   icon: avni.svg
