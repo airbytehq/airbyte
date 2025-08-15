@@ -143,15 +143,13 @@ jobs:
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         shell: bash
         run: |
-          ./poe-tasks/publish-python-registry.sh \
-            --name ${{ matrix.connector }}
+          ./poe-tasks/publish-python-registry.sh --name ${{ matrix.connector }}
         env:
           PYTHON_REGISTRY_TOKEN: ${{ secrets.PYPI_TOKEN }}
 
       - name: Publish to Python Registry [Manual]
         id: publish-python-registry-manual
         if: (github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call') && steps.connector-metadata.outputs.connector-language == 'python'
-        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         shell: bash
         run: |
           # Determine if this is a pre-release
@@ -162,9 +160,7 @@ jobs:
             PRE_RELEASE_FLAG=""
           fi
 
-          ./poe-tasks/publish-python-registry.sh \
-            --name ${{ matrix.connector }} \
-            $PRE_RELEASE_FLAG
+          ./poe-tasks/publish-python-registry.sh --name ${{ matrix.connector }} $PRE_RELEASE_FLAG
         env:
           PYTHON_REGISTRY_TOKEN: ${{ secrets.PYPI_TOKEN }}
 
