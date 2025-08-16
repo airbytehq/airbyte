@@ -1,5 +1,7 @@
 version: 6.7.0
 
+# Test change to trigger CI for Microsoft Auth 400 error investigation
+
 type: DeclarativeSource
 
 check:
