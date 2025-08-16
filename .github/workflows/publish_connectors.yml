@@ -250,6 +250,38 @@ jobs:
           SPEC_CACHE_GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
           METADATA_SERVICE_GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
 
+      - name: Generate OSS Registry Entry [On merge to master]
+        id: generate-oss-registry-entry-master
+        if: github.event_name == 'push'
+        shell: bash
+        run: |
+          echo "Generating OSS registry entry for ${{ matrix.connector }}"
+          poetry run --directory airbyte-ci/connectors/metadata_service/lib \
+            metadata_service generate-registry-entry \
+            prod-airbyte-cloud-connector-metadata-service \
+            "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
+            "spec.json" \
+            oss
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
+          SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+
+      - name: Generate Cloud Registry Entry [On merge to master]
+        id: generate-cloud-registry-entry-master
+        if: github.event_name == 'push'
+        shell: bash
+        run: |
+          echo "Generating Cloud registry entry for ${{ matrix.connector }}"
+          poetry run --directory airbyte-ci/connectors/metadata_service/lib \
+            metadata_service generate-registry-entry \
+            prod-airbyte-cloud-connector-metadata-service \
+            "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
+            "spec.cloud.json" \
+            cloud
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
+          SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+
       - name: Build and publish JVM connectors images [manual]
         id: build-and-publish-JVM-connectors-images-manual
         if: (github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call') && steps.connector-metadata.outputs.connector-language == 'java'
@@ -310,6 +342,58 @@ jobs:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
           SPEC_CACHE_GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
           METADATA_SERVICE_GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
+
+      - name: Generate OSS Registry Entry [Manual]
+        id: generate-oss-registry-entry-manual
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
+        shell: bash
+        run: |
+          echo "Generating OSS registry entry for ${{ matrix.connector }}"
+          # TODO factor this prerelease stuff out
+          is_pre_release=$(echo "${{ inputs.publish-options }}" | grep -c -- '--pre-release' || true)
+          if [[ $is_pre_release -gt 0 ]]; then
+            hash=$(git rev-parse --short=10 HEAD)
+            PRE_RELEASE_TAG="--pre-release-tag ${{ steps.connector-metadata.outputs.connector-version }}-dev.${hash}"
+            echo "Running with prerelease tag '$PRE_RELEASE_TAG'"
+          else
+            PRE_RELEASE_TAG=""
+          fi
+          poetry run --directory airbyte-ci/connectors/metadata_service/lib \
+            metadata_service generate-registry-entry \
+            $PRE_RELEASE_TAG \
+            prod-airbyte-cloud-connector-metadata-service \
+            "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
+            "spec.json" \
+            oss
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
+          SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+
+      - name: Generate Cloud Registry Entry [Manual]
+        id: generate-cloud-registry-entry-manual
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
+        shell: bash
+        run: |
+          echo "Generating Cloud registry entry for ${{ matrix.connector }}"
+          # TODO factor this prerelease stuff out
+          is_pre_release=$(echo "${{ inputs.publish-options }}" | grep -c -- '--pre-release' || true)
+          if [[ $is_pre_release -gt 0 ]]; then
+            hash=$(git rev-parse --short=10 HEAD)
+            PRE_RELEASE_TAG="--pre-release-tag ${{ steps.connector-metadata.outputs.connector-version }}-dev.${hash}"
+            echo "Running with prerelease tag '$PRE_RELEASE_TAG'"
+          else
+            PRE_RELEASE_TAG=""
+          fi
+          poetry run --directory airbyte-ci/connectors/metadata_service/lib \
+            metadata_service generate-registry-entry \
+            $PRE_RELEASE_TAG \
+            prod-airbyte-cloud-connector-metadata-service \
+            "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
+            "spec.cloud.json" \
+            cloud
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
+          SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
 
   notify-failure-slack-channel:
     name: "Notify Slack Channel on Publish Failures"

@@ -16,6 +16,14 @@ COMPONENTS_ZIP_FILE_NAME = "components.zip"
 COMPONENTS_ZIP_SHA256_FILE_NAME = "components.zip.sha256"
 LATEST_GCS_FOLDER_NAME = "latest"
 RELEASE_CANDIDATE_GCS_FOLDER_NAME = "release_candidate"
+METADATA_CDN_BASE_URL = "https://connectors.airbyte.com/files"
+DEFAULT_ASSET_URL = "https://storage.googleapis.com"
+
+VALID_REGISTRIES = ["oss", "cloud"]
+REGISTRIES_FOLDER = "registries/v0"
+ANALYTICS_BUCKET = "ab-analytics-connector-metrics"
+ANALYTICS_FOLDER = "data/connector_quality_metrics"
+PUBLIC_GCS_BASE_URL = "https://storage.googleapis.com/"
 
 VALID_REGISTRIES = ["oss", "cloud"]
 REGISTRIES_FOLDER = "registries/v0"
@@ -36,3 +44,6 @@ PUBLISH_GRACE_PERIOD = datetime.timedelta(hours=6)
 SLACK_NOTIFICATIONS_ENABLED = "true"
 
 SPECS_SECRETS_MASK_FILE_NAME = "specs_secrets_mask.yaml"
+
+CONNECTOR_DEPENDENCY_FOLDER = "connector_dependencies"
+CONNECTOR_DEPENDENCY_FILE_NAME = "dependencies.json"
