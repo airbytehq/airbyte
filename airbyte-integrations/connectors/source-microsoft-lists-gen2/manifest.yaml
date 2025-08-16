@@ -61,7 +61,7 @@ dynamic_streams:
   - type: DynamicDeclarativeStream
     stream_template:
       type: DeclarativeStream
-      name: ""
+      name: "{{ parameters['list_name'] }}"
       $parameters:
         list_id: ""
         list_name: ""
