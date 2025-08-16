@@ -2602,12 +2602,8 @@ definitions:
       url_base: "{{download_target}}"
       http_method: GET
     download_decoder:
-      type: GzipDecoder
-      decoder:
-        type: CsvDecoder
-        encoding: "utf-8-sig"
-        set_values_to_none:
-          - ""
+      type: CustomDecoder
+      class_name: source_declarative_manifest.components.BingAdsGzipCsvDecoder
     creation_requester:
       # https://learn.microsoft.com/en-ie/advertising/bulk-service/downloadcampaignsbyaccountids?view=bingads-13&tabs=prod&pivots=rest
       type: HttpRequester
@@ -11053,7 +11049,7 @@ schemas:
         description: The client identifier linked to the keyword.
         type:
           - "null"
-          - integer
+          - string
       Custom Parameter:
         description: A custom parameter associated with the keyword.
         type:
