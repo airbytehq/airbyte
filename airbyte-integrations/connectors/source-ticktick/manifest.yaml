@@ -68,8 +68,14 @@ definitions:
     type: HttpRequester
     url_base: https://api.ticktick.com
     authenticator:
-      type: BearerAuthenticator
-      api_token: "{{ config[\"api_key\"] }}"
+      type: OAuthAuthenticator
+      client_id: "{{ config[\"client_id\"] }}"
+      client_secret: "{{ config[\"client_secret\"] }}"
+      access_token_value: "{{ config[\"client_access_token\"] }}"
+      scopes:
+        - "tasks:"
+        - read
+      grant_type: client_credentials
 
 streams:
   - $ref: "#/definitions/streams/projects"
@@ -81,14 +87,77 @@ spec:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     required:
-      - api_key
+      - client_id
+      - client_secret
     properties:
-      api_key:
+      client_id:
         type: string
-        order: 0
-        title: API Key
+        title: Client ID
         airbyte_secret: true
+        order: 0
+      client_secret:
+        type: string
+        title: Client secret
+        airbyte_secret: true
+        order: 1
+      client_access_token:
+        type: string
+        title: Access token
+        airbyte_secret: true
+        airbyte_hidden: true
+        order: 2
     additionalProperties: true
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    oauth_config_specification:
+      oauth_connector_input_specification:
+        consent_url: >-
+          https://ticktick.com/oauth/authorize?scope={{scope_value |
+          urlEncode}}&client_id={{client_id_value}}&state={{state}}&redirect_uri={{redirect_uri_value}}&response_type=code
+        access_token_url: https://ticktick.com/oauth/token
+        scope: "tasks: read"
+        extract_output:
+          - access_token
+        access_token_headers:
+          Content-Type: application/x-www-form-urlencoded
+          Authorization: >-
+            Basic {{ (client_id_value ~ ':' ~ client_secret_value) | b64encode
+            }}
+        access_token_params:
+          code: "{{ auth_code_value }}"
+          scope: "{{ scope_value | urlEncode }}"
+          grant_type: authorization_code
+          redirect_uri: "{{ redirect_uri_value }}"
+      complete_oauth_output_specification:
+        required:
+          - access_token
+        properties:
+          access_token:
+            type: string
+            path_in_connector_config:
+              - client_access_token
+      complete_oauth_server_input_specification:
+        required:
+          - client_id
+          - client_secret
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        required:
+          - client_id
+          - client_secret
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+              - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+              - client_secret
 
 metadata:
   autoImportSchema:
@@ -96,19 +165,19 @@ metadata:
     tasks: true
   testedStreams:
     projects:
-      streamHash: 78b3cae4a919eb24d192a3b747f4d3df856f7294
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: a1baeb6a3e18cf22868431fe6ce36bff4683dacd
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     tasks:
-      streamHash: c78dbe7a9ef32ba08448acd4dbf94dd6de83d8e9
-      hasResponse: true
-      responsesAreSuccessful: true
       hasRecords: true
-      primaryKeysArePresent: true
+      streamHash: 83a4cf59a11d6a94e8f3e30aa3109b296bc8cbf6
+      hasResponse: true
       primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   assist: {}
 
 schemas:
