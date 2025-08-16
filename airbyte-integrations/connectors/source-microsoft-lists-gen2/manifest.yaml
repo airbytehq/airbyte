@@ -190,6 +190,7 @@ spec:
         type: string
         order: 3
         title: Application Id URI
+        default: "https://graph.microsoft.com/.default"
       tenant_id:
         type: string
         order: 4
