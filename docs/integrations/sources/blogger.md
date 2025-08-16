@@ -25,6 +25,7 @@ Google Blogger is a free blogging platform by Google that allows users to create
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.27 | 2025-08-16 | [65048](https://github.com/airbytehq/airbyte/pull/65048) | Update dependencies |
 | 0.0.26 | 2025-07-26 | [63795](https://github.com/airbytehq/airbyte/pull/63795) | Update dependencies |
 | 0.0.25 | 2025-07-05 | [62530](https://github.com/airbytehq/airbyte/pull/62530) | Update dependencies |
 | 0.0.24 | 2025-06-21 | [61887](https://github.com/airbytehq/airbyte/pull/61887) | Update dependencies |
