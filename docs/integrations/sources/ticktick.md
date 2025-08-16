@@ -20,6 +20,7 @@ Source for the ticktick openapi endpoint at https://developer.ticktick.com/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.3 | 2025-08-16 | [64962](https://github.com/airbytehq/airbyte/pull/64962) | Update dependencies |
 | 0.0.2 | 2025-08-14 | [64942](https://github.com/airbytehq/airbyte/pull/64942) | Fix docker image entrypoint for platform syncs |
 | 0.0.1 | 2025-08-05 | | Initial release by [@luutuankiet](https://github.com/luutuankiet) via Connector Builder |
 
