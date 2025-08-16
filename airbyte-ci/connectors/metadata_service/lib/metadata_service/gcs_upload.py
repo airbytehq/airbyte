@@ -388,7 +388,7 @@ def _apply_modifications_to_metadata_file(
 # 💎 Main Logic
 
 
-def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator_opts: ValidatorOptions) -> MetadataUploadInfo:
+def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, java_tar_file_path: Path | None, validator_opts: ValidatorOptions) -> MetadataUploadInfo:
     """Upload a metadata file to a GCS bucket.
 
     If the per 'version' key already exists it won't be overwritten.
@@ -464,6 +464,20 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
             override_destination_file_name=METADATA_FILE_NAME,
         )
         uploaded_files.extend(release_candidate_files_uploaded)
+
+    # Java tar upload
+
+    metadata_files_uploaded = _file_upload(
+        file_key="java_tar",
+        local_path=java_tar_file_path,
+        gcp_connector_dir=gcp_connector_dir,
+        bucket=bucket,
+        version_folder=version_folder,
+        upload_as_version=True,
+        upload_as_latest=should_upload_latest,
+        disable_cache=True
+    )
+    uploaded_files.extend(metadata_files_uploaded)
 
     # Icon upload
 
