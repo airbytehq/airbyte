@@ -269,7 +269,7 @@ class BulkDatetimeToRFC3339(RecordTransformation):
         stream_slice: Optional[StreamSlice] = None,
     ) -> None:
         original_value = record["Modified Time"]
-        if not original_value:
+        if original_value is not None and original_value != "":
             try:
                 record["Modified Time"] = (
                     datetime.strptime(original_value, "%m/%d/%Y %H:%M:%S.%f")
@@ -277,9 +277,8 @@ class BulkDatetimeToRFC3339(RecordTransformation):
                     .isoformat(timespec="milliseconds")
                 )
             except ValueError:
-                pass
-        else:
-            record["Modified Time"] = None
+                pass  # Keep original value if parsing fails
+        # Don't set to None - leave original value unchanged
 
 
 @dataclass
