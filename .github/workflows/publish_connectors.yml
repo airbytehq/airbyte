@@ -137,12 +137,49 @@ jobs:
         shell: bash
         run: ./poe-tasks/validate-connector-metadata.sh --name ${{ matrix.connector }}
 
+      - name: Publish to Python Registry [On merge to master]
+        id: publish-python-registry-master
+        if: github.event_name == 'push' && steps.connector-metadata.outputs.connector-language == 'python'
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        shell: bash
+        run: |
+          ./poe-tasks/publish-python-registry.sh --name ${{ matrix.connector }}
+        env:
+          PYTHON_REGISTRY_TOKEN: ${{ secrets.PYPI_TOKEN }}
+
+      - name: Publish to Python Registry [Manual]
+        id: publish-python-registry-manual
+        if: (github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call') && steps.connector-metadata.outputs.connector-language == 'python'
+        shell: bash
+        run: |
+          # Determine if this is a pre-release
+          is_pre_release=$(echo "${{ inputs.publish-options }}" | grep -c -- '--pre-release' || true)
+          if [[ $is_pre_release -gt 0 ]]; then
+            PRE_RELEASE_FLAG="--pre-release"
+          else
+            PRE_RELEASE_FLAG=""
+          fi
+
+          ./poe-tasks/publish-python-registry.sh --name ${{ matrix.connector }} $PRE_RELEASE_FLAG
+        env:
+          PYTHON_REGISTRY_TOKEN: ${{ secrets.PYPI_TOKEN }}
+
       - name: Build and publish JVM connectors images [On merge to master]
         id: build-and-publish-JVM-connectors-images-master
         if: github.event_name == 'push' && steps.connector-metadata.outputs.connector-language == 'java'
         shell: bash
         run: |
           ./poe-tasks/build-and-publish-java-connectors-with-tag.sh --main-release --publish --name ${{ matrix.connector }}
+
+      - name: Publish JVM connectors tar file [On merge to master]]
+        id: publish-JVM-connectors-tar-file-master
+        if: github.event_name == 'push' && steps.connector-metadata.outputs.connector-language == 'java'
+        shell: bash
+        run: ./poe-tasks/upload-java-connector-tar-file.sh --name ${{ matrix.connector }} --main-release
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
+        # we allow it to fail because we are testing this step. We should remove this once we are sure it works.
+        continue-on-error: true
 
       - name: Determine build and publish options
         id: get-connector-options
@@ -218,6 +255,16 @@ jobs:
         if: (github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call') && steps.connector-metadata.outputs.connector-language == 'java'
         shell: bash
         run: ./poe-tasks/build-and-publish-java-connectors-with-tag.sh  ${{ inputs.publish-options }} --name ${{ matrix.connector }} --publish
+
+      - name: Publish JVM connectors tar file [manual]
+        id: publish-JVM-connectors-tar-file-manual
+        if: (github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call') && steps.connector-metadata.outputs.connector-language == 'java'
+        shell: bash
+        run: ./poe-tasks/upload-java-connector-tar-file.sh --name ${{ matrix.connector }} ${{ inputs.publish-options }}
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
+        # we allow it to fail because we are testing this step. We should remove this once we are sure it works.
+        continue-on-error: true
 
       - name: Build and publish Python and Manifest-Only connectors images [manual]
         id: build-and-publish-python-manifest-only-connectors-images-manual
