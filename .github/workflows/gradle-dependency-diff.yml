@@ -16,5 +16,19 @@ jobs:
         with:
           distribution: temurin
           java-version: 21
+
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@v2
+        # We can't get app creds from forks, so we skip this step if the PR is from a fork.
+        if: github.event.pull_request.head.repo.fork != true
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
       - name: Run Gradle Dependency Diff
         uses: be-hase/gradle-dependency-diff-action@v2
+        with:
+          token: ${{ steps.get-app-token.outputs.token || secrets.GITHUB_TOKEN }}
