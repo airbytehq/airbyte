@@ -164,6 +164,28 @@ jobs:
         env:
           PYTHON_REGISTRY_TOKEN: ${{ secrets.PYPI_TOKEN }}
 
+      - name: Upload Python Dependencies to GCS [On merge to master]
+        id: upload-python-dependencies-master
+        if: github.event_name == 'push' && steps.connector-metadata.outputs.connector-language == 'python'
+        shell: bash
+        run: |
+          ./poe-tasks/upload-python-dependencies.sh --name ${{ matrix.connector }} --bucket dev-airbyte-cloud-connector-metadata-service
+
+      - name: Upload Python Dependencies to GCS [Manual]
+        id: upload-python-dependencies-manual
+        if: (github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call') && steps.connector-metadata.outputs.connector-language == 'python'
+        shell: bash
+        run: |
+          # Determine if this is a pre-release
+          is_pre_release=$(echo "${{ inputs.publish-options }}" | grep -c -- '--pre-release' || true)
+          if [[ $is_pre_release -gt 0 ]]; then
+            PRE_RELEASE_FLAG="--pre-release"
+          else
+            PRE_RELEASE_FLAG=""
+          fi
+
+          ./poe-tasks/upload-python-dependencies.sh --name ${{ matrix.connector }} --bucket dev-airbyte-cloud-connector-metadata-service $PRE_RELEASE_FLAG
+
       - name: Build and publish JVM connectors images [On merge to master]
         id: build-and-publish-JVM-connectors-images-master
         if: github.event_name == 'push' && steps.connector-metadata.outputs.connector-language == 'java'
