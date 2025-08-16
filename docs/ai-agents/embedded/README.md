@@ -11,4 +11,4 @@ There are two approaches to set up Airbyte Embedded.
 1. Use the [Airbyte Embedded Widget](./widget/README.md). This simple Javascript plugin will allow you to easily sync your customer's data.
 2. Use the [Airbyte API](./api/README.md). Build a fully customized experience on top of Airbyte's API. 
 
-The complete API reference can be found at https://api.airbyte.ai/api/v1/redoc
+The complete API reference can be found at https://api.airbyte.ai/api/v1/docs
