@@ -31,17 +31,6 @@ curl -X DELETE 'https://api.airbyte.ai/api/v1/integrations/sources/<template_id>
 
 Sources created from a deleted Source Template will stop showing up in the Widget.
 
-# Updating Templates
-
-You can update existing Source Templates using a PUT request to the API endpoint:
-
-```
-curl -X PUT 'https://api.airbyte.ai/api/v1/integrations/sources/<template_id>' \
--H 'authorization: Bearer <token>' \
--H 'content-type: application/json' \
---data-raw '{"partial_default_config":{}, "additional_required_parameters": []}'
-```
-
 When a Source Template is updated, all existing Sources created from it will also be updated.
 
 # Listing Templates

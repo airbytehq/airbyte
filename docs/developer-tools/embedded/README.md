@@ -7,6 +7,8 @@ There are three components to Airbyte Embedded:
 2. Configuring source templates: Templates define which connectors are available for your end users
 3. Configuring sources: Collect your users credentials so their data is synced to your data warehouse.
 
+You can read more about about how Airbyte Embedded fits in your application [here](https://airbyte.com/blog/how-to-build-ai-apps-with-customer-context).
+
 There are two approaches to set up Airbyte Embedded:
 
 ## When to Use the Widget

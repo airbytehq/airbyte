@@ -12,7 +12,7 @@ Once a user record is created, the customer can tap Connect Data to configure wh
 
 ![Embedded Sample Web app connect screen.](./assets/embedded-webapp-connect.png)
 
-This will render the Airbyte Embedded widget. This widget displays a list of approved connectors, as defined in the AI data hub by the Airbyte Embedded operator.
+This will render the Airbyte Embedded widget. This widget displays a list of available connectors.
 
 ![Embedded Sample Web app widget.](./assets/embedded-webapp-widget.png)
 
