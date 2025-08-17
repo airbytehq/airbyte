@@ -16,10 +16,10 @@ definitions:
     HttpRequester:
       authenticator:
         type: OAuthAuthenticator
-        client_id: "{{ config[\"client_id\"] }}"
+        client_id: '{{ config["client_id"] }}'
         grant_type: refresh_token
-        client_secret: "{{ config[\"client_secret\"] }}"
-        refresh_token: "{{ config[\"client_refresh_token\"] }}"
+        client_secret: '{{ config["client_secret"] }}'
+        refresh_token: '{{ config["oauth_refresh_token"] }}'
         expires_in_name: expires_in
         access_token_name: access_token
         refresh_request_body: {}
@@ -28,7 +28,7 @@ definitions:
           access_token_config_path:
             - oauth_access_token
           refresh_token_config_path:
-            - client_refresh_token
+            - oauth_refresh_token
           token_expiry_date_config_path:
             - oauth_token_expiry_date
         token_refresh_endpoint: "{{ config['base_url']}}/api/oauth2/token/"
@@ -79,14 +79,14 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/tasks"
+        url: "{{ config['base_url']}}/api/v2/tasks/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
-          client_id: "{{ config[\"client_id\"] }}"
+          client_id: '{{ config["client_id"] }}'
           grant_type: refresh_token
-          client_secret: "{{ config[\"client_secret\"] }}"
-          refresh_token: "{{ config[\"client_refresh_token\"] }}"
+          client_secret: '{{ config["client_secret"] }}'
+          refresh_token: '{{ config["oauth_refresh_token"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
           refresh_request_body: {}
@@ -95,7 +95,7 @@ streams:
             access_token_config_path:
               - oauth_access_token
             refresh_token_config_path:
-              - client_refresh_token
+              - oauth_refresh_token
             token_expiry_date_config_path:
               - oauth_token_expiry_date
             refresh_token_error_key: ""
@@ -884,14 +884,14 @@ streams:
           stop_condition: "{{ not response.links.next}}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/taskcategories"
+        url: "{{ config['base_url']}}/api/v2/taskcategories/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
-          client_id: "{{ config[\"client_id\"] }}"
+          client_id: '{{ config["client_id"] }}'
           grant_type: refresh_token
-          client_secret: "{{ config[\"client_secret\"] }}"
-          refresh_token: "{{ config[\"client_refresh_token\"] }}"
+          client_secret: '{{ config["client_secret"] }}'
+          refresh_token: '{{ config["oauth_refresh_token"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
           refresh_request_body: {}
@@ -900,7 +900,7 @@ streams:
             access_token_config_path:
               - oauth_access_token
             refresh_token_config_path:
-              - client_refresh_token
+              - oauth_refresh_token
             token_expiry_date_config_path:
               - oauth_token_expiry_date
             refresh_token_error_key: ""
@@ -954,7 +954,7 @@ streams:
           - type: AddedFieldDefinition
             path:
               - name
-            value: "{{ record[\"attributes\"][\"name\"] }}"
+            value: '{{ record["attributes"]["name"] }}'
       - type: RemoveFields
         field_pointers:
           - - attributes
@@ -974,14 +974,14 @@ streams:
           stop_condition: "{{ not response.links.next}}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/clients"
+        url: "{{ config['base_url']}}/api/v2/clients/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
-          client_id: "{{ config[\"client_id\"] }}"
+          client_id: '{{ config["client_id"] }}'
           grant_type: refresh_token
-          client_secret: "{{ config[\"client_secret\"] }}"
-          refresh_token: "{{ config[\"client_refresh_token\"] }}"
+          client_secret: '{{ config["client_secret"] }}'
+          refresh_token: '{{ config["oauth_refresh_token"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
           refresh_request_body: {}
@@ -990,7 +990,7 @@ streams:
             access_token_config_path:
               - oauth_access_token
             refresh_token_config_path:
-              - client_refresh_token
+              - oauth_refresh_token
             token_expiry_date_config_path:
               - oauth_token_expiry_date
             refresh_token_error_key: ""
@@ -1574,14 +1574,14 @@ streams:
           stop_condition: "{{ not response.links.next}}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/clientgroups"
+        url: "{{ config['base_url']}}/api/v2/clientgroups/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
-          client_id: "{{ config[\"client_id\"] }}"
+          client_id: '{{ config["client_id"] }}'
           grant_type: refresh_token
-          client_secret: "{{ config[\"client_secret\"] }}"
-          refresh_token: "{{ config[\"client_refresh_token\"] }}"
+          client_secret: '{{ config["client_secret"] }}'
+          refresh_token: '{{ config["oauth_refresh_token"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
           refresh_request_body: {}
@@ -1590,7 +1590,7 @@ streams:
             access_token_config_path:
               - oauth_access_token
             refresh_token_config_path:
-              - client_refresh_token
+              - oauth_refresh_token
             token_expiry_date_config_path:
               - oauth_token_expiry_date
             refresh_token_error_key: ""
@@ -1746,14 +1746,14 @@ streams:
           stop_condition: "{{ not response.links.next}}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/properties"
+        url: "{{ config['base_url']}}/api/v2/properties/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
-          client_id: "{{ config[\"client_id\"] }}"
+          client_id: '{{ config["client_id"] }}'
           grant_type: refresh_token
-          client_secret: "{{ config[\"client_secret\"] }}"
-          refresh_token: "{{ config[\"client_refresh_token\"] }}"
+          client_secret: '{{ config["client_secret"] }}'
+          refresh_token: '{{ config["oauth_refresh_token"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
           refresh_request_body: {}
@@ -1762,7 +1762,7 @@ streams:
             access_token_config_path:
               - oauth_access_token
             refresh_token_config_path:
-              - client_refresh_token
+              - oauth_refresh_token
             token_expiry_date_config_path:
               - oauth_token_expiry_date
             refresh_token_error_key: ""
@@ -2138,14 +2138,14 @@ streams:
           stop_condition: "{{ not response.links.next}}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/invoices"
+        url: "{{ config['base_url']}}/api/v2/invoices/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
-          client_id: "{{ config[\"client_id\"] }}"
+          client_id: '{{ config["client_id"] }}'
           grant_type: refresh_token
-          client_secret: "{{ config[\"client_secret\"] }}"
-          refresh_token: "{{ config[\"client_refresh_token\"] }}"
+          client_secret: '{{ config["client_secret"] }}'
+          refresh_token: '{{ config["oauth_refresh_token"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
           refresh_request_body: {}
@@ -2154,7 +2154,7 @@ streams:
             access_token_config_path:
               - oauth_access_token
             refresh_token_config_path:
-              - client_refresh_token
+              - oauth_refresh_token
             token_expiry_date_config_path:
               - oauth_token_expiry_date
             refresh_token_error_key: ""
@@ -2423,14 +2423,14 @@ streams:
           stop_condition: "{{ not response.links.next}}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/projects"
+        url: "{{ config['base_url']}}/api/v2/projects/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
-          client_id: "{{ config[\"client_id\"] }}"
+          client_id: '{{ config["client_id"] }}'
           grant_type: refresh_token
-          client_secret: "{{ config[\"client_secret\"] }}"
-          refresh_token: "{{ config[\"client_refresh_token\"] }}"
+          client_secret: '{{ config["client_secret"] }}'
+          refresh_token: '{{ config["oauth_refresh_token"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
           refresh_request_body: {}
@@ -2439,7 +2439,7 @@ streams:
             access_token_config_path:
               - oauth_access_token
             refresh_token_config_path:
-              - client_refresh_token
+              - oauth_refresh_token
             token_expiry_date_config_path:
               - oauth_token_expiry_date
             refresh_token_error_key: ""
@@ -2672,14 +2672,14 @@ streams:
           stop_condition: "{{ not response.links.next}}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/servicequotes"
+        url: "{{ config['base_url']}}/api/v2/servicequotes/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
-          client_id: "{{ config[\"client_id\"] }}"
+          client_id: '{{ config["client_id"] }}'
           grant_type: refresh_token
-          client_secret: "{{ config[\"client_secret\"] }}"
-          refresh_token: "{{ config[\"client_refresh_token\"] }}"
+          client_secret: '{{ config["client_secret"] }}'
+          refresh_token: '{{ config["oauth_refresh_token"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
           refresh_request_body: {}
@@ -2688,7 +2688,7 @@ streams:
             access_token_config_path:
               - oauth_access_token
             refresh_token_config_path:
-              - client_refresh_token
+              - oauth_refresh_token
             token_expiry_date_config_path:
               - oauth_token_expiry_date
             refresh_token_error_key: ""
@@ -2951,14 +2951,14 @@ streams:
           stop_condition: "{{ not response.links.next}}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/defectquotes"
+        url: "{{ config['base_url']}}/api/v2/defectquotes/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
-          client_id: "{{ config[\"client_id\"] }}"
+          client_id: '{{ config["client_id"] }}'
           grant_type: refresh_token
-          client_secret: "{{ config[\"client_secret\"] }}"
-          refresh_token: "{{ config[\"client_refresh_token\"] }}"
+          client_secret: '{{ config["client_secret"] }}'
+          refresh_token: '{{ config["oauth_refresh_token"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
           refresh_request_body: {}
@@ -2967,7 +2967,7 @@ streams:
             access_token_config_path:
               - oauth_access_token
             refresh_token_config_path:
-              - client_refresh_token
+              - oauth_refresh_token
             token_expiry_date_config_path:
               - oauth_token_expiry_date
             refresh_token_error_key: ""
@@ -3200,14 +3200,14 @@ streams:
           stop_condition: "{{ not response.links.next}}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/suppliers"
+        url: "{{ config['base_url']}}/api/v2/suppliers/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
-          client_id: "{{ config[\"client_id\"] }}"
+          client_id: '{{ config["client_id"] }}'
           grant_type: refresh_token
-          client_secret: "{{ config[\"client_secret\"] }}"
-          refresh_token: "{{ config[\"client_refresh_token\"] }}"
+          client_secret: '{{ config["client_secret"] }}'
+          refresh_token: '{{ config["oauth_refresh_token"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
           refresh_request_body: {}
@@ -3216,7 +3216,7 @@ streams:
             access_token_config_path:
               - oauth_access_token
             refresh_token_config_path:
-              - client_refresh_token
+              - oauth_refresh_token
             token_expiry_date_config_path:
               - oauth_token_expiry_date
             refresh_token_error_key: ""
@@ -3389,14 +3389,14 @@ streams:
           stop_condition: "{{ not response.links.next}}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/purchaseorders"
+        url: "{{ config['base_url']}}/api/v2/purchaseorders/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
-          client_id: "{{ config[\"client_id\"] }}"
+          client_id: '{{ config["client_id"] }}'
           grant_type: refresh_token
-          client_secret: "{{ config[\"client_secret\"] }}"
-          refresh_token: "{{ config[\"client_refresh_token\"] }}"
+          client_secret: '{{ config["client_secret"] }}'
+          refresh_token: '{{ config["oauth_refresh_token"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
           refresh_request_body: {}
@@ -3405,7 +3405,7 @@ streams:
             access_token_config_path:
               - oauth_access_token
             refresh_token_config_path:
-              - client_refresh_token
+              - oauth_refresh_token
             token_expiry_date_config_path:
               - oauth_token_expiry_date
             refresh_token_error_key: ""
@@ -3634,14 +3634,14 @@ streams:
           stop_condition: "{{ not response.links.next}}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/assets"
+        url: "{{ config['base_url']}}/api/v2/assets/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
-          client_id: "{{ config[\"client_id\"] }}"
+          client_id: '{{ config["client_id"] }}'
           grant_type: refresh_token
-          client_secret: "{{ config[\"client_secret\"] }}"
-          refresh_token: "{{ config[\"client_refresh_token\"] }}"
+          client_secret: '{{ config["client_secret"] }}'
+          refresh_token: '{{ config["oauth_refresh_token"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
           refresh_request_body: {}
@@ -3650,7 +3650,7 @@ streams:
             access_token_config_path:
               - oauth_access_token
             refresh_token_config_path:
-              - client_refresh_token
+              - oauth_refresh_token
             token_expiry_date_config_path:
               - oauth_token_expiry_date
             refresh_token_error_key: ""
@@ -3934,14 +3934,14 @@ streams:
           stop_condition: "{{ not response.links.next}}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/routines"
+        url: "{{ config['base_url']}}/api/v2/routines/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
-          client_id: "{{ config[\"client_id\"] }}"
+          client_id: '{{ config["client_id"] }}'
           grant_type: refresh_token
-          client_secret: "{{ config[\"client_secret\"] }}"
-          refresh_token: "{{ config[\"client_refresh_token\"] }}"
+          client_secret: '{{ config["client_secret"] }}'
+          refresh_token: '{{ config["oauth_refresh_token"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
           refresh_request_body: {}
@@ -3950,7 +3950,7 @@ streams:
             access_token_config_path:
               - oauth_access_token
             refresh_token_config_path:
-              - client_refresh_token
+              - oauth_refresh_token
             token_expiry_date_config_path:
               - oauth_token_expiry_date
             refresh_token_error_key: ""
@@ -4113,14 +4113,14 @@ streams:
           stop_condition: "{{ not response.links.next}}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/billingcards"
+        url: "{{ config['base_url']}}/api/v2/billingcards/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
-          client_id: "{{ config[\"client_id\"] }}"
+          client_id: '{{ config["client_id"] }}'
           grant_type: refresh_token
-          client_secret: "{{ config[\"client_secret\"] }}"
-          refresh_token: "{{ config[\"client_refresh_token\"] }}"
+          client_secret: '{{ config["client_secret"] }}'
+          refresh_token: '{{ config["oauth_refresh_token"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
           refresh_request_body: {}
@@ -4129,7 +4129,7 @@ streams:
             access_token_config_path:
               - oauth_access_token
             refresh_token_config_path:
-              - client_refresh_token
+              - oauth_refresh_token
             token_expiry_date_config_path:
               - oauth_token_expiry_date
             refresh_token_error_key: ""
@@ -4263,14 +4263,14 @@ streams:
           stop_condition: "{{ not response.links.next}}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/purchaseorderbills"
+        url: "{{ config['base_url']}}/api/v2/purchaseorderbills/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
-          client_id: "{{ config[\"client_id\"] }}"
+          client_id: '{{ config["client_id"] }}'
           grant_type: refresh_token
-          client_secret: "{{ config[\"client_secret\"] }}"
-          refresh_token: "{{ config[\"client_refresh_token\"] }}"
+          client_secret: '{{ config["client_secret"] }}'
+          refresh_token: '{{ config["oauth_refresh_token"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
           refresh_request_body: {}
@@ -4279,7 +4279,7 @@ streams:
             access_token_config_path:
               - oauth_access_token
             refresh_token_config_path:
-              - client_refresh_token
+              - oauth_refresh_token
             token_expiry_date_config_path:
               - oauth_token_expiry_date
             refresh_token_error_key: ""
@@ -4412,14 +4412,14 @@ streams:
           stop_condition: "{{ not response.links.next}}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/purchaseorderdockets"
+        url: "{{ config['base_url']}}/api/v2/purchaseorderdockets/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
-          client_id: "{{ config[\"client_id\"] }}"
+          client_id: '{{ config["client_id"] }}'
           grant_type: refresh_token
-          client_secret: "{{ config[\"client_secret\"] }}"
-          refresh_token: "{{ config[\"client_refresh_token\"] }}"
+          client_secret: '{{ config["client_secret"] }}'
+          refresh_token: '{{ config["oauth_refresh_token"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
           refresh_request_body: {}
@@ -4428,7 +4428,7 @@ streams:
             access_token_config_path:
               - oauth_access_token
             refresh_token_config_path:
-              - client_refresh_token
+              - oauth_refresh_token
             token_expiry_date_config_path:
               - oauth_token_expiry_date
             refresh_token_error_key: ""
@@ -4524,14 +4524,14 @@ streams:
           stop_condition: "{{ not response.links.next}}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/invoicelineitems"
+        url: "{{ config['base_url']}}/api/v2/invoicelineitems/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
-          client_id: "{{ config[\"client_id\"] }}"
+          client_id: '{{ config["client_id"] }}'
           grant_type: refresh_token
-          client_secret: "{{ config[\"client_secret\"] }}"
-          refresh_token: "{{ config[\"client_refresh_token\"] }}"
+          client_secret: '{{ config["client_secret"] }}'
+          refresh_token: '{{ config["oauth_refresh_token"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
           refresh_request_body: {}
@@ -4540,7 +4540,7 @@ streams:
             access_token_config_path:
               - oauth_access_token
             refresh_token_config_path:
-              - client_refresh_token
+              - oauth_refresh_token
             token_expiry_date_config_path:
               - oauth_token_expiry_date
             refresh_token_error_key: ""
@@ -4726,7 +4726,8 @@ spec:
       - base_url
       - client_id
       - client_secret
-      - client_refresh_token
+      - username
+      - password
       - start_date
     properties:
       base_url:
@@ -4751,25 +4752,37 @@ spec:
       oauth_access_token:
         type: string
         description: >-
-          The current access token. This field might be overridden by the
+          The current access token. This field will be overridden by the
           connector based on the token refresh endpoint response.
         order: 4
         title: Access Token
         airbyte_secret: true
-      client_refresh_token:
+      oauth_refresh_token:
         type: string
         order: 3
         title: Refresh token
         airbyte_secret: true
+        description: >-
+          The current refresh token. This field will be overridden by the
+          connector based on the token refresh endpoint response.
       oauth_token_expiry_date:
         type: string
         description: >-
-          The date the current access token expires in. This field might be
+          The date the current access token expires in. This field will be
           overridden by the connector based on the token refresh endpoint
           response.
         order: 5
         title: Token Expiry Date
         format: date-time
+      username:
+        type: string
+        order: 7
+        title: Uptick API Account Email
+      password:
+        type: string
+        order: 8
+        title: Uptick API Account Password
+        airbyte_secret: true
     additionalProperties: true
 
 metadata:
