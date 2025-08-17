@@ -608,5 +608,15 @@
             "console": "integratedTerminal",
             "python": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/.venv/bin/python"
         },
+        {
+            "name": "Active Directory: Read All Streams",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory/main.py",
+            "args": ["read", "--config", "secrets/config.json", "--catalog", "integration_tests/configured_catalog.json"],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory/.venv/bin/python"
+        }
     ]
 }
