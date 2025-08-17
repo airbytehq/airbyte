@@ -116,6 +116,7 @@ streams:
           User-Agent: Airbyte
         request_parameters:
           ordering: "-updated"
+          show_deleted: "true"
           fields[Task]: >-
             id,updated,created,__web_url__,deleted,is_active,inactive_date,due,due_after,pm_date,tolerance_start,tolerance_end,invoiced_date,name,description,scope_of_works,address,coord_lat,coord_lng,access_note,access_window,access_procedure,access_schedule,access_code,internal_note,workorder_url,technician_note,partner_uid,priority,sla_incident_notification_at,sla_due_inprogress,sla_due_inspected,charge_type,notes,invoice_note,estimated_duration,authorisation_name,authorisation_ref,authorisation_date,contractor_note,progress_total,progress_performed,status_changed_inprogress,status_changed_inspected,status_changed_complete,scheduled_at,app_link,timezone,callout,extra_fields,category,servicegroup,client,property,billingcard,assigned_to,assigned_office,technician,round,branch,costcentre,parent_task,author,contractor,contractor_assigned_technician,contractor_authorisation_limit,updated_by,status,zone,project,sla,get_absolute_url,is_editable
       paginator:
@@ -1783,6 +1784,7 @@ streams:
           User-Agent: Airbyte
         request_parameters:
           ordering: "-updated"
+          show_deleted: "true"
           fields[Property]: >-
             id,__str__,__web_url__,access_code,access_inductionreq,access_logbookreq,access_note,access_procedure,access_schedule,access_signaturereq,address,agm_date,authorisation_ref,autocomp_label,billing_manual,billing_requirements,bsecure_latest_sticker_guid,bsecure_resolved_guid,building_classes,building_construction_class,building_era,building_part,building_size,building_sizesqm,building_stories_above_ground,building_stories_below_ground,building_tenancies,building_type,certification_date,client_ref,client_signature_required,cofo_date,cofo_location,cofo_number,coords,created,extra_fields,get_absolute_url,inactive_date,internal_note,is_compliant,local_government_area,name,ocsp_number,organisation,ref,report_manual,report_requirements,restricted_access_hours,review_date,round_number,safety_requirements,service_requirements,status,timezone,updated
       record_selector:
@@ -2175,6 +2177,7 @@ streams:
           User-Agent: Airbyte
         request_parameters:
           ordering: "-updated"
+          show_deleted: "true"
           fields[Invoice]: >-
             id,authorisation_ref,created,currency,date,description,due_date,extra_fields,fx_rate,gst,is_creditable,is_overdue,is_sent,number,partner_online_payment_url,partner_push_bgtask_uid,partner_uid,ref,status,subtotal,synced,total,updated
       record_selector:
@@ -3671,6 +3674,7 @@ streams:
           User-Agent: Airbyte
         request_parameters:
           ordering: "-updated"
+          show_deleted: "true"
           fields[Asset]: >-
             id,asset_condition,barcode,base_date,bsecure_latest_sticker_guid,bsecure_resolved_guid,compliant,contractor_note,contractor_ref,coord_lat,coord_lng,created,deleted,extra_fields,get_absolute_url,get_edit_url,get_service_url,get_standard_installation,get_standard_maintenance,get_standard_performance,guid,inspected_date,inspection_order,inspection_ref,installation_date,internal_note,is_active,is_notoncofo,is_silent,label,last_service_result,location,make,model,ref,serviced_date,signoff_date,signoff_method,size,standard,standard_installation,standard_performance,status,total_expected_life,updated,uptick_ref
       record_selector:
