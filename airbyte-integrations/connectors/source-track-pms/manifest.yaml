@@ -2360,7 +2360,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.total_items }}"
+            cursor_value: "{{ response.scroll }}"
             stop_condition: "{{ not response._embedded.reservations }}"
         requester:
           $ref: "#/definitions/base_requester"
@@ -2395,6 +2395,12 @@ definitions:
                     backoff_time_in_seconds: 305
           request_headers:
             accept: application/json
+          request_parameters:
+            size: "100"
+            scroll: >-
+              {{ next_page_token['next_page_token'] if next_page_token else '1'
+              }}
+            sortColumn: id
         record_selector:
           type: RecordSelector
           extractor:
@@ -2402,18 +2408,6 @@ definitions:
             field_path:
               - _embedded
               - reservations
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              stream:
-                $ref: "#/definitions/streams/reservations_scroll"
-              parent_key: scroll_id
-              request_option:
-                type: RequestOption
-                field_name: scroll
-                inject_into: request_parameter
-              partition_field: scroll_id
       primary_key:
         - id
       schema_loader:
@@ -2472,6 +2466,20 @@ definitions:
           field_pointers:
             - - _embedded
               - channel
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: updatedAt
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "1900-01-01T00:00:00+00:00"
+          datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        start_time_option:
+          type: RequestOption
+          field_name: updatedSince
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S%z"
     tax_policies:
       type: DeclarativeStream
       name: tax_policies
@@ -3056,7 +3064,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.total_items }}"
+            cursor_value: "{{ response.scroll }}"
             stop_condition: "{{ not response._embedded.reservations }}"
         requester:
           $ref: "#/definitions/base_requester"
@@ -3091,6 +3099,12 @@ definitions:
                     backoff_time_in_seconds: 305
           request_headers:
             accept: application/json
+          request_parameters:
+            size: "100"
+            scroll: >-
+              {{ next_page_token['next_page_token'] if next_page_token else '1'
+              }}
+            sortColumn: id
         record_selector:
           type: RecordSelector
           extractor:
@@ -3098,18 +3112,6 @@ definitions:
             field_path:
               - _embedded
               - reservations
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              stream:
-                $ref: "#/definitions/streams/reservations_v2_scroll"
-              parent_key: scroll_id
-              request_option:
-                type: RequestOption
-                field_name: scroll
-                inject_into: request_parameter
-              partition_field: scroll_id
       primary_key:
         - id
       schema_loader:
@@ -4692,124 +4694,6 @@ definitions:
           inject_into: request_parameter
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S%z"
-    reservations_scroll:
-      type: DeclarativeStream
-      name: reservations_scroll
-      retriever:
-        type: SimpleRetriever
-        decoder:
-          type: JsonDecoder
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: pms/reservations
-          http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
-          request_headers:
-            accept: application/json
-          request_parameters:
-            size: "100"
-            scroll: "1"
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - _links
-              - self
-      primary_key:
-        - href
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/reservations_scroll"
-      transformations:
-        - type: RemoveFields
-          field_pointers:
-            - - _embedded
-              - unit
-        - type: RemoveFields
-          field_pointers:
-            - - _links
-        - type: RemoveFields
-          field_pointers:
-            - - _embedded
-              - links
-        - type: RemoveFields
-          field_pointers:
-            - - _embedded
-              - guaranteePolicy
-        - type: RemoveFields
-          field_pointers:
-            - - _embedded
-              - contact
-        - type: RemoveFields
-          field_pointers:
-            - - _embedded
-              - cancellationPolicy
-        - type: RemoveFields
-          field_pointers:
-            - - _embedded
-              - cancellationReason
-        - type: RemoveFields
-          field_pointers:
-            - - _embedded
-              - user
-        - type: RemoveFields
-          field_pointers:
-            - - _embedded
-              - type
-        - type: RemoveFields
-          field_pointers:
-            - - _embedded
-              - rateType
-        - type: RemoveFields
-          field_pointers:
-            - - _embedded
-              - cancelledBy
-        - type: RemoveFields
-          field_pointers:
-            - - _embedded
-              - paymentMethod
-        - type: RemoveFields
-          field_pointers:
-            - - guestBreakdown
-              - rates
-        - type: RemoveFields
-          field_pointers:
-            - - _embedded
-              - channel
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - scroll_id
-              value: "{{ record['href'] | regex_search('scroll=([^&]+)')  }}"
     maintenance_problems:
       type: DeclarativeStream
       name: maintenance_problems
@@ -5565,124 +5449,6 @@ definitions:
               - tasks
               - "*"
               - _links
-    reservations_v2_scroll:
-      type: DeclarativeStream
-      name: reservations_v2_scroll
-      retriever:
-        type: SimpleRetriever
-        decoder:
-          type: JsonDecoder
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: v2/pms/reservations
-          http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: IGNORE
-                    predicate: >-
-                      {{ response.status == 409 and response.detail == 'Invalid
-                      page provided' }}
-                    http_codes: []
-                    error_message: >-
-                      Track's inappropriate 409 for page numbers too high.
-                      Nothing to do but continue to work with the vendor.
-              - type: DefaultErrorHandler
-                max_retries: 3
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: RATE_LIMITED
-                    predicate: "{{ response.status == 429 }}"
-                    http_codes: []
-                    error_message: >-
-                      Track rate limit (10,000 requests per 5 minutes) met,
-                      waiting 5 minutes and 5 seconds to reset.
-                backoff_strategies:
-                  - type: ConstantBackoffStrategy
-                    backoff_time_in_seconds: 305
-          request_headers:
-            accept: application/json
-          request_parameters:
-            size: "100"
-            scroll: "1"
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - _links
-              - self
-      primary_key:
-        - href
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/reservations_v2_scroll"
-      transformations:
-        - type: RemoveFields
-          field_pointers:
-            - - _embedded
-              - unit
-        - type: RemoveFields
-          field_pointers:
-            - - _links
-        - type: RemoveFields
-          field_pointers:
-            - - _embedded
-              - links
-        - type: RemoveFields
-          field_pointers:
-            - - _embedded
-              - guaranteePolicy
-        - type: RemoveFields
-          field_pointers:
-            - - _embedded
-              - contact
-        - type: RemoveFields
-          field_pointers:
-            - - _embedded
-              - cancellationPolicy
-        - type: RemoveFields
-          field_pointers:
-            - - _embedded
-              - cancellationReason
-        - type: RemoveFields
-          field_pointers:
-            - - _embedded
-              - user
-        - type: RemoveFields
-          field_pointers:
-            - - _embedded
-              - type
-        - type: RemoveFields
-          field_pointers:
-            - - _embedded
-              - rateType
-        - type: RemoveFields
-          field_pointers:
-            - - _embedded
-              - cancelledBy
-        - type: RemoveFields
-          field_pointers:
-            - - _embedded
-              - paymentMethod
-        - type: RemoveFields
-          field_pointers:
-            - - guestBreakdown
-              - rates
-        - type: RemoveFields
-          field_pointers:
-            - - _embedded
-              - channel
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - scroll_id
-              value: "{{ record['href'] | regex_search('scroll=([^&]+)')  }}"
     units_daily_pricing_v2:
       type: DeclarativeStream
       name: units_daily_pricing_v2
@@ -7067,10 +6833,8 @@ streams:
   - $ref: "#/definitions/streams/reservations_cancellation_reasons"
   - $ref: "#/definitions/streams/reservations_discount_reasons"
   - $ref: "#/definitions/streams/reservations_guarantee_policies"
-  - $ref: "#/definitions/streams/reservations_scroll"
   - $ref: "#/definitions/streams/reservations_types"
   - $ref: "#/definitions/streams/reservations_v2"
-  - $ref: "#/definitions/streams/reservations_v2_scroll"
   - $ref: "#/definitions/streams/reviews"
   - $ref: "#/definitions/streams/roles"
   - $ref: "#/definitions/streams/suspend_code_reasons"
@@ -7329,7 +7093,7 @@ metadata:
       responsesAreSuccessful: true
     reservations:
       hasRecords: true
-      streamHash: eea32eb9b78de8c92ebb928e7d7c4d48c61023f2
+      streamHash: bf8428719cc9a2c9b8b1ebd8aa5dd42205fa1ff5
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -7385,7 +7149,7 @@ metadata:
       responsesAreSuccessful: true
     reservations_v2:
       hasRecords: true
-      streamHash: a024843e6de1dad41bd4367445ab79765a735d6b
+      streamHash: 7822ec41443ce43888d42cd4d582c36211cdc32b
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -7509,13 +7273,6 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    reservations_scroll:
-      hasRecords: true
-      streamHash: 2ac9f8d18984675042bda300e65b47712b0f17a2
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
     maintenance_problems:
       hasRecords: true
       streamHash: 39414501a14cd019a8a48cafdc1c8f6e3ab98cfb
@@ -7568,13 +7325,6 @@ metadata:
     housekeeping_task_list:
       hasRecords: true
       streamHash: a896ef3904bb357b70319a2214a83b10c02382ec
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    reservations_v2_scroll:
-      hasRecords: true
-      streamHash: a7e18408c924b6cfaa536a6dd23e7267990447b7
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -7747,7 +7497,6 @@ metadata:
     accounting_deposits: false
     folios_transactions: false
     owners_pii_redacted: false
-    reservations_scroll: false
     maintenance_problems: false
     suspend_code_reasons: false
     units_amenity_groups: false
@@ -7756,7 +7505,6 @@ metadata:
     fractionals_inventory: false
     crm_company_attachment: false
     housekeeping_task_list: false
-    reservations_v2_scroll: false
     units_daily_pricing_v2: false
     accounting_transactions: false
     maintenance_work_orders: false
@@ -25489,19 +25237,6 @@ schemas:
           - boolean
           - "null"
     additionalProperties: true
-  reservations_scroll:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - href
-    properties:
-      href:
-        type: string
-      scroll_id:
-        type:
-          - string
-          - "null"
-    additionalProperties: true
   maintenance_problems:
     type: object
     $schema: http://json-schema.org/schema#
@@ -28794,19 +28529,6 @@ schemas:
           - string
           - "null"
       updatedBy:
-        type:
-          - string
-          - "null"
-    additionalProperties: true
-  reservations_v2_scroll:
-    type: object
-    $schema: http://json-schema.org/schema#
-    required:
-      - href
-    properties:
-      href:
-        type: string
-      scroll_id:
         type:
           - string
           - "null"
