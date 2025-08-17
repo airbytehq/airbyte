@@ -31,7 +31,7 @@ definitions:
             - oauth_refresh_token
           token_expiry_date_config_path:
             - oauth_token_expiry_date
-        token_refresh_endpoint: "{{ config['base_url']}}/api/oauth2/token/"
+        token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
       error_handler:
         type: DefaultErrorHandler
         max_retries: 5
@@ -49,8 +49,8 @@ definitions:
           type: RequestPath
         pagination_strategy:
           type: CursorPagination
-          cursor_value: "{{ response.links.next}}"
-          stop_condition: "{{ not response.links.next}}"
+          cursor_value: "{{ response.links.next }}"
+          stop_condition: "{{ not response.links.next }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -79,7 +79,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/tasks/"
+        url: "{{ config['base_url'] }}/api/v2/tasks/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
@@ -99,7 +99,7 @@ streams:
             token_expiry_date_config_path:
               - oauth_token_expiry_date
             refresh_token_error_key: ""
-          token_refresh_endpoint: "{{ config['base_url']}}/api/oauth2/token/"
+          token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
           client_id_name: ""
           client_secret_name: ""
           refresh_token_name: ""
@@ -125,8 +125,8 @@ streams:
           type: RequestPath
         pagination_strategy:
           type: CursorPagination
-          cursor_value: "{{ response.links.next}}"
-          stop_condition: "{{ not response.links.next}}"
+          cursor_value: "{{ response.links.next }}"
+          stop_condition: "{{ not response.links.next }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -881,11 +881,11 @@ streams:
           type: RequestPath
         pagination_strategy:
           type: CursorPagination
-          cursor_value: "{{ response.links.next}}"
-          stop_condition: "{{ not response.links.next}}"
+          cursor_value: "{{ response.links.next }}"
+          stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/taskcategories/"
+        url: "{{ config['base_url'] }}/api/v2/taskcategories/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
@@ -905,7 +905,7 @@ streams:
             token_expiry_date_config_path:
               - oauth_token_expiry_date
             refresh_token_error_key: ""
-          token_refresh_endpoint: "{{ config['base_url']}}/api/oauth2/token/"
+          token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
           client_id_name: ""
           client_secret_name: ""
           refresh_token_name: ""
@@ -971,11 +971,11 @@ streams:
           type: RequestPath
         pagination_strategy:
           type: CursorPagination
-          cursor_value: "{{ response.links.next}}"
-          stop_condition: "{{ not response.links.next}}"
+          cursor_value: "{{ response.links.next }}"
+          stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/clients/"
+        url: "{{ config['base_url'] }}/api/v2/clients/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
@@ -995,7 +995,7 @@ streams:
             token_expiry_date_config_path:
               - oauth_token_expiry_date
             refresh_token_error_key: ""
-          token_refresh_endpoint: "{{ config['base_url']}}/api/oauth2/token/"
+          token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
           client_id_name: ""
           client_secret_name: ""
           refresh_token_name: ""
@@ -1571,11 +1571,11 @@ streams:
           type: RequestPath
         pagination_strategy:
           type: CursorPagination
-          cursor_value: "{{ response.links.next}}"
-          stop_condition: "{{ not response.links.next}}"
+          cursor_value: "{{ response.links.next }}"
+          stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/clientgroups/"
+        url: "{{ config['base_url'] }}/api/v2/clientgroups/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
@@ -1595,7 +1595,7 @@ streams:
             token_expiry_date_config_path:
               - oauth_token_expiry_date
             refresh_token_error_key: ""
-          token_refresh_endpoint: "{{ config['base_url']}}/api/oauth2/token/"
+          token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
           client_id_name: ""
           client_secret_name: ""
           refresh_token_name: ""
@@ -1743,11 +1743,11 @@ streams:
           type: RequestPath
         pagination_strategy:
           type: CursorPagination
-          cursor_value: "{{ response.links.next}}"
-          stop_condition: "{{ not response.links.next}}"
+          cursor_value: "{{ response.links.next }}"
+          stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/properties/"
+        url: "{{ config['base_url'] }}/api/v2/properties/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
@@ -1767,7 +1767,7 @@ streams:
             token_expiry_date_config_path:
               - oauth_token_expiry_date
             refresh_token_error_key: ""
-          token_refresh_endpoint: "{{ config['base_url']}}/api/oauth2/token/"
+          token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
           client_id_name: ""
           client_secret_name: ""
           refresh_token_name: ""
@@ -2136,11 +2136,11 @@ streams:
           type: RequestPath
         pagination_strategy:
           type: CursorPagination
-          cursor_value: "{{ response.links.next}}"
-          stop_condition: "{{ not response.links.next}}"
+          cursor_value: "{{ response.links.next }}"
+          stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/invoices/"
+        url: "{{ config['base_url'] }}/api/v2/invoices/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
@@ -2160,7 +2160,7 @@ streams:
             token_expiry_date_config_path:
               - oauth_token_expiry_date
             refresh_token_error_key: ""
-          token_refresh_endpoint: "{{ config['base_url']}}/api/oauth2/token/"
+          token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
           client_id_name: ""
           client_secret_name: ""
           refresh_token_name: ""
@@ -2422,11 +2422,11 @@ streams:
           type: RequestPath
         pagination_strategy:
           type: CursorPagination
-          cursor_value: "{{ response.links.next}}"
-          stop_condition: "{{ not response.links.next}}"
+          cursor_value: "{{ response.links.next }}"
+          stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/projects/"
+        url: "{{ config['base_url'] }}/api/v2/projects/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
@@ -2446,7 +2446,7 @@ streams:
             token_expiry_date_config_path:
               - oauth_token_expiry_date
             refresh_token_error_key: ""
-          token_refresh_endpoint: "{{ config['base_url']}}/api/oauth2/token/"
+          token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
           client_id_name: ""
           client_secret_name: ""
           refresh_token_name: ""
@@ -2671,11 +2671,11 @@ streams:
           type: RequestPath
         pagination_strategy:
           type: CursorPagination
-          cursor_value: "{{ response.links.next}}"
-          stop_condition: "{{ not response.links.next}}"
+          cursor_value: "{{ response.links.next }}"
+          stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/servicequotes/"
+        url: "{{ config['base_url'] }}/api/v2/servicequotes/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
@@ -2695,7 +2695,7 @@ streams:
             token_expiry_date_config_path:
               - oauth_token_expiry_date
             refresh_token_error_key: ""
-          token_refresh_endpoint: "{{ config['base_url']}}/api/oauth2/token/"
+          token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
           client_id_name: ""
           client_secret_name: ""
           refresh_token_name: ""
@@ -2950,11 +2950,11 @@ streams:
           type: RequestPath
         pagination_strategy:
           type: CursorPagination
-          cursor_value: "{{ response.links.next}}"
-          stop_condition: "{{ not response.links.next}}"
+          cursor_value: "{{ response.links.next }}"
+          stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/defectquotes/"
+        url: "{{ config['base_url'] }}/api/v2/defectquotes/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
@@ -2974,7 +2974,7 @@ streams:
             token_expiry_date_config_path:
               - oauth_token_expiry_date
             refresh_token_error_key: ""
-          token_refresh_endpoint: "{{ config['base_url']}}/api/oauth2/token/"
+          token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
           client_id_name: ""
           client_secret_name: ""
           refresh_token_name: ""
@@ -3199,11 +3199,11 @@ streams:
           type: RequestPath
         pagination_strategy:
           type: CursorPagination
-          cursor_value: "{{ response.links.next}}"
-          stop_condition: "{{ not response.links.next}}"
+          cursor_value: "{{ response.links.next }}"
+          stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/suppliers/"
+        url: "{{ config['base_url'] }}/api/v2/suppliers/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
@@ -3223,7 +3223,7 @@ streams:
             token_expiry_date_config_path:
               - oauth_token_expiry_date
             refresh_token_error_key: ""
-          token_refresh_endpoint: "{{ config['base_url']}}/api/oauth2/token/"
+          token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
           client_id_name: ""
           client_secret_name: ""
           refresh_token_name: ""
@@ -3388,11 +3388,11 @@ streams:
           type: RequestPath
         pagination_strategy:
           type: CursorPagination
-          cursor_value: "{{ response.links.next}}"
-          stop_condition: "{{ not response.links.next}}"
+          cursor_value: "{{ response.links.next }}"
+          stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/purchaseorders/"
+        url: "{{ config['base_url'] }}/api/v2/purchaseorders/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
@@ -3412,7 +3412,7 @@ streams:
             token_expiry_date_config_path:
               - oauth_token_expiry_date
             refresh_token_error_key: ""
-          token_refresh_endpoint: "{{ config['base_url']}}/api/oauth2/token/"
+          token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
           client_id_name: ""
           client_secret_name: ""
           refresh_token_name: ""
@@ -3633,11 +3633,11 @@ streams:
           type: RequestPath
         pagination_strategy:
           type: CursorPagination
-          cursor_value: "{{ response.links.next}}"
-          stop_condition: "{{ not response.links.next}}"
+          cursor_value: "{{ response.links.next }}"
+          stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/assets/"
+        url: "{{ config['base_url'] }}/api/v2/assets/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
@@ -3657,7 +3657,7 @@ streams:
             token_expiry_date_config_path:
               - oauth_token_expiry_date
             refresh_token_error_key: ""
-          token_refresh_endpoint: "{{ config['base_url']}}/api/oauth2/token/"
+          token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
           client_id_name: ""
           client_secret_name: ""
           refresh_token_name: ""
@@ -3934,11 +3934,11 @@ streams:
           type: RequestPath
         pagination_strategy:
           type: CursorPagination
-          cursor_value: "{{ response.links.next}}"
-          stop_condition: "{{ not response.links.next}}"
+          cursor_value: "{{ response.links.next }}"
+          stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/routines/"
+        url: "{{ config['base_url'] }}/api/v2/routines/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
@@ -3958,7 +3958,7 @@ streams:
             token_expiry_date_config_path:
               - oauth_token_expiry_date
             refresh_token_error_key: ""
-          token_refresh_endpoint: "{{ config['base_url']}}/api/oauth2/token/"
+          token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
           client_id_name: ""
           client_secret_name: ""
           refresh_token_name: ""
@@ -4113,11 +4113,11 @@ streams:
           type: RequestPath
         pagination_strategy:
           type: CursorPagination
-          cursor_value: "{{ response.links.next}}"
-          stop_condition: "{{ not response.links.next}}"
+          cursor_value: "{{ response.links.next }}"
+          stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/billingcards/"
+        url: "{{ config['base_url'] }}/api/v2/billingcards/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
@@ -4137,7 +4137,7 @@ streams:
             token_expiry_date_config_path:
               - oauth_token_expiry_date
             refresh_token_error_key: ""
-          token_refresh_endpoint: "{{ config['base_url']}}/api/oauth2/token/"
+          token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
           client_id_name: ""
           client_secret_name: ""
           refresh_token_name: ""
@@ -4263,11 +4263,11 @@ streams:
           type: RequestPath
         pagination_strategy:
           type: CursorPagination
-          cursor_value: "{{ response.links.next}}"
-          stop_condition: "{{ not response.links.next}}"
+          cursor_value: "{{ response.links.next }}"
+          stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/purchaseorderbills/"
+        url: "{{ config['base_url'] }}/api/v2/purchaseorderbills/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
@@ -4287,7 +4287,7 @@ streams:
             token_expiry_date_config_path:
               - oauth_token_expiry_date
             refresh_token_error_key: ""
-          token_refresh_endpoint: "{{ config['base_url']}}/api/oauth2/token/"
+          token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
           client_id_name: ""
           client_secret_name: ""
           refresh_token_name: ""
@@ -4412,11 +4412,11 @@ streams:
           type: RequestPath
         pagination_strategy:
           type: CursorPagination
-          cursor_value: "{{ response.links.next}}"
-          stop_condition: "{{ not response.links.next}}"
+          cursor_value: "{{ response.links.next }}"
+          stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/purchaseorderdockets/"
+        url: "{{ config['base_url'] }}/api/v2/purchaseorderdockets/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
@@ -4436,7 +4436,7 @@ streams:
             token_expiry_date_config_path:
               - oauth_token_expiry_date
             refresh_token_error_key: ""
-          token_refresh_endpoint: "{{ config['base_url']}}/api/oauth2/token/"
+          token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
           client_id_name: ""
           client_secret_name: ""
           refresh_token_name: ""
@@ -4524,11 +4524,11 @@ streams:
           type: RequestPath
         pagination_strategy:
           type: CursorPagination
-          cursor_value: "{{ response.links.next}}"
-          stop_condition: "{{ not response.links.next}}"
+          cursor_value: "{{ response.links.next }}"
+          stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/invoicelineitems/"
+        url: "{{ config['base_url'] }}/api/v2/invoicelineitems/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
@@ -4548,7 +4548,7 @@ streams:
             token_expiry_date_config_path:
               - oauth_token_expiry_date
             refresh_token_error_key: ""
-          token_refresh_endpoint: "{{ config['base_url']}}/api/oauth2/token/"
+          token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
           client_id_name: ""
           client_secret_name: ""
           refresh_token_name: ""
@@ -4737,7 +4737,7 @@ streams:
           stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/users/"
+        url: "{{ config['base_url'] }}/api/v2/users/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
@@ -4757,7 +4757,7 @@ streams:
             token_expiry_date_config_path:
               - oauth_token_expiry_date
             refresh_token_error_key: ""
-          token_refresh_endpoint: "{{ config['base_url']}}/api/oauth2/token/"
+          token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
           client_id_name: ""
           client_secret_name: ""
           refresh_token_name: ""
