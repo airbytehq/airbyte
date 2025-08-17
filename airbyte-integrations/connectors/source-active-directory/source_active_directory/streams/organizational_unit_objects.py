@@ -1,6 +1,6 @@
 from typing import Any, Iterable, Mapping, Optional
 
-from ldap3 import SUBTREE
+from ldap3 import LEVEL
 
 from .base import ActiveDirectoryStream
 from .organizational_units import OrganizationalUnits
@@ -108,7 +108,7 @@ class OrganizationalUnitObjects(ActiveDirectoryStream):
             success = self._conn.search(
                 search_base=ou_dn,
                 search_filter=search_filter,
-                search_scope=SUBTREE,
+                search_scope=LEVEL,
                 attributes=attributes
             )
             
