@@ -12,7 +12,7 @@ To use Airbyte Embedded, must have an active Airbyte Cloud with Embedded enabled
 - `Client Id`: Unique app id. Required for API access.
 - `Client Secret`: Secret key used to obtain a refresh token for API access.
 
-If you the client Id and Client Secret are blank, you will need to create a new Application via **Settings > Applications.** 
+If the client Id and Client Secret are blank, you will need to create a new Application via **Settings > Applications.** 
 
 In addition to the Embedded keys above, you will require an external user id, `External User Id`. This is a a unique identifier you create and assign when initiating the Embedded Widget. `External User Id`. You must create one unique identifier for each of your users using a UUID generator, or internal customer identifier.  The sample onboarding app uses the email provided for the external user id. In production, you may need to change this to use a common UUID library such as  [this](https://www.npmjs.com/package/uuid). 
 

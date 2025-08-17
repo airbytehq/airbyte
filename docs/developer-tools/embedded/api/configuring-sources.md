@@ -22,7 +22,7 @@ curl --location 'https://api.airbyte.com/v1/embedded/widget_token' \
 
 Where:
 - externalUserId is a unique identifier within your organization
-- allowedOrigin is the origin where you're embedding the widget (used for CORS validation). It can be an arbitrary string if you're not using the []
+- allowedOrigin is the origin where you're embedding the widget (used for CORS validation). It can be an arbitrary string if you're not using the Embedded Widget.
 
 The API will return a JSON object with a token string:
 ```
@@ -30,7 +30,7 @@ The API will return a JSON object with a token string:
 ```
 
 The string encodes all the information required by the [Airbyte Embedded Widget](../widget/).
-When using your own Widget, you can base64 decode the token find the scoped access token:
+When using your own Widget, you can base64 decode the token to find the scoped access token:
 
 Here's an example decoded token:
 ```
@@ -48,8 +48,7 @@ You'll need 3 pieces of information to create a source for your users:
 
 Here is an example request:
 ```
-# FIXME: make sure this is the newest name!
-curl 'https://api.airbyte.ai/api/v1/embedded/partial_user_configs/' \
+curl 'https://api.airbyte.ai/api/v1/integrations/sources/' \
   -H 'authorization: Bearer <token>' \
   -H 'content-type: application/json' \
   --data-raw '{"workspace_id":"<workspace_id>","source_config_template_id":"<source_template_id>","connection_configuration":{}}'
