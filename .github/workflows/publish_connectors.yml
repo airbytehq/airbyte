@@ -140,7 +140,6 @@ jobs:
       - name: Publish to Python Registry [On merge to master]
         id: publish-python-registry-master
         if: github.event_name == 'push' && steps.connector-metadata.outputs.connector-language == 'python'
-        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         shell: bash
         run: |
           ./poe-tasks/publish-python-registry.sh --name ${{ matrix.connector }}
