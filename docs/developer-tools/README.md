@@ -10,16 +10,32 @@ Airbyte provides multiple tools to help you build data applications.
 - **Authentication Proxies**: Connect safely to 3rd party APIs using Airbyte's Authentication Proxies.
 
 
+## Prerequisites
+
+Before using any Airbyte developer tools, ensure you have:
+
+- **Airbyte Cloud account**: Sign up at [cloud.airbyte.com](https://cloud.airbyte.com)
+- **Embedded access**: [Contact sales](https://share.hsforms.com/2uRdBz9VoTWiCtjECzRYgawcvair) to enable Airbyte Embedded on your account
+- **API credentials**: Available in your Airbyte Cloud dashboard under Settings > Applications
+
 ## Airbyte Embedded
 
-[Airbyte Embedded](https://airbyte.com/ai) provides product and software teams the tools and services to move data to provide context for AI applications. Embedded provides the following:
+[Airbyte Embedded](https://airbyte.com/ai) provides product and software teams the tools and services to move data to provide context for AI applications.
+
+### Embedded Workspaces & Widget
+
+Airbyte Embedded creates isolated workspaces for each of your customers, allowing them to configure their own data sources while keeping their data separate and secure. The Embedded Widget provides a pre-built UI component that handles the entire user onboarding flow, from authentication to source configuration.
+
+:::info
+Currently, S3 is the only supported destination for Airbyte Embedded. Additional destinations will be supported in the future.
+:::
 
 Once your Organization is enabled via Airbyte Embedded, you can begin onboarding customers via the Embedded Widget. The Get Started Guide walks you through how to configure a React.js serverless app for the onboarding app. You can download the code for the onboarding app [via GitHub](https://github.com/airbytehq/embedded-sampleweb-reactjs). If you prefer to develop in Node.js, please use [this sample app](https://github.com/airbytehq/embedded-sampleweb-nodejs) instead. Regardless of web framework you choose, the pre-requisites required for initial set up are the same.
 
 
 ## PyAirbyte MCP
 
-[The PyAirbyte remote MCP server](./pyairbyte-mcp/README.md) provides the ability for application developers to generate a data pipeline in Python using a single prompt. It is currently designed to work within Cursor, and broader support in the near future.
+[The PyAirbyte remote MCP server](./pyairbyte-mcp/README.md) provides the ability for application developers to generate a data pipeline in Python using a single prompt. It is currently designed to work within Cursor, with broader support coming in the near future.
 
 ## Proxy Requests
 

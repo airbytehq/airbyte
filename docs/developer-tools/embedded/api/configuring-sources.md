@@ -2,14 +2,21 @@
 products: embedded
 ---
 
-# Collecting Credentials 
+# Authentication & Token Management
 
-When using Airbyte Embedded to collect credentials from your users, we recommend requesting an access token that only has permissions to read and modify integrations in their specific workspaces.
+## Overview
+Airbyte Embedded uses a two-tier authentication system:
+1. **Organization-level tokens**: Your main API credentials for managing templates and connections
+2. **User-scoped tokens**: Temporary tokens that allow end-users to configure sources in their isolated workspaces
+
+## Generating User-Scoped Tokens
+
+When collecting credentials from your users, generate a scoped access token that only has permissions to read and modify integrations in their specific workspace. This follows the principle of least privilege and ensures user data isolation.
 
 This can be done by submitting a request to
 
 ```
-curl --location 'https://api.airbyte.com/v1/embedded/widget_token' \
+curl --location 'https://api.airbyte.ai/api/v1/embedded/widget_token' \
 --header 'Content-Type: application/json'\
 -H 'Authorization: Bearer <token>' \
 --header 'Accept: application/json' \
@@ -29,8 +36,17 @@ The API will return a JSON object with a token string:
 {"token":"eyJ0b2tlbiI6ImV5SmhiR2NpT2lKSVV6STFOaUo5LmV5SmhkV1FpT2lKaGFYSmllWFJsTFhObGNuWmxjaUlzSW5OMVlpSTZJbVUyTUdRNE1XRTFMVGt6WkdZdE5HWTVZUzA0TURFekxXSmlZbVkzT1ROalpqQmhNaUlzSW1sdkxtRnBjbUo1ZEdVdVlYVjBhQzUzYjNKcmMzQmhZMlZmYzJOdmNHVWlPbnNpZDI5eWEzTndZV05sU1dRaU9pSm1ZbUU0TVRJeE9DMHpORFkzTFRRMU9EZ3RZVGhrTlMxaE9ETTVObU5rWlRaak1ETWlmU3dpWVdOMElqcDdJbk4xWWlJNkltWmtOR1kzWVdNd0xURmhaREV0TkRJME9DMWlZekZqTFRZNU1HSXdPREk0T1RVNU9TSjlMQ0p5YjJ4bGN5STZXeUpGVFVKRlJFUkZSRjlGVGtSZlZWTkZVaUpkTENKcGMzTWlPaUpvZEhSd2N6b3ZMMk5zYjNWa0xtRnBjbUo1ZEdVdVkyOXRJaXdpZEhsd0lqb2lhVzh1WVdseVlubDBaUzVoZFhSb0xtVnRZbVZrWkdWa1gzWXhJaXdpWlhod0lqb3hOelV6TXpFNE1EVXdmUS4tZ0xJYkQ2OVZ4VUpyajE2QnluSTJhMTJjTDZwU19lVlNTZGxMVGdIbTdFIiwid2lkZ2V0VXJsIjoiaHR0cHM6Ly9jbG91ZC5haXJieXRlLmNvbS9lbWJlZGRlZC13aWRnZXQ/d29ya3NwYWNlSWQ9ZmJhODEyMTgtMzQ2Ny00NTg4LWE4ZDUtYTgzOTZjZGU2YzAzJmFsbG93ZWRPcmlnaW49aHR0cHMlM0ElMkYlMkZhcGkuYWlyYnl0ZS5haSJ9"}
 ```
 
-The string encodes all the information required by the [Airbyte Embedded Widget](../widget/).
-When using your own Widget, you can base64 decode the token to find the scoped access token:
+## Understanding the Token Response
+
+The response contains:
+- `token`: A JWT token scoped to the user's workspace 
+- `widgetUrl`: A pre-configured URL for the Airbyte Embedded Widget
+
+### Using with the Embedded Widget
+Pass the entire response directly to the Airbyte Embedded Widget - no additional processing needed.
+
+### Using with Custom Implementation  
+If building a custom integration, base64 decode the token field to extract the scoped access token:
 
 Here's an example decoded token:
 ```
@@ -44,7 +60,7 @@ You can use the value of this token string as bearer token when creating a sourc
 You'll need 3 pieces of information to create a source for your users:
 1. Their workspace ID
 2. The ID of the [Source Template](./source-templates.md) used
-3. THe connection configuration
+3. The connection configuration
 
 Here is an example request:
 ```

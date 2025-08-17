@@ -7,8 +7,17 @@ There are three components to Airbyte Embedded:
 2. Configuring source templates: Templates define which connectors are available for your end users
 3. Configuring sources: Collect your users credentials so their data is synced to your data warehouse.
 
-There are two approaches to set up Airbyte Embedded.
-1. Use the [Airbyte Embedded Widget](./widget/README.md). This simple Javascript plugin will allow you to easily sync your customer's data.
-2. Use the [Airbyte API](./api/README.md). Build a fully customized experience on top of Airbyte's API. 
+There are two approaches to set up Airbyte Embedded:
+
+## When to Use the Widget
+Use the [Airbyte Embedded Widget](./widget/README.md) if you:
+- Want to get started quickly with minimal development effort
+- Are comfortable with a pre-built UI that matches Airbyte's design
+- Want Airbyte to handle authentication, error states, and validation
+
+## When to Use the API
+Use the [Airbyte API](./api/README.md) if you:
+- Need complete control over the user experience and UI design
+- Want to integrate data source configuration into your existing workflows
 
 The complete API reference can be found at https://api.airbyte.ai/api/v1/redoc

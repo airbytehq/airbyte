@@ -6,7 +6,7 @@ products: embedded
 
 ## Airbyte Credentials
 
-To use Airbyte Embedded, must have an active Airbyte Cloud with Embedded enabled. (Please [contact sales](https://share.hsforms.com/2uRdBz9VoTWiCtjECzRYgawcvair) if you would like to sign up for a trial of Airbyte Embedded). Once you have your Airbyte instance enabled, log in, and navigate to **Settings > Embedded**. Note down the following values. 
+To use Airbyte Embedded, you must have an active Airbyte Cloud with Embedded enabled. (Please [contact sales](https://share.hsforms.com/2uRdBz9VoTWiCtjECzRYgawcvair) if you would like to sign up for a trial of Airbyte Embedded). Once you have your Airbyte instance enabled, log in, and navigate to **Settings > Embedded**. Note down the following values. 
 
 - `Organization Id`: Unique identifier to your Airbyte instance.
 - `Client Id`: Unique app id. Required for API access.
@@ -14,7 +14,7 @@ To use Airbyte Embedded, must have an active Airbyte Cloud with Embedded enabled
 
 If the client Id and Client Secret are blank, you will need to create a new Application via **Settings > Applications.** 
 
-In addition to the Embedded keys above, you will require an external user id, `External User Id`. This is a a unique identifier you create and assign when initiating the Embedded Widget. `External User Id`. You must create one unique identifier for each of your users using a UUID generator, or internal customer identifier.  The sample onboarding app uses the email provided for the external user id. In production, you may need to change this to use a common UUID library such as  [this](https://www.npmjs.com/package/uuid). 
+In addition to the Embedded keys above, you will require an external user id. This is a unique identifier you create and assign when initiating the Embedded Widget. You must create one unique identifier for each of your users using a UUID generator or internal customer identifier. The sample onboarding app uses the email provided for the external user id. In production, you may need to change this to use a common UUID library such as [this](https://www.npmjs.com/package/uuid). 
 
 ## Configure .env
 
