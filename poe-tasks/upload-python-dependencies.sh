@@ -132,6 +132,14 @@ fi
 echo "Installing Poetry dependencies..."
 # Export dependencies from poetry using pip list
 poetry install --all-extras
+
+# This command reformats the output of `pip freeze` into a JSON array of objects
+# Each line that looks like `package==version` is transformed into an object with `package_name` and `version` keys
+# Example output:
+# [
+#   {"package_name": "requests", "version": "2.25.1"},
+#   {"package_name": "pandas", "version": "1.2.3"}
+# ]
 DEPENDENCIES_JSON=$(poetry run pip freeze | jq -R -s -c 'split("\n")[:-1] | map(select(contains("=="))) | map({package_name: split("==")[0], version: split("==")[1]})')
 GENERATION_TIME=$(date -u +"%Y-%m-%dT%H:%M:%S.%N")
 
