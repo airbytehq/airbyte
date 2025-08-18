@@ -3,6 +3,7 @@
 #
 
 
+import copy
 import datetime
 import json
 import logging
@@ -115,7 +116,6 @@ def _apply_overrides_from_registry(metadata_data: dict, override_registry_key: s
     return metadata_data
 
 
-@deep_copy_params
 def _apply_generated_fields(metadata_data: dict, bucket_name: str, metadata_blob: storage.Blob) -> dict:
     """Apply generated fields to the metadata data field.
 
@@ -125,6 +125,9 @@ def _apply_generated_fields(metadata_data: dict, bucket_name: str, metadata_blob
     Returns:
         dict: The metadata data field with the generated fields applied.
     """
+    # work on our own copy of everything
+    metadata_data = copy.deepcopy(metadata_data)
+
     generated_fields = metadata_data.get("generated") or {}
 
     # Add the source file metadata
