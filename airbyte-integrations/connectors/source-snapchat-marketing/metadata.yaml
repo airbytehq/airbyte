@@ -8,7 +8,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 200330b2-ea62-4d11-ac6d-cfe3e3f8ab2b
-  dockerImageTag: 1.5.16
+  dockerImageTag: 1.5.17
   dockerRepository: airbyte/source-snapchat-marketing
   githubIssueLabel: source-snapchat-marketing
   icon: snapchat.svg
@@ -22,7 +22,6 @@ data:
   registryOverrides:
     cloud:
       enabled: true
-      dockerImageTag: 1.5.15
     oss:
       enabled: true
   releaseStage: generally_available
