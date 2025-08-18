@@ -1,6 +1,6 @@
 from typing import Any, Iterable, Mapping, Optional
 
-from ldap3 import SUBTREE
+from ldap3 import LEVEL
 
 from .base import ActiveDirectoryStream
 from .organizational_units import OrganizationalUnits
@@ -74,9 +74,9 @@ class OrganizationalUnitObjects(ActiveDirectoryStream):
                                 "created_at": obj["created_at"],
                                 "modified_at": obj["modified_at"],
                             }
-                            
-                            yield ou_object_record
-                            
+                            if is_direct_child:
+                                yield ou_object_record
+
                         except Exception as e:
                             self.logger.warning(f"Error processing OU-object relationship: {str(e)}")
                             continue
@@ -108,7 +108,7 @@ class OrganizationalUnitObjects(ActiveDirectoryStream):
             success = self._conn.search(
                 search_base=ou_dn,
                 search_filter=search_filter,
-                search_scope=SUBTREE,
+                search_scope=LEVEL,
                 attributes=attributes
             )
             
