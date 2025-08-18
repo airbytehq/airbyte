@@ -484,6 +484,10 @@ streams:
             type:
               - boolean
               - "null"
+          extra_fields:
+            type:
+              - object
+              - "null"
           due:
             type:
               - string
@@ -641,6 +645,12 @@ streams:
             path:
               - updated
             value: "{{ record['attributes']['updated'] }}"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - extra_fields
+            value: "{{ record['attributes']['extra_fields'] }}"
       - type: AddFields
         fields:
           - type: AddedFieldDefinition
