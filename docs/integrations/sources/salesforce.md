@@ -168,7 +168,7 @@ Salesforce provides security data through its standard object model:
 
 Note:
 
-- Security objects can be large datasets in organizations with many users, so monitor your Salesforce API limits accordingly
+- Security objects can be large datasets in organizations with many users, so monitor your Salesforce API limits accordingly.
 
 ### Permissions Need to Sync Permissions Data
 
