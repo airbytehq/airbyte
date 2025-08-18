@@ -173,6 +173,7 @@ Note:
 ### Permissions Need to Sync Permissions Data
 
 To sync security-related data from Salesforce, the authenticated Salesforce user must have appropriate permissions to read security objects. Consider granting these permissions through a dedicated permission set:
+
    - "View Setup and Configuration" - Required to access PermissionSet objects.
    - "View All Users" - Required to access comprehensive User data.
    - Standard read permissions for the specific objects you want to sync.
