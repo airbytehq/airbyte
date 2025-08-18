@@ -450,6 +450,10 @@ def generate_and_persist_registry_entry(
     gcs_client = get_gcs_storage_client(gcs_creds=os.environ.get("GCS_CREDENTIALS"))
     bucket = gcs_client.bucket(bucket_name)
     metadata_blob = bucket.blob(f"{METADATA_FOLDER}/{docker_repository}/{docker_image_tag}/{METADATA_FILE_NAME}")
+    # bucket.blob() returns a partially-loaded blob.
+    # reload() asks GCS to fetch the rest of the information.
+    # (this doesn't fetch the _contents_ of the blob, only its metadata - modified time, etc.)
+    metadata_blob.reload()
     metadata_dict = yaml.safe_load(metadata_blob.download_as_string())
 
     message = f"*🤖 🟡 _Registry Entry Generation_ STARTED*:\nRegistry Entry: `{registry_type}.json`\nConnector: `{docker_repository}`\nGCS Bucket: `{bucket_name}`."
