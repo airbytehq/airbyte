@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.dataflow.aggregate.AggregateFactory
 import io.airbyte.cdk.load.dataflow.aggregate.StoreKey
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
 import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
 import io.airbyte.integrations.destination.clickhouse.write.load.BinaryRowInsertBuffer
 import io.micronaut.context.annotation.Factory
 
@@ -30,9 +31,12 @@ class ClickhouseAggregate(
 @Factory
 class ClickhouseAggregateFactory(
     private val clickhouseClient: Client,
+    private val tableCatalog: TableCatalog,
 ) : AggregateFactory {
     override fun create(key: StoreKey): Aggregate {
-        val tableName = TableName(name = key.name, namespace = key.namespace ?: "default")
+
+        val tableName = tableCatalog.getValue(key).tableNames.finalTableName ?:
+            TableName(name = key.unmappedName, namespace = key.unmappedNamespace ?: "default")
         val binaryRowInsertBuffer =
             BinaryRowInsertBuffer(
                 tableName,

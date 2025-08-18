@@ -19,7 +19,7 @@ class AggregateStage(
         input: DataFlowStageIO,
         outputFlow: FlowCollector<DataFlowStageIO>,
     ) {
-        val key = input.raw!!.stream.mappedDescriptor
+        val key = input.raw!!.stream
         val rec = input.munged!!
 
         store.acceptFor(key, rec)
