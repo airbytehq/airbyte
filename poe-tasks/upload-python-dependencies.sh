@@ -114,9 +114,9 @@ if [[ $PRE_RELEASE == true ]]; then
     VERSION=$(generate_dev_tag "$VERSION")
 fi
 
-echo "Uploading dependencies for connector: $CONNECTOR_NAME"
-echo "  Version: $VERSION"
-echo "  GCS Bucket: $BUCKET_NAME"
+echo "📋 Uploading dependencies for connector: $CONNECTOR_NAME"
+echo "  🏷️ Version: $VERSION"
+echo "  🪣 GCS Bucket: $BUCKET_NAME"
 
 DOCKER_REPOSITORY=$(yq eval '.data.dockerRepository' metadata.yaml)
 DEFINITION_ID=$(yq eval '.data.definitionId' metadata.yaml)
@@ -167,4 +167,4 @@ echo "Uploading to: gs://${BUCKET_NAME}/${GCS_KEY}"
 
 gsutil cp "$TEMP_FILE" "gs://${BUCKET_NAME}/${GCS_KEY}"
 
-echo "Successfully uploaded dependencies metadata for $CONNECTOR_NAME ($VERSION)"
+echo "✅ Successfully uploaded dependencies metadata for $CONNECTOR_NAME ($VERSION)"
