@@ -72,7 +72,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url: "{{ config['base_url'] }}/api/v2/tasks/"
+        url: "{{ config['base_url'] }}/api/v2.14/tasks/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
@@ -847,7 +847,7 @@ streams:
           stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url'] }}/api/v2/taskcategories/"
+        url: "{{ config['base_url'] }}/api/v2.14/taskcategories/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
@@ -923,7 +923,7 @@ streams:
           stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url'] }}/api/v2/clients/"
+        url: "{{ config['base_url'] }}/api/v2.14/clients/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
@@ -1500,7 +1500,7 @@ streams:
           stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url'] }}/api/v2/clientgroups/"
+        url: "{{ config['base_url'] }}/api/v2.14/clientgroups/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
@@ -1658,7 +1658,7 @@ streams:
           stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url'] }}/api/v2/properties/"
+        url: "{{ config['base_url'] }}/api/v2.14/properties/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
@@ -2010,7 +2010,7 @@ streams:
           stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url'] }}/api/v2/invoices/"
+        url: "{{ config['base_url'] }}/api/v2.14/invoices/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
@@ -2282,7 +2282,7 @@ streams:
           stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url'] }}/api/v2/projects/"
+        url: "{{ config['base_url'] }}/api/v2.14/projects/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
@@ -2508,7 +2508,7 @@ streams:
           stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url'] }}/api/v2/servicequotes/"
+        url: "{{ config['base_url'] }}/api/v2.14/servicequotes/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
@@ -2765,7 +2765,7 @@ streams:
           stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url'] }}/api/v2/defectquotes/"
+        url: "{{ config['base_url'] }}/api/v2.14/defectquotes/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
@@ -2992,7 +2992,7 @@ streams:
           stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url'] }}/api/v2/suppliers/"
+        url: "{{ config['base_url'] }}/api/v2.14/suppliers/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
@@ -3148,7 +3148,7 @@ streams:
           stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url'] }}/api/v2/purchaseorders/"
+        url: "{{ config['base_url'] }}/api/v2.14/purchaseorders/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
@@ -3371,7 +3371,7 @@ streams:
           stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url'] }}/api/v2/assets/"
+        url: "{{ config['base_url'] }}/api/v2.14/assets/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
@@ -3650,7 +3650,7 @@ streams:
           stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url'] }}/api/v2/routines/"
+        url: "{{ config['base_url'] }}/api/v2.14/routines/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
@@ -3815,7 +3815,7 @@ streams:
           stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url'] }}/api/v2/billingcards/"
+        url: "{{ config['base_url'] }}/api/v2.14/billingcards/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
@@ -3951,7 +3951,7 @@ streams:
           stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url'] }}/api/v2/purchaseorderbills/"
+        url: "{{ config['base_url'] }}/api/v2.14/purchaseorderbills/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
@@ -4086,7 +4086,7 @@ streams:
           stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url'] }}/api/v2/purchaseorderdockets/"
+        url: "{{ config['base_url'] }}/api/v2.14/purchaseorderdockets/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
@@ -4184,7 +4184,7 @@ streams:
           stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url'] }}/api/v2/invoicelineitems/"
+        url: "{{ config['base_url'] }}/api/v2.14/invoicelineitems/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
@@ -4379,7 +4379,7 @@ streams:
           stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url'] }}/api/v2/users/"
+        url: "{{ config['base_url'] }}/api/v2.14/users/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
@@ -4696,7 +4696,7 @@ streams:
           stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url'] }}/api/v2/intelligence/task-profitability/"
+        url: "{{ config['base_url'] }}/api/v2.14/intelligence/task-profitability/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
