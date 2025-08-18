@@ -4,10 +4,6 @@
 
 package io.airbyte.cdk.load.dataflow.config
 
-import io.micronaut.context.annotation.Factory
-import io.micronaut.context.annotation.Requires
-import io.micronaut.context.env.Environment
-import jakarta.inject.Singleton
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
@@ -42,18 +38,4 @@ data class MemoryAndParallelismConfig(
             "maxConcurrentLifecycleOperations must be greater than 0"
         }
     }
-}
-
-@Factory
-class MemoryAndParallelismConfigFactory {
-    @Requires(notEnv = [Environment.TEST])
-    @Singleton
-    fun defaultConfig() = MemoryAndParallelismConfig()
-
-    @Requires(env = [Environment.TEST])
-    @Singleton
-    fun testConfig() = MemoryAndParallelismConfig(
-        // Set this to 1 so we flush aggregates immediately for easier testing.
-        maxRecordsPerAgg = 1,
-    )
 }
