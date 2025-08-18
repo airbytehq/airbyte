@@ -35,8 +35,12 @@ class ClickhouseAggregateFactory(
 ) : AggregateFactory {
     override fun create(key: StoreKey): Aggregate {
 
-        val tableName = tableCatalog.getValue(key).tableNames.finalTableName ?:
-            TableName(name = key.unmappedName, namespace = key.unmappedNamespace ?: "default")
+        val tableName =
+            tableCatalog.getValue(key).tableNames.finalTableName
+                ?: TableName(
+                    name = key.unmappedName,
+                    namespace = key.unmappedNamespace ?: "default"
+                )
         val binaryRowInsertBuffer =
             BinaryRowInsertBuffer(
                 tableName,
