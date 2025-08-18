@@ -50,15 +50,6 @@ def _github_url(docker_repo_name: str, github_connector_folders: List[str]) -> s
         return None
 
 
-def _icon_url(row: pd.DataFrame) -> str | None:
-    icon_file_name = row["icon_oss"]
-    if not isinstance(icon_file_name, str):
-        return None
-
-    github_icon_base = f"https://raw.githubusercontent.com/{GITHUB_REPO_NAME}/master/airbyte-config-oss/init-oss/src/main/resources/icons"
-    return f"{github_icon_base}/{icon_file_name}"
-
-
 def _issue_url(row: pd.DataFrame) -> str | None:
     docker_repo = row["dockerRepository_oss"]
     if not isinstance(docker_repo, str):
@@ -229,8 +220,8 @@ def _github_connector_folders() -> List[str]:
 
 
 def _load_registry(bucket: storage.Bucket, filename: str) -> ConnectorRegistryV0:
-    latest_cloud_registry_gcs_blob = bucket.blob(f"{REGISTRIES_FOLDER}/{filename}")
-    json_string = latest_cloud_registry_gcs_blob.download_as_string().decode("utf-8")
+    latest_oss_registry_gcs_blob = bucket.blob(f"{REGISTRIES_FOLDER}/{filename}")
+    json_string = latest_oss_registry_gcs_blob.download_as_string().decode("utf-8")
     latest_cloud_registry_dict = json.loads(json_string)
     return ConnectorRegistryV0.parse_obj(latest_cloud_registry_dict)
 
