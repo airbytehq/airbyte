@@ -172,7 +172,6 @@ jobs:
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
         run: |
-          # TODO: switch to use the production bucket once we are sure this works.
           ./poe-tasks/upload-python-dependencies.sh --name ${{ matrix.connector }} --bucket prod-airbyte-cloud-connector-metadata-service
         continue-on-error: true # We allow this to fail because we are testing this step. TODO: remove this once we are sure it works.
 
@@ -190,7 +189,6 @@ jobs:
           else
             PRE_RELEASE_FLAG=""
           fi
-          # TODO: switch to use the production bucket once we are sure this works.
           ./poe-tasks/upload-python-dependencies.sh --name ${{ matrix.connector }} --bucket prod-airbyte-cloud-connector-metadata-service $PRE_RELEASE_FLAG
         continue-on-error: true # We allow this to fail because we are testing this step. TODO: remove this once we are sure it works.
 
