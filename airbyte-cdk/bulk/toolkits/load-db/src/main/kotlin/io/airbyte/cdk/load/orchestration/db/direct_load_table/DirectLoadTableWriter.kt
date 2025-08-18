@@ -16,7 +16,6 @@ import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.StreamStateStore
-import io.github.oshai.kotlinlogging.KotlinLogging
 
 /**
  * @param directLoadTableTempTableNameMigration Iff you are implementing a destination which
