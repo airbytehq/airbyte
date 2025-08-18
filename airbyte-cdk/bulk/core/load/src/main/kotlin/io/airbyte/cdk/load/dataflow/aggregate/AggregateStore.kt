@@ -13,7 +13,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 
-typealias StoreKey = DestinationStream
+typealias StoreKey = DestinationStream.Descriptor
 
 @Singleton
 class AggregateStore(
