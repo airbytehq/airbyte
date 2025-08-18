@@ -4793,6 +4793,72 @@ streams:
       partition_field_end: ""
       partition_field_start: ""
 
+  - type: DeclarativeStream
+    name: taskprofitability
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.links.next }}"
+          stop_condition: "{{ not response.links.next }}"
+      requester:
+        type: HttpRequester
+        url: "{{ config['base_url'] }}/api/v2/intelligence/task-profitability/"
+        http_method: GET
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config["client_id"] }}'
+          grant_type: password
+          client_secret: '{{ config["client_secret"] }}'
+          expires_in_name: expires_in
+          access_token_name: access_token
+          token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
+          refresh_request_body:
+            username: '{{ config["username"] }}'
+            password: '{{ config["password"] }}'
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 5
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: Retry-After
+        request_headers:
+          User-Agent: Airbyte
+        request_parameters:
+          ordering: "-updated"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key:
+      - id
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: ""
+      datetime_format: "%Y-%m-%d"
+      start_time_option:
+        type: RequestOption
+        field_name: updatedsince
+        inject_into: request_parameter
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+      cursor_granularity: ""
+      step: ""
+      partition_field_end: ""
+      partition_field_start: ""
+
 spec:
   type: Spec
   connection_specification:
@@ -4994,6 +5060,7 @@ metadata:
     purchaseorderbills: true
     purchaseorderdockets: true
     users: true
+    taskprofitability: true
   applied_migrations:
     - from_version: 6.60.0
       to_version: "*"
