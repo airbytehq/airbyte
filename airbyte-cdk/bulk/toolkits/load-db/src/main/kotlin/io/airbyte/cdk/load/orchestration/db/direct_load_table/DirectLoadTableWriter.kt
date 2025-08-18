@@ -33,8 +33,6 @@ class DirectLoadTableWriter(
     private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
     private val tempTableNameGenerator: TempTableNameGenerator,
 ) : DestinationWriter {
-    val log = KotlinLogging.logger {  }
-
     private lateinit var initialStatuses: Map<DestinationStream, DirectLoadInitialStatus>
     override suspend fun setup() {
         val namespaces =
@@ -42,7 +40,6 @@ class DirectLoadTableWriter(
         destinationHandler.createNamespaces(namespaces + listOf(internalNamespace))
 
         initialStatuses = stateGatherer.gatherInitialStatus(names)
-        log.error { "Initial statuses: $initialStatuses" }
     }
 
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {

@@ -33,16 +33,12 @@ class ClickhouseAggregate(
 @Factory
 class ClickhouseAggregateFactory(
     private val clickhouseClient: Client,
-    private val tableCatalog: TableCatalogByDescriptor,
     private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
 ) : AggregateFactory {
     override fun create(key: StoreKey): Aggregate {
 
         val tableName = streamStateStore.get(key)!!.tableName
 
-        // val tableName =
-        //     tableCatalog.getValue(key).tableNames.finalTableName
-        //         ?: TableName(name = key.name, namespace = key.namespace ?: "default")
         val binaryRowInsertBuffer =
             BinaryRowInsertBuffer(
                 tableName,

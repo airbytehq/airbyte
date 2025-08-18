@@ -2670,7 +2670,6 @@ abstract class BasicFunctionalityIntegrationTest(
      */
     @Test
     open fun testOverwriteSchemaEvolution() {
-        val log = KotlinLogging.logger {  }
         assumeTrue(verifyDataWriting)
         fun makeStream(
             syncId: Long,
@@ -2695,7 +2694,6 @@ abstract class BasicFunctionalityIntegrationTest(
                 generationId = 1,
                 minimumGenerationId = 0,
             )
-        log.error { "Sync num 1" }
         runSync(
             updatedConfig,
             stream,
@@ -2715,8 +2713,6 @@ abstract class BasicFunctionalityIntegrationTest(
                 generationId = 2,
                 minimumGenerationId = 2,
             )
-
-        log.error { "Sync num 2" }
         runSync(
             updatedConfig,
             changedStream,
@@ -2749,7 +2745,6 @@ abstract class BasicFunctionalityIntegrationTest(
         // (this is relevant for e.g. iceberg, where every column has an ID,
         // and we need to be able to match the new columns to their ID)
         val finalStream = changedStream.copy(minimumGenerationId = 0, syncId = 44)
-        log.error { "Sync num 3" }
         runSync(
             updatedConfig,
             finalStream,

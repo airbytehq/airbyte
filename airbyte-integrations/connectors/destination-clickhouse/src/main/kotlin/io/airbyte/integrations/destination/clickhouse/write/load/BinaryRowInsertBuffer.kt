@@ -50,8 +50,6 @@ class BinaryRowInsertBuffer(
     internal var writer = RowBinaryFormatWriter(inner, schema, ClickHouseFormat.RowBinary)
 
     fun accumulate(recordFields: Map<String, AirbyteValue>) {
-        log.error { "Writing in $tableName" }
-
         recordFields.forEach { writeAirbyteValue(it.key, it.value) }
 
         writer.commitRow()

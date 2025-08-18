@@ -105,8 +105,6 @@ class DefaultDestinationCatalogFactory {
         @Named("checkNamespace") checkNamespace: String?,
         namespaceMapper: NamespaceMapper
     ): DestinationCatalog {
-        val log = KotlinLogging.logger {}
-
         if (operation == "check") {
             // generate a string like "20240523"
             val date = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
@@ -131,7 +129,6 @@ class DefaultDestinationCatalogFactory {
                 )
             )
         } else {
-            log.error { catalog.streams }
             return DestinationCatalog(streams = catalog.streams.map { streamFactory.make(it) })
         }
     }

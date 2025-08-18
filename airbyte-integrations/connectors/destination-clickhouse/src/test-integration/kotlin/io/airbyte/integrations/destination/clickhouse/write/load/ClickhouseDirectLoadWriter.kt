@@ -63,22 +63,7 @@ class ClickhouseDirectLoadWriterWithoutJson :
         Utils.getConfigPath("valid_connection_no_json.json"),
         SchematizedNestedValueBehavior.STRINGIFY,
         true,
-    ) {
-        @Test
-    override fun testOverwriteSchemaEvolution() {
-        super.testOverwriteSchemaEvolution()
-    }
-
-    @Test
-    override fun testNamespaces() {
-        super.testNamespaces()
-    }
-
-    @Test
-    override fun testFunkyCharacters() {
-        super.testFunkyCharacters()
-    }
-    }
+    )
 
 @Disabled("Requires local bastion and CH instance to pass")
 class ClickhouseDirectLoadWriterWithoutJsonSshTunnel :
