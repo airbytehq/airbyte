@@ -45,14 +45,15 @@ In the next sync, the delta contains the following record:
 
 | name      | deceased | updated_at |
 | :-------- | :------- | :--------- |
-| Louis XVI | false    | 1785       |
+| Louis XVII | false    | 1785       |
 
 At the end of this incremental sync, the data warehouse would now contain:
 
 | name             | deceased | updated_at |
 | :--------------- | :------- | :--------- |
 | Marie Antoinette | false    | 1755       |
-| Louis XVI        | false    | 1785       |
+| Louis XVI        | false    | 1754       |
+| Louis XVII       | false    | 1785       |
 
 ### Updating a Record
 
@@ -69,6 +70,7 @@ In the final de-duplicated table:
 | :--------------- | :------- | :--------- |
 | Louis XVI        | true     | 1793       |
 | Marie Antoinette | true     | 1793       |
+| Louis XVII       | false    | 1785       |
 
 ## Source-Defined Cursor
 
