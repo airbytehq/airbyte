@@ -22,11 +22,22 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /open/v1/project
           http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 5
         record_selector:
           type: RecordSelector
           extractor:
             type: DpathExtractor
             field_path: []
+          record_filter:
+            type: RecordFilter
+            condition: "{{ record.get('closed') is none }}"
         decoder:
           type: JsonDecoder
       schema_loader:
@@ -44,6 +55,14 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /open/v1/project/{{ stream_partition['parent_id'] }}/data
           http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -69,12 +88,12 @@ definitions:
     url_base: https://api.ticktick.com
     authenticator:
       type: OAuthAuthenticator
-      client_id: "{{ config[\"client_id\"] }}"
-      client_secret: "{{ config[\"client_secret\"] }}"
-      access_token_value: "{{ config[\"client_access_token\"] }}"
       scopes:
         - "tasks:"
         - read
+      client_id: "{{ config[\"client_id\"] }}"
+      client_secret: "{{ config[\"client_secret\"] }}"
+      access_token_value: "{{ config[\"client_access_token\"] }}"
       grant_type: client_credentials
 
 streams:
@@ -92,30 +111,29 @@ spec:
     properties:
       client_id:
         type: string
+        order: 0
         title: Client ID
         airbyte_secret: true
-        order: 0
       client_secret:
         type: string
+        order: 1
         title: Client secret
         airbyte_secret: true
-        order: 1
       client_access_token:
         type: string
+        order: 2
         title: Access token
         airbyte_secret: true
-        airbyte_hidden: true
-        order: 2
     additionalProperties: true
   advanced_auth:
     auth_flow_type: oauth2.0
     oauth_config_specification:
       oauth_connector_input_specification:
+        scope: "tasks: read"
         consent_url: >-
           https://ticktick.com/oauth/authorize?scope={{scope_value |
           urlEncode}}&client_id={{client_id_value}}&state={{state}}&redirect_uri={{redirect_uri_value}}&response_type=code
         access_token_url: https://ticktick.com/oauth/token
-        scope: "tasks: read"
         extract_output:
           - access_token
         access_token_headers:
@@ -166,14 +184,14 @@ metadata:
   testedStreams:
     projects:
       hasRecords: true
-      streamHash: a1baeb6a3e18cf22868431fe6ce36bff4683dacd
+      streamHash: 1c4166208aed38ad48568e87bbab0fd1cb0c4d5e
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     tasks:
       hasRecords: true
-      streamHash: 83a4cf59a11d6a94e8f3e30aa3109b296bc8cbf6
+      streamHash: e60b82300e96a25dfa56387eb86829b025d52d26
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -186,10 +204,6 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      closed:
-        type:
-          - boolean
-          - "null"
       color:
         type:
           - string
@@ -253,6 +267,39 @@ schemas:
         type:
           - boolean
           - "null"
+      items:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            id:
+              type:
+                - string
+                - "null"
+            isAllDay:
+              type:
+                - boolean
+                - "null"
+            sortOrder:
+              type:
+                - number
+                - "null"
+            status:
+              type:
+                - number
+                - "null"
+            timeZone:
+              type:
+                - string
+                - "null"
+            title:
+              type:
+                - string
+                - "null"
       kind:
         type:
           - string
