@@ -13,33 +13,15 @@ from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
 from source_twilio.auth import HttpBasicAuthenticator
 from source_twilio.streams import (
-    Addresses,
     Alerts,
-    Applications,
-    AvailablePhoneNumberCountries,
-    AvailablePhoneNumbersLocal,
-    AvailablePhoneNumbersMobile,
-    AvailablePhoneNumbersTollFree,
     Calls,
     ConferenceParticipants,
     Conferences,
-    ConversationMessages,
-    ConversationParticipants,
-    DependentPhoneNumbers,
-    Executions,
-    IncomingPhoneNumbers,
-    Keys,
     MessageMedia,
     Messages,
-    OutgoingCallerIds,
-    Queues,
     Recordings,
-    Roles,
-    Step,
-    Transcriptions,
     UsageRecords,
     UsageTriggers,
-    UserConversations,
 )
 
 
@@ -78,32 +60,14 @@ class SourceTwilio(YamlDeclarativeSource):
 
         streams = super().streams(config=config)
         streams += [
-            Addresses(**full_refresh_stream_kwargs),
             Alerts(**incremental_stream_kwargs),
-            Applications(**full_refresh_stream_kwargs),
-            AvailablePhoneNumberCountries(**full_refresh_stream_kwargs),
-            AvailablePhoneNumbersLocal(**full_refresh_stream_kwargs),
-            AvailablePhoneNumbersMobile(**full_refresh_stream_kwargs),
-            AvailablePhoneNumbersTollFree(**full_refresh_stream_kwargs),
             Calls(**incremental_stream_kwargs),
             ConferenceParticipants(**full_refresh_stream_kwargs),
             Conferences(**incremental_stream_kwargs),
-            ConversationMessages(**full_refresh_stream_kwargs),
-            ConversationParticipants(**full_refresh_stream_kwargs),
-            DependentPhoneNumbers(**full_refresh_stream_kwargs),
-            Executions(**full_refresh_stream_kwargs),
-            IncomingPhoneNumbers(**full_refresh_stream_kwargs),
-            Keys(**full_refresh_stream_kwargs),
             MessageMedia(**incremental_stream_kwargs_message_stream),
             Messages(**incremental_stream_kwargs_message_stream),
-            OutgoingCallerIds(**full_refresh_stream_kwargs),
-            Queues(**full_refresh_stream_kwargs),
             Recordings(**incremental_stream_kwargs),
-            Roles(**full_refresh_stream_kwargs),
-            Step(**full_refresh_stream_kwargs),
-            Transcriptions(**full_refresh_stream_kwargs),
             UsageRecords(**incremental_stream_kwargs),
             UsageTriggers(**full_refresh_stream_kwargs),
-            UserConversations(**full_refresh_stream_kwargs),
         ]
         return streams
