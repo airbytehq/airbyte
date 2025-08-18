@@ -97,7 +97,7 @@ streams:
           ordering: "-updated"
           show_deleted: "true"
           fields[Task]: >-
-            id,updated,created,__web_url__,deleted,is_active,inactive_date,due,due_after,pm_date,tolerance_start,tolerance_end,invoiced_date,name,description,scope_of_works,address,coord_lat,coord_lng,access_note,access_window,access_procedure,access_schedule,access_code,internal_note,workorder_url,technician_note,partner_uid,priority,sla_incident_notification_at,sla_due_inprogress,sla_due_inspected,charge_type,notes,invoice_note,estimated_duration,authorisation_name,authorisation_ref,authorisation_date,contractor_note,progress_total,progress_performed,status_changed_inprogress,status_changed_inspected,status_changed_complete,scheduled_at,app_link,timezone,callout,extra_fields,category,servicegroup,client,property,billingcard,assigned_to,assigned_office,technician,round,branch,costcentre,parent_task,author,contractor,contractor_assigned_technician,contractor_authorisation_limit,updated_by,status,zone,project,sla,get_absolute_url,is_editable
+            id,updated,created,deleted,is_active,inactive_date,due,due_after,pm_date,tolerance_start,tolerance_end,invoiced_date,name,description,scope_of_works,address,coord_lat,coord_lng,access_note,access_window,access_procedure,access_schedule,access_code,internal_note,workorder_url,technician_note,partner_uid,priority,sla_incident_notification_at,sla_due_inprogress,sla_due_inspected,charge_type,notes,invoice_note,estimated_duration,authorisation_name,authorisation_ref,authorisation_date,contractor_note,progress_total,progress_performed,status_changed_inprogress,status_changed_inspected,status_changed_complete,scheduled_at,app_link,timezone,callout,extra_fields,category,servicegroup,client,property,billingcard,assigned_to,assigned_office,technician,round,branch,costcentre,parent_task,author,contractor,contractor_assigned_technician,contractor_authorisation_limit,updated_by,status,zone,project,sla,is_editable
       paginator:
         type: DefaultPaginator
         page_token_option:
@@ -466,14 +466,7 @@ streams:
             type:
               - string
               - "null"
-          __str__:
-            type:
-              - string
-              - "null"
-          __web_url__:
-            type:
-              - string
-              - "null"
+
           created:
             type:
               - string
@@ -557,10 +550,7 @@ streams:
             type:
               - number
               - "null"
-          get_absolute_url:
-            type:
-              - string
-              - "null"
+
           is_editable:
             type:
               - boolean
@@ -621,18 +611,6 @@ streams:
             path:
               - ref
             value: "{{ record['attributes']['ref'] }}"
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - __str__
-            value: "{{ record['attributes']['__str__'] }}"
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - __web_url__
-            value: "{{ record['attributes']['__web_url__'] }}"
       - type: AddFields
         fields:
           - type: AddedFieldDefinition
@@ -765,12 +743,7 @@ streams:
             path:
               - contractor_authorisation_limit
             value: "{{ record['attributes']['contractor_authorisation_limit'] }}"
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - get_absolute_url
-            value: "{{ record['attributes']['get_absolute_url'] }}"
+
       - type: AddFields
         fields:
           - type: AddedFieldDefinition
@@ -974,7 +947,7 @@ streams:
         request_parameters:
           ordering: "-updated"
           fields[Client]: >-
-            __web_url__,created,updated,ref,name,is_active,contact_name,contact_organisation,contact_mobile,contact_phone_bh,contact_phone_ah,contact_email,contact_email_cc,contact_address,autocomp_label,business_hours,report_requirements,report_attention,report_email_to,report_email_cc,report_manual,billing_organisation,billing_requirements,billing_attention,billing_email_to,billing_email_cc,billing_manual,billing_address,billing_fixedprice,quoting_autoreminders_enabled,quoting_requirements,notes,address,material_markup,extra_fields,primary_contact__email,sector,account,primary_contact,account_manager,billingcard,clientgroup,pricetier
+            created,updated,ref,name,is_active,contact_name,contact_organisation,contact_mobile,contact_phone_bh,contact_phone_ah,contact_email,contact_email_cc,contact_address,autocomp_label,business_hours,report_requirements,report_attention,report_email_to,report_email_cc,report_manual,billing_organisation,billing_requirements,billing_attention,billing_email_to,billing_email_cc,billing_manual,billing_address,billing_fixedprice,quoting_autoreminders_enabled,quoting_requirements,notes,address,material_markup,extra_fields,primary_contact__email,sector,account,primary_contact,account_manager,billingcard,clientgroup,pricetier
       record_selector:
         type: RecordSelector
         extractor:
@@ -1069,10 +1042,7 @@ streams:
                         type:
                           - string
                           - "null"
-          __web_url__:
-            type:
-              - string
-              - "null"
+
           created:
             type:
               - string
@@ -1229,12 +1199,6 @@ streams:
           - updated
         additionalProperties: true
     transformations:
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - __web_url__
-            value: "{{ record['attributes']['__web_url__'] }}"
       - type: AddFields
         fields:
           - type: AddedFieldDefinition
@@ -1719,7 +1683,7 @@ streams:
           ordering: "-updated"
           show_deleted: "true"
           fields[Property]: >-
-            id,__str__,__web_url__,access_code,access_inductionreq,access_logbookreq,access_note,access_procedure,access_schedule,access_signaturereq,address,agm_date,authorisation_ref,autocomp_label,billing_manual,billing_requirements,bsecure_latest_sticker_guid,bsecure_resolved_guid,building_classes,building_construction_class,building_era,building_part,building_size,building_sizesqm,building_stories_above_ground,building_stories_below_ground,building_tenancies,building_type,certification_date,client_ref,client_signature_required,cofo_date,cofo_location,cofo_number,coords,created,extra_fields,get_absolute_url,inactive_date,internal_note,is_compliant,local_government_area,name,ocsp_number,organisation,ref,report_manual,report_requirements,restricted_access_hours,review_date,round_number,safety_requirements,service_requirements,status,timezone,updated
+            id,access_code,access_inductionreq,access_logbookreq,access_note,access_procedure,access_schedule,access_signaturereq,address,agm_date,authorisation_ref,autocomp_label,billing_manual,billing_requirements,bsecure_latest_sticker_guid,bsecure_resolved_guid,building_classes,building_construction_class,building_era,building_part,building_size,building_sizesqm,building_stories_above_ground,building_stories_below_ground,building_tenancies,building_type,certification_date,client_ref,client_signature_required,cofo_date,cofo_location,cofo_number,coords,created,extra_fields,inactive_date,internal_note,is_compliant,local_government_area,name,ocsp_number,organisation,ref,report_manual,report_requirements,restricted_access_hours,review_date,round_number,safety_requirements,service_requirements,status,timezone,updated
       record_selector:
         type: RecordSelector
         extractor:
@@ -1740,14 +1704,7 @@ streams:
               - "null"
           id:
             type: string
-          __str__:
-            type:
-              - string
-              - "null"
-          __web_url__:
-            type:
-              - string
-              - "null"
+
           created:
             type:
               - string
@@ -1853,27 +1810,12 @@ streams:
             type:
               - string
               - "null"
-          get_absolute_url:
-            type:
-              - string
-              - "null"
+
         required:
           - id
           - updated
         additionalProperties: true
     transformations:
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - __str__
-            value: "{{ record['attributes']['__str__'] }}"
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - __web_url__
-            value: "{{ record['attributes']['__web_url__'] }}"
       - type: AddFields
         fields:
           - type: AddedFieldDefinition
@@ -2030,12 +1972,7 @@ streams:
             path:
               - bsecure_resolved_guid
             value: "{{ record['attributes']['bsecure_resolved_guid'] }}"
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - get_absolute_url
-            value: "{{ record['attributes']['get_absolute_url'] }}"
+
       - type: RemoveFields
         field_pointers:
           - - attributes
@@ -2369,7 +2306,7 @@ streams:
         request_parameters:
           ordering: "-updated"
           fields[Project]: >-
-            id,actual_completion_date,actual_start_date,category,created,description,expected_completion_date,expected_start_date,extra_fields,final_rebate_rate,get_absolute_url,is_active,name,order_no,ref,retention_date,retention_rate,scope_of_works,status,updated
+            id,actual_completion_date,actual_start_date,category,created,description,expected_completion_date,expected_start_date,extra_fields,final_rebate_rate,is_active,name,order_no,ref,retention_date,retention_rate,scope_of_works,status,updated
       record_selector:
         type: RecordSelector
         extractor:
@@ -2444,10 +2381,7 @@ streams:
             type:
               - string
               - "null"
-          get_absolute_url:
-            type:
-              - string
-              - "null"
+
         required:
           - id
           - updated
@@ -2537,12 +2471,6 @@ streams:
             path:
               - retention_date
             value: "{{ record['attributes']['retention_date'] }}"
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - get_absolute_url
-            value: "{{ record['attributes']['get_absolute_url'] }}"
       - type: RemoveFields
         field_pointers:
           - - attributes
@@ -2604,7 +2532,7 @@ streams:
         request_parameters:
           ordering: "-updated"
           fields[ServiceQuote]: >-
-            id,authorisation_date,authorisation_name,authorisation_note,authorisation_ref,client_contact_address,client_contact_ah,client_contact_bh,client_contact_mobile,client_contact_name,client_name,client_primary_email,created,description,expiry_date,extra_fields,get_absolute_url,internal_note,product_subtotal,property_access_code,property_access_note,property_access_procedure,property_access_schedule,property_address,property_building_construction_class,property_building_era,property_building_part,property_building_size,property_building_sizesqm,property_building_stories_above_ground,property_building_stories_below_ground,property_name,property_ocsp_number,ref,review_date,scope_of_works,scope_of_works_format,scope_of_works_markdown,sent_attachments,sent_dt,status,status_changed_approved,status_changed_submitted,template,template_name,terms_and_conditions,updated,upload_path,uuid,viewed_via_email_at,viewed_via_link_at
+            id,authorisation_date,authorisation_name,authorisation_note,authorisation_ref,client_contact_address,client_contact_ah,client_contact_bh,client_contact_mobile,client_contact_name,client_name,client_primary_email,created,description,expiry_date,extra_fields,internal_note,product_subtotal,property_access_code,property_access_note,property_access_procedure,property_access_schedule,property_address,property_building_construction_class,property_building_era,property_building_part,property_building_size,property_building_sizesqm,property_building_stories_above_ground,property_building_stories_below_ground,property_name,property_ocsp_number,ref,review_date,scope_of_works,scope_of_works_format,scope_of_works_markdown,sent_attachments,sent_dt,status,status_changed_approved,status_changed_submitted,template,template_name,terms_and_conditions,updated,upload_path,uuid,viewed_via_email_at,viewed_via_link_at
       record_selector:
         type: RecordSelector
         extractor:
@@ -2675,10 +2603,7 @@ streams:
             type:
               - string
               - "null"
-          get_absolute_url:
-            type:
-              - string
-              - "null"
+
           upload_path:
             type:
               - string
@@ -2778,12 +2703,7 @@ streams:
             path:
               - scope_of_works_format
             value: "{{ record['attributes']['scope_of_works_format'] }}"
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - get_absolute_url
-            value: "{{ record['attributes']['get_absolute_url'] }}"
+
       - type: AddFields
         fields:
           - type: AddedFieldDefinition
@@ -2869,7 +2789,7 @@ streams:
         request_parameters:
           ordering: "-updated"
           fields[DefectQuote]: >-
-            id,authorisation_amount,authorisation_date,authorisation_name,authorisation_note,authorisation_ref,created,date,description,due_date,email_template,expiry_date,extra_fields,get_absolute_url,internal_note,last_actioned,ref,reminder_email_template,review_date,scope_of_works,sent_attachments,sent_dt,severity,status,status_changed_approved,status_changed_declined,status_changed_submitted,updated,upload_path,uuid,viewed_via_email_at,viewed_via_link_at
+            id,authorisation_amount,authorisation_date,authorisation_name,authorisation_note,authorisation_ref,created,date,description,due_date,email_template,expiry_date,extra_fields,internal_note,last_actioned,ref,reminder_email_template,review_date,scope_of_works,sent_attachments,sent_dt,severity,status,status_changed_approved,status_changed_declined,status_changed_submitted,updated,upload_path,uuid,viewed_via_email_at,viewed_via_link_at
       record_selector:
         type: RecordSelector
         extractor:
@@ -2944,10 +2864,7 @@ streams:
             type:
               - string
               - "null"
-          get_absolute_url:
-            type:
-              - string
-              - "null"
+
         required:
           - id
           - updated
@@ -3037,12 +2954,7 @@ streams:
             path:
               - upload_path
             value: "{{ record['attributes']['upload_path'] }}"
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - get_absolute_url
-            value: "{{ record['attributes']['get_absolute_url'] }}"
+
       - type: RemoveFields
         field_pointers:
           - - attributes
@@ -3104,7 +3016,7 @@ streams:
         request_parameters:
           ordering: "-updated"
           fields[Supplier]: >-
-            id,__str__,__web_url__,abn,accounts_address,accounts_email,accounts_email_cc,accounts_fax,accounts_mobile,accounts_name,accounts_phone_ah,accounts_phone_bh,created,extra_fields,is_active,name,partner_uid,payment_day,payment_terms,purchasing_address,purchasing_email,purchasing_email_cc,purchasing_mobile,purchasing_name,ref,updated
+            id,abn,accounts_address,accounts_email,accounts_email_cc,accounts_fax,accounts_mobile,accounts_name,accounts_phone_ah,accounts_phone_bh,created,extra_fields,is_active,name,partner_uid,payment_day,payment_terms,purchasing_address,purchasing_email,purchasing_email_cc,purchasing_mobile,purchasing_name,ref,updated
       record_selector:
         type: RecordSelector
         extractor:
@@ -3125,14 +3037,7 @@ streams:
               - "null"
           id:
             type: string
-          __str__:
-            type:
-              - string
-              - "null"
-          __web_url__:
-            type:
-              - string
-              - "null"
+
           created:
             type:
               - string
@@ -3164,18 +3069,6 @@ streams:
           - updated
         additionalProperties: true
     transformations:
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - __str__
-            value: "{{ record['attributes']['__str__'] }}"
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - __web_url__
-            value: "{{ record['attributes']['__web_url__'] }}"
       - type: AddFields
         fields:
           - type: AddedFieldDefinition
@@ -3279,7 +3172,7 @@ streams:
         request_parameters:
           ordering: "-updated"
           fields[PurchaseOrder]: >-
-            id,all_goods_received,created,created_via,currency,date,delivery_instructions,description,display_type,estimated_delivery_date,extra_fields,fx_rate,get_absolute_url,get_email_display,get_partner_name,has_manually_added_costs,has_no_dockets,is_editable,is_pdf_downloadable,partner_uid,ref,status,supplier_ref,total,type,updated
+            id,all_goods_received,created,created_via,currency,date,delivery_instructions,description,display_type,estimated_delivery_date,extra_fields,fx_rate,get_email_display,get_partner_name,has_manually_added_costs,has_no_dockets,is_editable,is_pdf_downloadable,partner_uid,ref,status,supplier_ref,total,type,updated
       record_selector:
         type: RecordSelector
         extractor:
@@ -3334,10 +3227,7 @@ streams:
             type:
               - boolean
               - "null"
-          get_absolute_url:
-            type:
-              - string
-              - "null"
+
           created_via:
             type:
               - string
@@ -3419,12 +3309,7 @@ streams:
             path:
               - is_editable
             value: "{{ record['attributes']['is_editable'] }}"
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - get_absolute_url
-            value: "{{ record['attributes']['get_absolute_url'] }}"
+
       - type: AddFields
         fields:
           - type: AddedFieldDefinition
@@ -3511,7 +3396,7 @@ streams:
           ordering: "-updated"
           show_deleted: "true"
           fields[Asset]: >-
-            id,asset_condition,barcode,base_date,bsecure_latest_sticker_guid,bsecure_resolved_guid,compliant,contractor_note,contractor_ref,coord_lat,coord_lng,created,deleted,extra_fields,get_absolute_url,get_edit_url,get_service_url,get_standard_installation,get_standard_maintenance,get_standard_performance,guid,inspected_date,inspection_order,inspection_ref,installation_date,internal_note,is_active,is_notoncofo,is_silent,label,last_service_result,location,make,model,ref,serviced_date,signoff_date,signoff_method,size,standard,standard_installation,standard_performance,status,total_expected_life,updated,uptick_ref
+            id,asset_condition,barcode,base_date,bsecure_latest_sticker_guid,bsecure_resolved_guid,compliant,contractor_note,contractor_ref,coord_lat,coord_lng,created,deleted,extra_fields,get_edit_url,get_service_url,get_standard_installation,get_standard_maintenance,get_standard_performance,guid,inspected_date,inspection_order,inspection_ref,installation_date,internal_note,is_active,is_notoncofo,is_silent,label,last_service_result,location,make,model,ref,serviced_date,signoff_date,signoff_method,size,standard,standard_installation,standard_performance,status,total_expected_life,updated,uptick_ref
       record_selector:
         type: RecordSelector
         extractor:
@@ -3599,10 +3484,7 @@ streams:
             type:
               - string
               - "null"
-          get_absolute_url:
-            type:
-              - string
-              - "null"
+
           get_edit_url:
             type:
               - string
@@ -3718,12 +3600,7 @@ streams:
             path:
               - last_service_result
             value: "{{ record['attributes']['last_service_result'] }}"
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - get_absolute_url
-            value: "{{ record['attributes']['get_absolute_url'] }}"
+
       - type: AddFields
         fields:
           - type: AddedFieldDefinition
@@ -3962,7 +3839,7 @@ streams:
         request_parameters:
           ordering: "-updated"
           fields[BillingCard]: >-
-            id,__str__,__web_url__,abn,autocomp_label,created,default_taxcode,extra_fields,is_active,name,partner_uid,payment_day,payment_terms,postal_address,postal_ah,postal_attention,postal_bh,postal_email,postal_fax,postal_mobile,ref,site_address,site_attention,synced,updated
+            id,abn,autocomp_label,created,default_taxcode,extra_fields,is_active,name,partner_uid,payment_day,payment_terms,postal_address,postal_ah,postal_attention,postal_bh,postal_email,postal_fax,postal_mobile,ref,site_address,site_attention,synced,updated
       record_selector:
         type: RecordSelector
         extractor:
