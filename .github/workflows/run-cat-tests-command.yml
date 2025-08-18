@@ -33,17 +33,9 @@ jobs:
     name: "On-Demand CAT Tests"
     runs-on: ubuntu-24.04
     steps:
-      - name: Get job variables
-        id: job-vars
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        shell: bash
-        run: |
-          PR_JSON=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.inputs.pr }})
-          echo "repo=$(echo "$PR_JSON" | jq -r .head.repo.full_name)" >> $GITHUB_OUTPUT
-          echo "branch=$(echo "$PR_JSON" | jq -r .head.ref)" >> $GITHUB_OUTPUT
-          echo "pr_title=$(echo "$PR_JSON" | jq -r .title)" >> $GITHUB_OUTPUT
-          echo "run-url=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
+      - name: Resolve workflow variables
+        id: vars
+        uses: aaronsteers/resolve-ci-vars-action@v0
 
       - name: Append comment with job run link
         # If comment-id is not provided, this will create a new
@@ -54,7 +46,7 @@ jobs:
           comment-id: ${{ github.event.inputs.comment-id }}
           issue-number: ${{ github.event.inputs.pr }}
           body: |
-            > Connector CAT tests started... [Check job output.](${{ steps.job-vars.outputs.run-url }})
+            > Connector CAT tests started... [Check job output.](${{ steps.vars.outputs.run-url }})
             >
             > If the connector supports live tests or regression tests, you may want to run those now also:
             > - [Run Live Tests](https://github.com/airbytehq/airbyte/actions/workflows/live_tests.yml)
@@ -64,8 +56,8 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v4
         with:
-          repository: ${{ steps.job-vars.outputs.repo }}
-          ref: ${{ steps.job-vars.outputs.branch }}
+          repository: ${{ steps.vars.outputs.pr-source-repo-name-full }}
+          ref: ${{ steps.vars.outputs.pr-source-git-branch }}
           fetch-depth: 0
 
       - name: Run CAT tests with `airbyte-ci`
@@ -82,8 +74,8 @@ jobs:
           github_token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          git_branch: ${{ steps.job-vars.outputs.branch }}
-          git_revision: ${{ steps.job-vars.outputs.commit_id }}
+          git_branch: ${{ steps.vars.outputs.pr-source-git-branch }}
+          git_revision: ${{ steps.vars.outputs.pr-source-git-sha }}
           subcommand: "connectors --modified test --only-step=acceptance"
 
       - name: Append completion comment

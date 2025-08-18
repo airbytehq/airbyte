@@ -14,6 +14,10 @@ jobs:
     name: "Format Check"
     runs-on: ubuntu-24.04
     steps:
+      - name: Resolve workflow variables
+        id: vars
+        uses: aaronsteers/resolve-ci-vars-action@v0
+
       - uses: actions/checkout@v4
       - name: Setup Java
         uses: actions/setup-java@v3
@@ -59,5 +63,5 @@ jobs:
             {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"Formatting is broken on master! :bangbang: \n\n\"}},
             {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"_merged by_: *${{ github.actor }}* \n\"}},
             {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"<@${{ steps.match-github-to-slack-user.outputs.slack_user_ids }}> \n\"}},
-            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\" :octavia-shocked: <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|View Action Run> :octavia-shocked: \n\"}},
+            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\" :octavia-shocked: <${{ steps.vars.outputs.run-url }}|View Action Run> :octavia-shocked: \n\"}},
             {\"type\":\"divider\"}]}
