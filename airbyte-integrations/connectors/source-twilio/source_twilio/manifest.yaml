@@ -1,0 +1,1119 @@
+version: 1.3.1
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - accounts
+
+definitions:
+  base_requester:
+    type: HttpRequester
+    authenticator:
+      type: BasicHttpAuthenticator
+      password: '{{ config["auth_token"] }}'
+      username: '{{ config["account_sid"] }}'
+
+  base_stream:
+    type: DeclarativeStream
+    primary_key:
+      - sid
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - "{{ parameters.get('data_field') or parameters['name'] }}"
+        schema_normalization: Default
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        page_size_option:
+          type: RequestOption
+          field_name: PageSize
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 1000
+          cursor_value: '{{ response.get("meta", {}).get("next_page_url") or response.get("next_page_uri") }}'
+    transformations:
+      # Twilio API returns datetime in two formats:
+      #   - RFC2822, like "Fri, 11 Dec 2020 04:28:40 +0000";
+      #   - ISO8601, like "2020-12-11T04:29:09Z".
+      # We only transform RFC2822 values (detected by the presence of ", ").
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path: [date_created]
+            value: >-
+              {{
+                format_datetime(
+                  record['date_created'],
+                  "%Y-%m-%dT%H:%M:%SZ",
+                  "%a, %d %b %Y %H:%M:%S %z"
+                )
+                if record.get('date_created') and ', ' in record['date_created']
+                else record.get('date_created')
+              }}
+          - type: AddedFieldDefinition
+            path: [date_updated]
+            value: >-
+              {{
+                format_datetime(
+                  record['date_updated'],
+                  "%Y-%m-%dT%H:%M:%SZ",
+                  "%a, %d %b %Y %H:%M:%S %z"
+                )
+                if record.get('date_updated') and ', ' in record['date_updated']
+                else record.get('date_updated')
+              }}
+
+  accounts_stream:
+    $ref: "#/definitions/base_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/accounts"
+    $parameters:
+      url_base: https://api.twilio.com/2010-04-01/
+      name: accounts
+      path: Accounts.json
+
+  conversations_stream:
+    $ref: "#/definitions/base_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/conversations"
+    $parameters:
+      url_base: https://conversations.twilio.com/v1/
+      name: conversations
+      path: Conversations
+
+  flows_stream:
+    $ref: "#/definitions/base_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/flows"
+    $parameters:
+      url_base: https://studio.twilio.com/v1/
+      name: flows
+      path: Flows
+
+  verify_services_stream:
+    $ref: "#/definitions/base_stream"
+    retriever:
+      $ref: "#/definitions/base_stream/retriever"
+      paginator:
+        $ref: "#/definitions/base_stream/retriever/paginator"
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: '{{ response.get("meta", {}).get("next_page_url") or response.get("next_page_uri") }}'
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/verify_services"
+    $parameters:
+      url_base: https://verify.twilio.com/v2/
+      name: verify_services
+      data_field: services
+      path: Services
+
+  services_stream:
+    $ref: "#/definitions/base_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/services"
+    $parameters:
+      url_base: https://chat.twilio.com/v2/
+      name: services
+      path: Services
+
+  trunks_stream:
+    $ref: "#/definitions/base_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/trunks"
+    $parameters:
+      url_base: https://trunking.twilio.com/v1/
+      name: trunks
+      path: Trunks
+
+  users_stream:
+    $ref: "#/definitions/base_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/users"
+    $parameters:
+      url_base: https://conversations.twilio.com/v1/
+      name: users
+      path: Users
+
+streams:
+  - $ref: "#/definitions/accounts_stream"
+  - $ref: "#/definitions/conversations_stream"
+  - $ref: "#/definitions/flows_stream"
+  - $ref: "#/definitions/verify_services_stream"
+  - $ref: "#/definitions/services_stream"
+  - $ref: "#/definitions/trunks_stream"
+  - $ref: "#/definitions/users_stream"
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 3) }}"
+  max_concurrency: 40
+
+spec:
+  type: Spec
+  additionalProperties: true
+  documentation_url: https://docs.airbyte.com/integrations/sources/twilio
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - account_sid
+      - auth_token
+      - start_date
+    title: Twilio Spec
+    properties:
+      account_sid:
+        airbyte_secret: true
+        description: Twilio account SID
+        order: 1
+        title: Account ID
+        type: string
+      auth_token:
+        airbyte_secret: true
+        description: Twilio Auth Token.
+        order: 2
+        title: Auth Token
+        type: string
+      start_date:
+        description:
+          UTC date and time in the format 2020-10-01T00:00:00Z. Any data
+          before this date will not be replicated.
+        examples:
+          - "2020-10-01T00:00:00Z"
+        format: date-time
+        order: 3
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        title: Replication Start Date
+        type: string
+      lookback_window:
+        default: 0
+        description: How far into the past to look for records. (in minutes)
+        examples:
+          - 60
+        maximum: 576000
+        minimum: 0
+        order: 4
+        title: Lookback window
+        type: integer
+      num_worker:
+        type: integer
+        title: Number of concurrent workers
+        minimum: 1
+        maximum: 40
+        default: 3
+        examples: [1, 2, 3]
+        order: 5
+        description: The number of worker threads to use for the sync.
+
+schemas:
+  accounts:
+    properties:
+      auth_token:
+        description: The authentication token for the account
+        type:
+          - "null"
+          - string
+      date_created:
+        description: The timestamp when the account was created
+        format: date-time
+        type:
+          - "null"
+          - string
+      date_updated:
+        description: The timestamp when the account was last updated
+        format: date-time
+        type:
+          - "null"
+          - string
+      friendly_name:
+        description: A user-defined friendly name for the account
+        type:
+          - "null"
+          - string
+      owner_account_sid:
+        description: The SID of the owner account
+        type:
+          - "null"
+          - string
+      sid:
+        description: The unique identifier for the account
+        type:
+          - "null"
+          - string
+      status:
+        description: The current status of the account
+        type:
+          - "null"
+          - string
+      subresource_uris:
+        description: URIs for accessing various subresources related to the account
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          addresses:
+            type:
+              - "null"
+              - string
+          conferences:
+            type:
+              - "null"
+              - string
+          signing_keys:
+            type:
+              - "null"
+              - string
+          transcriptions:
+            type:
+              - "null"
+              - string
+          connect_apps:
+            type:
+              - "null"
+              - string
+          sip:
+            type:
+              - "null"
+              - string
+          authorized_connect_apps:
+            type:
+              - "null"
+              - string
+          usage:
+            type:
+              - "null"
+              - string
+          keys:
+            type:
+              - "null"
+              - string
+          applications:
+            type:
+              - "null"
+              - string
+          recordings:
+            type:
+              - "null"
+              - string
+          short_codes:
+            type:
+              - "null"
+              - string
+          calls:
+            type:
+              - "null"
+              - string
+          notifications:
+            type:
+              - "null"
+              - string
+          incoming_phone_numbers:
+            type:
+              - "null"
+              - string
+          queues:
+            type:
+              - "null"
+              - string
+          messages:
+            type:
+              - "null"
+              - string
+          outgoing_caller_ids:
+            type:
+              - "null"
+              - string
+          available_phone_numbers:
+            type:
+              - "null"
+              - string
+          balance:
+            type:
+              - "null"
+              - string
+      type:
+        description: The type of the account
+        type:
+          - "null"
+          - string
+      uri:
+        description: The URI for accessing the account resource
+        type:
+          - "null"
+          - string
+    type: object
+    additionalProperties: true
+    $schema: http://json-schema.org/schema#
+
+  conversations:
+    properties:
+      sid:
+        description: The unique identifier for the conversation.
+        type:
+          - "null"
+          - string
+      account_sid:
+        description: The unique identifier for the account associated with the conversation.
+        type:
+          - "null"
+          - string
+      chat_service_sid:
+        description:
+          The SID (Service Identifier) for the chat service to which the
+          conversation belongs.
+        type:
+          - "null"
+          - string
+      messaging_service_sid:
+        description: The SID for the messaging service associated with the conversation.
+        type:
+          - "null"
+          - string
+      friendly_name:
+        description: A human-readable name assigned to the conversation.
+        type:
+          - "null"
+          - string
+      unique_name:
+        description: A unique name assigned to the conversation for easy identification.
+        type:
+          - "null"
+          - string
+      attributes:
+        description: Additional attributes or metadata associated with the conversation.
+        type:
+          - "null"
+          - string
+      date_created:
+        description: The date and time when the conversation was created.
+        format: date-time
+        type:
+          - "null"
+          - string
+      date_updated:
+        description: The date and time when the conversation was last updated.
+        format: date-time
+        type:
+          - "null"
+          - string
+      state:
+        description: The current state of the conversation (e.g., active, inactive).
+        type:
+          - "null"
+          - string
+      timers:
+        description: Information about timers set for the conversation.
+        type:
+          - "null"
+          - object
+      bindings:
+        description: Information about the communication channels bound to the conversation.
+        type:
+          - "null"
+          - object
+      url:
+        description:
+          The URL endpoint for accessing or interacting with the conversation
+          data.
+        type:
+          - "null"
+          - string
+    type: object
+    additionalProperties: true
+    $schema: http://json-schema.org/schema#
+
+  flows:
+    $schema: http://json-schema.org/schema#
+    type: object
+    additionalProperties: true
+    properties:
+      sid:
+        description: Unique identifier for the flow.
+        type:
+          - "null"
+          - string
+      account_sid:
+        description: Unique identifier for the account associated with the flow.
+        type:
+          - "null"
+          - string
+      date_created:
+        description: Date and time when the flow was created.
+        format: date-time
+        type:
+          - "null"
+          - string
+      date_updated:
+        description: Date and time when the flow was last updated.
+        format: date-time
+        type:
+          - "null"
+          - string
+      friendly_name:
+        description: A user-friendly name given to the flow.
+        type:
+          - "null"
+          - string
+      status:
+        description: Status of the flow (e.g., active, inactive).
+        type:
+          - string
+          - "null"
+        enum:
+          - published
+          - draft
+      version:
+        description: Version number of the flow.
+        type:
+          - "null"
+          - integer
+      url:
+        description: URL endpoint for the flow.
+        type:
+          - "null"
+          - string
+      links:
+        description: Represents links related to the flow data.
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          steps:
+            description: Link to the steps included in the flow.
+            type:
+              - "null"
+              - string
+
+  verify_services:
+    $schema: http://json-schema.org/schema#
+    title: Verify - Services Schema
+    additionalProperties: true
+    type:
+      - "null"
+      - object
+    properties:
+      default_template_sid:
+        description:
+          The unique identifier for the default template used for verification
+          messages.
+        type:
+          - "null"
+          - string
+      tts_name:
+        description: The name used for text-to-speech (TTS) in verification calls.
+        type:
+          - "null"
+          - string
+      psd2_enabled:
+        description:
+          Indicates if PSD2 (Payment Services Directive 2) verification
+          is enabled.
+        type:
+          - "null"
+          - boolean
+      do_not_share_warning_enabled:
+        description:
+          Indicates if the 'do not share' warning is enabled for verification
+          codes.
+        type:
+          - "null"
+          - boolean
+      mailer_sid:
+        description:
+          Unique identifier for the mailer service associated with the
+          verify service.
+        type:
+          - "null"
+          - string
+      friendly_name:
+        description: A user-friendly name for the verify service.
+        type:
+          - "null"
+          - string
+      url:
+        description: The URL associated with the verify service.
+        type:
+          - "null"
+          - string
+      account_sid:
+        description:
+          Unique identifier for the account associated with the verify
+          service.
+        type:
+          - "null"
+          - string
+      date_updated:
+        description: The date and time when the verify service was last updated.
+        type:
+          - "null"
+          - string
+      totp:
+        description:
+          Object containing configuration settings for Time-based One-Time
+          Password (TOTP) verification method.
+        type:
+          - "null"
+          - object
+        properties:
+          time_step:
+            description: The time step interval for generating TOTP codes.
+            type:
+              - "null"
+              - number
+          skew:
+            description: The time skew allowed for TOTP code validation.
+            type:
+              - "null"
+              - number
+          code_length:
+            description:
+              The number of digits in the TOTP (Time-based One-Time Password)
+              code.
+            type:
+              - "null"
+              - number
+          issuer:
+            description: The issuer name included in TOTP messages.
+            type:
+              - "null"
+              - string
+      code_length:
+        description: The number of digits in the verification code sent to users.
+        type:
+          - "null"
+          - number
+      custom_code_enabled:
+        description: Indicates whether custom verification codes are enabled.
+        type:
+          - "null"
+          - boolean
+      sid:
+        description: Unique identifier for the verify service.
+        type:
+          - "null"
+          - string
+      push:
+        description:
+          Object containing configuration settings for push verification
+          method.
+        type:
+          - "null"
+          - object
+        properties:
+          apn_credential_sid:
+            description:
+              Unique identifier for the APN (Apple Push Notification) credential
+              associated with the verify service.
+            type:
+              - "null"
+              - string
+          include_date:
+            description: Indicates if the date should be included in push notifications.
+            type:
+              - "null"
+              - boolean
+          fcm_credential_sid:
+            description:
+              Unique identifier for the FCM (Firebase Cloud Messaging)
+              credential associated with the verify service.
+            type:
+              - "null"
+              - string
+      date_created:
+        description: The date and time when the verify service was created.
+        type:
+          - "null"
+          - string
+      dtmf_input_required:
+        description: Indicates whether DTMF input is required during verification.
+        type:
+          - "null"
+          - boolean
+      skip_sms_to_landlines:
+        description:
+          Indicates whether SMS messages are skipped for landline numbers
+          during verification.
+        type:
+          - "null"
+          - boolean
+      lookup_enabled:
+        description: Indicates if phone number lookup is enabled for the verify service.
+        type:
+          - "null"
+          - boolean
+      links:
+        description: Object containing related hyperlinks for verify_services data.
+        type:
+          - "null"
+          - object
+        properties:
+          verification_checks:
+            description: Links related to verification checks for the verify service.
+            type:
+              - "null"
+              - string
+          rate_limits:
+            description: Links related to rate limits for the verify service.
+            type:
+              - "null"
+              - string
+          entities:
+            description: Links related to entities associated with the verify service.
+            type:
+              - "null"
+              - string
+          access_tokens:
+            description: Links related to access tokens for the verify service.
+            type:
+              - "null"
+              - string
+          verifications:
+            description:
+              Links related to verifications performed using the verify
+              service.
+            type:
+              - "null"
+              - string
+          webhooks:
+            description: Links related to webhooks for the verify service.
+            type:
+              - "null"
+              - string
+          messaging_configurations:
+            description:
+              Links related to messaging configurations for the verify
+              service.
+            type:
+              - "null"
+              - string
+
+  services:
+    $schema: http://json-schema.org/schema#
+    title: Services Schema
+    additionalProperties: true
+    type:
+      - "null"
+      - object
+    properties:
+      account_sid:
+        description: The unique identifier of the account related to the service.
+        type:
+          - "null"
+          - string
+      consumption_report_interval:
+        description: The interval at which consumption reports are generated.
+        type:
+          - "null"
+          - number
+      date_created:
+        description: The date and time when the service was created.
+        type:
+          - "null"
+          - string
+        format: date-time
+      date_updated:
+        description: The date and time when the service was last updated.
+        type:
+          - "null"
+          - string
+        format: date-time
+      default_channel_creator_role_sid:
+        description: The default role assigned to the creator of a channel.
+        type:
+          - "null"
+          - string
+      default_channel_role_sid:
+        description: The default role assigned to all users in a channel.
+        type:
+          - "null"
+          - string
+      default_service_role_sid:
+        description: The default role assigned to users of the service.
+        type:
+          - "null"
+          - string
+      friendly_name:
+        description: A user-friendly name given to the service.
+        type:
+          - "null"
+          - string
+      limits:
+        description: Limits applied to the service.
+        type:
+          - "null"
+          - object
+        properties:
+          channel_members:
+            description: Maximum number of members allowed in a channel.
+            type:
+              - "null"
+              - number
+          user_channels:
+            description: Maximum number of channels a user can belong to.
+            type:
+              - "null"
+              - number
+      links:
+        description: Links to different resources related to the service.
+        type:
+          - "null"
+          - object
+        properties:
+          channels:
+            description: Links related to channels.
+            type:
+              - "null"
+              - string
+          users:
+            description: Links related to users.
+            type:
+              - "null"
+              - string
+          roles:
+            description: Links related to roles.
+            type:
+              - "null"
+              - string
+          bindings:
+            description: Links related to bindings.
+            type:
+              - "null"
+              - string
+      notifications:
+        description: Notification settings for users.
+        type:
+          - "null"
+          - object
+        properties:
+          users:
+            description: Users to receive notifications.
+            type:
+              - "null"
+              - string
+      post_webhook_url:
+        description: URL for the post webhook.
+        type:
+          - "null"
+          - string
+      pre_webhook_url:
+        description: URL for the pre webhook.
+        type:
+          - "null"
+          - string
+      pre_webhook_retry_count:
+        description: Number of retries for the pre webhook.
+        type:
+          - "null"
+          - number
+      post_webhook_retry_count:
+        description: Number of retries for the post webhook.
+        type:
+          - "null"
+          - number
+      reachability_enabled:
+        description: Flag indicating if reachability is enabled.
+        type:
+          - "null"
+          - boolean
+      read_status_enabled:
+        description: Flag indicating if read status is enabled.
+        type:
+          - "null"
+          - boolean
+      sid:
+        description: The unique identifier of the service.
+        type:
+          - "null"
+          - string
+      typing_indicator_timeout:
+        description: Timeout duration for typing indicators.
+        type:
+          - "null"
+          - number
+      url:
+        description: URL of the service.
+        type:
+          - "null"
+          - string
+      webhook_filters:
+        description: Filters for webhooks.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      webhook_method:
+        description: HTTP method used for webhooks.
+        type:
+          - "null"
+          - string
+      media:
+        description: Media settings for the service.
+        type:
+          - "null"
+          - object
+        properties:
+          size_limit_mb:
+            description: Maximum size limit for media in megabytes.
+            type:
+              - "null"
+              - number
+          compatibility_message:
+            description: Message to display for incompatible media.
+            type:
+              - "null"
+              - string
+
+  trunks:
+    $schema: http://json-schema.org/schema#
+    title: Trunks Schema
+    additionalProperties: true
+    type:
+      - "null"
+      - object
+    properties:
+      sid:
+        description: The unique identifier for the trunk.
+        type:
+          - "null"
+          - string
+      account_sid:
+        description: The unique identifier of the account associated with the trunk.
+        type:
+          - "null"
+          - string
+      domain_name:
+        description: The domain name associated with the trunk.
+        type:
+          - "null"
+          - string
+      disaster_recovery_method:
+        description: The method used for disaster recovery for this trunk.
+        type:
+          - "null"
+          - string
+      disaster_recovery_url:
+        description: The URL set up for disaster recovery in case of trunk failure.
+        type:
+          - "null"
+          - string
+      friendly_name:
+        description: A user-friendly name for the trunk.
+        type:
+          - "null"
+          - string
+      secure:
+        description: Indicates whether the trunk connection is secure.
+        type:
+          - "null"
+          - boolean
+      cnam_lookup_enabled:
+        description:
+          Indicates whether Caller ID Name (CNAM) lookup is enabled for
+          this trunk.
+        type:
+          - "null"
+          - boolean
+      recording:
+        description: Settings related to call recording on the trunk.
+        type:
+          - "null"
+          - object
+        properties:
+          mode:
+            description: The mode used for recording calls on this trunk.
+            type:
+              - "null"
+              - string
+          trim:
+            description: Indicates whether recorded calls should be trimmed.
+            type:
+              - "null"
+              - string
+      transfer_mode:
+        description: The mode used for call transfer on this trunk.
+        type:
+          - "null"
+          - string
+      transfer_caller_id:
+        description: The Caller ID used when transferring calls through this trunk.
+        type:
+          - "null"
+          - string
+      auth_type:
+        description: The authentication type used for this trunk.
+        type:
+          - "null"
+          - string
+      auth_type_set:
+        description: A set of authentication types associated with the trunk.
+        type:
+          - "null"
+          - array
+        items:
+          auth_type:
+            description: The authentication type used for each item in the set.
+            type:
+              - "null"
+              - string
+      date_created:
+        description: The date and time the trunk was created.
+        type:
+          - "null"
+          - string
+        format: date-time
+      date_updated:
+        description: The date and time the trunk was last updated.
+        type:
+          - "null"
+          - string
+        format: date-time
+      url:
+        description: The URL of the trunk.
+        type:
+          - "null"
+          - string
+      links:
+        description: Links to related resources associated with the trunk.
+        type:
+          - "null"
+          - object
+        properties:
+          origination_urls:
+            description:
+              Endpoint for managing origination URLs associated with the
+              trunk.
+            type:
+              - "null"
+              - string
+          credential_lists:
+            description:
+              Endpoint for managing credential lists associated with the
+              trunk.
+            type:
+              - "null"
+              - string
+          ip_access_control_lists:
+            description:
+              Endpoint for managing IP Access Control Lists (ACLs) associated
+              with the trunk.
+            type:
+              - "null"
+              - string
+          phone_numbers:
+            description: Endpoint for managing phone numbers associated with the trunk.
+            type:
+              - "null"
+              - string
+
+  users:
+    $schema: http://json-schema.org/schema#
+    title: Users Schema
+    additionalProperties: true
+    type:
+      - "null"
+      - object
+    properties:
+      is_notifiable:
+        description: Indicates whether the user is set to receive notifications
+        type:
+          - "null"
+          - string
+      date_updated:
+        description: The date and time when the user was last updated
+        type:
+          - "null"
+          - string
+      is_online:
+        description: Indicates whether the user is currently online
+        type:
+          - "null"
+          - string
+      friendly_name:
+        description: A user-friendly name for the user
+        type:
+          - "null"
+          - string
+      account_sid:
+        description: The unique identifier for the user's account
+        type:
+          - "null"
+          - string
+      url:
+        description: URL to access the user's detailed information
+        type:
+          - "null"
+          - string
+      date_created:
+        description: The date and time when the user was created
+        type:
+          - "null"
+          - string
+      role_sid:
+        description: The unique identifier for the role assigned to the user
+        type:
+          - "null"
+          - string
+      sid:
+        description: The unique identifier for the user
+        type:
+          - "null"
+          - string
+      attributes:
+        description: Additional attributes or metadata associated with the user
+        type:
+          - "null"
+          - string
+      identity:
+        description: The identity or username of the user
+        type:
+          - "null"
+          - string
+      chat_service_sid:
+        description:
+          The unique identifier for the chat service the user is associated
+          with
+        type:
+          - "null"
+          - string
+      links:
+        description: Contains URLs to related resources for the user data.
+        type:
+          - "null"
+          - object
+        properties:
+          user_conversations:
+            description: URL to retrieve the conversations associated with the user
+            type:
+              - "null"
+              - string

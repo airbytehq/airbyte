@@ -3,17 +3,16 @@
 #
 
 import datetime
-import logging
-from typing import Any, List, Mapping, Tuple
+from typing import Any, List, Mapping, Optional
 
 import pendulum
 
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
 from source_twilio.auth import HttpBasicAuthenticator
 from source_twilio.streams import (
-    Accounts,
     Addresses,
     Alerts,
     Applications,
@@ -26,10 +25,8 @@ from source_twilio.streams import (
     Conferences,
     ConversationMessages,
     ConversationParticipants,
-    Conversations,
     DependentPhoneNumbers,
     Executions,
-    Flows,
     IncomingPhoneNumbers,
     Keys,
     MessageMedia,
@@ -38,35 +35,20 @@ from source_twilio.streams import (
     Queues,
     Recordings,
     Roles,
-    Services,
     Step,
     Transcriptions,
-    Trunks,
     UsageRecords,
     UsageTriggers,
     UserConversations,
-    Users,
-    VerifyServices,
 )
 
 
 RETENTION_WINDOW_LIMIT = 400
 
 
-class SourceTwilio(AbstractSource):
-    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
-        try:
-            auth = HttpBasicAuthenticator(
-                (
-                    config["account_sid"],
-                    config["auth_token"],
-                ),
-            )
-            accounts_gen = Accounts(authenticator=auth).read_records(sync_mode=SyncMode.full_refresh)
-            next(accounts_gen)
-            return True, None
-        except Exception as error:
-            return False, f"Unable to connect to Twilio API with the provided credentials - {repr(error)}"
+class SourceTwilio(YamlDeclarativeSource):
+    def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: TState, **kwargs):
+        super().__init__(catalog=catalog, config=config, state=state, **{"path_to_yaml": "manifest.yaml"})
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
@@ -94,8 +76,8 @@ class SourceTwilio(AbstractSource):
                 pendulum.now() - datetime.timedelta(days=RETENTION_WINDOW_LIMIT - 1)
             ).to_iso8601_string()
 
-        streams = [
-            Accounts(**full_refresh_stream_kwargs),
+        streams = super().streams(config=config)
+        streams += [
             Addresses(**full_refresh_stream_kwargs),
             Alerts(**incremental_stream_kwargs),
             Applications(**full_refresh_stream_kwargs),
@@ -106,11 +88,9 @@ class SourceTwilio(AbstractSource):
             Calls(**incremental_stream_kwargs),
             ConferenceParticipants(**full_refresh_stream_kwargs),
             Conferences(**incremental_stream_kwargs),
-            Conversations(**full_refresh_stream_kwargs),
             ConversationMessages(**full_refresh_stream_kwargs),
             ConversationParticipants(**full_refresh_stream_kwargs),
             DependentPhoneNumbers(**full_refresh_stream_kwargs),
-            Flows(**full_refresh_stream_kwargs),
             Executions(**full_refresh_stream_kwargs),
             IncomingPhoneNumbers(**full_refresh_stream_kwargs),
             Keys(**full_refresh_stream_kwargs),
@@ -120,14 +100,10 @@ class SourceTwilio(AbstractSource):
             Queues(**full_refresh_stream_kwargs),
             Recordings(**incremental_stream_kwargs),
             Roles(**full_refresh_stream_kwargs),
-            Services(**full_refresh_stream_kwargs),
             Step(**full_refresh_stream_kwargs),
             Transcriptions(**full_refresh_stream_kwargs),
-            Trunks(**full_refresh_stream_kwargs),
             UsageRecords(**incremental_stream_kwargs),
             UsageTriggers(**full_refresh_stream_kwargs),
-            Users(**full_refresh_stream_kwargs),
             UserConversations(**full_refresh_stream_kwargs),
-            VerifyServices(**full_refresh_stream_kwargs),
         ]
         return streams
