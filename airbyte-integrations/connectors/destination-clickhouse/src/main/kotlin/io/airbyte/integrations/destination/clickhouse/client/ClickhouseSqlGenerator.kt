@@ -43,7 +43,8 @@ class ClickhouseSqlGenerator(
 ) {
 
     /**
-     * This extension is here to avoid writing `.also { log.info { it }}` for every returned string we want to log
+     * This extension is here to avoid writing `.also { log.info { it }}` for every returned string
+     * we want to log
      */
     private fun String.andLog(): String {
         log.info { this }
@@ -96,7 +97,9 @@ class ClickhouseSqlGenerator(
             } else {
                 pksAsString
             }})
-            """.trimIndent().andLog()
+            """
+            .trimIndent()
+            .andLog()
     }
 
     internal fun extractPks(
@@ -122,7 +125,9 @@ class ClickhouseSqlGenerator(
         """
         EXCHANGE TABLES `${sourceTableName.namespace}`.`${sourceTableName.name}`
             AND `${targetTableName.namespace}`.`${targetTableName.name}`;
-        """.trimIndent().andLog()
+        """
+            .trimIndent()
+            .andLog()
 
     fun copyTable(
         columnNameMapping: ColumnNameMapping,
@@ -147,7 +152,9 @@ class ClickhouseSqlGenerator(
                 $COLUMN_NAME_AB_GENERATION_ID,
                 $columnNames
             FROM `${sourceTableName.namespace}`.`${sourceTableName.name}`
-            """.trimIndent().andLog()
+            """
+            .trimIndent()
+            .andLog()
     }
 
     fun upsertTable(
@@ -244,7 +251,9 @@ class ClickhouseSqlGenerator(
                  new_record.$COLUMN_NAME_AB_EXTRACTED_AT,
                  new_record.$COLUMN_NAME_AB_GENERATION_ID
                );
-               """.trimIndent().andLog()
+               """
+            .trimIndent()
+            .andLog()
     }
 
     /**
@@ -301,7 +310,9 @@ class ClickhouseSqlGenerator(
                SELECT $columnList $COLUMN_NAME_AB_META, $COLUMN_NAME_AB_RAW_ID, $COLUMN_NAME_AB_EXTRACTED_AT, $COLUMN_NAME_AB_GENERATION_ID
                FROM numbered_rows
                WHERE row_number = 1
-               """.trimIndent().andLog()
+               """
+            .trimIndent()
+            .andLog()
     }
 
     fun countTable(
@@ -310,7 +321,9 @@ class ClickhouseSqlGenerator(
     ): String =
         """
         SELECT count(1) $alias FROM `${tableName.namespace}`.`${tableName.name}`;
-    """.trimMargin().andLog()
+    """
+            .trimMargin()
+            .andLog()
 
     fun getGenerationId(
         tableName: TableName,
@@ -318,7 +331,9 @@ class ClickhouseSqlGenerator(
     ): String =
         """
         SELECT $COLUMN_NAME_AB_GENERATION_ID $alias FROM `${tableName.namespace}`.`${tableName.name}` LIMIT 1;
-    """.trimIndent().andLog()
+    """
+            .trimIndent()
+            .andLog()
 
     private fun columnsAndTypes(
         stream: DestinationStream,
