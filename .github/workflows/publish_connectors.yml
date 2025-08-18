@@ -145,6 +145,7 @@ jobs:
           ./poe-tasks/publish-python-registry.sh --name ${{ matrix.connector }}
         env:
           PYTHON_REGISTRY_TOKEN: ${{ secrets.PYPI_TOKEN }}
+        continue-on-error: true # We allow this to fail because we are testing this step. We should remove this once we are sure it works.
 
       - name: Publish to Python Registry [Manual]
         id: publish-python-registry-manual
@@ -162,6 +163,7 @@ jobs:
           ./poe-tasks/publish-python-registry.sh --name ${{ matrix.connector }} $PRE_RELEASE_FLAG
         env:
           PYTHON_REGISTRY_TOKEN: ${{ secrets.PYPI_TOKEN }}
+        continue-on-error: true # We allow this to fail because we are testing this step. We should remove this once we are sure it works.
 
       - name: Build and publish JVM connectors images [On merge to master]
         id: build-and-publish-JVM-connectors-images-master
