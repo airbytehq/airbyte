@@ -36,7 +36,6 @@ class DirectLoadTableAppendStreamLoader(
         logger.info {
             "AppendStreamLoader starting for stream ${stream.mappedDescriptor.toPrettyString()}"
         }
-        logger.error { "Real table = ${initialStatus.realTable}" }
         if (initialStatus.realTable == null) {
             sqlTableOperations.createTable(stream, realTableName, columnNameMapping, replace = true)
         } else {
