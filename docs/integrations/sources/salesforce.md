@@ -30,7 +30,7 @@ Follow the instructions below to create a Minimum Access standard profile and as
 
 While you can set up the Salesforce connector using any Salesforce user with read permission, we recommend creating a dedicated user with the Minimum Access standard profile for Airbyte. This allows you to granularly control the data Airbyte can read.
 
-Using Permission Sets, you should grant this user read access to the data you want Airbyte to have access to. Learn more about Permission sets by referring to [Salesforce's documentation](https://help.salesforce.com/s/articleView?id=sf.perm_sets_overview.htm&type=5).
+Using Permission Sets, you should grant this user read access to the data you want Airbyte to have access to. Learn more about Permission sets by referring to [Salesforce's documentation](https://help.salesforce.com/s/articleView?id=sf.perm_sets_overview.htm&type=5). If you want to sync permissions data from Salesforce, you also need the [permissions necessary to sync security-related data](#permissions-to-sync-permissions).
 
 [Log in to Salesforce](https://login.salesforce.com/) with an admin account.
 
@@ -166,11 +166,11 @@ Salesforce provides security data through its standard object model:
 2. **Permission-Based Access**: Which security objects are available depends on the permissions granted to the Salesforce user used for authentication.
 3. **Standard Object Syncing**: Security artifacts are available as regular Salesforce objects through the same sync mechanisms as other business data.
 
-Note:
+:::note
+Security objects can be large datasets in organizations with many users, so monitor your Salesforce API limits accordingly.
+:::
 
-- Security objects can be large datasets in organizations with many users, so monitor your Salesforce API limits accordingly.
-
-### Permissions Need to Sync Permissions Data
+### Permissions Needed to Sync Permissions Data {#permissions-to-sync-permissions}
 
 To sync security-related data from Salesforce, the authenticated Salesforce user must have appropriate permissions to read security objects. Consider granting these permissions through a dedicated permission set:
 
