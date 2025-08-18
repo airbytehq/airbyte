@@ -45,6 +45,8 @@ class PipelineCompletionHandlerTest {
                 stateHistogramStore = stateHistogramStore,
                 reconciler = reconciler
             )
+
+        coEvery { reconciler.disable() } just Runs
     }
 
     @Test
@@ -56,6 +58,7 @@ class PipelineCompletionHandlerTest {
         val thrownException =
             assertThrows<RuntimeException> { pipelineCompletionHandler.apply(testException) }
 
+        coVerify(exactly = 1) { reconciler.disable() }
         assertEquals("Test exception", thrownException.message)
     }
 
@@ -89,7 +92,6 @@ class PipelineCompletionHandlerTest {
         coEvery { mockAggregate1.flush() } just Runs
         coEvery { mockAggregate2.flush() } just Runs
         every { stateHistogramStore.acceptFlushedCounts(any()) } returns mockk()
-        coEvery { reconciler.disable() } just Runs
         every { reconciler.flushCompleteStates() } just Runs
 
         // When
@@ -108,7 +110,6 @@ class PipelineCompletionHandlerTest {
     fun `apply should handle empty aggregates list`() = runTest {
         // Given
         every { aggStore.getAll() } returns emptyList()
-        coEvery { reconciler.disable() } just Runs
         every { reconciler.flushCompleteStates() } just Runs
 
         // When
@@ -139,12 +140,12 @@ class PipelineCompletionHandlerTest {
 
         every { aggStore.getAll() } returns listOf(aggregateEntry)
         coEvery { mockAggregate.flush() } throws flushException
-        coEvery { reconciler.disable() } just Runs
         every { reconciler.flushCompleteStates() } just Runs
 
         // When & Then
         assertThrows<RuntimeException> { pipelineCompletionHandler.apply(null) }
 
+        coVerify(exactly = 1) { reconciler.disable() }
         coVerify(exactly = 1) { mockAggregate.flush() }
         // Note: acceptFlushedCounts should not be called if flush fails
         verify(exactly = 0) { stateHistogramStore.acceptFlushedCounts(any()) }

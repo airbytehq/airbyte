@@ -24,6 +24,8 @@ class PipelineCompletionHandler(
     suspend fun apply(
         cause: Throwable?,
     ) = coroutineScope {
+        reconciler.disable()
+
         if (cause != null) {
             log.error { "Destination Pipeline Completed — Exceptionally" }
             throw cause
@@ -43,7 +45,6 @@ class PipelineCompletionHandler(
             }
             .awaitAll()
 
-        reconciler.disable()
         reconciler.flushCompleteStates()
     }
 }
