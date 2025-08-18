@@ -68,6 +68,7 @@ class ClickhouseSqlGenerator(
             }
 
         val columnDeclarations = columnsAndTypes(stream, columnNameMapping, pks)
+        log.error { columnDeclarations }
 
         val forceCreateTable = if (replace) "OR REPLACE" else ""
 
@@ -340,6 +341,7 @@ class ClickhouseSqlGenerator(
         columnNameMapping: ColumnNameMapping,
         pks: List<String>,
     ): String {
+        log.info { stream.schema }
         return stream.schema
             .asColumns()
             .map { (fieldName, type) ->
@@ -352,6 +354,7 @@ class ClickhouseSqlGenerator(
                 }"
             }
             .joinToString(",\n")
+            .andLog()
     }
 
     fun alterTable(alterationSummary: AlterationSummary, tableName: TableName): String {

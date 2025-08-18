@@ -16,6 +16,7 @@ import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.StreamStateStore
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 /**
  * @param directLoadTableTempTableNameMigration Iff you are implementing a destination which
@@ -32,6 +33,8 @@ class DirectLoadTableWriter(
     private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
     private val tempTableNameGenerator: TempTableNameGenerator,
 ) : DestinationWriter {
+    val log = KotlinLogging.logger {  }
+
     private lateinit var initialStatuses: Map<DestinationStream, DirectLoadInitialStatus>
     override suspend fun setup() {
         val namespaces =
@@ -39,6 +42,7 @@ class DirectLoadTableWriter(
         destinationHandler.createNamespaces(namespaces + listOf(internalNamespace))
 
         initialStatuses = stateGatherer.gatherInitialStatus(names)
+        log.error { "Initial statuses: $initialStatuses" }
     }
 
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {

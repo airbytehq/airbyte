@@ -35,6 +35,7 @@ class ClickHouseWriter(
             .forEach { clickhouseClient.createNamespace(it) }
 
         initialStatuses = stateGatherer.gatherInitialStatus(names)
+        println("Initial statuses: $initialStatuses")
     }
 
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {

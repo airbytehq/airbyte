@@ -33,6 +33,7 @@ class AggregateStore(
     fun acceptFor(key: StoreKey, record: RecordDTO) {
         val (agg, histogram, timeTrigger, countTrigger, bytesTrigger) = getOrCreate(key)
 
+        log.error { "Accepting for store key $key" }
         agg.accept(record)
         histogram.increment(record.partitionKey)
         countTrigger.increment(1)
