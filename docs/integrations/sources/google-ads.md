@@ -335,6 +335,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.2 | 2025-08-16 | [64987](https://github.com/airbytehq/airbyte/pull/64987) | Update dependencies |
 | 4.0.1 | 2025-08-09 | [64612](https://github.com/airbytehq/airbyte/pull/64612) | Update dependencies |
 | 4.0.0 | 2025-08-06 | [64512](https://github.com/airbytehq/airbyte/pull/64512) | Update API version to v20 |
 | 3.15.0 | 2025-08-04 | [64495](https://github.com/airbytehq/airbyte/pull/64495) | Promoting release candidate 3.15.0-rc.1 to a main version. |
