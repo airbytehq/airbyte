@@ -315,7 +315,7 @@ jobs:
             metadata_service generate-registry-entry \
             $PRE_RELEASE_TAG \
             prod-airbyte-cloud-connector-metadata-service \
-            ${{ matrix.connector }} \
+            "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
             "spec.json" \
             oss
         env:
@@ -341,7 +341,7 @@ jobs:
             metadata_service generate-registry-entry \
             $PRE_RELEASE_TAG \
             prod-airbyte-cloud-connector-metadata-service \
-            ${{ matrix.connector }} \
+            "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
             "spec.cloud.json" \
             cloud
         env:

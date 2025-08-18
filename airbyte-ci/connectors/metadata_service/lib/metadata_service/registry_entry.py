@@ -425,7 +425,7 @@ def _persist_connector_registry_entry(bucket_name: str, registry_entry: Polymorp
 
 @sentry_sdk.trace
 def generate_and_persist_registry_entry(
-    bucket_name: str, connector_name: str, spec_path: pathlib.Path, registry_type: str, pre_release_tag: str | None
+    bucket_name: str, repo_metadata_file_path: pathlib.Path, spec_path: pathlib.Path, registry_type: str, pre_release_tag: str | None
 ) -> None:
     """Generate and persist the connector registry entry to the GCS bucket.
 
@@ -435,21 +435,21 @@ def generate_and_persist_registry_entry(
         registry_type (str): The registry type.
         pre_release_tag (str): The prerelease image tag ("1.2.3-dev.abcde12345"), or None. If set to None, will use the image tag from the metadata file.
     """
+    repo_metadata_dict = _get_and_parse_yaml_file(repo_metadata_file_path)
+    docker_repository = repo_metadata_dict["data"]["dockerRepository"]
     if pre_release_tag is not None:
         # We have a prerelease tag. Use it.
         docker_image_tag = pre_release_tag
     else:
         # No prerelease tag supplied - read the current version from connector metadata
-        repo_metadata_file_path = pathlib.Path(f"{CONNECTORS_PATH}/{connector_name}/{METADATA_FILE_NAME}")
-        repo_metadata_dict = _get_and_parse_yaml_file(repo_metadata_file_path)
-        docker_image_tag = repo_metadata_dict["dockerImageTag"]
+        docker_image_tag = repo_metadata_dict["data"]["dockerImageTag"]
 
     gcs_client = get_gcs_storage_client(gcs_creds=os.environ.get("GCS_CREDENTIALS"))
     bucket = gcs_client.bucket(bucket_name)
-    metadata_blob = bucket.blob(f"{METADATA_FOLDER}/{connector_name}/{docker_image_tag}/{METADATA_FILE_NAME}")
+    metadata_blob = bucket.blob(f"{METADATA_FOLDER}/{docker_repository}/{docker_image_tag}/{METADATA_FILE_NAME}")
     metadata_dict = yaml.safe_load(metadata_blob.download_as_string())
 
-    message = f"*🤖 🟡 _Registry Entry Generation_ STARTED*:\nRegistry Entry: `{registry_type}.json`\nConnector: `{metadata_dict['data']['dockerRepository']}`\nGCS Bucket: `{bucket_name}`."
+    message = f"*🤖 🟡 _Registry Entry Generation_ STARTED*:\nRegistry Entry: `{registry_type}.json`\nConnector: `{docker_repository}`\nGCS Bucket: `{bucket_name}`."
     send_slack_message(PUBLISH_UPDATE_CHANNEL, message)
 
     # If the connector is not enabled on the given registry, skip generateing and persisting the registry entry.
