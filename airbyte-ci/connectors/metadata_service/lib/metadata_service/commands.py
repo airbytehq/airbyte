@@ -205,22 +205,21 @@ def generate_specs_secrets_mask(bucket_name: str):
 
 @metadata_service.command(help="Generate the registry entry and persist it to GCS.")
 @click.argument("bucket-name", type=click.STRING, required=True)
-@click.argument("metadata-file-path", type=click.Path(exists=True, path_type=pathlib.Path), required=True)
+@click.argument("connector-name", type=click.STRING, required=True)
 @click.argument("spec-path", type=click.Path(exists=True, path_type=pathlib.Path), required=True)
 @click.argument("registry-type", type=click.Choice(VALID_REGISTRIES), required=True)
 @click.option("--pre-release-tag", type=click.STRING, required=False, default=None, help="The prerelease tag of the connector")
 @sentry_sdk.trace
 def generate_registry_entry(
-    bucket_name: str, metadata_file_path: pathlib.Path, spec_path: pathlib.Path, registry_type: str, pre_release_tag: str | None
+    bucket_name: str, connector_name: str, spec_path: pathlib.Path, registry_type: str, pre_release_tag: str | None
 ):
     # Set Sentry context for the generate_registry_entry command
     sentry_sdk.set_tag("command", "generate_registry_entry")
     sentry_sdk.set_tag("bucket_name", bucket_name)
-    sentry_sdk.set_tag("metadata_file_path", str(metadata_file_path))
 
     logger.info("Starting registry entry generation and upload process.")
     try:
-        generate_and_persist_registry_entry(bucket_name, metadata_file_path, spec_path, registry_type, pre_release_tag)
+        generate_and_persist_registry_entry(bucket_name, connector_name, spec_path, registry_type, pre_release_tag)
         sentry_sdk.set_tag("operation_success", True)
         logger.info("Registry entry generation and upload process completed successfully.")
     except Exception as e:

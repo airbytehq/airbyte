@@ -4,6 +4,7 @@
 
 import datetime
 
+CONNECTORS_PATH = "airbyte-integrations/connectors"
 METADATA_FILE_NAME = "metadata.yaml"
 MANIFEST_FILE_NAME = "manifest.yaml"
 COMPONENTS_PY_FILE_NAME = "components.py"

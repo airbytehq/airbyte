@@ -19,6 +19,7 @@ from pydash import set_with
 from metadata_service.constants import (
     CONNECTOR_DEPENDENCY_FILE_NAME,
     CONNECTOR_DEPENDENCY_FOLDER,
+    CONNECTORS_PATH,
     DEFAULT_ASSET_URL,
     ICON_FILE_NAME,
     METADATA_CDN_BASE_URL,
@@ -41,7 +42,7 @@ PolymorphicRegistryEntry = Union[ConnectorRegistrySourceDefinition, ConnectorReg
 TaggedRegistryEntry = Tuple[ConnectorTypes, PolymorphicRegistryEntry]
 
 
-def _apply_metadata_overrides(metadata_data: dict, registry_type: str, bucket_name: str) -> dict:
+def _apply_metadata_overrides(metadata_data: dict, registry_type: str, bucket_name: str, metadata_blob: storage.Blob) -> dict:
     connector_type = metadata_data["connectorType"]
 
     overridden_metadata_data = _apply_overrides_from_registry(metadata_data, registry_type)
@@ -67,7 +68,7 @@ def _apply_metadata_overrides(metadata_data: dict, registry_type: str, bucket_na
     overridden_metadata_data["public"] = True
 
     # Add generated fields for source file metadata and git
-    overridden_metadata_data["generated"] = _apply_generated_fields(overridden_metadata_data, bucket_name)
+    overridden_metadata_data["generated"] = _apply_generated_fields(overridden_metadata_data, bucket_name, metadata_blob)
 
     # Add Dependency information
     overridden_metadata_data["packageInfo"] = _apply_package_info_fields(overridden_metadata_data, bucket_name)
@@ -115,7 +116,7 @@ def _apply_overrides_from_registry(metadata_data: dict, override_registry_key: s
 
 
 @deep_copy_params
-def _apply_generated_fields(metadata_data: dict, bucket_name: str) -> dict:
+def _apply_generated_fields(metadata_data: dict, bucket_name: str, metadata_blob: storage.Blob) -> dict:
     """Apply generated fields to the metadata data field.
 
     Args:
@@ -126,13 +127,15 @@ def _apply_generated_fields(metadata_data: dict, bucket_name: str) -> dict:
     """
     generated_fields = metadata_data.get("generated") or {}
 
-    metadata_file_path = f"{METADATA_FOLDER}/{metadata_data['dockerRepository']}/{metadata_data['dockerImageTag']}/{METADATA_FILE_NAME}"
-
     # Add the source file metadata
-    generated_fields = set_with(generated_fields, "source_file_info.metadata_file_path", metadata_file_path, default_none_to_dict)
+    # on a GCS blob, the "name" is actually the full path
+    generated_fields = set_with(generated_fields, "source_file_info.metadata_file_path", metadata_blob.name, default_none_to_dict)
     generated_fields = set_with(generated_fields, "source_file_info.metadata_bucket_name", bucket_name, default_none_to_dict)
     generated_fields = set_with(
         generated_fields, "source_file_info.registry_entry_generated_at", datetime.datetime.now().isoformat(), default_none_to_dict
+    )
+    generated_fields = set_with(
+        generated_fields, "source_file_info.metadata_last_modified", metadata_blob.updated.isoformat(), default_none_to_dict
     )
 
     return generated_fields
@@ -368,7 +371,7 @@ def _get_connector_type_from_registry_entry(registry_entry: dict) -> TaggedRegis
         raise Exception("Could not determine connector type from registry entry")
 
 
-def _get_registry_entry_blob_paths(metadata_dict: dict, registry_type: str, pre_release_tag: str | None) -> List[str]:
+def _get_registry_entry_blob_paths(metadata_dict: dict, registry_type: str, docker_image_tag: str, is_prerelease: bool) -> List[str]:
     """
     Builds the registry entry paths for the registry entries.
 
@@ -379,27 +382,22 @@ def _get_registry_entry_blob_paths(metadata_dict: dict, registry_type: str, pre_
     Returns:
         List[str]: The registry entry paths.
     """
+    docker_repository = metadata_dict["data"]["dockerRepository"]
     registry_entry_paths = []
-    if pre_release_tag is not None:
-        dev_registry_entry_path = f"{METADATA_FOLDER}/{metadata_dict['data']['dockerRepository']}/{pre_release_tag}/{registry_type}.json"
+    if is_prerelease:
+        dev_registry_entry_path = f"{METADATA_FOLDER}/{docker_repository}/{docker_image_tag}/{registry_type}.json"
         registry_entry_paths.append(dev_registry_entry_path)
 
     elif "-rc" not in metadata_dict["data"]["dockerImageTag"]:
-        latest_registry_entry_path = f"{METADATA_FOLDER}/{metadata_dict['data']['dockerRepository']}/latest/{registry_type}.json"
-        versioned_registry_entry_path = (
-            f"{METADATA_FOLDER}/{metadata_dict['data']['dockerRepository']}/{metadata_dict['data']['dockerImageTag']}/{registry_type}.json"
-        )
+        latest_registry_entry_path = f"{METADATA_FOLDER}/{docker_repository}/latest/{registry_type}.json"
+        versioned_registry_entry_path = f"{METADATA_FOLDER}/{docker_repository}/{docker_image_tag}/{registry_type}.json"
 
         registry_entry_paths.append(latest_registry_entry_path)
         registry_entry_paths.append(versioned_registry_entry_path)
 
     elif "-rc" in metadata_dict["data"]["dockerImageTag"]:
-        release_candidate_registry_entry_path = (
-            f"{METADATA_FOLDER}/{metadata_dict['data']['dockerRepository']}/release_candidate/{registry_type}.json"
-        )
-        versioned_registry_entry_path = (
-            f"{METADATA_FOLDER}/{metadata_dict['data']['dockerRepository']}/{metadata_dict['data']['dockerImageTag']}/{registry_type}.json"
-        )
+        release_candidate_registry_entry_path = f"{METADATA_FOLDER}/{docker_repository}/release_candidate/{registry_type}.json"
+        versioned_registry_entry_path = f"{METADATA_FOLDER}/{docker_repository}/{docker_image_tag}/{registry_type}.json"
         registry_entry_paths.append(release_candidate_registry_entry_path)
 
     return registry_entry_paths
@@ -427,32 +425,43 @@ def _persist_connector_registry_entry(bucket_name: str, registry_entry: Polymorp
 
 @sentry_sdk.trace
 def generate_and_persist_registry_entry(
-    bucket_name: str, metadata_file_path: pathlib.Path, spec_path: pathlib.Path, registry_type: str, pre_release_tag: str | None
+    bucket_name: str, connector_name: str, spec_path: pathlib.Path, registry_type: str, pre_release_tag: str | None
 ) -> None:
     """Generate and persist the connector registry entry to the GCS bucket.
 
     Args:
         bucket_name (str): The name of the GCS bucket.
-        metadata_file_path (pathlib.Path): The path to the metadata file.
         spec_path (pathlib.Path): The path to the spec file.
         registry_type (str): The registry type.
         pre_release_tag (str): The prerelease image tag ("1.2.3-dev.abcde12345"), or None. If set to None, will use the image tag from the metadata file.
     """
+    if pre_release_tag is not None:
+        # We have a prerelease tag. Use it.
+        docker_image_tag = pre_release_tag
+    else:
+        # No prerelease tag supplied - read the current version from connector metadata
+        repo_metadata_file_path = pathlib.Path(f"{CONNECTORS_PATH}/{connector_name}/{METADATA_FILE_NAME}")
+        repo_metadata_dict = _get_and_parse_yaml_file(repo_metadata_file_path)
+        docker_image_tag = repo_metadata_dict["dockerImageTag"]
 
-    # It can be assumed the metadata file has already been validated before getting to this stage.
-    metadata_dict = _get_and_parse_yaml_file(metadata_file_path)
+    gcs_client = get_gcs_storage_client(gcs_creds=os.environ.get("GCS_CREDENTIALS"))
+    bucket = gcs_client.bucket(bucket_name)
+    metadata_blob = bucket.blob(f"{METADATA_FOLDER}/{connector_name}/{docker_image_tag}/{METADATA_FILE_NAME}")
+    metadata_dict = yaml.safe_load(metadata_blob.download_as_string())
 
     message = f"*🤖 🟡 _Registry Entry Generation_ STARTED*:\nRegistry Entry: `{registry_type}.json`\nConnector: `{metadata_dict['data']['dockerRepository']}`\nGCS Bucket: `{bucket_name}`."
     send_slack_message(PUBLISH_UPDATE_CHANNEL, message)
 
     # If the connector is not enabled on the given registry, skip generateing and persisting the registry entry.
     if metadata_dict["data"]["registryOverrides"][registry_type]["enabled"]:
-        registry_entry_blob_paths = _get_registry_entry_blob_paths(metadata_dict, registry_type, pre_release_tag)
+        registry_entry_blob_paths = _get_registry_entry_blob_paths(
+            metadata_dict, registry_type, docker_image_tag, is_prerelease=pre_release_tag is not None
+        )
 
         metadata_data = metadata_dict["data"]
 
         try:
-            overridden_metadata_data = _apply_metadata_overrides(metadata_data, registry_type, bucket_name)
+            overridden_metadata_data = _apply_metadata_overrides(metadata_data, registry_type, bucket_name, metadata_blob)
         except Exception as e:
             logger.exception(f"Error applying metadata overrides")
             message = f"*🤖 🔴 _Registry Entry Generation_ FAILED*:\nRegistry Entry: `{registry_type}.json`\nConnector: `{metadata_data['dockerRepository']}`\nGCS Bucket: `{bucket_name}`."
