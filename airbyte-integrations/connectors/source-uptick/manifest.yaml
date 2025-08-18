@@ -17,21 +17,14 @@ definitions:
       authenticator:
         type: OAuthAuthenticator
         client_id: '{{ config["client_id"] }}'
-        grant_type: refresh_token
+        grant_type: password
         client_secret: '{{ config["client_secret"] }}'
-        refresh_token: '{{ config["oauth_refresh_token"] }}'
         expires_in_name: expires_in
         access_token_name: access_token
-        refresh_request_body: {}
-        refresh_token_updater:
-          refresh_token_name: refresh_token
-          access_token_config_path:
-            - oauth_access_token
-          refresh_token_config_path:
-            - oauth_refresh_token
-          token_expiry_date_config_path:
-            - oauth_token_expiry_date
         token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
+        refresh_request_body:
+          username: '{{ config["username"] }}'
+          password: '{{ config["password"] }}'
       error_handler:
         type: DefaultErrorHandler
         max_retries: 5
@@ -84,28 +77,14 @@ streams:
         authenticator:
           type: OAuthAuthenticator
           client_id: '{{ config["client_id"] }}'
-          grant_type: refresh_token
+          grant_type: password
           client_secret: '{{ config["client_secret"] }}'
-          refresh_token: '{{ config["oauth_refresh_token"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
-          refresh_request_body: {}
-          refresh_token_updater:
-            refresh_token_name: refresh_token
-            access_token_config_path:
-              - oauth_access_token
-            refresh_token_config_path:
-              - oauth_refresh_token
-            token_expiry_date_config_path:
-              - oauth_token_expiry_date
-            refresh_token_error_key: ""
           token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
-          client_id_name: ""
-          client_secret_name: ""
-          refresh_token_name: ""
-          grant_type_name: ""
-          token_expiry_date: ""
-          token_expiry_date_format: ""
+          refresh_request_body:
+            username: '{{ config["username"] }}'
+            password: '{{ config["password"] }}'
         error_handler:
           type: DefaultErrorHandler
           max_retries: 5
@@ -890,28 +869,14 @@ streams:
         authenticator:
           type: OAuthAuthenticator
           client_id: '{{ config["client_id"] }}'
-          grant_type: refresh_token
+          grant_type: password
           client_secret: '{{ config["client_secret"] }}'
-          refresh_token: '{{ config["oauth_refresh_token"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
-          refresh_request_body: {}
-          refresh_token_updater:
-            refresh_token_name: refresh_token
-            access_token_config_path:
-              - oauth_access_token
-            refresh_token_config_path:
-              - oauth_refresh_token
-            token_expiry_date_config_path:
-              - oauth_token_expiry_date
-            refresh_token_error_key: ""
           token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
-          client_id_name: ""
-          client_secret_name: ""
-          refresh_token_name: ""
-          grant_type_name: ""
-          token_expiry_date: ""
-          token_expiry_date_format: ""
+          refresh_request_body:
+            username: '{{ config["username"] }}'
+            password: '{{ config["password"] }}'
         error_handler:
           type: DefaultErrorHandler
           max_retries: 5
@@ -980,28 +945,14 @@ streams:
         authenticator:
           type: OAuthAuthenticator
           client_id: '{{ config["client_id"] }}'
-          grant_type: refresh_token
+          grant_type: password
           client_secret: '{{ config["client_secret"] }}'
-          refresh_token: '{{ config["oauth_refresh_token"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
-          refresh_request_body: {}
-          refresh_token_updater:
-            refresh_token_name: refresh_token
-            access_token_config_path:
-              - oauth_access_token
-            refresh_token_config_path:
-              - oauth_refresh_token
-            token_expiry_date_config_path:
-              - oauth_token_expiry_date
-            refresh_token_error_key: ""
           token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
-          client_id_name: ""
-          client_secret_name: ""
-          refresh_token_name: ""
-          grant_type_name: ""
-          token_expiry_date: ""
-          token_expiry_date_format: ""
+          refresh_request_body:
+            username: '{{ config["username"] }}'
+            password: '{{ config["password"] }}'
         error_handler:
           type: DefaultErrorHandler
           max_retries: 5
@@ -1580,28 +1531,14 @@ streams:
         authenticator:
           type: OAuthAuthenticator
           client_id: '{{ config["client_id"] }}'
-          grant_type: refresh_token
+          grant_type: password
           client_secret: '{{ config["client_secret"] }}'
-          refresh_token: '{{ config["oauth_refresh_token"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
-          refresh_request_body: {}
-          refresh_token_updater:
-            refresh_token_name: refresh_token
-            access_token_config_path:
-              - oauth_access_token
-            refresh_token_config_path:
-              - oauth_refresh_token
-            token_expiry_date_config_path:
-              - oauth_token_expiry_date
-            refresh_token_error_key: ""
           token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
-          client_id_name: ""
-          client_secret_name: ""
-          refresh_token_name: ""
-          grant_type_name: ""
-          token_expiry_date: ""
-          token_expiry_date_format: ""
+          refresh_request_body:
+            username: '{{ config["username"] }}'
+            password: '{{ config["password"] }}'
         error_handler:
           type: DefaultErrorHandler
           max_retries: 5
@@ -1752,28 +1689,14 @@ streams:
         authenticator:
           type: OAuthAuthenticator
           client_id: '{{ config["client_id"] }}'
-          grant_type: refresh_token
+          grant_type: password
           client_secret: '{{ config["client_secret"] }}'
-          refresh_token: '{{ config["oauth_refresh_token"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
-          refresh_request_body: {}
-          refresh_token_updater:
-            refresh_token_name: refresh_token
-            access_token_config_path:
-              - oauth_access_token
-            refresh_token_config_path:
-              - oauth_refresh_token
-            token_expiry_date_config_path:
-              - oauth_token_expiry_date
-            refresh_token_error_key: ""
           token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
-          client_id_name: ""
-          client_secret_name: ""
-          refresh_token_name: ""
-          grant_type_name: ""
-          token_expiry_date: ""
-          token_expiry_date_format: ""
+          refresh_request_body:
+            username: '{{ config["username"] }}'
+            password: '{{ config["password"] }}'
         error_handler:
           type: DefaultErrorHandler
           max_retries: 5
@@ -2145,28 +2068,14 @@ streams:
         authenticator:
           type: OAuthAuthenticator
           client_id: '{{ config["client_id"] }}'
-          grant_type: refresh_token
+          grant_type: password
           client_secret: '{{ config["client_secret"] }}'
-          refresh_token: '{{ config["oauth_refresh_token"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
-          refresh_request_body: {}
-          refresh_token_updater:
-            refresh_token_name: refresh_token
-            access_token_config_path:
-              - oauth_access_token
-            refresh_token_config_path:
-              - oauth_refresh_token
-            token_expiry_date_config_path:
-              - oauth_token_expiry_date
-            refresh_token_error_key: ""
           token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
-          client_id_name: ""
-          client_secret_name: ""
-          refresh_token_name: ""
-          grant_type_name: ""
-          token_expiry_date: ""
-          token_expiry_date_format: ""
+          refresh_request_body:
+            username: '{{ config["username"] }}'
+            password: '{{ config["password"] }}'
         error_handler:
           type: DefaultErrorHandler
           max_retries: 5
@@ -2431,28 +2340,14 @@ streams:
         authenticator:
           type: OAuthAuthenticator
           client_id: '{{ config["client_id"] }}'
-          grant_type: refresh_token
+          grant_type: password
           client_secret: '{{ config["client_secret"] }}'
-          refresh_token: '{{ config["oauth_refresh_token"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
-          refresh_request_body: {}
-          refresh_token_updater:
-            refresh_token_name: refresh_token
-            access_token_config_path:
-              - oauth_access_token
-            refresh_token_config_path:
-              - oauth_refresh_token
-            token_expiry_date_config_path:
-              - oauth_token_expiry_date
-            refresh_token_error_key: ""
           token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
-          client_id_name: ""
-          client_secret_name: ""
-          refresh_token_name: ""
-          grant_type_name: ""
-          token_expiry_date: ""
-          token_expiry_date_format: ""
+          refresh_request_body:
+            username: '{{ config["username"] }}'
+            password: '{{ config["password"] }}'
         error_handler:
           type: DefaultErrorHandler
           max_retries: 5
@@ -2680,28 +2575,14 @@ streams:
         authenticator:
           type: OAuthAuthenticator
           client_id: '{{ config["client_id"] }}'
-          grant_type: refresh_token
+          grant_type: password
           client_secret: '{{ config["client_secret"] }}'
-          refresh_token: '{{ config["oauth_refresh_token"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
-          refresh_request_body: {}
-          refresh_token_updater:
-            refresh_token_name: refresh_token
-            access_token_config_path:
-              - oauth_access_token
-            refresh_token_config_path:
-              - oauth_refresh_token
-            token_expiry_date_config_path:
-              - oauth_token_expiry_date
-            refresh_token_error_key: ""
           token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
-          client_id_name: ""
-          client_secret_name: ""
-          refresh_token_name: ""
-          grant_type_name: ""
-          token_expiry_date: ""
-          token_expiry_date_format: ""
+          refresh_request_body:
+            username: '{{ config["username"] }}'
+            password: '{{ config["password"] }}'
         error_handler:
           type: DefaultErrorHandler
           max_retries: 5
@@ -2959,28 +2840,14 @@ streams:
         authenticator:
           type: OAuthAuthenticator
           client_id: '{{ config["client_id"] }}'
-          grant_type: refresh_token
+          grant_type: password
           client_secret: '{{ config["client_secret"] }}'
-          refresh_token: '{{ config["oauth_refresh_token"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
-          refresh_request_body: {}
-          refresh_token_updater:
-            refresh_token_name: refresh_token
-            access_token_config_path:
-              - oauth_access_token
-            refresh_token_config_path:
-              - oauth_refresh_token
-            token_expiry_date_config_path:
-              - oauth_token_expiry_date
-            refresh_token_error_key: ""
           token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
-          client_id_name: ""
-          client_secret_name: ""
-          refresh_token_name: ""
-          grant_type_name: ""
-          token_expiry_date: ""
-          token_expiry_date_format: ""
+          refresh_request_body:
+            username: '{{ config["username"] }}'
+            password: '{{ config["password"] }}'
         error_handler:
           type: DefaultErrorHandler
           max_retries: 5
@@ -3208,28 +3075,14 @@ streams:
         authenticator:
           type: OAuthAuthenticator
           client_id: '{{ config["client_id"] }}'
-          grant_type: refresh_token
+          grant_type: password
           client_secret: '{{ config["client_secret"] }}'
-          refresh_token: '{{ config["oauth_refresh_token"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
-          refresh_request_body: {}
-          refresh_token_updater:
-            refresh_token_name: refresh_token
-            access_token_config_path:
-              - oauth_access_token
-            refresh_token_config_path:
-              - oauth_refresh_token
-            token_expiry_date_config_path:
-              - oauth_token_expiry_date
-            refresh_token_error_key: ""
           token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
-          client_id_name: ""
-          client_secret_name: ""
-          refresh_token_name: ""
-          grant_type_name: ""
-          token_expiry_date: ""
-          token_expiry_date_format: ""
+          refresh_request_body:
+            username: '{{ config["username"] }}'
+            password: '{{ config["password"] }}'
         error_handler:
           type: DefaultErrorHandler
           max_retries: 5
@@ -3397,28 +3250,14 @@ streams:
         authenticator:
           type: OAuthAuthenticator
           client_id: '{{ config["client_id"] }}'
-          grant_type: refresh_token
+          grant_type: password
           client_secret: '{{ config["client_secret"] }}'
-          refresh_token: '{{ config["oauth_refresh_token"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
-          refresh_request_body: {}
-          refresh_token_updater:
-            refresh_token_name: refresh_token
-            access_token_config_path:
-              - oauth_access_token
-            refresh_token_config_path:
-              - oauth_refresh_token
-            token_expiry_date_config_path:
-              - oauth_token_expiry_date
-            refresh_token_error_key: ""
           token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
-          client_id_name: ""
-          client_secret_name: ""
-          refresh_token_name: ""
-          grant_type_name: ""
-          token_expiry_date: ""
-          token_expiry_date_format: ""
+          refresh_request_body:
+            username: '{{ config["username"] }}'
+            password: '{{ config["password"] }}'
         error_handler:
           type: DefaultErrorHandler
           max_retries: 5
@@ -3642,28 +3481,14 @@ streams:
         authenticator:
           type: OAuthAuthenticator
           client_id: '{{ config["client_id"] }}'
-          grant_type: refresh_token
+          grant_type: password
           client_secret: '{{ config["client_secret"] }}'
-          refresh_token: '{{ config["oauth_refresh_token"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
-          refresh_request_body: {}
-          refresh_token_updater:
-            refresh_token_name: refresh_token
-            access_token_config_path:
-              - oauth_access_token
-            refresh_token_config_path:
-              - oauth_refresh_token
-            token_expiry_date_config_path:
-              - oauth_token_expiry_date
-            refresh_token_error_key: ""
           token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
-          client_id_name: ""
-          client_secret_name: ""
-          refresh_token_name: ""
-          grant_type_name: ""
-          token_expiry_date: ""
-          token_expiry_date_format: ""
+          refresh_request_body:
+            username: '{{ config["username"] }}'
+            password: '{{ config["password"] }}'
         error_handler:
           type: DefaultErrorHandler
           max_retries: 5
@@ -3943,28 +3768,14 @@ streams:
         authenticator:
           type: OAuthAuthenticator
           client_id: '{{ config["client_id"] }}'
-          grant_type: refresh_token
+          grant_type: password
           client_secret: '{{ config["client_secret"] }}'
-          refresh_token: '{{ config["oauth_refresh_token"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
-          refresh_request_body: {}
-          refresh_token_updater:
-            refresh_token_name: refresh_token
-            access_token_config_path:
-              - oauth_access_token
-            refresh_token_config_path:
-              - oauth_refresh_token
-            token_expiry_date_config_path:
-              - oauth_token_expiry_date
-            refresh_token_error_key: ""
           token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
-          client_id_name: ""
-          client_secret_name: ""
-          refresh_token_name: ""
-          grant_type_name: ""
-          token_expiry_date: ""
-          token_expiry_date_format: ""
+          refresh_request_body:
+            username: '{{ config["username"] }}'
+            password: '{{ config["password"] }}'
         error_handler:
           type: DefaultErrorHandler
           max_retries: 5
@@ -4122,28 +3933,14 @@ streams:
         authenticator:
           type: OAuthAuthenticator
           client_id: '{{ config["client_id"] }}'
-          grant_type: refresh_token
+          grant_type: password
           client_secret: '{{ config["client_secret"] }}'
-          refresh_token: '{{ config["oauth_refresh_token"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
-          refresh_request_body: {}
-          refresh_token_updater:
-            refresh_token_name: refresh_token
-            access_token_config_path:
-              - oauth_access_token
-            refresh_token_config_path:
-              - oauth_refresh_token
-            token_expiry_date_config_path:
-              - oauth_token_expiry_date
-            refresh_token_error_key: ""
           token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
-          client_id_name: ""
-          client_secret_name: ""
-          refresh_token_name: ""
-          grant_type_name: ""
-          token_expiry_date: ""
-          token_expiry_date_format: ""
+          refresh_request_body:
+            username: '{{ config["username"] }}'
+            password: '{{ config["password"] }}'
         error_handler:
           type: DefaultErrorHandler
           max_retries: 5
@@ -4272,28 +4069,14 @@ streams:
         authenticator:
           type: OAuthAuthenticator
           client_id: '{{ config["client_id"] }}'
-          grant_type: refresh_token
+          grant_type: password
           client_secret: '{{ config["client_secret"] }}'
-          refresh_token: '{{ config["oauth_refresh_token"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
-          refresh_request_body: {}
-          refresh_token_updater:
-            refresh_token_name: refresh_token
-            access_token_config_path:
-              - oauth_access_token
-            refresh_token_config_path:
-              - oauth_refresh_token
-            token_expiry_date_config_path:
-              - oauth_token_expiry_date
-            refresh_token_error_key: ""
           token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
-          client_id_name: ""
-          client_secret_name: ""
-          refresh_token_name: ""
-          grant_type_name: ""
-          token_expiry_date: ""
-          token_expiry_date_format: ""
+          refresh_request_body:
+            username: '{{ config["username"] }}'
+            password: '{{ config["password"] }}'
         error_handler:
           type: DefaultErrorHandler
           max_retries: 5
@@ -4421,28 +4204,14 @@ streams:
         authenticator:
           type: OAuthAuthenticator
           client_id: '{{ config["client_id"] }}'
-          grant_type: refresh_token
+          grant_type: password
           client_secret: '{{ config["client_secret"] }}'
-          refresh_token: '{{ config["oauth_refresh_token"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
-          refresh_request_body: {}
-          refresh_token_updater:
-            refresh_token_name: refresh_token
-            access_token_config_path:
-              - oauth_access_token
-            refresh_token_config_path:
-              - oauth_refresh_token
-            token_expiry_date_config_path:
-              - oauth_token_expiry_date
-            refresh_token_error_key: ""
           token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
-          client_id_name: ""
-          client_secret_name: ""
-          refresh_token_name: ""
-          grant_type_name: ""
-          token_expiry_date: ""
-          token_expiry_date_format: ""
+          refresh_request_body:
+            username: '{{ config["username"] }}'
+            password: '{{ config["password"] }}'
         error_handler:
           type: DefaultErrorHandler
           max_retries: 5
@@ -4533,28 +4302,14 @@ streams:
         authenticator:
           type: OAuthAuthenticator
           client_id: '{{ config["client_id"] }}'
-          grant_type: refresh_token
+          grant_type: password
           client_secret: '{{ config["client_secret"] }}'
-          refresh_token: '{{ config["oauth_refresh_token"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
-          refresh_request_body: {}
-          refresh_token_updater:
-            refresh_token_name: refresh_token
-            access_token_config_path:
-              - oauth_access_token
-            refresh_token_config_path:
-              - oauth_refresh_token
-            token_expiry_date_config_path:
-              - oauth_token_expiry_date
-            refresh_token_error_key: ""
           token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
-          client_id_name: ""
-          client_secret_name: ""
-          refresh_token_name: ""
-          grant_type_name: ""
-          token_expiry_date: ""
-          token_expiry_date_format: ""
+          refresh_request_body:
+            username: '{{ config["username"] }}'
+            password: '{{ config["password"] }}'
         error_handler:
           type: DefaultErrorHandler
           max_retries: 5
@@ -4742,28 +4497,14 @@ streams:
         authenticator:
           type: OAuthAuthenticator
           client_id: '{{ config["client_id"] }}'
-          grant_type: refresh_token
+          grant_type: password
           client_secret: '{{ config["client_secret"] }}'
-          refresh_token: '{{ config["oauth_refresh_token"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
-          refresh_request_body: {}
-          refresh_token_updater:
-            refresh_token_name: refresh_token
-            access_token_config_path:
-              - oauth_access_token
-            refresh_token_config_path:
-              - oauth_refresh_token
-            token_expiry_date_config_path:
-              - oauth_token_expiry_date
-            refresh_token_error_key: ""
           token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
-          client_id_name: ""
-          client_secret_name: ""
-          refresh_token_name: ""
-          grant_type_name: ""
-          token_expiry_date: ""
-          token_expiry_date_format: ""
+          refresh_request_body:
+            username: '{{ config["username"] }}'
+            password: '{{ config["password"] }}'
         error_handler:
           type: DefaultErrorHandler
           max_retries: 5
@@ -5073,51 +4814,26 @@ spec:
       client_id:
         type: string
         order: 1
-        title: Client ID
+        title: OAuth Client ID
         airbyte_secret: true
-      start_date:
-        type: string
-        order: 6
-        title: Start Date
       client_secret:
         type: string
         order: 2
-        title: Client Secret
+        title: OAuth Client Secret
         airbyte_secret: true
-      oauth_access_token:
-        type: string
-        description: >-
-          The current access token. This field will be overridden by the
-          connector based on the token refresh endpoint response.
-        order: 4
-        title: Access Token
-        airbyte_secret: true
-      oauth_refresh_token:
-        type: string
-        order: 3
-        title: Refresh token
-        airbyte_secret: true
-        description: >-
-          The current refresh token. This field will be overridden by the
-          connector based on the token refresh endpoint response.
-      oauth_token_expiry_date:
-        type: string
-        description: >-
-          The date the current access token expires in. This field will be
-          overridden by the connector based on the token refresh endpoint
-          response.
-        order: 5
-        title: Token Expiry Date
-        format: date-time
       username:
         type: string
-        order: 7
+        order: 3
         title: Uptick API Account Email
       password:
         type: string
-        order: 8
+        order: 4
         title: Uptick API Account Password
         airbyte_secret: true
+      start_date:
+        type: string
+        order: 5
+        title: Start Date
     additionalProperties: true
 
 metadata:
