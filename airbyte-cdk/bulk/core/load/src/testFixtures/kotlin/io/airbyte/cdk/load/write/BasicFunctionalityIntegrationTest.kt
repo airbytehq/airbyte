@@ -642,6 +642,7 @@ abstract class BasicFunctionalityIntegrationTest(
             }
         }
     }
+
     @Test
     fun testCDCStateTypes() {
         if (
@@ -1348,6 +1349,11 @@ abstract class BasicFunctionalityIntegrationTest(
         assertEquals(fileContents, fileContent[sourcePath])
     }
 
+    /**
+     * Runs a sync, kills it before finishing, then asserts second sync finishes moving the data to the final table.
+     *
+     * Tests any sort of 2 phase commit write operation recovers from failure.
+     */
     @Test
     open fun testMidSyncCheckpointingStreamState(): Unit =
         runBlocking(Dispatchers.IO) {
@@ -1739,7 +1745,11 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId,
                 namespaceMapper = namespaceMapperForMedium()
             )
-        val stream = makeStream(12, 0, 42)
+        val stream = makeStream(
+            generationId = 12,
+            minimumGenerationId = 0,
+            syncId = 42,
+        )
         runSync(
             updatedConfig,
             stream,
@@ -1842,6 +1852,8 @@ abstract class BasicFunctionalityIntegrationTest(
     /**
      * Some destinations make complicated changes based on the sync mode, e.g. Bigquery changing the
      * table's clustering config. Verify that we can do those changes across truncates.
+     *
+     * This test validates we can finish a truncate refresh when the import type changes between runs.
      */
     @Test
     open fun testTruncateRefreshChangeSyncMode() {
