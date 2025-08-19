@@ -54,8 +54,14 @@ def _entry_should_be_on_gcs(metadata_model: ConnectorMetadataDefinitionV0) -> bo
         bool: True if the metadata entry should be on GCS, False otherwise.
     """
     if metadata_model.data.supportLevel and metadata_model.data.supportLevel.__root__ == "archived":
+        logger.info(
+            f"Skipping. Connector `{metadata_model.data.dockerRepository}` is archived or does not have a support level. Support level: {metadata_model.data.supportLevel.__root__}"
+        )
         return False
     if "-rc" in metadata_model.data.dockerImageTag:
+        logger.info(
+            f"Skipping. Connector `{metadata_model.data.dockerRepository}` is a release candidate. Docker image tag: {metadata_model.data.dockerImageTag}"
+        )
         return False
     return True
 
@@ -88,6 +94,10 @@ def _get_github_metadata_download_urls() -> list[str]:
             last_modified_at = commits[0].commit.author.date
             if not _is_younger_than_grace_period(last_modified_at):
                 metadata_download_urls.append(file_content.download_url)
+            else:
+                logger.info(
+                    f"Skipping. Metadata file on Github `{file_content.path}` was modified more recently than the grace period. Last modified at: {last_modified_at}"
+                )
     logger.debug(f"Found {len(metadata_download_urls)} download URLs")
 
     return metadata_download_urls
