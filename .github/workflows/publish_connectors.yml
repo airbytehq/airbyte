@@ -223,7 +223,6 @@ jobs:
             metadata_service generate-registry-entry \
             prod-airbyte-cloud-connector-metadata-service \
             "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
-            "spec.json" \
             oss
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
@@ -239,7 +238,6 @@ jobs:
             metadata_service generate-registry-entry \
             prod-airbyte-cloud-connector-metadata-service \
             "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
-            "spec.cloud.json" \
             cloud
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
@@ -316,7 +314,6 @@ jobs:
             $PRE_RELEASE_TAG \
             prod-airbyte-cloud-connector-metadata-service \
             "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
-            "spec.json" \
             oss
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
@@ -342,7 +339,6 @@ jobs:
             $PRE_RELEASE_TAG \
             prod-airbyte-cloud-connector-metadata-service \
             "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
-            "spec.cloud.json" \
             cloud
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}

@@ -33,6 +33,7 @@ from metadata_service.helpers.object_helpers import deep_copy_params, default_no
 from metadata_service.helpers.slack import send_slack_message
 from metadata_service.models.generated import ConnectorRegistryDestinationDefinition, ConnectorRegistrySourceDefinition
 from metadata_service.registry import ConnectorTypePrimaryKey, ConnectorTypes
+from metadata_service.spec_cache import SpecCache
 
 logger = logging.getLogger(__name__)
 
@@ -438,7 +439,7 @@ def _persist_connector_registry_entry(bucket_name: str, registry_entry: Polymorp
 
 @sentry_sdk.trace
 def generate_and_persist_registry_entry(
-    bucket_name: str, repo_metadata_file_path: pathlib.Path, spec_path: pathlib.Path, registry_type: str, pre_release_tag: str | None
+    bucket_name: str, repo_metadata_file_path: pathlib.Path, registry_type: str, pre_release_tag: str | None
 ) -> None:
     """Generate and persist the connector registry entry to the GCS bucket.
 
@@ -485,7 +486,11 @@ def generate_and_persist_registry_entry(
         )
 
         logger.info("Parsing spec file.")
-        overridden_metadata_data["spec"] = _get_and_parse_json_file(spec_path)
+        spec_cache = SpecCache()
+        cached_spec = spec_cache.find_spec_cache_with_fallback(
+            overridden_metadata_data["dockerRepository"], overridden_metadata_data["dockerImageTag"], registry_type
+        )
+        overridden_metadata_data["spec"] = spec_cache.download_spec(cached_spec)
         logger.info("Spec file parsed and added to metadata.")
 
         logger.info("Parsing registry entry model.")
