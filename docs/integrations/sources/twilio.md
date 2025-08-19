@@ -100,6 +100,7 @@ For more information, see [the Twilio docs for rate limitations](https://support
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------| :------------------------------------------------------- |:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.15.0 | 2025-08-19 | [65085](https://github.com/airbytehq/airbyte/pull/65085) | Promoting release candidate 0.15.0-rc.1 to a main version. |
 | 0.15.0-rc.1 | 2025-08-18 | [64918](https://github.com/airbytehq/airbyte/pull/64918) | Migrate nested full refresh streams                                                                                                          |
 | 0.14.0      | 2025-08-18 | [65066](https://github.com/airbytehq/airbyte/pull/65066) | Promoting release candidate 0.14.0-rc.1 to a main version. |
 | 0.14.0-rc.1 | 2025-08-14 | [64880](https://github.com/airbytehq/airbyte/pull/64880) | Migrated all full refresh streams that have no parent streams                                                                                                          |
