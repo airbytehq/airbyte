@@ -49,16 +49,16 @@ class PostgresSourceSelectQueryGenerator : SelectQueryGenerator {
     fun SelectQuerySpec.sql(): String {
         val components: List<String> = listOf(select.sql(), from.sql(), where.sql(), orderBy.sql())
         val sqlWithoutLimit: String = components.filter { it.isNotBlank() }.joinToString(" ")
-        val rownumClause: String =
+        val limitClause: String =
             when (limit) {
                 NoLimit -> return sqlWithoutLimit
-                Limit(0) -> "ROWNUM < 1"
-                is Limit -> "ROWNUM <= ?"
+                Limit(0) -> "LIMIT 0"
+                is Limit -> "LIMIT ?"
             }
         return if (where == NoWhere && orderBy == NoOrderBy) {
-            "$sqlWithoutLimit WHERE $rownumClause"
+            "$sqlWithoutLimit $limitClause"
         } else {
-            "${select.sql()} FROM ($sqlWithoutLimit) WHERE $rownumClause"
+            "${select.sql()} FROM ($sqlWithoutLimit) $limitClause"
         }
     }
 
@@ -138,3 +138,8 @@ class PostgresSourceSelectQueryGenerator : SelectQueryGenerator {
         }
 
 }
+
+/*data class NonEmittedField(
+    override val id: String,
+    override val type: FieldType,
+) : FieldOrMetaField*/
