@@ -4,7 +4,7 @@
 from dagster import Definitions, EnvVar, ScheduleDefinition, load_assets_from_modules
 from dagster_slack import SlackResource
 from metadata_service.constants import METADATA_FILE_NAME, METADATA_FOLDER
-from orchestrator.assets import connector_metrics, github, metadata, registry, registry_entry, registry_report, specs_secrets_mask, slack
+from orchestrator.assets import connector_metrics, github, metadata, registry, registry_entry, specs_secrets_mask, slack
 from orchestrator.config import (
     ANALYTICS_BUCKET,
     ANALYTICS_FOLDER,
@@ -12,7 +12,6 @@ from orchestrator.config import (
     CONNECTORS_PATH,
     HIGH_QUEUE_PRIORITY,
     REGISTRIES_FOLDER,
-    REPORT_FOLDER,
 )
 from orchestrator.jobs.registry import (
     add_new_metadata_partitions,
@@ -21,7 +20,6 @@ from orchestrator.jobs.registry import (
     generate_cloud_registry,
     generate_oss_registry,
     generate_registry_entry,
-    generate_registry_reports,
 )
 from orchestrator.logging.sentry import setup_dagster_sentry
 from orchestrator.resources.gcp import gcp_gcs_client, gcs_directory_blobs, gcs_file_blob, gcs_file_manager
@@ -43,7 +41,6 @@ ASSETS = load_assets_from_modules(
         metadata,
         connector_metrics,
         registry,
-        registry_report,
         registry_entry,
     ]
 )
@@ -66,7 +63,6 @@ GCS_RESOURCE_TREE = {
         }
     ),
     "registry_directory_manager": gcs_file_manager.configured({"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": REGISTRIES_FOLDER}),
-    "registry_report_directory_manager": gcs_file_manager.configured({"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": REPORT_FOLDER}),
     "root_metadata_directory_manager": gcs_file_manager.configured({"gcs_bucket": {"env": "METADATA_BUCKET"}, "prefix": ""}),
 }
 
@@ -132,7 +128,6 @@ RESOURCES = {
 }
 
 SENSORS = [
-    registry_updated_sensor(job=generate_registry_reports, resources_def=REGISTRY_RESOURCE_TREE),
     new_gcs_blobs_sensor(
         job=generate_oss_registry,
         resources_def=REGISTRY_ENTRY_RESOURCE_TREE,
@@ -171,7 +166,6 @@ SCHEDULES = [
 ]
 
 JOBS = [
-    generate_registry_reports,
     generate_oss_registry,
     generate_cloud_registry,
     generate_registry_entry,
