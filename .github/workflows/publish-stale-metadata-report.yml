@@ -7,9 +7,8 @@ on:
         description: "The git ref to check out from the repository"
         required: false
         type: string
-# TODO: uncomment once ready to implement schedule
-#   schedule:
-#     - cron: '0 */2 * * *'  # Run every 2 hours
+  schedule:
+    - cron: "0 * * * *" # Run every hour
 
 permissions:
   contents: read

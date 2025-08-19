@@ -27,3 +27,5 @@ If you have any questions, feel free to ask in the PR comments or join our [Slac
    - Note: If you are creating a new connector, please be sure to replace the default `logo.svg` file with a suitable icon.
 2. **Connector CI Tests.** Some failures here may be expected if your tests require credentials. Please review these results to ensure (1) unit tests are passing, if applicable, and (2) integration tests pass to the degree possible and expected.
 3. **(Optional.) [BYO Connector Credentials](https://docs.airbyte.com/platform/connector-development/local-connector-development#managing-connector-secrets) for tests in your fork.** You can _optionally_ set up your fork with BYO credentials for your connector. This can significantly speed up your review, ensuring your changes are fully tested before the maintainers begin their review.
+
+[📝 _Edit this welcome message._](https://github.com/airbytehq/airbyte/blob/master/.github/pr-welcome-community.md)
