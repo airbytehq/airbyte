@@ -16,10 +16,13 @@ import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.UnionBehavior
 import io.airbyte.cdk.load.write.UnknownTypesBehavior
 import io.airbyte.cdk.load.write.Untyped
+import org.junit.jupiter.api.Disabled
 
 abstract class AzureBlobStorageWriteTest(
     configContents: String,
-    nullEqualsUnset: Boolean,
+    nullEqualsUnset: Boolean = true,
+    mismatchedTypesUnrepresentable: Boolean = false,
+    unknownTypesBehavior: UnknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
     dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
     dataChannelFormat: DataChannelFormat = DataChannelFormat.JSONL
 ) :
@@ -39,8 +42,8 @@ abstract class AzureBlobStorageWriteTest(
         commitDataIncrementally = true,
         allTypesBehavior = Untyped,
         nullEqualsUnset = nullEqualsUnset,
-        unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
-        mismatchedTypesUnrepresentable = false,
+        unknownTypesBehavior = unknownTypesBehavior,
+        mismatchedTypesUnrepresentable = mismatchedTypesUnrepresentable,
         dataChannelMedium = dataChannelMedium,
         dataChannelFormat = dataChannelFormat,
     )
@@ -50,37 +53,117 @@ class AzureBlobStorageCsvNoFlatteningWriteTest :
         AzureBlobStorageTestUtil.getAccountKeyConfig(
             CSVFormatSpecification(flattening = Flattening.NO_FLATTENING)
         ),
-        nullEqualsUnset = true,
     )
+
+class AzureBlobStorageCsvNoFlatteningWriteTestProto :
+    AzureBlobStorageWriteTest(
+        AzureBlobStorageTestUtil.getAccountKeyConfig(
+            CSVFormatSpecification(flattening = Flattening.NO_FLATTENING),
+        ),
+        nullEqualsUnset = true,
+        mismatchedTypesUnrepresentable = true,
+        dataChannelFormat = DataChannelFormat.PROTOBUF,
+        dataChannelMedium = DataChannelMedium.SOCKET,
+        unknownTypesBehavior = UnknownTypesBehavior.NULL,
+    ) {
+    @Disabled("Not relevant for socket mode")
+    override fun testBasicWriteFile() {
+        super.testBasicWriteFile()
+    }
+}
 
 class AzureBlobStorageCsvWithFlatteningWriteTest :
     AzureBlobStorageWriteTest(
         AzureBlobStorageTestUtil.getAccountKeyConfig(
             CSVFormatSpecification(flattening = Flattening.ROOT_LEVEL_FLATTENING)
         ),
-        nullEqualsUnset = true,
     )
+
+class AzureBlobStorageCsvWithFlatteningWriteTestProto :
+    AzureBlobStorageWriteTest(
+        AzureBlobStorageTestUtil.getAccountKeyConfig(
+            CSVFormatSpecification(flattening = Flattening.ROOT_LEVEL_FLATTENING),
+        ),
+        nullEqualsUnset = true,
+        mismatchedTypesUnrepresentable = true,
+        dataChannelFormat = DataChannelFormat.PROTOBUF,
+        dataChannelMedium = DataChannelMedium.SOCKET,
+        unknownTypesBehavior = UnknownTypesBehavior.NULL,
+    ) {
+    @Disabled("Not relevant for socket mode")
+    override fun testBasicWriteFile() {
+        super.testBasicWriteFile()
+    }
+}
 
 class AzureBlobStorageJsonlNoFlatteningWriteTest :
     AzureBlobStorageWriteTest(
         AzureBlobStorageTestUtil.getAccountKeyConfig(
             JsonFormatSpecification(flattening = Flattening.NO_FLATTENING)
         ),
-        nullEqualsUnset = false,
     )
+
+class AzureBlobStorageJsonlNoFlatteningWriteTestProto :
+    AzureBlobStorageWriteTest(
+        AzureBlobStorageTestUtil.getAccountKeyConfig(
+            JsonFormatSpecification(flattening = Flattening.NO_FLATTENING),
+        ),
+        nullEqualsUnset = true,
+        mismatchedTypesUnrepresentable = true,
+        dataChannelFormat = DataChannelFormat.PROTOBUF,
+        dataChannelMedium = DataChannelMedium.SOCKET,
+        unknownTypesBehavior = UnknownTypesBehavior.NULL,
+    ) {
+    @Disabled("Not relevant for socket mode")
+    override fun testBasicWriteFile() {
+        super.testBasicWriteFile()
+    }
+}
 
 class AzureBlobStorageJsonlWithFlatteningWriteTest :
     AzureBlobStorageWriteTest(
         AzureBlobStorageTestUtil.getAccountKeyConfig(
             JsonFormatSpecification(flattening = Flattening.ROOT_LEVEL_FLATTENING)
         ),
-        nullEqualsUnset = false,
     )
+
+class AzureBlobStorageJsonlWithFlatteningWriteTestProto :
+    AzureBlobStorageWriteTest(
+        AzureBlobStorageTestUtil.getAccountKeyConfig(
+            JsonFormatSpecification(flattening = Flattening.ROOT_LEVEL_FLATTENING),
+        ),
+        nullEqualsUnset = true,
+        mismatchedTypesUnrepresentable = true,
+        dataChannelFormat = DataChannelFormat.PROTOBUF,
+        dataChannelMedium = DataChannelMedium.SOCKET,
+        unknownTypesBehavior = UnknownTypesBehavior.NULL,
+    ) {
+    @Disabled("Not relevant for socket mode")
+    override fun testBasicWriteFile() {
+        super.testBasicWriteFile()
+    }
+}
 
 class AzureBlobStorageSasCsvWithFlatteningWriteTest :
     AzureBlobStorageWriteTest(
         AzureBlobStorageTestUtil.getSasConfig(
             CSVFormatSpecification(flattening = Flattening.ROOT_LEVEL_FLATTENING)
         ),
-        nullEqualsUnset = true,
     )
+
+class AzureBlobStorageSasCsvWithFlatteningWriteTestProto :
+    AzureBlobStorageWriteTest(
+        AzureBlobStorageTestUtil.getSasConfig(
+            CSVFormatSpecification(flattening = Flattening.ROOT_LEVEL_FLATTENING),
+        ),
+        nullEqualsUnset = true,
+        mismatchedTypesUnrepresentable = true,
+        dataChannelFormat = DataChannelFormat.PROTOBUF,
+        dataChannelMedium = DataChannelMedium.SOCKET,
+        unknownTypesBehavior = UnknownTypesBehavior.NULL,
+    ) {
+    @Disabled("Not relevant for socket mode")
+    override fun testBasicWriteFile() {
+        super.testBasicWriteFile()
+    }
+}

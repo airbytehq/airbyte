@@ -34,6 +34,7 @@ Visit `https://docs.lob.com/` for API documentation
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.35 | 2025-08-09 | [64577](https://github.com/airbytehq/airbyte/pull/64577) | Update dependencies |
 | 0.0.34 | 2025-08-02 | [64287](https://github.com/airbytehq/airbyte/pull/64287) | Update dependencies |
 | 0.0.33 | 2025-07-26 | [63875](https://github.com/airbytehq/airbyte/pull/63875) | Update dependencies |
 | 0.0.32 | 2025-07-19 | [63495](https://github.com/airbytehq/airbyte/pull/63495) | Update dependencies |
