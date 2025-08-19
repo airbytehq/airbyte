@@ -65,7 +65,7 @@ class DestinationLifecycleTest {
     }
 
     @Test
-    fun `does not finalize streams if all streams not-complete`() = runTest {
+    fun `closes stream loaders exceptionally if all streams not-complete`() = runTest {
         // Given
         val streamLoader1 = mockk<StreamLoader>(relaxed = true)
         val streamLoader2 = mockk<StreamLoader>(relaxed = true)

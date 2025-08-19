@@ -17,6 +17,7 @@ class StreamCompletionTracker(
 
     private val receivedCount = AtomicInteger()
 
+    @Suppress("UNUSED_PARAMETER")
     fun accept(msg: DestinationRecordStreamComplete) {
         receivedCount.incrementAndGet()
     }

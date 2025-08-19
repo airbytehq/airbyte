@@ -10,7 +10,6 @@ import io.mockk.every
 import io.mockk.mockk
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.ValueSource
@@ -25,7 +24,7 @@ class StreamCompletionTrackerTest {
         val tracker = StreamCompletionTracker(catalog)
 
         // When
-        (1..size).forEach { _ -> tracker.accept(Fixtures.streamCompleteMsg) }
+        repeat(size) { tracker.accept(Fixtures.streamCompleteMsg) }
 
         // Then
         assertTrue(tracker.allStreamsComplete())
@@ -35,30 +34,17 @@ class StreamCompletionTrackerTest {
     @CsvSource("1,0", "2, 1", "3, 2", "4, 3", "10, 8", "42, 41", "99, 50", "1001, 1000")
     fun `#allStreamsComplete should return false when all completes weren't received`(
         size: Int,
-        received: Int
+        received: Int,
     ) {
         // Given
         val catalog = Fixtures.catalog(4)
         val tracker = StreamCompletionTracker(catalog)
 
         // When
-        (1..received).forEach { _ -> tracker.accept(Fixtures.streamCompleteMsg) }
+        repeat(received) { tracker.accept(Fixtures.streamCompleteMsg) }
 
         // Then
         assertFalse(tracker.allStreamsComplete()) // 2 out of 4 streams complete
-    }
-
-    @Test
-    fun `accept should be thread-safe with concurrent calls`() {
-        // Given
-        val catalog = Fixtures.catalog(10)
-        val tracker = StreamCompletionTracker(catalog)
-
-        // When - simulate concurrent accepts
-        repeat(10) { tracker.accept(Fixtures.streamCompleteMsg) }
-
-        // Then
-        assertTrue(tracker.allStreamsComplete())
     }
 
     object Fixtures {
