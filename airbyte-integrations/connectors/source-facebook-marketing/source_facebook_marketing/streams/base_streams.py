@@ -13,7 +13,7 @@ from facebook_business.adobjects.abstractobject import AbstractObject
 from facebook_business.exceptions import FacebookRequestError
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams import CheckpointMixin, Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from source_facebook_marketing.streams.common import traced_exception
@@ -21,11 +21,23 @@ from source_facebook_marketing.streams.common import traced_exception
 from .common import deep_merge
 
 
+# Pre-compile date-time fields as a set for faster lookup
+DATE_TIME_FIELDS = frozenset(
+    [
+        "created_time",
+        "creation_time",
+        "updated_time",
+        "event_time",
+        "start_time",
+        "first_fired_time",
+        "last_fired_time",
+    ]
+)
+
 if TYPE_CHECKING:  # pragma: no cover
     from source_facebook_marketing.api import API
 
 logger = logging.getLogger("airbyte")
-from airbyte_cdk.sources.streams import CheckpointMixin
 
 
 class FBMarketingStream(Stream, ABC):
@@ -77,28 +89,23 @@ class FBMarketingStream(Stream, ABC):
         return self._saved_fields
 
     @classmethod
-    def fix_date_time(cls, record):
-        date_time_fields = (
-            "created_time",
-            "creation_time",
-            "updated_time",
-            "event_time",
-            "start_time",
-            "first_fired_time",
-            "last_fired_time",
-        )
+    def fix_date_time(cls, record, max_depth=2, current_depth=0):
+        if not isinstance(record, dict) or current_depth > max_depth:
+            return
 
-        if isinstance(record, dict):
+        for field, value in record.items():
+            if isinstance(value, str):
+                if field in DATE_TIME_FIELDS and isinstance(value, str):
+                    record[field] = value.replace("t", "T").replace(" 0000", "+0000")
+
+        if current_depth < max_depth:
             for field, value in record.items():
-                if isinstance(value, str):
-                    if field in date_time_fields:
-                        record[field] = value.replace("t", "T").replace(" 0000", "+0000")
-                else:
-                    cls.fix_date_time(value)
-
-        elif isinstance(record, list):
-            for entry in record:
-                cls.fix_date_time(entry)
+                if isinstance(value, dict):
+                    cls.fix_date_time(value, max_depth, current_depth + 1)
+                elif isinstance(value, list):
+                    for entry in value:
+                        if isinstance(entry, dict):
+                            cls.fix_date_time(entry, max_depth, current_depth + 1)
 
     @staticmethod
     def add_account_id(record, account_id: str):
@@ -211,10 +218,11 @@ class FBMarketingStream(Stream, ABC):
             yield {"account_id": account_id, "stream_state": account_state}
 
     @abstractmethod
-    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
+    def list_objects(self, params: Mapping[str, Any], account_id: str) -> Iterable:
         """List FB objects, these objects will be loaded in read_records later with their details.
 
         :param params: params to make request
+        :param account_id: Facebook account ID
         :return: list of FB objects to load
         """
 

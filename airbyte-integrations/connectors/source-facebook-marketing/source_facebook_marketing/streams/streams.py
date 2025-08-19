@@ -4,6 +4,7 @@
 
 import base64
 import logging
+from functools import cache
 from typing import Any, Iterable, List, Mapping, Optional, Set
 
 import pendulum
@@ -49,6 +50,7 @@ class AdCreatives(FBMarketingStream):
         super().__init__(**kwargs)
         self._fetch_thumbnail_images = fetch_thumbnail_images
 
+    @cache  # cache fields to avoid re-computing them, as in the base class
     def fields(self, **kwargs) -> List[str]:
         """Remove "thumbnail_data_url" field because it is a computed field, and it's not a field that we can request from Facebook"""
         if self._fields:
