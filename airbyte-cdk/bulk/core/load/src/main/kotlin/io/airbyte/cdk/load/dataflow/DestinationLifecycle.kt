@@ -8,12 +8,10 @@ import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.dataflow.config.MemoryAndParallelismConfig
 import io.airbyte.cdk.load.dataflow.finalization.StreamCompletionTracker
 import io.airbyte.cdk.load.dataflow.pipeline.DataFlowPipeline
-import io.airbyte.cdk.load.state.StreamProcessingFailed
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
-import java.lang.Exception
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -88,7 +86,9 @@ class DestinationLifecycle(
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun finalizeIndividualStreams(streamLoaders: List<StreamLoader>) {
         if (!completionTracker.allStreamsComplete()) {
-            log.warn { "All streams did not complete. Skipping destructive finalization operations..." }
+            log.warn {
+                "All streams did not complete. Skipping destructive finalization operations..."
+            }
         }
 
         val finalizeDispatcher: CoroutineDispatcher =

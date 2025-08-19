@@ -276,7 +276,6 @@ abstract class ClickhouseAcceptanceTest(
         nullEqualsUnset = true,
         configUpdater = ClickhouseConfigUpdater(),
         dedupChangeUsesDefault = true,
-        onDataFlowCdk = true,
     ) {
     companion object {
         @JvmStatic
