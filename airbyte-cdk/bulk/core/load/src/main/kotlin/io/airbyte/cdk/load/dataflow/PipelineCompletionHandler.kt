@@ -5,8 +5,8 @@
 package io.airbyte.cdk.load.dataflow
 
 import io.airbyte.cdk.load.dataflow.aggregate.AggregateStore
+import io.airbyte.cdk.load.dataflow.state.StateHistogramStore
 import io.airbyte.cdk.load.dataflow.state.StateReconciler
-import io.airbyte.cdk.load.dataflow.state.StateStore
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import kotlinx.coroutines.async
@@ -16,7 +16,7 @@ import kotlinx.coroutines.coroutineScope
 @Singleton
 class PipelineCompletionHandler(
     private val aggStore: AggregateStore,
-    private val stateWatermarkStore: StateStore,
+    private val stateHistogramStore: StateHistogramStore,
     private val reconciler: StateReconciler,
 ) {
     private val log = KotlinLogging.logger {}
@@ -38,7 +38,7 @@ class PipelineCompletionHandler(
             .map {
                 async {
                     it.value.flush()
-                    stateWatermarkStore.acceptFlushedCounts(it.partitionHistogram)
+                    stateHistogramStore.acceptFlushedCounts(it.partitionHistogram)
                 }
             }
             .awaitAll()
