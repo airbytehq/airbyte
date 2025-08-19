@@ -142,7 +142,7 @@ jobs:
           ./poe-tasks/publish-python-registry.sh --name ${{ matrix.connector }}
         env:
           PYTHON_REGISTRY_TOKEN: ${{ secrets.PYPI_TOKEN }}
-        continue-on-error: true # We allow this to fail because we are testing this step. We should remove this once we are sure it works.
+        continue-on-error: true # We allow this to fail because we are testing this step. TODO: remove this once we are sure it works.
 
       - name: Publish to Python Registry [Manual]
         id: publish-python-registry-manual
@@ -160,7 +160,34 @@ jobs:
           ./poe-tasks/publish-python-registry.sh --name ${{ matrix.connector }} $PRE_RELEASE_FLAG
         env:
           PYTHON_REGISTRY_TOKEN: ${{ secrets.PYPI_TOKEN }}
-        continue-on-error: true # We allow this to fail because we are testing this step. We should remove this once we are sure it works.
+        continue-on-error: true # We allow this to fail because we are testing this step. TODO: remove this once we are sure it works.
+
+      - name: Upload Python Dependencies to GCS [On merge to master]
+        id: upload-python-dependencies-master
+        if: github.event_name == 'push' && steps.connector-metadata.outputs.connector-language == 'python'
+        shell: bash
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+        run: |
+          ./poe-tasks/upload-python-dependencies.sh --name ${{ matrix.connector }} --bucket prod-airbyte-cloud-connector-metadata-service
+        continue-on-error: true # We allow this to fail because we are testing this step. TODO: remove this once we are sure it works.
+
+      - name: Upload Python Dependencies to GCS [Manual]
+        id: upload-python-dependencies-manual
+        if: (github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call') && steps.connector-metadata.outputs.connector-language == 'python'
+        shell: bash
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+        run: |
+          # Determine if this is a pre-release
+          is_pre_release=$(echo "${{ inputs.publish-options }}" | grep -c -- '--pre-release' || true)
+          if [[ $is_pre_release -gt 0 ]]; then
+            PRE_RELEASE_FLAG="--pre-release"
+          else
+            PRE_RELEASE_FLAG=""
+          fi
+          ./poe-tasks/upload-python-dependencies.sh --name ${{ matrix.connector }} --bucket prod-airbyte-cloud-connector-metadata-service $PRE_RELEASE_FLAG
+        continue-on-error: true # We allow this to fail because we are testing this step. TODO: remove this once we are sure it works.
 
       - name: Build and publish JVM connectors images [On merge to master]
         id: build-and-publish-JVM-connectors-images-master
@@ -214,39 +241,15 @@ jobs:
           docker-hub-username: ${{ secrets.DOCKER_HUB_USERNAME }}
           docker-hub-password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
-      - name: Publish connectors [On merge to master]
-        # JVM docker images are published beforehand so Airbyte-CI only does registry publishing.
-        id: publish-connectors-master
-        if: github.event_name == 'push'
-        uses: ./.github/actions/run-airbyte-ci
-        with:
-          context: "master"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_4 }}
-          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
-          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          metadata_service_gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
-          slack_webhook_url: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
-          spec_cache_gcs_credentials: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
-          s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
-          s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          subcommand: "connectors --name ${{ matrix.connector }} publish --main-release"
-          python_registry_token: ${{ secrets.PYPI_TOKEN }}
-          max_attempts: 2
-          retry_wait_seconds: 600 # 10 minutes
-
       - name: Upload connector metadata [On merge to master]
         id: upload-connector-metadata-master
         if: github.event_name == 'push'
         shell: bash
         run: ./poe-tasks/upload-connector-metadata.sh --name ${{ matrix.connector }} --main-release
         env:
-          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
-          SPEC_CACHE_GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
-          METADATA_SERVICE_GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          SPEC_CACHE_GCS_CREDENTIALS: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
+          METADATA_SERVICE_GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
 
       - name: Build and publish JVM connectors images [manual]
         id: build-and-publish-JVM-connectors-images-manual
@@ -276,38 +279,15 @@ jobs:
           docker-hub-username: ${{ secrets.DOCKER_HUB_USERNAME }}
           docker-hub-password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
-      - name: Publish connectors [manual]
-        id: publish-connectors-manual
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
-        uses: ./.github/actions/run-airbyte-ci
-        with:
-          context: "manual"
-          dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_4 }}
-          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
-          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          metadata_service_gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
-          slack_webhook_url: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
-          spec_cache_gcs_credentials: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
-          s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
-          s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          subcommand: "connectors --name ${{ matrix.connector }} publish ${{ inputs.publish-options }}"
-          python_registry_token: ${{ secrets.PYPI_TOKEN }}
-          airbyte_ci_binary_url: ${{ inputs.airbyte_ci_binary_url }}
-          max_attempts: 2
-
       - name: Upload connector metadata [Manual]
         id: upload-connector-metadata-manual
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
         shell: bash
         run: ./poe-tasks/upload-connector-metadata.sh --name ${{ matrix.connector }} ${{ inputs.publish-options }}
         env:
-          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
-          SPEC_CACHE_GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
-          METADATA_SERVICE_GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          SPEC_CACHE_GCS_CREDENTIALS: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
+          METADATA_SERVICE_GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
 
   notify-failure-slack-channel:
     name: "Notify Slack Channel on Publish Failures"
