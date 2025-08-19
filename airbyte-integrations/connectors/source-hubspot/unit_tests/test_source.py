@@ -695,11 +695,11 @@ def test_pagination_marketing_emails_stream(requests_mock, config):
 
     requests_mock.register_uri(
         "GET",
-        "/marketing-emails/v1/emails/with-statistics?limit=250",
+        "/marketing/v3/emails?limit=250",
         [
             {
                 "json": {
-                    "objects": [{"id": f"{y}", "updated": 1641234593251} for y in range(250)],
+                    "results": [{"id": f"{y}", "updated": 1641234593251} for y in range(250)],
                     "limit": 250,
                     "offset": 0,
                     "total": 600,
@@ -708,7 +708,7 @@ def test_pagination_marketing_emails_stream(requests_mock, config):
             },
             {
                 "json": {
-                    "objects": [{"id": f"{y}", "updated": 1641234593251} for y in range(250, 500)],
+                    "results": [{"id": f"{y}", "updated": 1641234593251} for y in range(250, 500)],
                     "limit": 250,
                     "offset": 250,
                     "total": 600,
@@ -717,7 +717,7 @@ def test_pagination_marketing_emails_stream(requests_mock, config):
             },
             {
                 "json": {
-                    "objects": [{"id": f"{y}", "updated": 1641234595251} for y in range(500, 600)],
+                    "results": [{"id": f"{y}", "updated": 1641234595251} for y in range(500, 600)],
                     "limit": 250,
                     "offset": 500,
                     "total": 600,
@@ -726,6 +726,20 @@ def test_pagination_marketing_emails_stream(requests_mock, config):
             },
         ],
     )
+    
+    # Mock the statistics endpoint for each email
+    for email_id in range(600):
+        requests_mock.get(
+            f"https://api.hubapi.com/marketing/v3/emails/{email_id}/statistics",
+            json={
+                "delivered": 100,
+                "opens": 50,
+                "clicks": 25,
+                "bounces": 5,
+                "optouts": 2
+            },
+            status_code=200
+        )
     test_stream = find_stream("marketing_emails", config)
 
     records = read_full_refresh(test_stream)

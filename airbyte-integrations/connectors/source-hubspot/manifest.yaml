@@ -39,6 +39,25 @@ definitions:
     error_handler:
       $ref: "#/definitions/base_error_handler"
 
+  marketing_email_statistics_requester:
+    type: HttpRequester
+    url_base: "https://api.hubapi.com"
+    path: "/marketing/v3/emails/{{ stream_partition['email_id'] }}/statistics"
+    authenticator:
+      $ref: "#/definitions/authenticator"
+    http_method: GET
+    request_headers:
+      Content-Type: application/json
+      User-Agent: Airbyte
+    error_handler:
+      $ref: "#/definitions/base_error_handler"
+
+  marketing_email_statistics_selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: []
+
   base_error_handler:
     type: DefaultErrorHandler
     backoff_strategies:
@@ -560,7 +579,7 @@ definitions:
       $ref: "#/definitions/base_retriever"
       requester:
         $ref: "#/definitions/base_requester"
-        path: /marketing-emails/v1/emails/with-statistics
+        path: /marketing/v3/emails
       paginator:
         $ref: "#/definitions/offset_paginator"
         pagination_strategy:
@@ -570,11 +589,17 @@ definitions:
         extractor:
           type: DpathExtractor
           field_path:
-            - objects
+            - results
         record_filter:
           type: RecordFilter
           condition: "{{ record['updated'] | int > format_datetime(config.get('start_date', '2006-06-01T00:00:00Z'), '%ms') | int }}"
     transformations:
+      - type: CustomTransformation
+        class_name: source_declarative_manifest.components.MarketingEmailStatisticsTransformation
+        requester:
+          $ref: "#/definitions/marketing_email_statistics_requester"
+        record_selector:
+          $ref: "#/definitions/marketing_email_statistics_selector"
       - type: AddFields
         fields:
           - path: ["rootMicId"]

@@ -625,7 +625,7 @@ def test_cast_record_fields_if_needed(
         ("engagements_meetings", "crm.objects.contacts.read", "https://api.hubapi.com/crm/v3/objects/meetings", "GET"),
         ("engagements_notes", "crm.objects.contacts.read", "https://api.hubapi.com/crm/v3/objects/notes", "GET"),
         ("engagements_tasks", "crm.objects.contacts.read", "https://api.hubapi.com/crm/v3/objects/tasks", "GET"),
-        ("marketing_emails", "content", "https://api.hubapi.com/marketing-emails/v1/emails/with-statistics", "GET"),
+        ("marketing_emails", "content", "https://api.hubapi.com/marketing/v3/emails", "GET"),
         ("deals_archived", "contacts, crm.objects.deals.read", "https://api.hubapi.com/crm/v3/objects/deals", "GET"),
         ("forms", "forms", "https://api.hubapi.com/marketing/v3/forms", "GET"),
         # form_submissions have parent stream forms
@@ -695,7 +695,7 @@ def test_discover_if_scopes_missing(config, requests_mock, mock_dynamic_schema_r
 
 def test_read_catalog_with_missing_scopes(config, requests_mock, mock_dynamic_schema_requests):
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
-    requests_mock.get("https://api.hubapi.com/marketing-emails/v1/emails/with-statistics", json={}, status_code=403)
+    requests_mock.get("https://api.hubapi.com/marketing/v3/emails", json={}, status_code=403)
     requests_mock.get("https://api.hubapi.com/email/public/v1/subscriptions", json={}, status_code=403)
     catalog = ConfiguredAirbyteCatalogSerializer.load(
         {
