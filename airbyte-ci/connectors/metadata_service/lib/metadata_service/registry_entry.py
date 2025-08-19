@@ -374,7 +374,9 @@ def _get_connector_type_from_registry_entry(registry_entry: dict) -> TaggedRegis
         raise Exception("Could not determine connector type from registry entry")
 
 
-def _get_registry_entry_blob_paths(metadata_dict: dict, registry_type: str, docker_image_tag: str, is_prerelease: bool) -> List[str]:
+def _get_registry_entry_blob_paths(
+    metadata_dict: dict, registry_type: str, docker_image_tag: str, metadata_data_with_overrides: dict, is_prerelease: bool
+) -> List[str]:
     """
     Builds the registry entry paths for the registry entries.
 
@@ -387,21 +389,29 @@ def _get_registry_entry_blob_paths(metadata_dict: dict, registry_type: str, dock
     """
     docker_repository = metadata_dict["data"]["dockerRepository"]
     registry_entry_paths = []
-    if is_prerelease:
-        dev_registry_entry_path = f"{METADATA_FOLDER}/{docker_repository}/{docker_image_tag}/{registry_type}.json"
-        registry_entry_paths.append(dev_registry_entry_path)
 
-    elif "-rc" not in metadata_dict["data"]["dockerImageTag"]:
-        latest_registry_entry_path = f"{METADATA_FOLDER}/{docker_repository}/latest/{registry_type}.json"
-        versioned_registry_entry_path = f"{METADATA_FOLDER}/{docker_repository}/{docker_image_tag}/{registry_type}.json"
+    # The versioned registry entries always respect the registry overrides.
+    # For example, with destination-postgres: we'll push oss.json to `destination-postgres/<version>/oss.json`,
+    # but cloud.json goes to `destination-postgres-strict-encrypt/<version>/cloud.json`.
+    versioned_registry_entry_path = f"{METADATA_FOLDER}/{metadata_data_with_overrides['dockerRepository']}/{metadata_data_with_overrides['dockerImageTag']}/{registry_type}.json"
+    # We always publish the versioned registry entry.
+    registry_entry_paths.append(versioned_registry_entry_path)
 
-        registry_entry_paths.append(latest_registry_entry_path)
-        registry_entry_paths.append(versioned_registry_entry_path)
+    # If we're not doing a prerelease, we have an extra file to push.
+    if not is_prerelease:
+        if "-rc" in metadata_dict["data"]["dockerImageTag"]:
+            # We're doing a release candidate publish. Push the RC registry entry.
+            # This intentionally uses the non-overridden docker_repository. We _always_ upload both cloud+oss registry entries
+            # to the non-overridden docker_repository path for the `release_candidate` entry.
+            release_candidate_registry_entry_path = f"{METADATA_FOLDER}/{docker_repository}/release_candidate/{registry_type}.json"
+            registry_entry_paths.append(release_candidate_registry_entry_path)
 
-    elif "-rc" in metadata_dict["data"]["dockerImageTag"]:
-        release_candidate_registry_entry_path = f"{METADATA_FOLDER}/{docker_repository}/release_candidate/{registry_type}.json"
-        versioned_registry_entry_path = f"{METADATA_FOLDER}/{docker_repository}/{docker_image_tag}/{registry_type}.json"
-        registry_entry_paths.append(release_candidate_registry_entry_path)
+        else:
+            # This is a normal publish. Push the `latest` registry entry.
+            # This intentionally uses the non-overridden docker_repository. We _always_ upload both cloud+oss registry entries
+            # to the non-overridden docker_repository path for the `latest` entry.
+            latest_registry_entry_path = f"{METADATA_FOLDER}/{docker_repository}/latest/{registry_type}.json"
+            registry_entry_paths.append(latest_registry_entry_path)
 
     return registry_entry_paths
 
@@ -461,12 +471,7 @@ def generate_and_persist_registry_entry(
 
     # If the connector is not enabled on the given registry, skip generateing and persisting the registry entry.
     if metadata_dict["data"]["registryOverrides"][registry_type]["enabled"]:
-        registry_entry_blob_paths = _get_registry_entry_blob_paths(
-            metadata_dict, registry_type, docker_image_tag, is_prerelease=pre_release_tag is not None
-        )
-
         metadata_data = metadata_dict["data"]
-
         try:
             overridden_metadata_data = _apply_metadata_overrides(metadata_data, registry_type, bucket_name, metadata_blob)
         except Exception as e:
@@ -474,6 +479,10 @@ def generate_and_persist_registry_entry(
             message = f"*🤖 🔴 _Registry Entry Generation_ FAILED*:\nRegistry Entry: `{registry_type}.json`\nConnector: `{metadata_data['dockerRepository']}`\nGCS Bucket: `{bucket_name}`."
             send_slack_message(PUBLISH_UPDATE_CHANNEL, message)
             raise
+
+        registry_entry_blob_paths = _get_registry_entry_blob_paths(
+            metadata_dict, registry_type, docker_image_tag, overridden_metadata_data, is_prerelease=pre_release_tag is not None
+        )
 
         logger.info("Parsing spec file.")
         overridden_metadata_data["spec"] = _get_and_parse_json_file(spec_path)
