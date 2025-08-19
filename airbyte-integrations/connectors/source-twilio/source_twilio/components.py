@@ -2,11 +2,12 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
+from datetime import datetime, timezone
 from typing import Any, Mapping
+
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_format
-from datetime import datetime, timezone
 
 
 class TwilioDateTimeTypeTransformer(TypeTransformer):
@@ -37,6 +38,7 @@ class TwilioDateTimeTypeTransformer(TypeTransformer):
 
         return custom_transform_function
 
+
 class TwilioStateMigration(StateMigration):
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         for state in stream_state.get("states", []):
@@ -47,6 +49,7 @@ class TwilioStateMigration(StateMigration):
         if stream_state and any("parent_slice" not in state["partition"] for state in stream_state.get("states", [])):
             return True
         return False
+
 
 class TwilioUsageRecordsStateMigration(StateMigration):
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -59,11 +62,17 @@ class TwilioUsageRecordsStateMigration(StateMigration):
             return True
         return False
 
+
 class TwilioMessageMediaStateMigration(StateMigration):
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         for state in stream_state.get("states", []):
-            state["partition"] = {"subresource_uri": state["partition"]["subresource_uri"], "parent_slice":
-                {"subresource_uri": state["partition"]["subresource_uri"].split("Messages")[0] + "Messages.json", "parent_slice": {}}}
+            state["partition"] = {
+                "subresource_uri": state["partition"]["subresource_uri"],
+                "parent_slice": {
+                    "subresource_uri": state["partition"]["subresource_uri"].split("Messages")[0] + "Messages.json",
+                    "parent_slice": {},
+                },
+            }
         return stream_state
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:

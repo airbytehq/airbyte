@@ -145,7 +145,7 @@ definitions:
                 - type: AddFields
                   fields:
                     - type: AddedFieldDefinition
-                      path: [ subresource_uri ]
+                      path: [subresource_uri]
                       value: "{{ record.get('subresource_uris', {}).get(parameters.get('subresource_uri_key') or parameters.get('data_field') or parameters['name']) }}"
             parent_key: subresource_uri
             partition_field: subresource_uri
@@ -155,7 +155,7 @@ definitions:
       datetime_format: "%Y-%m-%d"
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%SZ"
-        - '%Y-%m-%d'
+        - "%Y-%m-%d"
         - "%Y-%m-%dT%H:%M:%S.%f%z"
       cursor_granularity: P1D
       step: P1Y
@@ -163,7 +163,7 @@ definitions:
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ format_datetime(config.get('start_date', '1970-01-01T00:00:00Z'), '%Y-%m-%d') }}"
-        datetime_format: '%Y-%m-%d'
+        datetime_format: "%Y-%m-%d"
       start_time_option:
         type: RequestOption
         field_name: "{{ parameters.get('start_time_key') }}"
@@ -171,7 +171,7 @@ definitions:
       end_datetime:
         type: MinMaxDatetime
         datetime: "{{ today_utc() }}"
-        datetime_format: '%Y-%m-%d'
+        datetime_format: "%Y-%m-%d"
       end_time_option:
         type: RequestOption
         field_name: "{{ parameters.get('end_time_key') }}"
@@ -512,7 +512,7 @@ definitions:
                 - type: AddFields
                   fields:
                     - type: AddedFieldDefinition
-                      path: [ subresource_uri ]
+                      path: [subresource_uri]
                       value: "{{ record.get('subresource_uris', {}).get(parameters['subresource_uri_subkey']) }}"
             parent_key: subresource_uri
             partition_field: subresource_uri
@@ -521,7 +521,7 @@ definitions:
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ max(format_datetime(config.get('start_date', '1970-01-01T00:00:00Z'), '%Y-%m-%d'), day_delta(-400, format='%Y-%m-%d')) }}"
-        datetime_format: '%Y-%m-%d'
+        datetime_format: "%Y-%m-%d"
     state_migrations:
       - type: CustomStateMigration
         class_name: source_twilio.components.TwilioMessageMediaStateMigration
@@ -544,7 +544,7 @@ definitions:
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ max(format_datetime(config.get('start_date', '1970-01-01T00:00:00Z'), '%Y-%m-%d'), day_delta(-400, format='%Y-%m-%d')) }}"
-        datetime_format: '%Y-%m-%d'
+        datetime_format: "%Y-%m-%d"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -676,7 +676,7 @@ definitions:
             partition_field: account_sid
     transformations:
       - type: RemoveFields
-        field_pointers: [[ "as_of" ]]
+        field_pointers: [["as_of"]]
     schema_loader:
       type: InlineSchemaLoader
       schema:

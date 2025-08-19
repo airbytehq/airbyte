@@ -2,14 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from urllib.parse import urlparse, parse_qs, urlencode
+from urllib.parse import parse_qs, urlencode, urlparse
 
 import pytest
 from freezegun import freeze_time
 from source_twilio.source import SourceTwilio
 
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.models import ConfiguredAirbyteCatalog
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.state_builder import StateBuilder
@@ -40,12 +39,14 @@ ACCOUNTS_JSON = {
     ],
 }
 
+
 def find_stream(stream_name, config, state=None):
     streams = SourceTwilio(config, None, state).streams(config=config)
     for stream in streams:
         if stream.name == stream_name:
             return stream
     raise ValueError(f"Stream {stream_name} not found")
+
 
 def read_from_stream(cfg, stream: str, sync_mode, state=None, expecting_exception: bool = False) -> EntrypointOutput:
     catalog = CatalogBuilder().with_stream(stream, sync_mode).build()
@@ -59,10 +60,10 @@ class TestTwilioStream:
                 {
                     "sid": "AC123",
                     "date_created": "2022-01-01T00:00:00Z",
-                    "subresource_uris": {"addresses": '/2010-04-01/Accounts/AC123/Addresses.json'},
+                    "subresource_uris": {"addresses": "/2010-04-01/Accounts/AC123/Addresses.json"},
                 }
             ],
-            "next_page_uri": "/2010-04-01/Accounts.json?PageSize=1000&Page=2&PageToken=PAAD42931b949c0dedce94b2f93847fdcf95"
+            "next_page_uri": "/2010-04-01/Accounts.json?PageSize=1000&Page=2&PageToken=PAAD42931b949c0dedce94b2f93847fdcf95",
         }
         requests_mock.get(f"{BASE}/Accounts.json", json=accounts_page_1_json, status_code=200)
 
@@ -75,7 +76,11 @@ class TestTwilioStream:
                 }
             ]
         }
-        requests_mock.get(f"{BASE}/Accounts.json?PageSize=1000&Page=2&PageToken=PAAD42931b949c0dedce94b2f93847fdcf95", json=accounts_page_2_json, status_code=200)
+        requests_mock.get(
+            f"{BASE}/Accounts.json?PageSize=1000&Page=2&PageToken=PAAD42931b949c0dedce94b2f93847fdcf95",
+            json=accounts_page_2_json,
+            status_code=200,
+        )
 
         records = read_from_stream(TEST_CONFIG, "accounts", SyncMode.full_refresh).records
 
@@ -119,7 +124,6 @@ class TestTwilioStream:
         assert records[0].record.data["date_updated"] == "2020-12-11T04:28:40Z"
 
 
-
 class TestIncrementalTwilioStream:
     @freeze_time("2022-11-16 12:03:11+00:00")
     def test_calls_includes_date_window_params(self, requests_mock):
@@ -140,35 +144,49 @@ class TestIncrementalTwilioStream:
         "stream_name,path,lower_key,upper_key,state,windows",
         [
             (
-                    "messages",
-                    "/Accounts/AC123/Messages.json",
-                    "DateSent>",
-                    "DateSent<",
-                    {"states": [{"partition": {"subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json"}, "cursor": {"date_sent": "2022-11-13"}}]},
-                    [
-                        ("2022-11-13", "2022-11-16"),
-                    ],
+                "messages",
+                "/Accounts/AC123/Messages.json",
+                "DateSent>",
+                "DateSent<",
+                {
+                    "states": [
+                        {
+                            "partition": {"subresource_uri": "/2010-04-01/Accounts/AC123/Messages.json"},
+                            "cursor": {"date_sent": "2022-11-13"},
+                        }
+                    ]
+                },
+                [
+                    ("2022-11-13", "2022-11-16"),
+                ],
             ),
             (
-                    "usage_records",
-                    "/Accounts/AC123/Usage/Records/Daily.json",
-                    "StartDate",
-                    "EndDate",
-                    {"states": [{"partition": {"account_sid": "AC123"}, "cursor": {"start_date": "2022-11-13"}}]},
-                    [
-                        ("2022-11-13", "2022-11-16"),
-                    ],
+                "usage_records",
+                "/Accounts/AC123/Usage/Records/Daily.json",
+                "StartDate",
+                "EndDate",
+                {"states": [{"partition": {"account_sid": "AC123"}, "cursor": {"start_date": "2022-11-13"}}]},
+                [
+                    ("2022-11-13", "2022-11-16"),
+                ],
             ),
             (
-                    "recordings",
-                    "/Accounts/AC123/Recordings.json",
-                    "DateCreated>",
-                    "DateCreated<",
-                    {"states": [{"partition": {"subresource_uri": "/2010-04-01/Accounts/AC123/Recordings.json"}, "cursor": {"date_created": "2021-11-13"}}]},
-                    [
-                        ("2021-11-13", "2022-11-12"),
-                        ("2022-11-13", "2022-11-16"),
-                    ],
+                "recordings",
+                "/Accounts/AC123/Recordings.json",
+                "DateCreated>",
+                "DateCreated<",
+                {
+                    "states": [
+                        {
+                            "partition": {"subresource_uri": "/2010-04-01/Accounts/AC123/Recordings.json"},
+                            "cursor": {"date_created": "2021-11-13"},
+                        }
+                    ]
+                },
+                [
+                    ("2021-11-13", "2022-11-12"),
+                    ("2022-11-13", "2022-11-16"),
+                ],
             ),
         ],
     )
@@ -185,10 +203,7 @@ class TestIncrementalTwilioStream:
         accounts_matcher = requests_mock.get(f"{BASE}/Accounts.json", json=ACCOUNTS_JSON, status_code=200)
 
         # One matcher per expected window (exact query values)
-        child_matchers = [
-            _register_date_window(requests_mock, path, stream_name, lower_key, upper_key, lo, hi)
-            for (lo, hi) in windows
-        ]
+        child_matchers = [_register_date_window(requests_mock, path, stream_name, lower_key, upper_key, lo, hi) for (lo, hi) in windows]
 
         state = (
             StateBuilder()
