@@ -726,19 +726,13 @@ def test_pagination_marketing_emails_stream(requests_mock, config):
             },
         ],
     )
-    
+
     # Mock the statistics endpoint for each email
     for email_id in range(600):
         requests_mock.get(
             f"https://api.hubapi.com/marketing/v3/emails/{email_id}/statistics",
-            json={
-                "delivered": 100,
-                "opens": 50,
-                "clicks": 25,
-                "bounces": 5,
-                "optouts": 2
-            },
-            status_code=200
+            json={"delivered": 100, "opens": 50, "clicks": 25, "bounces": 5, "optouts": 2},
+            status_code=200,
         )
     test_stream = find_stream("marketing_emails", config)
 
