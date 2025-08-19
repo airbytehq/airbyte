@@ -68,6 +68,12 @@ class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonPropertyDescription("Port of the database. Defaults to 5432.")
     var port: Int = 5432
 
+    @JsonProperty("database")
+    @JsonSchemaTitle("Database Name")
+    @JsonPropertyDescription("The name of the database to connect to.")
+    @JsonSchemaInject(json = """{"order":3}""")
+    lateinit var database: String
+
     @JsonProperty("username")
     @JsonSchemaTitle("User")
     @JsonPropertyDescription("The username which is used to access the database.")

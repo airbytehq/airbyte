@@ -15,8 +15,8 @@ airbyteBulkConnector {
 }
 
 dependencies {
-    implementation 'io.debezium:debezium-embedded:3.1.3.Final'
-    implementation 'io.debezium:debezium-connector-postgres:3.1.3.Final'
+    implementation 'org.postgresql:postgresql:42.7.7'
+    implementation 'io.debezium:debezium-connector-postgres'
 
     testFixturesApi 'org.testcontainers:postgresql:1.20.6'
 }

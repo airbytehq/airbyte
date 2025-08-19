@@ -7,6 +7,7 @@ import io.airbyte.cdk.discover.FieldOrMetaField
 import io.airbyte.cdk.discover.JdbcAirbyteStreamFactory
 import io.airbyte.cdk.discover.MetaField
 import io.airbyte.cdk.read.Stream
+import io.airbyte.integrations.source.postgres.PostgresSourceCdcMetaFields
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
 import java.time.OffsetDateTime
@@ -15,9 +16,9 @@ import java.time.OffsetDateTime
 @Primary
 class PostgresSourceStreamFactory : JdbcAirbyteStreamFactory {
 
-    override val globalCursor: FieldOrMetaField = throw NotImplementedError()
+    override val globalCursor: FieldOrMetaField = PostgresSourceCdcMetaFields.CDC_CURSOR
 
-    override val globalMetaFields: Set<MetaField> = throw NotImplementedError()
+    override val globalMetaFields: Set<MetaField> = emptySet() // TEMP
 
     override fun decorateRecordData(
         timestamp: OffsetDateTime,

@@ -21,9 +21,11 @@ import io.micronaut.context.annotation.Value
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import java.net.URLDecoder
+import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.time.Duration
 import java.util.*
+import org.postgresql.PGProperty
 
 private val log = KotlinLogging.logger {}
 
@@ -138,11 +140,20 @@ constructor(
         val incremental: IncrementalConfiguration =
             fromIncrementalSpec(pojo.getIncrementalConfigurationSpecificationValue())
 
+        /*
+        final String encodedDatabaseName = URLEncoder.encode(config.get(JdbcUtils.DATABASE_KEY).asText(), StandardCharsets.UTF_8);
+
+            final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:postgresql://%s:%s/%s?",
+        config.get(JdbcUtils.HOST_KEY).asText(),
+        config.get(JdbcUtils.PORT_KEY).asText(),
+        encodedDatabaseName));
+         */
+
+        var encodedDatabaseName = URLEncoder.encode(pojo.database, StandardCharsets.UTF_8.name())
+
         // Build JDBC URL.
         val address = "%s:%d"
-        val jdbcUrlFmt = "jdbc:mysql://${address}"
-        jdbcProperties["useCursorFetch"] = "true"
-        jdbcProperties["sessionVariables"] = "autocommit=0"
+        val jdbcUrlFmt = "jdbc:postgresql://$realHost:$realPort/$encodedDatabaseName?${PGProperty.CURRENT_SCHEMA}=public"
 
         // Internal configuration settings.
         val checkpointTargetInterval: Duration =
@@ -155,9 +166,10 @@ constructor(
 
         log.info { "maxDBConnections: $maxDBConnections. socket paths: ${socketPaths.size}" }
 
+        //TODO: by channel medium
         // If max_db_connections is set, we use it.
         // Otherwise, we use the number of socket paths provided.
-        val maxConcurrency: Int = maxDBConnections ?: socketPaths.size
+        val maxConcurrency: Int = maxDBConnections ?: /*socketPaths.size*/1
         log.info { "Effective concurrency: $maxConcurrency" }
 
         return PostgresSourceConfiguration(
