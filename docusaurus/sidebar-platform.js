@@ -516,10 +516,6 @@ module.exports = {
         },
         {
           type: "doc",
-          id: "terraform-documentation",
-        },
-        {
-          type: "doc",
           label: "Using PyAirbyte",
           id: "using-airbyte/pyairbyte/getting-started",
         },

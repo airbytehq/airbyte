@@ -40,7 +40,8 @@ export default {
           type: "doc",
           id: "pyairbyte-mcp/README",
           label: "PyAirbyte MCP",
-        }
+        },
+        "terraform",
       ]
     }
   ],
