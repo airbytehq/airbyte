@@ -6,7 +6,7 @@ import jakarta.inject.Singleton
 import java.util.concurrent.atomic.AtomicInteger
 
 @Singleton
-class StreamCompleteTracker(
+class StreamCompletionTracker(
     catalog: DestinationCatalog,
 ) {
     private val expectedCount = catalog.streams.size

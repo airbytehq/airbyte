@@ -6,12 +6,14 @@ package io.airbyte.cdk.load.dataflow
 
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.dataflow.config.MemoryAndParallelismConfig
-import io.airbyte.cdk.load.dataflow.finalization.StreamCompleteTracker
+import io.airbyte.cdk.load.dataflow.finalization.StreamCompletionTracker
 import io.airbyte.cdk.load.dataflow.pipeline.DataFlowPipeline
+import io.airbyte.cdk.load.state.StreamProcessingFailed
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
+import java.lang.Exception
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -24,7 +26,7 @@ class DestinationLifecycle(
     private val destinationInitializer: DestinationWriter,
     private val destinationCatalog: DestinationCatalog,
     private val pipeline: DataFlowPipeline,
-    private val completionTracker: StreamCompleteTracker,
+    private val completionTracker: StreamCompletionTracker,
     private val memoryAndParallelismConfig: MemoryAndParallelismConfig,
 ) {
     private val log = KotlinLogging.logger {}
@@ -34,8 +36,7 @@ class DestinationLifecycle(
         initializeDestination()
 
         // Create prepare individual streams for the data ingestion. E.g. create tables and
-        // propagate
-        // the schema updates
+        // propagate the schema updates
         val streamLoaders = initializeIndividualStreams()
 
         // Move data
@@ -87,8 +88,7 @@ class DestinationLifecycle(
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun finalizeIndividualStreams(streamLoaders: List<StreamLoader>) {
         if (!completionTracker.allStreamsComplete()) {
-            log.info { "All streams not complete. Skipping finalization..." }
-            return
+            log.warn { "All streams did not complete. Skipping destructive finalization operations..." }
         }
 
         val finalizeDispatcher: CoroutineDispatcher =
@@ -103,7 +103,7 @@ class DestinationLifecycle(
                         log.info {
                             "Finalizing stream ${it.stream.mappedDescriptor.namespace}:${it.stream.mappedDescriptor.name}"
                         }
-                        it.close(true)
+                        it.teardown(completionTracker.allStreamsComplete())
                         log.info {
                             "Finalized stream ${it.stream.mappedDescriptor.namespace}:${it.stream.mappedDescriptor.name}"
                         }

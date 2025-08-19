@@ -2,14 +2,9 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.load.dataflow
+package io.airbyte.cdk.load.dataflow.pipeline
 
 import io.airbyte.cdk.load.dataflow.config.MemoryAndParallelismConfig
-import io.airbyte.cdk.load.dataflow.pipeline.DataFlowPipeline
-import io.airbyte.cdk.load.dataflow.pipeline.DataFlowStage
-import io.airbyte.cdk.load.dataflow.pipeline.DataFlowStageIO
-import io.airbyte.cdk.load.dataflow.pipeline.PipelineCompletionHandler
-import io.airbyte.cdk.load.dataflow.pipeline.PipelineStartHandler
 import io.airbyte.cdk.load.dataflow.stages.AggregateStage
 import io.mockk.coEvery
 import io.mockk.coVerifySequence

@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.load.dataflow.input
 
-import io.airbyte.cdk.load.dataflow.finalization.StreamCompleteTracker
+import io.airbyte.cdk.load.dataflow.finalization.StreamCompletionTracker
 import io.airbyte.cdk.load.dataflow.pipeline.DataFlowStageIO
 import io.airbyte.cdk.load.dataflow.state.StateKeyClient
 import io.airbyte.cdk.load.dataflow.state.StateStore
@@ -27,7 +27,7 @@ class DataFlowPipelineInputFlow(
     private val inputFlow: Flow<DestinationMessage>,
     private val stateStore: StateStore,
     private val stateKeyClient: StateKeyClient,
-    private val completionTracker: StreamCompleteTracker,
+    private val completionTracker: StreamCompletionTracker,
 ) : Flow<DataFlowStageIO> {
     override suspend fun collect(
         collector: FlowCollector<DataFlowStageIO>,
