@@ -138,7 +138,7 @@ jobs:
       matrix:
         connector_name: ${{ fromJson(needs.bump-cdk-version.outputs.modified_connectors) }}
     with:
-      connectors-options: "--name=${{ matrix.connector_name }}"
+      connectors: "--name=${{ matrix.connector_name }}"
       publish-options: --pre-release
     secrets: inherit
 
