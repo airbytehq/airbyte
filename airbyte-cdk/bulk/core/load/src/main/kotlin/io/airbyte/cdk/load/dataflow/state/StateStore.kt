@@ -24,7 +24,7 @@ class StateStore(
 
     fun accept(msg: CheckpointMessage) {
         val key = keyClient.getStateKey(msg)
-        histogramStore.acceptExpectedCounts(key, msg.sourceStats!!.recordCount)
+        histogramStore.acceptExpectedCountsAndSize(key, msg.sourceStats!!.recordCount, msg.sourceStats.)
         states[key] = msg
     }
 
@@ -37,7 +37,23 @@ class StateStore(
         if (key.id != stateSequence.get()) return null
         if (!histogramStore.isComplete(key)) return null
 
+        val histogram: Long? = histogramStore.get(key)
         stateSequence.incrementAndGet()
-        return states.remove(key)
+
+        val checkpoint: CheckpointMessage? = states.remove(key)
+        return if (checkpoint == null || histogram == null) {
+            null
+        } else {
+            checkpoint.updateStats(
+                destinationStats = CheckpointMessage.Stats(histogram),
+                totalRecords = histogram
+            )
+            return checkpoint
+        }
     }
+
+    data class StateAndCount(
+        val state: CheckpointMessage,
+        val count: Long,
+    )
 }

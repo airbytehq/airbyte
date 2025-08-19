@@ -13,16 +13,22 @@ class StateHistogramStore {
     private val flushed: PartitionHistogram = PartitionHistogram(ConcurrentHashMap())
     // Counts of expected messages by state id
     private val expected: StateHistogram = StateHistogram(ConcurrentHashMap())
+    // Counts of expected messages size by state id
+    private val expectedSize: StateHistogram = StateHistogram(ConcurrentHashMap())
 
     fun acceptFlushedCounts(value: PartitionHistogram): PartitionHistogram {
         return flushed.merge(value)
     }
 
-    fun acceptExpectedCounts(key: StateKey, count: Long): StateHistogram {
-        val inner = ConcurrentHashMap<StateKey, Long>()
-        inner[key] = count
+    fun acceptExpectedCountsAndSize(key: StateKey, count: Long, size: Long): StateHistogram {
+        val innerCount = ConcurrentHashMap<StateKey, Long>()
+        innerCount[key] = count
 
-        return expected.merge(StateHistogram(inner))
+        val innerSize = ConcurrentHashMap<StateKey, Long>()
+        innerSize[key] = size
+
+
+        return expected.merge(StateHistogram(innerCount))
     }
 
     fun isComplete(key: StateKey): Boolean {
@@ -36,4 +42,6 @@ class StateHistogramStore {
         expected.remove(key)
         key.partitionKeys.forEach { flushed.remove(it) }
     }
+
+    fun get(key: StateKey) = expected.get(key)
 }

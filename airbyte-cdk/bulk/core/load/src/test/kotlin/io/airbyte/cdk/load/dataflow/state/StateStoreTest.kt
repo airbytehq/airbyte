@@ -40,14 +40,14 @@ class StateStoreTest {
         every { checkpointMessage.sourceStats } returns sourceStats
         every { sourceStats.recordCount } returns 100L
         every { keyClient.getStateKey(checkpointMessage) } returns stateKey
-        every { histogramStore.acceptExpectedCounts(stateKey, 100L) } returns mockk()
+        every { histogramStore.acceptExpectedCountsAndSize(stateKey, 100L) } returns mockk()
 
         // When
         stateStore.accept(checkpointMessage)
 
         // Then
         verify { keyClient.getStateKey(checkpointMessage) }
-        verify { histogramStore.acceptExpectedCounts(stateKey, 100L) }
+        verify { histogramStore.acceptExpectedCountsAndSize(stateKey, 100L) }
     }
 
     @Test
@@ -60,7 +60,7 @@ class StateStoreTest {
         every { checkpointMessage.sourceStats } returns sourceStats
         every { sourceStats.recordCount } returns 100L
         every { keyClient.getStateKey(checkpointMessage) } returns stateKey
-        every { histogramStore.acceptExpectedCounts(any(), any()) } returns mockk()
+        every { histogramStore.acceptExpectedCountsAndSize(any(), any()) } returns mockk()
 
         stateStore.accept(checkpointMessage)
 
@@ -90,7 +90,7 @@ class StateStoreTest {
         every { checkpointMessage.sourceStats } returns sourceStats
         every { sourceStats.recordCount } returns 100L
         every { keyClient.getStateKey(checkpointMessage) } returns stateKey
-        every { histogramStore.acceptExpectedCounts(any(), any()) } returns mockk()
+        every { histogramStore.acceptExpectedCountsAndSize(any(), any()) } returns mockk()
 
         stateStore.accept(checkpointMessage)
 
@@ -111,7 +111,7 @@ class StateStoreTest {
         every { checkpointMessage.sourceStats } returns sourceStats
         every { sourceStats.recordCount } returns 100L
         every { keyClient.getStateKey(checkpointMessage) } returns stateKey
-        every { histogramStore.acceptExpectedCounts(any(), any()) } returns mockk()
+        every { histogramStore.acceptExpectedCountsAndSize(any(), any()) } returns mockk()
         every { histogramStore.isComplete(stateKey) } returns false
 
         stateStore.accept(checkpointMessage)
@@ -134,7 +134,7 @@ class StateStoreTest {
         every { checkpointMessage.sourceStats } returns sourceStats
         every { sourceStats.recordCount } returns 100L
         every { keyClient.getStateKey(checkpointMessage) } returns stateKey
-        every { histogramStore.acceptExpectedCounts(any(), any()) } returns mockk()
+        every { histogramStore.acceptExpectedCountsAndSize(any(), any()) } returns mockk()
         every { histogramStore.isComplete(stateKey) } returns true
 
         stateStore.accept(checkpointMessage)
@@ -171,7 +171,7 @@ class StateStoreTest {
         every { keyClient.getStateKey(checkpointMessage1) } returns stateKey1
         every { keyClient.getStateKey(checkpointMessage2) } returns stateKey2
         every { keyClient.getStateKey(checkpointMessage3) } returns stateKey3
-        every { histogramStore.acceptExpectedCounts(any(), any()) } returns mockk()
+        every { histogramStore.acceptExpectedCountsAndSize(any(), any()) } returns mockk()
         every { histogramStore.isComplete(any()) } returns true
 
         // Add in reverse order
@@ -202,7 +202,7 @@ class StateStoreTest {
 
         every { keyClient.getStateKey(checkpointMessage1) } returns stateKey1
         every { keyClient.getStateKey(checkpointMessage2) } returns stateKey2
-        every { histogramStore.acceptExpectedCounts(any(), any()) } returns mockk()
+        every { histogramStore.acceptExpectedCountsAndSize(any(), any()) } returns mockk()
         every { histogramStore.isComplete(stateKey1) } returns false // incomplete
         every { histogramStore.isComplete(stateKey2) } returns true
 

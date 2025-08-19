@@ -25,7 +25,7 @@ class StateHistogramStoreTest {
         val partitionKey = PartitionKey("partition-1")
         val stateKey = StateKey(1L, listOf(partitionKey))
 
-        stateHistogramStore.acceptExpectedCounts(stateKey, 5L)
+        stateHistogramStore.acceptExpectedCountsAndSize(stateKey, 5L)
 
         val partitionHistogram = PartitionHistogram(ConcurrentHashMap())
         repeat(5) { partitionHistogram.increment(partitionKey) }
@@ -46,7 +46,7 @@ class StateHistogramStoreTest {
         val partitionKey3 = PartitionKey("partition-3")
         val stateKey = StateKey(1L, listOf(partitionKey1, partitionKey2, partitionKey3))
 
-        stateHistogramStore.acceptExpectedCounts(stateKey, 15L) // 5 + 3 + 7 = 15
+        stateHistogramStore.acceptExpectedCountsAndSize(stateKey, 15L) // 5 + 3 + 7 = 15
 
         val partitionHistogram = PartitionHistogram(ConcurrentHashMap())
         repeat(5) { partitionHistogram.increment(partitionKey1) }
@@ -67,7 +67,7 @@ class StateHistogramStoreTest {
         val partitionKey = PartitionKey("partition-1")
         val stateKey = StateKey(1L, listOf(partitionKey))
 
-        stateHistogramStore.acceptExpectedCounts(stateKey, 10L)
+        stateHistogramStore.acceptExpectedCountsAndSize(stateKey, 10L)
 
         val partitionHistogram = PartitionHistogram(ConcurrentHashMap())
         repeat(7) { partitionHistogram.increment(partitionKey) } // Less than expected
@@ -86,7 +86,7 @@ class StateHistogramStoreTest {
         val partitionKey = PartitionKey("partition-1")
         val stateKey = StateKey(1L, listOf(partitionKey))
 
-        stateHistogramStore.acceptExpectedCounts(stateKey, 5L)
+        stateHistogramStore.acceptExpectedCountsAndSize(stateKey, 5L)
 
         val partitionHistogram = PartitionHistogram(ConcurrentHashMap())
         repeat(8) { partitionHistogram.increment(partitionKey) } // More than expected
@@ -122,7 +122,7 @@ class StateHistogramStoreTest {
         val partitionKey = PartitionKey("partition-1")
         val stateKey = StateKey(1L, listOf(partitionKey))
 
-        stateHistogramStore.acceptExpectedCounts(stateKey, 5L)
+        stateHistogramStore.acceptExpectedCountsAndSize(stateKey, 5L)
 
         // When
         val result = stateHistogramStore.isComplete(stateKey)
@@ -138,7 +138,7 @@ class StateHistogramStoreTest {
         val partitionKey2 = PartitionKey("partition-2") // No flushed count for this
         val stateKey = StateKey(1L, listOf(partitionKey1, partitionKey2))
 
-        stateHistogramStore.acceptExpectedCounts(stateKey, 3L)
+        stateHistogramStore.acceptExpectedCountsAndSize(stateKey, 3L)
 
         val partitionHistogram = PartitionHistogram(ConcurrentHashMap())
         repeat(3) { partitionHistogram.increment(partitionKey1) }
@@ -159,7 +159,7 @@ class StateHistogramStoreTest {
         val partitionKey2 = PartitionKey("partition-2")
         val stateKey = StateKey(1L, listOf(partitionKey1, partitionKey2))
 
-        stateHistogramStore.acceptExpectedCounts(stateKey, 10L)
+        stateHistogramStore.acceptExpectedCountsAndSize(stateKey, 10L)
 
         val partitionHistogram = PartitionHistogram(ConcurrentHashMap())
         repeat(5) { partitionHistogram.increment(partitionKey1) }
@@ -185,8 +185,8 @@ class StateHistogramStoreTest {
         val stateKey1 = StateKey(1L, listOf(partitionKey1, partitionKey2))
         val stateKey2 = StateKey(2L, listOf(partitionKey3))
 
-        stateHistogramStore.acceptExpectedCounts(stateKey1, 8L)
-        stateHistogramStore.acceptExpectedCounts(stateKey2, 4L)
+        stateHistogramStore.acceptExpectedCountsAndSize(stateKey1, 8L)
+        stateHistogramStore.acceptExpectedCountsAndSize(stateKey2, 4L)
 
         val partitionHistogram = PartitionHistogram(ConcurrentHashMap())
         repeat(5) { partitionHistogram.increment(partitionKey1) }
