@@ -335,6 +335,7 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.0.0 | 2025-01-23 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Migrate Marketing Emails stream from deprecated v1 API to v3 API. Update endpoints from `/marketing-emails/v1/emails/with-statistics` to `/marketing/v3/emails` with separate statistics calls. |
 | 5.8.18 | 2025-08-09 | [64603](https://github.com/airbytehq/airbyte/pull/64603) | Update dependencies |
 | 5.8.17 | 2025-08-02 | [64197](https://github.com/airbytehq/airbyte/pull/64197) | Update dependencies |
 | 5.8.16 | 2025-07-26 | [63898](https://github.com/airbytehq/airbyte/pull/63898) | Update dependencies |
