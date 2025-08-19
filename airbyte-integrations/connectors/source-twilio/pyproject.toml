@@ -18,8 +18,6 @@ include = "source_twilio"
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
 airbyte-cdk = "^6"
-pendulum = "==2.1.2"
-requests = "==2.31.0"
 
 [tool.poetry.scripts]
 source-twilio = "source_twilio.run:run"
