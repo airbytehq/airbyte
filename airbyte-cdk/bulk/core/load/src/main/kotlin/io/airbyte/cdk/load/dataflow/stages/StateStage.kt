@@ -4,8 +4,8 @@
 
 package io.airbyte.cdk.load.dataflow.stages
 
-import io.airbyte.cdk.load.dataflow.DataFlowStage
-import io.airbyte.cdk.load.dataflow.DataFlowStageIO
+import io.airbyte.cdk.load.dataflow.pipeline.DataFlowStage
+import io.airbyte.cdk.load.dataflow.pipeline.DataFlowStageIO
 import io.airbyte.cdk.load.dataflow.state.StateHistogramStore
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Named

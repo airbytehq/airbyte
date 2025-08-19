@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.dataflow
 
+import io.airbyte.cdk.load.dataflow.pipeline.PipelineStartHandler
 import io.airbyte.cdk.load.dataflow.state.StateReconciler
 import io.mockk.Runs
 import io.mockk.every

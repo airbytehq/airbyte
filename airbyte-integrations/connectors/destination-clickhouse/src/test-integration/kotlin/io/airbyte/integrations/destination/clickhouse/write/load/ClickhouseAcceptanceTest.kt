@@ -43,7 +43,7 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 class ClickhouseDirectLoadWriterWithJson :
-    ClickhouseDirectLoadWriter(
+    ClickhouseAcceptanceTest(
         Utils.getConfigPath("valid_connection.json"),
         SchematizedNestedValueBehavior.PASS_THROUGH,
         false,
@@ -59,15 +59,175 @@ class ClickhouseDirectLoadWriterWithJson :
 }
 
 class ClickhouseDirectLoadWriterWithoutJson :
-    ClickhouseDirectLoadWriter(
+    ClickhouseAcceptanceTest(
         Utils.getConfigPath("valid_connection_no_json.json"),
         SchematizedNestedValueBehavior.STRINGIFY,
         true,
-    )
+    ) {
+    @Test
+    override fun testOutOfOrderStateMessages() {
+        super.testOutOfOrderStateMessages()
+    }
+
+    @Test
+    override fun testStateMessageBeforeRecords() {
+        super.testStateMessageBeforeRecords()
+    }
+
+    @Test
+    override fun testBasicWrite() {
+        super.testBasicWrite()
+    }
+
+    @Test
+    override fun testNamespaces() {
+        super.testNamespaces()
+    }
+
+    @Test
+    override fun testFunkyCharacters() {
+        super.testFunkyCharacters()
+    }
+
+    @Test
+    override fun testFunkyCharactersDedup() {
+        super.testFunkyCharactersDedup()
+    }
+
+    //    @Disabled
+    @Test
+    override fun testMidSyncCheckpointingStreamState() {
+        super.testMidSyncCheckpointingStreamState()
+    }
+
+    //    @Disabled
+    @Test
+    override fun testTruncateRefresh() {
+        super.testTruncateRefresh()
+    }
+
+    //    @Disabled
+    @Test
+    override fun testTruncateRefreshChangeSyncMode() {
+        super.testTruncateRefreshChangeSyncMode()
+    }
+
+    //    @Disabled
+    @Test
+    override fun testInterruptedTruncateWithPriorData() {
+        super.testInterruptedTruncateWithPriorData()
+    }
+
+    //    @Disabled
+    @Test
+    override fun testInterruptedTruncateWithoutPriorData() {
+        super.testInterruptedTruncateWithoutPriorData()
+    }
+
+    @Test
+    override fun testAppend() {
+        super.testAppend()
+    }
+
+    @Test
+    override fun testAppendSchemaEvolution() {
+        super.testAppendSchemaEvolution()
+    }
+
+    @Test
+    override fun testAppendJsonSchemaEvolution() {
+        super.testAppendJsonSchemaEvolution()
+    }
+
+    @Test
+    override fun testOverwriteSchemaEvolution() {
+        super.testOverwriteSchemaEvolution()
+    }
+
+    @Test
+    override fun testDedup() {
+        super.testDedup()
+    }
+
+    @Test
+    override fun testDedupWithStringKey() {
+        super.testDedupWithStringKey()
+    }
+
+    @Test
+    override fun testDedupNoCursor() {
+        super.testDedupNoCursor()
+    }
+
+    @Test
+    override fun testDedupChangeCursor() {
+        super.testDedupChangeCursor()
+    }
+
+    @Test
+    override fun testDedupChangePk() {
+        super.testDedupChangePk()
+    }
+
+    @Test
+    override fun testManyStreamsCompletion() {
+        super.testManyStreamsCompletion()
+    }
+
+    @Test
+    override fun testBasicTypes() {
+        super.testBasicTypes()
+    }
+
+    @Test
+    override fun testNumericTypes() {
+        super.testNumericTypes()
+    }
+
+    @Test
+    override fun testContainerTypes() {
+        super.testContainerTypes()
+    }
+
+    @Test
+    override fun testUnknownTypes() {
+        super.testUnknownTypes()
+    }
+
+    @Test
+    override fun testUnions() {
+        super.testUnions()
+    }
+
+    @Test
+    override fun testCoerceLegacyUnions() {
+        super.testCoerceLegacyUnions()
+    }
+
+    @Test
+    override fun testNoColumns() {
+        super.testNoColumns()
+    }
+
+    @Test
+    override fun testNoData() {
+        super.testNoData()
+    }
+
+    @Test
+    override fun testTruncateRefreshNoData() {
+        super.testTruncateRefreshNoData()
+    }
+
+    @Test
+    override fun testClear() {
+        super.testClear()
+    }
+}
 
 @Disabled("Requires local bastion and CH instance to pass")
 class ClickhouseDirectLoadWriterWithoutJsonSshTunnel :
-    ClickhouseDirectLoadWriter(
+    ClickhouseAcceptanceTest(
         Path.of("secrets/ssh-tunnel.json"),
         SchematizedNestedValueBehavior.STRINGIFY,
         true,
@@ -78,7 +238,7 @@ class ClickhouseDirectLoadWriterWithoutJsonSshTunnel :
     }
 }
 
-abstract class ClickhouseDirectLoadWriter(
+abstract class ClickhouseAcceptanceTest(
     configPath: Path,
     schematizedObjectBehavior: SchematizedNestedValueBehavior,
     stringifySchemalessObjects: Boolean
@@ -116,6 +276,7 @@ abstract class ClickhouseDirectLoadWriter(
         nullEqualsUnset = true,
         configUpdater = ClickhouseConfigUpdater(),
         dedupChangeUsesDefault = true,
+        onDataFlowCdk = true,
     ) {
     companion object {
         @JvmStatic

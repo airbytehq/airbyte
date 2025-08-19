@@ -5,7 +5,7 @@
 package io.airbyte.cdk.load.dataflow.input
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.dataflow.DataFlowStageIO
+import io.airbyte.cdk.load.dataflow.pipeline.DataFlowStageIO
 import io.airbyte.cdk.load.dataflow.state.PartitionKey
 import io.airbyte.cdk.load.dataflow.state.StateKeyClient
 import io.airbyte.cdk.load.dataflow.state.StateStore

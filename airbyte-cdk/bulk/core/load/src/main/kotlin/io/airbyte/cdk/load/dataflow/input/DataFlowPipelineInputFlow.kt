@@ -4,12 +4,14 @@
 
 package io.airbyte.cdk.load.dataflow.input
 
-import io.airbyte.cdk.load.dataflow.DataFlowStageIO
+import io.airbyte.cdk.load.dataflow.finalization.StreamCompleteTracker
+import io.airbyte.cdk.load.dataflow.pipeline.DataFlowStageIO
 import io.airbyte.cdk.load.dataflow.state.StateKeyClient
 import io.airbyte.cdk.load.dataflow.state.StateStore
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationRecord
+import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
 import jakarta.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
@@ -25,6 +27,7 @@ class DataFlowPipelineInputFlow(
     private val inputFlow: Flow<DestinationMessage>,
     private val stateStore: StateStore,
     private val stateKeyClient: StateKeyClient,
+    private val completionTracker: StreamCompleteTracker,
 ) : Flow<DataFlowStageIO> {
     override suspend fun collect(
         collector: FlowCollector<DataFlowStageIO>,
@@ -41,6 +44,7 @@ class DataFlowPipelineInputFlow(
                         )
                     collector.emit(io)
                 }
+                is DestinationRecordStreamComplete -> completionTracker.accept(it)
                 else -> Unit
             }
         }

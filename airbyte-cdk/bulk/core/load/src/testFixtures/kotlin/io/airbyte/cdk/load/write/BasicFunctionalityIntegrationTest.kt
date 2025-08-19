@@ -1350,7 +1350,8 @@ abstract class BasicFunctionalityIntegrationTest(
     }
 
     /**
-     * Runs a sync, kills it before finishing, then asserts second sync finishes moving the data to the final table.
+     * Runs a sync, kills it before finishing, then asserts second sync finishes moving the data to
+     * the final table.
      *
      * Tests any sort of 2 phase commit write operation recovers from failure.
      */
@@ -1745,11 +1746,12 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId,
                 namespaceMapper = namespaceMapperForMedium()
             )
-        val stream = makeStream(
-            generationId = 12,
-            minimumGenerationId = 0,
-            syncId = 42,
-        )
+        val stream =
+            makeStream(
+                generationId = 12,
+                minimumGenerationId = 0,
+                syncId = 42,
+            )
         runSync(
             updatedConfig,
             stream,
@@ -1853,7 +1855,8 @@ abstract class BasicFunctionalityIntegrationTest(
      * Some destinations make complicated changes based on the sync mode, e.g. Bigquery changing the
      * table's clustering config. Verify that we can do those changes across truncates.
      *
-     * This test validates we can finish a truncate refresh when the import type changes between runs.
+     * This test validates we can finish a truncate refresh when the import type changes between
+     * runs.
      */
     @Test
     open fun testTruncateRefreshChangeSyncMode() {

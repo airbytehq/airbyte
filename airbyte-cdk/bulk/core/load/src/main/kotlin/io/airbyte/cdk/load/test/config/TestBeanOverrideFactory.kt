@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.test.config
 
 import io.airbyte.cdk.load.dataflow.config.MemoryAndParallelismConfig
@@ -17,8 +21,9 @@ import jakarta.inject.Singleton
 class TestBeanOverrideFactory {
     @Singleton
     @Primary
-    fun testConfig() = MemoryAndParallelismConfig(
-        // Set this to 1 so we flush aggregates immediately for easier testing.
-        maxRecordsPerAgg = 1,
-    )
+    fun testConfig() =
+        MemoryAndParallelismConfig(
+            // Set this to 1 so we flush aggregates immediately for easier testing.
+            maxRecordsPerAgg = 1,
+        )
 }

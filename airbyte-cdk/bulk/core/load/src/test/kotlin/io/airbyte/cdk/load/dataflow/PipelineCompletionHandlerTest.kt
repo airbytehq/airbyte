@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.dataflow
 import io.airbyte.cdk.load.dataflow.aggregate.Aggregate
 import io.airbyte.cdk.load.dataflow.aggregate.AggregateEntry
 import io.airbyte.cdk.load.dataflow.aggregate.AggregateStore
+import io.airbyte.cdk.load.dataflow.pipeline.PipelineCompletionHandler
 import io.airbyte.cdk.load.dataflow.state.PartitionHistogram
 import io.airbyte.cdk.load.dataflow.state.StateHistogramStore
 import io.airbyte.cdk.load.dataflow.state.StateReconciler

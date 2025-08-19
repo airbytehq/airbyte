@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.dataflow
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.dataflow.config.MemoryAndParallelismConfig
+import io.airbyte.cdk.load.dataflow.pipeline.DataFlowPipeline
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import io.mockk.coEvery

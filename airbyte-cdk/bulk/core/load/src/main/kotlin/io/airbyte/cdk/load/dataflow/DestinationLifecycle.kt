@@ -6,6 +6,8 @@ package io.airbyte.cdk.load.dataflow
 
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.dataflow.config.MemoryAndParallelismConfig
+import io.airbyte.cdk.load.dataflow.finalization.StreamCompleteTracker
+import io.airbyte.cdk.load.dataflow.pipeline.DataFlowPipeline
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -22,6 +24,7 @@ class DestinationLifecycle(
     private val destinationInitializer: DestinationWriter,
     private val destinationCatalog: DestinationCatalog,
     private val pipeline: DataFlowPipeline,
+    private val completionTracker: StreamCompleteTracker,
     private val memoryAndParallelismConfig: MemoryAndParallelismConfig,
 ) {
     private val log = KotlinLogging.logger {}
@@ -30,7 +33,8 @@ class DestinationLifecycle(
         // Initialize the destination to make sure that it is ready for the data ingestion
         initializeDestination()
 
-        // Create prepare individual streams for the data ingestion. E.g. create tables and propagate
+        // Create prepare individual streams for the data ingestion. E.g. create tables and
+        // propagate
         // the schema updates
         val streamLoaders = initializeIndividualStreams()
 
@@ -82,6 +86,11 @@ class DestinationLifecycle(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun finalizeIndividualStreams(streamLoaders: List<StreamLoader>) {
+        if (!completionTracker.allStreamsComplete()) {
+            log.info { "All streams not complete. Skipping finalization..." }
+            return
+        }
+
         val finalizeDispatcher: CoroutineDispatcher =
             Dispatchers.Default.limitedParallelism(
                 memoryAndParallelismConfig.maxConcurrentLifecycleOperations
