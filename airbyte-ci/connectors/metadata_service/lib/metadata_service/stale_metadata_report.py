@@ -124,7 +124,7 @@ def _get_and_parse_metadata_files(metadata_download_urls: list[str]) -> list[Con
             connector_metadata = ConnectorMetadataDefinitionV0.parse_obj(metadata_dict)
             connector_metadata_list.append(connector_metadata)
         except Exception as e:
-            logger.debug(f"Skipping. Failed to parse metadata for metadata at path: {metadata_download_url}. Exception: {e}")
+            logger.info(f"Skipping. Failed to parse metadata for metadata at path: {metadata_download_url}. Exception: {e}")
             continue
     logger.debug(f"Parsed {len(connector_metadata_list)} metadata files")
     return connector_metadata_list
