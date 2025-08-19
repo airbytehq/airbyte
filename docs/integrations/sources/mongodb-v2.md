@@ -208,10 +208,9 @@ For more information regarding configuration parameters, please see [MongoDb Doc
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                                                   |
-|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------|
-| 2.0.3   | 2025-08-12 | [64900](https://github.com/airbytehq/airbyte/pull/64900) | Fix hardcoded read preferences to allow specification in connection string.                               |
-
+| Version | Date       | Pull Request                                             | Subject                                                                                                  |
+|:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------|
+| 2.0.3   | 2025-08-12 | [64900](https://github.com/airbytehq/airbyte/pull/64900) | Fix hardcoded read preferences to allow specification in connection string.                              |
 | 2.0.2   | 2025-07-14 | [62938](https://github.com/airbytehq/airbyte/pull/62938) | Only require a single database read permission when configured to sync a single database.                 |
 | 2.0.1   | 2025-06-04 | [61369](https://github.com/airbytehq/airbyte/pull/61369) | Do not pin on 1.5.17                                                                                      |
 | 2.0.0   | 2025-05-27 | [60252](https://github.com/airbytehq/airbyte/pull/60252) | Add support for multiple databases                                                                        |
