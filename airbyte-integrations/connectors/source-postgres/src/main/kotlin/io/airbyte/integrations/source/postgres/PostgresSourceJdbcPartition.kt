@@ -1,6 +1,9 @@
 package io.airbyte.integrations.source.postgres
 
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.NonEmittedField
+import io.airbyte.cdk.jdbc.StringFieldType
 import io.airbyte.cdk.read.DefaultJdbcStreamState
 import io.airbyte.cdk.read.From
 import io.airbyte.cdk.read.FromSample
@@ -20,15 +23,20 @@ sealed class PostgresSourceJdbcPartition(
     val stream = streamState.stream
     val from = From(stream.name, stream.namespace)
 
+    val ctidField = NonEmittedField("ctid", StringFieldType)
+
     override val nonResumableQuery: SelectQuery
         get() = selectQueryGenerator.generate(nonResumableQuerySpec.optimize())
 
-    open val nonResumableQuerySpec = SelectQuerySpec(SelectColumns(stream.fields), from)
+    open val nonResumableQuerySpec = SelectQuerySpec(SelectColumns(
+        listOf(ctidField) + stream.fields
+    ), from)
 
     override fun samplingQuery(sampleRateInvPow2: Int): SelectQuery {
         val sampleSize: Int = streamState.sharedState.maxSampleSize
+
         val querySpec =
-            SelectQuerySpec(SelectColumns(stream.fields),
+            SelectQuerySpec(SelectColumns(listOf(ctidField) + stream.fields),
                 FromSample(stream.name, stream.namespace, sampleRateInvPow2, sampleSize),
             )
         return selectQueryGenerator.generate(querySpec.optimize())

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.data.JsonEncoder
 import io.airbyte.cdk.data.NullCodec
 import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.NonEmittedField
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.JdbcFieldType
 import io.airbyte.cdk.output.sockets.FieldValueEncoder
@@ -42,6 +43,7 @@ interface SelectQuerier {
     interface ResultRow {
         val data: NativeRecordPayload
         val changes: Map<Field, FieldValueChange>
+        val nonEmittedData: NativeRecordPayload
     }
 }
 
@@ -58,6 +60,7 @@ class JdbcSelectQuerier(
     data class ResultRow(
         override val data: NativeRecordPayload = mutableMapOf(),
         override var changes: MutableMap<Field, FieldValueChange> = mutableMapOf(),
+        override var nonEmittedData: NativeRecordPayload = mutableMapOf(),
     ) : SelectQuerier.ResultRow
 
     class Result(
@@ -137,12 +140,20 @@ class JdbcSelectQuerier(
                 log.debug { "Getting value #$colIdx for $column." }
                 val jdbcFieldType: JdbcFieldType<*> = column.type as JdbcFieldType<*>
                 try {
-                    @Suppress("UNCHECKED_CAST")
-                    resultRow.data[column.id] =
-                        FieldValueEncoder(
-                            jdbcFieldType.jdbcGetter.get(rs!!, colIdx),
-                            jdbcFieldType.jsonEncoder as JsonEncoder<in Any?>,
-                        )
+                    if (column is NonEmittedField) {
+                      resultRow.nonEmittedData[column.id] =
+                          FieldValueEncoder(
+                              jdbcFieldType.jdbcGetter.get(rs!!, colIdx),
+                              jdbcFieldType.jsonEncoder as JsonEncoder<in Any?>,
+                          )
+                    } else {
+                        @Suppress("UNCHECKED_CAST")
+                        resultRow.data[column.id] =
+                            FieldValueEncoder(
+                                jdbcFieldType.jdbcGetter.get(rs!!, colIdx),
+                                jdbcFieldType.jsonEncoder as JsonEncoder<in Any?>,
+                            )
+                    }
                 } catch (e: Exception) {
                     resultRow.data[column.id] =
                         FieldValueEncoder(

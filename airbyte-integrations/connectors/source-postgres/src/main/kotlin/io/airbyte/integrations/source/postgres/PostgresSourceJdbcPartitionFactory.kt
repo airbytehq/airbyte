@@ -14,8 +14,8 @@ import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 
-//@Primary
-//@Singleton
+@Primary
+@Singleton
 class PostgresSourceJdbcPartitionFactory(
     override val sharedState: DefaultJdbcSharedState,
     val selectQueryGenerator: PostgresSourceSelectQueryGenerator,
