@@ -5,6 +5,7 @@
 import pendulum
 import pytest
 from pendulum import duration
+from source_facebook_marketing import SourceFacebookMarketing
 from source_facebook_marketing.api import MyFacebookAdsApi
 from source_facebook_marketing.streams import (
     AdSets,
@@ -151,3 +152,21 @@ def test_custom_ads_insights_breakdowns(some_config):
     stream = AdsInsights(breakdowns=[], action_breakdowns=[], action_breakdowns_allow_empty=True, **kwargs)
     assert stream.breakdowns == []
     assert stream.action_breakdowns == []
+
+
+@pytest.mark.parametrize(
+    "default_ads_insights_action_breakdowns, expected_action_breakdowns",
+    [
+        (None, ["action_type", "action_target_id", "action_destination"]),
+        ([], []),
+        (["action_type", "action_destination"], ["action_type", "action_destination"]),
+    ],
+    ids=["should_use_default_action_breakdowns_when_not_provided_in_the_config", "empty_action_breakdowns", "overridden_action_breakdowns"],
+)
+def test_ads_insights_default_breakdowns_based_on_config_input(default_ads_insights_action_breakdowns, expected_action_breakdowns, config):
+    if default_ads_insights_action_breakdowns is not None:
+        config["default_ads_insights_action_breakdowns"] = default_ads_insights_action_breakdowns
+    source = SourceFacebookMarketing()
+    streams = source.streams(config)
+    ads_insights_stream = [stream for stream in streams if "ads_insights" == stream.name][0]
+    assert ads_insights_stream.request_params()["action_breakdowns"] == expected_action_breakdowns

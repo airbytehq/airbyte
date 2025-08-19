@@ -72,6 +72,13 @@ class SourceFacebookMarketing(AbstractSource):
 
         config = ConnectorConfig.parse_obj(config)
 
+        default_ads_insights_action_breakdowns = (
+            config.default_ads_insights_action_breakdowns
+            if config.default_ads_insights_action_breakdowns is not None
+            else AdsInsights.action_breakdowns
+        )
+        config.default_ads_insights_action_breakdowns = default_ads_insights_action_breakdowns
+
         if config.start_date:
             config.start_date = pendulum.instance(config.start_date)
 
@@ -175,7 +182,13 @@ class SourceFacebookMarketing(AbstractSource):
                 fetch_thumbnail_images=config.fetch_thumbnail_images,
                 page_size=config.page_size,
             ),
-            AdsInsights(page_size=config.page_size, **insights_args),
+            AdsInsights(
+                page_size=config.page_size,
+                action_breakdowns=config.default_ads_insights_action_breakdowns,
+                # in case user input is an empty list of action_breakdowns we allow empty breakdowns
+                action_breakdowns_allow_empty=config.default_ads_insights_action_breakdowns == [],
+                **insights_args,
+            ),
             AdsInsightsAgeAndGender(page_size=config.page_size, **insights_args),
             AdsInsightsCountry(page_size=config.page_size, **insights_args),
             AdsInsightsRegion(page_size=config.page_size, **insights_args),
