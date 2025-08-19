@@ -9,21 +9,21 @@ on:
   workflow_call:
     inputs:
       connectors:
-        description: "list of connectors to publish. This should be a string of the form --name=source-pokeapi --name=destination-postgres."
+        description: "Connectors to Publish. This should be a string of the form: --name=source-pokeapi --name=destination-postgres"
         default: "--name=source-pokeapi"
         type: string
       release-type:
-        description: "Whether to publish as a pre-release (tagged for development) or as a main (production) release"
+        description: "Whether to publish as a pre-release (tagged for development) or as a main-release (production)"
         default: pre-release
         type: string
   workflow_dispatch:
     inputs:
       connectors:
-        description: "list of connectors to publish. This should be a string of the form --name=source-pokeapi --name=destination-postgres."
+        description: "Connectors to Publish. This should be a string of the form: --name=source-pokeapi --name=destination-postgres"
         default: "--name=source-pokeapi"
         type: string
       release-type:
-        description: "Whether to publish as a pre-release (tagged for development) or as a main (production) release"
+        description: "Whether to publish as a pre-release (tagged for development) or as a main-release (production)"
         default: pre-release
         type: choice
         options:
