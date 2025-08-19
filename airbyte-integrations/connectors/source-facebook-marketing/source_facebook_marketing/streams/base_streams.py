@@ -76,9 +76,9 @@ class FBMarketingStream(Stream, ABC):
         self._saved_fields = list(json_schema.get("properties", {}).keys())
         return self._saved_fields
 
-    @classmethod
-    def fix_date_time(cls, record):
-        date_time_fields = (
+    # Pre-compile the date time fields as a set for O(1) lookups
+    _DATE_TIME_FIELDS = frozenset(
+        [
             "created_time",
             "creation_time",
             "updated_time",
@@ -86,19 +86,36 @@ class FBMarketingStream(Stream, ABC):
             "start_time",
             "first_fired_time",
             "last_fired_time",
-        )
+        ]
+    )
 
-        if isinstance(record, dict):
+    @classmethod
+    def fix_date_time(cls, record, max_depth=2, current_depth=0):
+        """
+        Optimized date/time fixing that only processes known date fields
+        and limits recursion depth to avoid deep traversal of complex objects.
+        Args:
+            record: The record to process
+            max_depth: Maximum recursion depth (default 2)
+            current_depth: Current recursion depth (used internally)
+        """
+        if not isinstance(record, dict) or current_depth > max_depth:
+            return
+
+        # Process date fields in current record
+        for field, value in record.items():
+            if field in cls._DATE_TIME_FIELDS and isinstance(value, str):
+                record[field] = value.replace("t", "T").replace(" 0000", "+0000")
+
+        # Recursively process nested structures with depth limit
+        if current_depth < max_depth:
             for field, value in record.items():
-                if isinstance(value, str):
-                    if field in date_time_fields:
-                        record[field] = value.replace("t", "T").replace(" 0000", "+0000")
-                else:
-                    cls.fix_date_time(value)
-
-        elif isinstance(record, list):
-            for entry in record:
-                cls.fix_date_time(entry)
+                if isinstance(value, dict):
+                    cls.fix_date_time(value, max_depth, current_depth + 1)
+                elif isinstance(value, list):
+                    for item in value:
+                        if isinstance(item, dict):
+                            cls.fix_date_time(item, max_depth, current_depth + 1)
 
     @staticmethod
     def add_account_id(record, account_id: str):
@@ -189,15 +206,20 @@ class FBMarketingStream(Stream, ABC):
         account_state = stream_slice.get("stream_state", {})
 
         try:
-            for record in self.list_objects(
+            objects = self.list_objects(
                 params=self.request_params(stream_state=account_state),
                 account_id=account_id,
-            ):
+            )
+
+            for record in objects:
                 if isinstance(record, AbstractObject):
                     record = record.export_all_data()  # convert FB object to dict
+
                 self.fix_date_time(record)
                 self.add_account_id(record, stream_slice["account_id"])
+
                 yield record
+
         except FacebookRequestError as exc:
             raise traced_exception(exc)
 
@@ -211,7 +233,7 @@ class FBMarketingStream(Stream, ABC):
             yield {"account_id": account_id, "stream_state": account_state}
 
     @abstractmethod
-    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
+    def list_objects(self, params: Mapping[str, Any], account_id: str) -> Iterable:
         """List FB objects, these objects will be loaded in read_records later with their details.
 
         :param params: params to make request

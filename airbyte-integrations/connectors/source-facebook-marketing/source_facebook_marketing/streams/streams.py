@@ -4,6 +4,7 @@
 
 import base64
 import logging
+from functools import cache
 from typing import Any, Iterable, List, Mapping, Optional, Set
 
 import pendulum
@@ -49,6 +50,7 @@ class AdCreatives(FBMarketingStream):
         super().__init__(**kwargs)
         self._fetch_thumbnail_images = fetch_thumbnail_images
 
+    @cache  # Add caching like the parent class
     def fields(self, **kwargs) -> List[str]:
         """Remove "thumbnail_data_url" field because it is a computed field, and it's not a field that we can request from Facebook"""
         if self._fields:
@@ -60,20 +62,28 @@ class AdCreatives(FBMarketingStream):
     def read_records(
         self,
         sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """Read with super method and append thumbnail_data_url if enabled"""
         for record in super().read_records(sync_mode, cursor_field, stream_slice, stream_state):
             if self._fetch_thumbnail_images:
                 thumbnail_url = record.get("thumbnail_url")
                 if thumbnail_url:
-                    record["thumbnail_data_url"] = fetch_thumbnail_data_url(thumbnail_url)
+                    try:
+                        record["thumbnail_data_url"] = fetch_thumbnail_data_url(thumbnail_url)
+                    except Exception as e:
+                        logger.warning(f"Failed to process thumbnail for record {record.get('id', 'unknown')}: {str(e)}")
+
             yield record
 
     def list_objects(self, params: Mapping[str, Any], account_id: str) -> Iterable:
-        return self._api.get_account(account_id=account_id).get_ad_creatives(params=params, fields=self.fields())
+        try:
+            return self._api.get_account(account_id=account_id).get_ad_creatives(params=params, fields=self.fields())
+        except Exception as e:
+            logger.error(f"AdCreatives API call failed for account {account_id}: {str(e)}")
+            raise
 
 
 class CustomConversions(FBMarketingStream):
