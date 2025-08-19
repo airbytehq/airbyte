@@ -176,7 +176,7 @@ jobs:
         run: |
           ./poe-tasks/build-and-publish-java-connectors-with-tag.sh --main-release --publish --name ${{ matrix.connector }}
 
-      - name: Publish JVM connectors tar file [On merge to master]]
+      - name: Publish JVM connectors tar file [On merge to master]
         id: publish-JVM-connectors-tar-file-master
         if: github.event_name == 'push' && steps.connector-metadata.outputs.connector-language == 'java'
         shell: bash
@@ -192,7 +192,7 @@ jobs:
         shell: bash
         run: |
           # Don't tag with latest for pre-release or release candidate builds
-          if [[ "${{ needs.publish_options.outputs.release-type }}" == "pre-release" || "{{needs.publish_options.outputs.is_release_candidate}}" == "true" ]]; then
+          if [[ "${{ needs.publish_options.outputs.release-type }}" == "pre-release" || "${{ steps.connector-metadata.outputs.is_release_candidate }}" == "true" ]]; then
             echo "push-latest=false" >> $GITHUB_OUTPUT
             echo "Skipping latest tag for pre-release or release candidate build."
           else
