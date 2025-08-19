@@ -8,29 +8,22 @@ on:
       - "airbyte-integrations/connectors/**/metadata.yaml"
   workflow_call:
     inputs:
-      connectors-options:
-        description: "Options to pass to the 'airbyte-ci connectors' command group."
+      connectors:
+        description: "list of connectors to publish. This should be a string of the form --name=source-pokeapi --name=destination-postgres."
         default: "--name=source-pokeapi"
         type: string
       publish-options:
         description: "Options to pass to the 'airbyte-ci connectors publish' command. Use --pre-release or --main-release depending on whether you want to publish a dev image or not. "
         default: "--pre-release"
-        type: string
-      airbyte_ci_binary_url:
-        description: "URL to the airbyte-ci binary to use for the action. If not provided, the action will use the latest release of airbyte-ci."
-        default: "https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci"
         type: string
   workflow_dispatch:
     inputs:
-      connectors-options:
-        description: "Options to pass to the 'airbyte-ci connectors' command group."
+      connectors:
+        description: "list of connectors to publish. This should be a string of the form --name=source-pokeapi --name=destination-postgres."
         default: "--name=source-pokeapi"
       publish-options:
         description: "Options to pass to the 'airbyte-ci connectors publish' command. Use --pre-release or --main-release depending on whether you want to publish a dev image or not. "
         default: "--pre-release"
-      airbyte_ci_binary_url:
-        description: "URL to the airbyte-ci binary to use for the action. If not provided, the action will use the latest release of airbyte-ci."
-        default: "https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci"
 jobs:
   list_connectors:
     name: List connectors to publish
@@ -44,13 +37,13 @@ jobs:
         id: list-connectors-manual
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
         shell: bash
-        # We need to run an actual script to parse the `--name` args and filter for JVM connectors.
-        run: echo connectors-to-publish=$(./poe-tasks/parse-connector-name-args.sh ${{ inputs.connectors-options }}) | tee -a $GITHUB_OUTPUT
+        # When invoked manually, we run on the connectors specified in the input.
+        run: echo connectors-to-publish=$(./poe-tasks/parse-connector-name-args.sh ${{ inputs.connectors }}) | tee -a $GITHUB_OUTPUT
       - name: List connectors [On merge to master]
         id: list-connectors-master
         if: github.event_name == 'push'
         shell: bash
-        # get-modified-connectors.sh already prints things in the right format, so just use that output directly
+        # When merging to master, we run on connectors that have changed since the previous commit.
         run: echo connectors-to-publish=$(./poe-tasks/get-modified-connectors.sh --prev-commit --json) | tee -a $GITHUB_OUTPUT
     outputs:
       # Exactly one of the manual/master steps will run, so just OR them together.
