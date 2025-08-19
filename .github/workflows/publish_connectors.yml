@@ -12,48 +12,64 @@ on:
         description: "list of connectors to publish. This should be a string of the form --name=source-pokeapi --name=destination-postgres."
         default: "--name=source-pokeapi"
         type: string
-      publish-options:
-        description: "Options to pass to the 'airbyte-ci connectors publish' command. Use --pre-release or --main-release depending on whether you want to publish a dev image or not. "
-        default: "--pre-release"
+      release-type:
+        description: "Whether to publish as a pre-release (tagged for development) or as a main (production) release"
+        default: pre-release
         type: string
   workflow_dispatch:
     inputs:
       connectors:
         description: "list of connectors to publish. This should be a string of the form --name=source-pokeapi --name=destination-postgres."
         default: "--name=source-pokeapi"
-      publish-options:
-        description: "Options to pass to the 'airbyte-ci connectors publish' command. Use --pre-release or --main-release depending on whether you want to publish a dev image or not. "
-        default: "--pre-release"
+        type: string
+      release-type:
+        description: "Whether to publish as a pre-release (tagged for development) or as a main (production) release"
+        default: pre-release
+        type: choice
+        options:
+          - pre-release
+          - main-release
 jobs:
-  list_connectors:
-    name: List connectors to publish
+  publish_options:
+    name: Resolve options for connector publishing
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v4
         with:
           fetch-depth: 2 # Required so we can conduct a diff from the previous commit to understand what connectors have changed.
-      - name: List connectors [manual]
+      - name: List connectors to publish [manual]
         id: list-connectors-manual
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
         shell: bash
         # When invoked manually, we run on the connectors specified in the input.
         run: echo connectors-to-publish=$(./poe-tasks/parse-connector-name-args.sh ${{ inputs.connectors }}) | tee -a $GITHUB_OUTPUT
-      - name: List connectors [On merge to master]
+      - name: List connectors to publish [On merge to master]
         id: list-connectors-master
         if: github.event_name == 'push'
         shell: bash
         # When merging to master, we run on connectors that have changed since the previous commit.
         run: echo connectors-to-publish=$(./poe-tasks/get-modified-connectors.sh --prev-commit --json) | tee -a $GITHUB_OUTPUT
+      - name: Resolve release type
+        id: resolve-release-type
+        shell: bash
+        run: |
+          # If workflow is triggered on merge to master, do a main release.
+          # If workflow is triggered manually, use the input release type.
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            echo "release-type=main-release" >> $GITHUB_OUTPUT
+          else
+            echo "release-type=${{ inputs.release-type }}" >> $GITHUB_OUTPUT
+          fi
     outputs:
       # Exactly one of the manual/master steps will run, so just OR them together.
       connectors-to-publish: ${{ steps.list-connectors-manual.outputs.connectors-to-publish || steps.list-connectors-master.outputs.connectors-to-publish }}
   publish_connectors:
     name: Publish connectors
-    needs: [list_connectors]
+    needs: [publish_options]
     runs-on: ubuntu-24.04
     strategy:
-      matrix: ${{ fromJson(needs.list_connectors.outputs.connectors-to-publish) }}
+      matrix: ${{ fromJson(needs.publish_options.outputs.connectors-to-publish) }}
       max-parallel: 5
       # Allow all jobs to run, even if one fails
       fail-fast: false
@@ -127,30 +143,12 @@ jobs:
         shell: bash
         run: ./poe-tasks/validate-connector-metadata.sh --name ${{ matrix.connector }}
 
-      - name: Publish to Python Registry [On merge to master]
-        id: publish-python-registry-master
-        if: github.event_name == 'push' && steps.connector-metadata.outputs.connector-language == 'python'
+      - name: Publish to Python Registry
+        id: publish-python-registry
+        if: steps.connector-metadata.outputs.connector-language == 'python'
         shell: bash
         run: |
-          ./poe-tasks/publish-python-registry.sh --name ${{ matrix.connector }}
-        env:
-          PYTHON_REGISTRY_TOKEN: ${{ secrets.PYPI_TOKEN }}
-        continue-on-error: true # We allow this to fail because we are testing this step. TODO: remove this once we are sure it works.
-
-      - name: Publish to Python Registry [Manual]
-        id: publish-python-registry-manual
-        if: (github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call') && steps.connector-metadata.outputs.connector-language == 'python'
-        shell: bash
-        run: |
-          # Determine if this is a pre-release
-          is_pre_release=$(echo "${{ inputs.publish-options }}" | grep -c -- '--pre-release' || true)
-          if [[ $is_pre_release -gt 0 ]]; then
-            PRE_RELEASE_FLAG="--pre-release"
-          else
-            PRE_RELEASE_FLAG=""
-          fi
-
-          ./poe-tasks/publish-python-registry.sh --name ${{ matrix.connector }} $PRE_RELEASE_FLAG
+          ./poe-tasks/publish-python-registry.sh --name ${{ matrix.connector }} --release-type ${{inputs.release-type}}
         env:
           PYTHON_REGISTRY_TOKEN: ${{ secrets.PYPI_TOKEN }}
         continue-on-error: true # We allow this to fail because we are testing this step. TODO: remove this once we are sure it works.
