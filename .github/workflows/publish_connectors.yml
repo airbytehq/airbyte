@@ -57,13 +57,14 @@ jobs:
           # If workflow is triggered on merge to master, do a main release.
           # If workflow is triggered manually, use the input release type.
           if [[ "${{ github.event_name }}" == "push" ]]; then
-            echo "release-type=main-release" >> $GITHUB_OUTPUT
+            echo "release-type=main-release" | tee -a $GITHUB_OUTPUT
           else
-            echo "release-type=${{ inputs.release-type }}" >> $GITHUB_OUTPUT
+            echo "release-type=${{ inputs.release-type }}" | tee -a $GITHUB_OUTPUT
           fi
     outputs:
       # Exactly one of the manual/master steps will run, so just OR them together.
       connectors-to-publish: ${{ steps.list-connectors-manual.outputs.connectors-to-publish || steps.list-connectors-master.outputs.connectors-to-publish }}
+      release-type: ${{ steps.resolve-release-type.outputs.release-type }}
   publish_connectors:
     name: Publish connectors
     needs: [publish_options]
@@ -125,6 +126,8 @@ jobs:
           set -euo pipefail
           echo "connector-language=$(poe -qq get-language)" | tee -a $GITHUB_OUTPUT
           echo "connector-version=$(poe -qq get-version)" | tee -a $GITHUB_OUTPUT
+          is_rc=$(poe -qq get-version | grep -q 'rc' && echo "true" || echo "false")
+          echo "is_release_candidate=$is_rc" | tee -a $GITHUB_OUTPUT
 
       # We're intentionally not using the `google-github-actions/auth` action.
       # The upload-connector-metadata step runs a script which handles auth manually.
@@ -148,36 +151,22 @@ jobs:
         if: steps.connector-metadata.outputs.connector-language == 'python'
         shell: bash
         run: |
-          ./poe-tasks/publish-python-registry.sh --name ${{ matrix.connector }} --release-type ${{inputs.release-type}}
+          ./poe-tasks/publish-python-registry.sh --name ${{ matrix.connector }} --release-type ${{ needs.publish_options.outputs.release-type }}
         env:
           PYTHON_REGISTRY_TOKEN: ${{ secrets.PYPI_TOKEN }}
         continue-on-error: true # We allow this to fail because we are testing this step. TODO: remove this once we are sure it works.
 
-      - name: Upload Python Dependencies to GCS [On merge to master]
+      - name: Upload Python Dependencies to GCS
         id: upload-python-dependencies-master
-        if: github.event_name == 'push' && steps.connector-metadata.outputs.connector-language == 'python'
+        if: steps.connector-metadata.outputs.connector-language == 'python'
         shell: bash
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
         run: |
-          ./poe-tasks/upload-python-dependencies.sh --name ${{ matrix.connector }} --bucket prod-airbyte-cloud-connector-metadata-service
-        continue-on-error: true # We allow this to fail because we are testing this step. TODO: remove this once we are sure it works.
-
-      - name: Upload Python Dependencies to GCS [Manual]
-        id: upload-python-dependencies-manual
-        if: (github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call') && steps.connector-metadata.outputs.connector-language == 'python'
-        shell: bash
-        env:
-          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-        run: |
-          # Determine if this is a pre-release
-          is_pre_release=$(echo "${{ inputs.publish-options }}" | grep -c -- '--pre-release' || true)
-          if [[ $is_pre_release -gt 0 ]]; then
-            PRE_RELEASE_FLAG="--pre-release"
-          else
-            PRE_RELEASE_FLAG=""
-          fi
-          ./poe-tasks/upload-python-dependencies.sh --name ${{ matrix.connector }} --bucket prod-airbyte-cloud-connector-metadata-service $PRE_RELEASE_FLAG
+          ./poe-tasks/upload-python-dependencies.sh \
+            --name ${{ matrix.connector }} \
+            --bucket prod-airbyte-cloud-connector-metadata-service \
+            --release-type ${{ needs.publish_options.outputs.release-type }}
         continue-on-error: true # We allow this to fail because we are testing this step. TODO: remove this once we are sure it works.
 
       - name: Build and publish JVM connectors images [On merge to master]
@@ -202,19 +191,15 @@ jobs:
         if: steps.connector-metadata.outputs.connector-language != 'java'
         shell: bash
         run: |
-          # TODO: refactor this logic to be shared by all connector types
-          is_pre_release=$(echo ${{ inputs.publish-options }} | grep -c -- '--pre-release' || true)
-          is_release_candidate=$(echo ${{ steps.connector-metadata.outputs.connector-version }} | grep -c -- '-rc' || true)
-
           # Don't tag with latest for pre-release or release candidate builds
-          if [[ $is_pre_release -gt 0 || $is_release_candidate -gt 0 ]]; then
+          if [[ "${{ needs.publish_options.outputs.release-type }}" == "pre-release" || "{{needs.publish_options.outputs.is_release_candidate}}" == "true" ]]; then
             echo "push-latest=false" >> $GITHUB_OUTPUT
             echo "Skipping latest tag for pre-release or release candidate build."
           else
             echo "push-latest=true" >> $GITHUB_OUTPUT
           fi
 
-          if [[ $is_pre_release -gt 0 ]]; then
+          if [[ "${{ needs.publish_options.outputs.release-type }}" == "pre-release" ]]; then
             hash=$(git rev-parse --short=10 HEAD)
             tag_override="${{ steps.connector-metadata.outputs.connector-version }}-dev.${hash}"
             echo "tag-override=${tag_override}" >> $GITHUB_OUTPUT
