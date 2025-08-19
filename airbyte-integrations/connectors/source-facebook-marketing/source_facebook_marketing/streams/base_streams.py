@@ -90,6 +90,20 @@ class FBMarketingStream(Stream, ABC):
 
     @classmethod
     def fix_date_time(cls, record, max_depth=2, current_depth=0):
+        """
+        This method recursively traverses record dictionaries and nested structures
+        to standardize datetime fields to proper ISO 8601 format, ensuring
+        compatibility with downstream datetime parsing libraries.
+
+        Args:
+            record: Dictionary or nested structure containing potential datetime fields
+            max_depth: Maximum recursion depth to prevent infinite loops (default: 2)
+            current_depth: Current recursion level
+
+        Examples:
+            Input:  {"created_time": "2023-01-01t12:00:00 0000"}
+            Output: {"created_time": "2023-01-01T12:00:00+0000"}
+        """
         if not isinstance(record, dict) or current_depth > max_depth:
             return
 
