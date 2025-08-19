@@ -45,7 +45,7 @@ jobs:
         if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
         shell: bash
         # We need to run an actual script to parse the `--name` args and filter for JVM connectors.
-        run: ./poe-tasks/parse-connector-name-args.sh ${{ inputs.connectors-options }} | tee -a $GITHUB_OUTPUT
+        run: connectors-to-publish=$(./poe-tasks/parse-connector-name-args.sh ${{ inputs.connectors-options }}) | tee -a $GITHUB_OUTPUT
       - name: List connectors [On merge to master]
         id: list-connectors-master
         if: github.event_name == 'push'
@@ -53,11 +53,9 @@ jobs:
         # get-modified-connectors.sh already prints things in the right format, so just use that output directly
         run: |
           echo connectors-to-publish=$(./poe-tasks/get-modified-connectors.sh --prev-commit --json) | tee -a $GITHUB_OUTPUT
-          echo connectors-to-publish-jvm=$(./poe-tasks/get-modified-connectors.sh --prev-commit --java --json) | tee -a $GITHUB_OUTPUT
     outputs:
       # Exactly one of the manual/master steps will run, so just OR them together.
       connectors-to-publish: ${{ steps.list-connectors-manual.outputs.connectors-to-publish || steps.list-connectors-master.outputs.connectors-to-publish }}
-      connectors-to-publish-jvm: ${{ steps.list-connectors-manual.outputs.connectors-to-publish-jvm || steps.list-connectors-master.outputs.connectors-to-publish-jvm }}
   publish_connectors:
     name: Publish connectors
     needs: [list_connectors]
