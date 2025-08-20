@@ -1,0 +1,38 @@
+{
+  "title": {
+    "message": "Docs",
+    "description": "The title in the navbar"
+  },
+  "logo.alt": {
+    "message": "Simple, secure and extensible data integration",
+    "description": "The alt text of navbar logo"
+  },
+  "item.label.Platform": {
+    "message": "Platform",
+    "description": "Navbar item with label Platform"
+  },
+  "item.label.Connectors": {
+    "message": "Connectors",
+    "description": "Navbar item with label Connectors"
+  },
+  "item.label.Release notes": {
+    "message": "Release notes",
+    "description": "Navbar item with label Release notes"
+  },
+  "item.label.Developer Tools": {
+    "message": "Developer Tools",
+    "description": "Navbar item with label Developer Tools"
+  },
+  "item.label.Support": {
+    "message": "Support",
+    "description": "Navbar item with label Support"
+  },
+  "item.label.Status": {
+    "message": "Status",
+    "description": "Navbar item with label Status"
+  },
+  "item.label.Version": {
+    "message": "Version",
+    "description": "Navbar item with label Version"
+  }
+}
