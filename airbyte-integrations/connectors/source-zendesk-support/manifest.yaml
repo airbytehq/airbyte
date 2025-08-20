@@ -11,7 +11,7 @@ definitions:
   # Legacy bearer authenticator - kept for backward compatibility during transition
   bearer_authenticator:
     type: BearerAuthenticator
-    api_token: "{{ config['credentials']['access_token'] }}"
+    api_token: "{{ config['access_token'] }}"
   
   # New OAuth2 authenticator with refresh token support for Zendesk's new requirements
   oauth2_authenticator:
@@ -36,10 +36,10 @@ definitions:
       http_method: GET
       authenticator:
         type: SelectiveAuthenticator
-        authenticator_selection_path: ["credentials", "credentials"]
+        authenticator_selection_path: ["credentials"]
         authenticators:
-          oauth2.0: "#/definitions/oauth2_authenticator"
-          oauth2.0_legacy: "#/definitions/bearer_authenticator"  # For backward compatibility
+          oauth2.0_refresh: "#/definitions/oauth2_authenticator"
+          oauth2.0: "#/definitions/bearer_authenticator"  # Legacy OAuth with access token
           api_token: "#/definitions/basic_authenticator"
       error_handler:
         type: DefaultErrorHandler
@@ -339,8 +339,9 @@ definitions:
         http_method: GET
         authenticator:
           type: SelectiveAuthenticator
-          authenticator_selection_path: ["credentials", "credentials"]
+          authenticator_selection_path: ["credentials"]
           authenticators:
+            oauth2.0_refresh: "#/definitions/oauth2_authenticator"
             oauth2.0: "#/definitions/bearer_authenticator"
             api_token: "#/definitions/basic_authenticator"
       download_target_extractor:
@@ -1307,7 +1308,7 @@ spec:
             properties:
               credentials:
                 type: string
-                const: oauth2.0
+                const: oauth2.0_refresh
                 order: 0
               refresh_token:
                 type: string
@@ -1345,7 +1346,7 @@ spec:
             properties:
               credentials:
                 type: string
-                const: oauth2.0_legacy
+                const: oauth2.0
                 order: 0
               access_token:
                 type: string
@@ -1426,7 +1427,7 @@ spec:
     predicate_key:
       - credentials
       - credentials
-    predicate_value: oauth2.0
+    predicate_value: oauth2.0_refresh
     oauth_config_specification:
       complete_oauth_output_specification:
         type: object
