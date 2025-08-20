@@ -36,10 +36,6 @@ data:
       5.0.0:
         message: "OAuth authentication flow has been updated to support refresh tokens. Users must reauthenticate using the new OAuth2.0 option before September 30, 2025 when Zendesk enforces access token expiration. The legacy OAuth2.0 option will stop working after this deadline. Please see the migration guide for additional details."
         upgradeDeadline: "2025-09-30"
-        scopedImpact:
-          - scopeType: config
-            impactedScopes:
-              - "authentication"
       4.0.0:
         message: "This version includes breaking changes to the `Tags` stream. The pagination strategy has been changed from `Offset` to `Cursor-Based`. It is necessary to reset the stream. Please see the migration guide for additional details."
         upgradeDeadline: "2024-09-09"
