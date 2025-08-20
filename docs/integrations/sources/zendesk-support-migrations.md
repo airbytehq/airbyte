@@ -1,5 +1,66 @@
 # Zendesk Support Migration Guide
 
+## Upgrading to 5.0.0
+
+**OAuth authentication update required before September 30, 2025**
+
+This version introduces a new OAuth authentication flow that supports refresh tokens to comply with Zendesk's updated OAuth policies. **Zendesk will enforce access token expiration on September 30, 2025**, requiring all integrations to migrate from static access tokens to refresh token flows.
+
+### What's Changing?
+
+- **New OAuth2.0 option**: Uses refresh tokens for automatic token renewal
+- **Legacy OAuth2.0 option**: The original OAuth implementation will stop working after September 30, 2025
+- **Required action**: Users must reauthenticate before the deadline to continue uninterrupted service
+
+### Migration Steps
+
+:::warning Critical Deadline
+**Action Required by September 30, 2025**: All users currently using OAuth authentication must complete the reauthentication process before Zendesk enforces token expiration. Failure to do so will result in connection failures and data sync interruptions.
+:::
+
+#### For Airbyte Open Source: Update the local connector image
+
+1. Select **Settings** in the main navbar.
+    - Select **Sources**.
+2. Find Zendesk Support in the list of connectors.
+3. Select **Change** to update your OSS version to the latest available version.
+
+#### For Airbyte Cloud: Update the connector version
+
+1. Select **Sources** in the main navbar.
+2. Select the instance of the connector you wish to upgrade.
+3. Select **Upgrade**
+    - Follow the prompt to confirm you are ready to upgrade to the new version.
+
+#### Reauthenticate with the new OAuth flow
+
+1. Navigate to your Zendesk Support source configuration.
+2. In the **Authentication** section, select **OAuth2.0** (not "OAuth2.0 (Legacy)").
+3. Click **Authenticate your Zendesk Support account** to complete the OAuth flow.
+4. **Important**: This will generate new access and refresh tokens that support automatic renewal.
+
+:::note
+The "OAuth2.0 (Legacy)" option is maintained for backward compatibility but will stop working after September 30, 2025. We strongly recommend migrating to the new "OAuth2.0" option as soon as possible.
+:::
+
+#### Test the connection
+
+1. After reauthenticating, click **Test** to verify the new authentication works correctly.
+2. Save your configuration once the test passes.
+
+### Benefits of the Update
+
+- **Automatic token refresh**: No more manual token updates required
+- **Enhanced security**: Tokens automatically expire and renew, reducing security risks  
+- **Compliance**: Meets Zendesk's new OAuth requirements
+- **Uninterrupted syncs**: Prevents authentication failures due to expired tokens
+
+### Troubleshooting
+
+- **Connection test fails**: Ensure you selected "OAuth2.0" (not "OAuth2.0 (Legacy)") and completed the full authentication flow
+- **Sync errors after upgrade**: Verify that you've reauthenticated with the new OAuth flow
+- **Questions about the deadline**: See [Zendesk's announcement](https://support.zendesk.com/hc/en-us/articles/9181963681434) for official details
+
 ## Upgrading to 4.0.0
 
 The pagination strategy has been changed from `Offset` to `Cursor-Based`. It is necessary to reset the stream.
