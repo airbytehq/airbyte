@@ -5,9 +5,9 @@
 package io.airbyte.cdk.load.dataflow.state
 
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
-import kotlin.test.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 

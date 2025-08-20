@@ -43,6 +43,11 @@ class StateStore(
 
         // Add count to stats (will always equal source stats)
         // TODO: decide what we want to do with dest stats
-        return msg!!.withDestinationStats(CheckpointMessage.Stats(count))
+        msg!!.updateStats(
+            destinationStats = CheckpointMessage.Stats(count),
+            totalRecords = count,
+        )
+
+        return msg
     }
 }
