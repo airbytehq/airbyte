@@ -6,8 +6,8 @@ package io.airbyte.integrations.source.mysql
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.mysql.cj.xdevapi.Table
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airvyte.cdk.db.jdbc.JdbcUtils
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.read.And
@@ -46,6 +46,7 @@ import io.airbyte.cdk.read.WhereClauseLeafNode
 import io.airbyte.cdk.read.WhereClauseNode
 import io.airbyte.cdk.read.optimize
 import io.airbyte.cdk.util.Jsons
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
@@ -454,15 +455,20 @@ class MySqlJdbcConcurrentPartitionsCreatorFactory<
         MySqlJdbcConcurrentPartitionsCreator(partition, partitionFactory)
 }
 
+// TODO: move to separate util file??
+data class TableSizeInfo (val tableSize: Long, val avgRowLength: Long, val rowCount: Long)
+//
+//private const val DEFAULT_PARTITION_SIZE: Long = 1_000_000
+//private const val QUERY_TARGET_SIZE_GB: Long = 1_073_741_824
+
 class MySqlJdbcConcurrentPartitionsCreator<
     A : JdbcSharedState, S : JdbcStreamState<A>, P : JdbcPartition<S>>(
     partition: P,
     partitionFactory: JdbcPartitionFactory<A, S, P>,
 ) : JdbcPartitionsCreator<A, S, P>(partition, partitionFactory) {
     private val log = KotlinLogging.logger {}
-    private var maxChunkSize: Long = Long.MAX_VALUE
     val tableEstimateQuery =
-        "SELECT DATA_LENGTH FROM information_schema.TABLES t WHERE TABLE_SCHEMA = '%s' AND TABLE_NAME = '%s'"
+        "SELECT DATA_LENGTH, AVG_ROW_LENGTH, COUNT(*) FROM information_schema.TABLES t WHERE TABLE_SCHEMA = '%s' AND TABLE_NAME = '%s'"
 
     override suspend fun run(): List<PartitionReader> {
         // Ensure that the cursor upper bound is known, if required.
@@ -502,24 +508,34 @@ class MySqlJdbcConcurrentPartitionsCreator<
             }
             return listOf(JdbcNonResumablePartitionReader(partition))
         }
-        val tableByteSizeEstimate: Long =
-            findTableSizeEstimate(stream, partitionFactory.sharedState)
+        // Get table size information for partition size calculation.
+        val tableSizeInfo: TableSizeInfo? =
+            findTableSizeInfoEstimate(stream, partitionFactory.sharedState)
+        //val pair = AirbyteStreamNameNamespacePair(stream.name, stream.namespace)
+        //val calculatedPartitionSize = calculatePartitionSize(tableSizeInfo, pair)
+
+        val maxPartitionSize: Long =
+            if (sharedState.configuration.realHost.lowercase().contains("psdb.cloud")) {
+                100_000
+            } else {
+                Long.MAX_VALUE
+            }
+        //val partitionNumRows: Long = minOf(maxPartitionSize, calculatedPartitionSize)
+
+        // Get min number of partitions based on table size. Calculation: ceiling(rowCount/maxPartitionSize).
+        val minPartitionCount: Long = (((tableSizeInfo?.rowCount ?: 1L) + maxPartitionSize - 1).toDouble() / maxPartitionSize).toLong()
+
+        val tableByteSizeEstimate: Long = tableSizeInfo?.tableSize ?: 0L
+        //val tableByteSizeEstimate: Long = findTableSizeInfoEstimate(stream, partitionFactory.sharedState)
 
         if (tableByteSizeEstimate == 0L) {
-            log.info { "Unable to get table estimate size" }
+            log.info { "Unable to get table size estimate" }
             return listOf(JdbcNonResumablePartitionReader(partition))
         }
 
-        if (sharedState.configuration.get(JdbcUtils.HOST_KEY).asText().lowercase().contains("psdb.cloud")) {
-            maxChunkSize = 100_000
-        }
-
-        // TODO: convert rows to bytes comparison
-        // partitionByteLimit = Long.min(maxChunkSize * rowByteSize, sharedState.targetPartitionByteSize)
-        // is rowbytesize just for a sampled row, ideally avg?
-
         log.info { "Table memory size estimated at ${tableByteSizeEstimate shr 20} MiB." }
         log.info { "Target partition size is ${sharedState.targetPartitionByteSize shr 20} MiB." }
+        //log.info { "Partition size is $partitionNumRows." }
         val secondarySamplingRate: Double =
             if (tableByteSizeEstimate <= sharedState.targetPartitionByteSize) {
                 return listOf(JdbcNonResumablePartitionReader(partition))
@@ -532,18 +548,27 @@ class MySqlJdbcConcurrentPartitionsCreator<
                     1.0
                 }
             }
+
         val random = Random(tableByteSizeEstimate) // RNG output is repeatable.
-        val splitBoundaries: List<OpaqueStateValue> =
+        var splitBoundaries: List<OpaqueStateValue> =
             sample.sampledValues
                 .filter { random.nextDouble() < secondarySamplingRate }
                 .mapNotNull { (splitBoundary: OpaqueStateValue?, _) -> splitBoundary }
                 .distinct()
+
+        if (splitBoundaries.size < minPartitionCount) {
+            splitBoundaries = sample.sampledValues
+                .mapNotNull { (splitBoundary: OpaqueStateValue?, _) -> splitBoundary }
+                .shuffled(random)
+                .take(minPartitionCount.toInt() - 1)
+        }
+
         val partitions: List<JdbcPartition<*>> = partitionFactory.split(partition, splitBoundaries)
         log.info { "Table will be read by ${partitions.size} concurrent partition reader(s)." }
         return partitions.map { JdbcNonResumablePartitionReader(it) }
     }
 
-    private fun findTableSizeEstimate(stream: Stream, sharedState: JdbcSharedState): Long {
+    private fun findTableSizeInfoEstimate(stream: Stream, sharedState: JdbcSharedState): TableSizeInfo? {
         val jdbcConnectionFactory = JdbcConnectionFactory(sharedState.configuration)
         jdbcConnectionFactory.get().use { connection ->
             val stmt =
@@ -553,9 +578,29 @@ class MySqlJdbcConcurrentPartitionsCreator<
             val rs = stmt.executeQuery()
             if (rs.next()) {
                 val tableSize: Long = rs.getLong(1)
-                return tableSize
+                val avgRowLength: Long = rs.getLong(2)
+                val rowCount: Long = rs.getLong(3)
+                return TableSizeInfo(tableSize, avgRowLength, rowCount)
             }
         }
-        return 0
+        return null
     }
+
+    // Number of rows in partition.
+//    private fun calculatePartitionSize(tableSizeInfo: TableSizeInfo?, pair: AirbyteStreamNameNamespacePair): Long {
+//        if (tableSizeInfo == null || tableSizeInfo.tableSize == 0L || tableSizeInfo.avgRowLength == 0L) {
+//            log.info {"Partition size could not be determined for pair: {}, defaulting to {} rows"; pair; DEFAULT_PARTITION_SIZE}
+//            return DEFAULT_PARTITION_SIZE
+//        }
+//
+//        val avgRowLength = tableSizeInfo.avgRowLength
+//        val partitionSize = QUERY_TARGET_SIZE_GB / avgRowLength
+//        log.info {"partition size determined for pair: {}, is {}"; pair; partitionSize}
+//        return partitionSize
+//
+//    }
+
+    // Note: diff approach?? take total num rows / 100k = min num of partitions
+    // change secondarySamplingRate if
+    // if taking this approach, change findTableSizeInfoEstimate to return tableSize/
 }
