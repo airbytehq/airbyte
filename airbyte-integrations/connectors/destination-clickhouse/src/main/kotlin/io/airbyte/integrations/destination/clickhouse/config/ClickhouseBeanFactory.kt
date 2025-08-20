@@ -19,8 +19,6 @@ import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfigurati
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfigurationFactory
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseSpecification
 import io.micronaut.context.annotation.Factory
-import io.micronaut.context.annotation.Requires
-import io.micronaut.context.env.Environment
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 import org.apache.sshd.common.util.net.SshdSocketAddress

@@ -340,6 +340,7 @@ abstract class BasicFunctionalityIntegrationTest(
     // Which medium to use as your input source for the test
     dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
     dataChannelFormat: DataChannelFormat = DataChannelFormat.JSONL,
+    val testSpeedModeStatsEmission: Boolean = true,
 ) :
     IntegrationTest(
         additionalMicronautEnvs = additionalMicronautEnvs,
@@ -1198,6 +1199,12 @@ abstract class BasicFunctionalityIntegrationTest(
             )
 
         val stateMessages = messages.filter { it.type == AirbyteMessage.Type.STATE }
+
+        // Only used for speed mode (unnecessary to test if dest does not support speed)
+        val expectedBytes =
+            if (testSpeedModeStatsEmission) expectedBytesForMediumAndFormat(214L, 234L, 59L)
+            else null
+
         assertAll(
             {
                 assertEquals(
@@ -1215,7 +1222,7 @@ abstract class BasicFunctionalityIntegrationTest(
                             destinationRecordCount = 1,
                             checkpointKey = checkpointKeyForMedium(),
                             totalRecords = 1L,
-                            totalBytes = expectedBytesForMediumAndFormat(214L, 234L, 59L)
+                            totalBytes = expectedBytes
                         )
                         .asProtocolMessage()
                 assertEquals(
@@ -1350,7 +1357,8 @@ abstract class BasicFunctionalityIntegrationTest(
     }
 
     /**
-     * Runs a sync, kills it before finishing, then asserts second sync finishes moving the data to the final table.
+     * Runs a sync, kills it before finishing, then asserts second sync finishes moving the data to
+     * the final table.
      *
      * Tests any sort of 2 phase commit write operation recovers from failure.
      */
@@ -1745,11 +1753,12 @@ abstract class BasicFunctionalityIntegrationTest(
                 syncId,
                 namespaceMapper = namespaceMapperForMedium()
             )
-        val stream = makeStream(
-            generationId = 12,
-            minimumGenerationId = 0,
-            syncId = 42,
-        )
+        val stream =
+            makeStream(
+                generationId = 12,
+                minimumGenerationId = 0,
+                syncId = 42,
+            )
         runSync(
             updatedConfig,
             stream,
@@ -1853,7 +1862,8 @@ abstract class BasicFunctionalityIntegrationTest(
      * Some destinations make complicated changes based on the sync mode, e.g. Bigquery changing the
      * table's clustering config. Verify that we can do those changes across truncates.
      *
-     * This test validates we can finish a truncate refresh when the import type changes between runs.
+     * This test validates we can finish a truncate refresh when the import type changes between
+     * runs.
      */
     @Test
     open fun testTruncateRefreshChangeSyncMode() {
