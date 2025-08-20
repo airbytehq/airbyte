@@ -95,7 +95,7 @@ You can also use a pre-existing user but we highly recommend creating a dedicate
 
 | Version | Date       | Pull Request                                               | Subject                                                                        |
 |:--------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------|
-| 2.0.11  | 2025-08-20 | [\#65120](https://github.com/airbytehq/airbyte/pull/65120) | Check should properly surface protocol related config errors.                  |
+| 2.0.12  | 2025-08-20 | [\#65120](https://github.com/airbytehq/airbyte/pull/65120) | Check should properly surface protocol related config errors.                  |
 | 2.0.11  | 2025-07-23 | [\#65117](https://github.com/airbytehq/airbyte/pull/65117) | Fix a bug related to the column duplicates name.                               |
 | 2.0.10  | 2025-07-23 | [\#64104](https://github.com/airbytehq/airbyte/pull/64104) | Add an option to configure the batch size (both bytes and number of records).  |
 | 2.0.9   | 2025-07-23 | [\#63738](https://github.com/airbytehq/airbyte/pull/63738) | Set clickhouse as an airbyte connector.                                        |
