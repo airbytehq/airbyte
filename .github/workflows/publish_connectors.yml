@@ -268,7 +268,7 @@ jobs:
 
   publish_connector_registry_entries:
     name: Publish connector registry entries
-    needs: [publish_connectors]
+    needs: [list_connectors, publish_connectors]
     runs-on: ubuntu-24.04
     strategy:
       matrix: ${{ fromJson(needs.list_connectors.outputs.connectors-to-publish) }}
@@ -296,6 +296,25 @@ jobs:
         with:
           version: 1.8.5
 
+      - name: Install metadata_service
+        run: poetry install --directory airbyte-ci/connectors/metadata_service/lib
+
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install Poe
+        run: |
+          # Install Poe so we can run the connector tasks:
+          uv tool install poethepoet
+
+      - name: Get connector metadata
+        id: connector-metadata
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: |
+          set -euo pipefail
+          echo "connector-language=$(poe -qq get-language)" | tee -a $GITHUB_OUTPUT
+          echo "connector-version=$(poe -qq get-version)" | tee -a $GITHUB_OUTPUT
+
       - name: Generate OSS Registry Entry [On merge to master]
         id: generate-oss-registry-entry-master
         if: github.event_name == 'push'
@@ -306,7 +325,9 @@ jobs:
             metadata_service generate-registry-entry \
             prod-airbyte-cloud-connector-metadata-service \
             "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
-            oss
+            oss \
+            ${{ steps.connector-metadata.outputs.connector-version }} \
+            --main-release
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
           SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
@@ -321,7 +342,9 @@ jobs:
             metadata_service generate-registry-entry \
             prod-airbyte-cloud-connector-metadata-service \
             "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
-            cloud
+            cloud \
+            ${{ steps.connector-metadata.outputs.connector-version }} \
+            --main-release
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
           SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
@@ -336,17 +359,20 @@ jobs:
           is_pre_release=$(echo "${{ inputs.publish-options }}" | grep -c -- '--pre-release' || true)
           if [[ $is_pre_release -gt 0 ]]; then
             hash=$(git rev-parse --short=10 HEAD)
-            PRE_RELEASE_TAG="--pre-release-tag ${{ steps.connector-metadata.outputs.connector-version }}-dev.${hash}"
-            echo "Running with prerelease tag '$PRE_RELEASE_TAG'"
+            DOCKER_IMAGE_TAG="${{ steps.connector-metadata.outputs.connector-version }}-dev.${hash}"
+            RELEASE_TYPE_FLAG="--pre-release"
+            echo "Running with prerelease tag '$DOCKER_IMAGE_TAG'"
           else
-            PRE_RELEASE_TAG=""
+            DOCKER_IMAGE_TAG="${{ steps.connector-metadata.outputs.connector-version }}"
+            RELEASE_TYPE_FLAG="--main-release"
           fi
           poetry run --directory airbyte-ci/connectors/metadata_service/lib \
             metadata_service generate-registry-entry \
-            $PRE_RELEASE_TAG \
             prod-airbyte-cloud-connector-metadata-service \
             "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
-            oss
+            oss \
+            $DOCKER_IMAGE_TAG \
+            $RELEASE_TYPE_FLAG
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
           SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
@@ -361,17 +387,20 @@ jobs:
           is_pre_release=$(echo "${{ inputs.publish-options }}" | grep -c -- '--pre-release' || true)
           if [[ $is_pre_release -gt 0 ]]; then
             hash=$(git rev-parse --short=10 HEAD)
-            PRE_RELEASE_TAG="--pre-release-tag ${{ steps.connector-metadata.outputs.connector-version }}-dev.${hash}"
-            echo "Running with prerelease tag '$PRE_RELEASE_TAG'"
+            DOCKER_IMAGE_TAG="${{ steps.connector-metadata.outputs.connector-version }}-dev.${hash}"
+            RELEASE_TYPE_FLAG="--pre-release"
+            echo "Running with prerelease tag '$DOCKER_IMAGE_TAG'"
           else
-            PRE_RELEASE_TAG=""
+            DOCKER_IMAGE_TAG="${{ steps.connector-metadata.outputs.connector-version }}"
+            RELEASE_TYPE_FLAG="--main-release"
           fi
           poetry run --directory airbyte-ci/connectors/metadata_service/lib \
             metadata_service generate-registry-entry \
-            $PRE_RELEASE_TAG \
             prod-airbyte-cloud-connector-metadata-service \
             "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
-            cloud
+            cloud \
+            $DOCKER_IMAGE_TAG \
+            $RELEASE_TYPE_FLAG
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
           SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}

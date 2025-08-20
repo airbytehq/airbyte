@@ -439,7 +439,7 @@ def _persist_connector_registry_entry(bucket_name: str, registry_entry: Polymorp
 
 @sentry_sdk.trace
 def generate_and_persist_registry_entry(
-    bucket_name: str, repo_metadata_file_path: pathlib.Path, registry_type: str, pre_release_tag: str | None
+    bucket_name: str, repo_metadata_file_path: pathlib.Path, registry_type: str, docker_image_tag: str, is_prerelease: bool
 ) -> None:
     """Generate and persist the connector registry entry to the GCS bucket.
 
@@ -450,18 +450,12 @@ def generate_and_persist_registry_entry(
         pre_release_tag (str): The prerelease image tag ("1.2.3-dev.abcde12345"), or None. If set to None, will use the image tag from the metadata file.
     """
     # Read the repo metadata dict to bootstrap ourselves. We need the docker repository,
-    # and (in non-prerelease mode) we need the docker image tag.
+    # so that we can read the metadata from GCS.
     repo_metadata_dict = _get_and_parse_yaml_file(repo_metadata_file_path)
     docker_repository = repo_metadata_dict["data"]["dockerRepository"]
-    if pre_release_tag is not None:
-        # We have a prerelease tag. Use it.
-        docker_image_tag = pre_release_tag
-    else:
-        # No prerelease tag supplied - read the current version from connector metadata
-        docker_image_tag = repo_metadata_dict["data"]["dockerImageTag"]
 
-    # Now that we have that information, read the appropriate versioned metadata from GCS.
-    # This metadata will differ in a few fields (e.g. dockerImageTag will contain the actual prerelease tag `1.2.3-dev.abcde12345`),
+    # Now that we have the docker repo, read the appropriate versioned metadata from GCS.
+    # This metadata will differ in a few fields (e.g. in prerelease mode, dockerImageTag will contain the actual prerelease tag `1.2.3-dev.abcde12345`),
     # so we'll treat this as the source of truth (ish. See below for how we handle the registryOverrides field.)
     gcs_client = get_gcs_storage_client(gcs_creds=os.environ.get("GCS_CREDENTIALS"))
     bucket = gcs_client.bucket(bucket_name)
@@ -486,9 +480,7 @@ def generate_and_persist_registry_entry(
             send_slack_message(PUBLISH_UPDATE_CHANNEL, message)
             raise
 
-        registry_entry_blob_paths = _get_registry_entry_blob_paths(
-            metadata_dict, registry_type, overridden_metadata_data, is_prerelease=pre_release_tag is not None
-        )
+        registry_entry_blob_paths = _get_registry_entry_blob_paths(metadata_dict, registry_type, overridden_metadata_data, is_prerelease)
 
         logger.info("Parsing spec file.")
         spec_cache = SpecCache()

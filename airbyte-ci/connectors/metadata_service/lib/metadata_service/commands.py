@@ -207,16 +207,21 @@ def generate_specs_secrets_mask(bucket_name: str):
 @click.argument("bucket-name", type=click.STRING, required=True)
 @click.argument("metadata-file-path", type=click.STRING, required=True)
 @click.argument("registry-type", type=click.Choice(VALID_REGISTRIES), required=True)
-@click.option("--pre-release-tag", type=click.STRING, required=False, default=None, help="The prerelease tag of the connector")
+@click.argument("docker-image-tag", type=click.STRING, required=True)
+@click.option(
+    "--pre-release/--main-release", type=bool, is_flag=True, required=True, help="Whether this is a prerelease or mainrelease publish."
+)
 @sentry_sdk.trace
-def generate_registry_entry(bucket_name: str, metadata_file_path: pathlib.Path, registry_type: str, pre_release_tag: str | None):
+def generate_registry_entry(
+    bucket_name: str, metadata_file_path: pathlib.Path, registry_type: str, docker_image_tag: str, pre_release: bool
+):
     # Set Sentry context for the generate_registry_entry command
     sentry_sdk.set_tag("command", "generate_registry_entry")
     sentry_sdk.set_tag("bucket_name", bucket_name)
 
     logger.info("Starting registry entry generation and upload process.")
     try:
-        generate_and_persist_registry_entry(bucket_name, metadata_file_path, registry_type, pre_release_tag)
+        generate_and_persist_registry_entry(bucket_name, metadata_file_path, registry_type, docker_image_tag, pre_release)
         sentry_sdk.set_tag("operation_success", True)
         logger.info("Registry entry generation and upload process completed successfully.")
     except Exception as e:
