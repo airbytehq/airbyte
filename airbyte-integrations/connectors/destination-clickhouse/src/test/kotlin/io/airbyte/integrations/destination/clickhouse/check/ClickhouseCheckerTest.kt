@@ -88,11 +88,12 @@ class ClickhouseCheckerTest {
     fun `check hostname format failure`() {
         val httpConfig = Fixtures.config(hostname = "$PROTOCOL://hostname")
         val httpsConfig = Fixtures.config(hostname = "https://hostname")
+        val clientFactory = RawClickHouseClientFactory()
 
-        val caught1 = assertThrows<Throwable> { checker.check(httpConfig) }
+        val caught1 = assertThrows<Throwable> { clientFactory.make(httpConfig) }
         assertEquals(PROTOCOL_ERR_MESSAGE, caught1.message)
 
-        val caught2 = assertThrows<Throwable> { checker.check(httpsConfig) }
+        val caught2 = assertThrows<Throwable> { clientFactory.make(httpsConfig) }
         assertEquals(PROTOCOL_ERR_MESSAGE, caught2.message)
     }
 
