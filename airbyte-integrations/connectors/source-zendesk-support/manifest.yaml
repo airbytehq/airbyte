@@ -11,7 +11,7 @@ definitions:
   # Legacy bearer authenticator - kept for backward compatibility during transition
   bearer_authenticator:
     type: BearerAuthenticator
-    api_token: "{{ config['access_token'] }}"
+    api_token: "{{ config['credentials']['access_token'] }}"
   
   # New OAuth2 authenticator with refresh token support for Zendesk's new requirements
   oauth2_authenticator:
@@ -36,7 +36,7 @@ definitions:
       http_method: GET
       authenticator:
         type: SelectiveAuthenticator
-        authenticator_selection_path: ["credentials"]
+        authenticator_selection_path: ["credentials", "credentials"]
         authenticators:
           oauth2.0_refresh: "#/definitions/oauth2_authenticator"
           oauth2.0: "#/definitions/bearer_authenticator"  # Legacy OAuth with access token
@@ -339,7 +339,7 @@ definitions:
         http_method: GET
         authenticator:
           type: SelectiveAuthenticator
-          authenticator_selection_path: ["credentials"]
+          authenticator_selection_path: ["credentials", "credentials"]
           authenticators:
             oauth2.0_refresh: "#/definitions/oauth2_authenticator"
             oauth2.0: "#/definitions/bearer_authenticator"
