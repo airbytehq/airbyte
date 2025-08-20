@@ -69,6 +69,11 @@ class PostgresSourceSelectQueryGenerator : SelectQueryGenerator {
                 is SelectColumnMaxValue -> "MAX(${column.sql()})"
             }
 
+    /*fun Field.sql(): String = when(id) {
+        "ctid" -> "ctid::text"
+        else -> "\"$id\""
+    }*/
+
     fun Field.sql(): String = "\"$id\""
 
     fun FromNode.sql(columns: List<Field>,): String =
@@ -81,7 +86,7 @@ class PostgresSourceSelectQueryGenerator : SelectQueryGenerator {
                     if (sampleRateInv == 1L) {
                         ""
                     } else {
-                        " TABLESAMPLE SYSTEM(${sampleRatePercentage.toPlainString()})"
+                        " TABLESAMPLE SYSTEM(${sampleRatePercentage.toPlainString()}) REPEATABLE(2472983)"
                     }
                 val innerFrom: String = From(name, namespace).sql(columns) + sample
                 val inner = "SELECT ${columns.joinToString(", ") { it.sql() }} $innerFrom ORDER BY RANDOM()"
@@ -99,11 +104,11 @@ class PostgresSourceSelectQueryGenerator : SelectQueryGenerator {
         when (this) {
             is And -> conj.joinToString(") AND (", "(", ")") { it.sql() }
             is Or -> disj.joinToString(") OR (", "(", ")") { it.sql() }
-            is Equal -> "${column.sql()} = ?"
-            is GreaterOrEqual -> "${column.sql()} >= ?"
-            is Greater -> "${column.sql()} > ?"
-            is LesserOrEqual -> "${column.sql()} <= ?"
-            is Lesser -> "${column.sql()} < ?"
+            is Equal -> "${column.sql()} = ?::tid"
+            is GreaterOrEqual -> "${column.sql()} >= ?::tid"
+            is Greater -> "${column.sql()} > ?::tid"
+            is LesserOrEqual -> "${column.sql()} <= ?::tid"
+            is Lesser -> "${column.sql()} < ?::tid"
         }
 
     fun OrderByNode.sql(): String =
@@ -139,7 +144,3 @@ class PostgresSourceSelectQueryGenerator : SelectQueryGenerator {
 
 }
 
-/*data class NonEmittedField(
-    override val id: String,
-    override val type: FieldType,
-) : FieldOrMetaField*/

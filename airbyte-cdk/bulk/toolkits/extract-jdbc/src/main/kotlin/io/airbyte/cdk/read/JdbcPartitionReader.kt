@@ -176,7 +176,7 @@ class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
 
     val incumbentLimit = AtomicLong()
     val numRecords = AtomicLong()
-    val lastRecord = AtomicReference<ObjectNode?>(null)
+    val lastRecord = AtomicReference<SelectQuerier.ResultRow>(null)
     val runComplete = AtomicBoolean(false)
 
     override suspend fun run() {
@@ -200,7 +200,8 @@ class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
             .use { result: SelectQuerier.Result ->
                 for (row in result) {
                     out(row)
-                    lastRecord.set(row.data.toJson(Jsons.objectNode()))
+//                    lastRecord.set(row.data.toJson(Jsons.objectNode()))
+                    lastRecord.set(row)
                     // Check activity periodically to handle timeout.
                     if (numRecords.incrementAndGet() % fetchSize == 0L) {
                         coroutineContext.ensureActive()
@@ -237,7 +238,7 @@ class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
                 streamState.updateLimitState { it.down }
             }
         }
-        val checkpointState: OpaqueStateValue = partition.incompleteState(lastRecord.get()!!)
+        val checkpointState: OpaqueStateValue = partition.incompleteState(lastRecord.get())
         return PartitionReadCheckpoint(
             checkpointState,
             numRecords.get(),
