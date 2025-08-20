@@ -42,6 +42,7 @@ class ClickhouseAirbyteClientTest {
         mockk(relaxed = true)
     private val tempTableNameGenerator: TempTableNameGenerator = mockk(relaxed = true)
     private val clickhouseConfiguration: ClickhouseConfiguration = mockk(relaxed = true)
+    private val columnNameMapping: ColumnNameMapping = ColumnNameMapping(emptyMap())
 
     // Client
     private val clickhouseAirbyteClient =
@@ -109,7 +110,8 @@ class ClickhouseAirbyteClientTest {
                 tableColumns,
                 catalogColumns,
                 listOf(),
-                listOf()
+                listOf(),
+                columnNameMapping,
             )
         Assertions.assertEquals(expected, actual)
     }
@@ -131,7 +133,8 @@ class ClickhouseAirbyteClientTest {
                 tableColumns,
                 catalogColumns,
                 listOf(),
-                listOf()
+                listOf(),
+                columnNameMapping,
             )
         Assertions.assertEquals(expected, actual)
     }
@@ -156,7 +159,8 @@ class ClickhouseAirbyteClientTest {
                 tableColumns,
                 catalogColumns,
                 listOf(),
-                listOf()
+                listOf(),
+                columnNameMapping,
             )
         Assertions.assertEquals(expected, actual)
     }
@@ -178,7 +182,8 @@ class ClickhouseAirbyteClientTest {
                 tableColumns,
                 catalogColumns,
                 listOf(),
-                listOf()
+                listOf(),
+                columnNameMapping,
             )
         Assertions.assertEquals(expected, actual)
 
@@ -197,7 +202,8 @@ class ClickhouseAirbyteClientTest {
                 tableColumns2,
                 catalogColumns2,
                 listOf(),
-                listOf()
+                listOf(),
+                columnNameMapping,
             )
         Assertions.assertEquals(expected2, actual2)
     }
@@ -218,7 +224,8 @@ class ClickhouseAirbyteClientTest {
                 tableColumns,
                 catalogColumns,
                 listOf("col1"),
-                listOf()
+                listOf(),
+                columnNameMapping,
             )
         Assertions.assertEquals(expected, actual)
         actual =
@@ -226,7 +233,8 @@ class ClickhouseAirbyteClientTest {
                 tableColumns,
                 catalogColumns,
                 listOf(),
-                listOf("col2")
+                listOf("col2"),
+                columnNameMapping,
             )
         Assertions.assertEquals(expected, actual)
         actual =
@@ -234,7 +242,8 @@ class ClickhouseAirbyteClientTest {
                 tableColumns,
                 catalogColumns,
                 listOf("col1"),
-                listOf("col2")
+                listOf("col2"),
+                columnNameMapping,
             )
         Assertions.assertEquals(expected, actual)
     }
@@ -260,7 +269,8 @@ class ClickhouseAirbyteClientTest {
                 tableColumns,
                 catalogColumns,
                 listOf(),
-                listOf()
+                listOf(),
+                columnNameMapping,
             )
         Assertions.assertEquals(expected, actual)
 
@@ -282,7 +292,8 @@ class ClickhouseAirbyteClientTest {
                 tableColumns2,
                 catalogColumns2,
                 listOf(),
-                listOf()
+                listOf(),
+                columnNameMapping,
             )
         Assertions.assertEquals(expected2, actual2)
 
@@ -304,7 +315,8 @@ class ClickhouseAirbyteClientTest {
                 tableColumns3,
                 catalogColumns3,
                 listOf(),
-                listOf()
+                listOf(),
+                columnNameMapping,
             )
         Assertions.assertEquals(expected3, actual3)
 
@@ -333,7 +345,8 @@ class ClickhouseAirbyteClientTest {
                 tableColumns4,
                 catalogColumns4,
                 listOf(),
-                listOf()
+                listOf(),
+                columnNameMapping,
             )
         Assertions.assertEquals(expected4, actual4)
     }
@@ -364,8 +377,9 @@ class ClickhouseAirbyteClientTest {
         val mockTableName = mockk<TableName>(relaxed = true)
         val alterTableStatement = "ALTER TABLE my_table ADD COLUMN new_col String"
 
-        coEvery { clickhouseAirbyteClient.getChangedColumns(any(), any(), any(), any()) } returns
-            alterationSummary
+        coEvery {
+            clickhouseAirbyteClient.getChangedColumns(any(), any(), any(), any(), any())
+        } returns alterationSummary
         coEvery { clickhouseSqlGenerator.alterTable(alterationSummary, mockTableName) } returns
             alterTableStatement
         coEvery { clickhouseAirbyteClient.execute(alterTableStatement) } returns
@@ -392,7 +406,7 @@ class ClickhouseAirbyteClientTest {
         clickhouseAirbyteClient.ensureSchemaMatches(stream, mockTableName, columnMapping)
 
         coVerifyOrder {
-            clickhouseAirbyteClient.getChangedColumns(any(), any(), any(), any())
+            clickhouseAirbyteClient.getChangedColumns(any(), any(), any(), any(), any())
             clickhouseSqlGenerator.alterTable(alterationSummary, mockTableName)
             clickhouseAirbyteClient.execute(alterTableStatement)
         }
@@ -411,8 +425,9 @@ class ClickhouseAirbyteClientTest {
         val finalTableName = TableName("fin", "al")
         val tempTableName = TableName("temp", "orary")
 
-        coEvery { clickhouseAirbyteClient.getChangedColumns(any(), any(), any(), any()) } returns
-            alterationSummary
+        coEvery {
+            clickhouseAirbyteClient.getChangedColumns(any(), any(), any(), any(), any())
+        } returns alterationSummary
         coEvery { clickhouseAirbyteClient.execute(any()) } returns mockk(relaxed = true)
         every { tempTableNameGenerator.generate(any()) } returns tempTableName
         every { clickhouseFinalTableNameGenerator.getTableName(any()) } returns finalTableName
@@ -439,7 +454,7 @@ class ClickhouseAirbyteClientTest {
         coVerify(exactly = 0) { clickhouseSqlGenerator.alterTable(any(), any()) }
 
         coVerifyOrder {
-            clickhouseAirbyteClient.getChangedColumns(any(), any(), any(), any())
+            clickhouseAirbyteClient.getChangedColumns(any(), any(), any(), any(), any())
             clickhouseSqlGenerator.createNamespace(tempTableName.namespace)
             clickhouseSqlGenerator.createTable(stream, tempTableName, columnMapping, true)
             clickhouseSqlGenerator.copyTable(columnMapping, finalTableName, tempTableName)

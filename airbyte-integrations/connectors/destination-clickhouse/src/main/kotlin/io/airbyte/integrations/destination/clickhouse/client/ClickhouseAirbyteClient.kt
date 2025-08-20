@@ -156,6 +156,7 @@ class ClickhouseAirbyteClient(
                 airbyteSchemaWithClickhouseType,
                 clickhousePks,
                 currentPKs,
+                columnNameMapping,
             )
 
         if (columnChanges.hasApplicableAlterations() && !columnChanges.hasDedupChange) {
@@ -243,12 +244,14 @@ class ClickhouseAirbyteClient(
         tableColumns: List<ClickHouseColumn>,
         catalogColumns: Map<String, String>,
         clickhousePks: List<String>,
-        airbytePks: List<String>
+        airbytePks: List<String>,
+        columnNameMapping: ColumnNameMapping
     ): AlterationSummary {
 
         val modified = mutableMapOf<String, String>()
         val deleted = mutableSetOf<String>()
-        val mutableCatalogColumns: MutableMap<String, String> = catalogColumns.toMutableMap()
+        val mutableCatalogColumns: MutableMap<String, String> =
+            catalogColumns.mapKeys { (key, _) -> columnNameMapping.get(key) ?: key }.toMutableMap()
 
         tableColumns.forEach { clickhouseColumn ->
             if (!mutableCatalogColumns.containsKey(clickhouseColumn.columnName)) {
