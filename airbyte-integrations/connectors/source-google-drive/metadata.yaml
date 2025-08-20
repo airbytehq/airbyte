@@ -1,6 +1,6 @@
 data:
   ab_internal:
-    ql: 200
+    ql: 300
     sl: 200
   allowedHosts:
     hosts:
