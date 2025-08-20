@@ -132,7 +132,7 @@ runs:
         # Check if this is a release candidate
         IS_RELEASE_CANDIDATE=$(poe -qq get-version | grep -q 'rc' && echo "true" || echo "false")
 
-        # Determine tag override and push-latest based on release-type
+        # Determine the image tags to use 
         if [[ "${{ inputs.tag-override }}" ]]; then
           CONNECTOR_VERSION_TAG="${{ inputs.tag-override }}"
           echo "🏷 Using provided tag override: $CONNECTOR_VERSION_TAG"
@@ -145,7 +145,7 @@ runs:
           echo "🏷 Using main release tag: $CONNECTOR_VERSION_TAG"
         fi
 
-        # Determine push-latest behavior
+        # Determine whether to push with latest tag
         if [[ "${{ inputs.push-latest }}" == "true" || "${{ inputs.push-latest }}" == "false" ]]; then
           # Use explicit input value
           PUSH_LATEST="${{ inputs.push-latest }}"
@@ -167,7 +167,7 @@ runs:
           exit 1
         fi
 
-        # Validate registry input
+        # Validate image registry input
         case "${{ inputs.registry }}" in
           "docker.io/airbyte")
             # Supported registries
