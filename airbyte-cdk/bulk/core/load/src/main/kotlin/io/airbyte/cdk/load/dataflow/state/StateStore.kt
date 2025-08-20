@@ -38,6 +38,11 @@ class StateStore(
         if (!histogramStore.isComplete(key)) return null
 
         stateSequence.incrementAndGet()
-        return states.remove(key)
+        val msg = states.remove(key)
+        val count = histogramStore.remove(key)!!
+
+        // Add count to stats (will always equal source stats)
+        // TODO: decide what we want to do with dest stats
+        return msg!!.withDestinationStats(CheckpointMessage.Stats(count))
     }
 }
