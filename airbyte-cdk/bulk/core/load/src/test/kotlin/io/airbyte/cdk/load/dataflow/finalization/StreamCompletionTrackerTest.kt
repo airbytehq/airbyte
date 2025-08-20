@@ -37,7 +37,7 @@ class StreamCompletionTrackerTest {
         received: Int,
     ) {
         // Given
-        val catalog = Fixtures.catalog(4)
+        val catalog = Fixtures.catalog(size)
         val tracker = StreamCompletionTracker(catalog)
 
         // When
