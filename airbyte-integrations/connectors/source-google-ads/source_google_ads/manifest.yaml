@@ -405,7 +405,7 @@ definitions:
         class_name: "source_google_ads.components.CustomGAQueryHttpRequester"
         authenticator:
           $ref: "#/definitions/authenticator"
-        url_base: "https://googleads.googleapis.com/v18/{{ stream_partition['customer_id'] }}/googleAds:search"
+        url_base: "https://googleads.googleapis.com/v20/{{ stream_partition['customer_id'] }}/googleAds:search"
         http_method: POST
         error_handler:
           $ref: "#/definitions/base_error_handler"

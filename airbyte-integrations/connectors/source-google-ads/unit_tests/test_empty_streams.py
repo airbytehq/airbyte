@@ -226,15 +226,15 @@ def test_custom_query_stream(customers, config_for_custom_query_tests, requests_
         },
     )
     requests_mock.register_uri(
-        "GET", "https://googleads.googleapis.com/v18/customers:listAccessibleCustomers", accessible_customers_response
+        "GET", "https://googleads.googleapis.com/v20/customers:listAccessibleCustomers", accessible_customers_response
     )
     requests_mock.register_uri(
-        "POST", "https://googleads.googleapis.com/v18/customers/1234567890/googleAds:searchStream", customers_response
+        "POST", "https://googleads.googleapis.com/v20/customers/1234567890/googleAds:searchStream", customers_response
     )
 
     request_history = requests_mock.register_uri(
         "POST",
-        "https://googleads.googleapis.com/v18/customers/123/googleAds:search",
+        "https://googleads.googleapis.com/v20/customers/123/googleAds:search",
         custom_query_response,
     )
 
