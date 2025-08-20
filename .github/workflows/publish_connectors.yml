@@ -37,7 +37,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v4
+        # v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
         with:
           fetch-depth: 2 # Required so we can conduct a diff from the previous commit to understand what connectors have changed.
       - name: List connectors [manual]
@@ -69,7 +70,8 @@ jobs:
       fail-fast: false
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v4
+        # v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
         with:
           fetch-depth: 2 # Required so we can conduct a diff from the previous commit to understand what connectors have changed.
 
@@ -213,36 +215,6 @@ jobs:
           SPEC_CACHE_GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
           METADATA_SERVICE_GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
 
-      - name: Generate OSS Registry Entry [On merge to master]
-        id: generate-oss-registry-entry-master
-        if: github.event_name == 'push'
-        shell: bash
-        run: |
-          echo "Generating OSS registry entry for ${{ matrix.connector }}"
-          poetry run --directory airbyte-ci/connectors/metadata_service/lib \
-            metadata_service generate-registry-entry \
-            prod-airbyte-cloud-connector-metadata-service \
-            "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
-            oss
-        env:
-          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
-          SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
-
-      - name: Generate Cloud Registry Entry [On merge to master]
-        id: generate-cloud-registry-entry-master
-        if: github.event_name == 'push'
-        shell: bash
-        run: |
-          echo "Generating Cloud registry entry for ${{ matrix.connector }}"
-          poetry run --directory airbyte-ci/connectors/metadata_service/lib \
-            metadata_service generate-registry-entry \
-            prod-airbyte-cloud-connector-metadata-service \
-            "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
-            cloud
-        env:
-          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
-          SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
-
       - name: Build and publish JVM connectors images [manual]
         id: build-and-publish-JVM-connectors-images-manual
         if: (github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call') && steps.connector-metadata.outputs.connector-language == 'java'
@@ -293,6 +265,66 @@ jobs:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
           SPEC_CACHE_GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
           METADATA_SERVICE_GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
+
+  publish_connector_registry_entries:
+    name: Publish connector registry entries
+    needs: [publish_connectors]
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix: ${{ fromJson(needs.list_connectors.outputs.connectors-to-publish) }}
+      max-parallel: 5
+      # Allow all jobs to run, even if one fails
+      fail-fast: false
+    steps:
+      - name: Checkout Airbyte
+        # v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
+        with:
+          fetch-depth: 2 # Required so we can conduct a diff from the previous commit to understand what connectors have changed.
+
+      - name: Set up Python
+        # v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.11"
+          check-latest: true
+          update-environment: true
+
+      - name: Install and configure Poetry
+        # v1
+        uses: snok/install-poetry@76e04a911780d5b312d89783f7b1cd627778900a
+        with:
+          version: 1.8.5
+
+      - name: Generate OSS Registry Entry [On merge to master]
+        id: generate-oss-registry-entry-master
+        if: github.event_name == 'push'
+        shell: bash
+        run: |
+          echo "Generating OSS registry entry for ${{ matrix.connector }}"
+          poetry run --directory airbyte-ci/connectors/metadata_service/lib \
+            metadata_service generate-registry-entry \
+            prod-airbyte-cloud-connector-metadata-service \
+            "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
+            oss
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
+          SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+
+      - name: Generate Cloud Registry Entry [On merge to master]
+        id: generate-cloud-registry-entry-master
+        if: github.event_name == 'push'
+        shell: bash
+        run: |
+          echo "Generating Cloud registry entry for ${{ matrix.connector }}"
+          poetry run --directory airbyte-ci/connectors/metadata_service/lib \
+            metadata_service generate-registry-entry \
+            prod-airbyte-cloud-connector-metadata-service \
+            "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
+            cloud
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
+          SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
 
       - name: Generate OSS Registry Entry [Manual]
         id: generate-oss-registry-entry-manual
@@ -348,11 +380,12 @@ jobs:
     name: "Notify Slack Channel on Publish Failures"
     runs-on: ubuntu-24.04
     needs:
-      - publish_connectors
+      - publish_connector_registry_entries
     if: ${{ always() && contains(needs.*.result, 'failure') && github.ref == 'refs/heads/master' }}
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v4
+        # v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
       - name: Match GitHub User to Slack User
         id: match-github-to-slack-user
         uses: ./.github/actions/match-github-to-slack-user
@@ -377,11 +410,12 @@ jobs:
     name: "Notify PagerDuty on Publish Failures"
     runs-on: ubuntu-24.04
     needs:
-      - publish_connectors
+      - publish_connector_registry_entries
     if: ${{ always() && contains(needs.*.result, 'failure') && github.ref == 'refs/heads/master' }}
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v4
+        # v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
       - name: Notify PagerDuty
         id: pager-duty
         uses: ./.github/actions/send-pager-duty-event
