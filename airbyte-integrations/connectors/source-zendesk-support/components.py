@@ -49,19 +49,19 @@ class ZendeskSupportAttributeDefinitionsExtractor(RecordExtractor):
 class ZendeskSupportOAuth2Authenticator(DeclarativeOauth2Authenticator):
     """
     Custom OAuth2 authenticator for Zendesk Support that handles token expiration and refresh.
-    
+
     This authenticator implements Zendesk's new OAuth refresh token flow to comply with
     their September 30, 2025 deadline for access token expiration support.
-    
+
     Reference: https://developer.zendesk.com/api-reference/ticketing/oauth/grant_type_tokens/
     """
 
     def get_refresh_request_body(self) -> Mapping[str, Any]:
         """
         Build the request body for token refresh according to Zendesk's OAuth specification.
-        
+
         Zendesk expects:
-        - grant_type: "refresh_token" 
+        - grant_type: "refresh_token"
         - refresh_token: The refresh token
         - client_id: The OAuth client ID
         - client_secret: The OAuth client secret
@@ -76,10 +76,10 @@ class ZendeskSupportOAuth2Authenticator(DeclarativeOauth2Authenticator):
     def refresh_access_token(self) -> Tuple[str, int]:
         """
         Refresh the access token using Zendesk's /oauth/tokens endpoint.
-        
+
         Returns:
             Tuple[str, int]: (access_token, expires_in_seconds)
-            
+
         Raises:
             Exception: If the token refresh fails
         """
@@ -92,15 +92,15 @@ class ZendeskSupportOAuth2Authenticator(DeclarativeOauth2Authenticator):
             )
             response.raise_for_status()
             response_json = response.json()
-            
+
             access_token = response_json.get("access_token")
             expires_in = response_json.get("expires_in", 7200)  # Default to 2 hours if not provided
-            
+
             if not access_token:
                 raise Exception("No access_token in refresh response")
-                
+
             return access_token, expires_in
-            
+
         except requests.exceptions.RequestException as e:
             raise Exception(f"HTTP error while refreshing Zendesk access token: {e}") from e
         except (KeyError, ValueError) as e:

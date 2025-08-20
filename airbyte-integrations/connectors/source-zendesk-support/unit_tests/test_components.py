@@ -109,7 +109,7 @@ def test_attribute_definitions_extractor(response_data, expected_records, compon
     [
         (
             "test_client_id",
-            "test_client_secret", 
+            "test_client_secret",
             "test_refresh_token",
             {
                 "grant_type": "refresh_token",
@@ -131,7 +131,7 @@ def test_oauth_authenticator_refresh_request_body(client_id, client_secret, refr
         config={"subdomain": "test"},
         parameters={},
     )
-    
+
     # Test the refresh request body
     request_body = authenticator.get_refresh_request_body()
     assert request_body == expected_body
@@ -153,7 +153,7 @@ def test_oauth_authenticator_refresh_request_body(client_id, client_secret, refr
 def test_oauth_authenticator_refresh_access_token(response_json, expected_token, expected_expires_in, should_raise, components_module):
     """Test the OAuth access token refresh functionality."""
     import unittest.mock
-    
+
     # Create an instance of the OAuth authenticator
     authenticator = components_module.ZendeskSupportOAuth2Authenticator(
         client_id="test_client_id",
@@ -163,14 +163,14 @@ def test_oauth_authenticator_refresh_access_token(response_json, expected_token,
         config={"subdomain": "test"},
         parameters={},
     )
-    
+
     # Mock the requests.request method
-    with unittest.mock.patch('requests.request') as mock_request:
+    with unittest.mock.patch("requests.request") as mock_request:
         mock_response = MagicMock()
         mock_response.json.return_value = response_json
         mock_response.raise_for_status = MagicMock()
         mock_request.return_value = mock_response
-        
+
         if should_raise:
             with pytest.raises(Exception):
                 authenticator.refresh_access_token()
@@ -178,7 +178,7 @@ def test_oauth_authenticator_refresh_access_token(response_json, expected_token,
             access_token, expires_in = authenticator.refresh_access_token()
             assert access_token == expected_token
             assert expires_in == expected_expires_in
-            
+
             # Verify the request was made correctly
             mock_request.assert_called_once_with(
                 method="POST",
@@ -196,7 +196,7 @@ def test_oauth_authenticator_refresh_access_token(response_json, expected_token,
 def test_oauth_authenticator_refresh_http_error(components_module):
     """Test OAuth authenticator handles HTTP errors properly."""
     import unittest.mock
-    
+
     # Create an instance of the OAuth authenticator
     authenticator = components_module.ZendeskSupportOAuth2Authenticator(
         client_id="test_client_id",
@@ -206,21 +206,21 @@ def test_oauth_authenticator_refresh_http_error(components_module):
         config={"subdomain": "test"},
         parameters={},
     )
-    
+
     # Mock requests to raise an HTTP error
-    with unittest.mock.patch('requests.request') as mock_request:
+    with unittest.mock.patch("requests.request") as mock_request:
         mock_request.side_effect = requests.exceptions.RequestException("HTTP 401 Unauthorized")
-        
+
         with pytest.raises(Exception) as exc_info:
             authenticator.refresh_access_token()
-        
+
         assert "HTTP error while refreshing Zendesk access token" in str(exc_info.value)
 
 
 def test_oauth_authenticator_refresh_json_error(components_module):
     """Test OAuth authenticator handles JSON parsing errors properly."""
     import unittest.mock
-    
+
     # Create an instance of the OAuth authenticator
     authenticator = components_module.ZendeskSupportOAuth2Authenticator(
         client_id="test_client_id",
@@ -230,15 +230,15 @@ def test_oauth_authenticator_refresh_json_error(components_module):
         config={"subdomain": "test"},
         parameters={},
     )
-    
+
     # Mock requests to return invalid JSON
-    with unittest.mock.patch('requests.request') as mock_request:
+    with unittest.mock.patch("requests.request") as mock_request:
         mock_response = MagicMock()
         mock_response.json.side_effect = ValueError("Invalid JSON")
         mock_response.raise_for_status = MagicMock()
         mock_request.return_value = mock_response
-        
+
         with pytest.raises(Exception) as exc_info:
             authenticator.refresh_access_token()
-        
+
         assert "Invalid response format while refreshing Zendesk access token" in str(exc_info.value)
