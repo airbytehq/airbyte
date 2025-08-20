@@ -739,3 +739,18 @@ def test_pagination_marketing_emails_stream(requests_mock, config):
     records = read_full_refresh(test_stream)
     # The stream should handle pagination correctly and output 600 records.
     assert len(records) == 600
+
+    # Verify that statistics data has been merged into the email records
+    # Check a specific record to ensure statistics fields are present
+    sample_record = records[5]
+
+    # Assert that the mocked statistics values are present in the record
+    assert sample_record["delivered"] == 100, "Statistics 'delivered' field should be merged from /statistics endpoint"
+    assert sample_record["opens"] == 50, "Statistics 'opens' field should be merged from /statistics endpoint"
+    assert sample_record["clicks"] == 25, "Statistics 'clicks' field should be merged from /statistics endpoint"
+    assert sample_record["bounces"] == 5, "Statistics 'bounces' field should be merged from /statistics endpoint"
+    assert sample_record["optouts"] == 2, "Statistics 'optouts' field should be merged from /statistics endpoint"
+
+    # Verify that the email record also has the base email fields (from /marketing/v3/emails)
+    assert "id" in sample_record, "Email 'id' field should be present from /marketing/v3/emails endpoint"
+    assert "updated" in sample_record, "Email 'updated' field should be present from /marketing/v3/emails endpoint"
