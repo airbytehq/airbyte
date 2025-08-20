@@ -376,7 +376,7 @@ def _get_connector_type_from_registry_entry(registry_entry: dict) -> TaggedRegis
 
 
 def _get_registry_entry_blob_paths(
-    metadata_dict: dict, registry_type: str, docker_image_tag: str, metadata_data_with_overrides: dict, is_prerelease: bool
+    metadata_dict: dict, registry_type: str, metadata_data_with_overrides: dict, is_prerelease: bool
 ) -> List[str]:
     """
     Builds the registry entry paths for the registry entries.
@@ -449,6 +449,8 @@ def generate_and_persist_registry_entry(
         registry_type (str): The registry type.
         pre_release_tag (str): The prerelease image tag ("1.2.3-dev.abcde12345"), or None. If set to None, will use the image tag from the metadata file.
     """
+    # Read the repo metadata dict to bootstrap ourselves. We need the docker repository,
+    # and (in non-prerelease mode) we need the docker image tag.
     repo_metadata_dict = _get_and_parse_yaml_file(repo_metadata_file_path)
     docker_repository = repo_metadata_dict["data"]["dockerRepository"]
     if pre_release_tag is not None:
@@ -458,6 +460,9 @@ def generate_and_persist_registry_entry(
         # No prerelease tag supplied - read the current version from connector metadata
         docker_image_tag = repo_metadata_dict["data"]["dockerImageTag"]
 
+    # Now that we have that information, read the appropriate versioned metadata from GCS.
+    # This metadata will differ in a few fields (e.g. dockerImageTag will contain the actual prerelease tag `1.2.3-dev.abcde12345`),
+    # so we'll treat this as the source of truth (ish. See below for how we handle the registryOverrides field.)
     gcs_client = get_gcs_storage_client(gcs_creds=os.environ.get("GCS_CREDENTIALS"))
     bucket = gcs_client.bucket(bucket_name)
     metadata_blob = bucket.blob(f"{METADATA_FOLDER}/{docker_repository}/{docker_image_tag}/{METADATA_FILE_NAME}")
@@ -482,11 +487,12 @@ def generate_and_persist_registry_entry(
             raise
 
         registry_entry_blob_paths = _get_registry_entry_blob_paths(
-            metadata_dict, registry_type, docker_image_tag, overridden_metadata_data, is_prerelease=pre_release_tag is not None
+            metadata_dict, registry_type, overridden_metadata_data, is_prerelease=pre_release_tag is not None
         )
 
         logger.info("Parsing spec file.")
         spec_cache = SpecCache()
+        # Use the overridden values here. This enables us to read from the appropriate spec cache for strict-encrypt connectors.
         cached_spec = spec_cache.find_spec_cache_with_fallback(
             overridden_metadata_data["dockerRepository"], overridden_metadata_data["dockerImageTag"], registry_type
         )
