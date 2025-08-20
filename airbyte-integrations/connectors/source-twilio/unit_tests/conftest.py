@@ -1,3 +1,5 @@
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+
 import sys
 from pathlib import Path
 
@@ -13,6 +15,7 @@ TEST_CONFIG = {
     "start_date": "2021-01-01T00:00:00Z",
     "lookback_window": 0,
 }
+
 
 def _get_manifest_path() -> Path:
     source_declarative_manifest_path = Path("/airbyte/integration_code/source_declarative_manifest")

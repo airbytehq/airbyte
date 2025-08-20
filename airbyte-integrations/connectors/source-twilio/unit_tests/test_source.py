@@ -6,9 +6,9 @@ from unittest.mock import Mock
 
 import pytest
 import requests
+from conftest import TEST_CONFIG, get_source
 
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
-from conftest import get_source, TEST_CONFIG
 
 
 TEST_INSTANCE = get_source(TEST_CONFIG)

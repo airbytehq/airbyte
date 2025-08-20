@@ -5,13 +5,14 @@
 from urllib.parse import parse_qs, urlencode, urlparse
 
 import pytest
+from conftest import TEST_CONFIG, get_source
 from freezegun import freeze_time
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.state_builder import StateBuilder
-from conftest import get_source, TEST_CONFIG
+
 
 BASE = "https://api.twilio.com/2010-04-01"
 
@@ -29,6 +30,7 @@ ACCOUNTS_JSON = {
         }
     ],
 }
+
 
 def read_from_stream(cfg, stream: str, sync_mode, state=None, expecting_exception: bool = False) -> EntrypointOutput:
     catalog = CatalogBuilder().with_stream(stream, sync_mode).build()
