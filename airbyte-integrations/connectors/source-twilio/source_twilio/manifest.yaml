@@ -528,7 +528,7 @@ definitions:
     schema_loader:
       type: InlineSchemaLoader
       schema:
-        $ref: "#/schemas/conference_participants"
+        $ref: "#/schemas/message_media"
     $parameters:
       name: message_media
       data_field: media_list
