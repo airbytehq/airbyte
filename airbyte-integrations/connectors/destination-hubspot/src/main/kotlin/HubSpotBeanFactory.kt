@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.hubspot
 
+import io.airbyte.cdk.Operation
+import io.airbyte.cdk.load.check.CheckOperationWithoutGeneric
 import io.airbyte.cdk.load.check.dlq.DlqChecker
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
@@ -14,22 +16,29 @@ import io.airbyte.cdk.load.lowcode.DeclarativeDestinationFactory
 import io.airbyte.cdk.load.pipeline.LoadPipeline
 import io.airbyte.cdk.load.write.dlq.DlqPipelineFactory
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
+import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.integrations.destination.hubspot.http.HubSpotOperationRepository
 import io.airbyte.integrations.destination.hubspot.io.airbyte.integrations.destination.hubspot.http.HubSpotObjectTypeIdMapper
 import io.micronaut.context.annotation.Factory
+import io.micronaut.context.annotation.Primary
+import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 import okhttp3.OkHttpClient
 
 @Factory
 class HubSpotBeanFactory {
+    @Primary
     @Singleton
-    fun check(
-        factory: DeclarativeDestinationFactory<HubSpotConfiguration>,
+    @Requires(property = Operation.PROPERTY, value = "check")
+    @Requires(env = ["destination"])
+    fun checkOperation(
+        factory: DeclarativeDestinationFactory,
         checker: DlqChecker,
-    ) = factory.createDestinationChecker(checker)
+        outputConsumer: OutputConsumer
+    ): Operation = CheckOperationWithoutGeneric(factory.createDestinationChecker(checker), outputConsumer)
 
     @Singleton
-    fun factory(config: HubSpotConfiguration): DeclarativeDestinationFactory<HubSpotConfiguration> =
+    fun factory(config: HubSpotConfiguration): DeclarativeDestinationFactory =
         DeclarativeDestinationFactory(config)
 
     @Singleton

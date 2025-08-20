@@ -5,7 +5,9 @@
 package io.airbyte.integrations.destination.customerio
 
 import dev.failsafe.RetryPolicy
-import io.airbyte.cdk.load.check.DestinationChecker
+import io.airbyte.cdk.Operation
+import io.airbyte.cdk.load.check.CheckOperationWithoutGeneric
+import io.airbyte.cdk.load.check.DestinationCheckerWithoutGeneric
 import io.airbyte.cdk.load.check.dlq.DlqChecker
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
@@ -16,23 +18,29 @@ import io.airbyte.cdk.load.lowcode.DeclarativeDestinationFactory
 import io.airbyte.cdk.load.pipeline.LoadPipeline
 import io.airbyte.cdk.load.write.dlq.DlqPipelineFactory
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
+import io.airbyte.cdk.output.OutputConsumer
 import io.micronaut.context.annotation.Factory as MicronautFactory
+import io.micronaut.context.annotation.Primary
+import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 import okhttp3.OkHttpClient
 
 @MicronautFactory
 class CustomerIoBeanFactory {
+    @Primary
     @Singleton
-    fun check(
-        factory: DeclarativeDestinationFactory<CustomerIoConfiguration>,
+    @Requires(property = Operation.PROPERTY, value = "check")
+    @Requires(env = ["destination"])
+    fun checkOperation(
+        factory: DeclarativeDestinationFactory,
         checker: DlqChecker,
-    ): DestinationChecker<CustomerIoConfiguration> = factory.createDestinationChecker(checker)
+        outputConsumer: OutputConsumer
+    ): Operation = CheckOperationWithoutGeneric(factory.createDestinationChecker(checker), outputConsumer)
 
     @Singleton
     fun factory(
         config: CustomerIoConfiguration
-    ): DeclarativeDestinationFactory<CustomerIoConfiguration> =
-        DeclarativeDestinationFactory(config)
+    ): DeclarativeDestinationFactory = DeclarativeDestinationFactory(config)
 
     @Singleton fun getConfig(config: DestinationConfiguration) = config as CustomerIoConfiguration
 

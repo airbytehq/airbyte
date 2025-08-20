@@ -30,17 +30,15 @@ import io.airbyte.cdk.util.ResourceUtils
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 
-class DeclarativeDestinationFactory<T>(private val config: T) where
-T : DestinationConfiguration,
-T : ObjectStorageConfigProvider {
+class DeclarativeDestinationFactory(private val config: ObjectStorageConfigProvider) {
     private val stringInterpolator: StringInterpolator = StringInterpolator()
 
-    fun createDestinationChecker(dlqChecker: DlqChecker): CompositeDlqChecker<T> {
+    fun createDestinationChecker(dlqChecker: DlqChecker): CompositeDlqChecker {
         val mapper = ObjectMapper(YAMLFactory())
         val manifestContent = ResourceUtils.readResource("manifest.yaml")
         val manifest: DeclarativeDestinationModel =
             mapper.readValue(manifestContent, DeclarativeDestinationModel::class.java)
-        return CompositeDlqChecker(createChecker(manifest.checker), dlqChecker)
+        return CompositeDlqChecker(createChecker(manifest.checker), dlqChecker, config.objectStorageConfig)
     }
 
     private fun createAuthenticator(
@@ -53,7 +51,7 @@ T : ObjectStorageConfigProvider {
 
     private fun createChecker(
         model: CheckerModel,
-    ): HttpRequestChecker<T> =
+    ): HttpRequestChecker =
         when (model) {
             is HttpRequestCheckerModel -> HttpRequestChecker(model.requester.toRequester())
         }
@@ -104,5 +102,5 @@ T : ObjectStorageConfigProvider {
             HttpMethod.OPTIONS -> RequestMethod.OPTIONS
         }
 
-    private fun createInterpolationContext(): Map<String, T> = mapOf("config" to config)
+    private fun createInterpolationContext(): Map<String, Any> = mapOf("config" to config)
 }
