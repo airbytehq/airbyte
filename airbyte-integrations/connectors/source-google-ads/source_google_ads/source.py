@@ -95,14 +95,27 @@ class SourceGoogleAds(YamlDeclarativeSource):
         yield from self.get_all_accounts(google_api, dummy_customers, customer_status_filter)
 
     def get_customers(self, google_api: GoogleAds, config: Mapping[str, Any]) -> List[CustomerModel]:
+
+        customer_ids = config.get("customer_ids", [])
+        
+        # If customer_ids are provided, use them directly
+        if customer_ids:
+            customers = []
+            login_customer_id = config.get("login_customer_id")
+            if login_customer_id:
+                for customer_id in customer_ids:
+                    customers.append(CustomerModel(
+                        id=customer_id, 
+                        login_customer_id=login_customer_id,
+                        is_manager_account=False
+                    ))
+                return customers
+            else:
+                raise ValueError(f"login_customer_id not found in config.")
+
         customer_status_filter = config.get("customer_status_filter", [])
+        # Fallback: get all connected accounts
         accounts = self._get_all_connected_accounts(google_api, customer_status_filter)
-
-        # filter only selected accounts
-        if config.get("customer_ids"):
-            return CustomerModel.from_accounts_by_id(accounts, config["customer_ids"])
-
-        # all unique accounts
         return CustomerModel.from_accounts(accounts)
 
     @staticmethod
