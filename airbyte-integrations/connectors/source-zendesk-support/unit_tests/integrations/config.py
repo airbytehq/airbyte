@@ -21,6 +21,13 @@ class ConfigBuilder:
         self._credentials["credentials"] = "oauth2.0"
         return self
 
+    def with_oauth_refresh_credentials(self, refresh_token: str, client_id: str, client_secret: str) -> "ConfigBuilder":
+        self._credentials["refresh_token"] = refresh_token
+        self._credentials["client_id"] = client_id
+        self._credentials["client_secret"] = client_secret
+        self._credentials["credentials"] = "oauth2.0_refresh"
+        return self
+
     def with_basic_auth_credentials(self, email: str, password: str) -> "ConfigBuilder":
         self._credentials["api_token"] = password
         self._credentials["credentials"] = "api_token"
