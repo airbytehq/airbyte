@@ -73,7 +73,9 @@ class SyncManager(val catalog: DestinationCatalog) {
         throw IllegalStateException(
             buildString {
                 appendLine("Timeout waiting for StreamLoader registration for stream: $stream")
-                appendLine("This indicates a coordination issue: the producer responsible for registering the loader did not do so.")
+                appendLine(
+                    "This indicates a coordination issue: the producer responsible for registering the loader did not do so."
+                )
             }
         )
     }

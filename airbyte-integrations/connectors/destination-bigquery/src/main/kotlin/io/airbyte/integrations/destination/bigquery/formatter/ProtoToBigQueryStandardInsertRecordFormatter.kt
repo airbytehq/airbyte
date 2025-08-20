@@ -160,8 +160,7 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
             .append(stream.generationId)
 
         builder.append(",\"").append(Meta.COLUMN_NAME_AB_META).append("\":")
-        val allChanges =
-            record.rawData.sourceMeta.changes + unknownColumnChanges + parsingFailures
+        val allChanges = record.rawData.sourceMeta.changes + unknownColumnChanges + parsingFailures
         appendMetaObject(builder, record, allChanges)
     }
 

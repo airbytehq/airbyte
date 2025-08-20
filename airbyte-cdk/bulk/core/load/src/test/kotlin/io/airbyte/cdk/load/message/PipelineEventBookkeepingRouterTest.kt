@@ -23,7 +23,6 @@ import io.airbyte.cdk.load.util.deserializeToNode
 import io.mockk.*
 import java.util.UUID
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

@@ -26,7 +26,6 @@ import io.airbyte.integrations.destination.bigquery.BigQueryDestinationTestUtils
 import io.airbyte.integrations.destination.bigquery.spec.BigquerySpecification
 import io.airbyte.integrations.destination.bigquery.spec.CdcDeletionMode
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.BigqueryColumnNameGenerator
-import org.junit.jupiter.api.Test
 
 abstract class BigqueryWriteTest(
     configContents: String,
@@ -65,7 +64,8 @@ abstract class BigqueryWriteTest(
         nullEqualsUnset = nullEqualsUnset,
         configUpdater = BigqueryConfigUpdater,
         additionalMicronautEnvs = additionalMicronautEnvs,
-        isStreamSchemaRetroactiveForUnknownTypeToString = isStreamSchemaRetroactiveForUnknownTypeToString,
+        isStreamSchemaRetroactiveForUnknownTypeToString =
+            isStreamSchemaRetroactiveForUnknownTypeToString,
         unknownTypesBehavior = unknownTypesBehavior,
         dataChannelFormat = dataChannelFormat,
         dataChannelMedium = dataChannelMedium,
@@ -127,7 +127,8 @@ abstract class BigqueryDirectLoadWriteTest(
             timeWithTimezoneBehavior = SimpleValueBehavior.STRONGLY_TYPE,
         ),
         coercesLegacyUnions = true,
-        isStreamSchemaRetroactiveForUnknownTypeToString = isStreamSchemaRetroactiveForUnknownTypeToString,
+        isStreamSchemaRetroactiveForUnknownTypeToString =
+            isStreamSchemaRetroactiveForUnknownTypeToString,
         unknownTypesBehavior = unknownTypesBehavior,
         dataChannelFormat = dataChannelFormat,
         dataChannelMedium = dataChannelMedium,

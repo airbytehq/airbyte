@@ -226,8 +226,10 @@ class ProtoToBigQueryStandardInsertRecordFormatterTest {
 
         stream = mockk {
             every { this@mockk.airbyteValueProxyFieldAccessors } returns fieldAccessors
-            every { this@mockk.syncId } returns this@ProtoToBigQueryStandardInsertRecordFormatterTest.syncId
-            every { this@mockk.generationId } returns this@ProtoToBigQueryStandardInsertRecordFormatterTest.generationId
+            every { this@mockk.syncId } returns
+                this@ProtoToBigQueryStandardInsertRecordFormatterTest.syncId
+            every { this@mockk.generationId } returns
+                this@ProtoToBigQueryStandardInsertRecordFormatterTest.generationId
             every { this@mockk.schema } returns dummyType
             every { this@mockk.mappedDescriptor } returns DestinationStream.Descriptor("", "dummy")
             every { this@mockk.unknownColumnChanges } returns
@@ -238,7 +240,8 @@ class ProtoToBigQueryStandardInsertRecordFormatterTest {
             mockk(relaxed = true) {
                 every { this@mockk.airbyteRawId } returns uuid
                 every { this@mockk.rawData } returns protoSource!!
-                every { this@mockk.stream } returns this@ProtoToBigQueryStandardInsertRecordFormatterTest.stream
+                every { this@mockk.stream } returns
+                    this@ProtoToBigQueryStandardInsertRecordFormatterTest.stream
             }
 
         formatter =
@@ -548,7 +551,6 @@ class ProtoToBigQueryStandardInsertRecordFormatterTest {
         assertTrue(jsonResult.contains("\"string_col\""))
     }
 
-
     @Test
     fun `handles empty arrays and objects`() {
         val emptyComplexTypesProtoValues =
@@ -573,10 +575,10 @@ class ProtoToBigQueryStandardInsertRecordFormatterTest {
                     .setTimestampWithoutTimezone("2025-06-17T23:59:59")
                     .build(),
                 AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
-                    .setJson("""[]""".toByteArray().toByteString())  // Empty array
+                    .setJson("""[]""".toByteArray().toByteString()) // Empty array
                     .build(),
                 AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
-                    .setJson("""{}""".toByteArray().toByteString())  // Empty object
+                    .setJson("""{}""".toByteArray().toByteString()) // Empty object
                     .build(),
                 AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
                     .setJson("""{"u":1}""".toByteArray().toByteString())
@@ -608,7 +610,7 @@ class ProtoToBigQueryStandardInsertRecordFormatterTest {
                 AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder().setNumber(12.34).build(),
                 AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder().setString("hello").build(),
                 AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
-                    .setDate("invalid-date")  // Invalid date format
+                    .setDate("invalid-date") // Invalid date format
                     .build(),
                 AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
                     .setTimeWithTimezone("23:59:59+02:00")
@@ -673,12 +675,15 @@ class ProtoToBigQueryStandardInsertRecordFormatterTest {
         return DestinationRecordProtobufSource(msg)
     }
 
-    private fun field(name: String, type: io.airbyte.cdk.load.data.AirbyteType, idx: Int): AirbyteValueProxy.FieldAccessor =
-        mockk {
-            every { this@mockk.name } returns name
-            every { this@mockk.type } returns type
-            try {
-                every { this@mockk.index } returns idx
-            } catch (_: Exception) {}
-        }
+    private fun field(
+        name: String,
+        type: io.airbyte.cdk.load.data.AirbyteType,
+        idx: Int
+    ): AirbyteValueProxy.FieldAccessor = mockk {
+        every { this@mockk.name } returns name
+        every { this@mockk.type } returns type
+        try {
+            every { this@mockk.index } returns idx
+        } catch (_: Exception) {}
+    }
 }
