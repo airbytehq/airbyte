@@ -271,7 +271,6 @@ class DataChannelBeanFactory {
             "Pipeline input queue is not initialized. This should never happen in STDIO mode."
         }
         return InputConsumerTask(
-            catalog,
             inputFlow,
             pipelineInputQueue,
             partitioner,
