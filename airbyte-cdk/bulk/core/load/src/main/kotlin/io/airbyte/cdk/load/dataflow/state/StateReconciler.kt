@@ -6,9 +6,11 @@ package io.airbyte.cdk.load.dataflow.state
 
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.output.OutputConsumer
+import jakarta.inject.Named
 import jakarta.inject.Singleton
-import kotlin.time.Duration
+import java.time.Duration
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.toKotlinDuration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
@@ -19,15 +21,18 @@ import kotlinx.coroutines.launch
 class StateReconciler(
     private val stateStore: StateStore,
     private val consumer: OutputConsumer,
+    @Named("stateReconciliationInterval")
+    reconciliationInterval: Duration?, // only java durations can be injected
 ) {
-    private val iterationDuration: Duration = 30.seconds
+    // allow overriding this for test purposes
+    private val reconciliationInterval = reconciliationInterval?.toKotlinDuration() ?: 30.seconds
     private lateinit var job: Job
 
     fun run(scope: CoroutineScope) {
         job =
             scope.launch {
                 while (true) {
-                    delay(iterationDuration)
+                    delay(reconciliationInterval)
                     flushCompleteStates()
                 }
             }

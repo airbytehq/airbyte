@@ -340,6 +340,7 @@ abstract class BasicFunctionalityIntegrationTest(
     // Which medium to use as your input source for the test
     dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
     dataChannelFormat: DataChannelFormat = DataChannelFormat.JSONL,
+    val testSpeedModeStatsEmission: Boolean = true,
 ) :
     IntegrationTest(
         additionalMicronautEnvs = additionalMicronautEnvs,
@@ -1198,6 +1199,12 @@ abstract class BasicFunctionalityIntegrationTest(
             )
 
         val stateMessages = messages.filter { it.type == AirbyteMessage.Type.STATE }
+
+        // Only used for speed mode (unnecessary to test if dest does not support speed)
+        val expectedBytes =
+            if (testSpeedModeStatsEmission) expectedBytesForMediumAndFormat(214L, 234L, 59L)
+            else null
+
         assertAll(
             {
                 assertEquals(
@@ -1215,7 +1222,7 @@ abstract class BasicFunctionalityIntegrationTest(
                             destinationRecordCount = 1,
                             checkpointKey = checkpointKeyForMedium(),
                             totalRecords = 1L,
-                            totalBytes = expectedBytesForMediumAndFormat(214L, 234L, 59L)
+                            totalBytes = expectedBytes
                         )
                         .asProtocolMessage()
                 assertEquals(
