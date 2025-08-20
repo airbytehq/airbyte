@@ -32,9 +32,8 @@ class TestOAuthRefreshAuthentication(TestCase):
             .with_start_date(ab_datetime_now().subtract(timedelta(hours=1)))
         )
 
-    def test_oauth_authenticator_direct_token_refresh(self):
+    def test_oauth_authenticator_direct_token_refresh(self, components_module):
         """Test OAuth authenticator refresh_access_token method directly like successful connectors do"""
-        import source_zendesk_support.components as components_module
 
         # Create authenticator instance
         authenticator = components_module.ZendeskSupportOAuth2Authenticator(
@@ -78,9 +77,8 @@ class TestOAuthRefreshAuthentication(TestCase):
                 headers={"Content-Type": "application/json"},
             )
 
-    def test_oauth_authenticator_direct_token_refresh_error(self):
+    def test_oauth_authenticator_direct_token_refresh_error(self, components_module):
         """Test OAuth authenticator handles refresh errors properly"""
-        import source_zendesk_support.components as components_module
 
         authenticator = components_module.ZendeskSupportOAuth2Authenticator(
             client_id="test_client_id",
@@ -120,9 +118,8 @@ class TestOAuthRefreshAuthentication(TestCase):
         actual_keys = set(config["credentials"].keys())
         assert expected_keys.issubset(actual_keys), f"Missing OAuth fields. Expected: {expected_keys}, Got: {actual_keys}"
 
-    def test_oauth_authenticator_missing_access_token_handling(self):
+    def test_oauth_authenticator_missing_access_token_handling(self, components_module):
         """Test OAuth authenticator defaults expires_in when missing from response"""
-        import source_zendesk_support.components as components_module
 
         authenticator = components_module.ZendeskSupportOAuth2Authenticator(
             client_id="test_client_id",
