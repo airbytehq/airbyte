@@ -126,8 +126,6 @@ jobs:
           set -euo pipefail
           echo "connector-language=$(poe -qq get-language)" | tee -a $GITHUB_OUTPUT
           echo "connector-version=$(poe -qq get-version)" | tee -a $GITHUB_OUTPUT
-          is_rc=$(poe -qq get-version | grep -q 'rc' && echo "true" || echo "false")
-          echo "is_release_candidate=$is_rc" | tee -a $GITHUB_OUTPUT
 
       # We're intentionally not using the `google-github-actions/auth` action.
       # The upload-connector-metadata step runs a script which handles auth manually.
