@@ -5,6 +5,7 @@ check:
   type: CheckStream
   stream_names:
     - pages
+    - blocks
 
 streams:
   - type: DeclarativeStream
@@ -3143,3 +3144,78 @@ streams:
                   type:
                     - "null"
                     - string
+
+  - type: DeclarativeStream
+    name: blocks
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.notion.com/v1/
+        authenticator:
+          type: BearerAuthenticator
+          api_token:
+            "{{ config.get('credentials', {}).get('token') if config.get('credentials',
+            {}).get('auth_type') == 'token' else config.get('credentials', {}).get('access_token')
+            if config.get('credentials', {}).get('auth_type') == 'OAuth2.0' else config.get('access_token',
+            '') }}"
+        path: blocks/{{ stream_partition.block_id }}/children
+        http_method: GET
+        request_parameters:
+          page_size: 100
+        request_headers:
+          Notion-Version: "2022-06-28"
+        error_handler:
+          type: CustomErrorHandler
+          class_name: source_notion.components.NotionBlocksErrorHandler
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+        record_filter:
+          type: CustomRecordFilter
+          class_name: source_notion.components.NotionBlocksFilter
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: start_cursor
+        page_size_option:
+          type: RequestOption
+          field_name: page_size
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: '{{ response.get("next_cursor") }}'
+          stop_condition: '{{ not response.get("has_more") }}'
+      partition_router:
+        type: CustomPartitionRouter
+        class_name: source_notion.components.NotionBlocksPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: id
+            partition_field: block_id
+            stream:
+              $ref: "#/streams/1"  # Reference to pages stream
+    transformations:
+      - type: CustomTransformation
+        class_name: source_notion.components.NotionBlocksTransformation
+    schema_loader:
+      type: JsonFileSchemaLoader
+      file_path: schemas/blocks.json
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: last_edited_time
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('start_date', '2020-01-01T00:00:00.000Z') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
