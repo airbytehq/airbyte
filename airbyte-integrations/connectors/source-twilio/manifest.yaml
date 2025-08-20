@@ -45,7 +45,7 @@ definitions:
             - "{{ parameters.get('data_field') or parameters['name'] }}"
         schema_normalization:
           type: CustomSchemaNormalization
-          class_name: source-declarative-manifest.components.TwilioDateTimeTypeTransformer
+          class_name: source_declarative_manifest.components.TwilioDateTimeTypeTransformer
       paginator:
         type: DefaultPaginator
         page_token_option:
@@ -178,7 +178,7 @@ definitions:
         inject_into: request_parameter
     state_migrations:
       - type: CustomStateMigration
-        class_name: source-declarative-manifest.components.TwilioStateMigration
+        class_name: source_declarative_manifest.components.TwilioStateMigration
 
   accounts_stream:
     $ref: "#/definitions/base_stream"
@@ -358,7 +358,7 @@ definitions:
           field_path: ["participants"]
         schema_normalization:
           type: CustomSchemaNormalization
-          class_name: source-declarative-manifest.components.TwilioDateTimeTypeTransformer
+          class_name: source_declarative_manifest.components.TwilioDateTimeTypeTransformer
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -385,7 +385,7 @@ definitions:
           field_path: ["messages"]
         schema_normalization:
           type: CustomSchemaNormalization
-          class_name: source-declarative-manifest.components.TwilioDateTimeTypeTransformer
+          class_name: source_declarative_manifest.components.TwilioDateTimeTypeTransformer
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -524,7 +524,7 @@ definitions:
         datetime_format: "%Y-%m-%d"
     state_migrations:
       - type: CustomStateMigration
-        class_name: source-declarative-manifest.components.TwilioMessageMediaStateMigration
+        class_name: source_declarative_manifest.components.TwilioMessageMediaStateMigration
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -637,7 +637,7 @@ definitions:
           field_path: ["steps"]
         schema_normalization:
           type: CustomSchemaNormalization
-          class_name: source-declarative-manifest.components.TwilioDateTimeTypeTransformer
+          class_name: source_declarative_manifest.components.TwilioDateTimeTypeTransformer
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -701,7 +701,7 @@ definitions:
         $ref: "#/schemas/usage_records"
     state_migrations:
       - type: CustomStateMigration
-        class_name: source-declarative-manifest.components.TwilioUsageRecordsStateMigration
+        class_name: source_declarative_manifest.components.TwilioUsageRecordsStateMigration
     $parameters:
       name: usage_records
       cursor_field: start_date
@@ -731,7 +731,7 @@ definitions:
           field_path: ["conversations"]
         schema_normalization:
           type: CustomSchemaNormalization
-          class_name: source-declarative-manifest.components.TwilioDateTimeTypeTransformer
+          class_name: source_declarative_manifest.components.TwilioDateTimeTypeTransformer
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:

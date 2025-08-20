@@ -11,7 +11,7 @@ from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.state_builder import StateBuilder
-from .conftest import get_source, TEST_CONFIG
+from conftest import get_source, TEST_CONFIG
 
 BASE = "https://api.twilio.com/2010-04-01"
 

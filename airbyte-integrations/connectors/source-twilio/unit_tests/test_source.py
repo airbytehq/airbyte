@@ -8,7 +8,7 @@ import pytest
 import requests
 
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
-from .conftest import get_source, TEST_CONFIG
+from conftest import get_source, TEST_CONFIG
 
 
 TEST_INSTANCE = get_source(TEST_CONFIG)
@@ -34,10 +34,10 @@ TEST_INSTANCE = get_source(TEST_CONFIG)
         ),
     ),
 )
-def test_check_connection_handles_exceptions(mocker, config, exception, expected_error_msg):
+def test_check_connection_handles_exceptions(mocker, exception, expected_error_msg):
     mocker.patch("time.sleep")
     mocker.patch.object(requests.Session, "send", Mock(side_effect=exception))
     logger_mock = Mock()
-    status_ok, error = TEST_INSTANCE.check_connection(logger=logger_mock, config=config)
+    status_ok, error = TEST_INSTANCE.check_connection(logger=logger_mock, config=TEST_CONFIG)
     assert not status_ok
     assert error == expected_error_msg
