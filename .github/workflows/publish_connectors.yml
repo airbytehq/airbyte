@@ -186,33 +186,13 @@ jobs:
         # we allow it to fail because we are testing this step. We should remove this once we are sure it works.
         continue-on-error: true
 
-      - name: Determine build and publish options
-        id: get-connector-options
+      - name: Build and publish Python and Manifest-Only connectors images
+        id: build-and-publish-python-manifest-only-connectors-images
         if: steps.connector-metadata.outputs.connector-language != 'java'
-        shell: bash
-        run: |
-          # Don't tag with latest for pre-release or release candidate builds
-          if [[ "${{ needs.publish_options.outputs.release-type }}" == "pre-release" || "${{ steps.connector-metadata.outputs.is_release_candidate}}" == "true" ]]; then
-            echo "push-latest=false" >> $GITHUB_OUTPUT
-            echo "Skipping latest tag for pre-release or release candidate build."
-          else
-            echo "push-latest=true" >> $GITHUB_OUTPUT
-          fi
-
-          if [[ "${{ needs.publish_options.outputs.release-type }}" == "pre-release" ]]; then
-            hash=$(git rev-parse --short=10 HEAD)
-            tag_override="${{ steps.connector-metadata.outputs.connector-version }}-dev.${hash}"
-            echo "tag-override=${tag_override}" >> $GITHUB_OUTPUT
-            echo "Using a dev tag for a pre-release build: ${tag_override}"
-          fi
-
-      - name: Build and publish Python and Manifest-Only connectors images [On merge to master]
-        id: build-and-publish-python-manifest-only-connectors-images-master
-        if: github.event_name == 'push' && steps.connector-metadata.outputs.connector-language != 'java'
         uses: ./.github/actions/connector-image-build-push
         with:
           connector-name: ${{ matrix.connector }}
-          push-latest: ${{ steps.get-connector-options.outputs.push-latest }}
+          release-type: ${{ needs.publish_options.outputs.release-type }}
           dry-run: "false"
           docker-hub-username: ${{ secrets.DOCKER_HUB_USERNAME }}
           docker-hub-password: ${{ secrets.DOCKER_HUB_PASSWORD }}
@@ -225,18 +205,6 @@ jobs:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           SPEC_CACHE_GCS_CREDENTIALS: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
           METADATA_SERVICE_GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-
-      - name: Build and publish Python and Manifest-Only connectors images [manual]
-        id: build-and-publish-python-manifest-only-connectors-images-manual
-        if: (github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call') && steps.connector-metadata.outputs.connector-language != 'java'
-        uses: ./.github/actions/connector-image-build-push
-        with:
-          connector-name: ${{ matrix.connector }}
-          push-latest: ${{ steps.get-connector-options.outputs.push-latest }}
-          tag-override: ${{ steps.get-connector-options.outputs.tag-override }}
-          dry-run: "false"
-          docker-hub-username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          docker-hub-password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
   notify-failure-slack-channel:
     name: "Notify Slack Channel on Publish Failures"
