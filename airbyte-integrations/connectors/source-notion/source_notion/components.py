@@ -11,9 +11,9 @@ from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilte
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ErrorHandler
-from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
+from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
 
 
 logger = logging.getLogger("airbyte")
