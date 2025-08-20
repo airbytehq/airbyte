@@ -68,6 +68,12 @@ class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonPropertyDescription("Port of the database. Defaults to 5432.")
     var port: Int = 5432
 
+    @JsonProperty("database")
+    @JsonSchemaTitle("Database Name")
+    @JsonPropertyDescription("The name of the database to connect to.")
+    @JsonSchemaInject(json = """{"order":3}""")
+    lateinit var database: String
+
     @JsonProperty("username")
     @JsonSchemaTitle("User")
     @JsonPropertyDescription("The username which is used to access the database.")
@@ -149,12 +155,13 @@ class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonPropertyDescription("How often (in seconds) a stream should checkpoint, when possible.")
     var checkpointTargetIntervalSeconds: Int? = 300
 
-    @JsonProperty("concurrency")
-    @JsonSchemaTitle("Concurrency")
+    @JsonProperty("max_db_connections")
+    @JsonSchemaTitle("Max Concurrent Queries to Database")
     @JsonSchemaInject(json = """{"order":12}""")
-    @JsonSchemaDefault("1")
-    @JsonPropertyDescription("Maximum number of concurrent queries to the database.")
-    var concurrency: Int? = 1
+    @JsonPropertyDescription(
+        "Maximum number of concurrent queries to the database. Leave empty to let Airbyte optimize performance."
+    )
+    var max_db_connections: Int? = null
 
     @JsonProperty("check_privileges")
     @JsonSchemaTitle("Check Table and Column Access Privileges")

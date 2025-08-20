@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.output.sockets.toJson
 import io.airbyte.cdk.util.Jsons
 
 /** Base class for default implementations of [JdbcPartition]. */
@@ -193,10 +194,10 @@ class DefaultJdbcSplittableSnapshotPartition(
                     )
             }
 
-    override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
+    override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
         DefaultJdbcStreamStateValue.snapshotCheckpoint(
             primaryKey = checkpointColumns,
-            primaryKeyCheckpoint = checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
+            primaryKeyCheckpoint = checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
         )
 }
 
@@ -260,10 +261,10 @@ class DefaultJdbcSplittableSnapshotWithCursorPartition(
                     )
             }
 
-    override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
+    override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
         DefaultJdbcStreamStateValue.snapshotWithCursorCheckpoint(
             primaryKey = checkpointColumns,
-            primaryKeyCheckpoint = checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
+            primaryKeyCheckpoint = checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
             cursor,
             cursorUpperBound,
         )
@@ -300,9 +301,9 @@ class DefaultJdbcCursorIncrementalPartition(
                 cursorCheckpoint = cursorUpperBound,
             )
 
-    override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
+    override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
         DefaultJdbcStreamStateValue.cursorIncrementalCheckpoint(
             cursor,
-            cursorCheckpoint = lastRecord[cursor.id] ?: Jsons.nullNode(),
+            cursorCheckpoint = lastRecord.data.toJson()[cursor.id] ?: Jsons.nullNode(),
         )
 }

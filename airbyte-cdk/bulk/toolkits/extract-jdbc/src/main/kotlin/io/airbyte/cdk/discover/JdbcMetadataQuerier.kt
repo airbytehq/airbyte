@@ -204,7 +204,7 @@ class JdbcMetadataQuerier(
         streamID: StreamIdentifier,
     ): List<Field> {
         val table: TableName = findTableName(streamID) ?: return listOf()
-        return columnMetadata(table).map { Field(it.label, fieldTypeMapper.toFieldType(it)) }
+        return columnMetadata(table).map { EmittedField(it.label, fieldTypeMapper.toFieldType(it)) }
     }
 
     fun columnMetadata(table: TableName): List<ColumnMetadata> {
@@ -234,7 +234,7 @@ class JdbcMetadataQuerier(
     ): String {
         val querySpec =
             SelectQuerySpec(
-                SelectColumns(columnIDs.map { Field(it, NullFieldType) }),
+                SelectColumns(columnIDs.map { EmittedField(it, NullFieldType) }),
                 From(table.name, table.namespace()),
                 limit = Limit(0),
             )
