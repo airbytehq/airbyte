@@ -27,6 +27,10 @@ open class Histogram<T>(private val map: ConcurrentMap<T, Long> = ConcurrentHash
         return this.apply { map.merge(key, 1, Long::plus) }
     }
 
+    fun increment(key: T, value: Long): Histogram<T> {
+        return this.apply { map.merge(key, value, Long::plus) }
+    }
+
     fun merge(other: Histogram<T>): Histogram<T> {
         return this.apply { other.map.forEach { map.merge(it.key, it.value, Long::plus) } }
     }
@@ -37,5 +41,7 @@ open class Histogram<T>(private val map: ConcurrentMap<T, Long> = ConcurrentHash
 }
 
 typealias StateHistogram = Histogram<StateKey>
+
+typealias SizeHistogram = Histogram<StateKey>
 
 typealias PartitionHistogram = Histogram<PartitionKey>

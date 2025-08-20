@@ -34,7 +34,7 @@ class StateReconciler(
     }
 
     fun flushCompleteStates() {
-        var complete = stateStore.getNextComplete()
+        var complete: CheckpointMessage? = stateStore.getNextComplete()
         while (complete != null) {
             publish(complete)
             complete = stateStore.getNextComplete()
