@@ -1,11 +1,11 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
+import json
 from datetime import timedelta
 from unittest import TestCase
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 import freezegun
-import json
 import requests
 
 from airbyte_cdk.models import SyncMode
@@ -35,17 +35,17 @@ class TestOAuthRefreshAuthentication(TestCase):
     def test_oauth_authenticator_direct_token_refresh(self):
         """Test OAuth authenticator refresh_access_token method directly like successful connectors do"""
         import source_zendesk_support.components as components_module
-        
+
         # Create authenticator instance
         authenticator = components_module.ZendeskSupportOAuth2Authenticator(
             client_id="test_client_id",
-            client_secret="test_client_secret", 
+            client_secret="test_client_secret",
             refresh_token="test_refresh_token",
             token_refresh_endpoint="https://d3v-airbyte.zendesk.com/oauth/tokens",
             config={"subdomain": "d3v-airbyte"},
             parameters={},
         )
-        
+
         # Mock successful requests.request call
         with patch("requests.request") as mock_request:
             mock_response = MagicMock()
@@ -57,14 +57,14 @@ class TestOAuthRefreshAuthentication(TestCase):
             }
             mock_response.raise_for_status = MagicMock()
             mock_request.return_value = mock_response
-            
+
             # Call refresh_access_token directly
             access_token, expires_in = authenticator.refresh_access_token()
-            
+
             # Verify results
             assert access_token == "new_access_token_12345"
             assert expires_in == 7200
-            
+
             # Verify request was made correctly
             mock_request.assert_called_once_with(
                 method="POST",
@@ -72,7 +72,7 @@ class TestOAuthRefreshAuthentication(TestCase):
                 json={
                     "grant_type": "refresh_token",
                     "refresh_token": "test_refresh_token",
-                    "client_id": "test_client_id", 
+                    "client_id": "test_client_id",
                     "client_secret": "test_client_secret",
                 },
                 headers={"Content-Type": "application/json"},
@@ -81,23 +81,23 @@ class TestOAuthRefreshAuthentication(TestCase):
     def test_oauth_authenticator_direct_token_refresh_error(self):
         """Test OAuth authenticator handles refresh errors properly"""
         import source_zendesk_support.components as components_module
-        
+
         authenticator = components_module.ZendeskSupportOAuth2Authenticator(
             client_id="test_client_id",
             client_secret="test_client_secret",
-            refresh_token="test_refresh_token", 
+            refresh_token="test_refresh_token",
             token_refresh_endpoint="https://d3v-airbyte.zendesk.com/oauth/tokens",
             config={"subdomain": "d3v-airbyte"},
             parameters={},
         )
-        
-        # Mock failed requests.request call 
+
+        # Mock failed requests.request call
         with patch("requests.request") as mock_request:
             mock_response = MagicMock()
             mock_response.json.return_value = {"error": "invalid_grant"}
             mock_response.raise_for_status.side_effect = requests.exceptions.HTTPError("400 Client Error")
             mock_request.return_value = mock_response
-            
+
             # Should raise exception
             try:
                 authenticator.refresh_access_token()
@@ -114,7 +114,7 @@ class TestOAuthRefreshAuthentication(TestCase):
         assert "refresh_token" in config["credentials"]
         assert "client_id" in config["credentials"]
         assert "client_secret" in config["credentials"]
-        
+
         # Validate config structure for the new OAuth flow
         expected_keys = {"refresh_token", "client_id", "client_secret", "credentials"}
         actual_keys = set(config["credentials"].keys())
@@ -123,7 +123,7 @@ class TestOAuthRefreshAuthentication(TestCase):
     def test_oauth_authenticator_missing_access_token_handling(self):
         """Test OAuth authenticator defaults expires_in when missing from response"""
         import source_zendesk_support.components as components_module
-        
+
         authenticator = components_module.ZendeskSupportOAuth2Authenticator(
             client_id="test_client_id",
             client_secret="test_client_secret",
@@ -132,7 +132,7 @@ class TestOAuthRefreshAuthentication(TestCase):
             config={"subdomain": "d3v-airbyte"},
             parameters={},
         )
-        
+
         # Mock response without expires_in field
         with patch("requests.request") as mock_request:
             mock_response = MagicMock()
@@ -142,7 +142,7 @@ class TestOAuthRefreshAuthentication(TestCase):
             }
             mock_response.raise_for_status = MagicMock()
             mock_request.return_value = mock_response
-            
+
             # Should work and default expires_in to 7200
             access_token, expires_in = authenticator.refresh_access_token()
             assert access_token == "minimal_access_token"
