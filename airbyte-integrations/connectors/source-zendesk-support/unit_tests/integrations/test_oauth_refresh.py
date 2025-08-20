@@ -41,7 +41,7 @@ class TestOAuthRefreshAuthentication(TestCase):
         http_mocker.post(
             "https://d3v-airbyte.zendesk.com/oauth/tokens",
             HttpResponse(
-                body=json.dumps(
+                json.dumps(
                     {
                         "access_token": "new_access_token_12345",
                         "expires_in": 7200,
@@ -49,7 +49,7 @@ class TestOAuthRefreshAuthentication(TestCase):
                         "token_type": "Bearer",
                     }
                 ),
-                status_code=200,
+                200,
             ),
         )
 
@@ -57,8 +57,8 @@ class TestOAuthRefreshAuthentication(TestCase):
         http_mocker.get(
             "https://d3v-airbyte.zendesk.com/api/v2/brands",
             HttpResponse(
-                body=json.dumps({"brands": [{"id": 1, "name": "Test Brand", "active": True}]}),
-                status_code=200,
+                json.dumps({"brands": [{"id": 1, "name": "Test Brand", "active": True}]}),
+                200,
             ),
         )
 
@@ -79,8 +79,8 @@ class TestOAuthRefreshAuthentication(TestCase):
         http_mocker.post(
             "https://d3v-airbyte.zendesk.com/oauth/tokens",
             HttpResponse(
-                body=json.dumps({"error": "invalid_grant", "error_description": "The provided authorization grant is invalid"}),
-                status_code=400,
+                json.dumps({"error": "invalid_grant", "error_description": "The provided authorization grant is invalid"}),
+                400,
             ),
         )
 
@@ -117,13 +117,13 @@ class TestOAuthRefreshAuthentication(TestCase):
         http_mocker.post(
             "https://d3v-airbyte.zendesk.com/oauth/tokens",
             HttpResponse(
-                body=json.dumps(
+                json.dumps(
                     {
                         "access_token": "minimal_access_token"
                         # Note: missing expires_in should default to 7200 seconds
                     }
                 ),
-                status_code=200,
+                200,
             ),
         )
 
@@ -131,8 +131,8 @@ class TestOAuthRefreshAuthentication(TestCase):
         http_mocker.get(
             "https://d3v-airbyte.zendesk.com/api/v2/brands",
             HttpResponse(
-                body=json.dumps({"brands": [{"id": 1, "name": "Test Brand"}]}),
-                status_code=200,
+                json.dumps({"brands": [{"id": 1, "name": "Test Brand"}]}),
+                200,
             ),
         )
 
@@ -146,7 +146,7 @@ class TestOAuthRefreshAuthentication(TestCase):
         config = self._config().build()
 
         # Mock network error during token refresh by using a connection error
-        http_mocker.post("https://d3v-airbyte.zendesk.com/oauth/tokens", HttpResponse(body="Service Unavailable", status_code=503))
+        http_mocker.post("https://d3v-airbyte.zendesk.com/oauth/tokens", HttpResponse("Service Unavailable", 503))
 
         # Should handle network errors gracefully
         try:
