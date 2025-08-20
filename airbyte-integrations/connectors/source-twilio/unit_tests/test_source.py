@@ -6,22 +6,12 @@ from unittest.mock import Mock
 
 import pytest
 import requests
-from source_twilio.source import SourceTwilio
 
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
+from .conftest import get_source, TEST_CONFIG
 
 
-@pytest.fixture
-def config():
-    return {
-        "account_sid": "airbyte.io",
-        "auth_token": "secret",
-        "start_date": "2022-01-01T00:00:00Z",
-        "lookback_window": 0,
-    }
-
-
-TEST_INSTANCE = SourceTwilio(config, None, None)
+TEST_INSTANCE = get_source(TEST_CONFIG)
 
 
 @pytest.mark.parametrize(
