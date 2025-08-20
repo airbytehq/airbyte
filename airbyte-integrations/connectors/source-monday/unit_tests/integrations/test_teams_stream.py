@@ -31,7 +31,7 @@ class TestTeamsStreamFullRefresh(TestCase):
         """
         api_token_authenticator = self.get_authenticator(self._config)
 
-        http_mocker.get(
+        http_mocker.post(
             TeamsRequestBuilder.teams_endpoint(api_token_authenticator).build(),
             TeamsResponseBuilder.teams_response().with_record(TeamsRecordBuilder.teams_record()).build(),
         )
@@ -53,7 +53,7 @@ class TestTeamsStreamFullRefresh(TestCase):
             response, error_code = test_values[0], test_values[1]
             api_token_authenticator = self.get_authenticator(self._config)
 
-            http_mocker.get(
+            http_mocker.post(
                 TeamsRequestBuilder.teams_endpoint(api_token_authenticator).build(),
                 [
                     ErrorResponseBuilder.response_with_status(200).build(response),
@@ -80,7 +80,7 @@ class TestTeamsStreamFullRefresh(TestCase):
         """
         api_token_authenticator = self.get_authenticator(self._config)
 
-        http_mocker.get(
+        http_mocker.post(
             TeamsRequestBuilder.teams_endpoint(api_token_authenticator).build(), ErrorResponseBuilder.response_with_status(200).build()
         )
 
@@ -103,7 +103,7 @@ class TestTeamsStreamFullRefresh(TestCase):
         """
         api_token_authenticator = self.get_authenticator(self._config)
 
-        http_mocker.get(
+        http_mocker.post(
             TeamsRequestBuilder.teams_endpoint(api_token_authenticator).build(), ErrorResponseBuilder.response_with_status(500).build()
         )
 
@@ -127,7 +127,7 @@ class TestTeamsStreamFullRefresh(TestCase):
         """
         api_token_authenticator = self.get_authenticator(self._config)
 
-        http_mocker.get(
+        http_mocker.post(
             TeamsRequestBuilder.teams_endpoint(api_token_authenticator).build(), ErrorResponseBuilder.response_with_status(403).build()
         )
 

@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-track-pms
   githubIssueLabel: source-track-pms
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Track PMS
   releaseDate: 2024-10-18
   releaseStage: alpha

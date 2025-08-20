@@ -36,13 +36,15 @@ import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseSpecificati
 import io.airbyte.integrations.destination.clickhouse.write.load.ClientProvider.getClient
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.nio.file.Files
+import java.nio.file.Path
 import java.time.ZonedDateTime
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.Test
 
 class ClickhouseDirectLoadWriterWithJson :
     ClickhouseDirectLoadWriter(
-        "valid_connection.json",
+        Utils.getConfigPath("valid_connection.json"),
         SchematizedNestedValueBehavior.PASS_THROUGH,
         false,
     ) {
@@ -58,18 +60,31 @@ class ClickhouseDirectLoadWriterWithJson :
 
 class ClickhouseDirectLoadWriterWithoutJson :
     ClickhouseDirectLoadWriter(
-        "valid_connection_no_json.json",
+        Utils.getConfigPath("valid_connection_no_json.json"),
         SchematizedNestedValueBehavior.STRINGIFY,
         true,
     )
 
+@Disabled("Requires local bastion and CH instance to pass")
+class ClickhouseDirectLoadWriterWithoutJsonSshTunnel :
+    ClickhouseDirectLoadWriter(
+        Path.of("secrets/ssh-tunnel.json"),
+        SchematizedNestedValueBehavior.STRINGIFY,
+        true,
+    ) {
+    @Test
+    override fun testBasicWrite() {
+        super.testBasicWrite()
+    }
+}
+
 abstract class ClickhouseDirectLoadWriter(
-    specFile: String,
+    configPath: Path,
     schematizedObjectBehavior: SchematizedNestedValueBehavior,
     stringifySchemalessObjects: Boolean
 ) :
     BasicFunctionalityIntegrationTest(
-        configContents = Files.readString(Utils.getConfigPath(specFile)),
+        configContents = Files.readString(configPath),
         configSpecClass = ClickhouseSpecificationOss::class.java,
         dataDumper =
             ClickhouseDataDumper { spec ->

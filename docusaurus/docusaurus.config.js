@@ -89,6 +89,10 @@ const config = {
         ]
       : []),
   ],
+  i18n: {
+    defaultLocale: 'en',
+    locales: ['en'],
+  },
   // The preset is the "main" docs instance, though in reality, most content does not live under this preset. See the plugins array below, which defines the behavior of each docs instance.
   presets: [
     [
@@ -144,14 +148,14 @@ const config = {
         ],
       },
     ],
-    // This plugin controls Airbyte Embedded docs, which are not versioned
+    // This plugin controls Airbyte Developer Tools docs, which are not versioned
     [
       "@docusaurus/plugin-content-docs",
       {
-        id: "embedded",
-        path: "../docs/embedded",
-        routeBasePath: "/embedded",
-        sidebarPath: "./sidebar-embedded.js",
+        id: "developer-tools",
+        path: "../docs/developer-tools",
+        routeBasePath: "/developer-tools",
+        sidebarPath: "./sidebar-developer-tools.js",
         editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
         remarkPlugins: [
           docsHeaderDecoration,
@@ -300,9 +304,9 @@ const config = {
           {
             type: "docSidebar",
             position: "left",
-            docsPluginId: "embedded",
-            sidebarId: "embedded",
-            label: "Airbyte Embedded",
+            docsPluginId: "developer-tools",
+            sidebarId: "developer-tools",
+            label: "Developer Tools",
           },
           {
             href: "https://support.airbyte.com/",

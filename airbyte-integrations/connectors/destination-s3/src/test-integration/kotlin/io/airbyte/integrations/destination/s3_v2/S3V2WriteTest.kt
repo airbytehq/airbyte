@@ -322,22 +322,7 @@ class S3V2WriteTestJsonUncompressed :
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         unionBehavior = UnionBehavior.PASS_THROUGH,
         allTypesBehavior = Untyped,
-    ) {
-    @Test
-    override fun testBasicWrite() {
-        super.testBasicWrite()
-    }
-
-    @Test
-    override fun testBasicTypes() {
-        super.testBasicTypes()
-    }
-
-    @Test
-    override fun testUnknownTypes() {
-        super.testUnknownTypes()
-    }
-}
+    )
 
 class S3V2WriteTestJsonRootLevelFlattening :
     S3V2WriteTest(
@@ -370,17 +355,7 @@ class S3V2WriteTestCsvUncompressed :
         schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
         unionBehavior = UnionBehavior.PASS_THROUGH,
         allTypesBehavior = Untyped,
-    ) {
-    @Test
-    override fun testBasicWriteFile() {
-        super.testBasicWriteFile()
-    }
-
-    @Test
-    override fun testTruncateRefreshNoData() {
-        super.testTruncateRefreshNoData()
-    }
-}
+    )
 
 class S3V2WriteTestCsvRootLevelFlattening :
     S3V2WriteTest(
@@ -547,6 +522,22 @@ class S3V2WriteTestParquetUncompressed :
         mergesUnions = true,
     )
 
+class S3V2WriteTestParquetUncompressedProto :
+    S3V2WriteTest(
+        S3V2TestUtils.PARQUET_UNCOMPRESSED_CONFIG_PATH,
+        AvroExpectedRecordMapper,
+        stringifySchemalessObjects = true,
+        schematizedObjectBehavior = SchematizedNestedValueBehavior.STRONGLY_TYPE,
+        schematizedArrayBehavior = SchematizedNestedValueBehavior.STRONGLY_TYPE,
+        unionBehavior = UnionBehavior.PROMOTE_TO_OBJECT,
+        allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
+        nullEqualsUnset = true,
+        unknownTypesBehavior = UnknownTypesBehavior.FAIL,
+        mergesUnions = true,
+        dataChannelFormat = DataChannelFormat.PROTOBUF,
+        dataChannelMedium = DataChannelMedium.SOCKET
+    )
+
 class S3V2WriteTestParquetSnappy :
     S3V2WriteTest(
         S3V2TestUtils.PARQUET_SNAPPY_CONFIG_PATH,
@@ -559,6 +550,22 @@ class S3V2WriteTestParquetSnappy :
         nullEqualsUnset = true,
         unknownTypesBehavior = UnknownTypesBehavior.FAIL,
         mergesUnions = true,
+    )
+
+class S3V2WriteTestParquetSnappyProto :
+    S3V2WriteTest(
+        S3V2TestUtils.PARQUET_SNAPPY_CONFIG_PATH,
+        AvroExpectedRecordMapper,
+        stringifySchemalessObjects = true,
+        schematizedObjectBehavior = SchematizedNestedValueBehavior.STRONGLY_TYPE,
+        schematizedArrayBehavior = SchematizedNestedValueBehavior.STRONGLY_TYPE,
+        unionBehavior = UnionBehavior.PROMOTE_TO_OBJECT,
+        allTypesBehavior = StronglyTyped(integerCanBeLarge = false),
+        nullEqualsUnset = true,
+        unknownTypesBehavior = UnknownTypesBehavior.FAIL,
+        mergesUnions = true,
+        dataChannelFormat = DataChannelFormat.PROTOBUF,
+        dataChannelMedium = DataChannelMedium.SOCKET
     )
 
 class S3V2WriteTestEndpointURL :
@@ -613,11 +620,6 @@ class S3V2WriteTestJsonUncompressedSockets :
     override fun testClear() {
         super.testClear()
     }
-
-    @Test
-    override fun testTruncateRefresh() {
-        super.testTruncateRefresh()
-    }
 }
 
 class S3V2WriteTestJsonUncompressedSocketsProtobuf :
@@ -640,10 +642,5 @@ class S3V2WriteTestJsonUncompressedSocketsProtobuf :
     @Disabled("Clear will never run in socket mode")
     override fun testClear() {
         super.testClear()
-    }
-
-    @Test
-    override fun testTruncateRefresh() {
-        super.testTruncateRefresh()
     }
 }
