@@ -3205,7 +3205,7 @@ streams:
             parent_key: id
             partition_field: block_id
             stream:
-              $ref: "#/streams/1"  # Reference to pages stream
+              $ref: "#/streams/1" # Reference to pages stream
     transformations:
       - type: CustomTransformation
         class_name: source_notion.components.NotionBlocksTransformation
