@@ -1,4 +1,7 @@
 data:
+  ab_internal:
+    ql: 300
+    sl: 200
   allowedHosts:
     hosts:
       - "www.googleapis.com"
@@ -7,11 +10,12 @@ data:
   connectorSubtype: file
   connectorType: source
   definitionId: 9f8dda77-1048-4368-815b-269bf54ee9b8
-  dockerImageTag: 0.4.2
+  dockerImageTag: 0.4.3
   dockerRepository: airbyte/source-google-drive
   githubIssueLabel: source-google-drive
   icon: google-drive.svg
   license: ELv2
+  maxSecondsBetweenMessages: 3600
   name: Google Drive
   remoteRegistries:
     pypi:
@@ -30,7 +34,7 @@ data:
   tags:
     - language:python
     - cdk:python-file-based
-  supportLevel: community
+  supportLevel: certified
   supportsFileTransfer: true
   connectorTestSuitesOptions:
     - suite: acceptanceTests
