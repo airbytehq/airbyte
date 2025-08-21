@@ -79,10 +79,10 @@ class PinterestReportRequestBodyProvider(RequestOptionsProvider):
         self.granularity = granularity
     
     def get_request_options(
-        self, 
-        stream_state: Mapping[str, Any], 
-        stream_slice: StreamSlice, 
-        next_page_token: Mapping[str, Any]
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: StreamSlice,
+        next_page_token: Mapping[str, Any],
     ) -> Mapping[str, Any]:
         """Return the request body for report creation."""
         return {
@@ -105,7 +105,9 @@ class PinterestReportTransformation(RecordTransformation):
         super().__init__(config, **kwargs)
         self.level = level
     
-    def transform(self, record: Record, config: Config, stream_slice: StreamSlice, stream_state: StreamState) -> Record:
+    def transform(
+        self, record: Record, config: Config, stream_slice: StreamSlice, stream_state: StreamState
+    ) -> Record:
         """Transform individual report records."""
         if not isinstance(record, dict):
             return record

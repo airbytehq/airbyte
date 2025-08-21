@@ -27,7 +27,9 @@ class SourcePinterest(YamlDeclarativeSource):
         super().__init__(**{"path_to_yaml": "manifest.yaml"})
 
     @staticmethod
-    def _validate_and_transform(config: Mapping[str, Any], amount_of_days_allowed_for_lookup: int = 89) -> Mapping[str, Any]:
+    def _validate_and_transform(
+        config: Mapping[str, Any], amount_of_days_allowed_for_lookup: int = 89
+    ) -> Mapping[str, Any]:
         config = copy.deepcopy(config)
         today = pendulum.today()
         latest_date_allowed_by_api = today.subtract(days=amount_of_days_allowed_for_lookup)
@@ -60,7 +62,10 @@ class SourcePinterest(YamlDeclarativeSource):
 
             if not response:
                 raise AirbyteTracedException(
-                    message=f"Invalid ad_account_id: {config['account_id']}. No data returned from Pinterest API.",
+                    message=(
+                        f"Invalid ad_account_id: {config['account_id']}. "
+                        "No data returned from Pinterest API."
+                    ),
                     internal_message="The provided ad_account_id does not exist.",
                     failure_type=FailureType.config_error,
                 )
