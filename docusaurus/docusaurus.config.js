@@ -66,13 +66,6 @@ const config = {
         content: "plvcr4wcl9abmq0itvi63c",
       },
     },
-    {
-      tagName: "meta",
-      attributes: {
-        name: "google-site-verification",
-        content: "3bGvGd17EJ-wHoyGlRszHtmMGmtWGQ4dDFEQy8ampQ0",
-      },
-    },
     ...(process.env.NODE_ENV === "production" && process.env.SEGMENT_WRITE_KEY
       ? [
           {
