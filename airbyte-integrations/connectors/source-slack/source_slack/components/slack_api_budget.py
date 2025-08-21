@@ -83,13 +83,17 @@ class MessagesAndThreadsHttpRequester(HttpRequester):
         else:
             backoff_strategies = None
 
-        api_budget = MessagesAndThreadsApiBudget(
+        api_budget = (
+            MessagesAndThreadsApiBudget(
                 policies=[
                     UnlimitedCallRatePolicy(
                         matchers=[HttpRequestMatcher(url=self.url_match)],
                     )
                 ]
-            ) if self.config.get("credentials", {}).get("option_title") == "Default OAuth2.0 authorization" else None
+            )
+            if self.config.get("credentials", {}).get("option_title") == "Default OAuth2.0 authorization"
+            else None
+        )
         self._http_client = HttpClient(
             name=self.name,
             logger=self.logger,

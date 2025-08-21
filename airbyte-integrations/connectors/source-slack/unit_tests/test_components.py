@@ -154,15 +154,15 @@ def test_threads_partition_router(token_config, threads_stream_state, expected_p
             MovingWindowCallRatePolicy,
         ),
         (
-                429,
-                [
-                    # first call rate limited
-                    {"headers": {"Retry-After": "1"}, "text": "rate limited", "status_code": 429},
-                    # refreshed limits on second call
-                    {"json": {"messages": []}, "status_code": 200},
-                ],
-                "token",
-                UnlimitedCallRatePolicy,
+            429,
+            [
+                # first call rate limited
+                {"headers": {"Retry-After": "1"}, "text": "rate limited", "status_code": 429},
+                # refreshed limits on second call
+                {"json": {"messages": []}, "status_code": 200},
+            ],
+            "token",
+            UnlimitedCallRatePolicy,
         ),
         (
             200,
@@ -176,8 +176,9 @@ def test_threads_partition_router(token_config, threads_stream_state, expected_p
     ),
     ids=["rate_limited_oauth_policy", "no_rate_limits_token_policy", "no_rate_limits_policy"],
 )
-def test_threads_and_messages_api_budget(response_status_code, api_response, config, expected_policy, oauth_config, token_config,
-                                         requests_mock):
+def test_threads_and_messages_api_budget(
+    response_status_code, api_response, config, expected_policy, oauth_config, token_config, requests_mock
+):
     stream = get_stream_by_name("threads", oauth_config if config == "oauth" else token_config)
     assert len(stream.retriever.requester._http_client._api_budget._policies) == (1 if config == "oauth" else 0)
     if config == "oauth":
