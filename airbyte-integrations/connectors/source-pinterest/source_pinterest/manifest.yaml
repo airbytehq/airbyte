@@ -441,75 +441,9 @@ definitions:
     name: "campaign_analytics_report"
     primary_key: []
     retriever:
-      type: AsyncRetriever
-      status_mapping:
-        failed:
-          - FAILED
-          - CANCELLED
-          - EXPIRED
-        running:
-          - IN_PROGRESS
-        completed:
-          - FINISHED
-      download_target_extractor:
-        type: DpathExtractor
-        field_path: ["url"]
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: CustomRecordExtractor
-          class_name: source_pinterest.components.components.PinterestReportDownloadExtractor
-      status_extractor:
-        type: DpathExtractor
-        field_path: ["report_status"]
-      polling_requester:
-        type: HttpRequester
-        path: "ad_accounts/{{ stream_partition.id }}/reports"
-        url_base: "https://api.pinterest.com/v5/"
-        http_method: GET
-        authenticator: "#/definitions/authenticator"
-        request_parameters:
-          token: "{{ creation_response['token'] }}"
-      creation_requester:
-        type: HttpRequester
-        path: "ad_accounts/{{ stream_partition.id }}/reports"
-        url_base: "https://api.pinterest.com/v5/"
-        http_method: POST
-        authenticator: "#/definitions/authenticator"
-        request_body_json:
-          start_date: "{{ stream_slice['start_date'] }}"
-          end_date: "{{ stream_slice['end_date'] }}"
-          granularity: "DAY"
-          level: "CAMPAIGN"
-          columns:
-            - "IMPRESSION_1"
-            - "IMPRESSION_1_GROSS"
-            - "IMPRESSION_2"
-            - "CLICKTHROUGH_1"
-            - "CLICKTHROUGH_1_GROSS"
-            - "CLICKTHROUGH_2"
-            - "TOTAL_ENGAGEMENT"
-            - "ENGAGEMENT_1"
-            - "ENGAGEMENT_2"
-            - "ECTR"
-            - "CAMPAIGN_NAME"
-            - "PIN_ID"
-            - "CPM_IN_MICRO_DOLLAR"
-            - "CPM_IN_DOLLAR"
-            - "CPC_IN_MICRO_DOLLAR"
-            - "CPC_IN_DOLLAR"
-            - "SPEND_IN_MICRO_DOLLAR"
-            - "SPEND_IN_DOLLAR"
-            - "TOTAL_CLICKTHROUGH"
-            - "TOTAL_IMPRESSION"
-            - "ADVERTISER_ID"
-            - "CAMPAIGN_DAILY_SPEND_CAP"
-            - "CAMPAIGN_LIFETIME_SPEND_CAP"
-            - "CAMPAIGN_ID"
-      download_requester:
-        type: HttpRequester
-        url_base: "{{ download_target }}"
-        http_method: GET
+      type: CustomRetriever
+      class_name: source_pinterest.components.components.PinterestReportRetriever
+      report_level: "CAMPAIGN"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -546,75 +480,9 @@ definitions:
     $ref: "#/definitions/campaign_analytics_report_stream"
     name: "advertiser_report"
     retriever:
-      type: AsyncRetriever
-      status_mapping:
-        failed:
-          - FAILED
-          - CANCELLED
-          - EXPIRED
-        running:
-          - IN_PROGRESS
-        completed:
-          - FINISHED
-      download_target_extractor:
-        type: DpathExtractor
-        field_path: ["url"]
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: CustomRecordExtractor
-          class_name: source_pinterest.components.components.PinterestReportDownloadExtractor
-      status_extractor:
-        type: DpathExtractor
-        field_path: ["report_status"]
-      polling_requester:
-        type: HttpRequester
-        path: "ad_accounts/{{ stream_partition.id }}/reports"
-        url_base: "https://api.pinterest.com/v5/"
-        http_method: GET
-        authenticator: "#/definitions/authenticator"
-        request_parameters:
-          token: "{{ creation_response['token'] }}"
-      creation_requester:
-        type: HttpRequester
-        path: "ad_accounts/{{ stream_partition.id }}/reports"
-        url_base: "https://api.pinterest.com/v5/"
-        http_method: POST
-        authenticator: "#/definitions/authenticator"
-        request_body_json:
-          start_date: "{{ stream_slice['start_date'] }}"
-          end_date: "{{ stream_slice['end_date'] }}"
-          granularity: "DAY"
-          level: "ADVERTISER"
-          columns:
-            - "IMPRESSION_1"
-            - "IMPRESSION_1_GROSS"
-            - "IMPRESSION_2"
-            - "CLICKTHROUGH_1"
-            - "CLICKTHROUGH_1_GROSS"
-            - "CLICKTHROUGH_2"
-            - "TOTAL_ENGAGEMENT"
-            - "ENGAGEMENT_1"
-            - "ENGAGEMENT_2"
-            - "ECTR"
-            - "CAMPAIGN_NAME"
-            - "PIN_ID"
-            - "CPM_IN_MICRO_DOLLAR"
-            - "CPM_IN_DOLLAR"
-            - "CPC_IN_MICRO_DOLLAR"
-            - "CPC_IN_DOLLAR"
-            - "SPEND_IN_MICRO_DOLLAR"
-            - "SPEND_IN_DOLLAR"
-            - "TOTAL_CLICKTHROUGH"
-            - "TOTAL_IMPRESSION"
-            - "ADVERTISER_ID"
-            - "CAMPAIGN_DAILY_SPEND_CAP"
-            - "CAMPAIGN_LIFETIME_SPEND_CAP"
-            - "CAMPAIGN_ID"
-      download_requester:
-        type: HttpRequester
-        url_base: "{{ download_target }}"
-        http_method: GET
+      type: CustomRetriever
+      class_name: source_pinterest.components.components.PinterestReportRetriever
+      report_level: "ADVERTISER"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -631,75 +499,9 @@ definitions:
     $ref: "#/definitions/campaign_analytics_report_stream"
     name: "ad_group_report"
     retriever:
-      type: AsyncRetriever
-      status_mapping:
-        failed:
-          - FAILED
-          - CANCELLED
-          - EXPIRED
-        running:
-          - IN_PROGRESS
-        completed:
-          - FINISHED
-      download_target_extractor:
-        type: DpathExtractor
-        field_path: ["url"]
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: CustomRecordExtractor
-          class_name: source_pinterest.components.components.PinterestReportDownloadExtractor
-      status_extractor:
-        type: DpathExtractor
-        field_path: ["report_status"]
-      polling_requester:
-        type: HttpRequester
-        path: "ad_accounts/{{ stream_partition.id }}/reports"
-        url_base: "https://api.pinterest.com/v5/"
-        http_method: GET
-        authenticator: "#/definitions/authenticator"
-        request_parameters:
-          token: "{{ creation_response['token'] }}"
-      creation_requester:
-        type: HttpRequester
-        path: "ad_accounts/{{ stream_partition.id }}/reports"
-        url_base: "https://api.pinterest.com/v5/"
-        http_method: POST
-        authenticator: "#/definitions/authenticator"
-        request_body_json:
-          start_date: "{{ stream_slice['start_date'] }}"
-          end_date: "{{ stream_slice['end_date'] }}"
-          granularity: "DAY"
-          level: "AD_GROUP"
-          columns:
-            - "IMPRESSION_1"
-            - "IMPRESSION_1_GROSS"
-            - "IMPRESSION_2"
-            - "CLICKTHROUGH_1"
-            - "CLICKTHROUGH_1_GROSS"
-            - "CLICKTHROUGH_2"
-            - "TOTAL_ENGAGEMENT"
-            - "ENGAGEMENT_1"
-            - "ENGAGEMENT_2"
-            - "ECTR"
-            - "CAMPAIGN_NAME"
-            - "PIN_ID"
-            - "CPM_IN_MICRO_DOLLAR"
-            - "CPM_IN_DOLLAR"
-            - "CPC_IN_MICRO_DOLLAR"
-            - "CPC_IN_DOLLAR"
-            - "SPEND_IN_MICRO_DOLLAR"
-            - "SPEND_IN_DOLLAR"
-            - "TOTAL_CLICKTHROUGH"
-            - "TOTAL_IMPRESSION"
-            - "ADVERTISER_ID"
-            - "CAMPAIGN_DAILY_SPEND_CAP"
-            - "CAMPAIGN_LIFETIME_SPEND_CAP"
-            - "CAMPAIGN_ID"
-      download_requester:
-        type: HttpRequester
-        url_base: "{{ download_target }}"
-        http_method: GET
+      type: CustomRetriever
+      class_name: source_pinterest.components.components.PinterestReportRetriever
+      report_level: "AD_GROUP"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
