@@ -103,7 +103,7 @@ class PinterestReportTransformation(RecordTransformation):
     Transforms Pinterest Analytics Report records to add metadata and normalize fields.
     """
     
-    def __init__(self, level: str, config: Config = None, **kwargs):
+    def __init__(self, level: str = "CAMPAIGN", config: Config = None, **kwargs):
         super().__init__(config, **kwargs)
         self.level = level
     
