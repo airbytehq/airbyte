@@ -8,10 +8,13 @@ from typing import Any, Dict, Iterable, List, Mapping
 import requests
 
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
-from airbyte_cdk.sources.declarative.requesters.request_options.request_options_provider import RequestOptionsProvider
+from airbyte_cdk.sources.declarative.requesters.request_options.request_options_provider import (
+    RequestOptionsProvider,
+)
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.transformations.transformation import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
+
 from source_pinterest.utils import get_analytics_columns
 
 
@@ -155,7 +158,9 @@ class PinterestReportRetriever(Retriever):
         self, sync_mode, cursor_field, stream_slice, stream_state
     ) -> Iterable[Record]:
         """Read records by creating and downloading async reports."""
-        ad_account_id = stream_slice.get("id") or stream_slice.get("parent_slice", {}).get("id")
+        ad_account_id = (
+            stream_slice.get("id") or stream_slice.get("parent_slice", {}).get("id")
+        )
         if not ad_account_id:
             return []
 
@@ -165,14 +170,18 @@ class PinterestReportRetriever(Retriever):
             return []
 
         # Step 2: Poll for report completion
-        download_url = self._poll_for_completion(ad_account_id, creation_response["token"])
+        download_url = self._poll_for_completion(
+            ad_account_id, creation_response["token"]
+        )
         if not download_url:
             return []
 
         # Step 3: Download and extract records
         return self._download_and_extract_records(download_url, stream_slice)
 
-    def _create_report(self, ad_account_id: str, stream_slice: StreamSlice) -> Dict[str, Any]:
+    def _create_report(
+        self, ad_account_id: str, stream_slice: StreamSlice
+    ) -> Dict[str, Any]:
         """Create an analytics report via POST request."""
         url = f"{self.base_url}ad_accounts/{ad_account_id}/reports"
 
@@ -186,7 +195,11 @@ class PinterestReportRetriever(Retriever):
 
         # Use authenticator from config
         headers = {}
-        if self.config and isinstance(self.config, dict) and "authenticator" in self.config:
+        if (
+            self.config
+            and isinstance(self.config, dict)
+            and "authenticator" in self.config
+        ):
             auth_headers = self.config["authenticator"].get_auth_header()
             headers.update(auth_headers)
 
@@ -203,7 +216,11 @@ class PinterestReportRetriever(Retriever):
 
         # Use authenticator from config
         headers = {}
-        if self.config and isinstance(self.config, dict) and "authenticator" in self.config:
+        if (
+            self.config
+            and isinstance(self.config, dict)
+            and "authenticator" in self.config
+        ):
             auth_headers = self.config["authenticator"].get_auth_header()
             headers.update(auth_headers)
 
