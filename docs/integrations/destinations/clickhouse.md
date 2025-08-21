@@ -49,15 +49,15 @@ Make sure your ClickHouse database can be accessed by Airbyte. If your database 
 
 You need a ClickHouse user with the following permissions:
 
-- can create tables and write rows.
-- can create databases
-- can alter, drop and exchange tables
+- create tables and write rows
+- create databases
+- alter, drop and exchange tables
 
 You can create such a user by running the following:
 
 ```
 GRANT CREATE ON * TO airbyte_user;
-GRANT DROP ON * TO airbyte_user;
+GRANT DROP TABLE ON {database}.* TO airbyte_user;
 GRANT CREATE ON {database}.* TO airbyte_user;
 GRANT DROP ON {database}.* TO airbyte_user;
 GRANT ALTER ON {database}.* TO airbyte_user;
