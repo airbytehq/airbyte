@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.customerio
 import dev.failsafe.RetryPolicy
 import io.airbyte.cdk.Operation
 import io.airbyte.cdk.load.check.CheckOperationWithoutGeneric
-import io.airbyte.cdk.load.check.DestinationCheckerWithoutGeneric
 import io.airbyte.cdk.load.check.dlq.DlqChecker
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
@@ -19,6 +18,7 @@ import io.airbyte.cdk.load.pipeline.LoadPipeline
 import io.airbyte.cdk.load.write.dlq.DlqPipelineFactory
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
 import io.airbyte.cdk.output.OutputConsumer
+import io.airbyte.cdk.spec.SpecificationFactory
 import io.micronaut.context.annotation.Factory as MicronautFactory
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
@@ -37,11 +37,18 @@ class CustomerIoBeanFactory {
         outputConsumer: OutputConsumer
     ): Operation = CheckOperationWithoutGeneric(factory.createDestinationChecker(checker), outputConsumer)
 
+    @Primary
     @Singleton
-    fun factory(
+    fun specificationFactory(
+        factory: DeclarativeDestinationFactory,
+    ): SpecificationFactory = factory.createSpecificationFactory()
+
+    @Singleton
+    fun destinationFactory(
         config: CustomerIoConfiguration
     ): DeclarativeDestinationFactory = DeclarativeDestinationFactory(config)
 
+    // TODO replace for ObjectStorageConfigProvider
     @Singleton fun getConfig(config: DestinationConfiguration) = config as CustomerIoConfiguration
 
     @Singleton fun discover() = CustomerIoDiscoverer()
@@ -53,6 +60,7 @@ class CustomerIoBeanFactory {
             override val numPartWorkers = 1
         }
 
+    // TODO to replace for declarative config
     @Singleton
     fun httpClient(config: CustomerIoConfiguration): HttpClient {
         val authenticator =

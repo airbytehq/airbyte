@@ -10,7 +10,6 @@ import dev.failsafe.RetryPolicy
 import io.airbyte.cdk.load.check.dlq.DlqChecker
 import io.airbyte.cdk.load.checker.CompositeDlqChecker
 import io.airbyte.cdk.load.checker.HttpRequestChecker
-import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.dlq.ObjectStorageConfigProvider
 import io.airbyte.cdk.load.http.HttpRequester
 import io.airbyte.cdk.load.http.RequestMethod
@@ -26,18 +25,30 @@ import io.airbyte.cdk.load.model.http.HttpRequester as HttpRequesterModel
 import io.airbyte.cdk.load.model.http.authenticator.Authenticator as AuthenticatorModel
 import io.airbyte.cdk.load.model.http.authenticator.BasicAccessAuthenticator as BasicAccessAuthenticatorModel
 import io.airbyte.cdk.load.model.http.authenticator.OAuthAuthenticator as OAuthAuthenticatorModel
+import io.airbyte.cdk.load.spec.DeclarativeSpecificationFactory
 import io.airbyte.cdk.util.ResourceUtils
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 
 class DeclarativeDestinationFactory(private val config: ObjectStorageConfigProvider) {
     private val stringInterpolator: StringInterpolator = StringInterpolator()
+    private val manifest: DeclarativeDestinationModel =  createManifest()
+
+    companion object {
+        fun createManifest(): DeclarativeDestinationModel {
+            val mapper = ObjectMapper(YAMLFactory())
+            val manifestContent = ResourceUtils.readResource("manifest.yaml")
+            val manifest: DeclarativeDestinationModel =
+                mapper.readValue(manifestContent, DeclarativeDestinationModel::class.java)
+            return manifest
+        }
+    }
+
+    fun createSpecificationFactory(): DeclarativeSpecificationFactory {
+        return DeclarativeSpecificationFactory(manifest.spec)
+    }
 
     fun createDestinationChecker(dlqChecker: DlqChecker): CompositeDlqChecker {
-        val mapper = ObjectMapper(YAMLFactory())
-        val manifestContent = ResourceUtils.readResource("manifest.yaml")
-        val manifest: DeclarativeDestinationModel =
-            mapper.readValue(manifestContent, DeclarativeDestinationModel::class.java)
         return CompositeDlqChecker(createChecker(manifest.checker), dlqChecker, config.objectStorageConfig)
     }
 
