@@ -10,5 +10,5 @@ def test_streams():
     config_mock = {"start_date": "2020-01-01T00:00:00.000Z", "credentials": {"auth_type": "token", "token": "abcd"}}
     streams = source.streams(config_mock)
     # Expecting 5 streams: users, databases, pages, comments, blocks
-    expected_streams_number = 5  
+    expected_streams_number = 5
     assert len(streams) == expected_streams_number

@@ -235,7 +235,7 @@ class NotionBlocksErrorHandler(DefaultErrorHandler):
             return ErrorResolution(
                 response_action=ResponseAction.FAIL,
                 failure_type=FailureType.system_error,
-                error_message="Non-response exception encountered"
+                error_message="Non-response exception encountered",
             )
 
         response = response_or_exception
@@ -249,7 +249,7 @@ class NotionBlocksErrorHandler(DefaultErrorHandler):
             return ErrorResolution(
                 response_action=ResponseAction.IGNORE,
                 failure_type=FailureType.config_error,
-                error_message="Block not accessible (expected for restricted blocks)"
+                error_message="Block not accessible (expected for restricted blocks)",
             )
 
         # Handle 400 errors for unsupported ai_block types
@@ -266,7 +266,7 @@ class NotionBlocksErrorHandler(DefaultErrorHandler):
                 return ErrorResolution(
                     response_action=ResponseAction.IGNORE,
                     failure_type=FailureType.config_error,
-                    error_message="Unsupported ai_block type (expected)"
+                    error_message="Unsupported ai_block type (expected)",
                 )
 
         # For all other cases, use default behavior
