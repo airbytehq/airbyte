@@ -4,7 +4,7 @@
 import json
 import logging
 import os
-from typing import Optional, Set
+from typing import Set
 
 import dpath.util
 import sentry_sdk
@@ -71,7 +71,7 @@ def _persist_secrets_to_gcs(specs_secrets: Set[str], bucket: storage.Bucket) -> 
     service_account_info = json.loads(gcs_creds)
     credentials = service_account.Credentials.from_service_account_info(service_account_info)
     client = storage.Client(credentials=credentials)
-    bucket = client.bucket("dev-airbyte-cloud-connector-metadata-service")
+    bucket = client.bucket("dev-airbyte-cloud-connector-metadata-service-2")
     specs_secrets_mask_blob = bucket.blob(f"{REGISTRIES_FOLDER}/{SPECS_SECRETS_MASK_FILE_NAME}")
 
     try:
