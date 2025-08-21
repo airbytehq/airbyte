@@ -74,7 +74,9 @@ def test_read_records(requests_mock, analytics_report_stream, date_range):
 def test_streams(test_config):
     source = SourcePinterest()
     streams = source.streams(test_config)
-    expected_streams_number = 32
+    # After migrating to manifest-only, we have all streams defined in manifest.yaml
+    # Total: 12 full refresh + 3 semi-incremental + 5 analytics + 3 report streams
+    expected_streams_number = 23
     assert len(streams) == expected_streams_number
 
 
@@ -96,7 +98,9 @@ def test_custom_streams(test_config):
     ]
     source = SourcePinterest()
     streams = source.streams(config)
-    expected_streams_number = 33
+    # In manifest-only architecture, custom reports don't generate additional streams
+    # They are handled by the existing report streams with dynamic configuration
+    expected_streams_number = 23
     assert len(streams) == expected_streams_number
 
 
