@@ -67,7 +67,7 @@ streams:
           inject_into: request_parameter
         pagination_strategy:
           type: CursorPagination
-          page_size: "100"
+          page_size: 100
           cursor_value: '{{ response.get("next_cursor") }}'
           stop_condition: '{{ not response.get("has_more") }}'
       partition_router: []
@@ -222,7 +222,7 @@ streams:
           inject_into: body_json
         pagination_strategy:
           type: CursorPagination
-          page_size: "100"
+          page_size: 100
           cursor_value: '{{ response.get("next_cursor") }}'
           stop_condition: '{{ not response.get("has_more") }}'
       partition_router: []
@@ -1399,7 +1399,7 @@ streams:
           inject_into: body_json
         pagination_strategy:
           type: CursorPagination
-          page_size: "100"
+          page_size: 100
           cursor_value: '{{ response.get("next_cursor") }}'
           stop_condition: '{{ not response.get("has_more") }}'
       partition_router: []
@@ -2881,7 +2881,7 @@ streams:
           inject_into: request_parameter
         pagination_strategy:
           type: CursorPagination
-          page_size: "100"
+          page_size: 100
           cursor_value: '{{ response.get("next_cursor") }}'
           stop_condition: '{{ not response.get("has_more") }}'
       partition_router:
@@ -2958,7 +2958,7 @@ streams:
                       inject_into: body_json
                     pagination_strategy:
                       type: CursorPagination
-                      page_size: "100"
+                      page_size: 100
                       cursor_value: '{{ response.get("next_cursor") }}'
                       stop_condition: '{{ not response.get("has_more") }}'
                   partition_router: []
@@ -3187,7 +3187,7 @@ streams:
           inject_into: request_parameter
         pagination_strategy:
           type: CursorPagination
-          page_size: "100"
+          page_size: 100
           cursor_value: '{{ response.get("next_cursor") }}'
           stop_condition: '{{ not response.get("has_more") }}'
       partition_router:
