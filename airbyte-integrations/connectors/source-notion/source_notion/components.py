@@ -10,10 +10,10 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
-from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ErrorHandler
+from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
-from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, FailureType, ResponseAction
 
 
 logger = logging.getLogger("airbyte")
@@ -213,7 +213,7 @@ class NotionBlocksFilter(RecordFilter):
 
 
 @dataclass
-class NotionBlocksErrorHandler(ErrorHandler):
+class NotionBlocksErrorHandler(DefaultErrorHandler):
     """
     Custom error handler for Notion blocks that handles:
     1. 404 errors for inaccessible blocks
@@ -227,12 +227,16 @@ class NotionBlocksErrorHandler(ErrorHandler):
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         super().__post_init__(parameters)
 
-    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ResponseAction:
+    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
         """
         Interpret the response and determine the appropriate action.
         """
         if not isinstance(response_or_exception, requests.Response):
-            return ResponseAction.FAIL
+            return ErrorResolution(
+                response_action=ResponseAction.FAIL,
+                failure_type=FailureType.system_error,
+                error_message="Non-response exception encountered"
+            )
 
         response = response_or_exception
 
@@ -242,7 +246,11 @@ class NotionBlocksErrorHandler(ErrorHandler):
                 f"Block not accessible (404): {response.json().get('message', 'Unknown error')}. "
                 "This is expected when the integration doesn't have access to certain blocks."
             )
-            return ResponseAction.IGNORE
+            return ErrorResolution(
+                response_action=ResponseAction.IGNORE,
+                failure_type=FailureType.config_error,
+                error_message="Block not accessible (expected for restricted blocks)"
+            )
 
         # Handle 400 errors for unsupported ai_block types
         if response.status_code == 400:
@@ -255,15 +263,11 @@ class NotionBlocksErrorHandler(ErrorHandler):
                     f"Unsupported ai_block type encountered: {error_msg}. "
                     "Skipping this block as ai_block types are not supported by the API."
                 )
-                return ResponseAction.IGNORE
+                return ErrorResolution(
+                    response_action=ResponseAction.IGNORE,
+                    failure_type=FailureType.config_error,
+                    error_message="Unsupported ai_block type (expected)"
+                )
 
-        # Handle rate limiting (429)
-        if response.status_code == 429:
-            return ResponseAction.RETRY
-
-        # Handle server errors (5xx)
-        if response.status_code >= 500:
-            return ResponseAction.RETRY
-
-        # For all other cases, use default handling
-        return ResponseAction.FAIL
+        # For all other cases, use default behavior
+        return super().interpret_response(response_or_exception)
