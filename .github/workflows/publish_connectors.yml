@@ -266,6 +266,12 @@ jobs:
           SPEC_CACHE_GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
           METADATA_SERVICE_GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
 
+  # The connector registries are generated from the spec cache,
+  # and in some cases, there are cross-connector dependencies.
+  # Specifically, connectors with a strict-encrypt variant need the strict-encrypt's spec cache
+  # to generate their registry entry.
+  # For example, generating destination-postgres's cloud.json will read from
+  # destination-postgres-strict-encrypt's spec cache.
   publish_connector_registry_entries:
     name: Publish connector registry entries
     needs: [list_connectors, publish_connectors]
