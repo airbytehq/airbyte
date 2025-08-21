@@ -7,8 +7,13 @@
       "statusCode": 301
     },
     {
+      "source": "/platform/terraform-documentation",
+      "destination": "/developer-tools/terraform",
+      "statusCode": 301
+    },
+    {
       "source": "/terraform-documentation",
-      "destination": "/platform/terraform-documentation",
+      "destination": "/developer-tools/terraform",
       "statusCode": 301
     },
     {

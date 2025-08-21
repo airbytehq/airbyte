@@ -53,7 +53,7 @@ These are great choices for developers who want to automate the way you work wit
 
 ### Terraform
 
-Many people think of Airbyte and its connectors as infrastructure. Our [Terraform provider](/platform/terraform-documentation) ensures you can deploy and manage sources and destinations with Terraform, the same way you manage your other infrastructure today.
+Many people think of Airbyte and its connectors as infrastructure. Our [Terraform provider](/developer-tools/terraform) ensures you can deploy and manage sources and destinations with Terraform, the same way you manage your other infrastructure today.
 
 ### PyAirbyte
 

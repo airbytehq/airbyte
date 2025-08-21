@@ -26,7 +26,7 @@ Teams and organizations need efficient and timely data access to an ever-growing
 
 - **Robust platform** provides horizontal scaling required for large-scale data movement operations, available as [Cloud-managed](https://airbyte.com/product/airbyte-cloud) or [Self-managed](https://airbyte.com/product/airbyte-enterprise).
 
-- **Accessible User Interfaces** through the UI, [**PyAirbyte**](/platform/using-airbyte/pyairbyte/getting-started) (Python library), [**API**](/platform/api-documentation), and [**Terraform Provider**](/platform/terraform-documentation) to integrate with your preferred tooling and approach to infrastructure management.
+- **Accessible User Interfaces** through the UI, [**PyAirbyte**](/platform/using-airbyte/pyairbyte/getting-started) (Python library), [**API**](/platform/api-documentation), and [**Terraform Provider**](/developer-tools/terraform) to integrate with your preferred tooling and approach to infrastructure management.
 
 Airbyte is suitable for a wide range of data integration use cases, including AI data infrastructure and EL(T) workloads. Airbyte is also [embeddable](https://airbyte.com/product/powered-by-airbyte) within your own app or platform to power your product.
 
