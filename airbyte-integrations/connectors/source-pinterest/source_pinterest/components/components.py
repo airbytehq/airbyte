@@ -104,7 +104,8 @@ class PinterestReportTransformation(RecordTransformation):
     """
     
     def __init__(self, level: str = "CAMPAIGN", config: Config = None, **kwargs):
-        super().__init__(config, **kwargs)
+        # Only pass arguments that the parent class expects
+        super().__init__(config)
         self.level = level
     
     def transform(
@@ -143,7 +144,8 @@ class PinterestReportRetriever(Retriever):
     """
     
     def __init__(self, report_level: str = "CAMPAIGN", config: Config = None, **kwargs):
-        super().__init__(config, **kwargs)
+        # Only pass arguments that the parent class expects
+        super().__init__(config)
         self.report_level = report_level
         self.base_url = "https://api.pinterest.com/v5/"
         
