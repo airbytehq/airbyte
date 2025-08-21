@@ -20,6 +20,7 @@ on:
       connection_id:
         description: ID of the connection to test; use "auto" to let the connection retriever choose a connection
         required: true
+        default: auto
       pr_url:
         description: URL of the PR containing the code change
         required: true
@@ -41,6 +42,7 @@ on:
         description: The subset of connections to select from.
         required: true
         type: choice
+        default: all
         options:
           - sandboxes
           - all
