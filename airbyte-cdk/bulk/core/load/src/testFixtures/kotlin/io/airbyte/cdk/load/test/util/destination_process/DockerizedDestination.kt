@@ -183,7 +183,10 @@ class DockerizedDestination(
             envVars.flatMap { (key, value) ->
                 logger.info { "Env vars: $key loaded" }
                 listOf("-e", "$key=$value")
-            } + socketPathEnvVarsMaybe
+            } + listOf(
+                "-e",
+                "MICRONAUT_ENVIRONMENTS=test",
+            ) + socketPathEnvVarsMaybe
 
         // DANGER: env vars can contain secrets, so you MUST NOT log this command.
         val cmd: MutableList<String> =
