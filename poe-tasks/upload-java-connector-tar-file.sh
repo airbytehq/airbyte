@@ -9,7 +9,7 @@ set -euo pipefail
 source "${BASH_SOURCE%/*}/lib/util.sh"
 source "${BASH_SOURCE%/*}/lib/parse_args.sh"
 
-metadata_bucket="dev-airbyte-cloud-connector-metadata-service"
+metadata_bucket="dev-airbyte-cloud-connector-metadata-service2"
 connector=$(get_only_connector)
 tar_file_path="${CONNECTORS_DIR}/${connector}/build/distributions/airbyte-app.tar"
 
