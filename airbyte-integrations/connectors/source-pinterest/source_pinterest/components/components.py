@@ -10,12 +10,7 @@ import requests
 from airbyte_cdk.sources.declarative.extractors.record_extractor import (
     RecordExtractor,
 )
-# Import with shorter line length
-from airbyte_cdk.sources.declarative.requesters.request_options import (
-    request_options_provider,
-)
-
-RequestOptionsProvider = request_options_provider.RequestOptionsProvider
+from airbyte_cdk.sources.declarative.requesters.request_options.request_options_provider import RequestOptionsProvider  # noqa: E501
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.transformations.transformation import (
     RecordTransformation,
