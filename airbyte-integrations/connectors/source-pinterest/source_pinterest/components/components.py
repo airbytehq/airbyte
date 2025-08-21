@@ -104,9 +104,10 @@ class PinterestReportTransformation(RecordTransformation):
     """
     
     def __init__(self, level: str = "CAMPAIGN", config: Config = None, **kwargs):
-        # Only pass arguments that the parent class expects
-        super().__init__(config)
+        # RecordTransformation.__init__() takes no arguments in CDK v4
+        super().__init__()
         self.level = level
+        self.config = config
     
     def transform(
         self, record: Record, config: Config, stream_slice: StreamSlice, stream_state: StreamState
@@ -144,10 +145,11 @@ class PinterestReportRetriever(Retriever):
     """
     
     def __init__(self, report_level: str = "CAMPAIGN", config: Config = None, **kwargs):
-        # Only pass arguments that the parent class expects
-        super().__init__(config)
+        # Retriever.__init__() may not take config in CDK v4
+        super().__init__()
         self.report_level = report_level
         self.base_url = "https://api.pinterest.com/v5/"
+        self.config = config
         
     def read_records(
         self, sync_mode, cursor_field, stream_slice, stream_state
