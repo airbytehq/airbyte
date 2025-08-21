@@ -540,8 +540,7 @@ definitions:
         level: "CAMPAIGN"
     schema_loader:
       type: InlineSchemaLoader
-      schema:
-        $ref: "#/schemas/reports"
+      schema: "#/definitions/reports_schema"
 
   advertiser_report_stream:
     type: DeclarativeStream
@@ -647,8 +646,7 @@ definitions:
         level: "ADVERTISER"
     schema_loader:
       type: InlineSchemaLoader
-      schema:
-        $ref: "#/schemas/reports"
+      schema: "#/definitions/reports_schema"
 
   ad_group_report_stream:
     type: DeclarativeStream
@@ -754,8 +752,53 @@ definitions:
         level: "AD_GROUP"
     schema_loader:
       type: InlineSchemaLoader
-      schema:
-        $ref: "#/schemas/reports"
+      schema: "#/definitions/reports_schema"
+
+  # Report schema
+  reports_schema:
+    $schema: https://json-schema.org/draft-07/schema#
+    type: object
+    properties:
+      DATE:
+        description: Date of the data record
+        type: ["null", "string"]
+        format: date
+      ADVERTISER_ID:
+        description: Unique identifier for the advertiser
+        type: ["null", "number"]
+      AD_ACCOUNT_ID:
+        description: Unique identifier for the ad account
+        type: ["string"]
+      CAMPAIGN_ID:
+        description: Unique identifier for the campaign
+        type: ["null", "number"]
+      CAMPAIGN_NAME:
+        description: Name of the campaign
+        type: ["null", "string"]
+      IMPRESSION_1:
+        description: Number of impressions
+        type: ["null", "number"]
+      CLICKTHROUGH_1:
+        description: Number of click-through events
+        type: ["null", "number"]
+      SPEND_IN_DOLLAR:
+        description: Total spend in dollars
+        type: ["null", "number"]
+      CPM_IN_DOLLAR:
+        description: Cost per mille in dollars
+        type: ["null", "number"]
+      CPC_IN_DOLLAR:
+        description: Cost per click in dollars
+        type: ["null", "number"]
+      report_level:
+        description: Report aggregation level
+        type: ["null", "string"]
+      slice_start_date:
+        description: Start date of the report slice
+        type: ["null", "string"]
+      slice_end_date:
+        description: End date of the report slice
+        type: ["null", "string"]
 
   # Schemas
   ad_accounts_schema:
