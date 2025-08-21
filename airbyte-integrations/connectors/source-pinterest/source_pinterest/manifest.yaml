@@ -183,7 +183,12 @@ definitions:
       datetime_format: "%Y-%m-%d"
       cursor_datetime_formats:
         - "%s"
-      start_datetime: "{{ config.get('start_date') if config.get('start_date') and config.get('start_date') > day_delta(-89, format='%Y-%m-%d') else day_delta(-89, format='%Y-%m-%d') }}"
+      start_datetime: >-
+        {{
+          config.get('start_date') if config.get('start_date') and 
+          config.get('start_date') > day_delta(-89, format='%Y-%m-%d') 
+          else day_delta(-89, format='%Y-%m-%d')
+        }}
       cursor_granularity: "P1D"
       step: "P30D"
       start_time_option:
@@ -296,7 +301,12 @@ definitions:
             stream: "#/definitions/board_sections_stream"
             partition_field: "id"
     $parameters:
-      path: "{{ 'boards/' + stream_slice.parent_slice.id + '/sections/' + stream_slice.id + '/pins?ad_account_id=' + config['account_id'] if config.get('account_id') else 'boards/' + stream_slice.parent_slice.id + '/sections/' + stream_slice.id + '/pins' }}"
+      path: >-
+        {{
+          'boards/' + stream_slice.parent_slice.id + '/sections/' + stream_slice.id + 
+          '/pins?ad_account_id=' + config['account_id'] if config.get('account_id') 
+          else 'boards/' + stream_slice.parent_slice.id + '/sections/' + stream_slice.id + '/pins'
+        }}
 
   audiences_stream:
     # Docs: https://developers.pinterest.com/docs/api/v5/#operation/audiences/list
@@ -490,7 +500,12 @@ definitions:
       datetime_format: "%Y-%m-%d"
       cursor_datetime_formats:
         - "%s"
-      start_datetime: "{{ config.get('start_date') if config.get('start_date') and config.get('start_date') > day_delta(-913, format='%Y-%m-%d') else day_delta(-913, format='%Y-%m-%d') }}"
+      start_datetime: >-
+        {{
+          config.get('start_date') if config.get('start_date') and 
+          config.get('start_date') > day_delta(-913, format='%Y-%m-%d') 
+          else day_delta(-913, format='%Y-%m-%d')
+        }}
       cursor_granularity: "P1D"
       step: "P30D"
       start_time_option:
@@ -3030,7 +3045,10 @@ spec:
         examples: ["2022-07-28"]
       status:
         title: "Status"
-        description: "For the ads, ad_groups, and campaigns streams, specifying a status will filter out records that do not match the specified ones. If a status is not specified, the source will default to records with a status of either ACTIVE or PAUSED."
+        description: >-
+          For the ads, ad_groups, and campaigns streams, specifying a status will filter out 
+          records that do not match the specified ones. If a status is not specified, the source 
+          will default to records with a status of either ACTIVE or PAUSED.
         type: [array, "null"]
         items:
           type: string
@@ -3062,7 +3080,9 @@ spec:
             airbyte_secret: true
       custom_reports:
         title: "Custom Reports"
-        description: 'A list which contains ad statistics entries, each entry must have a name and can contains fields, breakdowns or action_breakdowns. Click on "add" to fill this field.'
+        description: >-
+          A list which contains ad statistics entries, each entry must have a name and can 
+          contains fields, breakdowns or action_breakdowns. Click on "add" to fill this field.
         type: array
         items:
           title: "ReportConfig"
@@ -3246,7 +3266,10 @@ spec:
               order: 6
             conversion_report_time:
               title: "Conversion report time"
-              description: "The date by which the conversion metrics returned from this endpoint will be reported. There are two dates associated with a conversion event: the date that the user interacted with the ad, and the date that the user completed a conversion event.."
+              description: >-
+                The date by which the conversion metrics returned from this endpoint will be reported. 
+                There are two dates associated with a conversion event: the date that the user 
+                interacted with the ad, and the date that the user completed a conversion event.
               default: "TIME_OF_AD_ACTION"
               enum: ["TIME_OF_AD_ACTION", "TIME_OF_CONVERSION"]
               type: string
