@@ -271,7 +271,11 @@ definitions:
       schema: "#/definitions/board_sections_schema"
     retriever: "#/definitions/board_based_retriever"
     $parameters:
-      path: "{{ 'boards/' + stream_slice.id + '/sections?ad_account_id=' + config['account_id'] if config.get('account_id') else 'boards/' + stream_slice.id + '/sections' }}"
+      path: >-
+        {{
+          'boards/' + stream_slice.id + '/sections?ad_account_id=' + config['account_id']
+          if config.get('account_id') else 'boards/' + stream_slice.id + '/sections'
+        }}
 
   board_pins_stream:
     # Docs: https://developers.pinterest.com/docs/api/v5/#operation/boards/list_pins
@@ -282,7 +286,11 @@ definitions:
       schema: "#/definitions/board_pins_schema"
     retriever: "#/definitions/board_based_retriever"
     $parameters:
-      path: "{{ 'boards/' + stream_slice.id + '/pins?ad_account_id=' + config['account_id'] if config.get('account_id') else 'boards/' + stream_slice.id + '/pins' }}"
+      path: >-
+        {{
+          'boards/' + stream_slice.id + '/pins?ad_account_id=' + config['account_id']
+          if config.get('account_id') else 'boards/' + stream_slice.id + '/pins'
+        }}
 
   board_section_pins_stream:
     # Docs: https://developers.pinterest.com/docs/api/v5/#operation/board_sections/list_pins
