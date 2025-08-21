@@ -12,7 +12,6 @@ import io.airbyte.cdk.load.write.StreamLoader
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.delay
 
 sealed interface DestinationResult
 
@@ -53,31 +52,8 @@ class SyncManager(val catalog: DestinationCatalog) {
             .complete(streamLoaderResult)
     }
 
-    suspend fun getOrAwaitStreamLoader(
-        stream: DestinationStream.Descriptor,
-    ): StreamLoader {
-        val pollEveryMs = 1_000L
-        val maxAttempts = 300
-
-        var attempts = 0
-        while (attempts < maxAttempts) {
-            val deferred = streamLoaders[stream]
-            if (deferred != null) {
-                return deferred.await().getOrThrow()
-            }
-
-            delay(pollEveryMs)
-            attempts++
-        }
-
-        throw IllegalStateException(
-            buildString {
-                appendLine("Timeout waiting for StreamLoader registration for stream: $stream")
-                appendLine(
-                    "This indicates a coordination issue: the producer responsible for registering the loader did not do so."
-                )
-            }
-        )
+    suspend fun getOrAwaitStreamLoader(stream: DestinationStream.Descriptor): StreamLoader {
+        return streamLoaders.getOrPut(stream) { CompletableDeferred() }.await().getOrThrow()
     }
 
     suspend fun getStreamLoaderOrNull(stream: DestinationStream.Descriptor): StreamLoader? {

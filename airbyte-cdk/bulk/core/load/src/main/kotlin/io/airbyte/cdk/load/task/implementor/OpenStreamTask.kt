@@ -31,9 +31,8 @@ class OpenStreamTask(
 ) : Task {
     override val terminalCondition: TerminalCondition = SelfTerminating
 
-    private val seen = ConcurrentHashMap.newKeySet<DestinationStream.Descriptor>()
-
     override suspend fun execute() {
+        val seen = ConcurrentHashMap.newKeySet<DestinationStream.Descriptor>()
         openStreamQueue.consume().collect { stream ->
             val desc = stream.mappedDescriptor
 

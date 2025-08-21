@@ -259,7 +259,6 @@ class DataChannelBeanFactory {
     @Singleton
     @Requires(property = "airbyte.destination.core.data-channel.medium", value = "STDIO")
     fun stdioInputConsumerTask(
-        catalog: DestinationCatalog,
         inputFlow: ReservingDeserializingInputFlow,
         @Named("_pipelineInputQueue")
         pipelineInputQueue: PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>? =

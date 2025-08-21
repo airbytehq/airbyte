@@ -182,7 +182,7 @@ class BigqueryBatchStandardInsertsLoaderFactory(
                     ProtoToBigQueryStandardInsertRecordFormatter(
                         catalog.getStream(streamDescriptor).airbyteValueProxyFieldAccessors,
                         tableNameInfo.columnNameMapping,
-                        catalog.getStream(streamDescriptor)
+                        catalog.getStream(streamDescriptor),
                     )
                 }
                 else -> {
@@ -207,7 +207,7 @@ class BigqueryBatchStandardInsertsLoaderFactory(
     ): S {
         // Poll the state store until it's populated by the coordinating StreamLoader thread
         var attempts = 0
-        val maxAttempts = 300
+        val maxAttempts = 20 * 60 // 20 minutes
 
         while (attempts < maxAttempts) {
             val state = stateStore.get(streamDescriptor)
@@ -220,7 +220,7 @@ class BigqueryBatchStandardInsertsLoaderFactory(
         }
 
         throw RuntimeException(
-            "Timeout waiting for StreamStateStore to be populated for stream $streamDescriptor. This indicates a coordination issue between workers."
+            "Timeout waiting for StreamStateStore to be populated for stream $streamDescriptor. This indicates a coordination issue between workers.",
         )
     }
 

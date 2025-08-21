@@ -24,7 +24,6 @@ import io.airbyte.cdk.load.task.Task
 import io.airbyte.cdk.load.task.TerminalCondition
 import io.airbyte.cdk.load.util.use
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.flow.fold
 
 private val log = KotlinLogging.logger {}
 
@@ -79,7 +78,7 @@ class InputConsumerTask(
         log.info { "Starting consuming messages from the input flow" }
         pipelineInputQueue.use {
             pipelineEventBookkeepingRouter.use {
-                inputFlow.fold(Unit) { _, (_, reserved) ->
+                inputFlow.collect { (_, reserved) ->
                     when (val message = reserved.value) {
                         is DestinationStreamAffinedMessage ->
                             handleRecordForPipeline(reserved.replace(message))

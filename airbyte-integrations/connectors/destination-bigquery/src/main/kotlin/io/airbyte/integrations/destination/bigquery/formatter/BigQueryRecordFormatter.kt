@@ -33,6 +33,7 @@ import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.util.BigDecimalUtil
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.util.serializeToString
+import io.airbyte.integrations.destination.bigquery.write.standard_insert.RecordFormatter
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadSqlGenerator
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import java.math.BigInteger
@@ -50,7 +51,7 @@ import java.util.concurrent.TimeUnit
 class BigQueryRecordFormatter(
     private val columnNameMapping: ColumnNameMapping,
     private val legacyRawTablesOnly: Boolean,
-) : io.airbyte.integrations.destination.bigquery.write.standard_insert.RecordFormatter {
+) : RecordFormatter {
 
     override fun formatRecord(record: DestinationRecordRaw): String {
         val enrichedRecord =

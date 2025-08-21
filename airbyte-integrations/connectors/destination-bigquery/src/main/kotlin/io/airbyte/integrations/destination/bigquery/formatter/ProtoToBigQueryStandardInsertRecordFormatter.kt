@@ -40,6 +40,7 @@ import io.airbyte.cdk.load.message.DestinationRecordProtobufSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
+import io.airbyte.integrations.destination.bigquery.write.standard_insert.RecordFormatter
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -52,7 +53,7 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
     private val fieldAccessors: Array<FieldAccessor>,
     private val columnNameMapping: ColumnNameMapping,
     private val stream: DestinationStream,
-) : io.airbyte.integrations.destination.bigquery.write.standard_insert.RecordFormatter {
+) : RecordFormatter {
 
     // Pre-compute unknown columns to track parsing failures
     private val unknownColumnChanges =
