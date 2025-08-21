@@ -3156,7 +3156,14 @@ streams:
         url_base: https://api.notion.com/v1/
         authenticator:
           type: BearerAuthenticator
-          api_token: "{{ config.get('credentials', {}).get('token') if config.get('credentials', {}).get('auth_type') == 'token' else config.get('credentials', {}).get('access_token') if config.get('credentials', {}).get('auth_type') == 'OAuth2.0' else config.get('access_token', '') }}"
+          api_token: >-
+            {{
+              config.get('credentials', {}).get('token') if
+              config.get('credentials', {}).get('auth_type') == 'token' else
+              config.get('credentials', {}).get('access_token') if
+              config.get('credentials', {}).get('auth_type') == 'OAuth2.0' else
+              config.get('access_token', '')
+            }}
         path: blocks/{{ stream_partition.block_id }}/children
         http_method: GET
         request_parameters:
