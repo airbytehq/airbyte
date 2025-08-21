@@ -54,4 +54,3 @@ curl --request POST 'https://api.airbyte.ai/api/v1/integrations/connections/' \
 You can find the full connector specification in the [Connector Registry](https://connectors.airbyte.com/files/registries/v0/cloud_registry.json).
 
 You can find the [reference docs for creating a connection template here](https://api.airbyte.ai/api/v1/redoc#tag/Template-Connections/operation/create_integrations_templates_connections).
-```
