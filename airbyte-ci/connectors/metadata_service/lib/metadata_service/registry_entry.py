@@ -37,7 +37,7 @@ from metadata_service.spec_cache import SpecCache
 
 logger = logging.getLogger(__name__)
 
-DEV_BUCKET = "dev-airbyte-cloud-connector-metadata-service"
+DEV_BUCKET = "dev-airbyte-cloud-connector-metadata-service-2"
 
 
 PolymorphicRegistryEntry = Union[ConnectorRegistrySourceDefinition, ConnectorRegistryDestinationDefinition]
