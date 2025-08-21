@@ -154,29 +154,31 @@ Common use cases for syncing Salesforce permission data include:
 The following streams contain security and permission-related data:
 
 - **[`User`](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_user.htm)** - Core user accounts with security-related fields including profiles, roles, and user permissions. Contains information about user status, login history, and assigned licenses.
-- **[`PermissionSet`](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_permissionset.htm)** - Represents sets of permissions used to grant additional access to users without changing their profile. Contains user, object, and field permissions as well as setup entity access settings.
 - **[`ActivePermSetLicenseMetric`](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_activepermsetlicensemetric.htm)** - Tracks permission set license usage metrics including assigned user counts, active user counts, and total available licenses.
 - **[`ActiveProfileMetric`](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_activeprofilemetric.htm)** - Provides metrics about user profile usage including user license associations and assignment counts.
 
+For comprehensive information about Salesforce security objects, refer to the [Salesforce Object Reference](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_concepts.htm) documentation.
+
 ### How Salesforce Permission Syncing Works
 
-Salesforce provides security data through its standard object model:
+Salesforce provides some security-related data through its standard object model:
 
-1. **Dynamic Object Discovery**: The connector automatically discovers all available Salesforce objects (sobjects) based on the authenticated user's permissions.
-2. **Permission-Based Access**: Which security objects are available depends on the permissions granted to the Salesforce user used for authentication.
-3. **Standard Object Syncing**: Security artifacts are available as regular Salesforce objects through the same sync mechanisms as other business data.
+1. **Dynamic Object Discovery**: The connector automatically discovers available Salesforce objects (sobjects) based on the authenticated user's permissions.
+2. **Permission-Based Access**: Which security objects are available depends on the permissions granted to the Salesforce user used for authentication and your Salesforce environment configuration.
+3. **Standard Object Syncing**: Available security-related objects are synced as regular Salesforce objects through the same sync mechanisms as other business data.
 
 :::note
-Security objects can be large datasets in organizations with many users, so monitor your Salesforce API limits accordingly.
+Security-related object availability varies by Salesforce environment (production vs sandbox) and user permissions. Security objects can be large datasets in organizations with many users, so monitor your Salesforce API limits accordingly.
 :::
 
 ### Permissions Needed to Sync Permissions Data {#permissions-to-sync-permissions}
 
 To sync security-related data from Salesforce, the authenticated Salesforce user must have appropriate permissions to read security objects. Consider granting these permissions through a dedicated permission set:
 
-   - "View Setup and Configuration" - Required to access PermissionSet objects.
    - "View All Users" - Required to access comprehensive User data.
    - Standard read permissions for the specific objects you want to sync.
+
+For more information about Salesforce security and permissions, refer to the official Salesforce documentation on [User Permissions](https://help.salesforce.com/s/articleView?id=sf.admin_userperms.htm&type=5) and [Permission Sets](https://help.salesforce.com/s/articleView?id=sf.perm_sets_overview.htm&type=5).
 
 ## Limitations & Troubleshooting
 
