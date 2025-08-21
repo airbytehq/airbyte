@@ -116,7 +116,8 @@ def test_http_method(patch_base_class):
 def test_response_action(requests_mock, patch_base_class, http_status, expected_response_action):
     response_mock = create_requests_response(requests_mock, http_status, {})
     stream = PinterestStream(config=MagicMock())
-    assert stream._http_client._error_handler.interpret_response(response_mock).response_action == expected_response_action
+    error_handler = stream.get_error_handler()
+    assert error_handler.interpret_response(response_mock).response_action == expected_response_action
 
 
 @pytest.mark.parametrize(

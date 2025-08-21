@@ -73,7 +73,8 @@ def test_stream_checkpoint_interval(patch_incremental_base_class):
 )
 def test_should_retry(requests_mock, test_config, http_status, expected_response_action):
     response_mock = create_requests_response(requests_mock, http_status, {"code": 1} if HTTPStatus.BAD_REQUEST else {})
-    stream = get_stream_by_name("campaign_analytics_report", test_config)
+    # Use a non-report stream since report streams are now declarative and don't have _http_client
+    stream = get_stream_by_name("ad_accounts", test_config)
     assert stream._http_client._error_handler.interpret_response(response_mock).response_action == expected_response_action
 
 
