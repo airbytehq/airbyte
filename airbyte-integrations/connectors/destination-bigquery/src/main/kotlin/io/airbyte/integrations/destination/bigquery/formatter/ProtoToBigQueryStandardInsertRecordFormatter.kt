@@ -136,16 +136,13 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
         parsingFailures: MutableList<Meta.Change>,
         needsComma: Boolean
     ) {
-        var addComma = needsComma
-
-        if (addComma) builder.append(',')
+        if (needsComma) builder.append(',')
         builder
             .append('"')
             .append(Meta.COLUMN_NAME_AB_RAW_ID)
             .append("\":\"")
             .append(escape(record.airbyteRawId.toString()))
             .append('"')
-        addComma = true
 
         builder
             .append(",\"")
