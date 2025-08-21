@@ -4,8 +4,8 @@
 
 package io.airbyte.cdk.load.dataflow.stages
 
-import io.airbyte.cdk.load.dataflow.DataFlowStageIO
 import io.airbyte.cdk.load.dataflow.aggregate.Aggregate
+import io.airbyte.cdk.load.dataflow.pipeline.DataFlowStageIO
 import io.mockk.coVerify
 import io.mockk.mockk
 import kotlin.test.assertSame
