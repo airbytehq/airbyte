@@ -57,15 +57,14 @@ You can create such a user by running the following:
 
 ```
 GRANT CREATE ON * TO airbyte_user;
-GRANT DROP TABLE ON {database}.* TO airbyte_user;
 GRANT CREATE ON {database}.* TO airbyte_user;
-GRANT DROP ON {database}.* TO airbyte_user;
 GRANT ALTER ON {database}.* TO airbyte_user;
 GRANT TRUNCATE ON {database}.* TO airbyte_user;
 GRANT INSERT ON {database}.* TO airbyte_user;
 GRANT SELECT ON {database}.* TO airbyte_user;
 GRANT CREATE DATABASE ON {database}.* TO airbyte_user;
 GRANT CREATE TABLE ON {database}.* TO airbyte_user;
+GRANT DROP TABLE ON {database}.* TO airbyte_user;
 ```
 
 Where `{database}` is the database configured on your connector.
@@ -74,13 +73,13 @@ Then for each connection using this connector with a custom namespace, run:
 
 ```
 GRANT CREATE ON {namespace}.* TO airbyte_user;
-GRANT DROP ON {namespace}.* TO airbyte_user;
 GRANT ALTER ON {namespace}.* TO airbyte_user;
 GRANT TRUNCATE ON {namespace}.* TO airbyte_user;
 GRANT INSERT ON {namespace}.* TO airbyte_user;
 GRANT SELECT ON {namespace}.* TO airbyte_user;
 GRANT CREATE DATABASE ON {namespace}.* TO airbyte_user;
 GRANT CREATE TABLE ON {namespace}.* TO airbyte_user;
+GRANT DROP TABLE ON {namespace}.* TO airbyte_user;
 ```
 
 Where `{namespace}` is the custom namespace configured for that connection.
