@@ -75,7 +75,13 @@ def test_should_retry(requests_mock, test_config, http_status, expected_response
     response_mock = create_requests_response(requests_mock, http_status, {"code": 1} if HTTPStatus.BAD_REQUEST else {})
     # Create a traditional HttpStream directly since all manifest streams are declarative
     from source_pinterest.streams import AdAccountValidationStream
-    stream = AdAccountValidationStream(test_config)
+    from unittest.mock import MagicMock
+    
+    # Add authenticator to config for stream instantiation
+    config_with_auth = dict(test_config)
+    config_with_auth["authenticator"] = MagicMock()
+    
+    stream = AdAccountValidationStream(config_with_auth)
     assert stream._http_client._error_handler.interpret_response(response_mock).response_action == expected_response_action
 
 
