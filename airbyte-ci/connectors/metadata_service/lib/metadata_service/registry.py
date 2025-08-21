@@ -6,9 +6,10 @@ import copy
 import json
 import logging
 import os
+import urllib.parse
 from collections import defaultdict
 from enum import Enum
-from typing import Union
+from typing import Optional, Union
 
 import semver
 import sentry_sdk
@@ -20,6 +21,7 @@ from metadata_service.constants import (
     ANALYTICS_BUCKET,
     ANALYTICS_FOLDER,
     METADATA_FOLDER,
+    PUBLIC_GCS_BASE_URL,
     PUBLISH_UPDATE_CHANNEL,
     REGISTRIES_FOLDER,
     VALID_REGISTRIES,
@@ -311,7 +313,7 @@ def _persist_registry(registry: ConnectorRegistryV0, registry_name: str, bucket:
     service_account_info = json.loads(gcs_creds)
     credentials = service_account.Credentials.from_service_account_info(service_account_info)
     client = storage.Client(credentials=credentials)
-    bucket = client.bucket("dev-airbyte-cloud-connector-metadata-service-2")
+    bucket = client.bucket("dev-airbyte-cloud-connector-metadata-service")
 
     registry_file_name = f"{registry_name}_registry.json"
     registry_file_path = f"{REGISTRIES_FOLDER}/{registry_file_name}"
