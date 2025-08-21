@@ -10,7 +10,7 @@ from orchestrator.models.metadata import LatestMetadataEntry
 
 GROUP_NAME = "connector_cdk_versions"
 
-BASE_URL = "https://storage.googleapis.com/dev-airbyte-cloud-connector-metadata-service/"
+BASE_URL = "https://storage.googleapis.com/dev-airbyte-cloud-connector-metadata-service-2/"
 DEPENDENCY_FOLDER = "connector_dependencies"
 DEPENDENCY_FILE = "dependencies.json"
 PACKAGE_NAME = "airbyte-cdk"
