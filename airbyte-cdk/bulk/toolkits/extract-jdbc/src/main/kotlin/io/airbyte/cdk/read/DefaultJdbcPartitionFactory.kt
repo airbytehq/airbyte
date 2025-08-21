@@ -10,7 +10,7 @@ import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.Field
-import io.airbyte.cdk.discover.FieldOrMetaField
+import io.airbyte.cdk.discover.DataOrMetaField
 import io.airbyte.cdk.output.CatalogValidationFailureHandler
 import io.airbyte.cdk.output.InvalidCursor
 import io.airbyte.cdk.output.InvalidPrimaryKey
@@ -151,7 +151,7 @@ class DefaultJdbcPartitionFactory(
             return null
         }
         val cursorLabel: String = cursors.keys.first()
-        val cursor: FieldOrMetaField? = stream.schema.find { it.id == cursorLabel }
+        val cursor: DataOrMetaField? = stream.schema.find { it.id == cursorLabel }
         if (cursor !is Field) {
             handler.accept(
                 InvalidCursor(stream.id, cursorLabel),

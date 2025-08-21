@@ -3,7 +3,7 @@ package io.airbyte.integrations.source.postgres.operations
 
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.discover.FieldOrMetaField
+import io.airbyte.cdk.discover.DataOrMetaField
 import io.airbyte.cdk.discover.JdbcAirbyteStreamFactory
 import io.airbyte.cdk.discover.MetaField
 import io.airbyte.cdk.read.Stream
@@ -16,7 +16,7 @@ import java.time.OffsetDateTime
 @Primary
 class PostgresSourceStreamFactory : JdbcAirbyteStreamFactory {
 
-    override val globalCursor: FieldOrMetaField = PostgresSourceCdcMetaFields.CDC_CURSOR
+    override val globalCursor: DataOrMetaField = PostgresSourceCdcMetaFields.CDC_CURSOR
 
     override val globalMetaFields: Set<MetaField> = emptySet() // TEMP
 

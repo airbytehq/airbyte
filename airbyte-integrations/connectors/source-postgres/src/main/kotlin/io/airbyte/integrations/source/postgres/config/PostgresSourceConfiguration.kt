@@ -24,7 +24,6 @@ import java.net.URLDecoder
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.time.Duration
-import java.util.*
 import org.postgresql.PGProperty
 
 private val log = KotlinLogging.logger {}
@@ -122,6 +121,8 @@ constructor(
         val sshOpts: SshConnectionOptions =
             SshConnectionOptions.fromAdditionalProperties(pojo.getAdditionalProperties())
 
+        // TODO: add SSL config to JDBC URL
+        // TODO: require SSL not disabled in cloud
         /*// Configure SSL encryption.
         if (
             pojo.getEncryptionValue() is EncryptionPreferred &&
@@ -153,7 +154,7 @@ constructor(
 
         // Build JDBC URL.
         val address = "%s:%d"
-        val jdbcUrlFmt = "jdbc:postgresql://$realHost:$realPort/$encodedDatabaseName?${PGProperty.CURRENT_SCHEMA}=public"
+        val jdbcUrlFmt = "jdbc:postgresql://%s:%d/$encodedDatabaseName?${PGProperty.CURRENT_SCHEMA}=public"
 
         // Internal configuration settings.
         val checkpointTargetInterval: Duration =
@@ -161,6 +162,8 @@ constructor(
         if (!checkpointTargetInterval.isPositive) {
             throw ConfigErrorException("Checkpoint Target Interval should be positive")
         }
+
+        // TODO: only use username from <username>@azure.com when checking privileges
 
         val maxDBConnections: Int? = pojo.max_db_connections
 
@@ -179,7 +182,7 @@ constructor(
             sshConnectionOptions = sshOpts,
             jdbcUrlFmt = jdbcUrlFmt,
             jdbcProperties = jdbcProperties,
-            namespaces = pojo.schemas?.toSet() ?: emptySet(),
+            namespaces = pojo.schemas?.toSet() ?: setOf("public"),
             incrementalConfiguration = incremental,
             maxConcurrency = maxConcurrency,
             checkpointTargetInterval = checkpointTargetInterval,
