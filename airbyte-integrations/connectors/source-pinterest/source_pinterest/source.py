@@ -82,7 +82,7 @@ class SourcePinterest(YamlDeclarativeSource):
                     # Re-raise non-authentication HTTP errors
                     raise
             except Exception as e:
-                # Re-raise any other exceptions (including our intentional AirbyteTracedException)
+                # Re-raise any other exceptions (including intentional AirbyteTracedException)
                 raise
 
         return config
