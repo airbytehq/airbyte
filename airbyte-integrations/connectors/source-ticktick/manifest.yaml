@@ -11,25 +11,47 @@ check:
 
 definitions:
   streams:
+    tasks:
+      type: DeclarativeStream
+      name: tasks
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
+        requester:
+          $ref: "#/definitions/tasks_requester"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - tasks
+          record_filter:
+            type: RecordFilter
+            condition: "{{ record  }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              stream:
+                $ref: "#/definitions/streams/projects"
+              parent_key: id
+              partition_field: parent_id
+      primary_key:
+        - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tasks"
     projects:
       type: DeclarativeStream
       name: projects
-      primary_key:
-        - id
       retriever:
         type: SimpleRetriever
+        decoder:
+          type: JsonDecoder
         requester:
           $ref: "#/definitions/base_requester"
-          path: /open/v1/project
-          http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -37,64 +59,37 @@ definitions:
             field_path: []
           record_filter:
             type: RecordFilter
-            condition: "{{ record.get('closed') is none }}"
-        decoder:
-          type: JsonDecoder
+            condition: "{{ not record.closed }}"
+          schema_normalization: Default
+      primary_key:
+        - id
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/projects"
-    tasks:
-      type: DeclarativeStream
-      name: tasks
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /open/v1/project/{{ stream_partition['parent_id'] }}/data
-          http_method: GET
-          error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 3
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: 5
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - tasks
-        partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: parent_id
-              stream:
-                $ref: "#/definitions/streams/projects"
-        decoder:
-          type: JsonDecoder
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/tasks"
   base_requester:
     type: HttpRequester
     url_base: https://api.ticktick.com
+    throttler:
+      type: RateLimiter
+      limit: 20
+      period_in_seconds: 60
     authenticator:
       type: OAuthAuthenticator
       scopes:
         - "tasks:"
         - read
       client_id: "{{ config[\"client_id\"] }}"
+      grant_type: client_credentials
       client_secret: "{{ config[\"client_secret\"] }}"
       access_token_value: "{{ config[\"client_access_token\"] }}"
-      grant_type: client_credentials
+    error_handler:
+      type: DefaultErrorHandler
+  tasks_requester:
+    type: HttpRequester
+    $ref: "#/definitions/base_requester"
+    path: /open/v1/project/{{ stream_partition['parent_id'] }}/data
+    http_method: GET
 
 streams:
   - $ref: "#/definitions/streams/projects"
@@ -102,6 +97,57 @@ streams:
 
 spec:
   type: Spec
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    oauth_config_specification:
+      complete_oauth_output_specification:
+        required:
+          - access_token
+        properties:
+          access_token:
+            type: string
+            path_in_connector_config:
+              - client_access_token
+      oauth_connector_input_specification:
+        scope: "tasks: read"
+        consent_url: >-
+          https://ticktick.com/oauth/authorize?scope={{scope_value |
+          urlEncode}}&client_id={{client_id_value}}&state={{state}}&redirect_uri={{redirect_uri_value}}&response_type=code
+        extract_output:
+          - access_token
+        access_token_url: https://ticktick.com/oauth/token
+        access_token_params:
+          code: "{{ auth_code_value }}"
+          scope: "{{ scope_value | urlEncode }}"
+          grant_type: authorization_code
+          redirect_uri: "{{ redirect_uri_value }}"
+        access_token_headers:
+          Content-Type: application/x-www-form-urlencoded
+          Authorization: >-
+            Basic {{ (client_id_value ~ ':' ~ client_secret_value) | b64encode
+            }}
+      complete_oauth_server_input_specification:
+        required:
+          - client_id
+          - client_secret
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        required:
+          - client_id
+          - client_secret
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+              - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+              - client_secret
   connection_specification:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -125,135 +171,38 @@ spec:
         title: Access token
         airbyte_secret: true
     additionalProperties: true
-  advanced_auth:
-    auth_flow_type: oauth2.0
-    oauth_config_specification:
-      oauth_connector_input_specification:
-        scope: "tasks: read"
-        consent_url: >-
-          https://ticktick.com/oauth/authorize?scope={{scope_value |
-          urlEncode}}&client_id={{client_id_value}}&state={{state}}&redirect_uri={{redirect_uri_value}}&response_type=code
-        access_token_url: https://ticktick.com/oauth/token
-        extract_output:
-          - access_token
-        access_token_headers:
-          Content-Type: application/x-www-form-urlencoded
-          Authorization: >-
-            Basic {{ (client_id_value ~ ':' ~ client_secret_value) | b64encode
-            }}
-        access_token_params:
-          code: "{{ auth_code_value }}"
-          scope: "{{ scope_value | urlEncode }}"
-          grant_type: authorization_code
-          redirect_uri: "{{ redirect_uri_value }}"
-      complete_oauth_output_specification:
-        required:
-          - access_token
-        properties:
-          access_token:
-            type: string
-            path_in_connector_config:
-              - client_access_token
-      complete_oauth_server_input_specification:
-        required:
-          - client_id
-          - client_secret
-        properties:
-          client_id:
-            type: string
-          client_secret:
-            type: string
-      complete_oauth_server_output_specification:
-        required:
-          - client_id
-          - client_secret
-        properties:
-          client_id:
-            type: string
-            path_in_connector_config:
-              - client_id
-          client_secret:
-            type: string
-            path_in_connector_config:
-              - client_secret
 
 metadata:
-  autoImportSchema:
-    projects: true
-    tasks: true
-  testedStreams:
-    projects:
-      hasRecords: true
-      streamHash: 1c4166208aed38ad48568e87bbab0fd1cb0c4d5e
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
-    tasks:
-      hasRecords: true
-      streamHash: e60b82300e96a25dfa56387eb86829b025d52d26
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
   assist: {}
+  testedStreams:
+    tasks:
+      hasRecords: false
+      streamHash: 1a027c8709d9e91d57a7af4cb1ee457208b5cb48
+      hasResponse: false
+      primaryKeysAreUnique: false
+      primaryKeysArePresent: false
+      responsesAreSuccessful: false
+    projects:
+      hasRecords: false
+      streamHash: 4bdbe4119e33f1b535cff3d333d34d0740ee2381
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: false
+  autoImportSchema:
+    tasks: true
+    projects: true
 
 schemas:
-  projects:
-    type: object
-    $schema: http://json-schema.org/schema#
-    additionalProperties: true
-    properties:
-      color:
-        type:
-          - string
-          - "null"
-      groupId:
-        type:
-          - string
-          - "null"
-      id:
-        type: string
-      kind:
-        type:
-          - string
-          - "null"
-      name:
-        type:
-          - string
-          - "null"
-      permission:
-        type:
-          - string
-          - "null"
-      sortOrder:
-        type:
-          - number
-          - "null"
-      viewMode:
-        type:
-          - string
-          - "null"
-    required:
-      - id
   tasks:
     type: object
     $schema: http://json-schema.org/schema#
-    additionalProperties: true
+    required:
+      - id
     properties:
-      columnId:
-        type:
-          - string
-          - "null"
-      content:
-        type:
-          - string
-          - "null"
+      id:
+        type: string
       desc:
-        type:
-          - string
-          - "null"
-      dueDate:
         type:
           - string
           - "null"
@@ -261,12 +210,18 @@ schemas:
         type:
           - string
           - "null"
-      id:
-        type: string
-      isAllDay:
+      kind:
         type:
-          - boolean
+          - string
           - "null"
+      tags:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
       items:
         type:
           - array
@@ -280,39 +235,59 @@ schemas:
               type:
                 - string
                 - "null"
-            isAllDay:
+            title:
               type:
-                - boolean
-                - "null"
-            sortOrder:
-              type:
-                - number
+                - string
                 - "null"
             status:
               type:
                 - number
                 - "null"
+            isAllDay:
+              type:
+                - boolean
+                - "null"
             timeZone:
               type:
                 - string
                 - "null"
-            title:
+            sortOrder:
               type:
-                - string
+                - number
                 - "null"
-      kind:
+      title:
         type:
           - string
+          - "null"
+      status:
+        type:
+          - number
+          - "null"
+      content:
+        type:
+          - string
+          - "null"
+      dueDate:
+        type:
+          - string
+          - "null"
+      columnId:
+        type:
+          - string
+          - "null"
+      isAllDay:
+        type:
+          - boolean
           - "null"
       priority:
         type:
           - number
           - "null"
-      projectId:
+      timeZone:
         type:
           - string
           - "null"
-      repeatFlag:
+      projectId:
         type:
           - string
           - "null"
@@ -324,25 +299,49 @@ schemas:
         type:
           - string
           - "null"
-      status:
+      repeatFlag:
+        type:
+          - string
+          - "null"
+    additionalProperties: true
+  projects:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - id
+    properties:
+      id:
+        type: string
+      kind:
+        type:
+          - string
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      color:
+        type:
+          - string
+          - "null"
+      closed:
+        type:
+          - boolean
+          - "null"
+      groupId:
+        type:
+          - string
+          - "null"
+      viewMode:
+        type:
+          - string
+          - "null"
+      sortOrder:
         type:
           - number
           - "null"
-      tags:
-        type:
-          - array
-          - "null"
-        items:
-          type:
-            - string
-            - "null"
-      timeZone:
+      permission:
         type:
           - string
           - "null"
-      title:
-        type:
-          - string
-          - "null"
-    required:
-      - id
+    additionalProperties: true
