@@ -238,5 +238,5 @@ class StdoutOutputConsumer(
 @Factory
 private class PrintStreamFactory {
 
-    @Singleton @Requires(notEnv = [Environment.TEST]) fun stdout(): PrintStream = System.out
+    @Singleton fun stdout(): PrintStream = System.out
 }
