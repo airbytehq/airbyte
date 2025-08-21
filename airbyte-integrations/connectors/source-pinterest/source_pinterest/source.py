@@ -71,11 +71,19 @@ class SourcePinterest(YamlDeclarativeSource):
                         internal_message="The provided ad_account_id does not exist.",
                         failure_type=FailureType.config_error,
                     )
-            except (requests.exceptions.HTTPError, AirbyteTracedException) as e:
-                # Skip account validation if authentication fails - let connection check handle it
-                # This allows integration tests with dummy credentials to proceed
-                logger.debug(f"Skipping account_id validation due to authentication error: {e}")
-                pass
+            except requests.exceptions.HTTPError as e:
+                # Only skip validation for authentication errors (401), re-raise config errors
+                if e.response is not None and e.response.status_code == 401:
+                    # Skip account validation if authentication fails - let connection check handle it
+                    # This allows integration tests with dummy credentials to proceed
+                    logger.debug(f"Skipping account_id validation due to authentication error: {e}")
+                    pass
+                else:
+                    # Re-raise non-authentication HTTP errors
+                    raise
+            except Exception as e:
+                # Re-raise any other exceptions (including our intentional AirbyteTracedException)
+                raise
 
         return config
 
