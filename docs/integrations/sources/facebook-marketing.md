@@ -219,18 +219,6 @@ To retrieve specific fields from Facebook Ads Insights combined with other break
       - `mixed`: Click-through actions are attributed to the time the ad was viewed (Jan 1st), and view-through actions are attributed to the time the action was taken (Jan 2nd).
 </FieldAnchor>
 
-   **Example Configuration for Aggregated Metrics:**
-   
-   To create a custom insight that matches Facebook UI totals, configure it with empty action breakdowns:
-   
-   - **Name**: `AggregatedInsights`
-   - **Level**: `ad`
-   - **Fields**: Select desired metrics (e.g., `spend`, `impressions`, `clicks`)
-   - **Breakdowns**: Leave empty or select specific breakdowns as needed
-   - **Action Breakdowns**: Leave empty to get aggregated action metrics
-   
-   This configuration will provide metrics that align with Facebook's default reporting interface.
-
 <FieldAnchor field="custom_insights.time_increment">
    7. (Optional) For **Time Increment**, you may provide a value in days by which to aggregate statistics. The sync will be chunked into intervals of this size. For example, if you set this value to 7, the sync will be chunked into 7-day intervals. The default value is 1 day.
 </FieldAnchor>
@@ -366,11 +354,8 @@ This response indicates that the Facebook Graph API requires you to reduce the f
 If your Ads Insights data doesn't match Facebook's UI, this is often due to action breakdowns segmenting the data differently than Facebook's default reporting view. To resolve this:
 
 1. **Set Action Breakdowns to Empty**: In the connector configuration, set "Action breakdowns for the Built-in Ads Insight stream" to an empty list (remove all values).
-2. **Verify Configuration**: Ensure both of these settings are configured:
-   - `default_ads_insights_action_breakdowns`: `[]` (empty list)
-   - `action_breakdowns_allow_empty`: `true`
-3. **Refresh Schema**: After updating the configuration, refresh your connection schema to apply the changes.
-4. **Re-sync Data**: Perform a full refresh sync to get aggregated metrics that typically match Facebook's default reporting view.
+2. **Refresh Schema**: After updating the configuration, refresh your connection schema to apply the changes.
+3. **Re-sync Data**: Perform a full refresh sync to get aggregated metrics that typically match Facebook's default reporting view.
 
 If the issue persists, verify you're using connector version 3.5.11 or later, which includes the fix for this issue.
 
