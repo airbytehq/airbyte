@@ -10,7 +10,9 @@ import requests
 from airbyte_cdk.sources.declarative.extractors.record_extractor import (
     RecordExtractor,
 )
-from airbyte_cdk.sources.declarative.requesters.request_options.request_options_provider import RequestOptionsProvider  # noqa: E501
+from airbyte_cdk.sources.declarative.requesters.request_options import (
+    request_options_provider,
+)
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
 from airbyte_cdk.sources.declarative.transformations.transformation import (
     RecordTransformation,
@@ -23,6 +25,9 @@ from airbyte_cdk.sources.declarative.types import (
 )
 
 from source_pinterest.utils import get_analytics_columns
+
+# Alias for shorter line length
+RequestOptionsProvider = request_options_provider.RequestOptionsProvider
 
 
 class AdAccountRecordExtractor(RecordExtractor):
