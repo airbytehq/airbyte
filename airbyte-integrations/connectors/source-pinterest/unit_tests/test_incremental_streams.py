@@ -66,8 +66,8 @@ def test_stream_checkpoint_interval(patch_incremental_base_class):
     ("http_status", "expected_response_action"),
     (
         (HTTPStatus.OK, ResponseAction.SUCCESS),
-        (HTTPStatus.BAD_REQUEST, ResponseAction.RETRY),
-        (HTTPStatus.TOO_MANY_REQUESTS, ResponseAction.RETRY),
+        (HTTPStatus.BAD_REQUEST, ResponseAction.FAIL),  # AdAccountValidationStream uses HttpStatusErrorHandler
+        (HTTPStatus.TOO_MANY_REQUESTS, ResponseAction.RATE_LIMITED),  # HttpStatusErrorHandler returns RATE_LIMITED
         (HTTPStatus.INTERNAL_SERVER_ERROR, ResponseAction.RETRY),
     ),
 )
