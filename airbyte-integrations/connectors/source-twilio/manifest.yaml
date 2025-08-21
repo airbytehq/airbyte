@@ -22,7 +22,7 @@ definitions:
         - type: ExponentialBackoffStrategy
       response_filters:
         - type: HttpResponseFilter
-          action: RETRY
+          action: RATE_LIMITED
           http_codes:
             - 429
           error_message: >-
