@@ -103,7 +103,7 @@ class PinterestReportTransformation(RecordTransformation):
     Transforms Pinterest Analytics Report records to add metadata and normalize fields.
     """
     
-    def __init__(self, config: Config, level: str, **kwargs):
+    def __init__(self, level: str, config: Config = None, **kwargs):
         super().__init__(config, **kwargs)
         self.level = level
     
@@ -142,7 +142,7 @@ class PinterestReportRetriever(Retriever):
     3. Download the completed report data
     """
     
-    def __init__(self, config: Config, report_level: str = "CAMPAIGN", **kwargs):
+    def __init__(self, report_level: str = "CAMPAIGN", config: Config = None, **kwargs):
         super().__init__(config, **kwargs)
         self.report_level = report_level
         self.base_url = "https://api.pinterest.com/v5/"
@@ -182,7 +182,7 @@ class PinterestReportRetriever(Retriever):
         
         # Use authenticator from config
         headers = {}
-        if hasattr(self.config, "get") and "authenticator" in self.config:
+        if self.config and isinstance(self.config, dict) and "authenticator" in self.config:
             auth_headers = self.config["authenticator"].get_auth_header()
             headers.update(auth_headers)
             
@@ -199,7 +199,7 @@ class PinterestReportRetriever(Retriever):
         
         # Use authenticator from config
         headers = {}
-        if hasattr(self.config, "get") and "authenticator" in self.config:
+        if self.config and isinstance(self.config, dict) and "authenticator" in self.config:
             auth_headers = self.config["authenticator"].get_auth_header()
             headers.update(auth_headers)
         
