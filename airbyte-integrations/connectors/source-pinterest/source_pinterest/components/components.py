@@ -7,24 +7,36 @@ from typing import Any, Dict, Iterable, List, Mapping
 
 import requests
 
-from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
-from airbyte_cdk.sources.declarative.requesters.request_options.request_options_provider import (
-    RequestOptionsProvider,
+from airbyte_cdk.sources.declarative.extractors.record_extractor import (
+    RecordExtractor,
 )
+# Import with shorter line length
+from airbyte_cdk.sources.declarative.requesters.request_options import (
+    request_options_provider,
+)
+
+RequestOptionsProvider = request_options_provider.RequestOptionsProvider
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
-from airbyte_cdk.sources.declarative.transformations.transformation import RecordTransformation
-from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
+from airbyte_cdk.sources.declarative.transformations.transformation import (
+    RecordTransformation,
+)
+from airbyte_cdk.sources.declarative.types import (
+    Config,
+    Record,
+    StreamSlice,
+    StreamState,
+)
 
 from source_pinterest.utils import get_analytics_columns
 
 
 class AdAccountRecordExtractor(RecordExtractor):
     """
-    Custom extractor for handling different response formats from the Ad Accounts endpoint.
+    Custom extractor for handling different Ad Accounts endpoint response formats.
 
-    This extractor is necessary to handle cases where an `account_id` is present in the request.
-    - When querying all ad accounts, the response contains an "items" key with a list of accounts.
-    - When querying a specific ad account, the response returns a single dictionary representing that account.
+    This extractor handles cases where an `account_id` is present in the request.
+    - When querying all ad accounts, response contains an "items" key with accounts.
+    - When querying a specific ad account, response returns a single dictionary.
     """
 
     def extract_records(self, response: requests.Response) -> List[Record]:
@@ -113,7 +125,11 @@ class PinterestReportTransformation(RecordTransformation):
         self.config = config
 
     def transform(
-        self, record: Record, config: Config, stream_slice: StreamSlice, stream_state: StreamState
+        self,
+        record: Record,
+        config: Config,
+        stream_slice: StreamSlice,
+        stream_state: StreamState,
     ) -> Record:
         """Transform individual report records."""
         if not isinstance(record, dict):
@@ -139,7 +155,7 @@ class PinterestReportTransformation(RecordTransformation):
 
 class PinterestReportRetriever(Retriever):
     """
-    Custom retriever for Pinterest Analytics Reports that handles async report generation.
+    Custom retriever for Pinterest Analytics Reports with async generation.
 
     This retriever implements the async flow:
     1. POST to create a report
