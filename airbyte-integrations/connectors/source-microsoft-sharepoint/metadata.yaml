@@ -1,7 +1,7 @@
 data:
   ab_internal:
-    ql: 400
-    sl: 300
+    ql: 100
+    sl: 100
   allowedHosts:
     hosts:
       - graph.microsoft.com
@@ -20,14 +20,14 @@ data:
   connectorSubtype: file
   connectorType: source
   definitionId: 59353119-f0f2-4e5a-a8ba-15d887bc34f6
-  dockerImageTag: 0.10.3
+  dockerImageTag: 0.10.4
   dockerRepository: airbyte/source-microsoft-sharepoint
   githubIssueLabel: source-microsoft-sharepoint
   icon: microsoft-sharepoint.svg
   license: ELv2
   maxSecondsBetweenMessages: 5400
   name: Microsoft SharePoint
-  supportLevel: certified
+  supportLevel: community
   supportsFileTransfer: true
   releaseStage: alpha
   releases:
