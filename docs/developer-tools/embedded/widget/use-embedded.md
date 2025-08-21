@@ -12,7 +12,7 @@ Once a user record is created, the customer can tap Connect Data to configure wh
 
 ![Embedded Sample Web app connect screen.](./assets/embedded-webapp-connect.png)
 
-This will render the Airbyte Embedded widget. This widget displays a list of approved connectors, as defined in the AI data hub by the Airbyte Embedded operator.
+This will render the Airbyte Embedded widget. This widget displays a list of available connectors.
 
 ![Embedded Sample Web app widget.](./assets/embedded-webapp-widget.png)
 
@@ -20,7 +20,7 @@ Customers can select a source and input their configuration. Upon save, a custom
 
 ## External User Id
 
-The sample application users the customer's email as the unique external id to define a workspace within Airbyte Embedded. For production usage, it is recommend to use a UUID or identifier specific to your business.  
+The sample application uses the customer's email as the unique external id to define a workspace within Airbyte Embedded. For production usage, it is recommended to use a UUID or identifier specific to your business.  
 
 If you need to change this logic, pass in a different id to the server token endpoint `/server/server.js` or add custom logic into `/src/airbyteService.js`
 
@@ -32,7 +32,7 @@ Line 108: `api.generateWidgetToken(req.user.email)`
 
 ## Versioning the Widget
 
-Depending on your need, you may version the widget you use to avoid introducing any unexpected changes into your app. As a best practice, it is recommend to pin to minor versions:
+Depending on your needs, you may version the widget you use to avoid introducing any unexpected changes into your app. As a best practice, it is recommended to pin to minor versions:
 
 In your component:
 
@@ -62,6 +62,6 @@ Should you prefer to always pull the latest version, omit the version number ent
 
 ```javascript
 
-<script src="https://cdn.jsdelivr.net/npm/@airbyte-embedded/airbyte-embedded-widget@0.4.2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@airbyte-embedded/airbyte-embedded-widget"></script>
 
 ```
