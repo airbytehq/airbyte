@@ -70,6 +70,7 @@ class TwilioStateMigration(StateMigration):
         ]
       }
     """
+
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         for state in stream_state.get("states", []):
             state["partition"]["parent_slice"] = {}
@@ -123,6 +124,7 @@ class TwilioUsageRecordsStateMigration(StateMigration):
       ]
     }
     """
+
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         new_state = {"states": []}
         for state in stream_state.get("states", []):
@@ -176,6 +178,7 @@ class TwilioMessageMediaStateMigration(StateMigration):
         ]
       }
     """
+
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         new_state = {"states": []}
         for state in stream_state.get("states", []):
