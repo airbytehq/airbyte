@@ -311,7 +311,7 @@ def _persist_registry(registry: ConnectorRegistryV0, registry_name: str, bucket:
     service_account_info = json.loads(gcs_creds)
     credentials = service_account.Credentials.from_service_account_info(service_account_info)
     client = storage.Client(credentials=credentials)
-    bucket = client.bucket("dev-airbyte-cloud-connector-metadata-service2")
+    bucket = client.bucket("dev-airbyte-cloud-connector-metadata-service-2")
 
     registry_file_name = f"{registry_name}_registry.json"
     registry_file_path = f"{REGISTRIES_FOLDER}/{registry_file_name}"
