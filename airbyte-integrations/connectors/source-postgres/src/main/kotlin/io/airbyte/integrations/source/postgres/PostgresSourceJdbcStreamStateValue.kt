@@ -52,6 +52,7 @@ data class PostgresSourceJdbcStreamStateValue(
             Jsons.valueToTree(PostgresSourceJdbcStreamStateValue(
                 ctid = ctidCheckpoint.asText(),
                 cursors = mapOf(cursor.id to cursorCheckpoint),
+                stateType = StateType.CTID_BASED.serialized,
             ))
     }
 }
