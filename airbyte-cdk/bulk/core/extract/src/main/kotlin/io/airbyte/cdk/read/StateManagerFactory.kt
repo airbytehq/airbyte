@@ -15,7 +15,7 @@ import io.airbyte.cdk.data.AirbyteSchemaType
 import io.airbyte.cdk.data.ArrayAirbyteSchemaType
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.discover.Field
-import io.airbyte.cdk.discover.FieldOrMetaField
+import io.airbyte.cdk.discover.DataOrMetaField
 import io.airbyte.cdk.discover.MetaField
 import io.airbyte.cdk.discover.MetaFieldDecorator
 import io.airbyte.cdk.discover.MetadataQuerier
@@ -220,7 +220,7 @@ class StateManagerFactory(
             return pk
         }
 
-        fun cursorOrNull(cursorColumnIDComponents: List<String>): FieldOrMetaField? {
+        fun cursorOrNull(cursorColumnIDComponents: List<String>): DataOrMetaField? {
             if (cursorColumnIDComponents.isEmpty()) {
                 return null
             }
@@ -232,7 +232,7 @@ class StateManagerFactory(
         }
         val configuredPrimaryKey: List<Field>? =
             configuredStream.primaryKey?.asSequence()?.let { pkOrNull(it.toList()) }
-        val configuredCursor: FieldOrMetaField? =
+        val configuredCursor: DataOrMetaField? =
             configuredStream.cursorField?.asSequence()?.let { cursorOrNull(it.toList()) }
         val configuredSyncMode: ConfiguredSyncMode =
             when (configuredStream.syncMode) {
