@@ -1,5 +1,5 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
-package io.airbyte.integrations.source.mysql
+package io.airbyte.integrations.source.datagen
 
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.StreamIdentifier
@@ -224,9 +224,9 @@ class DevDataGenSourceMetadataQuerier(
         val selectQueryGenerator: SelectQueryGenerator,
         val fieldTypeMapper: JdbcMetadataQuerier.FieldTypeMapper,
         val checkQueries: JdbcCheckQueries,
-    ) : MetadataQuerier.Factory<MySqlSourceConfiguration> {
+    ) : MetadataQuerier.Factory<DataGenSourceConfiguration> {
         /** The [SourceConfiguration] is deliberately not injected in order to support tests. */
-        override fun session(config: MySqlSourceConfiguration): MetadataQuerier {
+        override fun session(config: DataGenSourceConfiguration): MetadataQuerier {
             val jdbcConnectionFactory = JdbcConnectionFactory(config)
             val base =
                 JdbcMetadataQuerier(
@@ -237,7 +237,7 @@ class DevDataGenSourceMetadataQuerier(
                     checkQueries,
                     jdbcConnectionFactory,
                 )
-            return MySqlSourceMetadataQuerier(base)
+            return DataGenSourceMetadataQuerier(base)
         }
     }
 }
