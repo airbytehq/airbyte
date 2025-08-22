@@ -286,7 +286,11 @@ class PinterestAnalyticsErrorHandler(ErrorHandler):
             return ErrorResolution(
                 ResponseAction.RETRY,
                 FailureType.transient_error,
-                f"Analytics API returns bad request error when under load. This error should be retried after a second. If this error message appears, it means the Analytics API did not recover or there might be a bigger issue so please contact the support team.",
+                (
+                    "Analytics API returns bad request error when under load. This error should be retried "
+                    "after a second. If this error message appears, it means the Analytics API did not "
+                    "recover or there might be a bigger issue so please contact the support team."
+                ),
             )
 
         return self._decorated.interpret_response(response)

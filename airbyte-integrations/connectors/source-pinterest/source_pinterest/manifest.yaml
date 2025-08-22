@@ -3063,7 +3063,7 @@ spec:
         type: string
         title: "Start Date"
         description: >-
-          A date in the format YYYY-MM-DD. If you have not set a date, it would be 
+          A date in the format YYYY-MM-DD. If you have not set a date, it would be
           defaulted to latest allowed date by api (89 days from today).
         format: date
         pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
@@ -3325,7 +3325,7 @@ spec:
         type: string
         title: "Account ID"
         description: >-
-          The Pinterest account ID you want to fetch data for. This ID must be 
+          The Pinterest account ID you want to fetch data for. This ID must be
           provided to filter the data for a specific account.
         examples: ["1234567890"]
   advanced_auth:
