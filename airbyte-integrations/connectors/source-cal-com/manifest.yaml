@@ -847,6 +847,35 @@ schemas:
         type:
           - string
           - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      rescheduledToUid:
+        type:
+          - string
+          - "null"
+      absentHost:
+        type:
+          - boolean
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      cancelledByEmail:
+        type:
+          - string
+          - "null"
+      cancellationReason:
+        type:
+          - string
+          - "null"
+      rescheduledByEmail:
+        type:
+          - string
+          - "null"
     required:
       - id
   conferencing:

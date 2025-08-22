@@ -53,4 +53,24 @@ class DefaultTempTableNameGeneratorTest {
             tempTableName,
         )
     }
+
+    @Test
+    fun testGenerateWithoutNamespace() {
+        val generator = DefaultTempTableNameGenerator()
+        val tempTableName =
+            generator.generate(
+                TableName(
+                    namespace = "a",
+                    name = "1",
+                )
+            )
+        // name and namespace are unchanged
+        // sha256(a_raw__stream_1_airbyte_tmp) is
+        //   b0b9f815c588c797c6616a082f6f2c5862bea54fff8b8c914e3310f4bba57052,
+        //   of which we take the first 32 chars (b0b9f815c588c797c6616a082f6f2c58)
+        assertEquals(
+            TableName("a", "a1b0b9f815c588c797c6616a082f6f2c58"),
+            tempTableName,
+        )
+    }
 }

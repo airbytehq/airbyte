@@ -23,6 +23,7 @@ import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfigurati
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfigurationProvider
 import io.airbyte.cdk.load.command.s3.S3BucketConfiguration
 import io.airbyte.cdk.load.command.s3.S3BucketConfigurationProvider
+import io.airbyte.cdk.load.data.Transformations
 import io.airbyte.cdk.load.file.GZIPProcessor
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
 import io.airbyte.integrations.destination.bigquery.spec.GcsStagingConfiguration
@@ -41,7 +42,7 @@ data class BigqueryBulkLoadConfiguration(
     ObjectStorageCompressionConfigurationProvider<BufferedOutputStream> {
     override val objectStoragePathConfiguration: ObjectStoragePathConfiguration
     override val objectStorageFormatConfiguration: ObjectStorageFormatConfiguration =
-        CSVFormatConfiguration()
+        CSVFormatConfiguration(rootLevelFlattening = !bigQueryConfiguration.legacyRawTablesOnly)
     override val objectStorageUploadConfiguration: ObjectStorageUploadConfiguration =
         ObjectStorageUploadConfiguration()
     override val s3BucketConfiguration: S3BucketConfiguration
@@ -75,6 +76,7 @@ data class BigqueryBulkLoadConfiguration(
                 pathPattern =
                     "\${NAMESPACE}/\${STREAM_NAME}/\${YEAR}/\${MONTH}/\${DAY}/\${HOUR}/\${UUID}",
                 fileNamePattern = "{date}_{timestamp}_{part_number}{format_extension}",
+                resolveNamesMethod = { Transformations.toAlphanumericAndUnderscore(it) }
             )
     }
 }

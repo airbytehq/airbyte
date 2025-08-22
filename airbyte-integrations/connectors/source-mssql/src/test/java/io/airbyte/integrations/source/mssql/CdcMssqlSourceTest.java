@@ -47,19 +47,8 @@ import io.airbyte.integrations.source.mssql.MsSQLTestDatabase.ContainerModifier;
 import io.airbyte.integrations.source.mssql.cdc.MssqlDebeziumStateUtil;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
-import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.v0.AirbyteGlobalState;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
-import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.*;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
-import io.airbyte.protocol.models.v0.AirbyteStream;
-import io.airbyte.protocol.models.v0.AirbyteStreamState;
-import io.airbyte.protocol.models.v0.CatalogHelpers;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.v0.StreamDescriptor;
-import io.airbyte.protocol.models.v0.SyncMode;
 import io.debezium.connector.sqlserver.Lsn;
 import java.sql.SQLException;
 import java.time.Duration;
@@ -92,6 +81,80 @@ public class CdcMssqlSourceTest extends CdcSourceTest<MssqlSource, MsSQLTestData
 
   protected final String testUserName() {
     return testdb.withNamespace(TEST_USER_NAME_PREFIX);
+  }
+
+  @Override
+  protected AirbyteCatalog expectedCatalogForDiscover() {
+    final String COL_ID = "id";
+    final String COL_MAKE_ID = "make_id";
+    final String COL_MODEL = "model";
+    final String MODELS_STREAM_NAME_2 = "models_stream_2";
+    final String MODELS_STREAM_NAME = "models";
+
+    AirbyteCatalog expectedCatalog = new AirbyteCatalog()
+        .withStreams(
+            java.util.List.of(
+                CatalogHelpers.createAirbyteStream(
+                    MODELS_STREAM_NAME,
+                    modelsSchema(),
+                    Field.of(COL_ID, JsonSchemaType.INTEGER),
+                    Field.of(COL_MAKE_ID, JsonSchemaType.INTEGER),
+                    Field.of(COL_MODEL, JsonSchemaType.STRING))
+                    .withSupportedSyncModes(
+                        Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+                    .withSourceDefinedPrimaryKey(
+                        java.util.List.of(java.util.List.of(COL_ID)))
+                    .withIsResumable(true)));
+
+    Map<String, String> columns = ImmutableMap.of(
+        COL_ID, "INTEGER",
+        COL_MAKE_ID, "INTEGER",
+        COL_MODEL, "VARCHAR(200)");
+    testdb.with(
+        createTableSqlFmt(),
+        modelsSchema(),
+        MODELS_STREAM_NAME_2,
+        columnClause(columns, Optional.empty()));
+
+    List<AirbyteStream> streams = new ArrayList<>(expectedCatalog.getStreams());
+    // stream with PK
+    streams.get(0).setSourceDefinedCursor(true);
+    streams.get(0).setIsResumable(true);
+    addCdcMetadataColumns(streams.get(0));
+    addCdcDefaultCursorField(streams.get(0));
+
+    AirbyteStream streamWithoutPK = CatalogHelpers.createAirbyteStream(
+        MODELS_STREAM_NAME_2,
+        modelsSchema(),
+        Field.of(COL_ID, JsonSchemaType.INTEGER),
+        Field.of(COL_MAKE_ID, JsonSchemaType.INTEGER),
+        Field.of(COL_MODEL, JsonSchemaType.STRING));
+    streamWithoutPK.setSourceDefinedPrimaryKey(Collections.emptyList());
+    streamWithoutPK.setSupportedSyncModes(java.util.List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
+    streamWithoutPK.setSourceDefinedCursor(true);
+    addCdcDefaultCursorField(streamWithoutPK);
+    addCdcMetadataColumns(streamWithoutPK);
+    addIsResumableFlagForNonPkTable(streamWithoutPK);
+
+    AirbyteStream randomStream = CatalogHelpers.createAirbyteStream(
+        RANDOM_TABLE_NAME,
+        randomSchema(),
+        Field.of(COL_ID + "_random", JsonSchemaType.INTEGER),
+        Field.of(COL_MAKE_ID + "_random", JsonSchemaType.INTEGER),
+        Field.of(COL_MODEL + "_random", JsonSchemaType.STRING))
+        .withSourceDefinedCursor(true)
+        .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+        .withSourceDefinedPrimaryKey(
+            java.util.List.of(java.util.List.of(COL_ID + "_random")))
+        .withIsResumable(true);
+
+    addCdcDefaultCursorField(randomStream);
+    addCdcMetadataColumns(randomStream);
+
+    streams.add(streamWithoutPK);
+    streams.add(randomStream);
+    expectedCatalog.withStreams(streams);
+    return expectedCatalog;
   }
 
   @Override

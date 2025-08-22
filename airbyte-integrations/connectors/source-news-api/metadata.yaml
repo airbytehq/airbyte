@@ -20,7 +20,7 @@ data:
   dockerRepository: airbyte/source-news-api
   githubIssueLabel: source-news-api
   icon: newsapi.svg
-  license: MIT
+  license: ELv2
   name: News Api
   releaseDate: 2022-10-21
   releaseStage: alpha

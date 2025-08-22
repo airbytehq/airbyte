@@ -36,9 +36,7 @@ class AirbyteTypeToJsonSchema {
                     val required = objNode.putArray("required")
                     airbyteType.required.forEach { required.add(it) }
                 }
-                if (airbyteType.additionalProperties != null) {
-                    objNode.put("additionalProperties", airbyteType.additionalProperties)
-                }
+                objNode.put("additionalProperties", airbyteType.additionalProperties)
                 objNode
             }
             is ObjectTypeWithoutSchema -> ofType("object")

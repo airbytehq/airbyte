@@ -78,7 +78,7 @@ allprojects {
             jvmTarget = JvmTarget.JVM_21
             languageVersion = KotlinVersion.KOTLIN_1_9
             allWarningsAsErrors = isInCi()
-            freeCompilerArgs = ["-Xjvm-default=all"]
+            freeCompilerArgs = ["-Xjvm-default=all"] + getKotlinCompilerArgs()
         }
         dependsOn {
             tasks.matching { it.name == 'generate' }
@@ -89,7 +89,7 @@ allprojects {
             jvmTarget = JvmTarget.JVM_21
             languageVersion = KotlinVersion.KOTLIN_1_9
             allWarningsAsErrors = isInCi()
-            freeCompilerArgs = ["-Xjvm-default=all"]
+            freeCompilerArgs = ["-Xjvm-default=all"] + getKotlinCompilerArgs()
         }
         dependsOn {
             tasks.matching { it.name == 'generate' }
@@ -100,7 +100,7 @@ allprojects {
             jvmTarget = JvmTarget.JVM_21
             languageVersion = KotlinVersion.KOTLIN_1_9
             allWarningsAsErrors = isInCi()
-            freeCompilerArgs = ["-Xjvm-default=all"]
+            freeCompilerArgs = ["-Xjvm-default=all"] + getKotlinCompilerArgs()
         }
         dependsOn {
             tasks.matching { it.name == 'generate' }
@@ -246,5 +246,13 @@ static def getJavaCompilerArgs() {
         return ["-Werror"]
     } else {
         return []
+    }
+}
+
+static def getKotlinCompilerArgs() {
+    if (isInCi()) {
+        return []
+    } else {
+        return ["-Xdebug"]
     }
 }

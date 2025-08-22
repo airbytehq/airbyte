@@ -18,7 +18,7 @@ data:
   dockerRepository: airbyte/source-dixa
   githubIssueLabel: source-dixa
   icon: dixa.svg
-  license: MIT
+  license: ELv2
   name: Dixa
   releaseDate: 2021-07-07
   releaseStage: alpha

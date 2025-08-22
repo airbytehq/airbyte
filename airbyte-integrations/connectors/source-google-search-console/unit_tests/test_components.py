@@ -1,13 +1,6 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
 import pytest
-from source_google_search_console.components import (
-    CustomReportExtractDimensionsFromKeys,
-    CustomReportSchemaLoader,
-    NestedSubstreamStateMigration,
-)
-
-from airbyte_cdk.sources.types import Record
 
 
 @pytest.mark.parametrize(
@@ -53,8 +46,8 @@ from airbyte_cdk.sources.types import Record
         pytest.param({}, False, None, id="test_do_not_migrate_empty_state"),
     ],
 )
-def test_nested_substream(stream_state, expected_should_migrate, expected_migrated_state):
-    component = NestedSubstreamStateMigration()
+def test_nested_substream(stream_state, expected_should_migrate, expected_migrated_state, components_module):
+    component = components_module.NestedSubstreamStateMigration()
 
     should_migrate = component.should_migrate(stream_state=stream_state)
     assert should_migrate == expected_should_migrate
@@ -64,7 +57,7 @@ def test_nested_substream(stream_state, expected_should_migrate, expected_migrat
         assert migrated_state == expected_migrated_state
 
 
-def test_custom_report_extract_dimensions_from_keys():
+def test_custom_report_extract_dimensions_from_keys(components_module):
     expected_record = {
         "clicks": 0,
         "impressions": 1,
@@ -77,7 +70,7 @@ def test_custom_report_extract_dimensions_from_keys():
         "device": "desktop",
     }
 
-    component = CustomReportExtractDimensionsFromKeys(dimensions=["date", "country", "device"])
+    component = components_module.CustomReportExtractDimensionsFromKeys(dimensions=["date", "country", "device"])
 
     record = {
         "clicks": 0,
@@ -93,7 +86,7 @@ def test_custom_report_extract_dimensions_from_keys():
     assert record == expected_record
 
 
-def test_custom_report_schema_loader():
+def test_custom_report_schema_loader(components_module):
     expected_schema = {
         "$schema": "https://json-schema.org/draft-07/schema#",
         "type": ["null", "object"],
@@ -113,7 +106,7 @@ def test_custom_report_schema_loader():
         },
     }
 
-    schema_loader = CustomReportSchemaLoader(dimensions=["date", "country", "device", "page", "query"])
+    schema_loader = components_module.CustomReportSchemaLoader(dimensions=["date", "country", "device", "page", "query"])
 
     actual_schema = schema_loader.get_json_schema()
 

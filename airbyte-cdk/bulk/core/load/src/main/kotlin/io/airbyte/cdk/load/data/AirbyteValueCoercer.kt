@@ -25,7 +25,11 @@ import java.time.format.DateTimeFormatter
  * common-sense conversions among numeric types, as well as upcasting any value to StringValue.
  */
 object AirbyteValueCoercer {
-    fun coerce(value: AirbyteValue, type: AirbyteType): AirbyteValue? {
+    fun coerce(
+        value: AirbyteValue,
+        type: AirbyteType,
+        respectLegacyUnions: Boolean = false
+    ): AirbyteValue? {
         // Don't modify nulls.
         if (value == NullValue) {
             return NullValue
@@ -46,9 +50,16 @@ object AirbyteValueCoercer {
                 is ObjectType,
                 ObjectTypeWithEmptySchema,
                 ObjectTypeWithoutSchema -> coerceObject(value)
-
-                // Don't touch unions, just pass it through
-                is UnionType -> value
+                is UnionType -> {
+                    if (respectLegacyUnions && type.isLegacyUnion) {
+                        // If we care about legacy unions, and this is a legacy union,
+                        // do the legacy union thing.
+                        coerce(value, type.chooseType(), respectLegacyUnions = true)
+                    } else {
+                        // Don't touch non-legacy unions, just pass it through
+                        value
+                    }
+                }
                 // Similarly, if we don't know what type it's supposed to be,
                 // leave it unchanged.
                 is UnknownType -> value

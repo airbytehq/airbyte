@@ -60,15 +60,14 @@ class DiscoverOperation<T : ConfigurationSpecification, C : DestinationConfigura
         } catch (t: Throwable) {
             logger.warn(t) { "Caught throwable during DISCOVER" }
             handleException(t)
+            throw t
         } finally {
             destinationDiscoverer.cleanup(config)
         }
     }
 
     private fun handleException(t: Throwable) {
-        val (traceMessage, statusMessage) = exceptionHandler.handleCheckFailure(t)
-        outputConsumer.accept(traceMessage)
-        outputConsumer.accept(statusMessage)
+        outputConsumer.accept(exceptionHandler.handle(t))
     }
 
     private fun DestinationDiscoverCatalog.toProtocol(): ProtocolDestinationCatalog =

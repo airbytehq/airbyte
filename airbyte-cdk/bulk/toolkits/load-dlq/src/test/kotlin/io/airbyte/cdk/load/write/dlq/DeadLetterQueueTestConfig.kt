@@ -4,13 +4,11 @@
 
 package io.airbyte.cdk.load.write.dlq
 
-import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
-import io.airbyte.cdk.load.command.dlq.DisabledObjectStorageSpec
+import io.airbyte.cdk.load.command.dlq.ConfigurationSpecificationWithDlq
 import io.airbyte.cdk.load.command.dlq.ObjectStorageConfig
 import io.airbyte.cdk.load.command.dlq.ObjectStorageConfigProvider
-import io.airbyte.cdk.load.command.dlq.ObjectStorageSpec
 import io.airbyte.cdk.load.command.dlq.toObjectStorageConfig
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.StreamKey
@@ -44,10 +42,7 @@ class DeadLetterQueueTestLoader : DlqLoader<DeadLetterQueueTestAggregator> {
     }
 }
 
-@Singleton
-class DeadLetterQueueTestSpecification : ConfigurationSpecification() {
-    val objectStorageConfig: ObjectStorageSpec = DisabledObjectStorageSpec()
-}
+@Singleton class DeadLetterQueueTestSpecification : ConfigurationSpecificationWithDlq()
 
 @Singleton
 class DeadLetterQueueTestConfigurationFactory :

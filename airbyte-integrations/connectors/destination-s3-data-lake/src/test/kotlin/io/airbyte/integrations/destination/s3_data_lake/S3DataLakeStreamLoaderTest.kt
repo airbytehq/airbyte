@@ -148,7 +148,7 @@ internal class S3DataLakeStreamLoaderTest {
         }
         val icebergUtil: IcebergUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
-            every { createTable(any(), any(), any(), any()) } returns table
+            every { createTable(any(), any(), any()) } returns table
             every { toIcebergSchema(any()) } answers
                 {
                     stream.schema.withAirbyteMeta(true).toIcebergSchema(emptyList())
@@ -238,7 +238,9 @@ internal class S3DataLakeStreamLoaderTest {
         every { table.refresh() } just runs
         every { table.manageSnapshots().createBranch(any()).commit() } throws
             IllegalArgumentException("branch already exists")
-        every { table.manageSnapshots().fastForwardBranch(any(), any()).commit() } just runs
+        every {
+            table.manageSnapshots().replaceBranch("main", DEFAULT_STAGING_BRANCH).commit()
+        } just runs
         every { table.newScan().planFiles() } returns CloseableIterable.empty()
         val s3DataLakeUtil: S3DataLakeUtil = mockk {
             every { createNamespaceWithGlueHandling(any(), any()) } just runs
@@ -246,13 +248,12 @@ internal class S3DataLakeStreamLoaderTest {
         }
         val icebergUtil: IcebergUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
-            every { createTable(any(), any(), any(), any()) } returns table
+            every { createTable(any(), any(), any()) } returns table
             every { toIcebergSchema(any()) } answers
                 {
                     stream.schema.withAirbyteMeta(true).toIcebergSchema(emptyList())
                 }
-            every { constructGenerationIdSuffix(any() as Long) } returns ""
-            every { assertGenerationIdSuffixIsOfValidFormat(any()) } just runs
+            every { constructGenerationIdSuffix(any<DestinationStream>()) } returns ""
         }
         val streamLoader =
             S3DataLakeStreamLoader(
@@ -390,7 +391,9 @@ internal class S3DataLakeStreamLoaderTest {
         every { updateSchema.apply() } returns icebergSchema
         every { table.refresh() } just runs
         every { table.manageSnapshots().createBranch(any()).commit() } just runs
-        every { table.manageSnapshots().fastForwardBranch(any(), any()).commit() } just runs
+        every {
+            table.manageSnapshots().replaceBranch("main", DEFAULT_STAGING_BRANCH).commit()
+        } just runs
         every { table.newScan().planFiles() } returns CloseableIterable.empty()
         val s3DataLakeUtil: S3DataLakeUtil = mockk {
             every { createNamespaceWithGlueHandling(any(), any()) } just runs
@@ -398,13 +401,12 @@ internal class S3DataLakeStreamLoaderTest {
         }
         val icebergUtil: IcebergUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
-            every { createTable(any(), any(), any(), any()) } returns table
+            every { createTable(any(), any(), any()) } returns table
             every { toIcebergSchema(any()) } answers
                 {
                     stream.schema.withAirbyteMeta(true).toIcebergSchema(listOf(primaryKeys))
                 }
-            every { constructGenerationIdSuffix(any() as Long) } returns ""
-            every { assertGenerationIdSuffixIsOfValidFormat(any()) } just runs
+            every { constructGenerationIdSuffix(any<DestinationStream>()) } returns ""
         }
         val streamLoader =
             S3DataLakeStreamLoader(

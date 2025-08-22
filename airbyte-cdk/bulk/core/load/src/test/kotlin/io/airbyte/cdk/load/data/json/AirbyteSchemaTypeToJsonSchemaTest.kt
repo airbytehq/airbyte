@@ -107,7 +107,8 @@ class AirbyteSchemaTypeToJsonSchemaTest {
                 "city": {
                   "type": "string"
                 }
-              }
+              },
+              "additionalProperties": true
             },
             "combined_denormalized": {
               "type": "object",
@@ -115,7 +116,8 @@ class AirbyteSchemaTypeToJsonSchemaTest {
                 "name": {
                   "type": "string"
                 }
-              }
+              },
+              "additionalProperties": true
             },
             "union_array": {
               "type": "array",
@@ -154,7 +156,8 @@ class AirbyteSchemaTypeToJsonSchemaTest {
               "format": "date-time",
               "airbyte_type": "timestamp_without_timezone"
             }
-          }
+          },
+          "additionalProperties": true
         }
     """.trimIndent()
 
@@ -176,7 +179,7 @@ class AirbyteSchemaTypeToJsonSchemaTest {
     internal fun `test given additional properties is not defined when serialize then do not specify`() {
         val airbyteType = ObjectType(linkedMapOf<String, FieldType>())
         val node = AirbyteTypeToJsonSchema().convert(airbyteType)
-        Assertions.assertNull(node.get("additionalProperties"))
+        Assertions.assertTrue(node.get("additionalProperties").booleanValue())
     }
 
     @Test

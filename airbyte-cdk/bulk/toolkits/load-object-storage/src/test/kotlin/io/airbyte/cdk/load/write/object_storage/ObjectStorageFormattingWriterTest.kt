@@ -15,6 +15,7 @@ import io.airbyte.cdk.load.file.NoopProcessor
 import io.airbyte.cdk.load.file.object_storage.BufferedFormattingWriter
 import io.airbyte.cdk.load.file.object_storage.JsonFormattingWriter
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageFormattingWriter
+import io.airbyte.cdk.load.file.object_storage.StandardByteArrayOutputStream
 import io.airbyte.cdk.load.message.DestinationRecordJsonSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.protocol.models.Jsons
@@ -33,7 +34,7 @@ class ObjectStorageFormattingWriterTest {
 
     @Test
     fun `buffered formatting writer never produces empty parts`() {
-        val outputStream = ByteArrayOutputStream()
+        val outputStream = StandardByteArrayOutputStream()
         outputStream.write("i am a header".toByteArray())
         val bufferedWriter =
             BufferedFormattingWriter(
@@ -50,7 +51,7 @@ class ObjectStorageFormattingWriterTest {
 
     @Test
     fun `buffered formatting writer yields entire buffer once any data has been added`() {
-        val outputStream = ByteArrayOutputStream()
+        val outputStream = StandardByteArrayOutputStream()
         outputStream.write("i am a header".toByteArray())
         val bufferedWriter =
             BufferedFormattingWriter(

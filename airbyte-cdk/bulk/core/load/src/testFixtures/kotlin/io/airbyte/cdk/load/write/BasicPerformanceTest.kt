@@ -456,7 +456,7 @@ abstract class BasicPerformanceTest(
 
                         recordCount?.also {
                             log.info {
-                                "$testPrettyName: table ${stream.descriptor.name} contains $it records" +
+                                "$testPrettyName: table ${stream.mappedDescriptor.name} contains $it records" +
                                     " (expected ${summary.expectedRecordsCount / numStreams} records, " +
                                     "emitted ${summary.records / numStreams} records)"
                             }
@@ -470,9 +470,9 @@ abstract class BasicPerformanceTest(
         val performanceTestSummary =
             listOf(
                 PerformanceTestSummary(
-                    namespace = testScenario.catalog.streams[0].descriptor.namespace,
+                    namespace = testScenario.catalog.streams[0].mappedDescriptor.namespace,
                     streamName =
-                        testScenario.catalog.streams.joinToString(",") { it.descriptor.name },
+                        testScenario.catalog.streams.joinToString(",") { it.mappedDescriptor.name },
                     recordCount = totalRecordCount,
                     expectedRecordCount = summary.expectedRecordsCount,
                     emittedRecordCount = summary.records,

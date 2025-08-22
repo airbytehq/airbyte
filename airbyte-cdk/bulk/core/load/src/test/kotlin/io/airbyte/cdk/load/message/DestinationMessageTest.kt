@@ -659,8 +659,8 @@ class DestinationMessageTest {
         val destinationRecord =
             factory.fromAirbyteProtobufMessage(inputMessage, 100L) as DestinationRecord
 
-        assertEquals("name", destinationRecord.stream.descriptor.name)
-        assertEquals("namespace", destinationRecord.stream.descriptor.namespace)
+        assertEquals("name", destinationRecord.stream.mappedDescriptor.name)
+        assertEquals("namespace", destinationRecord.stream.mappedDescriptor.namespace)
         assertEquals("checkpoint_id", destinationRecord.checkpointId?.value)
         assertEquals(100L, destinationRecord.serializedSizeBytes)
         assertEquals(

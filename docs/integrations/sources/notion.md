@@ -117,8 +117,17 @@ The connector is restricted by Notion [request limits](https://developers.notion
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                                              |
-|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------|
+| Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
+|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.1.0 | 2025-07-30 | [55725](https://github.com/airbytehq/airbyte/pull/55725) | Add sequence_number to fetched Notion blocks |
+| 3.0.16 | 2025-07-28 | [64102](https://github.com/airbytehq/airbyte/pull/64102) | Promoting release candidate 3.0.16-rc.1 to a main version. |
+| 3.0.16-rc.1 | 2025-07-21 | [63368](https://github.com/airbytehq/airbyte/pull/63368) | Migrate to CDK V6 |
+| 3.0.15 | 2025-07-19 | [63382](https://github.com/airbytehq/airbyte/pull/63382) | Update dependencies |
+| 3.0.14 | 2025-07-12 | [63213](https://github.com/airbytehq/airbyte/pull/63213) | Update dependencies |
+| 3.0.13 | 2025-07-05 | [62609](https://github.com/airbytehq/airbyte/pull/62609) | Update dependencies |
+| 3.0.12 | 2025-06-24 | [62033](https://github.com/airbytehq/airbyte/pull/62033) | Add "in_trash" field in Notion "Pages" endpoint schema |
+| 3.0.11 | 2025-06-28 | [62356](https://github.com/airbytehq/airbyte/pull/62356) | Update dependencies |
+| 3.0.10 | 2025-06-21 | [61902](https://github.com/airbytehq/airbyte/pull/61902) | Update dependencies |
 | 3.0.9 | 2025-06-14 | [61602](https://github.com/airbytehq/airbyte/pull/61602) | Update dependencies |
 | 3.0.8 | 2025-06-07 | [52290](https://github.com/airbytehq/airbyte/pull/52290) | Update dependencies |
 | 3.0.7 | 2025-01-11 | [43832](https://github.com/airbytehq/airbyte/pull/43832) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |

@@ -13,15 +13,15 @@ data:
       enabled: false
       packageName: airbyte-source-agilecrm
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.51.0@sha256:890b109f243b8b9406f23ea7522de41025f7b3e87f6fc9710bc1e521213a276f
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.60.12@sha256:b236b4ff8351a7d7f0ff7f938bbf0ab7b455c4c9e6e7cc93933f4aa9201d66cb
   connectorSubtype: api
   connectorType: source
   definitionId: 7bdf5aaa-3dad-4ed0-9cec-4858454f3e18
-  dockerImageTag: 0.0.23
+  dockerImageTag: 0.0.27
   dockerRepository: airbyte/source-agilecrm
   githubIssueLabel: source-agilecrm
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: AgileCRM
   releaseDate: 2024-11-08
   releaseStage: alpha

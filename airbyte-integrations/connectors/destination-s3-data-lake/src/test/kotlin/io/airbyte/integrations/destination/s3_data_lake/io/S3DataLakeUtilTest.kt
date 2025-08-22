@@ -87,7 +87,6 @@ internal class S3DataLakeUtilTest {
 
     @Test
     fun testCreateTableWithMissingNamespace() {
-        val properties = mapOf<String, String>()
         val streamDescriptor = DestinationStream.Descriptor("namespace", "name")
         val schema = Schema()
         val tableBuilder: Catalog.TableBuilder = mockk {
@@ -111,8 +110,7 @@ internal class S3DataLakeUtilTest {
             icebergUtil.createTable(
                 streamDescriptor = streamDescriptor,
                 catalog = catalog,
-                schema = schema,
-                properties = properties
+                schema = schema
             )
         assertNotNull(table)
         verify(exactly = 1) {
@@ -125,7 +123,6 @@ internal class S3DataLakeUtilTest {
 
     @Test
     fun testCreateTableWithExistingNamespace() {
-        val properties = mapOf<String, String>()
         val streamDescriptor = DestinationStream.Descriptor("namespace", "name")
         val schema = Schema()
         val tableBuilder: Catalog.TableBuilder = mockk {
@@ -148,8 +145,7 @@ internal class S3DataLakeUtilTest {
             icebergUtil.createTable(
                 streamDescriptor = streamDescriptor,
                 catalog = catalog,
-                schema = schema,
-                properties = properties
+                schema = schema
             )
         assertNotNull(table)
         verify(exactly = 0) {
@@ -162,7 +158,6 @@ internal class S3DataLakeUtilTest {
 
     @Test
     fun testLoadTable() {
-        val properties = mapOf<String, String>()
         val streamDescriptor = DestinationStream.Descriptor("namespace", "name")
         val schema = Schema()
         val catalog: NessieCatalog = mockk {
@@ -176,8 +171,7 @@ internal class S3DataLakeUtilTest {
             icebergUtil.createTable(
                 streamDescriptor = streamDescriptor,
                 catalog = catalog,
-                schema = schema,
-                properties = properties
+                schema = schema
             )
         assertNotNull(table)
         verify(exactly = 0) {

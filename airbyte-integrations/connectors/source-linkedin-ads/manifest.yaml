@@ -454,8 +454,9 @@ definitions:
             inject_into: request_parameter
             field_name: start
           pagination_strategy:
-            type: OffsetIncrement
-            page_size: 500
+            type: CursorPagination
+            cursor_value: "{{ response.get('paging', {}).get('start', 0) + response.get('paging', {}).get('count', 0) }}"
+            stop_condition: "{{ response.get('paging', {}).get('total', 0) == 0 }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -505,8 +506,9 @@ definitions:
             inject_into: request_parameter
             field_name: start
           pagination_strategy:
-            type: OffsetIncrement
-            page_size: 500
+            type: CursorPagination
+            cursor_value: "{{ response.get('paging', {}).get('start', 0) + response.get('paging', {}).get('count', 0) }}"
+            stop_condition: "{{ response.get('paging', {}).get('total', 0) == 0 }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -1670,9 +1672,13 @@ dynamic_streams:
 # could require some tuning.
 #
 # It is likely that certain customers may have a greater limit provisioned so allow for a max of 50.
+#
+# Update 2025-06-16: Added num_workers to the config to allow for more control over the number
+# of workers and set the default to 3. This is because some customers were experiencing rate
+# limiting issues with v5.5.0 of the connector -- migration to manifest-only.
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "19"
+  default_concurrency: "{{ config.get('num_workers', 2) }}"
   max_concurrency: 50
 
 spec:
@@ -1803,6 +1809,13 @@ spec:
                 - MONTHLY
                 - YEARLY
         default: []
+      num_workers:
+        title: Number of Workers
+        description: The number of workers to use for the connector. This is used to limit the number of concurrent requests to the LinkedIn Ads API. If not set, the default is 3 workers.
+        type: integer
+        default: 3
+        minimum: 2
+        maximum: 50
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:

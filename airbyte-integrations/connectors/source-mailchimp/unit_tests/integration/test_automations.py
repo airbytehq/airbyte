@@ -4,7 +4,6 @@ import json
 from unittest import TestCase
 
 import freezegun
-from source_mailchimp import SourceMailchimp
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
@@ -12,6 +11,7 @@ from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
 from airbyte_cdk.test.state_builder import StateBuilder
+from unit_tests.conftest import get_source
 
 from .config import ConfigBuilder
 
@@ -45,14 +45,14 @@ class AutomationsTest(TestCase):
                     "sort_dir": "ASC",
                     "exclude_fields": "automations._links",
                     "count": 1000,
-                    "since_create_time": "2022-12-31T23:59:59.001000Z",
+                    "since_create_time": "2023-01-01T00:00:00.001000Z",
                     "before_create_time": "2023-01-31T23:59:59.001000Z",
                 },
             ),
             HttpResponse(json.dumps(find_template("automations", __file__)), 200),
         )
 
-        source = SourceMailchimp()
+        source = get_source(_CONFIG)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
         assert len(actual_messages.records) == 1
@@ -67,7 +67,7 @@ class AutomationsTest(TestCase):
                     "sort_dir": "ASC",
                     "exclude_fields": "automations._links",
                     "count": 1000,
-                    "since_create_time": "2022-12-31T23:59:59.001000Z",
+                    "since_create_time": "2023-01-01T00:00:00.001000Z",
                     "before_create_time": "2023-01-31T23:59:59.001000Z",
                 },
             ),
@@ -82,13 +82,13 @@ class AutomationsTest(TestCase):
                     "exclude_fields": "automations._links",
                     "count": 1000,
                     "offset": 1002,
-                    "since_create_time": "2022-12-31T23:59:59.001000Z",
+                    "since_create_time": "2023-01-01T00:00:00.001000Z",
                     "before_create_time": "2023-01-31T23:59:59.001000Z",
                 },
             ),
             HttpResponse(json.dumps(find_template("automations", __file__)), 200),
         )
-        source = SourceMailchimp()
+        source = get_source(_CONFIG)
         actual_messages = read(source, config=_CONFIG, catalog=_create_catalog())
 
         assert len(actual_messages.records) == 1003
@@ -104,14 +104,14 @@ class AutomationsTest(TestCase):
                     "sort_dir": "ASC",
                     "exclude_fields": "automations._links",
                     "count": 1000,
-                    "since_create_time": "2022-12-31T23:59:59.001000Z",
+                    "since_create_time": "2023-01-01T00:00:00.001000Z",
                     "before_create_time": "2023-01-31T23:59:59.001000Z",
                 },
             ),
             HttpResponse(json.dumps(find_template("automations", __file__)), 200),
         )
 
-        source = SourceMailchimp()
+        source = get_source(_CONFIG)
         actual_messages = read(
             source,
             config=_CONFIG,

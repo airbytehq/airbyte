@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.file.csv
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import java.io.InputStream
 import java.io.InputStreamReader
@@ -19,10 +18,8 @@ class CsvDecoder(
 ) {
     private val mapper: ObjectMapper = ObjectMapper()
 
-    fun decode(input: InputStream): Stream<JsonNode> {
+    fun decode(input: InputStream): Stream<Map<String, String>> {
         val parser = CSVParser(InputStreamReader(input, StandardCharsets.UTF_8), csvFormat)
-        return parser.stream().map { csvRecord ->
-            mapper.convertValue(csvRecord.toMap(), JsonNode::class.java)
-        }
+        return parser.stream().map { it.toMap() }
     }
 }

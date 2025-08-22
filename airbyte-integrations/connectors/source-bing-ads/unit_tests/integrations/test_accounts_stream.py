@@ -8,8 +8,8 @@ from request_builder import RequestBuilder
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
-from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
-from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
+from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
+from airbyte_cdk.test.mock_http import HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
 
 

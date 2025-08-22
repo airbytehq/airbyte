@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test
 private const val TEST_CONFIG =
     """
     {
-        "objectStorageConfig":{
+        "object_storage_config":{
             "storage_type":"S3",
             "format":{"format_type":"CSV","flattening":"Root level flattening"},
             "bucket_path":"destination-shelby",

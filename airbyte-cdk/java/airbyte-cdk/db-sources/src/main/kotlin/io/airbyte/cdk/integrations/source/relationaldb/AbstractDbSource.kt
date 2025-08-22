@@ -150,7 +150,7 @@ protected constructor(driverClassName: String) :
                 catalog,
                 fullyQualifiedTableNameToInfo,
                 stateManager,
-                emittedAt
+                emittedAt,
             )
         val fullRefreshIterators =
             getFullRefreshIterators(
@@ -332,7 +332,7 @@ protected constructor(driverClassName: String) :
             tableNameToTable,
             stateManager,
             emittedAt,
-            SyncMode.FULL_REFRESH
+            SyncMode.FULL_REFRESH,
         )
     }
 
@@ -341,7 +341,7 @@ protected constructor(driverClassName: String) :
         catalog: ConfiguredAirbyteCatalog,
         tableNameToTable: Map<String, TableInfo<CommonField<DataType>>>,
         stateManager: StateManager?,
-        emittedAt: Instant
+        emittedAt: Instant,
     ): List<AutoCloseableIterator<AirbyteMessage>> {
         return getSelectedIterators(
             database,
@@ -349,7 +349,7 @@ protected constructor(driverClassName: String) :
             tableNameToTable,
             stateManager,
             emittedAt,
-            SyncMode.INCREMENTAL
+            SyncMode.INCREMENTAL,
         )
     }
 
@@ -371,7 +371,7 @@ protected constructor(driverClassName: String) :
         tableNameToTable: Map<String, TableInfo<CommonField<DataType>>>,
         stateManager: StateManager?,
         emittedAt: Instant,
-        syncMode: SyncMode
+        syncMode: SyncMode,
     ): List<AutoCloseableIterator<AirbyteMessage>> {
         val iteratorList: MutableList<AutoCloseableIterator<AirbyteMessage>> = ArrayList()
         for (airbyteStream in catalog!!.streams) {
@@ -394,7 +394,7 @@ protected constructor(driverClassName: String) :
                         catalog,
                         table,
                         stateManager,
-                        emittedAt
+                        emittedAt,
                     )
                 iteratorList.add(tableReadIterator)
             }
@@ -419,7 +419,7 @@ protected constructor(driverClassName: String) :
         catalog: ConfiguredAirbyteCatalog?,
         table: TableInfo<CommonField<DataType>>,
         stateManager: StateManager?,
-        emittedAt: Instant
+        emittedAt: Instant,
     ): AutoCloseableIterator<AirbyteMessage> {
         val streamName = airbyteStream.stream.name
         val namespace = airbyteStream.stream.namespace
@@ -447,7 +447,7 @@ protected constructor(driverClassName: String) :
                         selectedDatabaseFields,
                         table,
                         cursorInfo.get(),
-                        emittedAt
+                        emittedAt,
                     )
             } else {
                 // if no cursor is present then this is the first read for is the same as doing a
@@ -543,7 +543,7 @@ protected constructor(driverClassName: String) :
         selectedDatabaseFields: List<String>,
         table: TableInfo<CommonField<DataType>>,
         cursorInfo: CursorInfo,
-        emittedAt: Instant
+        emittedAt: Instant,
     ): AutoCloseableIterator<AirbyteMessage> {
         val streamName = airbyteStream.stream.name
         val namespace = airbyteStream.stream.namespace
@@ -566,7 +566,7 @@ protected constructor(driverClassName: String) :
                 table.nameSpace,
                 table.name,
                 cursorInfo,
-                cursorType
+                cursorType,
             )
 
         return getMessageIterator(queryIterator, streamName, namespace, emittedAt.toEpochMilli())
@@ -791,7 +791,7 @@ protected constructor(driverClassName: String) :
         schemaName: String?,
         tableName: String,
         cursorInfo: CursorInfo,
-        cursorFieldType: DataType
+        cursorFieldType: DataType,
     ): AutoCloseableIterator<AirbyteRecordData>
 
     protected open val stateEmissionFrequency: Int
