@@ -4,10 +4,12 @@ type: DeclarativeSource
 
 check:
   type: CheckStream
-  # Placeholder: currently unused but required in the manifest.
-  # The check using the customer stream and custom queries stream should be implemented once the full migration to low-code is complete.
   stream_names:
     - campaign
+  dynamic_streams_check_configs:
+    - type: DynamicStreamCheckConfig
+      dynamic_stream_name: dynamic_stream_0
+      stream_count: 1
 
 definitions:
   # Authenticator Definitions
@@ -393,6 +395,61 @@ definitions:
              | map('replace','VIDEO_VIEW','4')
              | map('replace','NONE','5')
              | list }}
+
+  dynamic_stream_template:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/base_retriever"
+      requester:
+        type: CustomRequester
+        class_name: "source_google_ads.components.CustomGAQueryHttpRequester"
+        authenticator:
+          $ref: "#/definitions/authenticator"
+        url_base: "https://googleads.googleapis.com/v20/{{ stream_partition['customer_id'] }}/googleAds:search"
+        http_method: POST
+        error_handler:
+          $ref: "#/definitions/base_error_handler"
+      record_selector:
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+        schema_normalization:
+          type: CustomSchemaNormalization
+          class_name: source_google_ads.components.DoubleQuotedDictTypeTransformer
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: "clientCustomer"
+            partition_field: "customer_id"
+            stream: "#/definitions/customer_client"
+      paginator:
+        $ref: "#/definitions/cursor_paginator"
+    transformations:
+      - type: CustomTransformation
+        class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
+      - type: CustomTransformation
+        class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
+      - type: AddFields
+        fields:
+          $ref: "#/definitions/transformations/transform_metrics_interaction_event_types"
+        condition: "{{ record.get('metrics.interaction_event_types', False) }}"
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_google_ads.components.GoogleAdsPerPartitionStateMigration
+        customer_client_stream: "#/definitions/customer_client"
+    schema_loader:
+      type: CustomSchemaLoader
+      class_name: "source_google_ads.components.CustomGAQuerySchemaLoader"
+      requester:
+        $ref: "#/definitions/base_requester"
+        url: "https://googleads.googleapis.com/v20/googleAdsFields"
+        http_method: GET
+        error_handler:
+          $ref: "#/definitions/base_error_handler"
+        $parameters:
+          name: dynamic_schema_loader_requester
 
   # Stream Definitions
   account_performance_report_stream:
@@ -908,6 +965,115 @@ definitions:
         schema:
           $ref: "#/schemas/campaign_criterion"
 
+  custom_ga_query_stream:
+    type: DynamicDeclarativeStream
+    stream_template:
+      $ref: "#/definitions/dynamic_stream_template"
+    components_resolver:
+      type: ConfigComponentsResolver
+      stream_config:
+        - type: StreamConfig
+          configs_pointer:
+            - custom_queries_array
+      components_mapping:
+        - type: ComponentMappingDefinition
+          field_path:
+            - name
+          value: "{{ components_values['table_name'] }}"
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            - incremental_sync
+          value: >-
+            {
+              "type": "DatetimeBasedCursor",
+              "cursor_field": "{{ components_values.get('cursor_field') }}",
+              "datetime_format": "%Y-%m-%d",
+              "lookback_window": "P{{ config.get('conversion_window_days', 14) }}D",
+              "cursor_granularity": "P1D",
+              "step": "P14D",
+              "start_datetime": {
+                "type": "MinMaxDatetime",
+                "datetime": "{{ config.get('start_date', day_delta(-365 * 2, format='%Y-%m-%d')) }}",
+                "datetime_format": "%Y-%m-%d"
+              },
+              "end_datetime": {
+                "type": "MinMaxDatetime",
+                "datetime": "{{ config.get('end_date', today_utc()) }}",
+                "datetime_format": "%Y-%m-%d"
+              }
+            }
+          condition: "{{ components_values.get('cursor_field', False) }}"
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            - retriever
+            - requester
+            - $parameters
+            - query
+          value: "{{ components_values.get('query', None) }}"
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            - retriever
+            - requester
+            - $parameters
+            - cursor_field
+          value: "{{ components_values.get('cursor_field', None) }}"
+          condition: "{{ components_values.get('cursor_field', False) }}"
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            - schema_loader
+            - query
+          value: "{{ components_values.get('query', None) }}"
+          condition: "{{ components_values.get('query', False) }}"
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            - schema_loader
+            - cursor_field
+          value: "{{ components_values.get('cursor_field', None) }}"
+          condition: "{{ components_values.get('cursor_field', False) }}"
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            - retriever
+            - partition_router
+            - parent_stream_configs
+            - "0"
+            - stream
+            - name
+          value: customer_client_non_manager
+          condition: "{{ 'metrics' in components_values.get('query', False) }}"
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            - retriever
+            - partition_router
+            - parent_stream_configs
+            - "0"
+            - stream
+            - retriever
+            - requester
+            - request_body
+            - value
+            - query
+          value: >
+            SELECT
+              customer_client.client_customer,
+              customer_client.level,
+              customer_client.id,
+              customer_client.manager,
+              customer_client.time_zone,
+              customer_client.status
+            FROM
+              customer_client
+            WHERE
+              customer_client.manager = FALSE
+          condition: "{{ 'metrics' in components_values.get('query', False) }}"
+          create_or_update: true
+
 streams:
   - "#/definitions/account_performance_report_stream"
   - "#/definitions/ad_group_stream"
@@ -936,6 +1102,8 @@ streams:
   - "#/definitions/topic_view_stream"
   - "#/definitions/user_interest_stream"
   - "#/definitions/user_location_view_stream"
+dynamic_streams:
+  - "#/definitions/custom_ga_query_stream"
 
 concurrency_level:
   type: ConcurrencyLevel
