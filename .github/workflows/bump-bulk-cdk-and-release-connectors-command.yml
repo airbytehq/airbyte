@@ -64,7 +64,7 @@ jobs:
         connector_name: ${{ fromJson(needs.bump-cdk-version.outputs.modified_connectors_json) }}
     with:
       connectors: "--name=${{ matrix.connector_name }}"
-      publish-options: --main-release
+      release-type: main-release
     secrets: inherit
 
   update-changelog-and-merge:
