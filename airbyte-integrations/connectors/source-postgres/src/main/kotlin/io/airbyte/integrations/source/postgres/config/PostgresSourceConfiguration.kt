@@ -153,7 +153,7 @@ constructor(
         var encodedDatabaseName = URLEncoder.encode(pojo.database, StandardCharsets.UTF_8.name())
 
         // Build JDBC URL.
-        val address = "%s:%d"
+        // TODO: handle schemas correctly
         val jdbcUrlFmt = "jdbc:postgresql://%s:%d/$encodedDatabaseName?${PGProperty.CURRENT_SCHEMA}=public"
 
         // Internal configuration settings.
