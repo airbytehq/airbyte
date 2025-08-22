@@ -19,7 +19,21 @@ definitions:
         decoder:
           type: JsonDecoder
         requester:
-          $ref: "#/definitions/tasks_requester"
+          type: HttpRequester
+          path: /open/v1/project/{{ stream_partition['parent_id'] }}/data
+          url_base: https://api.ticktick.com
+          http_method: GET
+          authenticator:
+            type: OAuthAuthenticator
+            scopes:
+              - "tasks:"
+              - read
+            client_id: "{{ config[\"client_id\"] }}"
+            grant_type: client_credentials
+            client_secret: "{{ config[\"client_secret\"] }}"
+            access_token_value: "{{ config[\"client_access_token\"] }}"
+          error_handler:
+            type: DefaultErrorHandler
         record_selector:
           type: RecordSelector
           extractor:
@@ -34,7 +48,81 @@ definitions:
           parent_stream_configs:
             - type: ParentStreamConfig
               stream:
-                $ref: "#/definitions/streams/projects"
+                type: DeclarativeStream
+                name: projects
+                retriever:
+                  type: SimpleRetriever
+                  decoder:
+                    type: JsonDecoder
+                  requester:
+                    type: HttpRequester
+                    path: /open/v1/project/
+                    url_base: https://api.ticktick.com
+                    authenticator:
+                      type: OAuthAuthenticator
+                      scopes:
+                        - "tasks:"
+                        - read
+                      client_id: "{{ config[\"client_id\"] }}"
+                      grant_type: client_credentials
+                      client_secret: "{{ config[\"client_secret\"] }}"
+                      access_token_value: "{{ config[\"client_access_token\"] }}"
+                    error_handler:
+                      type: DefaultErrorHandler
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path: []
+                    record_filter:
+                      type: RecordFilter
+                      condition: "{{ not record.closed }}"
+                    schema_normalization: Default
+                primary_key:
+                  - id
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    type: object
+                    $schema: http://json-schema.org/schema#
+                    required:
+                      - id
+                    properties:
+                      id:
+                        type: string
+                      kind:
+                        type:
+                          - string
+                          - "null"
+                      name:
+                        type:
+                          - string
+                          - "null"
+                      color:
+                        type:
+                          - string
+                          - "null"
+                      closed:
+                        type:
+                          - boolean
+                          - "null"
+                      groupId:
+                        type:
+                          - string
+                          - "null"
+                      viewMode:
+                        type:
+                          - string
+                          - "null"
+                      sortOrder:
+                        type:
+                          - number
+                          - "null"
+                      permission:
+                        type:
+                          - string
+                          - "null"
+                    additionalProperties: true
               parent_key: id
               partition_field: parent_id
       primary_key:
@@ -42,7 +130,115 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/tasks"
+          type: object
+          $schema: http://json-schema.org/schema#
+          required:
+            - id
+          properties:
+            id:
+              type: string
+            desc:
+              type:
+                - string
+                - "null"
+            etag:
+              type:
+                - string
+                - "null"
+            kind:
+              type:
+                - string
+                - "null"
+            tags:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - string
+                  - "null"
+            items:
+              type:
+                - array
+                - "null"
+              items:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  id:
+                    type:
+                      - string
+                      - "null"
+                  title:
+                    type:
+                      - string
+                      - "null"
+                  status:
+                    type:
+                      - number
+                      - "null"
+                  isAllDay:
+                    type:
+                      - boolean
+                      - "null"
+                  timeZone:
+                    type:
+                      - string
+                      - "null"
+                  sortOrder:
+                    type:
+                      - number
+                      - "null"
+            title:
+              type:
+                - string
+                - "null"
+            status:
+              type:
+                - number
+                - "null"
+            content:
+              type:
+                - string
+                - "null"
+            dueDate:
+              type:
+                - string
+                - "null"
+            columnId:
+              type:
+                - string
+                - "null"
+            isAllDay:
+              type:
+                - boolean
+                - "null"
+            priority:
+              type:
+                - number
+                - "null"
+            timeZone:
+              type:
+                - string
+                - "null"
+            projectId:
+              type:
+                - string
+                - "null"
+            sortOrder:
+              type:
+                - number
+                - "null"
+            startDate:
+              type:
+                - string
+                - "null"
+            repeatFlag:
+              type:
+                - string
+                - "null"
+          additionalProperties: true
     projects:
       type: DeclarativeStream
       name: projects
@@ -51,8 +247,20 @@ definitions:
         decoder:
           type: JsonDecoder
         requester:
-          $ref: "#/definitions/base_requester"
+          type: HttpRequester
           path: /open/v1/project/
+          url_base: https://api.ticktick.com
+          authenticator:
+            type: OAuthAuthenticator
+            scopes:
+              - "tasks:"
+              - read
+            client_id: "{{ config[\"client_id\"] }}"
+            grant_type: client_credentials
+            client_secret: "{{ config[\"client_secret\"] }}"
+            access_token_value: "{{ config[\"client_access_token\"] }}"
+          error_handler:
+            type: DefaultErrorHandler
         record_selector:
           type: RecordSelector
           extractor:
@@ -67,7 +275,46 @@ definitions:
       schema_loader:
         type: InlineSchemaLoader
         schema:
-          $ref: "#/schemas/projects"
+          type: object
+          $schema: http://json-schema.org/schema#
+          required:
+            - id
+          properties:
+            id:
+              type: string
+            kind:
+              type:
+                - string
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            color:
+              type:
+                - string
+                - "null"
+            closed:
+              type:
+                - boolean
+                - "null"
+            groupId:
+              type:
+                - string
+                - "null"
+            viewMode:
+              type:
+                - string
+                - "null"
+            sortOrder:
+              type:
+                - number
+                - "null"
+            permission:
+              type:
+                - string
+                - "null"
+          additionalProperties: true
   base_requester:
     type: HttpRequester
     url_base: https://api.ticktick.com
@@ -84,13 +331,324 @@ definitions:
       type: DefaultErrorHandler
   tasks_requester:
     type: HttpRequester
-    $ref: "#/definitions/base_requester"
     path: /open/v1/project/{{ stream_partition['parent_id'] }}/data
+    url_base: https://api.ticktick.com
     http_method: GET
+    authenticator:
+      type: OAuthAuthenticator
+      scopes:
+        - "tasks:"
+        - read
+      client_id: "{{ config[\"client_id\"] }}"
+      grant_type: client_credentials
+      client_secret: "{{ config[\"client_secret\"] }}"
+      access_token_value: "{{ config[\"client_access_token\"] }}"
+    error_handler:
+      type: DefaultErrorHandler
 
 streams:
-  - $ref: "#/definitions/streams/projects"
-  - $ref: "#/definitions/streams/tasks"
+  - type: DeclarativeStream
+    name: projects
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      requester:
+        type: HttpRequester
+        path: /open/v1/project/
+        url_base: https://api.ticktick.com
+        authenticator:
+          type: OAuthAuthenticator
+          scopes:
+            - "tasks:"
+            - read
+          client_id: "{{ config[\"client_id\"] }}"
+          grant_type: client_credentials
+          client_secret: "{{ config[\"client_secret\"] }}"
+          access_token_value: "{{ config[\"client_access_token\"] }}"
+        error_handler:
+          type: DefaultErrorHandler
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+        record_filter:
+          type: RecordFilter
+          condition: "{{ not record.closed }}"
+        schema_normalization: Default
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - id
+        properties:
+          id:
+            type: string
+          kind:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          color:
+            type:
+              - string
+              - "null"
+          closed:
+            type:
+              - boolean
+              - "null"
+          groupId:
+            type:
+              - string
+              - "null"
+          viewMode:
+            type:
+              - string
+              - "null"
+          sortOrder:
+            type:
+              - number
+              - "null"
+          permission:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: tasks
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      requester:
+        type: HttpRequester
+        path: /open/v1/project/{{ stream_partition['parent_id'] }}/data
+        url_base: https://api.ticktick.com
+        http_method: GET
+        authenticator:
+          type: OAuthAuthenticator
+          scopes:
+            - "tasks:"
+            - read
+          client_id: "{{ config[\"client_id\"] }}"
+          grant_type: client_credentials
+          client_secret: "{{ config[\"client_secret\"] }}"
+          access_token_value: "{{ config[\"client_access_token\"] }}"
+        error_handler:
+          type: DefaultErrorHandler
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - tasks
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record  }}"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              type: DeclarativeStream
+              name: projects
+              retriever:
+                type: SimpleRetriever
+                decoder:
+                  type: JsonDecoder
+                requester:
+                  type: HttpRequester
+                  path: /open/v1/project/
+                  url_base: https://api.ticktick.com
+                  authenticator:
+                    type: OAuthAuthenticator
+                    scopes:
+                      - "tasks:"
+                      - read
+                    client_id: "{{ config[\"client_id\"] }}"
+                    grant_type: client_credentials
+                    client_secret: "{{ config[\"client_secret\"] }}"
+                    access_token_value: "{{ config[\"client_access_token\"] }}"
+                  error_handler:
+                    type: DefaultErrorHandler
+                record_selector:
+                  type: RecordSelector
+                  extractor:
+                    type: DpathExtractor
+                    field_path: []
+                  record_filter:
+                    type: RecordFilter
+                    condition: "{{ not record.closed }}"
+                  schema_normalization: Default
+              primary_key:
+                - id
+              schema_loader:
+                type: InlineSchemaLoader
+                schema:
+                  type: object
+                  $schema: http://json-schema.org/schema#
+                  required:
+                    - id
+                  properties:
+                    id:
+                      type: string
+                    kind:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    color:
+                      type:
+                        - string
+                        - "null"
+                    closed:
+                      type:
+                        - boolean
+                        - "null"
+                    groupId:
+                      type:
+                        - string
+                        - "null"
+                    viewMode:
+                      type:
+                        - string
+                        - "null"
+                    sortOrder:
+                      type:
+                        - number
+                        - "null"
+                    permission:
+                      type:
+                        - string
+                        - "null"
+                  additionalProperties: true
+            parent_key: id
+            partition_field: parent_id
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - id
+        properties:
+          id:
+            type: string
+          desc:
+            type:
+              - string
+              - "null"
+          etag:
+            type:
+              - string
+              - "null"
+          kind:
+            type:
+              - string
+              - "null"
+          tags:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - string
+                - "null"
+          items:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                id:
+                  type:
+                    - string
+                    - "null"
+                title:
+                  type:
+                    - string
+                    - "null"
+                status:
+                  type:
+                    - number
+                    - "null"
+                isAllDay:
+                  type:
+                    - boolean
+                    - "null"
+                timeZone:
+                  type:
+                    - string
+                    - "null"
+                sortOrder:
+                  type:
+                    - number
+                    - "null"
+          title:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - number
+              - "null"
+          content:
+            type:
+              - string
+              - "null"
+          dueDate:
+            type:
+              - string
+              - "null"
+          columnId:
+            type:
+              - string
+              - "null"
+          isAllDay:
+            type:
+              - boolean
+              - "null"
+          priority:
+            type:
+              - number
+              - "null"
+          timeZone:
+            type:
+              - string
+              - "null"
+          projectId:
+            type:
+              - string
+              - "null"
+          sortOrder:
+            type:
+              - number
+              - "null"
+          startDate:
+            type:
+              - string
+              - "null"
+          repeatFlag:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
 
 spec:
   type: Spec
@@ -346,10 +904,16 @@ schemas:
 api_budget:
   type: HTTPAPIBudget
   policies:
-    - type: FixedWindowCallRatePolicy
-      period: PT1M
-      call_limit: 20
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 3
+          interval: PT1S
+        - limit: 60
+          interval: PT1M
       matchers:
         - method: GET
-          url_base: https://api.ticktick.com
           url_path_pattern: .*
+  status_codes_for_ratelimit_hit:
+    - 503
+    - 500
+    - 429
