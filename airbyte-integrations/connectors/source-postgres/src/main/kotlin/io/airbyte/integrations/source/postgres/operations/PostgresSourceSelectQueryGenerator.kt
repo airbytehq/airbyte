@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.postgres.operations
 
 import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.NonEmittedField
 import io.airbyte.cdk.jdbc.LongFieldType
 import io.airbyte.cdk.jdbc.LosslessJdbcFieldType
 import io.airbyte.cdk.read.And
@@ -104,11 +105,26 @@ class PostgresSourceSelectQueryGenerator : SelectQueryGenerator {
         when (this) {
             is And -> conj.joinToString(") AND (", "(", ")") { it.sql() }
             is Or -> disj.joinToString(") OR (", "(", ")") { it.sql() }
-            is Equal -> "${column.sql()} = ?::tid"
-            is GreaterOrEqual -> "${column.sql()} >= ?::tid"
-            is Greater -> "${column.sql()} > ?::tid"
-            is LesserOrEqual -> "${column.sql()} <= ?::tid"
-            is Lesser -> "${column.sql()} < ?::tid"
+            is Equal -> when (column) {
+                is NonEmittedField -> "${column.sql()} = ?::tid"
+                else -> "${column.sql()} = ?"
+            }
+            is GreaterOrEqual -> when (column) {
+                is NonEmittedField -> "${column.sql()} >= ?::tid"
+                else -> "${column.sql()} >= ?"
+            }
+            is Greater -> when (column) {
+                is NonEmittedField -> "${column.sql()} > ?::tid"
+                else -> "${column.sql()} > ?"
+            }
+            is LesserOrEqual -> when (column) {
+                is NonEmittedField -> "${column.sql()} <= ?::tid"
+                else -> "${column.sql()} <= ?"
+            }
+            is Lesser ->  when (column) {
+                is NonEmittedField -> "${column.sql()} < ?::tid"
+                else -> "${column.sql()} < ?"
+            }
         }
 
     fun OrderByNode.sql(): String =

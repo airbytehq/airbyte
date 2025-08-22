@@ -14,6 +14,7 @@ import io.airbyte.cdk.read.From
 import io.airbyte.cdk.read.FromSample
 import io.airbyte.cdk.read.Greater
 import io.airbyte.cdk.read.GreaterOrEqual
+import io.airbyte.cdk.read.JdbcCursorPartition
 import io.airbyte.cdk.read.JdbcPartition
 import io.airbyte.cdk.read.JdbcSplittablePartition
 import io.airbyte.cdk.read.Lesser
@@ -21,6 +22,7 @@ import io.airbyte.cdk.read.LesserOrEqual
 import io.airbyte.cdk.read.Limit
 import io.airbyte.cdk.read.Or
 import io.airbyte.cdk.read.OrderBy
+import io.airbyte.cdk.read.SelectColumnMaxValue
 import io.airbyte.cdk.read.SelectColumns
 import io.airbyte.cdk.read.SelectQuerier
 import io.airbyte.cdk.read.SelectQuery
@@ -32,21 +34,23 @@ import io.airbyte.cdk.read.WhereClauseNode
 import io.airbyte.cdk.read.optimize
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.source.postgres.ctid.Ctid
+import io.debezium.data.Json
+
+val ctidField = NonEmittedField("ctid", StringFieldType)
 
 sealed class PostgresSourceJdbcPartition(
     val selectQueryGenerator: SelectQueryGenerator,
-    streamState: DefaultJdbcStreamState,
+    final override val streamState: DefaultJdbcStreamState,
 ) : JdbcPartition<DefaultJdbcStreamState> {
-    val ctidField = NonEmittedField("ctid", StringFieldType)
     val stream = streamState.stream
     val from = From(stream.name, stream.namespace)
 }
 
-class PostgresSourceJdbcNonResumableSnapshotPartition(
+/*class PostgresSourceJdbcNonResumableSnapshotPartition(
     selectQueryGenerator: SelectQueryGenerator,
     override val streamState: DefaultJdbcStreamState,
 ) : PostgresSourceJdbcPartition(selectQueryGenerator, streamState) {
-    override val completeState: OpaqueStateValue /*PostgresSorouceJdbcStreamStateValue.snapshotCompleted*/
+    override val completeState: OpaqueStateValue *//*PostgresSorouceJdbcStreamStateValue.snapshotCompleted*//*
         get() = Jsons.nullNode() // TEMP
 
     override val nonResumableQuery: SelectQuery
@@ -67,7 +71,7 @@ class PostgresSourceJdbcNonResumableSnapshotPartition(
     }
 
 
-}
+}*/
 
 sealed class PostgresSourceSplittablePartition(
     selectQueryGenerator: SelectQueryGenerator,
@@ -75,8 +79,8 @@ sealed class PostgresSourceSplittablePartition(
     val checkpointColumns: List<Field>,
 ) : PostgresSourceJdbcPartition(selectQueryGenerator, streamState),
     JdbcSplittablePartition<DefaultJdbcStreamState>{
-    abstract val lowerBound: Ctid?
-    abstract val upperBound: Ctid?
+    abstract val lowerBound: List<JsonNode>?
+    abstract val upperBound: List<JsonNode>?
 
     override val nonResumableQuery: SelectQuery
         get() = selectQueryGenerator.generate(nonResumableQuerySpec.optimize())
@@ -87,10 +91,10 @@ sealed class PostgresSourceSplittablePartition(
     override fun resumableQuery(limit: Long): SelectQuery {
         val querySpec =
             SelectQuerySpec(
-                SelectColumns((listOf(ctidField) + stream.fields + checkpointColumns).distinct()),
+                SelectColumns((listOf(ctidField) + stream.fields).distinct()),
                 from,
                 where,
-                OrderBy(checkpointColumns),
+                OrderBy(ctidField),
                 Limit(limit)
             )
         return selectQueryGenerator.generate(querySpec.optimize())
@@ -111,7 +115,7 @@ sealed class PostgresSourceSplittablePartition(
     val where: Where
         get() {
             val zippedLowerBound: List<Pair<Field, JsonNode>> =
-                lowerBound?.let { listOf(ctidField to Jsons.textNode(lowerBound.toString())) } ?: listOf()
+                lowerBound?.let { checkpointColumns.zip(it) } ?: listOf()
             val lowerBoundDisj: List<WhereClauseNode> =
                 zippedLowerBound.mapIndexed { idx: Int, (gtCol: Field, gtValue: JsonNode) ->
                     val lastLeaf: WhereClauseLeafNode =
@@ -127,7 +131,7 @@ sealed class PostgresSourceSplittablePartition(
                     )
                 }
             val zippedUpperBound: List<Pair<Field, JsonNode>> =
-                upperBound?.let { listOf(ctidField to Jsons.textNode(upperBound.toString())) } ?: listOf()
+                upperBound?.let { checkpointColumns.zip(it) } ?: listOf()
             val upperBoundDisj: List<WhereClauseNode> =
                 zippedUpperBound.mapIndexed { idx: Int, (leqCol: Field, leqValue: JsonNode) ->
                     val lastLeaf: WhereClauseLeafNode =
@@ -150,11 +154,10 @@ sealed class PostgresSourceSplittablePartition(
 
 class PostgresSourceJdbcSplittableSnapshotPartition(
     selectQueryGenerator: SelectQueryGenerator,
-    override val streamState: DefaultJdbcStreamState,
-    primaryKey: List<Field>,
-    override val lowerBound: Ctid?,
-    override val upperBound: Ctid?,
-) : PostgresSourceSplittablePartition(selectQueryGenerator, streamState, primaryKey) {
+    streamState: DefaultJdbcStreamState, // TODO: check here
+    override val lowerBound: List<JsonNode>?,
+    override val upperBound: List<JsonNode>?,
+) : PostgresSourceSplittablePartition(selectQueryGenerator, streamState, listOf(ctidField)) {
     override val completeState: OpaqueStateValue
         get() =
         when (upperBound) {
@@ -164,12 +167,95 @@ class PostgresSourceJdbcSplittableSnapshotPartition(
             )
         }
 
-//
-
     override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue {
         return PostgresSourceJdbcStreamStateValue.snapshotCheckpoint(
             lastRecord.nonEmittedData.toJson()["ctid"]
         )
 
     }
+}
+
+sealed class PostgresSourceCursorPartition(
+    selectQueryGenerator: SelectQueryGenerator,
+    streamState: DefaultJdbcStreamState,
+    checkpointColumns: List<Field>,
+    val cursor: Field,
+    val explicitCursorUpperBound: JsonNode?,
+): PostgresSourceSplittablePartition(selectQueryGenerator, streamState, checkpointColumns),
+    JdbcCursorPartition<DefaultJdbcStreamState> {
+
+        val cursorUpperBound: JsonNode
+            get() = explicitCursorUpperBound ?: streamState.cursorUpperBound ?: Jsons.nullNode()
+
+        override val cursorUpperBoundQuery: SelectQuery
+            get() = selectQueryGenerator.generate(cursorUpperBoundQuerySpec.optimize())
+
+        val cursorUpperBoundQuerySpec = SelectQuerySpec(SelectColumnMaxValue(cursor), from)
+    }
+
+class PostgresSourceJdbcSplittableSnapshotWithCursorPartition(
+    selectQueryGenerator: SelectQueryGenerator,
+    streamState: DefaultJdbcStreamState, // TODO: check here
+    override val lowerBound: List<JsonNode>?,
+    override val upperBound: List<JsonNode>?,
+    cursor: Field,
+    cursorUpperBound: JsonNode?,
+    ): PostgresSourceCursorPartition(
+    selectQueryGenerator,
+    streamState,
+    listOf(ctidField),
+    cursor,
+    cursorUpperBound) {
+
+    override val completeState: OpaqueStateValue
+        get() =
+            when (upperBound) {
+                null -> PostgresSourceJdbcStreamStateValue.cursorIncrementalCheckpoint(
+                    cursor,
+                    cursorUpperBound
+                )
+                else -> PostgresSourceJdbcStreamStateValue.snapshotWithCursorCheckpoint(
+                    Jsons.textNode(upperBound.toString()),
+                    cursor,
+                    cursorUpperBound
+                )
+            }
+
+    override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
+        PostgresSourceJdbcStreamStateValue.snapshotWithCursorCheckpoint(
+            lastRecord.nonEmittedData.toJson()["ctid"],
+            cursor,
+            cursorUpperBound
+        )
+}
+
+class PostgresSourceJdbcCursorIncrementalPartition(
+    selectQueryGenerator: SelectQueryGenerator,
+    streamState: DefaultJdbcStreamState,
+    cursor: Field,
+    val cursorLowerBound: JsonNode,
+    override val isLowerBoundIncluded: Boolean,
+    cursorUpperBound: JsonNode?,
+): PostgresSourceCursorPartition(
+    selectQueryGenerator,
+    streamState,
+    listOf(cursor),
+    cursor,
+    cursorUpperBound
+) {
+    override val lowerBound: List<JsonNode> = listOf(cursorLowerBound)
+    override val upperBound: List<JsonNode>
+        get() = listOf(cursorUpperBound)
+
+    override val completeState: OpaqueStateValue
+        get() =
+            PostgresSourceJdbcStreamStateValue.cursorIncrementalCheckpoint(
+                cursor,
+                cursorUpperBound
+            )
+    override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
+        PostgresSourceJdbcStreamStateValue.cursorIncrementalCheckpoint(
+            cursor,
+            lastRecord.data.toJson()[cursor.id] ?: Jsons.nullNode()
+        )
 }
