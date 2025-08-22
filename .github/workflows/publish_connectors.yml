@@ -270,7 +270,6 @@ jobs:
 
       - name: Generate OSS Registry Entry
         id: generate-oss-registry-entry
-        if: github.event_name == 'push'
         shell: bash
         run: |
           echo "Generating OSS registry entry for ${{ matrix.connector }}"
@@ -287,7 +286,6 @@ jobs:
 
       - name: Generate Cloud Registry Entry
         id: generate-cloud-registry-entry
-        if: github.event_name == 'push'
         shell: bash
         run: |
           echo "Generating Cloud registry entry for ${{ matrix.connector }}"
