@@ -29,10 +29,6 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
 
     lateinit var outputMessageRouter: OutputMessageRouter
     lateinit var outputRoute: ((NativeRecordPayload, Map<Field, FieldValueChange>?) -> Unit)
-    private val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
-
-    private fun generatePartitionId(length: Int): String =
-        (1..length).map { charPool.random() }.joinToString("")
 
     protected var partitionId: String = generatePartitionId(4)
     val streamState: JdbcStreamState<*> = partition.streamState

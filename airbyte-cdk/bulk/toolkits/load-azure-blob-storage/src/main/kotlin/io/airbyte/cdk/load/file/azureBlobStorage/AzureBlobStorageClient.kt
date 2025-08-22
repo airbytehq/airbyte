@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.file.azureBlobStorage
 import com.azure.core.util.BinaryData
 import com.azure.storage.blob.BlobServiceClient
 import com.azure.storage.blob.batch.BlobBatchClientBuilder
+import com.azure.storage.blob.batch.BlobBatchStorageException
 import com.azure.storage.blob.models.BlobStorageException
 import com.azure.storage.blob.models.DeleteSnapshotsOptionType
 import com.azure.storage.blob.models.ListBlobsOptions
@@ -134,11 +135,34 @@ class AzureBlobClient(
     }
 
     override suspend fun delete(keys: Set<String>) {
+        if (keys.isEmpty()) return
+
         val batchClient = BlobBatchClientBuilder(serviceClient).buildClient()
-        val blobContainerClient = serviceClient.getBlobContainerClient(blobConfig.containerName)
+
         keys.chunked(DELETE_BATCH_SIZE).forEach { chunk ->
-            val blobUrls = chunk.map { key -> blobContainerClient.getBlobClient(key).blobUrl }
-            batchClient.deleteBlobs(blobUrls, DeleteSnapshotsOptionType.INCLUDE)
+            val batch = batchClient.blobBatch
+
+            chunk.forEach { key ->
+                batch.deleteBlob(
+                    blobConfig.containerName,
+                    key,
+                    DeleteSnapshotsOptionType.INCLUDE,
+                    null
+                )
+            }
+
+            try {
+                batchClient.submitBatch(batch)
+            } catch (e: BlobBatchStorageException) {
+                val nonNotFound = e.batchExceptions.filter { it.statusCode != 404 }
+                if (nonNotFound.isNotEmpty()) {
+                    val details =
+                        nonNotFound.joinToString("; ") {
+                            "status=${it.statusCode}, message=${it.message}"
+                        }
+                    throw RuntimeException("Azure batch delete had failures: $details", e)
+                }
+            }
         }
     }
 

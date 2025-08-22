@@ -5,7 +5,7 @@
 import copy
 from abc import ABC, abstractmethod
 from functools import cached_property
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import parse_qsl, urlparse
 
 import pendulum
@@ -18,6 +18,7 @@ from airbyte_cdk.sources.declarative.types import StreamSlice
 from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 
@@ -30,6 +31,38 @@ TWILIO_STUDIO_API_BASE = "https://studio.twilio.com/v1/"
 TWILIO_CONVERSATIONS_URL_BASE = "https://conversations.twilio.com/v1/"
 TWILIO_TRUNKING_URL_BASE = "https://trunking.twilio.com/v1/"
 TWILIO_VERIFY_BASE_V2 = "https://verify.twilio.com/v2/"
+
+
+class TwilioBackoffStrategy(BackoffStrategy):
+    """
+    This method is called if we run into the rate limit.
+    Twilio puts the retry time in the `Retry-After` response header so
+    we return that value. If the response is anything other than a 429 (e.g: 5XX)
+    fall back on default retry behavior.
+    Rate Limits Docs: https://support.twilio.com/hc/en-us/articles/360032845014-Verify-V2-Rate-Limiting
+    """
+
+    def __init__(self, retry_factor: int = 5):
+        self.retry_factor = retry_factor
+
+    def backoff_time(
+        self,
+        response_or_exception: Optional[Union[requests.Response, requests.RequestException]],
+        attempt_count: int,
+    ) -> Optional[float]:
+        if not isinstance(response_or_exception, requests.Response):
+            return None
+
+        response = response_or_exception
+
+        # For 429 rate limit errors, use the retry-after header
+        if response.status_code == 429:
+            retry_after = response.headers.get("retry-after", "5")
+            return float(retry_after)
+
+        # For all other cases, return None to let CDK handle with default behavior
+        # This includes 400 errors that don't match our specific case
+        return None
 
 
 class TwilioStream(HttpStream, ABC):
@@ -77,16 +110,12 @@ class TwilioStream(HttpStream, ABC):
         else:
             yield from records
 
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
-        """This method is called if we run into the rate limit.
-        Twilio puts the retry time in the `Retry-After` response header so we
-        we return that value. If the response is anything other than a 429 (e.g: 5XX)
-        fall back on default retry behavior.
-        Rate Limits Docs: https://support.twilio.com/hc/en-us/articles/360032845014-Verify-V2-Rate-Limiting"""
-
-        backoff_time = response.headers.get("Retry-After")
-        if backoff_time is not None:
-            return float(backoff_time)
+    def get_backoff_strategy(self) -> Optional[Union[BackoffStrategy, List[BackoffStrategy]]]:
+        """
+        Return custom backoff strategy for Notion API.
+        This replaces the deprecated backoff_time method with the modern CDK approach.
+        """
+        return TwilioBackoffStrategy(retry_factor=self.retry_factor)
 
     def request_params(
         self,
@@ -277,7 +306,7 @@ class TwilioNestedStream(TwilioStream):
 
     @cached_property
     def parent_stream_instance(self):
-        return self.parent_stream(authenticator=self._session.auth)
+        return self.parent_stream(authenticator=self._http_client._session.auth)
 
     def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
         return StreamSlice(partition={"subresource_uri": record["subresource_uris"][self.subresource_uri_key]}, cursor_slice={})
@@ -305,85 +334,6 @@ class Accounts(TwilioStream):
     """https://www.twilio.com/docs/usage/api/account#read-multiple-account-resources"""
 
     url_base = TWILIO_API_URL_BASE_VERSIONED
-
-
-class Addresses(TwilioNestedStream):
-    """https://www.twilio.com/docs/usage/api/address#read-multiple-address-resources"""
-
-    parent_stream = Accounts
-
-
-class DependentPhoneNumbers(TwilioNestedStream):
-    """https://www.twilio.com/docs/usage/api/address?code-sample=code-list-dependent-pns-subresources&code-language=curl&code-sdk-version=json#instance-subresources"""
-
-    parent_stream = Addresses
-    url_base = TWILIO_API_URL_BASE_VERSIONED
-    uri_from_subresource = False
-
-    def path(self, stream_slice: Mapping[str, Any], **kwargs):
-        return f"Accounts/{stream_slice['account_sid']}/Addresses/{stream_slice['sid']}/DependentPhoneNumbers.json"
-
-    def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return StreamSlice(partition={"sid": record["sid"], "account_sid": record["account_sid"]}, cursor_slice={})
-
-
-class Applications(TwilioNestedStream):
-    """https://www.twilio.com/docs/usage/api/applications#read-multiple-application-resources"""
-
-    parent_stream = Accounts
-
-
-class AvailablePhoneNumberCountries(TwilioNestedStream):
-    """
-    https://www.twilio.com/docs/phone-numbers/api/availablephonenumber-resource#read-a-list-of-countries
-
-    List of available phone number countries, as well as local, mobile and toll free numbers
-    may be different on each request, so could not pass the full refresh tests.
-    """
-
-    parent_stream = Accounts
-    data_field = "countries"
-    subresource_uri_key = "available_phone_numbers"
-    primary_key = None
-
-
-class AvailablePhoneNumbersLocal(TwilioNestedStream):
-    """https://www.twilio.com/docs/phone-numbers/api/availablephonenumberlocal-resource#read-multiple-availablephonenumberlocal-resources"""
-
-    parent_stream = AvailablePhoneNumberCountries
-    data_field = "available_phone_numbers"
-    subresource_uri_key = "local"
-    primary_key = None
-
-
-class AvailablePhoneNumbersMobile(TwilioNestedStream):
-    """https://www.twilio.com/docs/phone-numbers/api/availablephonenumber-mobile-resource#read-multiple-availablephonenumbermobile-resources"""
-
-    parent_stream = AvailablePhoneNumberCountries
-    data_field = "available_phone_numbers"
-    subresource_uri_key = "mobile"
-    primary_key = None
-
-
-class AvailablePhoneNumbersTollFree(TwilioNestedStream):
-    """https://www.twilio.com/docs/phone-numbers/api/availablephonenumber-tollfree-resource#read-multiple-availablephonenumbertollfree-resources"""
-
-    parent_stream = AvailablePhoneNumberCountries
-    data_field = "available_phone_numbers"
-    subresource_uri_key = "toll_free"
-    primary_key = None
-
-
-class IncomingPhoneNumbers(TwilioNestedStream):
-    """https://www.twilio.com/docs/phone-numbers/api/incomingphonenumber-resource#read-multiple-incomingphonenumber-resources"""
-
-    parent_stream = Accounts
-
-
-class Keys(TwilioNestedStream):
-    """https://www.twilio.com/docs/usage/api/keys#read-a-key-resource"""
-
-    parent_stream = Accounts
 
 
 class Calls(IncrementalTwilioStream, TwilioNestedStream):
@@ -421,56 +371,6 @@ class ConferenceParticipants(TwilioNestedStream):
     data_field = "participants"
 
 
-class Flows(TwilioStream):
-    """
-    https://www.twilio.com/docs/studio/rest-api/flow#read-a-list-of-flows
-    """
-
-    url_base = TWILIO_STUDIO_API_BASE
-
-    def path(self, **kwargs):
-        return "Flows"
-
-
-class Executions(TwilioNestedStream):
-    """
-    https://www.twilio.com/docs/studio/rest-api/execution#read-a-list-of-executions
-    """
-
-    parent_stream = Flows
-    url_base = TWILIO_STUDIO_API_BASE
-    uri_from_subresource = False
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
-        return f"Flows/{ stream_slice['flow_sid'] }/Executions"
-
-    def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return StreamSlice(partition={"flow_sid": record["sid"]}, cursor_slice={})
-
-
-class Step(TwilioNestedStream):
-    """
-    https://www.twilio.com/docs/studio/rest-api/v2/step#read-a-list-of-step-resources
-    """
-
-    parent_stream = Executions
-    url_base = TWILIO_STUDIO_API_BASE
-    uri_from_subresource = False
-    data_field = "steps"
-
-    def path(self, stream_slice: Mapping[str, Any], **kwargs):
-        return f"Flows/{stream_slice['flow_sid']}/Executions/{stream_slice['execution_sid']}/Steps"
-
-    def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return StreamSlice(partition={"flow_sid": record["flow_sid"], "execution_sid": record["sid"]}, cursor_slice={})
-
-
-class OutgoingCallerIds(TwilioNestedStream):
-    """https://www.twilio.com/docs/voice/api/outgoing-caller-ids#outgoingcallerids-list-resource"""
-
-    parent_stream = Accounts
-
-
 class Recordings(IncrementalTwilioStream, TwilioNestedStream):
     """https://www.twilio.com/docs/voice/api/recording#read-multiple-recording-resources"""
 
@@ -478,70 +378,6 @@ class Recordings(IncrementalTwilioStream, TwilioNestedStream):
     lower_boundary_filter_field = "DateCreated>"
     upper_boundary_filter_field = "DateCreated<"
     cursor_field = "date_created"
-
-
-class Services(TwilioStream):
-    """
-    https://www.twilio.com/docs/chat/rest/service-resource#read-multiple-service-resources
-    """
-
-    url_base = TWILIO_CHAT_BASE
-
-    def path(self, **kwargs):
-        return "Services"
-
-
-class VerifyServices(TwilioStream):
-    """
-    https://www.twilio.com/docs/chat/rest/service-resource#read-multiple-service-resources
-    """
-
-    # Unlike other endpoints, this one won't accept requests where pageSize >100
-    page_size = 100
-    data_field = "services"
-    url_base = TWILIO_VERIFY_BASE_V2
-
-    def path(self, **kwargs):
-        return "Services"
-
-
-class Roles(TwilioNestedStream):
-    """
-    https://www.twilio.com/docs/chat/rest/role-resource#read-multiple-role-resources
-    """
-
-    parent_stream = Services
-    url_base = TWILIO_CHAT_BASE
-    uri_from_subresource = False
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs):
-        return f"Services/{ stream_slice['service_sid'] }/Roles"
-
-    def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return StreamSlice(partition={"service_sid": record["sid"]}, cursor_slice={})
-
-
-class Transcriptions(TwilioNestedStream):
-    """https://www.twilio.com/docs/voice/api/recording-transcription?code-sample=code-read-list-all-transcriptions&code-language=curl&code-sdk-version=json#read-multiple-transcription-resources"""
-
-    parent_stream = Accounts
-
-
-class Trunks(TwilioStream):
-    """
-    https://www.twilio.com/docs/sip-trunking/api/trunk-resource#trunk-properties
-    """
-
-    url_base = TWILIO_TRUNKING_URL_BASE
-
-    def path(self, **kwargs):
-        return "Trunks"
-
-
-class Queues(TwilioNestedStream):
-    """https://www.twilio.com/docs/voice/api/queue-resource#read-multiple-queue-resources"""
-
-    parent_stream = Accounts
 
 
 class Messages(IncrementalTwilioStream, TwilioNestedStream):
@@ -567,7 +403,9 @@ class MessageMedia(IncrementalTwilioStream, TwilioNestedStream):
 
     @cached_property
     def parent_stream_instance(self):
-        return self.parent_stream(authenticator=self._session.auth, start_date=self._start_date, lookback_window=self._lookback_window)
+        return self.parent_stream(
+            authenticator=self._http_client._session.auth, start_date=self._start_date, lookback_window=self._lookback_window
+        )
 
 
 class UsageNestedStream(TwilioNestedStream):
@@ -630,67 +468,3 @@ class Alerts(IncrementalTwilioStream):
 
     def path(self, **kwargs):
         return self.name.title()
-
-
-class Conversations(TwilioStream):
-    """https://www.twilio.com/docs/conversations/api/conversation-resource#read-multiple-conversation-resources"""
-
-    url_base = TWILIO_CONVERSATIONS_URL_BASE
-
-    def path(self, **kwargs):
-        return self.name.title()
-
-
-class ConversationParticipants(TwilioNestedStream):
-    """https://www.twilio.com/docs/conversations/api/conversation-participant-resource"""
-
-    parent_stream = Conversations
-    url_base = TWILIO_CONVERSATIONS_URL_BASE
-    data_field = "participants"
-    uri_from_subresource = False
-
-    def path(self, stream_slice: Mapping[str, Any], **kwargs):
-        return f"Conversations/{stream_slice['conversation_sid']}/Participants"
-
-    def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return StreamSlice(partition={"conversation_sid": record["sid"]}, cursor_slice={})
-
-
-class ConversationMessages(TwilioNestedStream):
-    """https://www.twilio.com/docs/conversations/api/conversation-message-resource#list-all-conversation-messages"""
-
-    parent_stream = Conversations
-    url_base = TWILIO_CONVERSATIONS_URL_BASE
-    uri_from_subresource = False
-    data_field = "messages"
-
-    def path(self, stream_slice: Mapping[str, Any], **kwargs):
-        return f"Conversations/{stream_slice['conversation_sid']}/Messages"
-
-    def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return StreamSlice(partition={"conversation_sid": record["sid"]}, cursor_slice={})
-
-
-class Users(TwilioStream):
-    """https://www.twilio.com/docs/conversations/api/user-resource"""
-
-    url_base = TWILIO_CONVERSATIONS_URL_BASE
-
-    def path(self, **kwargs):
-        return self.name.title()
-
-
-class UserConversations(TwilioNestedStream):
-    """https://www.twilio.com/docs/conversations/api/user-conversation-resource#list-all-of-a-users-conversations"""
-
-    parent_stream = Users
-    url_base = TWILIO_CONVERSATIONS_URL_BASE
-    uri_from_subresource = False
-    data_field = "conversations"
-    primary_key = ["account_sid"]
-
-    def path(self, stream_slice: Mapping[str, Any], **kwargs):
-        return f"Users/{stream_slice['user_sid']}/Conversations"
-
-    def parent_record_to_stream_slice(self, record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return StreamSlice(partition={"user_sid": record["sid"]}, cursor_slice={})
