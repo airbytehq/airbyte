@@ -52,6 +52,7 @@ definitions:
           type: JsonDecoder
         requester:
           $ref: "#/definitions/base_requester"
+          path: /open/v1/project/
         record_selector:
           type: RecordSelector
           extractor:
@@ -70,10 +71,6 @@ definitions:
   base_requester:
     type: HttpRequester
     url_base: https://api.ticktick.com
-    throttler:
-      type: RateLimiter
-      limit: 20
-      period_in_seconds: 60
     authenticator:
       type: OAuthAuthenticator
       scopes:
@@ -176,19 +173,19 @@ metadata:
   assist: {}
   testedStreams:
     tasks:
-      hasRecords: false
-      streamHash: 1a027c8709d9e91d57a7af4cb1ee457208b5cb48
-      hasResponse: false
-      primaryKeysAreUnique: false
-      primaryKeysArePresent: false
-      responsesAreSuccessful: false
-    projects:
-      hasRecords: false
-      streamHash: 4bdbe4119e33f1b535cff3d333d34d0740ee2381
+      hasRecords: true
+      streamHash: 614b09c66bbaf39cfd22bf6fbc3b5c8d45bbe19d
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
-      responsesAreSuccessful: false
+      responsesAreSuccessful: true
+    projects:
+      hasRecords: true
+      streamHash: f302a05535246c68b860f6b24d368272c73ddb28
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   autoImportSchema:
     tasks: true
     projects: true
@@ -345,3 +342,14 @@ schemas:
           - string
           - "null"
     additionalProperties: true
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: FixedWindowCallRatePolicy
+      period: PT1M
+      call_limit: 20
+      matchers:
+        - method: GET
+          url_base: https://api.ticktick.com
+          url_path_pattern: .*
