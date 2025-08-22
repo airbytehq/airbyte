@@ -22,4 +22,4 @@ Use the [Airbyte API](./api/README.md) if you:
 - Need complete control over the user experience and UI design
 - Want to integrate data source configuration into your existing workflows
 
-The complete API reference can be found at https://api.airbyte.ai/api/v1/redoc
+The complete API reference can be found at [https://api.airbyte.ai/api/v1/docs](https://api.airbyte.ai/api/v1/docs)
