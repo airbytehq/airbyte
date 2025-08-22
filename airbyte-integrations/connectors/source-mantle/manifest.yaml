@@ -72,6 +72,10 @@ definitions:
           type: JsonDecoder
         paginator:
           type: DefaultPaginator
+          page_size_option:
+            type: RequestOption
+            field_name: take
+            inject_into: request_parameter
           page_token_option:
             type: RequestOption
             field_name: cursor
