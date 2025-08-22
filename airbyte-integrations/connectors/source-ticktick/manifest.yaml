@@ -20,20 +20,29 @@ definitions:
           type: JsonDecoder
         requester:
           type: HttpRequester
-          path: /open/v1/project/{{ stream_partition['parent_id'] }}/data
           url_base: https://api.ticktick.com
-          http_method: GET
           authenticator:
-            type: OAuthAuthenticator
-            scopes:
-              - "tasks:"
-              - read
-            client_id: "{{ config[\"client_id\"] }}"
-            grant_type: client_credentials
-            client_secret: "{{ config[\"client_secret\"] }}"
-            access_token_value: "{{ config[\"client_access_token\"] }}"
+            type: SelectiveAuthenticator
+            authenticators:
+              Oauth:
+                type: OAuthAuthenticator
+                scopes:
+                  - "tasks:"
+                  - read
+                client_id: "{{ config.authorization.client_id }}"
+                grant_type: client_credentials
+                client_secret: "{{ config.authorization.client_secret) }}"
+                access_token_value: "{{ config.authorization.client_access_token }}"
+              Token:
+                type: BearerAuthenticator
+                api_token: "{{ config.authorization.bearer_token }}"
+            authenticator_selection_path:
+              - authorization
+              - auth_type
           error_handler:
             type: DefaultErrorHandler
+          path: /open/v1/project/{{ stream_partition['parent_id'] }}/data
+          http_method: GET
         record_selector:
           type: RecordSelector
           extractor:
@@ -56,19 +65,28 @@ definitions:
                     type: JsonDecoder
                   requester:
                     type: HttpRequester
-                    path: /open/v1/project/
                     url_base: https://api.ticktick.com
                     authenticator:
-                      type: OAuthAuthenticator
-                      scopes:
-                        - "tasks:"
-                        - read
-                      client_id: "{{ config[\"client_id\"] }}"
-                      grant_type: client_credentials
-                      client_secret: "{{ config[\"client_secret\"] }}"
-                      access_token_value: "{{ config[\"client_access_token\"] }}"
+                      type: SelectiveAuthenticator
+                      authenticators:
+                        Oauth:
+                          type: OAuthAuthenticator
+                          scopes:
+                            - "tasks:"
+                            - read
+                          client_id: "{{ config.authorization.client_id }}"
+                          grant_type: client_credentials
+                          client_secret: "{{ config.authorization.client_secret) }}"
+                          access_token_value: "{{ config.authorization.client_access_token }}"
+                        Token:
+                          type: BearerAuthenticator
+                          api_token: "{{ config.authorization.bearer_token }}"
+                      authenticator_selection_path:
+                        - authorization
+                        - auth_type
                     error_handler:
                       type: DefaultErrorHandler
+                    path: /open/v1/project/
                   record_selector:
                     type: RecordSelector
                     extractor:
@@ -248,19 +266,28 @@ definitions:
           type: JsonDecoder
         requester:
           type: HttpRequester
-          path: /open/v1/project/
           url_base: https://api.ticktick.com
           authenticator:
-            type: OAuthAuthenticator
-            scopes:
-              - "tasks:"
-              - read
-            client_id: "{{ config[\"client_id\"] }}"
-            grant_type: client_credentials
-            client_secret: "{{ config[\"client_secret\"] }}"
-            access_token_value: "{{ config[\"client_access_token\"] }}"
+            type: SelectiveAuthenticator
+            authenticators:
+              Oauth:
+                type: OAuthAuthenticator
+                scopes:
+                  - "tasks:"
+                  - read
+                client_id: "{{ config.authorization.client_id }}"
+                grant_type: client_credentials
+                client_secret: "{{ config.authorization.client_secret) }}"
+                access_token_value: "{{ config.authorization.client_access_token }}"
+              Token:
+                type: BearerAuthenticator
+                api_token: "{{ config.authorization.bearer_token }}"
+            authenticator_selection_path:
+              - authorization
+              - auth_type
           error_handler:
             type: DefaultErrorHandler
+          path: /open/v1/project/
         record_selector:
           type: RecordSelector
           extractor:
@@ -315,36 +342,41 @@ definitions:
                 - string
                 - "null"
           additionalProperties: true
+  bearer_token:
+    type: BearerAuthenticator
+    api_token: "{{ config.authorization.bearer_token }}"
   base_requester:
     type: HttpRequester
     url_base: https://api.ticktick.com
     authenticator:
-      type: OAuthAuthenticator
-      scopes:
-        - "tasks:"
-        - read
-      client_id: "{{ config[\"client_id\"] }}"
-      grant_type: client_credentials
-      client_secret: "{{ config[\"client_secret\"] }}"
-      access_token_value: "{{ config[\"client_access_token\"] }}"
+      type: SelectiveAuthenticator
+      authenticators:
+        Oauth:
+          type: OAuthAuthenticator
+          scopes:
+            - "tasks:"
+            - read
+          client_id: "{{ config.authorization.client_id }}"
+          grant_type: client_credentials
+          client_secret: "{{ config.authorization.client_secret) }}"
+          access_token_value: "{{ config.authorization.client_access_token }}"
+        Token:
+          type: BearerAuthenticator
+          api_token: "{{ config.authorization.bearer_token }}"
+      authenticator_selection_path:
+        - authorization
+        - auth_type
     error_handler:
       type: DefaultErrorHandler
-  tasks_requester:
-    type: HttpRequester
-    path: /open/v1/project/{{ stream_partition['parent_id'] }}/data
-    url_base: https://api.ticktick.com
-    http_method: GET
-    authenticator:
-      type: OAuthAuthenticator
-      scopes:
-        - "tasks:"
-        - read
-      client_id: "{{ config[\"client_id\"] }}"
-      grant_type: client_credentials
-      client_secret: "{{ config[\"client_secret\"] }}"
-      access_token_value: "{{ config[\"client_access_token\"] }}"
-    error_handler:
-      type: DefaultErrorHandler
+  oauth_authenticator:
+    type: OAuthAuthenticator
+    scopes:
+      - "tasks:"
+      - read
+    client_id: "{{ config.authorization.client_id }}"
+    grant_type: client_credentials
+    client_secret: "{{ config.authorization.client_secret) }}"
+    access_token_value: "{{ config.authorization.client_access_token }}"
 
 streams:
   - type: DeclarativeStream
@@ -355,19 +387,28 @@ streams:
         type: JsonDecoder
       requester:
         type: HttpRequester
-        path: /open/v1/project/
         url_base: https://api.ticktick.com
         authenticator:
-          type: OAuthAuthenticator
-          scopes:
-            - "tasks:"
-            - read
-          client_id: "{{ config[\"client_id\"] }}"
-          grant_type: client_credentials
-          client_secret: "{{ config[\"client_secret\"] }}"
-          access_token_value: "{{ config[\"client_access_token\"] }}"
+          type: SelectiveAuthenticator
+          authenticators:
+            Oauth:
+              type: OAuthAuthenticator
+              scopes:
+                - "tasks:"
+                - read
+              client_id: "{{ config.authorization.client_id }}"
+              grant_type: client_credentials
+              client_secret: "{{ config.authorization.client_secret) }}"
+              access_token_value: "{{ config.authorization.client_access_token }}"
+            Token:
+              type: BearerAuthenticator
+              api_token: "{{ config.authorization.bearer_token }}"
+          authenticator_selection_path:
+            - authorization
+            - auth_type
         error_handler:
           type: DefaultErrorHandler
+        path: /open/v1/project/
       record_selector:
         type: RecordSelector
         extractor:
@@ -430,20 +471,29 @@ streams:
         type: JsonDecoder
       requester:
         type: HttpRequester
-        path: /open/v1/project/{{ stream_partition['parent_id'] }}/data
         url_base: https://api.ticktick.com
-        http_method: GET
         authenticator:
-          type: OAuthAuthenticator
-          scopes:
-            - "tasks:"
-            - read
-          client_id: "{{ config[\"client_id\"] }}"
-          grant_type: client_credentials
-          client_secret: "{{ config[\"client_secret\"] }}"
-          access_token_value: "{{ config[\"client_access_token\"] }}"
+          type: SelectiveAuthenticator
+          authenticators:
+            Oauth:
+              type: OAuthAuthenticator
+              scopes:
+                - "tasks:"
+                - read
+              client_id: "{{ config.authorization.client_id }}"
+              grant_type: client_credentials
+              client_secret: "{{ config.authorization.client_secret) }}"
+              access_token_value: "{{ config.authorization.client_access_token }}"
+            Token:
+              type: BearerAuthenticator
+              api_token: "{{ config.authorization.bearer_token }}"
+          authenticator_selection_path:
+            - authorization
+            - auth_type
         error_handler:
           type: DefaultErrorHandler
+        path: /open/v1/project/{{ stream_partition['parent_id'] }}/data
+        http_method: GET
       record_selector:
         type: RecordSelector
         extractor:
@@ -466,19 +516,28 @@ streams:
                   type: JsonDecoder
                 requester:
                   type: HttpRequester
-                  path: /open/v1/project/
                   url_base: https://api.ticktick.com
                   authenticator:
-                    type: OAuthAuthenticator
-                    scopes:
-                      - "tasks:"
-                      - read
-                    client_id: "{{ config[\"client_id\"] }}"
-                    grant_type: client_credentials
-                    client_secret: "{{ config[\"client_secret\"] }}"
-                    access_token_value: "{{ config[\"client_access_token\"] }}"
+                    type: SelectiveAuthenticator
+                    authenticators:
+                      Oauth:
+                        type: OAuthAuthenticator
+                        scopes:
+                          - "tasks:"
+                          - read
+                        client_id: "{{ config.authorization.client_id }}"
+                        grant_type: client_credentials
+                        client_secret: "{{ config.authorization.client_secret) }}"
+                        access_token_value: "{{ config.authorization.client_access_token }}"
+                      Token:
+                        type: BearerAuthenticator
+                        api_token: "{{ config.authorization.bearer_token }}"
+                    authenticator_selection_path:
+                      - authorization
+                      - auth_type
                   error_handler:
                     type: DefaultErrorHandler
+                  path: /open/v1/project/
                 record_selector:
                   type: RecordSelector
                   extractor:
@@ -653,7 +712,11 @@ streams:
 spec:
   type: Spec
   advanced_auth:
+    predicate_key:
+      - authorization
+      - auth_type
     auth_flow_type: oauth2.0
+    predicate_value: Oauth
     oauth_config_specification:
       complete_oauth_output_specification:
         required:
@@ -662,6 +725,7 @@ spec:
           access_token:
             type: string
             path_in_connector_config:
+              - authorization
               - client_access_token
       oauth_connector_input_specification:
         scope: "tasks: read"
@@ -698,33 +762,71 @@ spec:
           client_id:
             type: string
             path_in_connector_config:
+              - authorization
               - client_id
           client_secret:
             type: string
             path_in_connector_config:
+              - authorization
               - client_secret
   connection_specification:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
-    required:
-      - client_id
-      - client_secret
     properties:
-      client_id:
-        type: string
-        order: 0
-        title: Client ID
-        airbyte_secret: true
-      client_secret:
-        type: string
-        order: 1
-        title: Client secret
-        airbyte_secret: true
-      client_access_token:
-        type: string
-        order: 2
-        title: Access token
-        airbyte_secret: true
+      authorization:
+        type: object
+        oneOf:
+          - type: object
+            title: OAuth2
+            required:
+              - auth_type
+              - client_id
+              - client_secret
+            properties:
+              auth_type:
+                type: string
+                const: Oauth
+                order: 0
+              client_id:
+                type: string
+                description: >-
+                  The client ID of your Ticktick application. Read more <a
+                  href="https://developer.ticktick.com/api#/openapi?id=getting-started">here</a>.
+                title: Client ID
+                airbyte_secret: true
+              client_secret:
+                type: string
+                description: >-
+                  The client secret of of your Ticktick application.
+                  application. Read more <a
+                  href="https://developer.ticktick.com/api#/openapi?id=getting-started">here</a>.
+                title: Client Secret
+                airbyte_secret: true
+              client_access_token:
+                type: string
+                description: >-
+                  Access token for making authenticated requests; filled after
+                  complete oauth2 flow.
+                title: Access Token
+                airbyte_secret: true
+          - type: object
+            title: Bearer Token (from Oauth2)
+            required:
+              - auth_type
+              - bearer_token
+            properties:
+              auth_type:
+                type: string
+                const: Token
+                order: 0
+              bearer_token:
+                type: string
+                description: >-
+                  Access token for making authenticated requests; filled after
+                  complete oauth2 flow.
+                title: Bearer Token
+                airbyte_secret: true
+        title: Authentication Type
     additionalProperties: true
 
 metadata:
@@ -732,14 +834,14 @@ metadata:
   testedStreams:
     tasks:
       hasRecords: true
-      streamHash: 614b09c66bbaf39cfd22bf6fbc3b5c8d45bbe19d
+      streamHash: 2ab2096c5e51d4619c7c6db5376152e68d1c1acc
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     projects:
       hasRecords: true
-      streamHash: f302a05535246c68b860f6b24d368272c73ddb28
+      streamHash: f42dc343c8c5b030eb4214b82af4da3911dcf604
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
