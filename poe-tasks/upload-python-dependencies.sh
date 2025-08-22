@@ -36,8 +36,8 @@ EOF
 }
 
 # Default values
-BUCKET_NAME="dev-airbyte-cloud-connector-metadata-service"
-RELEASE_TYPE="pre-release"
+BUCKET_NAME="dev-airbyte-cloud-connector-metadata-service-2"
+PRE_RELEASE=false
 CONNECTOR_NAME=""
 VERSION=""
 
