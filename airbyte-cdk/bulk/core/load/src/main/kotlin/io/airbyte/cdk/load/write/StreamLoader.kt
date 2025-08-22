@@ -22,4 +22,12 @@ interface StreamLoader {
     suspend fun start() {}
 
     suspend fun close(hadNonzeroRecords: Boolean, streamFailure: StreamProcessingFailed? = null) {}
+
+    suspend fun teardown(completedSuccessfully: Boolean) {
+        if (completedSuccessfully) {
+            close(true, null)
+        } else {
+            close(true, StreamProcessingFailed(Exception("All streams did not complete.")))
+        }
+    }
 }

@@ -35,7 +35,7 @@ class StateReconcilerTest {
 
     @BeforeEach
     fun setUp() {
-        stateReconciler = StateReconciler(stateStore, consumer)
+        stateReconciler = StateReconciler(stateStore, consumer, null)
     }
 
     @Test
