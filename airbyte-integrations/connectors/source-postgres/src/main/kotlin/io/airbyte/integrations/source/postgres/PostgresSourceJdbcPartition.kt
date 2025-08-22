@@ -85,7 +85,7 @@ sealed class PostgresSourceSplittablePartition(
     override val nonResumableQuery: SelectQuery
         get() = selectQueryGenerator.generate(nonResumableQuerySpec.optimize())
 
-    val nonResumableQuerySpec: SelectQuerySpec
+    open val nonResumableQuerySpec: SelectQuerySpec
         get() = SelectQuerySpec(SelectColumns(listOf(ctidField) + stream.fields), from, where)
 
     override fun resumableQuery(limit: Long): SelectQuery {
@@ -246,6 +246,21 @@ class PostgresSourceJdbcCursorIncrementalPartition(
     override val lowerBound: List<JsonNode> = listOf(cursorLowerBound)
     override val upperBound: List<JsonNode>
         get() = listOf(cursorUpperBound)
+
+    override val nonResumableQuerySpec: SelectQuerySpec
+        get() = SelectQuerySpec(SelectColumns(stream.fields), from, where)
+
+    override fun resumableQuery(limit: Long): SelectQuery {
+        val querySpec =
+            SelectQuerySpec(
+                SelectColumns((stream.fields).distinct()),
+                from,
+                where,
+                OrderBy(ctidField),
+                Limit(limit)
+            )
+        return selectQueryGenerator.generate(querySpec.optimize())
+    }
 
     override val completeState: OpaqueStateValue
         get() =
