@@ -24,6 +24,7 @@ class PipelineCompletionHandler(
     suspend fun apply(
         cause: Throwable?,
     ) = coroutineScope {
+        // shutdown the reconciler regardless of success or failure, so we don't hang
         reconciler.disable()
 
         if (cause != null) {

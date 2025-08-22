@@ -17,6 +17,7 @@ import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+/** At an interval it checks for any complete states and flushes them to the platform. */
 @Singleton
 class StateReconciler(
     private val stateStore: StateStore,

@@ -31,7 +31,7 @@ interface StreamLoader {
         if (completedSuccessfully) {
             close(true, null)
         } else {
-            close(true, StreamProcessingFailed(Exception("All streams did not complete.")))
+            close(true, StreamProcessingFailed(Exception("One or more streams did not complete.")))
         }
     }
 }
