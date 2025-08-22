@@ -152,7 +152,6 @@ jobs:
           ./poe-tasks/publish-python-registry.sh --name ${{ matrix.connector }} --release-type ${{ needs.publish_options.outputs.release-type }}
         env:
           PYTHON_REGISTRY_TOKEN: ${{ secrets.PYPI_TOKEN }}
-        continue-on-error: true # We allow this to fail because we are testing this step. TODO: remove this once we are sure it works.
 
       - name: Upload Python Dependencies to GCS
         id: upload-python-dependencies-master
@@ -165,7 +164,6 @@ jobs:
             --name ${{ matrix.connector }} \
             --bucket prod-airbyte-cloud-connector-metadata-service \
             --release-type ${{ needs.publish_options.outputs.release-type }}
-        continue-on-error: true # We allow this to fail because we are testing this step. TODO: remove this once we are sure it works.
 
       - name: Build and publish JVM connectors images
         id: build-and-publish-JVM-connectors-images
