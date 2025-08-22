@@ -4,6 +4,7 @@ package io.airbyte.cdk.read
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.data.JsonEncoder
 import io.airbyte.cdk.data.NullCodec
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.NonEmittedField
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
@@ -155,18 +156,20 @@ class JdbcSelectQuerier(
                             )
                     }
                 } catch (e: Exception) {
-                    resultRow.data[column.id] =
-                        FieldValueEncoder(
-                            null,
-                            NullCodec // Use NullCodec for null values
-                        ) // Use NullCodec for null values
                     if (!hasLoggedException) {
                         log.warn(e) { "Error deserializing value in column $column." }
                         hasLoggedException = true
                     } else {
                         log.debug(e) { "Error deserializing value in column $column." }
                     }
-                    resultRow.changes.set(column, FieldValueChange.RETRIEVAL_FAILURE_TOTAL)
+                    if (column is EmittedField) {
+                        resultRow.changes.set(column, FieldValueChange.RETRIEVAL_FAILURE_TOTAL)
+                        resultRow.data[column.id] =
+                            FieldValueEncoder(
+                                null,
+                                NullCodec // Use NullCodec for null values
+                            ) // Use NullCodec for null values
+                    }
                 }
                 colIdx++
             }

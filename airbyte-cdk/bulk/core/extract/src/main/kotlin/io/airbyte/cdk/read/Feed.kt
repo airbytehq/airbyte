@@ -3,7 +3,7 @@ package io.airbyte.cdk.read
 
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.discover.Field
-import io.airbyte.cdk.discover.FieldOrMetaField
+import io.airbyte.cdk.discover.DataOrMetaField
 
 /**
  * [Feed] identifies part of the data consumed during a READ operation.
@@ -30,10 +30,10 @@ data class Global(
  */
 data class Stream(
     val id: StreamIdentifier,
-    val schema: Set<FieldOrMetaField>,
+    val schema: Set<DataOrMetaField>,
     val configuredSyncMode: ConfiguredSyncMode,
     val configuredPrimaryKey: List<Field>?,
-    val configuredCursor: FieldOrMetaField?,
+    val configuredCursor: DataOrMetaField?,
 ) : Feed {
     val name: String
         get() = id.name
