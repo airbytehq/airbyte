@@ -5,7 +5,7 @@ products: all
 # Data activation (reverse ETL)
 
 :::info
-Data activation is in early access. If you'd like to be an early adopter, [fill out this form](https://form.typeform.com/to/STc7a0jx).
+Data activation is in **early access**. Try it today with the HubSpot and Customer.io destinations in Airbyte Cloud or Self-Managed version 1.8 and later. If you'd like to be an early adopter, chat with the team, and share feedback, [fill out this form](https://form.typeform.com/to/STc7a0jx).
 :::
 
 Data activation enables you to move data out of your data warehouse and into the operational tools where work happens, like CRMs, marketing platforms, and support systems. With this capability, you can deliver modeled data directly to points of action and systems people already use, helping your organization respond faster and more effectively.
