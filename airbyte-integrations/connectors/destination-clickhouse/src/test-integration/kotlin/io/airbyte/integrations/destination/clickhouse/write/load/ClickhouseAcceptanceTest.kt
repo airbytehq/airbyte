@@ -43,7 +43,7 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 class ClickhouseDirectLoadWriterWithJson :
-    ClickhouseDirectLoadWriter(
+    ClickhouseAcceptanceTest(
         Utils.getConfigPath("valid_connection.json"),
         SchematizedNestedValueBehavior.PASS_THROUGH,
         false,
@@ -59,7 +59,7 @@ class ClickhouseDirectLoadWriterWithJson :
 }
 
 class ClickhouseDirectLoadWriterWithoutJson :
-    ClickhouseDirectLoadWriter(
+    ClickhouseAcceptanceTest(
         Utils.getConfigPath("valid_connection_no_json.json"),
         SchematizedNestedValueBehavior.STRINGIFY,
         true,
@@ -67,7 +67,7 @@ class ClickhouseDirectLoadWriterWithoutJson :
 
 @Disabled("Requires local bastion and CH instance to pass")
 class ClickhouseDirectLoadWriterWithoutJsonSshTunnel :
-    ClickhouseDirectLoadWriter(
+    ClickhouseAcceptanceTest(
         Path.of("secrets/ssh-tunnel.json"),
         SchematizedNestedValueBehavior.STRINGIFY,
         true,
@@ -78,7 +78,7 @@ class ClickhouseDirectLoadWriterWithoutJsonSshTunnel :
     }
 }
 
-abstract class ClickhouseDirectLoadWriter(
+abstract class ClickhouseAcceptanceTest(
     configPath: Path,
     schematizedObjectBehavior: SchematizedNestedValueBehavior,
     stringifySchemalessObjects: Boolean
@@ -116,6 +116,7 @@ abstract class ClickhouseDirectLoadWriter(
         nullEqualsUnset = true,
         configUpdater = ClickhouseConfigUpdater(),
         dedupChangeUsesDefault = true,
+        testSpeedModeStatsEmission = false,
     ) {
     companion object {
         @JvmStatic
