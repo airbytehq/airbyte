@@ -33,11 +33,13 @@ class ConfigurationSupplierSpecificationFactory(
     val configJsonObjectSupplier: ConfigurationSpecificationSupplier<*>,
     val extendSpecification: SpecificationExtender,
 ) : SpecificationFactory {
-    override fun create() : ConnectorSpecification {
-        return extendSpecification(ConnectorSpecification().withConnectionSpecification(configJsonObjectSupplier.jsonSchema))
+    override fun create(): ConnectorSpecification {
+        return extendSpecification(
+            ConnectorSpecification()
+                .withConnectionSpecification(configJsonObjectSupplier.jsonSchema)
+        )
     }
 }
-
 
 interface SpecificationExtender : (ConnectorSpecification) -> ConnectorSpecification
 

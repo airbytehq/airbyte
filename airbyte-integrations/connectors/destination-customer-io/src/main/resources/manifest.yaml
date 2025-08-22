@@ -24,7 +24,8 @@ spec:
         properties:
           siteId:
             type: string
-            description: Enter your Customer IO <a href="https://docs.customer.io/integrations/sdk/ios/getting-started/auth/#get-your-api-key">Site
+            description:
+              Enter your Customer IO <a href="https://docs.customer.io/integrations/sdk/ios/getting-started/auth/#get-your-api-key">Site
               ID</a>.
             title: Site ID
             airbyte_secret: true
@@ -32,7 +33,8 @@ spec:
             order: 1
           apiKey:
             type: string
-            description: Enter your Customer IO <a href="https://docs.customer.io/integrations/sdk/ios/getting-started/auth/#get-your-api-key">API
+            description:
+              Enter your Customer IO <a href="https://docs.customer.io/integrations/sdk/ios/getting-started/auth/#get-your-api-key">API
               Key</a>.
             title: API Key
             airbyte_secret: true

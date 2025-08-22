@@ -36,11 +36,11 @@ import io.airbyte.cdk.util.ResourceUtils
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 
-
 class DeclarativeDestinationFactory(config: JsonNode?) {
     private val stringInterpolator: StringInterpolator = StringInterpolator()
-    private val manifest: DeclarativeDestinationModel =  createManifest()
-    // TODO at some point, we might want to validate the config against the spec to improve error messages
+    private val manifest: DeclarativeDestinationModel = createManifest()
+    // TODO at some point, we might want to validate the config against the spec to improve error
+    // messages
     val config: JsonNode? = config
     val cdkConfiguration = createCdkConfiguration()
 
@@ -60,7 +60,10 @@ class DeclarativeDestinationFactory(config: JsonNode?) {
         }
 
         val objectStorageConfig =
-            ValidatedJsonUtils.parseUnvalidated(config.get("object_storage_config"), ObjectStorageSpec::class.java)
+            ValidatedJsonUtils.parseUnvalidated(
+                    config.get("object_storage_config"),
+                    ObjectStorageSpec::class.java
+                )
                 .toObjectStorageConfig()
         return DeclarativeCdkConfiguration(objectStorageConfig)
     }
@@ -70,7 +73,11 @@ class DeclarativeDestinationFactory(config: JsonNode?) {
     }
 
     fun createDestinationChecker(dlqChecker: DlqChecker): CompositeDlqChecker {
-        return CompositeDlqChecker(createChecker(manifest.checker), dlqChecker, cdkConfiguration.objectStorageConfig)
+        return CompositeDlqChecker(
+            createChecker(manifest.checker),
+            dlqChecker,
+            cdkConfiguration.objectStorageConfig
+        )
     }
 
     private fun createAuthenticator(
@@ -134,5 +141,6 @@ class DeclarativeDestinationFactory(config: JsonNode?) {
             HttpMethod.OPTIONS -> RequestMethod.OPTIONS
         }
 
-    private fun createInterpolationContext(): Map<String, Any> = mapOf("config" to Jsons.convertValue(config, MutableMap::class.java))
+    private fun createInterpolationContext(): Map<String, Any> =
+        mapOf("config" to Jsons.convertValue(config, MutableMap::class.java))
 }

@@ -10,7 +10,6 @@ import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
 import io.airbyte.cdk.load.message.InputRecord
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.cdk.load.write.WriteOperation
-import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.InputStream
 import java.io.PipedInputStream
 import java.io.PipedOutputStream
@@ -58,10 +57,10 @@ class DestinationCheckerSyncWithoutGeneric(
 
             pipe.println(
                 InputRecord(
-                    mockStream,
-                    """{"test": 42}""",
-                    System.currentTimeMillis(),
-                )
+                        mockStream,
+                        """{"test": 42}""",
+                        System.currentTimeMillis(),
+                    )
                     .asProtocolMessage()
                     .serializeToString()
             )
@@ -78,7 +77,6 @@ class DestinationCheckerSyncWithoutGeneric(
         catalog.streams.forEach { stream -> cleaner.cleanup(stream) }
     }
 }
-
 
 // TODO the cleaner maybe should also be looking for old test tables, a la DestinationCleaner??
 fun interface CheckCleanerWithoutGeneric {

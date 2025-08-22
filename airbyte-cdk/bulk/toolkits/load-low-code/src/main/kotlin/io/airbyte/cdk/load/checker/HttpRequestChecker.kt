@@ -8,8 +8,7 @@ import io.airbyte.cdk.load.check.DestinationCheckerWithoutGeneric
 import io.airbyte.cdk.load.http.HttpRequester
 import io.airbyte.cdk.load.http.consumeBodyToString
 
-class HttpRequestChecker(private val requester: HttpRequester) :
-    DestinationCheckerWithoutGeneric {
+class HttpRequestChecker(private val requester: HttpRequester) : DestinationCheckerWithoutGeneric {
     override fun check() {
         val response = requester.send()
         response.use {

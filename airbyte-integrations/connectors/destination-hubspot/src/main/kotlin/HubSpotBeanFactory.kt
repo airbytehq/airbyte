@@ -38,7 +38,8 @@ class HubSpotBeanFactory {
         factory: DeclarativeDestinationFactory,
         checker: DlqChecker,
         outputConsumer: OutputConsumer
-    ): Operation = CheckOperationWithoutGeneric(factory.createDestinationChecker(checker), outputConsumer)
+    ): Operation =
+        CheckOperationWithoutGeneric(factory.createDestinationChecker(checker), outputConsumer)
 
     @Singleton
     fun factory(

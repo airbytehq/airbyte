@@ -9,7 +9,6 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.util.regex.Pattern
 
-
 class CustomerIoCheckTest :
     CheckIntegrationTest<NoopSpec>(
         successConfigFilenames =

@@ -14,14 +14,17 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode
 
 class DeclarativeSpecificationFactory(private val declarativeSpec: Spec) : SpecificationFactory {
     override fun create(): ConnectorSpecification {
-        val connectionSpecificationCopy: ObjectNode = declarativeSpec.connectionSpecification.deepCopy()
+        val connectionSpecificationCopy: ObjectNode =
+            declarativeSpec.connectionSpecification.deepCopy()
         appendObjectStorageConfig(connectionSpecificationCopy)
 
-        val spec = ConnectorSpecification()
-            .withConnectionSpecification(connectionSpecificationCopy)
-            // FIXME do we really need the following. I added those for backward compabitiliy with destination-customer-io
-            .withSupportsIncremental(true)
-            .withSupportedDestinationSyncModes(listOf(DestinationSyncMode.APPEND))
+        val spec =
+            ConnectorSpecification()
+                .withConnectionSpecification(connectionSpecificationCopy)
+                // FIXME do we really need the following. I added those for backward compabitiliy
+                // with destination-customer-io
+                .withSupportsIncremental(true)
+                .withSupportedDestinationSyncModes(listOf(DestinationSyncMode.APPEND))
 
         if (declarativeSpec.advancedAuth != null) {
             spec.withAdvancedAuth(declarativeSpec.advancedAuth)
@@ -35,7 +38,7 @@ class DeclarativeSpecificationFactory(private val declarativeSpec: Spec) : Speci
             "object_storage_config",
             ValidatedJsonUtils.generateAirbyteJsonSchema(ObjectStorageSpec::class.java),
         )
-        (connectionSpecificationCopy.get("properties")
-            .get("object_storage_config") as ObjectNode).remove("\$schema")
+        (connectionSpecificationCopy.get("properties").get("object_storage_config") as ObjectNode)
+            .remove("\$schema")
     }
 }

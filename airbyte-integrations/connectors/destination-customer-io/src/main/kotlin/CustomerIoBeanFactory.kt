@@ -37,16 +37,21 @@ class CustomerIoBeanFactory {
         factory: DeclarativeDestinationFactory,
         checker: DlqChecker,
         outputConsumer: OutputConsumer
-    ): Operation = CheckOperationWithoutGeneric(factory.createDestinationChecker(checker), outputConsumer)
+    ): Operation =
+        CheckOperationWithoutGeneric(factory.createDestinationChecker(checker), outputConsumer)
 
     @Singleton
     fun connectorFactory(
         @Value("\${airbyte.connector.config.json}") configAsJsonString: String? = null,
-    ): DeclarativeDestinationFactory = DeclarativeDestinationFactory(configAsJsonString?.let { Jsons.readTree(configAsJsonString) })
+    ): DeclarativeDestinationFactory =
+        DeclarativeDestinationFactory(
+            configAsJsonString?.let { Jsons.readTree(configAsJsonString) }
+        )
 
     @Primary
     @Singleton
-    fun cdkConfiguration(factory: DeclarativeDestinationFactory): DeclarativeCdkConfiguration = factory.cdkConfiguration
+    fun cdkConfiguration(factory: DeclarativeDestinationFactory): DeclarativeCdkConfiguration =
+        factory.cdkConfiguration
 
     @Primary
     @Singleton
@@ -70,7 +75,9 @@ class CustomerIoBeanFactory {
     @Singleton
     fun httpClient(factory: DeclarativeDestinationFactory): HttpClient {
         if (factory.config == null) {
-            throw IllegalArgumentException("Configuration was not provided and therefore HttpClient can't be instantiated")
+            throw IllegalArgumentException(
+                "Configuration was not provided and therefore HttpClient can't be instantiated"
+            )
         }
 
         val authenticator =
