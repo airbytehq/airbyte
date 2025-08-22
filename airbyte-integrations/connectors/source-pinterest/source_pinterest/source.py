@@ -9,7 +9,6 @@ from typing import Any, List, Mapping
 
 import pendulum
 import requests
-
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
