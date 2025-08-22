@@ -212,10 +212,10 @@ jobs:
   # destination-postgres-strict-encrypt's spec cache.
   publish_connector_registry_entries:
     name: Publish connector registry entries
-    needs: [list_connectors, publish_connectors]
+    needs: [publish_options, publish_connectors]
     runs-on: ubuntu-24.04
     strategy:
-      matrix: ${{ fromJson(needs.list_connectors.outputs.connectors-to-publish) }}
+      matrix: ${{ fromJson(needs.publish_options.outputs.connectors-to-publish) }}
       max-parallel: 5
       # Allow all jobs to run, even if one fails
       fail-fast: false
@@ -258,9 +258,18 @@ jobs:
           set -euo pipefail
           echo "connector-language=$(poe -qq get-language)" | tee -a $GITHUB_OUTPUT
           echo "connector-version=$(poe -qq get-version)" | tee -a $GITHUB_OUTPUT
+          CONNECTOR_VERSION=$(poe -qq get-version)
+          if [[ "${{ inputs.release-type }}" == "pre-release" ]]; then
+            hash=$(git rev-parse --short=10 HEAD)
+            echo "docker-image-tag=${CONNECTOR_VERSION}-dev.${hash}" | tee -a $GITHUB_OUTPUT
+            echo "release-type-flag=--pre-release" | tee -a $GITHUB_OUTPUT
+          else
+            echo "docker-image-tag=${CONNECTOR_VERSION}" | tee -a $GITHUB_OUTPUT
+            echo "release-type-flag=--main-release" | tee -a $GITHUB_OUTPUT
+          fi
 
-      - name: Generate OSS Registry Entry [On merge to master]
-        id: generate-oss-registry-entry-master
+      - name: Generate OSS Registry Entry
+        id: generate-oss-registry-entry
         if: github.event_name == 'push'
         shell: bash
         run: |
@@ -270,14 +279,14 @@ jobs:
             prod-airbyte-cloud-connector-metadata-service \
             "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
             oss \
-            ${{ steps.connector-metadata.outputs.connector-version }} \
-            --main-release
+            ${{ steps.connector-metadata.outputs.docker-image-tag }} \
+            ${{ steps.connector-metadata.outputs.release-type-flag }}
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
           SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
 
-      - name: Generate Cloud Registry Entry [On merge to master]
-        id: generate-cloud-registry-entry-master
+      - name: Generate Cloud Registry Entry
+        id: generate-cloud-registry-entry
         if: github.event_name == 'push'
         shell: bash
         run: |
@@ -287,64 +296,8 @@ jobs:
             prod-airbyte-cloud-connector-metadata-service \
             "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
             cloud \
-            ${{ steps.connector-metadata.outputs.connector-version }} \
-            --main-release
-        env:
-          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
-          SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
-
-      - name: Generate OSS Registry Entry [Manual]
-        id: generate-oss-registry-entry-manual
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
-        shell: bash
-        run: |
-          echo "Generating OSS registry entry for ${{ matrix.connector }}"
-          # TODO factor this prerelease stuff out
-          is_pre_release=$(echo "${{ inputs.publish-options }}" | grep -c -- '--pre-release' || true)
-          if [[ $is_pre_release -gt 0 ]]; then
-            hash=$(git rev-parse --short=10 HEAD)
-            DOCKER_IMAGE_TAG="${{ steps.connector-metadata.outputs.connector-version }}-dev.${hash}"
-            RELEASE_TYPE_FLAG="--pre-release"
-            echo "Running with prerelease tag '$DOCKER_IMAGE_TAG'"
-          else
-            DOCKER_IMAGE_TAG="${{ steps.connector-metadata.outputs.connector-version }}"
-            RELEASE_TYPE_FLAG="--main-release"
-          fi
-          poetry run --directory airbyte-ci/connectors/metadata_service/lib \
-            metadata_service generate-registry-entry \
-            prod-airbyte-cloud-connector-metadata-service \
-            "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
-            oss \
-            $DOCKER_IMAGE_TAG \
-            $RELEASE_TYPE_FLAG
-        env:
-          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
-          SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
-
-      - name: Generate Cloud Registry Entry [Manual]
-        id: generate-cloud-registry-entry-manual
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
-        shell: bash
-        run: |
-          echo "Generating Cloud registry entry for ${{ matrix.connector }}"
-          # TODO factor this prerelease stuff out
-          is_pre_release=$(echo "${{ inputs.publish-options }}" | grep -c -- '--pre-release' || true)
-          if [[ $is_pre_release -gt 0 ]]; then
-            hash=$(git rev-parse --short=10 HEAD)
-            DOCKER_IMAGE_TAG="${{ steps.connector-metadata.outputs.connector-version }}-dev.${hash}"
-            RELEASE_TYPE_FLAG="--pre-release"
-            echo "Running with prerelease tag '$DOCKER_IMAGE_TAG'"
-          else
-            DOCKER_IMAGE_TAG="${{ steps.connector-metadata.outputs.connector-version }}"
-            RELEASE_TYPE_FLAG="--main-release"
-          fi
-          poetry run --directory airbyte-ci/connectors/metadata_service/lib \
-            metadata_service generate-registry-entry \
-            prod-airbyte-cloud-connector-metadata-service \
-            "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
-            cloud \
-            $DOCKER_IMAGE_TAG \
-            $RELEASE_TYPE_FLAG
+            ${{ steps.connector-metadata.outputs.docker-image-tag }} \
+            ${{ steps.connector-metadata.outputs.release-type-flag }}
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
           SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
