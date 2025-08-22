@@ -94,6 +94,7 @@ You can also use a pre-existing user but we highly recommend creating a dedicate
 
 | Version | Date       | Pull Request                                               | Subject                                                                        |
 |:--------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 2.0.14  | 2025-08-21 | [\#65125](https://github.com/airbytehq/airbyte/pull/65125) | Migrate to dataflow model.                                                     |
 | 2.0.13  | 2025-08-20 | [\#65125](https://github.com/airbytehq/airbyte/pull/65125) | Update docs permissioning advice.                                              |
 | 2.0.12  | 2025-08-20 | [\#65120](https://github.com/airbytehq/airbyte/pull/65120) | Check should properly surface protocol related config errors.                  |
 | 2.0.11  | 2025-07-23 | [\#65117](https://github.com/airbytehq/airbyte/pull/65117) | Fix a bug related to the column duplicates name.                               |
