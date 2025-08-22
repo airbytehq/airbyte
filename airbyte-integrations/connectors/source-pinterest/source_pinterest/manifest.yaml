@@ -243,7 +243,11 @@ definitions:
       type: InlineSchemaLoader
       schema: "#/definitions/catalogs_product_groups_schema"
     $parameters:
-      path: "{{ 'catalogs/product_groups?ad_account_id=' + config['account_id'] if config.get('account_id') else 'catalogs/product_groups' }}"
+      path: >-
+        {{
+          'catalogs/product_groups?ad_account_id=' + config['account_id']
+          if config.get('account_id') else 'catalogs/product_groups'
+        }}
 
   ad_accounts_stream:
     # Docs: https://developers.pinterest.com/docs/api/v5/ad_accounts-list and https://developers.pinterest.com/docs/api/v5/ad_accounts-get
@@ -377,7 +381,11 @@ definitions:
       type: InlineSchemaLoader
       schema: "#/definitions/campaigns_schema"
     $parameters:
-      path: "ad_accounts/{{ stream_slice.id }}/campaigns{{ '?entity_statuses=' + ','.join(config.get('status')) if config.get('status') else '' }}"
+      path: >-
+        ad_accounts/{{ stream_slice.id }}/campaigns{{
+          '?entity_statuses=' + ','.join(config.get('status'))
+          if config.get('status') else ''
+        }}
 
   ad_groups_stream:
     # Docs: https://developers.pinterest.com/docs/api/v5/#operation/ad_groups/list
@@ -387,7 +395,11 @@ definitions:
       type: InlineSchemaLoader
       schema: "#/definitions/ad_groups_schema"
     $parameters:
-      path: "ad_accounts/{{ stream_slice.id }}/ad_groups{{ '?entity_statuses=' + ','.join(config.get('status')) if config.get('status') else '' }}"
+      path: >-
+        ad_accounts/{{ stream_slice.id }}/ad_groups{{
+          '?entity_statuses=' + ','.join(config.get('status'))
+          if config.get('status') else ''
+        }}
 
   ads_stream:
     # Docs: https://developers.pinterest.com/docs/api/v5/#operation/ads/list
@@ -397,7 +409,11 @@ definitions:
       type: InlineSchemaLoader
       schema: "#/definitions/ads_schema"
     $parameters:
-      path: "ad_accounts/{{ stream_slice.id }}/ads{{ '?entity_statuses=' + ','.join(config.get('status')) if config.get('status') else '' }}"
+      path: >-
+        ad_accounts/{{ stream_slice.id }}/ads{{
+          '?entity_statuses=' + ','.join(config.get('status'))
+          if config.get('status') else ''
+        }}
 
   # Analytics streams
   user_account_analytics_stream:
@@ -3295,7 +3311,9 @@ spec:
             start_date:
               type: string
               title: "Start Date"
-              description: "A date in the format YYYY-MM-DD. If you have not set a date, it would be defaulted to latest allowed date by report api (913 days from today)."
+              description: >-
+                A date in the format YYYY-MM-DD. If you have not set a date, it would be
+                defaulted to latest allowed date by report api (913 days from today).
               format: date
               pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
               pattern_descriptor: "YYYY-MM-DD"
