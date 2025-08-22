@@ -42,8 +42,17 @@ class ClickhouseSqlGenerator(
     val clickhouseConfiguration: ClickhouseConfiguration,
 ) {
 
+    /**
+     * This extension is here to avoid writing `.also { log.info { it }}` for every returned string
+     * we want to log
+     */
+    private fun String.andLog(): String {
+        log.info { this }
+        return this
+    }
+
     fun createNamespace(namespace: String): String {
-        return "CREATE DATABASE IF NOT EXISTS `$namespace`;"
+        return "CREATE DATABASE IF NOT EXISTS `$namespace`;".andLog()
     }
 
     fun createTable(
@@ -88,7 +97,9 @@ class ClickhouseSqlGenerator(
             } else {
                 pksAsString
             }})
-            """.trimIndent()
+            """
+            .trimIndent()
+            .andLog()
     }
 
     internal fun extractPks(
@@ -108,13 +119,15 @@ class ClickhouseSqlGenerator(
     }
 
     fun dropTable(tableName: TableName): String =
-        "DROP TABLE IF EXISTS `${tableName.namespace}`.`${tableName.name}`;"
+        "DROP TABLE IF EXISTS `${tableName.namespace}`.`${tableName.name}`;".andLog()
 
     fun exchangeTable(sourceTableName: TableName, targetTableName: TableName): String =
         """
         EXCHANGE TABLES `${sourceTableName.namespace}`.`${sourceTableName.name}`
             AND `${targetTableName.namespace}`.`${targetTableName.name}`;
-        """.trimIndent()
+        """
+            .trimIndent()
+            .andLog()
 
     fun copyTable(
         columnNameMapping: ColumnNameMapping,
@@ -139,7 +152,9 @@ class ClickhouseSqlGenerator(
                 $COLUMN_NAME_AB_GENERATION_ID,
                 $columnNames
             FROM `${sourceTableName.namespace}`.`${sourceTableName.name}`
-            """.trimIndent()
+            """
+            .trimIndent()
+            .andLog()
     }
 
     fun upsertTable(
@@ -236,7 +251,9 @@ class ClickhouseSqlGenerator(
                  new_record.$COLUMN_NAME_AB_EXTRACTED_AT,
                  new_record.$COLUMN_NAME_AB_GENERATION_ID
                );
-               """.trimIndent()
+               """
+            .trimIndent()
+            .andLog()
     }
 
     /**
@@ -293,7 +310,9 @@ class ClickhouseSqlGenerator(
                SELECT $columnList $COLUMN_NAME_AB_META, $COLUMN_NAME_AB_RAW_ID, $COLUMN_NAME_AB_EXTRACTED_AT, $COLUMN_NAME_AB_GENERATION_ID
                FROM numbered_rows
                WHERE row_number = 1
-               """.trimIndent()
+               """
+            .trimIndent()
+            .andLog()
     }
 
     fun countTable(
@@ -302,7 +321,9 @@ class ClickhouseSqlGenerator(
     ): String =
         """
         SELECT count(1) $alias FROM `${tableName.namespace}`.`${tableName.name}`;
-    """.trimMargin()
+    """
+            .trimMargin()
+            .andLog()
 
     fun getGenerationId(
         tableName: TableName,
@@ -310,7 +331,9 @@ class ClickhouseSqlGenerator(
     ): String =
         """
         SELECT $COLUMN_NAME_AB_GENERATION_ID $alias FROM `${tableName.namespace}`.`${tableName.name}` LIMIT 1;
-    """.trimIndent()
+    """
+            .trimIndent()
+            .andLog()
 
     private fun columnsAndTypes(
         stream: DestinationStream,
@@ -331,19 +354,6 @@ class ClickhouseSqlGenerator(
             .joinToString(",\n")
     }
 
-    fun wrapInTransaction(vararg sqlStatements: String): String {
-        val builder = StringBuilder()
-        builder.append("BEGIN TRANSACTION;\n")
-        sqlStatements.forEach {
-            builder.append(it)
-            // No semicolon - statements already end with a semicolon
-            builder.append("\n")
-        }
-        builder.append("COMMIT TRANSACTION;\n")
-
-        return builder.toString()
-    }
-
     fun alterTable(alterationSummary: AlterationSummary, tableName: TableName): String {
         val builder =
             StringBuilder()
@@ -359,7 +369,7 @@ class ClickhouseSqlGenerator(
             builder.append(" DROP COLUMN `$columnName`,")
         }
 
-        return builder.dropLast(1).toString()
+        return builder.dropLast(1).toString().andLog()
     }
 
     private fun String.sqlNullable(): String = "Nullable($this)"
