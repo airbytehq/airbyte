@@ -2,7 +2,7 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.load.dataflow
+package io.airbyte.cdk.load.dataflow.pipeline
 
 import io.airbyte.cdk.load.dataflow.aggregate.AggregateStore
 import io.airbyte.cdk.load.dataflow.state.StateHistogramStore
@@ -24,6 +24,9 @@ class PipelineCompletionHandler(
     suspend fun apply(
         cause: Throwable?,
     ) = coroutineScope {
+        // shutdown the reconciler regardless of success or failure, so we don't hang
+        reconciler.disable()
+
         if (cause != null) {
             log.error { "Destination Pipeline Completed — Exceptionally" }
             throw cause
@@ -43,7 +46,6 @@ class PipelineCompletionHandler(
             }
             .awaitAll()
 
-        reconciler.disable()
         reconciler.flushCompleteStates()
     }
 }

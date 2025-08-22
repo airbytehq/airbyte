@@ -2,7 +2,7 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.load.dataflow
+package io.airbyte.cdk.load.dataflow.pipeline
 
 import io.airbyte.cdk.load.dataflow.state.StateReconciler
 import io.github.oshai.kotlinlogging.KotlinLogging
