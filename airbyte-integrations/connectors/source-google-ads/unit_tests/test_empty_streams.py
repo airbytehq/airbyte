@@ -169,7 +169,7 @@ def test_custom_query_stream(customers, config_for_custom_query_tests, requests_
     # Register mocks
     requests_mock.register_uri("POST", "https://www.googleapis.com/oauth2/v3/token", access_token_response)
     requests_mock.get(
-        "https://googleads.googleapis.com/v18/googleAdsFields/campaign_budget.name",
+        "https://googleads.googleapis.com/v20/googleAdsFields/campaign_budget.name",
         json={
             "resourceName": "googleAdsFields/campaign_budget.name",
             "category": "ATTRIBUTE",
@@ -183,7 +183,7 @@ def test_custom_query_stream(customers, config_for_custom_query_tests, requests_
         },
     )
     requests_mock.get(
-        "https://googleads.googleapis.com/v18/googleAdsFields/campaign.name",
+        "https://googleads.googleapis.com/v20/googleAdsFields/campaign.name",
         json={
             "resourceName": "googleAdsFields/campaign.name",
             "category": "ATTRIBUTE",
@@ -197,7 +197,7 @@ def test_custom_query_stream(customers, config_for_custom_query_tests, requests_
         },
     )
     requests_mock.get(
-        "https://googleads.googleapis.com/v18/googleAdsFields/metrics.interaction_event_types",
+        "https://googleads.googleapis.com/v20/googleAdsFields/metrics.interaction_event_types",
         json={
             "resourceName": "googleAdsFields/metrics.interaction_event_types",
             "category": "METRIC",
@@ -207,12 +207,12 @@ def test_custom_query_stream(customers, config_for_custom_query_tests, requests_
             "filterable": True,
             "sortable": False,
             "enumValues": ["UNSPECIFIED", "UNKNOWN", "CLICK", "ENGAGEMENT", "VIDEO_VIEW", "NONE"],
-            "typeUrl": "google.ads.googleads.v18.enums.InteractionEventTypeEnum.InteractionEventType",
+            "typeUrl": "google.ads.googleads.v20.enums.InteractionEventTypeEnum.InteractionEventType",
             "isRepeated": True,
         },
     )
     requests_mock.get(
-        "https://googleads.googleapis.com/v18/googleAdsFields/segments.date",
+        "https://googleads.googleapis.com/v20/googleAdsFields/segments.date",
         json={
             "resourceName": "googleAdsFields/segments.date",
             "category": "SEGMENT",

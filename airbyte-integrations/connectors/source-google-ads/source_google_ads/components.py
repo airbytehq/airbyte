@@ -804,7 +804,7 @@ class CustomGAQuerySchemaLoader(SchemaLoader):
         return field_value
 
     def _get_field_metadata(self, field: str) -> Dict[str, Any]:
-        url = f"https://googleads.googleapis.com/v18/googleAdsFields/{field}"
+        url = f"https://googleads.googleapis.com/v20/googleAdsFields/{field}"
         logger.debug(f"`GET` request for field metadata for {field}, url: {url}")
         response = requests.get(
             url=url,
@@ -860,8 +860,8 @@ class CustomGAQuerySchemaLoader(SchemaLoader):
         except ValueError:
             raise AirbyteTracedException(
                 failure_type=FailureType.config_error,
-                internal_message=f"The provided query is invalid: {query}. Please refer to the Google Ads API documentation for the correct syntax: https://developers.google.com/google-ads/api/fields/v18/overview and test validate your query using the Google Ads Query Builder: https://developers.google.com/google-ads/api/fields/v18/query_validator",
-                message=f"The provided query is invalid: {query}. Please refer to the Google Ads API documentation for the correct syntax: https://developers.google.com/google-ads/api/fields/v18/overview and test validate your query using the Google Ads Query Builder: https://developers.google.com/google-ads/api/fields/v18/query_validator",
+                internal_message=f"The provided query is invalid: {query}. Please refer to the Google Ads API documentation for the correct syntax: https://developers.google.com/google-ads/api/fields/v20/overview and test validate your query using the Google Ads Query Builder: https://developers.google.com/google-ads/api/fields/v20/query_validator",
+                message=f"The provided query is invalid: {query}. Please refer to the Google Ads API documentation for the correct syntax: https://developers.google.com/google-ads/api/fields/v20/overview and test validate your query using the Google Ads Query Builder: https://developers.google.com/google-ads/api/fields/v20/query_validator",
             )
 
 

@@ -444,7 +444,7 @@ definitions:
       class_name: "source_google_ads.components.CustomGAQuerySchemaLoader"
       requester:
         $ref: "#/definitions/base_requester"
-        url: "https://googleads.googleapis.com/v18/googleAdsFields"
+        url: "https://googleads.googleapis.com/v20/googleAdsFields"
         http_method: GET
         error_handler:
           $ref: "#/definitions/base_error_handler"
