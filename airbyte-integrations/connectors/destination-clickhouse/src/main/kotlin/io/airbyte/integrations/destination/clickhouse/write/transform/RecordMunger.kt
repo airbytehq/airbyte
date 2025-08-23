@@ -6,7 +6,7 @@ package io.airbyte.integrations.destination.clickhouse.write.transform
 
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.UnionType
-import io.airbyte.cdk.load.dataflow.DataMunger
+import io.airbyte.cdk.load.dataflow.transform.DataMunger
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
 import jakarta.inject.Singleton

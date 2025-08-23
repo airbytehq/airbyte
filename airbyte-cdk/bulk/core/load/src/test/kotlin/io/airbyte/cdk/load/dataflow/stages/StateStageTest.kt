@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.load.dataflow.stages
 
-import io.airbyte.cdk.load.dataflow.DataFlowStageIO
+import io.airbyte.cdk.load.dataflow.pipeline.DataFlowStageIO
 import io.airbyte.cdk.load.dataflow.state.PartitionHistogram
 import io.airbyte.cdk.load.dataflow.state.StateHistogramStore
 import io.mockk.mockk

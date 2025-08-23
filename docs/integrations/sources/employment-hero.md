@@ -58,6 +58,7 @@ Hit Get new Access token and approve via browser, Postman will collect a new `ac
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.32 | 2025-08-23 | [65290](https://github.com/airbytehq/airbyte/pull/65290) | Update dependencies |
 | 0.0.31 | 2025-08-09 | [64694](https://github.com/airbytehq/airbyte/pull/64694) | Update dependencies |
 | 0.0.30 | 2025-08-02 | [64327](https://github.com/airbytehq/airbyte/pull/64327) | Update dependencies |
 | 0.0.29 | 2025-07-26 | [64022](https://github.com/airbytehq/airbyte/pull/64022) | Update dependencies |

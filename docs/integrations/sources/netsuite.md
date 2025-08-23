@@ -144,25 +144,27 @@ The connector is restricted by Netsuite [Concurrency Limit per Integration](http
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------|
-| 0.1.20  | 2025-07-21 | [63698](https://github.com/airbytehq/airbyte/pull/63698) | Add support for german date format in NetSuite input      |
-| 0.1.19  | 2025-05-24 | [60581](https://github.com/airbytehq/airbyte/pull/60581) | Update dependencies                                       |
-| 0.1.18  | 2025-05-10 | [60086](https://github.com/airbytehq/airbyte/pull/60086) | Update dependencies                                       |
-| 0.1.17  | 2025-05-03 | [59481](https://github.com/airbytehq/airbyte/pull/59481) | Update dependencies                                       |
-| 0.1.16  | 2025-04-27 | [59091](https://github.com/airbytehq/airbyte/pull/59091) | Update dependencies                                       |
-| 0.1.15  | 2025-04-19 | [58531](https://github.com/airbytehq/airbyte/pull/58531) | Update dependencies                                       |
-| 0.1.14  | 2025-04-12 | [57860](https://github.com/airbytehq/airbyte/pull/57860) | Update dependencies                                       |
-| 0.1.13  | 2025-04-05 | [57301](https://github.com/airbytehq/airbyte/pull/57301) | Update dependencies                                       |
-| 0.1.12  | 2025-03-29 | [56692](https://github.com/airbytehq/airbyte/pull/56692) | Update dependencies                                       |
-| 0.1.11  | 2025-03-22 | [56060](https://github.com/airbytehq/airbyte/pull/56060) | Update dependencies                                       |
-| 0.1.10  | 2025-03-08 | [55455](https://github.com/airbytehq/airbyte/pull/55455) | Update dependencies                                       |
-| 0.1.9   | 2025-03-05 | [55207](https://github.com/airbytehq/airbyte/pull/55207) | Add support for additional date format in Netsuite input  |
-| 0.1.8   | 2025-03-01 | [54821](https://github.com/airbytehq/airbyte/pull/54821) | Update dependencies                                       |
-| 0.1.7   | 2025-02-22 | [54363](https://github.com/airbytehq/airbyte/pull/54363) | Update dependencies                                       |
-| 0.1.6   | 2025-02-15 | [53853](https://github.com/airbytehq/airbyte/pull/53853) | Update dependencies                                       |
-| 0.1.5   | 2025-02-08 | [53243](https://github.com/airbytehq/airbyte/pull/53243) | Update dependencies                                       |
-| 0.1.4   | 2024-07-29 | [42857](https://github.com/airbytehq/airbyte/pull/42857) | Migrate connector to Poetry                               |
-| 0.1.3   | 2023-01-20 | [21645](https://github.com/airbytehq/airbyte/pull/21645) | Minor issues fix, Setup Guide corrections for public docs |
-| 0.1.1   | 2022-09-28 | [17304](https://github.com/airbytehq/airbyte/pull/17304) | Migrate to per-stream state                               |
-| 0.1.0   | 2022-09-15 | [16093](https://github.com/airbytehq/airbyte/pull/16093) | Initial Alpha release                                     |
+| 0.1.22 | 2025-08-23 | [65215](https://github.com/airbytehq/airbyte/pull/65215) | Update dependencies |
+| 0.1.21 | 2025-08-16 | [61055](https://github.com/airbytehq/airbyte/pull/61055) | Update dependencies |
+| 0.1.20 | 2025-07-21 | [63698](https://github.com/airbytehq/airbyte/pull/63698) | Add support for german date format in NetSuite input |
+| 0.1.19 | 2025-05-24 | [60581](https://github.com/airbytehq/airbyte/pull/60581) | Update dependencies |
+| 0.1.18 | 2025-05-10 | [60086](https://github.com/airbytehq/airbyte/pull/60086) | Update dependencies |
+| 0.1.17 | 2025-05-03 | [59481](https://github.com/airbytehq/airbyte/pull/59481) | Update dependencies |
+| 0.1.16 | 2025-04-27 | [59091](https://github.com/airbytehq/airbyte/pull/59091) | Update dependencies |
+| 0.1.15 | 2025-04-19 | [58531](https://github.com/airbytehq/airbyte/pull/58531) | Update dependencies |
+| 0.1.14 | 2025-04-12 | [57860](https://github.com/airbytehq/airbyte/pull/57860) | Update dependencies |
+| 0.1.13 | 2025-04-05 | [57301](https://github.com/airbytehq/airbyte/pull/57301) | Update dependencies |
+| 0.1.12 | 2025-03-29 | [56692](https://github.com/airbytehq/airbyte/pull/56692) | Update dependencies |
+| 0.1.11 | 2025-03-22 | [56060](https://github.com/airbytehq/airbyte/pull/56060) | Update dependencies |
+| 0.1.10 | 2025-03-08 | [55455](https://github.com/airbytehq/airbyte/pull/55455) | Update dependencies |
+| 0.1.9 | 2025-03-05 | [55207](https://github.com/airbytehq/airbyte/pull/55207) | Add support for additional date format in Netsuite input |
+| 0.1.8 | 2025-03-01 | [54821](https://github.com/airbytehq/airbyte/pull/54821) | Update dependencies |
+| 0.1.7 | 2025-02-22 | [54363](https://github.com/airbytehq/airbyte/pull/54363) | Update dependencies |
+| 0.1.6 | 2025-02-15 | [53853](https://github.com/airbytehq/airbyte/pull/53853) | Update dependencies |
+| 0.1.5 | 2025-02-08 | [53243](https://github.com/airbytehq/airbyte/pull/53243) | Update dependencies |
+| 0.1.4 | 2024-07-29 | [42857](https://github.com/airbytehq/airbyte/pull/42857) | Migrate connector to Poetry |
+| 0.1.3 | 2023-01-20 | [21645](https://github.com/airbytehq/airbyte/pull/21645) | Minor issues fix, Setup Guide corrections for public docs |
+| 0.1.1 | 2022-09-28 | [17304](https://github.com/airbytehq/airbyte/pull/17304) | Migrate to per-stream state |
+| 0.1.0 | 2022-09-15 | [16093](https://github.com/airbytehq/airbyte/pull/16093) | Initial Alpha release |
 
 </details>

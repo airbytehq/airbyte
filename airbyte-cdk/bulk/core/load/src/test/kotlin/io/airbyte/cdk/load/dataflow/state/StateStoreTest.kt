@@ -28,12 +28,13 @@ class StateStoreTest {
     @BeforeEach
     fun setUp() {
         stateStore = StateStore(keyClient, histogramStore)
+        every { histogramStore.remove(any()) } returns 1L
     }
 
     @Test
     fun `accept should store checkpoint message and update histogram`() {
         // Given
-        val checkpointMessage = mockk<CheckpointMessage>()
+        val checkpointMessage = mockk<CheckpointMessage>(relaxed = true)
         val sourceStats = mockk<CheckpointMessage.Stats>()
         val stateKey = StateKey(1L, listOf(PartitionKey("partition-1")))
 
@@ -127,7 +128,7 @@ class StateStoreTest {
     @Test
     fun `getNextComplete should return and remove state when it matches sequence and is complete`() {
         // Given
-        val checkpointMessage = mockk<CheckpointMessage>()
+        val checkpointMessage = mockk<CheckpointMessage>(relaxed = true)
         val sourceStats = mockk<CheckpointMessage.Stats>()
         val stateKey = StateKey(1L, listOf(PartitionKey("partition-1")))
 
@@ -154,9 +155,9 @@ class StateStoreTest {
     @Test
     fun `getNextComplete should process states in sequence order`() {
         // Given
-        val checkpointMessage1 = mockk<CheckpointMessage>()
-        val checkpointMessage2 = mockk<CheckpointMessage>()
-        val checkpointMessage3 = mockk<CheckpointMessage>()
+        val checkpointMessage1 = mockk<CheckpointMessage>(relaxed = true)
+        val checkpointMessage2 = mockk<CheckpointMessage>(relaxed = true)
+        val checkpointMessage3 = mockk<CheckpointMessage>(relaxed = true)
         val sourceStats = mockk<CheckpointMessage.Stats>()
 
         val stateKey1 = StateKey(1L, listOf(PartitionKey("partition-1")))
@@ -189,8 +190,8 @@ class StateStoreTest {
     @Test
     fun `getNextComplete should skip incomplete states and not advance sequence`() {
         // Given
-        val checkpointMessage1 = mockk<CheckpointMessage>()
-        val checkpointMessage2 = mockk<CheckpointMessage>()
+        val checkpointMessage1 = mockk<CheckpointMessage>(relaxed = true)
+        val checkpointMessage2 = mockk<CheckpointMessage>(relaxed = true)
         val sourceStats = mockk<CheckpointMessage.Stats>()
 
         val stateKey1 = StateKey(1L, listOf(PartitionKey("partition-1")))
