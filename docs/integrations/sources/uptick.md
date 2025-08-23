@@ -21,7 +21,7 @@ Extract data from Uptick - The new standard in fire inspection software.
 | clients | id | DefaultPaginator | ✅ |  ✅  |
 | clientgroups | id | DefaultPaginator | ✅ |  ✅  |
 | properties | id | DefaultPaginator | ✅ |  ✅  |
-| taskprofitability |  | DatePaginator | ✅ |  ❌ |
+| taskprofitability | id | NoPagination | ✅ |  ❌ |
 | invoices | id | DefaultPaginator | ✅ |  ✅  |
 | projects | id | DefaultPaginator | ✅ |  ✅  |
 | servicequotes | id | DefaultPaginator | ✅ |  ✅  |
@@ -43,6 +43,7 @@ Extract data from Uptick - The new standard in fire inspection software.
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.2.0 | 2025-08-22 | | Update task profitability stream to use start_date parameter |
 | 0.0.11 | 2025-08-14 | [64942](https://github.com/airbytehq/airbyte/pull/65061) | Add users and task profitability streams |
 | 0.0.10 | 2025-08-14 | [64942](https://github.com/airbytehq/airbyte/pull/64942) | Fix docker image entrypoint for platform syncs |
 | 0.0.9 | 2025-08-13 | [64170](https://github.com/airbytehq/airbyte/pull/64170) | adds cursor pagination, incremental sync and rate limiting |

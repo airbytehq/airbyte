@@ -4684,47 +4684,19 @@ streams:
     name: taskprofitability
     retriever:
       type: SimpleRetriever
-      decoder:
-        type: JsonDecoder
-      paginator:
-        type: DefaultPaginator
-        page_token_option:
-          type: RequestPath
-        pagination_strategy:
-          type: CursorPagination
-          cursor_value: "{{ response.links.next }}"
-          stop_condition: "{{ not response.links.next }}"
       requester:
-        type: HttpRequester
+        $ref: "#/definitions/linked/HttpRequester"
         url: "{{ config['base_url'] }}/api/v2.14/intelligence/task-profitability/"
         http_method: GET
-        authenticator:
-          type: OAuthAuthenticator
-          client_id: '{{ config["client_id"] }}'
-          grant_type: password
-          client_secret: '{{ config["client_secret"] }}'
-          expires_in_name: expires_in
-          access_token_name: access_token
-          token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
-          refresh_request_body:
-            username: '{{ config["username"] }}'
-            password: '{{ config["password"] }}'
-        error_handler:
-          type: DefaultErrorHandler
-          max_retries: 5
-          backoff_strategies:
-            - type: WaitTimeFromHeader
-              header: Retry-After
-        request_headers:
-          User-Agent: Airbyte
         request_parameters:
-          ordering: "-updated"
+          completed_after: "{{ config['start_date'] }}"
+      paginator:
+        type: NoPagination
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
-          field_path:
-            - data
+          field_path: []
     primary_key:
       - id
     incremental_sync:
