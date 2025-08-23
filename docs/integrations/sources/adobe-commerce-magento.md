@@ -42,6 +42,7 @@ Integrate Adobe Commerce store data to your destination
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.2 | 2025-08-23 | [65323](https://github.com/airbytehq/airbyte/pull/65323) | Update dependencies |
 | 0.0.1 | 2025-07-26 | | Initial release by [@joacoc2020](https://github.com/joacoc2020) via Connector Builder |
 
 </details>
