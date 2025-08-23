@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-eventee
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.60.12@sha256:b236b4ff8351a7d7f0ff7f938bbf0ab7b455c4c9e6e7cc93933f4aa9201d66cb
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.60.16@sha256:b8126848437ec5a6cff05fb4796fd775450b83e57925674d856a1838a390a28c
   connectorSubtype: api
   connectorType: source
   definitionId: 8be64312-22e6-4c6d-8738-2294bd565139
-  dockerImageTag: 0.0.32
+  dockerImageTag: 0.0.33
   dockerRepository: airbyte/source-eventee
   githubIssueLabel: source-eventee
   icon: icon.svg
