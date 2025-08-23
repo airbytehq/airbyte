@@ -3,7 +3,7 @@ data:
     hosts:
       - onesignal.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.60.12@sha256:b236b4ff8351a7d7f0ff7f938bbf0ab7b455c4c9e6e7cc93933f4aa9201d66cb
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.60.16@sha256:b8126848437ec5a6cff05fb4796fd775450b83e57925674d856a1838a390a28c
   connectorSubtype: api
   connectorTestSuitesOptions:
     - suite: liveTests
@@ -19,7 +19,7 @@ data:
             type: GSM
   connectorType: source
   definitionId: bb6afd81-87d5-47e3-97c4-e2c2901b1cf8
-  dockerImageTag: 1.2.32
+  dockerImageTag: 1.2.33
   dockerRepository: airbyte/source-onesignal
   documentationUrl: https://docs.airbyte.com/integrations/sources/onesignal
   githubIssueLabel: source-onesignal
