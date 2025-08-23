@@ -25,6 +25,7 @@ The Cal.com connector enables seamless data synchronization between Cal.com’s 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.32 | 2025-08-23 | [65345](https://github.com/airbytehq/airbyte/pull/65345) | Update dependencies |
 | 0.0.31 | 2025-08-09 | [64661](https://github.com/airbytehq/airbyte/pull/64661) | Update dependencies |
 | 0.0.30 | 2025-08-02 | [64423](https://github.com/airbytehq/airbyte/pull/64423) | Update dependencies |
 | 0.0.29 | 2025-06-26 | [64099](https://github.com/airbytehq/airbyte/pull/64099) | Add support for updatedAt, cancelledByEmail, rescheduledByEmail and cancellationReason fields in GET Bookings |
