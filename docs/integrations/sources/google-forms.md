@@ -23,6 +23,7 @@ Google Forms is a free online tool from Google that allows users to create custo
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.31 | 2025-08-23 | [65367](https://github.com/airbytehq/airbyte/pull/65367) | Update dependencies |
 | 0.0.30 | 2025-08-09 | [64575](https://github.com/airbytehq/airbyte/pull/64575) | Update dependencies |
 | 0.0.29 | 2025-08-02 | [64267](https://github.com/airbytehq/airbyte/pull/64267) | Update dependencies |
 | 0.0.28 | 2025-07-26 | [63860](https://github.com/airbytehq/airbyte/pull/63860) | Update dependencies |
