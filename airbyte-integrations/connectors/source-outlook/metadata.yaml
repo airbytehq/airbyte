@@ -24,6 +24,9 @@ data:
   name: Outlook
   releaseDate: 2025-08-14
   releaseStage: alpha
+  releases:
+    - version: 1.0.0
+      breakingChanges: ["The conversation stream is removed."]
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/outlook
   tags:
