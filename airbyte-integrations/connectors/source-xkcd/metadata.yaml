@@ -14,7 +14,7 @@ data:
   releaseDate: 2022-10-17
   remoteRegistries:
     pypi:
-      enabled: true
+      enabled: false
       packageName: airbyte-source-xkcd
   registryOverrides:
     cloud:
