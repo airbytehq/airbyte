@@ -19,7 +19,9 @@ import java.time.Clock
 import java.time.Instant
 import java.util.function.Consumer
 
-/** Emits the [AirbyteMessage] instances produced by the connector. */
+/** Emits the [AirbyteMessage] instances produced by the connector.
+ * some small change.
+ */
 @DefaultImplementation(StdoutOutputConsumer::class)
 abstract class OutputConsumer(private val clock: Clock) : Consumer<AirbyteMessage>, AutoCloseable {
     companion object {
