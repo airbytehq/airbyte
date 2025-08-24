@@ -53,6 +53,7 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
     private val fieldAccessors: Array<FieldAccessor>,
     private val columnNameMapping: ColumnNameMapping,
     private val stream: DestinationStream,
+    private val legacyRawTablesOnly: Boolean = false,
 ) : RecordFormatter {
 
     // Pre-compute unknown columns to track parsing failures
@@ -111,20 +112,31 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
     ): Boolean {
         var addComma = needsComma
 
-        fieldAccessors.forEach { accessor ->
-            val result = extractTypedValueWithErrorHandling(proxy, accessor)
-
-            if (result.parsingError != null) {
-                parsingFailures.add(result.parsingError)
-            }
-
+        if (legacyRawTablesOnly) {
             if (addComma) builder.append(',')
 
-            val columnName = columnNameMapping[accessor.name]!!
-            builder.append('"').append(escape(columnName)).append("\":")
-            appendJsonValue(builder, result.value, result.isRawJson)
+            builder.append('"').append(Meta.COLUMN_NAME_DATA).append("\":")
+
+            val validatedJsonData = buildValidatedJsonData(proxy, parsingFailures)
+            builder.append('"').append(escape(validatedJsonData)).append('"')
 
             addComma = true
+        } else {
+            fieldAccessors.forEach { accessor ->
+                val result = extractTypedValueWithErrorHandling(proxy, accessor)
+
+                if (result.parsingError != null) {
+                    parsingFailures.add(result.parsingError)
+                }
+
+                if (addComma) builder.append(',')
+
+                val columnName = columnNameMapping[accessor.name]!!
+                builder.append('"').append(escape(columnName)).append("\":")
+                appendJsonValue(builder, result.value, result.isRawJson)
+
+                addComma = true
+            }
         }
 
         return addComma
@@ -159,7 +171,15 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
 
         builder.append(",\"").append(Meta.COLUMN_NAME_AB_META).append("\":")
         val allChanges = record.rawData.sourceMeta.changes + unknownColumnChanges + parsingFailures
-        appendMetaObject(builder, record, allChanges)
+
+        if (legacyRawTablesOnly) {
+            // In legacy mode, serialize meta as escaped JSON string
+            val metaJson = buildMetaObjectAsString(record, allChanges)
+            builder.append('"').append(escape(metaJson)).append('"')
+        } else {
+            // In direct-load mode, create raw JSON object
+            appendMetaObject(builder, record, allChanges)
+        }
     }
 
     data class ExtractionResult(
@@ -637,6 +657,56 @@ class ProtoToBigQueryStandardInsertRecordFormatter(
             else -> {
                 builder.append('"').append(escape(value.toString())).append('"')
             }
+        }
+    }
+
+    private fun buildValidatedJsonData(
+        proxy: AirbyteValueProxy,
+        parsingFailures: MutableList<Meta.Change>
+    ): String {
+        return buildString {
+            append('{')
+
+            var needsComma = false
+
+            fieldAccessors.forEach { accessor ->
+                val result = extractTypedValueWithErrorHandling(proxy, accessor)
+
+                if (result.parsingError != null) {
+                    parsingFailures.add(result.parsingError)
+                }
+
+                if (needsComma) append(',')
+
+                append('"').append(escape(accessor.name)).append("\":")
+                appendJsonValue(this, result.value, result.isRawJson)
+
+                needsComma = true
+            }
+
+            append('}')
+        }
+    }
+
+    private fun buildMetaObjectAsString(
+        record: DestinationRecordRaw,
+        allChanges: List<Meta.Change>
+    ): String {
+        return buildString {
+            append('{').append("\"sync_id\":").append(record.stream.syncId)
+            append(",\"changes\":[")
+            allChanges.forEachIndexed { idx, change ->
+                if (idx > 0) append(',')
+                append("{\"field\":\"")
+                append(escape(change.field))
+                append("\",\"change\":\"")
+                append(change.change.name)
+                append("\",\"reason\":\"")
+                append(change.reason.name)
+                append("\"}")
+            }
+            append(']')
+            append('}')
         }
     }
 

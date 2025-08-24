@@ -661,6 +661,271 @@ class ProtoToBigQueryStandardInsertRecordFormatterTest {
         assertEquals("DESTINATION_SERIALIZATION_ERROR", dateChange.get("reason").asText())
     }
 
+    @Test
+    fun `formats legacy raw table with validations applied`() {
+        // Create a legacy formatter
+        val legacyFormatter =
+            ProtoToBigQueryStandardInsertRecordFormatter(
+                fieldAccessors,
+                columnNameMapping,
+                stream,
+                legacyRawTablesOnly = true
+            )
+
+        val jsonResult = legacyFormatter.formatRecord(record)
+        val result = jsonResult.deserializeToNode() as ObjectNode
+
+        // Verify meta fields are present
+        assertEquals(uuid.toString(), result.get("_airbyte_raw_id").asText())
+        assertNotNull(result.get("_airbyte_extracted_at").asText())
+        assertEquals(generationId, result.get("_airbyte_generation_id").asLong())
+
+        // Verify _airbyte_data column contains JSON string with validated data
+        assertTrue(result.has("_airbyte_data"))
+        val dataField = result.get("_airbyte_data").asText()
+
+        // Parse the JSON data to verify it contains validated fields
+        val dataJson = dataField.deserializeToNode() as ObjectNode
+
+        // Verify all fields are present and validated
+        assertEquals(true, dataJson.get("bool_col").asBoolean())
+        assertEquals(123L, dataJson.get("int_col").asLong())
+        assertEquals(12.34, dataJson.get("num_col").asDouble(), 0.001)
+        assertEquals("hello", dataJson.get("string_col").asText())
+        assertEquals("2025-06-17", dataJson.get("date_col").asText())
+        assertEquals("23:59:59+02:00", dataJson.get("time_tz_col").asText())
+        assertEquals("23:59:59", dataJson.get("time_no_tz_col").asText())
+        assertEquals("2025-06-17T23:59:59+02:00", dataJson.get("ts_tz_col").asText())
+        assertEquals("2025-06-17T23:59:59", dataJson.get("ts_no_tz_col").asText())
+
+        // Verify complex types
+        val arrayCol = dataJson.get("array_col") as ArrayNode
+        assertEquals(2, arrayCol.size())
+        assertEquals("a", arrayCol.get(0).asText())
+        assertEquals("b", arrayCol.get(1).asText())
+
+        val objCol = dataJson.get("obj_col") as ObjectNode
+        assertEquals("v", objCol.get("k").asText())
+
+        // Verify unknown column is null
+        assertTrue(dataJson.get("unknown_col").isNull())
+
+        // Verify meta field with changes (should include validation errors)
+        // In legacy mode, _airbyte_meta is stored as JSON string, so we need to parse it
+        val metaString = result.get("_airbyte_meta").asText()
+        val meta = metaString.deserializeToNode() as ObjectNode
+        assertEquals(syncId, meta.get("sync_id").asLong())
+
+        val changes = meta.get("changes") as ArrayNode
+        assertEquals(4, changes.size()) // 3 original + 1 unknown column
+    }
+
+    @Test
+    fun `legacy mode applies integer overflow validation`() {
+        val legacyFormatter =
+            ProtoToBigQueryStandardInsertRecordFormatter(
+                fieldAccessors,
+                columnNameMapping,
+                stream,
+                legacyRawTablesOnly = true
+            )
+
+        val bigInteger = BigInteger.valueOf(Long.MAX_VALUE).add(BigInteger.ONE)
+        val oversizedProtoValues =
+            mutableListOf(
+                AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder().setBoolean(true).build(),
+                AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
+                    .setBigInteger(bigInteger.toString())
+                    .build(), // Oversized int
+                AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder().setNumber(12.34).build(),
+                AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder().setString("hello").build(),
+                AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
+                    .setDate("2025-06-17")
+                    .build(),
+                AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
+                    .setTimeWithTimezone("23:59:59+02:00")
+                    .build(),
+                AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
+                    .setTimeWithoutTimezone("23:59:59")
+                    .build(),
+                AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
+                    .setTimestampWithTimezone("2025-06-17T23:59:59+02:00")
+                    .build(),
+                AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
+                    .setTimestampWithoutTimezone("2025-06-17T23:59:59")
+                    .build(),
+                AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
+                    .setJson("""["a","b"]""".toByteArray().toByteString())
+                    .build(),
+                AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
+                    .setJson("""{"k":"v"}""".toByteArray().toByteString())
+                    .build(),
+                AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
+                    .setJson("""{"u":1}""".toByteArray().toByteString())
+                    .build(),
+                AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder().setIsNull(true).build(),
+            )
+
+        val oversizedRecord = buildModifiedRecord(oversizedProtoValues)
+        every { record.rawData } returns oversizedRecord
+
+        val jsonResult = legacyFormatter.formatRecord(record)
+        val result = jsonResult.deserializeToNode() as ObjectNode
+
+        // Verify _airbyte_data column contains validated data
+        val dataField = result.get("_airbyte_data").asText()
+        val dataJson = dataField.deserializeToNode() as ObjectNode
+
+        // Integer field should be null due to overflow
+        assertTrue(dataJson.get("int_col").isNull())
+
+        // Check that error was tracked in meta
+        // In legacy mode, _airbyte_meta is stored as JSON string, so we need to parse it
+        val metaString = result.get("_airbyte_meta").asText()
+        val meta = metaString.deserializeToNode() as ObjectNode
+        val changes = meta.get("changes") as ArrayNode
+
+        // Should have original changes + unknown column change + integer overflow change
+        assertEquals(5, changes.size())
+
+        // Find the integer overflow change
+        val intChange =
+            changes.find { change -> (change as ObjectNode).get("field").asText() == "int_col" }
+                as ObjectNode
+
+        assertEquals("NULLED", intChange.get("change").asText())
+        assertEquals("DESTINATION_FIELD_SIZE_LIMITATION", intChange.get("reason").asText())
+    }
+
+    @Test
+    fun `legacy mode applies timestamp validation`() {
+        val legacyFormatter =
+            ProtoToBigQueryStandardInsertRecordFormatter(
+                fieldAccessors,
+                columnNameMapping,
+                stream,
+                legacyRawTablesOnly = true
+            )
+
+        val invalidTimestampProtoValues =
+            mutableListOf(
+                AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder().setBoolean(true).build(),
+                AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder().setInteger(123).build(),
+                AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder().setNumber(12.34).build(),
+                AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder().setString("hello").build(),
+                AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
+                    .setDate("2025-06-17")
+                    .build(),
+                AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
+                    .setTimeWithTimezone("23:59:59+02:00")
+                    .build(),
+                AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
+                    .setTimeWithoutTimezone("23:59:59")
+                    .build(),
+                AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
+                    .setTimestampWithTimezone("invalid-timestamp")
+                    .build(), // Invalid timestamp
+                AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
+                    .setTimestampWithoutTimezone("2025-06-17T23:59:59")
+                    .build(),
+                AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
+                    .setJson("""["a","b"]""".toByteArray().toByteString())
+                    .build(),
+                AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
+                    .setJson("""{"k":"v"}""".toByteArray().toByteString())
+                    .build(),
+                AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
+                    .setJson("""{"u":1}""".toByteArray().toByteString())
+                    .build(),
+                AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder().setIsNull(true).build(),
+            )
+
+        val invalidRecord = buildModifiedRecord(invalidTimestampProtoValues)
+        every { record.rawData } returns invalidRecord
+
+        val jsonResult = legacyFormatter.formatRecord(record)
+        val result = jsonResult.deserializeToNode() as ObjectNode
+
+        // Verify _airbyte_data column contains validated data
+        val dataField = result.get("_airbyte_data").asText()
+        val dataJson = dataField.deserializeToNode() as ObjectNode
+
+        // Timestamp field should be null due to parsing error
+        assertTrue(dataJson.get("ts_tz_col").isNull())
+
+        // Check that error was tracked in meta
+        // In legacy mode, _airbyte_meta is stored as JSON string, so we need to parse it
+        val metaString = result.get("_airbyte_meta").asText()
+        val meta = metaString.deserializeToNode() as ObjectNode
+        val changes = meta.get("changes") as ArrayNode
+
+        // Should have original changes + unknown column change + timestamp parsing change
+        assertEquals(5, changes.size())
+
+        // Find the timestamp parsing change
+        val timestampChange =
+            changes.find { change -> (change as ObjectNode).get("field").asText() == "ts_tz_col" }
+                as ObjectNode
+
+        assertEquals("NULLED", timestampChange.get("change").asText())
+        assertEquals("DESTINATION_SERIALIZATION_ERROR", timestampChange.get("reason").asText())
+    }
+
+    @Test
+    fun `legacy mode vs direct mode structure difference`() {
+        val legacyFormatter =
+            ProtoToBigQueryStandardInsertRecordFormatter(
+                fieldAccessors,
+                columnNameMapping,
+                stream,
+                legacyRawTablesOnly = true
+            )
+
+        val directFormatter =
+            ProtoToBigQueryStandardInsertRecordFormatter(
+                fieldAccessors,
+                columnNameMapping,
+                stream,
+                legacyRawTablesOnly = false
+            )
+
+        val legacyResult = legacyFormatter.formatRecord(record).deserializeToNode() as ObjectNode
+        val directResult = directFormatter.formatRecord(record).deserializeToNode() as ObjectNode
+
+        // Legacy mode should have _airbyte_data field
+        assertTrue(legacyResult.has("_airbyte_data"))
+        assertFalse(directResult.has("_airbyte_data"))
+
+        // Direct mode should have individual field columns
+        assertTrue(directResult.has("bool_col"))
+        assertTrue(directResult.has("string_col"))
+        assertTrue(directResult.has("int_col"))
+
+        // Legacy mode should NOT have individual field columns (only _airbyte_data)
+        assertFalse(legacyResult.has("bool_col"))
+        assertFalse(legacyResult.has("string_col"))
+        assertFalse(legacyResult.has("int_col"))
+
+        // Both should have the same metadata fields
+        assertEquals(
+            legacyResult.get("_airbyte_raw_id").asText(),
+            directResult.get("_airbyte_raw_id").asText()
+        )
+        assertEquals(
+            legacyResult.get("_airbyte_generation_id").asLong(),
+            directResult.get("_airbyte_generation_id").asLong()
+        )
+
+        // Meta fields should have the same number of changes
+        // In legacy mode, _airbyte_meta is stored as JSON string, so we need to parse it
+        val legacyMetaString = legacyResult.get("_airbyte_meta").asText()
+        val legacyMeta = legacyMetaString.deserializeToNode() as ObjectNode
+        val directMeta = directResult.get("_airbyte_meta") as ObjectNode
+        val legacyChanges = legacyMeta.get("changes") as ArrayNode
+        val directChanges = directMeta.get("changes") as ArrayNode
+        assertEquals(legacyChanges.size(), directChanges.size())
+    }
+
     private fun buildModifiedRecord(
         protoValues: List<AirbyteRecordMessage.AirbyteValueProtobuf>
     ): DestinationRecordProtobufSource {

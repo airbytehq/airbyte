@@ -176,13 +176,11 @@ class BigqueryBatchStandardInsertsLoaderFactory(
         val formatter: RecordFormatter =
             when (dataChannelFormat) {
                 DataChannelFormat.PROTOBUF -> {
-                    if (config.legacyRawTablesOnly) {
-                        throw ConfigErrorException("Raw tables not supported in speed mode")
-                    }
                     ProtoToBigQueryStandardInsertRecordFormatter(
                         catalog.getStream(streamDescriptor).airbyteValueProxyFieldAccessors,
                         tableNameInfo.columnNameMapping,
                         catalog.getStream(streamDescriptor),
+                        legacyRawTablesOnly = config.legacyRawTablesOnly,
                     )
                 }
                 else -> {
@@ -207,7 +205,7 @@ class BigqueryBatchStandardInsertsLoaderFactory(
     ): S {
         // Poll the state store until it's populated by the coordinating StreamLoader thread
         var attempts = 0
-        val maxAttempts = 20 * 60 // 20 minutes
+        val maxAttempts = 60 * 60 // 1 hour
 
         while (attempts < maxAttempts) {
             val state = stateStore.get(streamDescriptor)
