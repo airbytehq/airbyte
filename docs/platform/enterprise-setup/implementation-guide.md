@@ -703,6 +703,7 @@ secretsManager:
   googleSecretManager:
     projectId: <project-id>
     credentialsSecretKey: gcp.json
+    region: <region> # Optional - specify region for regional Secret Manager endpoints
 ```
 
 </TabItem>
@@ -717,6 +718,7 @@ global:
     googleSecretManager:
       projectId: <project-id>
       credentialsSecretKey: gcp.json
+      region: <region> # Optional - specify region for regional Secret Manager endpoints
 ```
 
 </TabItem>
