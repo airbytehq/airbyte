@@ -12,6 +12,10 @@ inputs:
     description: "Docker registry"
     required: false
     default: "docker.io/airbyte"
+  release-type:
+    description: "Release type: 'pre-release' or 'main-release'. Determines tagging and latest push behavior."
+    required: false
+    default: "pre-release"
   tag-override:
     description: "Override the image tag (optional). If not provided, the tag will be derived from the connector metadata.yaml."
     required: false
@@ -118,17 +122,43 @@ runs:
           exit 1
         fi
 
-        # Resolve connector version to use for image tagging
+        # Get connector version from metadata
+        CONNECTOR_VERSION=$(poe -qq get-version)
+        if [[ -z "$CONNECTOR_VERSION" ]]; then
+          echo "❌ Docker tag not found in metadata.yaml"
+          exit 1
+        fi
+
+        # Check if this is a release candidate
+        IS_RELEASE_CANDIDATE=$(poe -qq get-version | grep -q 'rc' && echo "true" || echo "false")
+
+        # Determine the image tags to use 
         if [[ "${{ inputs.tag-override }}" ]]; then
           CONNECTOR_VERSION_TAG="${{ inputs.tag-override }}"
-          echo "🏷 Using provided tag: $CONNECTOR_VERSION_TAG"
+          echo "🏷 Using provided tag override: $CONNECTOR_VERSION_TAG"
+        elif [[ "${{ inputs.release-type }}" == "pre-release" ]]; then
+          hash=$(git rev-parse --short=10 HEAD)
+          CONNECTOR_VERSION_TAG="${CONNECTOR_VERSION}-dev.${hash}"
+          echo "🏷 Using pre-release tag: $CONNECTOR_VERSION_TAG"
         else
-          CONNECTOR_VERSION_TAG=$(poe -qq get-version)
-          if [[ -z "$CONNECTOR_VERSION_TAG" ]]; then
-            echo "❌ Docker tag not found in metadata.yaml"
-            exit 1
+          CONNECTOR_VERSION_TAG="$CONNECTOR_VERSION"
+          echo "🏷 Using main release tag: $CONNECTOR_VERSION_TAG"
+        fi
+
+        # Determine whether to push with latest tag
+        if [[ "${{ inputs.push-latest }}" == "true" || "${{ inputs.push-latest }}" == "false" ]]; then
+          # Use explicit input value
+          PUSH_LATEST="${{ inputs.push-latest }}"
+          echo "🏷 Using explicit push-latest setting: $PUSH_LATEST"
+        else
+          # Auto-determine based on release-type and release candidate status
+          if [[ "${{ inputs.release-type }}" == "pre-release" || "$IS_RELEASE_CANDIDATE" == "true" ]]; then
+            PUSH_LATEST="false"
+            echo "🏷 Skipping latest tag for pre-release or release candidate build"
+          else
+            PUSH_LATEST="true"
+            echo "🏷 Will push with latest tag for main release"
           fi
-          echo "🏷 Using tag from metadata.yaml: $CONNECTOR_VERSION_TAG"
         fi
 
         # Can't dry-run and force-publish at the same time
@@ -137,7 +167,7 @@ runs:
           exit 1
         fi
 
-        # Validate registry input
+        # Validate image registry input
         case "${{ inputs.registry }}" in
           "docker.io/airbyte")
             # Supported registries
@@ -157,7 +187,7 @@ runs:
 
         # Get all tags to use for image pushing
         DOCKER_TAGS="${FULL_IMAGE_NAME}"
-        if [[ "${{ inputs.push-latest }}" == "true" ]]; then
+        if [[ "$PUSH_LATEST" == "true" ]]; then
           DOCKER_TAGS="${DOCKER_TAGS},${{ inputs.registry }}/${CONNECTOR_NAME}:latest"
         fi
 
@@ -168,6 +198,8 @@ runs:
         echo "  Version Tag: $CONNECTOR_VERSION_TAG"
         echo "  Registry: ${{ inputs.registry }}"
         echo "  Full Image Name: $FULL_IMAGE_NAME"
+        echo "  Release Type: ${{ inputs.release-type }}"
+        echo "  Push Latest: $PUSH_LATEST"
         echo "  Dry Run: ${{ inputs.dry-run }}"
         echo "  Force Publish: ${{ inputs.force-publish }}" 
 
@@ -251,15 +283,12 @@ runs:
           DO_PUBLISH="true"
         fi
 
-        push_latest="${{ inputs.push-latest }}"
-
         # Output decision summary
         echo ""
         echo "📊 Build Decision Summary:"
         echo "  Image exists: $IMAGE_EXISTS"
         echo "  Will build: $DO_BUILD"
         echo "  Will publish: $DO_PUBLISH"
-        echo "  Will tag with latest: ${push_latest:-false}"
         echo "  Dry run mode: ${{ inputs.dry-run }}"
         echo "  Force publish: ${{ inputs.force-publish }}"
 
