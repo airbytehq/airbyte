@@ -220,7 +220,7 @@ class PostgresSourceMetadataQuerier(
     override fun streamNamespaces(): List<String> = base.config.namespaces.toList()
 
     override fun streamNames(streamNamespace: String?): List<StreamIdentifier> =
-        base.memoizedTableNames
+        memoizedTableNames
             .filter { (it.schema ?: it.catalog) == streamNamespace }
             .map { StreamDescriptor().withName(it.name).withNamespace(streamNamespace) }
             .map(StreamIdentifier::from)
@@ -228,7 +228,7 @@ class PostgresSourceMetadataQuerier(
     fun findTableName(
         streamID: StreamIdentifier,
     ): TableName? =
-        base.memoizedTableNames.find {
+        memoizedTableNames.find {
             it.name == streamID.name && (it.schema ?: it.catalog) == streamID.namespace
         }
 

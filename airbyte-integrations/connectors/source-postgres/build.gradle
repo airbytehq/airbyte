@@ -18,5 +18,5 @@ dependencies {
     implementation 'org.postgresql:postgresql:42.7.7'
     implementation 'io.debezium:debezium-connector-postgres'
 
-    testFixturesApi 'org.testcontainers:postgresql:1.20.6'
+    testImplementation 'org.testcontainers:postgresql:1.21.3'
 }
