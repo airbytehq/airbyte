@@ -264,16 +264,7 @@ abstract class IntegrationTest(
             )
         return runBlocking(Dispatchers.IO) {
             launch { destination.run() }
-            messages.forEach {
-                destination.sendMessage(it)
-                // Add a small delay between messages when using socket mode to ensure proper
-                // ordering
-                // This prevents the issue where records sent to different sockets are processed out
-                // of order
-                if (dataChannelMedium == DataChannelMedium.SOCKET) {
-                    delay(100)
-                }
-            }
+            messages.forEach { destination.sendMessage(it) }
             if (streamStatus != null) {
                 catalog.streams.forEach {
                     val streamStatusMessage =
@@ -351,16 +342,7 @@ abstract class IntegrationTest(
         fun doRun() =
             runBlocking(Dispatchers.IO) {
                 launch { destination.run() }
-                records.forEach {
-                    destination.sendMessage(it)
-                    // Add a small delay between messages when using socket mode to ensure proper
-                    // ordering
-                    // This prevents the issue where records sent to different sockets are processed
-                    // out of order
-                    if (dataChannelMedium == DataChannelMedium.SOCKET) {
-                        delay(100)
-                    }
-                }
+                records.forEach { destination.sendMessage(it) }
                 destination.sendMessage(InputStreamCheckpoint(inputStateMessage))
                 val noopTraceMessage =
                     AirbyteMessage()
