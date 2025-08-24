@@ -6,7 +6,7 @@ products: embedded
 
 ## Airbyte Credentials
 
-To use Airbyte Embedded, you must have an active Airbyte Cloud with Embedded enabled. (Please [contact sales](https://share.hsforms.com/2uRdBz9VoTWiCtjECzRYgawcvair) if you would like to sign up for a trial of Airbyte Embedded). Once you have your Airbyte instance enabled, log in, and navigate to **Settings > Embedded**. Note down the following values. 
+To use Airbyte Embedded, you must have an active Airbyte Cloud with Embedded enabled. (Please [connect with us](https://calendly.com/teo-airbyte/15min-docs) if you would like to sign up for a trial of Airbyte Embedded). Once you have your Airbyte instance enabled, log onto cloud.airbyte.com/embedded, and complete the onboarding flow, including your destination configuration. Then navigate to **Settings > Embedded** and note down the following values. 
 
 - `Organization Id`: Unique identifier to your Airbyte instance.
 - `Client Id`: Unique app id. Required for API access.
@@ -55,39 +55,3 @@ The sample web app uses basic authentication to protect the webapp. This is fine
 ```bash
 SONAR_WEBAPP_PASSWORD=your_password
 ```
-
-Next, you need to provide configuration details to an [S3 bucket](https://docs.aws.amazon.com/AmazonS3/latest/userguide/GetStartedWithS3.html) running on AWS. This S3 bucket is the AI Destination Store from the AI Hub Blueprint. It is where customer data will be written.
-
-```bash
-# AWS Credentials
-SONAR_AWS_ACCESS_KEY=your_aws_access_key
-SONAR_AWS_SECRET_ACCESS_KEY=your_aws_secret_access_key
-
-# S3 Configuration
-SONAR_S3_BUCKET=your_s3_bucket_name
-SONAR_S3_BUCKET_REGION=your_s3_bucket_region
-SONAR_S3_BUCKET_PREFIX=your_s3_bucket_prefix
-```
-
-The following values are examples of what an S3 configuration should look like:
-
-![S3 Bucket configuration.](./assets/s3-bucket-config.png)
-
-```bash
-# S3 Configuration
-SONAR_S3_BUCKET=airbyte-embed
-SONAR_S3_BUCKET_REGION=us-east-2
-SONAR_S3_BUCKET_PREFIX=quinton-test
-```
-
-## Create Connector to S3
-
-Next, you need to create the S3 destination connector within your Airbyte Embedded instance. You can use the provided script within the sample app, which relies on the values in the .env file created above.
-
-```bash
-./setup-s3.sh
-```
-
-:::caution
-Only run this script once. Running it multiple times will create multiple connections to s3 and may cause errors when customer data syncs.
-:::

@@ -43,6 +43,7 @@ Visit `https://YOUR_REGION.castoredc.com/account/settings` for getting your clie
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.31 | 2025-08-23 | [65277](https://github.com/airbytehq/airbyte/pull/65277) | Update dependencies |
 | 0.0.30 | 2025-08-09 | [64441](https://github.com/airbytehq/airbyte/pull/64441) | Update dependencies |
 | 0.0.29 | 2025-06-21 | [61896](https://github.com/airbytehq/airbyte/pull/61896) | Update dependencies |
 | 0.0.28 | 2025-06-15 | [61453](https://github.com/airbytehq/airbyte/pull/61453) | Update dependencies |

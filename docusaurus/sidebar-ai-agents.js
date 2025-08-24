@@ -1,9 +1,9 @@
 export default {
-  "developer-tools": [
-    { 
+  "ai-agents": [
+    {
       type: "category",
       collapsible: false,
-      label: "Developer Tools",
+      label: "AI Agents",
       link: {
         type: "doc",
         id: "README",
