@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c2281cee-86f9-4a86-bb48-d23286b4c7bd
-  dockerImageTag: 2.2.0-rc.6
+  dockerImageTag: 2.2.0-rc.7
   dockerRepository: airbyte/source-slack
   documentationUrl: https://docs.airbyte.com/integrations/sources/slack
   githubIssueLabel: source-slack
@@ -54,9 +54,7 @@ data:
     streams:
       - users
       - channels
-      - channel_messages
       - channel_members
-      - threads
   supportLevel: certified
   tags:
     - language:python

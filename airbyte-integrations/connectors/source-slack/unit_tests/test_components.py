@@ -14,6 +14,7 @@ from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordSel
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.streams.call_rate import MovingWindowCallRatePolicy, UnlimitedCallRatePolicy
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
+from unit_tests.conftest import oauth_config, token_config
 
 
 def get_stream_by_name(stream_name, config):
@@ -139,7 +140,7 @@ def test_threads_partition_router(token_config, threads_stream_state, expected_p
 
 
 @pytest.mark.parametrize(
-    "response_status_code, api_response, expected_policy",
+    "response_status_code, api_response, config, expected_policy",
     (
         (
             429,
@@ -149,7 +150,19 @@ def test_threads_partition_router(token_config, threads_stream_state, expected_p
                 # refreshed limits on second call
                 {"json": {"messages": []}, "status_code": 200},
             ],
+            "oauth",
             MovingWindowCallRatePolicy,
+        ),
+        (
+            429,
+            [
+                # first call rate limited
+                {"headers": {"Retry-After": "1"}, "text": "rate limited", "status_code": 429},
+                # refreshed limits on second call
+                {"json": {"messages": []}, "status_code": 200},
+            ],
+            "token",
+            UnlimitedCallRatePolicy,
         ),
         (
             200,
@@ -157,15 +170,19 @@ def test_threads_partition_router(token_config, threads_stream_state, expected_p
                 # no rate limits
                 {"json": {"messages": []}, "status_code": 200},
             ],
+            "oauth",
             UnlimitedCallRatePolicy,
         ),
     ),
-    ids=["rate_limited_policy", "no_rate_limits_policy"],
+    ids=["rate_limited_oauth_policy", "no_rate_limits_token_policy", "no_rate_limits_policy"],
 )
-def test_threads_and_messages_api_budget(response_status_code, api_response, expected_policy, token_config, requests_mock):
-    stream = get_stream_by_name("threads", token_config)
-    assert len(stream.retriever.requester._http_client._api_budget._policies) == 1
-    assert isinstance(stream.retriever.requester._http_client._api_budget._policies[0], UnlimitedCallRatePolicy)
+def test_threads_and_messages_api_budget(
+    response_status_code, api_response, config, expected_policy, oauth_config, token_config, requests_mock
+):
+    stream = get_stream_by_name("threads", oauth_config if config == "oauth" else token_config)
+    assert len(stream.retriever.requester._http_client._api_budget._policies) == (1 if config == "oauth" else 0)
+    if config == "oauth":
+        assert isinstance(stream.retriever.requester._http_client._api_budget._policies[0], UnlimitedCallRatePolicy)
 
     messages = [{"ts": 1577866844}, {"ts": 1577877406}]
 
@@ -189,5 +206,6 @@ def test_threads_and_messages_api_budget(response_status_code, api_response, exp
 
     list(stream.retriever.read_records(records_schema={}, stream_slice=stream_slice))
 
-    assert len(stream.retriever.requester._http_client._api_budget._policies) == 1
-    assert isinstance(stream.retriever.requester._http_client._api_budget._policies[0], expected_policy)
+    assert len(stream.retriever.requester._http_client._api_budget._policies) == (1 if config == "oauth" else 0)
+    if config == "oauth":
+        assert isinstance(stream.retriever.requester._http_client._api_budget._policies[0], expected_policy)
