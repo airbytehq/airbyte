@@ -45,6 +45,7 @@ TEST_INSTANCE = SourceTwilio(config, None, None)
     ),
 )
 def test_check_connection_handles_exceptions(mocker, config, exception, expected_error_msg):
+    mocker.patch("time.sleep")
     mocker.patch.object(requests.Session, "send", Mock(side_effect=exception))
     logger_mock = Mock()
     status_ok, error = TEST_INSTANCE.check_connection(logger=logger_mock, config=config)
