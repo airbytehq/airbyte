@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.bigquery.write.bulk_loader
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.file.gcs.GcsBlob
 import io.airbyte.cdk.load.file.object_storage.ByteArrayPool
 import io.airbyte.cdk.load.message.DestinationRecordRaw
@@ -35,6 +36,7 @@ import kotlinx.coroutines.coroutineScope
 
 @Singleton
 @Requires(bean = BulkLoaderFactory::class)
+@SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION")
 class BigQueryBulkOneShotUploader<O : OutputStream>(
     private val partFormatter: ObjectLoaderPartFormatter<O>,
     private val partLoader: ObjectLoaderPartLoader<GcsBlob>,
@@ -149,11 +151,12 @@ class BigQueryBulkOneShotUploader<O : OutputStream>(
             }
         }
 
-        if (completedGcsBlob != null) {
+        val finalBlob = completedGcsBlob
+        if (finalBlob != null) {
             log.info {
-                "Executing BigQuery load for ${state.streamKey.stream} from GCS: ${completedGcsBlob!!.key}"
+                "Executing BigQuery load for ${state.streamKey.stream} from GCS: ${finalBlob.key}"
             }
-            state.bulkLoader.load(completedGcsBlob!!)
+            state.bulkLoader.load(finalBlob)
             log.info { "BigQuery load completed for ${state.streamKey.stream}" }
             FinalOutput(BulkLoaderTableLoader.LoadResult)
         } else {
