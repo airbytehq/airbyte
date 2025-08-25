@@ -164,6 +164,7 @@ Token acquiring implemented by [instantiate](https://docs.microsoft.com/en-us/az
 
 | Version | Date       | Pull Request                                             | Subject                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------- |
+| 1.2.5 | 2025-08-23 | [65219](https://github.com/airbytehq/airbyte/pull/65219) | Update dependencies |
 | 1.2.4 | 2025-08-09 | [48176](https://github.com/airbytehq/airbyte/pull/48176) | Update dependencies |
 | 1.2.3 | 2024-10-29 | [47758](https://github.com/airbytehq/airbyte/pull/47758) | Update dependencies |
 | 1.2.2 | 2024-10-28 | [47453](https://github.com/airbytehq/airbyte/pull/47453) | Update dependencies |

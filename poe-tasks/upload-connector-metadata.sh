@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Uploads the metadata (+SBOM+spec cache) to GCS.
-# Usage: ./poe-tasks/upload-connector-metadata.sh --name destination-bigquery [--pre-release] [--main-release]
+# Usage: ./poe-tasks/upload-connector-metadata.sh --name destination-bigquery --release-type <pre-release|main-release>
 # You must have three environment variables set (GCS_CREDENTIALS, METADATA_SERVICE_GCS_CREDENTIALS, SPEC_CACHE_GCS_CREDENTIALS),
 # each containing a JSON-formatted GCP service account key.
 # SPEC_CACHE_GCS_CREDENTIALS needs write access to `gs://$spec_cache_bucket/specs`.
