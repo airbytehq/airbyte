@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-cimis
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.60.12@sha256:b236b4ff8351a7d7f0ff7f938bbf0ab7b455c4c9e6e7cc93933f4aa9201d66cb
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.60.16@sha256:b8126848437ec5a6cff05fb4796fd775450b83e57925674d856a1838a390a28c
   connectorSubtype: api
   connectorType: source
   definitionId: d169ef9b-6741-4af6-b4c8-7ec4410d7f0e
-  dockerImageTag: 0.0.35
+  dockerImageTag: 0.0.36
   dockerRepository: airbyte/source-cimis
   githubIssueLabel: source-cimis
   icon: icon.svg

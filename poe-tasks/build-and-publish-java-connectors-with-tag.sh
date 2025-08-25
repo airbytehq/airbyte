@@ -1,16 +1,15 @@
 #!/usr/bin/env bash
 
 # This script builds and optionally publishes Java connector Docker images.
-# Usage: ./build-and-publish-java-connectors-with-tag.sh --name <name> [--pre-release] [--main-release] [--publish]
+# Usage: ./build-and-publish-java-connectors-with-tag.sh --name <name> --release-type [pre-release | main-release] [--publish]
 #
 # Flag descriptions:
-#   --main-release: Publishes images with the exact version from metadata.yaml.
-#                   Only publishes if the image does not exists on Dockerhub.
-#                   Used for production releases on merge to master.
-#
-#   --pre-release:  Publishes images with a dev tag (version-dev.githash).
-#                   Only publishes if the image does not exists on Dockerhub.
-#                   Used for development/testing purposes.
+#   --name <name>:    Specifies the connector name (e.g., destination-bigquery).
+#                    
+#   --release-type:   Specifies the release type:
+#                     - pre-release: Builds with a dev tag (version-dev.githash).
+#                     - main-release: Builds with the exact version from metadata.yaml.
+#                     Defaults to pre-release if not specified.
 #
 #   --publish:      Actually publishes the images. Without this flag, the script runs in dry-run mode
 #                   and only shows what would be published without actually publishing.
@@ -24,7 +23,7 @@
 #   ./build-and-publish-java-connectors-with-tag.sh --name=foo-conn
 #
 #   2) Mixed: positional + pre-release
-#   ./build-and-publish-java-connectors-with-tag.sh --pre-release foo-conn
+#   ./build-and-publish-java-connectors-with-tag.sh --release-type=pre-release foo-conn
 #
 #   3) Enable actual publishing (default is dry-run mode)
 #   ./build-and-publish-java-connectors-with-tag.sh --publish foo-conn

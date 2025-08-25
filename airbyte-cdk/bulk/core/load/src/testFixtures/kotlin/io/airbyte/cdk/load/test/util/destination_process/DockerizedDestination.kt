@@ -179,11 +179,22 @@ class DockerizedDestination(
                 emptyList()
             }
 
+        // Why these Micronaut Envs?
+        // - test: this is only used for tests - this enables loading of test specific config
+        // - cli: in docker mode, we are running via the CLI (random beans expect this)
+        // - destination: this is DockerizedDestination - we're always a destination
+        // - connector: see above - destinations are connectors
+        val micronautEnvEnvVar =
+            listOf(
+                "-e",
+                "MICRONAUT_ENVIRONMENTS=test,cli,destination,connector",
+            )
+
         val additionalEnvEntries =
             envVars.flatMap { (key, value) ->
                 logger.info { "Env vars: $key loaded" }
                 listOf("-e", "$key=$value")
-            } + socketPathEnvVarsMaybe
+            } + micronautEnvEnvVar + socketPathEnvVarsMaybe
 
         // DANGER: env vars can contain secrets, so you MUST NOT log this command.
         val cmd: MutableList<String> =
