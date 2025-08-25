@@ -362,6 +362,23 @@ docker manifest annotate 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/so
 docker manifest push 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-vault/docker:latest
 ```
 
+### One-shot release with Poe
+
+If you're already logged into ECR, you can run the entire flow in one command:
+
+```bash
+# Optional: override REGISTRY
+export REGISTRY=794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-vault/docker
+
+~/.local/bin/poe release 1.0.0
+```
+
+Tip: preview without side effects using a dry run:
+
+```bash
+~/.local/bin/poe -d release 1.0.0
+```
+
 ## Streams
 
 This connector supports the following streams:
