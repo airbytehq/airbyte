@@ -115,7 +115,8 @@ class BigQueryBulkLoaderFactory(
         val tableNameInfo = names[key.stream]!!
         if (bigQueryConfiguration.legacyRawTablesOnly) {
             val rawTableName = tableNameInfo.tableNames.rawTableName!!
-            val rawTableSuffix = typingDedupingStreamStateStore!!.get(key.stream)!!.rawTableSuffix
+            val executionConfig = waitForStateStore(typingDedupingStreamStateStore!!, key.stream)
+            val rawTableSuffix = executionConfig.rawTableSuffix
             tableId = TableId.of(rawTableName.namespace, rawTableName.name + rawTableSuffix)
             schema = BigQueryRecordFormatter.CSV_SCHEMA
         } else {

@@ -215,6 +215,19 @@ class GcsRawOverride :
         CdcDeletionMode.HARD_DELETE,
     )
 
+class GcsRawOverrideProto :
+    BigqueryDirectLoadWriteTest(
+        BigQueryDestinationTestUtils.createConfig(
+            configFile = GCS_STAGING_CONFIG,
+            rawDatasetId = RAW_DATASET_OVERRIDE,
+        ),
+        CdcDeletionMode.HARD_DELETE,
+        isStreamSchemaRetroactiveForUnknownTypeToString = false,
+        unknownTypesBehavior = UnknownTypesBehavior.NULL,
+        dataChannelFormat = DataChannelFormat.PROTOBUF,
+        dataChannelMedium = DataChannelMedium.SOCKET,
+    )
+
 class Gcs :
     BigqueryDirectLoadWriteTest(
         BigQueryDestinationTestUtils.createConfig(configFile = GCS_STAGING_CONFIG),
