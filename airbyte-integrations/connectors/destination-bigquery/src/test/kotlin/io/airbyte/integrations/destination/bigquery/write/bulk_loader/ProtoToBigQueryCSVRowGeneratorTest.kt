@@ -26,7 +26,6 @@ import io.airbyte.cdk.load.message.DestinationRecordProtobufSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.DestinationRecordSource
 import io.airbyte.cdk.load.message.Meta
-import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.integrations.destination.bigquery.BigQueryConsts
 import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.protobuf.AirbyteMessage
@@ -43,7 +42,6 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import scala.math.BigDecimal
 
 @ExtendWith(MockKExtension::class)
 class ProtoToBigQueryCSVRowGeneratorTest {
@@ -92,15 +90,26 @@ class ProtoToBigQueryCSVRowGeneratorTest {
         fieldAccessors = fields.toTypedArray()
 
         // Create header array with data fields + meta fields
-        header = arrayOf(
-            "bool_col", "int_col", "num_col", "string_col", "date_col",
-            "time_tz_col", "time_no_tz_col", "ts_tz_col", "ts_no_tz_col",
-            "array_col", "obj_col", "union_col", "unknown_col",
-            Meta.COLUMN_NAME_AB_RAW_ID,
-            Meta.COLUMN_NAME_AB_EXTRACTED_AT,
-            Meta.COLUMN_NAME_AB_GENERATION_ID,
-            Meta.COLUMN_NAME_AB_META
-        )
+        header =
+            arrayOf(
+                "bool_col",
+                "int_col",
+                "num_col",
+                "string_col",
+                "date_col",
+                "time_tz_col",
+                "time_no_tz_col",
+                "ts_tz_col",
+                "ts_no_tz_col",
+                "array_col",
+                "obj_col",
+                "union_col",
+                "unknown_col",
+                Meta.COLUMN_NAME_AB_RAW_ID,
+                Meta.COLUMN_NAME_AB_EXTRACTED_AT,
+                Meta.COLUMN_NAME_AB_GENERATION_ID,
+                Meta.COLUMN_NAME_AB_META
+            )
 
         val protoValues =
             mutableListOf(
@@ -220,8 +229,7 @@ class ProtoToBigQueryCSVRowGeneratorTest {
 
         stream = mockk {
             every { this@mockk.airbyteValueProxyFieldAccessors } returns fieldAccessors
-            every { this@mockk.syncId } returns
-                this@ProtoToBigQueryCSVRowGeneratorTest.syncId
+            every { this@mockk.syncId } returns this@ProtoToBigQueryCSVRowGeneratorTest.syncId
             every { this@mockk.generationId } returns
                 this@ProtoToBigQueryCSVRowGeneratorTest.generationId
             every { this@mockk.schema } returns dummyType
@@ -234,8 +242,7 @@ class ProtoToBigQueryCSVRowGeneratorTest {
             mockk(relaxed = true) {
                 every { this@mockk.airbyteRawId } returns uuid
                 every { this@mockk.rawData } returns protoSource!!
-                every { this@mockk.stream } returns
-                    this@ProtoToBigQueryCSVRowGeneratorTest.stream
+                every { this@mockk.stream } returns this@ProtoToBigQueryCSVRowGeneratorTest.stream
             }
 
         generator = ProtoToBigQueryCSVRowGenerator(header, stream, fieldAccessors)
@@ -282,7 +289,9 @@ class ProtoToBigQueryCSVRowGeneratorTest {
         assertTrue(metaJson.contains("\"field\":\"x\""))
         assertTrue(metaJson.contains("\"change\":\"NULLED\""))
         assertTrue(metaJson.contains("\"reason\":\"DESTINATION_SERIALIZATION_ERROR\""))
-        assertTrue(metaJson.contains("\"field\":\"unknown_col\"")) // Should include unknown column change
+        assertTrue(
+            metaJson.contains("\"field\":\"unknown_col\"")
+        ) // Should include unknown column change
     }
 
     @Test
@@ -458,8 +467,7 @@ class ProtoToBigQueryCSVRowGeneratorTest {
                 every { rawData } returns mockk<DestinationRecordSource>(relaxed = true)
             }
 
-        val ex =
-            assertThrows(IllegalArgumentException::class.java) { generator.generate(nonProto) }
+        val ex = assertThrows(IllegalArgumentException::class.java) { generator.generate(nonProto) }
         assertTrue(
             ex.message!!.contains(
                 "ProtoToBigQueryCSVRowGenerator only supports DestinationRecordProtobufSource"
@@ -628,7 +636,8 @@ class ProtoToBigQueryCSVRowGeneratorTest {
 
         // If there was validation/truncation, it should be tracked in meta
         val metaJson = csvRow[16].toString()
-        // Note: Actual behavior depends on BigQueryRecordFormatter.NUMERIC_MAX_VALUE/SCALE validation
+        // Note: Actual behavior depends on BigQueryRecordFormatter.NUMERIC_MAX_VALUE/SCALE
+        // validation
     }
 
     @Test
