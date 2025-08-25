@@ -26,6 +26,7 @@ import io.airbyte.cdk.load.message.DestinationRecordProtobufSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.DestinationRecordSource
 import io.airbyte.cdk.load.message.Meta
+import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.integrations.destination.bigquery.BigQueryConsts
 import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.protobuf.AirbyteMessage
@@ -636,8 +637,10 @@ class ProtoToBigQueryCSVRowGeneratorTest {
 
         // If there was validation/truncation, it should be tracked in meta
         val metaJson = csvRow[16].toString()
-        // Note: Actual behavior depends on BigQueryRecordFormatter.NUMERIC_MAX_VALUE/SCALE
-        // validation
+
+        val metaAsNode = metaJson.deserializeToNode()
+        assertEquals(42, metaAsNode["sync_id"].asInt())
+        assertEquals(5, metaAsNode["changes"].size())
     }
 
     @Test
