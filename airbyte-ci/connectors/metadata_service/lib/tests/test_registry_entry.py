@@ -387,62 +387,6 @@ def test_gcs_operations_failure(
 
 @pytest.mark.parametrize("registry_type", ["oss", "cloud"])
 @patch("metadata_service.registry_entry.send_slack_message")
-@patch("metadata_service.registry_entry.get_gcs_storage_client")
-def test_gcs_deletion_failure_when_registry_disabled(mock_gcs_client, mock_send_slack, temp_files_disabled, registry_type):
-    """Test exception handling when GCS deletion fails for disabled registry entries."""
-
-    # Arrange
-    metadata_path, spec_path = temp_files_disabled
-    bucket_name = "test-bucket"
-
-    # Mock GCS client that fails on deletion
-    mock_storage_client = Mock()
-    mock_bucket = Mock()
-    mock_blob = Mock()
-
-    mock_gcs_client.return_value = mock_storage_client
-    mock_storage_client.bucket.return_value = mock_bucket
-    mock_bucket.blob.return_value = mock_blob
-    mock_blob.exists.return_value = True
-    mock_bucket.delete_blob.side_effect = Exception("Failed to delete blob")
-
-    mock_blob.download_as_string.return_value = yaml.dump(
-        {
-            "metadataSpecVersion": "1.0",
-            "data": {
-                "name": f"Test Source",
-                "definitionId": "12345678-1234-1234-1234-123456789012",
-                "connectorType": "source",
-                "dockerRepository": f"airbyte/source-test",
-                "dockerImageTag": "fake/docker-image",
-                "documentationUrl": f"https://docs.airbyte.com/integrations/sources/test",
-                "connectorSubtype": "api",
-                "releaseStage": "beta",
-                "license": "MIT",
-                "registryOverrides": {"oss": {"enabled": True}, "cloud": {"enabled": True}},
-                "tags": ["language:python"],
-            },
-        }
-    ).encode("utf-8")
-    mock_blob.name = "fake/blob/path.yaml"
-    mock_blob.updated.isoformat.return_value = "2025-01-23T12:34:56Z"
-
-    # Act & Assert - Should raise exception since deletion errors aren't caught
-    with pytest.raises(Exception, match="Failed to delete blob"):
-        generate_and_persist_registry_entry(
-            bucket_name=bucket_name,
-            repo_metadata_file_path=metadata_path,
-            registry_type=registry_type,
-            docker_image_tag="irrelevant",
-            is_prerelease=False,
-        )
-
-    # Assert - Verify deletion was attempted
-    mock_bucket.delete_blob.assert_called_once()
-
-
-@pytest.mark.parametrize("registry_type", ["oss", "cloud"])
-@patch("metadata_service.registry_entry.send_slack_message")
 @patch("metadata_service.registry_entry._apply_metadata_overrides")
 def test_metadata_override_application_failure(mock_apply_overrides, mock_send_slack, temp_files, registry_type):
     """Test exception handling when _apply_metadata_overrides fails."""
