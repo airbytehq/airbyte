@@ -17,4 +17,8 @@ class CompositeDlqChecker(
         decorated.check()
         dlqChecker.check(objectStorageConfig)
     }
+
+    override fun cleanup() {
+        decorated.check()
+    }
 }
