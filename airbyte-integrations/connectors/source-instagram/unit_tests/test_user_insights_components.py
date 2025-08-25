@@ -79,8 +79,8 @@ def test_user_insights_extractor(components_module, metrics_response, expected_r
     response = {
         "data": metrics_response,
         "paging": {
-            "previous": "https://graph.facebook.com/v21.0/17841408147298757/insights?since=1749074099&until=1749160499&metric=follower_count%2Creach&period=day",
-            "next": "https://graph.facebook.com/v21.0/17841408147298757/insights?since=1749246901&until=1749333301&metric=follower_count%2Creach&period=day",
+            "previous": "https://graph.facebook.com/v23.0/17841408147298757/insights?since=1749074099&until=1749160499&metric=follower_count%2Creach&period=day",
+            "next": "https://graph.facebook.com/v23.0/17841408147298757/insights?since=1749246901&until=1749333301&metric=follower_count%2Creach&period=day",
         },
     }
 
