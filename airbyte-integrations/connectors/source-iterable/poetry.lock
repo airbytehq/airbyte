@@ -1326,13 +1326,13 @@ dev = ["argcomplete", "attrs (>=19.2)", "hypothesis (>=3.56)", "mock", "requests
 
 [[package]]
 name = "pytest-memray"
-version = "1.7.0"
+version = "1.8.0"
 description = "A simple plugin to use with pytest"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "pytest_memray-1.7.0-py3-none-any.whl", hash = "sha256:b896718c1adf6d0cd339dfaaaa5620f035c9919e1199a79b3453804a1254306f"},
-    {file = "pytest_memray-1.7.0.tar.gz", hash = "sha256:c18fa907d2210b42f4096c093e2d3416dfc002dcaa450ef3f9ba819bc3dd8f5f"},
+    {file = "pytest_memray-1.8.0-py3-none-any.whl", hash = "sha256:44da9fe0d98541abf4cc76acea6e4a9c525b3c8e604655e5537705f336c9b875"},
+    {file = "pytest_memray-1.8.0.tar.gz", hash = "sha256:c0c706ef81941a7aa7064f2b3b8b5cdc0cea72b5277c6a6a09b113ca9ab30bdb"},
 ]
 
 [package.dependencies]
@@ -1341,7 +1341,7 @@ pytest = ">=7.2"
 
 [package.extras]
 docs = ["furo (>=2022.12.7)", "sphinx (>=6.1.3)", "sphinx-argparse (>=0.4)", "sphinx-inline-tabs (>=2022.1.2b11)", "sphinxcontrib-programoutput (>=0.17)", "towncrier (>=22.12)"]
-lint = ["black (==22.12)", "isort (==5.11.4)", "mypy (==0.991)", "ruff (==0.0.272)"]
+lint = ["black (==25.1.0)", "isort (==6.0.1)", "mypy (==1.17.1)", "ruff (==0.12.7)"]
 test = ["anyio (>=4.4.0)", "covdefaults (>=2.2.2)", "coverage (>=7.0.5)", "flaky (>=3.7)", "pytest (>=7.2)", "pytest-xdist (>=3.1)"]
 
 [[package]]
@@ -1461,13 +1461,13 @@ files = [
 
 [[package]]
 name = "requests"
-version = "2.32.4"
+version = "2.32.5"
 description = "Python HTTP for Humans."
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 files = [
-    {file = "requests-2.32.4-py3-none-any.whl", hash = "sha256:27babd3cda2a6d50b30443204ee89830707d396671944c998b5975b031ac2b2c"},
-    {file = "requests-2.32.4.tar.gz", hash = "sha256:27d0316682c8a29834d3264820024b62a36942083d52caf2f14c0591336d3422"},
+    {file = "requests-2.32.5-py3-none-any.whl", hash = "sha256:2462f94637a34fd532264295e186976db0f5d453d1cdd31473c85a6a161affb6"},
+    {file = "requests-2.32.5.tar.gz", hash = "sha256:dbba0bac56e100853db0ea71b82b4dfd5fe2bf6d3754a8893c3af500cec7d7cf"},
 ]
 
 [package.dependencies]
@@ -1700,13 +1700,13 @@ files = [
 
 [[package]]
 name = "types-pyyaml"
-version = "6.0.12.20250809"
+version = "6.0.12.20250822"
 description = "Typing stubs for PyYAML"
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "types_pyyaml-6.0.12.20250809-py3-none-any.whl", hash = "sha256:032b6003b798e7de1a1ddfeefee32fac6486bdfe4845e0ae0e7fb3ee4512b52f"},
-    {file = "types_pyyaml-6.0.12.20250809.tar.gz", hash = "sha256:af4a1aca028f18e75297da2ee0da465f799627370d74073e96fee876524f61b5"},
+    {file = "types_pyyaml-6.0.12.20250822-py3-none-any.whl", hash = "sha256:1fe1a5e146aa315483592d292b72a172b65b946a6d98aa6ddd8e4aa838ab7098"},
+    {file = "types_pyyaml-6.0.12.20250822.tar.gz", hash = "sha256:259f1d93079d335730a9db7cff2bcaf65d7e04b4a56b5927d49a612199b59413"},
 ]
 
 [[package]]

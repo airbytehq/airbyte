@@ -3,24 +3,20 @@
     "message": "Next",
     "description": "The label for version current"
   },
-  "sidebar.developer-tools.category.Developer Tools": {
-    "message": "Developer Tools",
-    "description": "The label for category Developer Tools in sidebar developer-tools"
+  "sidebar.ai-agents.category.AI Agents": {
+    "message": "AI Agents",
+    "description": "The label for category AI Agents in sidebar ai-agents"
   },
-  "sidebar.developer-tools.category.Embedded": {
+  "sidebar.ai-agents.category.Embedded": {
     "message": "Embedded",
-    "description": "The label for category Embedded in sidebar developer-tools"
+    "description": "The label for category Embedded in sidebar ai-agents"
   },
-  "sidebar.developer-tools.category.Widget": {
+  "sidebar.ai-agents.category.Widget": {
     "message": "Widget",
-    "description": "The label for category Widget in sidebar developer-tools"
+    "description": "The label for category Widget in sidebar ai-agents"
   },
-  "sidebar.developer-tools.category.API": {
+  "sidebar.ai-agents.category.API": {
     "message": "API",
-    "description": "The label for category API in sidebar developer-tools"
-  },
-  "sidebar.developer-tools.doc.PyAirbyte MCP": {
-    "message": "PyAirbyte MCP",
-    "description": "The label for the doc item PyAirbyte MCP in sidebar developer-tools, linking to the doc pyairbyte-mcp/README"
+    "description": "The label for category API in sidebar ai-agents"
   }
 }
