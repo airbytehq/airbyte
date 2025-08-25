@@ -154,7 +154,7 @@ sealed class PostgresSourceSplittablePartition(
 
 class PostgresSourceJdbcSplittableSnapshotPartition(
     selectQueryGenerator: SelectQueryGenerator,
-    streamState: DefaultJdbcStreamState, // TODO: check here
+    streamState: DefaultJdbcStreamState,
     override val lowerBound: List<JsonNode>?,
     override val upperBound: List<JsonNode>?,
 ) : PostgresSourceSplittablePartition(selectQueryGenerator, streamState, listOf(ctidField)) {
