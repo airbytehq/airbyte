@@ -4,15 +4,14 @@ import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.discover.Field
-import io.airbyte.cdk.discover.FieldOrMetaField
+import io.airbyte.cdk.discover.DataField
+import io.airbyte.cdk.discover.DataOrMetaField
 import io.airbyte.cdk.output.CatalogValidationFailureHandler
 import io.airbyte.cdk.output.InvalidCursor
 import io.airbyte.cdk.output.ResetStream
 import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.DefaultJdbcSharedState
 import io.airbyte.cdk.read.DefaultJdbcStreamState
-import io.airbyte.cdk.read.DefaultJdbcStreamStateValue
 import io.airbyte.cdk.read.JdbcPartitionFactory
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.StreamFeedBootstrap
@@ -49,8 +48,8 @@ class PostgresSourceJdbcPartitionFactory(
                 upperBound = null,
             )
         }
-        val cursorChosenFromCatalog: Field =
-            stream.configuredCursor as? Field ?: throw ConfigErrorException("no cursor")
+        val cursorChosenFromCatalog: DataField =
+            stream.configuredCursor as? DataField ?: throw ConfigErrorException("no cursor")
         return PostgresSourceJdbcSplittableSnapshotWithCursorPartition(
             selectQueryGenerator,
             streamState,
@@ -84,7 +83,7 @@ class PostgresSourceJdbcPartitionFactory(
 
         val ctidVal: Ctid? = sv.ctid?.let { Ctid(it) }
 
-        val cursorPair: Pair<Field, JsonNode>? =
+        val cursorPair: Pair<DataField, JsonNode>? =
             if (sv.cursors.isEmpty()) {
                 null
             } else {
@@ -117,7 +116,7 @@ class PostgresSourceJdbcPartitionFactory(
                 )
             }
         } else {
-            val (cursor: Field, cursorCheckpoint: JsonNode) = cursorPair
+            val (cursor: DataField, cursorCheckpoint: JsonNode) = cursorPair
             if (!isCursorBasedIncremental) {
                 handler.accept(ResetStream(stream.id))
                 streamState.reset()
@@ -149,7 +148,7 @@ class PostgresSourceJdbcPartitionFactory(
         }
     }
 
-    private fun PostgresSourceJdbcStreamStateValue.cursorPair(stream: Stream): Pair<Field, JsonNode>? {
+    private fun PostgresSourceJdbcStreamStateValue.cursorPair(stream: Stream): Pair<DataField, JsonNode>? {
         if (cursors.size > 1) {
             handler.accept(
                 InvalidCursor(stream.id, cursors.keys.toString()),
@@ -157,8 +156,8 @@ class PostgresSourceJdbcPartitionFactory(
             return null
         }
         val cursorLabel: String = cursors.keys.first()
-        val cursor: FieldOrMetaField? = stream.schema.find { it.id == cursorLabel }
-        if (cursor !is Field) {
+        val cursor: DataOrMetaField? = stream.schema.find { it.id == cursorLabel }
+        if (cursor !is DataField) {
             handler.accept(
                 InvalidCursor(stream.id, cursorLabel),
             )

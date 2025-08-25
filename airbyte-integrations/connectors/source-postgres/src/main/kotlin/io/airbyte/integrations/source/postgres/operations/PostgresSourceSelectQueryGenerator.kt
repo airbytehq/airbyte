@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.source.postgres.operations
 
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.DataField
 import io.airbyte.cdk.discover.NonEmittedField
 import io.airbyte.cdk.jdbc.LongFieldType
 import io.airbyte.cdk.jdbc.LosslessJdbcFieldType
@@ -75,9 +75,9 @@ class PostgresSourceSelectQueryGenerator : SelectQueryGenerator {
         else -> "\"$id\""
     }*/
 
-    fun Field.sql(): String = "\"$id\""
+    fun DataField.sql(): String = "\"$id\""
 
-    fun FromNode.sql(columns: List<Field>,): String =
+    fun FromNode.sql(columns: List<DataField>,): String =
         when (this) {
             NoFrom -> "FROM DUAL"
             is From ->

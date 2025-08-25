@@ -3,7 +3,7 @@ package io.airbyte.integrations.source.postgres
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.DataField
 import io.airbyte.cdk.util.Jsons
 
 data class PostgresSourceJdbcStreamStateValue(
@@ -34,7 +34,7 @@ data class PostgresSourceJdbcStreamStateValue(
             )
 
         fun cursorIncrementalCheckpoint(
-            cursor: Field,
+            cursor: DataField,
             cursorCheckpoint: JsonNode,
         ): OpaqueStateValue =
             when (cursorCheckpoint.isNull) {
@@ -46,7 +46,7 @@ data class PostgresSourceJdbcStreamStateValue(
 
         fun snapshotWithCursorCheckpoint(
             ctidCheckpoint: JsonNode,
-            cursor: Field,
+            cursor: DataField,
             cursorCheckpoint: JsonNode,
         ): OpaqueStateValue =
             Jsons.valueToTree(PostgresSourceJdbcStreamStateValue(
