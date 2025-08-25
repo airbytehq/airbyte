@@ -445,9 +445,10 @@ def generate_and_persist_registry_entry(
 
     Args:
         bucket_name (str): The name of the GCS bucket.
-        spec_path (pathlib.Path): The path to the spec file.
+        repo_metadata_file_path (pathlib.Path): The path to the spec file.
         registry_type (str): The registry type.
-        pre_release_tag (str): The prerelease image tag ("1.2.3-dev.abcde12345"), or None. If set to None, will use the image tag from the metadata file.
+        docker_image_tag (str): The docker image tag associated with this release. Typically a semver string (e.g. '1.2.3'), possibly with a suffix (e.g. '1.2.3-dev.abcde12345')
+        is_prerelease (bool): Whether this is a prerelease, or a main release.
     """
     # Read the repo metadata dict to bootstrap ourselves. We need the docker repository,
     # so that we can read the metadata from GCS.
