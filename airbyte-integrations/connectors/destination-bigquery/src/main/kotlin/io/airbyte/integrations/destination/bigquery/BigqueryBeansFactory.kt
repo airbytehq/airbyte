@@ -29,6 +29,8 @@ import io.airbyte.integrations.destination.bigquery.check.BigqueryCheckCleaner
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
 import io.airbyte.integrations.destination.bigquery.write.bulk_loader.BigqueryBulkLoadConfiguration
 import io.airbyte.integrations.destination.bigquery.write.bulk_loader.BigqueryConfiguredForBulkLoad
+import io.airbyte.integrations.destination.bigquery.write.bulk_loader.BigQueryBulkOneShotUploader
+import io.airbyte.integrations.destination.bigquery.write.bulk_loader.BigQueryBulkOneShotUploaderStep
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.BigQueryDatabaseHandler
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadDatabaseInitialStatusGatherer
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadNativeTableOperations
@@ -41,10 +43,11 @@ import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Named
 import jakarta.inject.Singleton
+import io.airbyte.cdk.load.config.DataChannelMedium
+import java.io.OutputStream
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.nio.charset.StandardCharsets
-import org.threeten.bp.Duration
 
 private val logger = KotlinLogging.logger {}
 
@@ -55,6 +58,26 @@ class BigqueryBeansFactory {
     @Singleton
     @Requires(condition = BigqueryConfiguredForBulkLoad::class)
     fun getBulkLoadConfig(config: BigqueryConfiguration) = BigqueryBulkLoadConfiguration(config)
+
+    @Singleton
+    @Named("bigQueryOneShotStep")
+    @Requires(condition = BigqueryConfiguredForBulkLoad::class)
+    fun <O : OutputStream> getBigQueryOneShotStep(
+        bigQueryOneShotUploader: BigQueryBulkOneShotUploader<O>,
+        taskFactory: io.airbyte.cdk.load.task.internal.LoadPipelineStepTaskFactory,
+        @Named("numInputPartitions") numInputPartitions: Int,
+        @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium,
+    ): BigQueryBulkOneShotUploaderStep<io.airbyte.cdk.load.message.StreamKey, O>? {
+        return if (dataChannelMedium == DataChannelMedium.SOCKET) {
+            BigQueryBulkOneShotUploaderStep(
+                bigQueryOneShotUploader,
+                taskFactory,
+                numInputPartitions
+            )
+        } else {
+            null
+        }
+    }
 
     @Singleton
     @Named("checkNamespace")

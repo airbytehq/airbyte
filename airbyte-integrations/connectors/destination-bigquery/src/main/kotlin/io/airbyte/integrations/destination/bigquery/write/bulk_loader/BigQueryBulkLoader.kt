@@ -9,6 +9,7 @@ import com.google.cloud.bigquery.BigQuery
 import com.google.cloud.bigquery.JobInfo
 import com.google.cloud.bigquery.LoadJobConfiguration
 import io.airbyte.cdk.load.command.DestinationCatalog
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.file.gcs.GcsBlob
 import io.airbyte.cdk.load.file.gcs.GcsClient
 import io.airbyte.cdk.load.message.StreamKey
@@ -118,7 +119,8 @@ class BigQueryBulkLoaderFactory(
             tableId = TableId.of(rawTableName.namespace, rawTableName.name + rawTableSuffix)
             schema = BigQueryRecordFormatter.CSV_SCHEMA
         } else {
-            tableId = directLoadStreamStateStore!!.get(key.stream)!!.tableName.toTableId()
+            val executionConfig = waitForStateStore(directLoadStreamStateStore!!, key.stream)
+            tableId = executionConfig.tableName.toTableId()
             schema =
                 BigQueryRecordFormatter.getDirectLoadSchema(
                     catalog.getStream(key.stream),
@@ -131,6 +133,29 @@ class BigQueryBulkLoaderFactory(
             bigQueryConfiguration,
             tableId,
             schema,
+        )
+    }
+
+    private fun <S> waitForStateStore(
+        stateStore: StreamStateStore<S>,
+        streamDescriptor: DestinationStream.Descriptor
+    ): S {
+        // Poll the state store until it's populated by the coordinating StreamLoader thread
+        var attempts = 0
+        val maxAttempts = 60 * 60 // 1 hour
+
+        while (attempts < maxAttempts) {
+            val state = stateStore.get(streamDescriptor)
+            if (state != null) {
+                return state
+            }
+
+            Thread.sleep(1000)
+            attempts++
+        }
+
+        throw RuntimeException(
+            "Timeout waiting for StreamStateStore to be populated for stream $streamDescriptor. This indicates a coordination issue between workers.",
         )
     }
 }

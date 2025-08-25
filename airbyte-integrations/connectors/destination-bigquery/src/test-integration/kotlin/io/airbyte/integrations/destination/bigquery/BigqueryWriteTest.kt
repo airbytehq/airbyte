@@ -220,3 +220,13 @@ class Gcs :
         BigQueryDestinationTestUtils.createConfig(configFile = GCS_STAGING_CONFIG),
         CdcDeletionMode.HARD_DELETE,
     )
+
+class GcsProto :
+    BigqueryDirectLoadWriteTest(
+        BigQueryDestinationTestUtils.createConfig(configFile = GCS_STAGING_CONFIG),
+        CdcDeletionMode.HARD_DELETE,
+        isStreamSchemaRetroactiveForUnknownTypeToString = false,
+        unknownTypesBehavior = UnknownTypesBehavior.NULL,
+        dataChannelFormat = DataChannelFormat.PROTOBUF,
+        dataChannelMedium = DataChannelMedium.SOCKET,
+    )

@@ -1,0 +1,169 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
+package io.airbyte.integrations.destination.bigquery.write.bulk_loader
+
+import io.airbyte.cdk.load.config.DataChannelMedium
+import io.airbyte.cdk.load.file.gcs.GcsBlob
+import io.airbyte.cdk.load.file.object_storage.ByteArrayPool
+import io.airbyte.cdk.load.message.DestinationRecordRaw
+import io.airbyte.cdk.load.message.StreamKey
+import io.airbyte.cdk.load.pipeline.BatchAccumulator
+import io.airbyte.cdk.load.pipeline.BatchAccumulatorResult
+import io.airbyte.cdk.load.pipeline.FinalOutput
+import io.airbyte.cdk.load.pipeline.IntermediateOutput
+import io.airbyte.cdk.load.pipeline.NoOutput
+import io.airbyte.cdk.load.pipeline.db.BulkLoaderTableLoader
+import io.airbyte.cdk.load.pipline.object_storage.ObjectKey
+import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartFormatter
+import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartLoader
+import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderUploadCompleter
+import io.airbyte.cdk.load.write.db.BulkLoader
+import io.airbyte.cdk.load.write.db.BulkLoaderFactory
+import io.github.oshai.kotlinlogging.KotlinLogging
+import io.micronaut.context.annotation.Requires
+import jakarta.inject.Named
+import jakarta.inject.Singleton
+import java.io.OutputStream
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+
+/**
+ * BigQuery-specific one-shot uploader that combines formatting, upload, completion, and BigQuery load
+ * operations in a single BatchAccumulator optimized for socket mode.
+ * 
+ * This wraps the existing BigQuery bulk load pipeline stages but eliminates the inter-stage queuing
+ * overhead by orchestrating them directly within a single accumulator.
+ */
+@Singleton
+@Requires(bean = BulkLoaderFactory::class)
+class BigQueryBulkOneShotUploader<O : OutputStream>(
+    private val partFormatter: ObjectLoaderPartFormatter<O>,
+    private val partLoader: ObjectLoaderPartLoader<GcsBlob>,
+    private val uploadCompleter: ObjectLoaderUploadCompleter<GcsBlob>,
+    private val bulkLoaderFactory: BulkLoaderFactory<StreamKey, GcsBlob>,
+    @Named("uploadParallelismForSocket") private val uploadParallelism: Int,
+    @Named("dataChannelMedium") private val dataChannelMedium: DataChannelMedium,
+) :
+    BatchAccumulator<
+        BigQueryBulkOneShotUploader.State<O>,
+        StreamKey,
+        DestinationRecordRaw,
+        BulkLoaderTableLoader.LoadResult
+    > {
+
+    private val log = KotlinLogging.logger {}
+    
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val uploadDispatcher = Dispatchers.IO.limitedParallelism(uploadParallelism)
+
+    data class State<O : OutputStream>(
+        val streamKey: StreamKey,
+        val formatterState: ObjectLoaderPartFormatter.State<O>,
+        val partLoaderState: ObjectLoaderPartLoader.State<GcsBlob>,
+        val completerState: ObjectLoaderUploadCompleter.State,
+        val bulkLoader: BulkLoader<GcsBlob>,
+        val uploads: MutableList<Deferred<ObjectLoaderPartLoader.PartResult<GcsBlob>>> = mutableListOf(),
+    ) : AutoCloseable {
+        override fun close() {
+            formatterState.close()
+            partLoaderState.close()
+            completerState.close()
+            bulkLoader.close()
+        }
+    }
+
+    override suspend fun start(key: StreamKey, part: Int): State<O> {
+        log.info { "Starting BigQuery bulk one-shot upload for stream ${key.stream} partition $part in ${dataChannelMedium} mode" }
+        
+        val fmt = partFormatter.startLockFree(key)
+        val objKey = ObjectKey(stream = key.stream, objectKey = fmt.partFactory.key)
+        
+        return State(
+            streamKey = key,
+            formatterState = fmt,
+            partLoaderState = partLoader.start(objKey, part),
+            completerState = uploadCompleter.start(objKey, part),
+            bulkLoader = bulkLoaderFactory.create(key, part),
+        )
+    }
+
+    override suspend fun accept(
+        input: DestinationRecordRaw,
+        state: State<O>,
+    ): BatchAccumulatorResult<State<O>, BulkLoaderTableLoader.LoadResult> {
+        return when (val fmtResult = partFormatter.accept(input, state.formatterState)) {
+            is NoOutput -> NoOutput(state.copy(formatterState = fmtResult.nextState))
+            is IntermediateOutput -> {
+                // Launch async upload for intermediate part
+                state.uploads += launchUpload(fmtResult.output, state.partLoaderState)
+                NoOutput(state.copy(formatterState = fmtResult.nextState))
+            }
+            is FinalOutput -> uploadFinalAndExecuteBigQueryLoad(fmtResult.output, state)
+        }
+    }
+
+    override suspend fun finish(
+        state: State<O>
+    ): FinalOutput<State<O>, BulkLoaderTableLoader.LoadResult> =
+        uploadFinalAndExecuteBigQueryLoad(
+            partFormatter.finish(state.formatterState).output,
+            state
+        )
+
+    private fun launchUpload(
+        part: ObjectLoaderPartFormatter.FormattedPart,
+        loaderState: ObjectLoaderPartLoader.State<GcsBlob>,
+    ): Deferred<ObjectLoaderPartLoader.PartResult<GcsBlob>> =
+        CoroutineScope(uploadDispatcher).async {
+            try {
+                when (val res = partLoader.acceptWithExperimentalCoroutinesApi(part, loaderState)) {
+                    is IntermediateOutput -> res.output
+                    else -> error("PartLoader should emit IntermediateOutput only")
+                }
+            } finally {
+                // Recycle byte arrays to optimize memory usage in socket mode
+                part.part.bytes?.let { ByteArrayPool.recycle(it) }
+            }
+        }
+
+    private suspend fun uploadFinalAndExecuteBigQueryLoad(
+        finalPart: ObjectLoaderPartFormatter.FormattedPart,
+        state: State<O>
+    ): FinalOutput<State<O>, BulkLoaderTableLoader.LoadResult> = coroutineScope {
+        // Upload the final part
+        state.uploads += launchUpload(finalPart, state.partLoaderState)
+
+        log.info { "Awaiting ${state.uploads.size} part uploads for ${state.streamKey.stream}…" }
+        
+        // Wait for all uploads to complete and process through upload completer
+        var completedGcsBlob: GcsBlob? = null
+        state.uploads.awaitAll().forEach { part ->
+            when (val res = uploadCompleter.accept(part, state.completerState)) {
+                is NoOutput -> Unit // Continue processing parts
+                is FinalOutput -> {
+                    completedGcsBlob = res.output.remoteObject
+                    log.info { "GCS upload completed for ${state.streamKey.stream}: ${completedGcsBlob?.key}" }
+                    return@forEach
+                }
+                else -> error("Unexpected output from upload completer: $res")
+            }
+        }
+
+        // Execute BigQuery load operation
+        if (completedGcsBlob != null) {
+            log.info { "Executing BigQuery load for ${state.streamKey.stream} from GCS: ${completedGcsBlob!!.key}" }
+            state.bulkLoader.load(completedGcsBlob!!)
+            log.info { "BigQuery load completed for ${state.streamKey.stream}" }
+            FinalOutput(BulkLoaderTableLoader.LoadResult)
+        } else {
+            error("Upload completer never produced a completed GCS blob – logic bug in socket mode")
+        }
+    }
+}
