@@ -3,7 +3,8 @@
 #
 
 
-from typing import Any, Mapping, Optional
+import logging
+from typing import Any, Mapping, Optional, Tuple
 
 from airbyte_cdk import AdvancedAuth, ConfiguredAirbyteCatalog, ConnectorSpecification, OAuthConfigSpecification, TState
 from airbyte_cdk.models import AuthFlowType, OauthConnectorInputSpecification
@@ -26,6 +27,21 @@ class SourceMicrosoftSharePoint(FileBasedSource):
             state=state,
             cursor_cls=DefaultFileBasedCursor,
         )
+
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
+        """
+        Override the check_connection method to mark stream reader as being used in a check operation.
+        This helps optimize memory usage when handling large files.
+        """
+        try:
+            # Mark the stream reader as being used in a check operation
+            if hasattr(self.stream_reader, "mark_as_check"):
+                self.stream_reader.mark_as_check()
+
+            # Call the parent check_connection method
+            return super().check_connection(logger, config)
+        except Exception as e:
+            return False, str(e)
 
     def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
         """
