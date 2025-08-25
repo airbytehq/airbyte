@@ -2,7 +2,9 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
+import datetime
 import json
+import os
 import pathlib
 import tempfile
 from unittest.mock import MagicMock, Mock, patch
@@ -98,6 +100,8 @@ def registry_scenario(request, sample_spec_dict):
             "metadata_path": metadata_path,
             "spec_path": spec_path,
             "metadata_dict": metadata_dict,
+            "docker_image_tag": docker_tag,
+            "is_prerelease": version_type == "dev",
         }
 
 
@@ -116,132 +120,169 @@ def test_generate_and_persist_registry_entry(
     sample_dependencies_dict,
 ):
     """Test registry entry generation for all scenarios: enabled/disabled, all registry types, and all version types."""
+    with (
+        patch("metadata_service.registry.storage.Client") as mock_storage_client_class,
+        patch("metadata_service.registry_entry.SpecCache") as mock_spec_cache_class,
+    ):
+        # Arrange
+        scenario = registry_scenario
+        bucket_name = "test-bucket"
 
-    # Arrange
-    scenario = registry_scenario
-    bucket_name = "test-bucket"
+        # Mock GCS client setup
+        mock_storage_client = Mock()
+        mock_storage_client_class.return_value = mock_storage_client
+        mock_bucket = Mock()
+        mock_blob = Mock()
+        mock_icon_blob = Mock()
 
-    # Mock GCS client setup
-    mock_storage_client = Mock()
-    mock_bucket = Mock()
-    mock_blob = Mock()
-    mock_icon_blob = Mock()
+        mock_gcs_client.return_value = mock_storage_client
+        mock_storage_client.bucket.return_value = mock_bucket
+        mock_bucket.blob.return_value = mock_blob
+        mock_bucket.delete_blob = Mock()
 
-    mock_gcs_client.return_value = mock_storage_client
-    mock_storage_client.bucket.return_value = mock_bucket
-    mock_bucket.blob.return_value = mock_blob
-    mock_bucket.delete_blob = Mock()
+        mock_spec_cache = Mock()
+        mock_spec_cache_class.return_value = mock_spec_cache
+        mock_spec_cache.download_spec.return_value = json.loads('{"fake": "spec"}')
 
-    if scenario["enabled"]:
-        # Mock successful operations for enabled scenarios
-        mock_safe_read_gcs_file.return_value = json.dumps(sample_dependencies_dict)
-        mock_icon_blob.bucket.name = bucket_name
-        mock_icon_blob.name = f"metadata/{scenario['metadata_dict']['data']['dockerRepository']}/latest/icon.svg"
-        mock_get_icon_blob.return_value = mock_icon_blob
-    else:
-        # Mock existing blob for deletion scenarios (latest versions only)
-        mock_blob.exists.return_value = True
+        mock_blob.download_as_string.return_value = yaml.dump(scenario["metadata_dict"])
+        mock_blob.name = "fake/blob/path.yaml"
+        mock_blob.updated.isoformat.return_value = "2025-01-23T12:34:56Z"
 
-    # Act
-    generate_and_persist_registry_entry(
-        bucket_name=bucket_name,
-        metadata_file_path=scenario["metadata_path"],
-        spec_path=scenario["spec_path"],
-        registry_type=scenario["registry_type"],
-    )
-
-    # Assert based on enabled/disabled status
-    if scenario["enabled"]:
-        # ENABLED SCENARIO ASSERTIONS
-
-        # Verify GCS operations were called
-        mock_gcs_client.assert_called()
-        mock_safe_read_gcs_file.assert_called_once()
-        mock_get_icon_blob.assert_called_once_with(bucket_name, scenario["metadata_dict"]["data"])
-
-        # Verify registry entry was persisted
-        mock_persist_entry.assert_called()
-        persist_call_args = mock_persist_entry.call_args_list
-
-        # Check number of persist calls based on version type
-        if scenario["version_type"] == "latest":
-            assert len(persist_call_args) == 2  # latest and versioned paths
-        else:  # rc or dev
-            assert len(persist_call_args) == 1  # only one path
-
-        # Verify the registry entry model was created correctly
-        for call_args in persist_call_args:
-            bucket_name_arg, registry_entry_model, registry_path = call_args[0]
-            assert bucket_name_arg == bucket_name
-            assert scenario["registry_type"] in registry_path
-
-            # Verify the model has expected fields
-            registry_entry_dict = json.loads(registry_entry_model.json(exclude_none=True))
-
-            # Check core field transformations
-            assert "sourceDefinitionId" in registry_entry_dict
-            assert registry_entry_dict["sourceDefinitionId"] == scenario["metadata_dict"]["data"]["definitionId"]
-
-            # Verify required fields were added
-            assert registry_entry_dict["tombstone"] is False
-            assert registry_entry_dict["custom"] is False
-            assert registry_entry_dict["public"] is True
-            assert "iconUrl" in registry_entry_dict
-            assert "generated" in registry_entry_dict
-            assert "packageInfo" in registry_entry_dict
-            assert registry_entry_dict["packageInfo"]["cdk_version"] == "0.50.0"
-            assert "spec" in registry_entry_dict
-
-            # Verify fields were removed
-            assert "registryOverrides" not in registry_entry_dict
-            assert "connectorType" not in registry_entry_dict
-            assert "definitionId" not in registry_entry_dict
-
-        # Verify Slack notifications
-        slack_calls = mock_send_slack.call_args_list
-        assert len(slack_calls) >= 2  # start + success notifications
-
-        start_call = slack_calls[0][0]
-        assert "Registry Entry Generation_ STARTED" in start_call[1]
-
-        success_calls = [call for call in slack_calls if "SUCCESS" in call[0][1]]
-        assert len(success_calls) == len(persist_call_args)
-
-    else:
-        # DISABLED SCENARIO ASSERTIONS
-
-        # Verify NO generation/persistence operations were called
-        mock_safe_read_gcs_file.assert_not_called()
-        mock_get_icon_blob.assert_not_called()
-        mock_persist_entry.assert_not_called()
-
-        if scenario["version_type"] == "latest":
-            # For latest versions, should check for deletion
-            mock_gcs_client.assert_called()
-            expected_latest_path = (
-                f"metadata/{scenario['metadata_dict']['data']['dockerRepository']}/latest/{scenario['registry_type']}.json"
-            )
-            mock_bucket.blob.assert_called_with(expected_latest_path)
-            mock_blob.exists.assert_called_once()
-            mock_bucket.delete_blob.assert_called_once_with(expected_latest_path)
+        if scenario["enabled"]:
+            # Mock successful operations for enabled scenarios
+            mock_safe_read_gcs_file.return_value = json.dumps(sample_dependencies_dict)
+            mock_icon_blob.bucket.name = bucket_name
+            mock_icon_blob.name = f"metadata/{scenario['metadata_dict']['data']['dockerRepository']}/latest/icon.svg"
+            mock_get_icon_blob.return_value = mock_icon_blob
         else:
-            # For rc/dev versions, no deletion should occur
-            mock_gcs_client.assert_not_called()
+            # Mock existing blob for deletion scenarios (latest versions only)
+            mock_blob.exists.return_value = True
 
-        # Verify NOOP Slack notification
-        slack_calls = mock_send_slack.call_args_list
-        assert len(slack_calls) == 2  # STARTED + NOOP notifications
+        # Act
+        generate_and_persist_registry_entry(
+            bucket_name=bucket_name,
+            repo_metadata_file_path=scenario["metadata_path"],
+            registry_type=scenario["registry_type"],
+            docker_image_tag=scenario["docker_image_tag"],
+            is_prerelease=scenario["is_prerelease"],
+        )
 
-        # Check STARTED notification
-        start_call = slack_calls[0][0]
-        assert "Registry Entry Generation_ STARTED" in start_call[1]
-        assert scenario["registry_type"] in start_call[1]
+        # Assert based on enabled/disabled status
+        if scenario["enabled"]:
+            # ENABLED SCENARIO ASSERTIONS
 
-        # Check NOOP notification
-        noop_call = slack_calls[1][0]
-        assert "Registry Entry Generation_ NOOP" in noop_call[1]
-        assert scenario["registry_type"] in noop_call[1]
-        assert "not enabled" in noop_call[1]
+            # Verify GCS operations were called
+            mock_gcs_client.assert_called()
+            mock_safe_read_gcs_file.assert_called_once()
+            mock_get_icon_blob.assert_called_once_with(bucket_name, scenario["metadata_dict"]["data"])
+
+            # Verify registry entry was persisted
+            mock_persist_entry.assert_called()
+            persist_call_args = mock_persist_entry.call_args_list
+
+            # Check number of persist calls based on version type
+            if scenario["version_type"] == "latest" or scenario["version_type"] == "rc":
+                # in "latest" mode, we write to versioned + `/latest`
+                # in "rc" mode, we write to versioned + `/release_candidate`
+                assert len(persist_call_args) == 2
+            else:  # dev
+                assert len(persist_call_args) == 1  # only one path
+
+            # Verify the registry entry model was created correctly
+            for call_args in persist_call_args:
+                bucket_name_arg, registry_entry_model, registry_path = call_args[0]
+                assert bucket_name_arg == bucket_name
+                assert scenario["registry_type"] in registry_path
+
+                # Verify the model has expected fields
+                registry_entry_dict = json.loads(registry_entry_model.json(exclude_none=True))
+
+                # Check core field transformations
+                assert "sourceDefinitionId" in registry_entry_dict
+                assert registry_entry_dict["sourceDefinitionId"] == scenario["metadata_dict"]["data"]["definitionId"]
+
+                # Verify required fields were added
+                assert registry_entry_dict["tombstone"] is False
+                assert registry_entry_dict["custom"] is False
+                assert registry_entry_dict["public"] is True
+                assert "iconUrl" in registry_entry_dict
+                assert "generated" in registry_entry_dict
+                assert "packageInfo" in registry_entry_dict
+                assert registry_entry_dict["packageInfo"]["cdk_version"] == "0.50.0"
+                assert "spec" in registry_entry_dict
+
+                # Verify fields were removed
+                assert "registryOverrides" not in registry_entry_dict
+                assert "connectorType" not in registry_entry_dict
+                assert "definitionId" not in registry_entry_dict
+
+            registry_entry_paths = set()
+            for kall in persist_call_args:
+                args, _ = kall
+                # blob path is the last positional arg
+                registry_entry_paths.add(args[-1])
+            if scenario["version_type"] == "rc":
+                assert registry_entry_paths == {
+                    f'metadata/airbyte/source-test-enabled/{scenario["docker_image_tag"]}/{scenario["registry_type"]}.json',
+                    f'metadata/airbyte/source-test-enabled/release_candidate/{scenario["registry_type"]}.json',
+                }
+            elif scenario["version_type"] == "latest":
+                assert registry_entry_paths == {
+                    f'metadata/airbyte/source-test-enabled/{scenario["docker_image_tag"]}/{scenario["registry_type"]}.json',
+                    f'metadata/airbyte/source-test-enabled/latest/{scenario["registry_type"]}.json',
+                }
+            elif scenario["version_type"] == "dev":
+                assert registry_entry_paths == {
+                    f'metadata/airbyte/source-test-enabled/{scenario["docker_image_tag"]}/{scenario["registry_type"]}.json',
+                }
+            else:
+                raise Exception(f'Unexpected scenario: {scenario["version_type"]}')
+
+            # Verify Slack notifications
+            slack_calls = mock_send_slack.call_args_list
+            assert len(slack_calls) >= 2  # start + success notifications
+
+            start_call = slack_calls[0][0]
+            assert "Registry Entry Generation_ STARTED" in start_call[1]
+
+            success_calls = [call for call in slack_calls if "SUCCESS" in call[0][1]]
+            assert len(success_calls) == len(persist_call_args)
+
+        else:
+            # DISABLED SCENARIO ASSERTIONS
+
+            # Verify NO generation/persistence operations were called
+            mock_safe_read_gcs_file.assert_not_called()
+            mock_get_icon_blob.assert_not_called()
+            mock_persist_entry.assert_not_called()
+
+            if scenario["version_type"] == "latest":
+                # For latest versions, should check for deletion
+                mock_gcs_client.assert_called()
+                expected_latest_path = (
+                    f"metadata/{scenario['metadata_dict']['data']['dockerRepository']}/latest/{scenario['registry_type']}.json"
+                )
+                mock_bucket.blob.assert_called_with(expected_latest_path)
+                mock_blob.exists.assert_called_once()
+                mock_bucket.delete_blob.assert_called_once_with(expected_latest_path)
+            else:
+                # For rc/dev versions, no deletion should occur
+                mock_bucket.delete_blob.assert_not_called()
+
+            # Verify NOOP Slack notification
+            slack_calls = mock_send_slack.call_args_list
+            assert len(slack_calls) == 2  # STARTED + NOOP notifications
+
+            # Check STARTED notification
+            start_call = slack_calls[0][0]
+            assert "Registry Entry Generation_ STARTED" in start_call[1]
+            assert scenario["registry_type"] in start_call[1]
+
+            # Check NOOP notification
+            noop_call = slack_calls[1][0]
+            assert "Registry Entry Generation_ NOOP" in noop_call[1]
+            assert scenario["registry_type"] in noop_call[1]
+            assert "not enabled" in noop_call[1]
 
 
 @pytest.mark.parametrize("registry_type", ["oss", "cloud"])
@@ -257,31 +298,11 @@ def test_invalid_metadata_file_path(mock_send_slack, registry_type):
     # Act & Assert
     with pytest.raises(FileNotFoundError):
         generate_and_persist_registry_entry(
-            bucket_name=bucket_name, metadata_file_path=invalid_metadata_path, spec_path=spec_path, registry_type=registry_type
-        )
-
-
-@pytest.mark.parametrize("registry_type", ["oss", "cloud"])
-@patch("metadata_service.registry_entry.send_slack_message")
-@patch("metadata_service.registry_entry._apply_metadata_overrides")
-def test_invalid_spec_file_path(mock_apply_overrides, mock_send_slack, temp_files, registry_type):
-    """Test exception handling when spec file path doesn't exist or is invalid."""
-
-    # Arrange - Use enabled temp files
-    metadata_path, _ = temp_files
-    invalid_spec_path = pathlib.Path("/nonexistent/spec.json")
-    bucket_name = "test-bucket"
-
-    # Mock successful metadata processing to reach spec parsing
-    mock_apply_overrides.return_value = {"test": "data"}
-
-    # Act & Assert
-    with pytest.raises(FileNotFoundError):
-        generate_and_persist_registry_entry(
             bucket_name=bucket_name,
-            metadata_file_path=metadata_path,
-            spec_path=invalid_spec_path,
+            repo_metadata_file_path=invalid_metadata_path,
             registry_type=registry_type,
+            docker_image_tag="irrelevant",
+            is_prerelease=False,
         )
 
 
@@ -315,7 +336,6 @@ def test_gcs_operations_failure(
     registry_type,
 ):
     """Test exception handling when various GCS operations fail."""
-
     # Arrange
     metadata_path, spec_path = temp_files
     bucket_name = "test-bucket"
@@ -351,7 +371,11 @@ def test_gcs_operations_failure(
     # Act & Assert
     with pytest.raises(Exception):
         generate_and_persist_registry_entry(
-            bucket_name=bucket_name, metadata_file_path=metadata_path, spec_path=spec_path, registry_type=registry_type
+            bucket_name=bucket_name,
+            repo_metadata_file_path=metadata_path,
+            registry_type=registry_type,
+            docker_image_tag="irrelevant",
+            is_prerelease=False,
         )
 
     # Verify error Slack notification was sent for non-client failures
@@ -382,10 +406,35 @@ def test_gcs_deletion_failure_when_registry_disabled(mock_gcs_client, mock_send_
     mock_blob.exists.return_value = True
     mock_bucket.delete_blob.side_effect = Exception("Failed to delete blob")
 
+    mock_blob.download_as_string.return_value = yaml.dump(
+        {
+            "metadataSpecVersion": "1.0",
+            "data": {
+                "name": f"Test Source",
+                "definitionId": "12345678-1234-1234-1234-123456789012",
+                "connectorType": "source",
+                "dockerRepository": f"airbyte/source-test",
+                "dockerImageTag": "fake/docker-image",
+                "documentationUrl": f"https://docs.airbyte.com/integrations/sources/test",
+                "connectorSubtype": "api",
+                "releaseStage": "beta",
+                "license": "MIT",
+                "registryOverrides": {"oss": {"enabled": True}, "cloud": {"enabled": True}},
+                "tags": ["language:python"],
+            },
+        }
+    ).encode("utf-8")
+    mock_blob.name = "fake/blob/path.yaml"
+    mock_blob.updated.isoformat.return_value = "2025-01-23T12:34:56Z"
+
     # Act & Assert - Should raise exception since deletion errors aren't caught
     with pytest.raises(Exception, match="Failed to delete blob"):
         generate_and_persist_registry_entry(
-            bucket_name=bucket_name, metadata_file_path=metadata_path, spec_path=spec_path, registry_type=registry_type
+            bucket_name=bucket_name,
+            repo_metadata_file_path=metadata_path,
+            registry_type=registry_type,
+            docker_image_tag="irrelevant",
+            is_prerelease=False,
         )
 
     # Assert - Verify deletion was attempted
@@ -408,7 +457,11 @@ def test_metadata_override_application_failure(mock_apply_overrides, mock_send_s
     # Act & Assert
     with pytest.raises(Exception):
         generate_and_persist_registry_entry(
-            bucket_name=bucket_name, metadata_file_path=metadata_path, spec_path=spec_path, registry_type=registry_type
+            bucket_name=bucket_name,
+            repo_metadata_file_path=metadata_path,
+            registry_type=registry_type,
+            docker_image_tag="irrelevant",
+            is_prerelease=False,
         )
 
     # Verify error Slack notification was sent
@@ -468,7 +521,11 @@ def test_registry_entry_model_parsing_failure(
     # Act & Assert
     with pytest.raises(Exception):
         generate_and_persist_registry_entry(
-            bucket_name=bucket_name, metadata_file_path=metadata_path, spec_path=spec_path, registry_type=registry_type
+            bucket_name=bucket_name,
+            repo_metadata_file_path=metadata_path,
+            registry_type=registry_type,
+            docker_image_tag="irrelevant",
+            is_prerelease=False,
         )
 
 

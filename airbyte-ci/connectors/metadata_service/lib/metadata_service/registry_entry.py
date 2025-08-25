@@ -455,17 +455,23 @@ def generate_and_persist_registry_entry(
     repo_metadata_dict = _get_and_parse_yaml_file(repo_metadata_file_path)
     docker_repository = repo_metadata_dict["data"]["dockerRepository"]
 
-    # Now that we have the docker repo, read the appropriate versioned metadata from GCS.
-    # This metadata will differ in a few fields (e.g. in prerelease mode, dockerImageTag will contain the actual prerelease tag `1.2.3-dev.abcde12345`),
-    # so we'll treat this as the source of truth (ish. See below for how we handle the registryOverrides field.)
-    gcs_client = get_gcs_storage_client(gcs_creds=os.environ.get("GCS_CREDENTIALS"))
-    bucket = gcs_client.bucket(bucket_name)
-    metadata_blob = bucket.blob(f"{METADATA_FOLDER}/{docker_repository}/{docker_image_tag}/{METADATA_FILE_NAME}")
-    # bucket.blob() returns a partially-loaded blob.
-    # reload() asks GCS to fetch the rest of the information.
-    # (this doesn't fetch the _contents_ of the blob, only its metadata - modified time, etc.)
-    metadata_blob.reload()
-    metadata_dict = yaml.safe_load(metadata_blob.download_as_string())
+    try:
+        # Now that we have the docker repo, read the appropriate versioned metadata from GCS.
+        # This metadata will differ in a few fields (e.g. in prerelease mode, dockerImageTag will contain the actual prerelease tag `1.2.3-dev.abcde12345`),
+        # so we'll treat this as the source of truth (ish. See below for how we handle the registryOverrides field.)
+        gcs_client = get_gcs_storage_client(gcs_creds=os.environ.get("GCS_CREDENTIALS"))
+        bucket = gcs_client.bucket(bucket_name)
+        metadata_blob = bucket.blob(f"{METADATA_FOLDER}/{docker_repository}/{docker_image_tag}/{METADATA_FILE_NAME}")
+        # bucket.blob() returns a partially-loaded blob.
+        # reload() asks GCS to fetch the rest of the information.
+        # (this doesn't fetch the _contents_ of the blob, only its metadata - modified time, etc.)
+        metadata_blob.reload()
+        metadata_dict = yaml.safe_load(metadata_blob.download_as_string())
+    except Exception as e:
+        logger.exception("Error loading metadata from GCS")
+        message = f"*🤖 🔴 _Registry Entry Generation_ FAILED*:\nRegistry Entry: `{registry_type}.json`\nConnector: `{repo_metadata_dict['data']['dockerRepository']}`\nGCS Bucket: `{bucket_name}`."
+        send_slack_message(PUBLISH_UPDATE_CHANNEL, message)
+        raise
 
     message = f"*🤖 🟡 _Registry Entry Generation_ STARTED*:\nRegistry Entry: `{registry_type}.json`\nConnector: `{docker_repository}`\nGCS Bucket: `{bucket_name}`."
     send_slack_message(PUBLISH_UPDATE_CHANNEL, message)
