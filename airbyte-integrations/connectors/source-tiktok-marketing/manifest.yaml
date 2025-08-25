@@ -366,7 +366,7 @@ definitions:
     $ref: "#/definitions/record_selector"
     record_filter:
       type: RecordFilter
-      condition: "{{ record['dimensions']['stat_time_hour'] >= stream_interval['start_time'] }}"
+      condition: "{{ record['dimensions']['stat_time_hour'] >= format_datetime(stream_interval['start_time'], '%Y-%m-%d 00:00:00', '%Y-%m-%d %H:%M:%S') }}"
 
   base_report_retriever:
     type: SimpleRetriever
@@ -419,7 +419,7 @@ definitions:
     cursor_field: "stat_time_hour"
     lookback_window: "P{{ config.get('attribution_window', 0) }}D"
     cursor_granularity: "PT1H"
-    step: PT1H
+    step: P1D
     cursor_datetime_formats:
       - "%Y-%m-%d"
       - "%Y-%m-%dT%H:%M:%SZ"
