@@ -1,11 +1,11 @@
 {
   "properties": {
     "ad_extension_domain": {
-      "description": "The format of the ad asset used in the campaign.",
+      "description": "",
       "type": ["null", "string"]
     },
     "ad_extension_url": {
-      "description": "The format of the ad asset used in the campaign.",
+      "description": "",
       "type": ["null", "string"]
     },
     "ad_format_asset": {
@@ -34,7 +34,7 @@
     },
     "breakdown_ad_objective": {
       "type": ["null", "string"],
-      "description": "The ID of the ad for breakdown reporting."
+      "description": ""
     },
     "breakdown_reporting_ad_id": {
       "type": ["null", "string"],
@@ -58,11 +58,11 @@
     },
     "comscore_market": {
       "type": ["null", "string"],
-      "description": "The destination of the conversion."
+      "description": ""
     },
     "comscore_market_code": {
       "type": ["null", "string"],
-      "description": "The destination of the conversion."
+      "description": ""
     },
     "conversion_destination": {
       "type": ["null", "string"],
@@ -73,12 +73,8 @@
       "type": ["null", "string"]
     },
     "creative_relaxation_asset_type": {
-      "description": "Additional descriptive text accompanying the ad content.",
-      "type": ["null", "object"],
-      "properties": {
-        "id": { "type": ["null", "string"] },
-        "text": { "type": ["null", "string"] }
-      }
+      "description": "",
+      "type": ["null", "string"]
     },
     "description_asset": {
       "description": "Additional descriptive text accompanying the ad content.",
@@ -106,14 +102,14 @@
     },
     "flexible_format_asset_type": {
       "type": ["null", "string"],
-      "description": "The fidelity type of the ad."
+      "description": ""
     },
     "frequency_value": {
       "description": "The number of times an ad was shown to a unique user.",
       "type": ["null", "string"]
     },
     "gen_ai_asset_type": {
-      "description": "The gender targeted by the ad campaign.",
+      "description": "",
       "type": ["null", "string"]
     },
     "gender": {
@@ -150,12 +146,12 @@
       "type": ["null", "string"]
     },
     "impression_view_time_advertiser_hour_v2": {
-      "type": ["null", "boolean"],
-      "description": "Indicates if the conversion ID is modeled."
+      "type": ["null", "string"],
+      "description": ""
     },
     "is_auto_advance": {
       "type": ["null", "boolean"],
-      "description": "Indicates if the conversion ID is modeled."
+      "description": ""
     },
     "is_conversion_id_modeled": {
       "type": ["null", "boolean"],
