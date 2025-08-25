@@ -166,7 +166,7 @@ class TestAdsReportHourly(TestCase):
         self.mock_response(http_mocker)
 
         output = read(get_source(config=self.config(), state=None), self.config(), self.catalog())
-        assert len(output.records) == 2
+        assert len(output.records) == 21
         assert output.records[0].record.data.get("ad_id") is not None
         assert output.records[0].record.data.get("stat_time_hour") is not None
 
@@ -182,7 +182,7 @@ class TestAdsReportHourly(TestCase):
             state=self.state(cursor=self.cursor),
         )
 
-        assert len(output.records) == 2
+        assert len(output.records) == 21
         assert output.state_messages[1].state.stream.stream_state.states == [
             {"cursor": {"stat_time_hour": self.legacy_cursor}, "partition": {"advertiser_id": self.advertiser_id, "parent_slice": {}}}
         ]
@@ -214,7 +214,7 @@ class TestAdsReportHourly(TestCase):
             self.config(include_deleted=True),
             self.catalog(),
         )
-        assert len(output.records) == 2
+        assert len(output.records) == 21
         assert output.records[0].record.data.get("ad_id") is not None
         assert output.records[0].record.data.get("stat_time_hour") is not None
 
@@ -332,7 +332,7 @@ class TestAdGroupsReportsHourly(TestCase):
         )
 
         output = read(get_source(config=self.config(), state=None), self.config(), self.catalog())
-        assert len(output.records) == 2
+        assert len(output.records) == 21
         assert output.records[0].record.data.get("adgroup_id") is not None
         assert output.records[0].record.data.get("stat_time_hour") is not None
 
@@ -425,7 +425,7 @@ class TestAdGroupsReportsHourly(TestCase):
             self.config(include_deleted=True),
             self.catalog(),
         )
-        assert len(output.records) == 2
+        assert len(output.records) == 21
         assert output.records[0].record.data.get("adgroup_id") is not None
         assert output.records[0].record.data.get("stat_time_hour") is not None
 
@@ -528,7 +528,7 @@ class TestAdvertisersReportsHourly(TestCase):
         self.mock_response(http_mocker)
 
         output = read(get_source(config=self.config(), state=None), self.config(), self.catalog())
-        assert len(output.records) == 2
+        assert len(output.records) == 21
         assert output.records[0].record.data.get("advertiser_id") is not None
         assert output.records[0].record.data.get("stat_time_hour") is not None
 
@@ -646,7 +646,7 @@ class TestCampaignsReportsHourly(TestCase):
         self.mock_response(http_mocker)
 
         output = read(get_source(config=self.config(), state=None), self.config(), self.catalog())
-        assert len(output.records) == 2
+        assert len(output.records) == 21
         assert output.records[0].record.data.get("campaign_id") is not None
         assert output.records[0].record.data.get("stat_time_hour") is not None
 
@@ -677,6 +677,6 @@ class TestCampaignsReportsHourly(TestCase):
             self.config(include_deleted=True),
             self.catalog(),
         )
-        assert len(output.records) == 2
+        assert len(output.records) == 21
         assert output.records[0].record.data.get("campaign_id") is not None
         assert output.records[0].record.data.get("stat_time_hour") is not None
