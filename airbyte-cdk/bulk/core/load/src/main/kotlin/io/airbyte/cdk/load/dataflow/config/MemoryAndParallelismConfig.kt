@@ -4,9 +4,6 @@
 
 package io.airbyte.cdk.load.dataflow.config
 
-import io.micronaut.context.annotation.Factory
-import io.micronaut.context.annotation.Secondary
-import jakarta.inject.Singleton
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
@@ -41,9 +38,4 @@ data class MemoryAndParallelismConfig(
             "maxConcurrentLifecycleOperations must be greater than 0"
         }
     }
-}
-
-@Factory
-class MemoryAndParallelismConfigFactory {
-    @Singleton @Secondary fun getMemoryAndParallelismConfig() = MemoryAndParallelismConfig()
 }

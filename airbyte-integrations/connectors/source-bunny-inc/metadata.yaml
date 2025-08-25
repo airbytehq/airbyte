@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-bunny-inc
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.58.1@sha256:165974dd98ea8d1278bfd77afff4465b8a41caf9138e3b7e1f33c77ee71e6f72
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.60.16@sha256:b8126848437ec5a6cff05fb4796fd775450b83e57925674d856a1838a390a28c
   connectorSubtype: api
   connectorType: source
   definitionId: 6aa362e3-6107-4fdc-9209-130a60e8725c
-  dockerImageTag: 0.0.25
+  dockerImageTag: 0.0.26
   dockerRepository: airbyte/source-bunny-inc
   githubIssueLabel: source-bunny-inc
   icon: icon.svg
