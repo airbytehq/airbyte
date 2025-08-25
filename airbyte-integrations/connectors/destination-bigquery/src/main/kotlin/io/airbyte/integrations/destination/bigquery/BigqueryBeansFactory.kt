@@ -11,7 +11,6 @@ import com.google.cloud.bigquery.BigQueryOptions
 import io.airbyte.cdk.load.check.DestinationCheckerSync
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
-import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.orchestration.db.DefaultTempTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DefaultDirectLoadTableSqlOperations
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableExecutionConfig
@@ -62,21 +61,17 @@ class BigqueryBeansFactory {
     @Singleton
     @Named("bigQueryOneShotStep")
     @Requires(condition = BigqueryConfiguredForBulkLoad::class)
+    @Requires(property = "airbyte.destination.core.data-channel.medium", value = "SOCKET")
     fun <O : OutputStream> getBigQueryOneShotStep(
         bigQueryOneShotUploader: BigQueryBulkOneShotUploader<O>,
         taskFactory: io.airbyte.cdk.load.task.internal.LoadPipelineStepTaskFactory,
         @Named("numInputPartitions") numInputPartitions: Int,
-        @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium,
-    ): BigQueryBulkOneShotUploaderStep<io.airbyte.cdk.load.message.StreamKey, O>? {
-        return if (dataChannelMedium == DataChannelMedium.SOCKET) {
-            BigQueryBulkOneShotUploaderStep(
-                bigQueryOneShotUploader,
-                taskFactory,
-                numInputPartitions
-            )
-        } else {
-            null
-        }
+    ): BigQueryBulkOneShotUploaderStep<io.airbyte.cdk.load.message.StreamKey, O> {
+        return BigQueryBulkOneShotUploaderStep(
+            bigQueryOneShotUploader,
+            taskFactory,
+            numInputPartitions
+        )
     }
 
     @Singleton
