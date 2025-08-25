@@ -12,10 +12,6 @@ data:
   license: ELv2
   name: Xkcd
   releaseDate: 2022-10-17
-  remoteRegistries:
-    pypi:
-      enabled: true
-      packageName: airbyte-source-xkcd
   registryOverrides:
     cloud:
       enabled: true
