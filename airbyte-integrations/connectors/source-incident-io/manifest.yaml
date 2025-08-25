@@ -389,6 +389,29 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/alerts"
+    alert_sources:
+      type: DeclarativeStream
+      name: alert_sources
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/alert_sources
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - alert_sources
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/alert_sources"
   base_requester:
     type: HttpRequester
     url_base: https://api.incident.io
@@ -411,6 +434,7 @@ streams:
   - $ref: "#/definitions/streams/schedules"
   - $ref: "#/definitions/streams/incidents"
   - $ref: "#/definitions/streams/alerts"
+  - $ref: "#/definitions/streams/alert_sources"
 
 spec:
   type: Spec
@@ -445,6 +469,7 @@ metadata:
     schedules: false
     incidents: true
     alerts: true
+    alert_sources: true
   testedStreams:
     actions:
       streamHash: 66bd85de048e14ed758adfad4f83d9ab9ef62b7e
@@ -544,6 +569,13 @@ metadata:
       hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
+    alert_sources:
+      hasRecords: true
+      streamHash: 1ed0657b71c365d5300652eba3832b34c77ab868
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
   assist:
     docsUrl: https://api-docs.incident.io/
 
@@ -1871,5 +1903,401 @@ schemas:
         type:
           - string
           - "null"
+    required:
+      - id
+  alert_sources:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      email_options:
+        type:
+          - object
+          - "null"
+        properties:
+          email_address:
+            type:
+              - string
+              - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      source_type:
+        type:
+          - string
+          - "null"
+      template:
+        type:
+          - object
+          - "null"
+        properties:
+          description:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              literal:
+                type:
+                  - string
+                  - "null"
+          attributes:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                alert_attribute_id:
+                  type:
+                    - string
+                    - "null"
+                binding:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    value:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        label:
+                          type:
+                            - string
+                            - "null"
+                        literal:
+                          type:
+                            - string
+                            - "null"
+                        reference:
+                          type:
+                            - string
+                            - "null"
+          expressions:
+            type:
+              - array
+              - "null"
+            items:
+              type:
+                - object
+                - "null"
+              properties:
+                else_branch:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    result:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        value:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            label:
+                              type:
+                                - string
+                                - "null"
+                            literal:
+                              type:
+                                - string
+                                - "null"
+                            reference:
+                              type:
+                                - string
+                                - "null"
+                label:
+                  type:
+                    - string
+                    - "null"
+                operations:
+                  type:
+                    - array
+                    - "null"
+                  items:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      branches:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          branches:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                condition_groups:
+                                  type:
+                                    - array
+                                    - "null"
+                                  items:
+                                    type:
+                                      - object
+                                      - "null"
+                                    properties:
+                                      conditions:
+                                        type:
+                                          - array
+                                          - "null"
+                                        items:
+                                          type:
+                                            - object
+                                            - "null"
+                                          properties:
+                                            operation:
+                                              type:
+                                                - object
+                                                - "null"
+                                              properties:
+                                                label:
+                                                  type:
+                                                    - string
+                                                    - "null"
+                                                value:
+                                                  type:
+                                                    - string
+                                                    - "null"
+                                            param_bindings:
+                                              type:
+                                                - array
+                                                - "null"
+                                              items:
+                                                type:
+                                                  - object
+                                                  - "null"
+                                                properties:
+                                                  value:
+                                                    type:
+                                                      - object
+                                                      - "null"
+                                                    properties:
+                                                      label:
+                                                        type:
+                                                          - string
+                                                          - "null"
+                                                      literal:
+                                                        type:
+                                                          - string
+                                                          - "null"
+                                            subject:
+                                              type:
+                                                - object
+                                                - "null"
+                                              properties:
+                                                label:
+                                                  type:
+                                                    - string
+                                                    - "null"
+                                                reference:
+                                                  type:
+                                                    - string
+                                                    - "null"
+                                result:
+                                  type:
+                                    - object
+                                    - "null"
+                                  properties:
+                                    value:
+                                      type:
+                                        - object
+                                        - "null"
+                                      properties:
+                                        label:
+                                          type:
+                                            - string
+                                            - "null"
+                                        literal:
+                                          type:
+                                            - string
+                                            - "null"
+                          returns:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                              array:
+                                type:
+                                  - boolean
+                                  - "null"
+                      filter:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          condition_groups:
+                            type:
+                              - array
+                              - "null"
+                            items:
+                              type:
+                                - object
+                                - "null"
+                              properties:
+                                conditions:
+                                  type:
+                                    - array
+                                    - "null"
+                                  items:
+                                    type:
+                                      - object
+                                      - "null"
+                                    properties:
+                                      operation:
+                                        type:
+                                          - object
+                                          - "null"
+                                        properties:
+                                          label:
+                                            type:
+                                              - string
+                                              - "null"
+                                          value:
+                                            type:
+                                              - string
+                                              - "null"
+                                      param_bindings:
+                                        type:
+                                          - array
+                                          - "null"
+                                        items:
+                                          type:
+                                            - object
+                                            - "null"
+                                          properties:
+                                            value:
+                                              type:
+                                                - object
+                                                - "null"
+                                              properties:
+                                                label:
+                                                  type:
+                                                    - string
+                                                    - "null"
+                                                literal:
+                                                  type:
+                                                    - string
+                                                    - "null"
+                                      subject:
+                                        type:
+                                          - object
+                                          - "null"
+                                        properties:
+                                          label:
+                                            type:
+                                              - string
+                                              - "null"
+                                          reference:
+                                            type:
+                                              - string
+                                              - "null"
+                      navigate:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          reference:
+                            type:
+                              - string
+                              - "null"
+                          reference_label:
+                            type:
+                              - string
+                              - "null"
+                      operation_type:
+                        type:
+                          - string
+                          - "null"
+                      parse:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          returns:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              type:
+                                type:
+                                  - string
+                                  - "null"
+                              array:
+                                type:
+                                  - boolean
+                                  - "null"
+                          source:
+                            type:
+                              - string
+                              - "null"
+                      returns:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          type:
+                            type:
+                              - string
+                              - "null"
+                          array:
+                            type:
+                              - boolean
+                              - "null"
+                reference:
+                  type:
+                    - string
+                    - "null"
+                returns:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    array:
+                      type:
+                        - boolean
+                        - "null"
+                root_reference:
+                  type:
+                    - string
+                    - "null"
+          title:
+            type:
+              - object
+              - "null"
+            properties:
+              label:
+                type:
+                  - string
+                  - "null"
+              literal:
+                type:
+                  - string
+                  - "null"
     required:
       - id
