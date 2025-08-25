@@ -210,6 +210,9 @@ jobs:
   # to generate their registry entry.
   # For example, generating destination-postgres's cloud.json will read from
   # destination-postgres-strict-encrypt's spec cache.
+  # As a result, we need publish_connector_registry_entries to run after publish_connectors is fully completed.
+  # Once strict-encrypt connectors are all gone, we can merge these steps together
+  # (i.e. move the generate-XYZ-registry-entry steps to the bottom of publish_connectors).
   publish_connector_registry_entries:
     name: Publish connector registry entries
     needs: [publish_options, publish_connectors]
