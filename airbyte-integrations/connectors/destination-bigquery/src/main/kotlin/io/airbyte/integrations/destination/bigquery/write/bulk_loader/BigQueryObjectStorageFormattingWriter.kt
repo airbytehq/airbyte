@@ -42,8 +42,8 @@ class BigQueryObjectStorageFormattingWriter(
 @Singleton
 class BigQueryObjectStorageFormattingWriterFactory(
     private val config: BigqueryConfiguration,
-    @Named("dataChannelFormat") private val dataChannelFormat: DataChannelFormat) :
-    ObjectStorageFormattingWriterFactory {
+    @Named("dataChannelFormat") private val dataChannelFormat: DataChannelFormat
+) : ObjectStorageFormattingWriterFactory {
     override fun create(
         stream: DestinationStream,
         outputStream: OutputStream,
@@ -64,7 +64,6 @@ class BigQueryObjectStorageFormattingWriterFactory(
                     extractedAtAsTimestampWithTimezone = true,
                 )
             }
-
         } else {
             if (dataChannelFormat == DataChannelFormat.PROTOBUF) {
                 ProtoToBigQueryObjectStorageFormattingWriter(
@@ -74,7 +73,6 @@ class BigQueryObjectStorageFormattingWriterFactory(
             } else {
                 BigQueryObjectStorageFormattingWriter(stream, outputStream)
             }
-
         }
     }
 }

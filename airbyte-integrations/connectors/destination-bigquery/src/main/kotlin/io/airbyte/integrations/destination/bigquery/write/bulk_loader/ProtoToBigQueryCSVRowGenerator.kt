@@ -6,22 +6,35 @@ package io.airbyte.integrations.destination.bigquery.write.bulk_loader
 
 import com.fasterxml.jackson.core.io.JsonStringEncoder
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.AirbyteValueCoercer
 import io.airbyte.cdk.load.data.AirbyteValueProxy
 import io.airbyte.cdk.load.data.AirbyteValueProxy.FieldAccessor
 import io.airbyte.cdk.load.data.ArrayType
 import io.airbyte.cdk.load.data.BooleanType
+import io.airbyte.cdk.load.data.BooleanValue
 import io.airbyte.cdk.load.data.DateType
+import io.airbyte.cdk.load.data.DateValue
 import io.airbyte.cdk.load.data.IntegerType
+import io.airbyte.cdk.load.data.IntegerValue
+import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberType
+import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
+import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimeTypeWithTimezone
 import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
+import io.airbyte.cdk.load.data.TimeWithTimezoneValue
+import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
 import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
+import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
+import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.data.collectUnknownPaths
+import io.airbyte.cdk.load.data.json.toAirbyteValue
 import io.airbyte.cdk.load.message.DestinationRecordProtobufSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.Meta
@@ -38,18 +51,12 @@ import java.time.OffsetDateTime
 import java.time.OffsetTime
 import java.util.concurrent.TimeUnit
 
-/**
- * High-performance CSV row generator that processes protobuf records directly without JSON
- * conversion, optimized for BigQuery's GCS staging mode.
- * 
- * IMPORTANT: This is NOT for legacy raw tables - only for direct load tables.
- */
 class ProtoToBigQueryCSVRowGenerator(
     private val header: Array<String>,
     private val stream: DestinationStream,
     private val fieldAccessors: Array<FieldAccessor>
 ) {
-    
+
     // Pre-compute unknown columns to track parsing failures
     private val unknownColumnChanges =
         stream.schema
@@ -64,17 +71,14 @@ class ProtoToBigQueryCSVRowGenerator(
             .toMutableList()
 
     private val jsonEscaper = JsonStringEncoder.getInstance()
-    
-    // Pre-computed indices for meta columns using header.indexOf() like ProtoToCsvWriter
+
     private val idxRawId = header.indexOf(Meta.COLUMN_NAME_AB_RAW_ID)
     private val idxExtractedAt = header.indexOf(Meta.COLUMN_NAME_AB_EXTRACTED_AT)
     private val idxMeta = header.indexOf(Meta.COLUMN_NAME_AB_META)
     private val idxGenerationId = header.indexOf(Meta.COLUMN_NAME_AB_GENERATION_ID)
-    
-    // Row index mapping for field accessors like ProtoToCsvWriter
-    private val rowIndex: Map<String, Int> = fieldAccessors.associate { it.name to header.indexOf(it.name) }
-    
-    // Reusable buffer to avoid repeated allocations - pre-filled with NULL_MARKER since BigQuery has no nulls
+
+    private val rowIndex: Map<String, Int> =
+        fieldAccessors.associate { it.name to header.indexOf(it.name) }
     private val rowBuf: Array<Any> = Array(header.size) { BigQueryConsts.NULL_MARKER }
 
     fun generate(record: DestinationRecordRaw): Array<Any> {
@@ -85,13 +89,15 @@ class ProtoToBigQueryCSVRowGenerator(
 
         val proxy = src.asAirbyteValueProxy()
         val parsingFailures = mutableListOf<Meta.Change>()
-        
-        // Process data fields using row index mapping like ProtoToCsvWriter
+
         var i = 0
         while (i < fieldAccessors.size) {
             val accessor = fieldAccessors[i]
-            val index = rowIndex[accessor.name] 
-                ?: throw IllegalArgumentException("Column '${accessor.name}' not found in row index")
+            val index =
+                rowIndex[accessor.name]
+                    ?: throw IllegalArgumentException(
+                        "Column '${accessor.name}' not found in row index"
+                    )
             val result = extractTypedValueWithErrorHandling(proxy, accessor)
             if (result.parsingError != null) {
                 parsingFailures.add(result.parsingError)
@@ -99,24 +105,19 @@ class ProtoToBigQueryCSVRowGenerator(
             rowBuf[index] = result.value ?: BigQueryConsts.NULL_MARKER
             i++
         }
-        
-        // Set meta columns using pre-computed indices
+
         rowBuf[idxRawId] = record.airbyteRawId.toString()
         rowBuf[idxExtractedAt] = formatExtractedAt(record.rawData.emittedAtMs)
         rowBuf[idxGenerationId] = stream.generationId.toString()
-        
-        // Build meta object with all changes including parsing failures
+
         val allChanges = record.rawData.sourceMeta.changes + unknownColumnChanges + parsingFailures
         rowBuf[idxMeta] = buildMetaString(record, allChanges)
-        
+
         return rowBuf
     }
 
-    data class ExtractionResult(
-        val value: Any?,
-        val parsingError: Meta.Change?
-    )
-    
+    data class ExtractionResult(val value: Any?, val parsingError: Meta.Change?)
+
     private fun extractTypedValueWithErrorHandling(
         proxy: AirbyteValueProxy,
         accessor: FieldAccessor
@@ -137,7 +138,8 @@ class ProtoToBigQueryCSVRowGenerator(
                             Meta.Change(
                                 accessor.name,
                                 AirbyteRecordMessageMetaChange.Change.NULLED,
-                                AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                                AirbyteRecordMessageMetaChange.Reason
+                                    .DESTINATION_FIELD_SIZE_LIMITATION
                             )
                         )
                     } else {
@@ -154,7 +156,8 @@ class ProtoToBigQueryCSVRowGenerator(
                                 Meta.Change(
                                     accessor.name,
                                     validatedResult.changeType!!,
-                                    AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                                    AirbyteRecordMessageMetaChange.Reason
+                                        .DESTINATION_FIELD_SIZE_LIMITATION
                                 )
                             )
                         } else if (validatedResult.changeType != null) {
@@ -163,7 +166,8 @@ class ProtoToBigQueryCSVRowGenerator(
                                 Meta.Change(
                                     accessor.name,
                                     validatedResult.changeType,
-                                    AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                                    AirbyteRecordMessageMetaChange.Reason
+                                        .DESTINATION_FIELD_SIZE_LIMITATION
                                 )
                             )
                         } else {
@@ -187,7 +191,8 @@ class ProtoToBigQueryCSVRowGenerator(
                                     Meta.Change(
                                         accessor.name,
                                         AirbyteRecordMessageMetaChange.Change.NULLED,
-                                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                                        AirbyteRecordMessageMetaChange.Reason
+                                            .DESTINATION_FIELD_SIZE_LIMITATION
                                     )
                                 )
                             } else {
@@ -199,7 +204,8 @@ class ProtoToBigQueryCSVRowGenerator(
                                 Meta.Change(
                                     accessor.name,
                                     AirbyteRecordMessageMetaChange.Change.NULLED,
-                                    AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR
+                                    AirbyteRecordMessageMetaChange.Reason
+                                        .DESTINATION_SERIALIZATION_ERROR
                                 )
                             )
                         }
@@ -221,7 +227,8 @@ class ProtoToBigQueryCSVRowGenerator(
                                     Meta.Change(
                                         accessor.name,
                                         AirbyteRecordMessageMetaChange.Change.NULLED,
-                                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                                        AirbyteRecordMessageMetaChange.Reason
+                                            .DESTINATION_FIELD_SIZE_LIMITATION
                                     )
                                 )
                             } else {
@@ -237,7 +244,8 @@ class ProtoToBigQueryCSVRowGenerator(
                                 Meta.Change(
                                     accessor.name,
                                     AirbyteRecordMessageMetaChange.Change.NULLED,
-                                    AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR
+                                    AirbyteRecordMessageMetaChange.Reason
+                                        .DESTINATION_SERIALIZATION_ERROR
                                 )
                             )
                         }
@@ -259,14 +267,14 @@ class ProtoToBigQueryCSVRowGenerator(
                                     Meta.Change(
                                         accessor.name,
                                         AirbyteRecordMessageMetaChange.Change.NULLED,
-                                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                                        AirbyteRecordMessageMetaChange.Reason
+                                            .DESTINATION_FIELD_SIZE_LIMITATION
                                     )
                                 )
                             } else {
                                 val formattedValue =
-                                    BigQueryRecordFormatter.DATETIME_WITHOUT_TIMEZONE_FORMATTER.format(
-                                        parsedDateTime
-                                    )
+                                    BigQueryRecordFormatter.DATETIME_WITHOUT_TIMEZONE_FORMATTER
+                                        .format(parsedDateTime)
                                 ExtractionResult(formattedValue, null)
                             }
                         } catch (_: Exception) {
@@ -275,7 +283,8 @@ class ProtoToBigQueryCSVRowGenerator(
                                 Meta.Change(
                                     accessor.name,
                                     AirbyteRecordMessageMetaChange.Change.NULLED,
-                                    AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR
+                                    AirbyteRecordMessageMetaChange.Reason
+                                        .DESTINATION_SERIALIZATION_ERROR
                                 )
                             )
                         }
@@ -298,7 +307,8 @@ class ProtoToBigQueryCSVRowGenerator(
                                 Meta.Change(
                                     accessor.name,
                                     AirbyteRecordMessageMetaChange.Change.NULLED,
-                                    AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR
+                                    AirbyteRecordMessageMetaChange.Reason
+                                        .DESTINATION_SERIALIZATION_ERROR
                                 )
                             )
                         }
@@ -321,7 +331,8 @@ class ProtoToBigQueryCSVRowGenerator(
                                 Meta.Change(
                                     accessor.name,
                                     AirbyteRecordMessageMetaChange.Change.NULLED,
-                                    AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR
+                                    AirbyteRecordMessageMetaChange.Reason
+                                        .DESTINATION_SERIALIZATION_ERROR
                                 )
                             )
                         }
@@ -329,22 +340,68 @@ class ProtoToBigQueryCSVRowGenerator(
                         ExtractionResult(null, null)
                     }
                 }
-                is ArrayType,
-                is ObjectType,
-                is UnknownType,
                 is UnionType -> {
-                    // Complex types: serialize to JSON string for BigQuery
+                    val unionType = accessor.type as UnionType
+                    if (unionType.isLegacyUnion) {
+                        val chosenType = unionType.chooseType()
+                        val jsonNode = proxy.getJsonNode(accessor)
+
+                        if (jsonNode != null && !jsonNode.isNull) {
+                            try {
+                                val airbyteValue = jsonNode.toAirbyteValue()
+                                val coercedValue =
+                                    AirbyteValueCoercer.coerce(
+                                        airbyteValue,
+                                        chosenType,
+                                        respectLegacyUnions = true
+                                    )
+
+                                if (coercedValue != null) {
+                                    return extractValueFromCoercedAirbyteValue(
+                                        coercedValue,
+                                        accessor.name
+                                    )
+                                } else {
+                                    return ExtractionResult(
+                                        null,
+                                        Meta.Change(
+                                            accessor.name,
+                                            AirbyteRecordMessageMetaChange.Change.NULLED,
+                                            AirbyteRecordMessageMetaChange.Reason
+                                                .DESTINATION_SERIALIZATION_ERROR
+                                        )
+                                    )
+                                }
+                            } catch (_: Exception) {
+                                return ExtractionResult(
+                                    null,
+                                    Meta.Change(
+                                        accessor.name,
+                                        AirbyteRecordMessageMetaChange.Change.NULLED,
+                                        AirbyteRecordMessageMetaChange.Reason
+                                            .DESTINATION_SERIALIZATION_ERROR
+                                    )
+                                )
+                            }
+                        }
+                    }
                     val jsonNode = proxy.getJsonNode(accessor)
                     ExtractionResult(jsonNode?.serializeToString(), null)
                 }
+                is ArrayType,
+                is ObjectType -> {
+                    val jsonNode = proxy.getJsonNode(accessor)
+                    ExtractionResult(jsonNode?.serializeToString(), null)
+                }
+                is UnknownType -> {
+                    ExtractionResult(null, null)
+                }
                 else -> {
-                    // Fallback for unknown types
                     val jsonNode = proxy.getJsonNode(accessor)
                     ExtractionResult(jsonNode?.serializeToString(), null)
                 }
             }
         } catch (_: Exception) {
-            // Handle any extraction errors by nulling the field
             ExtractionResult(
                 null,
                 Meta.Change(
@@ -356,12 +413,137 @@ class ProtoToBigQueryCSVRowGenerator(
         }
     }
 
+    private fun extractValueFromCoercedAirbyteValue(
+        coercedValue: AirbyteValue,
+        fieldName: String
+    ): ExtractionResult {
+        return when (coercedValue) {
+            NullValue -> ExtractionResult(null, null)
+            is BooleanValue -> ExtractionResult(coercedValue.value, null)
+            is StringValue -> ExtractionResult(coercedValue.value, null)
+            is IntegerValue -> {
+                if (
+                    coercedValue.value < BigQueryRecordFormatter.INT64_MIN_VALUE ||
+                        coercedValue.value > BigQueryRecordFormatter.INT64_MAX_VALUE
+                ) {
+                    ExtractionResult(
+                        null,
+                        Meta.Change(
+                            fieldName,
+                            AirbyteRecordMessageMetaChange.Change.NULLED,
+                            AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                        )
+                    )
+                } else {
+                    ExtractionResult(coercedValue.value.longValueExact(), null)
+                }
+            }
+            is NumberValue -> {
+                val validatedResult = validateAndFormatNumeric(coercedValue.value)
+                if (validatedResult.value == null) {
+                    ExtractionResult(
+                        null,
+                        Meta.Change(
+                            fieldName,
+                            validatedResult.changeType!!,
+                            AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                        )
+                    )
+                } else if (validatedResult.changeType != null) {
+                    ExtractionResult(
+                        validatedResult.value,
+                        Meta.Change(
+                            fieldName,
+                            validatedResult.changeType,
+                            AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                        )
+                    )
+                } else {
+                    ExtractionResult(validatedResult.value, null)
+                }
+            }
+            is DateValue -> {
+                if (
+                    coercedValue.value < BigQueryRecordFormatter.DATE_MIN_VALUE ||
+                        coercedValue.value > BigQueryRecordFormatter.DATE_MAX_VALUE
+                ) {
+                    ExtractionResult(
+                        null,
+                        Meta.Change(
+                            fieldName,
+                            AirbyteRecordMessageMetaChange.Change.NULLED,
+                            AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                        )
+                    )
+                } else {
+                    ExtractionResult(coercedValue.value.toString(), null)
+                }
+            }
+            is TimestampWithTimezoneValue -> {
+                if (
+                    coercedValue.value < BigQueryRecordFormatter.TIMESTAMP_MIN_VALUE ||
+                        coercedValue.value > BigQueryRecordFormatter.TIMESTAMP_MAX_VALUE
+                ) {
+                    ExtractionResult(
+                        null,
+                        Meta.Change(
+                            fieldName,
+                            AirbyteRecordMessageMetaChange.Change.NULLED,
+                            AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                        )
+                    )
+                } else {
+                    val formattedValue =
+                        BigQueryRecordFormatter.DATETIME_WITH_TIMEZONE_FORMATTER.format(
+                            coercedValue.value
+                        )
+                    ExtractionResult(formattedValue, null)
+                }
+            }
+            is TimestampWithoutTimezoneValue -> {
+                if (
+                    coercedValue.value < BigQueryRecordFormatter.DATETIME_MIN_VALUE ||
+                        coercedValue.value > BigQueryRecordFormatter.DATETIME_MAX_VALUE
+                ) {
+                    ExtractionResult(
+                        null,
+                        Meta.Change(
+                            fieldName,
+                            AirbyteRecordMessageMetaChange.Change.NULLED,
+                            AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                        )
+                    )
+                } else {
+                    val formattedValue =
+                        BigQueryRecordFormatter.DATETIME_WITHOUT_TIMEZONE_FORMATTER.format(
+                            coercedValue.value
+                        )
+                    ExtractionResult(formattedValue, null)
+                }
+            }
+            is TimeWithTimezoneValue -> {
+                val formattedValue =
+                    BigQueryRecordFormatter.TIME_WITH_TIMEZONE_FORMATTER.format(coercedValue.value)
+                ExtractionResult(formattedValue, null)
+            }
+            is TimeWithoutTimezoneValue -> {
+                val formattedValue =
+                    BigQueryRecordFormatter.TIME_WITHOUT_TIMEZONE_FORMATTER.format(
+                        coercedValue.value
+                    )
+                ExtractionResult(formattedValue, null)
+            }
+            else -> {
+                ExtractionResult(coercedValue.toString(), null)
+            }
+        }
+    }
 
     data class ValidatedNumericResult(
         val value: BigDecimal?,
         val changeType: AirbyteRecordMessageMetaChange.Change?
     )
-    
+
     private fun validateAndFormatNumeric(value: BigDecimal): ValidatedNumericResult {
         return when {
             value < BigQueryRecordFormatter.NUMERIC_MIN_VALUE ||
@@ -386,7 +568,10 @@ class ProtoToBigQueryCSVRowGenerator(
             .value!!
     }
 
-    private fun buildMetaString(record: DestinationRecordRaw, allChanges: List<Meta.Change>): String =
+    private fun buildMetaString(
+        record: DestinationRecordRaw,
+        allChanges: List<Meta.Change>
+    ): String =
         buildString(64) {
             append('{')
             append("\"sync_id\":").append(record.stream.syncId).append(',')

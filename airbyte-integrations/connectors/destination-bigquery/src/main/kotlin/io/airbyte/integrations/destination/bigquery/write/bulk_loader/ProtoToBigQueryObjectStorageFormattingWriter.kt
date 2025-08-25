@@ -22,7 +22,11 @@ class ProtoToBigQueryObjectStorageFormattingWriter(
     private val printer = finalSchema.toCsvPrinterWithHeader(outputStream)
     private val header: Array<String> = finalSchema.toCsvHeader()
     private val csvRowGenerator =
-        ProtoToBigQueryCSVRowGenerator(header, stream, stream.airbyteValueProxyFieldAccessors, )
+        ProtoToBigQueryCSVRowGenerator(
+            header,
+            stream,
+            stream.airbyteValueProxyFieldAccessors,
+        )
 
     override fun accept(record: DestinationRecordRaw) {
         val src = record.rawData

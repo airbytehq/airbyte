@@ -29,10 +29,11 @@ class BulkLoadPipeline<K : WithStream, T : RemoteObject<*>>(
     loadIntoTableStep: BulkLoaderLoadIntoTableStep<K, T>,
     @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium,
     @Named("bigQueryOneShotStep") bigQueryOneShotStep: LoadPipelineStep? = null,
-) : LoadPipeline(
-    if (dataChannelMedium == DataChannelMedium.SOCKET && bigQueryOneShotStep != null) {
-        listOf(bigQueryOneShotStep)
-    } else {
-        listOf(formatterStep, loaderStep, completerStep, loadIntoTableStep)
-    }
-)
+) :
+    LoadPipeline(
+        if (dataChannelMedium == DataChannelMedium.SOCKET && bigQueryOneShotStep != null) {
+            listOf(bigQueryOneShotStep)
+        } else {
+            listOf(formatterStep, loaderStep, completerStep, loadIntoTableStep)
+        }
+    )
