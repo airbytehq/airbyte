@@ -278,10 +278,10 @@ jobs:
           echo "Generating OSS registry entry for ${{ matrix.connector }}"
           poetry run --directory airbyte-ci/connectors/metadata_service/lib \
             metadata_service generate-registry-entry \
-            prod-airbyte-cloud-connector-metadata-service \
-            "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
-            oss \
-            ${{ steps.connector-metadata.outputs.docker-image-tag }} \
+            --bucket-name prod-airbyte-cloud-connector-metadata-service \
+            --metadata-file-path "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
+            --registry-type oss \
+            --docker-image-tag ${{ steps.connector-metadata.outputs.docker-image-tag }} \
             ${{ steps.connector-metadata.outputs.release-type-flag }}
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
@@ -294,10 +294,10 @@ jobs:
           echo "Generating Cloud registry entry for ${{ matrix.connector }}"
           poetry run --directory airbyte-ci/connectors/metadata_service/lib \
             metadata_service generate-registry-entry \
-            prod-airbyte-cloud-connector-metadata-service \
-            "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
-            cloud \
-            ${{ steps.connector-metadata.outputs.docker-image-tag }} \
+            --bucket-name prod-airbyte-cloud-connector-metadata-service \
+            --metadata-file-path "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
+            --registry-type cloud \
+            --docker-image-tag ${{ steps.connector-metadata.outputs.docker-image-tag }} \
             ${{ steps.connector-metadata.outputs.release-type-flag }}
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}

@@ -204,10 +204,10 @@ def generate_specs_secrets_mask(bucket_name: str):
 
 
 @metadata_service.command(help="Generate the registry entry and persist it to GCS.")
-@click.argument("bucket-name", type=click.STRING, required=True)
-@click.argument("metadata-file-path", type=click.STRING, required=True)
-@click.argument("registry-type", type=click.Choice(VALID_REGISTRIES), required=True)
-@click.argument("docker-image-tag", type=click.STRING, required=True)
+@click.option("--bucket-name", type=click.STRING, required=True)
+@click.option("--metadata-file-path", type=click.STRING, required=True)
+@click.option("--registry-type", type=click.Choice(VALID_REGISTRIES), required=True)
+@click.option("--docker-image-tag", type=click.STRING, required=True)
 @click.option(
     "--pre-release/--main-release", type=bool, is_flag=True, required=True, help="Whether this is a prerelease or mainrelease publish."
 )
