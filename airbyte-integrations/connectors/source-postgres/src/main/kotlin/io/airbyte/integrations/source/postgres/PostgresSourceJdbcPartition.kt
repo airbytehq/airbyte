@@ -195,7 +195,7 @@ sealed class PostgresSourceCursorPartition(
 
 class PostgresSourceJdbcSplittableSnapshotWithCursorPartition(
     selectQueryGenerator: SelectQueryGenerator,
-    streamState: DefaultJdbcStreamState, // TODO: check here
+    streamState: DefaultJdbcStreamState,
     override val lowerBound: List<JsonNode>?,
     override val upperBound: List<JsonNode>?,
     cursor: DataField,
