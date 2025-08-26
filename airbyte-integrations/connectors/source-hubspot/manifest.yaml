@@ -580,6 +580,8 @@ definitions:
       requester:
         $ref: "#/definitions/base_requester"
         path: /marketing/v3/emails
+        request_parameters:
+          includeStats: "true"
       paginator:
         $ref: "#/definitions/offset_paginator"
         pagination_strategy:
@@ -594,12 +596,6 @@ definitions:
           type: RecordFilter
           condition: "{{ record['updated'] | int > format_datetime(config.get('start_date', '2006-06-01T00:00:00Z'), '%ms') | int }}"
     transformations:
-      - type: CustomTransformation
-        class_name: source_declarative_manifest.components.MarketingEmailStatisticsTransformation
-        requester:
-          $ref: "#/definitions/marketing_email_statistics_requester"
-        record_selector:
-          $ref: "#/definitions/marketing_email_statistics_selector"
       - type: AddFields
         fields:
           - path: ["rootMicId"]

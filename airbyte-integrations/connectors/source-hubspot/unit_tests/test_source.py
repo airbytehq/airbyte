@@ -695,7 +695,7 @@ def test_pagination_marketing_emails_stream(requests_mock, config):
 
     requests_mock.register_uri(
         "GET",
-        "/marketing/v3/emails?limit=250",
+        "/marketing/v3/emails?includeStats=true&limit=250",
         [
             {
                 "json": {

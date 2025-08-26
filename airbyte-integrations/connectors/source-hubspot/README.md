@@ -1,6 +1,27 @@
 # HubSpot
 This directory contains the manifest-only connector for `source-hubspot`.
 
+## Changelog
+
+### 6.0.0 - Breaking Changes
+**Marketing Emails API Migration**
+
+This version migrates the `marketing_emails` stream from HubSpot's deprecated v1 API to the new v3 API.
+
+**Important: This is a breaking change that requires a data reset.**
+
+#### Changes:
+- Migrated from `/marketing-emails/v1/emails/with-statistics` to `/marketing/v3/emails?includeStats=true`
+- Updated response field path from `objects` to `results`
+- No data loss expected, but schema may have minor differences
+
+#### Migration Instructions:
+1. **Full Refresh Required**: You must reset your `marketing_emails` stream data
+2. **Timeline**: HubSpot will sunset the v1 API on **October 1, 2025**
+3. **Action Required**: Update to version 6.0.0 before the deadline
+
+For more details, see [HubSpot's API migration announcement](https://developers.hubspot.com/changelog/marketing-email-api-v3-released-to-general-availability-and-upcoming-sunset-for-v1).
+
 ## Documentation reference:
 Visit `https://developers.hubspot.com/` for API documentation
 

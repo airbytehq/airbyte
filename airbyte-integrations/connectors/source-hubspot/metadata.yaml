@@ -45,11 +45,11 @@ data:
     breakingChanges:
       6.0.0:
         message: >-
-          This update migrates the `marketing_emails` stream from the deprecated HubSpot Marketing 
-          Emails API v1 to the v3 API, which will be sunset on October 1, 2025. The stream behavior 
-          remains the same, but users may notice slight differences in field names or data structure 
-          due to API changes. Users will need to refresh their schema and may need to reset the 
-          marketing_emails stream after upgrading.
+          This update migrates the `marketing_emails` stream from HubSpot's deprecated v1 API to the new v3 API.
+          The migration changes the endpoint from `/marketing-emails/v1/emails/with-statistics` to `/marketing/v3/emails`
+          with `includeStats=true` parameter. The response field path changes from `objects` to `results`.
+          This is required due to HubSpot's API v1 sunset deadline. Users will need to refresh the source schema 
+          and reset the marketing_emails stream after upgrading.
         upgradeDeadline: "2025-10-01"
         deadlineAction: "auto_upgrade"
         scopedImpact:
