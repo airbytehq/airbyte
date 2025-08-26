@@ -167,6 +167,7 @@ definitions:
       - "%Y-%m-%dT%H:%M:%S.%fZ"
       - "%Y-%m-%dT%H:%M:%S.%f%z"
       - "%Y-%m-%dT%H:%M:%SZ"
+      - "%Y-%m-%dT%H:%M:%S%z"
 
   retriever_without_pagination:
     type: SimpleRetriever
@@ -339,6 +340,7 @@ definitions:
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%S.%fZ"
         - "%Y-%m-%dT%H:%M:%SZ"
+        - "%Y-%m-%dT%H:%M:%S%z"
         - "%ms" # Previous version of Hubspot stored state as a millisecond string for some reason
       is_client_side_incremental: true
     state_migrations:
@@ -429,6 +431,7 @@ definitions:
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%S.%fZ"
         - "%Y-%m-%dT%H:%M:%SZ"
+        - "%Y-%m-%dT%H:%M:%S%z"
         - "%ms"
       is_client_side_incremental: true
     state_migrations:
@@ -551,6 +554,7 @@ definitions:
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%S.%fZ"
         - "%Y-%m-%dT%H:%M:%SZ"
+        - "%Y-%m-%dT%H:%M:%S%z"
         - "%ms" # Previous version of Hubspot stored state as a millisecond string for some reason
       is_client_side_incremental: true
     state_migrations:
@@ -1155,6 +1159,7 @@ definitions:
         - "%ms" # support previous state format
         - "%Y-%m-%dT%H:%M:%S.%fZ"
         - "%Y-%m-%dT%H:%M:%SZ"
+        - "%Y-%m-%dT%H:%M:%S%z"
         - "%Y-%m-%d %H:%M:%S%z"
       start_datetime:
         type: MinMaxDatetime
@@ -1318,6 +1323,7 @@ definitions:
         - "%ms"
         - "%Y-%m-%dT%H:%M:%S.%fZ"
         - "%Y-%m-%dT%H:%M:%SZ"
+        - "%Y-%m-%dT%H:%M:%S%z"
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ format_datetime(config.get('start_date', '2006-06-01T00:00:00Z'), '%ms', '%Y-%m-%dT%H:%M:%SZ') }}"
@@ -1793,6 +1799,7 @@ definitions:
         - "%Y-%m-%dT%H:%M:%S.%fZ"
         - "%Y-%m-%dT%H:%M:%S.%f%z"
         - "%Y-%m-%dT%H:%M:%SZ"
+        - "%Y-%m-%dT%H:%M:%S%z"
     transformations:
       - type: DpathFlattenFields
         field_path:

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Uploads the java tar for java connectors.
-# Usage: ./poe-tasks/upload-java-connector-tar-file.sh --name destination-bigquery [--pre-release] [--main-release]
+# Usage: ./poe-tasks/upload-java-connector-tar-file.sh --name destination-bigquery --release-type <pre-release|main-release>
 # You must have set the env var GCS_CREDENTIALS, which contains a JSON-formatted GCP service account key.
 # GCS_CREDENTIALS needs write access to `gs://$metadata_bucket/resources/java`.
 set -euo pipefail
@@ -9,7 +9,7 @@ set -euo pipefail
 source "${BASH_SOURCE%/*}/lib/util.sh"
 source "${BASH_SOURCE%/*}/lib/parse_args.sh"
 
-metadata_bucket="dev-airbyte-cloud-connector-metadata-service"
+metadata_bucket="dev-airbyte-cloud-connector-metadata-service-2"
 connector=$(get_only_connector)
 tar_file_path="${CONNECTORS_DIR}/${connector}/build/distributions/airbyte-app.tar"
 
