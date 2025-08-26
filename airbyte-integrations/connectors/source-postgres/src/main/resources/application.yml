@@ -19,7 +19,7 @@ airbyte:
         memory-capacity-ratio: 0.6
         estimated-record-overhead-bytes: 16
         estimated-field-overhead-bytes: 16
-        namespace-kind: SCHEMA # TODO: should be CATALOG_AND_SCHEMA
+        namespace-kind: SCHEMA
         include-pseudo-columns: false
     check:
       jdbc:

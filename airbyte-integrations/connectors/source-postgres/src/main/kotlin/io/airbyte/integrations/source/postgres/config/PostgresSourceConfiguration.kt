@@ -24,7 +24,6 @@ import java.net.URLDecoder
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.time.Duration
-import org.postgresql.PGProperty
 
 private val log = KotlinLogging.logger {}
 
@@ -156,8 +155,7 @@ constructor(
         var encodedDatabaseName = URLEncoder.encode(pojo.database, StandardCharsets.UTF_8.name())
 
         // Build JDBC URL.
-        // TODO: handle schemas correctly
-        val jdbcUrlFmt = "jdbc:postgresql://%s:%d/$encodedDatabaseName?${PGProperty.CURRENT_SCHEMA}=public"
+        val jdbcUrlFmt = "jdbc:postgresql://%s:%d/$encodedDatabaseName"
 
         // Internal configuration settings.
         val checkpointTargetInterval: Duration =
