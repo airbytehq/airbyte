@@ -39,25 +39,6 @@ definitions:
     error_handler:
       $ref: "#/definitions/base_error_handler"
 
-  marketing_email_statistics_requester:
-    type: HttpRequester
-    url_base: "https://api.hubapi.com"
-    path: "/marketing/v3/emails/{{ stream_partition['email_id'] }}/statistics"
-    authenticator:
-      $ref: "#/definitions/authenticator"
-    http_method: GET
-    request_headers:
-      Content-Type: application/json
-      User-Agent: Airbyte
-    error_handler:
-      $ref: "#/definitions/base_error_handler"
-
-  marketing_email_statistics_selector:
-    type: RecordSelector
-    extractor:
-      type: DpathExtractor
-      field_path: []
-
   base_error_handler:
     type: DefaultErrorHandler
     backoff_strategies:
