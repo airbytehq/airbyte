@@ -223,8 +223,31 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
 
   // See
   // https://docs.redhat.com/en/documentation/red_hat_integration/2021.q3/html-single/debezium_user_guide/index#:~:text=topic%20names.-,Warning,-The%20MongoDB%20connector
+  // Logic take from sanitizeTopicPrefix()
   public static String normalizeToDebeziumFormat(final String connectionString) {
-    return connectionString != null ? connectionString.replaceAll("[+:/]", "_") : null;
+      if (connectionString == null) return null;
+
+      StringBuilder result = new StringBuilder(connectionString.length());
+      boolean changed = false;
+
+      for (int i = 0; i < connectionString.length(); i++) {
+        char c = connectionString.charAt(i);
+        if (isValidDebeziumCharacter(c)) {
+          result.append(c);
+        } else {
+          result.append('_');
+          changed = true;
+        }
+      }
+      return changed ? result.toString() : connectionString;
+
+  }
+
+  private static boolean isValidDebeziumCharacter(char c) {
+    return c == '.' || c == '_' || c == '-' ||
+            (c >= 'A' && c <= 'Z') ||
+            (c >= 'a' && c <= 'z') ||
+            (c >= '0' && c <= '9');
   }
 
   private static List<Object> generateOffsetKey(final String serverId) {
