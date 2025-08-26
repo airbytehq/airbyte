@@ -1,6 +1,6 @@
 # ClickHouse v2
 
-A fresh implementation of ClickHouse leveraging our new CDK. 
+A fresh implementation of ClickHouse leveraging our new CDK.
 
 ## Improvements over v1
 * All sync modes supported
@@ -78,6 +78,7 @@ You can also use a pre-existing user but we highly recommend creating a dedicate
 
 | Version | Date       | Pull Request                                                  | Subject                                                                        |
 |:--------|:-----------|:--------------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 0.1.12  | 2025-08-26 | [\#65544](https://github.com/airbytehq/airbyte/pull/65544)    | Disable connector - you should use the normal Destination Clickhouse instead.  |
 | 0.1.11  | 2025-07-09 | [\#62883](https://github.com/airbytehq/airbyte/pull/62883)    | Only set JSON properties on client if enabled to support older CH deployments. |
 | 0.1.10  | 2025-07-08 | [\#62861](https://github.com/airbytehq/airbyte/pull/62861)    | Set user agent header for internal CH telemetry.                               |
 | 0.1.9   | 2025-07-03 | [\#62509](https://github.com/airbytehq/airbyte/pull/62509)    | Simplify union stringification behavior.                                       |
