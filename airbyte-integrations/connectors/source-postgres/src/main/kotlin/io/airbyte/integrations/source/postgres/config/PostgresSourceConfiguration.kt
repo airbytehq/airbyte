@@ -91,6 +91,9 @@ constructor(
 ) :
     SourceConfigurationFactory<
         PostgresSourceConfigurationSpecification, PostgresSourceConfiguration> {
+
+    constructor() : this(emptySet(), STDIO.name, emptyList())
+
     override fun makeWithoutExceptionHandling(
         pojo: PostgresSourceConfigurationSpecification,
     ): PostgresSourceConfiguration {

@@ -3,15 +3,17 @@ package io.airbyte.integrations.source.postgres
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.discover.DataField
 import io.airbyte.cdk.util.Jsons
 
 data class PostgresSourceJdbcStreamStateValue(
     @JsonProperty("version") val version: Int = 2,
-    @JsonProperty("state_type") val stateType: String = StateType.CTID_BASED.serialized,
+    @JsonProperty("state_type") val stateType: String = StateType.CURSOR_BASED.serialized,
     @JsonProperty("stream_name") val streamName: String = "",
     @JsonProperty("stream_namespace") val streamNamespace: String = "",
     @JsonProperty("ctid") val ctid: String? = null,
     @JsonProperty("incremental_state") val incrementalState: JsonNode? = null,
+    @JsonProperty("cursors") val cursors: Map<String, JsonNode> = mapOf(),
 ) {
     companion object {
         val snapshotCompleted: OpaqueStateValue
@@ -30,6 +32,28 @@ data class PostgresSourceJdbcStreamStateValue(
                     stateType = StateType.CTID_BASED.serialized,
                 )
             )
+
+        fun cursorIncrementalCheckpoint(
+            cursor: DataField,
+            cursorCheckpoint: JsonNode,
+        ): OpaqueStateValue =
+            when (cursorCheckpoint.isNull) {
+                true -> Jsons.nullNode()
+                false -> Jsons.valueToTree(PostgresSourceJdbcStreamStateValue(
+                    cursors = mapOf(cursor.id to cursorCheckpoint)
+                ))
+            }
+
+        fun snapshotWithCursorCheckpoint(
+            ctidCheckpoint: JsonNode,
+            cursor: DataField,
+            cursorCheckpoint: JsonNode,
+        ): OpaqueStateValue =
+            Jsons.valueToTree(PostgresSourceJdbcStreamStateValue(
+                ctid = ctidCheckpoint.asText(),
+                cursors = mapOf(cursor.id to cursorCheckpoint),
+                stateType = StateType.CTID_BASED.serialized,
+            ))
     }
 }
 
