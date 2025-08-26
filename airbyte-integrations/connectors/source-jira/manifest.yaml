@@ -746,7 +746,7 @@ definitions:
                                 type: string
                                 description: This property is no longer available
                                   and will be removed from the documentation soon.
-                                  See the [deprecation 
+                                  See the [deprecation
                                   notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/)
                                   for details.
                               accountId:
@@ -773,7 +773,7 @@ definitions:
                                 type: string
                                 description: This property is no longer available
                                   and will be removed from the documentation soon.
-                                  See the [deprecation 
+                                  See the [deprecation
                                   notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/)
                                   for details.
                               emailAddress:
@@ -932,7 +932,7 @@ definitions:
                             type: string
                             description: This property is no longer available and
                               will be removed from the documentation soon. See the
-                              [deprecation 
+                              [deprecation
                               notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/)
                               for details.
                           leadAccountId:
@@ -977,7 +977,7 @@ definitions:
                                 type: string
                                 description: This property is no longer available
                                   and will be removed from the documentation soon.
-                                  See the [deprecation 
+                                  See the [deprecation
                                   notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/)
                                   for details.
                               accountId:
@@ -1004,7 +1004,7 @@ definitions:
                                 type: string
                                 description: This property is no longer available
                                   and will be removed from the documentation soon.
-                                  See the [deprecation 
+                                  See the [deprecation
                                   notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/)
                                   for details.
                               emailAddress:
@@ -1194,7 +1194,7 @@ definitions:
                                 type: string
                                 description: This property is no longer available
                                   and will be removed from the documentation soon.
-                                  See the [deprecation 
+                                  See the [deprecation
                                   notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/)
                                   for details.
                               accountId:
@@ -1221,7 +1221,7 @@ definitions:
                                 type: string
                                 description: This property is no longer available
                                   and will be removed from the documentation soon.
-                                  See the [deprecation 
+                                  See the [deprecation
                                   notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/)
                                   for details.
                               emailAddress:
@@ -1452,7 +1452,7 @@ definitions:
                                     description: The name of the project.
                                   projectTypeKey:
                                     type: string
-                                    description: The [project 
+                                    description: The [project
                                       type](https://confluence.atlassian.com/x/GwiiLQ#Jiraapplicationsoverview-Productfeaturesandprojecttypes)
                                       of the project.
                                     enum:
@@ -1686,7 +1686,7 @@ definitions:
                             on create, optional on update.
                     projectTypeKey:
                       type: string
-                      description: The [project 
+                      description: The [project
                         type](https://confluence.atlassian.com/x/GwiiLQ#Jiraapplicationsoverview-Productfeaturesandprojecttypes)
                         of the project.
                       enum:
@@ -2190,7 +2190,7 @@ definitions:
                             type: string
                             description: This property is no longer available and
                               will be removed from the documentation soon. See the
-                              [deprecation 
+                              [deprecation
                               notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/)
                               for details.
                           avatarUrl:
@@ -2245,7 +2245,7 @@ definitions:
                               description: The name of the project.
                             projectTypeKey:
                               type: string
-                              description: The [project 
+                              description: The [project
                                 type](https://confluence.atlassian.com/x/GwiiLQ#Jiraapplicationsoverview-Productfeaturesandprojecttypes)
                                 of the project.
                               enum:
@@ -2431,7 +2431,7 @@ definitions:
               key:
                 type: string
                 description: This property is no longer available and will be removed
-                  from the documentation soon. See the [deprecation 
+                  from the documentation soon. See the [deprecation
                   notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/)
                   for details.
               accountId:
@@ -2456,7 +2456,7 @@ definitions:
               name:
                 type: string
                 description: This property is no longer available and will be removed
-                  from the documentation soon. See the [deprecation 
+                  from the documentation soon. See the [deprecation
                   notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/)
                   for details.
               emailAddress:
@@ -2620,7 +2620,7 @@ definitions:
             type: string
             description: A URL to view the filter results in Jira, using the [Search
               for issues using JQL](#api-rest-api-3-filter-search-get) operation with
-              the filter's JQL string to return the filter results. For example, 
+              the filter's JQL string to return the filter results. For example,
               *https://your-domain.atlassian.net/rest/api/3/search?jql=project+%3D+SSP+AND+issuetype+%3D+Bug*.
             readOnly: true
           favourite:
@@ -2930,7 +2930,7 @@ definitions:
                                 type: string
                                 description: This property is no longer available
                                   and will be removed from the documentation soon.
-                                  See the [deprecation 
+                                  See the [deprecation
                                   notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/)
                                   for details.
                               accountId:
@@ -2958,7 +2958,7 @@ definitions:
                                 type: string
                                 description: This property is no longer available
                                   and will be removed from the documentation soon.
-                                  See the [deprecation 
+                                  See the [deprecation
                                   notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/)
                                   for details.
                               emailAddress:
@@ -3127,7 +3127,7 @@ definitions:
                             type: string
                             description: This property is no longer available and
                               will be removed from the documentation soon. See the
-                              [deprecation 
+                              [deprecation
                               notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/)
                               for details.
                           leadAccountId:
@@ -3174,7 +3174,7 @@ definitions:
                                 type: string
                                 description: This property is no longer available
                                   and will be removed from the documentation soon.
-                                  See the [deprecation 
+                                  See the [deprecation
                                   notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/)
                                   for details.
                               accountId:
@@ -3202,7 +3202,7 @@ definitions:
                                 type: string
                                 description: This property is no longer available
                                   and will be removed from the documentation soon.
-                                  See the [deprecation 
+                                  See the [deprecation
                                   notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/)
                                   for details.
                               emailAddress:
@@ -3405,7 +3405,7 @@ definitions:
                                 type: string
                                 description: This property is no longer available
                                   and will be removed from the documentation soon.
-                                  See the [deprecation 
+                                  See the [deprecation
                                   notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/)
                                   for details.
                               accountId:
@@ -3433,7 +3433,7 @@ definitions:
                                 type: string
                                 description: This property is no longer available
                                   and will be removed from the documentation soon.
-                                  See the [deprecation 
+                                  See the [deprecation
                                   notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/)
                                   for details.
                               emailAddress:
@@ -3692,7 +3692,7 @@ definitions:
                                     readOnly: true
                                   projectTypeKey:
                                     type: string
-                                    description: The [project 
+                                    description: The [project
                                       type](https://confluence.atlassian.com/x/GwiiLQ#Jiraapplicationsoverview-Productfeaturesandprojecttypes)
                                       of the project.
                                     readOnly: true
@@ -3954,7 +3954,7 @@ definitions:
                             on create, optional on update.
                     projectTypeKey:
                       type: string
-                      description: The [project 
+                      description: The [project
                         type](https://confluence.atlassian.com/x/GwiiLQ#Jiraapplicationsoverview-Productfeaturesandprojecttypes)
                         of the project.
                       readOnly: true
@@ -4509,7 +4509,7 @@ definitions:
                             type: string
                             description: This property is no longer available and
                               will be removed from the documentation soon. See the
-                              [deprecation 
+                              [deprecation
                               notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/)
                               for details.
                             readOnly: true
@@ -4575,7 +4575,7 @@ definitions:
                               readOnly: true
                             projectTypeKey:
                               type: string
-                              description: The [project 
+                              description: The [project
                                 type](https://confluence.atlassian.com/x/GwiiLQ#Jiraapplicationsoverview-Productfeaturesandprojecttypes)
                                 of the project.
                               readOnly: true
@@ -4991,7 +4991,7 @@ definitions:
                     type: string
                     readOnly: true
                   projectTypeKey:
-                    description: The [project 
+                    description: The [project
                       type](https://confluence.atlassian.com/x/GwiiLQ#Jiraapplicationsoverview-Productfeaturesandprojecttypes)
                       of the project.
                     type: string
@@ -5533,7 +5533,7 @@ definitions:
                                     readOnly: true
                                   projectTypeKey:
                                     type: string
-                                    description: The [project 
+                                    description: The [project
                                       type](https://confluence.atlassian.com/x/GwiiLQ#Jiraapplicationsoverview-Productfeaturesandprojecttypes)
                                       of the project.
                                     readOnly: true
@@ -6332,7 +6332,7 @@ definitions:
                     type: string
                     readOnly: true
                   projectTypeKey:
-                    description: The [project 
+                    description: The [project
                       type](https://confluence.atlassian.com/x/GwiiLQ#Jiraapplicationsoverview-Productfeaturesandprojecttypes)
                       of the project.
                     type: string
@@ -6425,9 +6425,9 @@ definitions:
                     of the built-in permissions or a custom permission added by an
                     app. See [Built-in permissions](#built-in-permissions) in *Get
                     all permission schemes* for more information about the built-in
-                    permissions. See the [project 
+                    permissions. See the [project
                     permission](https://developer.atlassian.com/cloud/jira/platform/modules/project-permission/)
-                    and [global 
+                    and [global
                     permission](https://developer.atlassian.com/cloud/jira/platform/modules/global-permission/)
                     module documentation for more information about custom permissions.
                   type: string
@@ -6531,7 +6531,7 @@ definitions:
             description: The category the project belongs to.
             readOnly: true
           projectTypeKey:
-            description: The [project 
+            description: The [project
               type](https://confluence.atlassian.com/x/GwiiLQ#Jiraapplicationsoverview-Productfeaturesandprojecttypes)
               of the project.
             type: string
@@ -7575,7 +7575,7 @@ definitions:
                 readOnly: true
               key:
                 description: This property is no longer available and will be removed
-                  from the documentation soon. See the [deprecation 
+                  from the documentation soon. See the [deprecation
                   notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/)
                   for details.
                 type: string
@@ -7600,7 +7600,7 @@ definitions:
                 - unknown
               name:
                 description: This property is no longer available and will be removed
-                  from the documentation soon. See the [deprecation 
+                  from the documentation soon. See the [deprecation
                   notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/)
                   for details.
                 type: string
@@ -7999,7 +7999,7 @@ definitions:
                   key:
                     type: string
                     description: This property is no longer available and will be
-                      removed from the documentation soon. See the [deprecation 
+                      removed from the documentation soon. See the [deprecation
                       notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/)
                       for details.
                   accountId:
@@ -8024,7 +8024,7 @@ definitions:
                   name:
                     type: string
                     description: This property is no longer available and will be
-                      removed from the documentation soon. See the [deprecation 
+                      removed from the documentation soon. See the [deprecation
                       notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/)
                       for details.
                   emailAddress:
@@ -8935,7 +8935,7 @@ definitions:
                               readOnly: true
                             projectTypeKey:
                               type: string
-                              description: The [project 
+                              description: The [project
                                 type](https://confluence.atlassian.com/x/GwiiLQ#Jiraapplicationsoverview-Productfeaturesandprojecttypes)
                                 of the project.
                               readOnly: true
@@ -9188,7 +9188,7 @@ definitions:
                       on create, optional on update.
               projectTypeKey:
                 type: string
-                description: The [project 
+                description: The [project
                   type](https://confluence.atlassian.com/x/GwiiLQ#Jiraapplicationsoverview-Productfeaturesandprojecttypes)
                   of the project.
                 readOnly: true
@@ -9306,7 +9306,7 @@ definitions:
                   key:
                     type: string
                     description: This property is no longer available and will be
-                      removed from the documentation soon. See the [deprecation 
+                      removed from the documentation soon. See the [deprecation
                       notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/)
                       for details.
                   accountId:
@@ -9331,7 +9331,7 @@ definitions:
                   name:
                     type: string
                     description: This property is no longer available and will be
-                      removed from the documentation soon. See the [deprecation 
+                      removed from the documentation soon. See the [deprecation
                       notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/)
                       for details.
                   emailAddress:
@@ -9503,7 +9503,7 @@ definitions:
                   key:
                     type: string
                     description: This property is no longer available and will be
-                      removed from the documentation soon. See the [deprecation 
+                      removed from the documentation soon. See the [deprecation
                       notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/)
                       for details.
                   accountId:
@@ -9528,7 +9528,7 @@ definitions:
                   name:
                     type: string
                     description: This property is no longer available and will be
-                      removed from the documentation soon. See the [deprecation 
+                      removed from the documentation soon. See the [deprecation
                       notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/)
                       for details.
                   emailAddress:
@@ -9793,7 +9793,7 @@ definitions:
                         readOnly: true
                       projectTypeKey:
                         type: string
-                        description: The [project 
+                        description: The [project
                           type](https://confluence.atlassian.com/x/GwiiLQ#Jiraapplicationsoverview-Productfeaturesandprojecttypes)
                           of the project.
                         readOnly: true
@@ -10126,7 +10126,7 @@ definitions:
             type:
             - 'null'
             - boolean
-        description: An entity property, for more information see [Entity 
+        description: An entity property, for more information see [Entity
           properties](https://developer.atlassian.com/cloud/jira/platform/jira-entity-properties/).
 
   # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-remote-links/#api-rest-api-3-issue-issueidorkey-remotelink-get
@@ -10918,7 +10918,7 @@ definitions:
                 readOnly: true
               key:
                 description: This property is no longer available and will be removed
-                  from the documentation soon. See the [deprecation 
+                  from the documentation soon. See the [deprecation
                   notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/)
                   for details.
                 type: string
@@ -10943,7 +10943,7 @@ definitions:
                 - unknown
               name:
                 description: This property is no longer available and will be removed
-                  from the documentation soon. See the [deprecation 
+                  from the documentation soon. See the [deprecation
                   notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/)
                   for details.
                 type: string
@@ -11096,7 +11096,7 @@ definitions:
                   attribute: true
           leadUserName:
             description: This property is no longer available and will be removed
-              from the documentation soon. See the [deprecation 
+              from the documentation soon. See the [deprecation
               notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/)
               for details.
             type:
@@ -11142,7 +11142,7 @@ definitions:
                 readOnly: true
               key:
                 description: This property is no longer available and will be removed
-                  from the documentation soon. See the [deprecation 
+                  from the documentation soon. See the [deprecation
                   notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/)
                   for details.
                 type:
@@ -11169,7 +11169,7 @@ definitions:
                 - unknown
               name:
                 description: This property is no longer available and will be removed
-                  from the documentation soon. See the [deprecation 
+                  from the documentation soon. See the [deprecation
                   notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/)
                   for details.
                 type: string
@@ -12244,10 +12244,10 @@ definitions:
         request_parameters:
           fields: "*all"
           jql: >
-            "updated >= {{ (timestamp(stream_slice.start_time) * 1000)|int }} "
-            "{{ ('and project in ' + '(' + stream_slice.project_id + ') ') if stream_slice.project_id
-            else '' }}"
-            "ORDER BY updated asc"
+            updated >= {{ (timestamp(stream_slice.start_time) * 1000)|int }}
+            {{ ('and project in ' + '(' + stream_slice.project_id + ') ') if stream_slice.project_id
+            else '' }}
+            ORDER BY updated asc
           expand: "renderedFields,transitions,changelog"
         error_handler:
           $ref: "#/definitions/error_handler"
@@ -14207,14 +14207,14 @@ definitions:
                 readOnly: true
               name:
                 description: This property is no longer available and will be removed
-                  from the documentation soon. See the [deprecation 
+                  from the documentation soon. See the [deprecation
                   notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/)
                   for details.
                 type: string
                 readOnly: true
               key:
                 description: This property is no longer available and will be removed
-                  from the documentation soon. See the [deprecation 
+                  from the documentation soon. See the [deprecation
                   notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/)
                   for details.
                 type: string
@@ -14277,14 +14277,14 @@ definitions:
                 readOnly: true
               name:
                 description: This property is no longer available and will be removed
-                  from the documentation soon. See the [deprecation 
+                  from the documentation soon. See the [deprecation
                   notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/)
                   for details.
                 type: string
                 readOnly: true
               key:
                 description: This property is no longer available and will be removed
-                  from the documentation soon. See the [deprecation 
+                  from the documentation soon. See the [deprecation
                   notice](https://developer.atlassian.com/cloud/jira/platform/deprecation-notice-user-privacy-api-migration-guide/)
                   for details.
                 type: string
@@ -14337,7 +14337,7 @@ definitions:
                 type: string
                 readOnly: true
           comment:
-            description: A comment about the worklog in [Atlassian Document 
+            description: A comment about the worklog in [Atlassian Document
               Format](https://developer.atlassian.com/cloud/jira/platform/apis/document/structure/).
               Optional when creating or updating a worklog.
             type: object
