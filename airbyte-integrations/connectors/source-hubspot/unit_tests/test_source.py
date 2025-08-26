@@ -263,15 +263,16 @@ class TestSplittingPropertiesFunctionality:
                 }
                 if after_id:
                     params.update({"after": after_id})
+                url_with_params = f"{test_stream_url}?{urlencode(params)}"
                 requests_mock.register_uri(
                     "GET",
-                    f"{test_stream_url}?{urlencode(params)}",
+                    url_with_params,
                     record_responses,
                 )
             after_id = id_list[-1]
 
         stream_records = read_from_stream(config, "companies", SyncMode.full_refresh).records
-        # check that we have records for all set ids, and that each record has 2000 properties (not more, and not less)
+        # check that we have records for all set ids, and that each record has 2000 properties
         assert len(stream_records) == sum([len(ids) for ids in record_ids_paginated])
         for record_ab_message in stream_records:
             record = record_ab_message.record.data
@@ -311,9 +312,12 @@ class TestSplittingPropertiesFunctionality:
                 "properties": ",".join(property_slice),
                 "limit": 100,
             }
+            base_url = test_stream.retriever.requester.url_base
+            path = test_stream.retriever.requester.get_path()
+            url = f"{base_url}/{path}?{urlencode(params)}"
             requests_mock.register_uri(
                 "GET",
-                f"{test_stream.retriever.requester.url_base}/{test_stream.retriever.requester.get_path()}?{urlencode(params)}",
+                url,
                 record_responses,
             )
         state = (
@@ -425,7 +429,9 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(
     assert output.state_messages[1].state.stream.stream_state.updatedAt == "2022-03-01T00:00:00.000000Z"
 
 
-def test_search_based_incremental_stream_should_sort_by_id(requests_mock, config, fake_properties_list, mock_dynamic_schema_requests):
+def test_search_based_incremental_stream_should_sort_by_id(
+    requests_mock, config, fake_properties_list, mock_dynamic_schema_requests
+):
     """
     If there are more than 10,000 records that would be returned by the Hubspot search endpoint,
     the CRMSearchStream instance should stop at the 10Kth record
@@ -435,15 +441,21 @@ def test_search_based_incremental_stream_should_sort_by_id(requests_mock, config
     test_stream = find_stream("companies", config)
     test_stream.associations = []
 
-    # Custom callback to mock search endpoint filter and sort behavior, returns 100 records per request.
-    # See _process_search in stream.py for details on the structure of the filter amd sort parameters.
-    # The generated records will have an id that is the sum of the current id and the current "after" value
-    # and the updatedAt field will be a random date between min_time and max_time.
+    # Custom callback to mock search endpoint filter and sort behavior,
+    # returns 100 records per request.
+    # See _process_search in stream.py for details on the structure of the
+    # filter and sort parameters.
+    # The generated records will have an id that is the sum of the current id
+    # and the current "after" value and the updatedAt field will be a random
+    # date between min_time and max_time.
     # Store "after" value in the record to check if it resets after 10k records.
     responses = [
         {
             "json": {
-                "results": [{"id": f"{y}", "updatedAt": "2022-02-25T16:43:11Z"} for y in range(x * 200 - 200 + 1, x * 200 + 1)],
+                "results": [
+                    {"id": f"{y}", "updatedAt": "2022-02-25T16:43:11Z"}
+                    for y in range(x * 200 - 200 + 1, x * 200 + 1)
+                ],
                 "paging": {
                     "next": {
                         "after": f"{x * 200}",
@@ -457,7 +469,10 @@ def test_search_based_incremental_stream_should_sort_by_id(requests_mock, config
     responses_more_than_10k = [
         {
             "json": {
-                "results": [{"id": f"{y + 10000}", "updatedAt": "2022-02-25T16:43:11Z"} for y in range(x * 200 - 200 + 1, x * 200 + 1)],
+                "results": [
+                    {"id": f"{y + 10000}", "updatedAt": "2022-02-25T16:43:11Z"}
+                    for y in range(x * 200 - 200 + 1, x * 200 + 1)
+                ],
                 "paging": {
                     "next": {
                         "after": f"{x * 200}",
@@ -480,7 +495,9 @@ def test_search_based_incremental_stream_should_sort_by_id(requests_mock, config
             "status_code": 200,
         }
     ]
-    test_stream_url = test_stream.retriever.requester.url_base + "/" + test_stream.retriever.requester.get_path() + "/search"
+    base_url = test_stream.retriever.requester.url_base
+    path = test_stream.retriever.requester.get_path()
+    test_stream_url = f"{base_url}/{path}/search"
     # Mocking Request
     requests_mock.register_uri("POST", test_stream_url, responses)
     requests_mock.register_uri("GET", "/properties/v2/company/properties", properties_response)
