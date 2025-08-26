@@ -61,10 +61,12 @@ constructor(
 
     override fun check(config: JsonNode): AirbyteConnectionStatus? {
         val dataSource = getDataSource(config)
+        val metadataDataSource = getMetadataDataSource(config)
         try {
             val retentionPeriodDays = 1
             val sqlGenerator = SnowflakeSqlGenerator(retentionPeriodDays)
             val database = getDatabase(dataSource)
+            val metadataDatabase = getDatabase(metadataDataSource)
             val databaseName = config[JdbcUtils.DATABASE_KEY].asText()
             val outputSchema = nameTransformer.getIdentifier(config[JdbcUtils.SCHEMA_KEY].asText())
             val rawTableSchemaName: String =
@@ -79,7 +81,12 @@ constructor(
                         UUID.randomUUID().toString().replace("-".toRegex(), "")
                 )
             val snowflakeDestinationHandler =
-                SnowflakeDestinationHandler(databaseName, database, rawTableSchemaName)
+                SnowflakeDestinationHandler(
+                    databaseName,
+                    database,
+                    rawTableSchemaName,
+                    metadataDatabase
+                )
             val snowflakeStagingClient = SnowflakeStagingClient(database)
             val snowflakeStorageOperation =
                 SnowflakeStorageOperation(
@@ -174,6 +181,7 @@ constructor(
         } finally {
             try {
                 close(dataSource)
+                close(metadataDataSource)
             } catch (e: Exception) {
                 LOGGER.warn("Unable to close data source.", e)
             }
@@ -182,6 +190,10 @@ constructor(
 
     private fun getDataSource(config: JsonNode): DataSource {
         return SnowflakeDatabaseUtils.createDataSource(config, airbyteEnvironment)
+    }
+
+    private fun getMetadataDataSource(config: JsonNode): DataSource {
+        return SnowflakeDatabaseUtils.createMetadataDataSource(config, airbyteEnvironment)
     }
 
     private fun getDatabase(dataSource: DataSource): JdbcDatabase {
@@ -203,7 +215,10 @@ constructor(
         val useMergeForUpsert =
             config.has(USE_MERGE_FOR_UPSERT) && config[USE_MERGE_FOR_UPSERT].asBoolean(false)
         val sqlGenerator = SnowflakeSqlGenerator(retentionPeriodDays, useMergeForUpsert)
-        val database = getDatabase(getDataSource(config))
+        val dataSource = getDataSource(config)
+        val metadataDataSource = getMetadataDataSource(config)
+        val database = getDatabase(dataSource)
+        val metadataDatabase = getDatabase(metadataDataSource)
         val databaseName = config[JdbcUtils.DATABASE_KEY].asText()
         val rawTableSchemaName: String =
             if (getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE).isPresent) {
@@ -213,7 +228,12 @@ constructor(
             }
         val catalogParser = CatalogParser(sqlGenerator, defaultNamespace, rawTableSchemaName)
         val snowflakeDestinationHandler =
-            SnowflakeDestinationHandler(databaseName, database, rawTableSchemaName)
+            SnowflakeDestinationHandler(
+                databaseName,
+                database,
+                rawTableSchemaName,
+                metadataDatabase
+            )
         val parsedCatalog: ParsedCatalog = catalogParser.parseCatalog(catalog)
         val disableTypeDedupe =
             config.has(DISABLE_TYPE_DEDUPE) && config[DISABLE_TYPE_DEDUPE].asBoolean(false)
@@ -224,8 +244,9 @@ constructor(
                     database,
                     databaseName,
                     sqlGenerator,
+                    metadataDatabase,
                 ),
-                SnowflakeAbMetaAndGenIdMigration(database),
+                SnowflakeAbMetaAndGenIdMigration(database, metadataDatabase),
             )
 
         val snowflakeStagingClient = SnowflakeStagingClient(database)

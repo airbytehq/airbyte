@@ -30,7 +30,10 @@ import org.mockito.kotlin.eq
 class SnowflakeDestinationHandlerTest {
 
     private val database = mock(JdbcDatabase::class.java)
+    private val metadataDatabase = mock(JdbcDatabase::class.java)
     private val destinationHandler =
+        SnowflakeDestinationHandler("mock-database-name", database, "mock-schema", metadataDatabase)
+    private val destinationHandlerWithSingleConnection =
         SnowflakeDestinationHandler("mock-database-name", database, "mock-schema")
 
     @ParameterizedTest
@@ -59,7 +62,8 @@ class SnowflakeDestinationHandlerTest {
         val showSchemasReturn = """
             {"name":"$mockSchemaName"}
         """.trimIndent()
-        `when`(database.unsafeQuery(eq("show schemas;")))
+        // Mock the metadata database for schema checks
+        `when`(metadataDatabase.unsafeQuery(eq("show schemas;")))
             .thenReturn(
                 listOf(
                         Jsons.deserialize(
@@ -69,13 +73,86 @@ class SnowflakeDestinationHandlerTest {
                     .stream(),
             )
         destinationHandler.createNamespaces(setOf(mockSchemaName))
-        // verify database.execute is not called
+        // verify database.execute is not called (schema exists)
         verify(database, times(0)).execute(anyString())
+    }
+
+    @Test
+    fun verifyMetadataQueriesUseMetadataConnection() {
+        // Given: A handler with separate metadata connection
+        val mockSchemaName = "mockSchema"
+        val showSchemasReturn = """
+            {"name":"$mockSchemaName"}
+        """.trimIndent()
+
+        // When checking if schema exists (metadata query)
+        `when`(metadataDatabase.unsafeQuery(eq("show schemas;")))
+            .thenReturn(listOf(Jsons.deserialize(showSchemasReturn)).stream())
+
+        // Then: Metadata database should be used, not regular database
+        destinationHandler.createNamespaces(setOf(mockSchemaName))
+
+        // Verify metadata connection was used for SHOW SCHEMAS
+        verify(metadataDatabase, times(1)).unsafeQuery(eq("show schemas;"))
+        // Verify regular database was NOT used for metadata query
+        verify(database, times(0)).unsafeQuery(anyString())
+        // Schema exists, so no CREATE SCHEMA should be executed
+        verify(database, times(0)).execute(anyString())
+    }
+
+    @Test
+    fun verifyDataOperationsUseRegularConnection() {
+        // Given: A SQL statement for data manipulation
+        val dataSql = Sql.of("INSERT INTO table VALUES (1, 2, 3)")
+
+        // When: Executing a data operation
+        destinationHandler.execute(dataSql)
+
+        // Then: Regular database connection should be used
+        verify(database, times(1)).execute(anyString())
+        // Metadata connection should NOT be used for data operations
+        verify(metadataDatabase, times(0)).execute(anyString())
+    }
+
+    @Test
+    fun verifySchemaCreationUsesRegularConnection() {
+        // Given: A schema that doesn't exist
+        val newSchemaName = "newSchema"
+        `when`(metadataDatabase.unsafeQuery(eq("show schemas;")))
+            .thenReturn(Stream.empty()) // No schemas exist
+
+        // When: Creating a new schema
+        destinationHandler.createNamespaces(setOf(newSchemaName))
+
+        // Then: Metadata connection used for checking existence
+        verify(metadataDatabase, times(1)).unsafeQuery(eq("show schemas;"))
+        // Regular connection used for CREATE SCHEMA (data operation)
+        verify(database, times(1)).execute(eq("CREATE SCHEMA IF NOT EXISTS \"$newSchemaName\";"))
+        // Metadata connection should NOT execute CREATE statements
+        verify(metadataDatabase, times(0)).execute(anyString())
+    }
+
+    @Test
+    fun verifyBackwardCompatibilityWithSingleConnection() {
+        // Given: A handler with only one connection (backward compatibility)
+        val mockSchemaName = "mockSchema"
+        `when`(database.unsafeQuery(eq("show schemas;"))).thenReturn(Stream.empty())
+
+        // When: Using handler with single connection
+        destinationHandlerWithSingleConnection.createNamespaces(setOf(mockSchemaName))
+
+        // Then: The single database connection handles both metadata and data operations
+        verify(database, times(1)).unsafeQuery(eq("show schemas;"))
+        verify(database, times(1)).execute(eq("CREATE SCHEMA IF NOT EXISTS \"$mockSchemaName\";"))
+        // Metadata database should not be involved (it's the same as database)
+        verify(metadataDatabase, times(0)).unsafeQuery(anyString())
+        verify(metadataDatabase, times(0)).execute(anyString())
     }
 
     @AfterEach
     fun tearDown() {
         reset(database)
+        reset(metadataDatabase)
     }
 
     companion object {

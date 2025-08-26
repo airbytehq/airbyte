@@ -18,8 +18,10 @@ import java.util.LinkedHashMap
 
 private val log = KotlinLogging.logger {}
 
-class SnowflakeAbMetaAndGenIdMigration(private val database: JdbcDatabase) :
-    Migration<SnowflakeState> {
+class SnowflakeAbMetaAndGenIdMigration(
+    private val database: JdbcDatabase,
+    private val metadataDatabase: JdbcDatabase = database // Optional metadata-only connection
+) : Migration<SnowflakeState> {
     override fun migrateIfNecessary(
         destinationHandler: DestinationHandler<SnowflakeState>,
         stream: StreamConfig,
@@ -40,8 +42,9 @@ class SnowflakeAbMetaAndGenIdMigration(private val database: JdbcDatabase) :
 
         // Snowflake will match the lowercase raw table even with QUOTED_IDENTIFIER_IGNORE_CASE =
         // TRUE
+        // Use metadata connection for SHOW COLUMNS query to avoid warehouse costs
         val results =
-            database.queryJsons(
+            metadataDatabase.queryJsons(
                 "SHOW COLUMNS IN TABLE \"${stream.id.rawNamespace}\".\"${stream.id.rawName}\""
             )
         val rawTableDefinition =

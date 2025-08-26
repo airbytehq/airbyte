@@ -231,6 +231,113 @@ object SnowflakeDatabaseUtils {
         return DefaultJdbcDatabase(dataSource, SnowflakeSourceOperations())
     }
 
+    /**
+     * Creates a DataSource specifically for metadata queries that doesn't require a warehouse. This
+     * allows SHOW, DESCRIBE, and information_schema queries to run without consuming compute
+     * credits.
+     */
+    @JvmStatic
+    fun createMetadataDataSource(config: JsonNode, airbyteEnvironment: String?): DataSource {
+        LOGGER.info("Creating metadata-only connection without warehouse for cost optimization")
+
+        val dataSource = HikariDataSource()
+
+        val jdbcUrl =
+            StringBuilder(
+                String.format("jdbc:snowflake://%s/?", config[JdbcUtils.HOST_KEY].asText())
+            )
+        val username = config[JdbcUtils.USERNAME_KEY].asText()
+
+        val properties = Properties()
+
+        val credentials = config["credentials"]
+        if (
+            credentials != null &&
+                credentials.has("auth_type") &&
+                "OAuth2.0" == credentials["auth_type"].asText()
+        ) {
+            LOGGER.debug("OAuth login mode is used for metadata connection")
+            val accessToken: String
+            try {
+                accessToken =
+                    getAccessTokenUsingRefreshToken(
+                        config[JdbcUtils.HOST_KEY].asText(),
+                        credentials["client_id"].asText(),
+                        credentials["client_secret"].asText(),
+                        credentials["refresh_token"].asText()
+                    )
+            } catch (e: IOException) {
+                throw RuntimeException(e)
+            }
+            properties[CONNECTION_STRING_IDENTIFIER_KEY] = CONNECTION_STRING_IDENTIFIER_VAL
+            properties["client_id"] = credentials["client_id"].asText()
+            properties["client_secret"] = credentials["client_secret"].asText()
+            properties["refresh_token"] = credentials["refresh_token"].asText()
+            properties[JdbcUtils.HOST_KEY] = config[JdbcUtils.HOST_KEY].asText()
+            properties["authenticator"] = "oauth"
+            properties["token"] = accessToken
+            properties[JdbcUtils.USERNAME_KEY] = username
+
+            // thread to keep the refresh token up to date
+            SnowflakeDestination.SCHEDULED_EXECUTOR_SERVICE.scheduleAtFixedRate(
+                getRefreshTokenTask(dataSource),
+                PAUSE_BETWEEN_TOKEN_REFRESH_MIN.toLong(),
+                PAUSE_BETWEEN_TOKEN_REFRESH_MIN.toLong(),
+                TimeUnit.MINUTES
+            )
+        } else if (credentials != null && credentials.has(JdbcUtils.PASSWORD_KEY)) {
+            LOGGER.debug("User/password login mode is used for metadata connection")
+            dataSource.username = username
+            dataSource.password = credentials[JdbcUtils.PASSWORD_KEY].asText()
+        } else if (credentials != null && credentials.has(PRIVATE_KEY_FIELD_NAME)) {
+            LOGGER.debug("Login mode with key pair is used for metadata connection")
+            dataSource.username = username
+            val privateKeyValue = credentials[PRIVATE_KEY_FIELD_NAME].asText()
+            createPrivateKeyFile("${PRIVATE_KEY_FILE_NAME}_metadata", privateKeyValue)
+            properties["private_key_file"] = "${PRIVATE_KEY_FILE_NAME}_metadata"
+            if (credentials.has(PRIVATE_KEY_PASSWORD)) {
+                properties["private_key_file_pwd"] = credentials[PRIVATE_KEY_PASSWORD].asText()
+            }
+        } else {
+            LOGGER.warn(
+                "Obsolete User/password login mode is used. Please re-create a connection to use the latest connector's version"
+            )
+            dataSource.username = username
+            dataSource.password = config[JdbcUtils.PASSWORD_KEY].asText()
+        }
+
+        // IMPORTANT: No warehouse parameter for metadata queries!
+        // This allows SHOW, DESCRIBE, and information_schema queries to run without compute credits
+        // properties["warehouse"] = config["warehouse"].asText() // INTENTIONALLY OMITTED
+
+        properties[JdbcUtils.DATABASE_KEY] = config[JdbcUtils.DATABASE_KEY].asText()
+        properties["role"] = config["role"].asText()
+        properties[JdbcUtils.SCHEMA_KEY] =
+            nameTransformer.getIdentifier(config[JdbcUtils.SCHEMA_KEY].asText())
+
+        properties["networkTimeout"] = Math.toIntExact(NETWORK_TIMEOUT.toSeconds())
+        properties["MULTI_STATEMENT_COUNT"] = 0
+        properties["application"] = "$airbyteEnvironment-metadata" // Distinguish metadata queries
+        properties["JDBC_QUERY_RESULT_FORMAT"] = "JSON"
+
+        // Metadata queries should be quick, so we can abort them if detached
+        properties["ABORT_DETACHED_QUERY"] = "true"
+
+        if (config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)) {
+            jdbcUrl.append(config[JdbcUtils.JDBC_URL_PARAMS_KEY].asText())
+        }
+
+        dataSource.driverClassName = DRIVER_CLASS_NAME
+        dataSource.jdbcUrl = jdbcUrl.toString()
+        dataSource.dataSourceProperties = properties
+
+        // Set a smaller pool size for metadata connections since they're lightweight
+        dataSource.maximumPoolSize = 2
+        dataSource.minimumIdle = 1
+
+        return dataSource
+    }
+
     private fun getRefreshTokenTask(dataSource: HikariDataSource): Runnable {
         return Runnable {
             LOGGER.info("Refresh token process started")

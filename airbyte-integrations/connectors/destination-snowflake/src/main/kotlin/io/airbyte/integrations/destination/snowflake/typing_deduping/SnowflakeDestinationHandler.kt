@@ -43,6 +43,7 @@ class SnowflakeDestinationHandler(
     databaseName: String,
     private val database: JdbcDatabase,
     rawTableSchema: String,
+    private val metadataDatabase: JdbcDatabase = database, // Optional metadata-only connection
 ) :
     JdbcDestinationHandler<SnowflakeState>(
         databaseName,
@@ -74,8 +75,9 @@ class SnowflakeDestinationHandler(
                     SHOW TABLES LIKE '$tableName' IN "$databaseName"."$schemaName";
                     """.trimIndent()
         try {
+            // Use metadata connection for SHOW queries to avoid warehouse costs
             val showTablesResult =
-                database.queryJsons(
+                metadataDatabase.queryJsons(
                     showTablesQuery,
                 )
             return showTablesResult.map {
@@ -408,7 +410,8 @@ class SnowflakeDestinationHandler(
         val destinationStates = getAllDestinationStates()
 
         val streamIds = streamConfigs.map(StreamConfig::id).toList()
-        val existingTables = findExistingTables(database, streamIds)
+        // Use metadata connection for finding existing tables (DESCRIBE queries)
+        val existingTables = findExistingTables(database, streamIds, metadataDatabase)
         val tableRowCounts = getFinalTableRowCount(streamIds)
         return streamConfigs
             .stream()
@@ -521,7 +524,8 @@ class SnowflakeDestinationHandler(
 
     private fun isSchemaExists(schema: String): Boolean {
         try {
-            database.unsafeQuery(SHOW_SCHEMAS).use { results ->
+            // Use metadata connection for SHOW SCHEMAS to avoid warehouse costs
+            metadataDatabase.unsafeQuery(SHOW_SCHEMAS).use { results ->
                 return results
                     .map { schemas: JsonNode -> schemas[NAME].asText() }
                     .anyMatch { anObject: String -> schema == anObject }
@@ -556,13 +560,15 @@ class SnowflakeDestinationHandler(
         @Throws(SQLException::class)
         fun findExistingTables(
             database: JdbcDatabase,
-            streamIds: List<StreamId>
+            streamIds: List<StreamId>,
+            metadataDatabase: JdbcDatabase = database // Allow passing metadata connection
         ): Map<String, Map<String, TableDefinition>> {
             val existingTables = HashMap<String, HashMap<String, TableDefinition>>()
             for (stream in streamIds) {
                 val schemaName = stream.finalNamespace
                 val tableName = stream.finalName
-                val table = getTable(database, schemaName, tableName)
+                // Use metadata connection for DESCRIBE TABLE queries
+                val table = getTable(metadataDatabase, schemaName, tableName)
                 if (table != null) {
                     existingTables
                         .computeIfAbsent(schemaName) { _: String? -> HashMap() }
@@ -579,6 +585,8 @@ class SnowflakeDestinationHandler(
         ): TableDefinition? {
             try {
                 val columns = LinkedHashMap<String, ColumnDefinition>()
+                // Note: This is a static method, so it receives the database as a parameter
+                // The caller should pass the metadata database for this operation
                 database.queryJsons("""DESCRIBE TABLE "$schemaName"."$tableName" """).map {
                     val columnName = it["name"].asText()
                     val dataType =

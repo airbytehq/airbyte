@@ -22,13 +22,15 @@ private val LOGGER = KotlinLogging.logger {}
 class SnowflakeV1V2Migrator(
     private val namingConventionTransformer: NamingConventionTransformer,
     private val database: JdbcDatabase,
-    private val databaseName: String
+    private val databaseName: String,
+    private val metadataDatabase: JdbcDatabase = database // Optional metadata-only connection
 ) : BaseDestinationV1V2Migrator<TableDefinition>() {
     @SneakyThrows
     @Throws(Exception::class)
     override fun doesAirbyteInternalNamespaceExist(streamConfig: StreamConfig?): Boolean {
         try {
-            return database
+            // Use metadata connection for SHOW SCHEMAS query to avoid warehouse costs
+            return metadataDatabase
                 .queryJsons(
                     "SHOW SCHEMAS LIKE '${streamConfig!!.id.rawNamespace}' IN DATABASE \"$databaseName\";",
                 )
@@ -55,8 +57,9 @@ class SnowflakeV1V2Migrator(
         namespace: String?,
         tableName: String?
     ): Optional<TableDefinition> {
+        // Use metadata connection for DESCRIBE TABLE query
         return Optional.ofNullable(
-            SnowflakeDestinationHandler.getTable(database, namespace!!, tableName!!)
+            SnowflakeDestinationHandler.getTable(metadataDatabase, namespace!!, tableName!!)
         )
     }
 

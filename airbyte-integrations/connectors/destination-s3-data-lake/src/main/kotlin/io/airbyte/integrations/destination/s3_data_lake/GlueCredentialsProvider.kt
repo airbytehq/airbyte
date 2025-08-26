@@ -50,14 +50,25 @@ class GlueCredentialsProvider private constructor(private val delegate: AwsCrede
                         }
                     }
                     AWS_CREDENTIALS_MODE_ASSUME_ROLE -> {
+                        // Use provided credentials if available, otherwise use default credential
+                        // chain
+                        // This allows AssumeRole to work with:
+                        // - Platform-injected credentials in Airbyte Cloud
+                        // - EC2 instance profiles in self-hosted deployments
+                        // - ECS task roles, Lambda execution roles, etc.
+                        val baseCredentialsProvider =
+                            if (!accessKey.isNullOrEmpty() && !secretKey.isNullOrEmpty()) {
+                                StaticCredentialsProvider.create(
+                                    AwsBasicCredentials.create(accessKey, secretKey)
+                                )
+                            } else {
+                                DefaultCredentialsProvider.create()
+                            }
+
                         StsAssumeRoleCredentialsProvider.builder()
                             .stsClient(
                                 StsClient.builder()
-                                    .credentialsProvider(
-                                        StaticCredentialsProvider.create(
-                                            AwsBasicCredentials.create(accessKey, secretKey)
-                                        )
-                                    )
+                                    .credentialsProvider(baseCredentialsProvider)
                                     .region(Region.of(properties[ASSUME_ROLE_REGION]))
                                     .build()
                             )
