@@ -34,10 +34,11 @@ from metadata_service.helpers.object_helpers import deep_copy_params, default_no
 from metadata_service.helpers.slack import send_slack_message
 from metadata_service.models.generated import ConnectorRegistryDestinationDefinition, ConnectorRegistrySourceDefinition
 from metadata_service.registry import ConnectorTypePrimaryKey, ConnectorTypes
+from metadata_service.spec_cache import SpecCache
 
 logger = logging.getLogger(__name__)
 
-DEV_BUCKET = "dev-airbyte-cloud-connector-metadata-service"
+DEV_BUCKET = "dev-airbyte-cloud-connector-metadata-service-2"
 
 
 PolymorphicRegistryEntry = Union[ConnectorRegistrySourceDefinition, ConnectorRegistryDestinationDefinition]
@@ -362,7 +363,7 @@ def _get_connector_type_from_registry_entry(registry_entry: dict) -> TaggedRegis
 
 
 def _get_registry_entry_blob_paths(
-    metadata_dict: dict, registry_type: str, docker_image_tag: str, metadata_data_with_overrides: dict, is_prerelease: bool
+    metadata_dict: dict, registry_type: str, metadata_data_with_overrides: dict, is_prerelease: bool
 ) -> List[str]:
     """
     Builds the registry entry paths for the registry entries.
@@ -425,33 +426,39 @@ def _persist_connector_registry_entry(bucket_name: str, registry_entry: Polymorp
 
 @sentry_sdk.trace
 def generate_and_persist_registry_entry(
-    bucket_name: str, repo_metadata_file_path: pathlib.Path, spec_path: pathlib.Path, registry_type: str, pre_release_tag: str | None
+    bucket_name: str, repo_metadata_file_path: pathlib.Path, registry_type: str, docker_image_tag: str, is_prerelease: bool
 ) -> None:
     """Generate and persist the connector registry entry to the GCS bucket.
 
     Args:
         bucket_name (str): The name of the GCS bucket.
-        spec_path (pathlib.Path): The path to the spec file.
+        repo_metadata_file_path (pathlib.Path): The path to the spec file.
         registry_type (str): The registry type.
-        pre_release_tag (str): The prerelease image tag ("1.2.3-dev.abcde12345"), or None. If set to None, will use the image tag from the metadata file.
+        docker_image_tag (str): The docker image tag associated with this release. Typically a semver string (e.g. '1.2.3'), possibly with a suffix (e.g. '1.2.3-dev.abcde12345')
+        is_prerelease (bool): Whether this is a prerelease, or a main release.
     """
+    # Read the repo metadata dict to bootstrap ourselves. We need the docker repository,
+    # so that we can read the metadata from GCS.
     repo_metadata_dict = _get_and_parse_yaml_file(repo_metadata_file_path)
     docker_repository = repo_metadata_dict["data"]["dockerRepository"]
-    if pre_release_tag is not None:
-        # We have a prerelease tag. Use it.
-        docker_image_tag = pre_release_tag
-    else:
-        # No prerelease tag supplied - read the current version from connector metadata
-        docker_image_tag = repo_metadata_dict["data"]["dockerImageTag"]
 
-    gcs_client = get_gcs_storage_client(gcs_creds=os.environ.get("GCS_CREDENTIALS"))
-    bucket = gcs_client.bucket(bucket_name)
-    metadata_blob = bucket.blob(f"{METADATA_FOLDER}/{docker_repository}/{docker_image_tag}/{METADATA_FILE_NAME}")
-    # bucket.blob() returns a partially-loaded blob.
-    # reload() asks GCS to fetch the rest of the information.
-    # (this doesn't fetch the _contents_ of the blob, only its metadata - modified time, etc.)
-    metadata_blob.reload()
-    metadata_dict = yaml.safe_load(metadata_blob.download_as_string())
+    try:
+        # Now that we have the docker repo, read the appropriate versioned metadata from GCS.
+        # This metadata will differ in a few fields (e.g. in prerelease mode, dockerImageTag will contain the actual prerelease tag `1.2.3-dev.abcde12345`),
+        # so we'll treat this as the source of truth (ish. See below for how we handle the registryOverrides field.)
+        gcs_client = get_gcs_storage_client(gcs_creds=os.environ.get("GCS_CREDENTIALS"))
+        bucket = gcs_client.bucket(bucket_name)
+        metadata_blob = bucket.blob(f"{METADATA_FOLDER}/{docker_repository}/{docker_image_tag}/{METADATA_FILE_NAME}")
+        # bucket.blob() returns a partially-loaded blob.
+        # reload() asks GCS to fetch the rest of the information.
+        # (this doesn't fetch the _contents_ of the blob, only its metadata - modified time, etc.)
+        metadata_blob.reload()
+        metadata_dict = yaml.safe_load(metadata_blob.download_as_string())
+    except:
+        logger.exception("Error loading metadata from GCS")
+        message = f"*🤖 🔴 _Registry Entry Generation_ FAILED*:\nRegistry Entry: `{registry_type}.json`\nConnector: `{repo_metadata_dict['data']['dockerRepository']}`\nGCS Bucket: `{bucket_name}`."
+        send_slack_message(PUBLISH_UPDATE_CHANNEL, message)
+        raise
 
     message = f"*🤖 🟡 _Registry Entry Generation_ STARTED*:\nRegistry Entry: `{registry_type}.json`\nConnector: `{docker_repository}`\nGCS Bucket: `{bucket_name}`."
     send_slack_message(PUBLISH_UPDATE_CHANNEL, message)
@@ -467,12 +474,15 @@ def generate_and_persist_registry_entry(
             send_slack_message(PUBLISH_UPDATE_CHANNEL, message)
             raise
 
-        registry_entry_blob_paths = _get_registry_entry_blob_paths(
-            metadata_dict, registry_type, docker_image_tag, overridden_metadata_data, is_prerelease=pre_release_tag is not None
-        )
+        registry_entry_blob_paths = _get_registry_entry_blob_paths(metadata_dict, registry_type, overridden_metadata_data, is_prerelease)
 
         logger.info("Parsing spec file.")
-        overridden_metadata_data["spec"] = _get_and_parse_json_file(spec_path)
+        spec_cache = SpecCache()
+        # Use the overridden values here. This enables us to read from the appropriate spec cache for strict-encrypt connectors.
+        cached_spec = spec_cache.find_spec_cache_with_fallback(
+            overridden_metadata_data["dockerRepository"], overridden_metadata_data["dockerImageTag"], registry_type
+        )
+        overridden_metadata_data["spec"] = spec_cache.download_spec(cached_spec)
         logger.info("Spec file parsed and added to metadata.")
 
         logger.info("Parsing registry entry model.")
