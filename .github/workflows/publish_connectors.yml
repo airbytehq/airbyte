@@ -35,7 +35,8 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v4
+        # v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
         with:
           fetch-depth: 2 # Required so we can conduct a diff from the previous commit to understand what connectors have changed.
       - name: List connectors to publish [manual]
@@ -76,7 +77,8 @@ jobs:
       fail-fast: false
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v4
+        # v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
         with:
           fetch-depth: 2 # Required so we can conduct a diff from the previous commit to understand what connectors have changed.
 
@@ -109,6 +111,8 @@ jobs:
         # v1
         uses: snok/install-poetry@76e04a911780d5b312d89783f7b1cd627778900a
         with:
+          # There are a few uses of `poetry run --directory` in various scripts.
+          # If we upgrade to 2.x, those need to be switched to `--project`.
           version: 1.8.5
 
       - name: Install the latest version of uv
@@ -202,15 +206,115 @@ jobs:
           SPEC_CACHE_GCS_CREDENTIALS: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
           METADATA_SERVICE_GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
 
+  # The connector registries are generated from the spec cache,
+  # and in some cases, there are cross-connector dependencies.
+  # Specifically, connectors with a strict-encrypt variant need the strict-encrypt's spec cache
+  # to generate their registry entry.
+  # For example, generating destination-postgres's cloud.json will read from
+  # destination-postgres-strict-encrypt's spec cache.
+  # As a result, we need publish_connector_registry_entries to run after publish_connectors is fully completed.
+  # Once strict-encrypt connectors are all gone, we can merge these steps together
+  # (i.e. move the generate-XYZ-registry-entry steps to the bottom of publish_connectors).
+  publish_connector_registry_entries:
+    name: Publish connector registry entries
+    needs: [publish_options, publish_connectors]
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix: ${{ fromJson(needs.publish_options.outputs.connectors-to-publish) }}
+      max-parallel: 5
+      # Allow all jobs to run, even if one fails
+      fail-fast: false
+    steps:
+      - name: Checkout Airbyte
+        # v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
+        with:
+          fetch-depth: 2 # Required so we can conduct a diff from the previous commit to understand what connectors have changed.
+
+      - name: Set up Python
+        # v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.11"
+          check-latest: true
+          update-environment: true
+
+      - name: Install and configure Poetry
+        # v1
+        uses: snok/install-poetry@76e04a911780d5b312d89783f7b1cd627778900a
+        with:
+          version: 1.8.5
+
+      - name: Install metadata_service
+        run: poetry install --directory airbyte-ci/connectors/metadata_service/lib
+
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install Poe
+        run: |
+          # Install Poe so we can run the connector tasks:
+          uv tool install poethepoet
+
+      - name: Get connector metadata
+        id: connector-metadata
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: |
+          set -euo pipefail
+          echo "connector-language=$(poe -qq get-language)" | tee -a $GITHUB_OUTPUT
+          echo "connector-version=$(poe -qq get-version)" | tee -a $GITHUB_OUTPUT
+          CONNECTOR_VERSION=$(poe -qq get-version)
+          if [[ "${{ inputs.release-type }}" == "pre-release" ]]; then
+            hash=$(git rev-parse --short=10 HEAD)
+            echo "docker-image-tag=${CONNECTOR_VERSION}-dev.${hash}" | tee -a $GITHUB_OUTPUT
+            echo "release-type-flag=--pre-release" | tee -a $GITHUB_OUTPUT
+          else
+            echo "docker-image-tag=${CONNECTOR_VERSION}" | tee -a $GITHUB_OUTPUT
+            echo "release-type-flag=--main-release" | tee -a $GITHUB_OUTPUT
+          fi
+
+      - name: Generate OSS Registry Entry
+        id: generate-oss-registry-entry
+        shell: bash
+        run: |
+          echo "Generating OSS registry entry for ${{ matrix.connector }}"
+          poetry run --directory airbyte-ci/connectors/metadata_service/lib \
+            metadata_service generate-registry-entry \
+            --bucket-name prod-airbyte-cloud-connector-metadata-service \
+            --metadata-file-path "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
+            --registry-type oss \
+            --docker-image-tag ${{ steps.connector-metadata.outputs.docker-image-tag }} \
+            ${{ steps.connector-metadata.outputs.release-type-flag }}
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
+          SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+
+      - name: Generate Cloud Registry Entry
+        id: generate-cloud-registry-entry
+        shell: bash
+        run: |
+          echo "Generating Cloud registry entry for ${{ matrix.connector }}"
+          poetry run --directory airbyte-ci/connectors/metadata_service/lib \
+            metadata_service generate-registry-entry \
+            --bucket-name prod-airbyte-cloud-connector-metadata-service \
+            --metadata-file-path "airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml" \
+            --registry-type cloud \
+            --docker-image-tag ${{ steps.connector-metadata.outputs.docker-image-tag }} \
+            ${{ steps.connector-metadata.outputs.release-type-flag }}
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
+          SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+
   notify-failure-slack-channel:
     name: "Notify Slack Channel on Publish Failures"
     runs-on: ubuntu-24.04
     needs:
-      - publish_connectors
+      - publish_connector_registry_entries
     if: ${{ always() && contains(needs.*.result, 'failure') && github.ref == 'refs/heads/master' }}
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v4
+        # v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
       - name: Match GitHub User to Slack User
         id: match-github-to-slack-user
         uses: ./.github/actions/match-github-to-slack-user
@@ -235,11 +339,12 @@ jobs:
     name: "Notify PagerDuty on Publish Failures"
     runs-on: ubuntu-24.04
     needs:
-      - publish_connectors
+      - publish_connector_registry_entries
     if: ${{ always() && contains(needs.*.result, 'failure') && github.ref == 'refs/heads/master' }}
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v4
+        # v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
       - name: Notify PagerDuty
         id: pager-duty
         uses: ./.github/actions/send-pager-duty-event
