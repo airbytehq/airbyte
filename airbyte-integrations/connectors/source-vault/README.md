@@ -143,16 +143,27 @@ To run unit tests locally, from the connector directory run:
 poetry run pytest unit_tests
 ```
 
-### Building the docker image
+### Building the Docker image (with Poe)
 
-1. Install [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md)
-2. Run the following command to build the docker image:
+We recommend using Poe the Poet tasks defined in `pyproject.toml`:
+
+```bash
+# Install Poe (if not already available)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+~/.local/bin/uv tool install poethepoet
+
+# From this connector directory
+~/.local/bin/poe build         # Build local dev image: airbyte/source-vault:dev
+~/.local/bin/poe build-arm     # Build ARM64: airbyte/source-vault:arm
+~/.local/bin/poe build-amd     # Build AMD64: airbyte/source-vault:amd
+~/.local/bin/poe build-all     # Build both architectures
+```
+
+If you prefer the legacy pipeline, you can still use `airbyte-ci` (may require Dagger setup):
 
 ```bash
 airbyte-ci connectors --name=source-vault build
 ```
-
-An image will be available on your host with the tag `airbyte/source-vault:dev`.
 
 ### Running as a docker container
 
@@ -167,7 +178,13 @@ docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integrat
 
 ### Running our CI test suite
 
-You can run our full test suite locally using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md):
+You can run tests locally with Poe:
+
+```bash
+~/.local/bin/poe pytest
+```
+
+Legacy alternative (deprecated):
 
 ```bash
 airbyte-ci connectors --name=source-vault test
@@ -241,51 +258,30 @@ If your secret ID expires, generate a new one:
 vault write -f auth/approle/role/fabrix-read/secret-id
 ```
 
-## Fabrix Build
+## Fabrix Build & Push with Poe (single copy‑paste)
 
-Run from Devcontainer (so airbyte-ci is runnable)
-
-### Quick Build (Recommended)
-
-Use the provided build script for a complete build:
+Paste this block to build, push, and publish manifests. Run the ECR login on your HOST; the rest can be in the dev container or anywhere with Docker access.
 
 ```bash
-# Build both ARM and AMD64 architectures and export tar files
-./build.sh
-```
+# 1) ECR login (HOST)
+aws ecr get-login-password --region us-east-1 \
+  | docker login --username AWS --password-stdin \
+    794038212761.dkr.ecr.us-east-1.amazonaws.com
 
-This script will:
-1. Build for both ARM64 and AMD64 architectures
-2. Export images to tar files
-3. Show next steps for deployment
+# 2) Version and optional registry
+export VERSION=1.0.0
+export REGISTRY=${REGISTRY:-794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-vault/docker}
 
-### Manual Build Commands
+# 3) Build both architectures (run in connector dir)
+~/.local/bin/poe build-all
 
-If you prefer to build manually:
+# 4) Push images
+~/.local/bin/poe ecr-tag-push-arm
+~/.local/bin/poe ecr-tag-push-amd
 
-#### Build for ARM
-```bash
-airbyte-ci connectors --name=source-vault build --architecture linux/arm64 -t arm
-```
-
-#### Build for AMD64
-```bash
-airbyte-ci connectors --name=source-vault build --architecture linux/amd64 -t amd
-```
-
-#### Export images to files - Extract for dev container to local docker for ECR push
-
-```bash
-# Export ARM image to tar file
-docker save airbyte/source-vault:arm -o vault-connector-arm.tar
-
-# Export AMD64 image to tar file
-docker save airbyte/source-vault:amd -o vault-connector-amd.tar
-
-# You can then copy these tar files to your host machine and load them into Docker
-# On your host machine:
-docker load -i vault-connector-arm.tar
-docker load -i vault-connector-amd.tar
+# 5) Manifests
+~/.local/bin/poe manifest-push-version
+~/.local/bin/poe manifest-push-latest
 ```
 
 ## Push to ECR
@@ -364,6 +360,23 @@ docker manifest annotate 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/so
 
 # Push the latest manifest
 docker manifest push 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-vault/docker:latest
+```
+
+### One-shot release with Poe
+
+If you're already logged into ECR, you can run the entire flow in one command:
+
+```bash
+# Optional: override REGISTRY
+export REGISTRY=794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-vault/docker
+
+~/.local/bin/poe release 1.0.0
+```
+
+Tip: preview without side effects using a dry run:
+
+```bash
+~/.local/bin/poe -d release 1.0.0
 ```
 
 ## Streams
