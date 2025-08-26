@@ -106,15 +106,15 @@ public class MongoDbCdcInitializer {
 
     // Check if we have saved CDC state and validate it for corruption or outdated format
     if (stateManager.getCdcState() != null && stateManager.getCdcState().state() != null) {
-      JsonNode cdcStateCount = stateManager.getCdcState().state();
+      JsonNode savedCdcState = stateManager.getCdcState().state();
       String correctlyNormalizedServerId = MongoDbDebeziumStateUtil.normalizeToDebeziumFormat(
           config.getDatabaseConfig().get("connection_string").asText());
 
       // Check for either corrupted state (multiple partitions) OR migration needed (old database name
       // format)
-      boolean needsCleaning = hasOldFormatState(cdcStateCount, correctlyNormalizedServerId);
+      boolean needsCleaning = hasOldFormatState(savedCdcState, correctlyNormalizedServerId);
       List<Map.Entry<String, JsonNode>> stateEntries = new ArrayList<>();
-      cdcStateCount.fields().forEachRemaining(stateEntries::add);
+      savedCdcState.fields().forEachRemaining(stateEntries::add);
 
       /*
        * Handle problematic state scenarios: Multiple partitions: Extract resume token from the state with
@@ -122,8 +122,8 @@ public class MongoDbCdcInitializer {
        * state (migration case)
        */
       if (needsCleaning) {
-        if (cdcStateCount.size() > 1) {
-          LOGGER.warn("Detected {} partition entries in CDC state - should only have 1", cdcStateCount.size());
+        if (savedCdcState.size() > 1) {
+          LOGGER.warn("Detected {} partition entries in CDC state - should only have 1", savedCdcState.size());
           for (Map.Entry<String, JsonNode> entry : stateEntries) {
             String keyString = entry.getKey();
             if (keyString.contains(correctlyNormalizedServerId)) {
