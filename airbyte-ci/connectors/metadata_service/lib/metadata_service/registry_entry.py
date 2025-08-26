@@ -467,7 +467,7 @@ def generate_and_persist_registry_entry(
         # (this doesn't fetch the _contents_ of the blob, only its metadata - modified time, etc.)
         metadata_blob.reload()
         metadata_dict = yaml.safe_load(metadata_blob.download_as_string())
-    except Exception as e:
+    except:
         logger.exception("Error loading metadata from GCS")
         message = f"*🤖 🔴 _Registry Entry Generation_ FAILED*:\nRegistry Entry: `{registry_type}.json`\nConnector: `{repo_metadata_dict['data']['dockerRepository']}`\nGCS Bucket: `{bucket_name}`."
         send_slack_message(PUBLISH_UPDATE_CHANNEL, message)
