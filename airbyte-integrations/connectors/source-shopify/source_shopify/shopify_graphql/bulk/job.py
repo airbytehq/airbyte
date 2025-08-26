@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from time import sleep, time
-from typing import Any, Final, Iterable, List, Mapping, Optional
+from typing import Any, Final, Iterable, List, Mapping, Optional, Union
 
 import pendulum as pdm
 import requests
@@ -223,21 +223,21 @@ class ShopifyBulkManager:
         # reseting the checkpoint flag, if bulk job has completed normally
         self._job_adjust_slice_from_checkpoint = False
 
-    def _set_last_checkpoint_cursor_value(self, checkpointed_cursor: str) -> None:
+    def _set_last_checkpoint_cursor_value(self, checkpointed_cursor: Union[str, int]) -> None:
         """
         Sets the last checkpoint cursor value.
 
         Args:
-            checkpointed_cursor (str): The cursor value to set as the last checkpoint. Defaults to None.
+            checkpointed_cursor (Union[str, int]): The cursor value to set as the last checkpoint. Defaults to None.
         """
         self._job_last_checkpoint_cursor_value = checkpointed_cursor
 
-    def _checkpoint_cursor_has_collision(self, checkpointed_cursor: str) -> bool:
+    def _checkpoint_cursor_has_collision(self, checkpointed_cursor: Union[str, int]) -> bool:
         """
         Checks if the provided checkpointed cursor collides with the last checkpointed cursor value.
 
         Args:
-            checkpointed_cursor (str): The cursor value to check for collision. Defaults to None.
+            checkpointed_cursor (Union[str, int]): The cursor value to check for collision. Defaults to None.
 
         Returns:
             bool: True if the provided cursor collides with the last checkpointed cursor value, False otherwise.
@@ -527,7 +527,7 @@ class ShopifyBulkManager:
         step = self._job_size if self._job_size else self._job_size_min
         return slice_start.add(days=step)
 
-    def _adjust_slice_end(self, slice_end: datetime, checkpointed_cursor: Optional[str] = None) -> datetime:
+    def _adjust_slice_end(self, slice_end: datetime, checkpointed_cursor: Optional[Union[str, int]] = None) -> datetime:
         """
         Choose between the existing `slice_end` value or `checkpointed_cursor` value, if provided.
 
@@ -541,11 +541,19 @@ class ShopifyBulkManager:
                 )
             # set the checkpointed cursor value
             self._set_last_checkpoint_cursor_value(checkpointed_cursor)
-            return pdm.parse(checkpointed_cursor)
+            
+            # Handle non-datetime cursors (e.g., integer IDs for customer_address stream)
+            # For non-datetime cursors, we can't adjust the slice end, so return the original slice_end
+            try:
+                return pdm.parse(str(checkpointed_cursor))
+            except (TypeError, ValueError):
+                # If the cursor is not a datetime string (e.g., integer ID), 
+                # we cannot use it to adjust the slice end, so return the original slice_end
+                return slice_end
 
         return slice_end
 
-    def get_adjusted_job_end(self, slice_start: datetime, slice_end: datetime, checkpointed_cursor: Optional[str] = None) -> datetime:
+    def get_adjusted_job_end(self, slice_start: datetime, slice_end: datetime, checkpointed_cursor: Optional[Union[str, int]] = None) -> datetime:
         if self._job_adjust_slice_from_checkpoint:
             # set the checkpointing to default, before the next slice is emitted, to avoid inf.loop
             self._reset_checkpointing()
