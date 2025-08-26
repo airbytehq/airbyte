@@ -7,8 +7,6 @@ import os
 from unittest.mock import Mock, patch
 
 import pytest
-from google.cloud import storage
-from google.oauth2 import service_account
 
 from metadata_service.constants import REGISTRIES_FOLDER
 from metadata_service.models.generated import ConnectorRegistryV0
