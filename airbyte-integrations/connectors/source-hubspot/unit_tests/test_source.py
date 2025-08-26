@@ -689,7 +689,8 @@ def test_engagements_stream_since_recent_date_more_than_10k(mock_dynamic_schema_
 
 def test_pagination_marketing_emails_stream(requests_mock, config):
     """
-    Test pagination for Marketing Emails stream
+    Test pagination for Marketing Emails stream using v3 API with includeStats=true
+    Verifies that statistics are included directly in the response (not merged from separate calls)
     """
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
 
@@ -699,7 +700,18 @@ def test_pagination_marketing_emails_stream(requests_mock, config):
         [
             {
                 "json": {
-                    "results": [{"id": f"{y}", "updated": 1641234593251} for y in range(250)],
+                    "results": [
+                        {
+                            "id": f"{y}", 
+                            "updated": 1641234593251,
+                            # Statistics included directly with includeStats=true
+                            "delivered": 100,
+                            "opens": 50, 
+                            "clicks": 25,
+                            "bounces": 5,
+                            "optouts": 2
+                        } for y in range(250)
+                    ],
                     "limit": 250,
                     "offset": 0,
                     "total": 600,
@@ -708,7 +720,18 @@ def test_pagination_marketing_emails_stream(requests_mock, config):
             },
             {
                 "json": {
-                    "results": [{"id": f"{y}", "updated": 1641234593251} for y in range(250, 500)],
+                    "results": [
+                        {
+                            "id": f"{y}", 
+                            "updated": 1641234593251,
+                            # Statistics included directly with includeStats=true
+                            "delivered": 100,
+                            "opens": 50, 
+                            "clicks": 25,
+                            "bounces": 5,
+                            "optouts": 2
+                        } for y in range(250, 500)
+                    ],
                     "limit": 250,
                     "offset": 250,
                     "total": 600,
@@ -717,7 +740,18 @@ def test_pagination_marketing_emails_stream(requests_mock, config):
             },
             {
                 "json": {
-                    "results": [{"id": f"{y}", "updated": 1641234595251} for y in range(500, 600)],
+                    "results": [
+                        {
+                            "id": f"{y}", 
+                            "updated": 1641234595251,
+                            # Statistics included directly with includeStats=true
+                            "delivered": 100,
+                            "opens": 50, 
+                            "clicks": 25,
+                            "bounces": 5,
+                            "optouts": 2
+                        } for y in range(500, 600)
+                    ],
                     "limit": 250,
                     "offset": 500,
                     "total": 600,
@@ -727,30 +761,25 @@ def test_pagination_marketing_emails_stream(requests_mock, config):
         ],
     )
 
-    # Mock the statistics endpoint for each email
-    for email_id in range(600):
-        requests_mock.get(
-            f"https://api.hubapi.com/marketing/v3/emails/{email_id}/statistics",
-            json={"delivered": 100, "opens": 50, "clicks": 25, "bounces": 5, "optouts": 2},
-            status_code=200,
-        )
+    # No longer need separate statistics endpoint mocks since includeStats=true 
+    # includes statistics directly in the main response
     test_stream = find_stream("marketing_emails", config)
 
     records = read_full_refresh(test_stream)
     # The stream should handle pagination correctly and output 600 records.
     assert len(records) == 600
 
-    # Verify that statistics data has been merged into the email records
-    # Check a specific record to ensure statistics fields are present
+    # Verify that statistics data is included directly in the email records
+    # (using includeStats=true parameter includes statistics in the main response)
     sample_record = records[5]
 
-    # Assert that the mocked statistics values are present in the record
-    assert sample_record["delivered"] == 100, "Statistics 'delivered' field should be merged from /statistics endpoint"
-    assert sample_record["opens"] == 50, "Statistics 'opens' field should be merged from /statistics endpoint"
-    assert sample_record["clicks"] == 25, "Statistics 'clicks' field should be merged from /statistics endpoint"
-    assert sample_record["bounces"] == 5, "Statistics 'bounces' field should be merged from /statistics endpoint"
-    assert sample_record["optouts"] == 2, "Statistics 'optouts' field should be merged from /statistics endpoint"
+    # Assert that statistics fields are present in the record (from includeStats=true)
+    assert sample_record["delivered"] == 100, "Statistics 'delivered' field should be included with includeStats=true"
+    assert sample_record["opens"] == 50, "Statistics 'opens' field should be included with includeStats=true"
+    assert sample_record["clicks"] == 25, "Statistics 'clicks' field should be included with includeStats=true"
+    assert sample_record["bounces"] == 5, "Statistics 'bounces' field should be included with includeStats=true"
+    assert sample_record["optouts"] == 2, "Statistics 'optouts' field should be included with includeStats=true"
 
-    # Verify that the email record also has the base email fields (from /marketing/v3/emails)
+    # Verify that the email record also has the base email fields
     assert "id" in sample_record, "Email 'id' field should be present from /marketing/v3/emails endpoint"
     assert "updated" in sample_record, "Email 'updated' field should be present from /marketing/v3/emails endpoint"
