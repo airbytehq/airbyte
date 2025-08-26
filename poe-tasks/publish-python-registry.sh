@@ -203,9 +203,6 @@ if [[ -f "pyproject.toml" ]]; then
 
     echo "✅ Temporary override package name to '$PACKAGE_NAME' and version to '$VERSION' in pyproject.toml"
 
-    # Install dependencies
-    poetry install --all-extras
-
     # Configure Poetry for PyPI publishing
     poetry config repositories.mypypi "$REGISTRY_UPLOAD_URL"
     poetry config pypi-token.mypypi "$PYPI_TOKEN"
