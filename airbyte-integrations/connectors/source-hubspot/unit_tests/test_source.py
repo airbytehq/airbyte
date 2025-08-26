@@ -229,9 +229,7 @@ class TestSplittingPropertiesFunctionality:
         response = api._session.get(api.BASE_URL + url, params=params)
         return api._parse_and_handle_errors(response)
 
-    def test_stream_with_splitting_properties(
-        self, requests_mock, fake_properties_list, config, mock_dynamic_schema_requests
-    ):
+    def test_stream_with_splitting_properties(self, requests_mock, fake_properties_list, config, mock_dynamic_schema_requests):
         """
         Check working stream `companies` with large list of properties using
         new functionality with splitting properties
@@ -253,10 +251,7 @@ class TestSplittingPropertiesFunctionality:
                     {
                         "json": {
                             "results": [
-                                {
-                                    **self.BASE_OBJECT_BODY,
-                                    **{"id": id, "properties": {p: "fake_data" for p in property_slice}}
-                                }
+                                {**self.BASE_OBJECT_BODY, **{"id": id, "properties": {p: "fake_data" for p in property_slice}}}
                                 for id in id_list
                             ],
                             "paging": {"next": {"after": id_list[-1]}} if len(id_list) == 100 else {},
@@ -390,12 +385,7 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(
     # Last page... it does not have paging->next->after
     responses.append(
         {
-            "json": {
-                "results": [
-                    {"id": f"{y}", "updatedAt": "2022-03-01T00:00:00Z"} for y in range(200)
-                ],
-                "paging": {}
-            },
+            "json": {"results": [{"id": f"{y}", "updatedAt": "2022-03-01T00:00:00Z"} for y in range(200)], "paging": {}},
             "status_code": 200,
         }
     )
@@ -444,9 +434,7 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(
     assert output.state_messages[1].state.stream.stream_state.updatedAt == "2022-03-01T00:00:00.000000Z"
 
 
-def test_search_based_incremental_stream_should_sort_by_id(
-    requests_mock, config, fake_properties_list, mock_dynamic_schema_requests
-):
+def test_search_based_incremental_stream_should_sort_by_id(requests_mock, config, fake_properties_list, mock_dynamic_schema_requests):
     """
     If there are more than 10,000 records that would be returned by the Hubspot search endpoint,
     the CRMSearchStream instance should stop at the 10Kth record
@@ -467,10 +455,7 @@ def test_search_based_incremental_stream_should_sort_by_id(
     responses = [
         {
             "json": {
-                "results": [
-                    {"id": f"{y}", "updatedAt": "2022-02-25T16:43:11Z"}
-                    for y in range(x * 200 - 200 + 1, x * 200 + 1)
-                ],
+                "results": [{"id": f"{y}", "updatedAt": "2022-02-25T16:43:11Z"} for y in range(x * 200 - 200 + 1, x * 200 + 1)],
                 "paging": {
                     "next": {
                         "after": f"{x * 200}",
@@ -484,10 +469,7 @@ def test_search_based_incremental_stream_should_sort_by_id(
     responses_more_than_10k = [
         {
             "json": {
-                "results": [
-                    {"id": f"{y + 10000}", "updatedAt": "2022-02-25T16:43:11Z"}
-                    for y in range(x * 200 - 200 + 1, x * 200 + 1)
-                ],
+                "results": [{"id": f"{y + 10000}", "updatedAt": "2022-02-25T16:43:11Z"} for y in range(x * 200 - 200 + 1, x * 200 + 1)],
                 "paging": {
                     "next": {
                         "after": f"{x * 200}",
@@ -519,13 +501,7 @@ def test_search_based_incremental_stream_should_sort_by_id(
     requests_mock.register_uri(
         "POST",
         "/crm/v4/associations/company/contacts/batch/read",
-        [
-            {
-                "status_code": 200,
-                "json": {"results": [{"from": {"id": f"{x}"}, "to": [{"toObjectId": "2"}]}]}
-            }
-            for x in range(1, 11001, 200)
-        ],
+        [{"status_code": 200, "json": {"results": [{"from": {"id": f"{x}"}, "to": [{"toObjectId": "2"}]}]}} for x in range(1, 11001, 200)],
     )
     state = (
         StateBuilder()
@@ -666,9 +642,7 @@ def test_engagements_stream_since_old_date(mock_dynamic_schema_requests, request
     assert int(output.state_messages[0].state.stream.stream_state.lastUpdated) == recent_date
 
 
-def test_engagements_stream_since_recent_date(
-    mock_dynamic_schema_requests, requests_mock, fake_properties_list, config
-):
+def test_engagements_stream_since_recent_date(mock_dynamic_schema_requests, requests_mock, fake_properties_list, config):
     """
     Connector should use 'Recent Engagements' API for recent dates (less than 30 days)
     """
@@ -697,9 +671,7 @@ def test_engagements_stream_since_recent_date(
     assert int(output.state_messages[0].state.stream.stream_state.lastUpdated) == recent_date
 
 
-def test_engagements_stream_since_recent_date_more_than_10k(
-    mock_dynamic_schema_requests, requests_mock, fake_properties_list, config
-):
+def test_engagements_stream_since_recent_date_more_than_10k(mock_dynamic_schema_requests, requests_mock, fake_properties_list, config):
     """
     Connector should use 'Recent Engagements' API for recent dates (less than 30 days).
     If response from 'Recent Engagements' API returns 10k records, it means that there more records,
@@ -753,8 +725,9 @@ def test_pagination_marketing_emails_stream(requests_mock, config):
                             "opens": 50,
                             "clicks": 25,
                             "bounces": 5,
-                            "optouts": 2
-                        } for y in range(250)
+                            "optouts": 2,
+                        }
+                        for y in range(250)
                     ],
                     "limit": 250,
                     "offset": 0,
@@ -773,8 +746,9 @@ def test_pagination_marketing_emails_stream(requests_mock, config):
                             "opens": 50,
                             "clicks": 25,
                             "bounces": 5,
-                            "optouts": 2
-                        } for y in range(250, 500)
+                            "optouts": 2,
+                        }
+                        for y in range(250, 500)
                     ],
                     "limit": 250,
                     "offset": 250,
@@ -793,8 +767,9 @@ def test_pagination_marketing_emails_stream(requests_mock, config):
                             "opens": 50,
                             "clicks": 25,
                             "bounces": 5,
-                            "optouts": 2
-                        } for y in range(500, 600)
+                            "optouts": 2,
+                        }
+                        for y in range(500, 600)
                     ],
                     "limit": 250,
                     "offset": 500,
