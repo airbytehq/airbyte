@@ -70,7 +70,7 @@ class MongoDbDebeziumPropertiesManagerTest {
     final var debeziumPropertiesManager = new MongoDbDebeziumPropertiesManager(cdcProperties, config, catalog, cdcStreamList);
 
     final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties(offsetManager);
-    assertEquals(MongoDbDebeziumPropertiesManager.normalizeName(EXPECTED_CONNECTION_STRING), debeziumProperties.get(NAME_KEY));
+    assertEquals(MongoDbDebeziumStateUtil.normalizeToDebeziumFormat(EXPECTED_CONNECTION_STRING), debeziumProperties.get(NAME_KEY));
     assertEquals(EXPECTED_CONNECTION_STRING, debeziumProperties.get(MONGODB_CONNECTION_STRING_KEY));
     assertEquals(MONGODB_CONNECTION_MODE_VALUE, debeziumProperties.get(MONGODB_CONNECTION_MODE_KEY));
     assertEquals(config.get(USERNAME_CONFIGURATION_KEY).asText(), debeziumProperties.get(MONGODB_USER_KEY));
@@ -127,7 +127,7 @@ class MongoDbDebeziumPropertiesManagerTest {
     final var debeziumPropertiesManager = new MongoDbDebeziumPropertiesManager(cdcProperties, config, catalog, cdcStreamList);
 
     final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties(offsetManager);
-    assertEquals(debeziumProperties.get(MONGODB_CONNECTION_STRING_KEY).toString(), debeziumProperties.get(NAME_KEY));
+    assertEquals(MongoDbDebeziumStateUtil.normalizeToDebeziumFormat(EXPECTED_CONNECTION_STRING), debeziumProperties.get(NAME_KEY));
 
     assertEquals(EXPECTED_CONNECTION_STRING, debeziumProperties.get(MONGODB_CONNECTION_STRING_KEY));
     assertEquals(MONGODB_CONNECTION_MODE_VALUE, debeziumProperties.get(MONGODB_CONNECTION_MODE_KEY));

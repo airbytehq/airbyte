@@ -83,7 +83,7 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
 
   @Override
   protected @NotNull String getName(final JsonNode config) {
-    return normalizeName(config.get(CONNECTION_STRING_CONFIGURATION_KEY).asText());
+    return MongoDbDebeziumStateUtil.normalizeToDebeziumFormat(config.get(CONNECTION_STRING_CONFIGURATION_KEY).asText());
   }
 
   @Override

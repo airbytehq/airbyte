@@ -101,10 +101,62 @@ public class MongoDbCdcInitializer {
     final JsonNode initialDebeziumState =
         mongoDbDebeziumStateUtil.constructInitialDebeziumState(initialResumeToken, serverId);
 
-    final MongoDbCdcState cdcState =
-        (stateManager.getCdcState() == null || stateManager.getCdcState().state() == null || stateManager.getCdcState().state().isNull())
-            ? new MongoDbCdcState(initialDebeziumState, isEnforceSchema)
-            : new MongoDbCdcState(Jsons.clone(stateManager.getCdcState().state()), stateManager.getCdcState().schema_enforced());
+    boolean hasCorruptedState = false;
+    String extractedResumeTokenString = null;
+
+    // Check if we have saved CDC state and validate it for corruption or outdated format
+    if (stateManager.getCdcState() != null && stateManager.getCdcState().state() != null) {
+      JsonNode cdcStateCount = stateManager.getCdcState().state();
+      String correctlyNormalizedServerId = MongoDbDebeziumStateUtil.normalizeToDebeziumFormat(
+          config.getDatabaseConfig().get("connection_string").asText());
+
+      // Check for either corrupted state (multiple partitions) OR migration needed (old database name
+      // format)
+      boolean needsCleaning = hasOldFormatState(cdcStateCount, correctlyNormalizedServerId);
+      List<Map.Entry<String, JsonNode>> stateEntries = new ArrayList<>();
+      cdcStateCount.fields().forEachRemaining(stateEntries::add);
+
+      /*
+       * Handle problematic state scenarios: Multiple partitions: Extract resume token from the state with
+       * correct server_id format Single partition with old format: Extract resume token from the single
+       * state (migration case)
+       */
+      if (needsCleaning) {
+        if (cdcStateCount.size() > 1) {
+          LOGGER.warn("Detected {} partition entries in CDC state - should only have 1", cdcStateCount.size());
+          for (Map.Entry<String, JsonNode> entry : stateEntries) {
+            String keyString = entry.getKey();
+            if (keyString.contains(correctlyNormalizedServerId)) {
+              extractedResumeTokenString = getTokenFromCorruptedState(entry.getValue().asText());
+              break;
+            }
+          }
+        } else {
+          LOGGER.info("Detected old database name format in CDC state, migrating to connection string format");
+          String valueString = stateEntries.get(0).getValue().asText();
+          extractedResumeTokenString = getTokenFromCorruptedState(valueString);
+        }
+        hasCorruptedState = true;
+      }
+    }
+
+    final MongoDbCdcState cdcState;
+    if (hasCorruptedState && extractedResumeTokenString != null) {
+      // Corruption/migration: create a clean state using extracted resume token string
+      JsonNode cleanDebeziumState = MongoDbDebeziumStateUtil.formatState(serverId, extractedResumeTokenString);
+      cdcState = new MongoDbCdcState(cleanDebeziumState, isEnforceSchema);
+      LOGGER.info("Created clean MongoDbCdcState from extracted resume token");
+    } else if (stateManager.getCdcState() == null ||
+        stateManager.getCdcState().state() == null ||
+        stateManager.getCdcState().state().isNull()) {
+      // No cdc state: create a new state from initial Debezium state.
+      cdcState = new MongoDbCdcState(initialDebeziumState, isEnforceSchema);
+      LOGGER.info("Created new MongoDbCdcState from initial state");
+    } else {
+      // Valid existing state: use the current state
+      cdcState = new MongoDbCdcState(Jsons.clone(stateManager.getCdcState().state()), stateManager.getCdcState().schema_enforced());
+      LOGGER.info("Using existing valid MongoDbCdcState");
+    }
 
     final Optional<BsonDocument> optSavedOffset = mongoDbDebeziumStateUtil.savedOffset(
         Jsons.clone(defaultDebeziumProperties),
@@ -260,6 +312,29 @@ public class MongoDbCdcInitializer {
           cdcStreamsCompleteStatusEmitters)
           .flatMap(Collection::stream).toList();
     }
+  }
+
+  private String getTokenFromCorruptedState(String valueString) {
+    try {
+      JsonNode valueJson = Jsons.deserialize(valueString);
+      if (valueJson.has("resume_token")) {
+        return valueJson.get("resume_token").asText();
+      }
+    } catch (Exception e) {
+      LOGGER.warn("Failed to parse value JSON: {}", e.getMessage());
+    }
+    return null;
+  }
+
+  private boolean hasOldFormatState(JsonNode state, String correctNormalizedServerId) {
+    Iterator<String> fieldNames = state.fieldNames();
+    while (fieldNames.hasNext()) {
+      String key = fieldNames.next();
+      if (!key.contains(correctNormalizedServerId)) {
+        return true; // Found at least one old format key
+      }
+    }
+    return false; // All keys are in new format
   }
 
   /**

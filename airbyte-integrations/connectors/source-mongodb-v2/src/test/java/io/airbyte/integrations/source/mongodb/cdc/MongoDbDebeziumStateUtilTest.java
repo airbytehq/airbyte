@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.mongodb.cdc;
 
+import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumStateUtil.formatState;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -148,11 +149,12 @@ class MongoDbDebeziumStateUtilTest {
 
   @Test
   void testOffsetDataFormat() {
-    final JsonNode offsetState = MongoDbDebeziumStateUtil.formatState("test_server_id", RESUME_TOKEN);
+    final JsonNode offsetState = formatState("mongodb://host:12345/", RESUME_TOKEN);
 
     assertNotNull(offsetState);
-    assertEquals("[\"" + "test-server-id" + "\",{\""
-        + MongoDbDebeziumConstants.OffsetState.KEY_SERVER_ID + "\":\"" + "test-server-id" + "\"}]", offsetState.fieldNames().next());
+    final String expectedNormalized = MongoDbDebeziumStateUtil.normalizeToDebeziumFormat("mongodb://host:12345/");
+    assertEquals("[\"" + expectedNormalized + "\",{\""
+        + MongoDbDebeziumConstants.OffsetState.KEY_SERVER_ID + "\":\"" + expectedNormalized + "\"}]", offsetState.fieldNames().next());
   }
 
   @Test
