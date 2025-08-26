@@ -31,6 +31,7 @@ You can learn more about the API here https://developers.oncehub.com/reference/i
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.33 | 2025-08-23 | [65165](https://github.com/airbytehq/airbyte/pull/65165) | Update dependencies |
 | 0.0.32 | 2025-08-09 | [64688](https://github.com/airbytehq/airbyte/pull/64688) | Update dependencies |
 | 0.0.31 | 2025-08-02 | [64185](https://github.com/airbytehq/airbyte/pull/64185) | Update dependencies |
 | 0.0.30 | 2025-07-26 | [63831](https://github.com/airbytehq/airbyte/pull/63831) | Update dependencies |
