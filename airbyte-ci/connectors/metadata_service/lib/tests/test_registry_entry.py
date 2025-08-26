@@ -110,7 +110,11 @@ def registry_scenario(request, sample_spec_dict):
 @patch("metadata_service.registry_entry._get_icon_blob_from_gcs")
 @patch("metadata_service.registry_entry.safe_read_gcs_file")
 @patch("metadata_service.registry_entry.get_gcs_storage_client")
+@patch("metadata_service.registry.storage.Client")
+@patch("metadata_service.registry_entry.SpecCache")
 def test_generate_and_persist_registry_entry(
+    mock_spec_cache_class,
+    mock_storage_client_class,
     mock_gcs_client,
     mock_safe_read_gcs_file,
     mock_get_icon_blob,
@@ -120,169 +124,165 @@ def test_generate_and_persist_registry_entry(
     sample_dependencies_dict,
 ):
     """Test registry entry generation for all scenarios: enabled/disabled, all registry types, and all version types."""
-    with (
-        patch("metadata_service.registry.storage.Client") as mock_storage_client_class,
-        patch("metadata_service.registry_entry.SpecCache") as mock_spec_cache_class,
-    ):
-        # Arrange
-        scenario = registry_scenario
-        bucket_name = "test-bucket"
+    # Arrange
+    scenario = registry_scenario
+    bucket_name = "test-bucket"
 
-        # Mock GCS client setup
-        mock_storage_client = Mock()
-        mock_storage_client_class.return_value = mock_storage_client
-        mock_bucket = Mock()
-        mock_blob = Mock()
-        mock_icon_blob = Mock()
+    # Mock GCS client setup
+    mock_storage_client = Mock()
+    mock_storage_client_class.return_value = mock_storage_client
+    mock_bucket = Mock()
+    mock_blob = Mock()
+    mock_icon_blob = Mock()
 
-        mock_gcs_client.return_value = mock_storage_client
-        mock_storage_client.bucket.return_value = mock_bucket
-        mock_bucket.blob.return_value = mock_blob
-        mock_bucket.delete_blob = Mock()
+    mock_gcs_client.return_value = mock_storage_client
+    mock_storage_client.bucket.return_value = mock_bucket
+    mock_bucket.blob.return_value = mock_blob
+    mock_bucket.delete_blob = Mock()
 
-        mock_spec_cache = Mock()
-        mock_spec_cache_class.return_value = mock_spec_cache
-        mock_spec_cache.download_spec.return_value = json.loads('{"fake": "spec"}')
+    mock_spec_cache = Mock()
+    mock_spec_cache_class.return_value = mock_spec_cache
+    mock_spec_cache.download_spec.return_value = json.loads('{"fake": "spec"}')
 
-        mock_blob.download_as_string.return_value = yaml.dump(scenario["metadata_dict"])
-        mock_blob.name = "fake/blob/path.yaml"
-        mock_blob.updated.isoformat.return_value = "2025-01-23T12:34:56Z"
+    mock_blob.download_as_string.return_value = yaml.dump(scenario["metadata_dict"])
+    mock_blob.name = "fake/blob/path.yaml"
+    mock_blob.updated.isoformat.return_value = "2025-01-23T12:34:56Z"
 
-        if scenario["enabled"]:
-            # Mock successful operations for enabled scenarios
-            mock_safe_read_gcs_file.return_value = json.dumps(sample_dependencies_dict)
-            mock_icon_blob.bucket.name = bucket_name
-            mock_icon_blob.name = f"metadata/{scenario['metadata_dict']['data']['dockerRepository']}/latest/icon.svg"
-            mock_get_icon_blob.return_value = mock_icon_blob
+    if scenario["enabled"]:
+        # Mock successful operations for enabled scenarios
+        mock_safe_read_gcs_file.return_value = json.dumps(sample_dependencies_dict)
+        mock_icon_blob.bucket.name = bucket_name
+        mock_icon_blob.name = f"metadata/{scenario['metadata_dict']['data']['dockerRepository']}/latest/icon.svg"
+        mock_get_icon_blob.return_value = mock_icon_blob
+    else:
+        # Mock existing blob for deletion scenarios (latest versions only)
+        mock_blob.exists.return_value = True
+
+    # Act
+    generate_and_persist_registry_entry(
+        bucket_name=bucket_name,
+        repo_metadata_file_path=scenario["metadata_path"],
+        registry_type=scenario["registry_type"],
+        docker_image_tag=scenario["docker_image_tag"],
+        is_prerelease=scenario["is_prerelease"],
+    )
+
+    # Assert based on enabled/disabled status
+    if scenario["enabled"]:
+        # ENABLED SCENARIO ASSERTIONS
+
+        # Verify GCS operations were called
+        mock_gcs_client.assert_called()
+        mock_safe_read_gcs_file.assert_called_once()
+        mock_get_icon_blob.assert_called_once_with(bucket_name, scenario["metadata_dict"]["data"])
+
+        # Verify registry entry was persisted
+        mock_persist_entry.assert_called()
+        persist_call_args = mock_persist_entry.call_args_list
+
+        # Check number of persist calls based on version type
+        if scenario["version_type"] == "latest" or scenario["version_type"] == "rc":
+            # in "latest" mode, we write to versioned + `/latest`
+            # in "rc" mode, we write to versioned + `/release_candidate`
+            assert len(persist_call_args) == 2
+        else:  # dev
+            assert len(persist_call_args) == 1  # only one path
+
+        # Verify the registry entry model was created correctly
+        for call_args in persist_call_args:
+            bucket_name_arg, registry_entry_model, registry_path = call_args[0]
+            assert bucket_name_arg == bucket_name
+            assert scenario["registry_type"] in registry_path
+
+            # Verify the model has expected fields
+            registry_entry_dict = json.loads(registry_entry_model.json(exclude_none=True))
+
+            # Check core field transformations
+            assert "sourceDefinitionId" in registry_entry_dict
+            assert registry_entry_dict["sourceDefinitionId"] == scenario["metadata_dict"]["data"]["definitionId"]
+
+            # Verify required fields were added
+            assert registry_entry_dict["tombstone"] is False
+            assert registry_entry_dict["custom"] is False
+            assert registry_entry_dict["public"] is True
+            assert "iconUrl" in registry_entry_dict
+            assert "generated" in registry_entry_dict
+            assert "packageInfo" in registry_entry_dict
+            assert registry_entry_dict["packageInfo"]["cdk_version"] == "0.50.0"
+            assert "spec" in registry_entry_dict
+
+            # Verify fields were removed
+            assert "registryOverrides" not in registry_entry_dict
+            assert "connectorType" not in registry_entry_dict
+            assert "definitionId" not in registry_entry_dict
+
+        registry_entry_paths = set()
+        for kall in persist_call_args:
+            args, _ = kall
+            # blob path is the last positional arg
+            registry_entry_paths.add(args[-1])
+        if scenario["version_type"] == "rc":
+            assert registry_entry_paths == {
+                f'metadata/airbyte/source-test-enabled/{scenario["docker_image_tag"]}/{scenario["registry_type"]}.json',
+                f'metadata/airbyte/source-test-enabled/release_candidate/{scenario["registry_type"]}.json',
+            }
+        elif scenario["version_type"] == "latest":
+            assert registry_entry_paths == {
+                f'metadata/airbyte/source-test-enabled/{scenario["docker_image_tag"]}/{scenario["registry_type"]}.json',
+                f'metadata/airbyte/source-test-enabled/latest/{scenario["registry_type"]}.json',
+            }
+        elif scenario["version_type"] == "dev":
+            assert registry_entry_paths == {
+                f'metadata/airbyte/source-test-enabled/{scenario["docker_image_tag"]}/{scenario["registry_type"]}.json',
+            }
         else:
-            # Mock existing blob for deletion scenarios (latest versions only)
-            mock_blob.exists.return_value = True
+            raise Exception(f'Unexpected scenario: {scenario["version_type"]}')
 
-        # Act
-        generate_and_persist_registry_entry(
-            bucket_name=bucket_name,
-            repo_metadata_file_path=scenario["metadata_path"],
-            registry_type=scenario["registry_type"],
-            docker_image_tag=scenario["docker_image_tag"],
-            is_prerelease=scenario["is_prerelease"],
-        )
+        # Verify Slack notifications
+        slack_calls = mock_send_slack.call_args_list
+        assert len(slack_calls) >= 2  # start + success notifications
 
-        # Assert based on enabled/disabled status
-        if scenario["enabled"]:
-            # ENABLED SCENARIO ASSERTIONS
+        start_call = slack_calls[0][0]
+        assert "Registry Entry Generation_ STARTED" in start_call[1]
 
-            # Verify GCS operations were called
+        success_calls = [call for call in slack_calls if "SUCCESS" in call[0][1]]
+        assert len(success_calls) == len(persist_call_args)
+
+    else:
+        # DISABLED SCENARIO ASSERTIONS
+
+        # Verify NO generation/persistence operations were called
+        mock_safe_read_gcs_file.assert_not_called()
+        mock_get_icon_blob.assert_not_called()
+        mock_persist_entry.assert_not_called()
+
+        if scenario["version_type"] == "latest":
+            # For latest versions, should check for deletion
             mock_gcs_client.assert_called()
-            mock_safe_read_gcs_file.assert_called_once()
-            mock_get_icon_blob.assert_called_once_with(bucket_name, scenario["metadata_dict"]["data"])
-
-            # Verify registry entry was persisted
-            mock_persist_entry.assert_called()
-            persist_call_args = mock_persist_entry.call_args_list
-
-            # Check number of persist calls based on version type
-            if scenario["version_type"] == "latest" or scenario["version_type"] == "rc":
-                # in "latest" mode, we write to versioned + `/latest`
-                # in "rc" mode, we write to versioned + `/release_candidate`
-                assert len(persist_call_args) == 2
-            else:  # dev
-                assert len(persist_call_args) == 1  # only one path
-
-            # Verify the registry entry model was created correctly
-            for call_args in persist_call_args:
-                bucket_name_arg, registry_entry_model, registry_path = call_args[0]
-                assert bucket_name_arg == bucket_name
-                assert scenario["registry_type"] in registry_path
-
-                # Verify the model has expected fields
-                registry_entry_dict = json.loads(registry_entry_model.json(exclude_none=True))
-
-                # Check core field transformations
-                assert "sourceDefinitionId" in registry_entry_dict
-                assert registry_entry_dict["sourceDefinitionId"] == scenario["metadata_dict"]["data"]["definitionId"]
-
-                # Verify required fields were added
-                assert registry_entry_dict["tombstone"] is False
-                assert registry_entry_dict["custom"] is False
-                assert registry_entry_dict["public"] is True
-                assert "iconUrl" in registry_entry_dict
-                assert "generated" in registry_entry_dict
-                assert "packageInfo" in registry_entry_dict
-                assert registry_entry_dict["packageInfo"]["cdk_version"] == "0.50.0"
-                assert "spec" in registry_entry_dict
-
-                # Verify fields were removed
-                assert "registryOverrides" not in registry_entry_dict
-                assert "connectorType" not in registry_entry_dict
-                assert "definitionId" not in registry_entry_dict
-
-            registry_entry_paths = set()
-            for kall in persist_call_args:
-                args, _ = kall
-                # blob path is the last positional arg
-                registry_entry_paths.add(args[-1])
-            if scenario["version_type"] == "rc":
-                assert registry_entry_paths == {
-                    f'metadata/airbyte/source-test-enabled/{scenario["docker_image_tag"]}/{scenario["registry_type"]}.json',
-                    f'metadata/airbyte/source-test-enabled/release_candidate/{scenario["registry_type"]}.json',
-                }
-            elif scenario["version_type"] == "latest":
-                assert registry_entry_paths == {
-                    f'metadata/airbyte/source-test-enabled/{scenario["docker_image_tag"]}/{scenario["registry_type"]}.json',
-                    f'metadata/airbyte/source-test-enabled/latest/{scenario["registry_type"]}.json',
-                }
-            elif scenario["version_type"] == "dev":
-                assert registry_entry_paths == {
-                    f'metadata/airbyte/source-test-enabled/{scenario["docker_image_tag"]}/{scenario["registry_type"]}.json',
-                }
-            else:
-                raise Exception(f'Unexpected scenario: {scenario["version_type"]}')
-
-            # Verify Slack notifications
-            slack_calls = mock_send_slack.call_args_list
-            assert len(slack_calls) >= 2  # start + success notifications
-
-            start_call = slack_calls[0][0]
-            assert "Registry Entry Generation_ STARTED" in start_call[1]
-
-            success_calls = [call for call in slack_calls if "SUCCESS" in call[0][1]]
-            assert len(success_calls) == len(persist_call_args)
-
+            expected_latest_path = (
+                f"metadata/{scenario['metadata_dict']['data']['dockerRepository']}/latest/{scenario['registry_type']}.json"
+            )
+            mock_bucket.blob.assert_called_with(expected_latest_path)
+            mock_blob.exists.assert_called_once()
+            mock_bucket.delete_blob.assert_called_once_with(expected_latest_path)
         else:
-            # DISABLED SCENARIO ASSERTIONS
+            # For rc/dev versions, no deletion should occur
+            mock_bucket.delete_blob.assert_not_called()
 
-            # Verify NO generation/persistence operations were called
-            mock_safe_read_gcs_file.assert_not_called()
-            mock_get_icon_blob.assert_not_called()
-            mock_persist_entry.assert_not_called()
+        # Verify NOOP Slack notification
+        slack_calls = mock_send_slack.call_args_list
+        assert len(slack_calls) == 2  # STARTED + NOOP notifications
 
-            if scenario["version_type"] == "latest":
-                # For latest versions, should check for deletion
-                mock_gcs_client.assert_called()
-                expected_latest_path = (
-                    f"metadata/{scenario['metadata_dict']['data']['dockerRepository']}/latest/{scenario['registry_type']}.json"
-                )
-                mock_bucket.blob.assert_called_with(expected_latest_path)
-                mock_blob.exists.assert_called_once()
-                mock_bucket.delete_blob.assert_called_once_with(expected_latest_path)
-            else:
-                # For rc/dev versions, no deletion should occur
-                mock_bucket.delete_blob.assert_not_called()
+        # Check STARTED notification
+        start_call = slack_calls[0][0]
+        assert "Registry Entry Generation_ STARTED" in start_call[1]
+        assert scenario["registry_type"] in start_call[1]
 
-            # Verify NOOP Slack notification
-            slack_calls = mock_send_slack.call_args_list
-            assert len(slack_calls) == 2  # STARTED + NOOP notifications
-
-            # Check STARTED notification
-            start_call = slack_calls[0][0]
-            assert "Registry Entry Generation_ STARTED" in start_call[1]
-            assert scenario["registry_type"] in start_call[1]
-
-            # Check NOOP notification
-            noop_call = slack_calls[1][0]
-            assert "Registry Entry Generation_ NOOP" in noop_call[1]
-            assert scenario["registry_type"] in noop_call[1]
-            assert "not enabled" in noop_call[1]
+        # Check NOOP notification
+        noop_call = slack_calls[1][0]
+        assert "Registry Entry Generation_ NOOP" in noop_call[1]
+        assert scenario["registry_type"] in noop_call[1]
+        assert "not enabled" in noop_call[1]
 
 
 @pytest.mark.parametrize("registry_type", ["oss", "cloud"])
