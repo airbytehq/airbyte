@@ -394,6 +394,14 @@ abstract class IntegrationTest(
                 assert(e is DestinationUncleanExitException)
             }
         }
+
+        // Add delay for socket mode to allow async BigQuery loads to complete
+        if (dataChannelMedium == DataChannelMedium.SOCKET) {
+            runBlocking {
+                delay(10 * 1000) // 10 seconds delay for async BigQuery loads to complete
+            }
+        }
+
         return outputStateMessage!!
     }
 
