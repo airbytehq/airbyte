@@ -108,9 +108,8 @@ def config_for_custom_query_tests():
         "conversion_window_days": 14,
         "custom_queries_array": [
             {
-                "query": "SELECT campaign_budget.name, campaign.name, metrics.interaction_event_types FROM campaign_budget",
+                "query": "SELECT campaign_budget.name, campaign.name, metrics.interaction_event_types, segments.date FROM campaign_budget ORDER BY segments.date ASC",
                 "table_name": "custom_ga_query",
-                "cursor_field": "segments.date",
             }
         ],
     }
