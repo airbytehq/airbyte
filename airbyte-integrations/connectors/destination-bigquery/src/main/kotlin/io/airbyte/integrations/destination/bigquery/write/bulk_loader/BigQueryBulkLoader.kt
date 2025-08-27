@@ -10,6 +10,7 @@ import com.google.cloud.bigquery.JobInfo
 import com.google.cloud.bigquery.LoadJobConfiguration
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.file.gcs.GcsBlob
 import io.airbyte.cdk.load.file.gcs.GcsClient
 import io.airbyte.cdk.load.message.StreamKey
@@ -29,6 +30,7 @@ import io.airbyte.integrations.destination.bigquery.write.typing_deduping.toTabl
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.condition.Condition
 import io.micronaut.context.condition.ConditionContext
+import jakarta.inject.Named
 import jakarta.inject.Singleton
 
 class BigQueryBulkLoader(
@@ -100,13 +102,20 @@ class BigQueryBulkLoaderFactory(
     private val bigQueryConfiguration: BigqueryConfiguration,
     private val typingDedupingStreamStateStore: StreamStateStore<TypingDedupingExecutionConfig>?,
     private val directLoadStreamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>?,
+    @Named("dataChannelMedium") private val dataChannelMedium: DataChannelMedium,
 ) : BulkLoaderFactory<StreamKey, GcsBlob> {
     override val numPartWorkers: Int = 2
     override val numUploadWorkers: Int = 10
     override val maxNumConcurrentLoads: Int = 1
 
     override val objectSizeBytes: Long = 200 * 1024 * 1024 // 200 MB
-    override val partSizeBytes: Long = 10 * 1024 * 1024 // 10 MB
+
+    override val partSizeBytes: Long =
+        when (dataChannelMedium) {
+            DataChannelMedium.SOCKET -> 20 * 1024 * 1024
+            DataChannelMedium.STDIO -> 10 * 1024 * 1024
+        }
+
     override val maxMemoryRatioReservedForParts: Double = 0.6
 
     override fun create(key: StreamKey, partition: Int): BulkLoader<GcsBlob> {
