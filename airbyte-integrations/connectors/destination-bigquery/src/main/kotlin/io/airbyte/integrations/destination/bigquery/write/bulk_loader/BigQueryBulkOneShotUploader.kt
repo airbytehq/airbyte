@@ -106,12 +106,9 @@ class BigQueryBulkOneShotUploader<O : OutputStream>(
     }
 
     override suspend fun finish(
-        bigQueryOneShotUploaderState: BigQueryOneShotUploaderState<O>
+        state: BigQueryOneShotUploaderState<O>
     ): FinalOutput<BigQueryOneShotUploaderState<O>, BulkLoaderTableLoader.LoadResult> =
-        uploadFinalAndExecuteBigQueryLoad(
-            partFormatter.finish(bigQueryOneShotUploaderState.formatterState).output,
-            bigQueryOneShotUploaderState
-        )
+        uploadFinalAndExecuteBigQueryLoad(partFormatter.finish(state.formatterState).output, state)
 
     private fun launchUpload(
         part: ObjectLoaderPartFormatter.FormattedPart,
