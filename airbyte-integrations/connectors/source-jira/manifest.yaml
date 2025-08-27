@@ -12066,7 +12066,7 @@ definitions:
   incremental_sync:
     type: DatetimeBasedCursor
     cursor_field: "updated"
-    start_datetime: "{{ config.get('start_date', '(now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')) }}"
+    start_datetime: "{{ config.get('start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')) }}"
     datetime_format: "%Y-%m-%dT%H:%M:%S%z"
     cursor_datetime_formats:
     - "%Y-%m-%dT%H:%M:%S.%f%z"
