@@ -82,6 +82,37 @@ class TwilioStateMigration(StateMigration):
         return False
 
 
+class TwilioAlertsStateMigration(StateMigration):
+    """
+    Migrates legacy `alerts` state to low-code shape. Previously, the stream incorrectly used per partition state.
+
+    Initial:
+    {
+        "states" : [
+          {
+            "partition" : {},
+            "cursor" : {
+              "date_generated" : "2025-08-05T16:43:50Z"
+            }
+          }
+        ]
+    }
+
+    Final:
+    {
+        "date_generated" : "2025-08-05T16:43:50Z"
+    }
+    """
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        return stream_state["states"][0]["cursor"]
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        if (stream_state and "states" in stream_state and stream_state["states"] and "cursor" in stream_state["states"][0]
+                and "date_generated" in stream_state["states"][0]["cursor"]):
+            return True
+        return False
+
+
 class TwilioUsageRecordsStateMigration(StateMigration):
     """
     Migrate legacy `usage_records` state to low-code shape.

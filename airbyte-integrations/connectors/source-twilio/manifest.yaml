@@ -215,7 +215,7 @@ definitions:
       type: DatetimeBasedCursor
       cursor_field: date_generated
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      cursor_granularity: PT0.000001S
+      cursor_granularity: PT1S
       step: P1Y
       lookback_window: "P{{ config.get('lookback_window', 0) }}D"
       start_datetime:
@@ -234,6 +234,9 @@ definitions:
         type: RequestOption
         field_name: EndDate
         inject_into: request_parameter
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_twilio.components.TwilioAlertsStateMigration
     schema_loader:
       type: InlineSchemaLoader
       schema:
