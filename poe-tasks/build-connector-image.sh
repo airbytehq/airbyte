@@ -13,10 +13,14 @@ CONNECTOR_DIR="${POE_PWD:-$PWD}"
 [[ -f "${CONNECTOR_DIR}/metadata.yaml" ]] || die "metadata.yaml not found in ${CONNECTOR_DIR}. Run inside a connector directory or via 'poe connector <name> image build'."
 
 TAG=""
+if [[ $# -gt 0 && "${1-}" != "--tag" ]]; then
+  TAG="$1"
+  shift
+fi
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --tag) TAG="$2"; shift 2;;
-    *) die "Unknown argument: $1 (only --tag <tag> is supported)";;
+    *) die "Unknown argument: $1 (supported: [<tag>] or --tag <tag>)";;
   esac
 done
 
