@@ -3,6 +3,37 @@ set -Eeuo pipefail
 
 RED="❌"; GREEN="✅"; INFO="ℹ️"; HAMMER="🛠️"; WHALE="🐳"; SPARKLES="✨"
 
+usage() {
+  cat << EOF
+Usage: $(basename "$0") [options] [TAG]
+
+Build and load a Docker image for the current Airbyte connector into the local Docker daemon.
+
+This script:
+  - Auto-detects host architecture (amd64/arm64) and builds with: docker buildx --platform linux/{arch} --load
+  - Determines Dockerfile via connector language (poe -qq get-language)
+  - Determines base image via metadata (poe -qq get-base-image)
+  - Tags the image as {dockerRepository}:{TAG}
+  - Prints the final image reference on the last line
+
+Options:
+  --tag TAG        Explicit image tag to use (default: dev-{platform}, e.g. dev-amd64)
+  -h, --help       Show this help message
+
+Positional:
+  TAG              Optional positional tag (equivalent to --tag TAG)
+
+Requirements:
+  - Run from a connector directory (with metadata.yaml) or via "poe connector <name> image build"
+  - docker, docker buildx, yq, and poe (poethepoet) must be installed
+
+Examples:
+  poe image build
+  poe image build --tag mytag
+  poe connector source-faker image build -- --tag mytag
+
+EOF
+}
 die() { echo "${RED} $*"; exit 1; }
 log() { echo "${INFO} $*"; }
 
@@ -13,14 +44,15 @@ CONNECTOR_DIR="${POE_PWD:-$PWD}"
 [[ -f "${CONNECTOR_DIR}/metadata.yaml" ]] || die "metadata.yaml not found in ${CONNECTOR_DIR}. Run inside a connector directory or via 'poe connector <name> image build'."
 
 TAG=""
-if [[ $# -gt 0 && "${1-}" != "--tag" ]]; then
+if [[ $# -gt 0 && "${1-}" != "--tag" && "${1-}" != "-h" && "${1-}" != "--help" ]]; then
   TAG="$1"
   shift
 fi
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --tag) TAG="$2"; shift 2;;
-    *) die "Unknown argument: $1 (supported: [<tag>] or --tag <tag>)";;
+    --tag) TAG="${2-}"; [[ -n "${TAG}" ]] || { usage >&2; die "Missing value for --tag"; }; shift 2;;
+    -h|--help) usage; exit 0;;
+    *) usage >&2; die "Unknown argument: $1";;
   esac
 done
 
