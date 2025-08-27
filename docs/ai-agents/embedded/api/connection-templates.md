@@ -33,7 +33,20 @@ curl --request POST 'https://api.airbyte.ai/api/v1/integrations/templates/connec
   "organization_id": "<organization_id>",
   "destination_name": "string",
   "destination_definition_id": "<destination_definition_id>",
-  "destination_config": {},
+  "destination_config": {
+      "access_key_id": "<aws_access_key>",
+      "secret_access_key": "<aws_secret_key>",
+      "s3_bucket_name": "<s3_bucket>",
+      "s3_bucket_path": "<s3_prefix>",
+      "s3_bucket_region": "<s3_region>",
+      "format": {
+        "format_type": "CSV",
+        "compression": {
+          "compression_type": "No Compression"
+        },
+        "flattening": "Root level flattening"
+      }
+    }
   "cron_expression": "string",
   "non_breaking_changes_preference": "ignore",
   "sync_on_create": true
