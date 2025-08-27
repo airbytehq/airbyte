@@ -399,12 +399,12 @@ module.exports = {
         },
         {
           type: "category",
-          label: "Cloud Flex",
+          label: "Enterprise Flex",
           link: {
             type: "doc",
-            id: "cloud-enterprise/readme",
+            id: "enterprise-flex/readme",
           },
-          items: ["cloud-enterprise/data-plane"],
+          items: ["enterprise-flex/data-plane"],
         },
         {
           type: "category",
