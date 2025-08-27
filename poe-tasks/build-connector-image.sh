@@ -41,7 +41,6 @@ command -v docker >/dev/null 2>&1 || die "Docker is not installed or not on PATH
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || true)"
 [[ -n "${REPO_ROOT}" ]] || die "Not inside the airbyte repository."
 CONNECTOR_DIR="${POE_PWD:-$PWD}"
-[[ -f "${CONNECTOR_DIR}/metadata.yaml" ]] || die "metadata.yaml not found in ${CONNECTOR_DIR}. Run inside a connector directory or via 'poe connector <name> image build'."
 
 TAG=""
 if [[ $# -gt 0 && "${1-}" != "--tag" && "${1-}" != "-h" && "${1-}" != "--help" ]]; then
@@ -55,6 +54,8 @@ while [[ $# -gt 0 ]]; do
     *) usage >&2; die "Unknown argument: $1";;
   esac
 done
+
+[[ -f "${CONNECTOR_DIR}/metadata.yaml" ]] || die "metadata.yaml not found in ${CONNECTOR_DIR}. Run inside a connector directory or via 'poe connector <name> image build'."
 
 ARCH_RAW="$(docker info --format '{{.Architecture}}' 2>/dev/null || true)"
 if [[ -z "${ARCH_RAW}" ]]; then
