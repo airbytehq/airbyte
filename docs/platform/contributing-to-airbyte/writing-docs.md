@@ -208,12 +208,12 @@ Some platform features are reserved for certain Airbyte products. To avoid confu
 
 To enable badges, include `products` in the Markdown metadata. The following values are possible, and you can combine them as needed.
 
-- `all`: Self-Managed Community, Self-Managed Enterprise, and Cloud (doesn't include Cloud Teams, Cloud Flex, or Embedded)
+- `all`: Self-Managed Community, Self-Managed Enterprise, and Cloud (doesn't include Cloud Teams, Enterprise Flex, or Embedded)
 - `oss-community`: Self-Managed Community only
 - `oss-enterprise`: Self-Managed Enterprise only
 - `cloud`: Cloud only
 - `cloud-teams`: Cloud Teams only
-- `cloud-flex`: Cloud Flex only
+- `enterprise-flex`: Enterprise Flex only
 - `embedded`: Embedded only (hidden if not specified - there is no off state for the Embedded badge)
 
 In this example, the Self-Managed Community badge is highlighted, and Cloud and Self-Managed Enterprise badges are grayed out.
@@ -232,10 +232,10 @@ In this example, the Self-Managed Community badge is grayed out, but the Cloud T
 
 ```markdown
 ---
-products: cloud-teams, cloud-flex, oss-enterprise
+products: cloud-teams, enterprise-flex, oss-enterprise
 ---
 
-# This topic is only for Cloud Teams, Cloud Flex, and Self-Managed Enterprise
+# This topic is only for Cloud Teams, Enterprise Flex, and Self-Managed Enterprise
 
 Some text.
 ```

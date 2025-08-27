@@ -33,7 +33,7 @@ Airbyte is available as a Self-Managed or Cloud product, depending on your needs
 
 <CardWithIcon title="Cloud Teams" description="For organizations looking to scale efficiently. Role based access control, single sign on, and more ensure Cloud is a robust solution that can grow with your team." ctaText="Talk to Sales" ctaLink="https://airbyte.com/company/talk-to-sales" icon="fa-lock" />
 
-<CardWithIcon title="Cloud Flex" description="An enterprise-grade solution with hybrid options for organizatons seeking the convenience of a fully managed solution with separate data planes for compliance and data sovereignty." ctaText="Learn more" ctaLink="cloud-enterprise" icon="fa-lock" />
+<CardWithIcon title="Enterprise Flex" description="An enterprise-grade solution with hybrid options for organizatons seeking the convenience of a fully managed solution with separate data planes for compliance and data sovereignty." ctaText="Learn more" ctaLink="enterprise-flex" icon="fa-lock" />
 
 </Grid>
 

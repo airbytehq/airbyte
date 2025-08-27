@@ -38,13 +38,13 @@ export const ProductInformation = ({ products }) => {
   const cloud = products["cloud"] || products["cloud-teams"] || products["all"];
   // cloud add-ons need to be specifically marked and are not part of the "all" shorthand
   const cloudTeams = products["cloud-teams"];
-  const cloudFlex = products["cloud-flex"];
+  const enterpriseFlex = products["enterprise-flex"];
   const embedded = products["embedded"];
 
   return (
     <div className={styles.badges}>
-      {cloudFlex ? (
-        <Badge available={true}>Cloud Flex</Badge>
+      {enterpriseFlex ? (
+        <Badge available={true}>Enterprise Flex</Badge>
       ) : (
         <Badge available={cloud}>
           Cloud{" "}
