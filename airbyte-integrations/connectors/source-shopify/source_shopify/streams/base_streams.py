@@ -247,7 +247,9 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
                         if record_value >= state_value:
                             yield record
                         else:
-                            if self.should_checkpoint(index):
+                            # For metafield streams with API limitations, don't emit old records for checkpointing
+                            # as this defeats the purpose of incremental syncing
+                            if self.should_checkpoint(index) and not self._is_metafield_stream_with_parent_filtering():
                                 yield record
                     else:
                         # old entities could have cursor field in place, but set to null
@@ -263,6 +265,14 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
                     yield record
         else:
             yield from records_slice
+
+    def _is_metafield_stream_with_parent_filtering(self) -> bool:
+        """
+        Check if this is a metafield stream that uses parent stream filtering due to API limitations.
+        For such streams, we should not emit old records for checkpointing purposes as it defeats
+        the purpose of incremental syncing.
+        """
+        return "metafield" in self.name.lower() and hasattr(self, "parent_stream_class") and self.parent_stream_class is not None
 
 
 class IncrementalShopifySubstream(IncrementalShopifyStream):
