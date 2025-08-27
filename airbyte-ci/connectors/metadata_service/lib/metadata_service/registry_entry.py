@@ -299,26 +299,6 @@ def _get_and_parse_yaml_file(file_path: pathlib.Path) -> dict:
     return file_dict
 
 
-def _get_and_parse_json_file(file_path: pathlib.Path) -> dict:
-    """Get and parse the json file.
-
-    Args:
-        file_path (pathlib.Path): The path to the file.
-
-    Returns:
-        dict: The file dictionary.
-    """
-    try:
-        logger.debug(f"Getting and parsing JSON file: `{file_path}`")
-        with open(file_path, "r") as f:
-            file_dict = json.load(f)
-    except Exception as e:
-        logger.exception(f"Error parsing JSON file: `{file_path}`")
-        raise
-    logger.info("Parsed JSON file.")
-    return file_dict
-
-
 @sentry_sdk.trace
 def _get_icon_blob_from_gcs(bucket_name: str, metadata_entry: dict) -> storage.Blob:
     """Get the icon blob from the GCS bucket.
@@ -362,50 +342,57 @@ def _get_connector_type_from_registry_entry(registry_entry: dict) -> TaggedRegis
         raise Exception("Could not determine connector type from registry entry")
 
 
-def _get_registry_entry_blob_paths(
+def _get_registry_blob_information(
     metadata_dict: dict, registry_type: str, metadata_data_with_overrides: dict, is_prerelease: bool
-) -> List[str]:
+) -> List[Tuple[str, str]]:
     """
-    Builds the registry entry paths for the registry entries.
+    Builds information for each registry blob: GCS path to write the registry entry into, along with
+    the correct "metadata blob path" for the entry.
 
     Args:
         metadata_dict (dict): The metadata dictionary.
         registry_type (str): The registry type.
 
     Returns:
-        List[str]: The registry entry paths.
+        List[Tuple[str, str]]: Tuples of the path to write the registry entry to, and the metadata blob path to populate into the entry.
     """
     docker_repository = metadata_dict["data"]["dockerRepository"]
-    registry_entry_paths = []
+    registry_entry_paths: List[Tuple[str, str]] = []
 
     # The versioned registry entries always respect the registry overrides.
     # For example, with destination-postgres: we'll push oss.json to `destination-postgres/<version>/oss.json`,
     # but cloud.json goes to `destination-postgres-strict-encrypt/<version>/cloud.json`.
     versioned_registry_entry_path = f"{METADATA_FOLDER}/{metadata_data_with_overrides['dockerRepository']}/{metadata_data_with_overrides['dockerImageTag']}/{registry_type}.json"
+    # However, the metadata blob path uses the non-overridden docker repo, for... reasons?
+    versioned_metadata_blob_path = f"{METADATA_FOLDER}/{docker_repository}/{metadata_data_with_overrides['dockerImageTag']}/metadata.yaml"
     # We always publish the versioned registry entry.
-    registry_entry_paths.append(versioned_registry_entry_path)
+    registry_entry_paths.append((versioned_registry_entry_path, versioned_metadata_blob_path))
 
     # If we're not doing a prerelease, we have an extra file to push.
+    # Note that for these extra files, we point at a different metadata.yaml than the versioned file
+    # (e.g. the `latest` registry entry points at the `latest` metadata.yaml, instead of at the versioned metadata.yaml)
     if not is_prerelease:
         if "-rc" in metadata_dict["data"]["dockerImageTag"]:
             # We're doing a release candidate publish. Push the RC registry entry.
             # This intentionally uses the non-overridden docker_repository. We _always_ upload both cloud+oss registry entries
             # to the non-overridden docker_repository path for the `release_candidate` entry.
             release_candidate_registry_entry_path = f"{METADATA_FOLDER}/{docker_repository}/release_candidate/{registry_type}.json"
-            registry_entry_paths.append(release_candidate_registry_entry_path)
+            release_candidate_metadata_blob_path = f"{METADATA_FOLDER}/{docker_repository}/release_candidate/metadata.yaml"
+            registry_entry_paths.append((release_candidate_registry_entry_path, release_candidate_metadata_blob_path))
 
         else:
             # This is a normal publish. Push the `latest` registry entry.
             # This intentionally uses the non-overridden docker_repository. We _always_ upload both cloud+oss registry entries
             # to the non-overridden docker_repository path for the `latest` entry.
             latest_registry_entry_path = f"{METADATA_FOLDER}/{docker_repository}/latest/{registry_type}.json"
-            registry_entry_paths.append(latest_registry_entry_path)
+            latest_registry_metadata_blob_path = f"{METADATA_FOLDER}/{docker_repository}/latest/metadata.yaml"
+            registry_entry_paths.append((latest_registry_entry_path, latest_registry_metadata_blob_path))
 
     return registry_entry_paths
 
 
 @sentry_sdk.trace
-def _persist_connector_registry_entry(bucket_name: str, registry_entry: PolymorphicRegistryEntry, registry_entry_path: str) -> None:
+def _persist_connector_registry_entry(registry_entry: PolymorphicRegistryEntry, registry_entry_path: str) -> None:
     """Persist the connector registry entry to the GCS bucket.
 
     Args:
@@ -474,7 +461,7 @@ def generate_and_persist_registry_entry(
             send_slack_message(PUBLISH_UPDATE_CHANNEL, message)
             raise
 
-        registry_entry_blob_paths = _get_registry_entry_blob_paths(metadata_dict, registry_type, overridden_metadata_data, is_prerelease)
+        registry_entry_blob_paths = _get_registry_blob_information(metadata_dict, registry_type, overridden_metadata_data, is_prerelease)
 
         logger.info("Parsing spec file.")
         spec_cache = SpecCache()
@@ -491,13 +478,17 @@ def generate_and_persist_registry_entry(
         logger.info("Registry entry model parsed.")
 
         # Persist the registry entry to the GCS bucket.
-        for registry_entry_blob_path in registry_entry_blob_paths:
+        for registry_entry_blob_path, metadata_blob_path in registry_entry_blob_paths:
             try:
                 logger.info(
                     f"Persisting `{metadata_data['dockerRepository']}` {registry_type} registry entry to `{registry_entry_blob_path}`"
                 )
 
-                _persist_connector_registry_entry(bucket_name, registry_entry_model, registry_entry_blob_path)
+                # set the correct metadata blob path on the registry entry
+                registry_entry_model = copy.deepcopy(registry_entry_model)
+                if registry_entry_model.generated is not None:
+                    registry_entry_model.generated.metadata_file_path = metadata_blob_path
+                _persist_connector_registry_entry(registry_entry_model, registry_entry_blob_path)
 
                 message = f"*🤖 🟢 _Registry Entry Generation_ SUCCESS*:\nRegistry Entry: `{registry_type}.json`\nConnector: `{metadata_data['dockerRepository']}`\nGCS Bucket: `{bucket_name}`\nPath: `{registry_entry_blob_path}`."
                 send_slack_message(PUBLISH_UPDATE_CHANNEL, message)
