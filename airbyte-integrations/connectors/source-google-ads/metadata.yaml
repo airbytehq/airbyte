@@ -12,7 +12,7 @@ data:
   connectorType: source
   definitionId: 253487c0-2246-43ba-a21f-5116b20a2c50
   dockerImageTag: "4.1.0-rc.1"
-  canonicalImageTag: 1.1.1
+  canonicalImageTag: 1.2.0
   dockerRepository: airbyte/source-google-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-ads
   githubIssueLabel: source-google-ads
