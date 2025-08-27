@@ -429,7 +429,7 @@ Request:
 
 ```bash
 bash
-curl -X GET "https://example.com/api/public/v1/workspaces/{workspaceId}" \
+curl -X GET "https://api.airbyte.com/v1/workspaces/{workspaceId}" \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
   -H "Content-Type: application/json"
 ```
