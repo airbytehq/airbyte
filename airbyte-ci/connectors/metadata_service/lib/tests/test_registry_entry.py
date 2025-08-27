@@ -190,8 +190,7 @@ def test_generate_and_persist_registry_entry(
 
         # Verify the registry entry model was created correctly
         for call_args in persist_call_args:
-            bucket_name_arg, registry_entry_model, registry_path = call_args[0]
-            assert bucket_name_arg == bucket_name
+            registry_entry_model, registry_path = call_args[0]
             assert scenario["registry_type"] in registry_path
 
             # Verify the model has expected fields
