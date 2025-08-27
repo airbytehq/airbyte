@@ -108,7 +108,6 @@ class InputConsumerTaskTest {
             )
         val task =
             InputConsumerTask(
-                catalog = catalog,
                 inputFlow = inputFlow,
                 pipelineInputQueue = pipelineInputQueue,
                 partitioner = mockk(relaxed = true),
@@ -160,7 +159,6 @@ class InputConsumerTaskTest {
             )
         val task =
             InputConsumerTask(
-                catalog = catalog,
                 inputFlow = inputFlow,
                 pipelineInputQueue = mockk(relaxed = true),
                 partitioner = mockk(relaxed = true),
@@ -196,7 +194,6 @@ class InputConsumerTaskTest {
 
         val task =
             InputConsumerTask(
-                catalog = catalog,
                 inputFlow = inputFlow,
                 pipelineInputQueue = mockk(relaxed = true),
                 partitioner = mockk(relaxed = true),
@@ -247,7 +244,6 @@ class InputConsumerTaskTest {
 
         val task =
             InputConsumerTask(
-                catalog = catalog,
                 inputFlow = inputFlow,
                 pipelineInputQueue = mockk(relaxed = true),
                 partitioner = mockk(relaxed = true),
