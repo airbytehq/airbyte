@@ -169,6 +169,7 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:-----------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.2.5 | 2025-08-26 | [65565](https://github.com/airbytehq/airbyte/pull/65565) | Increases `maxSecondsBetweenMessages` and defaults start_date to 2 years in the past |
 | 4.2.4 | 2025-08-23 | [65337](https://github.com/airbytehq/airbyte/pull/65337) | Update dependencies |
 | 4.2.3 | 2025-08-09 | [64583](https://github.com/airbytehq/airbyte/pull/64583) | Update dependencies |
 | 4.2.2 | 2025-08-02 | [64216](https://github.com/airbytehq/airbyte/pull/64216) | Update dependencies |
