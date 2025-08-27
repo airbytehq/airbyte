@@ -67,10 +67,14 @@ Here is an example request:
 curl 'https://api.airbyte.ai/api/v1/integrations/sources/' \
   -H 'authorization: Bearer <token>' \
   -H 'content-type: application/json' \
-  --data-raw '{"workspace_id":"<workspace_id>","source_config_template_id":"<source_template_id>","connection_configuration":{}}'
+  --data-raw '{
+  "workspace_id": "0967198e-ec7b-4c6b-b4d3-f71244cadbe9",
+  "source_template_id": "7bb1bee0-a40f-46a0-83fc-d70ade5dfeb2",
+  "source_config": {}
+}'
 ```
 
 The connection configuration should include all required fields from the connector specification, except for the ones included as default values in your source template.
 You can find the full connector specification in the [Connector Registry](https://connectors.airbyte.com/files/registries/v0/cloud_registry.json).
 
-You can find the [reference docs for creating a source here](https://api.airbyte.ai/api/v1/redoc#tag/Embedded/operation/create_embedded_sources)
+You can find [the reference docs for creating a source here](https://api.airbyte.ai/api/v1/docs#tag/Sources/operation/create_integrations_sources).
