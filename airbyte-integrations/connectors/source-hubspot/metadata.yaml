@@ -45,11 +45,7 @@ data:
     breakingChanges:
       6.0.0:
         message: >-
-          This update migrates the `marketing_emails` stream from HubSpot's deprecated v1 API to the new v3 API.
-          The migration changes the endpoint from `/marketing-emails/v1/emails/with-statistics` to `/marketing/v3/emails`
-          with `includeStats=true` parameter. The response field path changes from `objects` to `results`.
-          This is required due to HubSpot's API v1 sunset deadline. Users will need to refresh the source schema 
-          and reset the marketing_emails stream after upgrading.
+          This update migrates the `marketing_emails` stream from HubSpot's deprecated v1 API to the new v3 API. The migration significantly changes the schema of the stream, removing many fields that were previously present. Users will need to refresh the source schema and reset the marketing_emails stream after upgrading. Please refer to the [migration guide](https://docs.airbyte.com/integrations/sources/hubspot-migrations) for more information.
         upgradeDeadline: "2025-10-01"
         deadlineAction: "auto_upgrade"
         scopedImpact:
