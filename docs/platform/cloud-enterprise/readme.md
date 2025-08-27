@@ -4,7 +4,7 @@ products: cloud-flex
 
 # Cloud Flex
 
-Airbyte Cloud Flex is a hybrid solution that consists of a fully managed Cloud control plane with separate data planes that run in your own infrastructure. It's ideal for organizations with data sovereignty and compliance requirements who need to carefully manage data movement while also minimizing the time and effort needed to self-manage Airbyte.
+Airbyte Cloud Flex is a hybrid solution that consists of a fully managed Cloud control plane that supports separate data planes that run in your own infrastructure. It's ideal for organizations with data sovereignty and compliance requirements who need to carefully manage data movement while also minimizing the time and effort needed to self-manage Airbyte.
 
 ## Overview
 
