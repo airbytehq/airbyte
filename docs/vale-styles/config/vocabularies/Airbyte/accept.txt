@@ -8,7 +8,7 @@ Self-Managed Community
 Self-Managed Enterprise
 Cloud
 Cloud Teams
-Cloud Enterprise
+Cloud Flex
 abctl
 PyAirbyte
 [Nn]amespace
