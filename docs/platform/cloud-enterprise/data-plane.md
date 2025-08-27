@@ -6,7 +6,7 @@ products: cloud-flex
 
 Airbyte Flex customers can use Airbyte's public API to define regions and create independent data planes that operate in those regions. This ensures you're satisfying your data residency and governance requirements with a single Airbyte Cloud deployment, and it can help you reduce data egress costs with cloud providers.
 
-![Stylized diagram showing a control plane above multiple data planes in different global regions](assets/data-planes.png)
+![Stylized diagram showing a control plane above multiple data planes in different global regions](img/data-planes.png)
 
 ## How it works
 If you're not familiar with Kubernetes, think of the control plane as the brain and data planes as the muscles doing work the brain tells them to do.
@@ -420,7 +420,7 @@ You can see a list of your workspaces and the region associated to each from Air
 
 Airbyte displays your workspaces and each workspace region under **Regions**.
 
-![Multiple regions displayed in Airbyte's General Organization settings](assets/multiple-regions-in-airbyte.png)
+![Multiple regions displayed in Airbyte's General Organization settings](img/multiple-regions-in-airbyte.png)
 
   </TabItem>
   <TabItem value="check-regions-api" label="API">
