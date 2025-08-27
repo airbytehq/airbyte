@@ -3275,7 +3275,7 @@
             "description": "The type of call-to-action for the ad creative.",
             "type": ["null", "string"]
           },
-          "effective_instagram_story_id": {
+          "effective_instagram_media_id": {
             "description": "The effective Instagram story ID associated with the ad creative.",
             "type": ["null", "string"]
           },
@@ -3345,7 +3345,7 @@
             },
             "type": ["null", "object"]
           },
-          "instagram_actor_id": {
+          "instagram_user_id": {
             "description": "Instagram actor ID associated with the ad creative.",
             "type": ["null", "string"]
           },
@@ -3353,7 +3353,7 @@
             "description": "Permalink URL of the ad creative on Instagram.",
             "type": ["null", "string"]
           },
-          "instagram_story_id": {
+          "source_instagram_media_id": {
             "description": "ID of the story on Instagram.",
             "type": ["null", "string"]
           },
@@ -3369,7 +3369,7 @@
             "description": "Specification for the object story associated with the ad creative.",
             "properties": {
               "page_id": { "type": ["null", "string"] },
-              "instagram_actor_id": { "type": ["null", "string"] },
+              "instagram_user_id": { "type": ["null", "string"] },
               "link_data": {
                 "properties": {
                   "additional_image_index": { "type": ["null", "integer"] },

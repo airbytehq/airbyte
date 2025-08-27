@@ -111,14 +111,14 @@ Table "ad_creatives" {
     "applink_treatment" string
     "asset_feed_spec" object
     "call_to_action_type" string
-    "effective_instagram_story_id" string
+    "effective_instagram_media_id" string
     "effective_object_story_id" string
     "title" string
     "name" string
     "image_crops" object
-    "instagram_actor_id" string
+    "instagram_user_id" string
     "instagram_permalink_url" string
-    "instagram_story_id" string
+    "source_instagram_media_id" string
     "link_og_id" string
     "object_id" string
     "object_story_spec" object
