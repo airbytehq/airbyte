@@ -45,6 +45,7 @@ from metadata_service.spec_cache import SpecCache
 logger = logging.getLogger(__name__)
 
 DEV_BUCKET = "dev-airbyte-cloud-connector-metadata-service-2"
+PYTHON_CDK_SLUG = "python"
 
 
 PolymorphicRegistryEntry = Union[ConnectorRegistrySourceDefinition, ConnectorRegistryDestinationDefinition]
@@ -193,7 +194,9 @@ def _apply_package_info_fields(metadata_data: dict, bucket_name: str) -> dict:
             cdk_version = None
             for package in dependencies_json.get("dependencies", []):
                 if package.get("package_name") == "airbyte-cdk":
-                    cdk_version = package.get("version")
+                    # Note: Prefix the version with the python slug as the python cdk is the only one we have
+                    # versions available for.
+                    cdk_version = f'{PYTHON_CDK_SLUG}:{package.get("version")}'
                     break
             package_info_fields = set_with(package_info_fields, "cdk_version", cdk_version, default_none_to_dict)
     except Exception as e:
