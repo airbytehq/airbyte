@@ -45,7 +45,7 @@ class BigQueryBulkOneShotUploader<O : OutputStream>(
     @Named("uploadParallelismForSocket") private val uploadParallelism: Int,
 ) :
     BatchAccumulator<
-        BigQueryBulkOneShotUploader.State<O>,
+        BigQueryBulkOneShotUploader.BigQueryOneShotUploaderState<O>,
         StreamKey,
         DestinationRecordRaw,
         BulkLoaderTableLoader.LoadResult
@@ -56,7 +56,7 @@ class BigQueryBulkOneShotUploader<O : OutputStream>(
     @OptIn(ExperimentalCoroutinesApi::class)
     private val uploadDispatcher = Dispatchers.IO.limitedParallelism(uploadParallelism)
 
-    data class State<O : OutputStream>(
+    data class BigQueryOneShotUploaderState<O : OutputStream>(
         val streamKey: StreamKey,
         val formatterState: ObjectLoaderPartFormatter.State<O>,
         val partLoaderState: ObjectLoaderPartLoader.State<GcsBlob>,
@@ -73,7 +73,7 @@ class BigQueryBulkOneShotUploader<O : OutputStream>(
         }
     }
 
-    override suspend fun start(key: StreamKey, part: Int): State<O> {
+    override suspend fun start(key: StreamKey, part: Int): BigQueryOneShotUploaderState<O> {
         log.info {
             "Starting BigQuery bulk one-shot upload for stream ${key.stream} partition $part"
         }
@@ -81,7 +81,7 @@ class BigQueryBulkOneShotUploader<O : OutputStream>(
         val fmt = partFormatter.startLockFree(key)
         val objKey = ObjectKey(stream = key.stream, objectKey = fmt.partFactory.key)
 
-        return State(
+        return BigQueryOneShotUploaderState(
             streamKey = key,
             formatterState = fmt,
             partLoaderState = partLoader.start(objKey, part),
@@ -92,8 +92,8 @@ class BigQueryBulkOneShotUploader<O : OutputStream>(
 
     override suspend fun accept(
         input: DestinationRecordRaw,
-        state: State<O>,
-    ): BatchAccumulatorResult<State<O>, BulkLoaderTableLoader.LoadResult> {
+        state: BigQueryOneShotUploaderState<O>,
+    ): BatchAccumulatorResult<BigQueryOneShotUploaderState<O>, BulkLoaderTableLoader.LoadResult> {
         return when (val fmtResult = partFormatter.accept(input, state.formatterState)) {
             is NoOutput -> NoOutput(state.copy(formatterState = fmtResult.nextState))
             is IntermediateOutput -> {
@@ -106,9 +106,12 @@ class BigQueryBulkOneShotUploader<O : OutputStream>(
     }
 
     override suspend fun finish(
-        state: State<O>
-    ): FinalOutput<State<O>, BulkLoaderTableLoader.LoadResult> =
-        uploadFinalAndExecuteBigQueryLoad(partFormatter.finish(state.formatterState).output, state)
+        bigQueryOneShotUploaderState: BigQueryOneShotUploaderState<O>
+    ): FinalOutput<BigQueryOneShotUploaderState<O>, BulkLoaderTableLoader.LoadResult> =
+        uploadFinalAndExecuteBigQueryLoad(
+            partFormatter.finish(bigQueryOneShotUploaderState.formatterState).output,
+            bigQueryOneShotUploaderState
+        )
 
     private fun launchUpload(
         part: ObjectLoaderPartFormatter.FormattedPart,
@@ -128,39 +131,50 @@ class BigQueryBulkOneShotUploader<O : OutputStream>(
 
     private suspend fun uploadFinalAndExecuteBigQueryLoad(
         finalPart: ObjectLoaderPartFormatter.FormattedPart,
-        state: State<O>
-    ): FinalOutput<State<O>, BulkLoaderTableLoader.LoadResult> = coroutineScope {
-        // Upload the final part
-        state.uploads += launchUpload(finalPart, state.partLoaderState)
+        bigQueryOneShotUploaderState: BigQueryOneShotUploaderState<O>
+    ): FinalOutput<BigQueryOneShotUploaderState<O>, BulkLoaderTableLoader.LoadResult> =
+        coroutineScope {
+            // Upload the final part
+            bigQueryOneShotUploaderState.uploads +=
+                launchUpload(finalPart, bigQueryOneShotUploaderState.partLoaderState)
 
-        log.info { "Awaiting ${state.uploads.size} part uploads for ${state.streamKey.stream}…" }
-
-        // Wait for all uploads to complete and process through upload completer
-        var completedGcsBlob: GcsBlob? = null
-        state.uploads.awaitAll().forEach { part ->
-            when (val res = uploadCompleter.accept(part, state.completerState)) {
-                is NoOutput -> Unit // Continue processing parts
-                is FinalOutput -> {
-                    completedGcsBlob = res.output.remoteObject
-                    log.info {
-                        "GCS upload completed for ${state.streamKey.stream}: ${completedGcsBlob?.key}"
-                    }
-                    return@forEach
-                }
-                else -> error("Unexpected output from upload completer: $res")
-            }
-        }
-
-        val finalBlob = completedGcsBlob
-        if (finalBlob != null) {
             log.info {
-                "Executing BigQuery load for ${state.streamKey.stream} from GCS: ${finalBlob.key}"
+                "Awaiting ${bigQueryOneShotUploaderState.uploads.size} part uploads for ${bigQueryOneShotUploaderState.streamKey.stream}…"
             }
-            state.bulkLoader.load(finalBlob)
-            log.info { "BigQuery load completed for ${state.streamKey.stream}" }
-            FinalOutput(BulkLoaderTableLoader.LoadResult)
-        } else {
-            error("Upload completer never produced a completed GCS blob – logic bug in socket mode")
+
+            // Wait for all uploads to complete and process through upload completer
+            var completedGcsBlob: GcsBlob? = null
+            bigQueryOneShotUploaderState.uploads.awaitAll().forEach { part ->
+                when (
+                    val res =
+                        uploadCompleter.accept(part, bigQueryOneShotUploaderState.completerState)
+                ) {
+                    is NoOutput -> Unit // Continue processing parts
+                    is FinalOutput -> {
+                        completedGcsBlob = res.output.remoteObject
+                        log.info {
+                            "GCS upload completed for ${bigQueryOneShotUploaderState.streamKey.stream}: ${completedGcsBlob?.key}"
+                        }
+                        return@forEach
+                    }
+                    else -> error("Unexpected output from upload completer: $res")
+                }
+            }
+
+            val finalBlob = completedGcsBlob
+            if (finalBlob != null) {
+                log.info {
+                    "Executing BigQuery load for ${bigQueryOneShotUploaderState.streamKey.stream} from GCS: ${finalBlob.key}"
+                }
+                bigQueryOneShotUploaderState.bulkLoader.load(finalBlob)
+                log.info {
+                    "BigQuery load completed for ${bigQueryOneShotUploaderState.streamKey.stream}"
+                }
+                FinalOutput(BulkLoaderTableLoader.LoadResult)
+            } else {
+                error(
+                    "Upload completer never produced a completed GCS blob – logic bug in socket mode"
+                )
+            }
         }
-    }
 }

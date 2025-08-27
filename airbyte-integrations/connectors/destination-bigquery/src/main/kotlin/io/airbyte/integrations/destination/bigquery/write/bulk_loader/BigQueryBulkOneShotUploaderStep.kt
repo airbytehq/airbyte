@@ -20,7 +20,10 @@ class BigQueryBulkOneShotUploaderStep<K : WithStream, O : OutputStream>(
 
     override fun taskForPartition(partition: Int): Task {
         return taskFactory.createFirstStep<
-            BigQueryBulkOneShotUploader.State<O>, StreamKey, BulkLoaderTableLoader.LoadResult>(
+            BigQueryBulkOneShotUploader.BigQueryOneShotUploaderState<O>,
+            StreamKey,
+            BulkLoaderTableLoader.LoadResult
+        >(
             bigQueryOneShotUploader,
             null, // No output partitioner needed - this is the final step
             null, // No output queue needed - this is the final step
