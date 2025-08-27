@@ -399,7 +399,7 @@ module.exports = {
         },
         {
           type: "category",
-          label: "Cloud Enterprise",
+          label: "Cloud Flex",
           link: {
             type: "doc",
             id: "cloud-enterprise/readme",
