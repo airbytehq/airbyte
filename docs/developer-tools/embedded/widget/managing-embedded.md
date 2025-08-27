@@ -25,24 +25,6 @@ curl --request POST \
   --data '{
     "organization_id": "<organization id>",
     "partial_default_config": {},
-    "partialUserConfigSpec": {
-      "connectionSpecification": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "title": "Faker Source Spec2",
-        "type": "object",
-        "required": ["count"],
-        "properties": {
-          "count": {
-            "title": "Count",
-            "description": "How many users should be generated in total. The purchases table will be scaled to match, with 10 purchases created per 10 users. This setting does not apply to the products stream.",
-            "type": "integer",
-            "minimum": 1,
-            "default": 5005,
-            "order": 0
-          }
-        }
-      }
-    },
     "actor_definition_id": "<actor id>"
   }'
 ```

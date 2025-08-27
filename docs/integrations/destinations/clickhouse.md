@@ -49,23 +49,22 @@ Make sure your ClickHouse database can be accessed by Airbyte. If your database 
 
 You need a ClickHouse user with the following permissions:
 
-- can create tables and write rows.
-- can create databases
-- can alter, drop and exchange tables
+- create tables and write rows
+- create databases
+- alter, drop and exchange tables
 
 You can create such a user by running the following:
 
 ```
 GRANT CREATE ON * TO airbyte_user;
-GRANT DROP ON * TO airbyte_user;
 GRANT CREATE ON {database}.* TO airbyte_user;
-GRANT DROP ON {database}.* TO airbyte_user;
 GRANT ALTER ON {database}.* TO airbyte_user;
 GRANT TRUNCATE ON {database}.* TO airbyte_user;
 GRANT INSERT ON {database}.* TO airbyte_user;
 GRANT SELECT ON {database}.* TO airbyte_user;
 GRANT CREATE DATABASE ON {database}.* TO airbyte_user;
 GRANT CREATE TABLE ON {database}.* TO airbyte_user;
+GRANT DROP TABLE ON {database}.* TO airbyte_user;
 ```
 
 Where `{database}` is the database configured on your connector.
@@ -74,13 +73,13 @@ Then for each connection using this connector with a custom namespace, run:
 
 ```
 GRANT CREATE ON {namespace}.* TO airbyte_user;
-GRANT DROP ON {namespace}.* TO airbyte_user;
 GRANT ALTER ON {namespace}.* TO airbyte_user;
 GRANT TRUNCATE ON {namespace}.* TO airbyte_user;
 GRANT INSERT ON {namespace}.* TO airbyte_user;
 GRANT SELECT ON {namespace}.* TO airbyte_user;
 GRANT CREATE DATABASE ON {namespace}.* TO airbyte_user;
 GRANT CREATE TABLE ON {namespace}.* TO airbyte_user;
+GRANT DROP TABLE ON {namespace}.* TO airbyte_user;
 ```
 
 Where `{namespace}` is the custom namespace configured for that connection.
@@ -95,6 +94,9 @@ You can also use a pre-existing user but we highly recommend creating a dedicate
 
 | Version | Date       | Pull Request                                               | Subject                                                                        |
 |:--------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 2.0.13  | 2025-08-20 | [\#65125](https://github.com/airbytehq/airbyte/pull/65125) | Update docs permissioning advice.                                              |
+| 2.0.12  | 2025-08-20 | [\#65120](https://github.com/airbytehq/airbyte/pull/65120) | Check should properly surface protocol related config errors.                  |
+| 2.0.11  | 2025-07-23 | [\#65117](https://github.com/airbytehq/airbyte/pull/65117) | Fix a bug related to the column duplicates name.                               |
 | 2.0.10  | 2025-07-23 | [\#64104](https://github.com/airbytehq/airbyte/pull/64104) | Add an option to configure the batch size (both bytes and number of records).  |
 | 2.0.9   | 2025-07-23 | [\#63738](https://github.com/airbytehq/airbyte/pull/63738) | Set clickhouse as an airbyte connector.                                        |
 | 2.0.8   | 2025-07-23 | [\#63760](https://github.com/airbytehq/airbyte/pull/63760) | Throw an error if an invalid target table exist before the first sync.         |

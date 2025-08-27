@@ -16,7 +16,7 @@ Paste the following into your `mcp.json` file:
     "pyairbyte-mcp": {
       "url": "https://pyairbyte-mcp-7b7b8566f2ce.herokuapp.com/mcp",
       "env": {
-        "OPENAI_API_KEY": "your-openai-api-key"
+        "OPENAI_API_KEY": "<your-openai-api-key>"
       }
     }
   }
