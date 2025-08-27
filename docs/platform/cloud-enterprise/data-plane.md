@@ -1,10 +1,10 @@
 ---
-products: cloud-flex
+products: enterprise-flex
 ---
 
-# Multiple region deployments with Cloud Flex
+# Multiple region deployments with Enterprise Flex
 
-Airbyte Flex customers can use Airbyte's public API to define regions and create independent data planes that operate in those regions. This ensures you're satisfying your data residency and governance requirements with a single Airbyte Cloud deployment, and it can help you reduce data egress costs with cloud providers.
+Airbyte Enterprise Flex customers can use Airbyte's public API to define regions and create independent data planes that operate in those regions. This ensures you're satisfying your data residency and governance requirements with a single Airbyte Cloud deployment, and it can help you reduce data egress costs with cloud providers.
 
 ![Stylized diagram showing a control plane above multiple data planes in different global regions](img/data-planes.png)
 
