@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.bigquery.write.bulk_loader
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.csv.toCsvHeader
 import io.airbyte.cdk.load.data.withAirbyteMeta
-import io.airbyte.cdk.load.file.csv.toCsvPrinterWithHeader
 import io.airbyte.cdk.load.file.object_storage.ObjectStorageFormattingWriter
 import io.airbyte.cdk.load.message.DestinationRecordProtobufSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
@@ -19,8 +18,8 @@ class ProtoToBigQueryObjectStorageFormattingWriter(
 ) : ObjectStorageFormattingWriter {
 
     private val finalSchema = stream.schema.withAirbyteMeta(true)
-    private val printer = finalSchema.toCsvPrinterWithHeader(outputStream)
     private val header: Array<String> = finalSchema.toCsvHeader()
+    private val csvWriter = FastCsvWriter(outputStream, header)
     private val csvRowGenerator =
         ProtoToBigQueryCSVRowGenerator(
             header,
@@ -34,14 +33,14 @@ class ProtoToBigQueryObjectStorageFormattingWriter(
             "ProtoToBigQueryObjectStorageFormattingWriter only supports DestinationRecordProtobufSource"
         }
 
-        printer.printRecord(*csvRowGenerator.generate(record))
+        csvWriter.writeRow(csvRowGenerator.generate(record))
     }
 
     override fun flush() {
-        printer.flush()
+        csvWriter.flush()
     }
 
     override fun close() {
-        printer.close()
+        csvWriter.close()
     }
 }

@@ -41,6 +41,8 @@ dependencies {
     // https://github.com/airbytehq/airbyte-internal-issues/issues/13662
     implementation 'com.google.cloud:google-cloud-bigquery:2.53.0'
 
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.19.2")
+
     integrationTestImplementation 'com.google.cloud:google-cloud-bigquery'
     testImplementation "io.mockk:mockk:1.13.13"
 }
