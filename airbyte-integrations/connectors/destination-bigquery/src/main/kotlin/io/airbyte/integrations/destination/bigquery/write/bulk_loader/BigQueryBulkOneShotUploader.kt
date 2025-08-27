@@ -64,7 +64,6 @@ class BigQueryBulkOneShotUploader<O : OutputStream>(
         val bulkLoader: BulkLoader<GcsBlob>,
         val uploads: MutableList<Deferred<ObjectLoaderPartLoader.PartResult<GcsBlob>>> =
             mutableListOf(),
-        val bigqueryLoads: MutableList<Deferred<Unit>> = mutableListOf(),
     ) : AutoCloseable {
         override fun close() {
             formatterState.close()
@@ -102,19 +101,14 @@ class BigQueryBulkOneShotUploader<O : OutputStream>(
                 state.uploads += launchUpload(fmtResult.output, state.partLoaderState)
                 NoOutput(state.copy(formatterState = fmtResult.nextState))
             }
-            is FinalOutput ->
-                uploadFinalAndExecuteBigQueryLoad(fmtResult.output, state, isFinish = false)
+            is FinalOutput -> uploadFinalAndExecuteBigQueryLoad(fmtResult.output, state)
         }
     }
 
     override suspend fun finish(
         state: State<O>
     ): FinalOutput<State<O>, BulkLoaderTableLoader.LoadResult> =
-        uploadFinalAndExecuteBigQueryLoad(
-            partFormatter.finish(state.formatterState).output,
-            state,
-            isFinish = true
-        )
+        uploadFinalAndExecuteBigQueryLoad(partFormatter.finish(state.formatterState).output, state)
 
     private fun launchUpload(
         part: ObjectLoaderPartFormatter.FormattedPart,
@@ -132,25 +126,9 @@ class BigQueryBulkOneShotUploader<O : OutputStream>(
             }
         }
 
-    private fun launchBigQueryLoad(
-        blob: GcsBlob,
-        bulkLoader: BulkLoader<GcsBlob>,
-        streamKey: StreamKey
-    ): Deferred<Unit> =
-        CoroutineScope(uploadDispatcher).async {
-            try {
-                bulkLoader.load(blob)
-                log.info { "BigQuery load completed successfully for ${streamKey.stream}" }
-            } catch (e: Exception) {
-                log.error(e) { "BigQuery load failed for ${streamKey.stream}: ${e.message}" }
-                throw e // Re-throw to be caught by awaitAll in finish()
-            }
-        }
-
     private suspend fun uploadFinalAndExecuteBigQueryLoad(
         finalPart: ObjectLoaderPartFormatter.FormattedPart,
-        state: State<O>,
-        isFinish: Boolean
+        state: State<O>
     ): FinalOutput<State<O>, BulkLoaderTableLoader.LoadResult> = coroutineScope {
         // Upload the final part
         state.uploads += launchUpload(finalPart, state.partLoaderState)
@@ -175,46 +153,12 @@ class BigQueryBulkOneShotUploader<O : OutputStream>(
 
         val finalBlob = completedGcsBlob
         if (finalBlob != null) {
-            if (isFinish) {
-                // When finish() is called, launch final load and wait for all loads to complete
-                log.info {
-                    "Launching final BigQuery load for ${state.streamKey.stream} from GCS: ${finalBlob.key}"
-                }
-                state.bigqueryLoads +=
-                    launchBigQueryLoad(finalBlob, state.bulkLoader, state.streamKey)
-
-                log.info {
-                    "Awaiting ${state.bigqueryLoads.size} BigQuery loads to complete for ${state.streamKey.stream}…"
-                }
-                try {
-                    state.bigqueryLoads.awaitAll()
-                    log.info {
-                        "All BigQuery loads completed successfully for ${state.streamKey.stream}"
-                    }
-                } catch (e: Exception) {
-                    log.error(e) {
-                        "One or more BigQuery loads failed for ${state.streamKey.stream}: ${e.message}"
-                    }
-                    throw e // Propagate any load errors when finish() is called
-                }
-
-                FinalOutput(BulkLoaderTableLoader.LoadResult)
-            } else {
-                // For intermediate final parts, launch async
-                log.info {
-                    "Launching async BigQuery load for ${state.streamKey.stream} from GCS: ${finalBlob.key}"
-                }
-
-                state.bigqueryLoads +=
-                    launchBigQueryLoad(finalBlob, state.bulkLoader, state.streamKey)
-
-                log.info {
-                    "BigQuery load initiated for ${state.streamKey.stream} - pipeline continuing " +
-                        "(${state.bigqueryLoads.size} loads running)"
-                }
-
-                FinalOutput(BulkLoaderTableLoader.LoadResult)
+            log.info {
+                "Executing BigQuery load for ${state.streamKey.stream} from GCS: ${finalBlob.key}"
             }
+            state.bulkLoader.load(finalBlob)
+            log.info { "BigQuery load completed for ${state.streamKey.stream}" }
+            FinalOutput(BulkLoaderTableLoader.LoadResult)
         } else {
             error("Upload completer never produced a completed GCS blob – logic bug in socket mode")
         }
