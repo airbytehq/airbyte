@@ -90,7 +90,7 @@ help = "Run the legacy Airbyte-CI acceptance tests (CAT tests)."
 
 [tasks.image]
 help = "Build and load the connector image locally (docker buildx --load). Usage: poe image [build] [--tag <tag>] (default tag: dev-{platform})."
-shell = "${POE_ROOT}/poe-tasks/build-connector-image.sh ${tag}"
+shell = "${POE_GIT_ROOT}/poe-tasks/build-connector-image.sh ${tag}"
 args = [
   { name = "subcommand", positional = true, default = "build", help = "Subcommand (only 'build' is supported)" },
   { name = "tag", positional = false, options = ["--tag"], help = "Image tag to use (default dev-{platform})" },
