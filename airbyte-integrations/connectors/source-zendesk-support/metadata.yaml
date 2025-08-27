@@ -7,11 +7,11 @@ data:
       - ${subdomain}.zendesk.com
       - zendesk.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.60.16@sha256:b8126848437ec5a6cff05fb4796fd775450b83e57925674d856a1838a390a28c
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.61.2@sha256:edb24751e6c468c6e7fc17e106d2d8beb0bcdb9ec3df8c2c1ae6748fb2eb09b6
   connectorSubtype: api
   connectorType: source
   definitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
-  dockerImageTag: 4.10.8
+  dockerImageTag: 4.10.9
   dockerRepository: airbyte/source-zendesk-support
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-support
   githubIssueLabel: source-zendesk-support

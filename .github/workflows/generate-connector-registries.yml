@@ -34,7 +34,7 @@ jobs:
       - name: Install Poetry
         uses: snok/install-poetry@d526ede1e27960b7b181a5ac53044f552afdaa38 # v1.4.1
         with:
-          version: latest
+          version: 2.1.4
           virtualenvs-create: true
           virtualenvs-in-project: true
 
@@ -98,8 +98,8 @@ jobs:
         run: |
           poetry run metadata_service generate-connector-registry prod-airbyte-cloud-connector-metadata-service oss
 
-  generate-specs-secrets-mask:
-    name: Generate Specs Secrets Mask
+  post-registry-generation:
+    name: Post registry generation steps
     runs-on: ubuntu-24.04
     needs: [generate-cloud-registry, generate-oss-registry]
 
@@ -140,3 +140,10 @@ jobs:
         shell: bash
         run: |
           poetry run metadata_service generate-specs-secrets-mask prod-airbyte-cloud-connector-metadata-service
+
+      - name: Generate connector registry report
+        shell: bash
+        env:
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
+        # Note: --project because we're on poetry 2.x
+        run: poetry run --project airbyte-ci/connectors/metadata_service/lib metadata_service generate-registry-report dev-airbyte-cloud-connector-metadata-service-2
