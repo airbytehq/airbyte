@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 env:
-  DEV_GCS_BUCKET_NAME: dev-airbyte-cloud-connector-metadata-service
+  DEV_GCS_BUCKET_NAME: dev-airbyte-cloud-connector-metadata-service-2
   PROD_GCS_BUCKET_NAME: prod-airbyte-cloud-connector-metadata-service
   BINARY_FILE_NAME: airbyte-ci
 
