@@ -32,7 +32,12 @@ from metadata_service.constants import (
 from metadata_service.helpers.gcs import get_gcs_storage_client, safe_read_gcs_file
 from metadata_service.helpers.object_helpers import deep_copy_params, default_none_to_dict
 from metadata_service.helpers.slack import send_slack_message
-from metadata_service.models.generated import ConnectorRegistryDestinationDefinition, ConnectorRegistrySourceDefinition
+from metadata_service.models.generated import (
+    ConnectorRegistryDestinationDefinition,
+    ConnectorRegistrySourceDefinition,
+    GeneratedFields,
+    SourceFileInfo,
+)
 from metadata_service.registry import ConnectorTypePrimaryKey, ConnectorTypes
 from metadata_service.spec_cache import SpecCache
 
@@ -486,8 +491,11 @@ def generate_and_persist_registry_entry(
 
                 # set the correct metadata blob path on the registry entry
                 registry_entry_model = copy.deepcopy(registry_entry_model)
-                if registry_entry_model.generated is not None:
-                    registry_entry_model.generated.metadata_file_path = metadata_blob_path
+                generated_fields: Optional[GeneratedFields] = registry_entry_model.generated
+                if generated_fields is not None:
+                    source_file_info: Optional[SourceFileInfo] = generated_fields.source_file_info
+                    if source_file_info is not None:
+                        source_file_info.metadata_file_path = metadata_blob_path
                 _persist_connector_registry_entry(registry_entry_model, registry_entry_blob_path)
 
                 message = f"*🤖 🟢 _Registry Entry Generation_ SUCCESS*:\nRegistry Entry: `{registry_type}.json`\nConnector: `{metadata_data['dockerRepository']}`\nGCS Bucket: `{bucket_name}`\nPath: `{registry_entry_blob_path}`."
