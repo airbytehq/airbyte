@@ -5,8 +5,8 @@
 from urllib.parse import parse_qs, urlencode, urlparse
 
 import pytest
+from conftest import TEST_CONFIG, get_source
 from freezegun import freeze_time
-from source_twilio.source import SourceTwilio
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
@@ -14,14 +14,6 @@ from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.state_builder import StateBuilder
 
 
-TEST_CONFIG = {
-    "account_sid": "AC123",
-    "auth_token": "secret",
-    "start_date": "2021-01-01T00:00:00Z",
-    "lookback_window": 0,
-}
-
-TEST_INSTANCE = SourceTwilio(TEST_CONFIG, None, None)
 BASE = "https://api.twilio.com/2010-04-01"
 
 ACCOUNTS_JSON = {
@@ -40,17 +32,9 @@ ACCOUNTS_JSON = {
 }
 
 
-def find_stream(stream_name, config, state=None):
-    streams = SourceTwilio(config, None, state).streams(config=config)
-    for stream in streams:
-        if stream.name == stream_name:
-            return stream
-    raise ValueError(f"Stream {stream_name} not found")
-
-
 def read_from_stream(cfg, stream: str, sync_mode, state=None, expecting_exception: bool = False) -> EntrypointOutput:
     catalog = CatalogBuilder().with_stream(stream, sync_mode).build()
-    return read(SourceTwilio(catalog, cfg, state), cfg, catalog, state, expecting_exception)
+    return read(get_source(cfg, state), cfg, catalog, state, expecting_exception)
 
 
 class TestTwilioStream:
