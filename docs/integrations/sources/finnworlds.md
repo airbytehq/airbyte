@@ -33,6 +33,7 @@ Docs : https://finnworlds.com/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.31 | 2025-08-23 | [65253](https://github.com/airbytehq/airbyte/pull/65253) | Update dependencies |
 | 0.0.30 | 2025-08-09 | [64796](https://github.com/airbytehq/airbyte/pull/64796) | Update dependencies |
 | 0.0.29 | 2025-08-02 | [64360](https://github.com/airbytehq/airbyte/pull/64360) | Update dependencies |
 | 0.0.28 | 2025-07-26 | [64024](https://github.com/airbytehq/airbyte/pull/64024) | Update dependencies |

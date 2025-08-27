@@ -26,6 +26,7 @@ Outlook is the email service provided by Microsoft. This connector enables you t
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.3 | 2025-08-23 | [65161](https://github.com/airbytehq/airbyte/pull/65161) | Update dependencies |
 | 0.0.2 | 2025-08-14 | [64942](https://github.com/airbytehq/airbyte/pull/64942) | Fix docker image entrypoint for platform syncs |
 | 0.0.1 | 2025-08-14 | | Initial release by [@saif-qureshi-341](https://github.com/saif-qureshi-341) via Connector Builder |
 
