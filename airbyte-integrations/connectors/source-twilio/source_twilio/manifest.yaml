@@ -14,6 +14,19 @@ definitions:
       type: BasicHttpAuthenticator
       password: '{{ config["auth_token"] }}'
       username: '{{ config["account_sid"] }}'
+    error_handler:
+      type: DefaultErrorHandler
+      backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: retry-after
+        - type: ExponentialBackoffStrategy
+      response_filters:
+        - type: HttpResponseFilter
+          action: RATE_LIMITED
+          http_codes:
+            - 429
+          error_message: >-
+            Twilio rate limit reached (429). Backoff based on 'retry-after' header, then exponential backoff fallback.
 
   base_stream:
     type: DeclarativeStream
@@ -30,7 +43,9 @@ definitions:
           type: DpathExtractor
           field_path:
             - "{{ parameters.get('data_field') or parameters['name'] }}"
-        schema_normalization: Default
+        schema_normalization:
+          type: CustomSchemaNormalization
+          class_name: source_twilio.components.TwilioDateTimeTypeTransformer
       paginator:
         type: DefaultPaginator
         page_token_option:
@@ -43,37 +58,6 @@ definitions:
           type: CursorPagination
           page_size: 1000
           cursor_value: '{{ response.get("meta", {}).get("next_page_url") or response.get("next_page_uri") }}'
-    transformations:
-      # Twilio API returns datetime in two formats:
-      #   - RFC2822, like "Fri, 11 Dec 2020 04:28:40 +0000";
-      #   - ISO8601, like "2020-12-11T04:29:09Z".
-      # We only transform RFC2822 values (detected by the presence of ", ").
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path: [date_created]
-            value: >-
-              {{
-                format_datetime(
-                  record['date_created'],
-                  "%Y-%m-%dT%H:%M:%SZ",
-                  "%a, %d %b %Y %H:%M:%S %z"
-                )
-                if record.get('date_created') and ', ' in record['date_created']
-                else record.get('date_created')
-              }}
-          - type: AddedFieldDefinition
-            path: [date_updated]
-            value: >-
-              {{
-                format_datetime(
-                  record['date_updated'],
-                  "%Y-%m-%dT%H:%M:%SZ",
-                  "%a, %d %b %Y %H:%M:%S %z"
-                )
-                if record.get('date_updated') and ', ' in record['date_updated']
-                else record.get('date_updated')
-              }}
 
   base_substream:
     $ref: "#/definitions/base_stream"
@@ -137,6 +121,65 @@ definitions:
             parent_key: subresource_uris
             partition_field: subresource_uris
 
+  base_nested_incremental_from_accounts_stream:
+    $ref: "#/definitions/base_substream_with_uri_from_subresource"
+    retriever:
+      $ref: "#/definitions/base_substream_with_uri_from_subresource/retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        url: "https://api.twilio.com{{ stream_partition['subresource_uri'] }}"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/accounts_stream"
+              retriever:
+                $ref: "#/definitions/base_stream/retriever"
+                record_selector:
+                  $ref: "#/definitions/base_stream/retriever/record_selector"
+                  record_filter:
+                    type: RecordFilter
+                    condition: "{{ parameters.get('subresource_uri_key') or parameters.get('data_field') or parameters['name'] in record.get('subresource_uris', {}) }}"
+              transformations:
+                - type: AddFields
+                  fields:
+                    - type: AddedFieldDefinition
+                      path: [subresource_uri]
+                      value: "{{ record.get('subresource_uris', {}).get(parameters.get('subresource_uri_key') or parameters.get('data_field') or parameters['name']) }}"
+            parent_key: subresource_uri
+            partition_field: subresource_uri
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "{{ parameters.get('cursor_field') }}"
+      datetime_format: "%Y-%m-%d"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%SZ"
+        - "%Y-%m-%d"
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+      cursor_granularity: P1D
+      step: P1Y
+      lookback_window: "P{{ config.get('lookback_window', 0) }}D"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ format_datetime(config.get('start_date', '1970-01-01T00:00:00Z'), '%Y-%m-%d') }}"
+        datetime_format: "%Y-%m-%d"
+      start_time_option:
+        type: RequestOption
+        field_name: "{{ parameters.get('start_time_key') }}"
+        inject_into: request_parameter
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ today_utc() }}"
+        datetime_format: "%Y-%m-%d"
+      end_time_option:
+        type: RequestOption
+        field_name: "{{ parameters.get('end_time_key') }}"
+        inject_into: request_parameter
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_twilio.components.TwilioStateMigration
+
   accounts_stream:
     $ref: "#/definitions/base_stream"
     schema_loader:
@@ -165,6 +208,42 @@ definitions:
         $ref: "#/schemas/applications"
     $parameters:
       name: applications
+
+  alerts_stream:
+    $ref: "#/definitions/base_stream"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: date_generated
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      cursor_granularity: PT1S
+      step: P1Y
+      lookback_window: "P{{ config.get('lookback_window', 0) }}D"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('start_date', '1970-01-01T00:00:00Z') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        type: RequestOption
+        field_name: StartDate
+        inject_into: request_parameter
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_time_option:
+        type: RequestOption
+        field_name: EndDate
+        inject_into: request_parameter
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_twilio.components.TwilioAlertsStateMigration
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/alerts"
+    $parameters:
+      url: https://monitor.twilio.com/v1/Alerts
+      name: alerts
 
   available_phone_number_countries_stream:
     $ref: "#/definitions/base_substream_with_uri_from_subresource"
@@ -214,6 +293,63 @@ definitions:
       data_field: available_phone_numbers
       subresource_uri_subkey: toll_free
 
+  calls_stream:
+    $ref: "#/definitions/base_nested_incremental_from_accounts_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/calls"
+    $parameters:
+      name: calls
+      subresource_uri_key: calls
+      cursor_field: end_time
+      start_time_key: "EndTime>"
+      end_time_key: "EndTime<"
+
+  conference_participants_stream:
+    primary_key:
+      - account_sid
+      - conference_sid
+    $ref: "#/definitions/base_substream_with_uri_from_subresource"
+    retriever:
+      $ref: "#/definitions/base_substream_with_uri_from_subresource/retriever"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/conferences_stream"
+              retriever:
+                $ref: "#/definitions/base_nested_incremental_from_accounts_stream/retriever"
+                record_selector:
+                  $ref: "#/definitions/base_stream/retriever/record_selector"
+                  record_filter:
+                    type: RecordFilter
+                    condition: "{{ parameters.get('subresource_uri_key') or parameters.get('data_field') or parameters['name'] in record.get('subresource_uris', {}) }}"
+            parent_key: subresource_uris
+            partition_field: subresource_uris
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/conference_participants"
+    $parameters:
+      name: conference_participants
+      data_field: participants
+
+  conferences_stream:
+    $ref: "#/definitions/base_nested_incremental_from_accounts_stream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/conferences"
+    $parameters:
+      name: conferences
+      data_field: conferences
+      subresource_uri_key: conferences
+      cursor_field: date_created
+      start_time_key: DateCreated>
+      end_time_key: DateCreated<
+
   conversation_participants_stream:
     $ref: "#/definitions/base_stream"
     retriever:
@@ -223,7 +359,9 @@ definitions:
         extractor:
           type: DpathExtractor
           field_path: ["participants"]
-        schema_normalization: Default
+        schema_normalization:
+          type: CustomSchemaNormalization
+          class_name: source_twilio.components.TwilioDateTimeTypeTransformer
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -248,7 +386,9 @@ definitions:
         extractor:
           type: DpathExtractor
           field_path: ["messages"]
-        schema_normalization: Default
+        schema_normalization:
+          type: CustomSchemaNormalization
+          class_name: source_twilio.components.TwilioDateTimeTypeTransformer
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -351,6 +491,81 @@ definitions:
     $parameters:
       name: outgoing_caller_ids
 
+  message_media_stream:
+    $ref: "#/definitions/base_nested_incremental_from_accounts_stream"
+    retriever:
+      $ref: "#/definitions/base_substream_with_uri_from_subresource/retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        url: "https://api.twilio.com{{ stream_partition['subresource_uri'] }}"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/messages_stream"
+              retriever:
+                $ref: "#/definitions/base_nested_incremental_from_accounts_stream/retriever"
+                record_selector:
+                  $ref: "#/definitions/base_stream/retriever/record_selector"
+                  record_filter:
+                    type: RecordFilter
+                    condition: "{{ parameters['subresource_uri_subkey'] in record.get('subresource_uris', {}) and record.get('num_media', '0') != '0' }}"
+              transformations:
+                - type: AddFields
+                  fields:
+                    - type: AddedFieldDefinition
+                      path: [subresource_uri]
+                      value: "{{ record.get('subresource_uris', {}).get(parameters['subresource_uri_subkey']) }}"
+            parent_key: subresource_uri
+            partition_field: subresource_uri
+    incremental_sync:
+      $ref: "#/definitions/base_nested_incremental_from_accounts_stream/incremental_sync"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ max(format_datetime(config.get('start_date', '1970-01-01T00:00:00Z'), '%Y-%m-%d'), day_delta(-400, format='%Y-%m-%d')) }}"
+        datetime_format: "%Y-%m-%d"
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_twilio.components.TwilioMessageMediaStateMigration
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/message_media"
+    $parameters:
+      name: message_media
+      data_field: media_list
+      subresource_uri_subkey: media
+      cursor_field: date_created
+      start_time_key: DateCreated>
+      end_time_key: DateCreated<
+
+  messages_stream:
+    $ref: "#/definitions/base_nested_incremental_from_accounts_stream"
+    incremental_sync:
+      $ref: "#/definitions/base_nested_incremental_from_accounts_stream/incremental_sync"
+      datetime_format: "%Y-%m-%d %H:%M:%SZ"
+      cursor_granularity: PT0.000001S
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ max(format_datetime(config.get('start_date', '1970-01-01T00:00:00Z'), '%Y-%m-%d %H:%M:%SZ'), day_delta(-400, format='%Y-%m-%d %H:%M:%SZ')) }}"
+        datetime_format: "%Y-%m-%d %H:%M:%SZ"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%d %H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%d %H:%M:%SZ"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/messages"
+    $parameters:
+      name: messages
+      data_field: messages
+      subresource_uri_key: messages
+      cursor_field: date_sent
+      start_time_key: DateSent>
+      end_time_key: DateSent<
+
   queues_stream:
     $ref: "#/definitions/base_substream_with_uri_from_subresource"
     schema_loader:
@@ -359,6 +574,31 @@ definitions:
         $ref: "#/schemas/queues"
     $parameters:
       name: queues
+
+  recordings_stream:
+    $ref: "#/definitions/base_nested_incremental_from_accounts_stream"
+    incremental_sync:
+      $ref: "#/definitions/base_nested_incremental_from_accounts_stream/incremental_sync"
+      datetime_format: "%Y-%m-%d %H:%M:%SZ"
+      cursor_granularity: PT0.000001S
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ max(format_datetime(config.get('start_date', '1970-01-01T00:00:00Z'), '%Y-%m-%d %H:%M:%SZ'), day_delta(-400, format='%Y-%m-%d %H:%M:%SZ')) }}"
+        datetime_format: "%Y-%m-%d %H:%M:%SZ"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%d %H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%d %H:%M:%SZ"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/recordings"
+    $parameters:
+      name: recordings
+      subresource_uri_key: recordings
+      cursor_field: date_created
+      start_time_key: DateCreated>
+      end_time_key: DateCreated<
 
   roles_stream:
     $ref: "#/definitions/base_stream"
@@ -398,7 +638,9 @@ definitions:
         extractor:
           type: DpathExtractor
           field_path: ["steps"]
-        schema_normalization: Default
+        schema_normalization:
+          type: CustomSchemaNormalization
+          class_name: source_twilio.components.TwilioDateTimeTypeTransformer
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -434,6 +676,51 @@ definitions:
       url: https://trunking.twilio.com/v1/Trunks
       name: trunks
 
+  usage_records_stream:
+    $ref: "#/definitions/base_nested_incremental_from_accounts_stream"
+    primary_key:
+      - account_sid
+      - category
+      - start_date
+      - end_date
+    retriever:
+      $ref: "#/definitions/base_stream/retriever"
+      requester:
+        $ref: "#/definitions/base_requester"
+        url: "https://api.twilio.com/2010-04-01/Accounts/{{ stream_partition['account_sid'] }}/Usage/Records/Daily.json"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream: "#/definitions/accounts_stream"
+            parent_key: sid
+            partition_field: account_sid
+    transformations:
+      - type: RemoveFields
+        field_pointers: [["as_of"]]
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/usage_records"
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_twilio.components.TwilioUsageRecordsStateMigration
+    $parameters:
+      name: usage_records
+      cursor_field: start_date
+      start_time_key: StartDate
+      end_time_key: EndDate
+
+  usage_triggers_stream:
+    $ref: "#/definitions/base_substream"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/usage_triggers"
+    $parameters:
+      url: "https://api.twilio.com/2010-04-01/Accounts/{{ stream_partition['sid'] }}/Usage/Triggers.json"
+      name: usage_triggers
+
   user_conversations_stream:
     $ref: "#/definitions/base_stream"
     primary_key:
@@ -445,7 +732,9 @@ definitions:
         extractor:
           type: DpathExtractor
           field_path: ["conversations"]
-        schema_normalization: Default
+        schema_normalization:
+          type: CustomSchemaNormalization
+          class_name: source_twilio.components.TwilioDateTimeTypeTransformer
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -493,11 +782,15 @@ definitions:
 streams:
   - $ref: "#/definitions/accounts_stream"
   - $ref: "#/definitions/addresses_stream"
+  - $ref: "#/definitions/alerts_stream"
   - $ref: "#/definitions/applications_stream"
   - $ref: "#/definitions/available_phone_number_countries_stream"
   - $ref: "#/definitions/available_phone_numbers_local_stream"
   - $ref: "#/definitions/available_phone_numbers_mobile_stream"
   - $ref: "#/definitions/available_phone_numbers_toll_free_stream"
+  - $ref: "#/definitions/calls_stream"
+  - $ref: "#/definitions/conference_participants_stream"
+  - $ref: "#/definitions/conferences_stream"
   - $ref: "#/definitions/conversation_participants_stream"
   - $ref: "#/definitions/conversation_messages_stream"
   - $ref: "#/definitions/conversations_stream"
@@ -507,12 +800,17 @@ streams:
   - $ref: "#/definitions/incoming_phone_numbers_stream"
   - $ref: "#/definitions/keys_stream"
   - $ref: "#/definitions/outgoing_caller_ids_stream"
+  - $ref: "#/definitions/message_media_stream"
+  - $ref: "#/definitions/messages_stream"
   - $ref: "#/definitions/queues_stream"
+  - $ref: "#/definitions/recordings_stream"
   - $ref: "#/definitions/roles_stream"
   - $ref: "#/definitions/services_stream"
   - $ref: "#/definitions/step_stream"
   - $ref: "#/definitions/trunks_stream"
   - $ref: "#/definitions/transcriptions_stream"
+  - $ref: "#/definitions/usage_records_stream"
+  - $ref: "#/definitions/usage_triggers_stream"
   - $ref: "#/definitions/user_conversations_stream"
   - $ref: "#/definitions/users_stream"
   - $ref: "#/definitions/verify_services_stream"

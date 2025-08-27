@@ -54,7 +54,7 @@ def find_stream(stream_name, config, state=None):
     raise ValueError(f"Stream {stream_name} not found")
 
 
-GRAPH_URL = resolve_manifest(source=get_source(config={}, state=None)).record.data["manifest"]["definitions"]["base_requester"]["url_base"]
+GRAPH_URL = "https://graph.facebook.com/v23.0"
 
 account_url = f"{GRAPH_URL}/me/accounts?fields=id%2Cinstagram_business_account"
 
