@@ -236,7 +236,7 @@ definitions:
         inject_into: request_parameter
     state_migrations:
       - type: CustomStateMigration
-        class_name: source_twilio.components.TwilioAlertsStateMigration
+        class_name: source_declarative_manifest.components.TwilioAlertsStateMigration
     schema_loader:
       type: InlineSchemaLoader
       schema:
