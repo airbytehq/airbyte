@@ -5,7 +5,6 @@
 # ```toml
 # [tool.poe]
 # include = [
-#     "${POE_GIT_DIR}/poe-tasks/shared-connector-tasks.toml",
 #     "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
 # ]
 #
@@ -115,7 +114,19 @@ help = "Get complete CDK dependency information as JSON from pyproject.toml file
 shell = '''
 set -eu
 EXTRAS=$(poe -qq detect-cdk-extras)
-DEP_STR="${CDK_REF}${EXTRAS}"
+if [ -n "$EXTRAS" ]; then
+  # For version references like "airbyte-cdk@1.2.3", insert extras before @
+  if [[ "$CDK_REF" == *"@"* ]]; then
+    BASE_REF="${CDK_REF%@*}"
+    VERSION_PART="${CDK_REF#*@}"
+    DEP_STR="${BASE_REF}${EXTRAS}@${VERSION_PART}"
+  else
+    # For git URLs and local paths, append extras at the end
+    DEP_STR="${CDK_REF}${EXTRAS}"
+  fi
+else
+  DEP_STR="${CDK_REF}"
+fi
 echo Running: poetry add \"${DEP_STR}\"
 poetry add "${DEP_STR}"
 '''
@@ -160,3 +171,21 @@ CDK_ROOT=${REPO_ROOT}/../airbyte-python-cdk
 poe _use-cdk-with-ref "${CDK_ROOT}"
 '''
 help = "Pin to your local working copy of the CDK, in editable mode. (Expects that the CDK and airbyte repo are sibling directories.)"
+
+# Generic tasks (same across all connector types)
+
+[tool.poe.tasks.get-language]
+cmd = """yq eval '.data.tags[] | select(test("^language:")) | sub("language:","")' ${POE_PWD}/metadata.yaml"""
+help = "Get the language of the connector from its metadata.yaml file. Use with -qq to get just the language name."
+
+[tool.poe.tasks.get-base-image]
+cmd = """yq eval '.data.connectorBuildOptions.baseImage' ${POE_PWD}/metadata.yaml"""
+help = "Get the base image of the connector from its metadata.yaml file."
+
+[tool.poe.tasks.get-version]
+cmd = """yq eval '.data.dockerImageTag' ${POE_PWD}/metadata.yaml"""
+help = "Get the version of the connector from its metadata.yaml file."
+
+[tool.poe.tasks.run-cat-tests]
+shell = "airbyte-ci connectors --name=`poe -qq get-connector-name` test --only-step=acceptance"
+help = "Run the legacy Airbyte-CI acceptance tests (CAT tests)."
