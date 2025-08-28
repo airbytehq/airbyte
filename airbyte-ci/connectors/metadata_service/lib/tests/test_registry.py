@@ -334,7 +334,7 @@ class TestPersistRegistryToJson:
             mock_blob = Mock()
             mock_bucket.blob.return_value = mock_blob
 
-            _persist_registry(mock_registry, registry_type, Mock())
+            _persist_registry(mock_registry, registry_type, mock_bucket)
 
             mock_bucket.blob.assert_called_once_with(f"{REGISTRIES_FOLDER}/{expected_filename}")
             mock_blob.upload_from_string.assert_called_once()
