@@ -98,6 +98,8 @@ jobs:
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
         with:
           fetch-depth: 2 # Required so we can conduct a diff from the previous commit to understand what connectors have changed.
+          ref: ${{ github.sha }} # if there's no caller ref, then workflow was triggered from the airbyte repo
+          submodules: true
 
       - name: Create docker buildx builder
         id: create-buildx-builder
@@ -250,6 +252,8 @@ jobs:
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
         with:
           fetch-depth: 2 # Required so we can conduct a diff from the previous commit to understand what connectors have changed.
+          ref: ${{ github.sha }} # if there's no caller ref, then workflow was triggered from the airbyte repo
+          submodules: true
 
       - name: Set up Python
         # v5
