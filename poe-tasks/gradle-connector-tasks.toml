@@ -6,6 +6,7 @@
 # `airbyte-integrations/connectors/<connector-name>/poe_tasks.toml`
 #
 # include = [
+#     "${POE_GIT_DIR}/poe-tasks/shared-connector-tasks.toml",
 #     "${POE_GIT_DIR}/poe-tasks/gradle-connector-tasks.toml",
 # ]
 #
@@ -37,8 +38,6 @@ install = [
 
 gradle-warmup.help = "Warm up the Gradle daemon and cache by listing available tasks (no build)"
 gradle-warmup.cmd = "${POE_GIT_ROOT}/gradlew --no-daemon tasks --quiet"
-install-cdk-cli.help = "Install the CDK CLI for things like secrets and testing"
-install-cdk-cli.cmd = "uv tool install --upgrade 'airbyte-cdk[dev]'"
 
 test-all = "gradle check"
 test-fast = "test-all"  # TODO: Add a fast-fail unit test definition
@@ -69,21 +68,3 @@ ${POE_ROOT}/gradlew :airbyte-integrations:connectors:${connector_name}:${task_an
 args = [
   { name = "task_and_args", positional = true, multiple = true, help = "Gradle task name and its arguments" }
 ]
-
-# Generic tasks (same across all connector types)
-
-[tasks.get-language]
-cmd = """yq eval '.data.tags[] | select(test("^language:")) | sub("language:","")' ${POE_PWD}/metadata.yaml"""
-help = "Get the language of the connector from its metadata.yaml file. Use with -qq to get just the language name."
-
-[tasks.get-base-image]
-cmd = """yq eval '.data.connectorBuildOptions.baseImage' ${POE_PWD}/metadata.yaml"""
-help = "Get the base image of the connector from its metadata.yaml file."
-
-[tasks.get-version]
-cmd = """yq eval '.data.dockerImageTag' ${POE_PWD}/metadata.yaml"""
-help = "Get the version of the connector from its metadata.yaml file."
-
-[tasks.run-cat-tests]
-shell = "airbyte-ci connectors --name=`poe -qq get-connector-name` test --only-step=acceptance"
-help = "Run the legacy Airbyte-CI acceptance tests (CAT tests)."
