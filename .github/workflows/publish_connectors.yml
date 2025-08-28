@@ -12,10 +12,7 @@ on:
         description: "The original trigger that caused this workflow to be called."
         required: false
         default: "manual"
-        type: choice
-        options:
-          - manual
-          - push-to-master
+        type: string
       publish-java-tars:
         description: "Whether to publish Java connector tar files."
         required: false
