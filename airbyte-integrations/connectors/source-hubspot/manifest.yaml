@@ -220,6 +220,9 @@ definitions:
         - type: TypesMap
           target_type: string
           current_type: phone_number
+        - type: TypesMap
+          target_type: number
+          current_type: number
 
   deals_archived_schema_loader:
     $ref: "#/definitions/base_dynamic_schema_loader"
@@ -2575,6 +2578,9 @@ schemas:
           - integer
       default:
         description: Indicates if this pipeline is the default one in the system.
+        type:
+          - "null"
+          - boolean
 
   companies:
     $schema: http://json-schema.org/draft-07/schema#
