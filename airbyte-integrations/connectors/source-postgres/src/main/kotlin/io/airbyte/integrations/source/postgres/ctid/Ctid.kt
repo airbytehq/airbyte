@@ -33,14 +33,14 @@ class Ctid {
 
     override fun toString(): String = "($page,$tuple)"
 
-    override fun equals(o: Any?): Boolean {
-        if (this === o) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) {
             return true
         }
-        if (o == null || javaClass != o.javaClass) {
+        if (other == null || javaClass != other.javaClass) {
             return false
         }
-        val ctid = o as Ctid
+        val ctid = other as Ctid
         return page == ctid.page && tuple == ctid.tuple
     }
 
