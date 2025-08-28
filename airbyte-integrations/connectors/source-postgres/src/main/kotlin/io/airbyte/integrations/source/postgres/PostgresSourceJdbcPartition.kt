@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.postgres
 
 import com.fasterxml.jackson.databind.JsonNode
@@ -48,7 +52,9 @@ sealed class PostgresSourceJdbcPartition(
     selectQueryGenerator: SelectQueryGenerator,
     override val streamState: DefaultJdbcStreamState,
 ) : PostgresSourceJdbcPartition(selectQueryGenerator, streamState) {
-    override val completeState: OpaqueStateValue *//*PostgresSorouceJdbcStreamStateValue.snapshotCompleted*//*
+    override val completeState: OpaqueStateValue */
+/*PostgresSorouceJdbcStreamStateValue.snapshotCompleted*/
+/*
         get() = Jsons.nullNode() // TEMP
 
     override val nonResumableQuery: SelectQuery
@@ -75,8 +81,9 @@ sealed class PostgresSourceSplittablePartition(
     selectQueryGenerator: SelectQueryGenerator,
     streamState: PostgresSourceJdbcStreamState,
     val checkpointColumns: List<DataField>,
-) : PostgresSourceJdbcPartition(selectQueryGenerator, streamState),
-    JdbcSplittablePartition<PostgresSourceJdbcStreamState>{
+) :
+    PostgresSourceJdbcPartition(selectQueryGenerator, streamState),
+    JdbcSplittablePartition<PostgresSourceJdbcStreamState> {
     abstract val lowerBound: List<JsonNode>?
     abstract val upperBound: List<JsonNode>?
 
@@ -161,10 +168,11 @@ class PostgresSourceJdbcSplittableSnapshotPartition(
         get() =
             when (upperBound) {
                 null -> PostgresSourceJdbcStreamStateValue.snapshotCompleted
-                else -> PostgresSourceJdbcStreamStateValue.snapshotCheckpoint(
-                    Jsons.textNode(upperBound.toString()),
-                    filenode
-                )
+                else ->
+                    PostgresSourceJdbcStreamStateValue.snapshotCheckpoint(
+                        Jsons.textNode(upperBound.toString()),
+                        filenode
+                    )
             }
 
     override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue {
@@ -172,15 +180,16 @@ class PostgresSourceJdbcSplittableSnapshotPartition(
             lastRecord.nonEmittedData.toJson()["ctid"],
             filenode
         )
-
     }
 
     override fun extraValidation(jdbcConnectionFactory: JdbcConnectionFactory) {
-            val currentFilenode: Filenode? = PostgresSourceJdbcPartitionFactory.getStreamFilenode(streamState, jdbcConnectionFactory)
-            if (currentFilenode != filenode)
-                throw TransientErrorException("Full vacuum on table ${streamState.stream.id} detected. Filenode changed from $filenode to $currentFilenode")
+        val currentFilenode: Filenode? =
+            PostgresSourceJdbcPartitionFactory.getStreamFilenode(streamState, jdbcConnectionFactory)
+        if (currentFilenode != filenode)
+            throw TransientErrorException(
+                "Full vacuum on table ${streamState.stream.id} detected. Filenode changed from $filenode to $currentFilenode"
+            )
     }
-
 }
 
 sealed class PostgresSourceCursorPartition(
@@ -189,7 +198,8 @@ sealed class PostgresSourceCursorPartition(
     checkpointColumns: List<DataField>,
     val cursor: DataField,
     val explicitCursorUpperBound: JsonNode?,
-): PostgresSourceSplittablePartition(selectQueryGenerator, streamState, checkpointColumns),
+) :
+    PostgresSourceSplittablePartition(selectQueryGenerator, streamState, checkpointColumns),
     JdbcCursorPartition<PostgresSourceJdbcStreamState> {
 
     val cursorUpperBound: JsonNode
@@ -209,26 +219,30 @@ class PostgresSourceJdbcSplittableSnapshotWithCursorPartition(
     cursor: DataField,
     cursorUpperBound: JsonNode?,
     val filenode: Filenode?
-): PostgresSourceCursorPartition(
-    selectQueryGenerator,
-    streamState,
-    listOf(ctidField),
-    cursor,
-    cursorUpperBound) {
+) :
+    PostgresSourceCursorPartition(
+        selectQueryGenerator,
+        streamState,
+        listOf(ctidField),
+        cursor,
+        cursorUpperBound
+    ) {
 
     override val completeState: OpaqueStateValue
         get() =
             when (upperBound) {
-                null -> PostgresSourceJdbcStreamStateValue.cursorIncrementalCheckpoint(
-                    cursor,
-                    cursorUpperBound
-                )
-                else -> PostgresSourceJdbcStreamStateValue.snapshotWithCursorCheckpoint(
-                    Jsons.textNode(upperBound.toString()),
-                    cursor,
-                    cursorUpperBound,
-                    filenode,
-                )
+                null ->
+                    PostgresSourceJdbcStreamStateValue.cursorIncrementalCheckpoint(
+                        cursor,
+                        cursorUpperBound
+                    )
+                else ->
+                    PostgresSourceJdbcStreamStateValue.snapshotWithCursorCheckpoint(
+                        Jsons.textNode(upperBound.toString()),
+                        cursor,
+                        cursorUpperBound,
+                        filenode,
+                    )
             }
 
     override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
@@ -240,11 +254,13 @@ class PostgresSourceJdbcSplittableSnapshotWithCursorPartition(
         )
 
     override fun extraValidation(jdbcConnectionFactory: JdbcConnectionFactory) {
-        val currentFilenode: Filenode? = PostgresSourceJdbcPartitionFactory.getStreamFilenode(streamState, jdbcConnectionFactory)
+        val currentFilenode: Filenode? =
+            PostgresSourceJdbcPartitionFactory.getStreamFilenode(streamState, jdbcConnectionFactory)
         if (currentFilenode != filenode)
-            throw TransientErrorException("Full vacuum on table ${streamState.stream.id} detected. Filenode changed from $filenode to $currentFilenode")
+            throw TransientErrorException(
+                "Full vacuum on table ${streamState.stream.id} detected. Filenode changed from $filenode to $currentFilenode"
+            )
     }
-
 }
 
 class PostgresSourceJdbcCursorIncrementalPartition(
@@ -254,13 +270,14 @@ class PostgresSourceJdbcCursorIncrementalPartition(
     val cursorLowerBound: JsonNode,
     override val isLowerBoundIncluded: Boolean,
     cursorUpperBound: JsonNode?,
-): PostgresSourceCursorPartition(
-    selectQueryGenerator,
-    streamState,
-    listOf(cursor),
-    cursor,
-    cursorUpperBound
-) {
+) :
+    PostgresSourceCursorPartition(
+        selectQueryGenerator,
+        streamState,
+        listOf(cursor),
+        cursor,
+        cursorUpperBound
+    ) {
     override val lowerBound: List<JsonNode> = listOf(cursorLowerBound)
     override val upperBound: List<JsonNode>
         get() = listOf(cursorUpperBound)
@@ -282,10 +299,7 @@ class PostgresSourceJdbcCursorIncrementalPartition(
 
     override val completeState: OpaqueStateValue
         get() =
-            PostgresSourceJdbcStreamStateValue.cursorIncrementalCheckpoint(
-                cursor,
-                cursorUpperBound
-            )
+            PostgresSourceJdbcStreamStateValue.cursorIncrementalCheckpoint(cursor, cursorUpperBound)
     override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
         PostgresSourceJdbcStreamStateValue.cursorIncrementalCheckpoint(
             cursor,

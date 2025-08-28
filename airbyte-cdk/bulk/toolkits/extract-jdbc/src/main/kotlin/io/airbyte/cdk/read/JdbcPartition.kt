@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.read
 
-import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 
@@ -49,7 +48,6 @@ interface JdbcSplittablePartition<S : JdbcStreamState<*>> : JdbcPartition<S> {
 
     /** State value to emit when the partition is read up to (and including) [lastRecord]. */
     fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue
-
 }
 
 /** A [JdbcPartition] which allows cursor-based incremental reads. */
