@@ -1,0 +1,27 @@
+name: 'Upload Python Dependencies to GCS'
+description: 'Uploads Python dependencies for a connector to Google Cloud Storage'
+inputs:
+  connector-name:
+    description: 'Name of the connector to upload dependencies for'
+    required: true
+  bucket:
+    description: 'GCS bucket name to upload dependencies to'
+    required: true
+  release-type:
+    description: 'Type of release (pre-release or main-release)'
+    required: true
+  gcs-credentials:
+    description: 'GCS service account credentials JSON'
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - name: Upload Python Dependencies to GCS
+      shell: bash
+      run: |
+        ./poe-tasks/upload-python-dependencies.sh \
+          --name ${{ inputs.connector-name }} \
+          --bucket ${{ inputs.bucket }} \
+          --release-type ${{ inputs.release-type }}
+      env:
+        GCS_CREDENTIALS: ${{ inputs.gcs-credentials }}
