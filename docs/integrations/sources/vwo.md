@@ -34,6 +34,7 @@ Visit `https://developers.vwo.com/reference/introduction-1` for API documentatio
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.34 | 2025-08-24 | [65461](https://github.com/airbytehq/airbyte/pull/65461) | Update dependencies |
 | 0.0.33 | 2025-08-09 | [64862](https://github.com/airbytehq/airbyte/pull/64862) | Update dependencies |
 | 0.0.32 | 2025-08-02 | [64381](https://github.com/airbytehq/airbyte/pull/64381) | Update dependencies |
 | 0.0.31 | 2025-07-26 | [64080](https://github.com/airbytehq/airbyte/pull/64080) | Update dependencies |
