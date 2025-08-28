@@ -8,6 +8,19 @@ on:
       - "airbyte-integrations/connectors/**/metadata.yaml"
   workflow_call:
     inputs:
+      original_trigger:
+        description: "The original trigger that caused this workflow to be called."
+        required: false
+        default: "manual"
+        type: choice
+        options:
+          - manual
+          - push_to_master
+      publish_java_tars:
+        description: "Whether to publish Java connector tar files."
+        required: false
+        default: false
+        type: boolean
       connectors:
         description: "Connectors to Publish. This should be a string of the form: --name=source-pokeapi --name=destination-postgres"
         default: "--name=source-pokeapi"
@@ -29,6 +42,11 @@ on:
         options:
           - pre-release
           - main-release
+      publish_java_tars:
+        description: "Whether to publish Java connector tar files."
+        required: false
+        default: false
+        type: boolean
 jobs:
   publish_options:
     name: Resolve options for connector publishing
@@ -41,23 +59,21 @@ jobs:
           fetch-depth: 2 # Required so we can conduct a diff from the previous commit to understand what connectors have changed.
       - name: List connectors to publish [manual]
         id: list-connectors-manual
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
-        shell: bash
-        # When invoked manually, we run on the connectors specified in the input.
-        run: echo connectors-to-publish=$(./poe-tasks/parse-connector-name-args.sh ${{ inputs.connectors }}) | tee -a $GITHUB_OUTPUT
+        if: github.event_name == 'workflow_dispatch' || (github.event_name == 'workflow_call' && inputs.original_trigger == 'manual')
+        uses: ./.github/actions/list-connectors-manual
+        with:
+          connectors: ${{ inputs.connectors }}
       - name: List connectors to publish [On merge to master]
         id: list-connectors-master
-        if: github.event_name == 'push'
-        shell: bash
-        # When merging to master, we run on connectors that have changed since the previous commit.
-        run: echo connectors-to-publish=$(./poe-tasks/get-modified-connectors.sh --prev-commit --json) | tee -a $GITHUB_OUTPUT
+        if: github.event_name == 'push' || (github.event_name == 'workflow_call' && inputs.original_trigger == 'push_to_master')
+        uses: ./.github/actions/list-connectors-master
       - name: Resolve release type
         id: resolve-release-type
         shell: bash
         run: |
           # If workflow is triggered on merge to master, do a main release.
           # If workflow is triggered manually, use the input release type.
-          if [[ "${{ github.event_name }}" == "push" ]]; then
+          if [[ "${{ github.event_name }}" == "push" ||  ("${{ github.event_name }}" == "workflow_call" && "${{ inputs.original_trigger }}" == "push_to_master") ]]; then
             echo "release-type=main-release" | tee -a $GITHUB_OUTPUT
           else
             echo "release-type=${{ inputs.release-type }}" | tee -a $GITHUB_OUTPUT
@@ -145,44 +161,45 @@ jobs:
 
       - name: Validate connector metadata
         id: validate-connector-metadata
-        shell: bash
-        run: ./poe-tasks/validate-connector-metadata.sh --name ${{ matrix.connector }}
+        uses: ./.github/actions/validate-connector-metadata
+        with:
+          connector-name: ${{ matrix.connector }}
 
       - name: Publish to Python Registry
         id: publish-python-registry
         if: steps.connector-metadata.outputs.connector-language == 'python'
-        shell: bash
-        run: |
-          ./poe-tasks/publish-python-registry.sh --name ${{ matrix.connector }} --release-type ${{ needs.publish_options.outputs.release-type }}
-        env:
-          PYTHON_REGISTRY_TOKEN: ${{ secrets.PYPI_TOKEN }}
+        uses: ./.github/actions/publish-python-registry
+        with:
+          connector-name: ${{ matrix.connector }}
+          release-type: ${{ needs.publish_options.outputs.release-type }}
+          python-registry-token: ${{ secrets.PYPI_TOKEN }}
 
       - name: Upload Python Dependencies to GCS
         id: upload-python-dependencies-master
         if: steps.connector-metadata.outputs.connector-language == 'python'
-        shell: bash
-        env:
-          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-        run: |
-          ./poe-tasks/upload-python-dependencies.sh \
-            --name ${{ matrix.connector }} \
-            --bucket prod-airbyte-cloud-connector-metadata-service \
-            --release-type ${{ needs.publish_options.outputs.release-type }}
+        uses: ./.github/actions/upload-python-dependencies
+        with:
+          connector-name: ${{ matrix.connector }}
+          bucket: prod-airbyte-cloud-connector-metadata-service
+          release-type: ${{ needs.publish_options.outputs.release-type }}
+          gcs-credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
 
       - name: Build and publish JVM connectors images
         id: build-and-publish-JVM-connectors-images
         if: steps.connector-metadata.outputs.connector-language == 'java'
-        shell: bash
-        run: |
-          ./poe-tasks/build-and-publish-java-connectors-with-tag.sh --name ${{ matrix.connector }} --release-type ${{ needs.publish_options.outputs.release-type }} --publish
+        uses: ./.github/actions/build-publish-jvm-connectors
+        with:
+          connector-name: ${{ matrix.connector }}
+          release-type: ${{ needs.publish_options.outputs.release-type }}
 
       - name: Publish JVM connectors tar file
         id: publish-JVM-connectors-tar-file
-        if: steps.connector-metadata.outputs.connector-language == 'java'
-        shell: bash
-        run: ./poe-tasks/upload-java-connector-tar-file.sh --name ${{ matrix.connector }} --release-type ${{ needs.publish_options.outputs.release-type }}
-        env:
-          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
+        if: steps.connector-metadata.outputs.connector-language == 'java' && (inputs.publish_java_tars == 'true' || github.event_name == 'push')
+        uses: ./.github/actions/publish-jvm-tar
+        with:
+          connector-name: ${{ matrix.connector }}
+          release-type: ${{ needs.publish_options.outputs.release-type }}
+          gcs-credentials: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
         # we allow it to fail because we are testing this step. We should remove this once we are sure it works.
         continue-on-error: true
 
@@ -199,12 +216,13 @@ jobs:
 
       - name: Upload connector metadata
         id: upload-connector-metadata
-        shell: bash
-        run: ./poe-tasks/upload-connector-metadata.sh --name ${{ matrix.connector }} --release-type ${{ needs.publish_options.outputs.release-type }}
-        env:
-          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          SPEC_CACHE_GCS_CREDENTIALS: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
-          METADATA_SERVICE_GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+        uses: ./.github/actions/upload-connector-metadata
+        with:
+          connector-name: ${{ matrix.connector }}
+          release-type: ${{ needs.publish_options.outputs.release-type }}
+          gcs-credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          spec-cache-credentials: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
+          metadata-service-credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
 
   # The connector registries are generated from the spec cache,
   # and in some cases, there are cross-connector dependencies.
