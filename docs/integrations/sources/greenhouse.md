@@ -74,6 +74,7 @@ The Greenhouse connector should not run into Greenhouse API limitations under no
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.7.2 | 2025-08-28 | [64973](https://github.com/airbytehq/airbyte/pull/64973) | Update dependencies |
 | 0.7.1      | 2025-08-25 | [65510](https://github.com/airbytehq/airbyte/pull/65510)     | Fix custom migrations to reference DeclarativeStream Pydantic model instead of runtime component |
 | 0.7.0      | 2025-07-07 | [62830](https://github.com/airbytehq/airbyte/pull/62830) | Promoting release candidate 0.7.0-rc.1 to a main version. |
 | 0.7.0-rc.1 | 2025-06-29 | [47283](https://github.com/airbytehq/airbyte/pull/47283) | Migrate to Manifest-only |
