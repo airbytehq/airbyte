@@ -45,8 +45,13 @@ data:
     breakingChanges:
       6.0.0:
         message: >-
-          This update migrates the `marketing_emails` stream from HubSpot's deprecated v1 API to the new v3 API. The migration significantly changes the schema of the stream, removing many fields that were previously present. Users will need to refresh the source schema and reset the marketing_emails stream after upgrading. Please refer to the [migration guide](https://docs.airbyte.com/integrations/sources/hubspot-migrations) for more information.
-        upgradeDeadline: "2025-10-01"
+          This update migrates the `marketing_emails` stream from HubSpot's deprecated v1 API to
+          the new v3 API. While this migration significantly changes the schema of the stream,
+          removing many fields that were previously present, it also enables incremental sync
+          support for the stream. Users will need to refresh the source schema and reset the
+          `marketing_emails` stream after upgrading. Please refer to the [migration guide](https://docs.airbyte.com/integrations/sources/hubspot-migrations)
+          for more information.
+        upgradeDeadline: "2025-09-30"
         deadlineAction: "auto_upgrade"
         scopedImpact:
           - scopeType: stream

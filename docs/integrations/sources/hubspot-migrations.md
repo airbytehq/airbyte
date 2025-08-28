@@ -3,14 +3,14 @@
 ## Upgrading to 6.0.0
 
 :::note
-This change is only breaking if you are syncing the Marketing Emails stream.
+This change is only breaking if you are syncing the `marketing_emails` stream.
 :::
 
-This update migrates the `marketing_emails` stream from the deprecated HubSpot Marketing Emails API v1 to the v3 API, which will be sunset on October 1, 2025. The stream behavior remains the same, but users may notice slight differences in field names or data structure due to API changes.
+This update migrates the `marketing_emails` stream from HubSpot's deprecated v1 API to the new v3 API. While this migration significantly changes the schema of the stream, removing many fields that were previously present, it also enables incremental sync support for the stream. Users will need to refresh the source schema and reset the `marketing_emails` stream after upgrading. Please refer to HubSpot's [`marketing_emails` API documentation](https://developers.hubspot.com/docs/reference/api/marketing/emails/marketing-emails#get-%2Fmarketing%2Fv3%2Femails%2F) for more information on the changes to the endpoint and schema.
 
 Users should:
 
-- Refresh the source schema for the Marketing Emails stream.
+- Refresh the source schema for the `marketing_email` stream.
 - Reset the stream after upgrading to ensure uninterrupted syncs.
 
 ### Refresh affected schemas and reset data
