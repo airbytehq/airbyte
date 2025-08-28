@@ -405,7 +405,7 @@ def _get_registry_blob_information(
 
 
 @sentry_sdk.trace
-def _persist_connector_registry_entry(registry_entry: PolymorphicRegistryEntry, registry_entry_path: str) -> None:
+def _persist_connector_registry_entry(bucket_name: str, registry_entry: PolymorphicRegistryEntry, registry_entry_path: str) -> None:
     """Persist the connector registry entry to the GCS bucket.
 
     Args:
@@ -506,7 +506,7 @@ def generate_and_persist_registry_entry(
                     source_file_info: Optional[SourceFileInfo] = generated_fields.source_file_info
                     if source_file_info is not None:
                         source_file_info.metadata_file_path = metadata_blob_path
-                _persist_connector_registry_entry(registry_entry_model, registry_entry_blob_path)
+                _persist_connector_registry_entry(bucket_name, registry_entry_model, registry_entry_blob_path)
 
                 message = f"*🤖 🟢 _Registry Entry Generation_ SUCCESS*:\nRegistry Entry: `{registry_type}.json`\nConnector: `{metadata_data['dockerRepository']}`\nGCS Bucket: `{bucket_name}`\nPath: `{registry_entry_blob_path}`."
                 send_slack_message(PUBLISH_UPDATE_CHANNEL, message)
