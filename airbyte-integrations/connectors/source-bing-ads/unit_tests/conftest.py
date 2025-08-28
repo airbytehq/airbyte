@@ -1,12 +1,32 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-from unittest.mock import patch
+import sys
+import zipfile
+from io import BytesIO
+from pathlib import Path
+from unittest.mock import MagicMock
 
 import pytest
-from source_bing_ads import SourceBingAds
 
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.state_builder import StateBuilder
+
+
+pytest_plugins = ["airbyte_cdk.test.utils.manifest_only_fixtures"]
+
+
+def _get_manifest_path() -> Path:
+    source_declarative_manifest_path = Path("/airbyte/integration_code/source_declarative_manifest")
+    if source_declarative_manifest_path.exists():
+        return source_declarative_manifest_path
+    return Path(__file__).parent.parent
+
+
+_SOURCE_FOLDER_PATH = _get_manifest_path()
+_YAML_FILE_PATH = _SOURCE_FOLDER_PATH / "manifest.yaml"
+sys.path.append(str(_SOURCE_FOLDER_PATH))  # to allow loading custom components
 
 
 @pytest.fixture(autouse=True)
@@ -93,7 +113,7 @@ def config_with_custom_reports_fixture():
 
 @pytest.fixture(name="logger_mock")
 def logger_mock_fixture():
-    return patch("source_bing_ads.source.logging.Logger")
+    return MagicMock()
 
 
 @pytest.fixture(name="mock_auth_token")
@@ -129,10 +149,42 @@ def mock_account_query_fixture(requests_mock):
     )
 
 
+def get_source(config, state=None) -> YamlDeclarativeSource:
+    catalog = CatalogBuilder().build()
+    state = StateBuilder().build() if not state else state
+    return YamlDeclarativeSource(path_to_yaml=str(_YAML_FILE_PATH), catalog=catalog, config=config, state=state)
+
+
 def find_stream(stream_name, config, state=None):
     state = StateBuilder().build() if not state else state
-    streams = SourceBingAds(catalog=None, config=config, state=state).streams(config=config)
+    streams = get_source(config, state).streams(config=config)
     for stream in streams:
         if stream.name == stream_name:
             return stream
     raise ValueError(f"Stream {stream_name} not found")
+
+
+def create_zip_from_csv(filename: str) -> bytes:
+    """
+    Creates a zip file containing a CSV file from the resource/response folder.
+    The CSV is stored directly in the zip without additional gzip compression.
+
+    Args:
+        filename: The name of the CSV file without extension
+
+    Returns:
+        The zip file content as bytes
+    """
+    # Build path to the CSV file in resource/response folder
+    csv_path = Path(__file__).parent / f"resource/response/{filename}.csv"
+
+    # Read the CSV content
+    with open(csv_path, "r") as csv_file:
+        csv_content = csv_file.read()
+
+    # Create a zip file containing the CSV file directly (without gzip compression)
+    zip_buffer = BytesIO()
+    with zipfile.ZipFile(zip_buffer, mode="w") as zip_file:
+        zip_file.writestr(f"{filename}.csv", csv_content)
+
+    return zip_buffer.getvalue()

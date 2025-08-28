@@ -87,30 +87,61 @@ class DefaultObjectStorageFormattingWriterFactory(
                     )
                 }
             is AvroFormatConfiguration ->
-                AvroFormattingWriter(
-                    stream = stream,
-                    outputStream = outputStream,
-                    formatConfig =
-                        formatConfigProvider.objectStorageFormatConfiguration
-                            as AvroFormatConfiguration,
-                    rootLevelFlattening = flatten,
-                )
+                if (dataChannelFormat == DataChannelFormat.PROTOBUF) {
+                    ProtoToAvroFormatter(
+                        stream = stream,
+                        outputStream = outputStream,
+                        formatConfig =
+                            formatConfigProvider.objectStorageFormatConfiguration
+                                as AvroFormatConfiguration,
+                        rootLevelFlattening = flatten,
+                    )
+                } else {
+                    AvroFormattingWriter(
+                        stream = stream,
+                        outputStream = outputStream,
+                        formatConfig =
+                            formatConfigProvider.objectStorageFormatConfiguration
+                                as AvroFormatConfiguration,
+                        rootLevelFlattening = flatten,
+                    )
+                }
             is ParquetFormatConfiguration ->
-                ParquetFormattingWriter(
-                    stream = stream,
-                    outputStream = outputStream,
-                    formatConfig =
-                        formatConfigProvider.objectStorageFormatConfiguration
-                            as ParquetFormatConfiguration,
-                    rootLevelFlattening = flatten,
-                )
+                if (dataChannelFormat == DataChannelFormat.PROTOBUF) {
+                    ProtoToParquetFormatter(
+                        stream = stream,
+                        outputStream = outputStream,
+                        formatConfig =
+                            formatConfigProvider.objectStorageFormatConfiguration
+                                as ParquetFormatConfiguration,
+                        rootLevelFlattening = flatten,
+                    )
+                } else {
+                    ParquetFormattingWriter(
+                        stream = stream,
+                        outputStream = outputStream,
+                        formatConfig =
+                            formatConfigProvider.objectStorageFormatConfiguration
+                                as ParquetFormatConfiguration,
+                        rootLevelFlattening = flatten,
+                    )
+                }
             is CSVFormatConfiguration ->
-                CSVFormattingWriter(
-                    stream = stream,
-                    outputStream = outputStream,
-                    rootLevelFlattening = flatten,
-                    extractedAtAsTimestampWithTimezone = false,
-                )
+                if (dataChannelFormat == DataChannelFormat.PROTOBUF) {
+                    ProtoToCsvFormatter(
+                        stream = stream,
+                        outputStream = outputStream,
+                        rootLevelFlattening = flatten,
+                        extractedAtAsTimestampWithTimezone = false,
+                    )
+                } else {
+                    CSVFormattingWriter(
+                        stream = stream,
+                        outputStream = outputStream,
+                        rootLevelFlattening = flatten,
+                        extractedAtAsTimestampWithTimezone = false,
+                    )
+                }
         }
     }
 }

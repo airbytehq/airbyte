@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables
 
 import com.google.cloud.bigquery.StandardSQLTypeName
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteType
@@ -63,21 +64,33 @@ class BigqueryDirectLoadSqlGenerator(
                 .stream()
                 .map { c: String? -> StringUtils.wrap(c, QUOTE) }
                 .collect(Collectors.joining(", "))
-        val forceCreateTable = if (replace) "OR REPLACE" else ""
         val finalTableId = tableName.toPrettyString(QUOTE)
-        return Sql.of(
-            """
-            CREATE $forceCreateTable TABLE `$projectId`.$finalTableId (
-              _airbyte_raw_id STRING NOT NULL,
-              _airbyte_extracted_at TIMESTAMP NOT NULL,
-              _airbyte_meta JSON NOT NULL,
-              _airbyte_generation_id INTEGER,
-              $columnDeclarations
+        // bigquery has a CREATE OR REPLACE TABLE statement, but we can't use it
+        // because you can't change a partitioning/clustering scheme in-place.
+        // Bigquery requires you to drop+recreate the table in this case.
+        // For simplicity, we just always do a drop+recreate, rather than trying
+        // to detect when we can do a `create or replace` vs drop+create.
+        val dropTableStatement =
+            if (replace) {
+                listOf("""DROP TABLE IF EXISTS `$projectId`.$finalTableId""")
+            } else {
+                emptyList()
+            }
+        val createTableStatement =
+            listOf(
+                """
+                CREATE TABLE `$projectId`.$finalTableId (
+                  _airbyte_raw_id STRING NOT NULL,
+                  _airbyte_extracted_at TIMESTAMP NOT NULL,
+                  _airbyte_meta JSON NOT NULL,
+                  _airbyte_generation_id INTEGER,
+                  $columnDeclarations
+                )
+                PARTITION BY (DATE_TRUNC(_airbyte_extracted_at, DAY))
+                CLUSTER BY $clusterConfig;
+                """.trimIndent()
             )
-            PARTITION BY (DATE_TRUNC(_airbyte_extracted_at, DAY))
-            CLUSTER BY $clusterConfig;
-            """.trimIndent()
-        )
+        return Sql.separately(dropTableStatement + createTableStatement)
     }
 
     override fun overwriteTable(sourceTableName: TableName, targetTableName: TableName): Sql {
@@ -317,11 +330,18 @@ class BigqueryDirectLoadSqlGenerator(
             if (stream.importType is Dedupe) {
                 // We're doing de-duping, therefore we have a primary key.
                 // Cluster on the first 3 PK columns since BigQuery only allows up to 4 clustering
-                // columns,
-                // and we're always clustering on _airbyte_extracted_at
+                // columns, and we're always clustering on _airbyte_extracted_at
                 (stream.importType as Dedupe).primaryKey.stream().limit(3).forEach {
                     pk: List<String> ->
-                    clusterColumns.add(columnNameMapping[pk.first()]!!)
+                    val pkName = pk.first()
+                    val pkFieldType = stream.schema.asColumns()[pkName]!!
+                    val bigqueryType = toDialectType(pkFieldType.type)
+                    if (bigqueryType == StandardSQLTypeName.JSON) {
+                        throw ConfigErrorException(
+                            "Stream ${stream.mappedDescriptor.toPrettyString()}: Primary key contains non-clusterable JSON-typed column $pk"
+                        )
+                    }
+                    clusterColumns.add(columnNameMapping[pkName]!!)
                 }
             }
             clusterColumns.add("_airbyte_extracted_at")

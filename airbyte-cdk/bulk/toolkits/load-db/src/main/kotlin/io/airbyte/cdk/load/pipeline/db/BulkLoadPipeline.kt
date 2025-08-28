@@ -4,9 +4,11 @@
 
 package io.airbyte.cdk.load.pipeline.db
 
+import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.message.WithStream
 import io.airbyte.cdk.load.pipeline.LoadPipeline
+import io.airbyte.cdk.load.pipeline.LoadPipelineStep
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartFormatterStep
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPartLoaderStep
 import io.airbyte.cdk.load.pipline.object_storage.ObjectLoaderPipeline
@@ -25,4 +27,13 @@ class BulkLoadPipeline<K : WithStream, T : RemoteObject<*>>(
     @Named("recordPartLoaderStep") loaderStep: ObjectLoaderPartLoaderStep<T>,
     @Named("recordUploadCompleterStep") completerStep: ObjectLoaderUploadCompleterStep<K, T>,
     loadIntoTableStep: BulkLoaderLoadIntoTableStep<K, T>,
-) : LoadPipeline(listOf(formatterStep, loaderStep, completerStep, loadIntoTableStep))
+    @Named("dataChannelMedium") dataChannelMedium: DataChannelMedium,
+    @Named("bigQueryOneShotStep") bigQueryOneShotStep: LoadPipelineStep? = null,
+) :
+    LoadPipeline(
+        if (dataChannelMedium == DataChannelMedium.SOCKET && bigQueryOneShotStep != null) {
+            listOf(bigQueryOneShotStep)
+        } else {
+            listOf(formatterStep, loaderStep, completerStep, loadIntoTableStep)
+        }
+    )

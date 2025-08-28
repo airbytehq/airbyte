@@ -575,6 +575,18 @@ def test_extractor_supports_associations_list_interpolation(config, associations
             "174824652345600.0",
             id="test_unparsable_overflow_error_returns_original_value",
         ),
+        pytest.param(
+            "12345;6789;1525",
+            {"type": ["null", "number"]},
+            "12345;6789;1525",
+            id="test_semicolon_separated_string_returns_original_value_for_number_type",
+        ),
+        pytest.param(
+            "abc123",
+            {"type": ["null", "number"]},
+            "abc123",
+            id="test_non_numeric_string_returns_original_value_for_number_type",
+        ),
     ],
 )
 def test_entity_schema_normalization(components_module, original_value, field_schema, expected_value):

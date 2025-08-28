@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.integrationTest
 
 import DlqStateWithRecordSample
+import DlqStateWithSampleAndEmptyList
 import io.airbyte.cdk.load.MockObjectStorageClient
 import io.airbyte.cdk.load.check.DestinationChecker
 import io.airbyte.cdk.load.check.dlq.DlqChecker
@@ -34,6 +35,7 @@ import jakarta.inject.Singleton
 
 const val DLQ_INTEGRATION_TEST_ENV = "dlq-integration-test"
 const val DLQ_SAMPLE_TEST = "dlq-sample-test"
+const val DLQ_SAMPLE_WITH_EMPTY_LIST_TEST = "dlq-sample-with-empty-list-test"
 
 class DlqTestSpec : ConfigurationSpecificationWithDlq()
 
@@ -124,6 +126,11 @@ class DlqTestFactory {
     @Singleton
     @Secondary
     fun dlqStateFromRecordSampleFactory(): DlqStateFactory = DlqStateWithRecordSample.Factory()
+
+    @Singleton
+    @Requires(env = [DLQ_SAMPLE_WITH_EMPTY_LIST_TEST])
+    fun dlqStateFromRecordSampleWithEmptyListFactory(): DlqStateFactory =
+        DlqStateWithSampleAndEmptyList.Factory()
 
     @Singleton
     @Requires(env = [DLQ_SAMPLE_TEST])

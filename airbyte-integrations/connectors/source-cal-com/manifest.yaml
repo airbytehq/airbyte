@@ -852,13 +852,29 @@ schemas:
           - string
           - "null"
         format: date-time
-      rescheduled:
+      rescheduledToUid:
         type:
-          - boolean
+          - string
           - "null"
       absentHost:
         type:
           - boolean
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      cancelledByEmail:
+        type:
+          - string
+          - "null"
+      cancellationReason:
+        type:
+          - string
+          - "null"
+      rescheduledByEmail:
+        type:
+          - string
           - "null"
     required:
       - id

@@ -56,8 +56,7 @@ class S3DataLakeStreamLoader(
             icebergUtil.createTable(
                 streamDescriptor = stream.mappedDescriptor,
                 catalog = catalog,
-                schema = incomingSchema,
-                properties = properties
+                schema = incomingSchema
             )
 
         // Note that if we have columnTypeChangeBehavior OVERWRITE, we don't commit the schema
@@ -103,31 +102,20 @@ class S3DataLakeStreamLoader(
             // stale table metadata without this.
             table.refresh()
             computeOrExecuteSchemaUpdate().pendingUpdate?.commit()
-            table.manageSnapshots().fastForwardBranch(mainBranchName, stagingBranchName).commit()
+            table.manageSnapshots().replaceBranch(mainBranchName, stagingBranchName).commit()
 
-            if (stream.minimumGenerationId > 0) {
+            if (stream.isSingleGenerationTruncate()) {
                 logger.info {
                     "Detected a minimum generation ID (${stream.minimumGenerationId}). Preparing to delete obsolete generation IDs."
                 }
-                val generationIdsToDelete =
-                    (0 until stream.minimumGenerationId).map(
-                        icebergUtil::constructGenerationIdSuffix
-                    )
                 val icebergTableCleaner = IcebergTableCleaner(icebergUtil = icebergUtil)
-                icebergTableCleaner.deleteGenerationId(
-                    table,
-                    stagingBranchName,
-                    generationIdsToDelete
-                )
+                icebergTableCleaner.deleteOldGenerationData(table, stagingBranchName, stream)
                 //  Doing it again to push the deletes from the staging to main branch
                 logger.info {
                     "Deleted obsolete generation IDs up to ${stream.minimumGenerationId - 1}. " +
                         "Pushing these updates to the '$mainBranchName' branch."
                 }
-                table
-                    .manageSnapshots()
-                    .fastForwardBranch(mainBranchName, stagingBranchName)
-                    .commit()
+                table.manageSnapshots().replaceBranch(mainBranchName, stagingBranchName).commit()
             }
         }
     }

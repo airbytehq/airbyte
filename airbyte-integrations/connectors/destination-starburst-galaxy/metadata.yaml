@@ -8,7 +8,7 @@ data:
   dockerRepository: airbyte/destination-starburst-galaxy
   githubIssueLabel: destination-starburst-galaxy
   icon: starburst-galaxy.svg
-  license: MIT
+  license: ELv2
   name: Starburst Galaxy
   registryOverrides:
     cloud:

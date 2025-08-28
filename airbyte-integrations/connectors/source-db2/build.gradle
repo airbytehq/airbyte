@@ -1,5 +1,7 @@
 plugins {
     id 'airbyte-java-connector'
+    id "io.airbyte.gradle.docker"
+    id 'airbyte-connector-docker-convention'
 }
 
 airbyteJavaConnector {

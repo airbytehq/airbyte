@@ -63,7 +63,3 @@ dependencies {
 
     integrationTestImplementation("org.testcontainers:mssqlserver:$testContainersVersion")
 }
-
-tasks.named<Test>("test") {
-    systemProperties(mapOf("mockk.junit.extension.keepmocks" to "true", "mockk.junit.extension.requireParallelTesting" to "true"))
-}

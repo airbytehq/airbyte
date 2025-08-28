@@ -373,8 +373,17 @@ class EntitySchemaNormalization(TypeTransformer):
                 if "number" in target_type:
                     # do not cast numeric IDs into float, use integer instead
                     target_type = int if original_value.isnumeric() else float
-                    transformed_value = target_type(original_value.replace(",", ""))
-                    return transformed_value
+
+                    # In some cases, the returned value from Hubspot is non-numeric despite the discovered schema explicitly declaring a numeric type.
+                    # For example, a field with a type of "number" might return a string: "3092727991;3881228353;15895321999"
+                    # So, we attempt to cast the value to the declared type, and failing that, we log the error and return the original value.
+                    # This matches the previous behavior in the Python implementation.
+                    try:
+                        transformed_value = target_type(original_value.replace(",", ""))
+                        return transformed_value
+                    except ValueError:
+                        logger.exception(f"Could not cast field value {original_value} to {target_type}")
+                        return original_value
                 if "boolean" in target_type and original_value.lower() in ["true", "false"]:
                     transformed_value = str(original_value).lower() == "true"
                     return transformed_value

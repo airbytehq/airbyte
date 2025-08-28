@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/source-n8n
   githubIssueLabel: source-n8n
   icon: n8n.svg
-  license: MIT
+  license: ELv2
   name: n8n
   remoteRegistries:
     pypi:

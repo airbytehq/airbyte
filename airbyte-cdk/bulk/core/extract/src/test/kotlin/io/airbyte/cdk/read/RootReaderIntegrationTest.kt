@@ -11,6 +11,9 @@ import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.MetaField
 import io.airbyte.cdk.discover.MetaFieldDecorator
 import io.airbyte.cdk.output.BufferingOutputConsumer
+import io.airbyte.cdk.output.DataChannelFormat
+import io.airbyte.cdk.output.DataChannelMedium
+import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
@@ -35,6 +38,11 @@ import org.junit.jupiter.api.TestFactory
 import org.junit.jupiter.api.Timeout
 
 const val TEST_TIMEOUT_SECONDS = 10L
+
+val dcm = DataChannelMedium.STDIO
+val dcf = DataChannelFormat.JSONL
+val bufferSize = 8192
+val clock = ClockFactory().fixed()
 
 @Timeout(TEST_TIMEOUT_SECONDS)
 class RootReaderIntegrationTest {
@@ -123,9 +131,14 @@ class RootReaderIntegrationTest {
                 excessiveTimeout,
                 testOutputConsumer,
                 NoOpMetaFieldDecorator,
+                ResourceAcquirer(emptyList()),
                 listOf(
                     TestPartitionsCreatorFactory(Semaphore(CONSTRAINED), *testCases.toTypedArray())
                 ),
+                dcf,
+                dcm,
+                bufferSize,
+                clock,
             )
         Assertions.assertThrows(RuntimeException::class.java) {
             runBlocking(Dispatchers.Default) { rootReader.read() }
@@ -169,9 +182,14 @@ class RootReaderIntegrationTest {
                 excessiveTimeout,
                 testOutputConsumer,
                 NoOpMetaFieldDecorator,
+                ResourceAcquirer(emptyList()),
                 listOf(
                     TestPartitionsCreatorFactory(Semaphore(CONSTRAINED), *testCases.toTypedArray())
                 ),
+                dcf,
+                dcm,
+                bufferSize,
+                clock,
             )
         Assertions.assertThrows(RuntimeException::class.java) {
             runBlocking(Dispatchers.Default) { rootReader.read() }
@@ -217,12 +235,17 @@ class RootReaderIntegrationTest {
                 excessiveTimeout,
                 testOutputConsumer,
                 NoOpMetaFieldDecorator,
+                ResourceAcquirer(emptyList()),
                 listOf(
                     ConfigErrorThrowingGlobalPartitionsCreatorFactory(
                         Semaphore(CONSTRAINED),
                         *testCases.toTypedArray()
                     )
                 ),
+                dcf,
+                dcm,
+                bufferSize,
+                clock,
             )
         Assertions.assertThrows(ConfigErrorException::class.java) {
             runBlocking(Dispatchers.Default) { rootReader.read() }
@@ -281,7 +304,12 @@ data class TestCase(
                 excessiveTimeout,
                 testOutputConsumer,
                 NoOpMetaFieldDecorator,
+                ResourceAcquirer(emptyList()),
                 listOf(TestPartitionsCreatorFactory(Semaphore(resource), this)),
+                dcf,
+                dcm,
+                bufferSize,
+                clock,
             )
         try {
             runBlocking(Dispatchers.Default) { rootReader.read() }
@@ -700,6 +728,13 @@ data object NoOpMetaFieldDecorator : MetaFieldDecorator {
         globalStateValue: OpaqueStateValue?,
         stream: Stream,
         recordData: ObjectNode
+    ) {}
+
+    override fun decorateRecordData(
+        timestamp: OffsetDateTime,
+        globalStateValue: OpaqueStateValue?,
+        stream: Stream,
+        recordData: NativeRecordPayload
     ) {}
 }
 

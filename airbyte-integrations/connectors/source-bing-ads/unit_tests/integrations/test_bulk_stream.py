@@ -4,19 +4,14 @@ from pathlib import Path
 from typing import Optional
 
 from base_test import BaseTest
-from bingads.v13.bulk.bulk_service_manager import BulkServiceManager
 from request_builder import RequestBuilder
 
-from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
+from airbyte_cdk.test.mock_http import HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
 
 
 class TestBulkStream(BaseTest):
     download_entity: str = None
-
-    @property
-    def service_manager(self) -> BulkServiceManager:
-        return BulkServiceManager
 
     def mock_apis(self, file: str, read_with_state: Optional[bool] = False):
         self.mock_user_query_api(response_template="user_query")
@@ -72,17 +67,3 @@ class TestBulkStream(BaseTest):
             RequestBuilder(resource="path/to/bulk/resultquery/url", api="bulk").build(),
             HttpResponse(encoded_file_content, 200),
         )
-
-    def _download_file(self, file: Optional[str] = None) -> Path:
-        """
-        Returns path to temporary file of downloaded data that will be use in read.
-        Base file should be named as {file_name}.cvs in resource/response folder.
-        """
-        if file:
-            path_to_tmp_file = Path(__file__).parent.parent / f"resource/response/{file}_tmp.csv"
-            path_to_file_base = Path(__file__).parent.parent / f"resource/response/{file}.csv"
-            with open(path_to_file_base, "r") as f1, open(path_to_tmp_file, "w") as f2:
-                for line in f1:
-                    f2.write(line)
-            return path_to_tmp_file
-        return Path(__file__).parent.parent / "resource/response/non-existing-file.csv"

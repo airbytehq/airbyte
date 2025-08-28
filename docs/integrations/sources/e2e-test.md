@@ -74,6 +74,7 @@ The OSS and Cloud variants have the same version number. The Cloud variant was i
 
 | Version | Date       | Pull request                                                                                                      | Subject                                                                                               |
 |---------|------------|-------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------|
+| 2.2.3   | 2025-07-10 | [62917](https://github.com/airbytehq/airbyte/pull/62917)                                                          | Convert to new gradle build flow                                                                      |
 | 2.2.3   | 2024-05-09 | [59761](https://github.com/airbytehq/airbyte/pull/59761)                                                          | Update to new gradle flow.                                                                            |
 | 2.2.2   | 2024-04-25 | [37581](https://github.com/airbytehq/airbyte/pull/37581)                                                          | bump jsonschemafriend to 0.12.4                                                                       |
 | 2.2.1   | 2024-02-13 | [35231](https://github.com/airbytehq/airbyte/pull/35231)                                                          | Adopt JDK 0.20.4.                                                                                     |

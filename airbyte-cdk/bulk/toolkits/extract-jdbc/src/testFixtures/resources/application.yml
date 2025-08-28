@@ -1,6 +1,10 @@
 ---
 airbyte:
   connector:
+    data-channel:
+      medium: STDIO
+      format: JSONL
+      socket-paths:
     check:
       jdbc:
         queries:

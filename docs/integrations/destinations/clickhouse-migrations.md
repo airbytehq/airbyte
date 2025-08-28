@@ -1,67 +1,54 @@
 # Clickhouse Migration Guide
 
-## Upgrading to 1.0.0
+## SSH Support :warning:
 
-This version removes the option to use "normalization" with clickhouse. It also changes
-the schema and database of Airbyte's "raw" tables to be compatible with the new
-[Destinations V2](https://docs.airbyte.com/release_notes/upgrading_to_destinations_v2/#what-is-destinations-v2)
-format. These changes will likely require updates to downstream dbt / SQL models. After this update,
-Airbyte will only produce the ‘raw’ v2 tables, which store all content in JSON. These changes remove
-the ability to do deduplicated syncs with Clickhouse. (Clickhouse has an overview)[[https://clickhouse.com/docs/en/integrations/dbt]]
-for integrating with dbt If you are interested in the Clickhouse destination gaining the full features
-of Destinations V2 (including final tables), click [[https://github.com/airbytehq/airbyte/discussions/35339]]
-to register your interest.
+SSH is implementation for the new connector is in Beta. If you upgrade and SSH
+does not work for you, please reach out to support.
 
-This upgrade will ignore any existing raw tables and will not migrate any data to the new schema.
-For each stream, you could perform the following query to migrate the data from the old raw table
-to the new raw table:
+## Upgrading to 2.0.0
 
-```sql
--- assumes your database was 'default'
--- replace `{{stream_name}}` with replace your stream name
+This version differs from 1.0.0 radically. Whereas 1.0.0 wrote all your data
+as JSON to raw tables in airbyte_internal database, 2.0.0 will properly separate
+your schema into typed columns and write to the specified database in the
+configuration and the un-prefixed table name. You will no longer see
+`airbyte_internal.{database}_raw__stream_{table}` and will instead see
+`{database}.{table}`.
 
-CREATE TABLE airbyte_internal.default_raw__stream_{{stream_name}}
-(
-    `_airbyte_raw_id` String,
-    `_airbyte_extracted_at` DateTime64(3, 'GMT') DEFAULT now(),
-    `_airbyte_loaded_at` DateTime64(3, 'GMT') NULL,
-    `_airbyte_data` String,
-    PRIMARY KEY(`_airbyte_raw_id`)
-)
-ENGINE = MergeTree;
+While is treated as a "breaking change", connections should continue to function
+with no changes, albeit writing data to a completely different location and in a
+different form. So any downstream pipelines will need updating to ingest the new
+data location / format.
 
-INSERT INTO `airbyte_internal`.`default_raw__stream_{{stream_name}}`
-    SELECT
-        `_airbyte_ab_id` AS "_airbyte_raw_id",
-        `_airbyte_emitted_at` AS "_airbyte_extracted_at",
-        NULL AS "_airbyte_loaded_at",
-        _airbyte_data AS "_airbyte_data"
-    FROM default._airbyte_raw_{{stream_name}};
-```
+## Migrating existing data to the new format
 
-Airbyte will not delete any of your v1 data.
+Unfortunately Airbyte has no way to migrate the existing raw tables to the new
+typed format. The only "out of the box" way to get your data into the new format
+is to re-sync it from scratch.
 
-### Database/Schema and the Internal Schema
+## Removing the old tables
 
-We have split the raw and final tables into their own schemas,
-which in clickhouse is analogous to a `database`. For the Clickhouse destination, this means that
-we will only write into the raw table which will live in the `airbyte_internal` database.
-The tables written into this schema will be prefixed with either the default database provided in
-the `DB Name` field when configuring clickhouse (but can also be overridden in the connection). You can
-change the "raw" database from the default `airbyte_internal` by supplying a value for
-`Raw Table Schema Name`.
+Because the new destination has no knowledge of the old destination's table
+naming semantics, we will not remove existing data. If you would like to, you
+will need to delete all the tables saved in the old format, which for most
+people should be under `airbyte_internal.{database}_raw__`, but may vary based
+on your specific configuration.
 
-For Example:
+## Gotchas
 
-- DB Name: `default`
-- Stream Name: `my_stream`
+### Namespaces and the default database
 
-Writes to `airbyte_intneral.default_raw__stream_my_stream`
+In V2 namespaces are treated as equivalent to a ClickHouse "database". This
+means if you set a custom namespace for your connection that will be the
+database the connector will use for queries instead of the "database"
+configured in the Destination settings.
 
-where as:
+Previously, namespaces where added as a prefix to the table name. If you have
+existing connections configured in this fashion you may want to remove them.
 
-- DB Name: `default`
-- Stream Name: `my_stream`
-- Raw Table Schema Name: `raw_data`
+### Hostname
 
-Writes to: `raw_data.default_raw__stream_my_stream`
+If the "Hostname" property in your configuration contains the protocol ("http
+or "https"), you will need to remove it.
+
+The previous versions incidentally tolerated the protocol being stored in the
+hostname field.

@@ -65,28 +65,28 @@ class AirbyteSchemaTypeToJsonSchemaTest {
           "type": "object",
           "properties": {
             "name": {
-              "type": ["null", "string"]
+              "type": "string"
             },
             "age": {
-              "type": ["null", "integer"]
+              "type": "integer"
             },
             "is_cool": {
-              "type": ["null", "boolean"]
+              "type": "boolean"
             },
             "height": {
-              "type": ["null", "number"]
+              "type": "number"
             },
             "alt_integer": {
-                "type": ["null", "integer"]
+                "type": "integer"
             },
             "friends": {
-              "type": ["null", "array"],
+              "type": "array",
               "items": {
-                "type": ["null", "string"]
+                "type": "string"
               }
             },
             "mixed_array": {
-                "type": ["null", "array"],
+                "type": "array",
                 "items": {
                     "oneOf": [
                     {
@@ -99,28 +99,28 @@ class AirbyteSchemaTypeToJsonSchemaTest {
                 }
             },
             "address": {
-              "type": ["null", "object"],
+              "type": "object",
               "properties": {
                 "street": {
-                  "type": ["null", "string"]
+                  "type": "string"
                 },
                 "city": {
-                  "type": ["null", "string"]
+                  "type": "string"
                 }
               },
               "additionalProperties": true
             },
             "combined_denormalized": {
-              "type": ["null", "object"],
+              "type": "object",
               "properties": {
                 "name": {
-                  "type": ["null", "string"]
+                  "type": "string"
                 }
               },
               "additionalProperties": true
             },
             "union_array": {
-              "type": ["null", "array"],
+              "type": "array",
               "items": {
                 "oneOf": [
                   {
@@ -133,26 +133,26 @@ class AirbyteSchemaTypeToJsonSchemaTest {
               }
             },
             "date": {
-              "type": ["null", "string"],
+              "type": "string",
               "format": "date"
             },
             "time": {
-              "type": ["null", "string"],
+              "type": "string",
               "format": "time",
               "airbyte_type": "time_with_timezone"
             },
             "time_without_timezone": {
-              "type": ["null", "string"],
+              "type": "string",
               "format": "time",
               "airbyte_type": "time_without_timezone"
             },
             "timestamp": {
-              "type": ["null", "string"],
+              "type": "string",
               "format": "date-time",
               "airbyte_type": "timestamp_with_timezone"
             },
             "timestamp_without_timezone": {
-              "type": ["null", "string"],
+              "type": "string",
               "format": "date-time",
               "airbyte_type": "timestamp_without_timezone"
             }
@@ -202,25 +202,5 @@ class AirbyteSchemaTypeToJsonSchemaTest {
             ObjectType(properties = linkedMapOf<String, FieldType>(), required = emptyList())
         val node = AirbyteTypeToJsonSchema().convert(airbyteType)
         Assertions.assertNull(node.get("required"))
-    }
-
-    @Test
-    internal fun `test given nullable when serialize then set type as nullable`() {
-        val airbyteType =
-            ObjectType(
-                properties = linkedMapOf<String, FieldType>("aField" to FieldType(StringType, true))
-            )
-        val node = AirbyteTypeToJsonSchema().convert(airbyteType)
-        Assertions.assertEquals(
-            listOf<String>("null", "string"),
-            node
-                .get("properties")
-                .asIterable()
-                .toList()[0]
-                .get("type")
-                .asIterable()
-                .map { it.asText() }
-                .toList()
-        )
     }
 }
