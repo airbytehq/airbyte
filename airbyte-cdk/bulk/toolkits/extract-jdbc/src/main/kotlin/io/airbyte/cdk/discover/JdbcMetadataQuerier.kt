@@ -130,7 +130,7 @@ class JdbcMetadataQuerier(
                     }
                 }
             val clause = if (constants.includePseudoColumns) " and pseudo-column(s)" else ""
-            log.info { "Discovered ${results.size} column(s)${clause}."}
+            log.info { "Discovered ${results.size} column(s)${clause}." }
         } catch (e: Exception) {
             throw RuntimeException("Column name discovery query failed: ${e.message}", e)
         }

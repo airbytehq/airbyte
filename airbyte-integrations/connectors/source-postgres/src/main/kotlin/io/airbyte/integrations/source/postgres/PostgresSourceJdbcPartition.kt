@@ -1,14 +1,18 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.postgres
 
-import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.JsonNode
+import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.DataField
 import io.airbyte.cdk.discover.NonEmittedField
+import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.StringFieldType
 import io.airbyte.cdk.output.sockets.toJson
 import io.airbyte.cdk.read.And
-import io.airbyte.cdk.read.DefaultJdbcStreamState
 import io.airbyte.cdk.read.Equal
 import io.airbyte.cdk.read.From
 import io.airbyte.cdk.read.FromSample
@@ -33,15 +37,13 @@ import io.airbyte.cdk.read.WhereClauseLeafNode
 import io.airbyte.cdk.read.WhereClauseNode
 import io.airbyte.cdk.read.optimize
 import io.airbyte.cdk.util.Jsons
-import io.airbyte.integrations.source.postgres.ctid.Ctid
-import io.debezium.data.Json
 
 val ctidField = NonEmittedField("ctid", StringFieldType)
 
 sealed class PostgresSourceJdbcPartition(
     val selectQueryGenerator: SelectQueryGenerator,
-    final override val streamState: DefaultJdbcStreamState,
-) : JdbcPartition<DefaultJdbcStreamState> {
+    final override val streamState: PostgresSourceJdbcStreamState,
+) : JdbcPartition<PostgresSourceJdbcStreamState> {
     val stream = streamState.stream
     val from = From(stream.name, stream.namespace)
 }
@@ -50,7 +52,9 @@ sealed class PostgresSourceJdbcPartition(
     selectQueryGenerator: SelectQueryGenerator,
     override val streamState: DefaultJdbcStreamState,
 ) : PostgresSourceJdbcPartition(selectQueryGenerator, streamState) {
-    override val completeState: OpaqueStateValue *//*PostgresSorouceJdbcStreamStateValue.snapshotCompleted*//*
+    override val completeState: OpaqueStateValue */
+/*PostgresSorouceJdbcStreamStateValue.snapshotCompleted*/
+/*
         get() = Jsons.nullNode() // TEMP
 
     override val nonResumableQuery: SelectQuery
@@ -75,10 +79,11 @@ sealed class PostgresSourceJdbcPartition(
 
 sealed class PostgresSourceSplittablePartition(
     selectQueryGenerator: SelectQueryGenerator,
-    streamState: DefaultJdbcStreamState,
+    streamState: PostgresSourceJdbcStreamState,
     val checkpointColumns: List<DataField>,
-) : PostgresSourceJdbcPartition(selectQueryGenerator, streamState),
-    JdbcSplittablePartition<DefaultJdbcStreamState>{
+) :
+    PostgresSourceJdbcPartition(selectQueryGenerator, streamState),
+    JdbcSplittablePartition<PostgresSourceJdbcStreamState> {
     abstract val lowerBound: List<JsonNode>?
     abstract val upperBound: List<JsonNode>?
 
@@ -154,35 +159,39 @@ sealed class PostgresSourceSplittablePartition(
 
 class PostgresSourceJdbcSplittableSnapshotPartition(
     selectQueryGenerator: SelectQueryGenerator,
-    streamState: DefaultJdbcStreamState,
+    streamState: PostgresSourceJdbcStreamState,
     override val lowerBound: List<JsonNode>?,
     override val upperBound: List<JsonNode>?,
+    val filenode: Filenode?
 ) : PostgresSourceSplittablePartition(selectQueryGenerator, streamState, listOf(ctidField)) {
     override val completeState: OpaqueStateValue
         get() =
             when (upperBound) {
                 null -> PostgresSourceJdbcStreamStateValue.snapshotCompleted
-                else -> PostgresSourceJdbcStreamStateValue.snapshotCheckpoint(
-                    Jsons.textNode(upperBound.toString())
-                )
+                else ->
+                    PostgresSourceJdbcStreamStateValue.snapshotCheckpoint(
+                        Jsons.textNode(upperBound.toString()),
+                        filenode
+                    )
             }
 
     override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue {
         return PostgresSourceJdbcStreamStateValue.snapshotCheckpoint(
-            lastRecord.nonEmittedData.toJson()["ctid"]
+            lastRecord.nonEmittedData.toJson()["ctid"],
+            filenode
         )
-
     }
 }
 
 sealed class PostgresSourceCursorPartition(
     selectQueryGenerator: SelectQueryGenerator,
-    streamState: DefaultJdbcStreamState,
+    streamState: PostgresSourceJdbcStreamState,
     checkpointColumns: List<DataField>,
     val cursor: DataField,
     val explicitCursorUpperBound: JsonNode?,
-): PostgresSourceSplittablePartition(selectQueryGenerator, streamState, checkpointColumns),
-    JdbcCursorPartition<DefaultJdbcStreamState> {
+) :
+    PostgresSourceSplittablePartition(selectQueryGenerator, streamState, checkpointColumns),
+    JdbcCursorPartition<PostgresSourceJdbcStreamState> {
 
     val cursorUpperBound: JsonNode
         get() = explicitCursorUpperBound ?: streamState.cursorUpperBound ?: Jsons.nullNode()
@@ -195,54 +204,62 @@ sealed class PostgresSourceCursorPartition(
 
 class PostgresSourceJdbcSplittableSnapshotWithCursorPartition(
     selectQueryGenerator: SelectQueryGenerator,
-    streamState: DefaultJdbcStreamState,
+    streamState: PostgresSourceJdbcStreamState,
     override val lowerBound: List<JsonNode>?,
     override val upperBound: List<JsonNode>?,
     cursor: DataField,
     cursorUpperBound: JsonNode?,
-): PostgresSourceCursorPartition(
-    selectQueryGenerator,
-    streamState,
-    listOf(ctidField),
-    cursor,
-    cursorUpperBound) {
+    val filenode: Filenode?
+) :
+    PostgresSourceCursorPartition(
+        selectQueryGenerator,
+        streamState,
+        listOf(ctidField),
+        cursor,
+        cursorUpperBound
+    ) {
 
     override val completeState: OpaqueStateValue
         get() =
             when (upperBound) {
-                null -> PostgresSourceJdbcStreamStateValue.cursorIncrementalCheckpoint(
-                    cursor,
-                    cursorUpperBound
-                )
-                else -> PostgresSourceJdbcStreamStateValue.snapshotWithCursorCheckpoint(
-                    Jsons.textNode(upperBound.toString()),
-                    cursor,
-                    cursorUpperBound
-                )
+                null ->
+                    PostgresSourceJdbcStreamStateValue.cursorIncrementalCheckpoint(
+                        cursor,
+                        cursorUpperBound
+                    )
+                else ->
+                    PostgresSourceJdbcStreamStateValue.snapshotWithCursorCheckpoint(
+                        Jsons.textNode(upperBound.toString()),
+                        cursor,
+                        cursorUpperBound,
+                        filenode,
+                    )
             }
 
     override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
         PostgresSourceJdbcStreamStateValue.snapshotWithCursorCheckpoint(
             lastRecord.nonEmittedData.toJson()["ctid"],
             cursor,
-            cursorUpperBound
+            cursorUpperBound,
+            filenode,
         )
 }
 
 class PostgresSourceJdbcCursorIncrementalPartition(
     selectQueryGenerator: SelectQueryGenerator,
-    streamState: DefaultJdbcStreamState,
+    streamState: PostgresSourceJdbcStreamState,
     cursor: DataField,
     val cursorLowerBound: JsonNode,
     override val isLowerBoundIncluded: Boolean,
     cursorUpperBound: JsonNode?,
-): PostgresSourceCursorPartition(
-    selectQueryGenerator,
-    streamState,
-    listOf(cursor),
-    cursor,
-    cursorUpperBound
-) {
+) :
+    PostgresSourceCursorPartition(
+        selectQueryGenerator,
+        streamState,
+        listOf(cursor),
+        cursor,
+        cursorUpperBound
+    ) {
     override val lowerBound: List<JsonNode> = listOf(cursorLowerBound)
     override val upperBound: List<JsonNode>
         get() = listOf(cursorUpperBound)
@@ -264,10 +281,7 @@ class PostgresSourceJdbcCursorIncrementalPartition(
 
     override val completeState: OpaqueStateValue
         get() =
-            PostgresSourceJdbcStreamStateValue.cursorIncrementalCheckpoint(
-                cursor,
-                cursorUpperBound
-            )
+            PostgresSourceJdbcStreamStateValue.cursorIncrementalCheckpoint(cursor, cursorUpperBound)
     override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
         PostgresSourceJdbcStreamStateValue.cursorIncrementalCheckpoint(
             cursor,

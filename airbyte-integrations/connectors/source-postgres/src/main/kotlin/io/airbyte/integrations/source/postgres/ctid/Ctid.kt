@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.postgres.ctid
 
 import java.util.*
@@ -29,15 +33,14 @@ class Ctid {
 
     override fun toString(): String = "($page,$tuple)"
 
-
-    override fun equals(o: Any?): Boolean {
-        if (this === o) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) {
             return true
         }
-        if (o == null || javaClass != o.javaClass) {
+        if (other == null || javaClass != other.javaClass) {
             return false
         }
-        val ctid = o as Ctid
+        val ctid = other as Ctid
         return page == ctid.page && tuple == ctid.tuple
     }
 
@@ -57,10 +60,12 @@ class Ctid {
         }
 
         fun inc(ctid: Ctid, maxTuple: Long): Ctid {
-            return if (ctid.tuple + 1 > maxTuple) of(ctid.page + 1, 1) else of(
-                ctid.page,
-                ctid.tuple + 1,
-            )
+            return if (ctid.tuple + 1 > maxTuple) of(ctid.page + 1, 1)
+            else
+                of(
+                    ctid.page,
+                    ctid.tuple + 1,
+                )
         }
     }
 }
