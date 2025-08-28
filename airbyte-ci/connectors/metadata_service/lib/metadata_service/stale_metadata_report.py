@@ -253,8 +253,8 @@ def generate_and_publish_stale_metadata_report(bucket_name: str) -> tuple[bool, 
     Returns:
         tuple[bool, Optional[str]]: A tuple containing a boolean indicating whether the report was published and an optional error message.
     """
-    latest_metadata_versions_on_github = _get_latest_metadata_versions_on_github()
     latest_metadata_entries_on_gcs = _get_latest_metadata_entries_on_gcs(bucket_name)
+    latest_metadata_versions_on_github = _get_latest_metadata_versions_on_github()
     stale_metadata_report = _generate_stale_metadata_report(latest_metadata_versions_on_github, latest_metadata_entries_on_gcs)
     report_published, error_message = _publish_stale_metadata_report(
         stale_metadata_report, len(latest_metadata_versions_on_github), len(latest_metadata_entries_on_gcs)
