@@ -36,8 +36,6 @@ interface JdbcPartition<S : JdbcStreamState<*>> {
     ): Map<ResourceType, JdbcPartitionReader.AcquiredResource>? =
         // Acquire global resources by default.
         streamState.sharedState.tryAcquireResourcesForReader(resourceTypes)
-
-    fun extraValidation(jdbcConnectionFactory: JdbcConnectionFactory) {}
 }
 
 /** A [JdbcPartition] which can be subdivided. */

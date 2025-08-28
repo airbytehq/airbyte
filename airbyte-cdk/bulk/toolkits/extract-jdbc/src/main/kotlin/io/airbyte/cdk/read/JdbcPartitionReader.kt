@@ -146,7 +146,7 @@ class JdbcNonResumablePartitionReader<P : JdbcPartition<*>>(
                     numRecords.incrementAndGet()
                 }
             }
-        partition.extraValidation(JdbcConnectionFactory(sharedState.configuration))
+        streamState.validatePartition(partition, JdbcConnectionFactory(sharedState.configuration))
         runComplete.set(true)
     }
 

@@ -21,6 +21,7 @@ import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.DefaultJdbcSharedState
 import io.airbyte.cdk.read.DefaultJdbcStreamState
 import io.airbyte.cdk.read.JdbcPartitionFactory
+import io.airbyte.cdk.read.JdbcStreamState
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.StreamFeedBootstrap
 import io.airbyte.cdk.util.Jsons
@@ -185,14 +186,14 @@ class PostgresSourceJdbcPartitionFactory(
         FILENODE_NO_CHANGE,
     }
 
-    private fun getStreamFilenode(streamState: PostgresSourceJdbcStreamState): Filenode? {
+    private fun getStreamFilenode(streamState: JdbcStreamState<*>): Filenode? {
         return getStreamFilenode(streamState, JdbcConnectionFactory(config))
     }
 
     companion object {
         private val log = KotlinLogging.logger {}
         fun getStreamFilenode(
-            streamState: PostgresSourceJdbcStreamState,
+            streamState: JdbcStreamState<*>,
             jdbcConnectionFactory: JdbcConnectionFactory
         ): Filenode? {
             log.info { "Querying filenode for stream ${streamState.stream.id}" }

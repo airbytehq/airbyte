@@ -181,15 +181,6 @@ class PostgresSourceJdbcSplittableSnapshotPartition(
             filenode
         )
     }
-
-    override fun extraValidation(jdbcConnectionFactory: JdbcConnectionFactory) {
-        val currentFilenode: Filenode? =
-            PostgresSourceJdbcPartitionFactory.getStreamFilenode(streamState, jdbcConnectionFactory)
-        if (currentFilenode != filenode)
-            throw TransientErrorException(
-                "Full vacuum on table ${streamState.stream.id} detected. Filenode changed from $filenode to $currentFilenode"
-            )
-    }
 }
 
 sealed class PostgresSourceCursorPartition(
@@ -252,15 +243,6 @@ class PostgresSourceJdbcSplittableSnapshotWithCursorPartition(
             cursorUpperBound,
             filenode,
         )
-
-    override fun extraValidation(jdbcConnectionFactory: JdbcConnectionFactory) {
-        val currentFilenode: Filenode? =
-            PostgresSourceJdbcPartitionFactory.getStreamFilenode(streamState, jdbcConnectionFactory)
-        if (currentFilenode != filenode)
-            throw TransientErrorException(
-                "Full vacuum on table ${streamState.stream.id} detected. Filenode changed from $filenode to $currentFilenode"
-            )
-    }
 }
 
 class PostgresSourceJdbcCursorIncrementalPartition(
