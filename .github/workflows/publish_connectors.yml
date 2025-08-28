@@ -60,7 +60,7 @@ jobs:
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
         with:
           fetch-depth: 2 # Required so we can conduct a diff from the previous commit to understand what connectors have changed.
-          ref: ${{ inputs.caller-ref || github.sha }} # if there's no caller ref, then workflow was triggered from the airbyte repo
+          ref: ${{ github.sha }} # if there's no caller ref, then workflow was triggered from the airbyte repo
       - name: List connectors to publish [manual]
         id: list-connectors-manual
         if: github.event_name == 'workflow_dispatch' || (github.event_name == 'workflow_call' && inputs.original-trigger == 'manual')
