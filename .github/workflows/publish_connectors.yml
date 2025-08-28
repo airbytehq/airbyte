@@ -29,9 +29,6 @@ on:
         description: "Whether to publish as a pre-release (tagged for development) or as a main-release (production)"
         default: pre-release
         type: string
-      caller-ref:
-        type: string
-        required: true
   workflow_dispatch:
     inputs:
       connectors:
