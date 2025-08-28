@@ -1,0 +1,77 @@
+version: 6.61.4
+
+type: DeclarativeSource
+
+description: MockApi
+
+check:
+  type: CheckStream
+  stream_names:
+    - users
+
+streams:
+  - type: DeclarativeStream
+    name: users
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: https://68aef0f8b91dfcdd62bad316.mockapi.io/users
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          avatar:
+            type:
+              - string
+              - "null"
+          createdAt:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required: []
+    properties: {}
+    additionalProperties: true
+
+metadata:
+  assist:
+    docsUrl: >-
+      https://digitalisync-documentation.vercel.app/Using-connectors/Connectors/HubSpot
+  testedStreams:
+    users:
+      isStale: false
+      hasRecords: true
+      streamHash: 355e6844821e4a270df2498bd9007dd0e5159e48
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    users: true
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 1
