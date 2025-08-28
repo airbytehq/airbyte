@@ -190,8 +190,7 @@ def test_generate_and_persist_registry_entry(
 
         # Verify the registry entry model was created correctly
         for call_args in persist_call_args:
-            bucket_name_arg, registry_entry_model, registry_path = call_args[0]
-            assert bucket_name_arg == bucket_name
+            registry_entry_model, registry_path = call_args[0]
             assert scenario["registry_type"] in registry_path
 
             # Verify the model has expected fields
@@ -208,7 +207,7 @@ def test_generate_and_persist_registry_entry(
             assert "iconUrl" in registry_entry_dict
             assert "generated" in registry_entry_dict
             assert "packageInfo" in registry_entry_dict
-            assert registry_entry_dict["packageInfo"]["cdk_version"] == "0.50.0"
+            assert registry_entry_dict["packageInfo"]["cdk_version"] == "python:0.50.0"
             assert "spec" in registry_entry_dict
 
             # Verify fields were removed
