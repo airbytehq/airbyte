@@ -207,7 +207,7 @@ def test_generate_and_persist_registry_entry(
             assert "iconUrl" in registry_entry_dict
             assert "generated" in registry_entry_dict
             assert "packageInfo" in registry_entry_dict
-            assert registry_entry_dict["packageInfo"]["cdk_version"] == "0.50.0"
+            assert registry_entry_dict["packageInfo"]["cdk_version"] == "python:0.50.0"
             assert "spec" in registry_entry_dict
 
             # Verify fields were removed
