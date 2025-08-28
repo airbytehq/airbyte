@@ -8,7 +8,7 @@ on:
       - "airbyte-integrations/connectors/**/metadata.yaml"
   workflow_call:
     inputs:
-      original_trigger:
+      original-trigger:
         description: "The original trigger that caused this workflow to be called."
         required: false
         default: "manual"
@@ -16,7 +16,7 @@ on:
         options:
           - manual
           - push_to_master
-      publish_java_tars:
+      publish-java-tars:
         description: "Whether to publish Java connector tar files."
         required: false
         default: false
@@ -42,7 +42,7 @@ on:
         options:
           - pre-release
           - main-release
-      publish_java_tars:
+      publish-java-tars:
         description: "Whether to publish Java connector tar files."
         required: false
         default: false
@@ -59,13 +59,13 @@ jobs:
           fetch-depth: 2 # Required so we can conduct a diff from the previous commit to understand what connectors have changed.
       - name: List connectors to publish [manual]
         id: list-connectors-manual
-        if: github.event_name == 'workflow_dispatch' || (github.event_name == 'workflow_call' && inputs.original_trigger == 'manual')
+        if: github.event_name == 'workflow_dispatch' || (github.event_name == 'workflow_call' && inputs.original-trigger == 'manual')
         uses: ./.github/actions/list-connectors-manual
         with:
           connectors: ${{ inputs.connectors }}
       - name: List connectors to publish [On merge to master]
         id: list-connectors-master
-        if: github.event_name == 'push' || (github.event_name == 'workflow_call' && inputs.original_trigger == 'push_to_master')
+        if: github.event_name == 'push' || (github.event_name == 'workflow_call' && inputs.original-trigger == 'push_to_master')
         uses: ./.github/actions/list-connectors-master
       - name: Resolve release type
         id: resolve-release-type
@@ -73,7 +73,7 @@ jobs:
         run: |
           # If workflow is triggered on merge to master, do a main release.
           # If workflow is triggered manually, use the input release type.
-          if [[ "${{ github.event_name }}" == "push" ||  ("${{ github.event_name }}" == "workflow_call" && "${{ inputs.original_trigger }}" == "push_to_master") ]]; then
+          if [[ "${{ github.event_name }}" == "push" ||  ("${{ github.event_name }}" == "workflow_call" && "${{ inputs.original-trigger }}" == "push_to_master") ]]; then
             echo "release-type=main-release" | tee -a $GITHUB_OUTPUT
           else
             echo "release-type=${{ inputs.release-type }}" | tee -a $GITHUB_OUTPUT
@@ -194,7 +194,7 @@ jobs:
 
       - name: Publish JVM connectors tar file
         id: publish-JVM-connectors-tar-file
-        if: steps.connector-metadata.outputs.connector-language == 'java' && (inputs.publish_java_tars == 'true' || github.event_name == 'push')
+        if: steps.connector-metadata.outputs.connector-language == 'java' && (inputs.publish-java-tars == 'true' || github.event_name == 'push')
         uses: ./.github/actions/publish-jvm-tar
         with:
           connector-name: ${{ matrix.connector }}
