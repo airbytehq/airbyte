@@ -103,7 +103,8 @@ if $do_publish; then
             -DciMode=true \
             -Psbom=false \
             -Pdocker.tag="${docker_tag}" \
-            ":${CONNECTORS_DIR//\//:}:${connector}:assemble"
+            ":${CONNECTORS_DIR//\//:}:${connector}:assemble" \
+            --scan
 else
   echo "DRY RUN: Would build & publish ${connector} with tag ${docker_tag}"
 fi
