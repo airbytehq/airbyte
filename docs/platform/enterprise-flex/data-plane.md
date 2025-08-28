@@ -15,7 +15,7 @@ Airbyte Enterprise Flex customers can use Airbyte's public API to define regions
 If you're not familiar with Kubernetes, think of the control plane as the brain and data planes as the muscles doing work the brain tells them to do.
 
 - The control plane is responsible for Airbyte's user interface, APIs, Terraform provider, and orchestrating work. Airbyte manages this for you in the cloud, reducing the time and resources it takes to start moving your data.
-- The data plane initiates jobs, syncs data, completes jobs, and reports its status back to the control plane. We offer [cloud regions]  equipped to do this for you, but you also have the flexibility to deploy your own to keep sensitive data protected or meet local data residency requirements. 
+- The data plane initiates jobs, syncs data, completes jobs, and reports its status back to the control plane. We offer [cloud regions](https://docs.airbyte.com/platform/cloud/managing-airbyte-cloud/manage-data-residency) equipped to do this for you, but you also have the flexibility to deploy your own to keep sensitive data protected or meet local data residency requirements. 
 
 This separation of duties is what allows a single Airbyte deployment to ensure your data remains segregated and compliant.
 
@@ -23,16 +23,11 @@ By default, Airbyte has a single data plane that any workspace in the organizati
 
 1. [Create a region](#step-1).
 2. [Create a data plane](#step-2) in that region.
-3. [Associate your region to an Airbyte workspace](#step-3). You can tie each workspace to exactly one region.
-4. [Configure Kubernetes secrets](#step-4).
-5. [Create your values.yaml file](#step-5).
-6. [Deploy your data plane](#step-6).
+3. [Configure Kubernetes secrets](#step-3).
+4. [Create your values.yaml file](#step-4).
+5. [Deploy your data plane](#step-5).
+6. [Associate your region to an Airbyte workspace](#step-6). You can tie each workspace to exactly one region.
 
-## Limitations and considerations
-- While data planes process data in their respective regions, some metadata remains in the control plane.
-- Airbyte stores Cursor and Primary Key data in the control plane regardless of data plane location. If you have data that you can't store in the control plane, don't use it as a cursor or primary key.
-- The Connector Builder processes all data through the control plane, regardless of workspace settings. This limitation applies to the development and testing phase only; published connectors respect workspace data residency settings during syncs.
-- If you want to run multiple data planes in the same region for higher availability, both must be part of the same region in Airbyte and use the same secrets manager to ensure connection credentials are the same.
 
 ## Prerequisites
 
@@ -138,121 +133,6 @@ json
 
 </details>
 
-## 3. Associate a region to a workspace {#step-3}
-
-One you have a region and a data plane, you need to associate that region to your workspace. You can associate a workspace with a region when you create that workspace or later, after it exists.
-
-:::note
-You can only associate each workspace with one region.
-:::
-
-<Tabs>
-  <TabItem value="workspace-association-ui" label="UI" default>
-
-Follow these steps to associate your region to your current workspace using Airbyte's user interface.
-
-1. In the navigation panel, click **Settings**.
-
-2. Under **Workspace**, click **General**.
-
-3. Under **Region**, select your region.
-
-4. Click **Save changes**.
-
-  </TabItem>
-  <TabItem value="workspace-association-api" label="API">
-
-When creating a new workspace:
-
-<details>
-  <summary>Request</summary>
-
-Send a POST request to /v1/workspaces/
-
-```bash
-curl -X POST "api.airbyte.com/v1/workspaces" \
-  --header "Authorization: Bearer $TOKEN" \
-  --header "Content-Type: application/json" \
-  -d '{
-    "name": "My New Workspace",
-    "dataResidency": "auto"
-  }'
-```
-
-Include the following parameters in your request.
-
-| Body parameter  | Description                                               |
-| --------------- | --------------------------------------------------------- |
-| `name`          | The name of your workspace in Airbyte.                    |
-| `dataResidency` | A string with a region identifier you received in step 1. |
-
-For additional request examples, see [the API reference](https://reference.airbyte.com/reference/workspaces#/).
-
-</details>
-
-<details>
-  <summary>Response</summary>
-
-```json
-{
-  "workspaceId": "uuid-string",
-  "name": "workspace-name",
-  "dataResidency": "auto",
-  "notifications": {
-    "failure": {},
-    "success": {}
-  }
-}
-```
-
-</details>
-
-When updating a workspace:
-
-<details>
-  <summary>Request</summary>
-
-Send a PATCH request to /v1/workspaces/`{workspaceId}`.
-
-```bash
-curl -X PATCH "https://api.airbyte.com/v1/workspaces/{workspaceId}" \
-  --header "Authorization: Bearer $TOKEN" \
-  --header "Content-Type: application/json" \
-  -d '{
-    "name": "Updated Workspace Name",
-    "dataResidency": "us-west"
-  }'
-```
-
-Include the following parameters in your request.
-
-| Body parameter  | Description                                               |
-| --------------- | --------------------------------------------------------- |
-| `name`          | The name of your workspace in Airbyte.                    |
-| `dataResidency` | A string with a region identifier you received in step 1. |
-
-For additional request examples, see [the API reference](https://reference.airbyte.com/reference/workspaces#/).
-
-</details>
-
-<details>
-  <summary>Response</summary>
-
-```json
-{
-  "workspaceId": "uuid-string",
-  "name": "updated-workspace-name",
-  "dataResidency": "region-identifier",
-  "notifications": {
-    "failure": {},
-    "success": {}
-  }
-}
-```
-
-</details>
-  </TabItem>
-</Tabs>
 
 ## 4. Configure Kubernetes Secrets {#step-4}
 
@@ -409,6 +289,123 @@ helm upgrade --install airbyte-enterprise airbyte/airbyte-data-plane --version 1
 ```bash title="Example using or creating a namespace called 'airbyte-dataplane'"
 helm upgrade --install airbyte-enterprise airbyte/airbyte-data-plane --version 1.8.1 -n airbyte-dataplane --create-namespace --values values.yaml
 ```
+
+## 6. Associate a region to a workspace {#step-6}
+
+One you have a region and a data plane, you need to associate that region to your workspace. You can associate a workspace with a region when you create that workspace or later, after it exists.
+
+:::note
+You can only associate each workspace with one region.
+:::
+
+<Tabs>
+  <TabItem value="workspace-association-ui" label="UI" default>
+
+Follow these steps to associate your region to your current workspace using Airbyte's user interface.
+
+1. In the navigation panel, click **Settings**.
+
+2. Under **Workspace**, click **General**.
+
+3. Under **Region**, select your region.
+
+4. Click **Save changes**.
+
+  </TabItem>
+  <TabItem value="workspace-association-api" label="API">
+
+When creating a new workspace:
+
+<details>
+  <summary>Request</summary>
+
+Send a POST request to /v1/workspaces/
+
+```bash
+curl -X POST "api.airbyte.com/v1/workspaces" \
+  --header "Authorization: Bearer $TOKEN" \
+  --header "Content-Type: application/json" \
+  -d '{
+    "name": "My New Workspace",
+    "dataResidency": "auto"
+  }'
+```
+
+Include the following parameters in your request.
+
+| Body parameter  | Description                                               |
+| --------------- | --------------------------------------------------------- |
+| `name`          | The name of your workspace in Airbyte.                    |
+| `dataResidency` | A string with a region identifier you received in step 1. |
+
+For additional request examples, see [the API reference](https://reference.airbyte.com/reference/workspaces#/).
+
+</details>
+
+<details>
+  <summary>Response</summary>
+
+```json
+{
+  "workspaceId": "uuid-string",
+  "name": "workspace-name",
+  "dataResidency": "auto",
+  "notifications": {
+    "failure": {},
+    "success": {}
+  }
+}
+```
+
+</details>
+
+When updating a workspace:
+
+<details>
+  <summary>Request</summary>
+
+Send a PATCH request to /v1/workspaces/`{workspaceId}`.
+
+```bash
+curl -X PATCH "https://api.airbyte.com/v1/workspaces/{workspaceId}" \
+  --header "Authorization: Bearer $TOKEN" \
+  --header "Content-Type: application/json" \
+  -d '{
+    "name": "Updated Workspace Name",
+    "dataResidency": "us-west"
+  }'
+```
+
+Include the following parameters in your request.
+
+| Body parameter  | Description                                               |
+| --------------- | --------------------------------------------------------- |
+| `name`          | The name of your workspace in Airbyte.                    |
+| `dataResidency` | A string with a region identifier you received in step 1. |
+
+For additional request examples, see [the API reference](https://reference.airbyte.com/reference/workspaces#/).
+
+</details>
+
+<details>
+  <summary>Response</summary>
+
+```json
+{
+  "workspaceId": "uuid-string",
+  "name": "updated-workspace-name",
+  "dataResidency": "region-identifier",
+  "notifications": {
+    "failure": {},
+    "success": {}
+  }
+}
+```
+
+</details>
+  </TabItem>
+</Tabs>
+
 
 ## Check which region your workspaces use
 

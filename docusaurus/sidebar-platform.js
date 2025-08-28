@@ -404,7 +404,10 @@ module.exports = {
             type: "doc",
             id: "enterprise-flex/readme",
           },
-          items: ["enterprise-flex/data-plane"],
+          items: [
+            "enterprise-flex/getting-started",
+            "enterprise-flex/data-plane"
+          ],
         },
         {
           type: "category",
