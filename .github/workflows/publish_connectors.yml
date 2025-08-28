@@ -15,7 +15,7 @@ on:
         type: choice
         options:
           - manual
-          - push_to_master
+          - push-to-master
       publish-java-tars:
         description: "Whether to publish Java connector tar files."
         required: false
@@ -65,7 +65,7 @@ jobs:
           connectors: ${{ inputs.connectors }}
       - name: List connectors to publish [On merge to master]
         id: list-connectors-master
-        if: github.event_name == 'push' || (github.event_name == 'workflow_call' && inputs.original-trigger == 'push_to_master')
+        if: github.event_name == 'push' || (github.event_name == 'workflow_call' && inputs.original-trigger == 'push-to-master')
         uses: ./.github/actions/list-connectors-master
       - name: Resolve release type
         id: resolve-release-type
@@ -73,7 +73,7 @@ jobs:
         run: |
           # If workflow is triggered on merge to master, do a main release.
           # If workflow is triggered manually, use the input release type.
-          if [[ "${{ github.event_name }}" == "push" ||  ("${{ github.event_name }}" == "workflow_call" && "${{ inputs.original-trigger }}" == "push_to_master") ]]; then
+          if [[ "${{ github.event_name }}" == "push" ||  ("${{ github.event_name }}" == "workflow_call" && "${{ inputs.original-trigger }}" == "push-to-master") ]]; then
             echo "release-type=main-release" | tee -a $GITHUB_OUTPUT
           else
             echo "release-type=${{ inputs.release-type }}" | tee -a $GITHUB_OUTPUT
