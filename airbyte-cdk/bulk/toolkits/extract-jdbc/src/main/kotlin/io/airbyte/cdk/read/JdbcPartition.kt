@@ -6,6 +6,7 @@ package io.airbyte.cdk.read
 
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 
 /**
  * Encapsulates database-specific aspects relating to a JDBC stream partition, consumed by
@@ -36,6 +37,8 @@ interface JdbcPartition<S : JdbcStreamState<*>> {
     ): Map<ResourceType, JdbcPartitionReader.AcquiredResource>? =
         // Acquire global resources by default.
         streamState.sharedState.tryAcquireResourcesForReader(resourceTypes)
+
+    fun extraValidation(jdbcConnectionFactory: JdbcConnectionFactory) {}
 }
 
 /** A [JdbcPartition] which can be subdivided. */

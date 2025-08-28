@@ -1,9 +1,11 @@
 package io.airbyte.integrations.source.postgres
 
 import com.fasterxml.jackson.databind.JsonNode
+import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.DataField
 import io.airbyte.cdk.discover.NonEmittedField
+import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.StringFieldType
 import io.airbyte.cdk.output.sockets.toJson
 import io.airbyte.cdk.read.And
@@ -172,6 +174,13 @@ class PostgresSourceJdbcSplittableSnapshotPartition(
         )
 
     }
+
+    override fun extraValidation(jdbcConnectionFactory: JdbcConnectionFactory) {
+            val currentFilenode: Filenode? = PostgresSourceJdbcPartitionFactory.getStreamFilenode(streamState, jdbcConnectionFactory)
+            if (currentFilenode != filenode)
+                throw TransientErrorException("Full vacuum on table ${streamState.stream.id} detected. Filenode changed from $filenode to $currentFilenode")
+    }
+
 }
 
 sealed class PostgresSourceCursorPartition(
@@ -229,6 +238,13 @@ class PostgresSourceJdbcSplittableSnapshotWithCursorPartition(
             cursorUpperBound,
             filenode,
         )
+
+    override fun extraValidation(jdbcConnectionFactory: JdbcConnectionFactory) {
+        val currentFilenode: Filenode? = PostgresSourceJdbcPartitionFactory.getStreamFilenode(streamState, jdbcConnectionFactory)
+        if (currentFilenode != filenode)
+            throw TransientErrorException("Full vacuum on table ${streamState.stream.id} detected. Filenode changed from $filenode to $currentFilenode")
+    }
+
 }
 
 class PostgresSourceJdbcCursorIncrementalPartition(

@@ -38,7 +38,6 @@ class PostgresSourceJdbcPartitionFactory(
     val config: PostgresSourceConfiguration,
     val handler: CatalogValidationFailureHandler,
 ) : JdbcPartitionFactory<DefaultJdbcSharedState, PostgresSourceJdbcStreamState, PostgresSourceJdbcPartition> {
-    private val log = KotlinLogging.logger {}
     private val streamStates = ConcurrentHashMap<StreamIdentifier, PostgresSourceJdbcStreamState>()
 
     override fun streamState(streamFeedBootstrap: StreamFeedBootstrap): PostgresSourceJdbcStreamState =
@@ -176,25 +175,31 @@ class PostgresSourceJdbcPartitionFactory(
         FILENODE_NO_CHANGE,
     }
 
+
     private fun getStreamFilenode(streamState: PostgresSourceJdbcStreamState): Filenode? {
-        log.info { "Querying filenode for stream ${streamState.stream.id}" }
-        val jdbcConnectionFactory = JdbcConnectionFactory(config)
-        jdbcConnectionFactory.get().use { connection ->
-            val sql = "SELECT pg_relation_filenode('${streamState.stream.namespace}.${streamState.stream.name}')"
-            val stmt: PreparedStatement = connection.prepareStatement(sql)
-            val rs = stmt.executeQuery()
-            if (rs.next()) {
-                val jdbcFieldType: JdbcFieldType<*> = LongFieldType
-                val filenode: Any? = jdbcFieldType.jdbcGetter.get(rs, 1)
-                log.info { "Found filenode: $filenode" }
-                return filenode as? Filenode
-            } else {
-                log.info { "filenode not found" }
-            }
-            return null
-        }
+        return getStreamFilenode(streamState, JdbcConnectionFactory(config))
     }
 
+    companion object {
+        private val log = KotlinLogging.logger {}
+        fun getStreamFilenode(streamState: PostgresSourceJdbcStreamState, jdbcConnectionFactory: JdbcConnectionFactory): Filenode? {
+            log.info { "Querying filenode for stream ${streamState.stream.id}" }
+            jdbcConnectionFactory.get().use { connection ->
+                val sql = "SELECT pg_relation_filenode('${streamState.stream.namespace}.${streamState.stream.name}')"
+                val stmt: PreparedStatement = connection.prepareStatement(sql)
+                val rs = stmt.executeQuery()
+                if (rs.next()) {
+                    val jdbcFieldType: JdbcFieldType<*> = LongFieldType
+                    val filenode: Any? = jdbcFieldType.jdbcGetter.get(rs, 1)
+                    log.info { "Found filenode: $filenode" }
+                    return filenode as? Filenode
+                } else {
+                    log.info { "filenode not found" }
+                }
+                return null
+            }
+        }
+    }
 
     private fun ensureNoStreamFilenodeChanged(
         streamState: PostgresSourceJdbcStreamState,
