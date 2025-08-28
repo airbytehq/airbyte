@@ -157,7 +157,8 @@ jobs:
         # v2.1.5
         uses: google-github-actions/setup-gcloud@6a7c903a70c8625ed6700fa299f5ddb4ca6022e9
 
-      - run: ls airbyte-ci/connectors/metadata_service/lib
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
 
       - name: Install metadata_service
         run: poetry install --directory airbyte-ci/connectors/metadata_service/lib
