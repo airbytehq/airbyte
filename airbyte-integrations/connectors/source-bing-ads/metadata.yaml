@@ -56,7 +56,7 @@ data:
           Version 3.0.0 makes the tenant_id field required. Users must now provide
           a tenant_id value in their connector configuration. Previously this field
           was optional with a default value of "common".
-        upgradeDeadline: "2025-09-04"
+        upgradeDeadline: "2025-09-05"
   suggestedStreams:
     streams:
       - campaigns

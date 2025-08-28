@@ -1,5 +1,17 @@
 # Bing Ads Migration Guide
 
+## Upgrading to 3.0.0
+
+This version makes the `tenant_id` field required in the connector configuration. Previously, this field was optional with a default value of "common".
+
+Users must now explicitly provide a `tenant_id` value when configuring the connector. If you were previously relying on the default "common" tenant, you will need to add `"tenant_id": "common"` to your connector configuration.
+
+To upgrade:
+
+1. Update your connector configuration to include the `tenant_id` field
+2. Refresh the source schema 
+3. No stream resets are required for this change
+
 ## Upgrading to 2.0.0
 
 This version update affects all hourly reports (end in report_hourly) and the following streams:
