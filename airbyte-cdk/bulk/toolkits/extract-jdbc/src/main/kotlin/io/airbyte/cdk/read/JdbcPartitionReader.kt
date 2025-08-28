@@ -200,7 +200,6 @@ class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
             .use { result: SelectQuerier.Result ->
                 for (row in result) {
                     out(row)
-                    //                    lastRecord.set(row.data.toJson(Jsons.objectNode()))
                     lastRecord.set(row)
                     // Check activity periodically to handle timeout.
                     if (numRecords.incrementAndGet() % fetchSize == 0L) {
