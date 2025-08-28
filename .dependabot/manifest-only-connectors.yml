@@ -1,0 +1,18 @@
+version: 2
+updates:
+  - package-ecosystem: pip
+    directory: "/"
+    commit-message:
+      prefix: "chore(deps): "
+    schedule:
+      interval: weekly
+    labels:
+      - chore
+      - dependencies
+    open-pull-requests-limit: 5
+    groups:
+      minor-and-patch:
+        applies-to: version-updates
+        update-types:
+          - patch
+          - minor
