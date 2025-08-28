@@ -169,7 +169,7 @@ DEP_STR="${CDK_ROOT}${EXTRAS}"
 echo Running: poetry add \"${DEP_STR}\"
 poetry add "${DEP_STR}"
 '''
-help = "Pin to your local working copy of the CDK, in editable mode. (Expects that the CDK and airbyte repo are sibling directories."
+help = "Pin to your local working copy of the CDK, in editable mode. (Expects that the CDK and airbyte repo are sibling directories.)"
 
 # Generic tasks (same across all connector types)
 
