@@ -16,7 +16,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 47f25999-dd5e-4636-8c39-e7cea2453331
-  dockerImageTag: 3.0.0
+  dockerImageTag: 2.24.0
   dockerRepository: airbyte/source-bing-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/bing-ads
   erdUrl: https://dbdocs.io/airbyteio/source-bing-ads?view=relationships
@@ -51,12 +51,6 @@ data:
           Users will need to refresh the source schema and reset affected streams
           after upgrading.
         upgradeDeadline: "2023-12-11"
-      3.0.0:
-        message: >
-          Version 3.0.0 makes the tenant_id field required. Users must now provide
-          a tenant_id value in their connector configuration. Previously this field
-          was optional with a default value of "common".
-        upgradeDeadline: "2025-09-05"
   suggestedStreams:
     streams:
       - campaigns
