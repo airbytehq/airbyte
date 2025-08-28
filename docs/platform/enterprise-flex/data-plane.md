@@ -5,7 +5,7 @@ products: enterprise-flex
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Multiple region deployments with Enterprise Flex
+# Multiple region deployments
 
 Airbyte Enterprise Flex customers can use Airbyte's public API to define regions and create independent data planes that operate in those regions. This ensures you're satisfying your data residency and governance requirements with a single Airbyte Cloud deployment, and it can help you reduce data egress costs with cloud providers.
 
@@ -20,6 +20,8 @@ If you're not familiar with Kubernetes, think of the control plane as the brain 
 This separation of duties is what allows a single Airbyte deployment to ensure your data remains segregated and compliant.
 
 By default, Airbyte has a single data plane that any workspace in the organization can access, and it's automatically tied to the default workspace when Airbyte first starts. To configure additional data planes and regions, complete these steps.
+
+If you have not already, ensure you have the [required infrastructure](https://docs.airbyte.com/platform/enterprise-flex/getting-started) to run your data plane.
 
 1. [Create a region](#step-1).
 2. [Create a data plane](#step-2) in that region.

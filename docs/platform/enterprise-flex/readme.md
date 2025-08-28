@@ -40,6 +40,9 @@ Enterprise Flex also offers other enterprise-grade abilities.
 
 Enterprise Flex includes all features that are standard in Cloud Teams with the additional capabilities of running self-managed data planes, referencing your own secrets manager, and storing audit logs.
 
+Any Airbyte Cloud enviornment can be easily upgraded to Enterprise Flex. To learn more about upgrading to Enterprise Flex, [talk to sales](https://airbyte.com/company/talk-to-sales).
+
+
 ## An example hybrid deployment
 
 Every organization's precise needs differ, so you can implement Enterprise Flex in the way that suits you best. In this example, you have three workspaces. 
@@ -49,73 +52,3 @@ Every organization's precise needs differ, so you can implement Enterprise Flex 
 - Workspaces 2 and 3, which contain sensitive data from the United States and Australia, run on your own infrastructure. Only metadata ever reaches the control plane.
 
 ![In this example, you have three workspaces. Workspace 1 contains non-sensitive data and uses Airbyte's fully managed European workspace. Workspaces 2 and 3, which contain sensitive data from the United States and Australia, run on your own infrastructure. Only metadata ever reaches the control plane.](img/flex-enterprise-example.png)
-
-## Getting started
-
-Any Airbyte Cloud enviornment can be easily upgraded to Enterprise Flex. To learn more about upgrading to Enterprise Flex, [talk to sales](https://airbyte.com/company/talk-to-sales).
-
-### Infrastructure Prerequisites
-
-You may choose to run a self-managed data plane while using Airbyte Enterprise Flex. **If you are not using any self-managed data planes, then no additional infrastructure is required to begin creating connections and running syncs.**
-
-For a production-ready deployment of self-managed data planes, various infrastructure components are required. We recommend deploying to Amazon EKS or Google Kubernetes Engine. The following diagram illustrates a typical Airbyte Enterpris Flex deployment running a self-managed data plane:
-
-![Airbyte Enterprise Flex Architecture Diagram](./img/enterprise-flex-architecture.png)
-
-| Component                | Recommendation                                                                                                                                                            |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Kubernetes Cluster       | Amazon EKS cluster running on EC2 instances in [2 or more availability zones](https://docs.aws.amazon.com/eks/latest/userguide/disaster-recovery-resiliency.html) on a minimum of 6 nodes. |
-| External Secrets Manager | [Amazon Secrets Manager](/platform/operator-guides/configuring-airbyte#secrets) for storing connector 
-| Object Storage (Optional)| [Amazon S3 bucket](#configuring-external-logging) with a directory for log storage.                                                                         |
-
-- Self-managed [data planes](https://docs.airbyte.com/platform/enterprise-flex/data-planes) require a Kubernetes cluster to run on. We recommend deploying to Amazon EKS or Google Kubernetes Engine.
-
-A few notes on Kubernetes cluster provisioning for Airbyte Self-Managed Enterprise:
-
-- We support Amazon Elastic Kubernetes Service (EKS) on EC2 or Google Kubernetes Engine (GKE) on Google Compute Engine (GCE). Improved support for Azure Kubernetes Service (AKS) is coming soon.
-- While we support GKE Autopilot, we do not support Amazon EKS on Fargate.
-
-We require you to install and configure the following Kubernetes tooling:
-
-1. Install `helm` by following [these instructions](https://helm.sh/docs/intro/install/)
-2. Install `kubectl` by following [these instructions](https://kubernetes.io/docs/tasks/tools/).
-3. Configure `kubectl` to connect to your cluster by using `kubectl use-context my-cluster-name`:
-
-<details>
-<summary>Configure kubectl to connect to your cluster</summary>
-
-<Tabs>
-<TabItem value="Amazon EKS" label="Amazon EKS" default>
-
-1. Configure your [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html) to connect to your project.
-2. Install [eksctl](https://eksctl.io/introduction/).
-3. Run `eksctl utils write-kubeconfig --cluster=$CLUSTER_NAME` to make the context available to kubectl.
-4. Use `kubectl config get-contexts` to show the available contexts.
-5. Run `kubectl config use-context $EKS_CONTEXT` to access the cluster with kubectl.
-
-</TabItem>
-
-<TabItem value="GKE" label="GKE">
-
-1. Configure `gcloud` with `gcloud auth login`.
-2. On the Google Cloud Console, the cluster page will have a "Connect" button, with a command to run locally: `gcloud container clusters get-credentials $CLUSTER_NAME --zone $ZONE_NAME --project $PROJECT_NAME`.
-3. Use `kubectl config get-contexts` to show the available contexts.
-4. Run `kubectl config use-context $EKS_CONTEXT` to access the cluster with kubectl.
-
-</TabItem>
-</Tabs>
-
-</details>
-
-We also require you to create a Kubernetes namespace for your Airbyte deployment:
-
-```
-kubectl create namespace airbyte
-```
-
-### Limitations and considerations
-
-- While data planes process data in their respective regions, some metadata remains in the control plane.
-- Airbyte stores Cursor and Primary Key data in the control plane regardless of data plane location. If you have data that you can't store in the control plane, don't use it as a cursor or primary key.
-- The Connector Builder processes all data through the control plane, regardless of workspace settings. This limitation applies to the development and testing phase only; published connectors respect workspace data residency settings during syncs.
-- If you want to run multiple data planes in the same region for higher availability, both must be part of the same region in Airbyte and use the same secrets manager to ensure connection credentials are the same.
