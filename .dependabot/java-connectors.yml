@@ -10,6 +10,8 @@ updates:
       - chore
       - dependencies
     open-pull-requests-limit: 5
+    allow:
+      - dependency-type: all
     groups:
       minor-and-patch:
         applies-to: version-updates
@@ -26,6 +28,8 @@ updates:
       - chore
       - dependencies
     open-pull-requests-limit: 5
+    allow:
+      - dependency-type: all
     groups:
       minor-and-patch:
         applies-to: version-updates
