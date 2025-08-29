@@ -62,8 +62,7 @@ class DestinationLifecycle(
             )
 
         return runBlocking {
-            val result = mutableListOf<StreamLoader>()
-            destinationCatalog.streams
+            val result = destinationCatalog.streams
                 .map {
                     async(initDispatcher) {
                         log.info {
@@ -71,10 +70,10 @@ class DestinationLifecycle(
                         }
                         val streamLoader = destinationInitializer.createStreamLoader(it)
                         streamLoader.start()
-                        result.add(streamLoader)
                         log.info {
                             "Stream loader for stream ${it.mappedDescriptor.namespace}:${it.mappedDescriptor.name} started"
                         }
+                        streamLoader
                     }
                 }
                 .awaitAll()
