@@ -1,5 +1,9 @@
 **Load CDK**
 
+## Version 0.1.20
+
+* **Changed:** Fix hard failure edge case in stream initialization for in dataflow cdk lifecycle. 
+
 ## Version 0.1.18
 
 * **Changed:** Update load dataflow package accounts for stream completes and dest stats.
