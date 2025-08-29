@@ -7,8 +7,11 @@ package io.airbyte.cdk.load.dataflow.pipeline
 import io.airbyte.cdk.load.dataflow.state.StateReconciler
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
 
 @Singleton
 class PipelineRunner(
@@ -17,13 +20,13 @@ class PipelineRunner(
 ) {
     private val log = KotlinLogging.logger {}
 
-    suspend fun run() {
+    suspend fun run() = coroutineScope{
         log.info { "Destination Pipeline Starting..." }
 
         reconciler.run(CoroutineScope(Dispatchers.IO))
 
         try {
-            pipelines.forEach { it.run() }
+            pipelines.map { async { it.run() } }.awaitAll()
         } finally {
             // shutdown the reconciler regardless of success or failure, so we don't hang
             reconciler.disable()
