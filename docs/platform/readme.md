@@ -27,12 +27,13 @@ Airbyte is available as a Self-Managed or Cloud product, depending on your needs
 
 ### Cloud options
 
-<Grid columns="2">
+<Grid columns="3">
 
 <CardWithIcon title="Cloud" description="A Cloud-native version of Airbyte that provides a fully managed experience for data replication. Focus on moving data while Airbyte manages the infrastructure. Free 14-day trial." ctaText="Sign Up for Cloud" ctaLink="https://cloud.airbyte.com/signup" icon="fa-cloud" />
 
-<CardWithIcon title="Cloud Teams" description="For organizations
-looking to scale efficiently. Role based access control, single sign on, and more ensure Cloud is a robust solution that can grow with your team." ctaText="Talk to Sales" ctaLink="https://airbyte.com/company/talk-to-sales" icon="fa-lock" />
+<CardWithIcon title="Cloud Teams" description="For organizations looking to scale efficiently. Role based access control, single sign on, and more ensure Cloud is a robust solution that can grow with your team." ctaText="Talk to Sales" ctaLink="https://airbyte.com/company/talk-to-sales" icon="fa-lock" />
+
+<CardWithIcon title="Enterprise Flex" description="An enterprise-grade solution with hybrid options for organizatons seeking the convenience of a fully managed solution with separate data planes for compliance and data sovereignty." ctaText="Learn more" ctaLink="enterprise-flex" icon="fa-lock" />
 
 </Grid>
 

@@ -396,6 +396,18 @@ module.exports = {
         },
         {
           type: "category",
+          label: "Enterprise Flex",
+          link: {
+            type: "doc",
+            id: "enterprise-flex/readme",
+          },
+          items: [
+            "enterprise-flex/getting-started",
+            "enterprise-flex/data-plane"
+          ],
+        },
+        {
+          type: "category",
           label: "Upgrading Airbyte",
           link: {
             type: "doc",
