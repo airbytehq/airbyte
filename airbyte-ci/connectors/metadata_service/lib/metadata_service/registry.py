@@ -306,13 +306,6 @@ def _persist_registry(registry: ConnectorRegistryV0, registry_name: str, bucket:
         None
     """
 
-    # TODO: Remove the dev bucket set up once registry artificts have been validated and then add the bucket as a parameter. This block exists so we can write the registry artifacts to the dev bucket for validation.
-    gcs_creds = os.environ.get("GCS_DEV_CREDENTIALS")
-    service_account_info = json.loads(gcs_creds)
-    credentials = service_account.Credentials.from_service_account_info(service_account_info)
-    client = storage.Client(credentials=credentials)
-    bucket = client.bucket("dev-airbyte-cloud-connector-metadata-service-2")
-
     registry_file_name = f"{registry_name}_registry.json"
     registry_file_path = f"{REGISTRIES_FOLDER}/{registry_file_name}"
     registry_json = registry.json(exclude_none=True)
