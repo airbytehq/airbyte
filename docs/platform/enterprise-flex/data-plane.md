@@ -311,7 +311,7 @@ Follow these steps to associate your region to your current workspace using Airb
 
 3. Under **Region**, select your region.
 
-4. Click **Save changes**.
+4. Click **Save changes**. Now, run any sync. You will see the workloads spin up in the new data plane you've configured.
 
   </TabItem>
   <TabItem value="workspace-association-api" label="API">
