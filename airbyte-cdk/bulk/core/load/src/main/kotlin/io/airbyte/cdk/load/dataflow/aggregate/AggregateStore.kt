@@ -10,15 +10,13 @@ import io.airbyte.cdk.load.dataflow.config.MemoryAndParallelismConfig
 import io.airbyte.cdk.load.dataflow.state.PartitionHistogram
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
 import io.github.oshai.kotlinlogging.KotlinLogging
-import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 
 typealias StoreKey = DestinationStream.Descriptor
 
-@Singleton
 class AggregateStore(
     private val aggFactory: AggregateFactory,
-    private val memoryAndParallelismConfig: MemoryAndParallelismConfig,
+    memoryAndParallelismConfig: MemoryAndParallelismConfig,
 ) {
     private val log = KotlinLogging.logger {}
 

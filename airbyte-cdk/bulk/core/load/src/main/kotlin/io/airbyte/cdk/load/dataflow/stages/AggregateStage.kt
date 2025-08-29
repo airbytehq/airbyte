@@ -6,12 +6,8 @@ package io.airbyte.cdk.load.dataflow.stages
 
 import io.airbyte.cdk.load.dataflow.aggregate.AggregateStore
 import io.airbyte.cdk.load.dataflow.pipeline.DataFlowStageIO
-import jakarta.inject.Named
-import jakarta.inject.Singleton
 import kotlinx.coroutines.flow.FlowCollector
 
-@Named("aggregate")
-@Singleton
 class AggregateStage(
     val store: AggregateStore,
 ) {
