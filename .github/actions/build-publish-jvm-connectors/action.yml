@@ -1,0 +1,15 @@
+name: 'Build and publish JVM connectors images'
+description: 'Builds and publishes Docker images for Java/JVM-based connectors'
+inputs:
+  connector-name:
+    description: 'Name of the connector to build and publish'
+    required: true
+  release-type:
+    description: 'Type of release (pre-release or main-release)'
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - name: Build and publish JVM connectors images
+      shell: bash
+      run: ./poe-tasks/build-and-publish-java-connectors-with-tag.sh --name ${{ inputs.connector-name }} --release-type ${{ inputs.release-type }} --publish

@@ -1,0 +1,12 @@
+name: 'Validate connector metadata'
+description: 'Validates metadata for a specific connector'
+inputs:
+  connector-name:
+    description: 'Name of the connector to validate metadata for'
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - name: Validate connector metadata
+      shell: bash
+      run: ./poe-tasks/validate-connector-metadata.sh --name ${{ inputs.connector-name }}

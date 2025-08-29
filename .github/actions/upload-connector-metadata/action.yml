@@ -1,0 +1,28 @@
+name: 'Upload connector metadata'
+description: 'Uploads connector metadata to GCS'
+inputs:
+  connector-name:
+    description: 'Name of the connector to upload metadata for'
+    required: true
+  release-type:
+    description: 'Type of release (pre-release or main-release)'
+    required: true
+  gcs-credentials:
+    description: 'GCS service account credentials JSON for writing data to gs://prod-airbyte-cloud-connector-metadata-service/metadata'
+    required: true
+  spec-cache-credentials:
+    description: 'GCS service account credentials JSON for writing data to gs://io-airbyte-cloud-spec-cache/specs'
+    required: true
+  metadata-service-credentials:
+    description: 'GCS service account credentials JSON for writing data to gs://prod-airbyte-cloud-connector-metadata-service/sbom'
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - name: Upload connector metadata
+      shell: bash
+      run: ./poe-tasks/upload-connector-metadata.sh --name ${{ inputs.connector-name }} --release-type ${{ inputs.release-type }}
+      env:
+        GCS_CREDENTIALS: ${{ inputs.gcs-credentials }}
+        SPEC_CACHE_GCS_CREDENTIALS: ${{ inputs.spec-cache-credentials }}
+        METADATA_SERVICE_GCS_CREDENTIALS: ${{ inputs.metadata-service-credentials }}

@@ -1,0 +1,14 @@
+name: 'Get modified connectors'
+description: 'Gets all modified connector directories. It compares the current branch with the
+ default branch and filters out files that match certain ignore patterns.'
+outputs:
+  modified-connectors:
+    description: 'JSON array of connector names that have been modified since the previous commit'
+    value: ${{ steps.list-connectors.outputs.modified-connectors }}
+runs:
+  using: 'composite'
+  steps:
+    - name: List connectors to publish [On merge to master]
+      id: list-connectors
+      shell: bash
+      run: echo modified-connectors=$(${{ github.action_path }}/../../../poe-tasks/get-modified-connectors.sh --prev-commit --json) | tee -a $GITHUB_OUTPUT

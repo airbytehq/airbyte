@@ -1,0 +1,20 @@
+name: 'Publish JVM connectors tar file'
+description: 'Publishes tar files for JVM-based connectors to GCS'
+inputs:
+  connector-name:
+    description: 'Name of the connector to publish tar file for'
+    required: true
+  release-type:
+    description: 'Type of release (pre-release or main-release)'
+    required: true
+  gcs-credentials:
+    description: 'GCS service account credentials JSON'
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - name: Publish JVM connectors tar file
+      shell: bash
+      run: ./poe-tasks/upload-java-connector-tar-file.sh --name ${{ inputs.connector-name }} --release-type ${{ inputs.release-type }}
+      env:
+        GCS_CREDENTIALS: ${{ inputs.gcs-credentials }}

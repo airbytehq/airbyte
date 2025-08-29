@@ -1,0 +1,20 @@
+name: 'Publish to Python Registry'
+description: 'Publishes a Python connector to the Python registry'
+inputs:
+  connector-name:
+    description: 'Name of the connector to publish'
+    required: true
+  release-type:
+    description: 'Type of release (pre-release or main-release)'
+    required: true
+  python-registry-token:
+    description: 'Token for accessing the Python registry'
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - name: Publish to Python Registry
+      shell: bash
+      run: ./poe-tasks/publish-python-registry.sh --name ${{ inputs.connector-name }} --release-type ${{ inputs.release-type }}
+      env:
+        PYTHON_REGISTRY_TOKEN: ${{ inputs.python-registry-token }}

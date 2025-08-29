@@ -1,0 +1,19 @@
+name: 'Parse connector names args'
+description: 'Parse connector names from input in the format `--name <connector_name>`.
+For example, `./parse-connector-name-args.sh --name source-faker --name destination-bigquery` will output:
+{"connector":["source-faker","destination-bigquery"]}'
+inputs:
+  connectors:
+    description: 'Connectors to parse. This should be a string of the form: --name=source-pokeapi --name=destination-postgres'
+    required: true
+outputs:
+  parsed-connectors:
+    description: 'JSON array of connector names parsed from the input'
+    value: ${{ steps.list-connectors.outputs.parsed-connectors }}
+runs:
+  using: 'composite'
+  steps:
+    - name: List connectors to publish [manual]
+      id: list-connectors
+      shell: bash
+      run: echo parsed-connectors=$(${{ github.action_path }}/../../../poe-tasks/parse-connector-name-args.sh ${{ inputs.connectors }}) | tee -a $GITHUB_OUTPUT
