@@ -32,7 +32,7 @@ class AirbyteBulkConnectorExtension {
 
     void setCdk(String cdk) {
         this.cdk = cdk
-        if (cdk != "local" && !cdk.matches("^[0-9]+\\.[0-9]+")) {
+        if (cdk != "local" && !(cdk.matches("^[0-9]+\\.[0-9]+") || cdk.matches("^[0-9]+\\.[0-9]+\\.[0-9]+"))) {
             throw new IllegalArgumentException("'cdk' should be either a well-formed version number or 'local'")
         }
 

@@ -8,7 +8,7 @@ plugins {
 airbyteBulkConnector {
     core = 'load'
     toolkits = ['load-s3', 'load-avro', 'load-aws']
-    cdk = 'local'
+    cdk = '0.1.19'
 }
 
 application {
