@@ -33,7 +33,7 @@ For a production-ready deployment of self-managed data planes, various infrastru
 </TabItem>
 </Tabs>                                              
 
-A few notes on Kubernetes cluster provisioning for Airbyte Self-Managed Enterprise:
+A few notes on Kubernetes cluster provisioning for Airbyte Enterprise Flex:
 
 - We support Amazon Elastic Kubernetes Service (EKS) on EC2, Google Kubernetes Engine (GKE) on Google Compute Engine (GCE), or Azure Kubernetes Service (AKS) on Azure.
 - While we support GKE Autopilot, we do not support Amazon EKS on Fargate.
