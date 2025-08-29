@@ -7,7 +7,6 @@ data:
   connectorType: destination
   definitionId: 25c5221d-dce2-4163-ade9-739ef790f503
   dockerImageTag: 2.4.7-rc.1
-  enableProgressiveRollout: true
   dockerRepository: airbyte/destination-postgres
   documentationUrl: https://docs.airbyte.com/integrations/destinations/postgres
   githubIssueLabel: destination-postgres
@@ -23,6 +22,8 @@ data:
     oss:
       enabled: true
   releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: true
     breakingChanges:
       2.0.0:
         message: >
