@@ -15,12 +15,12 @@ Airbyte provides multiple tools to help you build data applications.
 Before using any Airbyte developer tools, ensure you have:
 
 - **Airbyte Cloud account**: Sign up at [cloud.airbyte.com](https://cloud.airbyte.com)
-- **Embedded access**: [Contact sales](https://share.hsforms.com/2uRdBz9VoTWiCtjECzRYgawcvair) to enable Airbyte Embedded on your account
+- **Embedded access**: Contact michel@airbyte.io or teo@airbyte.io to enable Airbyte Embedded on your account
 - **API credentials**: Available in your Airbyte Cloud dashboard under Settings > Applications
 
 ## Airbyte Embedded
 
-[Airbyte Embedded](https://airbyte.com/ai) provides product and software teams the tools and services to move data to provide context for AI applications.
+[Airbyte Embedded](https://airbyte.com/embedded) provides product and software teams the tools and services to move data to provide context for AI applications.
 
 ### Embedded Workspaces & Widget
 
@@ -30,7 +30,7 @@ Airbyte Embedded creates isolated workspaces for each of your customers, allowin
 Currently, S3 is the only supported destination for Airbyte Embedded. Additional destinations will be supported in the future.
 :::
 
-Once your Organization is enabled via Airbyte Embedded, you can begin onboarding customers via the Embedded Widget. The Get Started Guide walks you through how to configure a React.js serverless app for the onboarding app. You can download the code for the onboarding app [via GitHub](https://github.com/airbytehq/embedded-sampleweb-reactjs). If you prefer to develop in Node.js, please use [this sample app](https://github.com/airbytehq/embedded-sampleweb-nodejs) instead. Regardless of web framework you choose, the pre-requisites required for initial set up are the same.
+Once your Organization is enabled via Airbyte Embedded, you can begin onboarding customers via the Embedded Widget. You can download the code for the onboarding app [via GitHub](https://github.com/airbytehq/embedded-demoapp).
 
 
 ## PyAirbyte MCP
