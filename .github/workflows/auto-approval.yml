@@ -81,12 +81,12 @@ jobs:
             REQUESTER="${{ github.event.inputs.requester }}"
             REASON="${{ github.event.inputs.reason }}"
           fi
-          
+
           echo "pr-number=$PR_NUMBER" >> $GITHUB_OUTPUT
           echo "requester=${REQUESTER:-${{ github.actor }}}" >> $GITHUB_OUTPUT
           echo "reason=${REASON:-Automated approval}" >> $GITHUB_OUTPUT
           echo "run-url=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
-          
+
           PR_JSON=$(gh api repos/${{ github.repository }}/pulls/$PR_NUMBER)
           echo "pr-title=$(echo "$PR_JSON" | jq -r .title)" >> $GITHUB_OUTPUT
           echo "pr-author=$(echo "$PR_JSON" | jq -r .user.login)" >> $GITHUB_OUTPUT
