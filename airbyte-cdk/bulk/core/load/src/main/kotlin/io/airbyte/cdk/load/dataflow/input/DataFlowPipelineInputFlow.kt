@@ -12,7 +12,6 @@ import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
-import jakarta.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 
@@ -22,7 +21,6 @@ import kotlinx.coroutines.flow.FlowCollector
  * Adds state ids to the input, handling the serial case where we infer the state id from a global
  * counter.
  */
-@Singleton
 class DataFlowPipelineInputFlow(
     private val inputFlow: Flow<DestinationMessage>,
     private val stateStore: StateStore,
