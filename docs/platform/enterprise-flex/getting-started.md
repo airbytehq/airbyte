@@ -19,17 +19,23 @@ You may choose to run a self-managed data plane while using Airbyte Enterprise F
 
 ## Infrastructure prerequisites
 
-For a production-ready deployment of self-managed data planes, various infrastructure components are required. We recommend deploying to Amazon EKS or Google Kubernetes Engine.
+For a production-ready deployment of self-managed data planes, various infrastructure components are required. We recommend deploying to Amazon EKS, Google Kubernetes Engine,
+
+<Tabs>
+<TabItem value="Amazon EKS" label="Amazon EKS" default>
 
 | Component                | Recommendation                                                                                                                                                            |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Kubernetes Cluster       | Amazon EKS cluster running on EC2 instances in [2 or more availability zones](https://docs.aws.amazon.com/eks/latest/userguide/disaster-recovery-resiliency.html) on a minimum of 6 nodes. |
-| External Secrets Manager | [Amazon Secrets Manager](/platform/operator-guides/configuring-airbyte#secrets) for storing connector 
-| Object Storage (Optional)| [Amazon S3 bucket](#configuring-external-logging) with a directory for log storage.                                                                         |
+| Kubernetes Cluster       | Amazon EKS cluster running on EC2 instances in [2 or more availability zones](https://docs.aws.amazon.com/eks/latest/userguide/disaster-recovery-resiliency.html). |
+| External Secrets Manager | [Amazon Secrets Manager](/platform/operator-guides/configuring-airbyte#secrets) for storing connector secrets. 
+| Object Storage (Optional)| Amazon S3 bucket with a directory for log storage.                                                                         |
+
+</TabItem>
+                                                          
 
 A few notes on Kubernetes cluster provisioning for Airbyte Self-Managed Enterprise:
 
-- We support Amazon Elastic Kubernetes Service (EKS) on EC2 or Google Kubernetes Engine (GKE) on Google Compute Engine (GCE). Improved support for Azure Kubernetes Service (AKS) is coming soon.
+- We support Amazon Elastic Kubernetes Service (EKS) on EC2, Google Kubernetes Engine (GKE) on Google Compute Engine (GCE), or Azure Kubernetes Service (AKS) on Azure.
 - While we support GKE Autopilot, we do not support Amazon EKS on Fargate.
 
 We require you to install and configure the following Kubernetes tooling:
@@ -73,6 +79,8 @@ kubectl create namespace airbyte
 ## Limitations and considerations
 
 - While data planes process data in their respective regions, some metadata remains in the control plane.
-- Airbyte stores Cursor and Primary Key data in the control plane regardless of data plane location. If you have data that you can't store in the control plane, don't use it as a cursor or primary key.
+    - Airbyte stores Cursor and Primary Key data in the control plane regardless of data plane location. If you have data that you can't store in the control plane, don't use it as a cursor or primary key.
 - The Connector Builder processes all data through the control plane, regardless of workspace settings. This limitation applies to the development and testing phase only; published connectors respect workspace data residency settings during syncs.
 - If you want to run multiple data planes in the same region for higher availability, both must be part of the same region in Airbyte and use the same secrets manager to ensure connection credentials are the same.
+- Data planes must be able to communicate with the control plane. 
+    - **Data planes will only ever send requests to the control plane and never require inbound requests.**
