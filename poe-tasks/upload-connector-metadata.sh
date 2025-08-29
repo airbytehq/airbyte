@@ -119,4 +119,4 @@ fi
 #   | For strict-encrypt connectors the dockerhub checks enforce that both {connector}:{version} and {connector}-strict-encrypt:{version}
 #   | Docker images must be published prior to metadata upload. With our current connector publishing process, these images are
 #   | published in parallel and will not necessarily exist before metadata upload.
-poetry run --directory $METADATA_SERVICE_PATH metadata_service upload --disable-dockerhub-checks "$meta" "$DOCS_ROOT/" "$metadata_bucket" $metadata_upload_prerelease_flag
+poetry run --directory $METADATA_SERVICE_PATH metadata_service upload --disable-dockerhub-checks "$meta" "$doc" "$metadata_bucket" $metadata_upload_prerelease_flag

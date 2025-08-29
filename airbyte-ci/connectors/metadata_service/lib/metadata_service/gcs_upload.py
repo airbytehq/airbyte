@@ -84,12 +84,8 @@ class ManifestOnlyFilePaths:
 
 
 def get_doc_local_file_path(metadata: ConnectorMetadataDefinitionV0, docs_path: Path, inapp: bool) -> Optional[Path]:
-    pattern = re.compile(r"^https://docs\.airbyte\.com/(.+)$")
-    match = pattern.search(metadata.data.documentationUrl)
-    if match:
-        extension = ".inapp.md" if inapp else ".md"
-        return (docs_path / match.group(1)).with_suffix(extension)
-    return None
+    extension = ".inapp.md" if inapp else ".md"
+    return docs_path.with_suffix(extension)
 
 
 def get_manifest_only_file_paths(working_directory: Path) -> ManifestOnlyFilePaths:
