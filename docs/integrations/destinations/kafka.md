@@ -16,12 +16,32 @@ Each stream will be output into a Kafka topic.
 
 Currently, this connector only writes data with JSON format. More formats \(e.g. Apache Avro\) will be supported in the future.
 
-Each record will contain in its key the uuid assigned by Airbyte, and in the value these 3 fields:
+Each record will contain in its key the uuid assigned by Airbyte, and in the value these fields:
 
 - `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed.
 - `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source.
 - `_airbyte_data`: a json blob representing with the event data.
 - `_airbyte_stream`: the name of each record's stream.
+- `_airbyte_primary_keys` (optional): the primary key(s) of the stream if defined in the catalog. This is a list of lists to support composite keys.
+- `_airbyte_cdc_operation` (optional): for CDC sources, indicates the operation type - `insert`, `update`, or `delete`.
+
+Example message for a CDC-enabled sync with primary keys:
+```json
+{
+  "_airbyte_ab_id": "550e8400-e29b-41d4-a716-446655440000",
+  "_airbyte_stream": "orders",
+  "_airbyte_emitted_at": 1699564800000,
+  "_airbyte_data": {
+    "id": 123,
+    "customer_id": 456,
+    "total": 99.99,
+    "_ab_cdc_lsn": "0/1234567",
+    "_ab_cdc_updated_at": "2024-01-01T12:00:00Z"
+  },
+  "_airbyte_primary_keys": [["id"]],
+  "_airbyte_cdc_operation": "update"
+}
+```
 
 #### Features
 
@@ -105,6 +125,7 @@ _NOTE_: Some configurations for SSL are not available yet.
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------  |
+| 0.1.12  | 2025-08-29 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Add primary key and CDC operation metadata to output messages                  |
 | 0.1.11  | 2025-03-28 | [56450](https://github.com/airbytehq/airbyte/pull/56450) | Add support for other SASL Mechanisms when SASL_PLAINTEXT protocol is selected |
 | 0.1.10  | 2022-08-04 | [15287](https://github.com/airbytehq/airbyte/pull/15287) | Update Kafka destination to use outputRecordCollector to properly store state  |
 | 0.1.9   | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors                         |

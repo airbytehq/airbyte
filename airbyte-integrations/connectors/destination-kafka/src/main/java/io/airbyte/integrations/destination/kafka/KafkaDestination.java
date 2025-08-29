@@ -33,6 +33,8 @@ public class KafkaDestination extends BaseConnector implements Destination {
   public static final String COLUMN_NAME_EMITTED_AT = JavaBaseConstants.COLUMN_NAME_EMITTED_AT;
   public static final String COLUMN_NAME_DATA = JavaBaseConstants.COLUMN_NAME_DATA;
   public static final String COLUMN_NAME_STREAM = "_airbyte_stream";
+  public static final String COLUMN_NAME_PRIMARY_KEYS = "_airbyte_primary_keys";
+  public static final String COLUMN_NAME_CDC_OPERATION = "_airbyte_cdc_operation";
 
   private final StandardNameTransformer namingResolver;
 

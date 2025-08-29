@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.kafka;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -21,9 +22,11 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -172,6 +175,159 @@ public class KafkaRecordConsumerTest extends PerStreamStateMessageTest {
           Arguments.of("topic with spaces", "topic_with_spaces"));
     }
 
+  }
+
+  @Test
+  @DisplayName("Test building primary key map from catalog")
+  public void testBuildPrimaryKeyMap() {
+    // Create a catalog with primary keys
+    final AirbyteStream streamWithPK = CatalogHelpers.createAirbyteStream(
+        STREAM_NAME,
+        SCHEMA_NAME,
+        Field.of("id", JsonSchemaType.NUMBER),
+        Field.of("name", JsonSchemaType.STRING));
+    streamWithPK.setSourceDefinedPrimaryKey(List.of(List.of("id")));
+    
+    final ConfiguredAirbyteStream configuredStream = new ConfiguredAirbyteStream()
+        .withStream(streamWithPK);
+    
+    final ConfiguredAirbyteCatalog catalogWithPK = new ConfiguredAirbyteCatalog()
+        .withStreams(List.of(configuredStream));
+    
+    final KafkaDestinationConfig config = KafkaDestinationConfig.getKafkaDestinationConfig(getConfig(TOPIC_NAME));
+    final KafkaRecordConsumer consumerWithPK = new KafkaRecordConsumer(config, catalogWithPK, outputRecordCollector, NAMING_RESOLVER);
+    
+    final Map<AirbyteStreamNameNamespacePair, List<List<String>>> primaryKeyMap = consumerWithPK.buildPrimaryKeyMap();
+    
+    assertEquals(1, primaryKeyMap.size());
+    final AirbyteStreamNameNamespacePair streamPair = new AirbyteStreamNameNamespacePair(STREAM_NAME, SCHEMA_NAME);
+    assertEquals(List.of(List.of("id")), primaryKeyMap.get(streamPair));
+  }
+
+  @Test
+  @DisplayName("Test building primary key map with composite keys")
+  public void testBuildPrimaryKeyMapComposite() {
+    // Create a catalog with composite primary keys
+    final AirbyteStream streamWithCompositePK = CatalogHelpers.createAirbyteStream(
+        STREAM_NAME,
+        SCHEMA_NAME,
+        Field.of("id", JsonSchemaType.NUMBER),
+        Field.of("tenant_id", JsonSchemaType.NUMBER),
+        Field.of("name", JsonSchemaType.STRING));
+    streamWithCompositePK.setSourceDefinedPrimaryKey(List.of(List.of("tenant_id"), List.of("id")));
+    
+    final ConfiguredAirbyteStream configuredStream = new ConfiguredAirbyteStream()
+        .withStream(streamWithCompositePK);
+    
+    final ConfiguredAirbyteCatalog catalogWithPK = new ConfiguredAirbyteCatalog()
+        .withStreams(List.of(configuredStream));
+    
+    final KafkaDestinationConfig config = KafkaDestinationConfig.getKafkaDestinationConfig(getConfig(TOPIC_NAME));
+    final KafkaRecordConsumer consumerWithPK = new KafkaRecordConsumer(config, catalogWithPK, outputRecordCollector, NAMING_RESOLVER);
+    
+    final Map<AirbyteStreamNameNamespacePair, List<List<String>>> primaryKeyMap = consumerWithPK.buildPrimaryKeyMap();
+    
+    assertEquals(1, primaryKeyMap.size());
+    final AirbyteStreamNameNamespacePair streamPair = new AirbyteStreamNameNamespacePair(STREAM_NAME, SCHEMA_NAME);
+    assertEquals(List.of(List.of("tenant_id"), List.of("id")), primaryKeyMap.get(streamPair));
+  }
+
+  @Test
+  @DisplayName("Test building primary key map with user-configured primary key")
+  public void testBuildPrimaryKeyMapUserConfigured() {
+    // Create a catalog where user overrides source-defined primary key
+    final AirbyteStream stream = CatalogHelpers.createAirbyteStream(
+        STREAM_NAME,
+        SCHEMA_NAME,
+        Field.of("id", JsonSchemaType.NUMBER),
+        Field.of("email", JsonSchemaType.STRING));
+    stream.setSourceDefinedPrimaryKey(List.of(List.of("id")));
+    
+    final ConfiguredAirbyteStream configuredStream = new ConfiguredAirbyteStream()
+        .withStream(stream)
+        .withPrimaryKey(List.of(List.of("email"))); // User overrides with email as PK
+    
+    final ConfiguredAirbyteCatalog catalogWithPK = new ConfiguredAirbyteCatalog()
+        .withStreams(List.of(configuredStream));
+    
+    final KafkaDestinationConfig config = KafkaDestinationConfig.getKafkaDestinationConfig(getConfig(TOPIC_NAME));
+    final KafkaRecordConsumer consumerWithPK = new KafkaRecordConsumer(config, catalogWithPK, outputRecordCollector, NAMING_RESOLVER);
+    
+    final Map<AirbyteStreamNameNamespacePair, List<List<String>>> primaryKeyMap = consumerWithPK.buildPrimaryKeyMap();
+    
+    final AirbyteStreamNameNamespacePair streamPair = new AirbyteStreamNameNamespacePair(STREAM_NAME, SCHEMA_NAME);
+    assertEquals(List.of(List.of("email")), primaryKeyMap.get(streamPair)); // Should use user-configured PK
+  }
+
+  @Test
+  @DisplayName("Test extractCdcOperation for insert")
+  public void testExtractCdcOperationInsert() {
+    final KafkaDestinationConfig config = KafkaDestinationConfig.getKafkaDestinationConfig(getConfig(TOPIC_NAME));
+    final KafkaRecordConsumer testConsumer = new KafkaRecordConsumer(config, CATALOG, outputRecordCollector, NAMING_RESOLVER);
+    
+    final JsonNode dataWithLsn = Jsons.jsonNode(ImmutableMap.of(
+        "id", 1,
+        "name", "test",
+        "_ab_cdc_lsn", "0/1234567"));
+    
+    assertEquals("insert", testConsumer.extractCdcOperation(dataWithLsn));
+  }
+
+  @Test
+  @DisplayName("Test extractCdcOperation for update")
+  public void testExtractCdcOperationUpdate() {
+    final KafkaDestinationConfig config = KafkaDestinationConfig.getKafkaDestinationConfig(getConfig(TOPIC_NAME));
+    final KafkaRecordConsumer testConsumer = new KafkaRecordConsumer(config, CATALOG, outputRecordCollector, NAMING_RESOLVER);
+    
+    final JsonNode dataWithUpdate = Jsons.jsonNode(ImmutableMap.of(
+        "id", 1,
+        "name", "test",
+        "_ab_cdc_updated_at", "2023-01-01T00:00:00Z"));
+    
+    assertEquals("update", testConsumer.extractCdcOperation(dataWithUpdate));
+  }
+
+  @Test
+  @DisplayName("Test extractCdcOperation for delete")
+  public void testExtractCdcOperationDelete() {
+    final KafkaDestinationConfig config = KafkaDestinationConfig.getKafkaDestinationConfig(getConfig(TOPIC_NAME));
+    final KafkaRecordConsumer testConsumer = new KafkaRecordConsumer(config, CATALOG, outputRecordCollector, NAMING_RESOLVER);
+    
+    final JsonNode dataWithDelete = Jsons.jsonNode(ImmutableMap.of(
+        "id", 1,
+        "name", "test",
+        "_ab_cdc_deleted_at", "2023-01-01T00:00:00Z"));
+    
+    assertEquals("delete", testConsumer.extractCdcOperation(dataWithDelete));
+  }
+
+  @Test
+  @DisplayName("Test extractCdcOperation for non-CDC data")
+  public void testExtractCdcOperationNonCdc() {
+    final KafkaDestinationConfig config = KafkaDestinationConfig.getKafkaDestinationConfig(getConfig(TOPIC_NAME));
+    final KafkaRecordConsumer testConsumer = new KafkaRecordConsumer(config, CATALOG, outputRecordCollector, NAMING_RESOLVER);
+    
+    final JsonNode regularData = Jsons.jsonNode(ImmutableMap.of(
+        "id", 1,
+        "name", "test"));
+    
+    assertNull(testConsumer.extractCdcOperation(regularData));
+  }
+
+  @Test
+  @DisplayName("Test extractCdcOperation with null CDC fields")
+  public void testExtractCdcOperationNullFields() {
+    final KafkaDestinationConfig config = KafkaDestinationConfig.getKafkaDestinationConfig(getConfig(TOPIC_NAME));
+    final KafkaRecordConsumer testConsumer = new KafkaRecordConsumer(config, CATALOG, outputRecordCollector, NAMING_RESOLVER);
+    
+    final ObjectNode dataWithNullDelete = mapper.createObjectNode();
+    dataWithNullDelete.put("id", 1);
+    dataWithNullDelete.put("name", "test");
+    dataWithNullDelete.putNull("_ab_cdc_deleted_at");
+    dataWithNullDelete.put("_ab_cdc_updated_at", "2023-01-01T00:00:00Z");
+    
+    // Should return "update" since deleted_at is null but updated_at is present
+    assertEquals("update", testConsumer.extractCdcOperation(dataWithNullDelete));
   }
 
 }
