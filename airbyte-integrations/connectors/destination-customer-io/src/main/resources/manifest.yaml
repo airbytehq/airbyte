@@ -6,5 +6,42 @@ checker:
     method: GET
     authenticator:
       type: BasicAccessAuthenticator
-      username: "{{ config.credentials.siteId }}"
-      password: "{{ config.credentials.apiKey }}"
+      username: '{{ config["credentials"]["siteId"] }}'
+      password: '{{ config["credentials"]["apiKey"] }}'
+spec:
+  connection_specification:
+    "$schema": http://json-schema.org/draft-07/schema#
+    title: Customer Io Specification
+    type: object
+    additionalProperties: true
+    properties:
+      credentials:
+        description: Enter the site ID and API key to authenticate.
+        title: Credentials
+        order: 0
+        type: object
+        additionalProperties: true
+        properties:
+          siteId:
+            type: string
+            description:
+              Enter your Customer IO <a href="https://docs.customer.io/integrations/sdk/ios/getting-started/auth/#get-your-api-key">Site
+              ID</a>.
+            title: Site ID
+            airbyte_secret: true
+            always_show: true
+            order: 1
+          apiKey:
+            type: string
+            description:
+              Enter your Customer IO <a href="https://docs.customer.io/integrations/sdk/ios/getting-started/auth/#get-your-api-key">API
+              Key</a>.
+            title: API Key
+            airbyte_secret: true
+            always_show: true
+            order: 2
+        required:
+          - siteId
+          - apiKey
+    required:
+      - credentials
