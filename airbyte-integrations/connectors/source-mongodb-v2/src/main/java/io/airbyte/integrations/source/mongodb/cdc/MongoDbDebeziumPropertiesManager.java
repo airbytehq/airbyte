@@ -100,10 +100,10 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
       return null;
 
     // Step 1: Convert underscores to dashes (matches Debezium's normalizeName behavior)
-    String step1 = connectionString.replaceAll("_", "-");
+    String partialNormalizedStr = connectionString.replaceAll("_", "-");
 
     // Step 2: Replace special characters with underscores
-    return step1.replaceAll("[^a-zA-Z0-9.-]", "_");
+    return partialNormalizedStr.replaceAll("[^a-zA-Z0-9.-]", "_");
   }
 
   @Override
