@@ -82,6 +82,7 @@ jobs:
       # Exactly one of the manual/master steps will run, so just OR them together.
       connectors-to-publish: ${{ steps.list-connectors-manual.outputs.connectors-to-publish || steps.list-connectors-master.outputs.connectors-to-publish }}
       release-type: ${{ steps.resolve-release-type.outputs.release-type }}
+      # publishing java tars is not optional if triggered by push to master (in the non-enterprise repo).
       publish-java-tars: ${{ inputs.publish-java-tars || github.event_name == 'push' }}
   publish_connectors:
     name: Publish connectors
