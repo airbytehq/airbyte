@@ -4,8 +4,9 @@ import json
 from unittest.mock import patch
 
 from source_google_ads.source import SourceGoogleAds
+from .conftest import get_source, read_full_refresh
 
-from .conftest import find_stream, get_source, read_full_refresh
+from airbyte_cdk import Type
 
 
 @patch.object(SourceGoogleAds, "get_customers", return_value=[])
@@ -13,7 +14,6 @@ def test_query_shopping_performance_view_stream(customers, config, requests_mock
     config["end_date"] = "2021-01-10"
     config["conversion_window_days"] = 3
     config["credentials"]["access_token"] = "access_token"
-    stream = find_stream("shopping_performance_view", config)
 
     # Mocked responses
     access_token_response = [{"json": {"access_token": "access_token"}, "status_code": 200}]
@@ -76,7 +76,12 @@ def test_query_shopping_performance_view_stream(customers, config, requests_mock
     )
 
     # Run sync
-    records = read_full_refresh(stream_instance=stream)
+    messages = read_full_refresh(
+        get_source(config=config),
+        config,
+        "shopping_performance_view"
+    )
+    records = list(map(lambda message: message.record, filter(lambda message: message.type == Type.RECORD, messages)))
     assert len(records) == 1
     record = records[0]
 
@@ -111,8 +116,6 @@ def test_custom_query_stream(customers, config_for_custom_query_tests, requests_
     config_for_custom_query_tests["end_date"] = "2021-01-10"
     config_for_custom_query_tests["conversion_window_days"] = 1
     config_for_custom_query_tests["credentials"]["access_token"] = "access_token"
-    streams = get_source(config=config_for_custom_query_tests).streams(config=config_for_custom_query_tests)
-    stream = next(filter(lambda s: s.name == "custom_ga_query", streams))
 
     # Mocked responses
     access_token_response = [{"json": {"access_token": "access_token"}, "status_code": 200}]
@@ -239,7 +242,12 @@ def test_custom_query_stream(customers, config_for_custom_query_tests, requests_
     )
 
     # Run sync
-    records = read_full_refresh(stream_instance=stream)
+    messages = read_full_refresh(
+        get_source(config=config_for_custom_query_tests),
+        config_for_custom_query_tests,
+        "custom_ga_query"
+    )
+    records = list(map(lambda message: message.record, filter(lambda message: message.type == Type.RECORD, messages)))
     assert len(records) == 1
     record = records[0]
 
