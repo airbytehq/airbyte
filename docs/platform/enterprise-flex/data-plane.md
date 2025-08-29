@@ -136,7 +136,7 @@ json
 </details>
 
 
-## 4. Configure Kubernetes Secrets {#step-4}
+## 3. Configure Kubernetes Secrets {#step-4}
 
 Your data plane relies on Kubernetes secrets to identify itself with the control plane.
 
