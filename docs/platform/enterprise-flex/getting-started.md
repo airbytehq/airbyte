@@ -31,7 +31,7 @@ For a production-ready deployment of self-managed data planes, various infrastru
 | Object Storage (Optional)| Amazon S3 bucket with a directory for log storage.                                                                         |
 
 </TabItem>
-                                                          
+</Tabs>                                              
 
 A few notes on Kubernetes cluster provisioning for Airbyte Self-Managed Enterprise:
 
@@ -83,4 +83,4 @@ kubectl create namespace airbyte
 - The Connector Builder processes all data through the control plane, regardless of workspace settings. This limitation applies to the development and testing phase only; published connectors respect workspace data residency settings during syncs.
 - If you want to run multiple data planes in the same region for higher availability, both must be part of the same region in Airbyte and use the same secrets manager to ensure connection credentials are the same.
 - Data planes must be able to communicate with the control plane. 
-    - **Data planes will only ever send requests to the control plane and never require inbound requests.**
+- **Data planes will only ever send requests to the control plane and never require inbound requests.**
