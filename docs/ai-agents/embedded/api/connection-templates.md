@@ -21,7 +21,7 @@ You'll need the following to create a connection template:
 - (optional) A cron expression describing when to run syncs. The cron expression must follow the Quartz syntax. You can use [freeformatter.com](https://www.freeformatter.com/cron-expression-generator-quartz.html) to help validate the expression
 
 :::info
-S3 is the only destination we currently support for Airbyte Embedded.
+Blob storage like ABS, GCS, and S3 are the only destinations we currently support for Airbyte Embedded.
 :::
 
 Here is an example request for creating a connection template:
