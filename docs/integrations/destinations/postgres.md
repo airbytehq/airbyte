@@ -267,6 +267,7 @@ _where_ it is deployed.
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.4.7 | 2025-08-29 | [65620](https://github.com/airbytehq/airbyte/pull/65620) | Noop release.                                                                                                                         |
 | 2.4.7-rc.1 | 2025-08-29 | [65617](https://github.com/airbytehq/airbyte/pull/65617) | Testing RC publishing.                                                                                                                         |
 | 2.4.6   | 2025-08-21 | [63769](https://github.com/airbytehq/airbyte/pull/63769) | Fix numeric columns synced as NULL value in incremential sync.                                                                                                                         |
 | 2.4.5   | 2025-04-24 | [58652](https://github.com/airbytehq/airbyte/pull/58652) | Upgrade libraries for security patches                                                                                                                                                 |
