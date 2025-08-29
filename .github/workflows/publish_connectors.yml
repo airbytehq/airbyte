@@ -16,6 +16,11 @@ on:
         description: "Whether to publish as a pre-release (tagged for development) or as a main-release (production)"
         default: pre-release
         type: string
+      publish-java-tars:
+        description: "Whether to publish Java connector tar files."
+        required: false
+        default: false
+        type: boolean
   workflow_dispatch:
     inputs:
       connectors:
@@ -29,6 +34,11 @@ on:
         options:
           - pre-release
           - main-release
+      publish-java-tars:
+        description: "Whether to publish Java connector tar files."
+        required: false
+        default: false
+        type: boolean
 jobs:
   publish_options:
     name: Resolve options for connector publishing
@@ -66,6 +76,7 @@ jobs:
       # Exactly one of the manual/master steps will run, so just OR them together.
       connectors-to-publish: ${{ steps.list-connectors-manual.outputs.connectors-to-publish || steps.list-connectors-master.outputs.connectors-to-publish }}
       release-type: ${{ steps.resolve-release-type.outputs.release-type }}
+      publish-java-tars: ${{ inputs.publish-java-tars || github.event_name == 'push' }}
   publish_connectors:
     name: Publish connectors
     needs: [publish_options]
@@ -178,7 +189,7 @@ jobs:
 
       - name: Publish JVM connectors tar file
         id: publish-JVM-connectors-tar-file
-        if: steps.connector-metadata.outputs.connector-language == 'java'
+        if: steps.connector-metadata.outputs.connector-language == 'java' && needs.publish_options.outputs.publish-java-tars == 'true'
         shell: bash
         run: ./poe-tasks/upload-java-connector-tar-file.sh --name ${{ matrix.connector }} --release-type ${{ needs.publish_options.outputs.release-type }}
         env:
