@@ -21,6 +21,11 @@ on:
         required: false
         default: false
         type: boolean
+      original-trigger:
+        description: "The original trigger that caused this workflow to be called. The two possible values are `push-to-master` and `manual`"
+        required: false
+        default: "manual"
+        type: string
   workflow_dispatch:
     inputs:
       connectors:
@@ -51,13 +56,13 @@ jobs:
           fetch-depth: 2 # Required so we can conduct a diff from the previous commit to understand what connectors have changed.
       - name: List connectors to publish [manual]
         id: list-connectors-manual
-        if: github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_call'
+        if: github.event_name == 'workflow_dispatch' || inputs.original-trigger == 'manual'
         shell: bash
         # When invoked manually, we run on the connectors specified in the input.
         run: echo connectors-to-publish=$(./poe-tasks/parse-connector-name-args.sh ${{ inputs.connectors }}) | tee -a $GITHUB_OUTPUT
       - name: List connectors to publish [On merge to master]
         id: list-connectors-master
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' || inputs.original-trigger == 'push-to-master'
         shell: bash
         # When merging to master, we run on connectors that have changed since the previous commit.
         run: echo connectors-to-publish=$(./poe-tasks/get-modified-connectors.sh --prev-commit --json) | tee -a $GITHUB_OUTPUT
@@ -67,7 +72,7 @@ jobs:
         run: |
           # If workflow is triggered on merge to master, do a main release.
           # If workflow is triggered manually, use the input release type.
-          if [[ "${{ github.event_name }}" == "push" ]]; then
+          if [[ "${{ github.event_name }}" == "push" || "${{ inputs.original-trigger }}" == "push-to-master" ]]; then
             echo "release-type=main-release" | tee -a $GITHUB_OUTPUT
           else
             echo "release-type=${{ inputs.release-type }}" | tee -a $GITHUB_OUTPUT
