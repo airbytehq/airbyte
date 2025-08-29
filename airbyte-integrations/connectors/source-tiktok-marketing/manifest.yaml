@@ -327,6 +327,9 @@ definitions:
           filtering: '{{ {"secondary_status": "AD_STATUS_ALL"}|string if config.get("include_deleted", False) }}'
       record_selector:
         $ref: "#/definitions/record_selector"
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record.get('modify_time') is not none }}"
       paginator:
         $ref: "#/definitions/semi_incremental_stream/retriever/paginator"
       partition_router:
