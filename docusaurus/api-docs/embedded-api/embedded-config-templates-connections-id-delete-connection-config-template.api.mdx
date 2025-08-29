@@ -1,0 +1,71 @@
+---
+id: embedded-config-templates-connections-id-delete-connection-config-template
+title: "Delete Connection Config Template"
+description: "Delete Connection Config Template"
+sidebar_label: "Delete Connection Config Template"
+hide_title: true
+hide_table_of_contents: true
+api: eJztWE1v4zYQ/SvCnFqAjpO0vejmON42QLsJNt5eDEOgxbHNjURqSSpYV9B/XwypL380zRo9+mRZmnkzfHyk+FSB4xsL8QJSrRSmTmqVpFqt5SZxmBcZdwhLBrpAw+nhg4AYMF+hEChGB5F21KPYUSVFPRKYocPkDXQGFtPSSLeDeFHBH/P50x1ygwbixbJeMii44Tk6NNYHKJ4jxCAFMJAKYii42wIDg19LaVBA7EyJDGy6xZxDXIHbFZRhnZFqAwzW2uTcQQxl6VGcdBkFPAioqaBBW2hl0VLy7fU1/Qi0qZEFjQBieC7TFK1dl1n0qQkGRhQ6VI7CeVFkMvWMjb9YyqkGDRWG+HQyVNBmw5X8xwcnUvxIx4+D1IjaZ9SokyqABaqO4dr0+z42+kixB/k8ddokAtdSyTO6G8JPCCq676BOdBuEMSigV18wdf8COA3RNYPUaJXgt8KgtTJQzdXuce3Vst9rzbo7qswyoNluwadGq2jWw9QMlFbJyiB/kWqTpFuuNmiTwuAaDar0TWo/ahXdNanRNKRGT30qDX3Ny4xokxuljSff7lSaEBUGaWn0+CutM+RqUOB5p9LoUUXTEDrAI/nXDH5srsJ0hLoi4e7NXMEdjpzMEYb0+dRo4gioLMS5QJ9Dqgeq2ZEW+mW+OFo5J9T/34I+KUIW9pcBH3tjGsjmd3TTbnMLopw3W9tjSUOgQfx6ahO54yKi0aB1528eOVrLN3iu6P9q0msGaIw2HlM6zO1xqbXETJxb6INPrtn/3XCSanE22IwQoikhnJJaGzYppI+EPoYbw3dwgGSHq3CxfA9k9/ZodfLLsU4+aLOSQqC6qOSiEq+S29tjlfzNMynCqzG0cRHLRSw1g99OvXoelEOjeBY9o3lFc1HMRTGtYsKhfKCVe+/gov6Q0xy9o3nv4HJ0W03OMNg9YMGUxTDmhRy/3oxbxzg+dIzjgWMck2P0fpBEGdxeaTKIYetcYeMxoV1xaVY7h1dcwmGrk/AomjXVosnTg+e6dZjPJOAgpKHP7CaH6kBjHf2xOwQQKVKttY9syTtV610NMaDRhYDrq+urG5rSQluXc7/KGoP7Ht73qnWjcPjNjYuMS29iPINVMyEL4AXx9noDrLPxYeHvTUu41U4MMIiloFPvVluSFVTVilv8bLK6pttfSzRk35cMXrmRfEUULSoQ0tK1gHjNM4tHDXf7Dfz0qTnX/xwBOz2QVvWKNP/Ks5L+AYMX3IXvAfWyZrBFLvy3g6p5MElTLNwg5WhnI4V0Cr6f/Tmbz4ABL4mw3oEFKbD2YrDI9zuqqhAx1y+o6rpr0NF/6rGuvwMo6gNN
+sidebar_class_name: "delete api-method"
+info_path: embedded-api///airbyte-embedded-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Delete Connection Config Template"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"delete"}
+  path={"/api/v1/embedded/config_templates/connections/{id}"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Delete Connection Config Template
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"name":"id","in":"path","required":true,"schema":{"type":"string","format":"uuid","title":"Id"}}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={undefined}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"properties":{"organization_id":{"type":"string","format":"uuid","title":"Organization Id"},"destination_name":{"type":"string","title":"Destination Name"},"destination_actor_definition_id":{"type":"string","format":"uuid","title":"Destination Actor Definition Id"},"destination_config":{"type":"object","title":"Destination Config"},"cron_expression":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Cron Expression"},"non_breaking_changes_preference":{"type":"string","title":"Non Breaking Changes Preference","default":"ignore"},"sync_on_create":{"type":"boolean","title":"Sync On Create","default":true},"id":{"type":"string","format":"uuid","title":"Id"},"created_at":{"type":"string","format":"date-time","title":"Created At"},"updated_at":{"type":"string","format":"date-time","title":"Updated At"}},"type":"object","required":["organization_id","destination_name","destination_actor_definition_id","destination_config","id","created_at","updated_at"],"title":"GetConnectionConfigTemplateOut"}}}},"400":{"description":"Bad request","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"403":{"description":"Forbidden","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"422":{"description":"Validation Error","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"500":{"description":"Internal Server Error","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}}}}
+>
+  
+</StatusCodes>
+
+
+      
