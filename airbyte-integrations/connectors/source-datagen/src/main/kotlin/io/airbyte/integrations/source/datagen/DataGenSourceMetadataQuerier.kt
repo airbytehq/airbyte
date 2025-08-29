@@ -5,7 +5,6 @@ import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.MetadataQuerier
-import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.integrations.source.datagen.flavor.increment.IncrementDataGenerator
 import io.airbyte.integrations.source.datagen.flavor.increment.IncrementFlavor
 import io.airbyte.protocol.models.v0.StreamDescriptor
@@ -29,9 +28,9 @@ class DataGenSourceMetadataQuerier() : MetadataQuerier {
     }
 
     override fun fields(streamID: StreamIdentifier): List<Field> {
-         val flavor = flavors[streamID.namespace]
+        val flavor = flavors[streamID.namespace]
         val flavorFields = flavor?.fields?.get(streamID.name)
-         return flavor?.fields?.get(streamID.name) ?: emptyList()
+        return flavor?.fields?.get(streamID.name) ?: emptyList()
     }
 
     override fun streamNamespaces(): List<String> {

@@ -29,6 +29,7 @@ data class DataGenSourceConfiguration(
     override val realPort: Int = 0,
     override val sshTunnel: SshTunnelMethodConfiguration? = null,
     override val sshConnectionOptions: SshConnectionOptions = SshConnectionOptions.fromAdditionalProperties(emptyMap()),
+    //val flavor:
 ) : SourceConfiguration
 
 @Singleton

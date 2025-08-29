@@ -10,7 +10,7 @@ import jakarta.inject.Singleton
 
 @Singleton
 @Primary
-class DataGenSourceStreamFactory : AirbyteStreamFactory {
+open class DataGenSourceStreamFactory : AirbyteStreamFactory {
     override fun create(config: SourceConfiguration, discoveredStream: DiscoveredStream) :
         AirbyteStream = AirbyteStreamFactory.createAirbyteStream(discoveredStream).apply {
             supportedSyncModes = listOf(SyncMode.FULL_REFRESH)
