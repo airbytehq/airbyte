@@ -71,26 +71,26 @@ public class KafkaRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
       final AirbyteStreamNameNamespacePair streamPair = AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage);
       final String topic = topicMap.get(streamPair);
       final String key = UUID.randomUUID().toString();
-      
+
       // Build the message with required fields
       final ImmutableMap.Builder<String, Object> valueBuilder = ImmutableMap.<String, Object>builder()
           .put(KafkaDestination.COLUMN_NAME_AB_ID, key)
           .put(KafkaDestination.COLUMN_NAME_STREAM, recordMessage.getStream())
           .put(KafkaDestination.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt())
           .put(KafkaDestination.COLUMN_NAME_DATA, recordMessage.getData());
-      
+
       // Add primary keys if available
       final List<List<String>> primaryKeys = primaryKeyMap.get(streamPair);
       if (primaryKeys != null && !primaryKeys.isEmpty()) {
         valueBuilder.put(KafkaDestination.COLUMN_NAME_PRIMARY_KEYS, primaryKeys);
       }
-      
+
       // Add CDC operation if detected
       final String cdcOperation = extractCdcOperation(recordMessage.getData());
       if (cdcOperation != null) {
         valueBuilder.put(KafkaDestination.COLUMN_NAME_CDC_OPERATION, cdcOperation);
       }
-      
+
       final JsonNode value = Jsons.jsonNode(valueBuilder.build());
       sendRecord(new ProducerRecord<>(topic, key, value));
     } else {

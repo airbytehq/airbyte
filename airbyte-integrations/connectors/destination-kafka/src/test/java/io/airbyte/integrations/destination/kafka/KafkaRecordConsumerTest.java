@@ -187,18 +187,18 @@ public class KafkaRecordConsumerTest extends PerStreamStateMessageTest {
         Field.of("id", JsonSchemaType.NUMBER),
         Field.of("name", JsonSchemaType.STRING));
     streamWithPK.setSourceDefinedPrimaryKey(List.of(List.of("id")));
-    
+
     final ConfiguredAirbyteStream configuredStream = new ConfiguredAirbyteStream()
         .withStream(streamWithPK);
-    
+
     final ConfiguredAirbyteCatalog catalogWithPK = new ConfiguredAirbyteCatalog()
         .withStreams(List.of(configuredStream));
-    
+
     final KafkaDestinationConfig config = KafkaDestinationConfig.getKafkaDestinationConfig(getConfig(TOPIC_NAME));
     final KafkaRecordConsumer consumerWithPK = new KafkaRecordConsumer(config, catalogWithPK, outputRecordCollector, NAMING_RESOLVER);
-    
+
     final Map<AirbyteStreamNameNamespacePair, List<List<String>>> primaryKeyMap = consumerWithPK.buildPrimaryKeyMap();
-    
+
     assertEquals(1, primaryKeyMap.size());
     final AirbyteStreamNameNamespacePair streamPair = new AirbyteStreamNameNamespacePair(STREAM_NAME, SCHEMA_NAME);
     assertEquals(List.of(List.of("id")), primaryKeyMap.get(streamPair));
@@ -215,18 +215,18 @@ public class KafkaRecordConsumerTest extends PerStreamStateMessageTest {
         Field.of("tenant_id", JsonSchemaType.NUMBER),
         Field.of("name", JsonSchemaType.STRING));
     streamWithCompositePK.setSourceDefinedPrimaryKey(List.of(List.of("tenant_id"), List.of("id")));
-    
+
     final ConfiguredAirbyteStream configuredStream = new ConfiguredAirbyteStream()
         .withStream(streamWithCompositePK);
-    
+
     final ConfiguredAirbyteCatalog catalogWithPK = new ConfiguredAirbyteCatalog()
         .withStreams(List.of(configuredStream));
-    
+
     final KafkaDestinationConfig config = KafkaDestinationConfig.getKafkaDestinationConfig(getConfig(TOPIC_NAME));
     final KafkaRecordConsumer consumerWithPK = new KafkaRecordConsumer(config, catalogWithPK, outputRecordCollector, NAMING_RESOLVER);
-    
+
     final Map<AirbyteStreamNameNamespacePair, List<List<String>>> primaryKeyMap = consumerWithPK.buildPrimaryKeyMap();
-    
+
     assertEquals(1, primaryKeyMap.size());
     final AirbyteStreamNameNamespacePair streamPair = new AirbyteStreamNameNamespacePair(STREAM_NAME, SCHEMA_NAME);
     assertEquals(List.of(List.of("tenant_id"), List.of("id")), primaryKeyMap.get(streamPair));
@@ -242,19 +242,19 @@ public class KafkaRecordConsumerTest extends PerStreamStateMessageTest {
         Field.of("id", JsonSchemaType.NUMBER),
         Field.of("email", JsonSchemaType.STRING));
     stream.setSourceDefinedPrimaryKey(List.of(List.of("id")));
-    
+
     final ConfiguredAirbyteStream configuredStream = new ConfiguredAirbyteStream()
         .withStream(stream)
         .withPrimaryKey(List.of(List.of("email"))); // User overrides with email as PK
-    
+
     final ConfiguredAirbyteCatalog catalogWithPK = new ConfiguredAirbyteCatalog()
         .withStreams(List.of(configuredStream));
-    
+
     final KafkaDestinationConfig config = KafkaDestinationConfig.getKafkaDestinationConfig(getConfig(TOPIC_NAME));
     final KafkaRecordConsumer consumerWithPK = new KafkaRecordConsumer(config, catalogWithPK, outputRecordCollector, NAMING_RESOLVER);
-    
+
     final Map<AirbyteStreamNameNamespacePair, List<List<String>>> primaryKeyMap = consumerWithPK.buildPrimaryKeyMap();
-    
+
     final AirbyteStreamNameNamespacePair streamPair = new AirbyteStreamNameNamespacePair(STREAM_NAME, SCHEMA_NAME);
     assertEquals(List.of(List.of("email")), primaryKeyMap.get(streamPair)); // Should use user-configured PK
   }
@@ -264,12 +264,12 @@ public class KafkaRecordConsumerTest extends PerStreamStateMessageTest {
   public void testExtractCdcOperationInsert() {
     final KafkaDestinationConfig config = KafkaDestinationConfig.getKafkaDestinationConfig(getConfig(TOPIC_NAME));
     final KafkaRecordConsumer testConsumer = new KafkaRecordConsumer(config, CATALOG, outputRecordCollector, NAMING_RESOLVER);
-    
+
     final JsonNode dataWithLsn = Jsons.jsonNode(ImmutableMap.of(
         "id", 1,
         "name", "test",
         "_ab_cdc_lsn", "0/1234567"));
-    
+
     assertEquals("insert", testConsumer.extractCdcOperation(dataWithLsn));
   }
 
@@ -278,12 +278,12 @@ public class KafkaRecordConsumerTest extends PerStreamStateMessageTest {
   public void testExtractCdcOperationUpdate() {
     final KafkaDestinationConfig config = KafkaDestinationConfig.getKafkaDestinationConfig(getConfig(TOPIC_NAME));
     final KafkaRecordConsumer testConsumer = new KafkaRecordConsumer(config, CATALOG, outputRecordCollector, NAMING_RESOLVER);
-    
+
     final JsonNode dataWithUpdate = Jsons.jsonNode(ImmutableMap.of(
         "id", 1,
         "name", "test",
         "_ab_cdc_updated_at", "2023-01-01T00:00:00Z"));
-    
+
     assertEquals("update", testConsumer.extractCdcOperation(dataWithUpdate));
   }
 
@@ -292,12 +292,12 @@ public class KafkaRecordConsumerTest extends PerStreamStateMessageTest {
   public void testExtractCdcOperationDelete() {
     final KafkaDestinationConfig config = KafkaDestinationConfig.getKafkaDestinationConfig(getConfig(TOPIC_NAME));
     final KafkaRecordConsumer testConsumer = new KafkaRecordConsumer(config, CATALOG, outputRecordCollector, NAMING_RESOLVER);
-    
+
     final JsonNode dataWithDelete = Jsons.jsonNode(ImmutableMap.of(
         "id", 1,
         "name", "test",
         "_ab_cdc_deleted_at", "2023-01-01T00:00:00Z"));
-    
+
     assertEquals("delete", testConsumer.extractCdcOperation(dataWithDelete));
   }
 
@@ -306,11 +306,11 @@ public class KafkaRecordConsumerTest extends PerStreamStateMessageTest {
   public void testExtractCdcOperationNonCdc() {
     final KafkaDestinationConfig config = KafkaDestinationConfig.getKafkaDestinationConfig(getConfig(TOPIC_NAME));
     final KafkaRecordConsumer testConsumer = new KafkaRecordConsumer(config, CATALOG, outputRecordCollector, NAMING_RESOLVER);
-    
+
     final JsonNode regularData = Jsons.jsonNode(ImmutableMap.of(
         "id", 1,
         "name", "test"));
-    
+
     assertNull(testConsumer.extractCdcOperation(regularData));
   }
 
@@ -319,13 +319,13 @@ public class KafkaRecordConsumerTest extends PerStreamStateMessageTest {
   public void testExtractCdcOperationNullFields() {
     final KafkaDestinationConfig config = KafkaDestinationConfig.getKafkaDestinationConfig(getConfig(TOPIC_NAME));
     final KafkaRecordConsumer testConsumer = new KafkaRecordConsumer(config, CATALOG, outputRecordCollector, NAMING_RESOLVER);
-    
+
     final ObjectNode dataWithNullDelete = mapper.createObjectNode();
     dataWithNullDelete.put("id", 1);
     dataWithNullDelete.put("name", "test");
     dataWithNullDelete.putNull("_ab_cdc_deleted_at");
     dataWithNullDelete.put("_ab_cdc_updated_at", "2023-01-01T00:00:00Z");
-    
+
     // Should return "update" since deleted_at is null but updated_at is present
     assertEquals("update", testConsumer.extractCdcOperation(dataWithNullDelete));
   }

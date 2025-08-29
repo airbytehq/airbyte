@@ -125,7 +125,7 @@ _NOTE_: Some configurations for SSL are not available yet.
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------  |
-| 0.1.12  | 2025-08-29 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Add primary key and CDC operation metadata to output messages                  |
+| 0.1.12  | 2025-08-29 | [65624](https://github.com/airbytehq/airbyte/pull/65624) | Add primary key and CDC operation metadata to output messages                  |
 | 0.1.11  | 2025-03-28 | [56450](https://github.com/airbytehq/airbyte/pull/56450) | Add support for other SASL Mechanisms when SASL_PLAINTEXT protocol is selected |
 | 0.1.10  | 2022-08-04 | [15287](https://github.com/airbytehq/airbyte/pull/15287) | Update Kafka destination to use outputRecordCollector to properly store state  |
 | 0.1.9   | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors                         |
