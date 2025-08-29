@@ -162,9 +162,6 @@ jobs:
       - name: Install metadata_service
         run: poetry install --directory airbyte-ci/connectors/metadata_service/lib
 
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-
       - name: Validate connector metadata
         id: validate-connector-metadata
         shell: bash
