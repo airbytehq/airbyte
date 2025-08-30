@@ -29,6 +29,10 @@ jobs:
     runs-on: linux-24.04-large # Custom runner, defined in GitHub org settings
     timeout-minutes: 30
     steps:
+      - name: Resolve workflow variables
+        id: vars
+        uses: aaronsteers/resolve-ci-vars-action@v0
+
       - name: Checkout Airbyte
         uses: actions/checkout@v3
 
@@ -100,7 +104,7 @@ jobs:
                         "type": "section",
                         "text": {
                             "type": "mrkdwn",
-                            "text": "See details on <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|GitHub>\n"
+                            "text": "See details on <${{ steps.vars.outputs.run-url }}|GitHub>\n"
                         }
                     }
                 ]
@@ -129,7 +133,7 @@ jobs:
                         "type": "section",
                         "text": {
                             "type": "mrkdwn",
-                            "text": "See details on <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|GitHub>\n"
+                            "text": "See details on <${{ steps.vars.outputs.run-url }}|GitHub>\n"
                         }
                     }
                 ]

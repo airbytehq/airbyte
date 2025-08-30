@@ -43,23 +43,15 @@ jobs:
     name: "Bump version of connectors in this PR"
     runs-on: ubuntu-24.04
     steps:
-      - name: Get job variables
-        id: job-vars
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        shell: bash
-        run: |
-          PR_JSON=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.inputs.pr }})
-          echo "repo=$(echo "$PR_JSON" | jq -r .head.repo.full_name)" >> $GITHUB_OUTPUT
-          echo "branch=$(echo "$PR_JSON" | jq -r .head.ref)" >> $GITHUB_OUTPUT
-          echo "pr_title=$(echo "$PR_JSON" | jq -r .title)" >> $GITHUB_OUTPUT
-          echo "run-url=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
+      - name: Resolve workflow variables
+        id: vars
+        uses: aaronsteers/resolve-ci-vars-action@v0
 
       - name: Checkout Airbyte
         uses: actions/checkout@v4
         with:
-          repository: ${{ steps.job-vars.outputs.repo }}
-          ref: ${{ steps.job-vars.outputs.branch }}
+          repository: ${{ steps.vars.outputs.pr-source-repo-name-full }}
+          ref: ${{ steps.vars.outputs.pr-source-git-branch }}
           fetch-depth: 1
           # Important that token is a PAT so that CI checks are triggered again.
           # Without this we would be forever waiting on required checks to pass.
@@ -77,14 +69,14 @@ jobs:
 
             > Bump Version job started... [Check job output.][1]
 
-            [1]: ${{ steps.job-vars.outputs.run-url }}
+            [1]: ${{ steps.vars.outputs.run-url }}
 
       - name: Log changelog source
         run: |
           if [ -n "${{ github.event.inputs.changelog }}" ]; then
             echo "Using user-provided changelog: ${{ github.event.inputs.changelog }}"
           else
-            echo "Using PR title as changelog: ${{ steps.job-vars.outputs.pr_title }}"
+            echo "Using PR title as changelog: ${{ steps.vars.outputs.pr-title }}"
           fi
 
       - name: Run airbyte-ci connectors --modified bump-version
@@ -95,11 +87,11 @@ jobs:
           gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
-          git_repo_url: https://github.com/${{ steps.job-vars.outputs.repo }}.git
+          git_repo_url: https://github.com/${{ steps.vars.outputs.pr-source-repo-name-full }}.git
           subcommand: |
             connectors --modified bump-version \
               ${{ github.event.inputs.type }} \
-              "${{ github.event.inputs.changelog != '' && github.event.inputs.changelog || steps.job-vars.outputs.pr_title }}" \
+              "${{ github.event.inputs.changelog != '' && github.event.inputs.changelog || steps.vars.outputs.pr-title }}" \
               --pr-number ${{ github.event.inputs.pr }}
 
       # This is helpful in the case that we change a previously committed generated file to be ignored by git.
@@ -124,11 +116,11 @@ jobs:
           git commit -m "chore: bump-version ${{ github.event.inputs.bump-type }}"
           echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
 
-      - name: Push changes to '(${{ steps.job-vars.outputs.repo }})'
+      - name: Push changes to '(${{ steps.vars.outputs.pr-source-repo-name-full }})'
         if: steps.git-diff.outputs.changes == 'true'
         run: |
-          git remote add contributor https://github.com/${{ steps.job-vars.outputs.repo }}.git
-          git push contributor HEAD:'${{ steps.job-vars.outputs.branch }}'
+          git remote add contributor https://github.com/${{ steps.vars.outputs.pr-source-repo-name-full }}.git
+          git push contributor HEAD:'${{ steps.vars.outputs.pr-source-git-branch }}'
 
       - name: Append success comment
         uses: peter-evans/create-or-update-comment@v4
