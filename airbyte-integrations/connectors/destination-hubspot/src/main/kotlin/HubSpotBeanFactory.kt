@@ -34,6 +34,7 @@ class HubSpotBeanFactory {
 
     @Singleton
     fun discover(httpClient: HttpClient): HubSpotDiscoverer {
+        // return HubSpotDiscoverer(factory.createCompositeOperationsProvider())
         return HubSpotDiscoverer(HubSpotOperationRepository(httpClient))
     }
 

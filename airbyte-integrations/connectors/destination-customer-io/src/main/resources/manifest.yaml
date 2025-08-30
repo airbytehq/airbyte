@@ -8,3 +8,42 @@ checker:
       type: BasicAccessAuthenticator
       username: "{{ config.credentials.siteId }}"
       password: "{{ config.credentials.apiKey }}"
+
+discovery:
+  type: CompositeOperations
+  operations:
+    - type: StaticOperation
+      object_name: person_identify
+      sync_mode:
+        type: Dedupe
+        primary_key: []
+        cursor: []
+      schema:
+        type: object
+        required:
+          - person_email
+        additionalProperties: true
+        properties:
+          person_email:
+            type: string
+      matching_keys: []
+    - type: StaticOperation
+      object_name: person_event
+      sync_mode:
+        type: Append
+      schema:
+        type: object
+        required:
+          - person_email
+          - event_name
+        additionalProperties: true
+        properties:
+          person_email:
+            type: string
+          event_name:
+            type: string
+          event_id:
+            type: string
+          timestamp:
+            type: integer
+      matching_keys: []
