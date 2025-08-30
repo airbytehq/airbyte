@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<svg version="1.1" id="Livello_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 250 250" enable-background="new 0 0 250 250" xml:space="preserve">
+<path fill="#FEE200" d="M125,91.1l125-28.6V9.9l0,0c0-5.5-4.4-9.9-9.9-9.9H62.5L0,62.5L125,91.1z"/>
+<linearGradient id="SVGID_1_" gradientUnits="userSpaceOnUse" x1="38.7" y1="62.5" x2="38.7" y2="122.9034">
+	<stop  offset="0" style="stop-color:#DE4A01"/>
+	<stop  offset="1" style="stop-color:#E15900"/>
+</linearGradient>
+<polygon fill="url(#SVGID_1_)" points="62.5,62.5 0,62.5 0,155.1 77.4,123.1 "/>
+<linearGradient id="SVGID_2_" gradientUnits="userSpaceOnUse" x1="156.25" y1="118.6523" x2="156.25" y2="68.182">
+	<stop  offset="0" style="stop-color:#F08B09"/>
+	<stop  offset="1" style="stop-color:#EB770A"/>
+</linearGradient>
+<polygon fill="url(#SVGID_2_)" points="147.7,141.7 62.5,126.5 62.5,62.5 250,62.5 250,125.7 "/>
+<linearGradient id="SVGID_3_" gradientUnits="userSpaceOnUse" x1="149.4" y1="199.4" x2="149.4" y2="125">
+	<stop  offset="0" style="stop-color:#D73A00"/>
+	<stop  offset="1" style="stop-color:#CD2901"/>
+</linearGradient>
+<polygon fill="url(#SVGID_3_)" points="172.6,199.4 48.8,187.9 48.8,125 250,125 250,187.5 "/>
+<linearGradient id="SVGID_4_" gradientUnits="userSpaceOnUse" x1="31.25" y1="183.4025" x2="31.25" y2="128.5908">
+	<stop  offset="0" style="stop-color:#BE3106"/>
+	<stop  offset="1" style="stop-color:#AD3007"/>
+</linearGradient>
+<polygon fill="url(#SVGID_4_)" points="62.5,125 0,125 0,208.3 62.5,187.5 "/>
+<linearGradient id="SVGID_5_" gradientUnits="userSpaceOnUse" x1="151.45" y1="250" x2="151.45" y2="187.5">
+	<stop  offset="0" style="stop-color:#844980"/>
+	<stop  offset="1" style="stop-color:#703F6C"/>
+</linearGradient>
+<polygon fill="url(#SVGID_5_)" points="250,187.5 187.5,250 62.5,250 52.9,217.3 62.5,187.5 "/>
+<linearGradient id="SVGID_6_" gradientUnits="userSpaceOnUse" x1="31.25" y1="249.9" x2="31.25" y2="187.4">
+	<stop  offset="0" style="stop-color:#6F3C6D"/>
+	<stop  offset="1" style="stop-color:#663764"/>
+</linearGradient>
+<path fill="url(#SVGID_6_)" d="M0,187.5v48.7c0,7.6,6.2,13.7,13.8,13.7h48.7l0,0v-62.5l0,0H0V187.5z"/>
+</svg>
