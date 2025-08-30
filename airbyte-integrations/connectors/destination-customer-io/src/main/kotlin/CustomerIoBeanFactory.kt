@@ -36,7 +36,10 @@ class CustomerIoBeanFactory {
 
     @Singleton fun getConfig(config: DestinationConfiguration) = config as CustomerIoConfiguration
 
-    @Singleton fun discover() = CustomerIoDiscoverer()
+    @Singleton
+    fun discover(
+        factory: DeclarativeDestinationFactory<CustomerIoConfiguration>,
+    ) = CustomerIoDiscoverer(factory.createCompositeOperationsProvider())
 
     @Singleton
     fun objectLoader(): ObjectLoader =
