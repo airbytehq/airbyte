@@ -101,7 +101,7 @@ public class MongoDbCdcInitializer {
     final JsonNode initialDebeziumState =
         mongoDbDebeziumStateUtil.constructInitialDebeziumState(initialResumeToken, serverId);
 
-    boolean hasCorruptedState = false;
+    boolean needsStateMigration = false;
     String extractedResumeTokenString = null;
 
     // Check if we have saved CDC state and validate it for corruption or outdated format
@@ -130,12 +130,12 @@ public class MongoDbCdcInitializer {
           LOGGER.info("Detected old database name format in CDC state, migrating to connection string format");
           extractedResumeTokenString = getTokenFromCorruptedState(savedStateEntries.get(0).getValue().asText());
         }
-        hasCorruptedState = true;
+        needsStateMigration = true;
       }
     }
 
     final MongoDbCdcState cdcState;
-    if (hasCorruptedState && extractedResumeTokenString != null) {
+    if (needsStateMigration && extractedResumeTokenString != null) {
       JsonNode cleanDebeziumState = MongoDbDebeziumStateUtil.formatState(serverId, extractedResumeTokenString);
       // Corruption/migration: create a clean state using extracted resume token string
       cdcState = new MongoDbCdcState(cleanDebeziumState, isEnforceSchema);
@@ -323,10 +323,10 @@ public class MongoDbCdcInitializer {
   private boolean hasOldFormatState(List<Map.Entry<String, JsonNode>> stateEntries, String correctNormalizedServerId) {
     for (Map.Entry<String, JsonNode> entry : stateEntries) {
       if (!entry.getKey().contains(correctNormalizedServerId)) {
-        return true; // Found at least one old format key
+        return true; // Found a state entry that doesn't match current state format
       }
     }
-    return false; // All keys are in new format
+    return false; // All state entries match current state format
   }
 
   /**
