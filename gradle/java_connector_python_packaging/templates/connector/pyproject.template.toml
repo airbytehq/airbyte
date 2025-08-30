@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=58.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "${CONNECTOR_PROJECT_NAME}"
+authors = [{name = "Airbyte", email = "contact@airbyte.io"}]
+description = "${CONNECTOR_TYPE} implementation for ${CONNECTOR_NAME}"
+version = "0.0.1" #TODO: use "${CONNECTOR_VERSION}" when we start using real versioning
+dependencies = [
+    '${JAVA_RUNTIME_PROJECT_NAME}-linux @ https://storage.googleapis.com/${JAVA_RUNTIME_GCS_BUCKET_PATH}/${JAVA_RUNTIME_WHEEL_NAME}_linux-0.0.1-py3-none-any.whl ; platform_system == "Linux"',
+    '${JAVA_RUNTIME_PROJECT_NAME}-macos @ https://storage.googleapis.com/${JAVA_RUNTIME_GCS_BUCKET_PATH}/${JAVA_RUNTIME_WHEEL_NAME}_macos-0.0.1-py3-none-any.whl ; platform_system == "Darwin"',
+    '${JAVA_RUNTIME_PROJECT_NAME}-windows @ https://storage.googleapis.com/${JAVA_RUNTIME_GCS_BUCKET_PATH}/${JAVA_RUNTIME_WHEEL_NAME}_windows-0.0.1-py3-none-any.whl ; platform_system == "Windows"',
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["${CONNECTOR_PACKAGE_NAME}"]
+
+[tool.setuptools]
+include-package-data = true
+
+[project.scripts]
+${CONNECTOR_TYPE}-${CONNECTOR_NAME} = "${CONNECTOR_PACKAGE_NAME}.run:main"
