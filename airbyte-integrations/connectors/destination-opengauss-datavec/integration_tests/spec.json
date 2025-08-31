@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/milvus",
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/opengauss-datavec",
   "connectionSpecification": {
     "title": "Destination Config",
     "description": "The configuration model for the Vector DB based destinations. This model is used to generate the UI for the destination configuration,\nas well as to provide type safety for the configuration passed to the destination.\n\nThe configuration model is composed of four parts:\n* Processing configuration\n* Embedding configuration\n* Indexing configuration\n* Advanced configuration\n\nProcessing, embedding and advanced configuration are provided by this base class, while the indexing configuration is provided by the destination connector in the sub class.",
@@ -317,99 +317,49 @@
         "type": "object",
         "properties": {
           "host": {
-            "title": "Public Endpoint",
-            "description": "The public endpoint of the Milvus instance. ",
+            "title": "Database Host",
+            "description": "The host of the openGauss database instance. ",
             "order": 1,
             "examples": [
-              "https://my-instance.zone.zillizcloud.com",
-              "tcp://host.docker.internal:19530",
-              "tcp://my-local-milvus:19530"
+              "localhost",
+              "my-opengauss-host.com",
+              "192.168.1.100"
             ],
             "type": "string"
           },
-          "db": {
-            "title": "Database Name",
-            "description": "The database to connect to",
-            "default": "",
-            "type": "string"
+          "port": {
+            "title": "Port",
+            "description": "The port of the openGauss database instance",
+            "default": 5432,
+            "order": 2,
+            "type": "integer"
           },
-          "collection": {
-            "title": "Collection Name",
-            "description": "The collection to load data into",
+          "database": {
+            "title": "Database Name",
+            "description": "The database name to connect to",
             "order": 3,
             "type": "string"
           },
-          "auth": {
-            "title": "Authentication",
-            "description": "Authentication method",
-            "type": "object",
-            "order": 2,
-            "oneOf": [
-              {
-                "title": "API Token",
-                "type": "object",
-                "properties": {
-                  "mode": {
-                    "title": "Mode",
-                    "default": "token",
-                    "const": "token",
-                    "enum": ["token"],
-                    "type": "string"
-                  },
-                  "token": {
-                    "title": "API Token",
-                    "description": "API Token for the Milvus instance",
-                    "airbyte_secret": true,
-                    "type": "string"
-                  }
-                },
-                "required": ["token", "mode"],
-                "description": "Authenticate using an API token (suitable for Zilliz Cloud)"
-              },
-              {
-                "title": "Username/Password",
-                "type": "object",
-                "properties": {
-                  "mode": {
-                    "title": "Mode",
-                    "default": "username_password",
-                    "const": "username_password",
-                    "enum": ["username_password"],
-                    "type": "string"
-                  },
-                  "username": {
-                    "title": "Username",
-                    "description": "Username for the Milvus instance",
-                    "order": 1,
-                    "type": "string"
-                  },
-                  "password": {
-                    "title": "Password",
-                    "description": "Password for the Milvus instance",
-                    "airbyte_secret": true,
-                    "order": 2,
-                    "type": "string"
-                  }
-                },
-                "required": ["username", "password", "mode"],
-                "description": "Authenticate using username and password (suitable for self-managed Milvus clusters)"
-              },
-              {
-                "title": "No auth",
-                "type": "object",
-                "properties": {
-                  "mode": {
-                    "title": "Mode",
-                    "default": "no_auth",
-                    "const": "no_auth",
-                    "enum": ["no_auth"],
-                    "type": "string"
-                  }
-                },
-                "description": "Do not authenticate (suitable for locally running test clusters, do not use for clusters with public IP addresses)",
-                "required": ["mode"]
-              }
-            ]
+          "schema": {
+            "title": "Schema",
+            "description": "The schema to use for the tables",
+            "default": "public",
+            "order": 4,
+            "type": "string"
+          },
+
+          "username": {
+            "title": "Username",
+            "description": "Username for the openGauss database",
+            "order": 6,
+            "type": "string"
+          },
+          "password": {
+            "title": "Password",
+            "description": "Password for the openGauss database",
+            "airbyte_secret": true,
+            "order": 7,
+            "type": "string"
           },
           "vector_field": {
             "title": "Vector Field",
@@ -424,7 +374,7 @@
             "type": "string"
           }
         },
-        "required": ["host", "collection", "auth"],
+        "required": ["host", "port", "database", "username", "password"],
         "group": "indexing",
         "description": "Indexing configuration"
       }

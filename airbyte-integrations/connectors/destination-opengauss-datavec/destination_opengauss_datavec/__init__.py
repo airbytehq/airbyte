@@ -3,6 +3,6 @@
 #
 
 
-from .destination import DestinationOpengaussDatavec
+from .destination import DestinationOpenGaussDataVec
 
-__all__ = ["DestinationOpengaussDatavec"]
+__all__ = ["DestinationOpenGaussDataVec"]

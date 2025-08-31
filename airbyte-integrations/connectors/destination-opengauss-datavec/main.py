@@ -5,8 +5,8 @@
 
 import sys
 
-from destination_opengauss_datavec import DestinationOpengaussDatavec
+from destination_opengauss_datavec import DestinationOpenGaussDataVec
 
 
 if __name__ == "__main__":
-    DestinationOpengaussDatavec().run(sys.argv[1:])
+    DestinationOpenGaussDataVec().run(sys.argv[1:])
