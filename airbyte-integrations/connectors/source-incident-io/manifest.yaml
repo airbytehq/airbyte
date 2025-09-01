@@ -483,6 +483,7 @@ definitions:
         cursor_field: updated_at
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -571,7 +572,6 @@ definitions:
               partition_field: escalation_path_id
               stream:
                 $ref: "#/definitions/streams/escalations"
-              incremental_dependency: true
         decoder:
           type: JsonDecoder
       schema_loader:
