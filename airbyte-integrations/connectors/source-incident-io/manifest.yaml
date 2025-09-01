@@ -526,7 +526,7 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
-            page_size: 250
+            page_size: 25
             cursor_value: "{{ response.get('pagination_meta', {}).get('after') }}"
             stop_condition: "{{ response.get('pagination_meta', {}).get('after') is none }}"
         partition_router:
