@@ -13,9 +13,9 @@ This page contains the setup guide and reference information for the [Facebook M
 -  **For Airbyte Cloud**: If you are not the owner/admin of the Ad account, you must be granted [permissions to access the Ad account](https://www.facebook.com/business/help/155909647811305?id=829106167281625) by an admin.
 <!-- /env:cloud -->
 <!-- env:oss -->
--  **For Airbyte Open Source**: 
-   - [Facebook app](https://developers.facebook.com/apps/) with the Marketing API enabled 
-   - The following permissions: [ads_management](https://developers.facebook.com/docs/permissions#a), [ads_read](https://developers.facebook.com/docs/permissions#a), [business_management](https://developers.facebook.com/docs/permissions#b) and [read_insights](https://developers.facebook.com/docs/permissions#r). 
+-  **For Airbyte Open Source**:
+   - [Facebook app](https://developers.facebook.com/apps/) with the Marketing API enabled
+   - The following permissions: [ads_management](https://developers.facebook.com/docs/permissions#a), [ads_read](https://developers.facebook.com/docs/permissions#a), [business_management](https://developers.facebook.com/docs/permissions#b) and [read_insights](https://developers.facebook.com/docs/permissions#r).
 <!-- /env:oss -->
 
 ## Setup guide
@@ -23,7 +23,7 @@ This page contains the setup guide and reference information for the [Facebook M
 ### Set up Facebook Marketing
 
 <!-- env:cloud -->
-#### For Airbyte Cloud: 
+#### For Airbyte Cloud:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. Click Sources and then click + New source.
@@ -42,7 +42,7 @@ This page contains the setup guide and reference information for the [Facebook M
 <FieldAnchor field="access_token">
 5. In the **Access Token** field, enter the Marketing API access token.
 </FieldAnchor>
-   
+
 ### Airbyte Open Source
 
 This guide outlines the steps required to configure your Meta Developer account and create an app to utilize the Facebook Marketing API.
@@ -67,12 +67,12 @@ Your Meta app serves as a container for your API credentials and permissions. Me
 
 - Go to the 🔗 [Meta for Developers App Dashboard](https://developers.facebook.com/apps/) and click **Create App**.
 
-- **Important:**  
+- **Important:**
   During the setup process, at the **"Use case"** step, select:
-  > **Create an app without a use case**  
+  > **Create an app without a use case**
   > *Choose this option if you'd like to get an app ID without automatically adding any permissions, features, or products.*
 
-- **App Type:**  
+- **App Type:**
   Choose **Business** as the app type when prompted.
 
 ### 3. Add the Marketing API Product
@@ -83,7 +83,7 @@ After creating your app, you’ll need to enable the Marketing API to begin maki
 - Click **Add Product**.
 - Find and select **Marketing API** from the list of available products.
 
-📚 **Further Reading:** For an overview of the Marketing API, see: [https://developers.facebook.com/docs/marketing-apis](https://developers.facebook.com/docs/marketing-apis)
+📚 **Further Reading:** For an overview of the Marketing API, see: [Facebook Developer Marketing API Docs](https://developers.facebook.com/docs/marketing-apis)
 
 
 ### 4. Generate an Access Token
@@ -100,9 +100,9 @@ To authorize your application to interact with the Facebook Marketing API, you'l
 
 - Click **Get Token** to generate the access token.
 
-- **Copy the generated token securely.**  
+- **Copy the generated token securely.**
   Use this Access Token to authenticate your API calls when using the “Service Account Key Authentication” method.
-  
+
 :::tip
 You can always view your existing access tokens, their permissions, and lifecycles using the 🔗 [Access Token Tool](https://developers.facebook.com/tools/accesstoken).
 :::
@@ -115,21 +115,21 @@ This can make them unsuitable for applications requiring frequent or large data 
 
 To ensure reliable performance, you'll need to request "Advanced Access."
 
-- **Access App Review**  
+- **Access App Review**
   - From your app's dashboard, go to **App Review > Permissions and Features**.
 
-- **Identify Required Permissions**  
+- **Identify Required Permissions**
   - For each of the following permissions marked as "Standard Access", click the **Request advanced access** button:
-    - `ads_read`  
+    - `ads_read`
     - `ads_management`
   - Facebook may prompt you to fill out a form detailing how the permission is used.
 
-- **Complete Business Verification**  
-  - Make sure your app is associated with a **verified Business Manager account**.  
+- **Complete Business Verification**
+  - Make sure your app is associated with a **verified Business Manager account**.
   - This is a [prerequisite](https://developers.facebook.com/docs/marketing-api/get-started/authorization/#business-verification) for obtaining Advanced Access.
 
-- **Submit the App Review Request**  
-  - Once all information is provided, submit the request through the App Review interface.  
+- **Submit the App Review Request**
+  - Once all information is provided, submit the request through the App Review interface.
   - Monitor the status in the dashboard as Facebook reviews your application.
 
 - **Meet Rate Limit Requirements**
@@ -176,8 +176,12 @@ To ensure reliable performance, you'll need to request "Advanced Access."
 7. (Optional) Toggle the **Fetch Thumbnail Images** button to fetch the `thumbnail_url` and store the result in `thumbnail_data_url` for each [Ad Creative](https://developers.facebook.com/docs/marketing-api/creative/).
 </FieldAnchor>
 
+<FieldAnchor field="default_ads_insights_action_breakdowns">
+8. (Optional) If needed, you can change default action breakdowns for Built-in Ads Insights stream. Remove all if you need to make it empty list or change default values.
+</FieldAnchor>
+
 <FieldAnchor field="custom_insights">
-8. (Optional) In the **Custom Insights** section, you may provide a list of ad statistics entries. Each entry should have a unique name and can contain fields, breakdowns or action_breakdowns. Fields refer to the different data points you can collect from an ad, while breakdowns and action_breakdowns let you segment this data for more detailed insights. Click on **Add** to create a new entry in this list.
+9. (Optional) In the **Custom Insights** section, you may provide a list of ad statistics entries. Each entry should have a unique name and can contain fields, breakdowns or action_breakdowns. Fields refer to the different data points you can collect from an ad, while breakdowns and action_breakdowns let you segment this data for more detailed insights. Click on **Add** to create a new entry in this list.
 
 To retrieve specific fields from Facebook Ads Insights combined with other breakdowns, you can choose which fields and breakdowns to sync. However, please note that not all fields can be requested, and many are only functional when combined with specific other fields. For example, the breakdown `app_id` is only supported with the `total_postbacks` field. For more information on the breakdown limitations, refer to the [Facebook documentation](https://developers.facebook.com/docs/marketing-api/insights/breakdowns).
 
@@ -352,6 +356,10 @@ This response indicates that the Facebook Graph API requires you to reduce the f
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.0 | 2025-08-25 | [65533](https://github.com/airbytehq/airbyte/pull/65533) | Migrate to Marketing API v23 |
+| 3.5.12 | 2025-08-23 | [65288](https://github.com/airbytehq/airbyte/pull/65288) | Update dependencies |
+| 3.5.11 | 2025-08-19 | [64911](https://github.com/airbytehq/airbyte/pull/64911) | Allow overriding action breakdowns for default Ads Insights stream. |
+| 3.5.10 | 2025-08-16 | [65010](https://github.com/airbytehq/airbyte/pull/65010) | Update dependencies |
 | 3.5.9 | 2025-08-09 | [64679](https://github.com/airbytehq/airbyte/pull/64679) | Update dependencies |
 | 3.5.8 | 2025-08-02 | [64406](https://github.com/airbytehq/airbyte/pull/64406) | Update dependencies |
 | 3.5.7 | 2025-07-26 | [63934](https://github.com/airbytehq/airbyte/pull/63934) | Update dependencies |

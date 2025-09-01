@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
-  dockerImageTag: 3.5.9
+  dockerImageTag: 4.0.0
   dockerRepository: airbyte/source-facebook-marketing
   documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-marketing
   githubIssueLabel: source-facebook-marketing
@@ -51,6 +51,13 @@ data:
       3.1.0:
         message: "The `AdsInsights` Reports now don't have the possibility to fetch the root level properties `cost_per_conversion_lead` and `conversion_lead_rate`. These will therefore be removed."
         upgradeDeadline: "2024-06-14"
+      4.0.0:
+        message: "Several fields have been deprecated for the `AdCreatives` stream. `instagram_actor_id`, `effective_instagram_story_id`, `instagram_story_id` have been replaced with `instagram_user_id`, `effective_instagram_media_id`, `source_instagram_media_id` respectively."
+        upgradeDeadline: "2025-09-08"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "ad_creatives"
   suggestedStreams:
     streams:
       - ads_insights

@@ -1,5 +1,28 @@
 # Facebook Marketing Migration Guide
 
+## Upgrading to 4.0.0
+
+The connector has been updated to use [v23.0 of Meta's Marketing API](https://developers.facebook.com/docs/marketing-api/marketing-api-changelog/version23.0) as v21.0 will be deprecated on September 9, 2025.
+
+Three fields from the `AdCreatives` stream have been deprecated:
+- `instagram_actor_id` -> `instagram_user_id`
+- `effective_instagram_story_id` -> `effective_instagram_media_id`
+- `instagram_story_id` -> `source_instagram_media_id`
+
+See the [v22.0 changelog](https://developers.facebook.com/docs/marketing-api/marketing-api-changelog/version22.0) for more information
+
+### Steps to refresh the AdCreatives stream schema:
+
+1. Select **Connections** in the main navbar.
+   1. Select the connection(s) affected by the update.
+2. Select the **Schema** tab. 
+    1. Select **Refresh source schema**. 
+    2. Select **OK** 
+    3. Select **Save changes** at the bottom of the page.
+   :::note
+   Any detected schema changes will be listed for your review.
+   :::
+
 ## Upgrading to 3.1.0
 
 The `AdsInsights` Reports now don't have the possibility to fetch the next root level properties (fields):
