@@ -56,9 +56,13 @@ jobs:
           method: chat.postMessage
           payload: |
             channel: C03BEADRPNY
-            text: "Formatting is broken on master! :bangbang: \n\n"
+            text: "Formatting broken on master!"
             blocks:
               - type: divider
+              - type: section
+                text:
+                  type: mrkdwn
+                  text: "Formatting is broken on master! :bangbang: \n\n"
               - type: section
                 text:
                   type: mrkdwn
