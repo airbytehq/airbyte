@@ -32,22 +32,15 @@ jobs:
     name: "Run pre-commit fix"
     runs-on: ubuntu-24.04
     steps:
-      - name: Get job variables
-        id: job-vars
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        shell: bash
-        run: |
-          PR_JSON=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.inputs.pr }})
-          echo "repo=$(echo "$PR_JSON" | jq -r .head.repo.full_name)" >> $GITHUB_OUTPUT
-          echo "branch=$(echo "$PR_JSON" | jq -r .head.ref)" >> $GITHUB_OUTPUT
-          echo "run-url=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
+      - name: Resolve workflow variables
+        id: vars
+        uses: aaronsteers/resolve-ci-vars-action@v0
 
       - name: Checkout Airbyte
         uses: actions/checkout@v3
         with:
-          repository: ${{ steps.job-vars.outputs.repo }}
-          ref: ${{ steps.job-vars.outputs.branch }}
+          repository: ${{ steps.vars.outputs.pr-source-repo-name-full }}
+          ref: ${{ steps.vars.outputs.pr-source-git-branch }}
           fetch-depth: 1
           # Important that token is a PAT so that CI checks are triggered again.
           # Without this we would be forever waiting on required checks to pass.
@@ -65,7 +58,7 @@ jobs:
 
             > Format-fix job started... [Check job output.][1]
 
-            [1]: ${{ steps.job-vars.outputs.run-url }}
+            [1]: ${{ steps.vars.outputs.run-url }}
 
       # Compare the below to the `format_check.yml` workflow
       - name: Setup Java
@@ -109,11 +102,11 @@ jobs:
           git commit -m "chore: auto-fix lint and format issues"
           echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
 
-      - name: Push changes to '(${{ steps.job-vars.outputs.repo }})'
+      - name: Push changes to '(${{ steps.vars.outputs.pr-source-repo-name-full }})'
         if: steps.git-diff.outputs.changes == 'true'
         run: |
-          git remote add contributor https://github.com/${{ steps.job-vars.outputs.repo }}.git
-          git push contributor HEAD:'${{ steps.job-vars.outputs.branch }}'
+          git remote add contributor https://github.com/${{ steps.vars.outputs.pr-source-repo-name-full }}.git
+          git push contributor HEAD:'${{ steps.vars.outputs.pr-source-git-branch }}'
 
       - name: Append success comment
         uses: peter-evans/create-or-update-comment@v4

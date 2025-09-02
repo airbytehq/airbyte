@@ -33,20 +33,9 @@ jobs:
     name: "Approve Regression Tests"
     runs-on: ubuntu-24.04
     steps:
-      - name: Get job variables
-        id: job-vars
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        shell: bash
-        run: |
-          PR_JSON=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.inputs.pr }})
-          echo "PR_JSON: $PR_JSON"
-          echo "repo=$(echo "$PR_JSON" | jq -r .head.repo.full_name)" >> $GITHUB_OUTPUT
-          BRANCH=$(echo "$PR_JSON" | jq -r .head.ref)
-          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
-          echo "run-url=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
-          LATEST_COMMIT=$(gh api repos/${{ github.repository }}/commits/$BRANCH | jq -r .sha)
-          echo "latest_commit=$LATEST_COMMIT" >> $GITHUB_OUTPUT
+      - name: Resolve workflow variables
+        id: vars
+        uses: aaronsteers/resolve-ci-vars-action@v0
 
       - name: Append comment with job run link
         # If comment-id is not provided, this will create a new
@@ -60,7 +49,7 @@ jobs:
 
             > [Check job output.][1]
 
-            [1]: ${{ steps.job-vars.outputs.run-url }}
+            [1]: ${{ steps.vars.outputs.run-url }}
 
       - name: Approve regression tests
         id: approve-regression-tests
@@ -69,7 +58,7 @@ jobs:
           echo "approving regression test status check for ${{ github.event.inputs.connector-name }} if it exists ...."
           response=$(curl --write-out '%{http_code}' --silent --output /dev/null \
             --request POST \
-            --url ${{ github.api_url }}/repos/${{ github.repository }}/statuses/${{ steps.job-vars.outputs.latest_commit }} \
+            --url ${{ github.api_url }}/repos/${{ github.repository }}/statuses/${{ steps.vars.outputs.pr-source-git-sha }} \
             --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
             --header 'content-type: application/json' \
             --data '{
@@ -91,7 +80,7 @@ jobs:
           echo "updating regression test approval status check if it exists ...."
           response=$(curl --write-out '%{http_code}' --silent --output /dev/null \
             --request POST \
-            --url ${{ github.api_url }}/repos/${{ github.repository }}/statuses/${{ steps.job-vars.outputs.latest_commit }} \
+            --url ${{ github.api_url }}/repos/${{ github.repository }}/statuses/${{ steps.vars.outputs.pr-source-git-sha }} \
             --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
             --header 'content-type: application/json' \
             --data '{

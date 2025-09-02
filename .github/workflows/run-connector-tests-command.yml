@@ -50,6 +50,10 @@ jobs:
       github.event_name != 'push' &&
       needs.get-context.outputs.skip != 'true'
     steps:
+      - name: Resolve workflow variables
+        id: vars
+        uses: aaronsteers/resolve-ci-vars-action@v0
+
       - name: Append start comment
         id: post-start-comment
         uses: peter-evans/create-or-update-comment@v4
@@ -62,7 +66,7 @@ jobs:
             >
             > These tests will leverage Airbyte's integration test credentials.
             >
-            > [Check job output.](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id}})
+            > [Check job output.](${{ steps.vars.outputs.run-url }})
     outputs:
       comment-id: ${{ steps.post-start-comment.outputs.comment-id }}
 
