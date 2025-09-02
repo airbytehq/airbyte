@@ -15,8 +15,8 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 private val log = KotlinLogging.logger {}
 
 data class MsSqlServerJdbcStreamStateValue(
-    @JsonProperty("cursor") val cursors: String = "",
-    @JsonProperty("version") val version: Int = 2,
+    @JsonProperty("cursor") val cursor: String = "",
+    @JsonProperty("version") val version: Int = CURRENT_VERSION,
     @JsonProperty("state_type") val stateType: String = StateType.CURSOR_BASED.stateType,
     @JsonProperty("stream_name") val streamName: String = "",
     @JsonProperty("cursor_field") val cursorField: List<String> = listOf(),
@@ -27,6 +27,19 @@ data class MsSqlServerJdbcStreamStateValue(
     @JsonProperty("incremental_state") val incrementalState: JsonNode? = null,
 ) {
     companion object {
+        /** Current state version used by the v2 MSSQL connector */
+        const val CURRENT_VERSION = 3
+
+        /** Legacy state version used by the old MSSQL connector */
+        const val LEGACY_VERSION = 2
+
+        /**
+         * Determines if a given version number represents a legacy state format
+         * @param version The version number to check (null is considered legacy)
+         * @return true if the version is legacy and needs migration
+         */
+        fun isLegacy(version: Int?): Boolean = version == null || version <= LEGACY_VERSION
+
         /** Value representing the completion of a FULL_REFRESH snapshot. */
         val snapshotCompleted: OpaqueStateValue
             get() = Jsons.valueToTree(MsSqlServerJdbcStreamStateValue(stateType = "primary_key"))
@@ -40,7 +53,7 @@ data class MsSqlServerJdbcStreamStateValue(
             return Jsons.valueToTree(
                 MsSqlServerJdbcStreamStateValue(
                     cursorField = listOf(cursor.id),
-                    cursors = cursorCheckpoint.asText(),
+                    cursor = cursorCheckpoint.asText(),
                     streamName = stream.name,
                     streamNamespace = stream.namespace!!
                 )

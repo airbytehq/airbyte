@@ -5,8 +5,11 @@
 package io.airbyte.integrations.source.mssql
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.BinaryNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.data.LeafAirbyteSchemaType
+import io.airbyte.cdk.data.OffsetDateTimeCodec
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.read.And
 import io.airbyte.cdk.read.DefaultJdbcStreamState
@@ -36,6 +39,11 @@ import io.airbyte.cdk.read.WhereClauseNode
 import io.airbyte.cdk.read.optimize
 import io.airbyte.cdk.util.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.time.LocalDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
+import java.util.Base64
 
 private val log = KotlinLogging.logger {}
 /** Base class for default implementations of [JdbcPartition] for non resumable partitions. */
@@ -422,4 +430,205 @@ class MsSqlServerJdbcCursorIncrementalPartition(
             cursorCheckpoint = lastRecord[cursor.id] ?: Jsons.nullNode(),
             stream,
         )
+}
+
+// Extension methods for splitting MSSQL partitions
+fun MsSqlServerJdbcRfrSnapshotPartition.split(
+    opaqueStateValues: List<OpaqueStateValue>
+): List<MsSqlServerJdbcRfrSnapshotPartition> {
+    val splitPointValues: List<MsSqlServerJdbcStreamStateValue> =
+        opaqueStateValues.map { MsSqlServerStateMigration.parseStateValue(it) }
+
+    val inners: List<List<JsonNode>> =
+        splitPointValues.mapNotNull { sv ->
+            val pkField = checkpointColumns.firstOrNull()
+            if (pkField != null && sv.pkValue != null) {
+                listOf(stateValueToJsonNode(pkField, sv.pkValue))
+            } else null
+        }
+
+    val lbs: List<List<JsonNode>?> = listOf(lowerBound) + inners
+    val ubs: List<List<JsonNode>?> = inners + listOf(upperBound)
+
+    return lbs.zip(ubs).map { (lowerBound, upperBound) ->
+        MsSqlServerJdbcRfrSnapshotPartition(
+            selectQueryGenerator,
+            streamState,
+            checkpointColumns,
+            lowerBound,
+            upperBound,
+        )
+    }
+}
+
+fun MsSqlServerJdbcCdcRfrSnapshotPartition.split(
+    opaqueStateValues: List<OpaqueStateValue>
+): List<MsSqlServerJdbcCdcRfrSnapshotPartition> {
+    val splitPointValues: List<MsSqlServerCdcInitialSnapshotStateValue> =
+        opaqueStateValues.map {
+            Jsons.treeToValue(it, MsSqlServerCdcInitialSnapshotStateValue::class.java)
+        }
+
+    val inners: List<List<JsonNode>> =
+        splitPointValues.mapNotNull { sv ->
+            val pkField = checkpointColumns.firstOrNull()
+            if (pkField != null && sv.pkVal != null) {
+                listOf(stateValueToJsonNode(pkField, sv.pkVal))
+            } else null
+        }
+
+    val lbs: List<List<JsonNode>?> = listOf(lowerBound) + inners
+    val ubs: List<List<JsonNode>?> = inners + listOf(upperBound)
+
+    return lbs.zip(ubs).map { (lowerBound, upperBound) ->
+        MsSqlServerJdbcCdcRfrSnapshotPartition(
+            selectQueryGenerator,
+            streamState,
+            checkpointColumns,
+            lowerBound,
+            upperBound,
+        )
+    }
+}
+
+fun MsSqlServerJdbcCdcSnapshotPartition.split(
+    opaqueStateValues: List<OpaqueStateValue>
+): List<MsSqlServerJdbcCdcSnapshotPartition> {
+    val splitPointValues: List<MsSqlServerCdcInitialSnapshotStateValue> =
+        opaqueStateValues.map {
+            Jsons.treeToValue(it, MsSqlServerCdcInitialSnapshotStateValue::class.java)
+        }
+
+    val inners: List<List<JsonNode>> =
+        splitPointValues.mapNotNull { sv ->
+            val pkField = checkpointColumns.firstOrNull()
+            if (pkField != null && sv.pkVal != null) {
+                listOf(stateValueToJsonNode(pkField, sv.pkVal))
+            } else null
+        }
+
+    val lbs: List<List<JsonNode>?> = listOf(lowerBound) + inners
+    val ubs: List<List<JsonNode>?> = inners + listOf(null)
+
+    return lbs.zip(ubs).map { (lowerBound, _) ->
+        MsSqlServerJdbcCdcSnapshotPartition(
+            selectQueryGenerator,
+            streamState,
+            checkpointColumns,
+            lowerBound,
+        )
+    }
+}
+
+fun MsSqlServerJdbcSnapshotWithCursorPartition.split(
+    opaqueStateValues: List<OpaqueStateValue>
+): List<MsSqlServerJdbcSnapshotWithCursorPartition> {
+    val splitPointValues: List<MsSqlServerJdbcStreamStateValue> =
+        opaqueStateValues.map { MsSqlServerStateMigration.parseStateValue(it) }
+
+    val inners: List<List<JsonNode>> =
+        splitPointValues.mapNotNull { sv ->
+            val pkField = checkpointColumns.firstOrNull()
+            if (pkField != null && sv.pkValue != null) {
+                listOf(stateValueToJsonNode(pkField, sv.pkValue))
+            } else null
+        }
+
+    val lbs: List<List<JsonNode>?> = listOf(lowerBound) + inners
+    val ubs: List<List<JsonNode>?> = inners + listOf(upperBound)
+
+    return lbs.zip(ubs).map { (lowerBound, _) ->
+        MsSqlServerJdbcSnapshotWithCursorPartition(
+            selectQueryGenerator,
+            streamState,
+            checkpointColumns,
+            lowerBound,
+            cursor,
+            cursorUpperBound,
+            cursorCutoffTime,
+        )
+    }
+}
+
+fun MsSqlServerJdbcCursorIncrementalPartition.split(
+    opaqueStateValues: List<OpaqueStateValue>
+): List<MsSqlServerJdbcCursorIncrementalPartition> {
+    val splitPointValues: List<MsSqlServerJdbcStreamStateValue> =
+        opaqueStateValues.map { MsSqlServerStateMigration.parseStateValue(it) }
+
+    val inners: List<JsonNode> =
+        splitPointValues.mapNotNull { sv ->
+            if (sv.cursor != null) {
+                stateValueToJsonNode(cursor, sv.cursor)
+            } else null
+        }
+
+    val lbs: List<JsonNode> = listOf(cursorLowerBound) + inners
+    val ubs: List<JsonNode> = inners + listOf(cursorUpperBound)
+
+    return lbs.zip(ubs).mapIndexed { idx: Int, (lowerBound, upperBound) ->
+        MsSqlServerJdbcCursorIncrementalPartition(
+            selectQueryGenerator,
+            streamState,
+            cursor,
+            lowerBound,
+            isLowerBoundIncluded = idx == 0,
+            upperBound,
+            cursorCutoffTime,
+        )
+    }
+}
+
+private fun stateValueToJsonNode(field: Field, stateValue: String?): JsonNode {
+    when (field.type.airbyteSchemaType) {
+        is LeafAirbyteSchemaType ->
+            return when (field.type.airbyteSchemaType as LeafAirbyteSchemaType) {
+                LeafAirbyteSchemaType.INTEGER -> {
+                    Jsons.valueToTree(stateValue?.toBigInteger())
+                }
+                LeafAirbyteSchemaType.NUMBER -> {
+                    Jsons.valueToTree(stateValue?.toDouble())
+                }
+                LeafAirbyteSchemaType.BINARY -> {
+                    val ba = Base64.getDecoder().decode(stateValue!!)
+                    Jsons.valueToTree<BinaryNode>(ba)
+                }
+                LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE -> {
+                    try {
+                        val parsedDate =
+                            LocalDateTime.parse(
+                                stateValue,
+                                MsSqlServerJdbcPartitionFactory.inputDateFormatter
+                            )
+                        val dateAsString =
+                            parsedDate.format(MsSqlServerJdbcPartitionFactory.outputDateFormatter)
+                        Jsons.textNode(dateAsString)
+                    } catch (e: DateTimeParseException) {
+                        // Resolve to use the new format.
+                        Jsons.valueToTree(stateValue)
+                    }
+                }
+                LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE -> {
+                    val timestampInStatePattern = "yyyy-MM-dd'T'HH:mm:ss"
+                    try {
+                        val formatter: DateTimeFormatter =
+                            DateTimeFormatter.ofPattern(timestampInStatePattern)
+                        Jsons.valueToTree(
+                            LocalDateTime.parse(stateValue, formatter)
+                                .minusDays(1)
+                                .atOffset(ZoneOffset.UTC)
+                                .format(OffsetDateTimeCodec.formatter)
+                        )
+                    } catch (e: DateTimeParseException) {
+                        // Resolve to use the new format.
+                        Jsons.valueToTree(stateValue)
+                    }
+                }
+                else -> Jsons.valueToTree(stateValue)
+            }
+        else ->
+            throw IllegalStateException(
+                "PK field must be leaf type but is ${field.type.airbyteSchemaType}."
+            )
+    }
 }
