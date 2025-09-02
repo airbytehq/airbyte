@@ -19,7 +19,6 @@ java {
 
 application {
     mainClass = 'io.airbyte.integrations.destination.snowflake.SnowflakeDestinationKt'
-// enable when profiling
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0',
                                  '-XX:NativeMemoryTracking=detail', '-XX:+UnlockDiagnosticVMOptions',
                                  '-XX:GCLockerRetryAllocationCount=100',
@@ -34,10 +33,10 @@ application {
 
 }
 
-integrationTestJava {
-    // This is needed to make the destination-snowflake tests succeed - https://github.com/snowflakedb/snowflake-jdbc/issues/589#issuecomment-983944767
-    jvmArgs = ["--add-opens=java.base/java.nio=ALL-UNNAMED"]
-}
+//integrationTestJava {
+//    // This is needed to make the destination-snowflake tests succeed - https://github.com/snowflakedb/snowflake-jdbc/issues/589#issuecomment-983944767
+//    jvmArgs = ["--add-opens=java.base/java.nio=ALL-UNNAMED"]
+//}
 
 dependencies {
     implementation 'net.snowflake:snowflake-jdbc:3.26.1'
