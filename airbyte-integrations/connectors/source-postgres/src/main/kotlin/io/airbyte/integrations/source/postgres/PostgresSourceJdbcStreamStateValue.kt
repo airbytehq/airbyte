@@ -11,12 +11,11 @@ import io.airbyte.cdk.discover.DataField
 import io.airbyte.cdk.util.Jsons
 
 data class PostgresSourceJdbcStreamStateValue(
-    @JsonProperty("version") val version: Int = 2,
+    @JsonProperty("version") val version: Int = 3,
     @JsonProperty("state_type") val stateType: String = StateType.CURSOR_BASED.serialized,
     @JsonProperty("stream_name") val streamName: String = "",
     @JsonProperty("stream_namespace") val streamNamespace: String = "",
     @JsonProperty("ctid") val ctid: String? = null,
-    @JsonProperty("incremental_state") val incrementalState: JsonNode? = null,
     @JsonProperty("cursors") val cursors: Map<String, JsonNode> = mapOf(),
     @JsonProperty("relation_filenode") val filenode: Filenode? = null,
 ) {
