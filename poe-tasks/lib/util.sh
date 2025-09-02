@@ -13,14 +13,19 @@ connector_docs_path() {
   # First, remove -strict-encrypt suffix since these connectors
   # share documentation with their base connector
   local connector_name="$1"
+  local is_enterprise="$2"
   connector_name=$(echo "$connector_name" | sed -r 's/-strict-encrypt$//')
 
-  # The regex '^(source|destination)-(.*)' matches strings like source-whatever or destination-something-like-this,
-  # capturing the connector type (source/destination) and the connector name (whatever / something-like-this).
-  # We then output '\1s/\2.md', which inserts the captured values as `\1` and `\2`.
-  # This produces a string like `sources/whatever.md`.
-  # Then we prepend the 'docs/integrations/' path.
-  echo $DOCS_BASE_DIR/$(echo $connector_name | sed -r 's@^(source|destination)-(.*)@\1s/\2.md@')
+  if [ "$is_enterprise" = "true" ]; then
+    echo "$DOCS_BASE_DIR/enterprise-connectors/$connector_name"
+  else
+    # The regex '^(source|destination)-(.*)' matches strings like source-whatever or destination-something-like-this,
+    # capturing the connector type (source/destination) and the connector name (whatever / something-like-this).
+    # We then output '\1s/\2.md', which inserts the captured values as `\1` and `\2`.
+    # This produces a string like `sources/whatever.md`.
+    # Then we prepend the 'docs/integrations/' path.
+    echo $DOCS_BASE_DIR/$(echo $connector_name | sed -r 's@^(source|destination)-(.*)@\1s/\2.md@')
+  fi
 }
 
 # Expects that you have populated a $connectors variable as an array.
