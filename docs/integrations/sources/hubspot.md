@@ -174,7 +174,7 @@ The HubSpot source connector supports the following streams:
 - [Goals](https://developers.hubspot.com/docs/api/crm/goals) \(Incremental\)
 - [Leads](https://developers.hubspot.com/docs/api/crm/leads) \(Incremental\)
 - [Line Items](https://developers.hubspot.com/docs/api/crm/line-items) \(Incremental\)
-- [Marketing Emails](https://legacydocs.hubspot.com/docs/methods/cms_email/get-all-marketing-email-statistics)
+- [Marketing Emails](https://developers.hubspot.com/docs/api-reference/marketing-marketing-emails-v3-v3/marketing-emails/get-marketing-v3-emails-) \(Incremental\)
 - [Owners](https://developers.hubspot.com/docs/methods/owners/get_owners) \(Client-Side Incremental\)
 - [Owners Archived](https://legacydocs.hubspot.com/docs/methods/owners/get_owners) \(Client-Side Incremental)
 - [Products](https://developers.hubspot.com/docs/api/crm/products) \(Incremental\)
