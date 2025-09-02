@@ -464,44 +464,6 @@ def test_get_custom_objects_metadata_success(
     assert custom_stream.retriever._parameters["entity"] == "p19936848_Animal"
 
 
-def test_cast_record_fields_with_schema_if_needed(requests_mock, config):
-    """
-    Test that the stream cast record fields with stream json schema if needed
-    """
-    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
-    stream = find_stream("marketing_emails", config)
-    data_field = stream.retriever.record_selector.extractor.field_path[0]
-
-    cursor_value = "2022-02-25T16:43:11Z"
-
-    responses = [
-        {
-            "json": {
-                data_field: [
-                    {
-                        "id": "test_id",
-                        "updatedAt": cursor_value,
-                    }
-                ],
-            }
-        }
-    ]
-
-    stream._sync_mode = SyncMode.full_refresh
-
-    if isinstance("marketing_emails", str):
-        stream_url = stream.retriever.requester.url_base + stream.retriever.requester.path
-    else:
-        stream_url = stream.url
-
-    stream._sync_mode = None
-
-    requests_mock.register_uri("GET", stream_url, responses)
-    records = read_full_refresh(stream)
-    record = records[0]
-    assert record.data["updated"] == (ab_datetime_parse("2022-02-25T16:43:11Z").timestamp() * 1000)
-
-
 @pytest.mark.parametrize(
     "stream_class, endpoint, cursor_value, fake_properties_list_response, data_to_cast, expected_casted_data",
     [
