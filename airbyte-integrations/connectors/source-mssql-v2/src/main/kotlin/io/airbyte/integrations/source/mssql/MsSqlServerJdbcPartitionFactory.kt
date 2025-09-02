@@ -231,7 +231,7 @@ class MsSqlServerJdbcPartitionFactory(
             }
         } else {
             val sv: MsSqlServerJdbcStreamStateValue =
-                Jsons.treeToValue(opaqueStateValue, MsSqlServerJdbcStreamStateValue::class.java)
+                MsSqlServerStateMigration.parseStateValue(opaqueStateValue)
 
             if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
                 val upperBound = findPkUpperBound(stream, pkChosenFromCatalog)
@@ -272,7 +272,7 @@ class MsSqlServerJdbcPartitionFactory(
             }
             // resume back to cursor based increment.
             val cursor: Field = stream.fields.find { it.id == sv.cursorField.first() } as Field
-            val cursorCheckpoint: JsonNode = stateValueToJsonNode(cursor, sv.cursors)
+            val cursorCheckpoint: JsonNode = stateValueToJsonNode(cursor, sv.cursor)
 
             // Compose a jsonnode of cursor label to cursor value to fit in
             // DefaultJdbcCursorIncrementalPartition
@@ -363,8 +363,17 @@ class MsSqlServerJdbcPartitionFactory(
         unsplitPartition: MsSqlServerJdbcPartition,
         opaqueStateValues: List<OpaqueStateValue>
     ): List<MsSqlServerJdbcPartition> {
-        // At this moment we don't support split on within mysql stream in any mode.
-        return listOf(unsplitPartition)
+        return when (unsplitPartition) {
+            is MsSqlServerJdbcRfrSnapshotPartition -> unsplitPartition.split(opaqueStateValues)
+            is MsSqlServerJdbcCdcRfrSnapshotPartition -> unsplitPartition.split(opaqueStateValues)
+            is MsSqlServerJdbcCdcSnapshotPartition -> unsplitPartition.split(opaqueStateValues)
+            is MsSqlServerJdbcSnapshotWithCursorPartition ->
+                unsplitPartition.split(opaqueStateValues)
+            is MsSqlServerJdbcCursorIncrementalPartition ->
+                unsplitPartition.split(opaqueStateValues)
+            is MsSqlServerJdbcNonResumableSnapshotPartition -> listOf(unsplitPartition)
+            is MsSqlServerJdbcNonResumableSnapshotWithCursorPartition -> listOf(unsplitPartition)
+        }
     }
 
     companion object {
