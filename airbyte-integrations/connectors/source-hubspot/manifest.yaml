@@ -1615,7 +1615,7 @@ definitions:
       schema_loader:
         - type: InlineSchemaLoader
           schema:
-            $ref: "#/schemas/engagements_emails"
+            $ref: "#/schemas/engagements_meetings"
         - $ref: "#/definitions/base_dynamic_schema_loader"
 
   engagements_notes_stream:
@@ -1635,7 +1635,7 @@ definitions:
       schema_loader:
         - type: InlineSchemaLoader
           schema:
-            $ref: "#/schemas/engagements_emails"
+            $ref: "#/schemas/engagements_notes"
         - $ref: "#/definitions/base_dynamic_schema_loader"
 
   engagements_tasks_stream:
@@ -1655,7 +1655,7 @@ definitions:
       schema_loader:
         - type: InlineSchemaLoader
           schema:
-            $ref: "#/schemas/engagements_emails"
+            $ref: "#/schemas/engagements_tasks"
         - $ref: "#/definitions/base_dynamic_schema_loader"
 
   subscription_changes_stream:
@@ -2571,6 +2571,9 @@ schemas:
           - integer
       default:
         description: Indicates if this pipeline is the default one in the system.
+        type:
+          - "null"
+          - boolean
 
   companies:
     $schema: http://json-schema.org/draft-07/schema#
