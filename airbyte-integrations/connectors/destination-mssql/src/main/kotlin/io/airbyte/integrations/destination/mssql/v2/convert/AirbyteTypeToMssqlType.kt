@@ -29,13 +29,13 @@ enum class MssqlType(val sqlType: Int, val sqlStringOverride: String? = null) {
     BIT(Types.BOOLEAN),
     DATE(Types.DATE),
     BIGINT(Types.BIGINT),
-    /**
-     * if you change the numeric precision/scale, remember to also update [LIMITS.MAX_NUMERIC] /
-     * [LIMITS.MIN_NUMERIC]
-     */
     DECIMAL(Types.DECIMAL, sqlStringOverride = "DECIMAL(38, 8)"),
+    // Keep VARCHAR for backward compatibility but add NVARCHAR as primary
     VARCHAR(Types.VARCHAR, sqlStringOverride = "VARCHAR(MAX)"),
     VARCHAR_INDEX(Types.VARCHAR, sqlStringOverride = "VARCHAR(200)"),
+    // Add NVARCHAR types for proper Unicode support
+    NVARCHAR(Types.NVARCHAR, sqlStringOverride = "NVARCHAR(MAX)"),
+    NVARCHAR_INDEX(Types.NVARCHAR, sqlStringOverride = "NVARCHAR(200)"),
     DATETIMEOFFSET(Types.TIMESTAMP_WITH_TIMEZONE),
     TIME(Types.TIME),
     DATETIME(Types.TIMESTAMP);
@@ -55,7 +55,8 @@ class AirbyteTypeToMssqlType {
             is NumberType -> MssqlType.DECIMAL
             is ObjectTypeWithEmptySchema -> MssqlType.TEXT
             is ObjectTypeWithoutSchema -> MssqlType.TEXT
-            is StringType -> if (isIndexed) MssqlType.VARCHAR_INDEX else MssqlType.VARCHAR
+            // Fix: Use NVARCHAR for proper Unicode support instead of VARCHAR
+            is StringType -> if (isIndexed) MssqlType.NVARCHAR_INDEX else MssqlType.NVARCHAR
             is TimeTypeWithTimezone -> MssqlType.DATETIMEOFFSET
             is TimeTypeWithoutTimezone -> MssqlType.TIME
             is TimestampTypeWithTimezone -> MssqlType.DATETIMEOFFSET
