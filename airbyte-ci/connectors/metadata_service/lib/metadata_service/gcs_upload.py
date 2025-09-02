@@ -83,7 +83,7 @@ class ManifestOnlyFilePaths:
 # 🛣️ FILES AND PATHS
 
 
-def get_doc_local_file_path(metadata: ConnectorMetadataDefinitionV0, docs_path: Path, inapp: bool) -> Optional[Path]:
+def get_doc_local_file_path(docs_path: Path, inapp: bool) -> Optional[Path]:
     extension = ".inapp.md" if inapp else ".md"
     return docs_path.with_suffix(extension)
 
