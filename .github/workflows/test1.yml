@@ -2,6 +2,11 @@ name: Edgao test workflow 1
 
 on:
   workflow_dispatch:
+    inputs:
+      foo:
+        description: foo
+        required: false
+        type: string
 jobs:
   do_the_thing:
     uses: ./.github/workflows/test2.yml
