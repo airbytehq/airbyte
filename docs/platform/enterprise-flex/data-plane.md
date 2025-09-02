@@ -136,7 +136,7 @@ json
 </details>
 
 
-## 3. Configure Kubernetes Secrets {#step-4}
+## 3. Configure Kubernetes Secrets {#step-3}
 
 Your data plane relies on Kubernetes secrets to identify itself with the control plane.
 
@@ -191,7 +191,7 @@ kubectl create secret generic airbyte-config-secrets \
 </Tabs>
 </details>
 
-## 5. Create your deployment values {#step-5}
+## 4. Create your deployment values {#step-4}
 
 Add the following overrides to a new `values.yaml` file.
 
@@ -237,7 +237,7 @@ secretsManager:
     secretAccessKeySecretKey: AWS_SECRET_MANAGER_SECRET_ACCESS_KEY
 ```
 
-## 6. Deploy your data plane {#step-6}
+## 5. Deploy your data plane {#step-5}
 
 In your command-line tool, deploy the data plane using `helm upgrade`. The examples here may not reflect your actual Airbyte version and namespace conventions, so make sure you use the settings that are appropriate for your environment.
 
