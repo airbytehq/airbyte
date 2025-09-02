@@ -43,6 +43,8 @@ class AirbyteConnectorRunnable : Runnable {
                 }
             }
             if (operationName == "check") {
+                // During check, we don't fail the command on uncaught error. We assume the check as
+                // failed and return a trace + a connection status message.
                 val exception: Throwable? =
                     if (e.message == "Failed to initialize connector operation") e.cause else e
                 val (errorTraceMessage, connectionStatusMessage) =

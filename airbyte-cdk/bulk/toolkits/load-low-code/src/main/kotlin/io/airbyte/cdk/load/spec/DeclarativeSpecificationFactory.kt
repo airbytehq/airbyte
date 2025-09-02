@@ -21,7 +21,7 @@ class DeclarativeSpecificationFactory(private val declarativeSpec: Spec) : Speci
         val spec =
             ConnectorSpecification()
                 .withConnectionSpecification(connectionSpecificationCopy)
-                // FIXME do we really need the following. I added those for backward compabitiliy
+                // FIXME do we really need the following. I added those for backward compabitility
                 // with destination-customer-io
                 .withSupportsIncremental(true)
                 .withSupportedDestinationSyncModes(listOf(DestinationSyncMode.APPEND))
