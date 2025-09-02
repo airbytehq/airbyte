@@ -884,17 +884,17 @@ def test_bulk_stream_state_migration(stream_state, expected_state, components_mo
 def test_custom_report_name_conversion(test_name, config, components_values, expected_name):
     """Test that custom report name conversion works correctly based on configuration."""
     import re
-    
+
     # Simulate the camel_case_to_snake_case function from the CDK
     def camel_case_to_snake_case(value: str) -> str:
         return re.sub(r"(?<!^)(?=[A-Z])", "_", value).lower()
-    
+
     # Simulate the template evaluation logic from the manifest
-    disable_conversion = config.get('disable_custom_report_names_camel_to_snake_conversion', False)
-    
+    disable_conversion = config.get("disable_custom_report_names_camel_to_snake_conversion", False)
+
     if not disable_conversion:
-        actual_name = camel_case_to_snake_case(components_values['name'])
+        actual_name = camel_case_to_snake_case(components_values["name"])
     else:
-        actual_name = components_values['name']
-    
+        actual_name = components_values["name"]
+
     assert actual_name == expected_name
