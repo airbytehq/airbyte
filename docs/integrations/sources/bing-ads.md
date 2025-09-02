@@ -227,6 +227,41 @@ You can build your own report by providing:
   The report must include the Required Columns (you can find it under list of all columns of reporting object) at a minimum. As a general rule, each report must include at least one attribute column and at least one non-impression share performance statistics column. Be careful you can't add extra columns that not specified in Bing Ads docs and not all fields can be skipped.
 - _Aggregation_ - Hourly, Daily, Weekly, Monthly, DayOfWeek, HourOfDay, WeeklyStartingMonday, Summary. See [report aggregation](#report-aggregation).
 
+#### Custom Report Name Conversion
+
+**By default, custom report names are automatically converted from camelCase to snake_case.** For example:
+- `MyCustomReport` becomes `my_custom_report`
+- `CampaignPerformanceDaily` becomes `campaign_performance_daily`
+- `keywordAnalysisReport` becomes `keyword_analysis_report`
+
+This conversion ensures consistency with Airbyte's naming conventions and compatibility with most data destinations.
+
+#### Disabling Name Conversion
+
+If you prefer to use your exact custom report names without automatic conversion, you can disable this feature by setting the **Disable Custom Report Names Camel to Snake Case Conversion** configuration option to `true` in your connector configuration.
+
+When disabled:
+- Report names will be used exactly as specified
+- No camelCase to snake_case conversion will be applied
+- You have full control over the resulting stream names
+
+**Example configuration:**
+```json
+{
+  "disable_custom_report_names_camel_to_snake_conversion": true,
+  "custom_reports": [
+    {
+      "name": "MyExactReportName",
+      "reporting_object": "CampaignPerformanceReportRequest",
+      "report_columns": ["CampaignName", "Impressions", "Clicks"],
+      "report_aggregation": "Daily"
+    }
+  ]
+}
+```
+
+With this setting enabled, the stream will be named exactly `MyExactReportName` instead of `my_exact_report_name`.
+
 ### Report aggregation
 
 All reports synced by this connector can be [aggregated](https://docs.microsoft.com/en-us/advertising/reporting-service/reportaggregation?view=bingads-13) using hourly, daily, weekly, or monthly time windows.
@@ -262,6 +297,7 @@ The Bing Ads API limits the number of requests for all Microsoft Advertising cli
 
 | Version     | Date       | Pull Request                                                                                                                     | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.23.3 | 2025-09-02 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Fix Custom Report Names - Add Option to Disable camel_case_to_snake_case |
 | 2.23.2 | 2025-08-15 | [64952](https://github.com/airbytehq/airbyte/pull/64952) | Always decompress bulk download response |
 | 2.23.1 | 2025-07-26 | [60669](https://github.com/airbytehq/airbyte/pull/60669) | Update dependencies |
 | 2.23.0 | 2025-07-09 | [62872](https://github.com/airbytehq/airbyte/pull/62872) | Promoting release candidate 2.23.0-rc.1 to a main version. |
