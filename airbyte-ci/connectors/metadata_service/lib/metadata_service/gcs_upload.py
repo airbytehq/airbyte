@@ -475,7 +475,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
 
     # Doc upload
 
-    local_doc_path = get_doc_local_file_path(metadata, docs_path, inapp=False)
+    local_doc_path = get_doc_local_file_path(docs_path, inapp=False)
     doc_files_uploaded = _file_upload(
         file_key="doc",
         local_path=local_doc_path,
@@ -488,7 +488,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
     )
     uploaded_files.extend(doc_files_uploaded)
 
-    local_inapp_doc_path = get_doc_local_file_path(metadata, docs_path, inapp=True)
+    local_inapp_doc_path = get_doc_local_file_path(docs_path, inapp=True)
     inapp_doc_files_uploaded = _file_upload(
         file_key="inapp_doc",
         local_path=local_inapp_doc_path,
