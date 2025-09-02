@@ -567,7 +567,6 @@ definitions:
         path: /marketing/v3/emails
         request_parameters:
           includeStats: "true"
-          updatedAfter: "{{ stream_slice.start_time }}"
       paginator:
         $ref: "#/definitions/offset_paginator"
         pagination_strategy:
@@ -580,11 +579,10 @@ definitions:
             - results
     incremental_sync:
       $ref: "#/definitions/incremental_sync"
-    transformations:
-      - type: AddFields
-        fields:
-          - path: ["updated"]
-            value: "{{ format_datetime(record.get('updatedAt'), '%ms') if record.get('updatedAt') is not none else none }}"
+      start_time_option:
+        type: RequestOption
+        field_name: updatedAfter
+        inject_into: request_parameter
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -4607,6 +4605,10 @@ schemas:
       - object
     additionalProperties: true
     properties:
+      id:
+        type:
+          - "null"
+          - string
       feedbackSurveyId:
         type:
           - "null"
@@ -4780,10 +4782,6 @@ schemas:
             type:
               - "null"
               - string
-      id:
-        type:
-          - "null"
-          - string
       state:
         type:
           - "null"
