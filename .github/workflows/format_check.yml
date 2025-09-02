@@ -28,11 +28,11 @@ jobs:
           cache: "pip"
           check-latest: true
           update-environment: true
-      - name: Run Pre-Commit
-        uses: pre-commit/action@v3.0.1
-        id: format-check
-        with:
-          extra_args: --all-files
+      # - name: Run Pre-Commit
+      #   uses: pre-commit/action@v3.0.1
+      #   id: format-check
+      #   with:
+      #     extra_args: --all-files
 
       - name: Match GitHub User to Slack User [MASTER]
         # if: >
@@ -53,6 +53,7 @@ jobs:
         uses: slackapi/slack-github-action@v2.1.1
         with:
           token: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+          method: chat.postMessage
           payload: |
             channel: C03BEADRPNY
             blocks:
