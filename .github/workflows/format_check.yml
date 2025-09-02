@@ -49,15 +49,19 @@ jobs:
           always() && steps.format-check.outcome == 'failure' &&
           github.ref == 'refs/heads/master' &&
           github.event.pull_request.head.repo.fork == false
-        uses: abinoda/slack-action@master
+        uses: slack/slack-github-action@a560f02f1e4a8dee2a30c9f08cf9f8a1d04c3f11
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
         with:
-          args: >-
-            {\"channel\":\"C03BEADRPNY\", \"blocks\":[
-            {\"type\":\"divider\"},
-            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"Formatting is broken on master! :bangbang: \n\n\"}},
-            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"_merged by_: *${{ github.actor }}* \n\"}},
-            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"<@${{ steps.match-github-to-slack-user.outputs.slack_user_ids }}> \n\"}},
-            {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\" :octavia-shocked: <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|View Action Run> :octavia-shocked: \n\"}},
-            {\"type\":\"divider\"}]}
+          channel: 'C03BEADRPNY'
+          payload: |
+            {
+              "blocks": [
+                {"type": "divider"},
+                {"type": "section", "text": {"type": "mrkdwn", "text": "Formatting is broken on master! :bangbang: \n\n"}},
+                {"type": "section", "text": {"type": "mrkdwn", "text": "_merged by_: *${{ github.actor }}* \n"}},
+                {"type": "section", "text": {"type": "mrkdwn", "text": "<@${{ steps.match-github-to-slack-user.outputs.slack_user_ids }}> \n"}},
+                {"type": "section", "text": {"type": "mrkdwn", "text": " :octavia-shocked: <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|View Action Run> :octavia-shocked: \n"}},
+                {"type": "divider"}
+              ]
+            }
