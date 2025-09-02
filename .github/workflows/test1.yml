@@ -1,0 +1,7 @@
+name: Edgao test workflow 1
+
+on:
+  workflow_dispatch:
+jobs:
+  do_the_thing:
+    uses: ./.github/workflows/test2.yml

@@ -1,0 +1,19 @@
+name: Edgao test workflow 2
+
+concurrency:
+  group: edgao-test-concurrency-group
+  cancel-in-progress: false
+
+on:
+  workflow_dispatch:
+  workflow_call:
+jobs:
+  test_workflow_2:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: start
+        run: echo "starting"
+      - name: sleep
+        run: sleep 60
+      - name: finish
+        run: echo "done"
