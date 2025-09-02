@@ -54,10 +54,22 @@ jobs:
           token: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
           payload: |
             channel: C03BEADRPNY
-            text: |
-              Formatting is broken on master! :bangbang:
-              
-              _merged by_: *${{ github.actor }}*
-              <@${{ steps.match-github-to-slack-user.outputs.slack_user_ids }}>
-              
-              :octavia-shocked: <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|View Action Run> :octavia-shocked:
+            blocks:
+              - type: divider
+              - type: section
+                text:
+                  type: mrkdwn
+                  text: "Formatting is broken on master! :bangbang: \n\n"
+              - type: section
+                text:
+                  type: mrkdwn
+                  text: "_merged by_: *${{ github.actor }}* \n"
+              - type: section
+                text:
+                  type: mrkdwn
+                  text: "<@${{ steps.match-github-to-slack-user.outputs.slack_user_ids }}> \n"
+              - type: section
+                text:
+                  type: mrkdwn
+                  text: " :octavia-shocked: <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|View Action Run> :octavia-shocked: \n"
+              - type: divider
