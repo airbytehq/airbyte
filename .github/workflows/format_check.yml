@@ -52,8 +52,8 @@ jobs:
         uses: slackapi/slack-github-action@v1.26.0
         with:
           token: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+          channel-id: C03BEADRPNY
           payload: |
-            channel: C03BEADRPNY
             blocks:
               - type: divider
               - type: section
