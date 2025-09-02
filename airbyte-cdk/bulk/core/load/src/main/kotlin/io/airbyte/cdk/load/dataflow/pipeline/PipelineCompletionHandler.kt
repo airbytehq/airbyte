@@ -36,5 +36,7 @@ class PipelineCompletionHandler(
                 }
             }
             .awaitAll()
+
+        log.info { "Final aggregates flushed." }
     }
 }

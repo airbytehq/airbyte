@@ -20,7 +20,7 @@ class PipelineRunner(
 ) {
     private val log = KotlinLogging.logger {}
 
-    suspend fun run() = coroutineScope{
+    suspend fun run() = coroutineScope {
         log.info { "Destination Pipeline Starting..." }
 
         reconciler.run(CoroutineScope(Dispatchers.IO))
@@ -29,9 +29,11 @@ class PipelineRunner(
             pipelines.map { async { it.run() } }.awaitAll()
         } finally {
             // shutdown the reconciler regardless of success or failure, so we don't hang
+            log.info { "Disabling reconciler..." }
             reconciler.disable()
         }
 
+        log.info { "Flushing final states..." }
         reconciler.flushCompleteStates()
 
         log.info { "Destination Pipeline Completed — Successfully" }

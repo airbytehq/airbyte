@@ -21,6 +21,7 @@ import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseSpecificati
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Named
 import jakarta.inject.Singleton
+import kotlin.time.Duration.Companion.minutes
 import org.apache.sshd.common.util.net.SshdSocketAddress
 
 @Factory
@@ -90,6 +91,11 @@ class ClickhouseBeanFactory {
     fun getConfig(clickhouseConfiguration: ClickhouseConfiguration): MemoryAndParallelismConfig {
         return MemoryAndParallelismConfig(
             maxRecordsPerAgg = clickhouseConfiguration.resolvedRecordWindowSize,
+            maxOpenAggregates = 5,
+            maxBufferedAggregates = 2,
+            stalenessDeadlinePerAgg = 5.minutes,
+            maxEstBytesPerAgg = 50_000_000L,
+            maxConcurrentLifecycleOperations = 10,
         )
     }
 }

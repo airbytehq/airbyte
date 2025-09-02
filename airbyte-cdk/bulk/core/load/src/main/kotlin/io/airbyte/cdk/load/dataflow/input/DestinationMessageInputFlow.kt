@@ -8,8 +8,10 @@ import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.ProtocolMessageDeserializer
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.InputStream
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
+import kotlinx.coroutines.withContext
 
 /** Takes bytes and emits DestinationMessages */
 class DestinationMessageInputFlow(
@@ -38,6 +40,11 @@ class DestinationMessageInputFlow(
                 }
             }
 
-        log.info { "Finished processing input" }
+        withContext(Dispatchers.IO) {
+            inputStream.close()
+            log.info { "Input stream closed." }
+        }
+
+        log.info { "Finished reading input." }
     }
 }
