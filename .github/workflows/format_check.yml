@@ -51,11 +51,13 @@ jobs:
           github.event.pull_request.head.repo.fork == false
         uses: slackapi/slack-github-action@v1.26.0
         with:
+          token: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
           payload: |
-            {
-              "channel": "C03BEADRPNY",
-              "username": "GitHub Actions",
-              "text": "Formatting is broken on master! :bangbang:\n\n_merged by_: *${{ github.actor }}*\n<@${{ steps.match-github-to-slack-user.outputs.slack_user_ids }}>\n\n:octavia-shocked: <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|View Action Run> :octavia-shocked:"
-            }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+            channel: C03BEADRPNY
+            text: |
+              Formatting is broken on master! :bangbang:
+              
+              _merged by_: *${{ github.actor }}*
+              <@${{ steps.match-github-to-slack-user.outputs.slack_user_ids }}>
+              
+              :octavia-shocked: <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|View Action Run> :octavia-shocked:
