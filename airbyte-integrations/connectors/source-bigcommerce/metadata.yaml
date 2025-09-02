@@ -19,7 +19,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/bigcommerce
   githubIssueLabel: source-bigcommerce
   icon: bigcommerce.svg
-  license: MIT
+  license: ELv2
   name: Bigcommerce
   releaseDate: 2021-08-19
   releaseStage: alpha

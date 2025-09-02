@@ -142,6 +142,7 @@ Your data plane relies on Kubernetes secrets to identify itself with the control
 
 In step 5, you create a values.yaml file that references this Kubernetes secret store and these secret keys. Configure all required secrets before deploying your data plane.
 
+
 You may apply your Kubernetes secrets by applying the example manifests below to your cluster, or using kubectl directly. Ensure that the secrets manager configurtion on your data plane matches the configuration on the control plane. At this time, only access key authentication is supported. 
 
 While you can set the name of the secret to whatever you prefer, you need to set that name in your values.yaml file. For this reason it's easiest to keep the name of airbyte-config-secrets unless you have a reason to change it.
@@ -187,49 +188,6 @@ kubectl create secret generic airbyte-config-secrets \
 ```
 
 </TabItem>
-<TabItem value="GCS" label="GCS">
-
-First, create a new file `gcp.json` containing the credentials JSON blob for the service account you are looking to assume.
-
-```yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: airbyte-config-secrets
-type: Opaque
-stringData:
-  # Insert the data plane credentials received in step 2
-  DATA_PLANE_CLIENT_ID: your-data-plane-client-id
-  DATA_PLANE_CLIENT_SECRET: your-data-plane-client-secret
-  
-  # Only set these values if they are also set on your control plane
-  AWS_SECRET_MANAGER_ACCESS_KEY_ID: your-aws-secret-manager-access-key
-  AWS_SECRET_MANAGER_SECRET_ACCESS_KEY: your-aws-secret-manager-secret-key
-  S3_ACCESS_KEY_ID: your-s3-access-key
-  S3_SECRET_ACCESS_KEY: your-s3-secret-key
-
-  # GCP Secrets
-  gcp.json: <CREDENTIALS_JSON_BLOB>
-```
-
-Apply your secrets manifest in your command-line tool with `kubectl`: `kubectl apply -f <file>.yaml -n <namespace>`.
-
-You can also use `kubectl` to create the secret directly from the command-line tool:
-
-```bash
-kubectl create secret generic airbyte-config-secrets \
-  --from-literal=license-key='' \
-  --from-literal=data_plane_client_id='' \
-  --from-literal=data_plane_client_secret='' \
-  --from-literal=s3-access-key-id='' \
-  --from-literal=s3-secret-access-key='' \
-  --from-literal=aws-secret-manager-access-key-id='' \
-  --from-literal=aws-secret-manager-secret-access-key='' \
-  --from-file=aws.json
-  --namespace airbyte
-```
-
-</TabItem>
 </Tabs>
 </details>
 
@@ -268,7 +226,7 @@ storage:
     secretAccessKeySecretKey: S3_SECRET_ACCESS_KEY
 
 # Secret manager secrets/config
-# Must be set to the same secrets manager as the control
+# Must be set to the same secrets manager as the control plane
 secretsManager:
   secretName: airbyte-config-secrets
   type: AWS_SECRET_MANAGER

@@ -30,7 +30,7 @@ Follow the instructions below to create a Minimum Access standard profile and as
 
 While you can set up the Salesforce connector using any Salesforce user with read permission, we recommend creating a dedicated user with the Minimum Access standard profile for Airbyte. This allows you to granularly control the data Airbyte can read.
 
-Using Permission Sets, you should grant this user read access to the data you want Airbyte to have access to. Learn more about Permission sets by referring to [Salesforce's documentation](https://help.salesforce.com/s/articleView?id=sf.perm_sets_overview.htm&type=5).
+Using Permission Sets, you should grant this user read access to the data you want Airbyte to have access to. Learn more about Permission sets by referring to [Salesforce's documentation](https://help.salesforce.com/s/articleView?id=sf.perm_sets_overview.htm&type=5). If you want to sync permissions data from Salesforce, you also need the [permissions necessary to sync security-related data](#permissions-to-sync-permissions).
 
 [Log in to Salesforce](https://login.salesforce.com/) with an admin account.
 
@@ -139,6 +139,46 @@ Airbyte allows exporting all available Salesforce objects dynamically based on:
 
 - If the authenticated Salesforce user has the Role and Permissions to read and fetch objects. This would be set as part of the Permission Set you assign to the Airbyte user. See [Step 1](#step-1-optional-recommended-create-a-dedicated-salesforce-user) for more information.
 - If the Salesforce object has the queryable property set to true. Airbyte can only fetch objects which are queryable. If you don’t see an object available via Airbyte, and it is queryable, check if it is API-accessible to the Salesforce user you authenticated with.
+
+## Syncing Permissions Data from Salesforce
+
+The Salesforce connector can be used to sync security-related objects that can be synced to understand user permissions, roles, and access patterns within your Salesforce organization.
+
+Common use cases for syncing Salesforce permission data include:
+
+- **Permission Replication**: Leverage permissions from the Salesforce source to guide application of permissions downstream.
+- **Security Auditing**: Generate reports on user access rights and permission assignments.
+
+### Available Security-Related Streams
+
+The following streams contain security and permission-related data:
+
+- **[`User`](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_user.htm)** - Core user accounts with security-related fields including profiles, roles, and user permissions. Contains information about user status, login history, and assigned licenses.
+- **[`ActivePermSetLicenseMetric`](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_activepermsetlicensemetric.htm)** - Tracks permission set license usage metrics including assigned user counts, active user counts, and total available licenses.
+- **[`ActiveProfileMetric`](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_activeprofilemetric.htm)** - Provides metrics about user profile usage including user license associations and assignment counts.
+
+For comprehensive information about Salesforce security objects, refer to the [Salesforce Object Reference](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_concepts.htm) documentation.
+
+### How Salesforce Permission Syncing Works
+
+Salesforce provides some security-related data through its standard object model:
+
+1. **Dynamic Object Discovery**: The connector automatically discovers available Salesforce objects (sobjects) based on the authenticated user's permissions.
+2. **Permission-Based Access**: Which security objects are available depends on the permissions granted to the Salesforce user used for authentication and your Salesforce environment configuration.
+3. **Standard Object Syncing**: Available security-related objects are synced as regular Salesforce objects through the same sync mechanisms as other business data.
+
+:::note
+Security-related object availability varies by Salesforce environment (production vs sandbox) and user permissions. Security objects can be large datasets in organizations with many users, so monitor your Salesforce API limits accordingly.
+:::
+
+### Permissions Needed to Sync Permissions Data {#permissions-to-sync-permissions}
+
+To sync security-related data from Salesforce, the authenticated Salesforce user must have appropriate permissions to read security objects. Consider granting these permissions through a dedicated permission set:
+
+   - "View All Users" - Required to access comprehensive User data.
+   - Standard read permissions for the specific objects you want to sync.
+
+For more information about Salesforce security and permissions, refer to the official Salesforce documentation on [User Permissions](https://help.salesforce.com/s/articleView?id=sf.admin_userperms.htm&type=5) and [Permission Sets](https://help.salesforce.com/s/articleView?id=sf.perm_sets_overview.htm&type=5).
 
 ## Limitations & Troubleshooting
 

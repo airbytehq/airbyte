@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/source-whisky-hunter
   githubIssueLabel: source-whisky-hunter
   icon: whiskyhunter.svg
-  license: MIT
+  license: ELv2
   name: Whisky Hunter
   remoteRegistries:
     pypi:

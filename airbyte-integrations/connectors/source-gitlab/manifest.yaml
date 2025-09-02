@@ -173,6 +173,7 @@ spec:
             - credentials
             - client_secret
   config_normalization_rules:
+    type: ConfigNormalizationRules
     config_migrations:
       - type: ConfigMigration
         descriptions: Migrates `groups` key to `groups_list` key.

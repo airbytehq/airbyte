@@ -11,7 +11,7 @@ data:
   dockerRepository: airbyte/destination-vertica
   githubIssueLabel: destination-vertica
   icon: vertica.svg
-  license: MIT
+  license: ELv2
   name: Vertica
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/vertica

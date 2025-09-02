@@ -9,7 +9,6 @@ import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.write.StreamLoader
-import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.CompletableDeferred
@@ -28,16 +27,9 @@ data class DestinationFailure(
     "NP_NONNULL_PARAM_VIOLATION",
     justification = "exception is guaranteed to be non-null by Kotlin's type system"
 )
-class SyncManager(
-    val catalog: DestinationCatalog,
-    @Named("requireCheckpointIdOnRecordAndKeyOnState") requireCheckpointIndexOnState: Boolean
-) {
+class SyncManager(val catalog: DestinationCatalog) {
     private val streamManagers: ConcurrentHashMap<DestinationStream.Descriptor, StreamManager> =
-        ConcurrentHashMap(
-            catalog.streams.associate {
-                it.mappedDescriptor to StreamManager(it, requireCheckpointIndexOnState)
-            }
-        )
+        ConcurrentHashMap(catalog.streams.associate { it.mappedDescriptor to StreamManager(it) })
 
     private val destinationResult = CompletableDeferred<DestinationResult>()
     private val streamLoaders =
@@ -45,7 +37,6 @@ class SyncManager(
     private val inputConsumed = CompletableDeferred<Boolean>()
     private val checkpointsProcessed = CompletableDeferred<Boolean>()
     private val setupComplete = CompletableDeferred<Unit>()
-    private val globalReadCount = ConcurrentHashMap<CheckpointId, Long>()
 
     /** Get the manager for the given stream. Throws an exception if the stream is not found. */
     fun getStreamManager(stream: DestinationStream.Descriptor): StreamManager {
@@ -139,24 +130,5 @@ class SyncManager(
 
     suspend fun awaitSetupComplete() {
         setupComplete.await()
-    }
-
-    fun setGlobalReadCountForCheckpoint(checkpointId: CheckpointId, records: Long) {
-        globalReadCount[checkpointId] = records
-    }
-
-    fun hasGlobalCount(checkpointId: CheckpointId): Boolean {
-        return globalReadCount.containsKey(checkpointId)
-    }
-
-    fun areAllStreamsPersistedForGlobalCheckpoint(checkpointId: CheckpointId): Boolean {
-        val readCount =
-            globalReadCount[checkpointId]
-                ?: throw IllegalStateException(
-                    "Global read count for checkpoint $checkpointId is not set"
-                )
-        val persistedCount =
-            streamManagers.values.sumOf { it.persistedRecordCountForCheckpoint(checkpointId) }
-        return persistedCount == readCount
     }
 }

@@ -2,8 +2,8 @@
 
 ## SSH Support :warning:
 
-SSH is not yet implemented for the new connector. If you require SSH support,
-please hold off on migrating for now.
+SSH is implementation for the new connector is in Beta. If you upgrade and SSH
+does not work for you, please reach out to support.
 
 ## Upgrading to 2.0.0
 

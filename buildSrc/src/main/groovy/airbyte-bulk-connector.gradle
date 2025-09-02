@@ -32,7 +32,7 @@ class AirbyteBulkConnectorExtension {
 
     void setCdk(String cdk) {
         this.cdk = cdk
-        if (cdk != "local" && !cdk.matches("^[0-9]+\\.[0-9]+")) {
+        if (cdk != "local" && !(cdk.matches("^[0-9]+\\.[0-9]+") || cdk.matches("^[0-9]+\\.[0-9]+\\.[0-9]+"))) {
             throw new IllegalArgumentException("'cdk' should be either a well-formed version number or 'local'")
         }
 
@@ -264,6 +264,11 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
         project.configurations {
             testFixturesImplementation.extendsFrom implementation
             testFixturesRuntimeOnly.extendsFrom runtimeOnly
+        }
+
+        project.tasks.named('test').configure {
+            // enable the "don't be evil" option, which for some reason is disabled by default
+            systemProperties(["mockk.junit.extension.requireParallelTesting": "true"])
         }
 
         project.extensions.create('airbyteBulkConnector', AirbyteBulkConnectorExtension, project)

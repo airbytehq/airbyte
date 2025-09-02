@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/source-surveycto
   githubIssueLabel: source-surveycto
   icon: surveycto.svg
-  license: MIT
+  license: ELv2
   name: SurveyCTO
   remoteRegistries:
     pypi:

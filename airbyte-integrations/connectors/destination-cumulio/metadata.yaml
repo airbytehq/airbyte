@@ -6,7 +6,7 @@ data:
   githubIssueLabel: destination-cumulio
   connectorSubtype: api
   icon: cumulio.svg
-  license: MIT
+  license: ELv2
   name: Cumul.io
   registryOverrides:
     cloud:

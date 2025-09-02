@@ -12,11 +12,11 @@ data:
   connectorSubtype: api
   connectorType: destination
   definitionId: c101b15f-2de9-4616-b54f-0ec9d28ca64d
-  dockerImageTag: 0.0.3
+  dockerImageTag: 0.0.4
   dockerRepository: airbyte/destination-customer-io
   githubIssueLabel: destination-customer-io
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Customer IO
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/customer-io
@@ -25,6 +25,7 @@ data:
   ab_internal:
     sl: 100
     ql: 100
+    requireVersionIncrementsInPullRequests: false
   supportLevel: certified
   supportsDataActivation: true
   supportsRefreshes: true # needed for the CDK to work as it relies on the generation/sync ids to work

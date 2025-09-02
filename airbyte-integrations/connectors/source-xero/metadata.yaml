@@ -35,7 +35,7 @@ data:
   dockerRepository: airbyte/source-xero
   githubIssueLabel: source-xero
   icon: xero.svg
-  license: MIT
+  license: ELv2
   name: Xero
   releaseDate: 2021-11-11
   releaseStage: beta

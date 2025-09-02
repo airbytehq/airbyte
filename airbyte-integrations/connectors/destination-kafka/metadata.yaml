@@ -8,7 +8,7 @@ data:
   dockerRepository: airbyte/destination-kafka
   githubIssueLabel: destination-kafka
   icon: kafka.svg
-  license: MIT
+  license: ELv2
   name: Kafka
   registryOverrides:
     cloud:

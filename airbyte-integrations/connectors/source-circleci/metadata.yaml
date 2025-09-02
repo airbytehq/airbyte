@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-circleci
   githubIssueLabel: source-circleci
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Circleci
   releaseDate: 2024-09-29
   releaseStage: alpha
