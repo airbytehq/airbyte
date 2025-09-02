@@ -246,7 +246,7 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 
 | Version     | Date       | Pull Request                                                 | Subject                                                                                                                                                                                                                       |
 |:------------|:-----------|:-------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.15.6 | 2025-09-02 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Fix Missing Records: Remove `min_datetime` from `events_read_slice_cursor`|
+| 5.15.6 | 2025-09-02 | [65911](https://github.com/airbytehq/airbyte/pull/65911) | Fix Missing Records: Remove `min_datetime` from `events_read_slice_cursor`|
 | 5.15.5 | 2025-08-24 | [65489](https://github.com/airbytehq/airbyte/pull/65489) | Update dependencies |
 | 5.15.4 | 2025-08-09 | [64840](https://github.com/airbytehq/airbyte/pull/64840) | Update dependencies |
 | 5.15.3 | 2025-08-04 | [64484](https://github.com/airbytehq/airbyte/pull/64484) | Fix memory issue by moving schema loaders out of $parameters |
