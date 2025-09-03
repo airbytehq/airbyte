@@ -46,10 +46,10 @@ interface LosslessFieldType : FieldType {
 
 interface DataField : DataOrMetaField
 
-@Deprecated(
+/*@Deprecated(
     message = "Use `EmittedField` directly instead.",
     replaceWith = ReplaceWith("EmittedField")
-)
+)*/ //TEMP
 typealias Field = EmittedField
 /**
  * Internal equivalent of [io.airbyte.protocol.models.Field] for values which come from the source
