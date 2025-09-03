@@ -5,7 +5,7 @@
 import datetime
 from multiprocessing import current_process
 
-from mimesis import Address, Datetime, Person
+from mimesis import Address, Datetime, Numeric, Person
 from mimesis.locales import Locale
 
 from airbyte_cdk.models import AirbyteRecordMessage, Type
@@ -34,10 +34,12 @@ class UserGenerator:
         global person
         global address
         global dt
+        global numeric
 
         person = Person(locale=Locale.EN, seed=seed_with_offset)
         address = Address(locale=Locale.EN, seed=seed_with_offset)
         dt = Datetime(seed=seed_with_offset)
+        numeric = Numeric(seed=seed_with_offset)
 
     def generate(self, user_id: int):
         # faker doesn't always produce unique email addresses, so to enforce uniqueness, we will append the user_id to the prefix
@@ -50,7 +52,7 @@ class UserGenerator:
             "updated_at": format_airbyte_time(datetime.datetime.now()),
             "name": person.name(),
             "title": person.title(),
-            "age": person.age(),
+            "age": numeric.integer_number(18, 80),
             "email": email,
             "telephone": person.telephone(),
             "gender": person.gender(),
