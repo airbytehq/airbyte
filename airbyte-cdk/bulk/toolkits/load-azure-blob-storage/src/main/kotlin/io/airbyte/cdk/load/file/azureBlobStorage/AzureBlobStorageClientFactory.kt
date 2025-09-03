@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.file.azureBlobStorage
 
-import com.azure.identity.ClientSecretCredential
 import com.azure.identity.ClientSecretCredentialBuilder
 import com.azure.storage.blob.BlobServiceClientBuilder
 import com.azure.storage.common.StorageSharedKeyCredential
@@ -26,42 +25,48 @@ class AzureBlobStorageClientFactory(
             "https://${azureBlobStorageClientConfigurationProvider.azureBlobStorageClientConfiguration.accountName}.blob.core.windows.net"
 
         val config = azureBlobStorageClientConfigurationProvider.azureBlobStorageClientConfiguration
-        
-        val azureServiceClient = when {
-            // EntraId config is available
-            !config.tenantId.isNullOrBlank() && !config.clientId.isNullOrBlank() && !config.clientSecret.isNullOrBlank() -> {
-                val credential = ClientSecretCredentialBuilder()
-                    .tenantId(config.tenantId)
-                    .clientId(config.clientId)
-                    .clientSecret(config.clientSecret)
-                    .build()
-                BlobServiceClientBuilder()
-                    .endpoint(endpoint)
-                    .credential(credential)
-                    .buildClient()
-            }
 
-            // Shared Access Signature config is available
-            !config.sharedAccessSignature.isNullOrBlank() -> {
-                BlobServiceClientBuilder()
-                    .endpoint(endpoint)
-                    .sasToken(config.sharedAccessSignature)
-                    .buildClient()
-            }
+        val azureServiceClient =
+            when {
+                // EntraId config is available
+                !config.tenantId.isNullOrBlank() &&
+                    !config.clientId.isNullOrBlank() &&
+                    !config.clientSecret.isNullOrBlank() -> {
+                    val credential =
+                        ClientSecretCredentialBuilder()
+                            .tenantId(config.tenantId)
+                            .clientId(config.clientId)
+                            .clientSecret(config.clientSecret)
+                            .build()
+                    BlobServiceClientBuilder()
+                        .endpoint(endpoint)
+                        .credential(credential)
+                        .buildClient()
+                }
 
-            // Otherwise fallback to using an account key
-            !config.accountKey.isNullOrBlank() -> {
-                val credential = StorageSharedKeyCredential(config.accountName, config.accountKey)
-                BlobServiceClientBuilder()
-                    .endpoint(endpoint)
-                    .credential(credential)
-                    .buildClient()
-            }
+                // Shared Access Signature config is available
+                !config.sharedAccessSignature.isNullOrBlank() -> {
+                    BlobServiceClientBuilder()
+                        .endpoint(endpoint)
+                        .sasToken(config.sharedAccessSignature)
+                        .buildClient()
+                }
 
-            else -> {
-                throw IllegalStateException("No valid authentication method provided for Azure Blob Storage")
+                // Otherwise fallback to using an account key
+                !config.accountKey.isNullOrBlank() -> {
+                    val credential =
+                        StorageSharedKeyCredential(config.accountName, config.accountKey)
+                    BlobServiceClientBuilder()
+                        .endpoint(endpoint)
+                        .credential(credential)
+                        .buildClient()
+                }
+                else -> {
+                    throw IllegalStateException(
+                        "No valid authentication method provided for Azure Blob Storage"
+                    )
+                }
             }
-        }
 
         return AzureBlobClient(
             azureServiceClient,

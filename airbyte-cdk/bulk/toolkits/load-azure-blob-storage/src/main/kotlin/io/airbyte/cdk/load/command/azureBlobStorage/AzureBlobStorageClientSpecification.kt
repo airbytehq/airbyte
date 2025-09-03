@@ -60,8 +60,7 @@ interface AzureBlobStorageClientSpecification {
     )
     @get:JsonProperty("azure_tenant_id")
     @get:JsonSchemaInject(
-        json =
-            """{"examples":["12345678-1234-1234-1234-123456789012"],"airbyte_secret": false}"""
+        json = """{"examples":["12345678-1234-1234-1234-123456789012"],"airbyte_secret": false}"""
     )
     val azureTenantId: String?
 
@@ -71,8 +70,7 @@ interface AzureBlobStorageClientSpecification {
     )
     @get:JsonProperty("azure_client_id")
     @get:JsonSchemaInject(
-        json =
-            """{"examples":["87654321-4321-4321-4321-210987654321"],"airbyte_secret": false}"""
+        json = """{"examples":["87654321-4321-4321-4321-210987654321"],"airbyte_secret": false}"""
     )
     val azureClientId: String?
 
@@ -82,8 +80,7 @@ interface AzureBlobStorageClientSpecification {
     )
     @get:JsonProperty("azure_client_secret")
     @get:JsonSchemaInject(
-        json =
-            """{"examples":["your-client-secret"],"airbyte_secret": true,"always_show": true}"""
+        json = """{"examples":["your-client-secret"],"airbyte_secret": true,"always_show": true}"""
     )
     val azureClientSecret: String?
 
@@ -116,8 +113,9 @@ data class AzureBlobStorageClientConfiguration(
     init {
         val hasAccountKey = !accountKey.isNullOrBlank()
         val hasSas = !sharedAccessSignature.isNullOrBlank()
-        val hasEntraId = !tenantId.isNullOrBlank() && !clientId.isNullOrBlank() && !clientSecret.isNullOrBlank()
-        
+        val hasEntraId =
+            !tenantId.isNullOrBlank() && !clientId.isNullOrBlank() && !clientSecret.isNullOrBlank()
+
         val authMethods = listOf(hasAccountKey, hasSas, hasEntraId).count { it }
         check(authMethods == 1) {
             "AzureBlobStorageClientConfiguration must have exactly one of: account key, SAS token, or Entra ID authentication (tenant ID, client ID, and client secret)"
