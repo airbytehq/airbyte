@@ -174,7 +174,7 @@ The HubSpot source connector supports the following streams:
 - [Goals](https://developers.hubspot.com/docs/api/crm/goals) \(Incremental\)
 - [Leads](https://developers.hubspot.com/docs/api/crm/leads) \(Incremental\)
 - [Line Items](https://developers.hubspot.com/docs/api/crm/line-items) \(Incremental\)
-- [Marketing Emails](https://legacydocs.hubspot.com/docs/methods/cms_email/get-all-marketing-email-statistics)
+- [Marketing Emails](https://developers.hubspot.com/docs/api-reference/marketing-marketing-emails-v3-v3/marketing-emails/get-marketing-v3-emails-) \(Incremental\)
 - [Owners](https://developers.hubspot.com/docs/methods/owners/get_owners) \(Client-Side Incremental\)
 - [Owners Archived](https://legacydocs.hubspot.com/docs/methods/owners/get_owners) \(Client-Side Incremental)
 - [Products](https://developers.hubspot.com/docs/api/crm/products) \(Incremental\)
@@ -333,28 +333,31 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 <details>
   <summary>Expand to review</summary>
 
-| Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
-|:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.8.18 | 2025-08-09 | [64603](https://github.com/airbytehq/airbyte/pull/64603) | Update dependencies |
-| 5.8.17 | 2025-08-02 | [64197](https://github.com/airbytehq/airbyte/pull/64197) | Update dependencies |
-| 5.8.16 | 2025-07-26 | [63898](https://github.com/airbytehq/airbyte/pull/63898) | Update dependencies |
-| 5.8.15 | 2025-07-21 | [63341](https://github.com/airbytehq/airbyte/pull/63341) | Bump memory on Discover to 1GB |
-| 5.8.14 | 2025-07-19 | [63499](https://github.com/airbytehq/airbyte/pull/63499) | Update dependencies |
-| 5.8.13 | 2025-07-12 | [63115](https://github.com/airbytehq/airbyte/pull/63115) | Update dependencies |
-| 5.8.12 | 2025-07-08 | [62866](https://github.com/airbytehq/airbyte/pull/62866) | Handle non-numeric values in fields with declared numeric type |
-| 5.8.11 | 2025-07-07 | [62838](https://github.com/airbytehq/airbyte/pull/62838) | Promoting release candidate 5.8.11-rc.1 to a main version. |
+| Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
+|:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.0.0       | 2025-08-28 | [65100](https://github.com/airbytehq/airbyte/pull/65100) | Migrate Marketing Emails stream from deprecated v1 API to v3 API. Breaking change requires stream reset. This change also enables incremental syncs for `marketing_emails` stream. |
+| 5.8.20      | 2025-08-25 | [65513](https://github.com/airbytehq/airbyte/pull/65513) | Add missing datetime format                                                                                                                                                                                                   |
+| 5.8.19      | 2025-08-23 | [65327](https://github.com/airbytehq/airbyte/pull/65327) | Update dependencies                                                                                                                                                                                                          |
+| 5.8.18      | 2025-08-09 | [64603](https://github.com/airbytehq/airbyte/pull/64603) | Update dependencies |
+| 5.8.17      | 2025-08-02 | [64197](https://github.com/airbytehq/airbyte/pull/64197) | Update dependencies |
+| 5.8.16      | 2025-07-26 | [63898](https://github.com/airbytehq/airbyte/pull/63898) | Update dependencies |
+| 5.8.15      | 2025-07-21 | [63341](https://github.com/airbytehq/airbyte/pull/63341) | Bump memory on Discover to 1GB |
+| 5.8.14      | 2025-07-19 | [63499](https://github.com/airbytehq/airbyte/pull/63499) | Update dependencies |
+| 5.8.13      | 2025-07-12 | [63115](https://github.com/airbytehq/airbyte/pull/63115) | Update dependencies |
+| 5.8.12      | 2025-07-08 | [62866](https://github.com/airbytehq/airbyte/pull/62866) | Handle non-numeric values in fields with declared numeric type |
+| 5.8.11      | 2025-07-07 | [62838](https://github.com/airbytehq/airbyte/pull/62838) | Promoting release candidate 5.8.11-rc.1 to a main version. |
 | 5.8.11-rc.1 | 2025-07-02 | [62481](https://github.com/airbytehq/airbyte/pull/62481) | For CRMSearch streams, fix retry behavior for the underlying associations HttpRequester to retry 401 errors |
-| 5.8.10 | 2025-06-28 | [62179](https://github.com/airbytehq/airbyte/pull/62179) | Update dependencies |
-| 5.8.9 | 2025-06-21 | [61842](https://github.com/airbytehq/airbyte/pull/61842) | Update dependencies |
-| 5.8.8 | 2025-06-14 | [60640](https://github.com/airbytehq/airbyte/pull/60640) | Update dependencies |
-| 5.8.7 | 2025-06-11 | [61543](https://github.com/airbytehq/airbyte/pull/61543) | Fix pagination for `contacts` and other CRM Search streams when paginating past 10,000 records streams |
-| 5.8.6 | 2025-06-10 | [61502](https://github.com/airbytehq/airbyte/pull/61502) | Set cursor based pagination for CRM object streams |
-| 5.8.5 | 2025-06-02 | [61326](https://github.com/airbytehq/airbyte/pull/61326) | Additional change for millisecond float timestamps |
-| 5.8.4 | 2025-05-30 | [61013](https://github.com/airbytehq/airbyte/pull/61013) | Fix Typo |
-| 5.8.3 | 2025-05-30 | [61007](https://github.com/airbytehq/airbyte/pull/61007) | Bump memory on Check to 1600mi |
-| 5.8.2 | 2025-05-29 | [60962](https://github.com/airbytehq/airbyte/pull/60962) | Fix bug to allow millisecond timestamps coming in as a float string to be parsed into a datetime. |
-| 5.8.1 | 2025-05-28 | [60937](https://github.com/airbytehq/airbyte/pull/60937) | Retry 401 Unauthorized errors since token might have just expired. |
-| 5.8.0 | 2025-05-28 | [60855](https://github.com/airbytehq/airbyte/pull/60855) | Migrate to manifest-only |
+| 5.8.10      | 2025-06-28 | [62179](https://github.com/airbytehq/airbyte/pull/62179) | Update dependencies |
+| 5.8.9       | 2025-06-21 | [61842](https://github.com/airbytehq/airbyte/pull/61842) | Update dependencies |
+| 5.8.8       | 2025-06-14 | [60640](https://github.com/airbytehq/airbyte/pull/60640) | Update dependencies |
+| 5.8.7       | 2025-06-11 | [61543](https://github.com/airbytehq/airbyte/pull/61543) | Fix pagination for `contacts` and other CRM Search streams when paginating past 10,000 records streams |
+| 5.8.6       | 2025-06-10 | [61502](https://github.com/airbytehq/airbyte/pull/61502) | Set cursor based pagination for CRM object streams |
+| 5.8.5       | 2025-06-02 | [61326](https://github.com/airbytehq/airbyte/pull/61326) | Additional change for millisecond float timestamps |
+| 5.8.4       | 2025-05-30 | [61013](https://github.com/airbytehq/airbyte/pull/61013) | Fix Typo |
+| 5.8.3       | 2025-05-30 | [61007](https://github.com/airbytehq/airbyte/pull/61007) | Bump memory on Check to 1600mi |
+| 5.8.2       | 2025-05-29 | [60962](https://github.com/airbytehq/airbyte/pull/60962) | Fix bug to allow millisecond timestamps coming in as a float string to be parsed into a datetime. |
+| 5.8.1       | 2025-05-28 | [60937](https://github.com/airbytehq/airbyte/pull/60937) | Retry 401 Unauthorized errors since token might have just expired. |
+| 5.8.0       | 2025-05-28 | [60855](https://github.com/airbytehq/airbyte/pull/60855) | Migrate to manifest-only |
 | 5.7.0 | 2025-05-27 | [60919](https://github.com/airbytehq/airbyte/pull/60919) | Promoting release candidate 5.7.0-rc.2 to a main version. |
 | 5.7.0-rc.2 | 2025-05-23 | [60881](https://github.com/airbytehq/airbyte/pull/60881) | Ignore 403 errors for dynamic streams to prevent sync failures                                                                                                                                                               |
 | 5.7.0-rc.1 | 2025-05-22 | [60830](https://github.com/airbytehq/airbyte/pull/60830) | Migrate CustomObjects streams                                                                                                                                                                                                |
