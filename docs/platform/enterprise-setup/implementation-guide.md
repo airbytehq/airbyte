@@ -304,6 +304,7 @@ Follow these instructions to add the Airbyte helm repository:
             genericOidc:
               clientId: ""
               audience: ""
+              extraScopes: ""
               issuer: ""
               endpoints:
                 authorizationServerEndpoint: ""
