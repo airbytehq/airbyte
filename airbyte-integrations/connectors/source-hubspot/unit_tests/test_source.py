@@ -176,7 +176,8 @@ def test_stream_forbidden(requests_mock, config, mock_dynamic_schema_requests):
 
     output = read_from_stream(config, "workflows", SyncMode.full_refresh)
     assert not output.records
-    assert "The authenticated user does not have permissions to access the resource" in output.errors[0].trace.error.message
+    expected_error = "The authenticated user does not have permissions to access the resource"
+    assert expected_error in output.errors[0].trace.error.message
 
 
 def test_parent_stream_forbidden(requests_mock, config, fake_properties_list, mock_dynamic_schema_requests):
@@ -199,7 +200,8 @@ def test_parent_stream_forbidden(requests_mock, config, fake_properties_list, mo
 
     output = read_from_stream(config, "form_submissions", SyncMode.full_refresh)
     assert not output.records
-    assert "The authenticated user does not have permissions to access the resource" in output.errors[0].trace.error.message
+    expected_error = "The authenticated user does not have permissions to access the resource"
+    assert expected_error in output.errors[0].trace.error.message
 
 
 class TestSplittingPropertiesFunctionality:
@@ -228,10 +230,11 @@ class TestSplittingPropertiesFunctionality:
         return api._parse_and_handle_errors(response)
 
     def test_stream_with_splitting_properties(self, requests_mock, fake_properties_list, config, mock_dynamic_schema_requests):
+        """
+        Check working stream `companies` with large list of properties using
+        new functionality with splitting properties
+        """
         requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
-        """
-        Check working stream `companies` with large list of properties using new functionality with splitting properties
-        """
         test_stream = find_stream("companies", config)
 
         self.set_mock_properties(requests_mock, "/properties/v2/company/properties", fake_properties_list)
@@ -263,15 +266,16 @@ class TestSplittingPropertiesFunctionality:
                 }
                 if after_id:
                     params.update({"after": after_id})
+                url_with_params = f"{test_stream_url}?{urlencode(params)}"
                 requests_mock.register_uri(
                     "GET",
-                    f"{test_stream_url}?{urlencode(params)}",
+                    url_with_params,
                     record_responses,
                 )
             after_id = id_list[-1]
 
         stream_records = read_from_stream(config, "companies", SyncMode.full_refresh).records
-        # check that we have records for all set ids, and that each record has 2000 properties (not more, and not less)
+        # check that we have records for all set ids, and that each record has 2000 properties
         assert len(stream_records) == sum([len(ids) for ids in record_ids_paginated])
         for record_ab_message in stream_records:
             record = record_ab_message.record.data
@@ -311,9 +315,12 @@ class TestSplittingPropertiesFunctionality:
                 "properties": ",".join(property_slice),
                 "limit": 100,
             }
+            base_url = test_stream.retriever.requester.url_base
+            path = test_stream.retriever.requester.get_path()
+            url = f"{base_url}/{path}?{urlencode(params)}"
             requests_mock.register_uri(
                 "GET",
-                f"{test_stream.retriever.requester.url_base}/{test_stream.retriever.requester.get_path()}?{urlencode(params)}",
+                url,
                 record_responses,
             )
         state = (
@@ -404,7 +411,9 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(
         .build()
     )
 
-    test_stream_url = test_stream.retriever.requester.url_base + "/" + test_stream.retriever.requester.get_path() + "/search"
+    base_url = test_stream.retriever.requester.url_base
+    path = test_stream.retriever.requester.get_path()
+    test_stream_url = f"{base_url}/{path}/search"
     requests_mock.register_uri("POST", test_stream_url, responses)
     requests_mock.register_uri("GET", "/properties/v2/company/properties", properties_response)
     requests_mock.register_uri(
@@ -435,10 +444,13 @@ def test_search_based_incremental_stream_should_sort_by_id(requests_mock, config
     test_stream = find_stream("companies", config)
     test_stream.associations = []
 
-    # Custom callback to mock search endpoint filter and sort behavior, returns 100 records per request.
-    # See _process_search in stream.py for details on the structure of the filter amd sort parameters.
-    # The generated records will have an id that is the sum of the current id and the current "after" value
-    # and the updatedAt field will be a random date between min_time and max_time.
+    # Custom callback to mock search endpoint filter and sort behavior,
+    # returns 100 records per request.
+    # See _process_search in stream.py for details on the structure of the
+    # filter and sort parameters.
+    # The generated records will have an id that is the sum of the current id
+    # and the current "after" value and the updatedAt field will be a random
+    # date between min_time and max_time.
     # Store "after" value in the record to check if it resets after 10k records.
     responses = [
         {
@@ -480,7 +492,9 @@ def test_search_based_incremental_stream_should_sort_by_id(requests_mock, config
             "status_code": 200,
         }
     ]
-    test_stream_url = test_stream.retriever.requester.url_base + "/" + test_stream.retriever.requester.get_path() + "/search"
+    base_url = test_stream.retriever.requester.url_base
+    path = test_stream.retriever.requester.get_path()
+    test_stream_url = f"{base_url}/{path}/search"
     # Mocking Request
     requests_mock.register_uri("POST", test_stream_url, responses)
     requests_mock.register_uri("GET", "/properties/v2/company/properties", properties_response)
@@ -649,7 +663,8 @@ def test_engagements_stream_since_recent_date(mock_dynamic_schema_requests, requ
     ]
     state = StateBuilder().with_stream_state("engagements", {"lastUpdated": recent_date}).build()
     # Mocking Request
-    requests_mock.register_uri("GET", f"/engagements/v1/engagements/recent/modified?count=250&since={recent_date}", responses)
+    engagement_url = f"/engagements/v1/engagements/recent/modified?count=250&since={recent_date}"
+    requests_mock.register_uri("GET", engagement_url, responses)
     output = read_from_stream(config, "engagements", SyncMode.incremental, state)
     # The stream should not attempt to get more than 10K records.
     assert len(output.records) == 100
@@ -679,7 +694,8 @@ def test_engagements_stream_since_recent_date_more_than_10k(mock_dynamic_schema_
     ]
     state = StateBuilder().with_stream_state("engagements", {"lastUpdated": recent_date}).build()
     # Mocking Request
-    requests_mock.register_uri("GET", f"/engagements/v1/engagements/recent/modified?count=250&since={recent_date}", responses)
+    engagement_url = f"/engagements/v1/engagements/recent/modified?count=250&since={recent_date}"
+    requests_mock.register_uri("GET", engagement_url, responses)
     requests_mock.register_uri("GET", "/engagements/v1/engagements/paged?count=250", responses)
 
     output = read_from_stream(config, "engagements", SyncMode.incremental, state)
@@ -689,17 +705,30 @@ def test_engagements_stream_since_recent_date_more_than_10k(mock_dynamic_schema_
 
 def test_pagination_marketing_emails_stream(requests_mock, config):
     """
-    Test pagination for Marketing Emails stream
+    Test pagination for Marketing Emails stream using v3 API with includeStats=true
+    Verifies that statistics are included directly in the response (not merged from separate calls)
     """
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
 
     requests_mock.register_uri(
         "GET",
-        "/marketing-emails/v1/emails/with-statistics?limit=250",
+        "/marketing/v3/emails?includeStats=true&limit=250",
         [
             {
                 "json": {
-                    "objects": [{"id": f"{y}", "updated": 1641234593251} for y in range(250)],
+                    "results": [
+                        {
+                            "id": f"{y}",
+                            "updated": 1641234593251,
+                            # Statistics included directly with includeStats=true
+                            "delivered": 100,
+                            "opens": 50,
+                            "clicks": 25,
+                            "bounces": 5,
+                            "optouts": 2,
+                        }
+                        for y in range(250)
+                    ],
                     "limit": 250,
                     "offset": 0,
                     "total": 600,
@@ -708,7 +737,19 @@ def test_pagination_marketing_emails_stream(requests_mock, config):
             },
             {
                 "json": {
-                    "objects": [{"id": f"{y}", "updated": 1641234593251} for y in range(250, 500)],
+                    "results": [
+                        {
+                            "id": f"{y}",
+                            "updated": 1641234593251,
+                            # Statistics included directly with includeStats=true
+                            "delivered": 100,
+                            "opens": 50,
+                            "clicks": 25,
+                            "bounces": 5,
+                            "optouts": 2,
+                        }
+                        for y in range(250, 500)
+                    ],
                     "limit": 250,
                     "offset": 250,
                     "total": 600,
@@ -717,7 +758,19 @@ def test_pagination_marketing_emails_stream(requests_mock, config):
             },
             {
                 "json": {
-                    "objects": [{"id": f"{y}", "updated": 1641234595251} for y in range(500, 600)],
+                    "results": [
+                        {
+                            "id": f"{y}",
+                            "updated": 1641234595251,
+                            # Statistics included directly with includeStats=true
+                            "delivered": 100,
+                            "opens": 50,
+                            "clicks": 25,
+                            "bounces": 5,
+                            "optouts": 2,
+                        }
+                        for y in range(500, 600)
+                    ],
                     "limit": 250,
                     "offset": 500,
                     "total": 600,
@@ -726,8 +779,26 @@ def test_pagination_marketing_emails_stream(requests_mock, config):
             },
         ],
     )
+
+    # No longer need separate statistics endpoint mocks since includeStats=true
+    # includes statistics directly in the main response
     test_stream = find_stream("marketing_emails", config)
 
     records = read_full_refresh(test_stream)
     # The stream should handle pagination correctly and output 600 records.
     assert len(records) == 600
+
+    # Verify that statistics data is included directly in the email records
+    # (using includeStats=true parameter includes statistics in the main response)
+    sample_record = records[5]
+
+    # Assert that statistics fields are present in the record (from includeStats=true)
+    assert sample_record["delivered"] == 100, "Statistics 'delivered' field should be included with includeStats=true"
+    assert sample_record["opens"] == 50, "Statistics 'opens' field should be included with includeStats=true"
+    assert sample_record["clicks"] == 25, "Statistics 'clicks' field should be included with includeStats=true"
+    assert sample_record["bounces"] == 5, "Statistics 'bounces' field should be included with includeStats=true"
+    assert sample_record["optouts"] == 2, "Statistics 'optouts' field should be included with includeStats=true"
+
+    # Verify that the email record also has the base email fields
+    assert "id" in sample_record, "Email 'id' field should be present from /marketing/v3/emails endpoint"
+    assert "updated" in sample_record, "Email 'updated' field should be present from /marketing/v3/emails endpoint"
