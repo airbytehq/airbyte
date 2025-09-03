@@ -37,7 +37,6 @@ class SocketInputFlow(
     override suspend fun collect(collector: FlowCollector<PipelineInputEvent>) {
         pipelineEventBookkeepingRouter.use {
             socket.connect { inputStream ->
-                val unopenedStreams = catalog.streams.map { it.mappedDescriptor }.toMutableSet()
                 var messagesRead = 0L
                 inputFormatReader.read(inputStream).forEach { message ->
                     messagesRead++
@@ -50,7 +49,6 @@ class SocketInputFlow(
                             val event =
                                 pipelineEventBookkeepingRouter.handleStreamMessage(
                                     message,
-                                    unopenedStreams = unopenedStreams
                                 )
                             if (event is PipelineEndOfStream) {
                                 sawEndOfStream.add(event.stream)

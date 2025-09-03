@@ -7,11 +7,18 @@ on:
         description: "The git ref to check out from the repository"
         required: false
         type: string
-  schedule:
-    - cron: "*/5 * * * *"
+  workflow_call:
 
 permissions:
   contents: read
+
+concurrency:
+  # Only allow one active run, and one pending run.
+  # This prevents race conditions between multiple runs of this workflow.
+  group: generate-connector-registry
+  # If a new run is triggered while there's already one in-progress,
+  # allow the in-progress run to finish.
+  cancel-in-progress: false
 
 jobs:
   generate-cloud-registry:
@@ -146,4 +153,4 @@ jobs:
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
         # Note: --project because we're on poetry 2.x
-        run: poetry run --project airbyte-ci/connectors/metadata_service/lib metadata_service generate-registry-report dev-airbyte-cloud-connector-metadata-service
+        run: poetry run --project airbyte-ci/connectors/metadata_service/lib metadata_service generate-registry-report dev-airbyte-cloud-connector-metadata-service-2
