@@ -125,7 +125,7 @@ def test_read_always_updated():
 
     assert record_rows_count == 10
 
-    state = []
+    state = {}
     iterator = source.read(logger, config, catalog, state)
 
     record_rows_count = 0
