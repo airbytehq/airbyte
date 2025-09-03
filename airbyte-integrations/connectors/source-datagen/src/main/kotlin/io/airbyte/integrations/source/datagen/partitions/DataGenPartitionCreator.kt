@@ -28,7 +28,6 @@ class DataGenPartitionCreator (
     }
 
     override suspend fun run(): List<PartitionReader> {
-        TODO("Not yet implemented")
         var allStreams = feedBootstrap.feed.streams
         val activeStreams: List<Stream> by lazy {
             allStreams.filter { feedBootstrap.currentState(it) != null}
