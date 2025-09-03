@@ -24,8 +24,14 @@ connector_docs_path() {
     # We then output '\1s/\2.md', which inserts the captured values as `\1` and `\2`.
     # This produces a string like `sources/whatever.md`.
     # Then we prepend the 'docs/integrations/' path.
-    echo $DOCS_BASE_DIR/$(echo $connector_name | sed -r 's@^(source|destination)-(.*)@\1s/\2.md@')
+    docs_path=$DOCS_BASE_DIR/$(echo $connector_name | sed -r 's@^(source|destination)-(.*)@\1s/\2.md@')
   fi
+
+  if ! test -f "$docs_path"; then
+      echo 'Connector documentation file does not exist:' "$docs_path" >&2
+  fi
+
+  echo "$docs_path"
 }
 
 # Expects that you have populated a $connectors variable as an array.
