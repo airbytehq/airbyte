@@ -12289,14 +12289,6 @@ definitions:
                   type:
                     - "null"
                     - string
-                tmpToAccountId:
-                  type:
-                    - "null"
-                    - string
-                tmpFromAccountId:
-                  type:
-                    - "null"
-                    - string
           author:
             type: object
             description: The user who made the change.
