@@ -9,6 +9,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -20,7 +21,7 @@ class PipelineRunner(
 ) {
     private val log = KotlinLogging.logger {}
 
-    fun run() = runBlocking {
+    suspend fun run() = coroutineScope {
         log.info { "Destination Pipeline Starting..." }
 
         reconciler.run(CoroutineScope(Dispatchers.IO))

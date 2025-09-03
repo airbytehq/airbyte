@@ -38,7 +38,7 @@ class DestinationLifecycle(
         val streamLoaders = initializeIndividualStreams()
 
         // Move data
-        pipeline.run()
+        runBlocking { pipeline.run() }
 
         finalizeIndividualStreams(streamLoaders)
 
