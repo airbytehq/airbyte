@@ -94,6 +94,7 @@ class JdbcSelectQuerier(
         /** Initializes a connection and readies the resultset. */
         fun initQueryExecution() {
             conn = jdbcConnectionFactory.get()
+            conn?.autoCommit = false // TEMP
             stmt = conn!!.prepareStatement(q.sql)
             parameters.statementFetchSize?.let { fetchSize: Int ->
                 log.info { "Setting Statement fetchSize to $fetchSize." }
