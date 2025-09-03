@@ -260,7 +260,7 @@ You collect these values from Microsoft in the locations shown below.
 
 - `audience`: Same as `clientId`.
 
-- `extraScopes`: If you've defined extra scopes in your app registration, you can reference them here. Extra scopes are included in the authorization code flow and are sometimes required to provide web apps like Airbyte with valid JSON web tokens. In the Azure portal, **Entra ID** > **App registrations** > your app > **Expose an API**.  The format looks like `api://12345678-90ab-cdef-1234-567890abcdef/<SCOPE_NAME>`. Microsoft Graph API scopes and optional claims are not supported.
+- `extraScopes`: If you've defined extra scopes in your app registration, you can reference them here. Extra scopes are included in the authorization code flow and are sometimes required to provide web apps like Airbyte with valid JSON web tokens. In the Azure portal, **Entra ID** > **App registrations** > your app > **Expose an API**.  The format looks like `api://12345678-90ab-cdef-1234-567890abcdef/<SCOPE_NAME>`. Microsoft Graph API scopes and optional claims aren't supported.
 
 - `issuer`: In your well-known endpoint, use `issuer`.
 
