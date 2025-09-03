@@ -16,7 +16,7 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_faker"
 
 [tool.poetry.dependencies]
-python = "^3.10,<3.13"
+python = ">=3.10,<3.11"
 airbyte-cdk = ">=6.61.6,<7.0"
 mimesis = "==6.1.1"  # TODO: Consider broadening/bumping, but beware breaking changes.
 
@@ -24,9 +24,10 @@ mimesis = "==6.1.1"  # TODO: Consider broadening/bumping, but beware breaking ch
 source-faker = "source_faker.run:run"
 
 [tool.poetry.group.dev.dependencies]
-requests-mock = ">=1.9.3"  # Intentionally broad to avoid conflicts with CDK
-pytest-mock = ">=3.6.1"  # Intentionally broad to avoid conflicts with CDK
-pytest = ">=8.0.0"  # Intentionally broad to avoid conflicts with CDK
+# Commented out to reduce dependency resolution complexity
+# requests-mock = ">=1.9.3"  # Intentionally broad to avoid conflicts with CDK
+# pytest-mock = ">=3.6.1"  # Intentionally broad to avoid conflicts with CDK
+# pytest = ">=8.0.0"  # Intentionally broad to avoid conflicts with CDK
 
 
 [tool.poe]
