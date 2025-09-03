@@ -4,9 +4,9 @@
 
 package io.airbyte.cdk.load.dataflow.stages
 
-import io.airbyte.cdk.load.dataflow.DataFlowStage
-import io.airbyte.cdk.load.dataflow.DataFlowStageIO
-import io.airbyte.cdk.load.dataflow.DataMunger
+import io.airbyte.cdk.load.dataflow.pipeline.DataFlowStage
+import io.airbyte.cdk.load.dataflow.pipeline.DataFlowStageIO
+import io.airbyte.cdk.load.dataflow.transform.DataMunger
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
 import jakarta.inject.Named
 import jakarta.inject.Singleton
@@ -19,12 +19,12 @@ class ParseStage(
     override suspend fun apply(input: DataFlowStageIO): DataFlowStageIO {
         val raw = input.raw!!
         val fields = munger.transformForDest(raw)
+
         return input.apply {
             munged =
                 RecordDTO(
                     fields = fields,
-                    //                stateId = raw.checkpointId!!.value,
-                    stateId = "dummy",
+                    partitionKey = input.partitionKey!!,
                     sizeBytes = raw.serializedSizeBytes,
                     emittedAtMs = raw.rawData.emittedAtMs,
                 )

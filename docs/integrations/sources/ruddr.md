@@ -31,6 +31,8 @@ Ruddr connector enables seamless data synchronization from Ruddr to various data
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.26 | 2025-08-24 | [65472](https://github.com/airbytehq/airbyte/pull/65472) | Update dependencies |
+| 0.0.25 | 2025-08-16 | [65024](https://github.com/airbytehq/airbyte/pull/65024) | Update dependencies |
 | 0.0.24 | 2025-08-02 | [64473](https://github.com/airbytehq/airbyte/pull/64473) | Update dependencies |
 | 0.0.23 | 2025-07-26 | [63947](https://github.com/airbytehq/airbyte/pull/63947) | Update dependencies |
 | 0.0.22 | 2025-07-05 | [62688](https://github.com/airbytehq/airbyte/pull/62688) | Update dependencies |

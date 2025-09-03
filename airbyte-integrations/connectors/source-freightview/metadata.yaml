@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-freightview
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.60.0@sha256:8a01d4fabdc7cbee92a583cc30fe08bb8ebba0e8d54569920d29378772b31699
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.60.16@sha256:b8126848437ec5a6cff05fb4796fd775450b83e57925674d856a1838a390a28c
   connectorSubtype: api
   connectorType: source
   definitionId: aaedb415-d131-468f-84ab-5319d72e02ed
-  dockerImageTag: 0.0.29
+  dockerImageTag: 0.0.31
   dockerRepository: airbyte/source-freightview
   githubIssueLabel: source-freightview
   icon: icon.svg
