@@ -86,9 +86,7 @@ def test_read_small_random_data():
         "sync_mode": "incremental",
         "destination_sync_mode": "overwrite",
     }
-    catalog = ConfiguredAirbyteCatalog(
-        streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)]
-    )
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
     state = {}
     iterator = source.read(logger, config, catalog, state)
 
@@ -116,9 +114,7 @@ def test_read_always_updated():
         "sync_mode": "incremental",
         "destination_sync_mode": "overwrite",
     }
-    catalog = ConfiguredAirbyteCatalog(
-        streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)]
-    )
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
     state = {}
     iterator = source.read(logger, config, catalog, state)
 
@@ -148,9 +144,7 @@ def test_read_products():
         "sync_mode": "incremental",
         "destination_sync_mode": "overwrite",
     }
-    catalog = ConfiguredAirbyteCatalog(
-        streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)]
-    )
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
     state = {}
     iterator = source.read(logger, config, catalog, state)
 
@@ -185,9 +179,7 @@ def test_read_big_random_data():
             "destination_sync_mode": "overwrite",
         },
     ]
-    catalog = ConfiguredAirbyteCatalog(
-        streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict) for stream_dict in stream_dicts]
-    )
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict) for stream_dict in stream_dicts])
     state = {}
     iterator = source.read(logger, config, catalog, state)
 
@@ -223,9 +215,7 @@ def test_with_purchases():
             "destination_sync_mode": "overwrite",
         },
     ]
-    catalog = ConfiguredAirbyteCatalog(
-        streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict) for stream_dict in stream_dicts]
-    )
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict) for stream_dict in stream_dicts])
     state = {}
     iterator = source.read(logger, config, catalog, state)
 
@@ -253,9 +243,7 @@ def test_read_with_seed():
         "sync_mode": "incremental",
         "destination_sync_mode": "overwrite",
     }
-    catalog = ConfiguredAirbyteCatalog(
-        streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)]
-    )
+    catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
     state = {}
     iterator = source.read(logger, config, catalog, state)
 
@@ -268,10 +256,12 @@ def test_ensure_no_purchases_without_users():
     with pytest.raises(ValueError):
         source = SourceFaker()
         config = {"count": 100, "parallelism": 1}
-        stream_dict = {"stream": {"name": "purchases", "json_schema": {"type": "object", "properties": {}}}, "sync_mode": "incremental", "destination_sync_mode": "overwrite"}
-        catalog = ConfiguredAirbyteCatalog(
-            streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)]
-        )
+        stream_dict = {
+            "stream": {"name": "purchases", "json_schema": {"type": "object", "properties": {}}},
+            "sync_mode": "incremental",
+            "destination_sync_mode": "overwrite",
+        }
+        catalog = ConfiguredAirbyteCatalog(streams=[ConfiguredAirbyteStreamSerializer.load(stream_dict)])
         state = {}
         iterator = source.read(logger, config, catalog, state)
         iterator.__next__()
