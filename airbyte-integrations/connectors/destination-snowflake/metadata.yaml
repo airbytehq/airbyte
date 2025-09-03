@@ -13,7 +13,7 @@ data:
   license: ELv2
   name: Snowflake
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/java-connector-base:2.0.3
+    baseImage: docker.io/airbyte/java-connector-base:2.0.3@sha256-e98b7550c49dbfa8498c0c3cd01ac6f615aaa4c9e718373c3210382fb28594db
   registryOverrides:
     cloud:
       enabled: true
