@@ -20,6 +20,8 @@ class DataGenPartitionFactory (
         }
         return DataGenPartitionCreator(concurrencyResource, resourceAcquirer, feedBootstrap)
     }
+
+    fun create() {}
 }
 
 @Singleton

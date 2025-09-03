@@ -29,7 +29,6 @@ class DataGenSourceMetadataQuerier() : MetadataQuerier {
 
     override fun fields(streamID: StreamIdentifier): List<Field> {
         val flavor = flavors[streamID.namespace]
-        val flavorFields = flavor?.fields?.get(streamID.name)
         return flavor?.fields?.get(streamID.name) ?: emptyList()
     }
 

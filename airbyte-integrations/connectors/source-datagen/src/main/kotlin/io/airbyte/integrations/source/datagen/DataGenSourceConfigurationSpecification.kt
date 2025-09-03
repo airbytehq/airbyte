@@ -11,9 +11,9 @@ import io.airbyte.cdk.command.ConfigurationSpecification
 import jakarta.inject.Singleton
 
 /**
- * The object which is mapped to the MySQL source configuration JSON.
+ * The object which is mapped to the DataGen source configuration JSON.
  *
- * Use [MySqlSourceConfiguration] instead wherever possible. This object also allows injecting
+ * Use [DataGenSourceConfiguration] instead wherever possible. This object also allows injecting
  * values through Micronaut properties, this is made possible by the classes named
  * `MicronautPropertiesFriendly.*`.
  */
@@ -22,19 +22,17 @@ class DataGenSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonSchemaTitle("Data Generation Flavors")
     @JsonSchemaDescription("Different patterns for generating data")
     sealed interface FlavorConfig {
+        val runDuration: Int
+    }
 
+    data class Incremental(
         @JsonProperty("run_duration")
         @JsonSchemaTitle("Run Duration")
         @JsonSchemaInject(json = """{"order":1}""")
-        @JsonSchemaDefault("8")
+        @JsonSchemaDefault("8") 
         @JsonPropertyDescription("The duration to run the data generation for before timeout.")
-        val runDuration: Int
-
-        @JsonSchemaTitle("Incremental")
-        @JsonSchemaDescription("Generate data with incremental patterns and change tracking")
-        data object Incremental: FlavorConfig
-
-    }
+        override val runDuration: Int = 8
+    ) : FlavorConfig
 }
 
 //

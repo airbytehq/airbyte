@@ -1,7 +1,7 @@
 package io.airbyte.integrations.source.datagen.flavor.increment
 
 import io.airbyte.cdk.discover.Field
-import io.airbyte.cdk.jdbc.IntFieldType
+import io.airbyte.cdk.discover.IntFieldType
 import io.airbyte.integrations.source.datagen.flavor.Flavor
 
 data object IncrementFlavor: Flavor {
