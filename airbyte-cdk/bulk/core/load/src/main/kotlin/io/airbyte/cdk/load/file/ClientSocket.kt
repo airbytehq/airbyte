@@ -5,7 +5,6 @@
 package io.airbyte.cdk.load.file
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.io.BufferedInputStream
 import java.io.File
 import java.io.InputStream
 import java.net.StandardProtocolFamily

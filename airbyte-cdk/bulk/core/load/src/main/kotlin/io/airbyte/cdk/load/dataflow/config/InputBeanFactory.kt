@@ -29,6 +29,7 @@ import java.io.InputStream
 class InputBeanFactory {
     @Requires(property = "airbyte.destination.core.data-channel.medium", value = "SOCKET")
     @Singleton
+    @Named("inputStreams")
     fun socketStreams(
         @Value("\${airbyte.destination.core.data-channel.socket-paths}") socketPaths: List<String>,
         @Value("\${airbyte.destination.core.data-channel.socket-buffer-size-bytes}")
@@ -48,11 +49,12 @@ class InputBeanFactory {
 
     @Requires(property = "airbyte.destination.core.data-channel.medium", value = "STDIO")
     @Singleton
+    @Named("inputStreams")
     fun stdInStreams(): List<InputStream> = listOf(System.`in`)
 
     @Singleton
     fun messageFlows(
-        inputStreams: List<InputStream>,
+        @Named("inputStreams") inputStreams: List<InputStream>,
         deserializer: ProtocolMessageDeserializer,
     ): List<DestinationMessageInputFlow> =
         inputStreams.map {

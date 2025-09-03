@@ -26,9 +26,9 @@ class DestinationMessageInputFlow(
         var msgCount = 0L
         var estBytes = 0L
 
+        val reader = inputStream.bufferedReader()
         try {
-            inputStream
-                .bufferedReader()
+            reader
                 .lineSequence()
                 .filter { it.isNotEmpty() }
                 .forEach { line ->
@@ -44,6 +44,7 @@ class DestinationMessageInputFlow(
         } finally {
             withContext(Dispatchers.IO) {
                 inputStream.close()
+                reader.close()
                 log.info { "Input stream closed." }
             }
         }
