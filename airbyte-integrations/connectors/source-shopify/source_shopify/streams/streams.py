@@ -4,6 +4,7 @@
 
 
 import logging
+import sys
 from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import requests
@@ -83,6 +84,12 @@ class Customers(IncrementalShopifyStream):
 class MetafieldCustomers(IncrementalShopifyGraphQlBulkStream):
     parent_stream_class = Customers
     bulk_query: MetafieldCustomer = MetafieldCustomer
+
+    state_checkpoint_interval = sys.maxsize
+
+    @property
+    def filter_by_state_checkpoint(self) -> bool:
+        return True
 
 
 class Orders(IncrementalShopifyStreamWithDeletedEvents):
