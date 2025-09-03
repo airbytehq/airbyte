@@ -1,5 +1,4 @@
 # Notion
-# revert-me
 
 This page contains the setup guide and reference information for the Notion source connector.
 
