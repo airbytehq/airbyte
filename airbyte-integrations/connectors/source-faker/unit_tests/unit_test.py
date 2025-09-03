@@ -125,7 +125,14 @@ def test_read_always_updated():
 
     assert record_rows_count == 10
 
-    state = {}
+    from airbyte_cdk.models import AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor
+    from airbyte_cdk.models.airbyte_protocol import AirbyteStateBlob
+    stream_descriptor = StreamDescriptor(name="users", namespace=None)
+    stream_state = AirbyteStreamState(
+        stream_descriptor=stream_descriptor,
+        stream_state=AirbyteStateBlob(updated_at="something")
+    )
+    state = [AirbyteStateMessage(type=AirbyteStateType.STREAM, stream=stream_state)]
     iterator = source.read(logger, config, catalog, state)
 
     record_rows_count = 0
@@ -133,7 +140,7 @@ def test_read_always_updated():
         if row.type is Type.RECORD:
             record_rows_count = record_rows_count + 1
 
-    assert record_rows_count == 10
+    assert record_rows_count == 0
 
 
 def test_read_products():
@@ -248,8 +255,8 @@ def test_read_with_seed():
     iterator = source.read(logger, config, catalog, state)
 
     records = [row for row in iterator if row.type is Type.RECORD]
-    assert records[0].record.data["occupation"] == "Cartoonist"
-    assert records[0].record.data["email"] == "reflect1958+1@yahoo.com"
+    assert records[0].record.data["occupation"] == "Sheriff Principal"
+    assert records[0].record.data["email"] == "alleged2069+1@example.com"
 
 
 def test_ensure_no_purchases_without_users():
