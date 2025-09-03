@@ -229,12 +229,12 @@
       "stream": {
         "name": "marketing_emails",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
-        "source_defined_cursor": false,
-        "default_cursor_field": ["updated"]
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updatedAt"]
       },
       "sync_mode": "full_refresh",
-      "cursor_field": null,
+      "cursor_field": ["updatedAt"],
       "destination_sync_mode": "overwrite"
     },
     {

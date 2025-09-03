@@ -9,17 +9,15 @@ import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.load.dataflow.aggregate.Aggregate
 import io.airbyte.cdk.load.dataflow.aggregate.AggregateFactory
 import io.airbyte.cdk.load.dataflow.aggregate.StoreKey
-import io.airbyte.cdk.load.dataflow.state.StateHistogram
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
-import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableExecutionConfig
+import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.clickhouse.write.load.BinaryRowInsertBuffer
 import io.micronaut.context.annotation.Factory
 
 class ClickhouseAggregate(
     @VisibleForTesting val buffer: BinaryRowInsertBuffer,
 ) : Aggregate {
-
-    private val stateHistogram: StateHistogram = StateHistogram()
 
     override fun accept(record: RecordDTO) {
         buffer.accumulate(record.fields)
@@ -28,16 +26,17 @@ class ClickhouseAggregate(
     override suspend fun flush() {
         buffer.flush()
     }
-
-    override fun getStateHistogram(): StateHistogram = stateHistogram
 }
 
 @Factory
 class ClickhouseAggregateFactory(
     private val clickhouseClient: Client,
+    private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
 ) : AggregateFactory {
     override fun create(key: StoreKey): Aggregate {
-        val tableName = TableName(name = key.name, namespace = key.namespace ?: "default")
+
+        val tableName = streamStateStore.get(key)!!.tableName
+
         val binaryRowInsertBuffer =
             BinaryRowInsertBuffer(
                 tableName,
