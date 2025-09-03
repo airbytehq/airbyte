@@ -144,9 +144,9 @@ The Pinterest source connector supports the following
   \(Full refresh\)
 - [Customer Lists](https://developers.pinterest.com/docs/api/v5/#tag/customer_lists) \(Full
   refresh\)
-- [Advertizer Report](https://developers.pinterest.com/docs/api/v5/#operation/analytics/create_report)
+- [Advertiser Report](https://developers.pinterest.com/docs/api/v5/#operation/analytics/create_report)
   \(Incremental\)
-- [Advertizer Targeting Report](https://developers.pinterest.com/docs/api/v5/#operation/analytics/create_report)
+- [Advertiser Targeting Report](https://developers.pinterest.com/docs/api/v5/#operation/analytics/create_report)
   \(Incremental\)
 - [Pin Promotion Report](https://developers.pinterest.com/docs/api/v5/#operation/analytics/create_report)
   \(Incremental\)
@@ -205,6 +205,7 @@ The connector is restricted by the Pinterest
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.1.9 | 2025-08-21 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Migrate report streams to manifest-only pattern using AsyncRetriever. Migrated campaign analytics, advertiser, and ad group report streams from Python to declarative manifest.yaml. Added custom components for async report generation, data extraction, and transformation. Simplified source.py to pure YamlDeclarativeSource architecture. |
 | 2.1.8 | 2025-06-21 | [61920](https://github.com/airbytehq/airbyte/pull/61920) | Update dependencies |
 | 2.1.7 | 2025-06-14 | [61067](https://github.com/airbytehq/airbyte/pull/61067) | Update dependencies |
 | 2.1.6 | 2025-05-24 | [60136](https://github.com/airbytehq/airbyte/pull/60136) | Update dependencies |
