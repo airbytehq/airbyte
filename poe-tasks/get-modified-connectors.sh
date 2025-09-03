@@ -77,6 +77,11 @@ fi
 # 4) merge into one list
 all_changes=$(printf '%s\n%s\n%s\n%s' "$committed" "$staged" "$unstaged" "$untracked")
 
+echo "----------------------------------------" >&2
+echo "🔍 All changed files:" >&2
+printf '%s\n' "$all_changes" >&2
+echo "----------------------------------------" >&2
+
 # 5) drop ignored files
 filtered=$(printf '%s\n' "$all_changes" | grep -v -E "/${ignore_globs}")
 
