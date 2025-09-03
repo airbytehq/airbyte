@@ -127,6 +127,7 @@ def test_read_always_updated():
 
     from airbyte_cdk.models import AirbyteStateMessage, AirbyteStateType, AirbyteStreamState, StreamDescriptor
     from airbyte_cdk.models.airbyte_protocol import AirbyteStateBlob
+
     stream_descriptor = StreamDescriptor(name="users", namespace=None)
     stream_state = AirbyteStreamState(stream_descriptor=stream_descriptor, stream_state=AirbyteStateBlob(updated_at="something"))
     state = [AirbyteStateMessage(type=AirbyteStateType.STREAM, stream=stream_state)]
