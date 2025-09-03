@@ -1,5 +1,8 @@
 package io.airbyte.integrations.destination.snowflake.spec
 
+import com.fasterxml.jackson.annotation.JsonPropertyDescription
+import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription
+import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
 import jakarta.inject.Singleton
@@ -12,6 +15,16 @@ data class SnowflakeConfiguration(
     val schema: String,
     val username: String
 ) : DestinationConfiguration()
+
+//sealed interface CredentialConfiguration
+//
+//@JsonSchemaTitle("Key Pair Authentication Configuration")
+//@JsonSchemaDescription("Key pair specific configuration details for connecting to Snowflake")
+//data class PrivateKeyCredentialConfiguration(
+//    @JsonSchemaTitle("Private Key")
+//    @JsonPropertyDescription("RSA Private key to use for Snowflake connection. See the <a href=\"https://docs.airbyte.com/integrations/destinations/snowflake\">docs</a> for more information on how to obtain this key.")
+//    val privateKey: String
+//): CredentialConfiguration
 
 @Singleton
 class SnowflakeConfigurationFactory :

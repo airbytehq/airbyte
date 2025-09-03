@@ -2,6 +2,10 @@ package io.airbyte.integrations.destination.snowflake.spec
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
+import com.fasterxml.jackson.annotation.JsonTypeInfo
+import com.fasterxml.jackson.annotation.JsonValue
+import com.fasterxml.jackson.annotation.JsonSubTypes
+import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 import io.airbyte.cdk.command.ConfigurationSpecification
@@ -51,7 +55,55 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
     @get:JsonProperty("username")
     @get:JsonSchemaInject(json = """{"order": 5, "examples":["AIRBYTE_USER"]}""")
     val username: String = ""
+
+//    @get:JsonSchemaInject(json = """{"always_show": true,"order":6}""")
+//    val authType: AuthTypeSpecification = UsernamePasswordAuthSpecification()
 }
+
+//@JsonTypeInfo(
+//    use = JsonTypeInfo.Id.NAME,
+//    include = JsonTypeInfo.As.EXISTING_PROPERTY,
+//    property = "auth_type",
+//)
+//@JsonSubTypes(JsonSubTypes.Type(value = KeyPairAuthSpecification::class, name = "PRIVATE_KEY"),
+//    JsonSubTypes.Type(value = UsernamePasswordAuthSpecification::class, name = "USERNAME_PASSWORD"))
+//@JsonSchemaTitle("Authorization Method")
+//@JsonSchemaDescription(
+//    "Determines the type of authentication that should be used."
+//)
+//sealed class AuthTypeSpecification(@get:JsonSchemaTitle("Authorization Method") open val authType: Type) {
+//    /** Enumeration of possible credential types. */
+//    enum class Type(@get:JsonValue val authTypeName: String) {
+//        PRIVATE_KEY("PRIVATE_KEY"),
+//        USERNAME_PASSWORD("USERNAME_PASSWORD"),
+//    }
+//}
+//
+//@JsonSchemaTitle("Key Pair Authentication")
+//@JsonSchemaDescription("Configuration details for the Key Pair Authentication.")
+//class KeyPairAuthSpecification : AuthTypeSpecification(Type.PRIVATE_KEY) {
+//    @JsonSchemaTitle("Private Key")
+//    @JsonPropertyDescription("RSA Private key to use for Snowflake connection. See the <a href=\"https://docs.airbyte.com/integrations/destinations/snowflake\">docs</a> for more information on how to obtain this key.")
+//    @JsonProperty("private_key")
+//    @JsonSchemaInject(json = """{"order": 0}""")
+//    val privateKey: String = ""
+//
+//    @JsonSchemaTitle("Passphrase")
+//    @JsonPropertyDescription("Passphrase for private key")
+//    @JsonProperty("private_key")
+//    @JsonSchemaInject(json = """{"order": 0}""")
+//    val privateKeyPassword: String? = null
+//}
+//
+//@JsonSchemaTitle("Username and Password")
+//@JsonSchemaDescription("Configuration details for the Username and Password Authentication.")
+//class UsernamePasswordAuthSpecification : AuthTypeSpecification(Type.USERNAME_PASSWORD) {
+//    @JsonSchemaTitle("Password")
+//    @JsonPropertyDescription("Enter the password associated with the username.")
+//    @JsonProperty("password")
+//    @JsonSchemaInject(json = """{"order": 0, "airbyte_secret": true}""")
+//    val password: String = ""
+//}
 
 @Singleton
 class SnowflakeSpecificationExtension : DestinationSpecificationExtension {
