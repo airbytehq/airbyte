@@ -247,7 +247,8 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
                         if record_value >= state_value:
                             yield record
                         else:
-                            yield record
+                            if self.should_checkpoint(index):
+                                yield record
                     else:
                         # old entities could have cursor field in place, but set to null
                         self.logger.warning(
