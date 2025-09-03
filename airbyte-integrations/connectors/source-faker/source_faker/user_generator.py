@@ -5,7 +5,7 @@
 import datetime
 from multiprocessing import current_process
 
-from mimesis import Address, Datetime, Person, Numeric
+from mimesis import Address, Datetime, Numeric, Person
 from mimesis.locales import Locale
 
 from airbyte_cdk.models import AirbyteRecordMessage, Type
