@@ -143,6 +143,7 @@ class JdbcSelectQuerier(
                 val jdbcFieldType: JdbcFieldType<*> = column.type as JdbcFieldType<*>
                 try {
                     if (column is NonEmittedField) {
+                        @Suppress("UNCHECKED_CAST")
                         resultRow.nonEmittedData[column.id] =
                             FieldValueEncoder(
                                 jdbcFieldType.jdbcGetter.get(rs!!, colIdx),
