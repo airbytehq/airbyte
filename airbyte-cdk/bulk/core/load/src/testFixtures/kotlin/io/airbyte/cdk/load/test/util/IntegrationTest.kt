@@ -386,9 +386,13 @@ abstract class IntegrationTest(
             // when you kill a docker process, it doesn't exit uncleanly apparently
             doRun()
         } else {
-            // expect an exception. we're sending a stream incomplete or killing the
-            // destination, so it's expected to crash
-            assertThrows<DestinationUncleanExitException> { doRun() }
+            // If we're killing the destination, it's expected to throw.
+            // On non-dataflow we expect a throw if we don't send all stream completes.
+            try {
+                doRun()
+            } catch (e: Exception) {
+                assert(e is DestinationUncleanExitException)
+            }
         }
         return outputStateMessage!!
     }

@@ -6,11 +6,11 @@ data:
     hosts:
       - api.hubapi.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.60.12@sha256:b236b4ff8351a7d7f0ff7f938bbf0ab7b455c4c9e6e7cc93933f4aa9201d66cb
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.60.16@sha256:b8126848437ec5a6cff05fb4796fd775450b83e57925674d856a1838a390a28c
   connectorSubtype: api
   connectorType: source
   definitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
-  dockerImageTag: 5.8.18
+  dockerImageTag: 6.0.0
   dockerRepository: airbyte/source-hubspot
   documentationUrl: https://docs.airbyte.com/integrations/sources/hubspot
   resourceRequirements:
@@ -43,6 +43,19 @@ data:
     rolloutConfiguration:
       enableProgressiveRollout: false
     breakingChanges:
+      6.0.0:
+        message: >-
+          This update migrates the `marketing_emails` stream from HubSpot's deprecated v1 API to
+          the new v3 API. While this migration significantly changes the schema of the stream,
+          removing many fields that were previously present, it also enables incremental sync
+          support for the stream. Users will need to refresh the source schema and reset the
+          `marketing_emails` stream after upgrading. Please refer to the [migration guide](https://docs.airbyte.com/integrations/sources/hubspot-migrations)
+          for more information.
+        upgradeDeadline: "2025-09-30"
+        deadlineAction: "auto_upgrade"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes: ["marketing_emails"]
       5.0.0:
         message: >-
           This update deprecates the `contacts_form_submissions`, `contacts_list_memberships`, and

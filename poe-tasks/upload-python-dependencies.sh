@@ -5,7 +5,7 @@ set -euo pipefail
 # Upload Python connector dependencies metadata to GCS
 # Extracted from airbyte-ci publish pipeline for GitHub Actions integration
 #
-# Usage: ./poe-tasks/upload-python-depdendencies.sh --name source-avri [--pre-release] [--main-release]
+# Usage: ./poe-tasks/upload-python-dependencies.sh --name source-avri --release-type [pre-release | main-release] --bucket my-bucket --connector-version 1.2.3
 #
 
 # source utility functions
@@ -23,7 +23,7 @@ Options:
     -n, --name CONNECTOR_NAME     Connector name (required)
     --bucket BUCKET_NAME          GCS bucket name (optional, defaults to dev bucket)
     --connector-version VERSION   Connector version (optional, default reads from metadata.yaml)
-    --pre-release                 Publish as a pre-release (uses a dev version derived from the git hash)
+    --release-type TYPE           Release type (optional): 'pre-release' or 'main-release' (default is 'pre-release')
     -h, --help                    Show this help message
 
 Environment Variables:
@@ -36,7 +36,7 @@ EOF
 }
 
 # Default values
-BUCKET_NAME="dev-airbyte-cloud-connector-metadata-service"
+BUCKET_NAME="dev-airbyte-cloud-connector-metadata-service-2"
 PRE_RELEASE=false
 CONNECTOR_NAME=""
 VERSION=""
@@ -56,9 +56,9 @@ while [[ $# -gt 0 ]]; do
             VERSION="$2"
             shift 2
             ;;
-        --pre-release)
-            PRE_RELEASE=true
-            shift
+        --release-type)
+            RELEASE_TYPE="$2"
+            shift 2
             ;;
         -h|--help)
             usage
@@ -110,7 +110,7 @@ fi
 if [[ -z "$VERSION" ]]; then
     VERSION=$(poe -qq get-version)
 fi
-if [[ $PRE_RELEASE == true ]]; then
+if [[ $RELEASE_TYPE == "pre-release" ]]; then
     VERSION=$(generate_dev_tag "$VERSION")
 fi
 
