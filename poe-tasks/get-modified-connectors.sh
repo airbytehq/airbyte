@@ -121,7 +121,7 @@ print_list() {
     # If the list is empty, send one item as empty string.
     # This allows the matrix to run once as a no-op, and be marked as complete for purposes
     # of required checks.
-    echo '{"connector": []}'
+    echo '{"connector": [""]}'
   else
     # If the list is not empty, convert it to JSON format.
     # This is pre-formatted to send to a GitHub Actions Matrix
