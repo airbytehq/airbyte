@@ -19,7 +19,7 @@ The following example demonstrates how to use the API to create a new configurat
 
 ```bash
 curl --request POST \
-  --url https://api.airbyte.ai/api/v1/embedded/config_templates/sources/ \
+  --url https://api.airbyte.ai/api/v1/integrations/templates/sources \
   --header 'Content-Type: application/json' \
   --header 'Authorization: Bearer <bearer id>' \
   --data '{
