@@ -17,7 +17,7 @@ connector_docs_path() {
   connector_name=$(echo "$connector_name" | sed -r 's/-strict-encrypt$//')
 
   if [ "$is_enterprise" = "true" ]; then
-    echo "$DOCS_BASE_DIR/enterprise-connectors/$connector_name"
+    docs_path="$DOCS_BASE_DIR/enterprise-connectors/$connector_name.md"
   else
     # The regex '^(source|destination)-(.*)' matches strings like source-whatever or destination-something-like-this,
     # capturing the connector type (source/destination) and the connector name (whatever / something-like-this).
