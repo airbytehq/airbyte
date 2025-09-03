@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.file
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.io.BufferedInputStream
 import java.io.File
 import java.io.InputStream
 import java.net.StandardProtocolFamily
@@ -90,6 +91,20 @@ class ClientSocket(
         // will break tests. TODO: Anything else.
         log.info { "Socket file $socketPath connected for reading" }
 
-        return Channels.newInputStream(openedSocket).buffered(bufferSizeBytes)
+        val inputStream = Channels.newInputStream(openedSocket).buffered(bufferSizeBytes)
+
+        return SocketInputStream(openedSocket, inputStream)
+    }
+}
+
+class SocketInputStream(
+    private val socketChannel: SocketChannel,
+    private val inputStream: InputStream,
+): InputStream() {
+    override fun read(): Int = inputStream.read()
+
+    override fun close() {
+        inputStream.close()
+        socketChannel.close()
     }
 }

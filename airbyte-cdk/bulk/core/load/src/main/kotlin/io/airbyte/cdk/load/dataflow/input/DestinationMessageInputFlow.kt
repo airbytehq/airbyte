@@ -25,24 +25,27 @@ class DestinationMessageInputFlow(
     ) {
         var msgCount = 0L
         var estBytes = 0L
-        inputStream
-            .bufferedReader()
-            .lineSequence()
-            .filter { it.isNotEmpty() }
-            .forEach { line ->
-                val message = deserializer.deserialize(line)
 
-                collector.emit(message)
+        try {
+            inputStream
+                .bufferedReader()
+                .lineSequence()
+                .filter { it.isNotEmpty() }
+                .forEach { line ->
+                    val message = deserializer.deserialize(line)
 
-                estBytes += line.length
-                if (++msgCount % 100_000 == 0L) {
-                    log.info { "Processed $msgCount messages (${estBytes/1024/1024}Mb)" }
+                    collector.emit(message)
+
+                    estBytes += line.length
+                    if (++msgCount % 100_000 == 0L) {
+                        log.info { "Processed $msgCount messages (${estBytes/1024/1024}Mb)" }
+                    }
                 }
+        } finally {
+            withContext(Dispatchers.IO) {
+                inputStream.close()
+                log.info { "Input stream closed." }
             }
-
-        withContext(Dispatchers.IO) {
-            inputStream.close()
-            log.info { "Input stream closed." }
         }
 
         log.info { "Finished reading input." }
