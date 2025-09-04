@@ -3024,6 +3024,76 @@
     "deleted_description": {
       "description": "Description provided when the order was deleted",
       "type": ["null", "string"]
+    },
+    "b2b_company_id": {
+      "description": "ID of the B2B company that placed the order",
+      "type": ["null", "integer"]
+    },
+    "b2b_company_location_id": {
+      "description": "ID of the B2B company location that placed the order",
+      "type": ["null", "integer"]
+    },
+    "b2b_company_name": {
+      "description": "Name of the B2B company that placed the order",
+      "type": ["null", "string"]
+    },
+    "is_b2b_order": {
+      "description": "Indicates if this is a B2B order",
+      "type": ["null", "boolean"]
+    },
+    "b2b_payment_terms": {
+      "description": "Payment terms used for this B2B order",
+      "type": ["null", "string"]
+    },
+    "b2b_purchase_order_number": {
+      "description": "Purchase order number for B2B orders",
+      "type": ["null", "string"]
+    },
+    "b2b_price_list_id": {
+      "description": "ID of the price list used for this B2B order",
+      "type": ["null", "integer"]
+    },
+    "b2b_customer_type": {
+      "description": "Type of B2B customer that placed the order",
+      "type": ["null", "string"]
+    },
+    "poNumber": {
+      "description": "The PO number associated with the order",
+      "type": ["null", "string"]
+    },
+    "paymentTerms": {
+      "description": "The payment terms associated with the order",
+      "type": ["null", "string"]
+    },
+    "purchasingEntity": {
+      "description": "The purchasing entity for this order",
+      "type": ["null", "object"],
+      "properties": {
+        "company": {
+          "description": "The company that made the purchase",
+          "type": ["null", "object"],
+          "properties": {
+            "id": {
+              "description": "The unique identifier of the company",
+              "type": ["null", "string"]
+            },
+            "name": {
+              "description": "The name of the company",
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "location": {
+          "description": "The company location that made the purchase",
+          "type": ["null", "object"],
+          "properties": {
+            "id": {
+              "description": "The unique identifier of the company location",
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
     }
   }
 }
