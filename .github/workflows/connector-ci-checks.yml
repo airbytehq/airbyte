@@ -90,7 +90,6 @@ jobs:
         id: generate-matrix
         run: |
           # Get the list of modified connectors
-          bash -x ./poe-tasks/get-modified-connectors.sh --json
           echo "connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json)" | tee -a $GITHUB_OUTPUT
 
           # If local-cdk-changed is true, get Java connectors with useLocalCdk = true
