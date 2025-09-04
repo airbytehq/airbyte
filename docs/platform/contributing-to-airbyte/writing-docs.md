@@ -329,7 +329,7 @@ AI tools like ChatGPT and GitHub Copilot are good at describing code. For open s
 The documentation runs two linters, Vale and MarkDownLint. Vale lints for style, writing, and grammar. MarkDownLint lints for MarkDown structure. For example, Vale tells you when you use passive language and MarkDownLint tells you that you've skipped a heading level. Together, these linters provide broad protection against most common readability, accessibility, and rendering problems.
 
 :::note
-Vale and MarkDownLint are newly implemented. They might still generate false positives or false negatives. Currently, only MarkDownLint runs on pull requests, and compliance is optional (the GitHub action will not fail even if it finds errors). Vale might run on pull requests in the future. At some point, compliance might become mandatory. For now, just do your best to comply with the linters' recommendations.
+Vale and MarkDownLint are newly implemented. They might still generate false positives or false negatives. Currently, Airbyte doesn't enforce them on pull requests. This might happen in the future. For now, just do your best to comply with the linters' recommendations.
 :::
 
 ### Lint with Vale
