@@ -3,7 +3,7 @@
 # This script is used to find all modified connector directories in the Airbyte repository.
 # It compares the current branch with the default branch and filters out files that match certain ignore patterns.
 
-set -euo pipefail
+# set -euo pipefail
 
 # 0) Collect arguments
 DEFAULT_BRANCH="master"
@@ -74,16 +74,26 @@ else
   untracked=$(git ls-files --others --exclude-standard)
 fi
 
+committed='docs/ai-agents/embedded/api/README.md'
+staged=''
+unstaged=''
+untracked=''
+
 # 4) merge into one list
 all_changes=$(printf '%s\n%s\n%s\n%s' "$committed" "$staged" "$unstaged" "$untracked")
 
+# all_changes=$(printf 'docs/ai-agents/embedded/api/README.md\ndocs/integrations/sources/notion.md')
+echo "All changes found: $all_changes" >&2
+
 # 5) drop ignored files
 filtered=$(printf '%s\n' "$all_changes" | grep -v -E "/${ignore_globs}")
+echo "Filtered changes: $filtered" >&2
 
 # 6) keep only connector paths
 set +e # Ignore errors from grep if no matches are found
 connectors_paths=$(printf '%s\n' "$filtered" | grep -E '^airbyte-integrations/connectors/(source-[^/]+|destination-[^/]+)(/|$)')
 set -e
+echo "Connector paths found: $connectors_paths" >&2
 
 # 7) extract just the connector directory name
 dirs=$(printf '%s\n' "$connectors_paths" \
