@@ -254,16 +254,6 @@ class ClickhouseProtobufRecordMungerTest {
         every { catalogInfo.getMappedColumnName(stream, "unknown_col") } returns
             "mapped_unknown_col"
 
-        // Setup metadata field mappings
-        every { catalogInfo.getMappedColumnName(stream, Meta.COLUMN_NAME_AB_RAW_ID) } returns
-            Meta.COLUMN_NAME_AB_RAW_ID
-        every { catalogInfo.getMappedColumnName(stream, Meta.COLUMN_NAME_AB_EXTRACTED_AT) } returns
-            Meta.COLUMN_NAME_AB_EXTRACTED_AT
-        every { catalogInfo.getMappedColumnName(stream, Meta.COLUMN_NAME_AB_GENERATION_ID) } returns
-            Meta.COLUMN_NAME_AB_GENERATION_ID
-        every { catalogInfo.getMappedColumnName(stream, Meta.COLUMN_NAME_AB_META) } returns
-            Meta.COLUMN_NAME_AB_META
-
         munger = ClickhouseRecordMunger(catalogInfo, coercer)
     }
 
