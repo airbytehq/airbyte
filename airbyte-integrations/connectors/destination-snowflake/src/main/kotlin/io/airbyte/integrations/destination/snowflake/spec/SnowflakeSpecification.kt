@@ -36,7 +36,9 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
         "Enter the <a href=\"https://docs.snowflake.com/en/user-guide/security-access-control-overview.html#roles\">role</a> that you want to use to access Snowflake"
     )
     @get:JsonProperty("role")
-    @get:JsonSchemaInject(json = """{"group": "connection", "order": 1, "examples":["AIRBYTE_ROLE"]}""")
+    @get:JsonSchemaInject(
+        json = """{"group": "connection", "order": 1, "examples":["AIRBYTE_ROLE"]}"""
+    )
     val role: String = ""
 
     @get:JsonSchemaTitle("Warehouse")
@@ -44,7 +46,9 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
         "Enter the name of the <a href=\"https://docs.snowflake.com/en/user-guide/warehouses-overview.html#overview-of-warehouses\">warehouse</a> that you want to use as a compute cluster"
     )
     @get:JsonProperty("warehouse")
-    @get:JsonSchemaInject(json = """{"group": "connection", "order": 2, "examples":["AIRBYTE_WAREHOUSE"]}""")
+    @get:JsonSchemaInject(
+        json = """{"group": "connection", "order": 2, "examples":["AIRBYTE_WAREHOUSE"]}"""
+    )
     val warehouse: String = ""
 
     @get:JsonSchemaTitle("Database")
@@ -52,7 +56,9 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
         "Enter the name of the <a href=\"https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl\">database</a> you want to sync data into"
     )
     @get:JsonProperty("database")
-    @get:JsonSchemaInject(json = """{"group": "connection", "order": 3, "examples":["AIRBYTE_DATABASE"]}""")
+    @get:JsonSchemaInject(
+        json = """{"group": "connection", "order": 3, "examples":["AIRBYTE_DATABASE"]}"""
+    )
     val database: String = ""
 
     @get:JsonSchemaTitle("Default Schema")
@@ -60,7 +66,9 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
         "Enter the name of the default <a href=\"https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl\">schema</a>"
     )
     @get:JsonProperty("schema")
-    @get:JsonSchemaInject(json = """{"group": "connection", "order": 4, "examples":["AIRBYTE_SCHEMA"]}""")
+    @get:JsonSchemaInject(
+        json = """{"group": "connection", "order": 4, "examples":["AIRBYTE_SCHEMA"]}"""
+    )
     val schema: String = ""
 
     @get:JsonSchemaTitle("Username")
@@ -68,13 +76,13 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
         "Enter the name of the user you want to use to access the database"
     )
     @get:JsonProperty("username")
-    @get:JsonSchemaInject(json = """{"group": "connection", "order": 5, "examples":["AIRBYTE_USER"]}""")
+    @get:JsonSchemaInject(
+        json = """{"group": "connection", "order": 5, "examples":["AIRBYTE_USER"]}"""
+    )
     val username: String = ""
 
     @JsonSchemaTitle("Authorization Method")
-    @JsonSchemaDescription(
-        "Determines the type of authentication that should be used."
-    )
+    @JsonSchemaDescription("Determines the type of authentication that should be used.")
     @get:JsonSchemaInject(json = """{"group": "connection", "always_show": true,"order":6}""")
     val authType: AuthTypeSpecification? = null
 
@@ -142,13 +150,11 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
     include = JsonTypeInfo.As.EXISTING_PROPERTY,
     property = "auth_type",
 )
-@JsonSubTypes(JsonSubTypes.Type(value = KeyPairAuthSpecification::class, name = "PRIVATE_KEY"),
-    JsonSubTypes.Type(value = UsernamePasswordAuthSpecification::class, name =
-        "USERNAME_PASSWORD"))
-sealed class AuthTypeSpecification(
-    @get:JsonProperty("auth_type")
-    val authType: Type
-) {
+@JsonSubTypes(
+    JsonSubTypes.Type(value = KeyPairAuthSpecification::class, name = "PRIVATE_KEY"),
+    JsonSubTypes.Type(value = UsernamePasswordAuthSpecification::class, name = "USERNAME_PASSWORD")
+)
+sealed class AuthTypeSpecification(@get:JsonProperty("auth_type") val authType: Type) {
     /** Enumeration of possible credential types. */
     enum class Type(@get:JsonValue val authTypeName: String) {
         PRIVATE_KEY("PRIVATE_KEY"),
@@ -158,15 +164,16 @@ sealed class AuthTypeSpecification(
 
 @JsonSchemaTitle("Key Pair Authentication")
 @JsonSchemaDescription("Configuration details for the Key Pair Authentication.")
-class KeyPairAuthSpecification (
+class KeyPairAuthSpecification(
     @get:JsonSchemaTitle("Private Key")
-    @get:JsonPropertyDescription("""RSA Private key to use for Snowflake connection. See the <a
+    @get:JsonPropertyDescription(
+        """RSA Private key to use for Snowflake connection. See the <a
  href="https://docs.airbyte.com/integrations/destinations/snowflake">docs</a> for more
- information on how to obtain this key.""")
+ information on how to obtain this key."""
+    )
     @get:JsonProperty("private_key")
     @get:JsonSchemaInject(json = """{"order": 0, "multiline": true, "airbyte_secret": true}""")
     val privateKey: String = "",
-
     @get:JsonSchemaTitle("Passphrase")
     @get:JsonPropertyDescription("Passphrase for private key")
     @get:JsonProperty("private_key_password")
