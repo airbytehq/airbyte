@@ -278,7 +278,7 @@ To stop running containers and delete all data:
 
 ## Helm chart V2 (abctl versions 0.30 and later)
 
-Airbyte has upgraded its Helm chart to a new version called "V2." abctl versions 0.30 and later use Helm chart V2 by default. abctl versions 0.29 and earlier use Helm chart V1.
+Airbyte has upgraded its Helm chart to a new version called "V2." abctl versions 0.30 and later use Helm chart V2 by default. abctl versions 0.29 and earlier always use Helm chart V1.
 
 :::note
 Many abctl users don't use external integrations. For example, you might run a local deployment on `localhost` without a `values.yaml` file. If this is the case for you, you can safely ignore this section. Continue upgrading Airbyte in the usual way.
