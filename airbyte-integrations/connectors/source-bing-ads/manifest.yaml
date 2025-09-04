@@ -17487,6 +17487,7 @@ spec:
       - developer_token
       - client_id
       - refresh_token
+      - tenant_id
     additionalProperties: true
     properties:
       auth_method:
