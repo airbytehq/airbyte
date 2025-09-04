@@ -85,12 +85,6 @@ class MetafieldCustomers(IncrementalShopifyGraphQlBulkStream):
     parent_stream_class = Customers
     bulk_query: MetafieldCustomer = MetafieldCustomer
 
-    state_checkpoint_interval = sys.maxsize
-
-    @property
-    def filter_by_state_checkpoint(self) -> bool:
-        return True
-
 
 class Orders(IncrementalShopifyStreamWithDeletedEvents):
     data_field = "orders"
@@ -144,6 +138,12 @@ class Products(IncrementalShopifyGraphQlBulkStream):
 class MetafieldProducts(IncrementalShopifyGraphQlBulkStream):
     parent_stream_class = Products
     bulk_query: MetafieldProduct = MetafieldProduct
+
+    state_checkpoint_interval = sys.maxsize
+
+    @property
+    def filter_by_state_checkpoint(self) -> bool:
+        return True
 
 
 class ProductImages(IncrementalShopifyGraphQlBulkStream):
