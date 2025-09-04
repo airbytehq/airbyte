@@ -21,7 +21,6 @@ import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
-import io.airbyte.integrations.destination.mssql.v2.LIMITS
 import java.sql.Types
 
 enum class MssqlType(val sqlType: Int, val sqlStringOverride: String? = null) {
@@ -30,10 +29,8 @@ enum class MssqlType(val sqlType: Int, val sqlStringOverride: String? = null) {
     DATE(Types.DATE),
     BIGINT(Types.BIGINT),
     DECIMAL(Types.DECIMAL, sqlStringOverride = "DECIMAL(38, 8)"),
-    // Keep VARCHAR for backward compatibility but add NVARCHAR as primary
     VARCHAR(Types.VARCHAR, sqlStringOverride = "VARCHAR(MAX)"),
     VARCHAR_INDEX(Types.VARCHAR, sqlStringOverride = "VARCHAR(200)"),
-    // Add NVARCHAR types for proper Unicode support
     NVARCHAR(Types.NVARCHAR, sqlStringOverride = "NVARCHAR(MAX)"),
     NVARCHAR_INDEX(Types.NVARCHAR, sqlStringOverride = "NVARCHAR(200)"),
     DATETIMEOFFSET(Types.TIMESTAMP_WITH_TIMEZONE),
@@ -55,7 +52,6 @@ class AirbyteTypeToMssqlType {
             is NumberType -> MssqlType.DECIMAL
             is ObjectTypeWithEmptySchema -> MssqlType.TEXT
             is ObjectTypeWithoutSchema -> MssqlType.TEXT
-            // Fix: Use NVARCHAR for proper Unicode support instead of VARCHAR
             is StringType -> if (isIndexed) MssqlType.NVARCHAR_INDEX else MssqlType.NVARCHAR
             is TimeTypeWithTimezone -> MssqlType.DATETIMEOFFSET
             is TimeTypeWithoutTimezone -> MssqlType.TIME
