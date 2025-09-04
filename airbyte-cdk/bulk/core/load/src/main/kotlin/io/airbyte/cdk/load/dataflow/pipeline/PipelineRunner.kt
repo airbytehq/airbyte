@@ -22,19 +22,12 @@ class PipelineRunner(
 
     suspend fun run() = coroutineScope {
         log.info { "Destination Pipeline Starting..." }
+        log.info { "Running with ${pipelines.size} input streams..." }
 
         reconciler.run(CoroutineScope(Dispatchers.IO))
 
         try {
-            pipelines
-                .mapIndexed { i, p ->
-                    launch {
-                        log.info { "Running pipeline: ${i + 1}" }
-                        p.run()
-                    }
-                }
-                .joinAll()
-
+            pipelines.map { p -> launch { p.run() } }.joinAll()
             log.info { "Individual pipelines complete..." }
         } finally {
             // shutdown the reconciler regardless of success or failure, so we don't hang

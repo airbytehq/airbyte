@@ -21,7 +21,6 @@ import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseSpecificati
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Named
 import jakarta.inject.Singleton
-import kotlin.time.Duration.Companion.minutes
 import org.apache.sshd.common.util.net.SshdSocketAddress
 
 @Factory
