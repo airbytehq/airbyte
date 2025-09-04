@@ -19,6 +19,7 @@ import io.airbyte.cdk.load.message.StreamKey
 interface DlqLoader<S> : AutoCloseable {
 
     sealed interface DlqLoadResult
+
     data object Incomplete : DlqLoadResult
     data class Complete(val rejectedRecords: List<DestinationRecordRaw>? = null) : DlqLoadResult
 
