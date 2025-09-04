@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.dataflow.state
 
 import io.airbyte.cdk.load.message.CheckpointMessage
+import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
@@ -12,6 +13,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -187,6 +189,75 @@ class StateStoreTest {
         assertEquals(checkpointMessage2, stateStore.getNextComplete()) // sequence 2
         assertEquals(checkpointMessage3, stateStore.getNextComplete()) // sequence 3
         assertNull(stateStore.getNextComplete()) // no more states
+    }
+
+    @Test
+    fun `getNextComplete should add byte counts and record counts to destination stats`() {
+        // Given
+        val sourceStats = CheckpointMessage.Stats(recordCount = 150L)
+        val checkpointMessage =
+            StreamCheckpoint(
+                checkpoint = mockk(),
+                sourceStats = sourceStats,
+                serializedSizeBytes = 1L,
+            )
+        val stateKey = StateKey(1L, listOf(PartitionKey("partition-1")))
+        val recordCount = 150L
+        val byteCount = 50000L
+
+        every { keyClient.getStateKey(checkpointMessage) } returns stateKey
+        every { histogramStore.acceptExpectedCounts(stateKey, recordCount) } returns mockk()
+        every { histogramStore.isComplete(stateKey) } returns true
+        every { histogramStore.remove(stateKey) } returns
+            StateHistogramStats(count = recordCount, bytes = byteCount)
+
+        stateStore.accept(checkpointMessage)
+
+        // When
+        val result = stateStore.getNextComplete()
+
+        // Then
+        assertNotNull(result)
+        assertEquals(recordCount, result.destinationStats?.recordCount)
+        assertEquals(recordCount, result.totalRecords)
+        assertEquals(byteCount, result.totalBytes)
+
+        // Verify histogram stats were removed
+        verify { histogramStore.remove(stateKey) }
+    }
+
+    @Test
+    fun `getNextComplete should handle different byte and record counts from histogram`() {
+        // Given
+        val expectedRecordCount = 100L
+        val actualRecordCount = 98L // Slightly different due to filtering/dedup
+        val actualByteCount = 32768L
+
+        val sourceStats = CheckpointMessage.Stats(recordCount = expectedRecordCount)
+        val checkpointMessage =
+            StreamCheckpoint(
+                checkpoint = mockk(),
+                sourceStats = sourceStats,
+                serializedSizeBytes = 1L,
+            )
+        val stateKey = StateKey(1L, listOf(PartitionKey("partition-1")))
+
+        every { keyClient.getStateKey(checkpointMessage) } returns stateKey
+        every { histogramStore.acceptExpectedCounts(stateKey, expectedRecordCount) } returns mockk()
+        every { histogramStore.isComplete(stateKey) } returns true
+        every { histogramStore.remove(stateKey) } returns
+            StateHistogramStats(count = actualRecordCount, bytes = actualByteCount)
+
+        stateStore.accept(checkpointMessage)
+
+        // When
+        val result = stateStore.getNextComplete()
+
+        // Then
+        assertNotNull(result)
+        assertEquals(actualRecordCount, result.destinationStats?.recordCount)
+        assertEquals(actualRecordCount, result.totalRecords)
+        assertEquals(actualByteCount, result.totalBytes)
     }
 
     @Test
