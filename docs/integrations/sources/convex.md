@@ -75,6 +75,8 @@ In the Data tab, you should see the tables and a sample of the data that will be
 
 | Version | Date       | Pull Request                                             | Subject                                                          |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------- |
+| 0.4.50 | 2025-08-23 | [65287](https://github.com/airbytehq/airbyte/pull/65287) | Update dependencies |
+| 0.4.49 | 2025-08-16 | [65003](https://github.com/airbytehq/airbyte/pull/65003) | Update dependencies |
 | 0.4.48 | 2025-08-09 | [64798](https://github.com/airbytehq/airbyte/pull/64798) | Update dependencies |
 | 0.4.47 | 2025-07-19 | [63533](https://github.com/airbytehq/airbyte/pull/63533) | Update dependencies |
 | 0.4.46 | 2025-07-12 | [62996](https://github.com/airbytehq/airbyte/pull/62996) | Update dependencies |

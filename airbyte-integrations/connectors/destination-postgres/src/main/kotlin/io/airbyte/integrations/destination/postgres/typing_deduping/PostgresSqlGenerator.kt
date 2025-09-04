@@ -207,15 +207,19 @@ class PostgresSqlGenerator(
                         DSL.`val`(null as String?)
                     )
                     .else_(DSL.cast(field, SQLDataType.VARCHAR))
+            var cleanedText = extractAsText
+            if (type == AirbyteProtocolType.NUMBER) {
+                cleanedText = DSL.trim(extractAsText, "\"")
+            }
             return if (useExpensiveSaferCasting) {
                 DSL.function(
                     DSL.name("pg_temp", "airbyte_safe_cast"),
                     dialectType,
-                    extractAsText,
+                    cleanedText,
                     DSL.cast(DSL.`val`(null as Any?), dialectType)
                 )
             } else {
-                DSL.cast(extractAsText, dialectType)
+                DSL.cast(cleanedText, dialectType)
             }
         }
     }

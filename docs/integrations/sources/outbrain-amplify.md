@@ -65,6 +65,8 @@ Specify credentials and a start date.
 
 | Version | Date       | Pull Request                                             | Subject                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------- |
+| 0.2.16 | 2025-08-23 | [65178](https://github.com/airbytehq/airbyte/pull/65178) | Update dependencies |
+| 0.2.15 | 2025-08-16 | [64979](https://github.com/airbytehq/airbyte/pull/64979) | Update dependencies |
 | 0.2.14 | 2025-08-09 | [64678](https://github.com/airbytehq/airbyte/pull/64678) | Update dependencies |
 | 0.2.13 | 2025-08-02 | [64286](https://github.com/airbytehq/airbyte/pull/64286) | Update dependencies |
 | 0.2.12 | 2025-07-19 | [63413](https://github.com/airbytehq/airbyte/pull/63413) | Update dependencies |
