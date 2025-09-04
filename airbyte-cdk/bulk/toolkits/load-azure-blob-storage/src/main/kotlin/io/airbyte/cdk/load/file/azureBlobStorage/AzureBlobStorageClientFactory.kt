@@ -47,8 +47,7 @@ class AzureBlobStorageClientFactory(
 
             // Otherwise fallback to using an account key
             !config.accountKey.isNullOrBlank() -> {
-                val credential =
-                    StorageSharedKeyCredential(config.accountName, config.accountKey)
+                val credential = StorageSharedKeyCredential(config.accountName, config.accountKey)
                 clientBuilder.credential(credential)
             }
             else -> {
