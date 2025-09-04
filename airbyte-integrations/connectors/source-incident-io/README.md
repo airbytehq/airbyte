@@ -28,12 +28,12 @@ You will need `airbyte-ci` installed. You can find the documentation [here](airb
 ### Build
 This will create a dev image (`source-incident:dev`) that you can use to test the connector locally.
 ```bash
-airbyte-ci connectors --name=source-incident build
+airbyte-ci connectors --name=source-incident-io build
 ```
 
 ### Test
 This will run the acceptance tests for the connector.
 ```bash
-airbyte-ci connectors --name=source-incident test
+airbyte-ci connectors --name=source-incident-io test
 ```
 
