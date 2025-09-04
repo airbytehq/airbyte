@@ -255,6 +255,11 @@ A quick fix could be to edit your connection's 'Replication' settings from `Mirr
 to `Destination Default`. Otherwise, make sure to grant the role the required permissions in the
 desired namespace.
 
+### Running SHOW and DESCRIBE queries on Warehouses
+
+It is known that the Snowflake Destination currently runs SHOW and DESCRIBE queries on a warehouse.
+This is unnecessary, and leads to additional costs. Airbyte is currently in the process of fixing this.
+
 ## Changelog
 
 <details>

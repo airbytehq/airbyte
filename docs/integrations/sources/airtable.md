@@ -137,6 +137,7 @@ See information about rate limits [here](https://airtable.com/developers/web/api
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                 |
 |:-----------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------|
+| 4.6.10 | 2025-08-23 | [65352](https://github.com/airbytehq/airbyte/pull/65352) | Update dependencies |
 | 4.6.9 | 2025-08-09 | [64651](https://github.com/airbytehq/airbyte/pull/64651) | Update dependencies |
 | 4.6.8 | 2025-08-02 | [64436](https://github.com/airbytehq/airbyte/pull/64436) | Update dependencies |
 | 4.6.7 | 2025-07-21 | [63281](https://github.com/airbytehq/airbyte/pull/63281) | Bump default Memory on DISCOVER to 2.5GB |

@@ -1,6 +1,14 @@
-## Version 0.1.16
-
 **Load CDK**
+
+## Version 0.1.20
+
+* **Changed:** Fix hard failure edge case in stream initialization for in dataflow cdk lifecycle. 
+
+## Version 0.1.18
+
+* **Changed:** Update load dataflow package accounts for stream completes and dest stats.
+
+## Version 0.1.17
 
 * **Changed:** Run aggregate and flush steps on different dispatchers (default and IO respectively).
 
