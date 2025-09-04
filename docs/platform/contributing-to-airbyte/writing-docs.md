@@ -332,7 +332,7 @@ The documentation runs two linters, Vale and MarkDownLint. Vale lints for style,
 Vale and MarkDownLint are newly implemented. They might still generate false positives or false negatives. Currently, MarkDownLint is the only one of the two that runs on pull requests, and compliance is not mandatory. This may change in the future. For now, just do your best to comply with the linters' recommendations as you see them.
 :::
 
-### Lint with Vale
+#### Lint with Vale
 
 Airbyte uses Vale to promote standardization and minimum quality for docs content. Vale is an open source command-line tool that brings code-like linting to prose. It's not a general-purpose writing aid or an AI. It simply automates the identification of non-compliance with the style guide, principles for good writing, and other rules Airbyte defines as needed.
 
@@ -343,7 +343,6 @@ A configuration file, `//docusaurus/vale.ini`, controls Vale at the highest leve
 The repository imports those libraries from an external source. Don't modify them, or a future update may overwrite your modifications. If you want to improve these rules, modify `//docs/vale-styles/airbyte` or our vocabularies in `//docs/vale-styles/config/airbyte`.
 
 #### Install Vale
-
 The easiest way to install Vale is with a package manager. This ensures Vale is available in your PATH and allows you to keep up to date with new releases. For more options, see [Vale's documentation](https://vale.sh/docs/install).
 
 1. Install Vale.
