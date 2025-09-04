@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.dataflow.config
 
+import io.airbyte.cdk.load.config.DataChannelFormat
 import io.airbyte.cdk.load.dataflow.aggregate.AggregateStore
 import io.airbyte.cdk.load.dataflow.aggregate.AggregateStoreFactory
 import io.airbyte.cdk.load.dataflow.finalization.StreamCompletionTracker
@@ -14,6 +15,7 @@ import io.airbyte.cdk.load.dataflow.state.StateHistogramStore
 import io.airbyte.cdk.load.dataflow.state.StateKeyClient
 import io.airbyte.cdk.load.dataflow.state.StateStore
 import io.airbyte.cdk.load.file.ClientSocket
+import io.airbyte.cdk.load.message.DestinationMessageFactory
 import io.airbyte.cdk.load.message.ProtocolMessageDeserializer
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -33,6 +35,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 class InputBeanFactoryTest {
 
     @MockK private lateinit var deserializer: ProtocolMessageDeserializer
+    @MockK private lateinit var destinationMessageFactory: DestinationMessageFactory
 
     @MockK private lateinit var stateStore: StateStore
 
@@ -172,7 +175,13 @@ class InputBeanFactoryTest {
         val inputStreams = listOf(inputStream1, inputStream2)
 
         // When
-        val result = factory.messageFlows(inputStreams, deserializer)
+        val result =
+            factory.messageFlows(
+                inputStreams,
+                DataChannelFormat.JSONL,
+                deserializer,
+                destinationMessageFactory
+            )
 
         // Then
         assertEquals(2, result.size)
@@ -278,7 +287,13 @@ class InputBeanFactoryTest {
 
         val inputStreams = listOf(mockInputStream1, mockInputStream2)
 
-        val messageFlows = factory.messageFlows(inputStreams, deserializer)
+        val messageFlows =
+            factory.messageFlows(
+                inputStreams,
+                DataChannelFormat.JSONL,
+                deserializer,
+                destinationMessageFactory
+            )
 
         val inputFlows =
             factory.inputFlows(
