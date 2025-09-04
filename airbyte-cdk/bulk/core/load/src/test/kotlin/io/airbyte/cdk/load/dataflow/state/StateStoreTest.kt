@@ -30,7 +30,7 @@ class StateStoreTest {
     @BeforeEach
     fun setUp() {
         stateStore = StateStore(keyClient, histogramStore)
-        every { histogramStore.remove(any()) } returns 1L
+        every { histogramStore.remove(any()) } returns StateHistogramStats(1, 1)
     }
 
     @Test

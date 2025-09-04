@@ -66,7 +66,8 @@ class PipelineCompletionHandlerTest {
         val aggregateEntry1 =
             AggregateEntry(
                 value = mockAggregate1,
-                partitionHistogram = mockHistogram1,
+                partitionCountsHistogram = mockHistogram1,
+                partitionBytesHistogram = mockk(),
                 stalenessTrigger = mockk(),
                 recordCountTrigger = mockk(),
                 estimatedBytesTrigger = mockk()
@@ -75,7 +76,8 @@ class PipelineCompletionHandlerTest {
         val aggregateEntry2 =
             AggregateEntry(
                 value = mockAggregate2,
-                partitionHistogram = mockHistogram2,
+                partitionCountsHistogram = mockHistogram2,
+                partitionBytesHistogram = mockk(),
                 stalenessTrigger = mockk(),
                 recordCountTrigger = mockk(),
                 estimatedBytesTrigger = mockk()
@@ -119,7 +121,8 @@ class PipelineCompletionHandlerTest {
         val aggregateEntry =
             AggregateEntry(
                 value = mockAggregate,
-                partitionHistogram = mockHistogram,
+                partitionCountsHistogram = mockHistogram,
+                partitionBytesHistogram = mockk(),
                 stalenessTrigger = mockk(),
                 recordCountTrigger = mockk(),
                 estimatedBytesTrigger = mockk()
