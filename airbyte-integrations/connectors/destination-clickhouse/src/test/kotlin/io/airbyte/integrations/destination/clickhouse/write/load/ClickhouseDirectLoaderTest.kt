@@ -7,7 +7,7 @@ package io.airbyte.integrations.destination.clickhouse.write.load
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.write.DirectLoader
-import io.airbyte.integrations.destination.clickhouse.write.transform.RecordMunger
+import io.airbyte.integrations.destination.clickhouse.write.transform.ClickhouseRecordMunger
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -22,7 +22,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 
 @ExtendWith(MockKExtension::class)
 class ClickhouseDirectLoaderTest {
-    @MockK(relaxed = true) lateinit var munger: RecordMunger
+    @MockK(relaxed = true) lateinit var munger: ClickhouseRecordMunger
 
     @MockK(relaxed = true) lateinit var buffer: BinaryRowInsertBuffer
 
