@@ -57,4 +57,53 @@ class ClientSocket(
         }
         log.info { "Reading from socket $socketPath complete" }
     }
+
+    fun openInputStream(): InputStream {
+        log.info { "Connecting client socket at $socketPath" }
+        val socketFile = File(socketPath)
+        var totalWaitMs = 0L
+
+        while (!socketFile.exists()) {
+            log.info { "Waiting for socket file to be created: $socketPath" }
+            Thread.sleep(connectWaitDelayMs)
+            totalWaitMs += connectWaitDelayMs
+            if (totalWaitMs > connectTimeoutMs) {
+                throw IllegalStateException(
+                    "Socket file $socketPath not created after $connectTimeoutMs ms"
+                )
+            }
+        }
+        log.info { "Socket file $socketPath created" }
+
+        val address = UnixDomainSocketAddress.of(socketFile.toPath())
+        val openedSocket = SocketChannel.open(StandardProtocolFamily.UNIX)
+
+        log.info { "Socket file $socketPath opened" }
+
+        if (!openedSocket.connect(address)) {
+            throw IllegalStateException("Failed to connect to socket $socketPath")
+        }
+
+        // HACK: The dockerized destination tests uses this exact message
+        // as a signal that it's safe to create the TCP connection to the
+        // socat sidecar that feeds data into the socket. Removing it
+        // will break tests. TODO: Anything else.
+        log.info { "Socket file $socketPath connected for reading" }
+
+        val inputStream = Channels.newInputStream(openedSocket).buffered(bufferSizeBytes)
+
+        return SocketInputStream(openedSocket, inputStream)
+    }
+}
+
+class SocketInputStream(
+    private val socketChannel: SocketChannel,
+    private val inputStream: InputStream,
+) : InputStream() {
+    override fun read(): Int = inputStream.read()
+
+    override fun close() {
+        inputStream.close()
+        socketChannel.close()
+    }
 }

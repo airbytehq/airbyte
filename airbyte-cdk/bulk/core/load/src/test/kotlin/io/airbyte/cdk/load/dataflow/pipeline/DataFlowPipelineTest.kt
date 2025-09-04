@@ -20,7 +20,6 @@ class DataFlowPipelineTest {
     private val aggregate = mockk<AggregateStage>()
     private val flush = mockk<DataFlowStage>()
     private val state = mockk<DataFlowStage>()
-    private val startHandler = mockk<PipelineStartHandler>()
     private val completionHandler = mockk<PipelineCompletionHandler>()
     private val memoryAndParallelismConfig =
         MemoryAndParallelismConfig(
@@ -40,7 +39,6 @@ class DataFlowPipelineTest {
                 aggregate,
                 flush,
                 state,
-                startHandler,
                 completionHandler,
                 memoryAndParallelismConfig
             )
@@ -50,7 +48,6 @@ class DataFlowPipelineTest {
         val flushedIO = mockk<DataFlowStageIO>()
         val stateIO = mockk<DataFlowStageIO>()
 
-        coEvery { startHandler.run() } returns Unit
         coEvery { parse.apply(initialIO) } returns parsedIO
         coEvery { aggregate.apply(parsedIO, any()) } coAnswers
             {
@@ -66,7 +63,6 @@ class DataFlowPipelineTest {
 
         // Then
         coVerifySequence {
-            startHandler.run()
             parse.apply(initialIO)
             aggregate.apply(parsedIO, any())
             flush.apply(aggregatedIO)

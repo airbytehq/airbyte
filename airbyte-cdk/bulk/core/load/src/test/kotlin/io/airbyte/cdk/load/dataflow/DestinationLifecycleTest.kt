@@ -8,7 +8,7 @@ import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.dataflow.config.MemoryAndParallelismConfig
 import io.airbyte.cdk.load.dataflow.finalization.StreamCompletionTracker
-import io.airbyte.cdk.load.dataflow.pipeline.DataFlowPipeline
+import io.airbyte.cdk.load.dataflow.pipeline.PipelineRunner
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import io.mockk.coEvery
@@ -22,7 +22,7 @@ class DestinationLifecycleTest {
 
     private val destinationInitializer: DestinationWriter = mockk(relaxed = true)
     private val destinationCatalog: DestinationCatalog = mockk(relaxed = true)
-    private val pipeline: DataFlowPipeline = mockk(relaxed = true)
+    private val pipeline: PipelineRunner = mockk(relaxed = true)
     private val completionTracker: StreamCompletionTracker = mockk(relaxed = true)
     private val memoryAndParallelismConfig: MemoryAndParallelismConfig =
         MemoryAndParallelismConfig(maxOpenAggregates = 1, maxBufferedAggregates = 1)

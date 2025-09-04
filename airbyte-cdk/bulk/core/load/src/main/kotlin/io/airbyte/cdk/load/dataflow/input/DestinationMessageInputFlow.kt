@@ -7,16 +7,15 @@ package io.airbyte.cdk.load.dataflow.input
 import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.ProtocolMessageDeserializer
 import io.github.oshai.kotlinlogging.KotlinLogging
-import jakarta.inject.Named
-import jakarta.inject.Singleton
 import java.io.InputStream
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
+import kotlinx.coroutines.withContext
 
 /** Takes bytes and emits DestinationMessages */
-@Singleton
 class DestinationMessageInputFlow(
-    @Named("inputStream") private val inputStream: InputStream,
+    private val inputStream: InputStream,
     private val deserializer: ProtocolMessageDeserializer,
 ) : Flow<DestinationMessage> {
     val log = KotlinLogging.logger {}
@@ -26,21 +25,29 @@ class DestinationMessageInputFlow(
     ) {
         var msgCount = 0L
         var estBytes = 0L
-        inputStream
-            .bufferedReader()
-            .lineSequence()
-            .filter { it.isNotEmpty() }
-            .forEach { line ->
-                val message = deserializer.deserialize(line)
 
-                collector.emit(message)
+        val reader = inputStream.bufferedReader()
+        try {
+            reader
+                .lineSequence()
+                .filter { it.isNotEmpty() }
+                .forEach { line ->
+                    val message = deserializer.deserialize(line)
 
-                estBytes += line.length
-                if (++msgCount % 100_000 == 0L) {
-                    log.info { "Processed $msgCount messages (${estBytes/1024/1024}Mb)" }
+                    collector.emit(message)
+
+                    estBytes += line.length
+                    if (++msgCount % 100_000 == 0L) {
+                        log.info { "Processed $msgCount messages (${estBytes/1024/1024}Mb)" }
+                    }
                 }
+        } finally {
+            withContext(Dispatchers.IO) {
+                reader.close()
+                log.info { "Input stream reader closed." }
             }
+        }
 
-        log.info { "Finished processing input" }
+        log.info { "Finished reading input." }
     }
 }
