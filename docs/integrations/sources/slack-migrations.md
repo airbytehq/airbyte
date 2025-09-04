@@ -11,7 +11,7 @@ Users that sync Threads stream in Incremental sync mode should firstly check the
 ## Before applying this change users should check:
 
 1. Connection State for Threads stream: if Connection State for Threads stream is empty, please follow Migration Steps. 
-2. Record duplicates in destinations: if destination contains record duplicates, please follow Migration Steps.
+2. Record duplicates in destinations for Threads stream: if destination contains record duplicates for Threads stream, please follow Migration Steps.
 
 ## How to check Connection State for Threads stream
 
