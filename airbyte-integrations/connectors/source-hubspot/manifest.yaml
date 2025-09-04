@@ -220,6 +220,11 @@ definitions:
         - type: TypesMap
           target_type: string
           current_type: phone_number
+        - type: TypesMap
+          target_type:
+            - number
+            - string
+          current_type: number
 
   deals_archived_schema_loader:
     $ref: "#/definitions/base_dynamic_schema_loader"
