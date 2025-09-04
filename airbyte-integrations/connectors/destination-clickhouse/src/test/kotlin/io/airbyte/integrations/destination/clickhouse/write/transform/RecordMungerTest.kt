@@ -34,11 +34,11 @@ class RecordMungerTest {
 
     @MockK lateinit var validator: ClickhouseCoercer
 
-    private lateinit var munger: RecordMunger
+    private lateinit var munger: ClickhouseRecordMunger
 
     @BeforeEach
     fun setup() {
-        munger = RecordMunger(catalogInfo, validator)
+        munger = ClickhouseRecordMunger(catalogInfo, validator)
     }
 
     @Test
