@@ -230,7 +230,7 @@ class StateStoreTest {
     fun `getNextComplete should handle different byte and record counts from histogram`() {
         // Given
         val expectedRecordCount = 100L
-        val actualRecordCount = 98L // Slightly different due to filtering/dedup
+        val actualRecordCount = 98L // Slightly different
         val actualByteCount = 32768L
 
         val sourceStats = CheckpointMessage.Stats(recordCount = expectedRecordCount)
