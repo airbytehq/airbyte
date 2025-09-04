@@ -108,6 +108,33 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
     @get:JsonProperty("raw_data_dataset")
     @get:JsonSchemaInject(json = """{"group": "advanced", "order": 8}""")
     val internalTableDataset: String? = null
+
+    @get:JsonSchemaTitle("JDBC URL Params")
+    @get:JsonPropertyDescription(
+        """Enter the additional properties to pass to the JDBC URL string when connecting to the database (formatted as key=value pairs separated by the symbol &). Example: key1=value1&key2=value2&key3=value3""",
+    )
+    // for backwards compatibility, the JSON property is still called raw_data_dataset.
+    @get:JsonProperty("jdbc_url_params")
+    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 9}""")
+    val jdbcUrlParams: String? = null
+
+    @get:JsonSchemaTitle("Data Retention Period (days)")
+    @get:JsonPropertyDescription(
+        """The number of days of Snowflake Time Travel to enable on the tables. See <a href="https://docs.snowflake.com/en/user-guide/data-time-travel#data-retention-period">Snowflake's documentation</a> for more information. Setting a nonzero value will incur increased storage costs in your Snowflake instance.""",
+    )
+    // for backwards compatibility, the JSON property is still called raw_data_dataset.
+    @get:JsonProperty("retention_period_days")
+    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 10}""")
+    val retentionPeriodDays: Int? = 1
+
+    @get:JsonSchemaTitle("Use MERGE for De-duplication of final tables")
+    @get:JsonPropertyDescription(
+        """Use MERGE for de-duplication of final tables. This option no effect if Final tables are disabled or Sync mode is not DEDUPE""",
+    )
+    // for backwards compatibility, the JSON property is still called raw_data_dataset.
+    @get:JsonProperty("use_merge_for_upsert")
+    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 11}""")
+    val useMergeForUpsert: Boolean? = false
 }
 
 @JsonTypeInfo(
