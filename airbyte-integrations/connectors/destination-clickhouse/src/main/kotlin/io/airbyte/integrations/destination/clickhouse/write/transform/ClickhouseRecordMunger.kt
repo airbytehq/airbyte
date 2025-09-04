@@ -100,8 +100,8 @@ class ClickhouseRecordMunger(
         val parsingFailures = mutableListOf<Meta.Change>()
 
         fieldAccessors.forEach { accessor ->
-            val mappedColumnName = catalogInfo.getMappedColumnName(stream, accessor.name)
-                ?: return@forEach
+            val mappedColumnName =
+                catalogInfo.getMappedColumnName(stream, accessor.name) ?: return@forEach
 
             val extractionResult = extractTypedValueWithErrorHandling(proxy, accessor)
             if (extractionResult.parsingError != null) {
@@ -110,7 +110,7 @@ class ClickhouseRecordMunger(
 
             if (extractionResult.value != null) {
                 result[mappedColumnName] = extractionResult.value
-            } else if(accessor.type !is UnknownType){
+            } else if (accessor.type !is UnknownType) {
                 result[mappedColumnName] = NullValue
             }
         }
@@ -128,40 +128,44 @@ class ClickhouseRecordMunger(
     ): ExtractionResult {
         return try {
             when (accessor.type) {
-                is BooleanType -> ExtractionResult(
-                    proxy.getBoolean(accessor)?.let { BooleanValue(it) }, null
-                )
-
-                is StringType -> ExtractionResult(
-                    proxy.getString(accessor)?.let { StringValue(it) }, null
-                )
-
+                is BooleanType ->
+                    ExtractionResult(proxy.getBoolean(accessor)?.let { BooleanValue(it) }, null)
+                is StringType ->
+                    ExtractionResult(proxy.getString(accessor)?.let { StringValue(it) }, null)
                 is IntegerType -> {
                     val value = proxy.getInteger(accessor)
-                    if (value != null && (value < ClickhouseCoercer.Constants.INT64_MIN || value > ClickhouseCoercer.Constants.INT64_MAX)) {
+                    if (
+                        value != null &&
+                            (value < ClickhouseCoercer.Constants.INT64_MIN ||
+                                value > ClickhouseCoercer.Constants.INT64_MAX)
+                    ) {
                         ExtractionResult(
                             null,
                             Meta.Change(
                                 accessor.name,
                                 AirbyteRecordMessageMetaChange.Change.NULLED,
-                                AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                                AirbyteRecordMessageMetaChange.Reason
+                                    .DESTINATION_FIELD_SIZE_LIMITATION
                             )
                         )
                     } else {
                         ExtractionResult(value?.let { IntegerValue(it) }, null)
                     }
                 }
-
                 is NumberType -> {
                     val value = proxy.getNumber(accessor)
                     if (value != null) {
-                        if (value <= ClickhouseCoercer.Constants.DECIMAL128_MIN || value >= ClickhouseCoercer.Constants.DECIMAL128_MAX) {
+                        if (
+                            value <= ClickhouseCoercer.Constants.DECIMAL128_MIN ||
+                                value >= ClickhouseCoercer.Constants.DECIMAL128_MAX
+                        ) {
                             ExtractionResult(
                                 null,
                                 Meta.Change(
                                     accessor.name,
                                     AirbyteRecordMessageMetaChange.Change.NULLED,
-                                    AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                                    AirbyteRecordMessageMetaChange.Reason
+                                        .DESTINATION_FIELD_SIZE_LIMITATION
                                 )
                             )
                         } else {
@@ -171,20 +175,23 @@ class ClickhouseRecordMunger(
                         ExtractionResult(null, null)
                     }
                 }
-
                 is DateType -> {
                     val dateStr = proxy.getDate(accessor)
                     if (dateStr != null) {
                         try {
                             val localDate = java.time.LocalDate.parse(dateStr)
                             val days = localDate.toEpochDay()
-                            if (days < ClickhouseCoercer.Constants.DATE32_MIN || days > ClickhouseCoercer.Constants.DATE32_MAX) {
+                            if (
+                                days < ClickhouseCoercer.Constants.DATE32_MIN ||
+                                    days > ClickhouseCoercer.Constants.DATE32_MAX
+                            ) {
                                 ExtractionResult(
                                     null,
                                     Meta.Change(
                                         accessor.name,
                                         AirbyteRecordMessageMetaChange.Change.NULLED,
-                                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                                        AirbyteRecordMessageMetaChange.Reason
+                                            .DESTINATION_FIELD_SIZE_LIMITATION
                                     )
                                 )
                             } else {
@@ -196,7 +203,8 @@ class ClickhouseRecordMunger(
                                 Meta.Change(
                                     accessor.name,
                                     AirbyteRecordMessageMetaChange.Change.NULLED,
-                                    AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR
+                                    AirbyteRecordMessageMetaChange.Reason
+                                        .DESTINATION_SERIALIZATION_ERROR
                                 )
                             )
                         }
@@ -204,29 +212,31 @@ class ClickhouseRecordMunger(
                         ExtractionResult(null, null)
                     }
                 }
-
                 is TimestampTypeWithTimezone -> {
                     val timestampStr = proxy.getTimestampWithTimezone(accessor)
                     if (timestampStr != null) {
                         try {
                             val instant = java.time.Instant.parse(timestampStr)
                             val seconds = instant.epochSecond
-                            if (seconds < ClickhouseCoercer.Constants.DATETIME64_MIN || seconds > ClickhouseCoercer.Constants.DATETIME64_MAX) {
+                            if (
+                                seconds < ClickhouseCoercer.Constants.DATETIME64_MIN ||
+                                    seconds > ClickhouseCoercer.Constants.DATETIME64_MAX
+                            ) {
                                 ExtractionResult(
                                     null,
                                     Meta.Change(
                                         accessor.name,
                                         AirbyteRecordMessageMetaChange.Change.NULLED,
-                                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                                        AirbyteRecordMessageMetaChange.Reason
+                                            .DESTINATION_FIELD_SIZE_LIMITATION
                                     )
                                 )
                             } else {
                                 ExtractionResult(
                                     TimestampWithTimezoneValue(
-                                        java.time.OffsetDateTime.parse(
-                                            timestampStr
-                                        )
-                                    ), null
+                                        java.time.OffsetDateTime.parse(timestampStr)
+                                    ),
+                                    null
                                 )
                             }
                         } catch (e: Exception) {
@@ -235,7 +245,8 @@ class ClickhouseRecordMunger(
                                 Meta.Change(
                                     accessor.name,
                                     AirbyteRecordMessageMetaChange.Change.NULLED,
-                                    AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR
+                                    AirbyteRecordMessageMetaChange.Reason
+                                        .DESTINATION_SERIALIZATION_ERROR
                                 )
                             )
                         }
@@ -243,20 +254,23 @@ class ClickhouseRecordMunger(
                         ExtractionResult(null, null)
                     }
                 }
-
                 is TimestampTypeWithoutTimezone -> {
                     val timestampStr = proxy.getTimestampWithoutTimezone(accessor)
                     if (timestampStr != null) {
                         try {
                             val localDateTime = java.time.LocalDateTime.parse(timestampStr)
                             val seconds = localDateTime.toEpochSecond(java.time.ZoneOffset.UTC)
-                            if (seconds < ClickhouseCoercer.Constants.DATETIME64_MIN || seconds > ClickhouseCoercer.Constants.DATETIME64_MAX) {
+                            if (
+                                seconds < ClickhouseCoercer.Constants.DATETIME64_MIN ||
+                                    seconds > ClickhouseCoercer.Constants.DATETIME64_MAX
+                            ) {
                                 ExtractionResult(
                                     null,
                                     Meta.Change(
                                         accessor.name,
                                         AirbyteRecordMessageMetaChange.Change.NULLED,
-                                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                                        AirbyteRecordMessageMetaChange.Reason
+                                            .DESTINATION_FIELD_SIZE_LIMITATION
                                     )
                                 )
                             } else {
@@ -268,7 +282,8 @@ class ClickhouseRecordMunger(
                                 Meta.Change(
                                     accessor.name,
                                     AirbyteRecordMessageMetaChange.Change.NULLED,
-                                    AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR
+                                    AirbyteRecordMessageMetaChange.Reason
+                                        .DESTINATION_SERIALIZATION_ERROR
                                 )
                             )
                         }
@@ -276,7 +291,6 @@ class ClickhouseRecordMunger(
                         ExtractionResult(null, null)
                     }
                 }
-
                 is TimeTypeWithTimezone -> {
                     val timeStr = proxy.getTimeWithTimezone(accessor)
                     if (timeStr != null) {
@@ -289,7 +303,8 @@ class ClickhouseRecordMunger(
                                 Meta.Change(
                                     accessor.name,
                                     AirbyteRecordMessageMetaChange.Change.NULLED,
-                                    AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR
+                                    AirbyteRecordMessageMetaChange.Reason
+                                        .DESTINATION_SERIALIZATION_ERROR
                                 )
                             )
                         }
@@ -297,7 +312,6 @@ class ClickhouseRecordMunger(
                         ExtractionResult(null, null)
                     }
                 }
-
                 is TimeTypeWithoutTimezone -> {
                     val timeStr = proxy.getTimeWithoutTimezone(accessor)
                     if (timeStr != null) {
@@ -310,7 +324,8 @@ class ClickhouseRecordMunger(
                                 Meta.Change(
                                     accessor.name,
                                     AirbyteRecordMessageMetaChange.Change.NULLED,
-                                    AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR
+                                    AirbyteRecordMessageMetaChange.Reason
+                                        .DESTINATION_SERIALIZATION_ERROR
                                 )
                             )
                         }
@@ -318,21 +333,18 @@ class ClickhouseRecordMunger(
                         ExtractionResult(null, null)
                     }
                 }
-
                 is UnionType -> {
                     val jsonNode = proxy.getJsonNode(accessor)
                     ExtractionResult(jsonNode?.toAirbyteValue(), null)
                 }
-
-                is ArrayType, is ObjectType -> {
+                is ArrayType,
+                is ObjectType -> {
                     val jsonNode = proxy.getJsonNode(accessor)
                     ExtractionResult(jsonNode?.toAirbyteValue(), null)
                 }
-
                 is UnknownType -> {
                     ExtractionResult(null, null)
                 }
-
                 else -> {
                     val jsonNode = proxy.getJsonNode(accessor)
                     ExtractionResult(jsonNode?.let { StringValue(it.serializeToString()) }, null)
@@ -350,7 +362,6 @@ class ClickhouseRecordMunger(
         }
     }
 
-
     private fun addMetadataFields(
         result: HashMap<String, AirbyteValue>,
         msg: DestinationRecordRaw,
@@ -361,12 +372,13 @@ class ClickhouseRecordMunger(
             catalogInfo.getMappedColumnName(msg.stream, Meta.COLUMN_NAME_AB_EXTRACTED_AT)
         if (extractedAtColumn != null) {
             val timestampValue = java.time.Instant.ofEpochMilli(source.emittedAtMs)
-            result[extractedAtColumn] = TimestampWithTimezoneValue(
-                java.time.OffsetDateTime.ofInstant(
-                    timestampValue,
-                    java.time.ZoneOffset.UTC,
-                ),
-            )
+            result[extractedAtColumn] =
+                TimestampWithTimezoneValue(
+                    java.time.OffsetDateTime.ofInstant(
+                        timestampValue,
+                        java.time.ZoneOffset.UTC,
+                    ),
+                )
         }
 
         val generationIdColumn =
@@ -387,28 +399,28 @@ class ClickhouseRecordMunger(
             val allChanges = source.sourceMeta.changes + unknownColumnChanges + parsingFailures
             val changesArray = buildMetaArrayValue(allChanges)
 
-            val metaValue = ObjectValue(
-                linkedMapOf(
-                    "sync_id" to IntegerValue(msg.stream.syncId.toBigInteger()),
-                    "changes" to changesArray,
-                ),
-            )
+            val metaValue =
+                ObjectValue(
+                    linkedMapOf(
+                        "sync_id" to IntegerValue(msg.stream.syncId.toBigInteger()),
+                        "changes" to changesArray,
+                    ),
+                )
             result[metaColumn] = metaValue
         }
     }
 
-    private fun buildMetaArrayValue(
-        allChanges: List<Meta.Change>
-    ): ArrayValue {
-        val changeObjects = allChanges.map { change ->
-            ObjectValue(
-                linkedMapOf(
-                    "field" to StringValue(change.field),
-                    "change" to StringValue(change.change.toString()),
-                    "reason" to StringValue(change.reason.toString())
+    private fun buildMetaArrayValue(allChanges: List<Meta.Change>): ArrayValue {
+        val changeObjects =
+            allChanges.map { change ->
+                ObjectValue(
+                    linkedMapOf(
+                        "field" to StringValue(change.field),
+                        "change" to StringValue(change.change.toString()),
+                        "reason" to StringValue(change.reason.toString())
+                    )
                 )
-            )
-        }
+            }
 
         return ArrayValue(changeObjects)
     }

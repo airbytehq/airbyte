@@ -4,10 +4,10 @@
 
 package io.airbyte.integrations.destination.clickhouse.write.transform
 
-
 import com.google.protobuf.kotlin.toByteString
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.computeUnknownColumnChanges
+import io.airbyte.cdk.load.data.*
 import io.airbyte.cdk.load.data.AirbyteValueProxy
 import io.airbyte.cdk.load.data.ArrayType
 import io.airbyte.cdk.load.data.BooleanType
@@ -26,8 +26,9 @@ import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.message.DestinationRecordProtobufSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.Meta
+import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
 import io.airbyte.protocol.models.Jsons
-import io.airbyte.protocol.protobuf.AirbyteMessage
+import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteMessageProtobuf
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage
 import io.airbyte.protocol.protobuf.AirbyteRecordMessageMetaOuterClass
 import io.mockk.every
@@ -41,9 +42,6 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import io.airbyte.cdk.load.data.*
-import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
-import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteMessageProtobuf
 
 @ExtendWith(MockKExtension::class)
 class ClickhouseProtobufRecordMungerTest {
@@ -173,8 +171,7 @@ class ClickhouseProtobufRecordMungerTest {
                 .setMeta(metaProto)
                 .build()
 
-        val airbyteMessageProto =
-            AirbyteMessageProtobuf.newBuilder().setRecord(recordProto).build()
+        val airbyteMessageProto = AirbyteMessageProtobuf.newBuilder().setRecord(recordProto).build()
 
         protoSource = DestinationRecordProtobufSource(airbyteMessageProto)
 
@@ -224,14 +221,18 @@ class ClickhouseProtobufRecordMungerTest {
 
         record =
             mockk(relaxed = false) {
-                every { asJsonRecord() }  answers { callOriginal() }
-                every { asEnrichedDestinationRecordAirbyteValue(any(), any()) } answers { callOriginal() }
+                every { asJsonRecord() } answers { callOriginal() }
+                every { asEnrichedDestinationRecordAirbyteValue(any(), any()) } answers
+                    {
+                        callOriginal()
+                    }
                 every { this@mockk.airbyteRawId } returns uuid
-                every { this@mockk.schema } returns this@ClickhouseProtobufRecordMungerTest.stream.schema
-                every { this@mockk.schemaFields } returns (this@ClickhouseProtobufRecordMungerTest.stream.schema as ObjectType).properties
+                every { this@mockk.schema } returns
+                    this@ClickhouseProtobufRecordMungerTest.stream.schema
+                every { this@mockk.schemaFields } returns
+                    (this@ClickhouseProtobufRecordMungerTest.stream.schema as ObjectType).properties
                 every { this@mockk.rawData } returns protoSource!!
                 every { this@mockk.stream } returns this@ClickhouseProtobufRecordMungerTest.stream
-
             }
 
         // Setup catalog mappings
@@ -240,26 +241,33 @@ class ClickhouseProtobufRecordMungerTest {
         every { catalogInfo.getMappedColumnName(stream, "num_col") } returns "mapped_num_col"
         every { catalogInfo.getMappedColumnName(stream, "string_col") } returns "mapped_string_col"
         every { catalogInfo.getMappedColumnName(stream, "date_col") } returns "mapped_date_col"
-        every { catalogInfo.getMappedColumnName(stream, "time_tz_col") } returns "mapped_time_tz_col"
-        every { catalogInfo.getMappedColumnName(stream, "time_no_tz_col") } returns "mapped_time_no_tz_col"
+        every { catalogInfo.getMappedColumnName(stream, "time_tz_col") } returns
+            "mapped_time_tz_col"
+        every { catalogInfo.getMappedColumnName(stream, "time_no_tz_col") } returns
+            "mapped_time_no_tz_col"
         every { catalogInfo.getMappedColumnName(stream, "ts_tz_col") } returns "mapped_ts_tz_col"
-        every { catalogInfo.getMappedColumnName(stream, "ts_no_tz_col") } returns "mapped_ts_no_tz_col"
+        every { catalogInfo.getMappedColumnName(stream, "ts_no_tz_col") } returns
+            "mapped_ts_no_tz_col"
         every { catalogInfo.getMappedColumnName(stream, "array_col") } returns "mapped_array_col"
         every { catalogInfo.getMappedColumnName(stream, "obj_col") } returns "mapped_obj_col"
         every { catalogInfo.getMappedColumnName(stream, "union_col") } returns "mapped_union_col"
-        every { catalogInfo.getMappedColumnName(stream, "unknown_col") } returns "mapped_unknown_col"
-        
+        every { catalogInfo.getMappedColumnName(stream, "unknown_col") } returns
+            "mapped_unknown_col"
+
         // Setup metadata field mappings
-        every { catalogInfo.getMappedColumnName(stream, Meta.COLUMN_NAME_AB_RAW_ID) } returns Meta.COLUMN_NAME_AB_RAW_ID
-        every { catalogInfo.getMappedColumnName(stream, Meta.COLUMN_NAME_AB_EXTRACTED_AT) } returns Meta.COLUMN_NAME_AB_EXTRACTED_AT
-        every { catalogInfo.getMappedColumnName(stream, Meta.COLUMN_NAME_AB_GENERATION_ID) } returns Meta.COLUMN_NAME_AB_GENERATION_ID
-        every { catalogInfo.getMappedColumnName(stream, Meta.COLUMN_NAME_AB_META) } returns Meta.COLUMN_NAME_AB_META
+        every { catalogInfo.getMappedColumnName(stream, Meta.COLUMN_NAME_AB_RAW_ID) } returns
+            Meta.COLUMN_NAME_AB_RAW_ID
+        every { catalogInfo.getMappedColumnName(stream, Meta.COLUMN_NAME_AB_EXTRACTED_AT) } returns
+            Meta.COLUMN_NAME_AB_EXTRACTED_AT
+        every { catalogInfo.getMappedColumnName(stream, Meta.COLUMN_NAME_AB_GENERATION_ID) } returns
+            Meta.COLUMN_NAME_AB_GENERATION_ID
+        every { catalogInfo.getMappedColumnName(stream, Meta.COLUMN_NAME_AB_META) } returns
+            Meta.COLUMN_NAME_AB_META
 
         munger = ClickhouseRecordMunger(catalogInfo, coercer)
     }
 
-    @AfterEach
-    fun tearDown() = unmockkAll()
+    @AfterEach fun tearDown() = unmockkAll()
 
     @Test
     fun `transforms protobuf record with all field types`() {
@@ -268,12 +276,21 @@ class ClickhouseProtobufRecordMungerTest {
         assertEquals(16, result.size)
 
         // Verify all expected user field keys are present
-        val expectedUserFields = setOf(
-            "mapped_bool_col", "mapped_int_col", "mapped_num_col", "mapped_string_col",
-            "mapped_date_col", "mapped_time_tz_col", "mapped_time_no_tz_col", 
-            "mapped_ts_tz_col", "mapped_ts_no_tz_col", "mapped_array_col", 
-            "mapped_obj_col", "mapped_union_col"
-        )
+        val expectedUserFields =
+            setOf(
+                "mapped_bool_col",
+                "mapped_int_col",
+                "mapped_num_col",
+                "mapped_string_col",
+                "mapped_date_col",
+                "mapped_time_tz_col",
+                "mapped_time_no_tz_col",
+                "mapped_ts_tz_col",
+                "mapped_ts_no_tz_col",
+                "mapped_array_col",
+                "mapped_obj_col",
+                "mapped_union_col"
+            )
         val actualUserFields = result.keys.filter { !it.startsWith("_airbyte_") }.toSet()
         assertEquals(expectedUserFields, actualUserFields)
 
@@ -281,7 +298,7 @@ class ClickhouseProtobufRecordMungerTest {
         val boolValue = result["mapped_bool_col"] as BooleanValue
         assertEquals(true, boolValue.value)
 
-        val intValue = result["mapped_int_col"] as IntegerValue  
+        val intValue = result["mapped_int_col"] as IntegerValue
         assertEquals(123L.toBigInteger(), intValue.value)
 
         val numValue = result["mapped_num_col"] as NumberValue
@@ -297,11 +314,14 @@ class ClickhouseProtobufRecordMungerTest {
         val timeWithTzValue = result["mapped_time_tz_col"] as TimeWithTimezoneValue
         assertEquals(java.time.OffsetTime.parse("23:59:59+02:00"), timeWithTzValue.value)
 
-        val timeWithoutTzValue = result["mapped_time_no_tz_col"] as TimeWithoutTimezoneValue  
+        val timeWithoutTzValue = result["mapped_time_no_tz_col"] as TimeWithoutTimezoneValue
         assertEquals(java.time.LocalTime.parse("23:59:59"), timeWithoutTzValue.value)
 
         val tsWithTzValue = result["mapped_ts_tz_col"] as TimestampWithTimezoneValue
-        assertEquals(java.time.OffsetDateTime.parse("2025-06-17T23:59:59+02:00"), tsWithTzValue.value)
+        assertEquals(
+            java.time.OffsetDateTime.parse("2025-06-17T23:59:59+02:00"),
+            tsWithTzValue.value
+        )
 
         val tsWithoutTzValue = result["mapped_ts_no_tz_col"] as TimestampWithoutTimezoneValue
         assertEquals(java.time.LocalDateTime.parse("2025-06-17T23:59:59"), tsWithoutTzValue.value)
@@ -324,11 +344,13 @@ class ClickhouseProtobufRecordMungerTest {
         val rawIdValue = result[Meta.COLUMN_NAME_AB_RAW_ID] as StringValue
         assertEquals(uuid.toString(), rawIdValue.value)
 
-        val extractedAtValue = result[Meta.COLUMN_NAME_AB_EXTRACTED_AT] as TimestampWithTimezoneValue
-        val expectedTimestamp = java.time.OffsetDateTime.ofInstant(
-            java.time.Instant.ofEpochMilli(emittedAtMs), 
-            java.time.ZoneOffset.UTC
-        )
+        val extractedAtValue =
+            result[Meta.COLUMN_NAME_AB_EXTRACTED_AT] as TimestampWithTimezoneValue
+        val expectedTimestamp =
+            java.time.OffsetDateTime.ofInstant(
+                java.time.Instant.ofEpochMilli(emittedAtMs),
+                java.time.ZoneOffset.UTC
+            )
         assertEquals(expectedTimestamp, extractedAtValue.value)
 
         val generationIdValue = result[Meta.COLUMN_NAME_AB_GENERATION_ID] as IntegerValue
@@ -500,15 +522,16 @@ class ClickhouseProtobufRecordMungerTest {
         val metaValue = result[Meta.COLUMN_NAME_AB_META] as ObjectValue
         val changesArray = metaValue.values["changes"] as ArrayValue
         assertTrue(changesArray.values.isNotEmpty())
-        
+
         // Verify that parsing failure is present in the changes
         val changes = changesArray.values.filterIsInstance<ObjectValue>()
-        val intColError = changes.find { 
-            (it.values["field"] as StringValue).value == "int_col" 
-        }
+        val intColError = changes.find { (it.values["field"] as StringValue).value == "int_col" }
         assertNotNull(intColError)
         assertEquals("NULLED", (intColError!!.values["change"] as StringValue).value)
-        assertEquals("DESTINATION_FIELD_SIZE_LIMITATION", (intColError.values["reason"] as StringValue).value)
+        assertEquals(
+            "DESTINATION_FIELD_SIZE_LIMITATION",
+            (intColError.values["reason"] as StringValue).value
+        )
     }
 
     @Test
@@ -559,15 +582,17 @@ class ClickhouseProtobufRecordMungerTest {
         val metaValue = result[Meta.COLUMN_NAME_AB_META] as ObjectValue
         val changesArray = metaValue.values["changes"] as ArrayValue
         assertTrue(changesArray.values.isNotEmpty())
-        
+
         // Verify that parsing failure is present in the changes
         val changes = changesArray.values.filterIsInstance<ObjectValue>()
-        val timestampError = changes.find { 
-            (it.values["field"] as StringValue).value == "ts_tz_col" 
-        }
+        val timestampError =
+            changes.find { (it.values["field"] as StringValue).value == "ts_tz_col" }
         assertNotNull(timestampError)
         assertEquals("NULLED", (timestampError!!.values["change"] as StringValue).value)
-        assertEquals("DESTINATION_SERIALIZATION_ERROR", (timestampError.values["reason"] as StringValue).value)
+        assertEquals(
+            "DESTINATION_SERIALIZATION_ERROR",
+            (timestampError.values["reason"] as StringValue).value
+        )
     }
 
     @Test
@@ -630,7 +655,7 @@ class ClickhouseProtobufRecordMungerTest {
         // Verify empty array and object as AirbyteValue objects
         val emptyArrayValue = result["mapped_array_col"] as ArrayValue
         assertEquals(0, emptyArrayValue.values.size)
-        
+
         val emptyObjValue = result["mapped_obj_col"] as ObjectValue
         assertEquals(0, emptyObjValue.values.size)
     }
@@ -683,15 +708,16 @@ class ClickhouseProtobufRecordMungerTest {
         val metaValue = result[Meta.COLUMN_NAME_AB_META] as ObjectValue
         val changesArray = metaValue.values["changes"] as ArrayValue
         assertTrue(changesArray.values.isNotEmpty())
-        
+
         // Verify that parsing failure is present in the changes
         val changes = changesArray.values.filterIsInstance<ObjectValue>()
-        val dateError = changes.find { 
-            (it.values["field"] as StringValue).value == "date_col" 
-        }
+        val dateError = changes.find { (it.values["field"] as StringValue).value == "date_col" }
         assertNotNull(dateError)
         assertEquals("NULLED", (dateError!!.values["change"] as StringValue).value)
-        assertEquals("DESTINATION_SERIALIZATION_ERROR", (dateError.values["reason"] as StringValue).value)
+        assertEquals(
+            "DESTINATION_SERIALIZATION_ERROR",
+            (dateError.values["reason"] as StringValue).value
+        )
     }
 
     private fun buildModifiedRecord(
@@ -708,15 +734,12 @@ class ClickhouseProtobufRecordMungerTest {
         return DestinationRecordProtobufSource(msg)
     }
 
-    private fun field(
-        name: String,
-        type: AirbyteType,
-        idx: Int
-    ): AirbyteValueProxy.FieldAccessor = mockk {
-        every { this@mockk.name } returns name
-        every { this@mockk.type } returns type
-        try {
-            every { this@mockk.index } returns idx
-        } catch (_: Exception) {}
-    }
+    private fun field(name: String, type: AirbyteType, idx: Int): AirbyteValueProxy.FieldAccessor =
+        mockk {
+            every { this@mockk.name } returns name
+            every { this@mockk.type } returns type
+            try {
+                every { this@mockk.index } returns idx
+            } catch (_: Exception) {}
+        }
 }
