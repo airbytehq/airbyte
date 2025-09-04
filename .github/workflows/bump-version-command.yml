@@ -55,6 +55,14 @@ jobs:
           echo "pr_title=$(echo "$PR_JSON" | jq -r .title)" >> $GITHUB_OUTPUT
           echo "run-url=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
 
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@v2
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
       - name: Checkout Airbyte
         uses: actions/checkout@v4
         with:
@@ -63,7 +71,7 @@ jobs:
           fetch-depth: 1
           # Important that token is a PAT so that CI checks are triggered again.
           # Without this we would be forever waiting on required checks to pass.
-          token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
+          token: ${{ steps.get-app-token.outputs.token }}
 
       - name: Append comment with job run link
         # If comment-id is not provided, this will create a new
@@ -94,7 +102,7 @@ jobs:
           context: "manual"
           gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
-          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+          github_token: ${{ steps.get-app-token.outputs.token }}
           git_repo_url: https://github.com/${{ steps.job-vars.outputs.repo }}.git
           subcommand: |
             connectors --modified bump-version \

@@ -68,6 +68,15 @@ jobs:
           ref: ${{ steps.job-vars.outputs.branch }}
           fetch-depth: 0
 
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@v2
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
       - name: Run CAT tests with `airbyte-ci`
         if: github.event_name == 'workflow_dispatch'
         uses: ./.github/actions/run-airbyte-ci
@@ -79,7 +88,7 @@ jobs:
           gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
           gcp_integration_tester_credentials: ${{ secrets.GCLOUD_INTEGRATION_TESTER }}
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
-          github_token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
+          github_token: ${{ steps.get-app-token.outputs.token }}
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           git_branch: ${{ steps.job-vars.outputs.branch }}
