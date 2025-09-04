@@ -20,7 +20,6 @@ import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
 import jakarta.inject.Singleton
-//import kotlin.collections.plus
 
 /*
  * Munges values and keys into a simple map form. Encapsulates

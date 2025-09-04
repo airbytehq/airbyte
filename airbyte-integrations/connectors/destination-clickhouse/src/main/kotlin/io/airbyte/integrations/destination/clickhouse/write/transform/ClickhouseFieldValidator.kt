@@ -24,7 +24,6 @@ import java.time.ZoneOffset
 /**
  * ClickHouse-specific field validator that applies ClickHouse data type constraints during protobuf
  * to Airbyte value conversion.
- *
  */
 class ClickhouseFieldValidator : FieldValidator {
 
