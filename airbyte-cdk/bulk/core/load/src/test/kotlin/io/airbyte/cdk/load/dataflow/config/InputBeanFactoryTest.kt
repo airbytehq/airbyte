@@ -8,7 +8,7 @@ import io.airbyte.cdk.load.dataflow.aggregate.AggregateStore
 import io.airbyte.cdk.load.dataflow.aggregate.AggregateStoreFactory
 import io.airbyte.cdk.load.dataflow.finalization.StreamCompletionTracker
 import io.airbyte.cdk.load.dataflow.input.DataFlowPipelineInputFlow
-import io.airbyte.cdk.load.dataflow.input.DestinationMessageInputFlow
+import io.airbyte.cdk.load.dataflow.input.JsonDestinationMessageInputFlow
 import io.airbyte.cdk.load.dataflow.pipeline.DataFlowStage
 import io.airbyte.cdk.load.dataflow.state.StateHistogramStore
 import io.airbyte.cdk.load.dataflow.state.StateKeyClient
@@ -183,8 +183,8 @@ class InputBeanFactoryTest {
     @Test
     fun `inputFlows should create DataFlowPipelineInputFlow for each message flow`() {
         // Given
-        val messageFlow1 = mockk<DestinationMessageInputFlow>()
-        val messageFlow2 = mockk<DestinationMessageInputFlow>()
+        val messageFlow1 = mockk<JsonDestinationMessageInputFlow>()
+        val messageFlow2 = mockk<JsonDestinationMessageInputFlow>()
         val messageFlows = listOf(messageFlow1, messageFlow2)
 
         // When
