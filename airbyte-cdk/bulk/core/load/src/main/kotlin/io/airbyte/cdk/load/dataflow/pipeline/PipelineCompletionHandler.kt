@@ -33,6 +33,7 @@ class PipelineCompletionHandler(
                 async {
                     it.value.flush()
                     stateHistogramStore.acceptFlushedCounts(it.partitionCountsHistogram)
+                    stateHistogramStore.acceptFlushedBytes(it.partitionBytesHistogram)
                 }
             }
             .awaitAll()
