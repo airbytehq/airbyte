@@ -159,7 +159,7 @@ definitions:
         - "%Y-%m-%dT%H:%M:%S.%f%z"
       cursor_granularity: P1D
       step: P1Y
-      lookback_window: "P{{ config.get('lookback_window', 0) }}D"
+      lookback_window: "PT{{ config.get('lookback_window', 0) }}M"
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ format_datetime(config.get('start_date', '1970-01-01T00:00:00Z'), '%Y-%m-%d') }}"
@@ -217,7 +217,7 @@ definitions:
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       cursor_granularity: PT1S
       step: P1Y
-      lookback_window: "P{{ config.get('lookback_window', 0) }}D"
+      lookback_window: "PT{{ config.get('lookback_window', 0) }}M"
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ config.get('start_date', '1970-01-01T00:00:00Z') }}"
