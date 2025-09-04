@@ -1,5 +1,50 @@
 # Slack Migration Guide
 
+## Upgrading to 3.0.0
+
+Due to a bug in the Source Slack v2.1.0 state for Threads stream may be missing in some connections, which leads to reading the stream full refreshly even when incremental mode is used and because of this destination may contain record duplicates. The Source Slack v2.2.0 fixes missing state issue, so state is emitted properly.
+
+Users that sync Threads stream in Full Refresh sync mode can simply upgrade their connection to v3.0.0 and ignore Migration Steps.
+
+Users that sync Threads stream in Incremental sync mode should firstly check the following criteria and if at least one of them is related to your connection Migration Steps should be applied.
+
+## Before applying this change users should check:
+
+1. Connection State for Threads stream: if Connection State for Threads stream is empty, please follow Migration Steps. 
+2. Record duplicates in destinations: if destination contains record duplicates, please follow Migration Steps.
+
+## How to check Connection State for Threads stream
+
+1. Go to connection using Source Slack
+2. Select the **Settings** tab.
+3. Under **Connection state** section you can find a connection state json object, look for `streamDescriptor` with `"name": "threads"` and check `streamState` for it. 
+
+If you see state like in the example below, you should follow Migration Steps. 
+Empty state example:
+```
+...
+{
+    "streamDescriptor": {
+      "name": "threads"
+    },
+    "streamState": {
+      "__ab_no_cursor_state_message": true
+    }
+},
+...
+```
+
+## Migration Steps
+
+To clear your data for the `Threads` stream, follow the steps below:
+
+1. Select **Connections** in the main nav bar.
+   1. Select the connection(s) affected by the update.
+2. Select the **Status** tab.
+   1. In the **Enabled streams** list, click the three dots on the right side of the `Threads` and select **Clear Data**.
+
+After the clear succeeds, trigger a sync by clicking **Sync Now**. For more information on clearing your data in Airbyte, see [this page](/platform/operator-guides/clear).
+
 ## Upgrading to 2.0.0
 
 As part of recent changes to the Slack API's [Terms of Service](https://api.slack.com/changelog/2025-05-terms-rate-limit-update-and-faq), we are migrating to a new Marketplace OAuth application. Users will need to re-authenticate their source with the new application to refresh their access token that is used to retrieve data. This does not apply if you use an API token, are on OSS, or supply your own Slack OAuth application credentials.
