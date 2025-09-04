@@ -30,6 +30,8 @@ jobs:
         uses: actions/checkout@8edcb1bdb4e267140fa742c62e395cd74f332709 # v4.2.2
         with:
           ref: ${{ github.event.inputs.gitref || github.ref }}
+          submodules: true # Required for the enterprise repo since it uses a submodule that needs to exist for this workflow to run successfully.
+
 
       - name: Set up Python
         uses: actions/setup-python@9322b3ca74000aeb2c01eb777b646334015ddd72 # v5.6.0
@@ -72,6 +74,7 @@ jobs:
         uses: actions/checkout@8edcb1bdb4e267140fa742c62e395cd74f332709 # v4.2.2
         with:
           ref: ${{ github.event.inputs.gitref || github.ref }}
+          submodules: true # Required for the enterprise repo since it uses a submodule that needs to exist for this workflow to run successfully.
 
       - name: Set up Python
         uses: actions/setup-python@9322b3ca74000aeb2c01eb777b646334015ddd72 # v5.6.0
@@ -115,6 +118,7 @@ jobs:
         uses: actions/checkout@8edcb1bdb4e267140fa742c62e395cd74f332709 # v4.2.2
         with:
           ref: ${{ github.event.inputs.gitref || github.ref }}
+          submodules: true # Required for the enterprise repo since it uses a submodule that needs to exist for this workflow to run successfully.
 
       - name: Set up Python
         uses: actions/setup-python@9322b3ca74000aeb2c01eb777b646334015ddd72 # v5.6.0
