@@ -46,6 +46,12 @@ class AzureBlobStorageSpecification :
 
     override val azureClientSecret: String? = null
 
+    @get:JsonSchemaTitle("Azure Blob Storage target blob size (Megabytes)")
+    @get:JsonPropertyDescription(
+        "The amount of megabytes after which the connector should spill the records in a new blob object. Make sure to configure size greater than individual records. Enter 0 if not applicable."
+    )
+    @get:JsonProperty("azure_blob_storage_spill_size")
+    @JsonSchemaInject(json = """{"default": 500}""")
     val azureBlobStorageSpillSize: Int? = 500
 
     override val format: ObjectStorageFormatSpecification = JsonFormatSpecification()
