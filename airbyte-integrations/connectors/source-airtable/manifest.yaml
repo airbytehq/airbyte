@@ -685,6 +685,7 @@ spec:
               - credentials
               - client_secret
   config_normalization_rules:
+    type: ConfigNormalizationRules
     config_migrations:
         - type: ConfigMigration
           description: |

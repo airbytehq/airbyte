@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/destination-yugabytedb
   githubIssueLabel: destination-yugabytedb
   icon: yugabytedb.svg
-  license: MIT
+  license: ELv2
   name: YugabyteDB
   registryOverrides:
     cloud:

@@ -7,21 +7,54 @@ package io.airbyte.integrations.destination.clickhouse.config
 import com.clickhouse.client.api.Client
 import com.clickhouse.client.api.internal.ServerSettings
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
+import io.airbyte.cdk.load.dataflow.config.MemoryAndParallelismConfig
 import io.airbyte.cdk.load.orchestration.db.DefaultTempTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
+import io.airbyte.cdk.ssh.SshConnectionOptions
+import io.airbyte.cdk.ssh.SshKeyAuthTunnelMethod
+import io.airbyte.cdk.ssh.SshNoTunnelMethod
+import io.airbyte.cdk.ssh.SshPasswordAuthTunnelMethod
+import io.airbyte.cdk.ssh.createTunnelSession
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfigurationFactory
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseSpecification
 import io.micronaut.context.annotation.Factory
+import jakarta.inject.Named
 import jakarta.inject.Singleton
+import org.apache.sshd.common.util.net.SshdSocketAddress
 
 @Factory
 class ClickhouseBeanFactory {
+    /**
+     * The endpoint the client connects through.
+     *
+     * Either the raw clickhouse instance endpoint or an SSH tunnel.
+     */
     @Singleton
-    fun clickhouseClient(config: ClickhouseConfiguration): Client {
+    @Named("resolvedEndpoint")
+    fun resolvedEndpoint(config: ClickhouseConfiguration): String {
+        return when (val ssh = config.tunnelConfig) {
+            is SshKeyAuthTunnelMethod,
+            is SshPasswordAuthTunnelMethod -> {
+                val remote = SshdSocketAddress(config.hostname, config.port.toInt())
+                val sshConnectionOptions: SshConnectionOptions =
+                    SshConnectionOptions.fromAdditionalProperties(emptyMap())
+                val tunnel = createTunnelSession(remote, ssh, sshConnectionOptions)
+                "${config.protocol}://${tunnel.address.hostName}:${tunnel.address.port}"
+            }
+            is SshNoTunnelMethod,
+            null -> config.endpoint
+        }
+    }
+
+    @Singleton
+    fun clickhouseClient(
+        config: ClickhouseConfiguration,
+        @Named("resolvedEndpoint") endpoint: String,
+    ): Client {
         val builder =
             Client.Builder()
-                .addEndpoint(config.endpoint)
+                .addEndpoint(endpoint)
                 .setUsername(config.username)
                 .setPassword(config.password)
                 .compressClientRequest(true)
@@ -52,4 +85,11 @@ class ClickhouseBeanFactory {
 
     @Singleton
     fun tempTableNameGenerator(): TempTableNameGenerator = DefaultTempTableNameGenerator()
+
+    @Singleton
+    fun getConfig(clickhouseConfiguration: ClickhouseConfiguration): MemoryAndParallelismConfig {
+        return MemoryAndParallelismConfig(
+            maxRecordsPerAgg = clickhouseConfiguration.resolvedRecordWindowSize,
+        )
+    }
 }

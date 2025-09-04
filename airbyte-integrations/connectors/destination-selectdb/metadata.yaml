@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/destination-selectdb
   githubIssueLabel: destination-selectdb
   icon: selectdb.svg
-  license: MIT
+  license: ELv2
   name: SelectDB
   registryOverrides:
     cloud:

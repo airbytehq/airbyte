@@ -220,8 +220,9 @@ class ObjectLoaderStepBeanFactory {
     @Named("uploadParallelismForSocket")
     @Singleton
     fun sharedUploadPermits(
-        @Named("dataChannelSocketPaths") dataChannelSocketPaths: List<String>
+        @Named("dataChannelSocketPaths") dataChannelSocketPaths: List<String>,
+        loader: ObjectLoader
     ): Int {
-        return dataChannelSocketPaths.size * 4
+        return loader.socketUploadParallelism(dataChannelSocketPaths.size)
     }
 }

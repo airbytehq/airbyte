@@ -87,19 +87,17 @@ If there's truly a need to develop both simultaneously, then the way to go may b
 
 ## Publishing
 
-While the CDK is incubating, its published version numbers are 0.X where X is the _build number_.
-This build number is monotonically increasing and is based on the maximum version value found on
-the [maven repository that the jars are published to](https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/io/airbyte/bulk-cdk/).
+The CDK version is a SemVer version which is published here: [maven repository that the jars are published to](https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/io/airbyte/bulk-cdk/).
+Some legacy versions don't follow the SemVer format. Any CDK version with 0.x e.g. 0.600 is an example.
 
 Artifact publication happens via a [github workflow](../../.github/workflows/publish-bulk-cdk.yml)
 which gets triggered by any push to the master branch, i.e. after merging a pull request.
 
-From a contributor's perspective, this means that there's no need to worry about versions or
-changelogs.
-From a client's perspective, just always use the latest version.
+The contributor needs to manually bump the version before merging.
 
-Once the incubation period winds down and the CDK stabilizes, we can start thinking about contracts,
-semantic versioning, and so forth; but not until then.
+In the build process, we are checking that the version of the bulk CDK doesn't exist already.
+
+There is now a changelog file which needs to be updated. Currently there is no enforcement but it will.
 
 ## Licensing
 

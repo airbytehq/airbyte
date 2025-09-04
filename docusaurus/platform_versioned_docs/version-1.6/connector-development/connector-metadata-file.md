@@ -22,7 +22,7 @@ data:
   dockerRepository: airbyte/source-postgres
   githubIssueLabel: source-postgres
   icon: postgresql.svg
-  license: MIT
+  license: ELv2
   name: Postgres
   tags:
     - language:java

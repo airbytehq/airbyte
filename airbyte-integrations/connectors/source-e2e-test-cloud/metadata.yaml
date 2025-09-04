@@ -8,7 +8,7 @@ data:
   dockerRepository: airbyte/source-e2e-test-cloud
   githubIssueLabel: source-e2e-test-cloud
   icon: airbyte.svg
-  license: MIT
+  license: ELv2
   name: End-to-End Testing (Mock API)
   registryOverrides:
     cloud:
