@@ -26,48 +26,39 @@ class AzureBlobStorageClientFactory(
 
         val config = azureBlobStorageClientConfigurationProvider.azureBlobStorageClientConfiguration
 
-        val azureServiceClient =
-            when {
-                // EntraId config is available
-                !config.tenantId.isNullOrBlank() &&
-                    !config.clientId.isNullOrBlank() &&
-                    !config.clientSecret.isNullOrBlank() -> {
-                    val credential =
-                        ClientSecretCredentialBuilder()
-                            .tenantId(config.tenantId)
-                            .clientId(config.clientId)
-                            .clientSecret(config.clientSecret)
-                            .build()
-                    BlobServiceClientBuilder()
-                        .endpoint(endpoint)
-                        .credential(credential)
-                        .buildClient()
-                }
-
-                // Shared Access Signature config is available
-                !config.sharedAccessSignature.isNullOrBlank() -> {
-                    BlobServiceClientBuilder()
-                        .endpoint(endpoint)
-                        .sasToken(config.sharedAccessSignature)
-                        .buildClient()
-                }
-
-                // Otherwise fallback to using an account key
-                !config.accountKey.isNullOrBlank() -> {
-                    val credential =
-                        StorageSharedKeyCredential(config.accountName, config.accountKey)
-                    BlobServiceClientBuilder()
-                        .endpoint(endpoint)
-                        .credential(credential)
-                        .buildClient()
-                }
-                else -> {
-                    throw IllegalStateException(
-                        "No valid authentication method provided for Azure Blob Storage"
-                    )
-                }
+        val clientBuilder = BlobServiceClientBuilder().endpoint(endpoint)
+        when {
+            // EntraId config is available
+            !config.tenantId.isNullOrBlank() &&
+                !config.clientId.isNullOrBlank() &&
+                !config.clientSecret.isNullOrBlank() -> {
+                val credential =
+                    ClientSecretCredentialBuilder()
+                        .tenantId(config.tenantId)
+                        .clientId(config.clientId)
+                        .clientSecret(config.clientSecret)
+                        .build()
+                clientBuilder.credential(credential)
             }
 
+            // Shared Access Signature config is available
+            !config.sharedAccessSignature.isNullOrBlank() ->
+                clientBuilder.sasToken(config.sharedAccessSignature)
+
+            // Otherwise fallback to using an account key
+            !config.accountKey.isNullOrBlank() -> {
+                val credential =
+                    StorageSharedKeyCredential(config.accountName, config.accountKey)
+                clientBuilder.credential(credential)
+            }
+            else -> {
+                throw IllegalStateException(
+                    "No valid authentication method provided for Azure Blob Storage"
+                )
+            }
+        }
+
+        val azureServiceClient = clientBuilder.buildClient()
         return AzureBlobClient(
             azureServiceClient,
             azureBlobStorageClientConfigurationProvider.azureBlobStorageClientConfiguration,
