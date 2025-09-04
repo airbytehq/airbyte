@@ -191,12 +191,9 @@ class BulkLoadSpecification(
     val validateValuesPreLoad: Boolean?,
 ) : LoadType(loadType), AzureBlobStorageClientSpecification {
     // Entra ID support isn't exposed at this moment in dest-MSSQL
-    @get:JsonIgnore
-    override val azureClientId: String? = null
-    @get:JsonIgnore
-    override val azureClientSecret: String? = null
-    @get:JsonIgnore
-    override val azureTenantId: String? = null
+    @get:JsonIgnore override val azureClientId: String? = null
+    @get:JsonIgnore override val azureClientSecret: String? = null
+    @get:JsonIgnore override val azureTenantId: String? = null
 }
 
 /**
