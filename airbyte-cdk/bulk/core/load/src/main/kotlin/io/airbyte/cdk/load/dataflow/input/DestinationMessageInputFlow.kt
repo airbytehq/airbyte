@@ -43,7 +43,6 @@ class DestinationMessageInputFlow(
                 }
         } finally {
             withContext(Dispatchers.IO) {
-                inputStream.close()
                 reader.close()
                 log.info { "Input stream closed." }
             }

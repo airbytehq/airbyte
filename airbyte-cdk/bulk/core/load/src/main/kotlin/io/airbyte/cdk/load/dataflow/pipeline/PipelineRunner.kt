@@ -26,12 +26,14 @@ class PipelineRunner(
         reconciler.run(CoroutineScope(Dispatchers.IO))
 
         try {
-            pipelines.mapIndexed { i, p ->
-                launch {
-                    log.info { "Running pipeline: ${i + 1}" }
-                    p.run()
+            pipelines
+                .mapIndexed { i, p ->
+                    launch {
+                        log.info { "Running pipeline: ${i + 1}" }
+                        p.run()
+                    }
                 }
-            }.joinAll()
+                .joinAll()
 
             log.info { "Individual pipelines complete..." }
         } finally {

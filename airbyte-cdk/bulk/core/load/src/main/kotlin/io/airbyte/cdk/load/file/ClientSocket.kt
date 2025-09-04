@@ -99,7 +99,7 @@ class ClientSocket(
 class SocketInputStream(
     private val socketChannel: SocketChannel,
     private val inputStream: InputStream,
-): InputStream() {
+) : InputStream() {
     override fun read(): Int = inputStream.read()
 
     override fun close() {

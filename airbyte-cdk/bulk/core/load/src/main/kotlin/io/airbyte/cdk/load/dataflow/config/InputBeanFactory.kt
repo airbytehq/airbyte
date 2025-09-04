@@ -5,7 +5,7 @@
 package io.airbyte.cdk.load.dataflow.config
 
 import io.airbyte.cdk.load.dataflow.aggregate.AggregateFactory
-import io.airbyte.cdk.load.dataflow.aggregate.AggregateStore
+import io.airbyte.cdk.load.dataflow.aggregate.AggregateStoreFactory
 import io.airbyte.cdk.load.dataflow.finalization.StreamCompletionTracker
 import io.airbyte.cdk.load.dataflow.input.DataFlowPipelineInputFlow
 import io.airbyte.cdk.load.dataflow.input.DestinationMessageInputFlow
@@ -25,31 +25,39 @@ import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.io.InputStream
 
+/**
+ * Conditionally creates input streams / sockets based on channel medium, then wires up a pipeline
+ * to each input with separate aggregate stores but shared state stores.
+ */
 @Factory
 class InputBeanFactory {
     @Requires(property = "airbyte.destination.core.data-channel.medium", value = "SOCKET")
     @Singleton
-    @Named("inputStreams")
-    fun socketStreams(
+    fun sockets(
         @Value("\${airbyte.destination.core.data-channel.socket-paths}") socketPaths: List<String>,
         @Value("\${airbyte.destination.core.data-channel.socket-buffer-size-bytes}")
         bufferSizeBytes: Int,
         @Value("\${airbyte.destination.core.data-channel.socket-connection-timeout-ms}")
         socketConnectionTimeoutMs: Long,
-    ): List<InputStream> {
-        return socketPaths.map {
+    ): List<ClientSocket> =
+        socketPaths.map {
             ClientSocket(
-                    socketPath = it,
-                    bufferSizeBytes = bufferSizeBytes,
-                    connectTimeoutMs = socketConnectionTimeoutMs,
-                )
-                .openInputStream()
+                socketPath = it,
+                bufferSizeBytes = bufferSizeBytes,
+                connectTimeoutMs = socketConnectionTimeoutMs,
+            )
         }
-    }
+
+    @Requires(property = "airbyte.destination.core.data-channel.medium", value = "SOCKET")
+    @Named("inputStreams")
+    @Singleton
+    fun socketStreams(
+        sockets: List<ClientSocket>,
+    ): List<InputStream> = sockets.map(ClientSocket::openInputStream)
 
     @Requires(property = "airbyte.destination.core.data-channel.medium", value = "STDIO")
-    @Singleton
     @Named("inputStreams")
+    @Singleton
     fun stdInStreams(): List<InputStream> = listOf(System.`in`)
 
     @Singleton
@@ -81,17 +89,27 @@ class InputBeanFactory {
         }
 
     @Singleton
+    fun aggregateStoreFactory(
+        aggFactory: AggregateFactory,
+        memoryAndParallelismConfig: MemoryAndParallelismConfig,
+    ) =
+        AggregateStoreFactory(
+            aggFactory,
+            memoryAndParallelismConfig,
+        )
+
+    @Singleton
     fun pipes(
         inputFlows: List<DataFlowPipelineInputFlow>,
         @Named("parse") parse: DataFlowStage,
         @Named("flush") flush: DataFlowStage,
         @Named("state") state: DataFlowStage,
-        aggFactory: AggregateFactory,
+        aggregateStoreFactory: AggregateStoreFactory,
         stateHistogramStore: StateHistogramStore,
         memoryAndParallelismConfig: MemoryAndParallelismConfig,
     ): List<DataFlowPipeline> =
         inputFlows.map {
-            val aggStore = AggregateStore(aggFactory, memoryAndParallelismConfig)
+            val aggStore = aggregateStoreFactory.make()
             val aggregate = AggregateStage(aggStore)
             val completionHandler = PipelineCompletionHandler(aggStore, stateHistogramStore)
 

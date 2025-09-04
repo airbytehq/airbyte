@@ -100,3 +100,11 @@ data class AggregateEntry(
         return stalenessTrigger.isComplete(ts)
     }
 }
+
+/* For testing purposes so we can mock. */
+class AggregateStoreFactory(
+    private val aggFactory: AggregateFactory,
+    private val memoryAndParallelismConfig: MemoryAndParallelismConfig,
+) {
+    fun make() = AggregateStore(aggFactory, memoryAndParallelismConfig)
+}
