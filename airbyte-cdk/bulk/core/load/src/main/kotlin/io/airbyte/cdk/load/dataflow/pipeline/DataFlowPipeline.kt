@@ -6,7 +6,6 @@ package io.airbyte.cdk.load.dataflow.pipeline
 
 import io.airbyte.cdk.load.dataflow.config.MemoryAndParallelismConfig
 import io.airbyte.cdk.load.dataflow.stages.AggregateStage
-import jakarta.inject.Named
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.buffer
@@ -17,10 +16,10 @@ import kotlinx.coroutines.flow.transform
 
 class DataFlowPipeline(
     private val input: Flow<DataFlowStageIO>,
-    @Named("parse") private val parse: DataFlowStage,
-    @Named("aggregate") private val aggregate: AggregateStage,
-    @Named("flush") private val flush: DataFlowStage,
-    @Named("state") private val state: DataFlowStage,
+    private val parse: DataFlowStage,
+    private val aggregate: AggregateStage,
+    private val flush: DataFlowStage,
+    private val state: DataFlowStage,
     private val completionHandler: PipelineCompletionHandler,
     private val memoryAndParallelismConfig: MemoryAndParallelismConfig,
 ) {
