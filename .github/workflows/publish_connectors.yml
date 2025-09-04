@@ -325,6 +325,12 @@ jobs:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
           SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
 
+  generate_connector_registry:
+    name: Generate connector registry
+    needs: [publish_connector_registry_entries]
+    uses: ./.github/workflows/generate-connector-registries.yml
+    secrets: inherit
+
   notify-failure-slack-channel:
     name: "Notify Slack Channel on Publish Failures"
     runs-on: ubuntu-24.04
