@@ -1,28 +1,34 @@
-package io.airbyte.integrations.source.datagen.partitions
+package io.airbyte.integrations.source.datagen.partitionops
 
-import io.airbyte.cdk.output.DataChannelMedium
+import io.airbyte.cdk.output.DataChannelMedium.*
 import io.airbyte.cdk.output.OutputMessageRouter
-import io.airbyte.cdk.read.ConcurrencyResource
 import io.airbyte.cdk.read.PartitionReadCheckpoint
 import io.airbyte.cdk.read.PartitionReader
-import io.airbyte.cdk.read.PartitionsCreator.TryAcquireResourcesStatus
 import io.airbyte.cdk.read.Resource
 import io.airbyte.cdk.read.ResourceAcquirer
 import io.airbyte.cdk.read.ResourceType
 import io.airbyte.cdk.read.ResourceType.RESOURCE_DB_CONNECTION
 import io.airbyte.cdk.read.ResourceType.RESOURCE_OUTPUT_SOCKET
+import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.StreamFeedBootstrap
-import io.airbyte.cdk.read.generatePartitionId
-import io.airbyte.cdk.util.Jsons
+import io.airbyte.integrations.source.datagen.partitionobjs.DataGenSharedState
+import io.airbyte.integrations.source.datagen.partitionobjs.DataGenSourcePartition
+import io.airbyte.integrations.source.datagen.partitionobjs.DataGenStreamState
 import jakarta.inject.Singleton
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
 @Singleton
-class DataGenPartitionReader (val resourceAcquirer: ResourceAcquirer, val feedBootstrap: StreamFeedBootstrap) : PartitionReader {
+class DataGenPartitionReader (val partition: DataGenSourcePartition) : PartitionReader {
     lateinit var outputMessageRouter: OutputMessageRouter
+    val runComplete = AtomicBoolean(false)
     // dont need this rn cuz just doing 1 partition
     // protected var partitionId: String = generatePartitionId(4)
     protected var partitionId: String = "0"
+    val streamState: DataGenStreamState = partition.streamState
+    val stream: Stream = streamState.stream
+    val sharedState: DataGenSharedState = streamState.sharedState
+
     interface AcquiredResource : AutoCloseable {
         val resource: Resource.Acquired?
     }
@@ -30,41 +36,25 @@ class DataGenPartitionReader (val resourceAcquirer: ResourceAcquirer, val feedBo
 
     override fun tryAcquireResources() : PartitionReader.TryAcquireResourcesStatus{
         val resourceType =
-            when (feedBootstrap.dataChannelMedium) {
-                DataChannelMedium.STDIO -> listOf(RESOURCE_DB_CONNECTION)
-                DataChannelMedium.SOCKET ->
+            when (streamState.streamFeedBootstrap.dataChannelMedium) {
+                STDIO -> listOf(RESOURCE_DB_CONNECTION)
+                SOCKET ->
                     listOf(RESOURCE_DB_CONNECTION, RESOURCE_OUTPUT_SOCKET)
             }
-        fun tryAcquireResources(
-            resourcesType: List<ResourceType>
-        ): Map<ResourceType, AcquiredResource>? {
-            val resources: Map<ResourceType, Resource.Acquired>? =
-                resourceAcquirer.tryAcquire(resourcesType)
-            return resources
-                ?.map {
-                    it.key to
-                        object : AcquiredResource {
-                            override val resource: Resource.Acquired = it.value
-                            override fun close() {
-                                resource.close()
-                            }
-                        }
-                }
-                ?.toMap()
-        }
+
         val resources: Map<ResourceType, AcquiredResource> =
-            tryAcquireResources(resourceType)
+            sharedState.tryAcquireResourcesForReader(resourceType)
                 ?: return PartitionReader.TryAcquireResourcesStatus.RETRY_LATER
 
         acquiredResources.set(resources)
         // what does this do? and do i need it
         outputMessageRouter =
             OutputMessageRouter(
-                feedBootstrap.dataChannelMedium,
-                feedBootstrap.dataChannelFormat,
-                feedBootstrap.outputConsumer,
+                streamState.streamFeedBootstrap.dataChannelMedium,
+                streamState.streamFeedBootstrap.dataChannelFormat,
+                streamState.streamFeedBootstrap.outputConsumer,
                 mapOf("partition_id" to partitionId),
-                feedBootstrap,
+                streamState.streamFeedBootstrap,
                 acquiredResources
                     .get()
                     .filter { it.value.resource != null }
@@ -75,7 +65,11 @@ class DataGenPartitionReader (val resourceAcquirer: ResourceAcquirer, val feedBo
     }
 
     override suspend fun run() {
+        val configuration = sharedState.configuration
+        val sourceDataGenerator = configuration.flavor.dataGenerator
+        sourceDataGenerator.generateData()
 
+        runComplete.set(true)
     }
 
     override fun checkpoint(): PartitionReadCheckpoint {
@@ -87,7 +81,7 @@ class DataGenPartitionReader (val resourceAcquirer: ResourceAcquirer, val feedBo
 //                DataChannelMedium.SOCKET -> partitionId
 //            }
 //        )
-        throw RuntimeException("cannot checkpoint datagen")
+        throw RuntimeException("not checkpointing datagen yet")
     }
 
     override fun releaseResources() {

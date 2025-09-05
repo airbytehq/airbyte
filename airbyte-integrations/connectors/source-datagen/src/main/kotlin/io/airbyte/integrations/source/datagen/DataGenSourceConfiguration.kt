@@ -1,6 +1,7 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.datagen
 
+import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.command.SourceConfigurationFactory
 import io.airbyte.cdk.output.DataChannelMedium
@@ -8,14 +9,18 @@ import io.airbyte.cdk.output.DataChannelMedium.SOCKET
 import io.airbyte.cdk.output.DataChannelMedium.STDIO
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
+import io.airbyte.integrations.source.datagen.flavor.increment.IncrementFlavor
 import io.airbyte.integrations.source.datagen.log
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 import java.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toJavaDuration
 
 private val log = KotlinLogging.logger {}
+
+// TODO: support configuration to choose flavor
 
 /** Dev data gen-specific implementation of [SourceConfiguration] */
 data class DataGenSourceConfiguration(
@@ -28,8 +33,20 @@ data class DataGenSourceConfiguration(
     override val realPort: Int = 0,
     override val sshTunnel: SshTunnelMethodConfiguration? = null,
     override val sshConnectionOptions: SshConnectionOptions = SshConnectionOptions.fromAdditionalProperties(emptyMap()),
-    //val flavor:
-) : SourceConfiguration
+    val flavor: IncrementFlavor = IncrementFlavor
+) : SourceConfiguration {
+    /** Required to inject [DataGenSourceConfiguration] directly. */
+    @Factory
+    private class MicronautFactory {
+        @Singleton
+        fun dataGenSourceConfig(
+            factory:
+            SourceConfigurationFactory<
+                DataGenSourceConfigurationSpecification, DataGenSourceConfiguration>,
+            supplier: ConfigurationSpecificationSupplier<DataGenSourceConfigurationSpecification>,
+        ): DataGenSourceConfiguration = factory.make(supplier.get())
+    }
+}
 
 @Singleton
 class DataGenSourceConfigurationFactory:

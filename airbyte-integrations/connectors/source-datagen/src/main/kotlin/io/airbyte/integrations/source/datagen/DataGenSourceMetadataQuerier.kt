@@ -5,7 +5,6 @@ import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.MetadataQuerier
-import io.airbyte.integrations.source.datagen.flavor.increment.IncrementDataGenerator
 import io.airbyte.integrations.source.datagen.flavor.increment.IncrementFlavor
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
