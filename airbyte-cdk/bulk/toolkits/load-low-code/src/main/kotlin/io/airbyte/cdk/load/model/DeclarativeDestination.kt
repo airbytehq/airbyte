@@ -14,5 +14,8 @@ import io.airbyte.cdk.load.model.discovery.CompositeOperations
  */
 data class DeclarativeDestination(
     @JsonProperty("checker") val checker: Checker,
-    @JsonProperty(value = "discovery") val discovery: CompositeOperations,
+    @JsonProperty(value = "discovery")
+    val discovery: CompositeOperations? =
+        null, // todo: remove ? = null once we support Dynamic discovery and thus it can be a
+// required component
 )
