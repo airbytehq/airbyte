@@ -127,8 +127,7 @@
         "description" : "Write the legacy \"raw tables\" format, to enable backwards compatibility with older versions of this connector.",
         "title" : "Legacy raw tables",
         "group" : "advanced",
-        "order" : 7,
-        "default" : false
+        "order" : 7
       },
       "raw_data_dataset" : {
         "type" : "string",
