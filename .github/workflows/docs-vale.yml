@@ -21,4 +21,4 @@ jobs:
           files: docs/
           filter_mode: added # Only lint things that have changed
           fail_on_error: false # Don't fail if the linter finds issues so compliance can be optional
-          reporter: github-pr-review
+          reporter: github-pr-check
