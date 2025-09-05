@@ -136,6 +136,235 @@ class MsSqlServerExcludeTodaysDataIntegrationTest {
     }
 
     @Test
+    @Timeout(120)
+    fun testExcludeTodaysDataWithCursorBasedIncremental() {
+        // Setup: Create a table with date column for cursor-based incremental sync
+        val tableName = "test_exclude_today_incremental"
+        val today = LocalDate.now()
+        val yesterday = today.minusDays(1)
+        val twoDaysAgo = today.minusDays(2)
+        val threeDaysAgo = today.minusDays(3)
+
+        // Initial data setup with records from 3 days ago and 2 days ago
+        connectionFactory.get().use { connection: Connection ->
+            connection.isReadOnly = false
+
+            // Create table
+            val createTable =
+                """
+                DROP TABLE IF EXISTS $tableName;
+                CREATE TABLE $tableName (
+                    id INT IDENTITY(1,1) PRIMARY KEY,
+                    order_date DATE,
+                    amount DECIMAL(10,2),
+                    status VARCHAR(50)
+                )
+            """.trimIndent()
+
+            connection.createStatement().use { stmt -> stmt.execute(createTable) }
+
+            // Insert initial data (only old records)
+            val insertInitialData =
+                """
+                INSERT INTO $tableName (order_date, amount, status) VALUES
+                ('$threeDaysAgo', 100.00, 'initial'),
+                ('$twoDaysAgo', 200.00, 'initial');
+            """.trimIndent()
+
+            connection.createStatement().use { stmt -> stmt.execute(insertInitialData) }
+
+            log.info { "Created table $tableName with initial data" }
+            createdTables.add(tableName)
+        }
+
+        // First sync: Initial snapshot with exclude_todays_data = true
+        val configWithExclude = createConfig(excludeTodaysData = true)
+        val initialRecords = performSync(configWithExclude, tableName, "order_date")
+
+        // Verify initial sync contains only old records
+        val initialDates = extractDates(initialRecords, "order_date")
+        Assertions.assertEquals(2, initialRecords.size, "Initial sync should have 2 records")
+        Assertions.assertTrue(
+            initialDates.contains(threeDaysAgo.toString()),
+            "Initial sync should include records from 3 days ago"
+        )
+        Assertions.assertTrue(
+            initialDates.contains(twoDaysAgo.toString()),
+            "Initial sync should include records from 2 days ago"
+        )
+
+        // Add new records including yesterday and today
+        connectionFactory.get().use { connection: Connection ->
+            connection.isReadOnly = false
+
+            val insertNewData =
+                """
+                INSERT INTO $tableName (order_date, amount, status) VALUES
+                ('$yesterday', 300.00, 'incremental'),
+                ('$yesterday', 350.00, 'incremental'),
+                ('$today', 400.00, 'incremental_today'),
+                ('$today', 450.00, 'incremental_today');
+            """.trimIndent()
+
+            connection.createStatement().use { stmt -> stmt.execute(insertNewData) }
+            log.info { "Added new records including yesterday and today" }
+        }
+
+        // Second sync: Incremental sync should exclude today's data
+        val incrementalRecords = performSync(configWithExclude, tableName, "order_date")
+
+        // Extract only the new records from incremental sync
+        val allDates = extractDates(incrementalRecords, "order_date")
+        val statusValues = incrementalRecords.mapNotNull { it.get("status")?.asText() }
+
+        // Count records by date
+        val todayCount = allDates.count { it == today.toString() }
+        val yesterdayCount = allDates.count { it == yesterday.toString() }
+
+        // Verify: Today's records should be excluded in incremental sync
+        Assertions.assertEquals(
+            0,
+            todayCount,
+            "Today's records should be excluded during incremental sync when exclude_todays_data is true"
+        )
+
+        // Verify: Yesterday's records should be included
+        Assertions.assertTrue(
+            yesterdayCount >= 2,
+            "Yesterday's records should be included in incremental sync"
+        )
+
+        // Test without exclude_todays_data to confirm today's records exist
+        val configWithoutExclude = createConfig(excludeTodaysData = false)
+        val allRecordsIncludingToday = performSync(configWithoutExclude, tableName, "order_date")
+
+        val allDatesWithToday = extractDates(allRecordsIncludingToday, "order_date")
+        val todayCountWithoutExclude = allDatesWithToday.count { it == today.toString() }
+
+        Assertions.assertEquals(
+            2,
+            todayCountWithoutExclude,
+            "Today's records should be included when exclude_todays_data is false"
+        )
+
+        log.info { "Incremental sync test completed successfully" }
+    }
+
+    @Test
+    @Timeout(120)
+    fun testExcludeTodaysDataNotTriggeredForNonTemporalCursor() {
+        // Setup: Create a table with non-temporal cursor field (INTEGER and VARCHAR)
+        val tableName = "test_exclude_today_non_temporal"
+        val today = LocalDate.now()
+        val yesterday = today.minusDays(1)
+
+        connectionFactory.get().use { connection: Connection ->
+            connection.isReadOnly = false
+
+            // Create table with INTEGER primary key as cursor and date column for verification
+            val createTable =
+                """
+                DROP TABLE IF EXISTS $tableName;
+                CREATE TABLE $tableName (
+                    id INT IDENTITY(1,1) PRIMARY KEY,
+                    order_date DATE,
+                    status VARCHAR(50),
+                    amount DECIMAL(10,2)
+                )
+            """.trimIndent()
+
+            connection.createStatement().use { stmt -> stmt.execute(createTable) }
+
+            // Insert test data with today's and yesterday's dates
+            // IDs will be 1, 2, 3, 4, 5
+            val insertData =
+                """
+                INSERT INTO $tableName (order_date, status, amount) VALUES
+                ('$yesterday', 'old', 100.00),
+                ('$yesterday', 'old', 150.00),
+                ('$today', 'new', 200.00),
+                ('$today', 'new', 250.00),
+                ('$today', 'new', 300.00);
+            """.trimIndent()
+
+            connection.createStatement().use { stmt -> stmt.execute(insertData) }
+
+            log.info { "Created table $tableName with non-temporal cursor test data" }
+            createdTables.add(tableName)
+        }
+
+        // Test 1: Using INTEGER cursor field with exclude_todays_data = true
+        // The feature should NOT be triggered, all records should be returned
+        val configWithExclude = createConfig(excludeTodaysData = true)
+        val recordsWithIntCursor = performSync(configWithExclude, tableName, "id")
+
+        // Verify: All records should be included (feature not triggered for INTEGER cursor)
+        Assertions.assertEquals(
+            5,
+            recordsWithIntCursor.size,
+            "All 5 records should be included when cursor is INTEGER, even with exclude_todays_data = true"
+        )
+
+        // Verify today's records are included
+        val dates = extractDates(recordsWithIntCursor, "order_date")
+        val todayCount = dates.count { it == today.toString() }
+        Assertions.assertEquals(
+            3,
+            todayCount,
+            "Today's 3 records should be included when cursor is INTEGER type"
+        )
+
+        // Test 2: Using VARCHAR cursor field with exclude_todays_data = true
+        val recordsWithStringCursor = performSync(configWithExclude, tableName, "status")
+
+        // Verify: All records should be included (feature not triggered for VARCHAR cursor)
+        Assertions.assertEquals(
+            5,
+            recordsWithStringCursor.size,
+            "All 5 records should be included when cursor is VARCHAR, even with exclude_todays_data = true"
+        )
+
+        // Test 3: Incremental sync with non-temporal cursor should also include all new records
+        connectionFactory.get().use { connection: Connection ->
+            connection.isReadOnly = false
+
+            // Add more records with today's date
+            val insertNewData =
+                """
+                INSERT INTO $tableName (order_date, status, amount) VALUES
+                ('$today', 'newer', 350.00),
+                ('$today', 'newer', 400.00);
+            """.trimIndent()
+
+            connection.createStatement().use { stmt -> stmt.execute(insertNewData) }
+            log.info { "Added new records with today's date" }
+        }
+
+        // Perform incremental sync with INTEGER cursor
+        val incrementalRecords = performSync(configWithExclude, tableName, "id")
+
+        // Verify: All 7 records should be present (5 original + 2 new)
+        Assertions.assertEquals(
+            7,
+            incrementalRecords.size,
+            "All records including new today's records should be included in incremental sync with non-temporal cursor"
+        )
+
+        // Verify new today's records are included
+        val allDates = extractDates(incrementalRecords, "order_date")
+        val finalTodayCount = allDates.count { it == today.toString() }
+        Assertions.assertEquals(
+            5,
+            finalTodayCount,
+            "All 5 of today's records should be included after incremental sync with non-temporal cursor"
+        )
+
+        log.info {
+            "Non-temporal cursor test completed successfully - exclude_todays_data feature was correctly NOT triggered"
+        }
+    }
+
+    @Test
     @Timeout(60)
     fun testExcludeTodaysDataWithDatetime2Column() {
         // Setup: Create a table with datetime2 column for higher precision
