@@ -11,13 +11,12 @@ import pendulum
 import requests
 
 from airbyte_cdk import AirbyteTracedException, BackoffStrategy
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import WaitTimeFromHeaderBackoffStrategy
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, HttpStatusErrorHandler, ResponseAction
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_cdk.models import FailureType
 from source_pinterest.components.error_mapping import get_pinterest_ad_account_error_mapping
 
 from .utils import get_analytics_columns, to_datetime_str
