@@ -5,12 +5,9 @@
 package io.airbyte.cdk.load.discover
 
 import io.airbyte.cdk.Operation
-import io.airbyte.cdk.command.ConfigurationSpecification
-import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationConfiguration
-import io.airbyte.cdk.load.command.DestinationConfigurationFactory
 import io.airbyte.cdk.load.command.DestinationDiscoverCatalog
 import io.airbyte.cdk.load.command.DestinationOperation
 import io.airbyte.cdk.load.command.ImportType
@@ -31,29 +28,14 @@ private val logger = KotlinLogging.logger {}
 @Singleton
 @Requires(property = Operation.PROPERTY, value = "discover")
 @Requires(env = ["destination"])
-class DiscoverOperation<T : ConfigurationSpecification, C : DestinationConfiguration>(
-    val configJsonObjectSupplier: ConfigurationSpecificationSupplier<T>,
-    val configFactory: DestinationConfigurationFactory<T, C>,
+class DiscoverOperation<C : DestinationConfiguration>(
+    val config: C,
     val destinationDiscoverer: DestinationDiscoverer<C>,
     private val exceptionHandler: ExceptionHandler,
     private val outputConsumer: OutputConsumer,
 ) : Operation {
 
     override fun execute() {
-        val pojo =
-            try {
-                configJsonObjectSupplier.get()
-            } catch (e: Exception) {
-                handleException(e)
-                return
-            }
-        val config =
-            try {
-                configFactory.make(pojo)
-            } catch (e: Exception) {
-                handleException(e)
-                return
-            }
         try {
             val destinationCatalog = destinationDiscoverer.discover(config)
             outputConsumer.accept(destinationCatalog.toProtocol())
