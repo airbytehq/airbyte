@@ -364,10 +364,6 @@ definitions:
 
   record_selector_for_hourly_reports_streams:
     $ref: "#/definitions/record_selector"
-    record_filter:
-      type: RecordFilter
-      condition: "{{ record['dimensions']['stat_time_hour'] >= format_datetime(stream_interval['start_time'], '%Y-%m-%d 00:00:00', '%Y-%m-%d %H:%M:%S') }}"
-
   base_report_retriever:
     type: SimpleRetriever
     requester:
