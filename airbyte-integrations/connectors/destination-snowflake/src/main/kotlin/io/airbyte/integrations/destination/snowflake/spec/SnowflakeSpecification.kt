@@ -105,8 +105,8 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
     )
     // for compatibility with existing actor configs, we keep the old property name.
     @get:JsonProperty("disable_type_dedupe")
-    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 7, "default": false}""")
-    val legacyRawTablesOnly: Boolean? = null
+    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 7}""")
+    val legacyRawTablesOnly: Boolean? = false
 
     @get:JsonSchemaTitle("Airbyte Internal Table Dataset Name")
     @get:JsonPropertyDescription(
