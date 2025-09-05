@@ -13,19 +13,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Checkout the repository
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
         with:
           fetch-depth: 0
 
       # Detect changed Markdown files in the PR
-      - uses: tj-actions/changed-files@v46
+      - uses: tj-actions/changed-files@ed68ef82c095e0d48ec87eccea555d944a631a4c # Tagged to v46 due to prior CVE https://github.com/tj-actions/changed-files/releases/tag/v46 
         id: changed-files
         with:
           files: "docs/**/*.md"
           separator: ","
 
       # Run MarkdownLint on changed files
-      - uses: DavidAnson/markdownlint-cli2-action@v20
+      - uses: DavidAnson/markdownlint-cli2-action@992badcdf24e3b8eb7e87ff9287fe931bcb00c6e # Tagged to v20
         if: steps.changed-files.outputs.any_changed == 'true'
         with:
           globs: ${{ steps.changed-files.outputs.all_changed_files }}
