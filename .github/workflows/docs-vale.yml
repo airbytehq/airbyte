@@ -1,4 +1,4 @@
-name: Documentation Vale Lint
+name: Docs
 
 # This workflow runs Vale on changes docs files in pull requests. More info: https://docs.airbyte.com/platform/next/contributing-to-airbyte/writing-docs#lint-with-vale
 
@@ -10,6 +10,7 @@ on:
 
 jobs:
   vale:
+    name: "Lint with Vale"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # Pinned to V5
@@ -17,8 +18,8 @@ jobs:
           fetch-depth: 0
       - uses: errata-ai/vale-action@d89dee975228ae261d22c15adcd03578634d429c # Pinned to V2.1.1
         with:
-          vale_flags: --config=docusaurus/vale.ini
-          files: docs/
+          vale_flags: --config=docusaurus/vale.ini # Location of Vale's config file.
+          files: docs/ # Folder in which to lint
           filter_mode: added # Only lint things that have changed
-          fail_on_error: false # Don't fail if the linter finds issues so compliance can be optional
-          reporter: github-pr-check
+          fail_on_error: false # Don't fail if the linter finds issues (compliance is optional)
+          reporter: github-pr-check # Post style rule violations as annotations on the "Files changes" list
