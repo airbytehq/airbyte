@@ -265,14 +265,14 @@ class MsSqlSourceOperations :
             NoFrom -> ""
             is From -> if (this.namespace == null) "FROM $name" else "FROM $namespace.$name"
             is FromSample -> {
-                val sample: String =
-                    if (sampleRateInv == 1L) {
-                        ""
-                    } else {
-                        " TABLESAMPLE (${sampleRatePercentage.toPlainString()} PERCENT)"
-                    }
-                val baseFrom = if (namespace == null) "FROM $name" else "FROM $namespace.$name"
-                "$baseFrom$sample"
+                if (sampleRateInv == 1L) {
+                    if (namespace == null) "FROM $name" else "FROM $namespace.$name"
+                } else {
+                    val tableName = if (namespace == null) name else "$namespace.$name"
+                    val samplePercent = sampleRatePercentage.toPlainString()
+
+                    "FROM (SELECT TOP $sampleSize * FROM $tableName TABLESAMPLE ($samplePercent PERCENT) ORDER BY NEWID()) AS randomly_sampled"
+                }
             }
         }
 
