@@ -27,6 +27,8 @@ import io.debezium.engine.ChangeEvent
 import io.debezium.engine.DebeziumEngine
 import io.debezium.engine.format.Json
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.time.Duration
+import java.time.LocalDateTime
 import java.util.*
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
@@ -206,6 +208,17 @@ class CdcPartitionReader<T : Comparable<T>>(
         private val coroutineContext: CoroutineContext,
     ) : Consumer<ChangeEvent<String?, String?>> {
 
+        // Heartbeat timeout tracking fields (configurable per connector)
+        private var lastHeartbeatPosition: T? = null
+        private var lastHeartbeatTime: LocalDateTime? = null
+        // Only enable heartbeat timeout if explicitly configured
+        private val heartbeatTimeoutDuration: Duration? =
+            debeziumProperties["airbyte.heartbeat.timeout.seconds"]?.let {
+                Duration.ofSeconds(it.toLongOrNull() ?: 0L).takeIf { duration ->
+                    duration.seconds > 0
+                }
+            }
+
         override fun accept(changeEvent: ChangeEvent<String?, String?>) {
             val event = DebeziumEvent(changeEvent)
             val eventType: EventType = emitRecord(event)
@@ -302,6 +315,42 @@ class CdcPartitionReader<T : Comparable<T>>(
             }
 
             val currentPosition: T? = position(event.sourceRecord) ?: position(event.value)
+
+            // Only check for heartbeat timeout if it's configured AND this is a heartbeat event
+            if (eventType == EventType.HEARTBEAT && heartbeatTimeoutDuration != null) {
+                val heartbeatPosition = currentPosition
+                val now = LocalDateTime.now()
+
+                // Check if heartbeat position is progressing
+                val isProgressing = heartbeatPosition != lastHeartbeatPosition
+                if (isProgressing) {
+                    // Position is advancing - update tracking variables
+                    lastHeartbeatPosition = heartbeatPosition
+                    lastHeartbeatTime = now
+                    log.info { "Heartbeat progressing to position: $heartbeatPosition" }
+                } else {
+                    // Position is not advancing - check timeout
+                    val lastTime = lastHeartbeatTime
+                    if (lastTime != null) {
+                        val timeSinceLastProgress = Duration.between(lastTime, now)
+                        if (timeSinceLastProgress > heartbeatTimeoutDuration) {
+                            log.info {
+                                "Heartbeat timeout: no progress for ${timeSinceLastProgress.toMinutes()} minutes. " +
+                                    "Last position: $lastHeartbeatPosition, current: $heartbeatPosition"
+                            }
+                            return CloseReason.HEARTBEAT_NOT_PROGRESSING
+                        }
+                        log.info {
+                            "Heartbeat not progressing, time since last progress: ${timeSinceLastProgress.toSeconds()}s"
+                        }
+                    } else {
+                        // First heartbeat with this position - start tracking
+                        lastHeartbeatTime = now
+                        lastHeartbeatPosition = heartbeatPosition
+                    }
+                }
+            }
+
             if (currentPosition == null || currentPosition < upperBound) {
                 return null
             }
@@ -386,6 +435,9 @@ class CdcPartitionReader<T : Comparable<T>>(
         ),
         RECORD_REACHED_TARGET_POSITION(
             "record indicates that WAL consumption has reached the target position"
+        ),
+        HEARTBEAT_NOT_PROGRESSING(
+            "heartbeat position has not progressed for an extended period, indicating database is idle"
         ),
     }
 }
