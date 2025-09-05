@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk
 
 import io.airbyte.cdk.output.BufferingOutputConsumer
@@ -56,5 +60,4 @@ class AirbyteConnectorRunnableTest {
         assertEquals(1, outputConsumer.statuses().size)
         assertEquals(AirbyteConnectionStatus.Status.FAILED, outputConsumer.statuses()[0].status)
     }
-
 }

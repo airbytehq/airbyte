@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.checker
 
 import io.airbyte.cdk.load.check.DestinationCheckerWithoutGeneric
@@ -17,14 +21,11 @@ import org.junit.jupiter.api.extension.ExtendWith
 @ExtendWith(MockKExtension::class)
 class CompositeDlqCheckerTest {
 
-    @MockK
-    private lateinit var decorated: DestinationCheckerWithoutGeneric
+    @MockK private lateinit var decorated: DestinationCheckerWithoutGeneric
 
-    @MockK
-    private lateinit var dlqChecker: DlqChecker
+    @MockK private lateinit var dlqChecker: DlqChecker
 
-    @MockK
-    private lateinit var objectStorageConfig: ObjectStorageConfig
+    @MockK private lateinit var objectStorageConfig: ObjectStorageConfig
 
     private lateinit var compositeDlqChecker: CompositeDlqChecker
 
@@ -49,19 +50,16 @@ class CompositeDlqCheckerTest {
         every { decorated.check() } throws RuntimeException("Decorated checker failed")
         every { dlqChecker.check(objectStorageConfig) }
 
-        assertFailsWith<RuntimeException> {
-            compositeDlqChecker.check()
-        }
+        assertFailsWith<RuntimeException> { compositeDlqChecker.check() }
     }
 
     @Test
     fun `test given dlq checker fails when check then should propagate exception`() {
         every { decorated.check() } just Runs
-        every { dlqChecker.check(objectStorageConfig) } throws RuntimeException("Decorated checker failed")
+        every { dlqChecker.check(objectStorageConfig) } throws
+            RuntimeException("Decorated checker failed")
 
-        assertFailsWith<RuntimeException> {
-            compositeDlqChecker.check()
-        }
+        assertFailsWith<RuntimeException> { compositeDlqChecker.check() }
     }
 
     @Test

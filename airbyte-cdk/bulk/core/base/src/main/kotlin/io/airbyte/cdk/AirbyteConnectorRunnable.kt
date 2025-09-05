@@ -65,5 +65,4 @@ class AirbyteConnectorRunnable : Runnable {
             throw e
         }
     }
-
 }
