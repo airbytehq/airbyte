@@ -88,7 +88,7 @@ jobs:
         id: get-app-token
         with:
           owner: "airbytehq"
-          repositories: ${{ github.event.repository.name }}
+          repositories: ${{ inputs.repo || github.event.repository.name }}
           app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
           private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
       - name: Checkout Airbyte
