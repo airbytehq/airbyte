@@ -18,8 +18,8 @@ jobs:
           fetch-depth: 0
       - uses: errata-ai/vale-action@d89dee975228ae261d22c15adcd03578634d429c # Pinned to V2.1.1
         with:
-          files: "docs/"
+          vale_flags: --config=docusaurus/vale.ini
+          files: docs/**/*.md
           filter_mode: added
-          config: "docusaurus/vale.ini"
           fail_on_error: false # Don't fail if the linter finds issues so compliance can be optional
           reporter: github-pr-review
