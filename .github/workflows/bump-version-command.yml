@@ -31,6 +31,34 @@ on:
       gitref:
         description: "Ref (Ignored)"
         required: false
+  workflow_call:
+    inputs:
+      pr:
+        description: "Pull request number. This PR will be referenced in the changelog line."
+        type: number
+        required: false
+      comment-id:
+        description: "Optional. The comment-id of the slash command. Used to update the comment with the status."
+        required: false
+        type: number
+      type:
+        description: "The type of bump to perform. One of 'major', 'minor', or 'patch'."
+        required: false
+        default: "patch"
+        type: string
+      changelog:
+        description: "Optional. The comment to add to the changelog. If not provided, the PR title will be used."
+        required: false
+        default: ""
+        type: string
+      repo:
+        description: "Repository name"
+        required: false
+        type: string
+      gitref:
+        description: "Git reference"
+        required: false
+        type: string
 
 run-name: "Bump connector versions in PR: #${{ github.event.inputs.pr }}"
 concurrency:
@@ -60,7 +88,7 @@ jobs:
         id: get-app-token
         with:
           owner: "airbytehq"
-          repositories: "airbyte"
+          repositories: ${{ inputs.repo && contains(inputs.repo, '/') && split(inputs.repo, '/')[1] || github.event.repository.name }}
           app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
           private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
       - name: Checkout Airbyte

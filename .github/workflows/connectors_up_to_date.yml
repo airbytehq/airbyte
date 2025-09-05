@@ -12,6 +12,13 @@ on:
       connectors-options:
         description: "Options to pass to the 'airbyte-ci connectors' command group."
         default: "--language=python --language=low-code --language=manifest-only"
+  workflow_call:
+    inputs:
+      connectors-options:
+        description: "Options to pass to the 'airbyte-ci connectors' command group."
+        default: "--language=python --language=low-code --language=manifest-only"
+        type: string
+        required: false
 jobs:
   generate_matrix:
     name: Generate matrix
@@ -60,7 +67,7 @@ jobs:
         id: get-app-token
         with:
           owner: "airbytehq"
-          repositories: "airbyte"
+          repositories: ${{ github.event.repository.name }}
           app-id: ${{ secrets.OCTAVIA_BOT_HOARD_APP_ID }}
           private-key: ${{ secrets.OCTAVIA_BOT_HOARD_PRIVATE_KEY }}
       - name: Run airbyte-ci connectors up-to-date [WORKFLOW]
