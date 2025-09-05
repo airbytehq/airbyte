@@ -22,8 +22,11 @@ as `<stream_namespace>/<stream_name>/yyyy_mm_dd_<unix_epoch>_<part_number>.<file
 | Endpoint Domain Name                         | string  | This is Azure Blob Storage endpoint domain name. Leave default value \(or leave it empty if run container from command line\) to use Microsoft native one.                |
 | Azure blob storage container \(Bucket\) Name | string  | A name of the Azure blob storage container. If not exists - will be created automatically. If leave empty, then will be created automatically airbytecontainer+timestamp. |
 | Azure Blob Storage account name              | string  | The account's name of the Azure Blob Storage.                                                                                                                             |
-| The Azure blob storage account key           | string  | Azure blob storage account key. If this is set, the `shared access signature` option must not be set. Example: `abcdefghijklmnopqrstuvwxyz/0123456789+ABCDEFGHIJKLMNOPQRSTUVWXYZ/0123456789%++sampleKey==`.                                     |
-| The Azure blob shared access signature       | string  | Azure blob storage shared account signature (SAS). If this is set, the `storage account key` option must not be set. Example: `sv=2025-01-01&ss=b&srt=co&sp=abcdefghijk&se=2026-01-31T07:00:00Z&st=2025-01-31T20:30:29Z&spr=https&sig=YWJjZGVmZ2hpamthYmNkZWZnaGlqa2FiY2RlZmdoaWp%3D`.                  |
+| The Azure blob storage account key           | string  | Azure blob storage account key. If this is set, the `shared access signature` and Entra ID options must not be set. Example: `abcdefghijklmnopqrstuvwxyz/0123456789+ABCDEFGHIJKLMNOPQRSTUVWXYZ/0123456789%++sampleKey==`.                                     |
+| The Azure blob shared access signature       | string  | Azure blob storage shared account signature (SAS). If this is set, the `storage account key` and Entra ID options must not be set. Example: `sv=2025-01-01&ss=b&srt=co&sp=abcdefghijk&se=2026-01-31T07:00:00Z&st=2025-01-31T20:30:29Z&spr=https&sig=YWJjZGVmZ2hpamthYmNkZWZnaGlqa2FiY2RlZmdoaWp%3D`.                  |
+| Azure Tenant ID                             | string  | Azure Active Directory (Entra ID) tenant ID. Required for Entra ID authentication. If this is set, `Client ID` and `Client Secret` must also be set. Example: `12345678-1234-1234-1234-123456789012`.                                                      |
+| Azure Client ID                             | string  | Azure Active Directory (Entra ID) client ID. Required for Entra ID authentication. If this is set, `Tenant ID` and `Client Secret` must also be set. Example: `87654321-4321-4321-4321-210987654321`.                                                       |
+| Azure Client Secret                         | string  | Azure Active Directory (Entra ID) client secret. Required for Entra ID authentication. If this is set, `Tenant ID` and `Client ID` must also be set.                                                                                                        |
 | Azure Blob Storage target blob size          | integer | How large each blob should be, in megabytes. Example: 500. After a blob exceeds this size, the connector will start writing to a new blob, and increment the part number. |
 | Format                                       | object  | Format specific configuration. See below for details.                                                                                                                     |
 
@@ -115,8 +118,11 @@ With root level flattening, the output JSONL is:
   * **Azure Blob Storage account name**
     * See [this](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal) on how to create an account.
   * **Authentication** - you must use exactly one of these:
-    * **The Azure blob storage shared acces signature** (recommended)
+    * **The Azure blob storage shared access signature** (recommended)
       * See [this](https://learn.microsoft.com/en-us/azure/ai-services/translator/document-translation/how-to-guides/create-sas-tokens?tabs=Containers#create-sas-tokens-in-the-azure-portal) for how to create an SAS.
+    * **Azure Entra ID (Service Principal)**
+      * Tenant ID, Client ID, and Client Secret from an Azure service principal with appropriate permissions.
+      * See [this](https://learn.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal) for how to create a service principal.
     * **The Azure blob storage account key**
       * Corresponding key to the above user.
   * **Format**
@@ -133,7 +139,8 @@ With root level flattening, the output JSONL is:
 
 | Version  | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:---------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.0.4 | 2025-08-07 | [64556](https://github.com/airbytehq/airbyte/pull/64556) | Promoting release candidate 1.0.4-rc.1 to a main version. |
+| 1.1.0 | 2025-09-03 | [65933](https://github.com/airbytehq/airbyte/pull/65933)   | Add support for Azure Entra ID (Service Principal) authentication. You can now authenticate using Azure AD tenant ID, client ID, and client secret. |
+| 1.0.4 | 2025-08-07 | [64556](https://github.com/airbytehq/airbyte/pull/64556)   | Promoting release candidate 1.0.4-rc.1 to a main version. |
 | 1.0.4-rc.1 | 2025-08-05 | [59710](https://github.com/airbytehq/airbyte/pull/59710)   | Release Azure blob destination on latest CDK                                                                                                                    |
 | 1.0.3    | 2025-05-07 | [59710](https://github.com/airbytehq/airbyte/pull/59710)   | CDK backpressure bugfix                                                                                                                                         |
 | 1.0.2    | 2025-04-14 | [57563](https://github.com/airbytehq/airbyte/pull/57563)   | Fix signature spec example                                                                                                                                      |

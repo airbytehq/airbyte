@@ -1,5 +1,9 @@
 **Load CDK**
 
+## Version 0.1.22
+
+* **Changed:** Add EntraID support to azure-blob-storage.
+
 ## Version 0.1.21
 
 * **Changed:** Adds basic socket support.

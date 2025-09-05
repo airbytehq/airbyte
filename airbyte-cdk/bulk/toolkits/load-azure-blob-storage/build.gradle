@@ -3,6 +3,7 @@ dependencies {
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-load')
     api("com.azure:azure-storage-blob:12.31.1")
     api("com.azure:azure-storage-blob-batch:12.27.1")
+    api("com.azure:azure-identity:1.13.2")
     api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-aws')
     api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-object-storage')
 
