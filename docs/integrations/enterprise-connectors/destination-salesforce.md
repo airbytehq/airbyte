@@ -208,3 +208,14 @@ For programmatic configuration, use these parameter names:
 - [Salesforce Connected Apps](https://help.salesforce.com/s/articleView?id=sf.connected_app_create.htm)
 - [Rejected Records](/platform/next/move-data/rejected-records)
 
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
+
+The connector is still incubating, this section only exists to satisfy Airbyte's QA checks.
+
+- 0.0.6
+
+</details>
+
