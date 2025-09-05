@@ -327,6 +327,12 @@ definitions:
           filtering: '{{ {"secondary_status": "AD_STATUS_ALL"}|string if config.get("include_deleted", False) }}'
       record_selector:
         $ref: "#/definitions/record_selector"
+        # This filter is needed because the API will at times return Smart+ Ad Records without a modify_time value.
+        # These are not easily filtered at the API level which is why they are filtered here.
+        # See https://github.com/airbytehq/airbyte/pull/65602 for more context
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record.get('modify_time') is not none }}"
       paginator:
         $ref: "#/definitions/semi_incremental_stream/retriever/paginator"
       partition_router:
