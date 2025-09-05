@@ -17,7 +17,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, HttpStatusErrorHandler, ResponseAction
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_protocol.models import FailureType
+from airbyte_cdk.models import FailureType
 from source_pinterest.components.error_mapping import get_pinterest_ad_account_error_mapping
 
 from .utils import get_analytics_columns, to_datetime_str
@@ -156,6 +156,13 @@ class PinterestStream(HttpStream, ABC):
 
             for record in data:
                 yield record
+
+
+class AdAccounts(PinterestStream):
+    use_cache = True
+
+    def path(self, **kwargs) -> str:
+        return "ad_accounts"
 
 
 class PinterestSubStream(HttpSubStream):
