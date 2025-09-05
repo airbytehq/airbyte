@@ -1,5 +1,0 @@
-micronaut:
-  executors:
-    scheduled:
-      type: scheduled
-      core-pool-size: 1
