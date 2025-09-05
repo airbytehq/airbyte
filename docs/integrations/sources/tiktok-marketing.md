@@ -68,6 +68,24 @@ To access the Sandbox environment:
 6. Click `Set up source`.
 <!-- /env:oss -->
 
+## Configuration
+
+### API Request Rate Limiting
+
+The TikTok Marketing connector includes configurable rate limiting to optimize sync performance while respecting API limits. You can configure the following parameter:
+
+- **API Requests Per Minute**: Controls the maximum number of API requests sent per minute for each type of API endpoint. The default value is 600 requests per minute, which aligns with TikTok's standard rate limits.
+
+If you have higher API limits for your TikTok Marketing account, you can increase this value to achieve faster sync times. To modify this setting:
+
+1. In your connector configuration, locate the "API Requests Per Minute" field
+2. Increase the value above 600 if your account has higher limits
+3. Save the configuration
+
+:::info
+The minimum value is 600 requests per minute. Setting a value higher than your actual API limits may result in rate limiting errors. Contact TikTok support to confirm your account's specific rate limits before increasing this value.
+:::
+
 ## Supported sync modes
 
 The TikTok Marketing source connector supports the following [sync modes](https://docs.airbyte.com/platform/using-airbyte/core-concepts/#connection):
@@ -147,7 +165,7 @@ The connector is restricted by [requests limitation](https://business-api.tiktok
 
 | Version   | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.8.1 | 2025-09-05 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Add API Budget to prevent Rate-Limiting|
+| 4.8.1 | 2025-09-05 | [65957](https://github.com/airbytehq/airbyte/pull/65957) | Add API Budget to prevent Rate-Limiting|
 | 4.8.0 | 2025-06-24 | [62048](https://github.com/airbytehq/airbyte/pull/62048) | Promoting release candidate 4.8.0-rc.1 to a main version. |
 | 4.8.0-rc.1     | 2025-06-16 | [61580](https://github.com/airbytehq/airbyte/pull/61580)  | Convert to manifest-only format                                                                                                                               |
 | 4.7.0     | 2025-03-10 | [55681](https://github.com/airbytehq/airbyte/pull/55681)  | Ads / AdGroups report by country streams                                                                                                                               |
