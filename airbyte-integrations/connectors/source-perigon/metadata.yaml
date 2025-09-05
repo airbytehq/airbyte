@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 88031c22-4e1e-40da-8900-80f2ad176c34
-  dockerImageTag: 0.0.14
+  dockerImageTag: 0.0.15
   dockerRepository: airbyte/source-perigon
   githubIssueLabel: source-perigon
   icon: icon.svg

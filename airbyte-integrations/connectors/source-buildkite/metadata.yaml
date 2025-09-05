@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 9b0d6e72-5c85-40a3-af88-3a8f7c65746f
-  dockerImageTag: 0.0.29
+  dockerImageTag: 0.0.30
   dockerRepository: airbyte/source-buildkite
   githubIssueLabel: source-buildkite
   icon: icon.svg

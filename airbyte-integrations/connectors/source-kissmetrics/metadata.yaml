@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: ea2607ce-b94d-4218-83f8-724010403c9e
-  dockerImageTag: 0.0.33
+  dockerImageTag: 0.0.34
   dockerRepository: airbyte/source-kissmetrics
   githubIssueLabel: source-kissmetrics
   icon: icon.svg

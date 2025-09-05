@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: b58c3536-7900-439c-80a8-fc2b94460781
-  dockerImageTag: 0.0.31
+  dockerImageTag: 0.0.32
   dockerRepository: airbyte/source-firehydrant
   githubIssueLabel: source-firehydrant
   icon: icon.svg

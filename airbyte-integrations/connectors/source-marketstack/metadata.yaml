@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 0caeba13-0807-46aa-a6c0-7e8d25d168be
-  dockerImageTag: 0.0.33
+  dockerImageTag: 0.0.34
   dockerRepository: airbyte/source-marketstack
   githubIssueLabel: source-marketstack
   icon: icon.svg

@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: c32e6012-96cf-45f7-8c09-ac9a32484d96
-  dockerImageTag: 0.0.33
+  dockerImageTag: 0.0.34
   dockerRepository: airbyte/source-pretix
   githubIssueLabel: source-pretix
   icon: icon.svg
