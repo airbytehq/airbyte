@@ -104,7 +104,6 @@ class MsSqlSourceOperations :
                     JDBCType.REF,
                     JDBCType.DATALINK,
                     JDBCType.ROWID,
-                    JDBCType.SQLXML,
                     JDBCType.REF_CURSOR,
                     null -> PokemonFieldType
                 }
