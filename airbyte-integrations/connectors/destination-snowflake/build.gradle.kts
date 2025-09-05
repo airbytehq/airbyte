@@ -40,6 +40,7 @@ val junitPlatformVersion = "1.13.4"
 
 dependencies {
     implementation("net.snowflake:snowflake-jdbc-thin:3.26.1")
+    implementation("com.zaxxer:HikariCP:7.0.2")
 
     testImplementation("io.mockk:mockk:1.14.5")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
