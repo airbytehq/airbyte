@@ -11,6 +11,7 @@ import io.airbyte.integrations.destination.snowflake.spec.KeyPairAuthConfigurati
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.spec.UsernamePasswordAuthConfiguration
 import io.micronaut.context.annotation.Factory
+import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.io.File
 import java.nio.charset.StandardCharsets
@@ -42,6 +43,7 @@ class DataSourceFactory {
     fun dataSource(
         snowflakeConfiguration: SnowflakeConfiguration,
         snowflakeSqlNameTransformer: SnowflakeSqlNameTransformer,
+        @Named("snowflakePrivateKeyFileName")
         snowflakePrivateKeyFileName: String = PRIVATE_KEY_FILE_NAME,
     ): DataSource {
         val snowflakeJdbcUrl =
