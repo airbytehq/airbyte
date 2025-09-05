@@ -10,7 +10,7 @@ private val log = KotlinLogging.logger {}
 object PostgresSource {
     @JvmStatic
     fun main(args: Array<String>) {
-        args.forEachIndexed { index, arg ->
+        args.forEachIndexed { index, arg -> // TEMP
             log.info { "***$index $arg" }
             if (index in listOf(2, 4, 6)) {
                 log.info { (File(arg).readText()) }
