@@ -1,0 +1,25 @@
+name: Documentation Vale Lint
+
+# This workflow runs Vale on changes docs files in pull requests. More info: https://docs.airbyte.com/platform/next/contributing-to-airbyte/writing-docs#lint-with-vale
+
+on:
+  pull_request:
+    # Only trigger if Markdown files in /docs/ change
+    paths:
+      - "docs/**/*.md"
+
+jobs:
+  vale:
+    name: runner / vale
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # Pinned to V5
+        with:
+          fetch-depth: 0
+      - uses: errata-ai/vale-action@d89dee975228ae261d22c15adcd03578634d429c # Pinned to V2.1.1
+        with:
+          files: "docs/"
+          filter_mode: added
+          config: "docs/vale.ini"
+          fail_on_error: false # Don't fail if the linter finds issues so compliance can be optional
+          reporter: github-pr-review
