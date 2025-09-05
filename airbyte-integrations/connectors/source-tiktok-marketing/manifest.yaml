@@ -5776,6 +5776,14 @@ spec:
         default: false
         order: 4
         type: boolean
+      api_requests_per_minute:
+        title: The Maximum Number of API Requests to Send Per Minute For Each Type of API Endpoint.
+        description: Default is 600. Increase this if you have higher limits for this API for faster syncs.
+        minimum: 600
+        default: 600
+        order: 5
+        type: integer
+
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
@@ -5829,12 +5837,25 @@ spec:
           - secret
 
 # Based on https://developers.tiktok.com/doc/tiktok-api-v2-rate-limit, the rate limiting for the API on all endpoint is 600 requests per minutes.
-# This means 10 requests per second. Assuming response time of 250 ms (there is very little based for this response time though) and a bit of time for processing the responses, it would mean a thread can do ~3 requests per second.
-# If time allows it, we can definitely try to scope this number a bit better empirically.
+# With API Budget, we can set the default concurrency to 20, and the rate limit to 600 requests per minute. This to account for users with higher rate limits.
+# Those users can increase the rate limit in the config by setting api_requests_per_minute to a higher value.
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('concurrency_level', 3) }}"
+  default_concurrency: "{{ config.get('concurrency_level', 20) }}"
   max_concurrency: 20
+
+api_budget:
+  type: HTTPAPIBudget
+  status_codes_for_ratelimit_hit: [429]
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: "{{config.get('api_requests_per_minute', 600)}}"
+          interval: "PT1M"  # 1-minute sliding window
+      matchers:
+        - method: "GET"
+          url_base: "{{ config['subdomain'] }}"
+          url_path_pattern: ".*"  # Match all paths
 
 metadata:
   autoImportSchema:
