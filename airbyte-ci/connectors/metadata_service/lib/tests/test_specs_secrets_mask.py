@@ -337,7 +337,7 @@ class TestPersistSecretsToGcs:
             mock_creds.assert_called_once_with(mock_gcs_credentials)
             mock_client_class.assert_called_once_with(credentials=mock_credentials)
 
-            mock_client.bucket.assert_called_once_with("dev-airbyte-cloud-connector-metadata-service")
+            mock_client.bucket.assert_called_once_with("dev-airbyte-cloud-connector-metadata-service-2")
             mock_dev_bucket.blob.assert_called_once_with(f"{REGISTRIES_FOLDER}/{SPECS_SECRETS_MASK_FILE_NAME}")
 
             mock_blob.upload_from_string.assert_called_once()

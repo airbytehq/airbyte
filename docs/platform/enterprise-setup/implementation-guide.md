@@ -260,7 +260,6 @@ Follow these instructions to add the Airbyte helm repository:
     ```yaml title="values.yaml"
     global:
       auth:
-        enabled: false # Set to false if you're using SSO
       
         # -- Admin user configuration
         instanceAdmin:
@@ -290,7 +289,6 @@ Follow these instructions to add the Airbyte helm repository:
     ```yaml title="values.yaml"
     global:
       auth:
-        enabled: false # Set to false if you're using SSO
       
         # -- Admin user configuration
         instanceAdmin:
@@ -306,6 +304,7 @@ Follow these instructions to add the Airbyte helm repository:
             genericOidc:
               clientId: ""
               audience: ""
+              extraScopes: ""
               issuer: ""
               endpoints:
                 authorizationServerEndpoint: ""

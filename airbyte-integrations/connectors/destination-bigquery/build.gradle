@@ -8,7 +8,7 @@ plugins {
 airbyteBulkConnector {
     core = 'load'
     toolkits = ['load-gcs', 'load-db', 'load-s3']
-    cdk = '0.546'
+    cdk = '0.1.19'
 }
 
 java {

@@ -83,13 +83,9 @@ class ManifestOnlyFilePaths:
 # 🛣️ FILES AND PATHS
 
 
-def get_doc_local_file_path(metadata: ConnectorMetadataDefinitionV0, docs_path: Path, inapp: bool) -> Optional[Path]:
-    pattern = re.compile(r"^https://docs\.airbyte\.com/(.+)$")
-    match = pattern.search(metadata.data.documentationUrl)
-    if match:
-        extension = ".inapp.md" if inapp else ".md"
-        return (docs_path / match.group(1)).with_suffix(extension)
-    return None
+def get_doc_local_file_path(docs_path: Path, inapp: bool) -> Optional[Path]:
+    extension = ".inapp.md" if inapp else ".md"
+    return docs_path.with_suffix(extension)
 
 
 def get_manifest_only_file_paths(working_directory: Path) -> ManifestOnlyFilePaths:
@@ -479,7 +475,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
 
     # Doc upload
 
-    local_doc_path = get_doc_local_file_path(metadata, docs_path, inapp=False)
+    local_doc_path = get_doc_local_file_path(docs_path, inapp=False)
     doc_files_uploaded = _file_upload(
         file_key="doc",
         local_path=local_doc_path,
@@ -492,7 +488,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
     )
     uploaded_files.extend(doc_files_uploaded)
 
-    local_inapp_doc_path = get_doc_local_file_path(metadata, docs_path, inapp=True)
+    local_inapp_doc_path = get_doc_local_file_path(docs_path, inapp=True)
     inapp_doc_files_uploaded = _file_upload(
         file_key="inapp_doc",
         local_path=local_inapp_doc_path,

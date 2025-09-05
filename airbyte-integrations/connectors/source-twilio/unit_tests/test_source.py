@@ -6,22 +6,12 @@ from unittest.mock import Mock
 
 import pytest
 import requests
-from source_twilio.source import SourceTwilio
+from conftest import TEST_CONFIG, get_source
 
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 
 
-@pytest.fixture
-def config():
-    return {
-        "account_sid": "airbyte.io",
-        "auth_token": "secret",
-        "start_date": "2022-01-01T00:00:00Z",
-        "lookback_window": 0,
-    }
-
-
-TEST_INSTANCE = SourceTwilio(config, None, None)
+TEST_INSTANCE = get_source(TEST_CONFIG)
 
 
 @pytest.mark.parametrize(
@@ -44,9 +34,10 @@ TEST_INSTANCE = SourceTwilio(config, None, None)
         ),
     ),
 )
-def test_check_connection_handles_exceptions(mocker, config, exception, expected_error_msg):
+def test_check_connection_handles_exceptions(mocker, exception, expected_error_msg):
+    mocker.patch("time.sleep")
     mocker.patch.object(requests.Session, "send", Mock(side_effect=exception))
     logger_mock = Mock()
-    status_ok, error = TEST_INSTANCE.check_connection(logger=logger_mock, config=config)
+    status_ok, error = TEST_INSTANCE.check_connection(logger=logger_mock, config=TEST_CONFIG)
     assert not status_ok
     assert error == expected_error_msg

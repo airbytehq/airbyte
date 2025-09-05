@@ -8,11 +8,12 @@ import logging
 import re
 from dataclasses import dataclass
 from itertools import groupby
-from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import anyascii
 import requests
 
+from airbyte_cdk import AirbyteTracedException, FailureType, InterpolatedString
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
@@ -27,6 +28,7 @@ from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigr
 from airbyte_cdk.sources.declarative.partition_routers import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
+from airbyte_cdk.sources.declarative.schema import SchemaLoader
 from airbyte_cdk.sources.declarative.schema.inline_schema_loader import InlineSchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
@@ -43,6 +45,21 @@ REPORT_MAPPING = {
     "campaign_real_time_bidding_settings": "campaign",
     "campaign_bidding_strategy": "campaign",
     "service_accounts": "customer",
+}
+
+DATE_TYPES = ("segments.date", "segments.month", "segments.quarter", "segments.week")
+
+
+GOOGLE_ADS_DATATYPE_MAPPING = {
+    "INT64": "integer",
+    "INT32": "integer",
+    "DOUBLE": "number",
+    "STRING": "string",
+    "BOOLEAN": "boolean",
+    "DATE": "string",
+    "MESSAGE": "string",
+    "ENUM": "string",
+    "RESOURCE_NAME": "string",
 }
 
 
@@ -654,3 +671,283 @@ class GoogleAdsCriterionParentStateMigration(StateMigration):
             return stream_state
 
         return {"parent_state": stream_state}
+
+
+class CustomGAQueryHttpRequester(HttpRequester):
+    """
+    Custom HTTP requester for custom query streams.
+    """
+
+    parameters: Mapping[str, Any]
+
+    def __post_init__(self, parameters: Mapping[str, Any]):
+        super().__post_init__(parameters=parameters)
+        self.query = parameters.get("query")
+        self._cursor_field = (
+            InterpolatedString.create(parameters.get("cursor_field", ""), parameters={}) if parameters.get("cursor_field") else None
+        )
+
+    def get_request_body_json(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> MutableMapping[str, Any]:
+        query = self._build_query(stream_slice)
+        return {"query": query}
+
+    def get_request_headers(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
+        return {
+            "developer-token": self.config["credentials"]["developer_token"],
+            "login-customer-id": stream_slice["parent_slice"]["customer_id"],
+        }
+
+    def _build_query(self, stream_slice: StreamSlice) -> str:
+        fields = self._get_list_of_fields()
+        resource_name = self._get_resource_name()
+
+        cursor_field = self._cursor_field.eval(self.config) if self._cursor_field else None
+
+        if cursor_field:
+            fields.append(cursor_field)
+
+        if "start_time" in stream_slice and "end_time" in stream_slice and cursor_field:
+            query = f"SELECT {', '.join(fields)} FROM {resource_name} WHERE {cursor_field} BETWEEN '{stream_slice['start_time']}' AND '{stream_slice['end_time']}' ORDER BY {cursor_field} ASC"
+        else:
+            query = f"SELECT {', '.join(fields)} FROM {resource_name}"
+
+        self._validate_query(query)
+
+        return query
+
+    def _get_list_of_fields(self) -> List[str]:
+        """
+        Extract field names from the `SELECT` clause of the query.
+        e.g. Parses a query "SELECT field1, field2, field3 FROM table" and returns ["field1", "field2", "field3"].
+        """
+        query_upper = self.query.upper()
+        select_index = query_upper.find("SELECT")
+        from_index = query_upper.find("FROM")
+
+        fields_portion = self.query[select_index + 6 : from_index].strip()
+
+        fields = [field.strip() for field in fields_portion.split(",")]
+
+        return fields
+
+    def _get_resource_name(self) -> str:
+        """
+        Extract the resource name from the `FROM` clause of the query.
+        e.g. Parses a query "SELECT field1, field2, field3 FROM table" and returns "table".
+        """
+        query_upper = self.query.upper()
+        from_index = query_upper.find("FROM")
+        return self.query[from_index + 4 :].strip()
+
+    def _validate_query(self, query: str):
+        try:
+            GAQL.parse(query)
+        except ValueError:
+            raise ValueError("GAQL query validation failed.")
+
+
+@dataclass()
+class CustomGAQuerySchemaLoader(SchemaLoader):
+    """
+    Custom schema loader for custom query streams. Parses the user-provided query to extract the fields and then queries the Google Ads API for each field to retreive field metadata.
+    """
+
+    requester: HttpRequester
+    config: Config
+
+    query: str = ""
+    cursor_field: Union[str, InterpolatedString] = ""
+
+    def __post_init__(self):
+        self._cursor_field = InterpolatedString.create(self.cursor_field, parameters={}) if self.cursor_field else None
+        self._validate_query(self.query)
+
+    def get_json_schema(self) -> Dict[str, Any]:
+        local_json_schema = {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {},
+            "additionalProperties": True,
+        }
+
+        for field in self._get_list_of_fields():
+            field_metadata_response_json = self._get_field_metadata(field)
+            field_value = self._build_field_value(field, field_metadata_response_json)
+            local_json_schema["properties"][field] = field_value
+
+        return local_json_schema
+
+    def _build_field_value(self, field: str, response_json: Dict[str, Any]) -> Any:
+        field_value = {"type": [GOOGLE_ADS_DATATYPE_MAPPING.get(response_json["dataType"], response_json["dataType"]), "null"]}
+
+        if response_json["dataType"] == "DATE" and field in DATE_TYPES:
+            field_value["format"] = "date"
+
+        if response_json["dataType"] == "ENUM":
+            field_value["enum"] = [value for value in response_json["enumValues"]]
+
+        if response_json["isRepeated"]:
+            field_value = {"type": ["null", "array"], "items": field_value}
+
+        return field_value
+
+    def _get_field_metadata(self, field: str) -> Dict[str, Any]:
+        url = f"https://googleads.googleapis.com/v20/googleAdsFields/{field}"
+        logger.debug(f"`GET` request for field metadata for {field}, url: {url}")
+        response = requests.get(
+            url=url,
+            headers=self._get_request_headers(),
+        )
+
+        response.raise_for_status()
+
+        response_json = response.json()
+        logger.debug(f"Metadata response for {field}: {response_json}")
+        error = response_json.get("error")
+        if error:
+            failure_type = FailureType.transient_error if error["code"] >= 500 else FailureType.config_error
+            raise AirbyteTracedException(
+                failure_type=failure_type,
+                internal_message=f"Failed to get field metadata for {field}, error: {error}",
+                message=f"The provided field is invalid: Status: '{error.get('status')}', Message: '{error.get('message')}', Field: '{field}'",
+            )
+
+        return response_json
+
+    def _get_list_of_fields(self) -> List[str]:
+        """
+        Extract field names from the `SELECT` clause of the query.
+        e.g. Parses a query "SELECT field1, field2, field3 FROM table" and returns ["field1", "field2", "field3"].
+        """
+        query_upper = self.query.upper()
+        select_index = query_upper.find("SELECT")
+        from_index = query_upper.find("FROM")
+
+        fields_portion = self.query[select_index + 6 : from_index].strip()
+
+        fields = [field.strip() for field in fields_portion.split(",")]
+
+        cursor_field = self._cursor_field.eval(self.config) if self._cursor_field else None
+        if cursor_field:
+            fields.append(cursor_field)
+
+        return fields
+
+    def _get_request_headers(self) -> Mapping[str, Any]:
+        headers = {}
+        auth_headers = self.requester.authenticator.get_auth_header()
+        if auth_headers:
+            headers.update(auth_headers)
+
+        headers["developer-token"] = self.config["credentials"]["developer_token"]
+        return headers
+
+    def _validate_query(self, query: str):
+        try:
+            GAQL.parse(query)
+        except ValueError:
+            raise AirbyteTracedException(
+                failure_type=FailureType.config_error,
+                internal_message=f"The provided query is invalid: {query}. Please refer to the Google Ads API documentation for the correct syntax: https://developers.google.com/google-ads/api/fields/v20/overview and test validate your query using the Google Ads Query Builder: https://developers.google.com/google-ads/api/fields/v20/query_validator",
+                message=f"The provided query is invalid: {query}. Please refer to the Google Ads API documentation for the correct syntax: https://developers.google.com/google-ads/api/fields/v20/overview and test validate your query using the Google Ads Query Builder: https://developers.google.com/google-ads/api/fields/v20/query_validator",
+            )
+
+
+@dataclass(repr=False, eq=False, frozen=True)
+class GAQL:
+    """
+    Simple regex parser of Google Ads Query Language
+    https://developers.google.com/google-ads/api/docs/query/grammar
+    """
+
+    fields: Tuple[str]
+    resource_name: str
+    where: str
+    order_by: str
+    limit: Optional[int]
+    parameters: str
+
+    REGEX = re.compile(
+        r"""\s*
+            SELECT\s+(?P<FieldNames>\S.*)
+            \s+
+            FROM\s+(?P<ResourceNames>[a-z][a-zA-Z_]*(\s*,\s*[a-z][a-zA-Z_]*)*)
+            \s*
+            (\s+WHERE\s+(?P<WhereClause>\S.*?))?
+            (\s+ORDER\s+BY\s+(?P<OrderByClause>\S.*?))?
+            (\s+LIMIT\s+(?P<LimitClause>[1-9]([0-9])*))?
+            \s*
+            (\s+PARAMETERS\s+(?P<ParametersClause>\S.*?))?
+            $""",
+        flags=re.I | re.DOTALL | re.VERBOSE,
+    )
+
+    REGEX_FIELD_NAME = re.compile(r"^[a-z][a-z0-9._]*$", re.I)
+
+    @classmethod
+    def parse(cls, query):
+        m = cls.REGEX.match(query)
+        if not m:
+            raise ValueError
+
+        fields = [f.strip() for f in m.group("FieldNames").split(",")]
+        for field in fields:
+            if not cls.REGEX_FIELD_NAME.match(field):
+                raise ValueError
+
+        resource_names = re.split(r"\s*,\s*", m.group("ResourceNames"))
+        if len(resource_names) > 1:
+            raise ValueError
+        resource_name = resource_names[0]
+
+        where = cls._normalize(m.group("WhereClause") or "")
+        order_by = cls._normalize(m.group("OrderByClause") or "")
+        limit = m.group("LimitClause")
+        if limit:
+            limit = int(limit)
+        parameters = cls._normalize(m.group("ParametersClause") or "")
+        return cls(tuple(fields), resource_name, where, order_by, limit, parameters)
+
+    def __str__(self):
+        fields = ", ".join(self.fields)
+        query = f"SELECT {fields} FROM {self.resource_name}"
+        if self.where:
+            query += " WHERE " + self.where
+        if self.order_by:
+            query += " ORDER BY " + self.order_by
+        if self.limit is not None:
+            query += " LIMIT " + str(self.limit)
+        if self.parameters:
+            query += " PARAMETERS " + self.parameters
+        return query
+
+    def __repr__(self):
+        return self.__str__()
+
+    @staticmethod
+    def _normalize(s):
+        s = s.strip()
+        return re.sub(r"\s+", " ", s)
+
+    def set_where(self, value: str):
+        return self.__class__(self.fields, self.resource_name, value, self.order_by, self.limit, self.parameters)
+
+    def set_limit(self, value: int):
+        return self.__class__(self.fields, self.resource_name, self.where, self.order_by, value, self.parameters)
+
+    def append_field(self, value):
+        fields = list(self.fields)
+        fields.append(value)
+        return self.__class__(tuple(fields), self.resource_name, self.where, self.order_by, self.limit, self.parameters)
