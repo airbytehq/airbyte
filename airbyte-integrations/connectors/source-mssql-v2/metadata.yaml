@@ -19,6 +19,11 @@ data:
   name: Microsoft SQL Server (MSSQL)
   connectorBuildOptions:
     baseImage: docker.io/airbyte/java-connector-base:2.0.1@sha256:ec89bd1a89e825514dd2fc8730ba299a3ae1544580a078df0e35c5202c2085b3
+  connectorIPCOptions:
+    dataChannel:
+      version: "0.0.1"
+      supportedSerialization: ["JSONL", "PROTOBUF"]
+      supportedTransport: ["SOCKET", "STDIO"]
   registryOverrides:
     cloud:
       enabled: true
@@ -29,5 +34,5 @@ data:
   tags:
     - language:java
   connectorTestSuitesOptions:
-    - suite: acceptanceTests
+    - suite: unitTests
 metadataSpecVersion: "1.0"
