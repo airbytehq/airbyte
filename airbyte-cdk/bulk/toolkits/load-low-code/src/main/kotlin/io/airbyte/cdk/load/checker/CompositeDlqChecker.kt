@@ -19,6 +19,6 @@ class CompositeDlqChecker(
     }
 
     override fun cleanup() {
-        decorated.check()
+        decorated.cleanup()
     }
 }
