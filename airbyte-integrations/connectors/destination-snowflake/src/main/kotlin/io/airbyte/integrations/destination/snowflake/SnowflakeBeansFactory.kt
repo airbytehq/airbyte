@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.snowflake
 
 import io.airbyte.cdk.load.command.DestinationConfiguration
@@ -15,7 +19,8 @@ class SnowflakeBeansFactory {
     @Singleton
     fun getSnowflakeClient(config: SnowflakeConfiguration): Connection {
         // Build the Snowflake JDBC URL
-        // Format: jdbc:snowflake://<account>.snowflakecomputing.com/?warehouse=<warehouse>&database=<database>&schema=<schema>&role=<role>
+        // Format:
+        // jdbc:snowflake://<account>.snowflakecomputing.com/?warehouse=<warehouse>&database=<database>&schema=<schema>&role=<role>
         val jdbcUrl = buildString {
             append("jdbc:snowflake://")
             append(config.host)
@@ -28,17 +33,18 @@ class SnowflakeBeansFactory {
             append("&role=")
             append(config.role)
         }
-        
+
         // Set up connection properties
-        val properties = Properties().apply {
-            setProperty("user", config.username)
-            setProperty("password", config.password)
-            // Additional properties for better performance and compatibility
-            setProperty("CLIENT_SESSION_KEEP_ALIVE", "true")
-            setProperty("CLIENT_SESSION_KEEP_ALIVE_HEARTBEAT_FREQUENCY", "3600")
-            setProperty("APPLICATION", "airbyte-destination-snowflake")
-        }
-        
+        val properties =
+            Properties().apply {
+                setProperty("user", config.username)
+                setProperty("password", config.password)
+                // Additional properties for better performance and compatibility
+                setProperty("CLIENT_SESSION_KEEP_ALIVE", "true")
+                setProperty("CLIENT_SESSION_KEEP_ALIVE_HEARTBEAT_FREQUENCY", "3600")
+                setProperty("APPLICATION", "airbyte-destination-snowflake")
+            }
+
         // Create and return the connection
         return DriverManager.getConnection(jdbcUrl, properties)
     }
