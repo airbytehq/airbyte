@@ -14,7 +14,8 @@ data class SnowflakeConfiguration(
     val warehouse: String,
     val database: String,
     val schema: String,
-    val username: String
+    val username: String,
+    val password: String = "placeholder" // TODO: Will be properly passed from auth configuration
 ) : DestinationConfiguration()
 
 // sealed interface CredentialConfiguration
