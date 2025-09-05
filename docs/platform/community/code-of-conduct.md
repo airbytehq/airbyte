@@ -44,12 +44,26 @@ Instances of abusive, harassing, or otherwise unacceptable behavior may be repor
 
 Project maintainers who do not follow or enforce the Code of Conduct in good faith may face temporary or permanent repercussions as determined by other members of the project’s leadership.
 
-## Attribution
+- hi
+-  hi
+- bad list
 
-This Code of Conduct is adapted from the [Contributor Covenant](https://www.contributor-covenant.org/), version 1.4, available at [https://www.contributor-covenant.org/version/1/4/code-of-conduct.html](https://www.contributor-covenant.org/version/1/4/code-of-conduct.html)
+* unacceptable list style
+* More list items
+
+ ## Attribution
+
+https://google.com
+
+Some text.
+| Table Heading | Another one |
+| --- | -- |
+| some data | data |
+More text.
+
+This Code of Conduct is adapted from the [Contributor Covenant](https://www.contributor-covenant.org/), version 1.4, available at [https://www.contributor-covenant.org/version/1/4/code-of-conduct.html](https://www.contributor-covenant.org/version/1/4/code-of-conduct.html).
 
 ## Slack Code of Conduct
-
 Airbyte's Slack community is growing incredibly fast. We're home to over 1500 data professionals and are growing at an awesome pace. We are proud of our community, and have provided these guidelines to support new members in maintaining the wholesome spirit we have developed here. We appreciate your continued commitment to making this a community we are all excited to be a part of.
 
 ### Rule 1: Be respectful.
