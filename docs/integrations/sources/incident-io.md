@@ -55,7 +55,7 @@ The source connector supports the following [sync modes](https://docs.airbyte.co
 
 | Version | Date              | Pull Request | Subject        |
 |---------|-------------------|--------------|----------------|
-| 0.1.6   | 2025-09-05 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Update to CDK v7.0.0 |
+| 0.1.6   | 2025-09-05 | [65966](https://github.com/airbytehq/airbyte/pull/65966) | Update to CDK v7.0.0 |
 | 0.1.5   | 2025-08-23 | [65332](https://github.com/airbytehq/airbyte/pull/65332) | Update dependencies |
 | 0.1.4   | 2025-08-09 | [64591](https://github.com/airbytehq/airbyte/pull/64591) | Update dependencies |
 | 0.1.3   | 2025-08-02 | [64299](https://github.com/airbytehq/airbyte/pull/64299) | Update dependencies |

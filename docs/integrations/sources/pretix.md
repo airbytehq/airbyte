@@ -41,7 +41,7 @@
 
 | Version | Date              | Pull Request | Subject        |
 |---------|-------------------|--------------|----------------|
-| 0.0.34  | 2025-09-05 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Update to CDK v7.0.0 |
+| 0.0.34  | 2025-09-05 | [65966](https://github.com/airbytehq/airbyte/pull/65966) | Update to CDK v7.0.0 |
 | 0.0.33  | 2025-08-23 | [65174](https://github.com/airbytehq/airbyte/pull/65174) | Update dependencies |
 | 0.0.32  | 2025-08-09 | [64746](https://github.com/airbytehq/airbyte/pull/64746) | Update dependencies |
 | 0.0.31  | 2025-08-02 | [64246](https://github.com/airbytehq/airbyte/pull/64246) | Update dependencies |
