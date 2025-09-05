@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.postgres.ctid
 
 import java.util.*
@@ -29,7 +33,6 @@ class Ctid {
 
     override fun toString(): String = "($page,$tuple)"
 
-
     override fun equals(o: Any?): Boolean {
         if (this === o) {
             return true
@@ -57,10 +60,12 @@ class Ctid {
         }
 
         fun inc(ctid: Ctid, maxTuple: Long): Ctid {
-            return if (ctid.tuple + 1 > maxTuple) of(ctid.page + 1, 1) else of(
-                ctid.page,
-                ctid.tuple + 1,
-            )
+            return if (ctid.tuple + 1 > maxTuple) of(ctid.page + 1, 1)
+            else
+                of(
+                    ctid.page,
+                    ctid.tuple + 1,
+                )
         }
     }
 }

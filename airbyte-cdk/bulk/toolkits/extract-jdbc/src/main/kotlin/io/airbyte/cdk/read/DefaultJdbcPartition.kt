@@ -5,7 +5,6 @@
 package io.airbyte.cdk.read
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.output.sockets.toJson
@@ -180,7 +179,8 @@ class DefaultJdbcSplittableSnapshotPartition(
     override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
         DefaultJdbcStreamStateValue.snapshotCheckpoint(
             primaryKey = checkpointColumns,
-            primaryKeyCheckpoint = checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
+            primaryKeyCheckpoint =
+                checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
         )
 }
 
@@ -247,7 +247,8 @@ class DefaultJdbcSplittableSnapshotWithCursorPartition(
     override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
         DefaultJdbcStreamStateValue.snapshotWithCursorCheckpoint(
             primaryKey = checkpointColumns,
-            primaryKeyCheckpoint = checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
+            primaryKeyCheckpoint =
+                checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
             cursor,
             cursorUpperBound,
         )

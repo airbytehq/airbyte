@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.postgres
 
 import com.fasterxml.jackson.databind.JsonNode
@@ -30,7 +34,9 @@ class PostgresSourceJdbcPartitionFactory(
     val selectQueryGenerator: PostgresSourceSelectQueryGenerator,
     val config: PostgresSourceConfiguration,
     val handler: CatalogValidationFailureHandler,
-) : JdbcPartitionFactory<DefaultJdbcSharedState, DefaultJdbcStreamState, PostgresSourceJdbcPartition> {
+) :
+    JdbcPartitionFactory<
+        DefaultJdbcSharedState, DefaultJdbcStreamState, PostgresSourceJdbcPartition> {
     private val streamStates = ConcurrentHashMap<StreamIdentifier, DefaultJdbcStreamState>()
 
     override fun streamState(streamFeedBootstrap: StreamFeedBootstrap): DefaultJdbcStreamState =
@@ -58,9 +64,6 @@ class PostgresSourceJdbcPartitionFactory(
             cursorChosenFromCatalog,
             cursorUpperBound = null,
         )
-
-
-
     }
 
     override fun create(streamFeedBootstrap: StreamFeedBootstrap): PostgresSourceJdbcPartition? {
@@ -148,7 +151,9 @@ class PostgresSourceJdbcPartitionFactory(
         }
     }
 
-    private fun PostgresSourceJdbcStreamStateValue.cursorPair(stream: Stream): Pair<DataField, JsonNode>? {
+    private fun PostgresSourceJdbcStreamStateValue.cursorPair(
+        stream: Stream
+    ): Pair<DataField, JsonNode>? {
         if (cursors.size > 1) {
             handler.accept(
                 InvalidCursor(stream.id, cursors.keys.toString()),
@@ -177,12 +182,16 @@ class PostgresSourceJdbcPartitionFactory(
         opaqueStateValues: List<OpaqueStateValue>
     ): List<PostgresSourceJdbcPartition> {
         val splitPartitionBoundaries: List<PostgresSourceJdbcStreamStateValue> by lazy {
-            opaqueStateValues.map { Jsons.treeToValue(it, PostgresSourceJdbcStreamStateValue::class.java) }
+            opaqueStateValues.map {
+                Jsons.treeToValue(it, PostgresSourceJdbcStreamStateValue::class.java)
+            }
         }
 
         return when (unsplitPartition) {
-            is PostgresSourceJdbcSplittableSnapshotPartition -> unsplitPartition.split(splitPartitionBoundaries)
-            is PostgresSourceJdbcSplittableSnapshotWithCursorPartition -> unsplitPartition.split(splitPartitionBoundaries)
+            is PostgresSourceJdbcSplittableSnapshotPartition ->
+                unsplitPartition.split(splitPartitionBoundaries)
+            is PostgresSourceJdbcSplittableSnapshotWithCursorPartition ->
+                unsplitPartition.split(splitPartitionBoundaries)
             else -> listOf(unsplitPartition)
         }
     }
@@ -190,10 +199,19 @@ class PostgresSourceJdbcPartitionFactory(
     private fun PostgresSourceJdbcSplittableSnapshotPartition.split(
         splitPointValues: List<PostgresSourceJdbcStreamStateValue>
     ): List<PostgresSourceJdbcSplittableSnapshotPartition> {
-        val inners: List<Ctid> =
-            splitPointValues.map { Ctid(it.ctid!!) }
-        val lbCtid: Ctid?  = lowerBound?.let { if (it.isNotEmpty()) { Ctid.of(it[0].asText()) } else null }
-        val ubCtid: Ctid?  = upperBound?.let { if (it.isNotEmpty()) { Ctid.of(it[0].asText()) } else null }
+        val inners: List<Ctid> = splitPointValues.map { Ctid(it.ctid!!) }
+        val lbCtid: Ctid? =
+            lowerBound?.let {
+                if (it.isNotEmpty()) {
+                    Ctid.of(it[0].asText())
+                } else null
+            }
+        val ubCtid: Ctid? =
+            upperBound?.let {
+                if (it.isNotEmpty()) {
+                    Ctid.of(it[0].asText())
+                } else null
+            }
         val lbs: List<Ctid?> = listOf(lbCtid) + inners
         val ubs: List<Ctid?> = inners + listOf(ubCtid)
         return lbs.zip(ubs).map { (lowerBound, upperBound) ->
@@ -209,10 +227,19 @@ class PostgresSourceJdbcPartitionFactory(
     private fun PostgresSourceJdbcSplittableSnapshotWithCursorPartition.split(
         splitPointValues: List<PostgresSourceJdbcStreamStateValue>
     ): List<PostgresSourceJdbcSplittableSnapshotWithCursorPartition> {
-        val inners: List<Ctid> =
-            splitPointValues.map { Ctid(it.ctid!!) }
-        val lbCtid: Ctid?  = lowerBound?.let { if (it.isNotEmpty()) { Ctid.of(it[0].asText()) } else null }
-        val ubCtid: Ctid?  = upperBound?.let { if (it.isNotEmpty()) { Ctid.of(it[0].asText()) } else null }
+        val inners: List<Ctid> = splitPointValues.map { Ctid(it.ctid!!) }
+        val lbCtid: Ctid? =
+            lowerBound?.let {
+                if (it.isNotEmpty()) {
+                    Ctid.of(it[0].asText())
+                } else null
+            }
+        val ubCtid: Ctid? =
+            upperBound?.let {
+                if (it.isNotEmpty()) {
+                    Ctid.of(it[0].asText())
+                } else null
+            }
         val lbs: List<Ctid?> = listOf(lbCtid) + inners
         val ubs: List<Ctid?> = inners + listOf(ubCtid)
         return lbs.zip(ubs).map { (lowerBound, upperBound) ->
@@ -226,5 +253,4 @@ class PostgresSourceJdbcPartitionFactory(
             )
         }
     }
-
 }

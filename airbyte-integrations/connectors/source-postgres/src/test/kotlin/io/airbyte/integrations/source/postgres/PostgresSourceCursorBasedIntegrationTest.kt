@@ -1,10 +1,13 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.postgres
 
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.CliRunner
 import io.airbyte.cdk.discover.DiscoveredStream
 import io.airbyte.cdk.discover.EmittedField
-import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.StringFieldType
@@ -61,11 +64,9 @@ class PostgresSourceCursorBasedIntegrationTest {
         assertEquals(0, recordMessageFromRun2.size)
     }
 
-
     companion object {
         val log = KotlinLogging.logger {}
-        val dbContainer: PostgreSQLContainer<*> =
-            PostgresContainerFactory.shared(imageName = "postgres:17-bullseye")
+        val dbContainer: PostgreSQLContainer<*> = PostgresContainerFactory.shared17()
 
         val config: PostgresSourceConfigurationSpecification =
             PostgresContainerFactory.config(dbContainer)
@@ -79,15 +80,13 @@ class PostgresSourceCursorBasedIntegrationTest {
             val discoveredStream =
                 DiscoveredStream(
                     id = StreamIdentifier.Companion.from(desc),
-                    columns = listOf(EmittedField("k", IntFieldType), EmittedField("v", StringFieldType)),
+                    columns =
+                        listOf(EmittedField("k", IntFieldType), EmittedField("v", StringFieldType)),
                     primaryKeyColumnIDs = listOf(listOf("k")),
                 )
             val stream: AirbyteStream =
                 PostgresSourceStreamFactory()
-                    .create(
-                        PostgresSourceConfigurationFactory().make(config),
-                        discoveredStream
-                    )
+                    .create(PostgresSourceConfigurationFactory().make(config), discoveredStream)
 
             val configuredStream: ConfiguredAirbyteStream =
                 CatalogHelpers.toDefaultConfiguredStream(stream)
@@ -118,6 +117,5 @@ class PostgresSourceCursorBasedIntegrationTest {
                 }
             }
         }
-
     }
 }
