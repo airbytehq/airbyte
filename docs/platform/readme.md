@@ -15,6 +15,14 @@ Whether you're part of a large organization managing complex data pipelines or a
 
 Airbyte is available as a Self-Managed or Cloud product, depending on your needs.
 
+Don't don't do not not write Good.
+
+(Use parentheses because.)
+
+Strange Google "rule".
+
+This is an acid test. It's huge. MULTIPLE EXCEPTIONS! So, yeah. There's no problem here. There is no problem at all.
+
 ### Self-Managed options
 
 <Grid columns="2">
