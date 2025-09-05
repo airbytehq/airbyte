@@ -146,7 +146,7 @@ class PostgresSourceJdbcPartitionFactory(
             }
         } else {
             val (cursor: DataField, cursorCheckpoint: JsonNode) = cursorPair
-            if (!isCursorBasedIncremental || fileNodeChange != FILENODE_NO_CHANGE) {
+            if (!isCursorBasedIncremental || fileNodeChange !in listOf(FILENODE_NO_CHANGE, FILENODE_NEW_STREAM)) {
                 handler.accept(ResetStream(stream.id))
                 streamState.reset()
                 coldStart(streamState, filenode)
