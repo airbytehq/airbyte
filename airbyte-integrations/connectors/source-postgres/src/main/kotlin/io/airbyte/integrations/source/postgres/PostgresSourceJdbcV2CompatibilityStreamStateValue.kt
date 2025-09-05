@@ -51,7 +51,7 @@ data class PostgresSourceJdbcV2CompatibilityStreamStateValue(
                                     cursorField,
                                     incrementalState.cursorValue!!.asText()
                                 )
-                            ) // TEMP
+                            ) // TODO: check here
                         }
                         else -> mapOf()
                     }
