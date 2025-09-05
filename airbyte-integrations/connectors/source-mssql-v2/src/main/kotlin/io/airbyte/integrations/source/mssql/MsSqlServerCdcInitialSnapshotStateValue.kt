@@ -27,8 +27,7 @@ data class MsSqlServerCdcInitialSnapshotStateValue(
             Jsons.valueToTree(
                 MsSqlServerCdcInitialSnapshotStateValue(
                     streamName = stream.name,
-                    cursorField =
-                        stream.configuredCursor?.id.let { it?.let { listOf(it) } ?: emptyList() },
+                    cursorField = listOf(),
                     streamNamespace = stream.namespace
                 )
             )

@@ -369,8 +369,8 @@ class MsSqlServerJdbcPartitionFactory(
             is MsSqlServerJdbcCdcSnapshotPartition -> unsplitPartition.split(opaqueStateValues)
             is MsSqlServerJdbcSnapshotWithCursorPartition ->
                 unsplitPartition.split(opaqueStateValues)
-            is MsSqlServerJdbcCursorIncrementalPartition ->
-                unsplitPartition.split(opaqueStateValues)
+            is MsSqlServerJdbcSplittableSnapshotWithCursorPartition -> listOf(unsplitPartition)
+            is MsSqlServerJdbcCursorIncrementalPartition -> listOf(unsplitPartition)
             is MsSqlServerJdbcNonResumableSnapshotPartition -> listOf(unsplitPartition)
             is MsSqlServerJdbcNonResumableSnapshotWithCursorPartition -> listOf(unsplitPartition)
         }
