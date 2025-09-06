@@ -56,11 +56,11 @@ class DeclarativeDestinationFactoryTest {
                   username: "{{ config.apiId }}"
                   password: "{{ config.apiToken }}"
             discovery:
-              type: CompositeOperationsProvider
+              type: CompositeOperations
               operations:
                 - type: StaticOperation
                   object_name: player
-                  sync_mode:
+                  destination_import_mode:
                     type: Dedupe
                     primary_key: [[name]]
                     cursor: [updated_at]
@@ -114,7 +114,7 @@ class DeclarativeDestinationFactoryTest {
             }
 
             val actualOperations =
-                DeclarativeDestinationFactory(config).createCompositeOperationsProvider().get()
+                DeclarativeDestinationFactory(config).createOperationProvider().get()
             assertEquals(expectedOperations, actualOperations)
         } finally {
             unmockkStatic("io.airbyte.cdk.util.ResourceUtils") // Clean up mocks
@@ -136,11 +136,11 @@ class DeclarativeDestinationFactoryTest {
                   username: "{{ config.apiId }}"
                   password: "{{ config.apiToken }}"
             discovery:
-              type: CompositeOperationsProvider
+              type: CompositeOperations
               operations:
                 - type: StaticOperation
                   object_name: player
-                  sync_mode:
+                  destination_import_mode:
                     type: Dedupe
                     primary_key: [[name]]
                     cursor: [updated_at]
@@ -156,7 +156,7 @@ class DeclarativeDestinationFactoryTest {
                         type: string
                 - type: StaticOperation
                   object_name: position
-                  sync_mode:
+                  destination_import_mode:
                     type: Append
                   schema:
                     type: object
@@ -170,7 +170,7 @@ class DeclarativeDestinationFactoryTest {
                         type: string    
                 - type: StaticOperation
                   object_name: coaching_staff
-                  sync_mode:
+                  destination_import_mode:
                     type: Overwrite
                   schema:
                     type: object
@@ -182,7 +182,7 @@ class DeclarativeDestinationFactoryTest {
                         type: string
                 - type: StaticOperation
                   object_name: stadium
-                  sync_mode:
+                  destination_import_mode:
                     type: Update
                   schema:
                     type: object
@@ -194,7 +194,7 @@ class DeclarativeDestinationFactoryTest {
                         type: string
                 - type: StaticOperation
                   object_name: team
-                  sync_mode:
+                  destination_import_mode:
                     type: SoftDelete
                   schema:
                     type: object
@@ -286,8 +286,7 @@ class DeclarativeDestinationFactoryTest {
         val dlqChecker = mockk<DlqChecker>()
         every { dlqChecker.check(any()) } returns Unit
 
-        val actualOperations =
-            DeclarativeDestinationFactory(config).createCompositeOperationsProvider().get()
+        val actualOperations = DeclarativeDestinationFactory(config).createOperationProvider().get()
         assertEquals(expectedOperations, actualOperations)
     }
 
