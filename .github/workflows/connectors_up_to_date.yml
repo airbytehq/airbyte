@@ -12,13 +12,6 @@ on:
       connectors-options:
         description: "Options to pass to the 'airbyte-ci connectors' command group."
         default: "--language=python --language=low-code --language=manifest-only"
-  workflow_call:
-    inputs:
-      connectors-options:
-        description: "Options to pass to the 'airbyte-ci connectors' command group."
-        default: "--language=python --language=low-code --language=manifest-only"
-        type: string
-        required: false
 jobs:
   generate_matrix:
     name: Generate matrix
