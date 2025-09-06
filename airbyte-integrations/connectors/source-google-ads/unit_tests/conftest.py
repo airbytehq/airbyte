@@ -3,17 +3,14 @@
 #
 
 
-import sys
 from pathlib import Path
+from unittest.mock import Mock
 
 import pytest
-from source_google_ads import SourceGoogleAds
 from source_google_ads.models import CustomerModel
 
 from airbyte_cdk import YamlDeclarativeSource
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.catalog_builder import CatalogBuilder, ConfiguredAirbyteStreamBuilder
 from airbyte_cdk.test.state_builder import StateBuilder
 
 
@@ -28,6 +25,7 @@ def _get_manifest_path() -> Path:
 
 _SOURCE_FOLDER_PATH = _get_manifest_path()
 _YAML_FILE_PATH = "manifest.yaml"
+_UNUSED_LOGGER = Mock()
 
 # sys.path.append(str(_SOURCE_FOLDER_PATH))  # to allow loading custom components
 
@@ -38,24 +36,12 @@ def get_source(config, state=None) -> YamlDeclarativeSource:
     return YamlDeclarativeSource(path_to_yaml=str(_SOURCE_FOLDER_PATH / _YAML_FILE_PATH), catalog=catalog, config=config, state=state)
 
 
-def find_stream(stream_name, config, state=None):
-    streams = SourceGoogleAds(config, None, state).streams(config=config)
-    for stream in streams:
-        if stream.name == stream_name:
-            return stream
-    raise ValueError(f"Stream {stream_name} not found")
-
-
-def read_full_refresh(stream_instance: Stream):
-    res = []
-    schema = stream_instance.get_json_schema()
-    slices = stream_instance.stream_slices(sync_mode=SyncMode.full_refresh)
-    for slice in slices:
-        records = stream_instance.read_records(stream_slice=slice, sync_mode=SyncMode.full_refresh)
-        for record in records:
-            stream_instance.transformer.transform(record, schema)
-            res.append(record)
-    return res
+def read_full_refresh(source: YamlDeclarativeSource, config, stream_name: str):
+    return source.read(
+        _UNUSED_LOGGER,
+        config,
+        CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(stream_name)).build()
+    )
 
 
 @pytest.fixture(name="config")
