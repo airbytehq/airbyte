@@ -1,4 +1,4 @@
-version: 6.41.5
+version: 6.48.15
 
 type: DeclarativeSource
 
@@ -8,8 +8,6 @@ check:
   type: CheckStream
   stream_names:
     - brand_advertisers
-    - display_advertisers
-    - product_advertisers
 
 definitions:
   streams:
@@ -114,6 +112,8 @@ definitions:
             type: DpathExtractor
             field_path:
               - metrics
+              - "*"
+              - metrics
           record_filter:
             type: RecordFilter
             condition: "{{ record['prints'] > 0 }}"
@@ -176,6 +176,8 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config['end_date'] if config['end_date'] else today_utc() }}"
           datetime_format: "%Y-%m-%d"
+        step: P1D
+        cursor_granularity: P1D
       transformations:
         - type: AddFields
           fields:
@@ -189,6 +191,12 @@ definitions:
               path:
                 - campaign_id
               value: "{{ stream_partition.advertiser_campaign_id.split(\"-\")[1] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - date
+              value: "{{ stream_interval['start_time'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -307,6 +315,7 @@ definitions:
         - date
         - advertiser_id
         - campaign_id
+        - keyword
       retriever:
         type: SimpleRetriever
         requester:
@@ -336,7 +345,7 @@ definitions:
               - metrics
           record_filter:
             type: RecordFilter
-            condition: "{{ record['keywords'] }}"
+            condition: "{{ record['prints'] > 0 }}"
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -349,7 +358,7 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 100
+            page_size: 1000
             inject_on_first_request: true
         partition_router:
           type: SubstreamPartitionRouter
@@ -396,6 +405,8 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config['end_date'] if config['end_date'] else today_utc() }}"
           datetime_format: "%Y-%m-%d"
+        step: P1D
+        cursor_granularity: P1D
       transformations:
         - type: AddFields
           fields:
@@ -409,6 +420,12 @@ definitions:
               path:
                 - campaign_id
               value: "{{ stream_partition.advertiser_campaign_id.split(\"-\")[1] }}"
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - date
+              value: "{{ stream_interval['start_time'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -521,6 +538,16 @@ definitions:
           http_method: GET
           request_headers:
             Api-Version: "1"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                    error_message: No metrics found
         record_selector:
           type: RecordSelector
           extractor:
@@ -689,6 +716,16 @@ definitions:
               }}
           request_headers:
             Api-Version: "1"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                    error_message: No metrics found
         record_selector:
           type: RecordSelector
           extractor:
@@ -971,6 +1008,16 @@ definitions:
             aggregation_type: DAILY
           request_headers:
             api-version: "2"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                    error_message: No metrics found
         record_selector:
           type: RecordSelector
           extractor:
@@ -1140,6 +1187,16 @@ definitions:
             aggregation_type: DAILY
           request_headers:
             api-version: "2"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 404
+                    error_message: No metrics found
         record_selector:
           type: RecordSelector
           extractor:
@@ -1290,15 +1347,15 @@ spec:
       start_date:
         type: string
         description: >-
-          Cannot exceed 90 days from current day for Product Ads, and 90 days
-          from "End Date" on Brand and Display Ads
+          Cannot exceed 90 days from current day for Product Ads and Brand Ads,
+          and 90 days from "End Date" on Display Ads
         order: 4
         title: Start Date
         format: date
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
       end_date:
         type: string
-        description: Cannot exceed 90 days from current day for Product Ads
+        description: Cannot exceed 90 days from current day for Product Ads and Brand Ads
         order: 5
         title: End Date
         format: date
@@ -1340,12 +1397,12 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     brand_campaigns_metrics:
-      hasRecords: true
-      streamHash: cc4b229b896a43506e11dda2b92e16a573fd3fb0
+      streamHash: 805b532bda291ab920a6b555e3527189ca8093ef
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     brand_items:
       hasRecords: true
       streamHash: bdbfbd52812b682177d97d7ee6c719aca8b99ba6
@@ -1361,12 +1418,12 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     brand_keywords_metrics:
-      hasRecords: true
-      streamHash: 68251f6c86e0731150db4adc7b6c0b96990d0cef
+      streamHash: 535dbf26eac31d3a60a6735d72bc953022859f37
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     display_advertisers:
       hasRecords: true
       streamHash: 37746f6899b24e1c064585a90d96b09773b9569e
@@ -1383,7 +1440,7 @@ metadata:
       responsesAreSuccessful: true
     display_campaigns_metrics:
       hasRecords: true
-      streamHash: 62db61bdac680f95de4357739fcb9121b01f8158
+      streamHash: 40664d02902fecfcec4a8085080346333d31f502
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -1397,7 +1454,7 @@ metadata:
       responsesAreSuccessful: true
     display_line_items_metrics:
       hasRecords: true
-      streamHash: 419d979562667b9ac10b01f231215ebedab79e67
+      streamHash: 9b55bda7221bf7ea79986f1bd95d4662ef1b87ff
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -1425,7 +1482,7 @@ metadata:
       responsesAreSuccessful: true
     product_campaigns_metrics:
       hasRecords: true
-      streamHash: 8055a0a8eb8d0d9f10931c10d728dcf6621ace21
+      streamHash: c099edd8ae45c0c57749e92dbe85a40451cea8e6
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -1439,7 +1496,7 @@ metadata:
       responsesAreSuccessful: true
     product_items_metrics:
       hasRecords: true
-      streamHash: 090d239b4c62fae61e04ec24bc7e886c1ad141a7
+      streamHash: caa2b64de3dfe0702cae3a32bde82871e2f69714
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -1606,6 +1663,14 @@ schemas:
           - "null"
       advertiser_id:
         type: number
+      attribution_order_amount:
+        type:
+          - number
+          - "null"
+      attribution_order_conversions:
+        type:
+          - number
+          - "null"
       campaign_id:
         type: number
       clicks:
@@ -1616,7 +1681,7 @@ schemas:
         type:
           - number
           - "null"
-      cpc:
+      cost_per_clicks:
         type:
           - number
           - "null"
@@ -1624,114 +1689,20 @@ schemas:
         type:
           - number
           - "null"
-      currency:
-        type:
-          - string
-          - "null"
       cvr:
         type:
           - number
           - "null"
       date:
         type: string
-      event_time:
+      leads:
         type:
-          - object
+          - number
           - "null"
-        properties:
-          bookmark_conversions:
-            type:
-              - number
-              - "null"
-          cart_conversions:
-            type:
-              - number
-              - "null"
-          checkout_conversions:
-            type:
-              - number
-              - "null"
-          eshop_conversions:
-            type:
-              - number
-              - "null"
-          items_quantity:
-            type:
-              - number
-              - "null"
-          leads_im_conversions:
-            type:
-              - number
-              - "null"
-          leads_question_conversions:
-            type:
-              - number
-              - "null"
-          ppv_conversions:
-            type:
-              - number
-              - "null"
-          units_amount:
-            type:
-              - number
-              - "null"
-          units_quantity:
-            type:
-              - number
-              - "null"
       prints:
         type:
           - number
           - "null"
-      site_id:
-        type:
-          - string
-          - "null"
-      touch_point:
-        type:
-          - object
-          - "null"
-        properties:
-          bookmark_conversions:
-            type:
-              - number
-              - "null"
-          cart_conversions:
-            type:
-              - number
-              - "null"
-          checkout_conversions:
-            type:
-              - number
-              - "null"
-          eshop_conversions:
-            type:
-              - number
-              - "null"
-          items_quantity:
-            type:
-              - number
-              - "null"
-          leads_im_conversions:
-            type:
-              - number
-              - "null"
-          leads_question_conversions:
-            type:
-              - number
-              - "null"
-          ppv_conversions:
-            type:
-              - number
-              - "null"
-          units_amount:
-            type:
-              - number
-              - "null"
-          units_quantity:
-            type:
-              - number
-              - "null"
     required:
       - date
       - advertiser_id
@@ -1790,155 +1761,67 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      acos:
+        type:
+          - number
+          - "null"
       advertiser_id:
         type: number
+      attribution_order_amount:
+        type:
+          - number
+          - "null"
+      attribution_order_conversions:
+        type:
+          - number
+          - "null"
       campaign_id:
         type: number
+      clicks:
+        type:
+          - number
+          - "null"
+      consumed_budget:
+        type:
+          - number
+          - "null"
+      cost_per_clicks:
+        type:
+          - number
+          - "null"
+      ctr:
+        type:
+          - number
+          - "null"
+      cvr:
+        type:
+          - number
+          - "null"
       date:
         type: string
-      keywords:
+      goal_cpc_max:
         type:
-          - array
+          - number
           - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            acos:
-              type:
-                - number
-                - "null"
-            clicks:
-              type:
-                - number
-                - "null"
-            consumed_budget:
-              type:
-                - number
-                - "null"
-            cpc:
-              type:
-                - number
-                - "null"
-            ctr:
-              type:
-                - number
-                - "null"
-            currency:
-              type:
-                - string
-                - "null"
-            cvr:
-              type:
-                - number
-                - "null"
-            event_time:
-              type:
-                - object
-                - "null"
-              properties:
-                bookmark_conversions:
-                  type:
-                    - number
-                    - "null"
-                cart_conversions:
-                  type:
-                    - number
-                    - "null"
-                checkout_conversions:
-                  type:
-                    - number
-                    - "null"
-                eshop_conversions:
-                  type:
-                    - number
-                    - "null"
-                items_quantity:
-                  type:
-                    - number
-                    - "null"
-                leads_im_conversions:
-                  type:
-                    - number
-                    - "null"
-                leads_question_conversions:
-                  type:
-                    - number
-                    - "null"
-                ppv_conversions:
-                  type:
-                    - number
-                    - "null"
-                units_amount:
-                  type:
-                    - number
-                    - "null"
-                units_quantity:
-                  type:
-                    - number
-                    - "null"
-            keyword:
-              type:
-                - string
-                - "null"
-            prints:
-              type:
-                - number
-                - "null"
-            site_id:
-              type:
-                - string
-                - "null"
-            touch_point:
-              type:
-                - object
-                - "null"
-              properties:
-                bookmark_conversions:
-                  type:
-                    - number
-                    - "null"
-                cart_conversions:
-                  type:
-                    - number
-                    - "null"
-                checkout_conversions:
-                  type:
-                    - number
-                    - "null"
-                eshop_conversions:
-                  type:
-                    - number
-                    - "null"
-                items_quantity:
-                  type:
-                    - number
-                    - "null"
-                leads_im_conversions:
-                  type:
-                    - number
-                    - "null"
-                leads_question_conversions:
-                  type:
-                    - number
-                    - "null"
-                ppv_conversions:
-                  type:
-                    - number
-                    - "null"
-                units_amount:
-                  type:
-                    - number
-                    - "null"
-                units_quantity:
-                  type:
-                    - number
-                    - "null"
+      is_deleted:
+        type:
+          - boolean
+          - "null"
+      keyword:
+        type: string
+      leads:
+        type:
+          - number
+          - "null"
+      prints:
+        type:
+          - number
+          - "null"
     required:
       - date
       - advertiser_id
       - campaign_id
+      - keyword
   display_advertisers:
     type: object
     $schema: http://json-schema.org/schema#
