@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 7408d324-0442-488c-95e3-9d3ec1d3cf59
-  dockerImageTag: 0.0.34
+  dockerImageTag: 0.0.35
   dockerRepository: airbyte/source-katana
   githubIssueLabel: source-katana
   icon: icon.svg
