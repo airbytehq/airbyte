@@ -43,6 +43,7 @@ Extract data from Uptick - The new standard in fire inspection software.
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.2.2 | 2025-09-02 | [65733](https://github.com/airbytehq/airbyte/pull/65733) | Update dependencies |
 | 0.2.1 | 2025-08-24 | [65445](https://github.com/airbytehq/airbyte/pull/65445) | Update dependencies |
 | 0.2.0 | 2025-08-22 | | Update task profitability stream to use start_date parameter |
 | 0.0.11 | 2025-08-14 | [64942](https://github.com/airbytehq/airbyte/pull/65061) | Add users and task profitability streams |
