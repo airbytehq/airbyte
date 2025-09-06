@@ -21,6 +21,14 @@ jobs:
       # Output the matrix config as a JSON string
       modified_connectors: ${{ steps.export-connection-modified.outputs.modified_connectors }}
     steps:
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@v2
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
@@ -380,7 +388,7 @@ jobs:
           # We need a custom Github Token as some API endpoints
           # are not available from GHA auto generated tokens
           # like the one to list branch protection rules...
-          GITHUB_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
+          GITHUB_TOKEN: ${{ steps.get-app-token.outputs.token }}
           AUTO_MERGE_PRODUCTION: ${{ vars.ENABLE_CONNECTOR_AUTO_MERGE }}
         run: |
           poetry install
