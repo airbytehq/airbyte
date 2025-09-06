@@ -987,7 +987,7 @@ definitions:
           value: >-
             {
               "type": "DatetimeBasedCursor",
-              "cursor_field": "{{ components_values.get('cursor_field') }}",
+              "cursor_field": "segments.date",
               "datetime_format": "%Y-%m-%d",
               "lookback_window": "P{{ config.get('conversion_window_days', 14) }}D",
               "cursor_granularity": "P1D",
@@ -1003,7 +1003,7 @@ definitions:
                 "datetime_format": "%Y-%m-%d"
               }
             }
-          condition: "{{ components_values.get('cursor_field', False) }}"
+          condition: "{{ components_values.get('query', '').count('segments.date') == 1 }}"
           create_or_update: true
         - type: ComponentMappingDefinition
           field_path:
@@ -1019,8 +1019,8 @@ definitions:
             - requester
             - $parameters
             - cursor_field
-          value: "{{ components_values.get('cursor_field', None) }}"
-          condition: "{{ components_values.get('cursor_field', False) }}"
+          value: "segments.date"
+          condition: "{{ components_values.get('query', '').count('segments.date') == 1 }}"
           create_or_update: true
         - type: ComponentMappingDefinition
           field_path:
@@ -1033,8 +1033,8 @@ definitions:
           field_path:
             - schema_loader
             - cursor_field
-          value: "{{ components_values.get('cursor_field', None) }}"
-          condition: "{{ components_values.get('cursor_field', False) }}"
+          value: "segments.date"
+          condition: "{{ components_values.get('query', '').count('segments.date') == 1 }}"
           create_or_update: true
         - type: ComponentMappingDefinition
           field_path:
