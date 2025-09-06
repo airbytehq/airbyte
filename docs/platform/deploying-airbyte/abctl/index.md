@@ -276,6 +276,56 @@ To stop running containers and delete all data:
     rm -rf ~/.airbyte/abctl
     ```
 
+## Helm chart V2 (abctl versions 0.30 and later)
+
+Airbyte has upgraded its Helm chart to a new version called "V2." abctl versions 0.30 and later use Helm chart V2 by default. abctl versions 0.29 and earlier always use Helm chart V1.
+
+:::note
+Many abctl users don't use external integrations. For example, you might run a local deployment on `localhost` without a `values.yaml` file. If this is the case for you, you can safely ignore this section. Continue upgrading Airbyte in the usual way.
+:::
+
+### Which chart you should use
+
+You should use the latest version of the Helm chart. Doing so automatically installs the latest compatible version of Airbyte, unless you have a reason not to use it. 
+
+Typically, the only reason not to use Helm chart V2 is that you have complex configurations in your `values.yaml` file and you aren't ready to upgrade them. Although using Helm chart V2 is currently optional, at a point in the future, it will be mandatory. Airbyte recommends switching as soon as you're able to.
+
+Because Helm chart V2 is currently optional, the version of the Helm chart and the version of the Airbyte platform aren't necessarily the same. For example, your Helm chart version can be `2.03`, which is compatible with Airbyte's platform version `1.7.0`.
+
+### How to control the Helm chart and platform versions
+
+If you need to customize the platform or Helm chart version, you can use the `--chart-version` flag . Helm chart V2 is usable with Airbyte versions 1.6.0 and later. Earlier versions of Airbyte only support Helm chart V1.
+
+- To install the latest version of the Helm chart with the latest version of Airbyte:
+
+    ```bash
+    abctl local install
+    ```
+
+- To install a specific chart version, specify it with the `--chart-version` flag.
+
+    ```bash
+    abctl local install --chart-version 2.0.3
+    ```
+
+- To install a specific Airbyte version with a specific chart version, set the Airbyte version in your values.yaml file.
+
+    ```yaml "Values.yaml"
+    global:
+      image:
+        tag: 1.7.0
+    ```
+
+    Then, set the `--values` flag and specify your file.
+
+    ```bash
+    abctl local install --chart-version 2.0.3 --values Values.yaml
+    ```
+
+### How to update your values.yaml file to work with Helm chart V2
+
+Follow the directions under [Update your values.yaml](../chart-v2-community#update-your-valuesyaml-file) in the Helm conversion guide. The syntax conversion from V1 to V2 is the same regardless of whether you use Helm or abctl to deploy Airbyte. Don't follow the steps in other sections on that page, which are specific to Helm deployments.
+
 ## Manage Docker images
 
 To get a manifest of the images used by Airbyte and abctl, run:
