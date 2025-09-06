@@ -14,29 +14,24 @@ discovery:
   operations:
     - type: StaticOperation
       object_name: person_identify
-      sync_mode:
+      destination_import_mode:
         type: Dedupe
-        primary_key: []
-        cursor: []
       schema:
         type: object
         required:
           - person_email
-        additionalProperties: true
         properties:
           person_email:
             type: string
-      matching_keys: []
     - type: StaticOperation
       object_name: person_event
-      sync_mode:
+      destination_import_mode:
         type: Append
       schema:
         type: object
         required:
           - person_email
           - event_name
-        additionalProperties: true
         properties:
           person_email:
             type: string
@@ -46,4 +41,3 @@ discovery:
             type: string
           timestamp:
             type: integer
-      matching_keys: []

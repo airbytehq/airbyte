@@ -6,12 +6,12 @@ package io.airbyte.integrations.destination.customerio
 
 import io.airbyte.cdk.load.command.DestinationDiscoverCatalog
 import io.airbyte.cdk.load.discover.DestinationDiscoverer
-import io.airbyte.cdk.load.discoverer.operation.CompositeOperationProvider
+import io.airbyte.cdk.load.discoverer.operation.OperationProvider
 
-class CustomerIoDiscoverer(private val compositeOperationProvider: CompositeOperationProvider) :
+class CustomerIoDiscoverer(private val operationProvider: OperationProvider) :
     DestinationDiscoverer<CustomerIoConfiguration> {
     override fun discover(config: CustomerIoConfiguration): DestinationDiscoverCatalog {
-        return DestinationDiscoverCatalog(compositeOperationProvider.get())
+        return DestinationDiscoverCatalog(operationProvider.get())
         //        return DestinationDiscoverCatalog(
         //            listOf(
         //                DestinationOperation(

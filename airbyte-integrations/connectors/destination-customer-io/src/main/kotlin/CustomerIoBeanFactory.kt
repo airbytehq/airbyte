@@ -39,7 +39,7 @@ class CustomerIoBeanFactory {
     @Singleton
     fun discover(
         factory: DeclarativeDestinationFactory<CustomerIoConfiguration>,
-    ) = CustomerIoDiscoverer(factory.createCompositeOperationsProvider())
+    ) = CustomerIoDiscoverer(factory.createOperationProvider())
 
     @Singleton
     fun objectLoader(): ObjectLoader =

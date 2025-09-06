@@ -2,7 +2,7 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.load.model.sync_mode
+package io.airbyte.cdk.load.model.destination_import_mode
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonSubTypes
@@ -17,18 +17,18 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
     JsonSubTypes.Type(value = Update::class, name = "Update"),
     JsonSubTypes.Type(value = SoftDelete::class, name = "SoftDelete"),
 )
-sealed interface SyncMode
+sealed interface DestinationImportMode
 
-data object Append : SyncMode
+data object Append : DestinationImportMode
 
-data object Overwrite : SyncMode
+data object Overwrite : DestinationImportMode
 
-data object Update : SyncMode
+data object Update : DestinationImportMode
 
-data object SoftDelete : SyncMode
+data object SoftDelete : DestinationImportMode
 
 /** Configuration for the Dedupe destination sync mode */
 data class Dedupe(
-    @JsonProperty("primary_key") val primaryKey: List<List<String>>,
-    @JsonProperty("cursor") val cursor: List<String>
-) : SyncMode
+    @JsonProperty("primary_key") val primaryKey: List<List<String>>? = null,
+    @JsonProperty("cursor") val cursor: List<String>? = null
+) : DestinationImportMode
