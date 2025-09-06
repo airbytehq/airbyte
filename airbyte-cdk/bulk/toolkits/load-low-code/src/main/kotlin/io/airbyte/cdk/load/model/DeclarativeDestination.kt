@@ -6,9 +6,16 @@ package io.airbyte.cdk.load.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.airbyte.cdk.load.model.checker.Checker
+import io.airbyte.cdk.load.model.discovery.Operation
 
 /**
  * Root configuration for a declarative destination that uploads data according to its declarative
  * components.
  */
-data class DeclarativeDestination(@JsonProperty("checker") val checker: Checker)
+data class DeclarativeDestination(
+    @JsonProperty("checker") val checker: Checker,
+    @JsonProperty(value = "discovery")
+    val discovery: Operation? =
+        null, // todo: remove ? = null once we support Dynamic discovery and thus it can be a
+// required component
+)
