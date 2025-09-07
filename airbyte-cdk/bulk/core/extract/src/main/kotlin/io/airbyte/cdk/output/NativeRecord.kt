@@ -82,7 +82,7 @@ fun <T> JsonEncoder<T>.toProtobufEncoder(): ProtoEncoder<*> {
         is LocalTimeCodec, -> localTimeProtoEncoder
         is LocalDateTimeCodec, -> localDateTimeProtoEncoder
         is OffsetTimeCodec, -> offsetTimeProtoEncoder
-        is ArrayEncoder<*>, -> anyProtoEncoder
+        is ArrayEncoder<*>, -> arrayProtoEncoder
         else -> anyProtoEncoder
     }
 }
@@ -160,7 +160,9 @@ val floatProtoEncoder =
 
 val nullProtoEncoder = generateProtoEncoder<Any?> { builder, _ -> builder.setIsNull(true) }
 val anyProtoEncoder = textProtoEncoder
-// typealias AnyProtoEncoder = TextProtoEncoder
+
+// For now arrays are encoded in protobuf as json strings
+val arrayProtoEncoder = textProtoEncoder
 
 fun NativeRecordPayload.toProtobuf(
     recordMessageBuilder: AirbyteRecordMessageProtobuf.Builder,
@@ -177,7 +179,12 @@ fun NativeRecordPayload.toProtobuf(
                 entry.value.fieldValue?.let {
                     (entry.value.jsonEncoder.toProtobufEncoder() as ProtoEncoder<Any>).encode(
                         valueBuilder.clear(),
-                        entry.value.fieldValue!!
+                        when (entry.value.jsonEncoder) {
+                            // For arrays we use the value of its json string.
+                            is ArrayEncoder<*> -> this@toProtobuf.toJson().asText()
+                            else -> entry.value.fieldValue!!
+                        }
+
                     )
                 }
                     ?: nullProtoEncoder.encode(valueBuilder.clear(), null)
