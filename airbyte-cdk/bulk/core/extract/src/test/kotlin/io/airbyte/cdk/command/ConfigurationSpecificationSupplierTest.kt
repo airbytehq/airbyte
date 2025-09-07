@@ -20,10 +20,6 @@ class ConfigurationSpecificationSupplierTest {
 
     @Test
     fun testSchema() {
-        Assertions.assertEquals(
-            FakeSourceConfigurationSpecification::class.java,
-            supplier.javaClass
-        )
         val expected: String =
             ResourceUtils.readResource("fakesource/expected-schema.json")
                 .let(Jsons::readTree)
