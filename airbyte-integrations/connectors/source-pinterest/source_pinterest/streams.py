@@ -7,9 +7,6 @@ from abc import ABC
 from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
-import pendulum
-import requests
-
 from airbyte_cdk import AirbyteTracedException, BackoffStrategy
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import WaitTimeFromHeaderBackoffStrategy
@@ -17,7 +14,10 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, HttpStatusErrorHandler, ResponseAction
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+import pendulum
+import requests
 from airbyte_protocol.models import FailureType
+
 from source_pinterest.components.error_mapping import get_pinterest_ad_account_error_mapping
 
 from .utils import get_analytics_columns, to_datetime_str
@@ -286,7 +286,11 @@ class PinterestAnalyticsErrorHandler(ErrorHandler):
             return ErrorResolution(
                 ResponseAction.RETRY,
                 FailureType.transient_error,
-                f"Analytics API returns bad request error when under load. This error should be retried after a second. If this error message appears, it means the Analytics API did not recover or there might be a bigger issue so please contact the support team.",
+                (
+                    "Analytics API returns bad request error when under load. This error should be retried "
+                    "after a second. If this error message appears, it means the Analytics API did not "
+                    "recover or there might be a bigger issue so please contact the support team."
+                ),
             )
 
         return self._decorated.interpret_response(response)
