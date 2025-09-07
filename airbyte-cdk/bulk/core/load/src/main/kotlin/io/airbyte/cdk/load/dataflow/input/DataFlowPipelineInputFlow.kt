@@ -12,7 +12,7 @@ import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
-import jakarta.inject.Singleton
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 
@@ -22,13 +22,14 @@ import kotlinx.coroutines.flow.FlowCollector
  * Adds state ids to the input, handling the serial case where we infer the state id from a global
  * counter.
  */
-@Singleton
 class DataFlowPipelineInputFlow(
     private val inputFlow: Flow<DestinationMessage>,
     private val stateStore: StateStore,
     private val stateKeyClient: StateKeyClient,
     private val completionTracker: StreamCompletionTracker,
 ) : Flow<DataFlowStageIO> {
+    val log = KotlinLogging.logger {}
+
     override suspend fun collect(
         collector: FlowCollector<DataFlowStageIO>,
     ) {
@@ -48,5 +49,7 @@ class DataFlowPipelineInputFlow(
                 else -> Unit
             }
         }
+
+        log.info { "Finished routing input." }
     }
 }
