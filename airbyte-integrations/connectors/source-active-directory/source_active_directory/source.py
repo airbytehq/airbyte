@@ -54,6 +54,11 @@ class SourceActiveDirectory(AbstractSource):
         )
 
         domain_ip = config['domain_ip']
-        connection = auth.getLDAPConnection(ip=domain_ip, protocol='ldap')
+        try:
+            # Trying LDAPS
+            connection = auth.getLDAPConnection(ip=domain_ip)
+        except Exception:
+            # Trying LDAP
+            connection = auth.getLDAPConnection(ip=domain_ip, protocol='ldap')
         return connection
 
