@@ -6,7 +6,7 @@ dockerRepository: airbyte/destination-salesforce
 The Salesforce destination connector enables [data activation](/platform/next/move-data/elt-data-activation) by syncing data from your data warehouse to Salesforce objects. This connector is designed for operational workflows where you need to deliver modeled data directly to your CRM for sales, marketing, and customer success teams.
 
 :::info
-Data activation is in early access. If you'd like to be an early adopter for this connector, [fill out this form](https://form.typeform.com/to/STc7a0jx).
+Data activation is in **early access**. Try it today with the HubSpot and Customer.io destinations in Airbyte Cloud or Self-Managed version 1.8 and later. If you'd like to be an early adopter, chat with the team, and share feedback, [fill out this form](https://form.typeform.com/to/STc7a0jx).
 :::
 
 The connector uses the [Salesforce Bulk API v62.0](https://developer.salesforce.com/docs/atlas.en-us.api_asynch.meta/api_asynch/asynch_api_intro.htm) for efficient data loading and supports OAuth 2.0 authentication with comprehensive error handling through [rejected records](/platform/next/move-data/rejected-records) functionality.
@@ -207,4 +207,15 @@ For programmatic configuration, use these parameter names:
 - [Salesforce Bulk API Documentation](https://developer.salesforce.com/docs/atlas.en-us.api_asynch.meta/api_asynch/asynch_api_intro.htm)
 - [Salesforce Connected Apps](https://help.salesforce.com/s/articleView?id=sf.connected_app_create.htm)
 - [Rejected Records](/platform/next/move-data/rejected-records)
+
+## Changelog
+
+<details>
+  <summary>Expand to review</summary>
+
+The connector is still incubating, this section only exists to satisfy Airbyte's QA checks.
+
+- 0.0.6
+
+</details>
 

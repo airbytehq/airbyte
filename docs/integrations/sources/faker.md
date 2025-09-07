@@ -104,6 +104,9 @@ None!
 
 | Version     | Date       | Pull Request                                                                                                          | Subject                                                                                                         |
 |:------------|:-----------| :-------------------------------------------------------------------------------------------------------------------- |:----------------------------------------------------------------------------------------------------------------|
+| 6.2.33 | 2025-09-02 | [65914](https://github.com/airbytehq/airbyte/pull/65914) | Upgrade CDK to 6.28.0 and remove pendulum dependency |
+| 6.2.32 | 2025-08-23 | [65273](https://github.com/airbytehq/airbyte/pull/65273) | Update dependencies |
+| 6.2.31 | 2025-08-16 | [65006](https://github.com/airbytehq/airbyte/pull/65006) | Update dependencies |
 | 6.2.30 | 2025-08-09 | [64799](https://github.com/airbytehq/airbyte/pull/64799) | Update dependencies |
 | 6.2.29 | 2025-07-26 | [63953](https://github.com/airbytehq/airbyte/pull/63953) | Update dependencies |
 | 6.2.28 | 2025-07-19 | [63534](https://github.com/airbytehq/airbyte/pull/63534) | Update dependencies |

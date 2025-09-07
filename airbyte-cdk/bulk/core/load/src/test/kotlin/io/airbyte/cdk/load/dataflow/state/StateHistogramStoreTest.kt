@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.dataflow.state
 
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -158,8 +159,9 @@ class StateHistogramStoreTest {
         val partitionKey1 = PartitionKey("partition-1")
         val partitionKey2 = PartitionKey("partition-2")
         val stateKey = StateKey(1L, listOf(partitionKey1, partitionKey2))
+        val expectedCount = 10L
 
-        stateHistogramStore.acceptExpectedCounts(stateKey, 10L)
+        stateHistogramStore.acceptExpectedCounts(stateKey, expectedCount)
 
         val partitionHistogram = PartitionHistogram(ConcurrentHashMap())
         repeat(5) { partitionHistogram.increment(partitionKey1) }
@@ -167,12 +169,13 @@ class StateHistogramStoreTest {
         stateHistogramStore.acceptFlushedCounts(partitionHistogram)
 
         // When
-        stateHistogramStore.remove(stateKey)
+        val count = stateHistogramStore.remove(stateKey)
 
         // Then
         assertFalse(
             stateHistogramStore.isComplete(stateKey)
         ) // Should be false due to missing expected count
+        assertEquals(expectedCount, count)
     }
 
     @Test

@@ -16,22 +16,15 @@ definitions:
     HttpRequester:
       authenticator:
         type: OAuthAuthenticator
-        client_id: "{{ config[\"client_id\"] }}"
-        grant_type: refresh_token
-        client_secret: "{{ config[\"client_secret\"] }}"
-        refresh_token: "{{ config[\"client_refresh_token\"] }}"
+        client_id: '{{ config["client_id"] }}'
+        grant_type: password
+        client_secret: '{{ config["client_secret"] }}'
         expires_in_name: expires_in
         access_token_name: access_token
-        refresh_request_body: {}
-        refresh_token_updater:
-          refresh_token_name: refresh_token
-          access_token_config_path:
-            - oauth_access_token
-          refresh_token_config_path:
-            - client_refresh_token
-          token_expiry_date_config_path:
-            - oauth_token_expiry_date
-        token_refresh_endpoint: "{{ config['base_url']}}/api/oauth2/token/"
+        token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
+        refresh_request_body:
+          username: '{{ config["username"] }}'
+          password: '{{ config["password"] }}'
       error_handler:
         type: DefaultErrorHandler
         max_retries: 5
@@ -49,8 +42,8 @@ definitions:
           type: RequestPath
         pagination_strategy:
           type: CursorPagination
-          cursor_value: "{{ response.links.next}}"
-          stop_condition: "{{ not response.links.next}}"
+          cursor_value: "{{ response.links.next }}"
+          stop_condition: "{{ not response.links.next }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -79,33 +72,19 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/tasks"
+        url: "{{ config['base_url'] }}/api/v2.14/tasks/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
-          client_id: "{{ config[\"client_id\"] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config[\"client_secret\"] }}"
-          refresh_token: "{{ config[\"client_refresh_token\"] }}"
+          client_id: '{{ config["client_id"] }}'
+          grant_type: password
+          client_secret: '{{ config["client_secret"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
-          refresh_request_body: {}
-          refresh_token_updater:
-            refresh_token_name: refresh_token
-            access_token_config_path:
-              - oauth_access_token
-            refresh_token_config_path:
-              - client_refresh_token
-            token_expiry_date_config_path:
-              - oauth_token_expiry_date
-            refresh_token_error_key: ""
-          token_refresh_endpoint: "{{ config['base_url']}}/api/oauth2/token/"
-          client_id_name: ""
-          client_secret_name: ""
-          refresh_token_name: ""
-          grant_type_name: ""
-          token_expiry_date: ""
-          token_expiry_date_format: ""
+          token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
+          refresh_request_body:
+            username: '{{ config["username"] }}'
+            password: '{{ config["password"] }}'
         error_handler:
           type: DefaultErrorHandler
           max_retries: 5
@@ -116,16 +95,17 @@ streams:
           User-Agent: Airbyte
         request_parameters:
           ordering: "-updated"
+          show_deleted: "true"
           fields[Task]: >-
-            id,updated,created,__web_url__,deleted,is_active,inactive_date,due,due_after,pm_date,tolerance_start,tolerance_end,invoiced_date,name,description,scope_of_works,address,coord_lat,coord_lng,access_note,access_window,access_procedure,access_schedule,access_code,internal_note,workorder_url,technician_note,partner_uid,priority,sla_incident_notification_at,sla_due_inprogress,sla_due_inspected,charge_type,notes,invoice_note,estimated_duration,authorisation_name,authorisation_ref,authorisation_date,contractor_note,progress_total,progress_performed,status_changed_inprogress,status_changed_inspected,status_changed_complete,scheduled_at,app_link,timezone,callout,extra_fields,category,servicegroup,client,property,billingcard,assigned_to,assigned_office,technician,round,branch,costcentre,parent_task,author,contractor,contractor_assigned_technician,contractor_authorisation_limit,updated_by,status,zone,project,sla,get_absolute_url,is_editable
+            id,updated,created,deleted,is_active,inactive_date,due,due_after,pm_date,tolerance_start,tolerance_end,invoiced_date,name,description,scope_of_works,address,coord_lat,coord_lng,access_note,access_window,access_procedure,access_schedule,access_code,internal_note,workorder_url,technician_note,partner_uid,priority,sla_incident_notification_at,sla_due_inprogress,sla_due_inspected,charge_type,notes,invoice_note,estimated_duration,authorisation_name,authorisation_ref,authorisation_date,contractor_note,progress_total,progress_performed,status_changed_inprogress,status_changed_inspected,status_changed_complete,scheduled_at,app_link,timezone,callout,extra_fields,category,servicegroup,client,property,billingcard,assigned_to,assigned_office,technician,round,branch,costcentre,parent_task,author,contractor,contractor_assigned_technician,contractor_authorisation_limit,updated_by,status,zone,project,sla,is_editable
       paginator:
         type: DefaultPaginator
         page_token_option:
           type: RequestPath
         pagination_strategy:
           type: CursorPagination
-          cursor_value: "{{ response.links.next}}"
-          stop_condition: "{{ not response.links.next}}"
+          cursor_value: "{{ response.links.next }}"
+          stop_condition: "{{ not response.links.next }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -486,14 +466,7 @@ streams:
             type:
               - string
               - "null"
-          __str__:
-            type:
-              - string
-              - "null"
-          __web_url__:
-            type:
-              - string
-              - "null"
+
           created:
             type:
               - string
@@ -503,6 +476,10 @@ streams:
           is_active:
             type:
               - boolean
+              - "null"
+          extra_fields:
+            type:
+              - object
               - "null"
           due:
             type:
@@ -573,10 +550,7 @@ streams:
             type:
               - number
               - "null"
-          get_absolute_url:
-            type:
-              - string
-              - "null"
+
           is_editable:
             type:
               - boolean
@@ -641,18 +615,6 @@ streams:
         fields:
           - type: AddedFieldDefinition
             path:
-              - __str__
-            value: "{{ record['attributes']['__str__'] }}"
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - __web_url__
-            value: "{{ record['attributes']['__web_url__'] }}"
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
               - created
             value: "{{ record['attributes']['created'] }}"
       - type: AddFields
@@ -661,6 +623,12 @@ streams:
             path:
               - updated
             value: "{{ record['attributes']['updated'] }}"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - extra_fields
+            value: "{{ record['attributes']['extra_fields'] }}"
       - type: AddFields
         fields:
           - type: AddedFieldDefinition
@@ -775,12 +743,7 @@ streams:
             path:
               - contractor_authorisation_limit
             value: "{{ record['attributes']['contractor_authorisation_limit'] }}"
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - get_absolute_url
-            value: "{{ record['attributes']['get_absolute_url'] }}"
+
       - type: AddFields
         fields:
           - type: AddedFieldDefinition
@@ -880,37 +843,23 @@ streams:
           type: RequestPath
         pagination_strategy:
           type: CursorPagination
-          cursor_value: "{{ response.links.next}}"
-          stop_condition: "{{ not response.links.next}}"
+          cursor_value: "{{ response.links.next }}"
+          stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/taskcategories"
+        url: "{{ config['base_url'] }}/api/v2.14/taskcategories/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
-          client_id: "{{ config[\"client_id\"] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config[\"client_secret\"] }}"
-          refresh_token: "{{ config[\"client_refresh_token\"] }}"
+          client_id: '{{ config["client_id"] }}'
+          grant_type: password
+          client_secret: '{{ config["client_secret"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
-          refresh_request_body: {}
-          refresh_token_updater:
-            refresh_token_name: refresh_token
-            access_token_config_path:
-              - oauth_access_token
-            refresh_token_config_path:
-              - client_refresh_token
-            token_expiry_date_config_path:
-              - oauth_token_expiry_date
-            refresh_token_error_key: ""
-          token_refresh_endpoint: "{{ config['base_url']}}/api/oauth2/token/"
-          client_id_name: ""
-          client_secret_name: ""
-          refresh_token_name: ""
-          grant_type_name: ""
-          token_expiry_date: ""
-          token_expiry_date_format: ""
+          token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
+          refresh_request_body:
+            username: '{{ config["username"] }}'
+            password: '{{ config["password"] }}'
         error_handler:
           type: DefaultErrorHandler
           max_retries: 5
@@ -954,7 +903,7 @@ streams:
           - type: AddedFieldDefinition
             path:
               - name
-            value: "{{ record[\"attributes\"][\"name\"] }}"
+            value: '{{ record["attributes"]["name"] }}'
       - type: RemoveFields
         field_pointers:
           - - attributes
@@ -970,37 +919,23 @@ streams:
           type: RequestPath
         pagination_strategy:
           type: CursorPagination
-          cursor_value: "{{ response.links.next}}"
-          stop_condition: "{{ not response.links.next}}"
+          cursor_value: "{{ response.links.next }}"
+          stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/clients"
+        url: "{{ config['base_url'] }}/api/v2.14/clients/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
-          client_id: "{{ config[\"client_id\"] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config[\"client_secret\"] }}"
-          refresh_token: "{{ config[\"client_refresh_token\"] }}"
+          client_id: '{{ config["client_id"] }}'
+          grant_type: password
+          client_secret: '{{ config["client_secret"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
-          refresh_request_body: {}
-          refresh_token_updater:
-            refresh_token_name: refresh_token
-            access_token_config_path:
-              - oauth_access_token
-            refresh_token_config_path:
-              - client_refresh_token
-            token_expiry_date_config_path:
-              - oauth_token_expiry_date
-            refresh_token_error_key: ""
-          token_refresh_endpoint: "{{ config['base_url']}}/api/oauth2/token/"
-          client_id_name: ""
-          client_secret_name: ""
-          refresh_token_name: ""
-          grant_type_name: ""
-          token_expiry_date: ""
-          token_expiry_date_format: ""
+          token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
+          refresh_request_body:
+            username: '{{ config["username"] }}'
+            password: '{{ config["password"] }}'
         error_handler:
           type: DefaultErrorHandler
           max_retries: 5
@@ -1012,7 +947,7 @@ streams:
         request_parameters:
           ordering: "-updated"
           fields[Client]: >-
-            __web_url__,created,updated,ref,name,is_active,contact_name,contact_organisation,contact_mobile,contact_phone_bh,contact_phone_ah,contact_email,contact_email_cc,contact_address,autocomp_label,business_hours,report_requirements,report_attention,report_email_to,report_email_cc,report_manual,billing_organisation,billing_requirements,billing_attention,billing_email_to,billing_email_cc,billing_manual,billing_address,billing_fixedprice,quoting_autoreminders_enabled,quoting_requirements,notes,address,material_markup,extra_fields,primary_contact__email,sector,account,primary_contact,account_manager,billingcard,clientgroup,pricetier
+            created,updated,ref,name,is_active,contact_name,contact_organisation,contact_mobile,contact_phone_bh,contact_phone_ah,contact_email,contact_email_cc,contact_address,autocomp_label,business_hours,report_requirements,report_attention,report_email_to,report_email_cc,report_manual,billing_organisation,billing_requirements,billing_attention,billing_email_to,billing_email_cc,billing_manual,billing_address,billing_fixedprice,quoting_autoreminders_enabled,quoting_requirements,notes,address,material_markup,extra_fields,primary_contact__email,sector,account,primary_contact,account_manager,billingcard,clientgroup,pricetier
       record_selector:
         type: RecordSelector
         extractor:
@@ -1107,10 +1042,7 @@ streams:
                         type:
                           - string
                           - "null"
-          __web_url__:
-            type:
-              - string
-              - "null"
+
           created:
             type:
               - string
@@ -1267,12 +1199,6 @@ streams:
           - updated
         additionalProperties: true
     transformations:
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - __web_url__
-            value: "{{ record['attributes']['__web_url__'] }}"
       - type: AddFields
         fields:
           - type: AddedFieldDefinition
@@ -1570,37 +1496,23 @@ streams:
           type: RequestPath
         pagination_strategy:
           type: CursorPagination
-          cursor_value: "{{ response.links.next}}"
-          stop_condition: "{{ not response.links.next}}"
+          cursor_value: "{{ response.links.next }}"
+          stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/clientgroups"
+        url: "{{ config['base_url'] }}/api/v2.14/clientgroups/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
-          client_id: "{{ config[\"client_id\"] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config[\"client_secret\"] }}"
-          refresh_token: "{{ config[\"client_refresh_token\"] }}"
+          client_id: '{{ config["client_id"] }}'
+          grant_type: password
+          client_secret: '{{ config["client_secret"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
-          refresh_request_body: {}
-          refresh_token_updater:
-            refresh_token_name: refresh_token
-            access_token_config_path:
-              - oauth_access_token
-            refresh_token_config_path:
-              - client_refresh_token
-            token_expiry_date_config_path:
-              - oauth_token_expiry_date
-            refresh_token_error_key: ""
-          token_refresh_endpoint: "{{ config['base_url']}}/api/oauth2/token/"
-          client_id_name: ""
-          client_secret_name: ""
-          refresh_token_name: ""
-          grant_type_name: ""
-          token_expiry_date: ""
-          token_expiry_date_format: ""
+          token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
+          refresh_request_body:
+            username: '{{ config["username"] }}'
+            password: '{{ config["password"] }}'
         error_handler:
           type: DefaultErrorHandler
           max_retries: 5
@@ -1742,37 +1654,23 @@ streams:
           type: RequestPath
         pagination_strategy:
           type: CursorPagination
-          cursor_value: "{{ response.links.next}}"
-          stop_condition: "{{ not response.links.next}}"
+          cursor_value: "{{ response.links.next }}"
+          stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/properties"
+        url: "{{ config['base_url'] }}/api/v2.14/properties/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
-          client_id: "{{ config[\"client_id\"] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config[\"client_secret\"] }}"
-          refresh_token: "{{ config[\"client_refresh_token\"] }}"
+          client_id: '{{ config["client_id"] }}'
+          grant_type: password
+          client_secret: '{{ config["client_secret"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
-          refresh_request_body: {}
-          refresh_token_updater:
-            refresh_token_name: refresh_token
-            access_token_config_path:
-              - oauth_access_token
-            refresh_token_config_path:
-              - client_refresh_token
-            token_expiry_date_config_path:
-              - oauth_token_expiry_date
-            refresh_token_error_key: ""
-          token_refresh_endpoint: "{{ config['base_url']}}/api/oauth2/token/"
-          client_id_name: ""
-          client_secret_name: ""
-          refresh_token_name: ""
-          grant_type_name: ""
-          token_expiry_date: ""
-          token_expiry_date_format: ""
+          token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
+          refresh_request_body:
+            username: '{{ config["username"] }}'
+            password: '{{ config["password"] }}'
         error_handler:
           type: DefaultErrorHandler
           max_retries: 5
@@ -1783,8 +1681,9 @@ streams:
           User-Agent: Airbyte
         request_parameters:
           ordering: "-updated"
+          show_deleted: "true"
           fields[Property]: >-
-            id,__str__,__web_url__,access_code,access_inductionreq,access_logbookreq,access_note,access_procedure,access_schedule,access_signaturereq,address,agm_date,authorisation_ref,autocomp_label,billing_manual,billing_requirements,bsecure_latest_sticker_guid,bsecure_resolved_guid,building_classes,building_construction_class,building_era,building_part,building_size,building_sizesqm,building_stories_above_ground,building_stories_below_ground,building_tenancies,building_type,certification_date,client_ref,client_signature_required,cofo_date,cofo_location,cofo_number,coords,created,extra_fields,get_absolute_url,inactive_date,internal_note,is_compliant,local_government_area,name,ocsp_number,organisation,ref,report_manual,report_requirements,restricted_access_hours,review_date,round_number,safety_requirements,service_requirements,status,timezone,updated
+            id,access_code,access_inductionreq,access_logbookreq,access_note,access_procedure,access_schedule,access_signaturereq,address,agm_date,authorisation_ref,autocomp_label,billing_manual,billing_requirements,bsecure_latest_sticker_guid,bsecure_resolved_guid,building_classes,building_construction_class,building_era,building_part,building_size,building_sizesqm,building_stories_above_ground,building_stories_below_ground,building_tenancies,building_type,certification_date,client_ref,client_signature_required,cofo_date,cofo_location,cofo_number,coords,created,extra_fields,inactive_date,internal_note,is_compliant,local_government_area,name,ocsp_number,organisation,ref,report_manual,report_requirements,restricted_access_hours,review_date,round_number,safety_requirements,service_requirements,status,timezone,updated,extra_fields
       record_selector:
         type: RecordSelector
         extractor:
@@ -1805,14 +1704,7 @@ streams:
               - "null"
           id:
             type: string
-          __str__:
-            type:
-              - string
-              - "null"
-          __web_url__:
-            type:
-              - string
-              - "null"
+
           created:
             type:
               - string
@@ -1918,27 +1810,15 @@ streams:
             type:
               - string
               - "null"
-          get_absolute_url:
+          extra_fields:
             type:
-              - string
+              - object
               - "null"
         required:
           - id
           - updated
         additionalProperties: true
     transformations:
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - __str__
-            value: "{{ record['attributes']['__str__'] }}"
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - __web_url__
-            value: "{{ record['attributes']['__web_url__'] }}"
       - type: AddFields
         fields:
           - type: AddedFieldDefinition
@@ -2099,8 +1979,8 @@ streams:
         fields:
           - type: AddedFieldDefinition
             path:
-              - get_absolute_url
-            value: "{{ record['attributes']['get_absolute_url'] }}"
+              - extra_fields
+            value: "{{ record['attributes']['extra_fields'] }}"
       - type: RemoveFields
         field_pointers:
           - - attributes
@@ -2134,37 +2014,23 @@ streams:
           type: RequestPath
         pagination_strategy:
           type: CursorPagination
-          cursor_value: "{{ response.links.next}}"
-          stop_condition: "{{ not response.links.next}}"
+          cursor_value: "{{ response.links.next }}"
+          stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/invoices"
+        url: "{{ config['base_url'] }}/api/v2.14/invoices/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
-          client_id: "{{ config[\"client_id\"] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config[\"client_secret\"] }}"
-          refresh_token: "{{ config[\"client_refresh_token\"] }}"
+          client_id: '{{ config["client_id"] }}'
+          grant_type: password
+          client_secret: '{{ config["client_secret"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
-          refresh_request_body: {}
-          refresh_token_updater:
-            refresh_token_name: refresh_token
-            access_token_config_path:
-              - oauth_access_token
-            refresh_token_config_path:
-              - client_refresh_token
-            token_expiry_date_config_path:
-              - oauth_token_expiry_date
-            refresh_token_error_key: ""
-          token_refresh_endpoint: "{{ config['base_url']}}/api/oauth2/token/"
-          client_id_name: ""
-          client_secret_name: ""
-          refresh_token_name: ""
-          grant_type_name: ""
-          token_expiry_date: ""
-          token_expiry_date_format: ""
+          token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
+          refresh_request_body:
+            username: '{{ config["username"] }}'
+            password: '{{ config["password"] }}'
         error_handler:
           type: DefaultErrorHandler
           max_retries: 5
@@ -2175,6 +2041,7 @@ streams:
           User-Agent: Airbyte
         request_parameters:
           ordering: "-updated"
+          show_deleted: "true"
           fields[Invoice]: >-
             id,authorisation_ref,created,currency,date,description,due_date,extra_fields,fx_rate,gst,is_creditable,is_overdue,is_sent,number,partner_online_payment_url,partner_push_bgtask_uid,partner_uid,ref,status,subtotal,synced,total,updated
       record_selector:
@@ -2419,37 +2286,23 @@ streams:
           type: RequestPath
         pagination_strategy:
           type: CursorPagination
-          cursor_value: "{{ response.links.next}}"
-          stop_condition: "{{ not response.links.next}}"
+          cursor_value: "{{ response.links.next }}"
+          stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/projects"
+        url: "{{ config['base_url'] }}/api/v2.14/projects/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
-          client_id: "{{ config[\"client_id\"] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config[\"client_secret\"] }}"
-          refresh_token: "{{ config[\"client_refresh_token\"] }}"
+          client_id: '{{ config["client_id"] }}'
+          grant_type: password
+          client_secret: '{{ config["client_secret"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
-          refresh_request_body: {}
-          refresh_token_updater:
-            refresh_token_name: refresh_token
-            access_token_config_path:
-              - oauth_access_token
-            refresh_token_config_path:
-              - client_refresh_token
-            token_expiry_date_config_path:
-              - oauth_token_expiry_date
-            refresh_token_error_key: ""
-          token_refresh_endpoint: "{{ config['base_url']}}/api/oauth2/token/"
-          client_id_name: ""
-          client_secret_name: ""
-          refresh_token_name: ""
-          grant_type_name: ""
-          token_expiry_date: ""
-          token_expiry_date_format: ""
+          token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
+          refresh_request_body:
+            username: '{{ config["username"] }}'
+            password: '{{ config["password"] }}'
         error_handler:
           type: DefaultErrorHandler
           max_retries: 5
@@ -2461,7 +2314,7 @@ streams:
         request_parameters:
           ordering: "-updated"
           fields[Project]: >-
-            id,actual_completion_date,actual_start_date,category,created,description,expected_completion_date,expected_start_date,extra_fields,final_rebate_rate,get_absolute_url,is_active,name,order_no,ref,retention_date,retention_rate,scope_of_works,status,updated
+            id,actual_completion_date,actual_start_date,category,created,description,expected_completion_date,expected_start_date,extra_fields,final_rebate_rate,is_active,name,order_no,ref,retention_date,retention_rate,scope_of_works,status,updated
       record_selector:
         type: RecordSelector
         extractor:
@@ -2536,10 +2389,7 @@ streams:
             type:
               - string
               - "null"
-          get_absolute_url:
-            type:
-              - string
-              - "null"
+
         required:
           - id
           - updated
@@ -2629,12 +2479,6 @@ streams:
             path:
               - retention_date
             value: "{{ record['attributes']['retention_date'] }}"
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - get_absolute_url
-            value: "{{ record['attributes']['get_absolute_url'] }}"
       - type: RemoveFields
         field_pointers:
           - - attributes
@@ -2668,37 +2512,23 @@ streams:
           type: RequestPath
         pagination_strategy:
           type: CursorPagination
-          cursor_value: "{{ response.links.next}}"
-          stop_condition: "{{ not response.links.next}}"
+          cursor_value: "{{ response.links.next }}"
+          stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/servicequotes"
+        url: "{{ config['base_url'] }}/api/v2.14/servicequotes/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
-          client_id: "{{ config[\"client_id\"] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config[\"client_secret\"] }}"
-          refresh_token: "{{ config[\"client_refresh_token\"] }}"
+          client_id: '{{ config["client_id"] }}'
+          grant_type: password
+          client_secret: '{{ config["client_secret"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
-          refresh_request_body: {}
-          refresh_token_updater:
-            refresh_token_name: refresh_token
-            access_token_config_path:
-              - oauth_access_token
-            refresh_token_config_path:
-              - client_refresh_token
-            token_expiry_date_config_path:
-              - oauth_token_expiry_date
-            refresh_token_error_key: ""
-          token_refresh_endpoint: "{{ config['base_url']}}/api/oauth2/token/"
-          client_id_name: ""
-          client_secret_name: ""
-          refresh_token_name: ""
-          grant_type_name: ""
-          token_expiry_date: ""
-          token_expiry_date_format: ""
+          token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
+          refresh_request_body:
+            username: '{{ config["username"] }}'
+            password: '{{ config["password"] }}'
         error_handler:
           type: DefaultErrorHandler
           max_retries: 5
@@ -2710,7 +2540,7 @@ streams:
         request_parameters:
           ordering: "-updated"
           fields[ServiceQuote]: >-
-            id,authorisation_date,authorisation_name,authorisation_note,authorisation_ref,client_contact_address,client_contact_ah,client_contact_bh,client_contact_mobile,client_contact_name,client_name,client_primary_email,created,description,expiry_date,extra_fields,get_absolute_url,internal_note,product_subtotal,property_access_code,property_access_note,property_access_procedure,property_access_schedule,property_address,property_building_construction_class,property_building_era,property_building_part,property_building_size,property_building_sizesqm,property_building_stories_above_ground,property_building_stories_below_ground,property_name,property_ocsp_number,ref,review_date,scope_of_works,scope_of_works_format,scope_of_works_markdown,sent_attachments,sent_dt,status,status_changed_approved,status_changed_submitted,template,template_name,terms_and_conditions,updated,upload_path,uuid,viewed_via_email_at,viewed_via_link_at
+            id,authorisation_date,authorisation_name,authorisation_note,authorisation_ref,client_contact_address,client_contact_ah,client_contact_bh,client_contact_mobile,client_contact_name,client_name,client_primary_email,created,description,expiry_date,extra_fields,internal_note,product_subtotal,property_access_code,property_access_note,property_access_procedure,property_access_schedule,property_address,property_building_construction_class,property_building_era,property_building_part,property_building_size,property_building_sizesqm,property_building_stories_above_ground,property_building_stories_below_ground,property_name,property_ocsp_number,ref,review_date,scope_of_works,scope_of_works_format,scope_of_works_markdown,sent_attachments,sent_dt,status,status_changed_approved,status_changed_submitted,template,template_name,terms_and_conditions,updated,upload_path,uuid,viewed_via_email_at,viewed_via_link_at
       record_selector:
         type: RecordSelector
         extractor:
@@ -2781,10 +2611,7 @@ streams:
             type:
               - string
               - "null"
-          get_absolute_url:
-            type:
-              - string
-              - "null"
+
           upload_path:
             type:
               - string
@@ -2884,12 +2711,7 @@ streams:
             path:
               - scope_of_works_format
             value: "{{ record['attributes']['scope_of_works_format'] }}"
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - get_absolute_url
-            value: "{{ record['attributes']['get_absolute_url'] }}"
+
       - type: AddFields
         fields:
           - type: AddedFieldDefinition
@@ -2947,37 +2769,23 @@ streams:
           type: RequestPath
         pagination_strategy:
           type: CursorPagination
-          cursor_value: "{{ response.links.next}}"
-          stop_condition: "{{ not response.links.next}}"
+          cursor_value: "{{ response.links.next }}"
+          stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/defectquotes"
+        url: "{{ config['base_url'] }}/api/v2.14/defectquotes/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
-          client_id: "{{ config[\"client_id\"] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config[\"client_secret\"] }}"
-          refresh_token: "{{ config[\"client_refresh_token\"] }}"
+          client_id: '{{ config["client_id"] }}'
+          grant_type: password
+          client_secret: '{{ config["client_secret"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
-          refresh_request_body: {}
-          refresh_token_updater:
-            refresh_token_name: refresh_token
-            access_token_config_path:
-              - oauth_access_token
-            refresh_token_config_path:
-              - client_refresh_token
-            token_expiry_date_config_path:
-              - oauth_token_expiry_date
-            refresh_token_error_key: ""
-          token_refresh_endpoint: "{{ config['base_url']}}/api/oauth2/token/"
-          client_id_name: ""
-          client_secret_name: ""
-          refresh_token_name: ""
-          grant_type_name: ""
-          token_expiry_date: ""
-          token_expiry_date_format: ""
+          token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
+          refresh_request_body:
+            username: '{{ config["username"] }}'
+            password: '{{ config["password"] }}'
         error_handler:
           type: DefaultErrorHandler
           max_retries: 5
@@ -2989,7 +2797,7 @@ streams:
         request_parameters:
           ordering: "-updated"
           fields[DefectQuote]: >-
-            id,authorisation_amount,authorisation_date,authorisation_name,authorisation_note,authorisation_ref,created,date,description,due_date,email_template,expiry_date,extra_fields,get_absolute_url,internal_note,last_actioned,ref,reminder_email_template,review_date,scope_of_works,sent_attachments,sent_dt,severity,status,status_changed_approved,status_changed_declined,status_changed_submitted,updated,upload_path,uuid,viewed_via_email_at,viewed_via_link_at
+            id,authorisation_amount,authorisation_date,authorisation_name,authorisation_note,authorisation_ref,created,date,description,due_date,email_template,expiry_date,extra_fields,internal_note,last_actioned,ref,reminder_email_template,review_date,scope_of_works,sent_attachments,sent_dt,severity,status,status_changed_approved,status_changed_declined,status_changed_submitted,updated,upload_path,uuid,viewed_via_email_at,viewed_via_link_at
       record_selector:
         type: RecordSelector
         extractor:
@@ -3064,10 +2872,7 @@ streams:
             type:
               - string
               - "null"
-          get_absolute_url:
-            type:
-              - string
-              - "null"
+
         required:
           - id
           - updated
@@ -3157,12 +2962,7 @@ streams:
             path:
               - upload_path
             value: "{{ record['attributes']['upload_path'] }}"
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - get_absolute_url
-            value: "{{ record['attributes']['get_absolute_url'] }}"
+
       - type: RemoveFields
         field_pointers:
           - - attributes
@@ -3196,37 +2996,23 @@ streams:
           type: RequestPath
         pagination_strategy:
           type: CursorPagination
-          cursor_value: "{{ response.links.next}}"
-          stop_condition: "{{ not response.links.next}}"
+          cursor_value: "{{ response.links.next }}"
+          stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/suppliers"
+        url: "{{ config['base_url'] }}/api/v2.14/suppliers/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
-          client_id: "{{ config[\"client_id\"] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config[\"client_secret\"] }}"
-          refresh_token: "{{ config[\"client_refresh_token\"] }}"
+          client_id: '{{ config["client_id"] }}'
+          grant_type: password
+          client_secret: '{{ config["client_secret"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
-          refresh_request_body: {}
-          refresh_token_updater:
-            refresh_token_name: refresh_token
-            access_token_config_path:
-              - oauth_access_token
-            refresh_token_config_path:
-              - client_refresh_token
-            token_expiry_date_config_path:
-              - oauth_token_expiry_date
-            refresh_token_error_key: ""
-          token_refresh_endpoint: "{{ config['base_url']}}/api/oauth2/token/"
-          client_id_name: ""
-          client_secret_name: ""
-          refresh_token_name: ""
-          grant_type_name: ""
-          token_expiry_date: ""
-          token_expiry_date_format: ""
+          token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
+          refresh_request_body:
+            username: '{{ config["username"] }}'
+            password: '{{ config["password"] }}'
         error_handler:
           type: DefaultErrorHandler
           max_retries: 5
@@ -3238,7 +3024,7 @@ streams:
         request_parameters:
           ordering: "-updated"
           fields[Supplier]: >-
-            id,__str__,__web_url__,abn,accounts_address,accounts_email,accounts_email_cc,accounts_fax,accounts_mobile,accounts_name,accounts_phone_ah,accounts_phone_bh,created,extra_fields,is_active,name,partner_uid,payment_day,payment_terms,purchasing_address,purchasing_email,purchasing_email_cc,purchasing_mobile,purchasing_name,ref,updated
+            id,abn,accounts_address,accounts_email,accounts_email_cc,accounts_fax,accounts_mobile,accounts_name,accounts_phone_ah,accounts_phone_bh,created,extra_fields,is_active,name,partner_uid,payment_day,payment_terms,purchasing_address,purchasing_email,purchasing_email_cc,purchasing_mobile,purchasing_name,ref,updated
       record_selector:
         type: RecordSelector
         extractor:
@@ -3259,14 +3045,7 @@ streams:
               - "null"
           id:
             type: string
-          __str__:
-            type:
-              - string
-              - "null"
-          __web_url__:
-            type:
-              - string
-              - "null"
+
           created:
             type:
               - string
@@ -3298,18 +3077,6 @@ streams:
           - updated
         additionalProperties: true
     transformations:
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - __str__
-            value: "{{ record['attributes']['__str__'] }}"
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - __web_url__
-            value: "{{ record['attributes']['__web_url__'] }}"
       - type: AddFields
         fields:
           - type: AddedFieldDefinition
@@ -3385,37 +3152,23 @@ streams:
           type: RequestPath
         pagination_strategy:
           type: CursorPagination
-          cursor_value: "{{ response.links.next}}"
-          stop_condition: "{{ not response.links.next}}"
+          cursor_value: "{{ response.links.next }}"
+          stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/purchaseorders"
+        url: "{{ config['base_url'] }}/api/v2.14/purchaseorders/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
-          client_id: "{{ config[\"client_id\"] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config[\"client_secret\"] }}"
-          refresh_token: "{{ config[\"client_refresh_token\"] }}"
+          client_id: '{{ config["client_id"] }}'
+          grant_type: password
+          client_secret: '{{ config["client_secret"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
-          refresh_request_body: {}
-          refresh_token_updater:
-            refresh_token_name: refresh_token
-            access_token_config_path:
-              - oauth_access_token
-            refresh_token_config_path:
-              - client_refresh_token
-            token_expiry_date_config_path:
-              - oauth_token_expiry_date
-            refresh_token_error_key: ""
-          token_refresh_endpoint: "{{ config['base_url']}}/api/oauth2/token/"
-          client_id_name: ""
-          client_secret_name: ""
-          refresh_token_name: ""
-          grant_type_name: ""
-          token_expiry_date: ""
-          token_expiry_date_format: ""
+          token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
+          refresh_request_body:
+            username: '{{ config["username"] }}'
+            password: '{{ config["password"] }}'
         error_handler:
           type: DefaultErrorHandler
           max_retries: 5
@@ -3427,7 +3180,7 @@ streams:
         request_parameters:
           ordering: "-updated"
           fields[PurchaseOrder]: >-
-            id,all_goods_received,created,created_via,currency,date,delivery_instructions,description,display_type,estimated_delivery_date,extra_fields,fx_rate,get_absolute_url,get_email_display,get_partner_name,has_manually_added_costs,has_no_dockets,is_editable,is_pdf_downloadable,partner_uid,ref,status,supplier_ref,total,type,updated
+            id,all_goods_received,created,created_via,currency,date,delivery_instructions,description,display_type,estimated_delivery_date,extra_fields,fx_rate,get_email_display,get_partner_name,has_manually_added_costs,has_no_dockets,is_editable,is_pdf_downloadable,partner_uid,ref,status,supplier_ref,total,type,updated
       record_selector:
         type: RecordSelector
         extractor:
@@ -3482,10 +3235,7 @@ streams:
             type:
               - boolean
               - "null"
-          get_absolute_url:
-            type:
-              - string
-              - "null"
+
           created_via:
             type:
               - string
@@ -3567,12 +3317,7 @@ streams:
             path:
               - is_editable
             value: "{{ record['attributes']['is_editable'] }}"
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - get_absolute_url
-            value: "{{ record['attributes']['get_absolute_url'] }}"
+
       - type: AddFields
         fields:
           - type: AddedFieldDefinition
@@ -3630,37 +3375,23 @@ streams:
           type: RequestPath
         pagination_strategy:
           type: CursorPagination
-          cursor_value: "{{ response.links.next}}"
-          stop_condition: "{{ not response.links.next}}"
+          cursor_value: "{{ response.links.next }}"
+          stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/assets"
+        url: "{{ config['base_url'] }}/api/v2.14/assets/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
-          client_id: "{{ config[\"client_id\"] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config[\"client_secret\"] }}"
-          refresh_token: "{{ config[\"client_refresh_token\"] }}"
+          client_id: '{{ config["client_id"] }}'
+          grant_type: password
+          client_secret: '{{ config["client_secret"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
-          refresh_request_body: {}
-          refresh_token_updater:
-            refresh_token_name: refresh_token
-            access_token_config_path:
-              - oauth_access_token
-            refresh_token_config_path:
-              - client_refresh_token
-            token_expiry_date_config_path:
-              - oauth_token_expiry_date
-            refresh_token_error_key: ""
-          token_refresh_endpoint: "{{ config['base_url']}}/api/oauth2/token/"
-          client_id_name: ""
-          client_secret_name: ""
-          refresh_token_name: ""
-          grant_type_name: ""
-          token_expiry_date: ""
-          token_expiry_date_format: ""
+          token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
+          refresh_request_body:
+            username: '{{ config["username"] }}'
+            password: '{{ config["password"] }}'
         error_handler:
           type: DefaultErrorHandler
           max_retries: 5
@@ -3671,8 +3402,9 @@ streams:
           User-Agent: Airbyte
         request_parameters:
           ordering: "-updated"
+          show_deleted: "true"
           fields[Asset]: >-
-            id,asset_condition,barcode,base_date,bsecure_latest_sticker_guid,bsecure_resolved_guid,compliant,contractor_note,contractor_ref,coord_lat,coord_lng,created,deleted,extra_fields,get_absolute_url,get_edit_url,get_service_url,get_standard_installation,get_standard_maintenance,get_standard_performance,guid,inspected_date,inspection_order,inspection_ref,installation_date,internal_note,is_active,is_notoncofo,is_silent,label,last_service_result,location,make,model,ref,serviced_date,signoff_date,signoff_method,size,standard,standard_installation,standard_performance,status,total_expected_life,updated,uptick_ref
+            id,asset_condition,barcode,base_date,bsecure_latest_sticker_guid,bsecure_resolved_guid,compliant,contractor_note,contractor_ref,coord_lat,coord_lng,created,deleted,extra_fields,get_edit_url,get_service_url,get_standard_installation,get_standard_maintenance,get_standard_performance,guid,inspected_date,inspection_order,inspection_ref,installation_date,internal_note,is_active,is_notoncofo,is_silent,label,last_service_result,location,make,model,ref,serviced_date,signoff_date,signoff_method,size,standard,standard_installation,standard_performance,status,total_expected_life,updated,uptick_ref
       record_selector:
         type: RecordSelector
         extractor:
@@ -3760,10 +3492,7 @@ streams:
             type:
               - string
               - "null"
-          get_absolute_url:
-            type:
-              - string
-              - "null"
+
           get_edit_url:
             type:
               - string
@@ -3879,12 +3608,7 @@ streams:
             path:
               - last_service_result
             value: "{{ record['attributes']['last_service_result'] }}"
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - get_absolute_url
-            value: "{{ record['attributes']['get_absolute_url'] }}"
+
       - type: AddFields
         fields:
           - type: AddedFieldDefinition
@@ -3930,37 +3654,23 @@ streams:
           type: RequestPath
         pagination_strategy:
           type: CursorPagination
-          cursor_value: "{{ response.links.next}}"
-          stop_condition: "{{ not response.links.next}}"
+          cursor_value: "{{ response.links.next }}"
+          stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/routines"
+        url: "{{ config['base_url'] }}/api/v2.14/routines/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
-          client_id: "{{ config[\"client_id\"] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config[\"client_secret\"] }}"
-          refresh_token: "{{ config[\"client_refresh_token\"] }}"
+          client_id: '{{ config["client_id"] }}'
+          grant_type: password
+          client_secret: '{{ config["client_secret"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
-          refresh_request_body: {}
-          refresh_token_updater:
-            refresh_token_name: refresh_token
-            access_token_config_path:
-              - oauth_access_token
-            refresh_token_config_path:
-              - client_refresh_token
-            token_expiry_date_config_path:
-              - oauth_token_expiry_date
-            refresh_token_error_key: ""
-          token_refresh_endpoint: "{{ config['base_url']}}/api/oauth2/token/"
-          client_id_name: ""
-          client_secret_name: ""
-          refresh_token_name: ""
-          grant_type_name: ""
-          token_expiry_date: ""
-          token_expiry_date_format: ""
+          token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
+          refresh_request_body:
+            username: '{{ config["username"] }}'
+            password: '{{ config["password"] }}'
         error_handler:
           type: DefaultErrorHandler
           max_retries: 5
@@ -4109,37 +3819,23 @@ streams:
           type: RequestPath
         pagination_strategy:
           type: CursorPagination
-          cursor_value: "{{ response.links.next}}"
-          stop_condition: "{{ not response.links.next}}"
+          cursor_value: "{{ response.links.next }}"
+          stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/billingcards"
+        url: "{{ config['base_url'] }}/api/v2.14/billingcards/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
-          client_id: "{{ config[\"client_id\"] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config[\"client_secret\"] }}"
-          refresh_token: "{{ config[\"client_refresh_token\"] }}"
+          client_id: '{{ config["client_id"] }}'
+          grant_type: password
+          client_secret: '{{ config["client_secret"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
-          refresh_request_body: {}
-          refresh_token_updater:
-            refresh_token_name: refresh_token
-            access_token_config_path:
-              - oauth_access_token
-            refresh_token_config_path:
-              - client_refresh_token
-            token_expiry_date_config_path:
-              - oauth_token_expiry_date
-            refresh_token_error_key: ""
-          token_refresh_endpoint: "{{ config['base_url']}}/api/oauth2/token/"
-          client_id_name: ""
-          client_secret_name: ""
-          refresh_token_name: ""
-          grant_type_name: ""
-          token_expiry_date: ""
-          token_expiry_date_format: ""
+          token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
+          refresh_request_body:
+            username: '{{ config["username"] }}'
+            password: '{{ config["password"] }}'
         error_handler:
           type: DefaultErrorHandler
           max_retries: 5
@@ -4151,7 +3847,7 @@ streams:
         request_parameters:
           ordering: "-updated"
           fields[BillingCard]: >-
-            id,__str__,__web_url__,abn,autocomp_label,created,default_taxcode,extra_fields,is_active,name,partner_uid,payment_day,payment_terms,postal_address,postal_ah,postal_attention,postal_bh,postal_email,postal_fax,postal_mobile,ref,site_address,site_attention,synced,updated
+            id,abn,autocomp_label,created,default_taxcode,extra_fields,is_active,name,partner_uid,payment_day,payment_terms,postal_address,postal_ah,postal_attention,postal_bh,postal_email,postal_fax,postal_mobile,ref,site_address,site_attention,synced,updated
       record_selector:
         type: RecordSelector
         extractor:
@@ -4259,37 +3955,23 @@ streams:
           type: RequestPath
         pagination_strategy:
           type: CursorPagination
-          cursor_value: "{{ response.links.next}}"
-          stop_condition: "{{ not response.links.next}}"
+          cursor_value: "{{ response.links.next }}"
+          stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/purchaseorderbills"
+        url: "{{ config['base_url'] }}/api/v2.14/purchaseorderbills/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
-          client_id: "{{ config[\"client_id\"] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config[\"client_secret\"] }}"
-          refresh_token: "{{ config[\"client_refresh_token\"] }}"
+          client_id: '{{ config["client_id"] }}'
+          grant_type: password
+          client_secret: '{{ config["client_secret"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
-          refresh_request_body: {}
-          refresh_token_updater:
-            refresh_token_name: refresh_token
-            access_token_config_path:
-              - oauth_access_token
-            refresh_token_config_path:
-              - client_refresh_token
-            token_expiry_date_config_path:
-              - oauth_token_expiry_date
-            refresh_token_error_key: ""
-          token_refresh_endpoint: "{{ config['base_url']}}/api/oauth2/token/"
-          client_id_name: ""
-          client_secret_name: ""
-          refresh_token_name: ""
-          grant_type_name: ""
-          token_expiry_date: ""
-          token_expiry_date_format: ""
+          token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
+          refresh_request_body:
+            username: '{{ config["username"] }}'
+            password: '{{ config["password"] }}'
         error_handler:
           type: DefaultErrorHandler
           max_retries: 5
@@ -4408,37 +4090,23 @@ streams:
           type: RequestPath
         pagination_strategy:
           type: CursorPagination
-          cursor_value: "{{ response.links.next}}"
-          stop_condition: "{{ not response.links.next}}"
+          cursor_value: "{{ response.links.next }}"
+          stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/purchaseorderdockets"
+        url: "{{ config['base_url'] }}/api/v2.14/purchaseorderdockets/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
-          client_id: "{{ config[\"client_id\"] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config[\"client_secret\"] }}"
-          refresh_token: "{{ config[\"client_refresh_token\"] }}"
+          client_id: '{{ config["client_id"] }}'
+          grant_type: password
+          client_secret: '{{ config["client_secret"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
-          refresh_request_body: {}
-          refresh_token_updater:
-            refresh_token_name: refresh_token
-            access_token_config_path:
-              - oauth_access_token
-            refresh_token_config_path:
-              - client_refresh_token
-            token_expiry_date_config_path:
-              - oauth_token_expiry_date
-            refresh_token_error_key: ""
-          token_refresh_endpoint: "{{ config['base_url']}}/api/oauth2/token/"
-          client_id_name: ""
-          client_secret_name: ""
-          refresh_token_name: ""
-          grant_type_name: ""
-          token_expiry_date: ""
-          token_expiry_date_format: ""
+          token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
+          refresh_request_body:
+            username: '{{ config["username"] }}'
+            password: '{{ config["password"] }}'
         error_handler:
           type: DefaultErrorHandler
           max_retries: 5
@@ -4520,37 +4188,23 @@ streams:
           type: RequestPath
         pagination_strategy:
           type: CursorPagination
-          cursor_value: "{{ response.links.next}}"
-          stop_condition: "{{ not response.links.next}}"
+          cursor_value: "{{ response.links.next }}"
+          stop_condition: "{{ not response.links.next }}"
       requester:
         type: HttpRequester
-        url: "{{ config['base_url']}}/api/v2/invoicelineitems"
+        url: "{{ config['base_url'] }}/api/v2.14/invoicelineitems/"
         http_method: GET
         authenticator:
           type: OAuthAuthenticator
-          client_id: "{{ config[\"client_id\"] }}"
-          grant_type: refresh_token
-          client_secret: "{{ config[\"client_secret\"] }}"
-          refresh_token: "{{ config[\"client_refresh_token\"] }}"
+          client_id: '{{ config["client_id"] }}'
+          grant_type: password
+          client_secret: '{{ config["client_secret"] }}'
           expires_in_name: expires_in
           access_token_name: access_token
-          refresh_request_body: {}
-          refresh_token_updater:
-            refresh_token_name: refresh_token
-            access_token_config_path:
-              - oauth_access_token
-            refresh_token_config_path:
-              - client_refresh_token
-            token_expiry_date_config_path:
-              - oauth_token_expiry_date
-            refresh_token_error_key: ""
-          token_refresh_endpoint: "{{ config['base_url']}}/api/oauth2/token/"
-          client_id_name: ""
-          client_secret_name: ""
-          refresh_token_name: ""
-          grant_type_name: ""
-          token_expiry_date: ""
-          token_expiry_date_format: ""
+          token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
+          refresh_request_body:
+            username: '{{ config["username"] }}'
+            password: '{{ config["password"] }}'
         error_handler:
           type: DefaultErrorHandler
           max_retries: 5
@@ -4717,6 +4371,361 @@ streams:
       partition_field_end: ""
       partition_field_start: ""
 
+  - type: DeclarativeStream
+    name: users
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.links.next }}"
+          stop_condition: "{{ not response.links.next }}"
+      requester:
+        type: HttpRequester
+        url: "{{ config['base_url'] }}/api/v2.14/users/"
+        http_method: GET
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: '{{ config["client_id"] }}'
+          grant_type: password
+          client_secret: '{{ config["client_secret"] }}'
+          expires_in_name: expires_in
+          access_token_name: access_token
+          token_refresh_endpoint: "{{ config['base_url'] }}/api/oauth2/token/"
+          refresh_request_body:
+            username: '{{ config["username"] }}'
+            password: '{{ config["password"] }}'
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 5
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: Retry-After
+        request_headers:
+          User-Agent: Airbyte
+        request_parameters:
+          ordering: "-updated"
+          fields[User]: >-
+            updated,name,email,partner_uid,date_joined,last_login,last_access,is_active,is_staff,is_superuser,license,addons,rate,sell_rate,extra_fields,purchase_order_approval_limit,defectquote_approval_limit,servicegroup,home_branch,sell_rate_product
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          id:
+            type: string
+          relationships:
+            type:
+              - object
+              - "null"
+            properties:
+              servicegroup:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  data:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      type:
+                        type:
+                          - string
+                          - "null"
+                      id:
+                        type:
+                          - string
+                          - "null"
+              home_branch:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  data:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      type:
+                        type:
+                          - string
+                          - "null"
+                      id:
+                        type:
+                          - string
+                          - "null"
+              sell_rate_product:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  data:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      type:
+                        type:
+                          - string
+                          - "null"
+                      id:
+                        type:
+                          - string
+                          - "null"
+          updated:
+            type: string
+          name:
+            type: string
+          email:
+            type: string
+          partner_uid:
+            type: string
+          date_joined:
+            type: string
+          last_login:
+            type: string
+          last_access:
+            type: string
+          is_active:
+            type: boolean
+          is_staff:
+            type: boolean
+          is_superuser:
+            type: boolean
+          license:
+            type: string
+          addons:
+            type: string
+          rate:
+            type:
+              - number
+              - "null"
+          sell_rate:
+            type:
+              - number
+              - "null"
+          extra_fields:
+            type:
+              - object
+              - "null"
+          purchase_order_approval_limit:
+            type:
+              - number
+              - "null"
+          defectquote_approval_limit:
+            type:
+              - number
+              - "null"
+        required:
+          - id
+          - updated
+        additionalProperties: true
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - updated
+            value: "{{ record['attributes']['updated'] }}"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - name
+            value: "{{ record['attributes']['name'] }}"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - email
+            value: "{{ record['attributes']['email'] }}"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - partner_uid
+            value: "{{ record['attributes']['partner_uid'] }}"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - date_joined
+            value: "{{ record['attributes']['date_joined'] }}"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - last_login
+            value: "{{ record['attributes']['last_login'] }}"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - last_access
+            value: "{{ record['attributes']['last_access'] }}"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - is_active
+            value: "{{ record['attributes']['is_active'] }}"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - is_staff
+            value: "{{ record['attributes']['is_staff'] }}"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - is_superuser
+            value: "{{ record['attributes']['is_superuser'] }}"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - license
+            value: "{{ record['attributes']['license'] }}"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - addons
+            value: "{{ record['attributes']['addons'] }}"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - rate
+            value: "{{ record['attributes']['rate'] }}"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - sell_rate
+            value: "{{ record['attributes']['sell_rate'] }}"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - extra_fields
+            value: "{{ record['attributes']['extra_fields'] }}"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - purchase_order_approval_limit
+            value: "{{ record['attributes']['purchase_order_approval_limit'] }}"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - defectquote_approval_limit
+            value: "{{ record['attributes']['defectquote_approval_limit'] }}"
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - servicegroup_id
+            value: >-
+              {{ record['relationships']['servicegroup']['data']['id'] if
+              record['relationships']['servicegroup']['data'] else none }}
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - home_branch_id
+            value: >-
+              {{ record['relationships']['home_branch']['data']['id'] if
+              record['relationships']['home_branch']['data'] else none }}
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - sell_rate_product_id
+            value: >-
+              {{ record['relationships']['sell_rate_product']['data']['id'] if
+              record['relationships']['sell_rate_product']['data'] else none }}
+      - type: RemoveFields
+        field_pointers:
+          - - attributes
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: ""
+      datetime_format: "%Y-%m-%d"
+      start_time_option:
+        type: RequestOption
+        field_name: updatedsince
+        inject_into: request_parameter
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+      cursor_granularity: ""
+      step: ""
+      partition_field_end: ""
+      partition_field_start: ""
+
+  - type: DeclarativeStream
+    name: taskprofitability
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/linked/HttpRequester"
+        url: "{{ config['base_url'] }}/api/v2.14/intelligence/task-profitability/"
+        http_method: GET
+        request_parameters:
+          completed_after: "{{ config['start_date'] }}"
+      paginator:
+        type: NoPagination
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key:
+      - id
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: ""
+      datetime_format: "%Y-%m-%d"
+      start_time_option:
+        type: RequestOption
+        field_name: updatedsince
+        inject_into: request_parameter
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+      cursor_granularity: ""
+      step: ""
+      partition_field_end: ""
+      partition_field_start: ""
+
 spec:
   type: Spec
   connection_specification:
@@ -4726,7 +4735,8 @@ spec:
       - base_url
       - client_id
       - client_secret
-      - client_refresh_token
+      - username
+      - password
       - start_date
     properties:
       base_url:
@@ -4737,39 +4747,26 @@ spec:
       client_id:
         type: string
         order: 1
-        title: Client ID
+        title: OAuth Client ID
         airbyte_secret: true
-      start_date:
-        type: string
-        order: 6
-        title: Start Date
       client_secret:
         type: string
         order: 2
-        title: Client Secret
+        title: OAuth Client Secret
         airbyte_secret: true
-      oauth_access_token:
-        type: string
-        description: >-
-          The current access token. This field might be overridden by the
-          connector based on the token refresh endpoint response.
-        order: 4
-        title: Access Token
-        airbyte_secret: true
-      client_refresh_token:
+      username:
         type: string
         order: 3
-        title: Refresh token
-        airbyte_secret: true
-      oauth_token_expiry_date:
+        title: Uptick API Account Email
+      password:
         type: string
-        description: >-
-          The date the current access token expires in. This field might be
-          overridden by the connector based on the token refresh endpoint
-          response.
+        order: 4
+        title: Uptick API Account Password
+        airbyte_secret: true
+      start_date:
+        type: string
         order: 5
-        title: Token Expiry Date
-        format: date-time
+        title: Start Date
     additionalProperties: true
 
 metadata:
@@ -4929,6 +4926,8 @@ metadata:
     invoicelineitems: true
     purchaseorderbills: true
     purchaseorderdockets: true
+    users: true
+    taskprofitability: true
   applied_migrations:
     - from_version: 6.60.0
       to_version: "*"

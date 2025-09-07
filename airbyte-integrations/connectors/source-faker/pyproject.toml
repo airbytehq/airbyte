@@ -3,11 +3,11 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "6.2.30"
+version = "6.2.33"
 name = "source-faker"
 description = "Source implementation for fake but realistic looking data."
 authors = [ "Airbyte <evan@airbyte.io>",]
-license = "MIT"
+license = "ELv2"
 readme = "README.md"
 documentation = "https://docs.airbyte.com/integrations/sources/faker"
 homepage = "https://airbyte.com"
@@ -16,17 +16,17 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_faker"
 
 [tool.poetry.dependencies]
-python = "^3.9,<4.0"
-airbyte-cdk = "^2.0"
-mimesis = "==6.1.1"
+python = ">=3.10,<3.13"
+airbyte-cdk = ">=6.61.6,<7.0"
+mimesis = "==6.1.1"  # TODO: Consider broadening/bumping, but beware breaking changes.
 
 [tool.poetry.scripts]
 source-faker = "source_faker.run:run"
 
 [tool.poetry.group.dev.dependencies]
-requests-mock = "^1.9.3"
-pytest-mock = "^3.6.1"
-pytest = "^8.0.0"
+requests-mock = ">=1.9.3"  # Intentionally broad to avoid conflicts with CDK
+pytest-mock = ">=3.6.1"  # Intentionally broad to avoid conflicts with CDK
+pytest = ">=8.0.0"  # Intentionally broad to avoid conflicts with CDK
 
 
 [tool.poe]

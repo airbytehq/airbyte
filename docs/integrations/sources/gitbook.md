@@ -24,6 +24,7 @@ GitBook connector  enables seamless data integration from GitBook into your data
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.32 | 2025-08-23 | [65348](https://github.com/airbytehq/airbyte/pull/65348) | Update dependencies |
 | 0.0.31 | 2025-08-09 | [64619](https://github.com/airbytehq/airbyte/pull/64619) | Update dependencies |
 | 0.0.30 | 2025-08-02 | [64204](https://github.com/airbytehq/airbyte/pull/64204) | Update dependencies |
 | 0.0.29 | 2025-07-26 | [63902](https://github.com/airbytehq/airbyte/pull/63902) | Update dependencies |
