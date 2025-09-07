@@ -61,7 +61,7 @@ definitions:
       inject_into: "request_parameter"
       field_name: "startAt"
     # Why not OffsetPagination:
-    # Due to the record_filter, we may end up with a reduced number of records.
+    # Due to the record_filter we may end up with a reduced number of records.
     # For instance, a response has 50 records and the page_size option is also set to 50,
     # but the record_filter results in filtering out 40 records, leaving us with only 10.
     # During the calculation of the next_page_token, there is a check to ensure that
