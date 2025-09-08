@@ -3,7 +3,7 @@ data:
     hosts:
       - graph.facebook.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.60.16@sha256:b8126848437ec5a6cff05fb4796fd775450b83e57925674d856a1838a390a28c
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.62.0dev4@sha256:020c5bda8e30cd9cbe49234511e8878b98c39b4b226a7ba9c8088f4e5dc79e9a
   connectorSubtype: api
   connectorType: source
   definitionId: 6acf6b55-4f1e-4fca-944e-1a3caef8aba8
