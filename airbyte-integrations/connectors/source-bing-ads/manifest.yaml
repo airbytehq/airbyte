@@ -2702,6 +2702,7 @@ definitions:
     cursor_field: "Modified Time"
     cursor_datetime_formats:
       - "%Y-%m-%dT%H:%M:%S.%_ms%z"
+      - "%Y-%m-%dT%H:%M:%S.%f%z" #add support for old datetime cursor format with microseconds (causing integration tests to fail: Example value: "2023-04-27T18:00:14.970+00:00")
       - "%m/%d/%Y %H:%M:%S.%_ms"
     datetime_format: "%Y-%m-%dT%H:%M:%S.%_ms%z"
     lookback_window: P{{ config.get('lookback_window', 0) }}D
