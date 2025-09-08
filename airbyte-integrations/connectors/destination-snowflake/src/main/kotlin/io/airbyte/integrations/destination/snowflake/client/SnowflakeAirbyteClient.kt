@@ -19,7 +19,7 @@ val log = KotlinLogging.logger {}
 @Singleton
 class AirbyteSnowflakeClient(
     private val dataSource: HikariDataSource,
-    private val sqlGenerator: SnowflakeSqlGenerator,
+    private val sqlGenerator: SnowflakeDirectLoadSqlGenerator,
 ) : AirbyteClient, DirectLoadTableSqlOperations, DirectLoadTableNativeOperations {
     override suspend fun countTable(tableName: TableName): Long? {
         TODO("Not yet implemented")
