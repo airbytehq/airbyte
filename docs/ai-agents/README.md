@@ -20,7 +20,7 @@ Before using any Airbyte developer tools, ensure you have:
 
 ## Airbyte Embedded
 
-[Airbyte Embedded](https://airbyte.com/embedded) provides product and software teams the tools and services to move data to provide context for AI applications.
+[Airbyte Embedded](https://airbyte.com/embedded) equips product and software teams with the tools needed to move customer data and deliver context to AI applications.
 
 ### Embedded Workspaces & Widget
 
