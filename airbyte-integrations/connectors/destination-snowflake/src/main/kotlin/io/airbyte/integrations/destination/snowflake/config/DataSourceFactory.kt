@@ -48,7 +48,7 @@ class DataSourceFactory {
         @Named("snowflakePrivateKeyFileName")
         snowflakePrivateKeyFileName: String = PRIVATE_KEY_FILE_NAME,
         @Value("\${airbyte.edition}") airbyteEdition: String,
-    ): DataSource {
+    ): HikariDataSource {
         val snowflakeJdbcUrl =
             "jdbc:snowflake://${snowflakeConfiguration.host}/?${snowflakeConfiguration.jdbcUrlParams}"
         val datasourceConfig =
@@ -68,8 +68,9 @@ class DataSourceFactory {
                 jdbcUrl = snowflakeJdbcUrl
                 when (snowflakeConfiguration.authType) {
                     is KeyPairAuthConfiguration -> {
-                        File(snowflakePrivateKeyFileName)
-                            .writeText(
+                        val privateKeyFile = File(snowflakePrivateKeyFileName)
+                        privateKeyFile.deleteOnExit()
+                        privateKeyFile.writeText(
                                 snowflakeConfiguration.authType.privateKey,
                                 StandardCharsets.UTF_8
                             )
