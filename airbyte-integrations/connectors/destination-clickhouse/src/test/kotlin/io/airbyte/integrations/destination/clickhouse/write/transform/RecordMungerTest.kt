@@ -49,11 +49,19 @@ class RecordMungerTest {
                 secondArg<String>() + "_munged"
             }
 
-        every { validator.validate(any()) } answers { firstArg() }
+        every { validator.validate(any<EnrichedAirbyteValue>()) } answers { firstArg() }
 
         val stringfiedValue =
             Fixtures.mockCoercedValue(StringValue("{ \"json\": \"stringified\" }"))
-        every { validator.toJsonStringValue(any()) } answers { stringfiedValue }
+        every { validator.map(any()) } answers
+            {
+                val input = firstArg<EnrichedAirbyteValue>()
+                if (input.abValue is ObjectValue) {
+                    stringfiedValue
+                } else {
+                    input
+                }
+            }
 
         // mock coercion output
         val nonUnionUserFields =
@@ -99,10 +107,9 @@ class RecordMungerTest {
         verify {
             input.asEnrichedDestinationRecordAirbyteValue(extractedAtAsTimestampWithTimezone = true)
         }
-        // we validate each non-union field directly
         nonUnionUserFields.forEach { verify { validator.validate(it.value) } }
         // the stringified field is also validated
-        verify { validator.validate(stringfiedValue) }
+        verify(exactly = 1) { validator.validate(stringfiedValue) }
 
         // munged keys map to unwrapped / coerced values
         val expected =
