@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.snowflake.client
 
+import com.zaxxer.hikari.HikariDataSource
 import io.airbyte.cdk.load.client.AirbyteClient
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
@@ -11,11 +12,10 @@ import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNativeOperations
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableSqlOperations
 import jakarta.inject.Singleton
-import javax.sql.DataSource
 
 @Singleton
 class AirbyteSnowflakeClient(
-    private val dataSource: DataSource,
+    private val dataSource: HikariDataSource,
     private val sqlGenerator: SnowflakeSqlGenerator,
 ) : AirbyteClient, DirectLoadTableSqlOperations, DirectLoadTableNativeOperations {
     override suspend fun countTable(tableName: TableName): Long? {
