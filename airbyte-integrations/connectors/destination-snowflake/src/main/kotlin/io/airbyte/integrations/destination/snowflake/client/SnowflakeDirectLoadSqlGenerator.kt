@@ -132,7 +132,7 @@ class SnowflakeDirectLoadSqlGenerator() {
     }
 
     fun dropTable(tableName: TableName): String {
-        return "DROP TABLE IF EXISTS \"${tableName.namespace}\".\"${tableName.name}\"".andLog()
+        return "DROP TABLE IF EXISTS ${tableName.toPrettyString(QUOTE)}".andLog()
     }
 
     companion object {

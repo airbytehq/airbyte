@@ -61,7 +61,7 @@ class AirbyteSnowflakeClient(
     }
 
     override suspend fun dropTable(tableName: TableName) {
-        TODO("Not yet implemented")
+        execute(sqlGenerator.dropTable(tableName))
     }
 
     override suspend fun ensureSchemaMatches(
