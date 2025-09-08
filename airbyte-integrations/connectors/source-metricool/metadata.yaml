@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-metricool
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.60.10@sha256:b687d710b2cd3e194baeddc90ee3ad90c8397685001ceb8267f79d9d7df79d5c
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.60.16@sha256:b8126848437ec5a6cff05fb4796fd775450b83e57925674d856a1838a390a28c
   connectorSubtype: api
   connectorType: source
   definitionId: e4e1ed94-f374-47fe-8dfa-872fb9935fbe
-  dockerImageTag: 0.0.2
+  dockerImageTag: 0.0.4
   dockerRepository: airbyte/source-metricool
   githubIssueLabel: source-metricool
   icon: icon.svg

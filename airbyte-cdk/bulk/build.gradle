@@ -6,7 +6,7 @@ import javax.xml.xpath.XPathFactory
 import org.w3c.dom.Document
 
 allprojects {
-    version = "0.1.17"
+    version = "0.1.23"
     apply plugin: 'java-library'
     apply plugin: 'maven-publish'
 

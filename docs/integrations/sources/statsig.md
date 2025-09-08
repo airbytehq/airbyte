@@ -43,6 +43,8 @@ See the [API docs](https://docs.statsig.com/http-api) for steps to generate the 
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.30 | 2025-08-24 | [65469](https://github.com/airbytehq/airbyte/pull/65469) | Update dependencies |
+| 0.0.29 | 2025-08-16 | [65012](https://github.com/airbytehq/airbyte/pull/65012) | Update dependencies |
 | 0.0.28 | 2025-08-02 | [64453](https://github.com/airbytehq/airbyte/pull/64453) | Update dependencies |
 | 0.0.27 | 2025-07-26 | [64003](https://github.com/airbytehq/airbyte/pull/64003) | Update dependencies |
 | 0.0.26 | 2025-07-12 | [63062](https://github.com/airbytehq/airbyte/pull/63062) | Update dependencies |

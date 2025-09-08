@@ -1,0 +1,35 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - "api.heymantle.com"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-mantle
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.60.16@sha256:b8126848437ec5a6cff05fb4796fd775450b83e57925674d856a1838a390a28c
+  connectorSubtype: api
+  connectorType: source
+  definitionId: da48299b-4afa-46b4-bb9d-e1ade37e7169
+  dockerImageTag: 0.0.3
+  dockerRepository: airbyte/source-mantle
+  githubIssueLabel: source-mantle
+  icon: icon.svg
+  license: MIT
+  name: Mantle
+  releaseDate: 2025-08-13
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/mantle
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100

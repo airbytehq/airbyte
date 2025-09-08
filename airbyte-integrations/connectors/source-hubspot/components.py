@@ -205,6 +205,47 @@ class AddFieldsFromEndpointTransformation(RecordTransformation):
 
 
 @dataclass
+class MarketingEmailStatisticsTransformation(RecordTransformation):
+    """
+    Custom transformation for HubSpot Marketing Emails that fetches statistics from the v3 API.
+
+    This transformation is needed because the v3 API separates email data and statistics into two endpoints:
+    - GET /marketing/v3/emails - for email data
+    - GET /marketing/v3/emails/{emailId}/statistics - for statistics
+
+    This transformation fetches statistics for each email and merges them into the email record.
+    """
+
+    requester: Requester
+    record_selector: HttpSelector
+
+    def transform(
+        self,
+        record: Dict[str, Any],
+        config: Optional[Config] = None,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+    ) -> None:
+        try:
+            # Fetch statistics for this email using the v3 statistics endpoint
+            statistics_response = self.requester.send_request(
+                stream_slice=StreamSlice(partition={"email_id": record["id"]}, cursor_slice={})
+            )
+            statistics_data = self.record_selector.select_records(response=statistics_response, stream_state={}, records_schema={})
+
+            # Merge statistics into the email record
+            for stats in statistics_data:
+                record.update(stats)
+
+        except Exception as e:
+            # Log the error but don't fail the entire sync
+            # This ensures that if statistics are unavailable for some emails,
+            # we still get the email data
+            logger.warning(f"Failed to fetch statistics for email {record.get('id', 'unknown')}: {str(e)}")
+            pass
+
+
+@dataclass
 class HubspotSchemaExtractor(RecordExtractor):
     """
     Transformation that encapsulates the list of properties under a single object because DynamicSchemaLoader only

@@ -49,6 +49,8 @@ To get started;
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.1.17 | 2025-08-23 | [65424](https://github.com/airbytehq/airbyte/pull/65424) | Update dependencies |
+| 0.1.16 | 2025-08-16 | [65028](https://github.com/airbytehq/airbyte/pull/65028) | Update dependencies |
 | 0.1.15 | 2025-08-02 | [64427](https://github.com/airbytehq/airbyte/pull/64427) | Update dependencies |
 | 0.1.14 | 2025-07-26 | [64007](https://github.com/airbytehq/airbyte/pull/64007) | Update dependencies |
 | 0.1.13 | 2025-07-19 | [63631](https://github.com/airbytehq/airbyte/pull/63631) | Update dependencies |
