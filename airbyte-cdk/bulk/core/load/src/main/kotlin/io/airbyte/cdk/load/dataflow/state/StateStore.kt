@@ -50,4 +50,6 @@ class StateStore(
 
         return msg
     }
+
+    fun hasStates(): Boolean = states.isNotEmpty()
 }
