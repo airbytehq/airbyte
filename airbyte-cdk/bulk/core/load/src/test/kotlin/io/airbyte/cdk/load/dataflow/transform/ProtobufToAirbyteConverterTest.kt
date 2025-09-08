@@ -126,17 +126,19 @@ class ProtobufToAirbyteConverterTest {
         generationId: Long = 1L,
         syncId: Long = 2L,
         unknownChanges: List<Meta.Change> = emptyList()
-    ): DestinationRecordRaw =
-        mockk<DestinationRecordRaw> {
-            every { stream } returns
-                mockk<DestinationStream> {
-                    every { airbyteValueProxyFieldAccessors } returns accessors
-                    every { this@mockk.generationId } returns generationId
-                    every { this@mockk.syncId } returns syncId
-                    every { unknownColumnChanges } returns unknownChanges
-                }
+    ): DestinationRecordRaw {
+        val destinationStream =
+            mockk<DestinationStream> {
+                every { airbyteValueProxyFieldAccessors } returns accessors
+                every { this@mockk.generationId } returns generationId
+                every { this@mockk.syncId } returns syncId
+                every { unknownColumnChanges } returns unknownChanges
+            }
+        return mockk<DestinationRecordRaw> {
+            every { stream } returns destinationStream
             every { airbyteRawId } returns UUID.randomUUID()
         }
+    }
 
     @Test
     fun `convertWithMetadata processes basic types correctly`() {
@@ -149,19 +151,20 @@ class ProtobufToAirbyteConverterTest {
                 fa("boolean_field", BooleanType, 1),
                 fa("integer_field", IntegerType, 2),
                 fa("number_field", NumberType, 3),
-                fa("date_field", DateType, 4),
-                fa("time_tz_field", TimeTypeWithTimezone, 5),
-                fa("time_no_tz_field", TimeTypeWithoutTimezone, 6),
-                fa("ts_tz_field", TimestampTypeWithTimezone, 7),
-                fa("ts_no_tz_field", TimestampTypeWithoutTimezone, 8),
-                fa("array_field", ArrayType(FieldType(StringType, false)), 9),
-                fa("obj_field", ObjectType(linkedMapOf("k" to FieldType(StringType, false))), 10),
+                fa("bigdecimal_field", NumberType, 4),
+                fa("date_field", DateType, 5),
+                fa("time_tz_field", TimeTypeWithTimezone, 6),
+                fa("time_no_tz_field", TimeTypeWithoutTimezone, 7),
+                fa("ts_tz_field", TimestampTypeWithTimezone, 8),
+                fa("ts_no_tz_field", TimestampTypeWithoutTimezone, 9),
+                fa("array_field", ArrayType(FieldType(StringType, false)), 10),
+                fa("obj_field", ObjectType(linkedMapOf("k" to FieldType(StringType, false))), 11),
                 fa(
                     "union_field",
                     UnionType.of(ObjectType(linkedMapOf("u" to FieldType(IntegerType, false)))),
-                    11
+                    12
                 ),
-                fa("unknown_field", UnknownType(Jsons.emptyObject()), 12)
+                fa("unknown_field", UnknownType(Jsons.emptyObject()), 13)
             )
 
         val protoValues =
@@ -170,6 +173,7 @@ class ProtobufToAirbyteConverterTest {
                 vBoolean(true),
                 vInteger(123),
                 vNumber(45.67),
+                vBigDecimal("999.12345"),
                 vDate("2025-06-17"),
                 vTimeTz("23:59:59+02:00"),
                 vTimeNoTz("23:59:59"),
@@ -197,6 +201,9 @@ class ProtobufToAirbyteConverterTest {
 
         assertTrue(result["number_field"] is NumberValue)
         assertEquals(BigDecimal.valueOf(45.67), (result["number_field"] as NumberValue).value)
+
+        assertTrue(result["bigdecimal_field"] is NumberValue)
+        assertEquals(BigDecimal("999.12345"), (result["bigdecimal_field"] as NumberValue).value)
 
         assertTrue(result["date_field"] is DateValue)
         assertEquals("2025-06-17", (result["date_field"] as DateValue).value.toString())
@@ -238,6 +245,48 @@ class ProtobufToAirbyteConverterTest {
 
         verify { coercer.map(any()) }
         verify { coercer.validate(any()) }
+    }
+
+    @Test
+    fun `convertWithMetadata handles BigDecimal values correctly`() {
+        val coercer = createMockCoercerPassThrough()
+        val converter = ProtobufToAirbyteConverter(coercer)
+
+        val accessors =
+            arrayOf(
+                fa("small_decimal", NumberType, 0),
+                fa("large_decimal", NumberType, 1),
+                fa("scientific_decimal", NumberType, 2),
+                fa("negative_decimal", NumberType, 3)
+            )
+
+        val protoValues =
+            listOf(
+                vBigDecimal("0.0001"),
+                vBigDecimal("123456789.987654321"),
+                vBigDecimal("1.23E-10"),
+                vBigDecimal("-999.999")
+            )
+
+        val msg = mockMsgWithStream(accessors)
+        val source = buildProtoSource(protoValues)
+
+        val result = converter.convertWithMetadata(msg, source)
+
+        assertTrue(result["small_decimal"] is NumberValue)
+        assertEquals(BigDecimal("0.0001"), (result["small_decimal"] as NumberValue).value)
+
+        assertTrue(result["large_decimal"] is NumberValue)
+        assertEquals(
+            BigDecimal("123456789.987654321"),
+            (result["large_decimal"] as NumberValue).value
+        )
+
+        assertTrue(result["scientific_decimal"] is NumberValue)
+        assertEquals(BigDecimal("1.23E-10"), (result["scientific_decimal"] as NumberValue).value)
+
+        assertTrue(result["negative_decimal"] is NumberValue)
+        assertEquals(BigDecimal("-999.999"), (result["negative_decimal"] as NumberValue).value)
     }
 
     @Test
