@@ -45,7 +45,7 @@ class SnowflakeConfigurationFactory :
         val authTypeConfig =
             when (pojo.authType) {
                 is KeyPairAuthSpecification -> {
-                    val keyPairAuthSpec = pojo.authType as KeyPairAuthSpecification
+                    val keyPairAuthSpec = pojo.authType
                     KeyPairAuthConfiguration(
                         keyPairAuthSpec.privateKey,
                         keyPairAuthSpec.privateKeyPassword
@@ -73,7 +73,7 @@ class SnowflakeConfigurationFactory :
                 if (pojo.internalTableDataset.isNullOrBlank()) {
                     DbConstants.DEFAULT_RAW_TABLE_NAMESPACE
                 } else {
-                    pojo.internalTableDataset!!
+                    pojo.internalTableDataset
                 },
             jdbcUrlParams = pojo.jdbcUrlParams,
             retentionPeriodDays = pojo.retentionPeriodDays ?: 1,
