@@ -8,6 +8,7 @@ import io.airbyte.integrations.destination.snowflake.SnowflakeSqlNameTransformer
 import io.airbyte.integrations.destination.snowflake.client.AirbyteSnowflakeClient
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeSqlGenerator
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
+import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
@@ -18,7 +19,8 @@ internal class SnowflakeCheckerTest {
 
     @Test
     fun testSuccessfulCheck() {
-        val airbyteSnowflakeClient: AirbyteSnowflakeClient = mockk(relaxed = true)
+        val airbyteSnowflakeClient: AirbyteSnowflakeClient =
+            mockk(relaxed = true) { coEvery { countTable(any()) } returns 1L }
         val snowflakeSqlNameTransformer: SnowflakeSqlNameTransformer = mockk {
             every { transform(any()) } answers { firstArg() }
         }
@@ -44,7 +46,8 @@ internal class SnowflakeCheckerTest {
 
     @Test
     fun testUnsuccessfulCheck() {
-        val airbyteSnowflakeClient: AirbyteSnowflakeClient = mockk(relaxed = true)
+        val airbyteSnowflakeClient: AirbyteSnowflakeClient =
+            mockk(relaxed = true) { coEvery { countTable(any()) } returns 0L }
         val snowflakeSqlNameTransformer: SnowflakeSqlNameTransformer = mockk {
             every { transform(any()) } answers { firstArg() }
         }

@@ -62,7 +62,10 @@ class SnowflakeChecker(
 
                 // TODO Insert data here
 
-                // TODO verify record inserted
+                val tableCount = airbyteSnowflakeClient.countTable(qualifiedTableName)
+                require(tableCount == 1L) {
+                    "Failed to insert expected rows into check table. Actual written: $tableCount"
+                }
             } finally {
                 airbyteSnowflakeClient.dropTable(qualifiedTableName)
             }
