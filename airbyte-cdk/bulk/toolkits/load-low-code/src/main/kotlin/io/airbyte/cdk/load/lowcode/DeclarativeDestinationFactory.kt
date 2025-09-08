@@ -100,10 +100,6 @@ class DeclarativeDestinationFactory(config: JsonNode?) {
     }
 
     fun createOperationProvider(): OperationProvider {
-        val mapper = ObjectMapper(YAMLFactory())
-        val manifestContent = ResourceUtils.readResource("manifest.yaml")
-        val manifest: DeclarativeDestinationModel =
-            mapper.readValue(manifestContent, DeclarativeDestinationModel::class.java)
         // todo: 'discovery' component in the long term should be a required field, but since
         //  the first PR only implements static discovery not dynamic, we don't want to make the
         //  component required until connectors like Hubspot can define it.

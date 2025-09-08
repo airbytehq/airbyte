@@ -60,7 +60,7 @@ class CustomerIoBeanFactory {
 
     @Singleton
     fun discover(
-        factory: DeclarativeDestinationFactory<CustomerIoConfiguration>,
+        factory: DeclarativeDestinationFactory,
     ) = CustomerIoDiscoverer(factory.createOperationProvider())
 
     @Singleton

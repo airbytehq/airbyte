@@ -22,7 +22,7 @@ sealed interface Operation
  * Configuration for destination check operations. Performs a HTTP request to the destination API to
  * check if the configuration is valid.
  */
-data class CompositeOperations(@JsonProperty("operations") val operations: List<StaticOperation>) :
+data class CompositeOperations(@JsonProperty("operations") val operations: List<Operation>) :
     Operation
 
 /**

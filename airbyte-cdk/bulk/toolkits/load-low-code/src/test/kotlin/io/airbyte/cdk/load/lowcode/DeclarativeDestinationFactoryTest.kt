@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.lowcode
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import io.airbyte.cdk.load.check.dlq.DlqChecker
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
@@ -16,6 +17,14 @@ import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.http.authentication.BasicAccessAuthenticator
 import io.airbyte.cdk.load.model.checker.HttpRequestChecker
+import io.airbyte.cdk.load.model.destination_import_mode.Append as AppendModel
+import io.airbyte.cdk.load.model.destination_import_mode.Dedupe as DedupeModel
+import io.airbyte.cdk.load.model.destination_import_mode.Overwrite as OverwriteModel
+import io.airbyte.cdk.load.model.destination_import_mode.SoftDelete as SoftDeleteModel
+import io.airbyte.cdk.load.model.destination_import_mode.Update as UpdateModel
+import io.airbyte.cdk.load.model.discovery.CompositeOperations
+import io.airbyte.cdk.load.model.discovery.Operation
+import io.airbyte.cdk.load.model.discovery.StaticOperation
 import io.airbyte.cdk.load.model.http.HttpMethod
 import io.airbyte.cdk.load.model.http.HttpRequester
 import io.airbyte.cdk.load.model.http.authenticator.BasicAccessAuthenticator as BasicAccessAuthenticatorModel
@@ -41,6 +50,11 @@ class DeclarativeDestinationFactoryTest {
 
     @Test
     internal fun `test when check then ensure check gets interpolated credentials`() {
+        val mapper = ObjectMapper()
+
+        val config =
+            Jsons.readTree("""{"api_id": "$VALID_API_ID", "api_token": "$VALID_API_TOKEN"}""")
+
         mockManifest(
             ManifestBuilder()
                 .withChecker(
@@ -56,7 +70,35 @@ class DeclarativeDestinationFactoryTest {
                         ),
                     )
                 )
-                .withDiscovery()
+                .withCompositeOperation(
+                    CompositeOperations(
+                        operations =
+                            listOf<Operation>(
+                                StaticOperation(
+                                    objectName = "player",
+                                    destinationImportMode =
+                                        DedupeModel(
+                                            primaryKey = listOf(listOf("name")),
+                                            cursor = listOf("updated_at"),
+                                        ),
+                                    schema =
+                                        mapper.valueToTree(
+                                            mapOf(
+                                                "type" to "object",
+                                                "required" to listOf("name"),
+                                                "additionalProperties" to true,
+                                                "properties" to
+                                                    mapOf(
+                                                        "name" to mapOf("type" to "string"),
+                                                        "updated_at" to mapOf("type" to "string")
+                                                    )
+                                            )
+                                        ),
+                                    matchingKeys = listOf(listOf("test"))
+                                )
+                            )
+                    )
+                )
                 .build()
         )
 
@@ -72,9 +114,9 @@ class DeclarativeDestinationFactoryTest {
                                 "updated_at" to FieldType(StringType, true),
                             ),
                         additionalProperties = true,
-                        required = listOf<String>("name"),
+                        required = listOf("name"),
                     ),
-                    matchingKeys = listOf<List<String>>(listOf<String>("test"))
+                    matchingKeys = listOf(listOf("test"))
                 )
             )
 
@@ -83,13 +125,7 @@ class DeclarativeDestinationFactoryTest {
         every { dlqChecker.check(any()) } returns Unit
 
         try {
-            DeclarativeDestinationFactory(
-                    Jsons.readTree(
-                        """{"api_id": "$VALID_API_ID", "api_token": "$VALID_API_TOKEN"}"""
-                    )
-                )
-                .createDestinationChecker(dlqChecker)
-                .check()
+            DeclarativeDestinationFactory(config).createDestinationChecker(dlqChecker).check()
 
             verify {
                 constructedWith<BasicAccessAuthenticator>(
@@ -138,98 +174,118 @@ class DeclarativeDestinationFactoryTest {
 
     @Test
     internal fun `test static operations with all sync modes`() {
+        val mapper = ObjectMapper()
+
         mockManifest(
-            """
-            checker:
-              type: HttpRequestChecker
-              requester:
-                type: HttpRequester
-                url: https://airbyte.io/
-                method: GET
-                authenticator:
-                  type: BasicAccessAuthenticator
-                  username: "{{ config.apiId }}"
-                  password: "{{ config.apiToken }}"
-            discovery:
-              type: CompositeOperations
-              operations:
-                - type: StaticOperation
-                  object_name: player
-                  destination_import_mode:
-                    type: Dedupe
-                    primary_key: [[name]]
-                    cursor: [updated_at]
-                  schema:
-                    type: object
-                    required:
-                      - name
-                    additionalProperties: true
-                    properties:
-                      name:
-                        type: string
-                      updated_at:
-                        type: string
-                - type: StaticOperation
-                  object_name: position
-                  destination_import_mode:
-                    type: Append
-                  schema:
-                    type: object
-                    required:
-                      - name
-                    additionalProperties: true
-                    properties:
-                      name:
-                        type: string
-                      side:
-                        type: string    
-                - type: StaticOperation
-                  object_name: coaching_staff
-                  destination_import_mode:
-                    type: Overwrite
-                  schema:
-                    type: object
-                    required:
-                      - name
-                    additionalProperties: true
-                    properties:
-                      name:
-                        type: string
-                - type: StaticOperation
-                  object_name: stadium
-                  destination_import_mode:
-                    type: Update
-                  schema:
-                    type: object
-                    required:
-                      - name
-                    additionalProperties: true
-                    properties:
-                      name:
-                        type: string
-                - type: StaticOperation
-                  object_name: team
-                  destination_import_mode:
-                    type: SoftDelete
-                  schema:
-                    type: object
-                    required:
-                      - name
-                    additionalProperties: true
-                    properties:
-                      name:
-                        type: string
-        """.trimIndent()
+            ManifestBuilder()
+                .withChecker(
+                    HttpRequestChecker(
+                        HttpRequester(
+                            url = "https://airbyte.io/",
+                            method = HttpMethod.GET,
+                            authenticator =
+                                BasicAccessAuthenticatorModel(
+                                    """{{ config["api_id"] }}""",
+                                    """{{ config["api_token"] }}""",
+                                ),
+                        ),
+                    )
+                )
+                .withCompositeOperation(
+                    CompositeOperations(
+                        operations =
+                            listOf<Operation>(
+                                StaticOperation(
+                                    objectName = "player",
+                                    destinationImportMode =
+                                        DedupeModel(
+                                            primaryKey = listOf(listOf("name")),
+                                            cursor = listOf("updated_at"),
+                                        ),
+                                    schema =
+                                        mapper.valueToTree(
+                                            mapOf(
+                                                "type" to "object",
+                                                "required" to listOf("name"),
+                                                "additionalProperties" to true,
+                                                "properties" to
+                                                    mapOf(
+                                                        "name" to mapOf("type" to "string"),
+                                                        "updated_at" to mapOf("type" to "string")
+                                                    )
+                                            )
+                                        )
+                                ),
+                                StaticOperation(
+                                    objectName = "position",
+                                    destinationImportMode = AppendModel,
+                                    schema =
+                                        mapper.valueToTree(
+                                            mapOf(
+                                                "type" to "object",
+                                                "required" to listOf("name"),
+                                                "additionalProperties" to true,
+                                                "properties" to
+                                                    mapOf(
+                                                        "name" to mapOf("type" to "string"),
+                                                        "side" to mapOf("type" to "string")
+                                                    )
+                                            )
+                                        )
+                                ),
+                                StaticOperation(
+                                    objectName = "coaching_staff",
+                                    destinationImportMode = OverwriteModel,
+                                    schema =
+                                        mapper.valueToTree(
+                                            mapOf(
+                                                "type" to "object",
+                                                "required" to listOf("name"),
+                                                "additionalProperties" to true,
+                                                "properties" to
+                                                    mapOf("name" to mapOf("type" to "string"))
+                                            )
+                                        )
+                                ),
+                                StaticOperation(
+                                    objectName = "stadium",
+                                    destinationImportMode = UpdateModel,
+                                    schema =
+                                        mapper.valueToTree(
+                                            mapOf(
+                                                "type" to "object",
+                                                "required" to listOf("name"),
+                                                "additionalProperties" to true,
+                                                "properties" to
+                                                    mapOf("name" to mapOf("type" to "string"))
+                                            )
+                                        )
+                                ),
+                                StaticOperation(
+                                    objectName = "team",
+                                    destinationImportMode = SoftDeleteModel,
+                                    schema =
+                                        mapper.valueToTree(
+                                            mapOf(
+                                                "type" to "object",
+                                                "required" to listOf("name"),
+                                                "additionalProperties" to true,
+                                                "properties" to
+                                                    mapOf("name" to mapOf("type" to "string"))
+                                            )
+                                        )
+                                )
+                            )
+                    )
+                )
+                .build()
         )
 
         val expectedOperations =
-            listOf<DestinationOperation>(
+            listOf(
                 DestinationOperation(
                     "player",
-                    Dedupe(
-                        listOf<List<String>>(listOf<String>("name")),
-                        listOf<String>("updated_at")
-                    ),
+                    Dedupe(listOf(listOf("name")), listOf("updated_at")),
                     ObjectType(
                         properties =
                             linkedMapOf(
@@ -239,7 +295,7 @@ class DeclarativeDestinationFactoryTest {
                         additionalProperties = true,
                         required = listOf("name"),
                     ),
-                    matchingKeys = emptyList<List<String>>()
+                    matchingKeys = emptyList()
                 ),
                 DestinationOperation(
                     "position",
@@ -251,9 +307,9 @@ class DeclarativeDestinationFactoryTest {
                                 "side" to FieldType(StringType, true),
                             ),
                         additionalProperties = true,
-                        required = listOf<String>("name"),
+                        required = listOf("name"),
                     ),
-                    matchingKeys = emptyList<List<String>>()
+                    matchingKeys = emptyList()
                 ),
                 DestinationOperation(
                     "coaching_staff",
@@ -264,9 +320,9 @@ class DeclarativeDestinationFactoryTest {
                                 "name" to FieldType(StringType, true),
                             ),
                         additionalProperties = true,
-                        required = listOf<String>("name"),
+                        required = listOf("name"),
                     ),
-                    matchingKeys = emptyList<List<String>>()
+                    matchingKeys = emptyList()
                 ),
                 DestinationOperation(
                     "stadium",
@@ -277,9 +333,9 @@ class DeclarativeDestinationFactoryTest {
                                 "name" to FieldType(StringType, true),
                             ),
                         additionalProperties = true,
-                        required = listOf<String>("name"),
+                        required = listOf("name"),
                     ),
-                    matchingKeys = emptyList<List<String>>()
+                    matchingKeys = emptyList()
                 ),
                 DestinationOperation(
                     "team",
@@ -290,14 +346,15 @@ class DeclarativeDestinationFactoryTest {
                                 "name" to FieldType(StringType, true),
                             ),
                         additionalProperties = true,
-                        required = listOf<String>("name"),
+                        required = listOf("name"),
                     ),
-                    matchingKeys = emptyList<List<String>>()
+                    matchingKeys = emptyList()
                 ),
             )
 
         mockkConstructor(BasicAccessAuthenticator::class)
-        val config = MockConfig(VALID_API_ID, VALID_API_TOKEN)
+        val config =
+            Jsons.readTree("""{"api_id": "$VALID_API_ID", "api_token": "$VALID_API_TOKEN"}""")
         val dlqChecker = mockk<DlqChecker>()
         every { dlqChecker.check(any()) } returns Unit
 

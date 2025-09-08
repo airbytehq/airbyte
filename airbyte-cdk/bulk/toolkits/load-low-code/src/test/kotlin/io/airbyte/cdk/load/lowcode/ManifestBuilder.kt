@@ -7,6 +7,10 @@ package io.airbyte.cdk.load.lowcode
 import io.airbyte.cdk.load.model.DeclarativeDestination
 import io.airbyte.cdk.load.model.checker.Checker
 import io.airbyte.cdk.load.model.checker.HttpRequestChecker
+import io.airbyte.cdk.load.model.destination_import_mode.Append
+import io.airbyte.cdk.load.model.discovery.CompositeOperations
+import io.airbyte.cdk.load.model.discovery.Operation
+import io.airbyte.cdk.load.model.discovery.StaticOperation
 import io.airbyte.cdk.load.model.http.HttpMethod
 import io.airbyte.cdk.load.model.http.HttpRequester
 import io.airbyte.cdk.load.model.spec.Spec
@@ -25,6 +29,17 @@ class ManifestBuilder {
             connectionSpecification = Jsons.objectNode(),
             advancedAuth = null,
         )
+    private var discovery: Operation =
+        CompositeOperations(
+            operations =
+                listOf<Operation>(
+                    StaticOperation(
+                        objectName = "test",
+                        destinationImportMode = Append,
+                        schema = Jsons.objectNode()
+                    ),
+                )
+        )
 
     fun withChecker(checker: Checker): ManifestBuilder {
         this.checker = checker
@@ -36,7 +51,12 @@ class ManifestBuilder {
         return this
     }
 
+    fun withCompositeOperation(compositeOperations: CompositeOperations): ManifestBuilder {
+        this.discovery = compositeOperations
+        return this
+    }
+
     fun build(): String {
-        return Jsons.writeValueAsString(DeclarativeDestination(checker, spec))
+        return Jsons.writeValueAsString(DeclarativeDestination(checker, spec, discovery))
     }
 }
