@@ -12,7 +12,7 @@ data:
   definitionId: b979cb59-34b3-4f8b-9bf7-ae82d6371e2a
   dockerImageTag: 0.2.4
   dockerRepository: airbyte/source-netsuite-enterprise
-  documentationUrl: https://docs.airbyte.com/integrations/enterprise-connectors/source-netsuite
+  documentationUrl: https://docs.airbyte.com/integrations/enterprise-connectors/source-netsuite-enterprise
   githubIssueLabel: source-netsuite-enterprise
   icon: netsuite.svg
   license: Airbyte Enterprise
