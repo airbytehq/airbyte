@@ -6,6 +6,7 @@ import copy
 import logging
 from abc import ABC, abstractmethod
 from enum import Enum
+import time
 from typing import Any, Iterator, List, Mapping, Optional, Type, Union
 
 import backoff
@@ -231,11 +232,30 @@ class InsightAsyncJob(AsyncJob):
             return self._split_by_edge_class(Ad)
         raise ValueError("The job is already splitted to the smallest size.")
 
+    def _log_throttle(self, where: str):
+        """
+        Just log the current throttle values for debugging/monitoring.
+        """
+        throttle = getattr(self._api, "ads_insights_throttle", None)
+        if throttle:
+            logger.info(
+                f"{self}: throttle check ({where}): "
+                f"per_account={getattr(throttle, 'per_account', 'N/A')}, "
+                f"per_application={getattr(throttle, 'per_application', 'N/A')}"
+            )
+        else:
+            logger.info(f"{self}: throttle check ({where}): no throttle info available")
+
     def _split_by_edge_class(self, edge_class: Union[Type[Campaign], Type[AdSet], Type[Ad]]) -> List[AsyncJob]:
-        """Split insight job by creating insight jobs from lower edge object, i.e.
-        Account -> Campaign -> AdSet
-        TODO: use some cache to avoid expensive queries across different streams.
-        :return: list of new jobs
+        """
+        Split insight job by creating insight jobs from a lower edge object hierarchy.
+        Account -> Campaign -> AdSet -> Ad
+
+        Implementation detail:
+        - Launch an async insights job (server-side) to collect child IDs only
+          (fields=[pk_name], level=<child-level>) over the attribution window.
+        - Poll for completion and then read its result to collect unique IDs.
+        - Spawn one async job per ID, keeping original params/interval/timeout.
         """
         if edge_class == Campaign:
             pk_name = "campaign_id"
@@ -246,30 +266,74 @@ class InsightAsyncJob(AsyncJob):
         elif edge_class == Ad:
             pk_name = "ad_id"
             level = "ad"
-        else:
-            raise RuntimeError("Unsupported edge_class.")  # pragma: no cover
+        else:  # pragma: no cover
+            raise RuntimeError("Unsupported edge_class.")
 
-        params = dict(copy.deepcopy(self._params))
-        # get objects from attribution window as well (28 day + 1 current day)
-        new_start = self._interval.start - pendulum.duration(days=28 + 1)
-        new_start = validate_start_date(new_start)
-        params["time_range"].update(since=new_start.to_date_string())
-        params.update(fields=[pk_name], level=level)
-        params.pop("time_increment")  # query all days
-        result = self._edge_object.get_insights(params=params)
-        ids = set(row[pk_name] for row in result)
-        logger.info(f"Got {len(ids)} {pk_name}s for period {self._interval}: {ids}")
+        since = (self._interval.start - pendulum.duration(days=29))
+        since = validate_start_date(since)
+        params = {
+            "fields": [pk_name],
+            "level": level,
+            "time_range": {
+                "since": since.to_date_string(),
+                "until": self._interval.end.to_date_string(),
+            },
+        }
 
+        self._log_throttle(where=f"before starting ID-collection {level}")
+
+        # Start async job to collect IDs
+        try:
+            id_job: AdReportRun = self._edge_object.get_insights(params=params, is_async=True)
+        except Exception as e:
+            raise ValueError(f"Failed to start async ID-collection job at level={level}: {e}") from e
+
+        # Poll for completion with the same timeout budget
+        start_ts = pendulum.now()
+        while True:
+            id_job = id_job.api_get()
+            status = id_job.get("async_status")
+            percent = id_job.get("async_percent_completion")
+            logger.info(f"[Split:{level}] async status={status}, {percent}% complete")
+
+            self._log_throttle(where=f"polling {level}, status={status}, {percent}%")
+
+            if status == Status.COMPLETED:
+                break
+            if status in (Status.FAILED, Status.SKIPPED):
+                raise ValueError(f"Async ID-collection job failed for level={level} with status={status}")
+            if (pendulum.now() - start_ts) > self._job_timeout:
+                raise ValueError(f"Async ID-collection job timed out for level={level}")
+
+            time.sleep(30)
+
+        # Read result rows and collect unique IDs
+        try:
+            result_cursor = id_job.get_result(params={"limit": self.page_size})
+        except FacebookBadObjectError as e:
+            raise ValueError(f"Failed to fetch ID-collection results for level={level}: {e}") from e
+
+        ids = set()
+        for row in result_cursor:
+            if pk_name in row:
+                ids.add(row[pk_name])
+
+        logger.info(f"[Split:{level}] collected {len(ids)} unique {pk_name}(s) for interval {self._interval}")
+
+        # Spawn smaller async jobs (one per child ID)
         jobs = [
             InsightAsyncJob(
                 api=self._api,
                 edge_object=edge_class(pk),
-                params=self._params,
-                interval=self._interval,
+                params=self._params,          # keep original params
+                interval=self._interval,      # same time window
                 job_timeout=self._job_timeout,
             )
             for pk in ids
         ]
+        if not jobs:
+            raise ValueError(f"No child IDs found at level={level} to split {self} further")
+
         return jobs
 
     def start(self):

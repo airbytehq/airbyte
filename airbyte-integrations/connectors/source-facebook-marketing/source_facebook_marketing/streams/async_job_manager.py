@@ -4,6 +4,7 @@
 
 import logging
 import time
+from itertools import chain
 from typing import TYPE_CHECKING, Iterator, List
 
 from source_facebook_marketing.streams.common import JobException
@@ -25,13 +26,13 @@ class InsightAsyncJobManager:
     """
 
     # When current insights throttle hit this value no new jobs added.
-    THROTTLE_LIMIT = 70
+    THROTTLE_LIMIT = 40
     MAX_NUMBER_OF_ATTEMPTS = 20
     # Time to wait before checking job status update again.
     JOB_STATUS_UPDATE_SLEEP_SECONDS = 30
     # Maximum of concurrent jobs that could be scheduled. Since throttling
     # limit is not reliable indicator of async workload capability we still have to use this parameter.
-    MAX_JOBS_IN_QUEUE = 100
+    MAX_JOBS_IN_QUEUE = 20
 
     def __init__(self, api: "API", jobs: Iterator[AsyncJob], account_id: str):
         """Init
@@ -110,9 +111,7 @@ class InsightAsyncJobManager:
                         job,
                     )
                     smaller_jobs = job.split_job()
-                    grouped_jobs = ParentAsyncJob(api=self._api.api, jobs=smaller_jobs, interval=job.interval)
-                    running_jobs.append(grouped_jobs)
-                    grouped_jobs.start()
+                    self._jobs = iter(chain(smaller_jobs, self._jobs))
                 else:
                     logger.info("%s: failed, restarting", job)
                     job.restart()
@@ -129,7 +128,9 @@ class InsightAsyncJobManager:
         return completed_jobs
 
     def _wait_throttle_limit_down(self):
-        while self._get_current_throttle_value() > self.THROTTLE_LIMIT:
+        current_throttle = self._get_current_throttle_value()
+        print(f"Current throttle is {current_throttle} and limit is {self.THROTTLE_LIMIT}")
+        while current_throttle > self.THROTTLE_LIMIT:
             logger.info(f"Current throttle is {self._api.api.ads_insights_throttle}, wait {self.JOB_STATUS_UPDATE_SLEEP_SECONDS} seconds")
             time.sleep(self.JOB_STATUS_UPDATE_SLEEP_SECONDS)
             self._update_api_throttle_limit()
@@ -144,7 +145,7 @@ class InsightAsyncJobManager:
         """
         throttle = self._api.api.ads_insights_throttle
 
-        return min(throttle.per_account, throttle.per_application)
+        return max(throttle.per_account, throttle.per_application)
 
     def _update_api_throttle_limit(self):
         """
