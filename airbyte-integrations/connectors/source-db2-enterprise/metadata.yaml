@@ -12,7 +12,7 @@ data:
   definitionId: d2542966-8cc8-4899-9b74-413a7d9bb28e
   dockerImageTag: 0.0.4
   dockerRepository: airbyte/source-db2-enterprise
-  documentationUrl: https://docs.airbyte.com/integrations/enterprise-connectors/source-db2
+  documentationUrl: https://docs.airbyte.com/integrations/enterprise-connectors/source-db2-enterprise
   githubIssueLabel: source-db2-enterprise
   icon: db2.svg
   license: Airbyte Enterprise

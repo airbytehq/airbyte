@@ -1,0 +1,32 @@
+name: Publish Enterprise Connectors
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "airbyte-integrations/connectors/**/metadata.yaml"
+  workflow_dispatch:
+    inputs:
+      connectors:
+        description: "Connectors to Publish. This should be a string of the form: --name=source-pokeapi --name=destination-postgres"
+        default: "--name=source-pokeapi"
+        type: string
+      release-type:
+        description: "Whether to publish as a pre-release (tagged for development) or as a main-release (production)"
+        default: pre-release
+        type: choice
+        options:
+          - pre-release
+          - main-release
+
+jobs:
+  publish_enterprise_connectors:
+    name: Publish Enterprise Connectors
+    uses: airbytehq/airbyte/.github/workflows/publish_connectors.yml@master
+    secrets: inherit
+    with:
+      original-trigger: ${{ github.event_name == 'push' && 'push-to-master' || 'manual' }}
+      publish-java-tars: false # we never want to publish java tars for enterprise connectors
+      connectors: ${{ inputs.connectors }}
+      release-type: ${{ inputs.release-type }}
