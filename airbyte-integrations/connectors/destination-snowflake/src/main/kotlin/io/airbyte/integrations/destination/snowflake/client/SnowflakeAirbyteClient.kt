@@ -75,7 +75,20 @@ class AirbyteSnowflakeClient(
     }
 
     override suspend fun getGenerationId(tableName: TableName): Long {
-        TODO("Not yet implemented")
+        return try {
+            val sql = sqlGenerator.getGenerationId(tableName, "generation")
+            val resultSet = execute(sql)
+            if (resultSet.next()) {
+                resultSet.getLong("generation")
+            } else {
+                log.warn { "No generation ID found for table $tableName, returning 0" }
+                0L
+            }
+        } catch (e: Exception) {
+            log.error(e) { "Failed to retrieve the generation ID for table $tableName" }
+            // Return 0 if we can't get the generation ID (similar to ClickHouse approach)
+            0L
+        }
     }
 
     internal fun execute(query: String): ResultSet {
