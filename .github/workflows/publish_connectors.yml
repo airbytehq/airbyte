@@ -73,12 +73,24 @@ jobs:
           else
             echo "release-type=${{ inputs.release-type }}" | tee -a $GITHUB_OUTPUT
           fi
+      - name: Resolve publish-java-tars
+        id: resolve-publish-java-tars
+        shell: bash
+        run: |
+          # If workflow is triggered on merge to master, we can assume
+          # the workflow is running in the open-source repo and we always want to publish.
+          if [[ "${{ inputs.publish-java-tars }}" == "" ]]; then
+            echo "publish-java-tars=true" | tee -a $GITHUB_OUTPUT
+          # if workflow is triggered manually, any other way, use the input publish-java-tars.
+          else
+            echo "publish-java-tars=${{ inputs.publish-java-tars }}" | tee -a $GITHUB_OUTPUT
+          fi
     outputs:
       # Exactly one of the manual/master steps will run, so just OR them together.
       connectors-to-publish: ${{ steps.list-connectors-manual.outputs.connectors-to-publish || steps.list-connectors-master.outputs.connectors-to-publish }}
       release-type: ${{ steps.resolve-release-type.outputs.release-type }}
       # publishing java tars is not optional if triggered by push to master (in the non-enterprise repo).
-      publish-java-tars: ${{ inputs.publish-java-tars || github.event_name == 'push' }}
+      publish-java-tars: ${{ steps.resolve-publish-java-tars.outputs.publish-java-tars }}
   publish_connectors:
     name: Publish connectors
     needs: [publish_options]
