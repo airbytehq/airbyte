@@ -146,7 +146,7 @@ internal class DataSourceFactoryTest {
             )
             assertEquals(username, (dataSource as HikariConfig).username)
         } finally {
-            (dataSource as HikariDataSource).close()
+            dataSource.close()
         }
     }
 
@@ -259,7 +259,7 @@ internal class DataSourceFactoryTest {
             assertEquals(username, (dataSource as HikariConfig).username)
             assertEquals(password, (dataSource as HikariConfig).password)
         } finally {
-            (dataSource as HikariDataSource).close()
+            dataSource.close()
         }
     }
 }
