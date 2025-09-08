@@ -12,8 +12,11 @@ from .conftest import get_source
 @pytest.mark.parametrize(
     "config, expected",
     [
-        ({"credentials": {"advertiser_id": "11111111111"}}, "11111111111"),
-        ({"environment": {"advertiser_id": "2222222222"}}, "2222222222"),
+        ({"credentials": {"advertiser_id": "11111111111"}}, ["11111111111"]),
+        ({"environment": {"advertiser_id": "2222222222"}}, ["2222222222"]),
+        ({"credentials": {"advertiser_id": ["11111111111", "22222222222"]}}, ["11111111111", "22222222222"]),
+        ({"credentials": {"advertiser_id": []}}, None),
+        ({"credentials": {"advertiser_id": ""}}, None),
         ({"credentials": {"access_token": "access_token"}}, None),
     ],
 )
@@ -39,6 +42,11 @@ def test_get_partition_value_from_config(config, expected, components_module):
             None,
         ),
         ({"environment": {"advertiser_id": "2222222222"}}, [{"advertiser_ids": '["2222222222"]', "parent_slice": {}}], None),
+        (
+            {"credentials": {"advertiser_id": ["11111111111", "22222222222"]}},
+            [{"advertiser_ids": '["11111111111", "22222222222"]', "parent_slice": {}}],
+            None,
+        ),
         (
             {"credentials": {"auth_type": "oauth2.0", "access_token": "access_token"}},
             [{"advertiser_ids": '["11111111", "22222222"]', "parent_slice": {}}],
@@ -86,6 +94,11 @@ def test_stream_slices_multiple(config, expected, requests_mock, json_data, comp
             None,
         ),
         ({"environment": {"advertiser_id": "2222222222"}}, [{"advertiser_id": "2222222222", "parent_slice": {}}], None),
+        (
+            {"credentials": {"advertiser_id": ["11111111111", "22222222222"]}},
+            [{"advertiser_id": "11111111111", "parent_slice": {}}, {"advertiser_id": "22222222222", "parent_slice": {}}],
+            None,
+        ),
         (
             {"credentials": {"auth_type": "oauth2.0", "access_token": "access_token"}},
             [{"advertiser_id": "11111111", "parent_slice": {}}, {"advertiser_id": "22222222", "parent_slice": {}}],
