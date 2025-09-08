@@ -6,7 +6,7 @@ package io.airbyte.integrations.destination.hubspot
 
 import io.airbyte.cdk.Operation
 import io.airbyte.cdk.command.CONNECTOR_CONFIG_PREFIX
-import io.airbyte.cdk.load.check.CheckOperationWithoutGeneric
+import io.airbyte.cdk.load.check.CheckOperationV2
 import io.airbyte.cdk.load.check.dlq.DlqChecker
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
@@ -39,7 +39,7 @@ class HubSpotBeanFactory {
         checker: DlqChecker,
         outputConsumer: OutputConsumer
     ): Operation =
-        CheckOperationWithoutGeneric(factory.createDestinationChecker(checker), outputConsumer)
+        CheckOperationV2(factory.createDestinationChecker(checker), outputConsumer)
 
     @Singleton
     fun factory(

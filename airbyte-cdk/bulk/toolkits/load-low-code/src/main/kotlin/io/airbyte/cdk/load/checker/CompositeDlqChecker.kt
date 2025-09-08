@@ -4,15 +4,15 @@
 
 package io.airbyte.cdk.load.checker
 
-import io.airbyte.cdk.load.check.DestinationCheckerWithoutGeneric
+import io.airbyte.cdk.load.check.DestinationCheckerV2
 import io.airbyte.cdk.load.check.dlq.DlqChecker
 import io.airbyte.cdk.load.command.dlq.ObjectStorageConfig
 
 class CompositeDlqChecker(
-    private val decorated: DestinationCheckerWithoutGeneric,
+    private val decorated: DestinationCheckerV2,
     private val dlqChecker: DlqChecker,
     private val objectStorageConfig: ObjectStorageConfig
-) : DestinationCheckerWithoutGeneric {
+) : DestinationCheckerV2 {
     override fun check() {
         decorated.check()
         dlqChecker.check(objectStorageConfig)

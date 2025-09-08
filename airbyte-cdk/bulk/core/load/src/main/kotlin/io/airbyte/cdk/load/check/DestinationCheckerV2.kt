@@ -29,17 +29,17 @@ import kotlinx.coroutines.runBlocking
  * * Implementors should not throw exceptions in the constructor.
  * * Implementors should not inject configuration; only use the config passed in [check].
  */
-interface DestinationCheckerWithoutGeneric {
+interface DestinationCheckerV2 {
     fun check()
     fun cleanup() {}
 }
 
-class DestinationCheckerSyncWithoutGeneric(
+class DestinationCheckerSyncV2(
     val catalog: DestinationCatalog,
     stdinPipe: InputStream,
     private val writeOperation: WriteOperation,
-    private val cleaner: CheckCleanerWithoutGeneric,
-) : DestinationCheckerWithoutGeneric {
+    private val cleaner: CheckCleanerV2,
+) : DestinationCheckerV2 {
     private val pipe: PrintWriter
 
     init {
@@ -79,6 +79,6 @@ class DestinationCheckerSyncWithoutGeneric(
 }
 
 // TODO the cleaner maybe should also be looking for old test tables, a la DestinationCleaner??
-fun interface CheckCleanerWithoutGeneric {
+fun interface CheckCleanerV2 {
     fun cleanup(stream: DestinationStream)
 }

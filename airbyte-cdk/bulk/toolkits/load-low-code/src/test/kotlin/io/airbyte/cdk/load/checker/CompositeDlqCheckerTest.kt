@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.load.checker
 
-import io.airbyte.cdk.load.check.DestinationCheckerWithoutGeneric
+import io.airbyte.cdk.load.check.DestinationCheckerV2
 import io.airbyte.cdk.load.check.dlq.DlqChecker
 import io.airbyte.cdk.load.command.dlq.ObjectStorageConfig
 import io.mockk.Runs
@@ -21,7 +21,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 @ExtendWith(MockKExtension::class)
 class CompositeDlqCheckerTest {
 
-    @MockK private lateinit var decorated: DestinationCheckerWithoutGeneric
+    @MockK private lateinit var decorated: DestinationCheckerV2
 
     @MockK private lateinit var dlqChecker: DlqChecker
 
