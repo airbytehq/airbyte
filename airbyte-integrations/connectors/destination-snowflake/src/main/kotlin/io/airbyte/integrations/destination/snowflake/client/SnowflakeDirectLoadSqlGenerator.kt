@@ -36,7 +36,7 @@ import jakarta.inject.Singleton
 class SnowflakeDirectLoadSqlGenerator() {
     /** Extension function to log SQL objects */
     private fun String.andLog(): String {
-        log.info { this.toString() }
+        log.info { this }
         return this
     }
 
