@@ -4,8 +4,9 @@
 
 from unittest.mock import MagicMock, patch
 
-from airbyte_cdk.models import Status
 from source_pinterest.source import SourcePinterest
+
+from airbyte_cdk.models import Status
 
 
 def test_check_connection(requests_mock, test_config):
@@ -23,7 +24,9 @@ def test_check_wrong_date_connection(wrong_date_config):
     check_result = source.check(logger_mock, wrong_date_config)
     status_ok, error = check_result.status, check_result.message
     assert status_ok == Status.FAILED
-    assert error == "\"Encountered an error while discovering streams. Error: time data 'wrong_date_format' does not match format '%Y-%m-%d'\""
+    assert (
+        error == "\"Encountered an error while discovering streams. Error: time data 'wrong_date_format' does not match format '%Y-%m-%d'\""
+    )
 
 
 def test_check_connection_expired_token(requests_mock, test_config):
@@ -33,7 +36,10 @@ def test_check_connection_expired_token(requests_mock, test_config):
     check_result = source.check(logger_mock, test_config)
     status_ok, error = check_result.status, check_result.message
     assert status_ok == Status.FAILED
-    assert error == f"'Encountered an error while checking availability of stream boards. Error: 401 Client Error: None for url: https://api.pinterest.com/v5/oauth/token'"
+    assert (
+        error
+        == f"'Encountered an error while checking availability of stream boards. Error: 401 Client Error: None for url: https://api.pinterest.com/v5/oauth/token'"
+    )
 
 
 def test_get_authenticator(test_config):
@@ -47,7 +53,7 @@ def test_invalid_account_id(wrong_account_id_config):
     source = SourcePinterest(None, wrong_account_id_config, None)
     logger_mock = MagicMock()
 
-    with (patch("source_pinterest.source.AdAccountValidationStream") as MockStream):
+    with patch("source_pinterest.source.AdAccountValidationStream") as MockStream:
         instance = MockStream.return_value
         instance.read_records.return_value = []
 
