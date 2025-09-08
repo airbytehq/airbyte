@@ -41,11 +41,10 @@ import java.time.ZoneOffset
 class ClickhouseCoercer : Coercer {
 
     override fun map(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
-        when (value.type) {
-            is UnionType -> return toJsonStringValue(value)
+        return when (value.type) {
+            is UnionType -> toJsonStringValue(value)
             else -> value
         }
-        return value
     }
 
     private fun toJsonStringValue(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
