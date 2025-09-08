@@ -13,10 +13,9 @@ import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.discover.DestinationDiscoverer
-import kotlin.String
 
-class CustomerIoDiscoverer() : DestinationDiscoverer<CustomerIoConfiguration> {
-    override fun discover(config: CustomerIoConfiguration): DestinationDiscoverCatalog {
+class CustomerIoDiscoverer() : DestinationDiscoverer {
+    override fun discover(): DestinationDiscoverCatalog {
         return DestinationDiscoverCatalog(
             listOf(
                 DestinationOperation(
@@ -30,7 +29,7 @@ class CustomerIoDiscoverer() : DestinationDiscoverer<CustomerIoConfiguration> {
                         additionalProperties = true,
                         required = listOf("person_email"),
                     ),
-                    matchingKeys = emptyList<List<String>>()
+                    matchingKeys = emptyList()
                 ),
                 DestinationOperation(
                     "person_event",
@@ -46,7 +45,7 @@ class CustomerIoDiscoverer() : DestinationDiscoverer<CustomerIoConfiguration> {
                         additionalProperties = true,
                         required = listOf("person_email", "event_name"),
                     ),
-                    matchingKeys = emptyList<List<String>>()
+                    matchingKeys = emptyList()
                 )
             )
         )
