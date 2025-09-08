@@ -23,7 +23,7 @@ class AirbyteSnowflakeClient(
     private val sqlGenerator: SnowflakeDirectLoadSqlGenerator,
 ) : AirbyteClient, DirectLoadTableSqlOperations, DirectLoadTableNativeOperations {
     override suspend fun countTable(tableName: TableName): Long? {
-        TODO("Not yet implemented")
+        return execute(sqlGenerator.countTable(tableName)).getInt("total").toLong()
     }
 
     override suspend fun createNamespace(namespace: String) {

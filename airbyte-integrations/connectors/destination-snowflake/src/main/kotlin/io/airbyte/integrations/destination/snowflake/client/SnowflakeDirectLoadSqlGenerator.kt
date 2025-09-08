@@ -40,6 +40,10 @@ class SnowflakeDirectLoadSqlGenerator(private val cdcDeletionMode: CdcDeletionMo
         return this
     }
 
+    fun countTable(tableName: TableName): String {
+        return "SELECT COUNT(*) AS total FROM ${tableName.toPrettyString()}".andLog()
+    }
+
     fun createNamespace(namespace: String): String {
         return "CREATE SCHEMA IF NOT EXISTS \"$namespace\"".andLog()
     }
@@ -64,14 +68,13 @@ class SnowflakeDirectLoadSqlGenerator(private val cdcDeletionMode: CdcDeletionMo
                 .joinToString(",\n")
 
         val columnDeclarations = columnsAndTypes(stream, columnNameMapping)
-        val finalTableId = tableName.toPrettyString(QUOTE)
 
         // Snowflake supports CREATE OR REPLACE TABLE, which is simpler than drop+recreate
         val createOrReplace = if (replace) "CREATE OR REPLACE" else "CREATE"
 
         val createTableStatement =
             """
-            $createOrReplace TABLE $finalTableId (
+            $createOrReplace TABLE ${tableName.toPrettyString(QUOTE)} (
               "$COLUMN_NAME_AB_RAW_ID" VARCHAR NOT NULL,
               "$COLUMN_NAME_AB_EXTRACTED_AT" TIMESTAMP_TZ NOT NULL,
               "$COLUMN_NAME_AB_META" VARIANT NOT NULL,
@@ -111,7 +114,9 @@ class SnowflakeDirectLoadSqlGenerator(private val cdcDeletionMode: CdcDeletionMo
                 "$COLUMN_NAME_AB_GENERATION_ID",
                 $columnNames
             FROM ${sourceTableName.toPrettyString(QUOTE)}
-            """.trimIndent().andLog()
+            """
+            .trimIndent()
+            .andLog()
     }
 
     fun upsertTable(
