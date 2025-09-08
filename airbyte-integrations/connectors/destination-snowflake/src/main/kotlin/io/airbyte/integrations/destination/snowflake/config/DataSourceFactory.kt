@@ -11,6 +11,7 @@ import io.airbyte.integrations.destination.snowflake.spec.KeyPairAuthConfigurati
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.spec.UsernamePasswordAuthConfiguration
 import io.micronaut.context.annotation.Factory
+import io.micronaut.context.annotation.Value
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.io.File
@@ -23,6 +24,7 @@ import net.snowflake.client.jdbc.SnowflakeDriver
 internal const val DATA_SOURCE_CONNECTION_TIMEOUT_MS = 30000L
 internal const val DATA_SOURCE_IDLE_TIMEOUT_MS = 600000L
 internal const val DATA_SOURCE_PROPERTY_ABORT_DETACHED_QUERY = "ABORT_DETACHED_QUERY"
+internal const val DATA_SOURCE_PROPERTY_APPLICATION = "application"
 internal const val DATA_SOURCE_PROPERTY_DATABASE = "database"
 internal const val DATA_SOURCE_PROPERTY_JDBC_QUERY_RESULT_FORMAT = "JDBC_QUERY_RESULT_FORMAT"
 internal const val DATA_SOURCE_PROPERTY_MULTI_STATEMENT_COUNT = "MULTI_STATEMENT_COUNT"
@@ -45,6 +47,7 @@ class DataSourceFactory {
         snowflakeSqlNameTransformer: SnowflakeSqlNameTransformer,
         @Named("snowflakePrivateKeyFileName")
         snowflakePrivateKeyFileName: String = PRIVATE_KEY_FILE_NAME,
+        @Value("\${airbyte.edition}") airbyteEdition: String,
     ): DataSource {
         val snowflakeJdbcUrl =
             "jdbc:snowflake://${snowflakeConfiguration.host}/?${snowflakeConfiguration.jdbcUrlParams}"
@@ -112,9 +115,10 @@ class DataSourceFactory {
                 // https://docs.snowflake.com/en/user-guide/jdbc-parameters.html#application
                 // identify airbyte traffic to snowflake to enable partnership & optimization
                 // opportunities
-                // TODO inject airbyte environment
-                //            addDataSourceProperty("application", airbyteEnvironment) // see envs
-                // in OssCloudEnvVarConsts class
+                addDataSourceProperty(
+                    DATA_SOURCE_PROPERTY_APPLICATION,
+                    "airbyte_${airbyteEdition.lowercase()}"
+                )
                 // Needed for JDK17 - see
                 // https://stackoverflow.com/questions/67409650/snowflake-jdbc-driver-internal-error-fail-to-retrieve-row-count-for-first-arrow
                 addDataSourceProperty(DATA_SOURCE_PROPERTY_JDBC_QUERY_RESULT_FORMAT, JSON_FORMAT)

@@ -18,12 +18,14 @@ import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 import net.snowflake.client.jdbc.SnowflakeDriver
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 
 internal class DataSourceFactoryTest {
 
-    @Test
-    fun testCreateDataSourcePrivateKeyAuth() {
+    @ParameterizedTest
+    @CsvSource(value = ["OSS", "CLOUD", "ENTERPRISE"])
+    fun testCreateDataSourcePrivateKeyAuth(airbyteEdition: String) {
         val privateKeyFile = File.createTempFile("snowflake-private-key", ".p8")
         privateKeyFile.deleteOnExit()
         val privateKey = "test-private-key"
@@ -64,6 +66,7 @@ internal class DataSourceFactoryTest {
                 snowflakeConfiguration = snowflakeConfiguration,
                 snowflakeSqlNameTransformer = snowflakeSqlNameTransformer,
                 snowflakePrivateKeyFileName = privateKeyFile.path,
+                airbyteEdition = airbyteEdition,
             )
         try {
             assertEquals(HikariDataSource::class, dataSource::class)
@@ -128,6 +131,10 @@ internal class DataSourceFactoryTest {
                     .dataSourceProperties[DATA_SOURCE_PROPERTY_MULTI_STATEMENT_COUNT]
             )
             assertEquals(
+                "airbyte_${airbyteEdition.lowercase()}",
+                (dataSource as HikariConfig).dataSourceProperties[DATA_SOURCE_PROPERTY_APPLICATION]
+            )
+            assertEquals(
                 JSON_FORMAT,
                 (dataSource as HikariConfig)
                     .dataSourceProperties[DATA_SOURCE_PROPERTY_JDBC_QUERY_RESULT_FORMAT]
@@ -143,8 +150,9 @@ internal class DataSourceFactoryTest {
         }
     }
 
-    @Test
-    fun testCreateDataSourceUsernamePasswordAuth() {
+    @ParameterizedTest
+    @CsvSource(value = ["OSS", "CLOUD", "ENTERPRISE"])
+    fun testCreateDataSourceUsernamePasswordAuth(airbyteEdition: String) {
         val password = "test-password"
         val authType =
             UsernamePasswordAuthConfiguration(
@@ -180,6 +188,7 @@ internal class DataSourceFactoryTest {
             factory.dataSource(
                 snowflakeConfiguration = snowflakeConfiguration,
                 snowflakeSqlNameTransformer = snowflakeSqlNameTransformer,
+                airbyteEdition = airbyteEdition,
             )
         try {
             assertEquals(HikariDataSource::class, dataSource::class)
@@ -232,6 +241,10 @@ internal class DataSourceFactoryTest {
                 0,
                 (dataSource as HikariConfig)
                     .dataSourceProperties[DATA_SOURCE_PROPERTY_MULTI_STATEMENT_COUNT]
+            )
+            assertEquals(
+                "airbyte_${airbyteEdition.lowercase()}",
+                (dataSource as HikariConfig).dataSourceProperties[DATA_SOURCE_PROPERTY_APPLICATION]
             )
             assertEquals(
                 JSON_FORMAT,
