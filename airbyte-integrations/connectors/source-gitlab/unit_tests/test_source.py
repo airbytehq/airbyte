@@ -7,7 +7,7 @@ import logging
 
 import pytest
 
-from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
+from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 
 from .conftest import get_source
 
@@ -17,7 +17,7 @@ def test_streams(config):
     migrated_config = source.configure(config=config, temp_dir="/not/a/real/path")
     streams = source.streams(migrated_config)
     assert len(streams) == 23
-    assert all([isinstance(stream, DeclarativeStream) for stream in streams])
+    assert all([isinstance(stream, DefaultStream) for stream in streams])
 
 
 def test_connection_success(config, requests_mock):
