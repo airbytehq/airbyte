@@ -22,7 +22,7 @@ class AirbyteSnowflakeClient(
     private val dataSource: HikariDataSource,
     private val sqlGenerator: SnowflakeDirectLoadSqlGenerator,
 ) : AirbyteClient, DirectLoadTableSqlOperations, DirectLoadTableNativeOperations {
-    override suspend fun countTable(tableName: TableName): Long? {
+    override suspend fun countTable(tableName: TableName): Long {
         return execute(sqlGenerator.countTable(tableName)).getInt("total").toLong()
     }
 
