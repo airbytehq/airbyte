@@ -3,7 +3,6 @@
 #
 
 
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice
 
 from .conftest import BASE_CONFIG, GROUPS_LIST_URL, get_source, get_stream_by_name
@@ -14,7 +13,7 @@ class TestGroupStreamsPartitionRouter:
         source = get_source(config=BASE_CONFIG)
         requests_mock.get(url=GROUPS_LIST_URL, json=[{"id": "group_id_1"}, {"id": "group_id_2"}])
         groups_stream = get_stream_by_name(source=source, stream_name="groups", config=BASE_CONFIG)
-        assert list(groups_stream.stream_slices(sync_mode=SyncMode.full_refresh)) == [
+        assert list(map(lambda partition: partition.to_slice(), groups_stream.generate_partitions())) == [
             StreamSlice(partition={"id": "group_id_1"}, cursor_slice={}),
             StreamSlice(partition={"id": "group_id_2"}, cursor_slice={}),
         ]
@@ -34,7 +33,7 @@ class TestGroupStreamsPartitionRouter:
             expected_stream_slices.append(StreamSlice(partition={"id": f"descendant_{group_id}"}, cursor_slice={}))
 
         groups_stream = get_stream_by_name(source=source, stream_name="groups", config=BASE_CONFIG | {"groups_list": groups_list})
-        assert list(groups_stream.stream_slices(sync_mode=SyncMode.full_refresh)) == expected_stream_slices
+        assert list(map(lambda partition: partition.to_slice(), groups_stream.generate_partitions())) == expected_stream_slices
 
 
 class TestProjectStreamsPartitionRouter:
@@ -44,7 +43,7 @@ class TestProjectStreamsPartitionRouter:
         source = get_source(config=BASE_CONFIG)
         requests_mock.get(url=GROUPS_LIST_URL, json=[])
         projects_stream = get_stream_by_name(source=source, stream_name="projects", config=BASE_CONFIG | self.projects_config)
-        assert list(projects_stream.stream_slices(sync_mode=SyncMode.full_refresh)) == [
+        assert list(map(lambda partition: partition.to_slice(), projects_stream.generate_partitions())) == [
             StreamSlice(partition={"id": "group_id_1%2Fproject_id_1"}, cursor_slice={}),
             StreamSlice(partition={"id": "group_id_2%2Fproject_id_2"}, cursor_slice={}),
         ]
@@ -66,7 +65,7 @@ class TestProjectStreamsPartitionRouter:
         requests_mock.get(url=GROUPS_LIST_URL, json=groups_list_response)
 
         projects_stream = get_stream_by_name(source=source, stream_name="projects", config=BASE_CONFIG | self.projects_config)
-        assert list(projects_stream.stream_slices(sync_mode=SyncMode.full_refresh)) == expected_stream_slices
+        assert list(map(lambda partition: partition.to_slice(), projects_stream.generate_partitions())) == expected_stream_slices
 
     def test_projects_stream_slices_with_group_project_ids_filtered_by_projects_list_config(self, requests_mock):
         source = get_source(config=BASE_CONFIG)
@@ -88,6 +87,6 @@ class TestProjectStreamsPartitionRouter:
         )
 
         projects_stream = get_stream_by_name(source=source, stream_name="projects", config=BASE_CONFIG | self.projects_config)
-        assert list(projects_stream.stream_slices(sync_mode=SyncMode.full_refresh)) == [
+        assert list(map(lambda partition: partition.to_slice(), projects_stream.generate_partitions())) == [
             StreamSlice(partition={"id": project_id.replace("/", "%2F")}, cursor_slice={})
         ]
