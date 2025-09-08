@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.snowflake.client
 
 import io.airbyte.cdk.load.client.AirbyteClient
@@ -8,7 +12,6 @@ import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNat
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableSqlOperations
 import jakarta.inject.Singleton
 import javax.sql.DataSource
-
 
 @Singleton
 class AirbyteSnowflakeClient(
@@ -32,10 +35,7 @@ class AirbyteSnowflakeClient(
         TODO("Not yet implemented")
     }
 
-    override suspend fun overwriteTable(
-        sourceTableName: TableName,
-        targetTableName: TableName
-    ) {
+    override suspend fun overwriteTable(sourceTableName: TableName, targetTableName: TableName) {
         TODO("Not yet implemented")
     }
 
