@@ -19,8 +19,9 @@ class TestGroupStreamsPartitionRouter:
         ]
 
     def test_groups_stream_slices_with_group_ids_in_config(self, requests_mock):
-        source = get_source(config=BASE_CONFIG)
         groups_list = ["group_id_1", "group_id_2"]
+        config = BASE_CONFIG | {"groups_list": groups_list}
+        source = get_source(config=config)
         expected_stream_slices = []
 
         for group_id in groups_list:
@@ -32,7 +33,7 @@ class TestGroupStreamsPartitionRouter:
             expected_stream_slices.append(StreamSlice(partition={"id": group_id}, cursor_slice={}))
             expected_stream_slices.append(StreamSlice(partition={"id": f"descendant_{group_id}"}, cursor_slice={}))
 
-        groups_stream = get_stream_by_name(source=source, stream_name="groups", config=BASE_CONFIG | {"groups_list": groups_list})
+        groups_stream = get_stream_by_name(source=source, stream_name="groups", config=config)
         assert list(map(lambda partition: partition.to_slice(), groups_stream.generate_partitions())) == expected_stream_slices
 
 
@@ -40,16 +41,18 @@ class TestProjectStreamsPartitionRouter:
     projects_config = {"projects_list": ["group_id_1/project_id_1", "group_id_2/project_id_2"]}
 
     def test_projects_stream_slices_without_group_project_ids(self, requests_mock):
-        source = get_source(config=BASE_CONFIG)
+        config = BASE_CONFIG | self.projects_config
+        source = get_source(config=config)
         requests_mock.get(url=GROUPS_LIST_URL, json=[])
-        projects_stream = get_stream_by_name(source=source, stream_name="projects", config=BASE_CONFIG | self.projects_config)
+        projects_stream = get_stream_by_name(source=source, stream_name="projects", config=config)
         assert list(map(lambda partition: partition.to_slice(), projects_stream.generate_partitions())) == [
             StreamSlice(partition={"id": "group_id_1%2Fproject_id_1"}, cursor_slice={}),
             StreamSlice(partition={"id": "group_id_2%2Fproject_id_2"}, cursor_slice={}),
         ]
 
     def test_projects_stream_slices_with_group_project_ids(self, requests_mock):
-        source = get_source(config=BASE_CONFIG)
+        config = BASE_CONFIG | self.projects_config
+        source = get_source(config=config)
         groups_list = ["group_id_1", "group_id_2"]
         groups_list_response = []
         expected_stream_slices = []
@@ -64,11 +67,12 @@ class TestProjectStreamsPartitionRouter:
 
         requests_mock.get(url=GROUPS_LIST_URL, json=groups_list_response)
 
-        projects_stream = get_stream_by_name(source=source, stream_name="projects", config=BASE_CONFIG | self.projects_config)
+        projects_stream = get_stream_by_name(source=source, stream_name="projects", config=config)
         assert list(map(lambda partition: partition.to_slice(), projects_stream.generate_partitions())) == expected_stream_slices
 
     def test_projects_stream_slices_with_group_project_ids_filtered_by_projects_list_config(self, requests_mock):
-        source = get_source(config=BASE_CONFIG)
+        config = BASE_CONFIG | self.projects_config
+        source = get_source(config=config)
         group_id = "group_id_1"
         project_id = self.projects_config["projects_list"][0]
         unknown_project_id = "unknown_project_id"
@@ -86,7 +90,7 @@ class TestProjectStreamsPartitionRouter:
             ],
         )
 
-        projects_stream = get_stream_by_name(source=source, stream_name="projects", config=BASE_CONFIG | self.projects_config)
+        projects_stream = get_stream_by_name(source=source, stream_name="projects", config=config)
         assert list(map(lambda partition: partition.to_slice(), projects_stream.generate_partitions())) == [
             StreamSlice(partition={"id": project_id.replace("/", "%2F")}, cursor_slice={})
         ]
