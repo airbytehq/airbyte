@@ -13,6 +13,7 @@ import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNat
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableSqlOperations
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
+import java.sql.ResultSet
 
 val log = KotlinLogging.logger {}
 
@@ -25,7 +26,9 @@ class AirbyteSnowflakeClient(
         TODO("Not yet implemented")
     }
 
-    override suspend fun createNamespace(namespace: String) {}
+    override suspend fun createNamespace(namespace: String) {
+        execute(sqlGenerator.createNamespace(namespace))
+    }
 
     override suspend fun createTable(
         stream: DestinationStream,
@@ -33,7 +36,7 @@ class AirbyteSnowflakeClient(
         columnNameMapping: ColumnNameMapping,
         replace: Boolean
     ) {
-        TODO("Not yet implemented")
+        execute(sqlGenerator.createTable(stream, tableName, columnNameMapping, replace))
     }
 
     override suspend fun overwriteTable(sourceTableName: TableName, targetTableName: TableName) {
@@ -71,5 +74,11 @@ class AirbyteSnowflakeClient(
 
     override suspend fun getGenerationId(tableName: TableName): Long {
         TODO("Not yet implemented")
+    }
+
+    internal fun execute(query: String): ResultSet {
+        return dataSource.connection.use { connection ->
+            connection.createStatement().executeQuery(query)
+        }
     }
 }

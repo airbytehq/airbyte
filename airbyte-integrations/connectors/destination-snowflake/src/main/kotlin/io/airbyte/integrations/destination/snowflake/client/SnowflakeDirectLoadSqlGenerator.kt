@@ -29,29 +29,27 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.Sql
 import io.airbyte.cdk.load.orchestration.db.TableName
-import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadSqlGenerator
 import io.airbyte.integrations.destination.snowflake.spec.CdcDeletionMode
 import jakarta.inject.Singleton
 
 @Singleton
-class SnowflakeDirectLoadSqlGenerator(private val cdcDeletionMode: CdcDeletionMode) :
-    DirectLoadSqlGenerator {
+class SnowflakeDirectLoadSqlGenerator(private val cdcDeletionMode: CdcDeletionMode) {
     /** Extension function to log SQL objects */
-    private fun Sql.andLog(): Sql {
+    private fun String.andLog(): String {
         log.info { this.toString() }
         return this
     }
 
-    fun createNamespace(namespace: String): Sql {
-        return Sql.of("CREATE SCHEMA IF NOT EXISTS \"$namespace\"").andLog()
+    fun createNamespace(namespace: String): String {
+        return "CREATE SCHEMA IF NOT EXISTS \"$namespace\"".andLog()
     }
 
-    override fun createTable(
+    fun createTable(
         stream: DestinationStream,
         tableName: TableName,
         columnNameMapping: ColumnNameMapping,
         replace: Boolean
-    ): Sql {
+    ): String {
         fun columnsAndTypes(
             stream: DestinationStream,
             columnNameMapping: ColumnNameMapping
@@ -82,23 +80,22 @@ class SnowflakeDirectLoadSqlGenerator(private val cdcDeletionMode: CdcDeletionMo
             )
         """.trimIndent()
 
-        return Sql.of(createTableStatement).andLog()
+        return createTableStatement.andLog()
     }
 
-    override fun overwriteTable(sourceTableName: TableName, targetTableName: TableName): Sql {
+    fun overwriteTable(sourceTableName: TableName, targetTableName: TableName): String {
         TODO("Not yet implemented")
     }
 
-    override fun copyTable(
+    fun copyTable(
         columnNameMapping: ColumnNameMapping,
         sourceTableName: TableName,
         targetTableName: TableName
-    ): Sql {
+    ): String {
         val columnNames =
             columnNameMapping.map { (_, actualName) -> actualName }.joinToString(",") { "\"$it\"" }
 
-        return Sql.of(
-                """
+        return """
             INSERT INTO ${targetTableName.toPrettyString(QUOTE)}
             (
                 "$COLUMN_NAME_AB_RAW_ID",
@@ -114,12 +111,10 @@ class SnowflakeDirectLoadSqlGenerator(private val cdcDeletionMode: CdcDeletionMo
                 "$COLUMN_NAME_AB_GENERATION_ID",
                 $columnNames
             FROM ${sourceTableName.toPrettyString(QUOTE)}
-            """.trimIndent()
-            )
-            .andLog()
+            """.trimIndent().andLog()
     }
 
-    override fun upsertTable(
+    fun upsertTable(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping,
         sourceTableName: TableName,
@@ -128,9 +123,8 @@ class SnowflakeDirectLoadSqlGenerator(private val cdcDeletionMode: CdcDeletionMo
         TODO("Not yet implemented")
     }
 
-    override fun dropTable(tableName: TableName): Sql {
-        return Sql.of("DROP TABLE IF EXISTS \"${tableName.namespace}\".\"${tableName.name}\"")
-            .andLog()
+    fun dropTable(tableName: TableName): String {
+        return "DROP TABLE IF EXISTS \"${tableName.namespace}\".\"${tableName.name}\"".andLog()
     }
 
     companion object {
