@@ -12,7 +12,7 @@ data:
   connectorSubtype: api
   connectorType: destination
   definitionId: c8ccd253-8525-4bbd-801c-f0b84ac71f61
-  dockerImageTag: 0.0.4
+  dockerImageTag: 0.0.5
   dockerRepository: airbyte/destination-hubspot
   githubIssueLabel: destination-hubspot
   icon: hubspot.svg
