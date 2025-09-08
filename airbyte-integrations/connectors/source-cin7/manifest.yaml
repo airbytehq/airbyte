@@ -3446,10 +3446,12 @@ schemas:
               type:
                 - string
                 - "null"
+              format: date-time
             InvoiceDueDate:
               type:
                 - string
                 - "null"
+              format: date-time
             InvoiceNumber:
               type:
                 - string
@@ -3644,6 +3646,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       Location:
         type:
           - string
@@ -3702,7 +3705,29 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       OrderNumber:
+        type:
+          - string
+          - "null"
+      Note:
+        type:
+          - string
+          - "null"
+      Contact:
+        type:
+          - string
+          - "null"
+      Phone:
+        type:
+          - string
+          - "null"
+      RequiredBy:
+        type:
+          - string
+          - "null"
+        format: date-time
+      RelatedDropShipSaleTask:
         type:
           - string
           - "null"
