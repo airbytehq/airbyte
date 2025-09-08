@@ -284,6 +284,18 @@ class SnowflakeDirectLoadSqlGenerator() {
         return "DROP TABLE IF EXISTS ${tableName.toPrettyString(QUOTE)}".andLog()
     }
 
+    fun getGenerationId(
+        tableName: TableName,
+        alias: String = "",
+    ): String {
+        val aliasClause = if (alias.isNotEmpty()) " AS $alias" else ""
+        return """
+            SELECT "$COLUMN_NAME_AB_GENERATION_ID"$aliasClause 
+            FROM ${tableName.toPrettyString(QUOTE)} 
+            LIMIT 1
+        """.trimIndent().andLog()
+    }
+
     companion object {
         const val QUOTE: String = "\""
 
