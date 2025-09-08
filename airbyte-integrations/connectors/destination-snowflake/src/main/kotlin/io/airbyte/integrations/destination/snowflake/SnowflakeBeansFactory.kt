@@ -6,6 +6,8 @@ package io.airbyte.integrations.destination.snowflake
 
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.cdk.load.command.DestinationConfiguration
+import io.airbyte.cdk.load.orchestration.db.DefaultTempTableNameGenerator
+import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfigurationFactory
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeSpecification
@@ -16,6 +18,9 @@ import javax.sql.DataSource
 
 @Factory
 class SnowflakeBeansFactory {
+    @Singleton
+    fun tempTableNameGenerator(): TempTableNameGenerator = DefaultTempTableNameGenerator()
+
     @Singleton
     fun snowflakeConfiguration(
         configFactory: SnowflakeConfigurationFactory,
