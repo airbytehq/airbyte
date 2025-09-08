@@ -8,8 +8,6 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 import requests
-
-from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 from source_pinterest.components.components import AdAccountRecordExtractor
 from source_pinterest.streams import (
     AdAccountValidationStream,
@@ -25,6 +23,7 @@ from source_pinterest.utils import get_analytics_columns
 from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice
+from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
 
 from .conftest import get_stream_by_name, read_from_stream
@@ -84,7 +83,9 @@ def test_parse_response_with_sensitive_data(requests_mock, test_config):
         url="https://api.pinterest.com/v5/catalogs/feeds",
         json={"items": [{"id": "CatalogsFeeds1", "credentials": {"password": "bla"}}]},
     )
-    actual_response = [record.record.data for record in read_from_stream(test_config, "catalogs_feeds", sync_mode=SyncMode.full_refresh).records]
+    actual_response = [
+        record.record.data for record in read_from_stream(test_config, "catalogs_feeds", sync_mode=SyncMode.full_refresh).records
+    ]
     assert actual_response == [{"id": "CatalogsFeeds1"}]
 
 
@@ -212,7 +213,9 @@ def test_path(test_config, stream_name, stream_slice, expected_path):
         stream_slice = StreamSlice(partition=stream_slice, cursor_slice={})
 
     if isinstance(stream, DefaultStream):
-        result = stream._stream_partition_generator._partition_factory._retriever.requester.get_path(stream_slice=stream_slice, stream_state=None, next_page_token=None)
+        result = stream._stream_partition_generator._partition_factory._retriever.requester.get_path(
+            stream_slice=stream_slice, stream_state=None, next_page_token=None
+        )
     else:
         result = stream.retriever.requester.get_path(stream_slice=stream_slice, stream_state=None, next_page_token=None)
 
