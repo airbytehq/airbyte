@@ -8,6 +8,7 @@ import com.zaxxer.hikari.HikariDataSource
 import io.airbyte.cdk.load.client.AirbyteClient
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
+import io.airbyte.cdk.load.orchestration.db.Sql
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNativeOperations
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableSqlOperations
@@ -48,7 +49,7 @@ class AirbyteSnowflakeClient(
         sourceTableName: TableName,
         targetTableName: TableName
     ) {
-        TODO("Not yet implemented")
+        execute(sqlGenerator.copyTable(columnNameMapping, sourceTableName, targetTableName))
     }
 
     override suspend fun upsertTable(
@@ -57,7 +58,9 @@ class AirbyteSnowflakeClient(
         sourceTableName: TableName,
         targetTableName: TableName
     ) {
-        TODO("Not yet implemented")
+        execute(
+            sqlGenerator.upsertTable(stream, columnNameMapping, sourceTableName, targetTableName)
+        )
     }
 
     override suspend fun dropTable(tableName: TableName) {
