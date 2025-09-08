@@ -33,7 +33,7 @@ import io.airbyte.integrations.destination.snowflake.spec.CdcDeletionMode
 import jakarta.inject.Singleton
 
 @Singleton
-class SnowflakeDirectLoadSqlGenerator(private val cdcDeletionMode: CdcDeletionMode) {
+class SnowflakeDirectLoadSqlGenerator() {
     /** Extension function to log SQL objects */
     private fun String.andLog(): String {
         log.info { this.toString() }
