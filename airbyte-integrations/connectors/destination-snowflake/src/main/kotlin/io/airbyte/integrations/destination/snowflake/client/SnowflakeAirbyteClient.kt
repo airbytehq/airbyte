@@ -25,9 +25,7 @@ class AirbyteSnowflakeClient(
         TODO("Not yet implemented")
     }
 
-    override suspend fun createNamespace(namespace: String) {
-
-    }
+    override suspend fun createNamespace(namespace: String) {}
 
     override suspend fun createTable(
         stream: DestinationStream,

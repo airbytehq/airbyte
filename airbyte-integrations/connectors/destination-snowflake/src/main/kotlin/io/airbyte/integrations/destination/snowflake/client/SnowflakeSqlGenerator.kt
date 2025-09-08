@@ -33,10 +33,10 @@ import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadSqlGener
 import io.airbyte.integrations.destination.snowflake.spec.CdcDeletionMode
 import jakarta.inject.Singleton
 
-@Singleton class SnowflakeDirectLoadSqlGenerator(private val cdcDeletionMode: CdcDeletionMode): DirectLoadSqlGenerator {
-    /**
-     * Extension function to log SQL objects
-     */
+@Singleton
+class SnowflakeDirectLoadSqlGenerator(private val cdcDeletionMode: CdcDeletionMode) :
+    DirectLoadSqlGenerator {
+    /** Extension function to log SQL objects */
     private fun Sql.andLog(): Sql {
         log.info { this.toString() }
         return this
@@ -67,11 +67,12 @@ import jakarta.inject.Singleton
 
         val columnDeclarations = columnsAndTypes(stream, columnNameMapping)
         val finalTableId = tableName.toPrettyString(QUOTE)
-        
+
         // Snowflake supports CREATE OR REPLACE TABLE, which is simpler than drop+recreate
         val createOrReplace = if (replace) "CREATE OR REPLACE" else "CREATE"
-        
-        val createTableStatement = """
+
+        val createTableStatement =
+            """
             $createOrReplace TABLE $finalTableId (
               "$COLUMN_NAME_AB_RAW_ID" VARCHAR NOT NULL,
               "$COLUMN_NAME_AB_EXTRACTED_AT" TIMESTAMP_TZ NOT NULL,
@@ -80,14 +81,11 @@ import jakarta.inject.Singleton
               $columnDeclarations
             )
         """.trimIndent()
-        
+
         return Sql.of(createTableStatement).andLog()
     }
 
-    override fun overwriteTable(
-        sourceTableName: TableName,
-        targetTableName: TableName
-    ): Sql {
+    override fun overwriteTable(sourceTableName: TableName, targetTableName: TableName): Sql {
         TODO("Not yet implemented")
     }
 
@@ -96,12 +94,11 @@ import jakarta.inject.Singleton
         sourceTableName: TableName,
         targetTableName: TableName
     ): Sql {
-        val columnNames = columnNameMapping
-            .map { (_, actualName) -> actualName }
-            .joinToString(",") { "\"$it\"" }
-        
+        val columnNames =
+            columnNameMapping.map { (_, actualName) -> actualName }.joinToString(",") { "\"$it\"" }
+
         return Sql.of(
-            """
+                """
             INSERT INTO ${targetTableName.toPrettyString(QUOTE)}
             (
                 "$COLUMN_NAME_AB_RAW_ID",
@@ -118,7 +115,8 @@ import jakarta.inject.Singleton
                 $columnNames
             FROM ${sourceTableName.toPrettyString(QUOTE)}
             """.trimIndent()
-        ).andLog()
+            )
+            .andLog()
     }
 
     override fun upsertTable(
@@ -131,7 +129,8 @@ import jakarta.inject.Singleton
     }
 
     override fun dropTable(tableName: TableName): Sql {
-        return Sql.of("DROP TABLE IF EXISTS \"${tableName.namespace}\".\"${tableName.name}\"").andLog()
+        return Sql.of("DROP TABLE IF EXISTS \"${tableName.namespace}\".\"${tableName.name}\"")
+            .andLog()
     }
 
     companion object {
