@@ -16,7 +16,6 @@ import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.io.File
 import java.nio.charset.StandardCharsets
-import javax.sql.DataSource
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 import net.snowflake.client.jdbc.SnowflakeDriver
@@ -71,9 +70,9 @@ class DataSourceFactory {
                         val privateKeyFile = File(snowflakePrivateKeyFileName)
                         privateKeyFile.deleteOnExit()
                         privateKeyFile.writeText(
-                                snowflakeConfiguration.authType.privateKey,
-                                StandardCharsets.UTF_8
-                            )
+                            snowflakeConfiguration.authType.privateKey,
+                            StandardCharsets.UTF_8
+                        )
                         addDataSourceProperty(
                             DATA_SOURCE_PROPERTY_PRIVATE_KEY_FILE,
                             snowflakePrivateKeyFileName
