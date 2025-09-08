@@ -29,12 +29,15 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.Sql
 import io.airbyte.cdk.load.orchestration.db.TableName
-import io.airbyte.integrations.destination.snowflake.spec.CdcDeletionMode
 import jakarta.inject.Singleton
 
 @Singleton
 class SnowflakeDirectLoadSqlGenerator() {
-    /** Extension function to log SQL objects */
+
+    /**
+     * This extension is here to avoid writing `.also { log.info { it }}` for every returned string
+     * we want to log
+     */
     private fun String.andLog(): String {
         log.info { this }
         return this
