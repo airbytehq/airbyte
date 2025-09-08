@@ -293,7 +293,9 @@ class SnowflakeDirectLoadSqlGenerator() {
             SELECT "$COLUMN_NAME_AB_GENERATION_ID"$aliasClause 
             FROM ${tableName.toPrettyString(QUOTE)} 
             LIMIT 1
-        """.trimIndent().andLog()
+        """
+            .trimIndent()
+            .andLog()
     }
 
     companion object {
