@@ -11,7 +11,10 @@ import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNativeOperations
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableSqlOperations
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
+
+val log = KotlinLogging.logger {}
 
 @Singleton
 class AirbyteSnowflakeClient(
@@ -23,7 +26,7 @@ class AirbyteSnowflakeClient(
     }
 
     override suspend fun createNamespace(namespace: String) {
-        TODO("Not yet implemented")
+
     }
 
     override suspend fun createTable(
