@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 
-class DestinationMessageInputFlowTest {
+class JsonDestinationMessageInputFlowTest {
 
     @Test
     fun `should deserialize and emit messages from input stream`() = runTest {
@@ -30,7 +30,7 @@ class DestinationMessageInputFlowTest {
         every { deserializer.deserialize(line1) } returns message1
         every { deserializer.deserialize(line2) } returns message2
 
-        val inputFlow = DestinationMessageInputFlow(inputStream, deserializer)
+        val inputFlow = JsonDestinationMessageInputFlow(inputStream, deserializer)
         val collector = mockk<FlowCollector<DestinationMessage>>(relaxed = true)
 
         // When
@@ -57,7 +57,7 @@ class DestinationMessageInputFlowTest {
         every { deserializer.deserialize(line1) } returns message1
         every { deserializer.deserialize(line2) } returns message2
 
-        val inputFlow = DestinationMessageInputFlow(inputStream, deserializer)
+        val inputFlow = JsonDestinationMessageInputFlow(inputStream, deserializer)
         val collector = mockk<FlowCollector<DestinationMessage>>(relaxed = true)
 
         // When
@@ -77,7 +77,7 @@ class DestinationMessageInputFlowTest {
         val inputStream = ByteArrayInputStream("".toByteArray())
         val deserializer = mockk<ProtocolMessageDeserializer>()
 
-        val inputFlow = DestinationMessageInputFlow(inputStream, deserializer)
+        val inputFlow = JsonDestinationMessageInputFlow(inputStream, deserializer)
         val collector = mockk<FlowCollector<DestinationMessage>>(relaxed = true)
 
         // When

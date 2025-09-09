@@ -5,9 +5,9 @@
 package io.airbyte.integrations.destination.clickhouse.write.load
 
 import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.dataflow.transform.RecordMunger
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.write.DirectLoader
-import io.airbyte.integrations.destination.clickhouse.write.transform.RecordMunger
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
