@@ -114,7 +114,8 @@ class ClickhouseAirbyteClient(
         columnNameMapping: ColumnNameMapping
     ) {
         val properTableName = nameGenerator.getTableName(stream.mappedDescriptor)
-        val tableSchema: TableSchema = client.getTableSchema(properTableName.name, properTableName.namespace)
+        val tableSchema: TableSchema =
+            client.getTableSchema(properTableName.name, properTableName.namespace)
 
         log.info { "Fetch the clickhouse table schema: $tableSchema" }
 
@@ -278,12 +279,13 @@ class ClickhouseAirbyteClient(
         val hasDedupChange =
             !(clickhousePks.containsAll(airbytePks) && airbytePks.containsAll(clickhousePks))
 
-        val alterationSummary = AlterationSummary(
-            added = added,
-            modified = modified,
-            deleted = deleted,
-            hasDedupChange = hasDedupChange
-        )
+        val alterationSummary =
+            AlterationSummary(
+                added = added,
+                modified = modified,
+                deleted = deleted,
+                hasDedupChange = hasDedupChange
+            )
 
         log.info { "Alteration summary: $alterationSummary" }
 
