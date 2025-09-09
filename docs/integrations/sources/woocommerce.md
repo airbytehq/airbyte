@@ -122,7 +122,7 @@ maximum number of seconds between API calls.
 
 | Version | Date       | Pull Request                                             | Subject                                                                |
 |:--------| :--------- |:---------------------------------------------------------|:-----------------------------------------------------------------------|
-| 0.5.16 | 2025-09-11 | [66091](https://github.com/airbytehq/airbyte/pull/66091) | Update to CDK v7 |
+| 0.5.16 | 2025-09-11 | [66092](https://github.com/airbytehq/airbyte/pull/66092) | Update to CDK v7 |
 | 0.5.15 | 2025-08-24 | [65450](https://github.com/airbytehq/airbyte/pull/65450) | Update dependencies |
 | 0.5.14 | 2025-08-09 | [64822](https://github.com/airbytehq/airbyte/pull/64822) | Update dependencies |
 | 0.5.13 | 2025-08-02 | [64347](https://github.com/airbytehq/airbyte/pull/64347) | Update dependencies |
@@ -169,7 +169,7 @@ maximum number of seconds between API calls.
 | 0.2.2 | 2023-03-03 | [23599](https://github.com/airbytehq/airbyte/pull/23599) | Fix pagination and removed lookback window |
 | 0.2.1 | 2023-02-10 | [22821](https://github.com/airbytehq/airbyte/pull/22821) | Specified date formatting in specification |
 | 0.2.0 | 2022-11-30 | [19903](https://github.com/airbytehq/airbyte/pull/19903) | Migrate to low-code; Certification to Beta |
-| 0.1.1 | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499) | Remove base-python dependencies |
-| 0.1.0 | 2021-09-09 | [5955](https://github.com/airbytehq/airbyte/pull/5955) | Initial Release. Source WooCommerce |
+| 0.1.1 | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499)   | Remove base-python dependencies |
+| 0.1.0 | 2021-09-09 | [5955](https://github.com/airbytehq/airbyte/pull/5955)   | Initial Release. Source WooCommerce |
 
 </details>
