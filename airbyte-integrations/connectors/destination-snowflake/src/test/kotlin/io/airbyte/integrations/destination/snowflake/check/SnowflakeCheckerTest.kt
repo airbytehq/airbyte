@@ -34,10 +34,11 @@ internal class SnowflakeCheckerTest {
         val checker =
             SnowflakeChecker(
                 airbyteSnowflakeClient = airbyteSnowflakeClient,
+                snowflakeConfiguration = snowflakeConfiguration,
                 snowflakeSqlNameTransformer = snowflakeSqlNameTransformer,
                 snowflakeSqlGenerator = snowflakeSqlGenerator,
             )
-        checker.check(snowflakeConfiguration)
+        checker.check()
 
         coVerify(exactly = 1) { airbyteSnowflakeClient.createNamespace(testSchema) }
         coVerify(exactly = 1) { airbyteSnowflakeClient.createTable(any(), any(), any(), any()) }
@@ -61,11 +62,12 @@ internal class SnowflakeCheckerTest {
         val checker =
             SnowflakeChecker(
                 airbyteSnowflakeClient = airbyteSnowflakeClient,
+                snowflakeConfiguration = snowflakeConfiguration,
                 snowflakeSqlNameTransformer = snowflakeSqlNameTransformer,
                 snowflakeSqlGenerator = snowflakeSqlGenerator,
             )
 
-        assertThrows<IllegalArgumentException> { checker.check(snowflakeConfiguration) }
+        assertThrows<IllegalArgumentException> { checker.check() }
 
         coVerify(exactly = 1) { airbyteSnowflakeClient.createNamespace(testSchema) }
         coVerify(exactly = 1) { airbyteSnowflakeClient.createTable(any(), any(), any(), any()) }

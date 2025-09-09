@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.snowflake.check
 
-import io.airbyte.cdk.load.check.DestinationChecker
+import io.airbyte.cdk.load.check.DestinationCheckerV2
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
@@ -24,18 +24,19 @@ import kotlinx.coroutines.runBlocking
 @Singleton
 class SnowflakeChecker(
     private val airbyteSnowflakeClient: AirbyteSnowflakeClient,
+    private val snowflakeConfiguration: SnowflakeConfiguration,
     private val snowflakeSqlNameTransformer: SnowflakeSqlNameTransformer,
     private val snowflakeSqlGenerator: SnowflakeDirectLoadSqlGenerator,
-) : DestinationChecker<SnowflakeConfiguration> {
+) : DestinationCheckerV2 {
 
-    override fun check(config: SnowflakeConfiguration) {
+    override fun check() {
         val columnName = "testKey"
         val data = "{\"$columnName\": \"testValue\"}"
-        val outputSchema = snowflakeSqlNameTransformer.transform(config.schema)
+        val outputSchema = snowflakeSqlNameTransformer.transform(snowflakeConfiguration.schema)
         val tableName =
             snowflakeSqlNameTransformer.transform(
                 "_airbyte_connection_test_${
-            UUID.randomUUID().toString().replace("-".toRegex(), "")}"
+                UUID.randomUUID().toString().replace("-".toRegex(), "")}"
             )
         val qualifiedTableName = TableName(namespace = outputSchema, name = tableName)
         val destinationStream =
