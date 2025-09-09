@@ -75,10 +75,7 @@ internal class SnowflakeBeanFactoryTest {
             )
             assertEquals(10, (dataSource as HikariConfig).maximumPoolSize)
             assertEquals(0, (dataSource as HikariConfig).minimumIdle)
-            assertEquals(
-                DATA_SOURCE_IDLE_TIMEOUT_MS,
-                (dataSource as HikariConfig).idleTimeout
-            )
+            assertEquals(DATA_SOURCE_IDLE_TIMEOUT_MS, (dataSource as HikariConfig).idleTimeout)
             assertEquals(-1, (dataSource as HikariConfig).initializationFailTimeout)
             assertEquals(
                 DATA_SOURCE_CONNECTION_TIMEOUT_MS + 10000L,
@@ -200,10 +197,7 @@ internal class SnowflakeBeanFactoryTest {
             )
             assertEquals(10, (dataSource as HikariConfig).maximumPoolSize)
             assertEquals(0, (dataSource as HikariConfig).minimumIdle)
-            assertEquals(
-                DATA_SOURCE_IDLE_TIMEOUT_MS,
-                (dataSource as HikariConfig).idleTimeout
-            )
+            assertEquals(DATA_SOURCE_IDLE_TIMEOUT_MS, (dataSource as HikariConfig).idleTimeout)
             assertEquals(-1, (dataSource as HikariConfig).initializationFailTimeout)
             assertEquals(
                 DATA_SOURCE_CONNECTION_TIMEOUT_MS + 10000L,
