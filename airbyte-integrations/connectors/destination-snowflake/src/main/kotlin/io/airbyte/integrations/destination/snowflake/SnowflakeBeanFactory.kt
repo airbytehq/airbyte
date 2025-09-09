@@ -2,13 +2,17 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.snowflake.config
+package io.airbyte.integrations.destination.snowflake
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import io.airbyte.integrations.destination.snowflake.SnowflakeSqlNameTransformer
+import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
+import io.airbyte.cdk.load.orchestration.db.DefaultTempTableNameGenerator
+import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
 import io.airbyte.integrations.destination.snowflake.spec.KeyPairAuthConfiguration
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
+import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfigurationFactory
+import io.airbyte.integrations.destination.snowflake.spec.SnowflakeSpecification
 import io.airbyte.integrations.destination.snowflake.spec.UsernamePasswordAuthConfiguration
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Value
@@ -38,10 +42,22 @@ internal const val NETWORK_TIMEOUT_MINUTES: Long = 1L
 internal const val PRIVATE_KEY_FILE_NAME: String = "rsa_key.p8"
 
 @Factory
-class DataSourceFactory {
+class SnowflakeBeanFactory {
+    @Singleton
+    fun tempTableNameGenerator(): TempTableNameGenerator = DefaultTempTableNameGenerator()
 
     @Singleton
-    fun dataSource(
+    fun snowflakeConfiguration(
+        configFactory: SnowflakeConfigurationFactory,
+        specFactory: ConfigurationSpecificationSupplier<SnowflakeSpecification>,
+    ): SnowflakeConfiguration {
+        val spec = specFactory.get()
+
+        return configFactory.makeWithoutExceptionHandling(spec)
+    }
+
+    @Singleton
+    fun snowflakeDataSource(
         snowflakeConfiguration: SnowflakeConfiguration,
         snowflakeSqlNameTransformer: SnowflakeSqlNameTransformer,
         @Named("snowflakePrivateKeyFileName")
