@@ -312,7 +312,39 @@ class SnowflakeDirectLoadSqlGenerator() {
         """.trimIndent().andLog()
     }
 
-    
+    private fun buildSnowflakeStageName(tableName: TableName): String {
+        return "airbyte_stage_${tableName.name}"
+    }
+
+    fun createSnowflakeStage(tableName: TableName): String {
+        val stageName = buildSnowflakeStageName(tableName)
+        return """
+            CREATE OR REPLACE STAGE $stageName
+                FILE_FORMAT = my_csv_format;
+        """.trimIndent().andLog()
+    }
+
+    fun putInStage(tableName: TableName, tempFilePath: String): String {
+        val stageName = buildSnowflakeStageName(tableName)
+        return """
+            PUT 'file://$tempFilePath' @$stageName
+            AUTO_COMPRESS = TRUE
+            OVERWRITE = TRUE
+        """.trimIndent().andLog()
+    }
+
+    fun copyFromStage(tableName: TableName): String {
+        val stageName = buildSnowflakeStageName(tableName)
+        
+        return """
+            COPY INTO ${tableName.toPrettyString(QUOTE)}
+            FROM @$stageName
+            FILE_FORMAT = $STAGE_FORMAT_NAME
+            MATCH_BY_COLUMN_NAME = 'CASE_INSENSITIVE'
+            ON_ERROR = 'ABORT_STATEMENT'
+            PURGE = TRUE
+        """.trimIndent().andLog()
+    }
 
     companion object {
         const val QUOTE: String = "\""
