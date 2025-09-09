@@ -143,6 +143,7 @@ Syncing data with an hourly granularity often generates large data volumes and c
 
 | Version    | Date       | Pull Request                                             | Subject                                                                        |
 |:-----------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 1.5.18 | 2025-09-11 | [66083](https://github.com/airbytehq/airbyte/pull/66083) | Update to CDK v7 |
 | 1.5.17     | 2025-08-14 | [64940](https://github.com/airbytehq/airbyte/pull/64940) | Re-release connector with fixed docker image entrypoint |
 | 1.5.16     | 2025-08-11 | [63276](https://github.com/airbytehq/airbyte/pull/63276) | Fix start time for stats streams |
 | 1.5.15     | 2025-08-09 | [64480](https://github.com/airbytehq/airbyte/pull/64480) | Update dependencies |
