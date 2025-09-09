@@ -20,12 +20,12 @@ acceptance_tests:
       #   status: succeed
       - config_path: integration_tests/invalid_config.json
         status: failed
-  ## Failing in CI. Disabling for now to unblock CI for P0 (https://github.com/airbytehq/airbyte/pull/64952)
+    ## Failing in CI. Disabling for now to unblock CI for P0 (https://github.com/airbytehq/airbyte/pull/64952)
     basic_read:
       tests:
         - config_path: secrets/config.json
-  #       expect_records:
-  #         path: "integration_tests/expected_records.jsonl"
+          #       expect_records:
+          #         path: "integration_tests/expected_records.jsonl"
           empty_streams:
             - name: keywords
               bypass_reason: "This stream is tested without start date"
