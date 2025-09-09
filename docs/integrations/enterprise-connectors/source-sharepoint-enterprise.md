@@ -271,8 +271,45 @@ If enabled, sends subdirectory folder structure along with source file names to 
 
 ### Multi-Site Support
 
-By providing a url to the site URL field, the connector will be able to access the files in the specific sharepoint site. 
-The site url should be in the format `https://<tenan_name>.sharepoint.com/sites/<site>`. If no field is provided, the connector will access the files in the main site.
+By providing a URL to the Site URL field, the connector will be able to access files in specific SharePoint sites, including both traditional SharePoint sites and Microsoft Teams-connected sites.
+
+**Supported Site URLs:**
+- Traditional SharePoint sites: `https://<tenant_name>.sharepoint.com/sites/<site_name>`
+- Microsoft Teams sites: `https://<tenant_name>.sharepoint.com/teams/<team_name>`
+- Main site access: Leave the Site URL field empty
+
+**Important:** Teams sites require proper SharePoint permissions to be configured by your administrator. If you encounter access issues, see the [Troubleshooting section](#troubleshooting) below.
+
+For more information about the difference between SharePoint sites and Teams-connected sites, see [Microsoft's documentation](https://learn.microsoft.com/en-us/sharepoint/teams-connected-sites).
+
+If no Site URL is provided, the connector will access files in the main site.
+
+### Troubleshooting
+
+#### 403 Access Denied Error for Teams Sites
+
+**Error:** `ClientRequestException: ('accessDenied', 'Access denied', '403 Client Error: Forbidden for url: https://graph.microsoft.com/v1.0/sites/...:/teams/...')`
+
+**Cause:** Your application lacks the necessary SharePoint permissions to access the specific Microsoft Teams site.
+
+**Solution:** 
+1. Verify that your Azure AD application has the required permissions:
+   - `Files.Read.All` (Application permission)
+   - `Sites.Read.All` (Application permission) 
+   - `Sites.Selected` (Application permission)
+2. Ensure admin consent has been granted for these permissions
+3. Contact your SharePoint administrator to verify the application has access to the specific Teams site
+4. For Teams sites, additional site-specific permissions may be required beyond the standard application permissions
+
+**Alternative approaches:**
+- Ask your SharePoint administrator to create a traditional SharePoint site and move the required files there
+- Use the main site access by leaving the Site URL field empty (if your files are accessible through the main site)
+- Verify that the Teams site URL is correct and accessible through the SharePoint web interface
+
+**Additional Resources:**
+- [Microsoft Graph permissions reference](https://learn.microsoft.com/en-us/graph/permissions-reference#sites-permissions)
+- [Teams and SharePoint integration](https://learn.microsoft.com/en-us/sharepoint/teams-connected-sites)
+- [SharePoint application permissions](https://learn.microsoft.com/en-us/graph/auth-v2-service)
 
 ### Supported sync modes
 
