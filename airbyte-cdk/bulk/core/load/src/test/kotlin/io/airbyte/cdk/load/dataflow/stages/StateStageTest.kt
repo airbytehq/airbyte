@@ -27,21 +27,34 @@ class StateStageTest {
     @Test
     fun `apply happy path`() = runTest {
         // Arrange
-        val histogram = mockk<PartitionHistogram>()
-        val input = DataFlowStageIO(partitionHistogram = histogram)
+        val countsHistogram = mockk<PartitionHistogram>()
+        val bytesHistogram = mockk<PartitionHistogram>()
+        val input =
+            DataFlowStageIO(
+                partitionCountsHistogram = countsHistogram,
+                partitionBytesHistogram = bytesHistogram,
+            )
 
         // Act
         val result = stateStage.apply(input)
 
         // Assert
-        verify(exactly = 1) { stateStore.acceptFlushedCounts(histogram) }
+        verify(exactly = 1) { stateStore.acceptFlushedCounts(countsHistogram) }
+        verify(exactly = 1) { stateStore.acceptFlushedBytes(bytesHistogram) }
         assertSame(input, result, "The output should be the same as the input object")
     }
 
     @Test
-    fun `apply with null partition histogram throws exception`() = runTest {
-        val input = DataFlowStageIO(partitionHistogram = null)
+    fun `apply with null counts histogram throws exception`() = runTest {
+        val input = DataFlowStageIO(partitionCountsHistogram = null)
         assertFailsWith<NullPointerException> { stateStage.apply(input) }
         verify(exactly = 0) { stateStore.acceptFlushedCounts(any()) }
+    }
+
+    @Test
+    fun `apply with null bytes histogram throws exception`() = runTest {
+        val input = DataFlowStageIO(partitionBytesHistogram = null)
+        assertFailsWith<NullPointerException> { stateStage.apply(input) }
+        verify(exactly = 0) { stateStore.acceptFlushedBytes(any()) }
     }
 }
