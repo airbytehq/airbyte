@@ -19,8 +19,7 @@ Users that sync Threads stream in Incremental sync mode should firstly check the
 2. Select the **Settings** tab.
 3. Under **Connection state** section you can find a connection state json object, look for `streamDescriptor` with `"name": "threads"` and check `streamState` for it. 
 
-If you see state like in the example below, you should follow Migration Steps. 
-Empty state example:
+If state looks similar to the example below, you should follow the Migration Steps:
 ```
 ...
 {
