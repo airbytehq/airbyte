@@ -7,7 +7,7 @@ import TabItem from '@theme/TabItem';
 
 # Getting started
 
-Any Airbyte Cloud enviornment can be easily upgraded to Enterprise Flex. To learn more about upgrading to Enterprise Flex, [talk to sales](https://airbyte.com/company/talk-to-sales).
+Any Airbyte Cloud environment can be easily upgraded to Enterprise Flex. To learn more about upgrading to Enterprise Flex, [talk to sales](https://airbyte.com/company/talk-to-sales).
 
 You may choose to run a self-managed data plane while using Airbyte Enterprise Flex. 
 
