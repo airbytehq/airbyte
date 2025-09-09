@@ -304,6 +304,7 @@ Follow these instructions to add the Airbyte helm repository:
             genericOidc:
               clientId: ""
               audience: ""
+              extraScopes: ""
               issuer: ""
               endpoints:
                 authorizationServerEndpoint: ""
@@ -317,8 +318,6 @@ Follow these instructions to add the Airbyte helm repository:
 
     </TabItem>
     </Tabs>
-
-
 
 4. You must configure the public facing URL of your Airbyte instance to your `values.yaml` file, under `global`:
 

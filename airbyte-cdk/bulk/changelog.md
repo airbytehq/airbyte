@@ -1,5 +1,17 @@
 **Load CDK**
 
+## Version 0.1.23
+
+* **Changed:** Dataflow CDK fails syncs if there are unflushed states at the end of a sync.
+
+## Version 0.1.22
+
+* **Changed:** Add EntraID support to azure-blob-storage.
+
+## Version 0.1.21
+
+* **Changed:** Adds basic socket support.
+
 ## Version 0.1.20
 
 * **Changed:** Fix hard failure edge case in stream initialization for in dataflow cdk lifecycle. 
