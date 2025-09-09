@@ -248,6 +248,7 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.9 | 2025-09-11 | [66081](https://github.com/airbytehq/airbyte/pull/66081) | Update to CDK v7 |
 | 3.0.8 | 2025-09-05 | [65552](https://github.com/airbytehq/airbyte/pull/65552) | Fix Incremental Syncs for Metafield child streams.|
 | 3.0.7 | 2025-06-02 | [59015](https://github.com/airbytehq/airbyte/pull/59015) | 🐙 source-shopify: Update dependencies [2025-05-17] |
 | 3.0.6 | 2025-05-28 | [60797](https://github.com/airbytehq/airbyte/pull/60797) | Fix 500s on `orders` & `order_refunds` streams by adding dynamic page limit. |
