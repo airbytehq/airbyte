@@ -2,7 +2,7 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.load.dataflow.transform
+package io.airbyte.cdk.load.dataflow.transform.medium
 
 import com.fasterxml.jackson.core.io.BigDecimalParser
 import com.fasterxml.jackson.core.io.BigIntegerParser
@@ -35,6 +35,8 @@ import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.data.json.toAirbyteValue
+import io.airbyte.cdk.load.dataflow.transform.ColumnNameMapper
+import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
 import io.airbyte.cdk.load.message.DestinationRecordProtobufSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.Meta
@@ -53,9 +55,9 @@ import javax.inject.Singleton
  * EnrichedAirbyteValue with destination-specific coercion applied through the Coercer interface.
  */
 @Singleton
-class ProtobufToAirbyteConverter(
-    private val coercer: Coercer,
-    private val columnNameMapper: ColumnNameMapper
+class ProtobufConverter(
+    private val columnNameMapper: ColumnNameMapper,
+    private val coercer: ValueCoercer,
 ) {
 
     /**
@@ -67,7 +69,7 @@ class ProtobufToAirbyteConverter(
      * @param columnMapper Optional function to map field names to destination column names
      * @return Map of column names to AirbyteValue including all metadata fields
      */
-    fun convertWithMetadata(
+    fun convert(
         msg: DestinationRecordRaw,
         source: DestinationRecordProtobufSource,
     ): Map<String, AirbyteValue> {

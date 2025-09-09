@@ -16,7 +16,7 @@ import io.airbyte.cdk.load.data.EnrichedAirbyteValue
  * 2. `map()` - transform values after initial conversion
  * 3. `validate()` - apply constraints and validation
  */
-interface Coercer {
+interface ValueCoercer {
     /**
      * Overrides how specific Airbyte types should be represented as AirbyteValue instances. Called
      * during protobuf extraction phase before value creation.

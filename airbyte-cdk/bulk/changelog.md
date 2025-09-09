@@ -1,5 +1,9 @@
 **Load CDK**
 
+## Version 0.1.25
+
+* **Changed:** Adds proto support to dataflow. Misc transform package cleanup (developer-facing).
+
 ## Version 0.1.24
 
 * **Changed:** Adds byte counts to emitted state stats.
