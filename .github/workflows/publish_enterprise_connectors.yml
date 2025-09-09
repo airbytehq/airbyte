@@ -26,7 +26,6 @@ jobs:
     uses: airbytehq/airbyte/.github/workflows/publish_connectors.yml@master
     secrets: inherit
     with:
-      original-trigger: ${{ github.event_name == 'push' && 'push-to-master' || 'manual' }}
       publish-java-tars: false # we never want to publish java tars for enterprise connectors
       connectors: ${{ inputs.connectors }}
       release-type: ${{ inputs.release-type }}
