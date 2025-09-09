@@ -246,7 +246,7 @@ Each record is marked with `is_deleted` flag when the appropriate event happens 
 
 | Version     | Date       | Pull Request                                                 | Subject                                                                                                                                                                                                                       |
 |:------------|:-----------|:-------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.15.6 | 2025-09-11 | [66085](https://github.com/airbytehq/airbyte/pull/66085) | Update to CDK v7 |
+| 5.15.6 | 2025-09-11 | [66089](https://github.com/airbytehq/airbyte/pull/66089) | Update to CDK v7 |
 | 5.15.5 | 2025-08-24 | [65489](https://github.com/airbytehq/airbyte/pull/65489) | Update dependencies |
 | 5.15.4 | 2025-08-09 | [64840](https://github.com/airbytehq/airbyte/pull/64840) | Update dependencies |
 | 5.15.3 | 2025-08-04 | [64484](https://github.com/airbytehq/airbyte/pull/64484) | Fix memory issue by moving schema loaders out of $parameters |
