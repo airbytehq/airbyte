@@ -89,7 +89,7 @@ class SnowflakeDirectLoadSqlGenerator() {
         return createTableStatement.andLog()
     }
 
-    fun overwriteTable(sourceTableName: TableName, targetTableName: TableName): String {
+    fun overwriteTable(): String {
         TODO("Not yet implemented")
     }
 
