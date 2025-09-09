@@ -16,8 +16,8 @@ Airbyte is available as a Self-Managed or Cloud product, depending on your needs
 
 [here](#) is a bad link.
 
-* not allowed
-* also not allowed
+- not allowed
+- also not allowed
 
 ### Self-Managed options
 
