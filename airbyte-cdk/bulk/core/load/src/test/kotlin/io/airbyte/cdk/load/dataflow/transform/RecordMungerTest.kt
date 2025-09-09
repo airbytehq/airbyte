@@ -15,8 +15,6 @@ import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.UnionType
-import io.airbyte.cdk.load.dataflow.transform.medium.JsonConverter
-import io.airbyte.cdk.load.dataflow.transform.medium.ProtobufConverter
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.EnrichedDestinationRecordAirbyteValue
 import io.mockk.every
@@ -30,21 +28,17 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
 @ExtendWith(MockKExtension::class)
-class JsonRecordMungerTest {
+class RecordMungerTest {
     @MockK lateinit var columnNameMapper: ColumnNameMapper
 
-    @MockK lateinit var valueCoercer: ValueCoercer
-
-    @MockK lateinit var protobufConverter: ProtobufConverter
-
-    private lateinit var jsonConverter: JsonConverter
+    @MockK lateinit var validator: Coercer
+    @MockK lateinit var protobufConverter: ProtobufToAirbyteConverter
 
     private lateinit var munger: RecordMunger
 
     @BeforeEach
     fun setup() {
-        jsonConverter = JsonConverter(columnNameMapper, valueCoercer)
-        munger = RecordMunger(jsonConverter, protobufConverter)
+        munger = RecordMunger(columnNameMapper, validator, protobufConverter)
     }
 
     @Test
@@ -55,11 +49,11 @@ class JsonRecordMungerTest {
                 secondArg<String>() + "_munged"
             }
 
-        every { valueCoercer.validate(any<EnrichedAirbyteValue>()) } answers { firstArg() }
+        every { validator.validate(any<EnrichedAirbyteValue>()) } answers { firstArg() }
 
         val stringfiedValue =
             Fixtures.mockCoercedValue(StringValue("{ \"json\": \"stringified\" }"))
-        every { valueCoercer.map(any()) } answers
+        every { validator.map(any()) } answers
             {
                 val input = firstArg<EnrichedAirbyteValue>()
                 if (input.abValue is ObjectValue) {
@@ -113,9 +107,9 @@ class JsonRecordMungerTest {
         verify {
             input.asEnrichedDestinationRecordAirbyteValue(extractedAtAsTimestampWithTimezone = true)
         }
-        nonUnionUserFields.forEach { verify { valueCoercer.validate(it.value) } }
+        nonUnionUserFields.forEach { verify { validator.validate(it.value) } }
         // the stringified field is also validated
-        verify(exactly = 1) { valueCoercer.validate(stringfiedValue) }
+        verify(exactly = 1) { validator.validate(stringfiedValue) }
 
         // munged keys map to unwrapped / coerced values
         val expected =

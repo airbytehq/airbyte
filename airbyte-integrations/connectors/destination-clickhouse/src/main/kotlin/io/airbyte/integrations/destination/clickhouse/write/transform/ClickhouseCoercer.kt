@@ -18,7 +18,7 @@ import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.data.UnionType
-import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
+import io.airbyte.cdk.load.dataflow.transform.Coercer
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.integrations.destination.clickhouse.write.transform.ClickhouseCoercer.Constants.DATE32_MAX
 import io.airbyte.integrations.destination.clickhouse.write.transform.ClickhouseCoercer.Constants.DATE32_MIN
@@ -38,7 +38,7 @@ import java.time.LocalTime
 import java.time.ZoneOffset
 
 @Singleton
-class ClickhouseCoercer : ValueCoercer {
+class ClickhouseCoercer : Coercer {
 
     override fun map(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
         return when (value.type) {

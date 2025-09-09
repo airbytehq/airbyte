@@ -23,8 +23,6 @@ import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
-import io.airbyte.cdk.load.dataflow.transform.medium.JsonConverter
-import io.airbyte.cdk.load.dataflow.transform.medium.ProtobufConverter
 import io.airbyte.cdk.load.message.DestinationRecordProtobufSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.Meta
@@ -62,7 +60,7 @@ class ProtobufRecordMungerTest {
 
     private lateinit var stream: DestinationStream
     private lateinit var columnNameMapper: ColumnNameMapper
-    private lateinit var valueCoercer: ValueCoercer
+    private lateinit var coercer: Coercer
     private var protoSource: DestinationRecordProtobufSource? = null
     private lateinit var record: DestinationRecordRaw
     private lateinit var fieldAccessors: Array<AirbyteValueProxy.FieldAccessor>
@@ -80,8 +78,8 @@ class ProtobufRecordMungerTest {
                 }
             }
 
-        valueCoercer =
-            object : ValueCoercer {
+        coercer =
+            object : Coercer {
                 val INT64_MAX = BigInteger(Long.MAX_VALUE.toString())
                 val INT64_MIN = BigInteger(Long.MIN_VALUE.toString())
                 override fun map(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
@@ -275,8 +273,9 @@ class ProtobufRecordMungerTest {
 
         munger =
             RecordMunger(
-                JsonConverter(columnNameMapper, valueCoercer),
-                ProtobufConverter(columnNameMapper, valueCoercer),
+                columnNameMapper,
+                coercer,
+                ProtobufToAirbyteConverter(coercer, columnNameMapper)
             )
     }
 
