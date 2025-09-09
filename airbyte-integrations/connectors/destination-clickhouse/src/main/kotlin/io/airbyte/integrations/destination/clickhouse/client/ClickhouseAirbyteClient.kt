@@ -279,10 +279,6 @@ class ClickhouseAirbyteClient(
                         clickhouseColumn.dataType.getDataTypeAsString().sqlNullable()
                     else clickhouseColumn.dataType.getDataTypeAsString()
                 if (mutableCatalogColumns[clickhouseColumn.columnName] != clickhouseType) {
-                    log.error { "clickhouseType: $clickhouseType" }
-                    log.error {
-                        "catalog Type: ${mutableCatalogColumns[clickhouseColumn.columnName]}"
-                    }
                     modified[clickhouseColumn.columnName] =
                         mutableCatalogColumns[clickhouseColumn.columnName]!!
                 }
