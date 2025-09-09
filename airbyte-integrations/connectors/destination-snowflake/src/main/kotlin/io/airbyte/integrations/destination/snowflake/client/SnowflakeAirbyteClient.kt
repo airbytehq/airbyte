@@ -18,7 +18,7 @@ import java.sql.ResultSet
 val log = KotlinLogging.logger {}
 
 @Singleton
-class AirbyteSnowflakeClient(
+class SnowflakeAirbyteClient(
     private val dataSource: HikariDataSource,
     private val sqlGenerator: SnowflakeDirectLoadSqlGenerator,
 ) : AirbyteClient, DirectLoadTableSqlOperations, DirectLoadTableNativeOperations {
