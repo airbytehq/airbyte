@@ -8,9 +8,9 @@ import io.airbyte.cdk.load.model.DeclarativeDestination
 import io.airbyte.cdk.load.model.checker.Checker
 import io.airbyte.cdk.load.model.checker.HttpRequestChecker
 import io.airbyte.cdk.load.model.destination_import_mode.Append
-import io.airbyte.cdk.load.model.discovery.CompositeOperations
-import io.airbyte.cdk.load.model.discovery.Operation
-import io.airbyte.cdk.load.model.discovery.StaticOperation
+import io.airbyte.cdk.load.model.discover.CompositeOperations
+import io.airbyte.cdk.load.model.discover.Operation
+import io.airbyte.cdk.load.model.discover.StaticOperation
 import io.airbyte.cdk.load.model.http.HttpMethod
 import io.airbyte.cdk.load.model.http.HttpRequester
 import io.airbyte.cdk.load.model.spec.Spec

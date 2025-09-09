@@ -40,9 +40,9 @@ import io.airbyte.cdk.load.model.destination_import_mode.DestinationImportMode a
 import io.airbyte.cdk.load.model.destination_import_mode.Overwrite as OverwriteModel
 import io.airbyte.cdk.load.model.destination_import_mode.SoftDelete as SoftDeleteModel
 import io.airbyte.cdk.load.model.destination_import_mode.Update as UpdateModel
-import io.airbyte.cdk.load.model.discovery.CompositeOperations as CompositeOperationsModel
-import io.airbyte.cdk.load.model.discovery.Operation as OperationModel
-import io.airbyte.cdk.load.model.discovery.StaticOperation as StaticOperationModel
+import io.airbyte.cdk.load.model.discover.CompositeOperations as CompositeOperationsModel
+import io.airbyte.cdk.load.model.discover.Operation as OperationModel
+import io.airbyte.cdk.load.model.discover.StaticOperation as StaticOperationModel
 import io.airbyte.cdk.load.model.http.HttpMethod
 import io.airbyte.cdk.load.model.http.HttpRequester as HttpRequesterModel
 import io.airbyte.cdk.load.model.http.authenticator.Authenticator as AuthenticatorModel

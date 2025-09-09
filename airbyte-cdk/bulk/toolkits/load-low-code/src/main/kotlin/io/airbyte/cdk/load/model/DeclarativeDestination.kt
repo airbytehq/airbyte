@@ -6,7 +6,7 @@ package io.airbyte.cdk.load.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.airbyte.cdk.load.model.checker.Checker
-import io.airbyte.cdk.load.model.discovery.Operation
+import io.airbyte.cdk.load.model.discover.Operation
 import io.airbyte.cdk.load.model.spec.Spec
 
 /**
