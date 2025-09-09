@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.clickhouse.client
 import com.clickhouse.client.api.Client as ClickHouseClientRaw
 import com.clickhouse.client.api.command.CommandResponse
 import com.clickhouse.client.api.data_formats.ClickHouseBinaryFormatReader
-import com.clickhouse.client.api.metadata.TableSchema
 import com.clickhouse.client.api.query.QueryResponse
 import com.clickhouse.data.ClickHouseColumn
 import com.clickhouse.data.ClickHouseDataType
@@ -114,10 +113,7 @@ class ClickhouseAirbyteClient(
         columnNameMapping: ColumnNameMapping
     ) {
         val properTableName = nameGenerator.getTableName(stream.mappedDescriptor)
-        val tableSchema: TableSchema =
-            client.getTableSchema(properTableName.name, properTableName.namespace)
-
-        log.info { "Fetch the clickhouse table schema: $tableSchema" }
+        val tableSchema = client.getTableSchema(properTableName.name, properTableName.namespace)
 
         val hasAllAirbyteColumn =
             tableSchema.columns.map { it.columnName }.containsAll(COLUMN_NAMES)
@@ -132,8 +128,6 @@ class ClickhouseAirbyteClient(
         val tableSchemaWithoutAirbyteColumns: List<ClickHouseColumn> =
             tableSchema.columns.filterNot { column -> column.columnName in COLUMN_NAMES }
 
-        log.info { "Found Clickhouse columns: $tableSchemaWithoutAirbyteColumns" }
-
         if (!stream.schema.isObject) {
             val error =
                 "The root of the schema is not an Object which is not expected, the schema changes won't be propagated"
@@ -143,8 +137,6 @@ class ClickhouseAirbyteClient(
 
         val airbyteSchemaWithClickhouseType: Map<String, String> =
             getAirbyteSchemaWithClickhouseType(stream)
-
-        log.info { "Airbyte columns: $airbyteSchemaWithClickhouseType" }
 
         val clickhousePks: List<String> =
             tableSchemaWithoutAirbyteColumns.filterNot { it.isNullable }.map { it.columnName }
@@ -279,17 +271,12 @@ class ClickhouseAirbyteClient(
         val hasDedupChange =
             !(clickhousePks.containsAll(airbytePks) && airbytePks.containsAll(clickhousePks))
 
-        val alterationSummary =
-            AlterationSummary(
-                added = added,
-                modified = modified,
-                deleted = deleted,
-                hasDedupChange = hasDedupChange
-            )
-
-        log.info { "Alteration summary: $alterationSummary" }
-
-        return alterationSummary
+        return AlterationSummary(
+            added = added,
+            modified = modified,
+            deleted = deleted,
+            hasDedupChange = hasDedupChange
+        )
     }
 
     override suspend fun countTable(tableName: TableName): Long? {
