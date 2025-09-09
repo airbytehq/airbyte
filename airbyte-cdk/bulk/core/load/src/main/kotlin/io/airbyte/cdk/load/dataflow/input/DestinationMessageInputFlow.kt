@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.withContext
 
 /** Takes bytes and emits DestinationMessages */
-class JsonDestinationMessageInputFlow(
+class DestinationMessageInputFlow(
     private val inputStream: InputStream,
     private val deserializer: ProtocolMessageDeserializer,
 ) : Flow<DestinationMessage> {

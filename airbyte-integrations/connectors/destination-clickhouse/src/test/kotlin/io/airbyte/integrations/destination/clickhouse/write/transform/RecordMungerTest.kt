@@ -2,7 +2,7 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.cdk.load.dataflow.transform
+package io.airbyte.integrations.destination.clickhouse.write.transform
 
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.BooleanType
@@ -17,6 +17,7 @@ import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.EnrichedDestinationRecordAirbyteValue
+import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
@@ -29,39 +30,30 @@ import org.junit.jupiter.api.extension.ExtendWith
 
 @ExtendWith(MockKExtension::class)
 class RecordMungerTest {
-    @MockK lateinit var columnNameMapper: ColumnNameMapper
+    @MockK lateinit var catalogInfo: TableCatalog
 
-    @MockK lateinit var validator: Coercer
-    @MockK lateinit var protobufConverter: ProtobufToAirbyteConverter
+    @MockK lateinit var validator: ClickhouseCoercer
 
     private lateinit var munger: RecordMunger
 
     @BeforeEach
     fun setup() {
-        munger = RecordMunger(columnNameMapper, validator, protobufConverter)
+        munger = RecordMunger(catalogInfo, validator)
     }
 
     @Test
     fun `transforms record into map of munged keys and values`() {
         // add "_munged" to every key so we can validate we get the mapped cols
-        every { columnNameMapper.getMappedColumnName(any(), any()) } answers
+        every { catalogInfo.getMappedColumnName(any(), any()) } answers
             {
                 secondArg<String>() + "_munged"
             }
 
-        every { validator.validate(any<EnrichedAirbyteValue>()) } answers { firstArg() }
+        every { validator.validate(any()) } answers { firstArg() }
 
         val stringfiedValue =
             Fixtures.mockCoercedValue(StringValue("{ \"json\": \"stringified\" }"))
-        every { validator.map(any()) } answers
-            {
-                val input = firstArg<EnrichedAirbyteValue>()
-                if (input.abValue is ObjectValue) {
-                    stringfiedValue
-                } else {
-                    input
-                }
-            }
+        every { validator.toJsonStringValue(any()) } answers { stringfiedValue }
 
         // mock coercion output
         val nonUnionUserFields =
@@ -107,9 +99,10 @@ class RecordMungerTest {
         verify {
             input.asEnrichedDestinationRecordAirbyteValue(extractedAtAsTimestampWithTimezone = true)
         }
+        // we validate each non-union field directly
         nonUnionUserFields.forEach { verify { validator.validate(it.value) } }
         // the stringified field is also validated
-        verify(exactly = 1) { validator.validate(stringfiedValue) }
+        verify { validator.validate(stringfiedValue) }
 
         // munged keys map to unwrapped / coerced values
         val expected =

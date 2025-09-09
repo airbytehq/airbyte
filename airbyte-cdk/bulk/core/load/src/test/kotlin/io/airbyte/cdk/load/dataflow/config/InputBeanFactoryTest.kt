@@ -4,18 +4,16 @@
 
 package io.airbyte.cdk.load.dataflow.config
 
-import io.airbyte.cdk.load.config.DataChannelFormat
 import io.airbyte.cdk.load.dataflow.aggregate.AggregateStore
 import io.airbyte.cdk.load.dataflow.aggregate.AggregateStoreFactory
 import io.airbyte.cdk.load.dataflow.finalization.StreamCompletionTracker
 import io.airbyte.cdk.load.dataflow.input.DataFlowPipelineInputFlow
-import io.airbyte.cdk.load.dataflow.input.JsonDestinationMessageInputFlow
+import io.airbyte.cdk.load.dataflow.input.DestinationMessageInputFlow
 import io.airbyte.cdk.load.dataflow.pipeline.DataFlowStage
 import io.airbyte.cdk.load.dataflow.state.StateHistogramStore
 import io.airbyte.cdk.load.dataflow.state.StateKeyClient
 import io.airbyte.cdk.load.dataflow.state.StateStore
 import io.airbyte.cdk.load.file.ClientSocket
-import io.airbyte.cdk.load.message.DestinationMessageFactory
 import io.airbyte.cdk.load.message.ProtocolMessageDeserializer
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -35,7 +33,6 @@ import org.junit.jupiter.api.extension.ExtendWith
 class InputBeanFactoryTest {
 
     @MockK private lateinit var deserializer: ProtocolMessageDeserializer
-    @MockK private lateinit var destinationMessageFactory: DestinationMessageFactory
 
     @MockK private lateinit var stateStore: StateStore
 
@@ -175,13 +172,7 @@ class InputBeanFactoryTest {
         val inputStreams = listOf(inputStream1, inputStream2)
 
         // When
-        val result =
-            factory.messageFlows(
-                inputStreams,
-                DataChannelFormat.JSONL,
-                deserializer,
-                destinationMessageFactory
-            )
+        val result = factory.messageFlows(inputStreams, deserializer)
 
         // Then
         assertEquals(2, result.size)
@@ -192,8 +183,8 @@ class InputBeanFactoryTest {
     @Test
     fun `inputFlows should create DataFlowPipelineInputFlow for each message flow`() {
         // Given
-        val messageFlow1 = mockk<JsonDestinationMessageInputFlow>()
-        val messageFlow2 = mockk<JsonDestinationMessageInputFlow>()
+        val messageFlow1 = mockk<DestinationMessageInputFlow>()
+        val messageFlow2 = mockk<DestinationMessageInputFlow>()
         val messageFlows = listOf(messageFlow1, messageFlow2)
 
         // When
@@ -287,13 +278,7 @@ class InputBeanFactoryTest {
 
         val inputStreams = listOf(mockInputStream1, mockInputStream2)
 
-        val messageFlows =
-            factory.messageFlows(
-                inputStreams,
-                DataChannelFormat.JSONL,
-                deserializer,
-                destinationMessageFactory
-            )
+        val messageFlows = factory.messageFlows(inputStreams, deserializer)
 
         val inputFlows =
             factory.inputFlows(
