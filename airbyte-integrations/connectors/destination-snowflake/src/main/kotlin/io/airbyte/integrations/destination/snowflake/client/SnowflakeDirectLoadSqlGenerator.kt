@@ -309,7 +309,9 @@ class SnowflakeDirectLoadSqlGenerator() {
             TRIM_SPACE = TRUE
             ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE
             REPLACE_INVALID_CHARACTERS = TRUE
-        """.trimIndent().andLog()
+        """
+            .trimIndent()
+            .andLog()
     }
 
     private fun buildSnowflakeStageName(tableName: TableName): String {
@@ -321,7 +323,9 @@ class SnowflakeDirectLoadSqlGenerator() {
         return """
             CREATE OR REPLACE STAGE $stageName
                 FILE_FORMAT = my_csv_format;
-        """.trimIndent().andLog()
+        """
+            .trimIndent()
+            .andLog()
     }
 
     fun putInStage(tableName: TableName, tempFilePath: String): String {
@@ -330,12 +334,14 @@ class SnowflakeDirectLoadSqlGenerator() {
             PUT 'file://$tempFilePath' @$stageName
             AUTO_COMPRESS = TRUE
             OVERWRITE = TRUE
-        """.trimIndent().andLog()
+        """
+            .trimIndent()
+            .andLog()
     }
 
     fun copyFromStage(tableName: TableName): String {
         val stageName = buildSnowflakeStageName(tableName)
-        
+
         return """
             COPY INTO ${tableName.toPrettyString(QUOTE)}
             FROM @$stageName
@@ -343,7 +349,9 @@ class SnowflakeDirectLoadSqlGenerator() {
             MATCH_BY_COLUMN_NAME = 'CASE_INSENSITIVE'
             ON_ERROR = 'ABORT_STATEMENT'
             PURGE = TRUE
-        """.trimIndent().andLog()
+        """
+            .trimIndent()
+            .andLog()
     }
 
     companion object {
