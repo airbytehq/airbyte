@@ -33,7 +33,8 @@ data:
       enableProgressiveRollout: true
     breakingChanges:
       3.0.0:
-        message: Due to a bug in the Source Slack v2.1.0 state for Threads stream may be missing in some connections, which leads to reading the stream full refreshly even when incremental mode is used and because of this destination may contain record duplicates. The Source Slack v2.2.0 fixes missing state issue, so state is emitted properly. Users will need to check their connection state on Settings Tab and check records in their destination then apply a stream refresh if Threads state is empty and/or Threads records in destination contain duplicates. For more information, see the [Slack Migration Guide](https://docs.airbyte.com/integrations/sources/slack-migrations).
+        message: This update fixes a bug that prevented incremental syncs from progressing for some connections containing the `threads` stream. Affected users should perform a stream refresh. See the [Slack Migration Guide](https://docs.airbyte.com/integrations/sources/slack-migrations?utm_source=chatgpt.com)
+ for instructions on identifying impacted connections and refreshing the stream.
         upgradeDeadline: "2025-09-25"
         scopedImpact:
           - scopeType: stream
