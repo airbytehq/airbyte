@@ -19,7 +19,7 @@ definitions:
     access_token_value: "{{ (config.get('credentials') or config).get('access_token') }}"
     token_expiry_date: "{{ (config.get('credentials') or config).get('token_expiry_date') }}"
     refresh_token_updater:
-      access_token_config_path: [ "credentials", "access_token" ]
+      access_token_config_path: ["credentials", "access_token"]
 
   # Error handlers
   base_error_handler:
