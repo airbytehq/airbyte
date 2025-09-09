@@ -21,12 +21,14 @@ acceptance_tests:
       - config_path: integration_tests/invalid_config.json
         status: failed
   ## Failing in CI. Disabling for now to unblock CI for P0 (https://github.com/airbytehq/airbyte/pull/64952)
-  # basic_read:
-  #   tests:
-  #     - config_path: secrets/config.json
+    basic_read:
+      tests:
+        - config_path: secrets/config.json
   #       expect_records:
   #         path: "integration_tests/expected_records.jsonl"
-  #       empty_streams:
+          empty_streams:
+            - name: keywords
+              bypass_reason: "This stream is tested without start date"
   #         - name: product_dimension_performance_report_hourly
   #           bypass_reason: "Test Account doesn't have Merchant Center configured to add Products, testing in integration test"
   #         - name: product_dimension_performance_report_daily
