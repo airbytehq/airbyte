@@ -38,8 +38,8 @@ Using Permission Sets, you should grant this user read access to the data you wa
 -  On the top right of the screen, click the gear icon and then click **Setup**.
 -  In the left navigation bar, under Administration, click **Users** > **Users**. Create a new User, entering details for the user's first name, last name, alias, and email. Filling in the email field will auto-populate the username field and nickname.
       - Leave `role` unspecified
-      - Select `Salesforce Platform` for the User License
-      - Select `Standard Platform User` for Profile.
+      - Select `Salesforce` for the User License
+      - Select `Standard User` for Profile.
       - Decide whether to generate a new password and notify the user.
       - Select `save`
 #### 2. Create a new Permission Set:
@@ -53,6 +53,11 @@ Using Permission Sets, you should grant this user read access to the data you wa
    - Select “Edit” and check the "Read" permission and uncheck all other permissions (Create, Edit, Delete, etc.).
    - Click `Save`
    - Continue to add read permissions for any objects you want Airbyte to have access to.
+- To grant access to uninstalled connected apps, you need to enable additional permission.
+   - Click "System Permissions"
+   - Select “Edit”
+   - If [API Access Control](https://help.salesforce.com/s/articleView?id=xcloud.security_api_access_control_about.htm&language=en_US&type=5) is enabled, need to check the "Use Any API Client" permission. If API Access Control isn't enabled, need to check “Approve Uninstalled Connected Apps” permission.
+   - Click `Save`
 #### 3. Assign the Permission Set to the new User
 - From the Permission Sets page, click "Manage Assignments" next to the read-only permission set you just created.
 - Click "Add Assignments."
