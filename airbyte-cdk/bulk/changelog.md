@@ -1,5 +1,13 @@
 **Load CDK**
 
+## Version 0.1.24
+
+* **Changed:** Adds byte counts to emitted state stats.
+
+## Version 0.1.23
+
+* **Changed:** Dataflow CDK fails syncs if there are unflushed states at the end of a sync.
+
 ## Version 0.1.22
 
 * **Changed:** Add EntraID support to azure-blob-storage.

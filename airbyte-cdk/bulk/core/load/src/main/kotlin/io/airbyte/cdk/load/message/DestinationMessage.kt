@@ -696,7 +696,10 @@ data class GlobalSnapshotCheckpoint(
 ) : CheckpointMessage {
 
     override val checkpointPartitionIds: List<String>
-        get() = streamCheckpoints.entries.map { it.value.checkpointId.toString() }
+        get() = buildList {
+            streamCheckpoints.values.mapTo(this) { it.checkpointId.value }
+            checkpointKey?.checkpointId?.value?.let { add(it) }
+        }
 
     override fun updateStats(
         destinationStats: Stats?,

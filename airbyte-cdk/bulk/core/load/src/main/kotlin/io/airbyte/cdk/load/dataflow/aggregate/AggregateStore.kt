@@ -29,10 +29,11 @@ class AggregateStore(
     private val aggregates = ConcurrentHashMap<StoreKey, AggregateEntry>()
 
     fun acceptFor(key: StoreKey, record: RecordDTO) {
-        val (agg, histogram, timeTrigger, countTrigger, bytesTrigger) = getOrCreate(key)
+        val (agg, counts, bytes, timeTrigger, countTrigger, bytesTrigger) = getOrCreate(key)
 
         agg.accept(record)
-        histogram.increment(record.partitionKey)
+        counts.increment(record.partitionKey, 1)
+        bytes.increment(record.partitionKey, record.sizeBytes)
         countTrigger.increment(1)
         bytesTrigger.increment(record.sizeBytes)
         timeTrigger.update(record.emittedAtMs)
@@ -69,7 +70,8 @@ class AggregateStore(
             aggregates.computeIfAbsent(key) {
                 AggregateEntry(
                     value = aggFactory.create(it),
-                    partitionHistogram = PartitionHistogram(),
+                    partitionCountsHistogram = PartitionHistogram(),
+                    partitionBytesHistogram = PartitionHistogram(),
                     stalenessTrigger = TimeTrigger(stalenessDeadlinePerAggMs),
                     recordCountTrigger = SizeTrigger(maxRecordsPerAgg),
                     estimatedBytesTrigger = SizeTrigger(maxEstBytesPerAgg),
@@ -87,7 +89,8 @@ class AggregateStore(
 
 data class AggregateEntry(
     val value: Aggregate,
-    val partitionHistogram: PartitionHistogram,
+    val partitionCountsHistogram: PartitionHistogram,
+    val partitionBytesHistogram: PartitionHistogram,
     val stalenessTrigger: TimeTrigger,
     val recordCountTrigger: SizeTrigger,
     val estimatedBytesTrigger: SizeTrigger,
