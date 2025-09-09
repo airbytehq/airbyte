@@ -57,7 +57,7 @@ class SnowflakeBeanFactory {
     }
 
     @Singleton
-    fun dataSource(
+    fun snowflakeDataSource(
         snowflakeConfiguration: SnowflakeConfiguration,
         snowflakeSqlNameTransformer: SnowflakeSqlNameTransformer,
         @Named("snowflakePrivateKeyFileName")

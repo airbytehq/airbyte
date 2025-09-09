@@ -24,7 +24,7 @@ internal class SnowflakeBeanFactoryTest {
 
     @ParameterizedTest
     @CsvSource(value = ["OSS", "CLOUD", "ENTERPRISE"])
-    fun testCreateDataSourcePrivateKeyAuth(airbyteEdition: String) {
+    fun testCreateSnowflakeDataSourcePrivateKeyAuth(airbyteEdition: String) {
         val privateKeyFile = File.createTempFile("snowflake-private-key", ".p8")
         privateKeyFile.deleteOnExit()
         val privateKey = "test-private-key"
@@ -61,7 +61,7 @@ internal class SnowflakeBeanFactoryTest {
             mockk<SnowflakeSqlNameTransformer> { every { transform(any()) } answers { firstArg() } }
         val factory = SnowflakeBeanFactory()
         val dataSource =
-            factory.dataSource(
+            factory.snowflakeDataSource(
                 snowflakeConfiguration = snowflakeConfiguration,
                 snowflakeSqlNameTransformer = snowflakeSqlNameTransformer,
                 snowflakePrivateKeyFileName = privateKeyFile.path,
@@ -154,7 +154,7 @@ internal class SnowflakeBeanFactoryTest {
 
     @ParameterizedTest
     @CsvSource(value = ["OSS", "CLOUD", "ENTERPRISE"])
-    fun testCreateDataSourceUsernamePasswordAuth(airbyteEdition: String) {
+    fun testCreateSnowflakeDataSourceUsernamePasswordAuth(airbyteEdition: String) {
         val password = "test-password"
         val authType =
             UsernamePasswordAuthConfiguration(
@@ -187,7 +187,7 @@ internal class SnowflakeBeanFactoryTest {
             mockk<SnowflakeSqlNameTransformer> { every { transform(any()) } answers { firstArg() } }
         val factory = SnowflakeBeanFactory()
         val dataSource =
-            factory.dataSource(
+            factory.snowflakeDataSource(
                 snowflakeConfiguration = snowflakeConfiguration,
                 snowflakeSqlNameTransformer = snowflakeSqlNameTransformer,
                 airbyteEdition = airbyteEdition,
