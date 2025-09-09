@@ -65,7 +65,7 @@ Please be aware: this also means that any change older than 90 days will not be 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.9.2 | 2025-09-11 | [66079](https://github.com/airbytehq/airbyte/pull/66079) | Update to CDK v7 |
+| 0.9.2 | 2025-09-11 | [66080](https://github.com/airbytehq/airbyte/pull/66080) | Update to CDK v7 |
 | 0.9.1 | 2025-08-24 | [65501](https://github.com/airbytehq/airbyte/pull/65501) | Update dependencies |
 | 0.9.0 | 2025-08-11 | [64879](https://github.com/airbytehq/airbyte/pull/64879) | Update events stream to use start and query params instead of filtering on source side |
 | 0.8.17 | 2025-08-09 | [64850](https://github.com/airbytehq/airbyte/pull/64850) | Update dependencies |
@@ -123,7 +123,7 @@ Please be aware: this also means that any change older than 90 days will not be 
 | 0.1.4 | 2022-08-19 | [15800](https://github.com/airbytehq/airbyte/pull/15800) | Bugfix to allow reading sentry.yaml at runtime |
 | 0.1.3 | 2022-08-17 | [15734](https://github.com/airbytehq/airbyte/pull/15734) | Fix yaml based on the new schema validator |
 | 0.1.2 | 2021-12-28 | [15345](https://github.com/airbytehq/airbyte/pull/15345) | Migrate to config-based framework |
-| 0.1.1 | 2021-12-28 | [8628](https://github.com/airbytehq/airbyte/pull/8628) | Update fields in source-connectors specifications |
-| 0.1.0 | 2021-10-12 | [6975](https://github.com/airbytehq/airbyte/pull/6975) | New Source: Sentry |
+| 0.1.1 | 2021-12-28 | [8628](https://github.com/airbytehq/airbyte/pull/8628)   | Update fields in source-connectors specifications |
+| 0.1.0 | 2021-10-12 | [6975](https://github.com/airbytehq/airbyte/pull/6975)   | New Source: Sentry |
 
 </details>
