@@ -6,7 +6,7 @@ package io.airbyte.integrations.destination.snowflake.check
 
 import io.airbyte.integrations.destination.snowflake.SnowflakeSqlNameTransformer
 import io.airbyte.integrations.destination.snowflake.client.AirbyteSnowflakeClient
-import io.airbyte.integrations.destination.snowflake.client.SnowflakeSqlGenerator
+import io.airbyte.integrations.destination.snowflake.client.SnowflakeDirectLoadSqlGenerator
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -24,7 +24,7 @@ internal class SnowflakeCheckerTest {
         val snowflakeSqlNameTransformer: SnowflakeSqlNameTransformer = mockk {
             every { transform(any()) } answers { firstArg() }
         }
-        val snowflakeSqlGenerator: SnowflakeSqlGenerator = mockk()
+        val snowflakeSqlGenerator: SnowflakeDirectLoadSqlGenerator = mockk()
 
         val testSchema = "test-schema"
         val snowflakeConfiguration: SnowflakeConfiguration = mockk {
@@ -51,7 +51,7 @@ internal class SnowflakeCheckerTest {
         val snowflakeSqlNameTransformer: SnowflakeSqlNameTransformer = mockk {
             every { transform(any()) } answers { firstArg() }
         }
-        val snowflakeSqlGenerator: SnowflakeSqlGenerator = mockk()
+        val snowflakeSqlGenerator: SnowflakeDirectLoadSqlGenerator = mockk()
 
         val testSchema = "test-schema"
         val snowflakeConfiguration: SnowflakeConfiguration = mockk {

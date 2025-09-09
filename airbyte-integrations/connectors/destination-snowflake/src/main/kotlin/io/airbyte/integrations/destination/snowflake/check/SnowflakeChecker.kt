@@ -15,7 +15,7 @@ import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.integrations.destination.snowflake.SnowflakeSqlNameTransformer
 import io.airbyte.integrations.destination.snowflake.client.AirbyteSnowflakeClient
-import io.airbyte.integrations.destination.snowflake.client.SnowflakeSqlGenerator
+import io.airbyte.integrations.destination.snowflake.client.SnowflakeDirectLoadSqlGenerator
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import jakarta.inject.Singleton
 import java.util.UUID
@@ -25,7 +25,7 @@ import kotlinx.coroutines.runBlocking
 class SnowflakeChecker(
     private val airbyteSnowflakeClient: AirbyteSnowflakeClient,
     private val snowflakeSqlNameTransformer: SnowflakeSqlNameTransformer,
-    private val snowflakeSqlGenerator: SnowflakeSqlGenerator,
+    private val snowflakeSqlGenerator: SnowflakeDirectLoadSqlGenerator,
 ) : DestinationChecker<SnowflakeConfiguration> {
 
     override fun check(config: SnowflakeConfiguration) {
