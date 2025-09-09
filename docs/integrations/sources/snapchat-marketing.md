@@ -143,7 +143,7 @@ Syncing data with an hourly granularity often generates large data volumes and c
 
 | Version    | Date       | Pull Request                                             | Subject                                                                        |
 |:-----------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
-| 1.5.18 | 2025-09-11 | [66083](https://github.com/airbytehq/airbyte/pull/66083) | Update to CDK v7 |
+| 1.5.18 | 2025-09-11 | [66085](https://github.com/airbytehq/airbyte/pull/66085) | Update to CDK v7 |
 | 1.5.17     | 2025-08-14 | [64940](https://github.com/airbytehq/airbyte/pull/64940) | Re-release connector with fixed docker image entrypoint |
 | 1.5.16     | 2025-08-11 | [63276](https://github.com/airbytehq/airbyte/pull/63276) | Fix start time for stats streams |
 | 1.5.15     | 2025-08-09 | [64480](https://github.com/airbytehq/airbyte/pull/64480) | Update dependencies |
@@ -213,10 +213,10 @@ Syncing data with an hourly granularity often generates large data volumes and c
 | 0.1.8      | 2022-10-05 | [17596](https://github.com/airbytehq/airbyte/pull/17596) | Retry 429 and 5xx errors when refreshing access token |
 | 0.1.6      | 2022-07-21 | [14924](https://github.com/airbytehq/airbyte/pull/14924) | Remove `additionalProperties` field from specs |
 | 0.1.5      | 2022-07-13 | [14577](https://github.com/airbytehq/airbyte/pull/14577) | Added stats streams hourly, daily, lifetime |
-| 0.1.4      | 2021-12-07 | [8429](https://github.com/airbytehq/airbyte/pull/8429) | Update titles and descriptions |
-| 0.1.3      | 2021-11-10 | [7811](https://github.com/airbytehq/airbyte/pull/7811) | Add oauth2.0, fix stream_state |
-| 0.1.2      | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499) | Remove base-python dependencies |
-| 0.1.1      | 2021-07-29 | [5072](https://github.com/airbytehq/airbyte/pull/5072) | Fix bug with incorrect stream_state value |
-| 0.1.0      | 2021-07-26 | [4843](https://github.com/airbytehq/airbyte/pull/4843) | Initial release supporting the Snapchat Marketing API |
+| 0.1.4      | 2021-12-07 | [8429](https://github.com/airbytehq/airbyte/pull/8429)   | Update titles and descriptions |
+| 0.1.3      | 2021-11-10 | [7811](https://github.com/airbytehq/airbyte/pull/7811)   | Add oauth2.0, fix stream_state |
+| 0.1.2      | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499)   | Remove base-python dependencies |
+| 0.1.1      | 2021-07-29 | [5072](https://github.com/airbytehq/airbyte/pull/5072)   | Fix bug with incorrect stream_state value |
+| 0.1.0      | 2021-07-26 | [4843](https://github.com/airbytehq/airbyte/pull/4843)   | Initial release supporting the Snapchat Marketing API |
 
 </details>
