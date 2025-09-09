@@ -5,8 +5,10 @@
 package io.airbyte.cdk.load.dataflow.pipeline
 
 import io.airbyte.cdk.load.dataflow.state.StateReconciler
+import io.airbyte.cdk.load.dataflow.state.StateStore
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
+import java.lang.IllegalStateException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
@@ -16,6 +18,7 @@ import kotlinx.coroutines.launch
 @Singleton
 class PipelineRunner(
     private val reconciler: StateReconciler,
+    private val store: StateStore,
     val pipelines: List<DataFlowPipeline>,
 ) {
     private val log = KotlinLogging.logger {}
@@ -39,5 +42,10 @@ class PipelineRunner(
         reconciler.flushCompleteStates()
 
         log.info { "Destination Pipeline Completed — Successfully" }
+
+        if (store.hasStates()) {
+            log.info { "Unflushed states detected. Failing sync." }
+            throw IllegalStateException("Sync completed, but unflushed states were detected.")
+        }
     }
 }
