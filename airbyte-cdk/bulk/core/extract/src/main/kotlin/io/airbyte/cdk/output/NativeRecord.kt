@@ -68,11 +68,11 @@ fun <T> JsonEncoder<T>.toProtobufEncoder(): ProtoEncoder<*> {
         is BooleanCodec, -> booleanProtoEncoder
         is OffsetDateTimeCodec, -> offsetDateTimeProtoEncoder
         is FloatCodec, -> floatProtoEncoder
-        is NullCodec, -> nullProtoEncoder
-        is BinaryCodec, -> binaryProtoEncoder
+        is NullCodec, -> nullProtoEncoder // TODO: check here
+        is BinaryCodec, -> binaryProtoEncoder // TODO: check here
         is BigDecimalCodec, -> bigDecimalProtoEncoder
         is BigDecimalIntegerCodec, ->
-            bigDecimalProtoEncoder // TODO: check can convert to exact integer
+            bigDecimalProtoEncoder
         is ShortCodec, -> shortProtoEncoder
         is ByteCodec, -> byteProtoEncoder
         is DoubleCodec, -> doubleProtoEncoder
@@ -117,19 +117,19 @@ private inline fun <T> generateProtoEncoder(
 
 val offsetTimeProtoEncoder =
     generateProtoEncoder<OffsetTime> { builder, value ->
-        builder.setString(value.format(OffsetTimeCodec.formatter))
+        builder.setTimeWithTimezone(value.format(OffsetTimeCodec.formatter))
     }
 val localDateTimeProtoEncoder =
     generateProtoEncoder<LocalDateTime> { builder, value ->
-        builder.setString(value.format(LocalDateTimeCodec.formatter))
+        builder.setTimestampWithoutTimezone(value.format(LocalDateTimeCodec.formatter))
     }
 val localTimeProtoEncoder =
     generateProtoEncoder<LocalTime> { builder, time ->
-        builder.setString(time.format(LocalTimeCodec.formatter))
+        builder.setTimeWithoutTimezone(time.format(LocalTimeCodec.formatter))
     }
 val localDateProtoEncoder =
     generateProtoEncoder<LocalDate> { builder, date ->
-        builder.setString(date.format(LocalDateCodec.formatter))
+        builder.setDate(date.format(LocalDateCodec.formatter))
     }
 val urlProtoEncoder =
     generateProtoEncoder<URL> { builder, url -> builder.setString(url.toExternalForm()) }
