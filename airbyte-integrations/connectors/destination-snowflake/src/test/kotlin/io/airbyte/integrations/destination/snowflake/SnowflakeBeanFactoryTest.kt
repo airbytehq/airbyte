@@ -16,7 +16,7 @@ import java.io.File
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 import net.snowflake.client.jdbc.SnowflakeDriver
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 
@@ -68,85 +68,85 @@ internal class SnowflakeBeanFactoryTest {
                 airbyteEdition = airbyteEdition,
             )
         try {
-            Assertions.assertEquals(HikariDataSource::class, dataSource::class)
-            Assertions.assertEquals(
+            assertEquals(HikariDataSource::class, dataSource::class)
+            assertEquals(
                 DATA_SOURCE_CONNECTION_TIMEOUT_MS,
                 (dataSource as HikariConfig).connectionTimeout
             )
-            Assertions.assertEquals(10, (dataSource as HikariConfig).maximumPoolSize)
-            Assertions.assertEquals(0, (dataSource as HikariConfig).minimumIdle)
-            Assertions.assertEquals(
+            assertEquals(10, (dataSource as HikariConfig).maximumPoolSize)
+            assertEquals(0, (dataSource as HikariConfig).minimumIdle)
+            assertEquals(
                 DATA_SOURCE_IDLE_TIMEOUT_MS,
                 (dataSource as HikariConfig).idleTimeout
             )
-            Assertions.assertEquals(-1, (dataSource as HikariConfig).initializationFailTimeout)
-            Assertions.assertEquals(
+            assertEquals(-1, (dataSource as HikariConfig).initializationFailTimeout)
+            assertEquals(
                 DATA_SOURCE_CONNECTION_TIMEOUT_MS + 10000L,
                 (dataSource as HikariConfig).leakDetectionThreshold
             )
-            Assertions.assertEquals(
+            assertEquals(
                 DATA_SOURCE_IDLE_TIMEOUT_MS + 10000L,
                 (dataSource as HikariConfig).maxLifetime
             )
-            Assertions.assertEquals(
+            assertEquals(
                 SnowflakeDriver::class.qualifiedName,
                 (dataSource as HikariConfig).driverClassName
             )
-            Assertions.assertEquals(
+            assertEquals(
                 "jdbc:snowflake://${snowflakeConfiguration.host}/?${snowflakeConfiguration.jdbcUrlParams}",
                 (dataSource as HikariConfig).jdbcUrl
             )
-            Assertions.assertEquals(
+            assertEquals(
                 privateKeyFile.path,
                 (dataSource as HikariConfig)
                     .dataSourceProperties[DATA_SOURCE_PROPERTY_PRIVATE_KEY_FILE]
             )
-            Assertions.assertEquals(
+            assertEquals(
                 privateKeyPassword,
                 (dataSource as HikariConfig)
                     .dataSourceProperties[DATA_SOURCE_PROPERTY_PRIVATE_KEY_PASSWORD]
             )
-            Assertions.assertEquals(
+            assertEquals(
                 warehouse,
                 (dataSource as HikariConfig).dataSourceProperties[DATA_SOURCE_PROPERTY_WAREHOUSE]
             )
-            Assertions.assertEquals(
+            assertEquals(
                 database,
                 (dataSource as HikariConfig).dataSourceProperties[DATA_SOURCE_PROPERTY_DATABASE]
             )
-            Assertions.assertEquals(
+            assertEquals(
                 role,
                 (dataSource as HikariConfig).dataSourceProperties[DATA_SOURCE_PROPERTY_ROLE]
             )
-            Assertions.assertEquals(
+            assertEquals(
                 schema,
                 (dataSource as HikariConfig).dataSourceProperties[DATA_SOURCE_PROPERTY_SCHEMA]
             )
-            Assertions.assertEquals(
+            assertEquals(
                 NETWORK_TIMEOUT_MINUTES.toDuration(DurationUnit.MINUTES).inWholeSeconds.toInt(),
                 (dataSource as HikariConfig)
                     .dataSourceProperties[DATA_SOURCE_PROPERTY_NETWORK_TIMEOUT]
             )
-            Assertions.assertEquals(
+            assertEquals(
                 0,
                 (dataSource as HikariConfig)
                     .dataSourceProperties[DATA_SOURCE_PROPERTY_MULTI_STATEMENT_COUNT]
             )
-            Assertions.assertEquals(
+            assertEquals(
                 "airbyte_${airbyteEdition.lowercase()}",
                 (dataSource as HikariConfig).dataSourceProperties[DATA_SOURCE_PROPERTY_APPLICATION]
             )
-            Assertions.assertEquals(
+            assertEquals(
                 JSON_FORMAT,
                 (dataSource as HikariConfig)
                     .dataSourceProperties[DATA_SOURCE_PROPERTY_JDBC_QUERY_RESULT_FORMAT]
             )
-            Assertions.assertEquals(
+            assertEquals(
                 "true",
                 (dataSource as HikariConfig)
                     .dataSourceProperties[DATA_SOURCE_PROPERTY_ABORT_DETACHED_QUERY]
             )
-            Assertions.assertEquals(username, (dataSource as HikariConfig).username)
+            assertEquals(username, (dataSource as HikariConfig).username)
         } finally {
             dataSource.close()
         }
@@ -193,76 +193,76 @@ internal class SnowflakeBeanFactoryTest {
                 airbyteEdition = airbyteEdition,
             )
         try {
-            Assertions.assertEquals(HikariDataSource::class, dataSource::class)
-            Assertions.assertEquals(
+            assertEquals(HikariDataSource::class, dataSource::class)
+            assertEquals(
                 DATA_SOURCE_CONNECTION_TIMEOUT_MS,
                 (dataSource as HikariConfig).connectionTimeout
             )
-            Assertions.assertEquals(10, (dataSource as HikariConfig).maximumPoolSize)
-            Assertions.assertEquals(0, (dataSource as HikariConfig).minimumIdle)
-            Assertions.assertEquals(
+            assertEquals(10, (dataSource as HikariConfig).maximumPoolSize)
+            assertEquals(0, (dataSource as HikariConfig).minimumIdle)
+            assertEquals(
                 DATA_SOURCE_IDLE_TIMEOUT_MS,
                 (dataSource as HikariConfig).idleTimeout
             )
-            Assertions.assertEquals(-1, (dataSource as HikariConfig).initializationFailTimeout)
-            Assertions.assertEquals(
+            assertEquals(-1, (dataSource as HikariConfig).initializationFailTimeout)
+            assertEquals(
                 DATA_SOURCE_CONNECTION_TIMEOUT_MS + 10000L,
                 (dataSource as HikariConfig).leakDetectionThreshold
             )
-            Assertions.assertEquals(
+            assertEquals(
                 DATA_SOURCE_IDLE_TIMEOUT_MS + 10000L,
                 (dataSource as HikariConfig).maxLifetime
             )
-            Assertions.assertEquals(
+            assertEquals(
                 SnowflakeDriver::class.qualifiedName,
                 (dataSource as HikariConfig).driverClassName
             )
-            Assertions.assertEquals(
+            assertEquals(
                 "jdbc:snowflake://${snowflakeConfiguration.host}/?${snowflakeConfiguration.jdbcUrlParams}",
                 (dataSource as HikariConfig).jdbcUrl
             )
-            Assertions.assertEquals(
+            assertEquals(
                 warehouse,
                 (dataSource as HikariConfig).dataSourceProperties[DATA_SOURCE_PROPERTY_WAREHOUSE]
             )
-            Assertions.assertEquals(
+            assertEquals(
                 database,
                 (dataSource as HikariConfig).dataSourceProperties[DATA_SOURCE_PROPERTY_DATABASE]
             )
-            Assertions.assertEquals(
+            assertEquals(
                 role,
                 (dataSource as HikariConfig).dataSourceProperties[DATA_SOURCE_PROPERTY_ROLE]
             )
-            Assertions.assertEquals(
+            assertEquals(
                 schema,
                 (dataSource as HikariConfig).dataSourceProperties[DATA_SOURCE_PROPERTY_SCHEMA]
             )
-            Assertions.assertEquals(
+            assertEquals(
                 NETWORK_TIMEOUT_MINUTES.toDuration(DurationUnit.MINUTES).inWholeSeconds.toInt(),
                 (dataSource as HikariConfig)
                     .dataSourceProperties[DATA_SOURCE_PROPERTY_NETWORK_TIMEOUT]
             )
-            Assertions.assertEquals(
+            assertEquals(
                 0,
                 (dataSource as HikariConfig)
                     .dataSourceProperties[DATA_SOURCE_PROPERTY_MULTI_STATEMENT_COUNT]
             )
-            Assertions.assertEquals(
+            assertEquals(
                 "airbyte_${airbyteEdition.lowercase()}",
                 (dataSource as HikariConfig).dataSourceProperties[DATA_SOURCE_PROPERTY_APPLICATION]
             )
-            Assertions.assertEquals(
+            assertEquals(
                 JSON_FORMAT,
                 (dataSource as HikariConfig)
                     .dataSourceProperties[DATA_SOURCE_PROPERTY_JDBC_QUERY_RESULT_FORMAT]
             )
-            Assertions.assertEquals(
+            assertEquals(
                 "true",
                 (dataSource as HikariConfig)
                     .dataSourceProperties[DATA_SOURCE_PROPERTY_ABORT_DETACHED_QUERY]
             )
-            Assertions.assertEquals(username, (dataSource as HikariConfig).username)
-            Assertions.assertEquals(password, (dataSource as HikariConfig).password)
+            assertEquals(username, (dataSource as HikariConfig).username)
+            assertEquals(password, (dataSource as HikariConfig).password)
         } finally {
             dataSource.close()
         }
