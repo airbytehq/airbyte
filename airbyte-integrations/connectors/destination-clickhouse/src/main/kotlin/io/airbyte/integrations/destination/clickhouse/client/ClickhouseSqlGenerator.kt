@@ -360,10 +360,10 @@ class ClickhouseSqlGenerator(
                 .append("ALTER TABLE `${tableName.namespace}`.`${tableName.name}`")
                 .appendLine()
         alterationSummary.added.forEach { (columnName, columnType) ->
-            builder.append(" ADD COLUMN `$columnName` ${columnType.sqlNullable()},")
+            builder.append(" ADD COLUMN `$columnName` $columnType,")
         }
         alterationSummary.modified.forEach { (columnName, columnType) ->
-            builder.append(" MODIFY COLUMN `$columnName` ${columnType.sqlNullable()},")
+            builder.append(" MODIFY COLUMN `$columnName` $columnType,")
         }
         alterationSummary.deleted.forEach { columnName ->
             builder.append(" DROP COLUMN `$columnName`,")
@@ -372,13 +372,13 @@ class ClickhouseSqlGenerator(
         return builder.dropLast(1).toString().andLog()
     }
 
-    private fun String.sqlNullable(): String = "Nullable($this)"
-
     companion object {
         const val DATETIME_WITH_PRECISION = "DateTime64(3)"
         const val DECIMAL_WITH_PRECISION_AND_SCALE = "Decimal(38, 9)"
     }
 }
+
+fun String.sqlNullable(): String = "Nullable($this)"
 
 fun AirbyteType.toDialectType(enableJson: Boolean): String =
     when (this) {
