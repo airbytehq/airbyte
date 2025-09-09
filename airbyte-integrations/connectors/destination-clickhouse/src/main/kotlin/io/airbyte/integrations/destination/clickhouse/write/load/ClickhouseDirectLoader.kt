@@ -6,16 +6,16 @@ package io.airbyte.integrations.destination.clickhouse.write.load
 
 import com.google.common.annotations.VisibleForTesting
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import io.airbyte.cdk.load.dataflow.transform.RecordMunger
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.write.DirectLoader
-import io.airbyte.integrations.destination.clickhouse.write.transform.ClickhouseRecordMunger
 
 @SuppressFBWarnings(
     value = ["NP_NONNULL_PARAM_VIOLATION"],
     justification = "suspend and fb's non-null analysis don't play well"
 )
 class ClickhouseDirectLoader(
-    @VisibleForTesting val munger: ClickhouseRecordMunger,
+    @VisibleForTesting val munger: RecordMunger,
     @VisibleForTesting val buffer: BinaryRowInsertBuffer,
     @VisibleForTesting val configuredRecordCountWindow: Long?,
 ) : DirectLoader {

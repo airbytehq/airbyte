@@ -2,7 +2,7 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.clickhouse.write.transform
+package io.airbyte.cdk.load.dataflow.transform
 
 import com.google.protobuf.kotlin.toByteString
 import io.airbyte.cdk.load.command.DestinationStream
@@ -26,8 +26,8 @@ import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.message.DestinationRecordProtobufSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.Meta
-import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
 import io.airbyte.protocol.models.Jsons
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteMessageProtobuf
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage
 import io.airbyte.protocol.protobuf.AirbyteRecordMessageMetaOuterClass
@@ -36,6 +36,13 @@ import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.unmockkAll
 import java.math.BigInteger
+import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.OffsetDateTime
+import java.time.OffsetTime
+import java.time.ZoneOffset
 import java.util.UUID
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.*
@@ -44,7 +51,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
 @ExtendWith(MockKExtension::class)
-class ClickhouseProtobufRecordMungerTest {
+class ProtobufRecordMungerTest {
 
     private val uuid: UUID = UUID.fromString("11111111-1111-1111-1111-111111111111")
     private val emittedAtMs = 1_724_438_400_000L
@@ -52,17 +59,48 @@ class ClickhouseProtobufRecordMungerTest {
     private val generationId = 314L
 
     private lateinit var stream: DestinationStream
-    private lateinit var catalogInfo: TableCatalog
-    private lateinit var coercer: ClickhouseCoercer
+    private lateinit var columnNameMapper: ColumnNameMapper
+    private lateinit var coercer: Coercer
     private var protoSource: DestinationRecordProtobufSource? = null
     private lateinit var record: DestinationRecordRaw
     private lateinit var fieldAccessors: Array<AirbyteValueProxy.FieldAccessor>
-    private lateinit var munger: ClickhouseRecordMunger
+    private lateinit var munger: RecordMunger
 
     @BeforeEach
     fun setUp() {
-        catalogInfo = mockk<TableCatalog>()
-        coercer = ClickhouseCoercer()
+        columnNameMapper =
+            object : ColumnNameMapper {
+                override fun getMappedColumnName(
+                    stream: DestinationStream,
+                    columnName: String
+                ): String? {
+                    return "mapped_$columnName"
+                }
+            }
+
+        coercer =
+            object : Coercer {
+                val INT64_MAX = BigInteger(Long.MAX_VALUE.toString())
+                val INT64_MIN = BigInteger(Long.MIN_VALUE.toString())
+                override fun map(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
+                    return value
+                }
+
+                override fun validate(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
+                    when (val abValue = value.abValue) {
+                        is IntegerValue ->
+                            if (abValue.value < INT64_MIN || abValue.value > INT64_MAX) {
+                                value.nullify(
+                                    AirbyteRecordMessageMetaChange.Reason
+                                        .DESTINATION_FIELD_SIZE_LIMITATION,
+                                )
+                            }
+                        else -> {}
+                    }
+
+                    return value
+                }
+            }
 
         val fields =
             mutableListOf(
@@ -210,9 +248,8 @@ class ClickhouseProtobufRecordMungerTest {
 
         stream = mockk {
             every { this@mockk.airbyteValueProxyFieldAccessors } returns fieldAccessors
-            every { this@mockk.syncId } returns this@ClickhouseProtobufRecordMungerTest.syncId
-            every { this@mockk.generationId } returns
-                this@ClickhouseProtobufRecordMungerTest.generationId
+            every { this@mockk.syncId } returns this@ProtobufRecordMungerTest.syncId
+            every { this@mockk.generationId } returns this@ProtobufRecordMungerTest.generationId
             every { this@mockk.schema } returns dummyType
             every { this@mockk.mappedDescriptor } returns DestinationStream.Descriptor("", "dummy")
             every { this@mockk.unknownColumnChanges } returns
@@ -227,34 +264,19 @@ class ClickhouseProtobufRecordMungerTest {
                         callOriginal()
                     }
                 every { this@mockk.airbyteRawId } returns uuid
-                every { this@mockk.schema } returns
-                    this@ClickhouseProtobufRecordMungerTest.stream.schema
+                every { this@mockk.schema } returns this@ProtobufRecordMungerTest.stream.schema
                 every { this@mockk.schemaFields } returns
-                    (this@ClickhouseProtobufRecordMungerTest.stream.schema as ObjectType).properties
+                    (this@ProtobufRecordMungerTest.stream.schema as ObjectType).properties
                 every { this@mockk.rawData } returns protoSource!!
-                every { this@mockk.stream } returns this@ClickhouseProtobufRecordMungerTest.stream
+                every { this@mockk.stream } returns this@ProtobufRecordMungerTest.stream
             }
 
-        // Setup catalog mappings
-        every { catalogInfo.getMappedColumnName(stream, "bool_col") } returns "mapped_bool_col"
-        every { catalogInfo.getMappedColumnName(stream, "int_col") } returns "mapped_int_col"
-        every { catalogInfo.getMappedColumnName(stream, "num_col") } returns "mapped_num_col"
-        every { catalogInfo.getMappedColumnName(stream, "string_col") } returns "mapped_string_col"
-        every { catalogInfo.getMappedColumnName(stream, "date_col") } returns "mapped_date_col"
-        every { catalogInfo.getMappedColumnName(stream, "time_tz_col") } returns
-            "mapped_time_tz_col"
-        every { catalogInfo.getMappedColumnName(stream, "time_no_tz_col") } returns
-            "mapped_time_no_tz_col"
-        every { catalogInfo.getMappedColumnName(stream, "ts_tz_col") } returns "mapped_ts_tz_col"
-        every { catalogInfo.getMappedColumnName(stream, "ts_no_tz_col") } returns
-            "mapped_ts_no_tz_col"
-        every { catalogInfo.getMappedColumnName(stream, "array_col") } returns "mapped_array_col"
-        every { catalogInfo.getMappedColumnName(stream, "obj_col") } returns "mapped_obj_col"
-        every { catalogInfo.getMappedColumnName(stream, "union_col") } returns "mapped_union_col"
-        every { catalogInfo.getMappedColumnName(stream, "unknown_col") } returns
-            "mapped_unknown_col"
-
-        munger = ClickhouseRecordMunger(catalogInfo, coercer)
+        munger =
+            RecordMunger(
+                columnNameMapper,
+                coercer,
+                ProtobufToAirbyteConverter(coercer, columnNameMapper)
+            )
     }
 
     @AfterEach fun tearDown() = unmockkAll()
@@ -298,23 +320,20 @@ class ClickhouseProtobufRecordMungerTest {
         assertEquals("hello", strValue.value)
 
         val dateValue = result["mapped_date_col"] as DateValue
-        assertEquals(java.time.LocalDate.of(2025, 6, 17), dateValue.value)
+        assertEquals(LocalDate.of(2025, 6, 17), dateValue.value)
 
         // Verify time and timestamp fields with precise types and values
         val timeWithTzValue = result["mapped_time_tz_col"] as TimeWithTimezoneValue
-        assertEquals(java.time.OffsetTime.parse("23:59:59+02:00"), timeWithTzValue.value)
+        assertEquals(OffsetTime.parse("23:59:59+02:00"), timeWithTzValue.value)
 
         val timeWithoutTzValue = result["mapped_time_no_tz_col"] as TimeWithoutTimezoneValue
-        assertEquals(java.time.LocalTime.parse("23:59:59"), timeWithoutTzValue.value)
+        assertEquals(LocalTime.parse("23:59:59"), timeWithoutTzValue.value)
 
         val tsWithTzValue = result["mapped_ts_tz_col"] as TimestampWithTimezoneValue
-        assertEquals(
-            java.time.OffsetDateTime.parse("2025-06-17T23:59:59+02:00"),
-            tsWithTzValue.value
-        )
+        assertEquals(OffsetDateTime.parse("2025-06-17T23:59:59+02:00"), tsWithTzValue.value)
 
         val tsWithoutTzValue = result["mapped_ts_no_tz_col"] as TimestampWithoutTimezoneValue
-        assertEquals(java.time.LocalDateTime.parse("2025-06-17T23:59:59"), tsWithoutTzValue.value)
+        assertEquals(LocalDateTime.parse("2025-06-17T23:59:59"), tsWithoutTzValue.value)
 
         // Verify complex types are returned as AirbyteValue objects (not JSON strings)
         val arrayValue = result["mapped_array_col"] as ArrayValue
@@ -337,10 +356,7 @@ class ClickhouseProtobufRecordMungerTest {
         val extractedAtValue =
             result[Meta.COLUMN_NAME_AB_EXTRACTED_AT] as TimestampWithTimezoneValue
         val expectedTimestamp =
-            java.time.OffsetDateTime.ofInstant(
-                java.time.Instant.ofEpochMilli(emittedAtMs),
-                java.time.ZoneOffset.UTC
-            )
+            OffsetDateTime.ofInstant(Instant.ofEpochMilli(emittedAtMs), ZoneOffset.UTC)
         assertEquals(expectedTimestamp, extractedAtValue.value)
 
         val generationIdValue = result[Meta.COLUMN_NAME_AB_GENERATION_ID] as IntegerValue

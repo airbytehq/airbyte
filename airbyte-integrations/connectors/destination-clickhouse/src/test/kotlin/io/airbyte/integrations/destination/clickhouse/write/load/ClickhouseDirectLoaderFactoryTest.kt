@@ -6,11 +6,11 @@ package io.airbyte.integrations.destination.clickhouse.write.load
 
 import com.clickhouse.client.api.Client
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.dataflow.transform.RecordMunger
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableExecutionConfig
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration
-import io.airbyte.integrations.destination.clickhouse.write.transform.ClickhouseRecordMunger
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
@@ -27,7 +27,7 @@ class ClickhouseDirectLoaderFactoryTest {
 
     @MockK lateinit var stateStore: StreamStateStore<DirectLoadTableExecutionConfig>
 
-    @MockK lateinit var munger: ClickhouseRecordMunger
+    @MockK lateinit var munger: RecordMunger
 
     @MockK(relaxed = true) lateinit var clickhouseConfiguration: ClickhouseConfiguration
 

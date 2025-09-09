@@ -6,7 +6,6 @@ package io.airbyte.cdk.load.dataflow.transform
 
 import com.fasterxml.jackson.core.io.BigDecimalParser
 import com.fasterxml.jackson.core.io.BigIntegerParser
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.AirbyteValueProxy.FieldAccessor
 import io.airbyte.cdk.load.data.ArrayType
@@ -47,12 +46,17 @@ import java.math.BigDecimal
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import javax.inject.Singleton
 
 /**
  * Converter that extracts typed values from protobuf records and converts them to
  * EnrichedAirbyteValue with destination-specific coercion applied through the Coercer interface.
  */
-class ProtobufToAirbyteConverter(private val coercer: Coercer) {
+@Singleton
+class ProtobufToAirbyteConverter(
+    private val coercer: Coercer,
+    private val columnNameMapper: ColumnNameMapper
+) {
 
     /**
      * Converts protobuf data to a complete map of AirbyteValue including metadata fields. This
@@ -66,7 +70,6 @@ class ProtobufToAirbyteConverter(private val coercer: Coercer) {
     fun convertWithMetadata(
         msg: DestinationRecordRaw,
         source: DestinationRecordProtobufSource,
-        columnMapper: ((stream: DestinationStream, fieldName: String) -> String?)? = null
     ): Map<String, AirbyteValue> {
         val stream = msg.stream
         val fieldAccessors = stream.airbyteValueProxyFieldAccessors
@@ -97,7 +100,8 @@ class ProtobufToAirbyteConverter(private val coercer: Coercer) {
 
             if (validatedValue.abValue !is NullValue || validatedValue.type !is UnknownType) {
                 // Apply column mapping if provided, otherwise use original field name
-                val columnName = columnMapper?.invoke(stream, accessor.name) ?: accessor.name
+                val columnName =
+                    columnNameMapper.getMappedColumnName(stream, accessor.name) ?: accessor.name
                 result[columnName] = validatedValue.abValue
             }
         }
