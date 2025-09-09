@@ -159,6 +159,7 @@ Information about expected report generation waiting time can be found [here](ht
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 7.3.4 | 2025-09-08 | [65992](https://github.com/airbytehq/airbyte/pull/65992) | Update to CDK v7 |
 | 7.3.3 | 2025-09-09 | [66032](https://github.com/airbytehq/airbyte/pull/66032) | Update dependencies |
 | 7.3.2 | 2025-08-09 | [64654](https://github.com/airbytehq/airbyte/pull/64654) | Update dependencies |
 | 7.3.1 | 2025-07-19 | [60633](https://github.com/airbytehq/airbyte/pull/60633) | Update dependencies |
