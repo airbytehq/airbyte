@@ -126,6 +126,7 @@ Now that you have set up the Mailchimp source connector, check out the following
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 |--------|------------|----------------------------------------------------------|---------------------------------------------------------------------------|
+| 2.1.5 | 2025-09-10 | [66020](https://github.com/airbytehq/airbyte/pull/66020) | Update to CDK v7 |
 | 2.1.4 | 2025-08-26 | [65557](https://github.com/airbytehq/airbyte/pull/65557) | Update dependencies |
 | 2.1.3 | 2025-08-23 | [65361](https://github.com/airbytehq/airbyte/pull/65361) | Update dependencies |
 | 2.1.2 | 2025-08-09 | [64625](https://github.com/airbytehq/airbyte/pull/64625) | Update dependencies |
