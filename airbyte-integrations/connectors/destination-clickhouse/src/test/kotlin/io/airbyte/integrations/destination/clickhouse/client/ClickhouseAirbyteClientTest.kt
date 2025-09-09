@@ -533,7 +533,7 @@ class ClickhouseAirbyteClientTest {
             mapOf(
                 "field_1" to "String",
             )
-        val actual = clickhouseAirbyteClient.getAirbyteSchemaWithClickhouseType(stream)
+        val actual = clickhouseAirbyteClient.getAirbyteSchemaWithClickhouseType(stream, listOf())
         Assertions.assertEquals(expected, actual)
     }
 
