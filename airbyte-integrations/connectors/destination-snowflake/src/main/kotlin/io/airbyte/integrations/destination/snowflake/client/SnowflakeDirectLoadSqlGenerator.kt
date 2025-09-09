@@ -298,8 +298,25 @@ class SnowflakeDirectLoadSqlGenerator() {
             .andLog()
     }
 
+    fun createFileFormat(): String {
+        return """
+            CREATE OR REPLACE FILE FORMAT $STAGE_FORMAT_NAME
+            TYPE = 'CSV'
+            FIELD_DELIMITER = ','
+            RECORD_DELIMITER = '\n'
+            SKIP_HEADER = 1
+            FIELD_OPTIONALLY_ENCLOSED_BY = '"'
+            TRIM_SPACE = TRUE
+            ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE
+            REPLACE_INVALID_CHARACTERS = TRUE
+        """.trimIndent().andLog()
+    }
+
+    
+
     companion object {
         const val QUOTE: String = "\""
+        const val STAGE_FORMAT_NAME: String = "airbyte_csv_format"
 
         fun toDialectType(type: AirbyteType): String =
             when (type) {
