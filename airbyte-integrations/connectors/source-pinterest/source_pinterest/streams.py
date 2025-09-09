@@ -159,6 +159,7 @@ class PinterestStream(HttpStream, ABC):
 
 class AdAccounts(PinterestStream):
     use_cache = True
+    is_resumable = False
 
     def path(self, **kwargs) -> str:
         return "ad_accounts"
