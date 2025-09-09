@@ -20,6 +20,6 @@ jobs:
         uses: reviewdog/action-markdownlint@3667398db9118d7e78f7a63d10e26ce454ba5f58 # v0.26.2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: github-pr-annotations # Post as annotations on the Changed Files page
+          reporter: github-pr-review # Post as annotations on the Changed Files page
           level: warning # Don't show info, just warnings and errors
           filter_mode: added # Only check newly added content
