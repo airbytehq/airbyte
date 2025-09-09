@@ -372,8 +372,6 @@ class ClickhouseSqlGenerator(
         return builder.dropLast(1).toString().andLog()
     }
 
-
-
     companion object {
         const val DATETIME_WITH_PRECISION = "DateTime64(3)"
         const val DECIMAL_WITH_PRECISION_AND_SCALE = "Decimal(38, 9)"

@@ -250,7 +250,8 @@ class ClickhouseAirbyteClient(
                     if (pks.contains(fieldName)) {
                         fieldType.type.toDialectType(clickhouseConfiguration.enableJson)
                     } else {
-                        fieldType.type.toDialectType(clickhouseConfiguration.enableJson)
+                        fieldType.type
+                            .toDialectType(clickhouseConfiguration.enableJson)
                             .sqlNullable()
                     }
             }
@@ -273,13 +274,15 @@ class ClickhouseAirbyteClient(
             if (!mutableCatalogColumns.containsKey(clickhouseColumn.columnName)) {
                 deleted.add(clickhouseColumn.columnName)
             } else {
-                val clickhouseType = if (clickhouseColumn.isNullable)
-                    clickhouseColumn.dataType.getDataTypeAsString().sqlNullable()
-                else
-                    clickhouseColumn.dataType.getDataTypeAsString()
+                val clickhouseType =
+                    if (clickhouseColumn.isNullable)
+                        clickhouseColumn.dataType.getDataTypeAsString().sqlNullable()
+                    else clickhouseColumn.dataType.getDataTypeAsString()
                 if (mutableCatalogColumns[clickhouseColumn.columnName] != clickhouseType) {
                     log.error { "clickhouseType: $clickhouseType" }
-                    log.error { "catalog Type: ${mutableCatalogColumns[clickhouseColumn.columnName]}" }
+                    log.error {
+                        "catalog Type: ${mutableCatalogColumns[clickhouseColumn.columnName]}"
+                    }
                     modified[clickhouseColumn.columnName] =
                         mutableCatalogColumns[clickhouseColumn.columnName]!!
                 }

@@ -96,8 +96,16 @@ class ClickhouseAirbyteClientTest {
     fun `test no changes`() {
         val tableColumns =
             listOf(
-                getMockColumn(columnName = COL1, columnType = ClickHouseDataType.String, isNullable = true),
-                getMockColumn(columnName = COL2, columnType = ClickHouseDataType.Int32, isNullable = true)
+                getMockColumn(
+                    columnName = COL1,
+                    columnType = ClickHouseDataType.String,
+                    isNullable = true
+                ),
+                getMockColumn(
+                    columnName = COL2,
+                    columnType = ClickHouseDataType.Int32,
+                    isNullable = true
+                )
             )
         val catalogColumns = mapOf(COL1 to "Nullable($STRING_TYPE)", COL2 to "Nullable($INT_TYPE)")
         val expected =
@@ -145,10 +153,19 @@ class ClickhouseAirbyteClientTest {
     fun `test modified columns`() {
         val tableColumns =
             listOf(
-                getMockColumn(columnName = COL1, columnType = ClickHouseDataType.String, isNullable = true),
-                getMockColumn(columnName = COL2, columnType = ClickHouseDataType.Int32, isNullable = true)
+                getMockColumn(
+                    columnName = COL1,
+                    columnType = ClickHouseDataType.String,
+                    isNullable = true
+                ),
+                getMockColumn(
+                    columnName = COL2,
+                    columnType = ClickHouseDataType.Int32,
+                    isNullable = true
+                )
             )
-        val catalogColumns = mapOf(COL1 to "Nullable($STRING_TYPE)", COL2 to "Nullable($STRING_TYPE)")
+        val catalogColumns =
+            mapOf(COL1 to "Nullable($STRING_TYPE)", COL2 to "Nullable($STRING_TYPE)")
         val expected =
             AlterationSummary(
                 added = emptyMap(), // No added columns
@@ -170,7 +187,13 @@ class ClickhouseAirbyteClientTest {
     @Test
     fun `test deleted columns`() {
         val tableColumns =
-            listOf(getMockColumn(columnName = COL1, columnType = ClickHouseDataType.String, isNullable = true))
+            listOf(
+                getMockColumn(
+                    columnName = COL1,
+                    columnType = ClickHouseDataType.String,
+                    isNullable = true
+                )
+            )
         val catalogColumns = mapOf(COL1 to "Nullable($STRING_TYPE)")
         val expected =
             AlterationSummary(
@@ -258,11 +281,17 @@ class ClickhouseAirbyteClientTest {
                 getMockColumn(columnName = COL3, columnType = ClickHouseDataType.Int32)
             )
         val catalogColumns =
-            mapOf(COL1 to "Nullable($STRING_TYPE)", COL2 to "Nullable($STRING_TYPE)", COL3 to "Nullable($STRING_TYPE)", COL4 to "Nullable($FLOAT_TYPE)")
+            mapOf(
+                COL1 to "Nullable($STRING_TYPE)",
+                COL2 to "Nullable($STRING_TYPE)",
+                COL3 to "Nullable($STRING_TYPE)",
+                COL4 to "Nullable($FLOAT_TYPE)"
+            )
         val expected =
             AlterationSummary( // Added col2 and col4, modified col3
                 added = mapOf(COL2 to "Nullable($STRING_TYPE)", COL4 to "Nullable($FLOAT_TYPE)"),
-                modified = mapOf(COL1 to "Nullable($STRING_TYPE)", COL3 to "Nullable($STRING_TYPE)"),
+                modified =
+                    mapOf(COL1 to "Nullable($STRING_TYPE)", COL3 to "Nullable($STRING_TYPE)"),
                 deleted = emptySet(),
                 hasDedupChange = false,
             )
@@ -301,8 +330,16 @@ class ClickhouseAirbyteClientTest {
 
         val tableColumns3 =
             listOf(
-                getMockColumn(columnName = COL1, columnType = ClickHouseDataType.String, isNullable = true),
-                getMockColumn(columnName = COL3, columnType = ClickHouseDataType.Int32, isNullable = true)
+                getMockColumn(
+                    columnName = COL1,
+                    columnType = ClickHouseDataType.String,
+                    isNullable = true
+                ),
+                getMockColumn(
+                    columnName = COL3,
+                    columnType = ClickHouseDataType.Int32,
+                    isNullable = true
+                )
             )
         val catalogColumns3 = mapOf(COL1 to STRING_TYPE, COL2 to STRING_TYPE, COL3 to INT_TYPE)
         val expected3 =
@@ -324,9 +361,21 @@ class ClickhouseAirbyteClientTest {
 
         val tableColumns4 =
             listOf(
-                getMockColumn(columnName = "col1", columnType = ClickHouseDataType.String, isNullable = true),
-                getMockColumn(columnName = COL3, columnType = ClickHouseDataType.Int32, isNullable = true),
-                getMockColumn(columnName = COL5, columnType = ClickHouseDataType.DateTime64, isNullable = true)
+                getMockColumn(
+                    columnName = "col1",
+                    columnType = ClickHouseDataType.String,
+                    isNullable = true
+                ),
+                getMockColumn(
+                    columnName = COL3,
+                    columnType = ClickHouseDataType.Int32,
+                    isNullable = true
+                ),
+                getMockColumn(
+                    columnName = COL5,
+                    columnType = ClickHouseDataType.DateTime64,
+                    isNullable = true
+                )
             )
         val catalogColumns4 =
             mapOf(
