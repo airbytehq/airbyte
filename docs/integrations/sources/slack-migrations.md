@@ -2,16 +2,14 @@
 
 ## Upgrading to 3.0.0
 
-Due to a bug in the Source Slack v2.1.0 state for Threads stream may be missing in some connections, which leads to reading the stream full refreshly even when incremental mode is used and because of this destination may contain record duplicates. The Source Slack v2.2.0 fixes missing state issue, so state is emitted properly.
+This update fixes a bug that prevented incremental syncs from progressing for some connections containing the `threads` stream.
 
-Users that sync Threads stream in Full Refresh sync mode can simply upgrade their connection to v3.0.0 and ignore Migration Steps.
+- **If you sync the `threads` stream in Full Refresh mode**: you can upgrade directly to v3.0.0 and skip the migration steps.  
+- **If you sync the `threads` stream in Incremental mode**: check the criteria below. If either applies, follow the migration steps.  
 
-Users that sync Threads stream in Incremental sync mode should firstly check the following criteria and if at least one of them is related to your connection Migration Steps should be applied.
-
-## Before applying this change users should check:
-
-1. Connection State for Threads stream: if Connection State for Threads stream is empty, please follow Migration Steps. 
-2. Record duplicates in destinations for Threads stream: if destination contains record duplicates for Threads stream, please follow Migration Steps.
+### Check before upgrading
+1. **Threads stream state** — if the state is empty, follow the migration steps.  
+2. **Destination records** — if duplicate records exist for the Threads stream, follow the migration steps.  
 
 ## How to check Connection State for Threads stream
 
