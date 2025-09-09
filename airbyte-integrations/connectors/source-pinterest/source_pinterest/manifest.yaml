@@ -16,6 +16,10 @@ definitions:
           ~ ':'
           ~ (config.get('credentials') or config).get('client_secret'))
         ) | base64encode }}
+    access_token_value: "{{ (config.get('credentials') or config).get('access_token') }}"
+    token_expiry_date: "{{ (config.get('credentials') or config).get('token_expiry_date') }}"
+    refresh_token_updater:
+      access_token_config_path: [ "credentials", "access_token" ]
 
   # Error handlers
   base_error_handler:
@@ -3119,9 +3123,9 @@ spec:
         title: "Account ID"
         description: "The Pinterest account ID you want to fetch data for. This ID must be provided to filter the data for a specific account."
         examples: ["1234567890"]
-      num_workers:
+      num_threads:
         type: integer
-        title: Number of concurrent workers
+        title: Number of concurrent threads
         minimum: 1
         maximum: 40
         default: 2
@@ -3129,7 +3133,7 @@ spec:
           - 1
           - 2
           - 3
-        description: The number of worker threads to use for the sync.
+        description: The number of parallel threads to use for the sync.
         order: 10
   advanced_auth:
     auth_flow_type: "oauth2.0"
@@ -3194,7 +3198,8 @@ check:
   stream_names:
     - boards
 
+# The rate limit for our app is 100 calls per second, with additional endpoint-specific limits. Reference: https://developers.pinterest.com/docs/reference/rate-limits/
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config['num_workers'] or 2 }}"
-  max_concurrency: 20
+  default_concurrency: "{{ config['num_threads'] or 3 }}"
+  max_concurrency: 50
