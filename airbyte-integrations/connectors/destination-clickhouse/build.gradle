@@ -8,7 +8,7 @@ plugins {
 airbyteBulkConnector {
     core = 'load'
     toolkits = ['load-db']
-    cdk = 'local'
+    cdk = '0.1.20'
 }
 
 java {
@@ -35,7 +35,7 @@ application {
 dependencies {
     implementation 'com.clickhouse:client-v2:0.9.0'
 
-    testImplementation("io.mockk:mockk:1.13.13")
+    testImplementation("io.mockk:mockk:1.14.2")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
     // This is being used in the test to check that the generated SQL can be parsed correctly.
     testImplementation("com.github.vertical-blank:sql-formatter:2.0.4")

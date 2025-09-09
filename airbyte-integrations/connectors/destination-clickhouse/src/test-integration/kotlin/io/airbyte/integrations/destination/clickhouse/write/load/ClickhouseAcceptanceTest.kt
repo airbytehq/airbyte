@@ -116,6 +116,7 @@ abstract class ClickhouseAcceptanceTest(
         nullEqualsUnset = true,
         configUpdater = ClickhouseConfigUpdater(),
         dedupChangeUsesDefault = true,
+        testSpeedModeStatsEmission = false,
     ) {
     companion object {
         @JvmStatic
