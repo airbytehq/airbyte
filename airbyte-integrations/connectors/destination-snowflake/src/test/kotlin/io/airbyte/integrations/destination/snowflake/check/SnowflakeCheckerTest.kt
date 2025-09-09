@@ -5,7 +5,7 @@
 package io.airbyte.integrations.destination.snowflake.check
 
 import io.airbyte.integrations.destination.snowflake.SnowflakeSqlNameTransformer
-import io.airbyte.integrations.destination.snowflake.client.AirbyteSnowflakeClient
+import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeDirectLoadSqlGenerator
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.mockk.coEvery
@@ -19,7 +19,7 @@ internal class SnowflakeCheckerTest {
 
     @Test
     fun testSuccessfulCheck() {
-        val airbyteSnowflakeClient: AirbyteSnowflakeClient =
+        val snowflakeAirbyteClient: SnowflakeAirbyteClient =
             mockk(relaxed = true) { coEvery { countTable(any()) } returns 1L }
         val snowflakeSqlNameTransformer: SnowflakeSqlNameTransformer = mockk {
             every { transform(any()) } answers { firstArg() }
@@ -33,21 +33,21 @@ internal class SnowflakeCheckerTest {
 
         val checker =
             SnowflakeChecker(
-                airbyteSnowflakeClient = airbyteSnowflakeClient,
+                snowflakeAirbyteClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
                 snowflakeSqlNameTransformer = snowflakeSqlNameTransformer,
                 snowflakeSqlGenerator = snowflakeSqlGenerator,
             )
         checker.check()
 
-        coVerify(exactly = 1) { airbyteSnowflakeClient.createNamespace(testSchema) }
-        coVerify(exactly = 1) { airbyteSnowflakeClient.createTable(any(), any(), any(), any()) }
-        coVerify(exactly = 1) { airbyteSnowflakeClient.dropTable(any()) }
+        coVerify(exactly = 1) { snowflakeAirbyteClient.createNamespace(testSchema) }
+        coVerify(exactly = 1) { snowflakeAirbyteClient.createTable(any(), any(), any(), any()) }
+        coVerify(exactly = 1) { snowflakeAirbyteClient.dropTable(any()) }
     }
 
     @Test
     fun testUnsuccessfulCheck() {
-        val airbyteSnowflakeClient: AirbyteSnowflakeClient =
+        val snowflakeAirbyteClient: SnowflakeAirbyteClient =
             mockk(relaxed = true) { coEvery { countTable(any()) } returns 0L }
         val snowflakeSqlNameTransformer: SnowflakeSqlNameTransformer = mockk {
             every { transform(any()) } answers { firstArg() }
@@ -61,7 +61,7 @@ internal class SnowflakeCheckerTest {
 
         val checker =
             SnowflakeChecker(
-                airbyteSnowflakeClient = airbyteSnowflakeClient,
+                snowflakeAirbyteClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
                 snowflakeSqlNameTransformer = snowflakeSqlNameTransformer,
                 snowflakeSqlGenerator = snowflakeSqlGenerator,
@@ -69,8 +69,8 @@ internal class SnowflakeCheckerTest {
 
         assertThrows<IllegalArgumentException> { checker.check() }
 
-        coVerify(exactly = 1) { airbyteSnowflakeClient.createNamespace(testSchema) }
-        coVerify(exactly = 1) { airbyteSnowflakeClient.createTable(any(), any(), any(), any()) }
-        coVerify(exactly = 1) { airbyteSnowflakeClient.dropTable(any()) }
+        coVerify(exactly = 1) { snowflakeAirbyteClient.createNamespace(testSchema) }
+        coVerify(exactly = 1) { snowflakeAirbyteClient.createTable(any(), any(), any(), any()) }
+        coVerify(exactly = 1) { snowflakeAirbyteClient.dropTable(any()) }
     }
 }

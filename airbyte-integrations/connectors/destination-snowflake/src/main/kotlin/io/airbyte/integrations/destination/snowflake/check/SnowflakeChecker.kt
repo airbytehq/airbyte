@@ -14,7 +14,7 @@ import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.integrations.destination.snowflake.SnowflakeSqlNameTransformer
-import io.airbyte.integrations.destination.snowflake.client.AirbyteSnowflakeClient
+import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeDirectLoadSqlGenerator
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import jakarta.inject.Singleton
@@ -23,7 +23,7 @@ import kotlinx.coroutines.runBlocking
 
 @Singleton
 class SnowflakeChecker(
-    private val airbyteSnowflakeClient: AirbyteSnowflakeClient,
+    private val snowflakeAirbyteClient: SnowflakeAirbyteClient,
     private val snowflakeConfiguration: SnowflakeConfiguration,
     private val snowflakeSqlNameTransformer: SnowflakeSqlNameTransformer,
     private val snowflakeSqlGenerator: SnowflakeDirectLoadSqlGenerator,
@@ -53,8 +53,8 @@ class SnowflakeChecker(
             )
         runBlocking {
             try {
-                airbyteSnowflakeClient.createNamespace(outputSchema)
-                airbyteSnowflakeClient.createTable(
+                snowflakeAirbyteClient.createNamespace(outputSchema)
+                snowflakeAirbyteClient.createTable(
                     stream = destinationStream,
                     tableName = qualifiedTableName,
                     columnNameMapping = ColumnNameMapping(emptyMap()),
@@ -63,12 +63,12 @@ class SnowflakeChecker(
 
                 // TODO Insert data here
 
-                val tableCount = airbyteSnowflakeClient.countTable(qualifiedTableName)
+                val tableCount = snowflakeAirbyteClient.countTable(qualifiedTableName)
                 require(tableCount == 1L) {
                     "Failed to insert expected rows into check table. Actual written: $tableCount"
                 }
             } finally {
-                airbyteSnowflakeClient.dropTable(qualifiedTableName)
+                snowflakeAirbyteClient.dropTable(qualifiedTableName)
             }
         }
     }
