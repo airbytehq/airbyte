@@ -248,7 +248,7 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.0.9 | 2025-09-11 | [66081](https://github.com/airbytehq/airbyte/pull/66081) | Update to CDK v7 |
+| 3.0.9 | 2025-09-11 | [66082](https://github.com/airbytehq/airbyte/pull/66082) | Update to CDK v7 |
 | 3.0.8 | 2025-09-05 | [65552](https://github.com/airbytehq/airbyte/pull/65552) | Fix Incremental Syncs for Metafield child streams.|
 | 3.0.7 | 2025-06-02 | [59015](https://github.com/airbytehq/airbyte/pull/59015) | 🐙 source-shopify: Update dependencies [2025-05-17] |
 | 3.0.6 | 2025-05-28 | [60797](https://github.com/airbytehq/airbyte/pull/60797) | Fix 500s on `orders` & `order_refunds` streams by adding dynamic page limit. |
@@ -353,13 +353,13 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 | 0.1.39 | 2022-10-13 | [17962](https://github.com/airbytehq/airbyte/pull/17962) | Added metafield streams; support for nested list streams |
 | 0.1.38 | 2022-10-10 | [17777](https://github.com/airbytehq/airbyte/pull/17777) | Fixed `404` for configured streams, fix missing `cursor` error for old records |
 | 0.1.37 | 2022-04-30 | [12500](https://github.com/airbytehq/airbyte/pull/12500) | Improve input configuration copy |
-| 0.1.36 | 2022-03-22 | [9850](https://github.com/airbytehq/airbyte/pull/9850) | Added `BalanceTransactions` stream |
+| 0.1.36 | 2022-03-22 | [9850](https://github.com/airbytehq/airbyte/pull/9850)   | Added `BalanceTransactions` stream |
 | 0.1.35 | 2022-03-07 | [10915](https://github.com/airbytehq/airbyte/pull/10915) | Fixed a bug which caused `full-refresh` syncs of child REST entities configured for `incremental` |
 | 0.1.34 | 2022-03-02 | [10794](https://github.com/airbytehq/airbyte/pull/10794) | Minor specification re-order, fixed links in documentation |
 | 0.1.33 | 2022-02-17 | [10419](https://github.com/airbytehq/airbyte/pull/10419) | Fixed wrong field type for tax_exemptions for `Abandoned_checkouts` stream |
 | 0.1.32 | 2022-02-18 | [10449](https://github.com/airbytehq/airbyte/pull/10449) | Added `tender_transactions` stream |
 | 0.1.31 | 2022-02-08 | [10175](https://github.com/airbytehq/airbyte/pull/10175) | Fixed compatibility issues for legacy user config |
-| 0.1.30 | 2022-01-24 | [9648](https://github.com/airbytehq/airbyte/pull/9648) | Added permission validation before sync |
+| 0.1.30 | 2022-01-24 | [9648](https://github.com/airbytehq/airbyte/pull/9648)   | Added permission validation before sync |
 | 0.1.29  | 2022-01-20 | [9049](https://github.com/airbytehq/airbyte/pull/9248)   | Added `shop_url` to the record for all streams                                                                                                                                                                                                                                                                                                                                            |
 | 0.1.28  | 2022-01-19 | [9591](https://github.com/airbytehq/airbyte/pull/9591)   | Implemented `OAuth2.0` authentication method for Airbyte Cloud                                                                                                                                                                                                                                                                                                                            |
 | 0.1.27  | 2021-12-22 | [9049](https://github.com/airbytehq/airbyte/pull/9049)   | Updated connector fields title/description                                                                                                                                                                                                                                                                                                                                                |
