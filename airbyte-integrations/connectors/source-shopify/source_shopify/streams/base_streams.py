@@ -222,6 +222,11 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
         return params
 
     def track_checkpoint_cursor(self, record_value: Union[str, int], filter_record_value: Optional[str] = None) -> None:
+        """
+        Tracks _checkpoint_cursor value (values from cursor field) and _filter_checkpointed_cursor value (value from filter field).
+        _filter_checkpointed_cursor value is only used when cursor field is ID for streams like Customer Address etc.
+        When after canceled/failed job source tries to adjust stream slice (see ShopifyBulkManager._adjust_slice_end()).
+        """
         if self.filter_by_state_checkpoint:
             # set checkpoint cursor
             if not self._checkpoint_cursor:
@@ -231,9 +236,7 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
                 self._checkpoint_cursor = record_value
 
             if filter_record_value:
-                if not self._filter_checkpointed_cursor:
-                    self._filter_checkpointed_cursor = filter_record_value
-                if str(filter_record_value) >= str(self._filter_checkpointed_cursor):
+                if not self._filter_checkpointed_cursor or str(filter_record_value) >= str(self._filter_checkpointed_cursor):
                     self._filter_checkpointed_cursor = filter_record_value
 
     def should_checkpoint(self, index: int) -> bool:

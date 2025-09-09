@@ -531,9 +531,14 @@ class ShopifyBulkManager:
         self, slice_end: datetime, checkpointed_cursor: Optional[str] = None, filter_checkpointed_cursor: Optional[str] = None
     ) -> datetime:
         """
-        Choose between the existing `slice_end` value or `checkpointed_cursor` value, if provided.
+        Choose between the existing `slice_end` value or `checkpointed_cursor` value or `filter_checkpointed_cursor` value, if provided.
 
         Optionally: raises the `transient` error if the checkpoint collision occurs.
+
+        Note: filter_checkpointed_cursor is only used when cursor field is ID for streams like Customer Address etc.
+        This method should return a datetime from last checkpointed value to adjust slice end, when cursor value is ID (int type)
+        method gets end datetime from filter_checkpointed_cursor, which is value from filter field from last record.
+        See https://github.com/airbytehq/oncall/issues/9052 for more details.
         """
 
         if checkpointed_cursor:
