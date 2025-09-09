@@ -274,6 +274,7 @@ If enabled, sends subdirectory folder structure along with source file names to 
 By providing a URL to the Site URL field, the connector will be able to access files in specific SharePoint sites, including both traditional SharePoint sites and Microsoft Teams-connected sites.
 
 **Supported Site URLs:**
+
 - Traditional SharePoint sites: `https://<tenant_name>.sharepoint.com/sites/<site_name>`
 - Microsoft Teams sites: `https://<tenant_name>.sharepoint.com/teams/<team_name>`
 - Main site access: Leave the Site URL field empty
@@ -292,7 +293,8 @@ If no Site URL is provided, the connector will access files in the main site.
 
 **Cause:** Your application lacks the necessary SharePoint permissions to access the specific Microsoft Teams site.
 
-**Solution:** 
+**Solution:**
+
 1. Verify that your Azure AD application has the required permissions:
    - `Files.Read.All` (Application permission)
    - `Sites.Read.All` (Application permission) 
@@ -302,11 +304,13 @@ If no Site URL is provided, the connector will access files in the main site.
 4. For Teams sites, additional site-specific permissions may be required beyond the standard application permissions
 
 **Alternative approaches:**
+
 - Ask your SharePoint administrator to create a traditional SharePoint site and move the required files there
 - Use the main site access by leaving the Site URL field empty (if your files are accessible through the main site)
 - Verify that the Teams site URL is correct and accessible through the SharePoint web interface
 
 **Additional Resources:**
+
 - [Microsoft Graph permissions reference](https://learn.microsoft.com/en-us/graph/permissions-reference#sites-permissions)
 - [Teams and SharePoint integration](https://learn.microsoft.com/en-us/sharepoint/teams-connected-sites)
 - [SharePoint application permissions](https://learn.microsoft.com/en-us/graph/auth-v2-service)
