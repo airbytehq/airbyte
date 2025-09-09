@@ -5,19 +5,14 @@
 package io.airbyte.cdk.load.discover
 
 import io.airbyte.cdk.Operation
-import io.airbyte.cdk.command.ConfigurationSpecification
-import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
-import io.airbyte.cdk.load.command.DestinationConfiguration
-import io.airbyte.cdk.load.command.DestinationConfigurationFactory
 import io.airbyte.cdk.load.command.DestinationDiscoverCatalog
 import io.airbyte.cdk.load.command.DestinationOperation
 import io.airbyte.cdk.load.command.ImportType
 import io.airbyte.cdk.load.command.SoftDelete
 import io.airbyte.cdk.load.command.Update
 import io.airbyte.cdk.load.data.json.AirbyteTypeToJsonSchema
-import io.airbyte.cdk.output.ExceptionHandler
 import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.protocol.models.v0.DestinationCatalog as ProtocolDestinationCatalog
 import io.airbyte.protocol.models.v0.DestinationOperation as ProtocolDestinationOperation
@@ -31,43 +26,21 @@ private val logger = KotlinLogging.logger {}
 @Singleton
 @Requires(property = Operation.PROPERTY, value = "discover")
 @Requires(env = ["destination"])
-class DiscoverOperation<T : ConfigurationSpecification, C : DestinationConfiguration>(
-    val configJsonObjectSupplier: ConfigurationSpecificationSupplier<T>,
-    val configFactory: DestinationConfigurationFactory<T, C>,
-    val destinationDiscoverer: DestinationDiscoverer<C>,
-    private val exceptionHandler: ExceptionHandler,
+class DiscoverOperation(
+    val destinationDiscoverer: DestinationDiscoverer,
     private val outputConsumer: OutputConsumer,
 ) : Operation {
 
     override fun execute() {
-        val pojo =
-            try {
-                configJsonObjectSupplier.get()
-            } catch (e: Exception) {
-                handleException(e)
-                return
-            }
-        val config =
-            try {
-                configFactory.make(pojo)
-            } catch (e: Exception) {
-                handleException(e)
-                return
-            }
         try {
-            val destinationCatalog = destinationDiscoverer.discover(config)
+            val destinationCatalog = destinationDiscoverer.discover()
             outputConsumer.accept(destinationCatalog.toProtocol())
         } catch (t: Throwable) {
             logger.warn(t) { "Caught throwable during DISCOVER" }
-            handleException(t)
             throw t
         } finally {
-            destinationDiscoverer.cleanup(config)
+            destinationDiscoverer.cleanup()
         }
-    }
-
-    private fun handleException(t: Throwable) {
-        outputConsumer.accept(exceptionHandler.handle(t))
     }
 
     private fun DestinationDiscoverCatalog.toProtocol(): ProtocolDestinationCatalog =
