@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: da48299b-4afa-46b4-bb9d-e1ade37e7169
-  dockerImageTag: 0.0.2
+  dockerImageTag: 0.0.3
   dockerRepository: airbyte/source-mantle
   githubIssueLabel: source-mantle
   icon: icon.svg

@@ -2453,7 +2453,7 @@
   },
   "sidebar.connectors.doc.Source Netsuite": {
     "message": "Source Netsuite",
-    "description": "The label for the doc item Source Netsuite in sidebar connectors, linking to the doc enterprise-connectors/source-netsuite"
+    "description": "The label for the doc item Source Netsuite in sidebar connectors, linking to the doc enterprise-connectors/source-netsuite-enterprise"
   },
   "sidebar.connectors.doc.Source Oracle": {
     "message": "Source Oracle",
