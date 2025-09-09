@@ -10,15 +10,13 @@ import io.airbyte.cdk.load.dataflow.config.MemoryAndParallelismConfig
 import io.airbyte.cdk.load.dataflow.state.PartitionHistogram
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
 import io.github.oshai.kotlinlogging.KotlinLogging
-import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 
 typealias StoreKey = DestinationStream.Descriptor
 
-@Singleton
 class AggregateStore(
     private val aggFactory: AggregateFactory,
-    private val memoryAndParallelismConfig: MemoryAndParallelismConfig,
+    memoryAndParallelismConfig: MemoryAndParallelismConfig,
 ) {
     private val log = KotlinLogging.logger {}
 
@@ -31,10 +29,11 @@ class AggregateStore(
     private val aggregates = ConcurrentHashMap<StoreKey, AggregateEntry>()
 
     fun acceptFor(key: StoreKey, record: RecordDTO) {
-        val (agg, histogram, timeTrigger, countTrigger, bytesTrigger) = getOrCreate(key)
+        val (agg, counts, bytes, timeTrigger, countTrigger, bytesTrigger) = getOrCreate(key)
 
         agg.accept(record)
-        histogram.increment(record.partitionKey)
+        counts.increment(record.partitionKey, 1)
+        bytes.increment(record.partitionKey, record.sizeBytes)
         countTrigger.increment(1)
         bytesTrigger.increment(record.sizeBytes)
         timeTrigger.update(record.emittedAtMs)
@@ -71,7 +70,8 @@ class AggregateStore(
             aggregates.computeIfAbsent(key) {
                 AggregateEntry(
                     value = aggFactory.create(it),
-                    partitionHistogram = PartitionHistogram(),
+                    partitionCountsHistogram = PartitionHistogram(),
+                    partitionBytesHistogram = PartitionHistogram(),
                     stalenessTrigger = TimeTrigger(stalenessDeadlinePerAggMs),
                     recordCountTrigger = SizeTrigger(maxRecordsPerAgg),
                     estimatedBytesTrigger = SizeTrigger(maxEstBytesPerAgg),
@@ -89,7 +89,8 @@ class AggregateStore(
 
 data class AggregateEntry(
     val value: Aggregate,
-    val partitionHistogram: PartitionHistogram,
+    val partitionCountsHistogram: PartitionHistogram,
+    val partitionBytesHistogram: PartitionHistogram,
     val stalenessTrigger: TimeTrigger,
     val recordCountTrigger: SizeTrigger,
     val estimatedBytesTrigger: SizeTrigger,
@@ -101,4 +102,12 @@ data class AggregateEntry(
     fun isStale(ts: Long): Boolean {
         return stalenessTrigger.isComplete(ts)
     }
+}
+
+/* For testing purposes so we can mock. */
+class AggregateStoreFactory(
+    private val aggFactory: AggregateFactory,
+    private val memoryAndParallelismConfig: MemoryAndParallelismConfig,
+) {
+    fun make() = AggregateStore(aggFactory, memoryAndParallelismConfig)
 }
