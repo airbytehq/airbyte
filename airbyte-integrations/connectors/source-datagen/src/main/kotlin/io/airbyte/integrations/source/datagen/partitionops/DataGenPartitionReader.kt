@@ -1,5 +1,6 @@
 package io.airbyte.integrations.source.datagen.partitionops
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.output.DataChannelMedium.*
 import io.airbyte.cdk.output.OutputMessageRouter
 import io.airbyte.cdk.read.PartitionReadCheckpoint
@@ -16,11 +17,14 @@ import io.airbyte.integrations.source.datagen.partitionobjs.DataGenSourcePartiti
 import io.airbyte.integrations.source.datagen.partitionobjs.DataGenStreamState
 import jakarta.inject.Singleton
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 
 @Singleton
+@SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
 class DataGenPartitionReader (val partition: DataGenSourcePartition) : PartitionReader {
     lateinit var outputMessageRouter: OutputMessageRouter
+    val numRecords = AtomicLong()
     val runComplete = AtomicBoolean(false)
     // dont need this rn cuz just doing 1 partition
     // protected var partitionId: String = generatePartitionId(4)
@@ -47,7 +51,6 @@ class DataGenPartitionReader (val partition: DataGenSourcePartition) : Partition
                 ?: return PartitionReader.TryAcquireResourcesStatus.RETRY_LATER
 
         acquiredResources.set(resources)
-        // what does this do? and do i need it
         outputMessageRouter =
             OutputMessageRouter(
                 streamState.streamFeedBootstrap.dataChannelMedium,
@@ -65,23 +68,31 @@ class DataGenPartitionReader (val partition: DataGenSourcePartition) : Partition
     }
 
     override suspend fun run() {
+        val outputRoute = outputMessageRouter.recordAcceptors[stream.id]!!
+
         val configuration = sharedState.configuration
         val sourceDataGenerator = configuration.flavor.dataGenerator
-        sourceDataGenerator.generateData()
+        val record = sourceDataGenerator.generateData()
+        outputRoute(record, null)
+        numRecords.incrementAndGet()
 
         runComplete.set(true)
     }
 
     override fun checkpoint(): PartitionReadCheckpoint {
 //        return PartitionReadCheckpoint(
-//            feedBootstrap.currentState ?: Jsons.objectNode(),
+//            streamFeedBootstrap.currentState ?: Jsons.objectNode(),
 //            (acquiredResources.get().size).toLong(),
-//            when (feedBootstrap.dataChannelMedium) {
-//                DataChannelMedium.STDIO -> null
-//                DataChannelMedium.SOCKET -> partitionId
+//            when (streamFeedBootstrap.dataChannelMedium) {
+//                STDIO -> null
+//                SOCKET -> partitionId
 //            }
 //        )
-        throw RuntimeException("not checkpointing datagen yet")
+        return PartitionReadCheckpoint(
+            com.fasterxml.jackson.databind.node.JsonNodeFactory.instance.objectNode(),
+            numRecords.get(),
+            null
+        )
     }
 
     override fun releaseResources() {

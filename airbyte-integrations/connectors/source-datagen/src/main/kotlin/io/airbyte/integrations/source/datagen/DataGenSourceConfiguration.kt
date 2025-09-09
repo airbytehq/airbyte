@@ -9,6 +9,7 @@ import io.airbyte.cdk.output.DataChannelMedium.SOCKET
 import io.airbyte.cdk.output.DataChannelMedium.STDIO
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
+import io.airbyte.integrations.source.datagen.flavor.Flavor
 import io.airbyte.integrations.source.datagen.flavor.increment.IncrementFlavor
 import io.airbyte.integrations.source.datagen.log
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -26,14 +27,14 @@ private val log = KotlinLogging.logger {}
 data class DataGenSourceConfiguration(
     override val global: Boolean = false,
     override val maxSnapshotReadDuration: Duration? = null,
-    override val checkpointTargetInterval: Duration = 0.seconds.toJavaDuration(),
+    override val checkpointTargetInterval: Duration = 10.seconds.toJavaDuration(),
     override val maxConcurrency: Int,
     override val resourceAcquisitionHeartbeat: Duration = Duration.ofMillis(100L),
     override val realHost: String = "unused",
     override val realPort: Int = 0,
     override val sshTunnel: SshTunnelMethodConfiguration? = null,
     override val sshConnectionOptions: SshConnectionOptions = SshConnectionOptions.fromAdditionalProperties(emptyMap()),
-    val flavor: IncrementFlavor = IncrementFlavor
+    val flavor: Flavor
 ) : SourceConfiguration {
     /** Required to inject [DataGenSourceConfiguration] directly. */
     @Factory
@@ -63,6 +64,12 @@ class DataGenSourceConfigurationFactory:
 //                }
 //            }
         log.info { "Effective concurrency: $maxConcurrency" }
-        return DataGenSourceConfiguration(maxConcurrency = maxConcurrency)
+
+        //unnecessary rn cuz incremental is default, template for future flavor additions
+        if (pojo.getFlavor() is Incremental) {
+            return DataGenSourceConfiguration(maxConcurrency = maxConcurrency, flavor = IncrementFlavor)
+        }
+
+        return DataGenSourceConfiguration(maxConcurrency = maxConcurrency, flavor = IncrementFlavor)
     }
 }

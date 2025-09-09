@@ -1,8 +1,8 @@
 package io.airbyte.integrations.source.datagen.flavor
 
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage
+import io.airbyte.cdk.output.sockets.NativeRecordPayload
 
 interface DataGenerator {
-    fun generateData(): AirbyteRecordMessage
+    fun generateData(): NativeRecordPayload
     // TODO: add arguments, return statement
 }
