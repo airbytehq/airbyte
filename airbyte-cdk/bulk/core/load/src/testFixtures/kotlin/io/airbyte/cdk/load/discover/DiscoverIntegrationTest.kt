@@ -51,7 +51,7 @@ abstract class DiscoverIntegrationTest<T : ConfigurationSpecification>(
                     featureFlags = tc.featureFlags.toTypedArray(),
                     micronautProperties = micronautProperties,
                 )
-            runBlocking((Dispatchers.IO) ) { process.run() }
+            runBlocking((Dispatchers.IO)) { process.run() }
             val messages = process.readMessages()
             val catalogMessages =
                 messages.filter { it.type == AirbyteMessage.Type.DESTINATION_CATALOG }
