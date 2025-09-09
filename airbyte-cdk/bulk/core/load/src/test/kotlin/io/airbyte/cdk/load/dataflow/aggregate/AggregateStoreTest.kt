@@ -111,7 +111,8 @@ class AggregateStoreTest {
         val entry = aggregateStore.getOrCreate(testKey)
         assertEquals(1L, entry.recordCountTrigger.watermark())
         assertEquals(50L, entry.estimatedBytesTrigger.watermark())
-        assertEquals(1L, entry.partitionHistogram.get(PartitionKey("partition1")))
+        assertEquals(1L, entry.partitionCountsHistogram.get(PartitionKey("partition1")))
+        assertEquals(50L, entry.partitionBytesHistogram.get(PartitionKey("partition1")))
     }
 
     @Test
@@ -210,7 +211,8 @@ class AggregateStoreTest {
         val entry =
             AggregateEntry(
                 value = mockAggregate,
-                partitionHistogram = PartitionHistogram(),
+                partitionCountsHistogram = PartitionHistogram(),
+                partitionBytesHistogram = PartitionHistogram(),
                 stalenessTrigger = TimeTrigger(10000),
                 recordCountTrigger = SizeTrigger(10).apply { repeat(10) { increment(1) } },
                 estimatedBytesTrigger = SizeTrigger(1000)
@@ -224,7 +226,8 @@ class AggregateStoreTest {
         val entry =
             AggregateEntry(
                 value = mockAggregate,
-                partitionHistogram = PartitionHistogram(),
+                partitionCountsHistogram = PartitionHistogram(),
+                partitionBytesHistogram = PartitionHistogram(),
                 stalenessTrigger = TimeTrigger(10000),
                 recordCountTrigger = SizeTrigger(100),
                 estimatedBytesTrigger = SizeTrigger(1000).apply { increment(1000) }
@@ -238,7 +241,8 @@ class AggregateStoreTest {
         val entry =
             AggregateEntry(
                 value = mockAggregate,
-                partitionHistogram = PartitionHistogram(),
+                partitionCountsHistogram = PartitionHistogram(),
+                partitionBytesHistogram = PartitionHistogram(),
                 stalenessTrigger = TimeTrigger(10000),
                 recordCountTrigger = SizeTrigger(100),
                 estimatedBytesTrigger = SizeTrigger(1000)
@@ -252,7 +256,8 @@ class AggregateStoreTest {
         val entry =
             AggregateEntry(
                 value = mockAggregate,
-                partitionHistogram = PartitionHistogram(),
+                partitionCountsHistogram = PartitionHistogram(),
+                partitionBytesHistogram = PartitionHistogram(),
                 stalenessTrigger = TimeTrigger(1000).apply { update(5000) },
                 recordCountTrigger = SizeTrigger(100),
                 estimatedBytesTrigger = SizeTrigger(1000)
