@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.dataflow.pipeline
 
 import io.airbyte.cdk.load.dataflow.state.StateReconciler
+import io.airbyte.cdk.load.dataflow.state.StateStore
 import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -29,6 +30,8 @@ class PipelineRunnerTest {
 
     @MockK(relaxed = true) private lateinit var reconciler: StateReconciler
 
+    @MockK(relaxed = true) private lateinit var store: StateStore
+
     @MockK private lateinit var pipeline1: DataFlowPipeline
 
     @MockK private lateinit var pipeline2: DataFlowPipeline
@@ -39,7 +42,8 @@ class PipelineRunnerTest {
 
     @BeforeEach
     fun setup() {
-        runner = PipelineRunner(reconciler, listOf(pipeline1, pipeline2, pipeline3))
+        every { store.hasStates() } returns false
+        runner = PipelineRunner(reconciler, store, listOf(pipeline1, pipeline2, pipeline3))
     }
 
     @Test
@@ -73,7 +77,7 @@ class PipelineRunnerTest {
         // Given
         val exception = RuntimeException("Pipeline failed")
         coEvery { pipeline1.run() } throws exception
-        val failingRunner = PipelineRunner(reconciler, listOf(pipeline1))
+        val failingRunner = PipelineRunner(reconciler, store, listOf(pipeline1))
 
         // When/Then
         val thrownException = assertThrows<RuntimeException> { runBlocking { failingRunner.run() } }
@@ -89,7 +93,7 @@ class PipelineRunnerTest {
     fun `run should execute operations in correct order`() = runTest {
         // Given
         coEvery { pipeline1.run() } just Runs
-        val singlePipelineRunner = PipelineRunner(reconciler, listOf(pipeline1))
+        val singlePipelineRunner = PipelineRunner(reconciler, store, listOf(pipeline1))
 
         // When
         singlePipelineRunner.run()
@@ -110,7 +114,7 @@ class PipelineRunnerTest {
 
         every { reconciler.run(any()) } answers { capturedScope = firstArg() }
 
-        val emptyRunner = PipelineRunner(reconciler, emptyList())
+        val emptyRunner = PipelineRunner(reconciler, store, emptyList())
 
         // When
         emptyRunner.run()
@@ -125,7 +129,7 @@ class PipelineRunnerTest {
     fun `run should handle single pipeline`() = runTest {
         // Given
         coEvery { pipeline1.run() } just Runs
-        val singlePipelineRunner = PipelineRunner(reconciler, listOf(pipeline1))
+        val singlePipelineRunner = PipelineRunner(reconciler, store, listOf(pipeline1))
 
         // When
         singlePipelineRunner.run()
@@ -142,7 +146,7 @@ class PipelineRunnerTest {
         // Given
         coEvery { pipeline1.run() } just Runs
         coEvery { reconciler.disable() } throws RuntimeException("Failed to disable")
-        val singlePipelineRunner = PipelineRunner(reconciler, listOf(pipeline1))
+        val singlePipelineRunner = PipelineRunner(reconciler, store, listOf(pipeline1))
 
         // When/Then
         val exception =
@@ -160,7 +164,7 @@ class PipelineRunnerTest {
         // Given
         coEvery { pipeline1.run() } just Runs
         every { reconciler.flushCompleteStates() } throws RuntimeException("Failed to flush")
-        val singlePipelineRunner = PipelineRunner(reconciler, listOf(pipeline1))
+        val singlePipelineRunner = PipelineRunner(reconciler, store, listOf(pipeline1))
 
         // When/Then
         val exception =
@@ -196,7 +200,7 @@ class PipelineRunnerTest {
                 pipeline
             }
 
-        val largeRunner = PipelineRunner(reconciler, pipelines)
+        val largeRunner = PipelineRunner(reconciler, store, pipelines)
 
         // When
         largeRunner.run()
@@ -238,12 +242,55 @@ class PipelineRunnerTest {
                 )
             }
 
-        val twoRunner = PipelineRunner(reconciler, listOf(pipeline1, pipeline2))
+        val twoRunner = PipelineRunner(reconciler, store, listOf(pipeline1, pipeline2))
 
         // When
         twoRunner.run()
 
         // Then
         assertTrue(reconcilerDisabled, "Reconciler should have been disabled")
+    }
+
+    @Test
+    fun `run should throw IllegalStateException when unflushed states exist at sync end`() =
+        runTest {
+            // Given
+            coEvery { pipeline1.run() } just Runs
+            every { store.hasStates() } returns true // Simulate unflushed states exist
+
+            val singlePipelineRunner = PipelineRunner(reconciler, store, listOf(pipeline1))
+
+            // When/Then
+            val exception =
+                assertThrows<IllegalStateException> { runBlocking { singlePipelineRunner.run() } }
+
+            // Then
+            assertEquals("Sync completed, but unflushed states were detected.", exception.message)
+
+            // Verify all operations completed before the check
+            coVerify(exactly = 1) { reconciler.run(any()) }
+            coVerify(exactly = 1) { pipeline1.run() }
+            coVerify(exactly = 1) { reconciler.disable() }
+            coVerify(exactly = 1) { reconciler.flushCompleteStates() }
+            coVerify(exactly = 1) { store.hasStates() }
+        }
+
+    @Test
+    fun `run should not throw exception when all states are flushed`() = runTest {
+        // Given
+        coEvery { pipeline1.run() } just Runs
+        every { store.hasStates() } returns false // All states are flushed
+
+        val singlePipelineRunner = PipelineRunner(reconciler, store, listOf(pipeline1))
+
+        // When - should complete without exception
+        singlePipelineRunner.run()
+
+        // Then
+        coVerify(exactly = 1) { reconciler.run(any()) }
+        coVerify(exactly = 1) { pipeline1.run() }
+        coVerify(exactly = 1) { reconciler.disable() }
+        coVerify(exactly = 1) { reconciler.flushCompleteStates() }
+        coVerify(exactly = 1) { store.hasStates() }
     }
 }
