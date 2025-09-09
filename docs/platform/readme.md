@@ -12,8 +12,11 @@ Airbyte is an open source data integration platform. It helps you consolidate da
 Whether you're part of a large organization managing complex data pipelines or an individual analyst consolidating data, Airbyte works for you. Airbyte offers flexibility and scalability that's easy to tailor to your specific needs, from one-off jobs to enterprise solutions.
 
 ## Airbyte Products
-
 Airbyte is available as a Self-Managed or Cloud product, depending on your needs.
+
+* Bad list
+* more bad list
+* [here](google.com) are multiple violations in one.
 
 ### Self-Managed options
 
