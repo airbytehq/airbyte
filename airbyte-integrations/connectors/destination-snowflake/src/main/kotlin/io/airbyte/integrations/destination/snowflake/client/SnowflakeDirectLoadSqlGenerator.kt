@@ -32,6 +32,9 @@ import io.airbyte.cdk.load.orchestration.db.TableName
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 
+internal const val CSV_FIELD_DELIMITER = ","
+internal const val CSV_RECORD_DELIMITER = "\n"
+
 private val log = KotlinLogging.logger {}
 
 @Singleton
@@ -305,8 +308,8 @@ class SnowflakeDirectLoadSqlGenerator() {
         return """
             CREATE OR REPLACE FILE FORMAT $STAGE_FORMAT_NAME
             TYPE = 'CSV'
-            FIELD_DELIMITER = ','
-            RECORD_DELIMITER = '\n'
+            FIELD_DELIMITER = '$CSV_FIELD_DELIMITER'
+            RECORD_DELIMITER = '$CSV_RECORD_DELIMITER'
             SKIP_HEADER = 1
             FIELD_OPTIONALLY_ENCLOSED_BY = '"'
             TRIM_SPACE = TRUE
