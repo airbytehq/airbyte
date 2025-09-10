@@ -40,9 +40,9 @@ import io.airbyte.cdk.load.model.destination_import_mode.DestinationImportMode a
 import io.airbyte.cdk.load.model.destination_import_mode.Overwrite as OverwriteModel
 import io.airbyte.cdk.load.model.destination_import_mode.SoftDelete as SoftDeleteModel
 import io.airbyte.cdk.load.model.destination_import_mode.Update as UpdateModel
-import io.airbyte.cdk.load.model.discover.CompositeOperations as CompositeOperationsModel
-import io.airbyte.cdk.load.model.discover.Operation as OperationModel
-import io.airbyte.cdk.load.model.discover.StaticOperation as StaticOperationModel
+import io.airbyte.cdk.load.model.discover.CatalogOperation as CatalogOperationModel
+import io.airbyte.cdk.load.model.discover.CompositeCatalogOperations as CompositeCatalogOperationsModel
+import io.airbyte.cdk.load.model.discover.StaticCatalogOperation as StaticCatalogOperationModel
 import io.airbyte.cdk.load.model.http.HttpMethod
 import io.airbyte.cdk.load.model.http.HttpRequester as HttpRequesterModel
 import io.airbyte.cdk.load.model.http.authenticator.Authenticator as AuthenticatorModel
@@ -103,12 +103,12 @@ class DeclarativeDestinationFactory(config: JsonNode?) {
         // todo: 'discovery' component in the long term should be a required field, but since
         //  the first PR only implements static discovery not dynamic, we don't want to make the
         //  component required until connectors like Hubspot can define it.
-        if (manifest.discovery == null) {
+        if (manifest.discover == null) {
             throw IllegalArgumentException(
                 "manifest.yaml is missing expected 'discovery' component"
             )
         } else {
-            return createOperationProvider(manifest.discovery)
+            return createOperationProvider(manifest.discover)
         }
     }
 
@@ -127,11 +127,11 @@ class DeclarativeDestinationFactory(config: JsonNode?) {
             is HttpRequestCheckerModel -> HttpRequestChecker(model.requester.toRequester())
         }
 
-    private fun createOperationProvider(model: OperationModel): OperationProvider =
+    private fun createOperationProvider(model: CatalogOperationModel): OperationProvider =
         when (model) {
-            is CompositeOperationsModel ->
+            is CompositeCatalogOperationsModel ->
                 CompositeOperationProvider(model.operations.map { createOperationProvider(it) })
-            is StaticOperationModel ->
+            is StaticCatalogOperationModel ->
                 StaticOperationProvider(
                     model.objectName,
                     mapImportMode(model.destinationImportMode),

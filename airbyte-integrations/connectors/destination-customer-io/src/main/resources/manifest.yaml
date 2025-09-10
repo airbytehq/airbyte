@@ -45,10 +45,10 @@ spec:
           - apiKey
     required:
       - credentials
-discovery:
-  type: CompositeOperations
+discover:
+  type: CompositeCatalogOperations
   operations:
-    - type: StaticOperation
+    - type: StaticCatalogOperation
       object_name: person_identify
       destination_import_mode:
         type: Dedupe
@@ -59,7 +59,7 @@ discovery:
         properties:
           person_email:
             type: string
-    - type: StaticOperation
+    - type: StaticCatalogOperation
       object_name: person_event
       destination_import_mode:
         type: Append
