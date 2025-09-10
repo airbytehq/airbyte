@@ -156,7 +156,7 @@ val offsetDateTimeProtoEncoder =
         builder.setTimestampWithTimezone(decoded.format(OffsetDateTimeCodec.formatter))
     }
 val floatProtoEncoder =
-    generateProtoEncoder<Float> { builder, decoded -> builder.setNumber(decoded.toDouble()) }
+    generateProtoEncoder<Float> { builder, decoded -> builder.setBigDecimal(decoded.toString()) }
 
 val nullProtoEncoder = generateProtoEncoder<Any?> { builder, _ -> builder.setIsNull(true) }
 val anyProtoEncoder = textProtoEncoder
