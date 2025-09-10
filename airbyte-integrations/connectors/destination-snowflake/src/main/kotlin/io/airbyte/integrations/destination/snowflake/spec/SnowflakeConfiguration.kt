@@ -51,11 +51,13 @@ class SnowflakeConfigurationFactory :
                         keyPairAuthSpec.privateKeyPassword
                     )
                 }
-                is UsernamePasswordAuthSpecification,
-                null -> {
+                is UsernamePasswordAuthSpecification -> {
                     val usernamePasswordAuthSpec =
                         pojo.authType as UsernamePasswordAuthSpecification
                     UsernamePasswordAuthConfiguration(usernamePasswordAuthSpec.password)
+                }
+                null -> {
+                    UsernamePasswordAuthConfiguration("")
                 }
             }
 

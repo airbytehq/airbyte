@@ -1,5 +1,9 @@
 **Load CDK**
 
+## Version 0.1.27
+
+* **Changed:** Allow per-test properties for spec integration test
+
 ## Version 0.1.26
 
 * **Changed:** Improve load-azure-blob-storage documentation.
