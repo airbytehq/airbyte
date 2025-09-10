@@ -16,11 +16,11 @@ This update fixes a bug that prevented incremental syncs from progressing for so
 
 1. Go to connection using Source Slack
 2. Select the **Settings** tab.
-3. Under **Connection state** section you can find a connection state json object, look for `streamDescriptor` with `"name": "threads"` and check `streamState` for it. 
+3. Under **Connection state** section you can find a connection state json object, look for `streamDescriptor` with `"name": "threads"` and check `streamState` for it.
 
 If state looks similar to the example below, you should follow the Migration Steps:
-```
-...
+
+```json
 {
     "streamDescriptor": {
       "name": "threads"
@@ -28,8 +28,7 @@ If state looks similar to the example below, you should follow the Migration Ste
     "streamState": {
       "__ab_no_cursor_state_message": true
     }
-},
-...
+}
 ```
 
 ## Migration Steps
