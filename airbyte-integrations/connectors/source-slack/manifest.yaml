@@ -571,6 +571,7 @@ concurrency_level:
 schemas:
   users:
     $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
     type: object
     properties:
       id:
@@ -747,6 +748,7 @@ schemas:
 
   channels:
     $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
     type: object
     properties:
       id:
@@ -886,6 +888,7 @@ schemas:
 
   channel_messages:
     $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
     type: object
     properties:
       channel_id:
@@ -1254,6 +1257,7 @@ schemas:
 
   channel_members:
     $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
     type: object
     properties:
       channel_id:
@@ -1265,6 +1269,7 @@ schemas:
 
   threads:
     $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
     type: object
     properties:
       channel_id:
