@@ -19,7 +19,6 @@ import io.airbyte.cdk.load.data.TimeWithTimezoneValue
 import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
-import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.integrations.destination.clickhouse.write.transform.ClickhouseCoercer.Constants.DATE32_MAX
 import io.airbyte.integrations.destination.clickhouse.write.transform.ClickhouseCoercer.Constants.DATE32_MIN
 import io.airbyte.integrations.destination.clickhouse.write.transform.ClickhouseCoercer.Constants.DECIMAL128_MAX
@@ -197,32 +196,21 @@ class ClickhouseCoercerTest {
 
     @ParameterizedTest
     @MethodSource("nonNullValues")
-    fun `map passes through non-union values unchanged`(value: AirbyteValue) {
+    fun `toJsonString turns non-null values into a string`(value: AirbyteValue) {
         val input = Fixtures.mockCoercedValue(value)
 
-        val result = coercer.map(input)
+        val result = coercer.toJsonStringValue(input)
 
-        assertEquals(input.abValue, result.abValue)
+        assert(result.abValue is StringValue)
     }
 
     @Test
-    fun `map passes through null values unchanged`() {
+    fun `toJsonString passes through null values`() {
         val input = Fixtures.mockCoercedValue(NullValue)
 
-        val result = coercer.map(input)
+        val result = coercer.toJsonStringValue(input)
 
         assertEquals(NullValue, result.abValue)
-    }
-
-    @ParameterizedTest
-    @MethodSource("nonNullValues")
-    fun `map converts union type values to JSON strings`(value: AirbyteValue) {
-        val input = Fixtures.mockCoercedUnionValue(value)
-
-        val result = coercer.map(input)
-
-        assert(result.abValue is StringValue)
-        assertEquals(input.abValue.toString(), result.abValue.toString())
     }
 
     companion object {
@@ -344,15 +332,6 @@ class ClickhouseCoercerTest {
                 abValue = value,
                 // the below fields are not under test
                 type = StringType,
-                name = "fixture",
-                airbyteMetaField = null,
-            )
-
-        fun mockCoercedUnionValue(value: AirbyteValue) =
-            EnrichedAirbyteValue(
-                abValue = value,
-                // Use UnionType to trigger the JSON string conversion
-                type = UnionType(setOf(), false),
                 name = "fixture",
                 airbyteMetaField = null,
             )

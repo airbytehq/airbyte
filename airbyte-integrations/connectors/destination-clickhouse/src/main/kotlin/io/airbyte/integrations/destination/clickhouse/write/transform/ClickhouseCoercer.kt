@@ -17,8 +17,6 @@ import io.airbyte.cdk.load.data.TimeWithTimezoneValue
 import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
-import io.airbyte.cdk.load.data.UnionType
-import io.airbyte.cdk.load.dataflow.transform.Coercer
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.integrations.destination.clickhouse.write.transform.ClickhouseCoercer.Constants.DATE32_MAX
 import io.airbyte.integrations.destination.clickhouse.write.transform.ClickhouseCoercer.Constants.DATE32_MIN
@@ -37,17 +35,12 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneOffset
 
+/*
+ * Mutative for performance reasons.
+ */
 @Singleton
-class ClickhouseCoercer : Coercer {
-
-    override fun map(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
-        return when (value.type) {
-            is UnionType -> toJsonStringValue(value)
-            else -> value
-        }
-    }
-
-    private fun toJsonStringValue(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
+class ClickhouseCoercer {
+    fun toJsonStringValue(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
         value.abValue =
             when (val abValue = value.abValue) {
                 is ObjectValue -> StringValue(abValue.values.serializeToString())
@@ -67,7 +60,7 @@ class ClickhouseCoercer : Coercer {
         return value
     }
 
-    override fun validate(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
+    fun validate(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
         when (val abValue = value.abValue) {
             is NumberValue ->
                 if (abValue.value <= DECIMAL128_MIN || abValue.value >= DECIMAL128_MAX) {
