@@ -29,9 +29,9 @@ Before you begin, ensure you satisfy all of these requirements.
 
 To manage and monitor your data plane after installation, you should also install these command line tools.
 
-- Install [Helm](https://helm.sh/) on your local machine.
-- Install [kind](https://kind.sigs.k8s.io/) on your local machine.
-- Install [kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl) on your local machine.
+- [Helm](https://helm.sh/)
+- [kind](https://kind.sigs.k8s.io/)
+- [kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl)
 
 ### Security considerations
 
@@ -52,9 +52,9 @@ You should already have considered [what regions and workspaces](getting-started
 
 Install Docker Desktop on the machine that will host your data plane. Follow the steps for your operating system in Docker's online help, linked below.
 
-    - [Mac](https://docs.docker.com/desktop/install/mac-install/)
-    - [Windows](https://docs.docker.com/desktop/install/windows-install/)
-    - [Linux](https://docs.docker.com/desktop/install/linux-install/) - If you're installing on a Linux headless virtual machine, it's easier to use [Docker Engine](https://docs.docker.com/engine/install/) instead of Docker Desktop.
+- [Mac](https://docs.docker.com/desktop/install/mac-install/)
+- [Windows](https://docs.docker.com/desktop/install/windows-install/)
+ß- [Linux](https://docs.docker.com/desktop/install/linux-install/) - If you're installing on a Linux headless virtual machine, it's easier to use [Docker Engine](https://docs.docker.com/engine/install/) instead of Docker Desktop.
 
 You don't need to do anything with Docker, but you do need to run it in the background. Once it's open, minimize it and proceed to Part 3.
 
@@ -231,6 +231,8 @@ Once you assign your workspace to your data plane, verify that data plane runs s
     source-faker-discover-49350414-0-cxrhx          0/2     Completed         0          12m
     ```
 
+5. In Airbyte's UI, ensure the sync completes and populates the expected number of records, based on your settings for the Sample Data source.
+
 <!-- ## Manage existing data planes
 
 Once a data plane is running, you can manage and delete it if necessary.
@@ -287,4 +289,4 @@ Airbox stores configuration data in `~/.airbyte/airbox/config.yaml`. This includ
 
 ## Restart a data plane
 
-As long as Docker Desktop is running in the background, your data plane remains available. If you quit Docker Desktop (for example, you restart a virtual machine) and want to restore your data plane, start Docker Desktop again. Once your containers are running, your data plane can resume work.
+As long as Docker Desktop is running in the background, your data plane remains available. If you quit Docker Desktop or restart your virtual machine and want to restore your data plane, start Docker Desktop again. Once your containers are running, your data plane can resume work.
