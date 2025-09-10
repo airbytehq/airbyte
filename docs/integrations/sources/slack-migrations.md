@@ -8,6 +8,7 @@ This update fixes a bug that prevented incremental syncs from progressing for so
 - **If you sync the `threads` stream in Incremental mode**: check the criteria below. If either applies, follow the migration steps.  
 
 ### Check before upgrading
+
 1. **Threads stream state** — if the state is empty, follow the migration steps.  
 2. **Destination records** — if duplicate records exist for the Threads stream, follow the migration steps.  
 
