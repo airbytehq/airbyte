@@ -1,5 +1,9 @@
 **Load CDK**
 
+## Version 0.1.28
+
+* **Changed:** Revert read version from file
+
 ## Version 0.1.27
 
 * **Changed:** Allow per-test properties for spec integration test
