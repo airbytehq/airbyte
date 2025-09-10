@@ -158,52 +158,57 @@ class SnowflakeBeanFactory {
         snowflakePrivateKeyFileName: String = PRIVATE_KEY_FILE_NAME,
         @Value("\${airbyte.edition}") airbyteEdition: String,
     ): SnowflakeStreamingIngestClient {
-        val properties = Properties().apply {
-            // Connection properties
-            setProperty("url", "https://${snowflakeConfiguration.host}")
-            setProperty("account", snowflakeConfiguration.host.substringBefore("."))
-            setProperty("user", snowflakeConfiguration.username)
-            setProperty("role", snowflakeConfiguration.role)
-            setProperty("warehouse", snowflakeConfiguration.warehouse)
-            setProperty("database", snowflakeConfiguration.database)
-            setProperty("schema", snowflakeSqlNameTransformer.transform(snowflakeConfiguration.schema))
-            
-            // Authentication
-            when (snowflakeConfiguration.authType) {
-                is KeyPairAuthConfiguration -> {
-                    val privateKeyFile = File("${snowflakePrivateKeyFileName}_streaming")
-                    privateKeyFile.deleteOnExit()
-                    privateKeyFile.writeText(
-                        snowflakeConfiguration.authType.privateKey,
-                        StandardCharsets.UTF_8
-                    )
-                    setProperty("private_key", privateKeyFile.absolutePath)
-                    snowflakeConfiguration.authType.privateKeyPassword?.let { password ->
-                        setProperty("private_key_passphrase", password)
-                    }
-                }
-                is UsernamePasswordAuthConfiguration -> {
-                    setProperty("password", snowflakeConfiguration.authType.password)
-                }
-            }
-            
-            // Additional properties for streaming
-            setProperty("application", "airbyte_${airbyteEdition.lowercase()}_streaming")
-            
-            // Add any JDBC URL parameters if they exist
-            snowflakeConfiguration.jdbcUrlParams?.let { params ->
-                // Parse and add any additional parameters from JDBC URL params
-                params.split("&").forEach { param ->
-                    val parts = param.split("=")
-                    if (parts.size == 2) {
-                        setProperty(parts[0], parts[1])
-                    }
-                }
-            }
-        }
+        val properties =
+            Properties().apply {
+                // Connection properties
+                setProperty("url", "https://${snowflakeConfiguration.host}")
+                setProperty("account", snowflakeConfiguration.host.substringBefore("."))
+                setProperty("user", snowflakeConfiguration.username)
+                setProperty("role", snowflakeConfiguration.role)
+                setProperty("warehouse", snowflakeConfiguration.warehouse)
+                setProperty("database", snowflakeConfiguration.database)
+                setProperty(
+                    "schema",
+                    snowflakeSqlNameTransformer.transform(snowflakeConfiguration.schema)
+                )
 
-        return SnowflakeStreamingIngestClientFactory
-            .builder("airbyte_${airbyteEdition.lowercase()}_streaming_client")
+                // Authentication
+                when (snowflakeConfiguration.authType) {
+                    is KeyPairAuthConfiguration -> {
+                        val privateKeyFile = File("${snowflakePrivateKeyFileName}_streaming")
+                        privateKeyFile.deleteOnExit()
+                        privateKeyFile.writeText(
+                            snowflakeConfiguration.authType.privateKey,
+                            StandardCharsets.UTF_8
+                        )
+                        setProperty("private_key", privateKeyFile.absolutePath)
+                        snowflakeConfiguration.authType.privateKeyPassword?.let { password ->
+                            setProperty("private_key_passphrase", password)
+                        }
+                    }
+                    is UsernamePasswordAuthConfiguration -> {
+                        setProperty("password", snowflakeConfiguration.authType.password)
+                    }
+                }
+
+                // Additional properties for streaming
+                setProperty("application", "airbyte_${airbyteEdition.lowercase()}_streaming")
+
+                // Add any JDBC URL parameters if they exist
+                snowflakeConfiguration.jdbcUrlParams?.let { params ->
+                    // Parse and add any additional parameters from JDBC URL params
+                    params.split("&").forEach { param ->
+                        val parts = param.split("=")
+                        if (parts.size == 2) {
+                            setProperty(parts[0], parts[1])
+                        }
+                    }
+                }
+            }
+
+        return SnowflakeStreamingIngestClientFactory.builder(
+                "airbyte_${airbyteEdition.lowercase()}_streaming_client"
+            )
             .setProperties(properties)
             .build()
     }
