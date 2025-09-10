@@ -8,9 +8,9 @@ import io.airbyte.cdk.load.model.DeclarativeDestination
 import io.airbyte.cdk.load.model.checker.Checker
 import io.airbyte.cdk.load.model.checker.HttpRequestChecker
 import io.airbyte.cdk.load.model.destination_import_mode.Append
-import io.airbyte.cdk.load.model.discover.CompositeOperations
-import io.airbyte.cdk.load.model.discover.Operation
-import io.airbyte.cdk.load.model.discover.StaticOperation
+import io.airbyte.cdk.load.model.discover.CatalogOperation
+import io.airbyte.cdk.load.model.discover.CompositeCatalogOperations
+import io.airbyte.cdk.load.model.discover.StaticCatalogOperation
 import io.airbyte.cdk.load.model.http.HttpMethod
 import io.airbyte.cdk.load.model.http.HttpRequester
 import io.airbyte.cdk.load.model.spec.Spec
@@ -29,11 +29,11 @@ class ManifestBuilder {
             connectionSpecification = Jsons.objectNode(),
             advancedAuth = null,
         )
-    private var discovery: Operation =
-        CompositeOperations(
+    private var discovery: CatalogOperation =
+        CompositeCatalogOperations(
             operations =
-                listOf<Operation>(
-                    StaticOperation(
+                listOf<CatalogOperation>(
+                    StaticCatalogOperation(
                         objectName = "test",
                         destinationImportMode = Append,
                         schema = Jsons.objectNode()
@@ -51,7 +51,7 @@ class ManifestBuilder {
         return this
     }
 
-    fun withCompositeOperation(compositeOperations: CompositeOperations): ManifestBuilder {
+    fun withCompositeOperation(compositeOperations: CompositeCatalogOperations): ManifestBuilder {
         this.discovery = compositeOperations
         return this
     }

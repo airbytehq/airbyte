@@ -22,9 +22,9 @@ import io.airbyte.cdk.load.model.destination_import_mode.Dedupe as DedupeModel
 import io.airbyte.cdk.load.model.destination_import_mode.Overwrite as OverwriteModel
 import io.airbyte.cdk.load.model.destination_import_mode.SoftDelete as SoftDeleteModel
 import io.airbyte.cdk.load.model.destination_import_mode.Update as UpdateModel
-import io.airbyte.cdk.load.model.discover.CompositeOperations
-import io.airbyte.cdk.load.model.discover.Operation
-import io.airbyte.cdk.load.model.discover.StaticOperation
+import io.airbyte.cdk.load.model.discover.CatalogOperation
+import io.airbyte.cdk.load.model.discover.CompositeCatalogOperations
+import io.airbyte.cdk.load.model.discover.StaticCatalogOperation
 import io.airbyte.cdk.load.model.http.HttpMethod
 import io.airbyte.cdk.load.model.http.HttpRequester
 import io.airbyte.cdk.load.model.http.authenticator.BasicAccessAuthenticator as BasicAccessAuthenticatorModel
@@ -71,10 +71,10 @@ class DeclarativeDestinationFactoryTest {
                     )
                 )
                 .withCompositeOperation(
-                    CompositeOperations(
+                    CompositeCatalogOperations(
                         operations =
-                            listOf<Operation>(
-                                StaticOperation(
+                            listOf<CatalogOperation>(
+                                StaticCatalogOperation(
                                     objectName = "player",
                                     destinationImportMode =
                                         DedupeModel(
@@ -192,10 +192,10 @@ class DeclarativeDestinationFactoryTest {
                     )
                 )
                 .withCompositeOperation(
-                    CompositeOperations(
+                    CompositeCatalogOperations(
                         operations =
-                            listOf<Operation>(
-                                StaticOperation(
+                            listOf<CatalogOperation>(
+                                StaticCatalogOperation(
                                     objectName = "player",
                                     destinationImportMode =
                                         DedupeModel(
@@ -216,7 +216,7 @@ class DeclarativeDestinationFactoryTest {
                                             )
                                         )
                                 ),
-                                StaticOperation(
+                                StaticCatalogOperation(
                                     objectName = "position",
                                     destinationImportMode = AppendModel,
                                     schema =
@@ -233,7 +233,7 @@ class DeclarativeDestinationFactoryTest {
                                             )
                                         )
                                 ),
-                                StaticOperation(
+                                StaticCatalogOperation(
                                     objectName = "coaching_staff",
                                     destinationImportMode = OverwriteModel,
                                     schema =
@@ -247,7 +247,7 @@ class DeclarativeDestinationFactoryTest {
                                             )
                                         )
                                 ),
-                                StaticOperation(
+                                StaticCatalogOperation(
                                     objectName = "stadium",
                                     destinationImportMode = UpdateModel,
                                     schema =
@@ -261,7 +261,7 @@ class DeclarativeDestinationFactoryTest {
                                             )
                                         )
                                 ),
-                                StaticOperation(
+                                StaticCatalogOperation(
                                     objectName = "team",
                                     destinationImportMode = SoftDeleteModel,
                                     schema =
