@@ -11,8 +11,8 @@ import jakarta.inject.Singleton
 import kotlinx.coroutines.runBlocking
 
 /**
- * Singleton that performs any once-per-run startup initialization required to interact
- * with Snowflake.
+ * Singleton that performs any once-per-run startup initialization required to interact with
+ * Snowflake.
  */
 @Singleton
 class SnowflakeInitializer(

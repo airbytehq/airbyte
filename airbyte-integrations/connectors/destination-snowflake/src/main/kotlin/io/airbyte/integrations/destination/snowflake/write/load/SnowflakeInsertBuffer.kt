@@ -13,6 +13,8 @@ import io.airbyte.integrations.destination.snowflake.client.CSV_RECORD_DELIMITER
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.LinkedBlockingQueue
 
@@ -31,17 +33,25 @@ class SnowflakeInsertBuffer(
     }
 
     suspend fun flush() {
-        logger.info { "Beginning insert into ${tableName.name}" }
-        // First, get all accumulated records
-        val records = mutableListOf<Map<String, AirbyteValue>>()
-        recordQueue.drainTo(records)
-        // Next, generate a CSV file from the accumulated records
-        val tempFilePath = generateCsvFile(records)
-        // Next, put the CSV file into the staging table
-        snowflakeClient.putInStage(tableName, tempFilePath)
-        // Finally, copy the data from the staging table to the final table
-        snowflakeClient.copyFromStage(tableName)
-        logger.info { "Finished insert of ${records.size} row(s) into ${tableName.name}" }
+        var tempFilePath = ""
+        try {
+            logger.info { "Beginning insert into ${tableName.name}" }
+            // First, get all accumulated records
+            val records = mutableListOf<Map<String, AirbyteValue>>()
+            recordQueue.drainTo(records)
+            // Next, generate a CSV file from the accumulated records
+            tempFilePath = generateCsvFile(records)
+            // Next, put the CSV file into the staging table
+            snowflakeClient.putInStage(tableName, tempFilePath)
+            // Finally, copy the data from the staging table to the final table
+            snowflakeClient.copyFromStage(tableName)
+            logger.info { "Finished insert of ${records.size} row(s) into ${tableName.name}" }
+        } finally {
+            if (tempFilePath.isNotBlank()) {
+                // Eagerly delete temp file to avoid build up during long syncs.
+                Files.deleteIfExists(Path.of(tempFilePath))
+            }
+        }
     }
 
     private fun generateCsvFile(records: List<Map<String, AirbyteValue>>): String {
