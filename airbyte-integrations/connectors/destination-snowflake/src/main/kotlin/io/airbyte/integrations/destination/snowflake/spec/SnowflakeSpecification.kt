@@ -148,13 +148,13 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
     include = JsonTypeInfo.As.EXISTING_PROPERTY,
-    property = "auth_type",
+    property = "credentials",
 )
 @JsonSubTypes(
     JsonSubTypes.Type(value = KeyPairAuthSpecification::class, name = "PRIVATE_KEY"),
     JsonSubTypes.Type(value = UsernamePasswordAuthSpecification::class, name = "USERNAME_PASSWORD")
 )
-sealed class AuthTypeSpecification(@get:JsonProperty("auth_type") val authType: Type) {
+sealed class AuthTypeSpecification(@get:JsonProperty("credentials") val authType: Type) {
     /** Enumeration of possible credential types. */
     enum class Type(@get:JsonValue val authTypeName: String) {
         PRIVATE_KEY("PRIVATE_KEY"),

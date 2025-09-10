@@ -5,6 +5,6 @@ import java.nio.file.Path
 
 object Utils {
     fun getConfigPath(resourceName: String): Path {
-        return Path.of(Resources.getResource(resourceName).toURI())
+        return Path.of(resourceName)
     }
 }

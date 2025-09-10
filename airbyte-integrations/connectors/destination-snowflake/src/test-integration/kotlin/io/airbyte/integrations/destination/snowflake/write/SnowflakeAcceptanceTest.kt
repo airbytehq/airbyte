@@ -29,7 +29,7 @@ import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.nio.file.Files
 import java.nio.file.Path
 
-class SnowflakeInsertAcceptanceTest : SnowflakeAcceptanceTest(Utils.getConfigPath("config.json"))
+class SnowflakeInsertAcceptanceTest : SnowflakeAcceptanceTest(Utils.getConfigPath("secrets/config.json"))
 
 abstract class SnowflakeAcceptanceTest(
     private val configPath: Path,
