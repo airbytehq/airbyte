@@ -111,7 +111,9 @@ class InsightAsyncJobManager:
                         job,
                     )
                     smaller_jobs = job.split_job()
-                    self._jobs = iter(chain(smaller_jobs, self._jobs))
+                    self._jobs = iter(chain(smaller_jobs[1:], self._jobs))
+                    smaller_jobs[0].start()
+                    running_jobs.append(smaller_jobs[0])
                 else:
                     logger.info("%s: failed, restarting", job)
                     job.restart()
