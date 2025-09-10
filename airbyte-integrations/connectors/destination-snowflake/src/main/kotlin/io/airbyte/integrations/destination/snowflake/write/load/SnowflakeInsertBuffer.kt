@@ -31,20 +31,22 @@ class SnowflakeInsertBuffer(
         // First, get all accumulated records
         val records = mutableListOf<Map<String, AirbyteValue>>()
         recordQueue.drainTo(records)
-        
+
         if (records.isEmpty()) {
             logger.info { "No records to insert into ${tableName.name}" }
             return
         }
-        
+
         // Use the new ingest client method to insert records directly
         val response = snowflakeClient.insertRecordsUsingIngestClient(tableName, records)
-        
+
         if (response.hasErrors()) {
-            logger.error { "Failed to insert records into ${tableName.name}. Errors: ${response.insertErrors}" }
+            logger.error {
+                "Failed to insert records into ${tableName.name}. Errors: ${response.insertErrors}"
+            }
             throw RuntimeException("Insert operation failed with errors: ${response.insertErrors}")
         }
-        
+
         logger.info { "Finished insert of ${records.size} row(s) into ${tableName.name}" }
     }
 }
