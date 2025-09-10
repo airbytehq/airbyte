@@ -151,11 +151,14 @@ class SnowflakeBeanFactory {
     }
 
     @Singleton
+    @Named("snowflakePrivateKeyFileName")
+    fun snowflakePrivateKeyFileName() = PRIVATE_KEY_FILE_NAME
+
+    @Singleton
     fun snowflakeStreamingIngestClient(
         snowflakeConfiguration: SnowflakeConfiguration,
         snowflakeSqlNameTransformer: SnowflakeSqlNameTransformer,
-        @Named("snowflakePrivateKeyFileName")
-        snowflakePrivateKeyFileName: String = PRIVATE_KEY_FILE_NAME,
+        @Named("snowflakePrivateKeyFileName") snowflakePrivateKeyFileName: String,
         @Value("\${airbyte.edition}") airbyteEdition: String,
     ): SnowflakeStreamingIngestClient {
         val properties =
