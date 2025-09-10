@@ -13,6 +13,7 @@ import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableSql
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.sql.ResultSet
+import net.snowflake.ingest.streaming.SnowflakeStreamingIngestClient
 import javax.sql.DataSource
 
 private val log = KotlinLogging.logger {}
@@ -21,6 +22,7 @@ private val log = KotlinLogging.logger {}
 class SnowflakeAirbyteClient(
     private val dataSource: DataSource,
     private val sqlGenerator: SnowflakeDirectLoadSqlGenerator,
+    private val snowflakeIngestClient: SnowflakeStreamingIngestClient,
 ) : AirbyteClient, DirectLoadTableSqlOperations, DirectLoadTableNativeOperations {
     override suspend fun countTable(tableName: TableName): Long {
         return execute(sqlGenerator.countTable(tableName)).getInt("total").toLong()
