@@ -30,7 +30,7 @@ data:
   releaseStage: generally_available
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: true
+      enableProgressiveRollout: false
     breakingChanges:
       3.0.0:
         message: This update fixes a bug that prevented incremental syncs from progressing for some connections containing the `threads` stream. Affected users should perform a stream refresh. See the [Slack Migration Guide](https://docs.airbyte.com/integrations/sources/slack-migrations) for instructions on identifying impacted connections and refreshing the stream.

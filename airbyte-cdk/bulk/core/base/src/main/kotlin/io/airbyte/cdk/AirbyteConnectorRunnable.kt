@@ -18,6 +18,8 @@ class AirbyteConnectorRunnable : Runnable {
 
     @Inject lateinit var operationProvider: Provider<Operation>
 
+    @Value("\${airbyte.connector.operation}") lateinit var operationName: String
+
     @Inject lateinit var outputConsumer: OutputConsumer
 
     @Inject lateinit var exceptionHandler: ExceptionHandler
@@ -40,12 +42,27 @@ class AirbyteConnectorRunnable : Runnable {
                     "Failed ${operation::class} operation execution."
                 }
             }
-            outputConsumer.accept(exceptionHandler.handle(e))
-            throw e
+            handleOperationException(e)
         } finally {
             log.info { "Flushing output consumer prior to shutdown." }
             outputConsumer.close()
             log.info { "Completed integration: $connectorName." }
+        }
+    }
+
+    private fun handleOperationException(e: Throwable) {
+        if (operationName == "check") {
+            // During check, we don't fail the command on uncaught error. We assume the check as
+            // failed and return a trace + a connection status message.
+            val exception: Throwable? =
+                if (e.message == "Failed to initialize connector operation") e.cause else e
+            val (errorTraceMessage, connectionStatusMessage) =
+                exceptionHandler.handleCheckFailure(exception ?: e)
+            outputConsumer.accept(errorTraceMessage)
+            outputConsumer.accept(connectionStatusMessage)
+        } else {
+            outputConsumer.accept(exceptionHandler.handle(e))
+            throw e
         }
     }
 }
