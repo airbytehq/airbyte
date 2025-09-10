@@ -10,21 +10,15 @@ jobs:
     name: "Add Labels to PRs.  Safe to Merge on fail"
     runs-on: ubuntu-24.04
     steps:
-      - name: Authenticate as GitHub App
-        uses: actions/create-github-app-token@v2
-        id: get-app-token
-        with:
-          owner: "airbytehq"
-          repositories: |
-            airbyte
-            workflow-actions
-          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
-          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+      # TODO: Replace PAT with a GitHub App token.
+      # The "private-action-loader" action does not seem to be compatible with it,
+      # so we should consider moving off of this specialized action onto a normal
+      # action step.
       - name: Run Issue Command from workflow-actions
         uses: nick-fields/private-action-loader@v3
         with:
-          pal-repo-token: "${{ steps.get-app-token.outputs.token }}"
+          pal-repo-token: "${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}"
           pal-repo-name: airbytehq/workflow-actions@production
           # the following input gets passed to the private action
-          token: "${{ steps.get-app-token.outputs.token }}"
+          token: "${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}"
           command: "pull"
