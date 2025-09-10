@@ -5,9 +5,11 @@ import javax.xml.xpath.XPathConstants
 import javax.xml.xpath.XPathFactory
 import org.w3c.dom.Document
 
+final var versionFile = file("core/base/src/main/resources/version.properties")
+
 final var cdkVersion = {
     var props = new Properties()
-    file("version.properties").withInputStream(props::load)
+    versionFile.withInputStream(props::load)
     return props.getProperty('version', 'undefined')
 }()
 
@@ -116,4 +118,93 @@ tasks.register('bulkCdkBuild').configure {
 }
 tasks.register('bulkCdkPublish').configure {
     dependsOn allprojects.collect {it.tasks.named('publish')}
+}
+
+tasks.register('bumpVersion').configure {
+    description = 'Bump the bulk CDK version number'
+
+    doLast {
+        // Parse command line arguments for version bump type
+        def bumpType = null
+        if (project.hasProperty('patch')) {
+            bumpType = 'patch'
+        } else if (project.hasProperty('minor')) {
+            bumpType = 'minor'
+        } else if (project.hasProperty('major')) {
+            bumpType = 'major'
+        } else {
+            throw new GradleException("Please specify version bump type: --patch, --minor, or --major")
+        }
+
+        // Read current version from version.properties
+        def currentVersion = versionFile.text.trim()
+
+        // Parse version components
+        def versionParts = currentVersion.split('\\.')
+        def major = Integer.parseInt(versionParts[0])
+        def minor = Integer.parseInt(versionParts[1])
+        def patch = Integer.parseInt(versionParts[2])
+
+        // Calculate new version based on bump type
+        def newVersion
+        switch (bumpType) {
+            case 'major':
+                newVersion = "${major + 1}.0.0"
+                break
+            case 'minor':
+                newVersion = "${major}.${minor + 1}.0"
+                break
+            case 'patch':
+                newVersion = "${major}.${minor}.${patch + 1}"
+                break
+        }
+
+        println "Bumping version from ${currentVersion} to ${newVersion}"
+
+        // Update version.properties file
+        versionFile.text = "${newVersion}\n"
+
+        // Get multiline changelog entry from user
+        println "Enter changelog entry (press Ctrl+D or Ctrl+Z when done):"
+        def changelogEntry = new StringBuilder()
+        System.in.withReader { reader ->
+            def line
+            while ((line = reader.readLine()) != null) {
+                changelogEntry.append(line).append('\n')
+            }
+        }
+
+        if (changelogEntry.length() == 0) {
+            throw new GradleException("Changelog entry cannot be empty")
+        }
+
+        // Read current changelog
+        def changelogFile = file("changelog.md")
+        def currentChangelog = changelogFile.text
+
+        // Find the insertion point (after the first line "**Load CDK**")
+        def lines = currentChangelog.split('\n')
+        def newChangelog = new StringBuilder()
+
+        // Add the header line
+        newChangelog.append(lines[0]).append('\n\n')
+
+        // Add new version entry
+        newChangelog.append("## Version ${newVersion}\n\n")
+        newChangelog.append("* **Changed:** ${changelogEntry.toString().trim()}\n\n")
+
+        // Add the rest of the existing changelog (skip the first empty line if it exists)
+        def startIndex = 1
+        if (startIndex < lines.length && lines[startIndex].trim().isEmpty()) {
+            startIndex = 2
+        }
+        for (int i = startIndex; i < lines.length; i++) {
+            newChangelog.append(lines[i]).append('\n')
+        }
+
+        // Write updated changelog
+        changelogFile.text = newChangelog.toString()
+
+        println "Version bumped to ${newVersion} and changelog updated"
+    }
 }
