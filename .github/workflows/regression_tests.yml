@@ -63,19 +63,6 @@ jobs:
 
       - name: Checkout Airbyte
         uses: actions/checkout@v4
-      - name: Authenticate as GitHub App
-        uses: actions/create-github-app-token@v2
-        id: get-app-token
-        with:
-          owner: "airbytehq"
-          repositories: "airbyte"
-          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
-          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
-      - name: Check PAT rate limits
-        run: |
-          ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
-            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
       - name: Extract branch name [WORKFLOW DISPATCH]
         shell: bash
         if: github.event_name == 'workflow_dispatch'
@@ -144,6 +131,10 @@ jobs:
         run: |
           echo "CONNECTION_SUBSET=--connector_live_tests.connection-subset=${{ github.event.inputs.connection_subset }}" >> $GITHUB_ENV
 
+      # NOTE: We still use a PAT here (rather than a GitHub App) because the workflow needs
+      # permissions to add commits to our main repo as well as forks. This will only work on
+      # forks if the user installs the app into their fork. Until we document this as a clear
+      # path, we will have to keep using the PAT.
       - name: Run Regression Tests [WORKFLOW DISPATCH]
         if: github.event_name == 'workflow_dispatch' # TODO: consider using the matrix strategy (https://docs.github.com/en/actions/using-jobs/using-a-matrix-for-your-jobs). See https://github.com/airbytehq/airbyte/pull/37659#discussion_r1583380234 for details.
         uses: ./.github/actions/run-airbyte-ci
@@ -157,7 +148,7 @@ jobs:
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           git_branch: ${{ steps.extract_branch.outputs.branch }}
           git_revision: ${{ steps.fetch_last_commit_id_pr.outputs.commit_id }}
-          github_token: ${{ steps.get-app-token.outputs.token }}
+          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           subcommand: connectors ${{ env.USE_LOCAL_CDK_FLAG }} --name ${{ github.event.inputs.connector_name }} test --only-step connector_live_tests --connector_live_tests.test-suite=regression --connector_live_tests.connection-id=${{ github.event.inputs.connection_id }} --connector_live_tests.pr-url=${{ github.event.inputs.pr_url }} ${{ env.READ_WITH_STATE_FLAG }} ${{ env.DISABLE_PROXY_FLAG }} ${{ env.STREAM_PARAMS }} ${{ env.CONNECTION_SUBSET }} --global-status-check-context="Regression Tests" --global-status-check-description='Running regression tests'

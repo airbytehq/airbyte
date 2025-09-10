@@ -58,14 +58,6 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.ref }}
-      - name: Authenticate as GitHub App
-        uses: actions/create-github-app-token@v2
-        id: get-app-token
-        with:
-          owner: "airbytehq"
-          repositories: "airbyte"
-          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
-          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
       - name: Checkout Airbyte Python CDK
         uses: actions/checkout@v4
         with:
@@ -99,6 +91,15 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         id: fetch_last_commit_id_wd
         run: echo "commit_id=$(git rev-parse origin/${{ steps.extract_branch.outputs.branch }})" >> $GITHUB_OUTPUT
+
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@v2
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
 
       - name: Run poe tasks for modified internal packages [PULL REQUEST]
         if: github.event_name == 'pull_request'

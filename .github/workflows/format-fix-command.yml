@@ -43,14 +43,10 @@ jobs:
           echo "branch=$(echo "$PR_JSON" | jq -r .head.ref)" >> $GITHUB_OUTPUT
           echo "run-url=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
 
-      - name: Authenticate as GitHub App
-        uses: actions/create-github-app-token@v2
-        id: get-app-token
-        with:
-          owner: "airbytehq"
-          repositories: "airbyte"
-          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
-          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+      # NOTE: We still use a PAT here (rather than a GitHub App) because the workflow needs
+      # permissions to add commits to our main repo as well as forks. This will only work on
+      # forks if the user installs the app into their fork. Until we document this as a clear
+      # path, we will have to keep using the PAT.
       - name: Checkout Airbyte
         uses: actions/checkout@v3
         with:
@@ -59,7 +55,7 @@ jobs:
           fetch-depth: 1
           # Important that token is a PAT so that CI checks are triggered again.
           # Without this we would be forever waiting on required checks to pass.
-          token: ${{ steps.get-app-token.outputs.token }}
+          token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
 
       - name: Append comment with job run link
         # If comment-id is not provided, this will create a new

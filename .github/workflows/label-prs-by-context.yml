@@ -15,7 +15,9 @@ jobs:
         id: get-app-token
         with:
           owner: "airbytehq"
-          repositories: "airbyte"
+          repositories: |
+            airbyte
+            workflow-actions
           app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
           private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
       - name: Run Issue Command from workflow-actions
