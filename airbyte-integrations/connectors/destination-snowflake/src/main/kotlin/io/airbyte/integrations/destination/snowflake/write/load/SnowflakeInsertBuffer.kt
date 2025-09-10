@@ -6,15 +6,9 @@ package io.airbyte.integrations.destination.snowflake.write.load
 
 import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.load.data.AirbyteValue
-import io.airbyte.cdk.load.data.csv.toCsvValue
 import io.airbyte.cdk.load.orchestration.db.TableName
-import io.airbyte.integrations.destination.snowflake.client.CSV_FIELD_DELIMITER
-import io.airbyte.integrations.destination.snowflake.client.CSV_RECORD_DELIMITER
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.io.File
-import java.nio.file.Files
-import java.nio.file.Path
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.LinkedBlockingQueue
 
@@ -33,37 +27,24 @@ class SnowflakeInsertBuffer(
     }
 
     suspend fun flush() {
-        var tempFilePath = ""
-        try {
-            logger.info { "Beginning insert into ${tableName.name}" }
-            // First, get all accumulated records
-            val records = mutableListOf<Map<String, AirbyteValue>>()
-            recordQueue.drainTo(records)
-            // Next, generate a CSV file from the accumulated records
-            tempFilePath = generateCsvFile(records)
-            // Next, put the CSV file into the staging table
-            snowflakeClient.putInStage(tableName, tempFilePath)
-            // Finally, copy the data from the staging table to the final table
-            snowflakeClient.copyFromStage(tableName)
-            logger.info { "Finished insert of ${records.size} row(s) into ${tableName.name}" }
-        } finally {
-            if (tempFilePath.isNotBlank()) {
-                // Eagerly delete temp file to avoid build up during long syncs.
-                Files.deleteIfExists(Path.of(tempFilePath))
-            }
+        logger.info { "Beginning insert into ${tableName.name}" }
+        // First, get all accumulated records
+        val records = mutableListOf<Map<String, AirbyteValue>>()
+        recordQueue.drainTo(records)
+        
+        if (records.isEmpty()) {
+            logger.info { "No records to insert into ${tableName.name}" }
+            return
         }
-    }
-
-    private fun generateCsvFile(records: List<Map<String, AirbyteValue>>): String {
-        val csvFile = File.createTempFile("snowflake", ".csv")
-        csvFile.deleteOnExit()
-        csvFile.bufferedWriter(Charsets.UTF_8).use { writer ->
-            records.forEach { record ->
-                writer.write(
-                    "${record.values.map { it.toCsvValue()}.joinToString(CSV_FIELD_DELIMITER)}$CSV_RECORD_DELIMITER"
-                )
-            }
+        
+        // Use the new ingest client method to insert records directly
+        val response = snowflakeClient.insertRecordsUsingIngestClient(tableName, records)
+        
+        if (response.hasErrors()) {
+            logger.error { "Failed to insert records into ${tableName.name}. Errors: ${response.insertErrors}" }
+            throw RuntimeException("Insert operation failed with errors: ${response.insertErrors}")
         }
-        return csvFile.absolutePath
+        
+        logger.info { "Finished insert of ${records.size} row(s) into ${tableName.name}" }
     }
 }
