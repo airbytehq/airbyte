@@ -23,9 +23,10 @@ from source_pinterest.utils import get_analytics_columns
 from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice
+from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
 
-from .conftest import get_stream_by_name
+from .conftest import get_stream_by_name, read_from_stream
 from .utils import create_requests_response
 
 
@@ -78,15 +79,12 @@ def test_parse_response(patch_base_class, test_response, test_current_stream_sta
 
 def test_parse_response_with_sensitive_data(requests_mock, test_config):
     """Test that sensitive data is removed"""
-    stream = get_stream_by_name("catalogs_feeds", test_config)
     requests_mock.get(
         url="https://api.pinterest.com/v5/catalogs/feeds",
         json={"items": [{"id": "CatalogsFeeds1", "credentials": {"password": "bla"}}]},
     )
     actual_response = [
-        dict(record)
-        for stream_slice in stream.stream_slices(sync_mode=SyncMode.full_refresh)
-        for record in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
+        record.record.data for record in read_from_stream(test_config, "catalogs_feeds", sync_mode=SyncMode.full_refresh).records
     ]
     assert actual_response == [{"id": "CatalogsFeeds1"}]
 
@@ -214,7 +212,13 @@ def test_path(test_config, stream_name, stream_slice, expected_path):
     if stream_slice:
         stream_slice = StreamSlice(partition=stream_slice, cursor_slice={})
 
-    result = stream.retriever.requester.get_path(stream_slice=stream_slice, stream_state=None, next_page_token=None)
+    if isinstance(stream, DefaultStream):
+        result = stream._stream_partition_generator._partition_factory._retriever.requester.get_path(
+            stream_slice=stream_slice, stream_state=None, next_page_token=None
+        )
+    else:
+        result = stream.retriever.requester.get_path(stream_slice=stream_slice, stream_state=None, next_page_token=None)
+
     assert result == expected_path
 
 
