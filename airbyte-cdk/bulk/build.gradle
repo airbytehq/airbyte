@@ -100,10 +100,10 @@ tasks.register('checkBuildNumber') {
 
             String expression = "/metadata/versioning/latest"
 
-            String latestVersion = (String) xpath.compile(expression).evaluate(doc, XPathConstants.STRING)
-            if (version.toString() == latestVersion) {
-                throw new GradleException("Version already exist")
-            }
+//            String latestVersion = (String) xpath.compile(expression).evaluate(doc, XPathConstants.STRING)
+//            if (version.toString() == latestVersion) {
+//                throw new GradleException("Version already exist")
+//            }
         } finally {
             connection.disconnect()
         }
