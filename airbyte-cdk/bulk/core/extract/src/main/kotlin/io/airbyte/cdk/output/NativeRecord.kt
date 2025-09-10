@@ -143,7 +143,10 @@ val shortProtoEncoder =
     generateProtoEncoder<Short> { builder, value -> builder.setInteger(value.toLong()) }
 val bigDecimalProtoEncoder =
     generateProtoEncoder<BigDecimal> { builder, decoded ->
-        builder.setBigDecimal(decoded.toPlainString())
+        when (decoded.scale()) {
+            0 -> builder.setBigInteger(decoded.toPlainString()) // no decimal places
+            else -> builder.setBigDecimal(decoded.toPlainString())
+        }
     }
 val longProtoEncoder = generateProtoEncoder<Long> { builder, value -> builder.setInteger(value) }
 val textProtoEncoder = generateProtoEncoder<String> { builder, value -> builder.setString(value) }
