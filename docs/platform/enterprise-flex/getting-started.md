@@ -59,4 +59,4 @@ You can deploy a self-managed data plane in Airbyte two ways.
 
 - Data planes must be able to communicate with the control plane.
 
-- **Data planes only send requests to the control plane and never require inbound requests.**
+- Data planes only send requests to the control plane and never require inbound requests.
