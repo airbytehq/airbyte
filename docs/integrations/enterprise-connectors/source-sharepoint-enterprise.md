@@ -295,7 +295,7 @@ If no Site URL is provided, the connector will access files in the main site.
 
 **Solution:**
 
-1. Verify that your Azure AD application has the required permissions:
+1. Verify that your Azure AD application has ALL of the following required permissions:
    - `Files.Read.All` (Application permission)
    - `Sites.Read.All` (Application permission) 
    - `Sites.Selected` (Application permission)
@@ -305,7 +305,6 @@ If no Site URL is provided, the connector will access files in the main site.
 
 **Alternative approaches:**
 
-- Ask your SharePoint administrator to create a traditional SharePoint site and move the required files there
 - Use the main site access by leaving the Site URL field empty (if your files are accessible through the main site)
 - Verify that the Teams site URL is correct and accessible through the SharePoint web interface
 
