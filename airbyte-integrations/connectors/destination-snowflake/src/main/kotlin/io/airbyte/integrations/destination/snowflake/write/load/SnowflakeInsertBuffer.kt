@@ -4,10 +4,17 @@
 
 package io.airbyte.integrations.destination.snowflake.write.load
 
+import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.csv.toCsvValue
 import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.integrations.destination.snowflake.client.CSV_FIELD_DELIMITER
+import io.airbyte.integrations.destination.snowflake.client.CSV_RECORD_DELIMITER
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.io.File
+import java.util.concurrent.BlockingQueue
+import java.util.concurrent.LinkedBlockingQueue
 
 private val logger = KotlinLogging.logger {}
 
@@ -16,15 +23,37 @@ class SnowflakeInsertBuffer(
     private val snowflakeClient: SnowflakeAirbyteClient
 ) {
 
+    @VisibleForTesting
+    internal val recordQueue: BlockingQueue<Map<String, AirbyteValue>> = LinkedBlockingQueue()
+
     fun accumulate(recordFields: Map<String, AirbyteValue>) {
-        recordFields.forEach {
-            // TODO implement accumulation
-        }
+        recordQueue.offer(recordFields)
     }
 
     suspend fun flush() {
         logger.info { "Beginning insert into ${tableName.name}" }
-        // TODO implement flush
-        logger.info { "Finished insert of rows into ${tableName.name}" }
+        // First, get all accumulated records
+        val records = mutableListOf<Map<String, AirbyteValue>>()
+        recordQueue.drainTo(records)
+        // Next, generate a CSV file from the accumulated records
+        val tempFilePath = generateCsvFile(records)
+        // Next, put the CSV file into the staging table
+        snowflakeClient.putInStage(tableName, tempFilePath)
+        // Finally, copy the data from the staging table to the final table
+        snowflakeClient.copyFromStage(tableName)
+        logger.info { "Finished insert of ${records.size} row(s) into ${tableName.name}" }
+    }
+
+    private fun generateCsvFile(records: List<Map<String, AirbyteValue>>): String {
+        val csvFile = File.createTempFile("snowflake", ".csv")
+        csvFile.deleteOnExit()
+        csvFile.bufferedWriter(Charsets.UTF_8).use { writer ->
+            records.forEach { record ->
+                writer.write(
+                    "${record.values.map { it.toCsvValue()}.joinToString(CSV_FIELD_DELIMITER)}$CSV_RECORD_DELIMITER"
+                )
+            }
+        }
+        return csvFile.absolutePath
     }
 }
