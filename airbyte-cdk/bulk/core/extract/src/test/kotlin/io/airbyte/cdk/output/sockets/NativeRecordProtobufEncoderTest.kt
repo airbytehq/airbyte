@@ -147,19 +147,19 @@ class NativeRecordProtobufEncoderTest {
                 decoder = { proto -> LocalDate.parse(proto.getData(0).date) }
             ),
             TestCase(
-                value = LocalTime.now(),
+                value = LocalTime.parse(LocalTime.now().format(LocalTimeCodec.formatter)),
                 jsonEncoder = LocalTimeCodec,
                 decoder = { proto -> LocalTime.parse(proto.getData(0).timeWithoutTimezone) }
             ),
             TestCase(
-                value = LocalDateTime.now(),
+                value = LocalDateTime.parse(LocalDateTime.now().format(LocalDateTimeCodec.formatter)),
                 jsonEncoder = LocalDateTimeCodec,
                 decoder = { proto ->
                     LocalDateTime.parse(proto.getData(0).timestampWithoutTimezone)
                 }
             ),
             TestCase(
-                value = OffsetTime.now(),
+                value = OffsetTime.parse(OffsetTime.now().format(OffsetTimeCodec.formatter)),
                 jsonEncoder = OffsetTimeCodec,
                 decoder = { proto -> OffsetTime.parse(proto.getData(0).timeWithTimezone) }
             ),
