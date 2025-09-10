@@ -9,6 +9,8 @@ import io.airbyte.cdk.load.dataflow.aggregate.StoreKey
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableExecutionConfig
 import io.airbyte.cdk.load.write.StreamStateStore
+import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
+import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
@@ -28,7 +30,8 @@ internal class SnowflakeAggregateFactoryTest {
         val key = StoreKey(namespace = descriptor.namespace!!, name = descriptor.name)
         val streamStore = StreamStateStore<DirectLoadTableExecutionConfig>()
         streamStore.put(descriptor, directLoadTableExecutionConfig)
-        val factory = SnowflakeAggregateFactory(streamStore)
+        val snowflakeClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
+        val factory = SnowflakeAggregateFactory(snowflakeClient, streamStore)
         val aggregate = factory.create(key)
         assertNotNull(aggregate)
         assertEquals(SnowflakeAggregate::class, aggregate::class)
