@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.snowflake
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import io.airbyte.cdk.Operation
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.cdk.load.orchestration.db.DefaultTempTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
@@ -15,12 +16,17 @@ import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeSpecification
 import io.airbyte.integrations.destination.snowflake.spec.UsernamePasswordAuthConfiguration
 import io.micronaut.context.annotation.Factory
+import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.io.File
+import java.io.PrintWriter
 import java.nio.charset.StandardCharsets
+import java.sql.Connection
 import java.util.Properties
+import java.util.logging.Logger
+import javax.sql.DataSource
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 import net.snowflake.client.jdbc.SnowflakeDriver
@@ -59,7 +65,33 @@ class SnowflakeBeanFactory {
         return configFactory.makeWithoutExceptionHandling(spec)
     }
 
+    /**
+     * Dummy [DataSource] for the spec operation. Spec doesn't have a configuration present, so we
+     * cannot create the real data source. However, to avoid having to pull conditional checks on
+     * every singleton related to using the data source, we can simply create a dummy one here so
+     * that everything will be wired correctly even if all of those beans are unused when running
+     * the spec operation.
+     */
     @Singleton
+    @Requires(property = Operation.PROPERTY, value = "spec")
+    fun emptySnowflakeDataSource(): DataSource {
+        return object : DataSource {
+            override fun getConnection(): Connection? = null
+            override fun getConnection(username: String, password: String): Connection? =
+                getConnection()
+            override fun getLogWriter(): PrintWriter =
+                PrintWriter(System.out.writer(StandardCharsets.UTF_8))
+            override fun setLogWriter(out: PrintWriter) {}
+            override fun setLoginTimeout(seconds: Int) {}
+            override fun getLoginTimeout(): Int = 0
+            override fun getParentLogger(): Logger = Logger.getGlobal()
+            override fun <T : Any> unwrap(iface: Class<T>): T? = null
+            override fun isWrapperFor(iface: Class<*>): Boolean = false
+        }
+    }
+
+    @Singleton
+    @Requires(property = Operation.PROPERTY, notEquals = "spec")
     fun snowflakeDataSource(
         snowflakeConfiguration: SnowflakeConfiguration,
         snowflakeSqlNameTransformer: SnowflakeSqlNameTransformer,
@@ -151,11 +183,14 @@ class SnowflakeBeanFactory {
     }
 
     @Singleton
+    @Named("snowflakePrivateKeyFileName")
+    fun snowflakePrivateKeyFileName() = PRIVATE_KEY_FILE_NAME
+
+    @Singleton
     fun snowflakeStreamingIngestClient(
         snowflakeConfiguration: SnowflakeConfiguration,
         snowflakeSqlNameTransformer: SnowflakeSqlNameTransformer,
-        @Named("snowflakePrivateKeyFileName")
-        snowflakePrivateKeyFileName: String = PRIVATE_KEY_FILE_NAME,
+        @Named("snowflakePrivateKeyFileName") snowflakePrivateKeyFileName: String,
         @Value("\${airbyte.edition}") airbyteEdition: String,
     ): SnowflakeStreamingIngestClient {
         val properties =
