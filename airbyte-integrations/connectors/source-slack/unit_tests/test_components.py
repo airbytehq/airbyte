@@ -10,7 +10,7 @@ from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordSel
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.streams.call_rate import MovingWindowCallRatePolicy, UnlimitedCallRatePolicy
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
-from unit_tests.conftest import oauth_config, token_config
+from unit_tests.conftest import oauth_config, token_config, get_stream_by_name
 
 
 def test_channel_members_extractor(token_config, components_module):
