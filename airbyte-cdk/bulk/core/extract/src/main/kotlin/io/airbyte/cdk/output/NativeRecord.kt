@@ -70,8 +70,7 @@ fun <T> JsonEncoder<T>.toProtobufEncoder(): ProtoEncoder<*> {
         is NullCodec, -> nullProtoEncoder
         is BinaryCodec, -> binaryProtoEncoder
         is BigDecimalCodec, -> bigDecimalProtoEncoder
-        is BigDecimalIntegerCodec, ->
-            bigDecimalProtoEncoder
+        is BigDecimalIntegerCodec, -> bigDecimalProtoEncoder
         is ShortCodec, -> shortProtoEncoder
         is ByteCodec, -> byteProtoEncoder
         is DoubleCodec, -> doubleProtoEncoder

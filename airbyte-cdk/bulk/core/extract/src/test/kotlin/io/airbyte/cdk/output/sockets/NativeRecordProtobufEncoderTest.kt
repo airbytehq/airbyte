@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.output.sockets
 
 import com.fasterxml.jackson.core.io.BigDecimalParser
@@ -33,11 +37,9 @@ import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.time.OffsetTime
 import java.util.*
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.DynamicNode
 import org.junit.jupiter.api.DynamicTest
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestFactory
 
 class NativeRecordProtobufEncoderTest {
@@ -45,158 +47,133 @@ class NativeRecordProtobufEncoderTest {
     data class TestCase<T>(
         val value: T,
         val jsonEncoder: JsonEncoder<*>,
-        val decoder: (AirbyteRecordMessageProtobuf) -> T)
+        val decoder: (AirbyteRecordMessageProtobuf) -> T
+    )
 
     val valBuilder = AirbyteValueProtobuf.newBuilder()
-    val protoBuilder = AirbyteRecordMessageProtobuf.newBuilder().also { it.addData(0, valBuilder.clear()) }
+    val protoBuilder =
+        AirbyteRecordMessageProtobuf.newBuilder().also { it.addData(0, valBuilder.clear()) }
 
-    val testCases = listOf(
-        TestCase(
-            value = 123L,
-            jsonEncoder = LongCodec,
-            decoder = { proto ->
-                proto.getData(0).integer
-            }
-        ),
-        TestCase(
-            value = 123,
-            jsonEncoder = IntCodec,
-            decoder = { proto ->
-                proto.getData(0).integer.toInt()
-            }
-        ),
-
-        TestCase(
-            value = "text value",
-            jsonEncoder = TextCodec,
-
-            decoder = { proto ->
-                proto.getData(0).string
-            }
-        ),
-        TestCase(
-            value = true,
-            jsonEncoder = BooleanCodec,
-            decoder = { proto ->
-                proto.getData(0).boolean
-            }
-        ),
-        TestCase(
-            value = OffsetDateTime.now(),
-            jsonEncoder = OffsetDateTimeCodec,
-            decoder = { proto ->
-                OffsetDateTime.parse(proto.getData(0).timestampWithTimezone)
-            }
-        ),
-        TestCase(
-            value = 123.456f,
-            jsonEncoder = FloatCodec,
-            decoder = { proto ->
-                BigDecimalParser.parseWithFastParser(proto.getData(0).bigDecimal).toFloat()
-            }
-        ),
-        TestCase(
-            value = "hello".toByteArray().let { ByteBuffer.wrap(it) },
-            jsonEncoder = BinaryCodec,
-            decoder = { proto ->
-                ByteBuffer.wrap(Base64.getDecoder().decode(proto.getData(0).string))
-            }
-        ),
-        TestCase(
-            value = BigDecimal.valueOf(1234.567),
-            jsonEncoder = BigDecimalCodec,
-            decoder = { proto ->
-                BigDecimalParser.parseWithFastParser(proto.getData(0).bigDecimal)
-            }
-        ),
-        TestCase(
-            value = BigDecimal.valueOf(987),
-            jsonEncoder = BigDecimalCodec,
-            decoder = { proto ->
-                BigDecimalParser.parseWithFastParser(proto.getData(0).bigInteger)
-            }
-        ),
-        TestCase(
-            value = 12,
-            jsonEncoder = ShortCodec,
-            decoder = { proto ->
-                proto.getData(0).integer.toShort()
-            }
-        ),
-        TestCase(
-            value = 123.toByte(),
-            jsonEncoder = ByteCodec,
-            decoder = { proto ->
-                proto.getData(0).integer.toByte()
-            }
-        ),
-        TestCase(
-            value = 12345.678,
-            jsonEncoder = DoubleCodec,
-            decoder = { proto ->
-                proto.getData(0).number
-            }
-        ),
-        TestCase(
-            value = "{\"hello\":1234}".toByteArray().let { ByteBuffer.wrap(it) },
-            jsonEncoder = JsonBytesCodec,
-            decoder = { proto ->
-                ByteBuffer.wrap(Base64.getDecoder().decode(proto.getData(0).string))
-            }
-        ),
-        TestCase(
-            value = "{\"hello\":1234}",
-            jsonEncoder = JsonStringCodec,
-            decoder = { proto ->
-                proto.getData(0).string
-            }
-        ),
-        TestCase(
-            value = URI("http://www.example.com").toURL(),
-            jsonEncoder = UrlCodec,
-            decoder = { proto ->
-                URI(proto.getData(0).string).toURL()
-            }
-        ),
-        TestCase(
-            value = LocalDate.now(),
-            jsonEncoder = LocalDateCodec,
-            decoder = { proto ->
-                LocalDate.parse(proto.getData(0).date)
-            }
-        ),
-        TestCase(
-            value = LocalTime.now(),
-            jsonEncoder = LocalTimeCodec,
-            decoder = { proto ->
-                LocalTime.parse(proto.getData(0).timeWithoutTimezone)
-            }
-        ),
-        TestCase(
-            value = LocalDateTime.now(),
-            jsonEncoder = LocalDateTimeCodec,
-            decoder = { proto ->
-                LocalDateTime.parse(proto.getData(0).timestampWithoutTimezone)
-            }
-        ),
-        TestCase(
-            value = OffsetTime.now(),
-            jsonEncoder = OffsetTimeCodec,
-            decoder = { proto ->
-                OffsetTime.parse(proto.getData(0).timeWithTimezone)
-            }
-        ),
-    )
+    val testCases =
+        listOf(
+            TestCase(
+                value = 123L,
+                jsonEncoder = LongCodec,
+                decoder = { proto -> proto.getData(0).integer }
+            ),
+            TestCase(
+                value = 123,
+                jsonEncoder = IntCodec,
+                decoder = { proto -> proto.getData(0).integer.toInt() }
+            ),
+            TestCase(
+                value = "text value",
+                jsonEncoder = TextCodec,
+                decoder = { proto -> proto.getData(0).string }
+            ),
+            TestCase(
+                value = true,
+                jsonEncoder = BooleanCodec,
+                decoder = { proto -> proto.getData(0).boolean }
+            ),
+            TestCase(
+                value = OffsetDateTime.now(),
+                jsonEncoder = OffsetDateTimeCodec,
+                decoder = { proto -> OffsetDateTime.parse(proto.getData(0).timestampWithTimezone) }
+            ),
+            TestCase(
+                value = 123.456f,
+                jsonEncoder = FloatCodec,
+                decoder = { proto ->
+                    BigDecimalParser.parseWithFastParser(proto.getData(0).bigDecimal).toFloat()
+                }
+            ),
+            TestCase(
+                value = "hello".toByteArray().let { ByteBuffer.wrap(it) },
+                jsonEncoder = BinaryCodec,
+                decoder = { proto ->
+                    ByteBuffer.wrap(Base64.getDecoder().decode(proto.getData(0).string))
+                }
+            ),
+            TestCase(
+                value = BigDecimal.valueOf(1234.567),
+                jsonEncoder = BigDecimalCodec,
+                decoder = { proto ->
+                    BigDecimalParser.parseWithFastParser(proto.getData(0).bigDecimal)
+                }
+            ),
+            TestCase(
+                value = BigDecimal.valueOf(987),
+                jsonEncoder = BigDecimalCodec,
+                decoder = { proto ->
+                    BigDecimalParser.parseWithFastParser(proto.getData(0).bigInteger)
+                }
+            ),
+            TestCase(
+                value = 12,
+                jsonEncoder = ShortCodec,
+                decoder = { proto -> proto.getData(0).integer.toShort() }
+            ),
+            TestCase(
+                value = 123.toByte(),
+                jsonEncoder = ByteCodec,
+                decoder = { proto -> proto.getData(0).integer.toByte() }
+            ),
+            TestCase(
+                value = 12345.678,
+                jsonEncoder = DoubleCodec,
+                decoder = { proto -> proto.getData(0).number }
+            ),
+            TestCase(
+                value = "{\"hello\":1234}".toByteArray().let { ByteBuffer.wrap(it) },
+                jsonEncoder = JsonBytesCodec,
+                decoder = { proto ->
+                    ByteBuffer.wrap(Base64.getDecoder().decode(proto.getData(0).string))
+                }
+            ),
+            TestCase(
+                value = "{\"hello\":1234}",
+                jsonEncoder = JsonStringCodec,
+                decoder = { proto -> proto.getData(0).string }
+            ),
+            TestCase(
+                value = URI("http://www.example.com").toURL(),
+                jsonEncoder = UrlCodec,
+                decoder = { proto -> URI(proto.getData(0).string).toURL() }
+            ),
+            TestCase(
+                value = LocalDate.now(),
+                jsonEncoder = LocalDateCodec,
+                decoder = { proto -> LocalDate.parse(proto.getData(0).date) }
+            ),
+            TestCase(
+                value = LocalTime.now(),
+                jsonEncoder = LocalTimeCodec,
+                decoder = { proto -> LocalTime.parse(proto.getData(0).timeWithoutTimezone) }
+            ),
+            TestCase(
+                value = LocalDateTime.now(),
+                jsonEncoder = LocalDateTimeCodec,
+                decoder = { proto ->
+                    LocalDateTime.parse(proto.getData(0).timestampWithoutTimezone)
+                }
+            ),
+            TestCase(
+                value = OffsetTime.now(),
+                jsonEncoder = OffsetTimeCodec,
+                decoder = { proto -> OffsetTime.parse(proto.getData(0).timeWithTimezone) }
+            ),
+        )
     @TestFactory
     fun dynamicTestsForAddition(): Collection<DynamicNode> {
 
         return testCases.map { case ->
             val fve = FieldValueEncoder(case.value, case.jsonEncoder as JsonEncoder<in Any>)
             DynamicTest.dynamicTest("test-${case.value.javaClass.simpleName}") {
-                val n: NativeRecordPayload =
-                    mutableMapOf("id" to fve)
-                val actualProto = n.toProtobuf(setOf(Field("id", StringFieldType)),
-                    protoBuilder, valBuilder).build()
+                val n: NativeRecordPayload = mutableMapOf("id" to fve)
+                val actualProto =
+                    n.toProtobuf(setOf(Field("id", StringFieldType)), protoBuilder, valBuilder)
+                        .build()
                 assertEquals(case.value, case.decoder(actualProto))
             }
         }
