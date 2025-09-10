@@ -6,13 +6,14 @@ package io.airbyte.integrations.destination.snowflake.write.load
 
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
 class SnowflakeInsertBuffer(
     private val tableName: TableName,
-// TODO inject client and any other information required to write to Snowflake
+    private val snowflakeClient: SnowflakeAirbyteClient
 ) {
 
     fun accumulate(recordFields: Map<String, AirbyteValue>) {

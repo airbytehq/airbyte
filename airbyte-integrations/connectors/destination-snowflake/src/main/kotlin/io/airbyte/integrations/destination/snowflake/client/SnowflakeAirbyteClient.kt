@@ -91,6 +91,22 @@ class SnowflakeAirbyteClient(
         }
     }
 
+    suspend fun createFileFormat() {
+        execute(sqlGenerator.createFileFormat())
+    }
+
+    suspend fun createSnowflakeStage(tableName: TableName) {
+        execute(sqlGenerator.createSnowflakeStage(tableName))
+    }
+
+    suspend fun putInStage(tableName: TableName, tempFilePath: String) {
+        execute(sqlGenerator.putInStage(tableName, tempFilePath))
+    }
+
+    suspend fun copyFromStage(tableName: TableName) {
+        execute(sqlGenerator.copyFromStage(tableName))
+    }
+
     internal fun execute(query: String): ResultSet {
         return dataSource.connection.use { connection ->
             connection.createStatement().executeQuery(query)
