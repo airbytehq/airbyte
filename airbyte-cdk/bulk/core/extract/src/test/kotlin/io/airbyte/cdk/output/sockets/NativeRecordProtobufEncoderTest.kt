@@ -77,7 +77,7 @@ class NativeRecordProtobufEncoderTest {
                 decoder = { proto -> proto.getData(0).boolean }
             ),
             TestCase(
-                value = OffsetDateTime.now(),
+                value = OffsetDateTime.parse(OffsetDateTime.now().format(OffsetDateTimeCodec.formatter)),
                 jsonEncoder = OffsetDateTimeCodec,
                 decoder = { proto -> OffsetDateTime.parse(proto.getData(0).timestampWithTimezone) }
             ),
