@@ -20,7 +20,7 @@ class SnowflakeInitializer(
 ) {
 
     @EventListener
-    internal fun onStartup(@Suppress("unused") event: StartupEvent) {
+    internal fun onStartup(@Suppress("UNUSED_PARAMETER") event: StartupEvent) {
         runBlocking { snowflakeAirbyteClient.createFileFormat() }
     }
 }
