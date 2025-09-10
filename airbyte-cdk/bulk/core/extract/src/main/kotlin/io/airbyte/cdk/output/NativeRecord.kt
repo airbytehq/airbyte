@@ -67,8 +67,8 @@ fun <T> JsonEncoder<T>.toProtobufEncoder(): ProtoEncoder<*> {
         is BooleanCodec, -> booleanProtoEncoder
         is OffsetDateTimeCodec, -> offsetDateTimeProtoEncoder
         is FloatCodec, -> floatProtoEncoder
-        is NullCodec, -> nullProtoEncoder // TODO: check here
-        is BinaryCodec, -> binaryProtoEncoder // TODO: check here
+        is NullCodec, -> nullProtoEncoder
+        is BinaryCodec, -> binaryProtoEncoder
         is BigDecimalCodec, -> bigDecimalProtoEncoder
         is BigDecimalIntegerCodec, ->
             bigDecimalProtoEncoder
@@ -143,7 +143,7 @@ val shortProtoEncoder =
     generateProtoEncoder<Short> { builder, value -> builder.setInteger(value.toLong()) }
 val bigDecimalProtoEncoder =
     generateProtoEncoder<BigDecimal> { builder, decoded ->
-        builder.setBigDecimal(decoded.toPlainString()) // TODO: check here. why string?
+        builder.setBigDecimal(decoded.toPlainString())
     }
 val longProtoEncoder = generateProtoEncoder<Long> { builder, value -> builder.setInteger(value) }
 val textProtoEncoder = generateProtoEncoder<String> { builder, value -> builder.setString(value) }
