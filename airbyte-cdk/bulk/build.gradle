@@ -6,7 +6,7 @@ import javax.xml.xpath.XPathFactory
 import org.w3c.dom.Document
 
 allprojects {
-    version = "0.1.27"
+    version = "0.1.28"
     apply plugin: 'java-library'
     apply plugin: 'maven-publish'
 
@@ -94,10 +94,10 @@ tasks.register('checkBuildNumber') {
 
             String expression = "/metadata/versioning/latest"
 
-//            String latestVersion = (String) xpath.compile(expression).evaluate(doc, XPathConstants.STRING)
-//            if (version.toString() == latestVersion) {
-//                throw new GradleException("Version already exist")
-//            }
+            String latestVersion = (String) xpath.compile(expression).evaluate(doc, XPathConstants.STRING)
+            if (version.toString() == latestVersion) {
+                throw new GradleException("Version already exist")
+            }
         } finally {
             connection.disconnect()
         }
