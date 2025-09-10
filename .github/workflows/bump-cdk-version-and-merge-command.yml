@@ -138,8 +138,8 @@ jobs:
       matrix:
         connector_name: ${{ fromJson(needs.bump-cdk-version.outputs.modified_connectors) }}
     with:
-      connectors-options: "--name=${{ matrix.connector_name }}"
-      publish-options: --pre-release
+      connectors: "--name=${{ matrix.connector_name }}"
+      release-type: pre-release
     secrets: inherit
 
   update-changelog-and-merge:
