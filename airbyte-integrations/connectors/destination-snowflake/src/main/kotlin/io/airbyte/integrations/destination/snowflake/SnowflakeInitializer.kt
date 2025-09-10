@@ -4,7 +4,9 @@
 
 package io.airbyte.integrations.destination.snowflake
 
+import io.airbyte.cdk.Operation
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
+import io.micronaut.context.annotation.Requires
 import io.micronaut.context.event.StartupEvent
 import io.micronaut.runtime.event.annotation.EventListener
 import jakarta.inject.Singleton
@@ -15,6 +17,7 @@ import kotlinx.coroutines.runBlocking
  * Snowflake.
  */
 @Singleton
+@Requires(property = Operation.PROPERTY, notEquals = "spec")
 class SnowflakeInitializer(
     private val snowflakeAirbyteClient: SnowflakeAirbyteClient,
 ) {
