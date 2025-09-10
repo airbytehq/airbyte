@@ -168,6 +168,7 @@ class NativeRecordProtobufEncoderTest {
     fun dynamicTestsForAddition(): Collection<DynamicNode> {
 
         return testCases.map { case ->
+            @Suppress("UNCHECKED_CAST")
             val fve = FieldValueEncoder(case.value, case.jsonEncoder as JsonEncoder<in Any>)
             DynamicTest.dynamicTest("test-${case.value.javaClass.simpleName}") {
                 val n: NativeRecordPayload = mutableMapOf("id" to fve)
