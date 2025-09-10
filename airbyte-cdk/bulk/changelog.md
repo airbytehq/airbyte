@@ -1,5 +1,17 @@
 **Load CDK**
 
+## Version 0.1.26
+
+* **Changed:** Improve load-azure-blob-storage documentation.
+
+## Version 0.1.25
+
+* **Changed:** Adds proto support to dataflow. Misc transform package cleanup (developer-facing).
+
+## Version 0.1.24
+
+* **Changed:** Adds byte counts to emitted state stats.
+
 ## Version 0.1.23
 
 * **Changed:** Dataflow CDK fails syncs if there are unflushed states at the end of a sync.
