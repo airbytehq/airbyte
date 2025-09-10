@@ -8,5 +8,6 @@ connector=$(get_only_connector)
 
 echo "---- PROCESSING METADATA FOR $connector ----"
 meta="${CONNECTORS_DIR}/${connector}/metadata.yaml"
-doc="$(connector_docs_path $connector)"
+is_enterprise=$(yq -r '.data.ab_internal.isEnterprise // false' "$meta")
+doc="$(connector_docs_path $connector $is_enterprise)"
 poetry run --directory $METADATA_SERVICE_PATH metadata_service validate "$meta" "$doc"

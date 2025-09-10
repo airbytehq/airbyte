@@ -7,7 +7,7 @@ package io.airbyte.cdk.load.dataflow
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.dataflow.config.MemoryAndParallelismConfig
 import io.airbyte.cdk.load.dataflow.finalization.StreamCompletionTracker
-import io.airbyte.cdk.load.dataflow.pipeline.DataFlowPipeline
+import io.airbyte.cdk.load.dataflow.pipeline.PipelineRunner
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -23,7 +23,7 @@ import kotlinx.coroutines.runBlocking
 class DestinationLifecycle(
     private val destinationInitializer: DestinationWriter,
     private val destinationCatalog: DestinationCatalog,
-    private val pipeline: DataFlowPipeline,
+    private val pipeline: PipelineRunner,
     private val completionTracker: StreamCompletionTracker,
     private val memoryAndParallelismConfig: MemoryAndParallelismConfig,
 ) {
@@ -62,22 +62,22 @@ class DestinationLifecycle(
             )
 
         return runBlocking {
-            val result = mutableListOf<StreamLoader>()
-            destinationCatalog.streams
-                .map {
-                    async(initDispatcher) {
-                        log.info {
-                            "Starting stream loader for stream ${it.mappedDescriptor.namespace}:${it.mappedDescriptor.name}"
-                        }
-                        val streamLoader = destinationInitializer.createStreamLoader(it)
-                        streamLoader.start()
-                        result.add(streamLoader)
-                        log.info {
-                            "Stream loader for stream ${it.mappedDescriptor.namespace}:${it.mappedDescriptor.name} started"
+            val result =
+                destinationCatalog.streams
+                    .map {
+                        async(initDispatcher) {
+                            log.info {
+                                "Starting stream loader for stream ${it.mappedDescriptor.namespace}:${it.mappedDescriptor.name}"
+                            }
+                            val streamLoader = destinationInitializer.createStreamLoader(it)
+                            streamLoader.start()
+                            log.info {
+                                "Stream loader for stream ${it.mappedDescriptor.namespace}:${it.mappedDescriptor.name} started"
+                            }
+                            streamLoader
                         }
                     }
-                }
-                .awaitAll()
+                    .awaitAll()
 
             return@runBlocking result
         }

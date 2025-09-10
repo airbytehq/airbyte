@@ -8,7 +8,7 @@ plugins {
 airbyteBulkConnector {
     core = 'load'
     toolkits = ['load-db']
-    cdk = 'local'
+    cdk = '0.1.20'
 }
 
 java {

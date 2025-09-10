@@ -218,12 +218,12 @@ Some platform features are reserved for certain Airbyte products. To avoid confu
 
 To enable badges, include `products` in the Markdown metadata. The following values are possible, and you can combine them as needed.
 
-- `all`: Self-Managed Community, Self-Managed Enterprise, and Cloud (doesn't include Cloud Teams, Cloud Enterprise, or Embedded)
+- `all`: Self-Managed Community, Self-Managed Enterprise, and Cloud (doesn't include Cloud Teams, Enterprise Flex, or Embedded)
 - `oss-community`: Self-Managed Community only
 - `oss-enterprise`: Self-Managed Enterprise only
 - `cloud`: Cloud only
 - `cloud-teams`: Cloud Teams only
-- `cloud-enterprise`: Cloud Enterprise only
+- `enterprise-flex`: Enterprise Flex only
 - `embedded`: Embedded only (hidden if not specified - there is no off state for the Embedded badge)
 
 In this example, the Self-Managed Community badge is highlighted, and Cloud and Self-Managed Enterprise badges are grayed out.
@@ -242,10 +242,10 @@ In this example, the Self-Managed Community badge is grayed out, but the Cloud T
 
 ```markdown
 ---
-products: cloud-teams, oss-enterprise
+products: cloud-teams, enterprise-flex, oss-enterprise
 ---
 
-# This topic is only for Cloud Teams and Self-Managed Enterprise
+# This topic is only for Cloud Teams, Enterprise Flex, and Self-Managed Enterprise
 
 Some text.
 ```
@@ -329,7 +329,7 @@ AI tools like ChatGPT and GitHub Copilot are good at describing code. For open s
 The documentation runs two linters, Vale and MarkDownLint. Vale lints for style, writing, and grammar. MarkDownLint lints for MarkDown structure. For example, Vale tells you when you use passive language and MarkDownLint tells you that you've skipped a heading level. Together, these linters provide broad protection against most common readability, accessibility, and rendering problems.
 
 :::note
-Vale and MarkDownLint are newly implemented. They might still generate false positives or false negatives. Currently, Airbyte doesn't enforce them on pull requests. This might happen in the future. For now, just do your best to comply with the linters' recommendations.
+Vale and MarkDownLint are newly implemented. They might still generate false positives or false negatives. Currently, MarkDownLint is the only one of the two that runs on pull requests, and compliance is not mandatory. This may change in the future. For now, just do your best to comply with the linters' recommendations as you see them.
 :::
 
 ### Lint with Vale
