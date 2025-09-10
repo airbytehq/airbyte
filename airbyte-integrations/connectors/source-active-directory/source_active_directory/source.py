@@ -1,3 +1,5 @@
+import logging
+
 from typing import Any, List, Mapping, Optional, Tuple
 
 from airbyte_cdk import AbstractSource
@@ -57,8 +59,10 @@ class SourceActiveDirectory(AbstractSource):
         try:
             # Trying LDAPS
             connection = auth.getLDAPConnection(ip=domain_ip)
-        except Exception:
+        except Exception as e:
+            logging.warning(f"LDAPS connection failed: {e}")
             # Trying LDAP
             connection = auth.getLDAPConnection(ip=domain_ip, protocol='ldap')
+
         return connection
 

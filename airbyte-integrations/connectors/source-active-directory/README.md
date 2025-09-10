@@ -6,7 +6,7 @@ This connector pulls data from Active Directory. It supports connecting to Activ
 
 ### Prerequisites
 
-- Python (~=3.9)
+- Python (~=3.10)
 - Poetry (~=1.7) - installation instructions [here](https://python-poetry.org/docs/#installation)
 
 ### Installing the connector
@@ -45,16 +45,16 @@ poetry run pytest unit_tests
 
 #### Using Poe (Recommended)
 
-Airbyte now uses **Poe the Poet** as the primary task runner for connector development. Install Poe using:
+We recommend using Poe the Poet tasks defined in `pyproject.toml`:
 
 ```bash
-# Install Poe the Poet
-brew tap nat-n/poethepoet
-brew install nat-n/poethepoet/poethepoet
+# Install Poe (if not already available)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+~/.local/bin/uv tool install poethepoet
 
-# Or using uv (recommended Python package manager)
-brew install uv
-uv tool install poethepoet
+# Or using alternative methods:
+# brew install uv && uv tool install poethepoet
+# pip install poethepoet
 ```
 
 From the connector directory, run:
@@ -74,6 +74,12 @@ poe check-all
 
 # Fix formatting and linting issues
 poe fix-all
+
+# Build Docker images
+poe build         # Build local dev image
+poe build-arm     # Build ARM64: airbyte/source-active-directory:arm
+poe build-amd     # Build AMD64: airbyte/source-active-directory:amd
+poe build-all     # Build both architectures
 ```
 
 **Available Poe tasks for this connector:**
@@ -92,10 +98,13 @@ poe fix-all
 - `poe fix-ruff` - Fix both formatting and linting
 - `poe fix-all` - Fix all auto-fixable issues
 - `poe fix-and-check` - Fix issues and then run checks
+- `poe build` - Build local dev image
+- `poe build-arm` - Build ARM64 image
+- `poe build-amd` - Build AMD64 image
+- `poe build-all` - Build both architectures
+- `poe release` - End-to-end release (build + push + manifest)
 
 Run `poe --help` from the connector directory to see all available tasks.
-
-**Note**: The connector includes a basic `metadata.yaml` file with the required `dockerImageTag` field. You may need to adjust the version number and other metadata fields as needed for your specific deployment.
 
 #### Legacy Method (Deprecated)
 
@@ -214,8 +223,8 @@ poe pytest
 # Check code quality
 poe check-all
 
-# Note: Docker image building still requires airbyte-ci or manual Docker commands
-# as this connector doesn't have a 'build' Poe task yet
+# Build Docker images
+poe build-all    # Build both ARM64 and AMD64 images
 ```
 
 ### Legacy Method (Deprecated)
@@ -223,8 +232,6 @@ poe check-all
 Run from Devcontainer (so airbyte-ci is runnable)
 
 **Note**: `airbyte-ci` is deprecated. Use Poe commands above when available.
-
-**Important**: Before building, ensure the `metadata.yaml` file is properly configured with all required fields including `dockerImageTag`. The connector now includes basic metadata configuration.
 
 Build for arm
 ```bash
@@ -252,6 +259,45 @@ docker load -i active-directory-connector-amd.tar
 ```
 
 ## Push to ECR
+
+### Quick Deploy (Recommended)
+
+Use the provided Poe tasks for streamlined deployment:
+
+```bash
+# 1) ECR login (HOST)
+aws ecr get-login-password --region us-east-1 \
+  | docker login --username AWS --password-stdin \
+    794038212761.dkr.ecr.us-east-1.amazonaws.com
+
+# 2) Version and optional registry
+export VERSION=1.0.0
+export REGISTRY=${REGISTRY:-794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-active-directory/docker}
+
+# 3) Build both architectures (run in connector dir)
+poe build-all
+
+# 4) Push images
+poe ecr-tag-push-arm
+poe ecr-tag-push-amd
+
+# 5) Manifests
+poe manifest-push-version
+poe manifest-push-latest
+```
+
+### One-shot release with Poe
+
+If you're already logged into ECR, you can run the entire flow in one command:
+
+```bash
+# Optional: override REGISTRY
+export REGISTRY=794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source-active-directory/docker
+
+poe release 1.0.0
+```
+
+### Manual Deploy Commands
 
 After loading the Docker images, you can tag and push them to your ECR repository:
 
@@ -313,8 +359,12 @@ docker manifest push 794038212761.dkr.ecr.us-east-1.amazonaws.com/airbyte/source
 The `airbyte-cdk` CLI is now available and provides additional functionality:
 
 ```bash
-# Install the airbyte-cdk CLI
-uv tool install 'airbyte-cdk[dev]'
+# Install the airbyte-cdk CLI using uv (recommended)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+~/.local/bin/uv tool install 'airbyte-cdk[dev]'
+
+# Or using pip
+pip install 'airbyte-cdk[dev]'
 
 # Available commands
 airbyte-cdk --help

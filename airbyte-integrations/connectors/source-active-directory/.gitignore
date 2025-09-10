@@ -1,3 +1,3 @@
 .venv/
 *.pyc
-secrets/
+/secrets
