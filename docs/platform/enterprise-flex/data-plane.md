@@ -223,7 +223,7 @@ kind: Secret
 metadata:
   name: airbyte-config-secrets
 type: Opaque
-data:
+stringData:
   # Insert the data plane credentials received in step 2
   DATA_PLANE_CLIENT_ID: your-data-plane-client-id
   DATA_PLANE_CLIENT_SECRET: your-data-plane-client-secret
