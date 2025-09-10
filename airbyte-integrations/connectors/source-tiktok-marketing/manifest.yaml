@@ -5716,11 +5716,23 @@ spec:
                 airbyte_secret: true
                 type: string
               advertiser_id:
-                title: Advertiser ID
-                description:
-                  The Advertiser ID to filter reports and streams. Let this
-                  empty to retrieve all.
-                type: string
+                title: Advertiser ID(s)
+                description: >
+                  The Advertiser ID(s) to filter reports and streams. You can:
+                  - Leave empty to retrieve all advertisers
+                  - Enter a single Advertiser ID as a string
+                  - Enter multiple Advertiser IDs as an array
+                oneOf:
+                  - type: string
+                    title: Single Advertiser ID
+                    description: A single Advertiser ID or empty string to retrieve all
+                  - type: array
+                    title: Multiple Advertiser IDs  
+                    description: An array of Advertiser IDs to filter reports and streams
+                    items:
+                      type: string
+                      description: Individual Advertiser ID
+                    minItems: 1
             required:
               - app_id
               - secret
@@ -5734,11 +5746,23 @@ spec:
                 order: 0
                 type: string
               advertiser_id:
-                title: Advertiser ID
-                description:
-                  The Advertiser ID which generated for the developer's Sandbox
-                  application.
-                type: string
+                title: Advertiser ID(s)
+                description: >
+                  The Advertiser ID(s) which generated for the developer's Sandbox
+                  application. You can:
+                  - Enter a single Advertiser ID as a string
+                  - Enter multiple Advertiser IDs as an array
+                oneOf:
+                  - type: string
+                    title: Single Advertiser ID
+                    description: A single Advertiser ID for the sandbox application
+                  - type: array
+                    title: Multiple Advertiser IDs  
+                    description: An array of Advertiser IDs for the sandbox application
+                    items:
+                      type: string
+                      description: Individual Advertiser ID
+                    minItems: 1
               access_token:
                 title: Access Token
                 description: The long-term authorized access token.

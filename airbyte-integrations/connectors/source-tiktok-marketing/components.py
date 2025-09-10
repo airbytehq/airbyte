@@ -39,16 +39,23 @@ class MultipleAdvertiserIdsPerPartition(SubstreamPartitionRouter):
         self._path_to_partition_in_config = self._parameters["path_in_config"]
         self._partition_field = self._parameters["partition_field"]
 
-    def get_partition_value_from_config(self) -> str:
+    def get_partition_value_from_config(self) -> Optional[list]:
         for path in self._path_to_partition_in_config:
             config_value = dpath.get(self.config, path, default=None)
-            if config_value:
-                return config_value
+            if config_value is not None and config_value != "":
+                # Handle both string and array formats for backward compatibility
+                if isinstance(config_value, list):
+                    # If it's an array, return as-is only if not empty
+                    return config_value if config_value else None
+                else:
+                    # If it's a string, return as single-item list
+                    return [config_value]
+        return None
 
     def stream_slices(self) -> Iterable[StreamSlice]:
         partition_value_in_config = self.get_partition_value_from_config()
         if partition_value_in_config:
-            slices = [partition_value_in_config]
+            slices = partition_value_in_config
         else:
             slices = [_id.partition[self._partition_field] for _id in super().stream_slices()]
 
@@ -71,7 +78,9 @@ class SingleAdvertiserIdPerPartition(MultipleAdvertiserIdsPerPartition):
         partition_value_in_config = self.get_partition_value_from_config()
 
         if partition_value_in_config:
-            yield StreamSlice(partition={self._partition_field: partition_value_in_config, "parent_slice": {}}, cursor_slice={})
+            # Handle both single ID and multiple IDs
+            for advertiser_id in partition_value_in_config:
+                yield StreamSlice(partition={self._partition_field: advertiser_id, "parent_slice": {}}, cursor_slice={})
         else:
             yield from super(MultipleAdvertiserIdsPerPartition, self).stream_slices()
 
