@@ -14,11 +14,18 @@ You'll likely use a combination of managed and self-managed data planes. Since A
 
 ## Determine which regions you need
 
-Think about the data you need to sync and your data sovereignty and compliance requirements. Based on this assessment, you should collect a list of how many, and which, regions you need.
+Think about the data you need to sync and your data sovereignty and compliance requirements. Generally, these are things you want to consider:
+
+- What data you want to sync, where it's stored today, and where you want it to be stored after syncing.
+- Your national, sub-national, industry, and organization compliance and privacy requirements.
+- Your data sovereignty needs.
+- Your organization's security posture and data handling policies.
+
+Based on this assessment, you should collect a list of how many, and which, regions you need.
 
 ## Create a workspace for each region
 
-Each workspace uses a single region, so create one workspace for each region. A good starting pattern is to create one managed workspace for non-sensitive data, and an additional workspace for each region your connections need to run in. For example, create one Workspace to handle U.S. data, one Workspace to handle Australian data, etc.
+Each workspace uses a single region, so create one workspace for each region. A good starting pattern is to create one managed workspace for non-sensitive data without compliance and sovereignty requirements, and an additional workspace for each region your connections need to run in. For example, create one Workspace to handle U.S. data, one Workspace to handle Australian data, etc.
 
 ## Managed data planes
 
