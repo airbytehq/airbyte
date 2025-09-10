@@ -20,9 +20,12 @@ import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.io.File
 import java.nio.charset.StandardCharsets
+import java.util.Properties
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 import net.snowflake.client.jdbc.SnowflakeDriver
+import net.snowflake.ingest.streaming.SnowflakeStreamingIngestClient
+import net.snowflake.ingest.streaming.SnowflakeStreamingIngestClientFactory
 
 internal const val DATA_SOURCE_CONNECTION_TIMEOUT_MS = 30000L
 internal const val DATA_SOURCE_IDLE_TIMEOUT_MS = 600000L
@@ -145,5 +148,68 @@ class SnowflakeBeanFactory {
             }
 
         return HikariDataSource(datasourceConfig)
+    }
+
+    @Singleton
+    fun snowflakeStreamingIngestClient(
+        snowflakeConfiguration: SnowflakeConfiguration,
+        snowflakeSqlNameTransformer: SnowflakeSqlNameTransformer,
+        @Named("snowflakePrivateKeyFileName")
+        snowflakePrivateKeyFileName: String = PRIVATE_KEY_FILE_NAME,
+        @Value("\${airbyte.edition}") airbyteEdition: String,
+    ): SnowflakeStreamingIngestClient {
+        val properties =
+            Properties().apply {
+                // Connection properties
+                setProperty("url", "https://${snowflakeConfiguration.host}")
+                setProperty("account", snowflakeConfiguration.host.substringBefore("."))
+                setProperty("user", snowflakeConfiguration.username)
+                setProperty("role", snowflakeConfiguration.role)
+                setProperty("warehouse", snowflakeConfiguration.warehouse)
+                setProperty("database", snowflakeConfiguration.database)
+                setProperty(
+                    "schema",
+                    snowflakeSqlNameTransformer.transform(snowflakeConfiguration.schema)
+                )
+
+                // Authentication
+                when (snowflakeConfiguration.authType) {
+                    is KeyPairAuthConfiguration -> {
+                        val privateKeyFile = File("${snowflakePrivateKeyFileName}_streaming")
+                        privateKeyFile.deleteOnExit()
+                        privateKeyFile.writeText(
+                            snowflakeConfiguration.authType.privateKey,
+                            StandardCharsets.UTF_8
+                        )
+                        setProperty("private_key", privateKeyFile.absolutePath)
+                        snowflakeConfiguration.authType.privateKeyPassword?.let { password ->
+                            setProperty("private_key_passphrase", password)
+                        }
+                    }
+                    is UsernamePasswordAuthConfiguration -> {
+                        setProperty("password", snowflakeConfiguration.authType.password)
+                    }
+                }
+
+                // Additional properties for streaming
+                setProperty("application", "airbyte_${airbyteEdition.lowercase()}_streaming")
+
+                // Add any JDBC URL parameters if they exist
+                snowflakeConfiguration.jdbcUrlParams?.let { params ->
+                    // Parse and add any additional parameters from JDBC URL params
+                    params.split("&").forEach { param ->
+                        val parts = param.split("=")
+                        if (parts.size == 2) {
+                            setProperty(parts[0], parts[1])
+                        }
+                    }
+                }
+            }
+
+        return SnowflakeStreamingIngestClientFactory.builder(
+                "airbyte_${airbyteEdition.lowercase()}_streaming_client"
+            )
+            .setProperties(properties)
+            .build()
     }
 }
