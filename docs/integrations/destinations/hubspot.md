@@ -80,6 +80,7 @@ Hubspot has **scopes** for each API call. Each stream is tied to a scope and wil
 
 | Version | Date       | Pull Request                                                    | Subject                                   |
 |:--------|:-----------|:----------------------------------------------------------------|:------------------------------------------|
+| 0.0.6   | 2025-09-09 | [65986](https://github.com/airbytehq/airbyte/pull/65986)        | Adding product object                     |
 | 0.0.5   | 2025-09-08 | [65157](https://github.com/airbytehq/airbyte/pull/65157)        | Update following breaking changes on spec |
 | 0.0.4   | 2025-08-01 | [64144](https://github.com/airbytehq/airbyte/pull/64144)        | OSS release                               |
 | 0.0.3   | 2025-07-18 | [205](https://github.com/airbytehq/airbyte-enterprise/pull/205) | Forcing new release                       |
