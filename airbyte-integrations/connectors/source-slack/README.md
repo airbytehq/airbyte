@@ -54,6 +54,7 @@ airbyte-ci connectors --name=source-slack test
 ## Publishing a new version of the connector
 
 If you want to contribute changes to `source-slack`, here's how you can do that:
+
 1. Make your changes locally, or load the connector's manifest into Connector Builder and make changes there.
 2. Make sure your changes are passing our test suite with `airbyte-ci connectors --name=source-slack test`
 3. Bump the connector version (please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors)):
