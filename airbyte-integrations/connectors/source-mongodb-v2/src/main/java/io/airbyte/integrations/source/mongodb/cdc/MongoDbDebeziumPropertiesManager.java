@@ -83,7 +83,27 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
 
   @Override
   protected @NotNull String getName(final JsonNode config) {
-    return normalizeName(config.get(CONNECTION_STRING_CONFIGURATION_KEY).asText());
+    return normalizeToDebeziumFormat(config.get(CONNECTION_STRING_CONFIGURATION_KEY).asText());
+  }
+
+  /**
+   * Ensure that the name property is formatted correctly for use by Debezium.
+   *
+   * @param connectionString: The name/server_id to be associated with the Debezium connector.
+   * @return The normalized name.
+   *
+   *         Ref
+   *         https://docs.redhat.com/en/documentation/red_hat_integration/2021.q3/html-single/debezium_user_guide/index#:~:text=topic%20names.-,Warning,-The%20MongoDB%20connector
+   */
+  public static String normalizeToDebeziumFormat(final String connectionString) {
+    if (connectionString == null)
+      return null;
+
+    // Step 1: Convert underscores to dashes (matches Debezium's normalizeName behavior)
+    String partialNormalizedStr = connectionString.replaceAll("_", "-");
+
+    // Step 2: Replace special characters with underscores
+    return partialNormalizedStr.replaceAll("[^a-zA-Z0-9.-]", "_");
   }
 
   @Override
@@ -115,16 +135,6 @@ public class MongoDbDebeziumPropertiesManager extends DebeziumPropertiesManager 
         .map(s -> s.getStream().getNamespace() + "\\." + s.getStream().getName())
         .filter(cdcStreamNames::contains)
         .collect(Collectors.joining(","));
-  }
-
-  /**
-   * Ensure that the name property is formatted correctly for use by Debezium.
-   *
-   * @param name The name to be associated with the Debezium connector.
-   * @return The normalized name.
-   */
-  public static String normalizeName(final String name) {
-    return name != null ? name.replaceAll("_", "-") : null;
   }
 
   /**

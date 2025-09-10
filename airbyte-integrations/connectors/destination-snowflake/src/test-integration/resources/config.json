@@ -1,0 +1,11 @@
+{
+  "host": "your_account.snowflakecomputing.com",
+  "role": "sysadmin",
+  "warehouse": "compute_wh",
+  "database": "airbyte_test",
+  "schema": "public",
+  "username": "root",
+  "credentials": {
+    "password": "password"
+  }
+}
