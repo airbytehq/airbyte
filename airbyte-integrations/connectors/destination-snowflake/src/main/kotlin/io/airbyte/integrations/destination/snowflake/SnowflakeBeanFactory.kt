@@ -79,7 +79,7 @@ class SnowflakeBeanFactory {
             override fun getConnection(): Connection? = null
             override fun getConnection(username: String, password: String): Connection? =
                 getConnection()
-            override fun getLogWriter(): PrintWriter = PrintWriter(System.out)
+            override fun getLogWriter(): PrintWriter = PrintWriter(System.out.writer(StandardCharsets.UTF_8))
             override fun setLogWriter(out: PrintWriter) {}
             override fun setLoginTimeout(seconds: Int) {}
             override fun getLoginTimeout(): Int = 0
