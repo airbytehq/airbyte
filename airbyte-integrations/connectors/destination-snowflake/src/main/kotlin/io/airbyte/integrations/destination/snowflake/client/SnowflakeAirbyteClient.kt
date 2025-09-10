@@ -15,7 +15,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.sql.ResultSet
 
-val log = KotlinLogging.logger {}
+private val log = KotlinLogging.logger {}
 
 @Singleton
 class SnowflakeAirbyteClient(
