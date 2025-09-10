@@ -6,7 +6,6 @@ package io.airbyte.cdk.output.sockets
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
-import com.google.protobuf.kotlin.toByteString
 import io.airbyte.cdk.data.ArrayEncoder
 import io.airbyte.cdk.data.BigDecimalCodec
 import io.airbyte.cdk.data.BigDecimalIntegerCodec
@@ -138,7 +137,7 @@ val byteProtoEncoder =
     generateProtoEncoder<Byte> { builder, value -> builder.setInteger(value.toLong()) }
 val binaryProtoEncoder =
     generateProtoEncoder<ByteBuffer> { builder, decoded ->
-        builder.setStringBytes(decoded.toByteString()) // TODO: check here. Need base64 encoded?
+        builder.setString(java.util.Base64.getEncoder().encodeToString(decoded.array()))
     }
 val shortProtoEncoder =
     generateProtoEncoder<Short> { builder, value -> builder.setInteger(value.toLong()) }
