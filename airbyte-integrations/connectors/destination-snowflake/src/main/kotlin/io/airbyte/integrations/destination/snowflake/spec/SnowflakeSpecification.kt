@@ -84,7 +84,7 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
     @JsonSchemaTitle("Authorization Method")
     @JsonSchemaDescription("Determines the type of authentication that should be used.")
     @get:JsonSchemaInject(json = """{"group": "connection", "always_show": true,"order":6}""")
-    val authType: AuthTypeSpecification? = null
+    val credentials: AuthTypeSpecification? = null
 
     @get:JsonSchemaTitle("CDC deletion mode")
     @get:JsonPropertyDescription(
