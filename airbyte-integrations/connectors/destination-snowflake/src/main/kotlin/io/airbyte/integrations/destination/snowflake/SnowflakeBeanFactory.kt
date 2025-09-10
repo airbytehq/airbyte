@@ -66,11 +66,11 @@ class SnowflakeBeanFactory {
     }
 
     /**
-     * Dummy [DataSource] for the spec operation.  Spec doesn't have a configuration
-     * present, so we cannot create the real data source.  However, to avoid having
-     * to pull conditional checks on every singleton related to using the data source,
-     * we can simply create a dummy one here so that everything will be wired correctly
-     * even if all of those beans are unused when running the spec operation.
+     * Dummy [DataSource] for the spec operation. Spec doesn't have a configuration present, so we
+     * cannot create the real data source. However, to avoid having to pull conditional checks on
+     * every singleton related to using the data source, we can simply create a dummy one here so
+     * that everything will be wired correctly even if all of those beans are unused when running
+     * the spec operation.
      */
     @Singleton
     @Requires(property = Operation.PROPERTY, value = "spec")
