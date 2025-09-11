@@ -1,0 +1,72 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "supported_sync_modes": ["full_refresh", "incremental"],
+  "properties": {
+    "id": {
+      "type": ["string"]
+    },
+    "tranid": {
+      "type": ["number"]
+    },
+    "trandate": {
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "quantity": {
+      "type": ["null", "number"]
+    },
+    "recordtype": {
+      "type": ["null", "string"]
+    },
+
+    "weight": {
+      "type": ["null", "number"]
+    },
+    "totalquantityonhand": {
+      "type": ["null", "number"]
+    },
+    "location": {
+      "type": ["null", "number"]
+    },
+    "locationname": {
+      "type": ["null", "string"]
+    },
+    "dsiuser": {
+      "type": ["null", "string"]
+    },
+    "class": {
+      "type": ["null", "string"]
+    },
+    "itemname": {
+      "type": ["null", "string"]
+    },
+    "itemdescription": {
+      "type": ["null", "string"]
+    },
+    "itemoptions": {
+      "type": ["null", "string"]
+    },
+    "shipmethod": {
+      "type": ["null", "string"]
+    },
+    "shiptmethoddesc": {
+      "type": ["null", "string"]
+    },
+
+    "customer": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "statusdesc": {
+      "type": ["null", "string"]
+    },
+    "lastmodifieddate": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    }
+  }
+}

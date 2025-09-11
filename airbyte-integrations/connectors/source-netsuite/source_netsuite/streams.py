@@ -27,6 +27,7 @@ from source_netsuite.constraints import (
     QUERY_CUSTOM_PRODUCTION,
     QUERY_CUSTOM_WHOLESALE,
     QUERY_CUSTOM_ITEM,
+    QUERY_CUSTOM_FULFILMENT_ITEM
 )
 from source_netsuite.errors import NETSUITE_ERRORS_MAPPING, DateFormatExeption
 
@@ -489,11 +490,11 @@ class CustomWholesale(NetsuiteStream):
     
     def get_json_schema(self) -> dict:        
         return HttpStream.get_json_schema(self)
-
+    
     def request_body_json(self, **kwargs) -> Optional[Mapping[str, Any]]:
         return  {
             "q": QUERY_CUSTOM_WHOLESALE
-        }
+        }    
     
     def read_records(
         self, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None, **kwargs
@@ -549,3 +550,71 @@ class CustomItem(NetsuiteStream):
     ) -> Iterable[Mapping]:
         results = response.json().get("items")
         yield from results        
+    
+            
+class CustomFulfillmentItem(IncrementalNetsuiteStream):
+  
+    offset = 0
+
+    @property
+    def cursor_field(self) -> str:
+        return "lastmodifieddate"
+    
+    @property
+    def name(self):
+        return "custom_fulfillmentitem"
+        
+    @property
+    def http_method(self) -> str:
+        return "POST"
+        
+    def request_headers(self, stream_state, stream_slice, next_page_token):
+        headers = super().request_headers(stream_state, stream_slice, next_page_token)
+        headers["Content-Type"] = "application/json"
+        headers["Prefer"] = "transient"
+        return headers
+                
+    def path(self, **kwargs) -> str:
+        return f"/services/rest/query/v1/suiteql?limit=1000&offset={self.offset}"
+        
+    def get_json_schema(self) -> dict:        
+        return HttpStream.get_json_schema(self)    
+    
+    def format_datetime(self, input_date: str) -> str:
+        date = datetime.strptime(input_date, "%m/%d/%Y")
+        return date.strftime("%Y-%m-%d")
+    
+    def request_body_json(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> Optional[Mapping[str, Any]]:
+        from_date = self.format_datetime(stream_slice["start"])
+        to_date = self.format_datetime(stream_slice["end"])
+        query = QUERY_CUSTOM_FULFILMENT_ITEM.format(from_date=from_date, to_date=to_date)
+        #print(f"\n{query}\n")
+        return  {
+            "q": query
+        }
+        
+        
+    def request_params(
+        self, **kwargs
+    ) -> MutableMapping[str, Any]:
+        NetsuiteStream.request_params(self, **kwargs)        
+    
+    def read_records(
+        self, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None, **kwargs
+    ) -> Iterable[Mapping[str, Any]]:
+        yield from HttpStream.read_records(self, stream_slice=stream_slice, stream_state=stream_state, **kwargs)  
+        
+    def parse_response(
+        self,
+        response: requests.Response,
+        **kwargs
+    ) -> Iterable[Mapping]:
+        # Prepare next page offset for the next call.
+        resp = response.json()
+        has_more = resp.get("hasMore")
+        if has_more:
+            self.offset = resp["offset"] + resp["count"]
+        else:
+            self.offset = 0
+                
+        yield from response.json().get("items")
