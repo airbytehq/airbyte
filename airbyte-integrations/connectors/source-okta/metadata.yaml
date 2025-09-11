@@ -23,7 +23,7 @@ data:
   dockerRepository: airbyte/source-okta
   githubIssueLabel: source-okta
   icon: icon.svg
-  license: ELv2
+  license: MIT
   name: Okta
   releaseStage: alpha
   supportLevel: community
