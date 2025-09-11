@@ -25,6 +25,7 @@ source-okta = "source_okta.run:run"
 requests-mock = "^1.9.3"
 pytest-mock = "^3.6.1"
 pytest = "^8.0.0"
+pendulum = "^3.1.0"
 
 
 [tool.poe]
