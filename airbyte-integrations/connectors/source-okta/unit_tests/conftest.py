@@ -126,6 +126,7 @@ def oauth_config():
     Credentials for oauth2.0 authorization
     """
     return {
+        "base_url": "https://test_domain.okta.com",
         "credentials": {
             "auth_type": "oauth2.0",
             "client_secret": "test_client_secret",
