@@ -6,7 +6,7 @@
     "type" : "object",
     "additionalProperties" : true,
     "properties" : {
-      "authType" : {
+      "credentials" : {
         "oneOf" : [ {
           "title" : "Key Pair Authentication",
           "type" : "object",
@@ -15,8 +15,8 @@
           "properties" : {
             "auth_type" : {
               "type" : "string",
-              "enum" : [ "PRIVATE_KEY" ],
-              "default" : "PRIVATE_KEY"
+              "enum" : [ "Key Pair Authentication" ],
+              "default" : "Key Pair Authentication"
             },
             "private_key" : {
               "type" : "string",
@@ -42,8 +42,8 @@
           "properties" : {
             "auth_type" : {
               "type" : "string",
-              "enum" : [ "USERNAME_PASSWORD" ],
-              "default" : "USERNAME_PASSWORD"
+              "enum" : [ "Username and Password" ],
+              "default" : "Username and Password"
             },
             "password" : {
               "type" : "string",
