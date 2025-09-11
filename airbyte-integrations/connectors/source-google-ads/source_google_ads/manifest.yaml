@@ -1003,7 +1003,7 @@ definitions:
                 "datetime_format": "%Y-%m-%d"
               }
             }
-          condition: "{{ components_values.get('query', '').count('segments.date') == 1 }}"
+          condition: "{{ components_values.get('query', '').count('segments.date') == 1 or (components_values.get('query', '').count('segments.date') == 2 and 'ORDER BY segments.date' in components_values.get('query', '')) }}"
           create_or_update: true
         - type: ComponentMappingDefinition
           field_path:
@@ -1020,7 +1020,7 @@ definitions:
             - $parameters
             - cursor_field
           value: "segments.date"
-          condition: "{{ components_values.get('query', '').count('segments.date') == 1 }}"
+          condition: "{{ components_values.get('query', '').count('segments.date') == 1 or (components_values.get('query', '').count('segments.date') == 2 and 'ORDER BY segments.date' in components_values.get('query', '')) }}"
           create_or_update: true
         - type: ComponentMappingDefinition
           field_path:
@@ -1034,7 +1034,7 @@ definitions:
             - schema_loader
             - cursor_field
           value: "segments.date"
-          condition: "{{ components_values.get('query', '').count('segments.date') == 1 }}"
+          condition: "{{ components_values.get('query', '').count('segments.date') == 1 or (components_values.get('query', '').count('segments.date') == 2 and 'ORDER BY segments.date' in components_values.get('query', '')) }}"
           create_or_update: true
         - type: ComponentMappingDefinition
           field_path:
