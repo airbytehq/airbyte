@@ -370,10 +370,23 @@ module.exports = {
                 "move-data/rejected-records"
               ],
             },
-            "using-airbyte/sync-files-and-records"
+            "using-airbyte/sync-files-and-records",
           ],
-        },        
+        },
         buildAConnector,
+        sectionHeader("Organizations and workspaces"),
+        {
+          type: "category",
+          label: "Manage organizations and workspaces",
+          link: {
+            type: "doc",
+            id: "organizations-workspaces/readme",
+          },
+          items: [
+            "organizations-workspaces/organizations/readme",
+            "organizations-workspaces/workspaces/readme",
+          ]
+        },        
         sectionHeader("Managing Airbyte"),
         deployAirbyte,
         {
