@@ -138,7 +138,7 @@ class PostgresSourceJdbcPartitionFactory(
                         lowerBound =
                             listOf(
                                 Jsons.textNode(streamState.maybeCtid!!.toString())
-                            ), // check if ctid is null
+                            ),
                         upperBound = null,
                         filenode
                     )
