@@ -92,6 +92,14 @@ class NotionDataFeedFilter(RecordFilter):
 
 @dataclass
 class BlocksRetriever(SimpleRetriever):
+    """
+    Docs: https://developers.notion.com/reference/get-block-children
+
+    According to that fact that block's entity may have children entities that stream also need to retrieve
+    BlocksRetriever calls read_records when received record.has_children is True.
+
+    """
+
     def read_records(
         self,
         records_schema: Mapping[str, Any],
