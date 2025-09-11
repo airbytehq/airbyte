@@ -245,5 +245,4 @@ Let's walk through the complete flow using the [SendGrid contacts export](https:
 
 7. **Leverage Enhanced Interpolation**: Take advantage of `creation_response` and `polling_response` contexts to simplify your configuration. For APIs that provide download URLs directly in creation or polling responses, you may not need a Download Target Extractor at all.
 
-
 Remember that asynchronous streams often take longer to test than synchronous streams, especially if the API takes time to process jobs.
