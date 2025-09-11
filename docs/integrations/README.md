@@ -14,7 +14,7 @@ Don't see the connector you need? Need a connector to do something it doesn't cu
 
 ## Connector support levels
 
-Each connector has one of the following support levels. Review [Connector support levels](connector-support-levels) for details on each tier.
+Each connector has one of the following support levels. Review [Connector support levels](/integrations/connector-support-levels) for details on each tier.
 
 - **Airbyte**: maintained by Airbyte.
 
