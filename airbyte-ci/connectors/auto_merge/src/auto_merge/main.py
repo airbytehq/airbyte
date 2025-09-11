@@ -10,6 +10,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING, Callable, Optional
 
+import requests
 from github import Auth, Github
 
 from .consts import (
@@ -31,6 +32,91 @@ if TYPE_CHECKING:
 logging.basicConfig()
 logger = logging.getLogger("auto_merge")
 logger.setLevel(logging.INFO)
+
+
+def get_required_checks_from_rulesets(repo: GithubRepo, branch_name: str) -> set[str]:
+    """Get required status checks from GitHub rulesets API.
+
+    Args:
+        repo (GithubRepo): The repository to check
+        branch_name (str): The branch name to get required checks for
+
+    Returns:
+        set[str]: Set of required status check contexts from rulesets
+    """
+    required_checks: set[str] = set()
+
+    url = f"{repo.url}/rules/branches/{branch_name}"
+    headers = {"Accept": "application/vnd.github+json", "Authorization": f"Bearer {GITHUB_TOKEN}", "X-GitHub-Api-Version": "2022-11-28"}
+
+    try:
+        response = requests.get(url, headers=headers)
+
+        if response.status_code == 404:
+            logger.info(f"No rulesets found for branch '{branch_name}' (404)")
+            return required_checks
+
+        response.raise_for_status()
+        rules_data = response.json()
+
+        for rule in rules_data:
+            if rule.get("type") == "required_status_checks":
+                parameters = rule.get("parameters", {})
+                if "required_status_checks" in parameters:
+                    for check in parameters["required_status_checks"]:
+                        if isinstance(check, dict) and "context" in check:
+                            required_checks.add(check["context"])
+                        elif isinstance(check, str):
+                            required_checks.add(check)
+    except Exception as e:
+        logger.info(f"Failed to fetch rulesets for branch '{branch_name}': {e}")
+
+    return required_checks
+
+
+def get_required_status_checks_from_all_sources(repo: GithubRepo, branch_name: str) -> set[str]:
+    """Get required status checks from both legacy branch protection and modern rulesets APIs.
+
+    This function transparently combines required checks from both APIs to ensure backwards
+    compatibility while supporting modern rulesets. It handles 404s gracefully when one
+    API isn't available and hard fails if no required checks are found from any source.
+
+    Args:
+        repo (GithubRepo): The repository to check
+        branch_name (str): The branch name to get required checks for
+
+    Returns:
+        set[str]: Combined set of required status check contexts from all sources
+
+    Raises:
+        ValueError: If no required checks are found from any source (hard fail for safety)
+    """
+    required_checks: set[str] = set()
+
+    try:
+        branch = repo.get_branch(branch_name)
+        legacy_checks = set(branch.get_required_status_checks().contexts)
+        required_checks.update(legacy_checks)
+        logger.info(f"Found {len(legacy_checks)} required checks from legacy branch protection API")
+    except Exception as e:
+        logger.info(f"Legacy branch protection API not available or failed: {e}")
+
+    try:
+        rulesets_checks = get_required_checks_from_rulesets(repo, branch_name)
+        required_checks.update(rulesets_checks)
+        logger.info(f"Found {len(rulesets_checks)} required checks from rulesets API")
+    except Exception as e:
+        logger.info(f"Rulesets API not available or failed: {e}")
+
+    if not required_checks:
+        raise ValueError(
+            f"No required status checks found for branch '{branch_name}' from either "
+            f"legacy branch protection or rulesets APIs. This could indicate a "
+            f"configuration issue or that all protection has been accidentally removed."
+        )
+
+    logger.info(f"Total required checks from all sources: {len(required_checks)}")
+    return required_checks
 
 
 @contextmanager
@@ -168,9 +254,8 @@ def auto_merge() -> None:
 
     with github_client() as gh_client:
         repo = gh_client.get_repo(AIRBYTE_REPO)
-        main_branch = repo.get_branch(BASE_BRANCH)
         logger.info(f"Fetching required passing contexts for {BASE_BRANCH}")
-        required_passing_contexts = set(main_branch.get_required_status_checks().contexts)
+        required_passing_contexts = get_required_status_checks_from_all_sources(repo, BASE_BRANCH)
         candidate_issues = gh_client.search_issues(
             f"repo:{AIRBYTE_REPO} is:pr label:{AUTO_MERGE_LABEL},{AUTO_MERGE_BYPASS_CI_CHECKS_LABEL} base:{BASE_BRANCH} state:open"
         )
