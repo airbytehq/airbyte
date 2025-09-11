@@ -132,6 +132,7 @@ def oauth_config():
             "refresh_token": "test_refresh_token",
         },
         "domain": "test_domain",
+        "start_date": "2022-07-22T00:00:00Z",
     }
 
 
@@ -171,9 +172,17 @@ def wrong_oauth_config_bad_auth_type():
 @fixture
 def token_config():
     """
-    Just test 'token'
+    Just test 'token' - updated to include required credentials field
     """
-    return {"token": "test_token", "start_date": "2021-03-21T20:49:13Z"}
+    return {
+        "token": "test_token", 
+        "start_date": "2021-03-21T20:49:13Z",
+        "credentials": {
+            "auth_type": "api_token",
+            "api_token": "test_token"
+        },
+        "domain": "test_domain"
+    }
 
 
 @fixture
