@@ -16,8 +16,10 @@ from airbyte_cdk.sources.streams import Stream
 
 
 def get_stream_by_name(stream_name: str, config: Mapping[str, Any]) -> Stream:
-    from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
     from pathlib import Path
+
+    from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+
     yaml_path = Path(__file__).parent.parent / "source_okta" / "manifest.yaml"
     for stream in YamlDeclarativeSource(config=config, catalog=None, state=None, path_to_yaml=str(yaml_path)).streams(config=config):
         if stream.name == stream_name:
@@ -41,13 +43,12 @@ class TestStatusCodes:
         oauth_authentication_instance = CustomOauth2Authenticator(config=oauth_config, **oauth_kwargs, parameters=None)
         oauth_authentication_instance.path = f"{api_url}/oauth2/v1/token"
         assert isinstance(oauth_authentication_instance, CustomOauth2Authenticator)
-        
+
         requests_mock.get(f"{api_url}/api/v1/users", status_code=http_status, json={})
         requests_mock.post(f"{api_url}/oauth2/v1/token", json={"access_token": "test_token", "expires_in": 948})
-        
+
         stream = get_stream_by_name("users", oauth_config)
         assert stream is not None
-        
 
 
 class TestOktaStream:

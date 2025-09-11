@@ -4,14 +4,16 @@
 
 import sys
 from pathlib import Path
+
 from pytest import fixture
 
-from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 
 
 def _get_manifest_path() -> Path:
     return Path(__file__).parent.parent
+
 
 _SOURCE_FOLDER_PATH = _get_manifest_path()
 _YAML_FILE_PATH = _SOURCE_FOLDER_PATH / "source_okta" / "manifest.yaml"
