@@ -2,7 +2,7 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
-import pendulum
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 from pytest import fixture
 
 
@@ -549,4 +549,4 @@ def error_failed_to_authorize_with_provided_credentials():
 
 @fixture
 def start_date():
-    return pendulum.parse("2021-03-21T20:49:13Z")
+    return ab_datetime_parse("2021-03-21T20:49:13Z")
