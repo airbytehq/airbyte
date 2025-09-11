@@ -81,9 +81,10 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
     )
     val username: String = ""
 
-    @JsonSchemaTitle("Authorization Method")
-    @JsonSchemaDescription("Determines the type of authentication that should be used.")
-    @get:JsonSchemaInject(json = """{"group": "connection", "always_show": true,"order":6}""")
+    @get:JsonSchemaTitle("Authorization Method")
+    @get:JsonSchemaDescription("Determines the type of authentication that should be used.")
+    @get:JsonProperty("credentials")
+    @get:JsonSchemaInject(json = """{"group": "connection", "order":6}""")
     val credentials: CredentialsSpecification? = null
 
     @get:JsonSchemaTitle("CDC deletion mode")
@@ -157,7 +158,7 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
         name = "Username and Password"
     )
 )
-sealed class CredentialsSpecification(@get:JsonProperty("auth_type") val auth_type: Type) {
+sealed class CredentialsSpecification(@JsonProperty("auth_type") val auth_type: Type) {
     /** Enumeration of possible credential types. */
     enum class Type(@get:JsonValue val authTypeName: String) {
         PRIVATE_KEY("Key Pair Authentication"),
