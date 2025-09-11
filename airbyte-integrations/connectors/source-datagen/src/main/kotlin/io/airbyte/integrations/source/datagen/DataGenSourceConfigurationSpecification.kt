@@ -41,12 +41,19 @@ class DataGenSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonSchemaInject(json = """{"default":"incremental","display_type":"radio"}""")
     fun getFlavor(): FlavorSpec = flavorJson ?: flavorInternal
 
-    // TODO: add maximum?
-    @JsonProperty("run_duration")
-    @JsonSchemaTitle("Run Duration")
-    @JsonSchemaDescription("The duration (in seconds) to run the data generation for before timeout.")
-    @JsonSchemaInject(json = """{"default":"300","required":true}""")
-    var runDuration: Long = 300
+    @JsonProperty("concurrency")
+    @JsonSchemaTitle("Concurrency")
+    @JsonSchemaDescription("The number of concurrent jobs or threads to run.")
+    @JsonSchemaDefault("1")
+    @JsonSchemaInject(json = """{"display_type":"number"}""")
+    var concurrency: Int = 1
+
+    // TODO: min 1 max 100 billion
+    @JsonProperty("max_records")
+    @JsonSchemaTitle("Max Record")
+    @JsonSchemaDescription("The maximum number of records to generate.")
+    @JsonSchemaInject(json = """{"default":"100"}""")
+    var maxRecords: Long = 100
 }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "data_type")

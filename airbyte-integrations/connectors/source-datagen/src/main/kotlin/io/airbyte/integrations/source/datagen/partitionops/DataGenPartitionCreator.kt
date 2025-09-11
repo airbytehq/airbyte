@@ -18,9 +18,7 @@ import java.util.concurrent.atomic.AtomicReference
 
 class DataGenPartitionCreator (
     val partition: DataGenSourcePartition,
-    val partitionFactory: DataGenSourcePartitionFactory,
-    val clock: Clock,
-    val endTime: LocalTime
+    val partitionFactory: DataGenSourcePartitionFactory
 ): PartitionsCreator {
 
     val streamState: DataGenStreamState = partition.streamState
@@ -39,7 +37,7 @@ class DataGenPartitionCreator (
 
     override suspend fun run(): List<PartitionReader> {
         // TODO: add split()
-        val partitionReader = DataGenPartitionReader(partition, clock, endTime)
+        val partitionReader = DataGenPartitionReader(partition)
         return listOf(partitionReader)
     }
 

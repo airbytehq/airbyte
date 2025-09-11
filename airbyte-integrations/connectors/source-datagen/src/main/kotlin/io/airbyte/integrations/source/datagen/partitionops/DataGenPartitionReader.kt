@@ -1,5 +1,6 @@
 package io.airbyte.integrations.source.datagen.partitionops
 
+import com.fasterxml.jackson.databind.node.TextNode
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.output.DataChannelMedium.*
 import io.airbyte.cdk.output.OutputMessageRouter
@@ -16,32 +17,24 @@ import io.airbyte.integrations.source.datagen.partitionobjs.DataGenSharedState
 import io.airbyte.integrations.source.datagen.partitionobjs.DataGenSourcePartition
 import io.airbyte.integrations.source.datagen.partitionobjs.DataGenStreamState
 import io.github.oshai.kotlinlogging.KotlinLogging
-import jakarta.inject.Singleton
-import java.time.Clock
-import java.time.LocalTime
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.minutes
-
 
 
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
-class DataGenPartitionReader (val partition: DataGenSourcePartition, val clock: Clock, val endTime: LocalTime) : PartitionReader {
+class DataGenPartitionReader (val partition: DataGenSourcePartition) : PartitionReader {
     private val log = KotlinLogging.logger {}
     lateinit var outputMessageRouter: OutputMessageRouter
 
     val numRecords = AtomicLong()
-    val recordsPerRun = 10
     val runComplete = AtomicBoolean(false)
     // dont need this rn cuz just doing 1 partition
     // protected var partitionId: String = generatePartitionId(4)
-    protected var partitionId: String = "0"
+    protected var partitionId: String = "1"
     val streamState: DataGenStreamState = partition.streamState
     val stream: Stream = streamState.stream
     val sharedState: DataGenSharedState = streamState.sharedState
-    val duration = sharedState.configuration.runDuration
 
     interface AcquiredResource : AutoCloseable {
         val resource: Resource.Acquired?
@@ -85,19 +78,17 @@ class DataGenPartitionReader (val partition: DataGenSourcePartition, val clock: 
         val configuration = sharedState.configuration
         val sourceDataGenerator = configuration.flavor.dataGenerator
 
-        repeat (recordsPerRun) {
+        for (i in 0L until configuration.maxRecords) {
             val record = sourceDataGenerator.generateData()
 
             outputRoute(record, null)
             numRecords.incrementAndGet()
         }
 
-        log.info { "Partition $partitionId: Generated $recordsPerRun records for stream ${stream.name}." }
-        if (LocalTime.now(clock) >= endTime) {
-            log.info { "Completed data generation for partition $partitionId. Total records generated: ${numRecords.get()}." }
-            runComplete.set(true)
-            return
-        }
+        log.info { "Completed data generation for partition $partitionId. Total records generated: ${numRecords.get()}." }
+        runComplete.set(true)
+
+        return
     }
 
     override fun checkpoint(): PartitionReadCheckpoint {
