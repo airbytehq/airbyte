@@ -11,6 +11,6 @@ class DataGenStreamState(
         get() = streamFeedBootstrap.feed
 
     companion object {
-        val completeState: OpaqueStateValue = TextNode("done!!")
+        var completeState: OpaqueStateValue = TextNode("done")
     }
 }
