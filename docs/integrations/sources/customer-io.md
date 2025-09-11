@@ -47,6 +47,7 @@ Please follow the [their documentation for generating an App API Key](https://cu
 
 | Version | Date       | Pull Request                                                   | Subject                                     |
 |:--------|:-----------| :------------------------------------------------------------- |:--------------------------------------------|
+| 0.3.20  | 2025-09-11 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Update to CDK v7 |
 | 0.3.19  | 2025-08-20 | [65113](https://github.com/airbytehq/airbyte/pull/65113) | Update logo                                 |
 | 0.3.18  | 2025-05-10 | [60049](https://github.com/airbytehq/airbyte/pull/60049) | Update dependencies                         |
 | 0.3.17  | 2025-05-03 | [58875](https://github.com/airbytehq/airbyte/pull/58875) | Update dependencies                         |
