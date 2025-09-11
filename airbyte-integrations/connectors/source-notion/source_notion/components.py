@@ -1,11 +1,16 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
-
+import copy
 from dataclasses import dataclass
-from typing import Any, List, Mapping, MutableMapping, Optional
+from functools import partial
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
+from airbyte_cdk.sources.declarative.incremental import ConcurrentCursorFactory, ConcurrentPerPartitionCursor
+from airbyte_cdk.sources.declarative.partition_routers import SubstreamPartitionRouter
+from airbyte_cdk.sources.declarative.retrievers.simple_retriever import FULL_REFRESH_SYNC_COMPLETE_KEY, SimpleRetriever
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
+from airbyte_cdk.sources.streams.core import StreamData
 
 
 @dataclass
@@ -83,3 +88,21 @@ class NotionDataFeedFilter(RecordFilter):
         if state_value_timestamp:
             return max(filter(None, [start_date_timestamp, state_value_timestamp]), default=start_date_timestamp)
         return start_date_timestamp
+
+
+@dataclass
+class BlocksRetriever(SimpleRetriever):
+    def read_records(
+        self,
+        records_schema: Mapping[str, Any],
+        stream_slice: Optional[StreamSlice] = None,
+    ) -> Iterable[StreamData]:
+        for stream_data in super().read_records(records_schema, stream_slice):
+            if stream_data.data.get("has_children"):
+                child_stream_slice = StreamSlice(
+                    partition={"block_id": stream_data.data["id"], "parent_slice": {}},
+                    cursor_slice=stream_slice.cursor_slice,
+                )
+                yield from self.read_records(records_schema, child_stream_slice)
+
+            yield stream_data
