@@ -23,11 +23,15 @@ class SnowflakeAirbyteClient(
 ) : AirbyteClient, DirectLoadTableSqlOperations, DirectLoadTableNativeOperations {
     override suspend fun countTable(tableName: TableName): Long {
         return dataSource.connection.use { connection ->
-            connection
+            val resultSet = connection
                 .createStatement()
                 .executeQuery(sqlGenerator.countTable(tableName))
-                .getInt("total")
-                .toLong()
+            
+            if (resultSet.next()) {
+                resultSet.getLong("total")
+            } else {
+                0L
+            }
         }
     }
 
