@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-chameleon
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.60.16@sha256:b8126848437ec5a6cff05fb4796fd775450b83e57925674d856a1838a390a28c
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.61.6@sha256:a86098c6af1cf9d0b4484f33c973981a4d4f16740924ce9325b01ee4c8ca33df
   connectorSubtype: api
   connectorType: source
   definitionId: 64a0240a-81a4-4e40-8002-e063b17cfbbe
-  dockerImageTag: 0.1.30
+  dockerImageTag: 0.1.31
   dockerRepository: airbyte/source-chameleon
   githubIssueLabel: source-chameleon
   icon: icon.svg
