@@ -110,7 +110,7 @@ The **Download Target Requester** (Optional) makes an additional API request onc
 
 **Note:** The Download Target Extractor is optional if not using the Download Target Requester. If not specified, the connector will make a _single_ request during the Download stage without the `download_target` interpolation context. This is suitable for simple APIs.
 
-#### Example Configuration (SendGrid):
+#### Example Configuration (SendGrid)
 
 In the UI, for the [SendGrid contacts export](https://www.twilio.com/docs/sendgrid/api-reference/contacts/export-contacts), you would configure:
 
