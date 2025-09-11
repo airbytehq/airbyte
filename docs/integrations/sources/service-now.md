@@ -58,7 +58,6 @@ Airbyte’s incubating ServiceNow Enterprise source connector offers both Full R
 - refund_request
 - vendor_update
 
-
 ## Supported sync modes
 
 The NetSuite source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
