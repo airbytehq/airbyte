@@ -1,0 +1,981 @@
+version: 6.41.5
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - topics
+
+definitions:
+  streams:
+    topics:
+      type: DeclarativeStream
+      name: topics
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: latest.json
+          http_method: GET
+          request_headers:
+            Api-Username: "{{ config['api_username'] }}"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - topic_list
+              - topics
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 30
+            start_from_page: 1
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/topics"
+    posts:
+      type: DeclarativeStream
+      name: posts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: t/{{ stream_slice['topic_id'] }}.json
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - post_stream
+              - posts
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: topic_id
+              stream:
+                $ref: "#/definitions/streams/topics"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/posts"
+    categories:
+      type: DeclarativeStream
+      name: categories
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: categories.json
+          http_method: GET
+          request_parameters:
+            include_subcategories: "true"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - category_list
+              - categories
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/categories"
+  base_requester:
+    type: HttpRequester
+    url_base: "{{ config['api_base_url'] }}/"
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config[\"api_key\"] }}"
+      inject_into:
+        type: RequestOption
+        field_name: Api-Key
+        inject_into: header
+
+streams:
+  - $ref: "#/definitions/streams/topics"
+  - $ref: "#/definitions/streams/posts"
+  - $ref: "#/definitions/streams/categories"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_base_url
+      - api_key
+      - api_username
+    properties:
+      api_base_url:
+        type: string
+        title: API Base URL
+        order: 0
+      api_key:
+        type: string
+        order: 1
+        title: API Key
+        airbyte_secret: true
+      api_username:
+        type: string
+        description: Used for authentication
+        order: 2
+        title: API Username
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    topics: true
+    posts: true
+    categories: true
+  testedStreams:
+    topics:
+      streamHash: 81dbb141db0031b274bd96f2051cfedb1c380958
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    posts:
+      streamHash: 35386c88f16c4438d5a34a697a0c05eb3bbee6a4
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    categories:
+      streamHash: 0f38d48471722842ef66e6a84cd2547ae78be33f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+  assist: {}
+
+schemas:
+  topics:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      archetype:
+        type:
+          - string
+          - "null"
+      archived:
+        type:
+          - boolean
+          - "null"
+      bookmarked:
+        type:
+          - boolean
+          - "null"
+      bumped:
+        type:
+          - boolean
+          - "null"
+      bumped_at:
+        type:
+          - string
+          - "null"
+      category_id:
+        type:
+          - number
+          - "null"
+      closed:
+        type:
+          - boolean
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      event_ends_at:
+        type:
+          - string
+          - "null"
+      event_starts_at:
+        type:
+          - string
+          - "null"
+      excerpt:
+        type:
+          - string
+          - "null"
+      fancy_title:
+        type:
+          - string
+          - "null"
+      has_accepted_answer:
+        type:
+          - boolean
+          - "null"
+      has_summary:
+        type:
+          - boolean
+          - "null"
+      highest_post_number:
+        type:
+          - number
+          - "null"
+      id:
+        type: number
+      image_url:
+        type:
+          - string
+          - "null"
+      last_posted_at:
+        type:
+          - string
+          - "null"
+      last_poster_username:
+        type:
+          - string
+          - "null"
+      last_read_post_number:
+        type:
+          - number
+          - "null"
+      like_count:
+        type:
+          - number
+          - "null"
+      liked:
+        type:
+          - boolean
+          - "null"
+      new_posts:
+        type:
+          - number
+          - "null"
+      notification_level:
+        type:
+          - number
+          - "null"
+      pinned:
+        type:
+          - boolean
+          - "null"
+      pinned_globally:
+        type:
+          - boolean
+          - "null"
+      posters:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            extras:
+              type:
+                - string
+                - "null"
+            flair_group_id:
+              type:
+                - number
+                - "null"
+            primary_group_id:
+              type:
+                - number
+                - "null"
+            user_id:
+              type:
+                - number
+                - "null"
+      posts_count:
+        type:
+          - number
+          - "null"
+      reply_count:
+        type:
+          - number
+          - "null"
+      slug:
+        type:
+          - string
+          - "null"
+      tags:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
+      tags_descriptions:
+        type:
+          - object
+          - "null"
+        properties:
+          aws:
+            type:
+              - string
+              - "null"
+          azure:
+            type:
+              - string
+              - "null"
+          gcp:
+            type:
+              - string
+              - "null"
+      title:
+        type:
+          - string
+          - "null"
+      unread:
+        type:
+          - number
+          - "null"
+      unread_posts:
+        type:
+          - number
+          - "null"
+      unseen:
+        type:
+          - boolean
+          - "null"
+      views:
+        type:
+          - number
+          - "null"
+      visibility_reason_id:
+        type:
+          - number
+          - "null"
+      visible:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+  posts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      version:
+        type:
+          - number
+          - "null"
+      accepted_answer:
+        type:
+          - boolean
+          - "null"
+      actions_summary:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            can_act:
+              type:
+                - boolean
+                - "null"
+            count:
+              type:
+                - number
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+      admin:
+        type:
+          - boolean
+          - "null"
+      avatar_template:
+        type:
+          - string
+          - "null"
+      bookmarked:
+        type:
+          - boolean
+          - "null"
+      calendar_details:
+        type:
+          - array
+          - "null"
+      can_accept_answer:
+        type:
+          - boolean
+          - "null"
+      can_delete:
+        type:
+          - boolean
+          - "null"
+      can_edit:
+        type:
+          - boolean
+          - "null"
+      can_recover:
+        type:
+          - boolean
+          - "null"
+      can_see_hidden_post:
+        type:
+          - boolean
+          - "null"
+      can_unaccept_answer:
+        type:
+          - boolean
+          - "null"
+      can_view_edit_history:
+        type:
+          - boolean
+          - "null"
+      can_wiki:
+        type:
+          - boolean
+          - "null"
+      cooked:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      display_username:
+        type:
+          - string
+          - "null"
+      flair_bg_color:
+        type:
+          - string
+          - "null"
+      flair_color:
+        type:
+          - string
+          - "null"
+      flair_group_id:
+        type:
+          - number
+          - "null"
+      flair_name:
+        type:
+          - string
+          - "null"
+      flair_url:
+        type:
+          - string
+          - "null"
+      hidden:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      incoming_link_count:
+        type:
+          - number
+          - "null"
+      link_counts:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            clicks:
+              type:
+                - number
+                - "null"
+            internal:
+              type:
+                - boolean
+                - "null"
+            reflection:
+              type:
+                - boolean
+                - "null"
+            title:
+              type:
+                - string
+                - "null"
+            url:
+              type:
+                - string
+                - "null"
+      moderator:
+        type:
+          - boolean
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      notice:
+        type:
+          - object
+          - "null"
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+      post_number:
+        type:
+          - number
+          - "null"
+      post_type:
+        type:
+          - number
+          - "null"
+      primary_group_name:
+        type:
+          - string
+          - "null"
+      quote_count:
+        type:
+          - number
+          - "null"
+      read:
+        type:
+          - boolean
+          - "null"
+      readers_count:
+        type:
+          - number
+          - "null"
+      reads:
+        type:
+          - number
+          - "null"
+      reply_count:
+        type:
+          - number
+          - "null"
+      reply_to_post_number:
+        type:
+          - number
+          - "null"
+      reply_to_user:
+        type:
+          - object
+          - "null"
+        properties:
+          avatar_template:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          username:
+            type:
+              - string
+              - "null"
+      reviewable_id:
+        type:
+          - number
+          - "null"
+      reviewable_score_count:
+        type:
+          - number
+          - "null"
+      reviewable_score_pending_count:
+        type:
+          - number
+          - "null"
+      score:
+        type:
+          - number
+          - "null"
+      staff:
+        type:
+          - boolean
+          - "null"
+      title_is_group:
+        type:
+          - boolean
+          - "null"
+      topic_accepted_answer:
+        type:
+          - boolean
+          - "null"
+      topic_id:
+        type:
+          - number
+          - "null"
+      topic_slug:
+        type:
+          - string
+          - "null"
+      trust_level:
+        type:
+          - number
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+      user_deleted:
+        type:
+          - boolean
+          - "null"
+      user_id:
+        type:
+          - number
+          - "null"
+      user_title:
+        type:
+          - string
+          - "null"
+      username:
+        type:
+          - string
+          - "null"
+      wiki:
+        type:
+          - boolean
+          - "null"
+      yours:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+  categories:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      can_edit:
+        type:
+          - boolean
+          - "null"
+      color:
+        type:
+          - string
+          - "null"
+      custom_fields:
+        type:
+          - object
+          - "null"
+        properties:
+          has_chat_enabled:
+            type:
+              - boolean
+              - "null"
+      default_list_filter:
+        type:
+          - string
+          - "null"
+      default_top_period:
+        type:
+          - string
+          - "null"
+      default_view:
+        type:
+          - string
+          - "null"
+      description_excerpt:
+        type:
+          - string
+          - "null"
+      description_text:
+        type:
+          - string
+          - "null"
+      has_children:
+        type:
+          - boolean
+          - "null"
+      id:
+        type: number
+      minimum_required_tags:
+        type:
+          - number
+          - "null"
+      name:
+        type:
+          - string
+          - "null"
+      navigate_to_first_post_after_read:
+        type:
+          - boolean
+          - "null"
+      notification_level:
+        type:
+          - number
+          - "null"
+      num_featured_topics:
+        type:
+          - number
+          - "null"
+      permission:
+        type:
+          - number
+          - "null"
+      position:
+        type:
+          - number
+          - "null"
+      post_count:
+        type:
+          - number
+          - "null"
+      read_restricted:
+        type:
+          - boolean
+          - "null"
+      show_subcategory_list:
+        type:
+          - boolean
+          - "null"
+      slug:
+        type:
+          - string
+          - "null"
+      sort_order:
+        type:
+          - string
+          - "null"
+      subcategory_count:
+        type:
+          - number
+          - "null"
+      subcategory_ids:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - number
+            - "null"
+      subcategory_list:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            description:
+              type:
+                - string
+                - "null"
+            can_edit:
+              type:
+                - boolean
+                - "null"
+            color:
+              type:
+                - string
+                - "null"
+            custom_fields:
+              type:
+                - object
+                - "null"
+              properties: {}
+            default_list_filter:
+              type:
+                - string
+                - "null"
+            default_top_period:
+              type:
+                - string
+                - "null"
+            default_view:
+              type:
+                - string
+                - "null"
+            description_excerpt:
+              type:
+                - string
+                - "null"
+            description_text:
+              type:
+                - string
+                - "null"
+            has_children:
+              type:
+                - boolean
+                - "null"
+            id:
+              type:
+                - number
+                - "null"
+            minimum_required_tags:
+              type:
+                - number
+                - "null"
+            name:
+              type:
+                - string
+                - "null"
+            navigate_to_first_post_after_read:
+              type:
+                - boolean
+                - "null"
+            notification_level:
+              type:
+                - number
+                - "null"
+            num_featured_topics:
+              type:
+                - number
+                - "null"
+            parent_category_id:
+              type:
+                - number
+                - "null"
+            permission:
+              type:
+                - number
+                - "null"
+            position:
+              type:
+                - number
+                - "null"
+            post_count:
+              type:
+                - number
+                - "null"
+            read_restricted:
+              type:
+                - boolean
+                - "null"
+            show_subcategory_list:
+              type:
+                - boolean
+                - "null"
+            slug:
+              type:
+                - string
+                - "null"
+            sort_order:
+              type:
+                - string
+                - "null"
+            subcategory_ids:
+              type:
+                - array
+                - "null"
+            subcategory_list_style:
+              type:
+                - string
+                - "null"
+            text_color:
+              type:
+                - string
+                - "null"
+            topic_count:
+              type:
+                - number
+                - "null"
+            topic_template:
+              type:
+                - string
+                - "null"
+            topic_url:
+              type:
+                - string
+                - "null"
+            topics_all_time:
+              type:
+                - number
+                - "null"
+            topics_day:
+              type:
+                - number
+                - "null"
+            topics_month:
+              type:
+                - number
+                - "null"
+            topics_week:
+              type:
+                - number
+                - "null"
+            topics_year:
+              type:
+                - number
+                - "null"
+      subcategory_list_style:
+        type:
+          - string
+          - "null"
+      text_color:
+        type:
+          - string
+          - "null"
+      topic_count:
+        type:
+          - number
+          - "null"
+      topic_template:
+        type:
+          - string
+          - "null"
+      topic_url:
+        type:
+          - string
+          - "null"
+      topics_all_time:
+        type:
+          - number
+          - "null"
+      topics_day:
+        type:
+          - number
+          - "null"
+      topics_month:
+        type:
+          - number
+          - "null"
+      topics_week:
+        type:
+          - number
+          - "null"
+      topics_year:
+        type:
+          - number
+          - "null"
+    required:
+      - id
