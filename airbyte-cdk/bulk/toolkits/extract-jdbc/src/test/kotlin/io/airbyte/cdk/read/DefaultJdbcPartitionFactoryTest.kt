@@ -54,6 +54,7 @@ class DefaultJdbcPartitionFactoryTest {
                         stream.namespace,
                         sampleRateInvPow2 = 8,
                         DefaultJdbcConstants.TABLE_SAMPLE_SIZE,
+                        where = null,
                     ),
                 )
             )
@@ -90,6 +91,7 @@ class DefaultJdbcPartitionFactoryTest {
                         stream.namespace,
                         sampleRateInvPow2 = 8,
                         DefaultJdbcConstants.TABLE_SAMPLE_SIZE,
+                        where = null,
                     ),
                 )
             )
@@ -135,6 +137,7 @@ class DefaultJdbcPartitionFactoryTest {
                         stream.namespace,
                         sampleRateInvPow2 = 8,
                         DefaultJdbcConstants.TABLE_SAMPLE_SIZE,
+                        where = Where(And(Or(listOf()), Or(listOf()))),
                     ),
                     NoWhere,
                     OrderBy(id),
@@ -205,6 +208,7 @@ class DefaultJdbcPartitionFactoryTest {
                         stream.namespace,
                         sampleRateInvPow2 = 8,
                         DefaultJdbcConstants.TABLE_SAMPLE_SIZE,
+                        where = Where(And(Or(listOf()), Or(listOf()))),
                     ),
                     NoWhere,
                     OrderBy(id)
@@ -311,6 +315,13 @@ class DefaultJdbcPartitionFactoryTest {
                         stream.namespace,
                         sampleRateInvPow2 = 8,
                         DefaultJdbcConstants.TABLE_SAMPLE_SIZE,
+                        where =
+                            Where(
+                                And(
+                                    Or(listOf(And(listOf(Greater(id, IntCodec.encode(22)))))),
+                                    Or(listOf())
+                                )
+                            ),
                     ),
                     Where(Greater(id, IntCodec.encode(22))),
                     OrderBy(id),
@@ -369,6 +380,13 @@ class DefaultJdbcPartitionFactoryTest {
                         stream.namespace,
                         sampleRateInvPow2 = 8,
                         DefaultJdbcConstants.TABLE_SAMPLE_SIZE,
+                        where =
+                            Where(
+                                And(
+                                    Or(listOf(And(listOf(Greater(id, IntCodec.encode(22)))))),
+                                    Or(listOf())
+                                )
+                            ),
                     ),
                     Where(Greater(id, IntCodec.encode(22))),
                     OrderBy(id)
@@ -450,6 +468,35 @@ class DefaultJdbcPartitionFactoryTest {
                         stream.namespace,
                         sampleRateInvPow2 = 8,
                         DefaultJdbcConstants.TABLE_SAMPLE_SIZE,
+                        where =
+                            Where(
+                                And(
+                                    Or(
+                                        listOf(
+                                            And(
+                                                listOf(
+                                                    GreaterOrEqual(
+                                                        ts,
+                                                        LocalDateCodec.encode(cursorValue)
+                                                    )
+                                                )
+                                            )
+                                        )
+                                    ),
+                                    Or(
+                                        listOf(
+                                            And(
+                                                listOf(
+                                                    LesserOrEqual(
+                                                        ts,
+                                                        LocalDateCodec.encode(cursorUpperBound)
+                                                    )
+                                                )
+                                            )
+                                        )
+                                    )
+                                )
+                            ),
                     ),
                     Where(
                         And(

@@ -1,3 +1,9 @@
+## Version 0.1.29
+
+**Extract CDK**
+
+* **Changed:** Pass WhereNode to FromSample node so we can apply filters to the sample query.
+
 ## Version 0.1.28
 
 **Extract CDK**

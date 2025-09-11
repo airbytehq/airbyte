@@ -28,6 +28,7 @@ import io.airbyte.cdk.jdbc.LosslessJdbcFieldType
 import io.airbyte.cdk.jdbc.PokemonFieldType
 import io.airbyte.cdk.jdbc.ShortFieldType
 import io.airbyte.cdk.jdbc.StringFieldType
+import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.read.And
 import io.airbyte.cdk.read.Equal
 import io.airbyte.cdk.read.From
@@ -164,7 +165,7 @@ class SnowflakeSourceOperations() :
                         " SAMPLE (${sampleRatePercentage.toPlainString()})"
                     }
                 val innerFrom: String = From(name, namespace).sql() + sample
-                val inner = "SELECT * $innerFrom ORDER BY RANDOM()"
+                val inner = "SELECT * $innerFrom ${where?.sql() ?: ""} ORDER BY RANDOM()"
                 "FROM (SELECT * FROM ($inner) LIMIT $sampleSize)"
             }
         }
@@ -222,6 +223,15 @@ class SnowflakeSourceOperations() :
         globalStateValue: OpaqueStateValue?,
         stream: Stream,
         recordData: ObjectNode
+    ) {
+        return
+    }
+
+    override fun decorateRecordData(
+        timestamp: OffsetDateTime,
+        globalStateValue: OpaqueStateValue?,
+        stream: Stream,
+        recordData: NativeRecordPayload
     ) {
         return
     }
