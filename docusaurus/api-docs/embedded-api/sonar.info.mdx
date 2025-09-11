@@ -40,6 +40,13 @@ The API contains 3 types of endpoints:
 - `/api/v1/sonar`: operator endpoints to fetch data from end-user data sources (apis & drives) with their configured credentials.
 - `/api/v1/integrations`: all the operator endpoints to manage configurations.
 
+It is recommended to specify the following header in all your http requests:
+```yaml
+X-Organization-Id: organization's uuid
+```
+It will ensure that the right organization is used for all the requests in case your user is a member of multiple organizations.
+If you only have one organization, it will default to that one, otherwise the call will fail.
+
 
 <div
   style={{"marginBottom":"2rem"}}

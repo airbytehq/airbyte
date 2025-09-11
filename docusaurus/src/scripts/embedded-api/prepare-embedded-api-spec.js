@@ -6,23 +6,15 @@
 const fs = require("fs");
 const https = require("https");
 const path = require("path");
-
-const SPEC_CACHE_PATH = path.join(
-  __dirname,
-  "..",
-  "data",
-  "embedded_api_spec.json",
-);
-
-const SPEC_URL =
-  "https://airbyte-sonar-prod.s3.us-east-2.amazonaws.com/openapi/latest/app.json";
+const { validateOpenAPISpec } = require("./openapi-validator");
+const { SPEC_CACHE_PATH, EMBEDDED_API_SPEC_URL } = require("./constants");
 
 function fetchEmbeddedApiSpec() {
   return new Promise((resolve, reject) => {
     console.log("Fetching embedded API spec...");
 
     https
-      .get(SPEC_URL, (response) => {
+      .get(EMBEDDED_API_SPEC_URL, (response) => {
         if (response.statusCode !== 200) {
           reject(new Error(`Failed to fetch spec: ${response.statusCode}`));
           return;
@@ -51,32 +43,8 @@ function fetchEmbeddedApiSpec() {
   });
 }
 
-function validateSpec(spec) {
-  // Basic validation to ensure spec has required structure
-  if (!spec || typeof spec !== "object") {
-    throw new Error("Invalid spec: not an object");
-  }
-
-  if (!spec.info || !spec.info.title) {
-    throw new Error("Invalid spec: missing info.title");
-  }
-
-  if (!spec.tags || !Array.isArray(spec.tags)) {
-    throw new Error("Invalid spec: missing or invalid tags array");
-  }
-
-  if (!spec.paths || typeof spec.paths !== "object") {
-    throw new Error("Invalid spec: missing or invalid paths");
-  }
-
-  // Log some useful info
-  console.log(`Spec title: ${spec.info.title}`);
-  console.log(`Spec version: ${spec.info.version || "unknown"}`);
-  console.log(`Found ${spec.tags.length} tags`);
-  console.log(`Found ${Object.keys(spec.paths).length} paths`);
-
-  return spec;
-}
+// validateSpec function is now handled by AJV validator
+// This provides comprehensive OpenAPI 3.1 schema validation
 
 function processSpec(spec) {
   // For now, return the spec as-is
@@ -98,13 +66,14 @@ function loadPreviousSpec() {
 }
 
 async function main() {
-  const previousSpec = loadPreviousSpec();
   
+  const previousSpec = loadPreviousSpec();
   try {
     console.log("🔄 Attempting to fetch latest embedded API spec...");
     const spec = await fetchEmbeddedApiSpec();
     
-    const validatedSpec = validateSpec(spec);
+    // Validate using comprehensive OpenAPI schema validator
+    const validatedSpec = await validateOpenAPISpec(spec);
     const processedSpec = processSpec(validatedSpec);
 
     // Ensure the data directory exists
@@ -123,6 +92,7 @@ async function main() {
     );
     
     if (previousSpec && previousSpec.info?.version !== processedSpec.info?.version) {
+      //TODO: we don't use versioning yet, so we should find another way to compare specs and output changes?
       console.log(`📝 Spec updated from ${previousSpec.info?.version} to ${processedSpec.info?.version}`);
     }
     
@@ -146,9 +116,37 @@ async function main() {
       
       console.log("✅ Build will continue with previous spec version");
     } else {
-      console.error("💥 No previous spec found and latest fetch failed - cannot continue");
+      console.error("💥 No previous spec found and latest fetch failed");
+      console.error("📝 Creating minimal fallback spec to allow build to continue");
       console.error("💡 Tip: Run this script successfully once to create an initial cache");
-      process.exit(1);
+      
+      // Create minimal valid OpenAPI spec that will result in empty docs
+      const fallbackSpec = {
+        openapi: "3.1.0",
+        info: {
+          title: "Embedded API (Unavailable)",
+          version: "0.0.0",
+          description: "The embedded API specification could not be fetched. Please check your network connection and try again."
+        },
+        paths: {},
+        tags: [],
+        components: {}
+      };
+      
+      // Ensure the data directory exists
+      const dir = path.dirname(SPEC_CACHE_PATH);
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+      
+      // Cleanup is now handled by package.json scripts before doc generation
+
+      fs.writeFileSync(
+        SPEC_CACHE_PATH,
+        JSON.stringify(fallbackSpec, null, 2),
+      );
+      
+      console.log("✅ Build will continue with empty embedded API documentation");
     }
   }
 }
