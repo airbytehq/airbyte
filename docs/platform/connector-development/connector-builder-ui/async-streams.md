@@ -108,7 +108,9 @@ The **Download Target Extractor** works similarly to the Status Extractor but ex
 
 The **Download Target Requester** (Optional) makes an additional API request once jobs have completed to retrieve download URLs or identifiers. When configured, the Download Target Extractor will operate on this API response rather than the API response from the Polling stage. This is typically only needed for complex APIs.
 
-**Note:** The Download Target Extractor is optional if not using the Download Target Requester. If not specified, the connector will make a _single_ request during the Download stage without the `download_target` interpolation context. This is suitable for simple APIs.
+:::note
+The Download Target Extractor is optional if not using the Download Target Requester. If not specified, the connector will make a _single_ request during the Download stage without the `download_target` interpolation context. This is suitable for simple APIs.
+:::
 
 #### Example Configuration (SendGrid)
 
