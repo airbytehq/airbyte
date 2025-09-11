@@ -131,7 +131,7 @@ In the UI, for the [SendGrid contacts export](https://www.twilio.com/docs/sendgr
 
 The Download tab configures how to retrieve the results once the job is complete. This tab provides comprehensive configuration options for processing the downloaded data.
 
-#### Key Components:
+#### Key Components
 
 - **API Endpoint URL** (required): The full URL for downloading results. Use the `{{ download_target }}` variable to reference the value extracted by the Download Target Extractor. Use the `{{ creation_response }}` variable to reference the creation request response when constructing this URL and use the `{{ polling_response }}` to reference the polling response when constructing the download URL.
 - **HTTP Method**: HTTP method for downloading, typically GET but can vary by API
