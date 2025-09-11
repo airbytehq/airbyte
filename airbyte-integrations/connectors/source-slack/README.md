@@ -7,11 +7,7 @@ For information about how to configure and use this connector within Airbyte, se
 
 ## Local development
 
-We recommend using the Connector Builder to edit this connector.
-Using either Airbyte Cloud or your local Airbyte OSS instance, navigate to the **Builder** tab and select **Import a YAML**.
-Then select the connector's `manifest.yaml` file to load the connector into the Builder. You're now ready to make changes to the connector!
-
-If you prefer to develop locally, you can follow the instructions below.
+To develop locally, you can follow the instructions below.
 
 ### Building the docker image
 
@@ -55,7 +51,7 @@ airbyte-ci connectors --name=source-slack test
 
 If you want to contribute changes to `source-slack`, here's how you can do that:
 
-1. Make your changes locally, or load the connector's manifest into Connector Builder and make changes there.
+1. Make your changes locally.
 2. Make sure your changes are passing our test suite with `airbyte-ci connectors --name=source-slack test`
 3. Bump the connector version (please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors)):
     - bump the `dockerImageTag` value in in `metadata.yaml`
