@@ -34,7 +34,24 @@ logger = logging.getLogger("auto_merge")
 logger.setLevel(logging.INFO)
 
 
-def get_required_checks_from_rulesets(repo: GithubRepo, branch_name: str) -> set[str]:
+def get_required_checks_from_legacy_api(repo: GithubRepo, branch_name: str) -> set[str]:
+    """Get required status checks from legacy branch protection API.
+
+    Args:
+        repo (GithubRepo): The repository to check
+        branch_name (str): The branch name to get required checks for
+
+    Returns:
+        set[str]: Set of required status check contexts from legacy API
+
+    Raises:
+        Exception: If the legacy API call fails
+    """
+    branch = repo.get_branch(branch_name)
+    return set(branch.get_required_status_checks().contexts)
+
+
+def get_required_checks_from_rulesets_api(repo: GithubRepo, branch_name: str) -> set[str]:
     """Get required status checks from GitHub rulesets API.
 
     Args:
@@ -43,33 +60,32 @@ def get_required_checks_from_rulesets(repo: GithubRepo, branch_name: str) -> set
 
     Returns:
         set[str]: Set of required status check contexts from rulesets
+
+    Raises:
+        Exception: If the rulesets API call fails
     """
     required_checks: set[str] = set()
 
     url = f"{repo.url}/rules/branches/{branch_name}"
     headers = {"Accept": "application/vnd.github+json", "Authorization": f"Bearer {GITHUB_TOKEN}", "X-GitHub-Api-Version": "2022-11-28"}
 
-    try:
-        response = requests.get(url, headers=headers)
+    response = requests.get(url, headers=headers)
 
-        if response.status_code == 404:
-            logger.info(f"No rulesets found for branch '{branch_name}' (404)")
-            return required_checks
+    if response.status_code == 404:
+        return required_checks
 
-        response.raise_for_status()
-        rules_data = response.json()
+    response.raise_for_status()
+    rules_data = response.json()
 
-        for rule in rules_data:
-            if rule.get("type") == "required_status_checks":
-                parameters = rule.get("parameters", {})
-                if "required_status_checks" in parameters:
-                    for check in parameters["required_status_checks"]:
-                        if isinstance(check, dict) and "context" in check:
-                            required_checks.add(check["context"])
-                        elif isinstance(check, str):
-                            required_checks.add(check)
-    except Exception as e:
-        logger.info(f"Failed to fetch rulesets for branch '{branch_name}': {e}")
+    for rule in rules_data:
+        if rule.get("type") == "required_status_checks":
+            parameters = rule.get("parameters", {})
+            if "required_status_checks" in parameters:
+                for check in parameters["required_status_checks"]:
+                    if isinstance(check, dict) and "context" in check:
+                        required_checks.add(check["context"])
+                    elif isinstance(check, str):
+                        required_checks.add(check)
 
     return required_checks
 
@@ -94,15 +110,14 @@ def get_required_status_checks_from_all_sources(repo: GithubRepo, branch_name: s
     required_checks: set[str] = set()
 
     try:
-        branch = repo.get_branch(branch_name)
-        legacy_checks = set(branch.get_required_status_checks().contexts)
+        legacy_checks = get_required_checks_from_legacy_api(repo, branch_name)
         required_checks.update(legacy_checks)
         logger.info(f"Found {len(legacy_checks)} required checks from legacy branch protection API")
     except Exception as e:
         logger.info(f"Legacy branch protection API not available or failed: {e}")
 
     try:
-        rulesets_checks = get_required_checks_from_rulesets(repo, branch_name)
+        rulesets_checks = get_required_checks_from_rulesets_api(repo, branch_name)
         required_checks.update(rulesets_checks)
         logger.info(f"Found {len(rulesets_checks)} required checks from rulesets API")
     except Exception as e:
