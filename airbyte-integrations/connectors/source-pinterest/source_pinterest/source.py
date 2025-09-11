@@ -109,16 +109,11 @@ class SourcePinterest(YamlDeclarativeSource):
         report_streams = [
             CampaignAnalyticsReport(ad_accounts, config=transformed_config),
             CampaignTargetingReport(ad_accounts, config=transformed_config),
-            AdvertiserReport(ad_accounts, config=transformed_config),
             AdvertiserTargetingReport(ad_accounts, config=transformed_config),
-            AdGroupReport(ad_accounts, config=transformed_config),
             AdGroupTargetingReport(ad_accounts, config=transformed_config),
-            PinPromotionReport(ad_accounts, config=transformed_config),
             PinPromotionTargetingReport(ad_accounts, config=transformed_config),
-            ProductGroupReport(ad_accounts, config=transformed_config),
             ProductGroupTargetingReport(ad_accounts, config=transformed_config),
             KeywordReport(ad_accounts, config=transformed_config),
-            ProductItemReport(ad_accounts, config=transformed_config),
         ] + self.get_custom_report_streams(config=transformed_config, ad_accounts_stream=ad_accounts)
 
         return declarative_streams + report_streams
