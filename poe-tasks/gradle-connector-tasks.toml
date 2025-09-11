@@ -87,3 +87,11 @@ help = "Get the version of the connector from its metadata.yaml file."
 [tasks.run-cat-tests]
 shell = "airbyte-ci connectors --name=`poe -qq get-connector-name` test --only-step=acceptance"
 help = "Run the legacy Airbyte-CI acceptance tests (CAT tests)."
+
+[tasks.image]
+help = "Build and load the connector image locally (docker buildx --load). Usage: poe image [build] [--tag <tag>] (default tag: dev-{platform})."
+shell = '$(git rev-parse --show-toplevel)/poe-tasks/build-connector-image.sh ${tag}'
+args = [
+  { name = "subcommand", positional = true, default = "build", help = "Subcommand (only 'build' is supported)" },
+  { name = "tag", positional = false, options = ["--tag"], help = "Image tag to use (default dev-{platform})" },
+]
