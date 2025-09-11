@@ -175,13 +175,10 @@ def token_config():
     Just test 'token' - updated to include required credentials field
     """
     return {
-        "token": "test_token", 
+        "token": "test_token",
         "start_date": "2021-03-21T20:49:13Z",
-        "credentials": {
-            "auth_type": "api_token",
-            "api_token": "test_token"
-        },
-        "domain": "test_domain"
+        "credentials": {"auth_type": "api_token", "api_token": "test_token"},
+        "domain": "test_domain",
     }
 
 
