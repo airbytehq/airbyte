@@ -298,9 +298,7 @@ class TestPersistSecretsToGcs:
             ({"z_secret", "a_secret", "m_secret"}, {"properties": ["a_secret", "m_secret", "z_secret"]}, "secrets sorted alphabetically"),
         ],
     )
-    def test_persist_secrets_to_gcs_various_secret_sets(
-        self, mock_bucket, mock_blob, secrets_set, expected_yaml_content, description
-    ):
+    def test_persist_secrets_to_gcs_various_secret_sets(self, mock_bucket, mock_blob, secrets_set, expected_yaml_content, description):
         """Test persistence with different secret set sizes and contents."""
         mock_bucket.blob.return_value = mock_blob
 
