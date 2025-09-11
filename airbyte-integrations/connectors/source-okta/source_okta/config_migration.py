@@ -4,8 +4,10 @@
 
 
 import logging
-import orjson
 from typing import Any, Dict, List, Mapping
+
+import orjson
+
 from airbyte_cdk.config_observation import create_connector_config_control_message
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
 from airbyte_cdk.models import AirbyteMessageSerializer

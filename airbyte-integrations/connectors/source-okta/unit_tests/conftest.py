@@ -2,8 +2,9 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
-from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 from pytest import fixture
+
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 
 
 @fixture
