@@ -197,7 +197,9 @@ definitions:
         - properties
       types_mapping:
         - type: TypesMap
-          target_type: boolean
+          target_type:
+            - boolean
+            - string
           current_type: bool
         - type: TypesMap
           target_type: date
