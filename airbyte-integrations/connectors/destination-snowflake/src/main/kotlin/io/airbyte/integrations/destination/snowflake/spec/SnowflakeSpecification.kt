@@ -84,7 +84,7 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
     @JsonSchemaTitle("Authorization Method")
     @JsonSchemaDescription("Determines the type of authentication that should be used.")
     @get:JsonSchemaInject(json = """{"group": "connection", "always_show": true,"order":6}""")
-    val authType: AuthTypeSpecification? = null
+    val credentials: CredentialsSpecification? = null
 
     @get:JsonSchemaTitle("CDC deletion mode")
     @get:JsonPropertyDescription(
@@ -151,14 +151,17 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
     property = "auth_type",
 )
 @JsonSubTypes(
-    JsonSubTypes.Type(value = KeyPairAuthSpecification::class, name = "PRIVATE_KEY"),
-    JsonSubTypes.Type(value = UsernamePasswordAuthSpecification::class, name = "USERNAME_PASSWORD")
+    JsonSubTypes.Type(value = KeyPairAuthSpecification::class, name = "Key Pair Authentication"),
+    JsonSubTypes.Type(
+        value = UsernamePasswordAuthSpecification::class,
+        name = "Username and Password"
+    )
 )
-sealed class AuthTypeSpecification(@get:JsonProperty("auth_type") val authType: Type) {
+sealed class CredentialsSpecification(@get:JsonProperty("auth_type") val auth_type: Type) {
     /** Enumeration of possible credential types. */
     enum class Type(@get:JsonValue val authTypeName: String) {
-        PRIVATE_KEY("PRIVATE_KEY"),
-        USERNAME_PASSWORD("USERNAME_PASSWORD"),
+        PRIVATE_KEY("Key Pair Authentication"),
+        USERNAME_PASSWORD("Username and Password"),
     }
 }
 
@@ -179,7 +182,7 @@ class KeyPairAuthSpecification(
     @get:JsonProperty("private_key_password")
     @get:JsonSchemaInject(json = """{"order": 0}""")
     val privateKeyPassword: String? = null
-) : AuthTypeSpecification(Type.PRIVATE_KEY)
+) : CredentialsSpecification(Type.PRIVATE_KEY)
 
 @JsonSchemaTitle("Username and Password")
 @JsonSchemaDescription("Configuration details for the Username and Password Authentication.")
@@ -189,7 +192,7 @@ class UsernamePasswordAuthSpecification(
     @get:JsonProperty("password")
     @get:JsonSchemaInject(json = """{"order": 0, "airbyte_secret": true}""")
     val password: String = ""
-) : AuthTypeSpecification(Type.USERNAME_PASSWORD)
+) : CredentialsSpecification(Type.USERNAME_PASSWORD)
 
 enum class CdcDeletionMode(@get:JsonValue val cdcDeletionMode: String) {
     HARD_DELETE("Hard delete"),
