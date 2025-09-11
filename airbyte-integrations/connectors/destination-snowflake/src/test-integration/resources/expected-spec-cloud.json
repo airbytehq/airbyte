@@ -6,62 +6,6 @@
     "type" : "object",
     "additionalProperties" : true,
     "properties" : {
-      "credentials" : {
-        "oneOf" : [ {
-          "title" : "Key Pair Authentication",
-          "type" : "object",
-          "additionalProperties" : true,
-          "description" : "Configuration details for the Key Pair Authentication.",
-          "properties" : {
-            "credentials" : {
-              "type" : "string",
-              "enum" : [ "PRIVATE_KEY" ],
-              "default" : "PRIVATE_KEY"
-            },
-            "private_key" : {
-              "type" : "string",
-              "description" : "RSA Private key to use for Snowflake connection. See the <a\n href=\"https://docs.airbyte.com/integrations/destinations/snowflake\">docs</a> for more\n information on how to obtain this key.",
-              "title" : "Private Key",
-              "order" : 0,
-              "multiline" : true,
-              "airbyte_secret" : true
-            },
-            "private_key_password" : {
-              "type" : "string",
-              "description" : "Passphrase for private key",
-              "title" : "Passphrase",
-              "order" : 0
-            }
-          },
-          "required" : [ "credentials", "private_key" ]
-        }, {
-          "title" : "Username and Password",
-          "type" : "object",
-          "additionalProperties" : true,
-          "description" : "Configuration details for the Username and Password Authentication.",
-          "properties" : {
-            "credentials" : {
-              "type" : "string",
-              "enum" : [ "USERNAME_PASSWORD" ],
-              "default" : "USERNAME_PASSWORD"
-            },
-            "password" : {
-              "type" : "string",
-              "description" : "Enter the password associated with the username.",
-              "title" : "Password",
-              "order" : 0,
-              "airbyte_secret" : true
-            }
-          },
-          "required" : [ "credentials", "password" ]
-        } ],
-        "description" : "Determines the type of authentication that should be used.",
-        "title" : "Authorization Method",
-        "group" : "connection",
-        "always_show" : true,
-        "order" : 6,
-        "type" : "object"
-      },
       "host" : {
         "type" : "string",
         "description" : "Enter your Snowflake account's <a href=\"https://docs.snowflake.com/en/user-guide/admin-account-identifier.html#using-an-account-locator-as-an-identifier\">locator</a> (in the format <account_locator>.<region>.<cloud>.snowflakecomputing.com)",
@@ -111,6 +55,61 @@
         "group" : "connection",
         "order" : 5,
         "examples" : [ "AIRBYTE_USER" ]
+      },
+      "credentials" : {
+        "oneOf" : [ {
+          "title" : "Key Pair Authentication",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "Configuration details for the Key Pair Authentication.",
+          "properties" : {
+            "auth_type" : {
+              "type" : "string",
+              "enum" : [ "Key Pair Authentication" ],
+              "default" : "Key Pair Authentication"
+            },
+            "private_key" : {
+              "type" : "string",
+              "description" : "RSA Private key to use for Snowflake connection. See the <a\n href=\"https://docs.airbyte.com/integrations/destinations/snowflake\">docs</a> for more\n information on how to obtain this key.",
+              "title" : "Private Key",
+              "order" : 0,
+              "multiline" : true,
+              "airbyte_secret" : true
+            },
+            "private_key_password" : {
+              "type" : "string",
+              "description" : "Passphrase for private key",
+              "title" : "Passphrase",
+              "order" : 0
+            }
+          },
+          "required" : [ "auth_type", "private_key" ]
+        }, {
+          "title" : "Username and Password",
+          "type" : "object",
+          "additionalProperties" : true,
+          "description" : "Configuration details for the Username and Password Authentication.",
+          "properties" : {
+            "auth_type" : {
+              "type" : "string",
+              "enum" : [ "Username and Password" ],
+              "default" : "Username and Password"
+            },
+            "password" : {
+              "type" : "string",
+              "description" : "Enter the password associated with the username.",
+              "title" : "Password",
+              "order" : 0,
+              "airbyte_secret" : true
+            }
+          },
+          "required" : [ "auth_type", "password" ]
+        } ],
+        "description" : "Determines the type of authentication that should be used.",
+        "title" : "Authorization Method",
+        "group" : "connection",
+        "order" : 6,
+        "type" : "object"
       },
       "cdc_deletion_mode" : {
         "type" : "string",
