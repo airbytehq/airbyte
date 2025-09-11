@@ -57,7 +57,11 @@ jobs:
         run: |
           echo "Job Inputs:"
           echo "  Connector name: ${{ github.event.inputs.connector_name }}"
-          echo "  Connection ID: ${{ github.event.inputs.connection_id }}"
+            if [[ "${{ github.event.inputs.connection_id }}" == "auto" ]]; then
+            echo "  Connection ID: auto"
+            else
+            echo "  Connection ID: $(echo "${{ github.event.inputs.connection_id }}" | cut -c1-8)"
+            fi
           echo "  PR URL: ${{ github.event.inputs.pr_url }}"
           echo "  Streams: ${{ github.event.inputs.streams }}"
           echo "  Should read with state: ${{ github.event.inputs.should_read_with_state }}"
