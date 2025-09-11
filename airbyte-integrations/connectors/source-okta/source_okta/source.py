@@ -19,5 +19,11 @@ WARNING: Do not modify this file.
 
 # Declarative Source
 class SourceOkta(YamlDeclarativeSource):
-    def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog] = None, config: Optional[Mapping[str, Any]] = None, state: Optional[TState] = None, **kwargs):
+    def __init__(
+        self,
+        catalog: Optional[ConfiguredAirbyteCatalog] = None,
+        config: Optional[Mapping[str, Any]] = None,
+        state: Optional[TState] = None,
+        **kwargs,
+    ):
         super().__init__(catalog=catalog, config=config, state=state, **{"path_to_yaml": "manifest.yaml"})

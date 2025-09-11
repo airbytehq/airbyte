@@ -8,8 +8,9 @@ from datetime import datetime
 from typing import List
 
 import orjson
+
 from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
-from airbyte_cdk.models import AirbyteMessage, AirbyteMessageSerializer, AirbyteErrorTraceMessage, AirbyteTraceMessage, Type, TraceType
+from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteMessage, AirbyteMessageSerializer, AirbyteTraceMessage, TraceType, Type
 
 from .config_migration import OktaConfigMigration
 from .source import SourceOkta
