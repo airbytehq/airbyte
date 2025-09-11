@@ -1,4 +1,26 @@
+## Version 0.1.28
+
+**Extract CDK**
+
+* **Changed:** Protobuf encoding fixes to make various types compatible with load(destination) decoding.
+
 **Load CDK**
+
+## Version 0.1.27
+
+* **Changed:** Allow per-test properties for spec integration test
+
+## Version 0.1.26
+
+* **Changed:** Improve load-azure-blob-storage documentation.
+
+## Version 0.1.25
+
+* **Changed:** Adds proto support to dataflow. Misc transform package cleanup (developer-facing).
+
+## Version 0.1.24
+
+* **Changed:** Adds byte counts to emitted state stats.
 
 ## Version 0.1.23
 
