@@ -14,7 +14,8 @@ const specDecoration = require("./src/remark/specDecoration");
 const docMetaTags = require("./src/remark/docMetaTags");
 const addButtonToTitle = require("./src/remark/addButtonToTitle");
 const fs = require("fs");
-const path = require("path");
+
+const { SPEC_CACHE_PATH, API_SIDEBAR_PATH } = require("./src/scripts/embedded-api/constants");
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
@@ -211,12 +212,7 @@ const config = {
           // items from the generated file structure.
 
           try {
-            const specPath = path.join(
-              __dirname,
-              "src",
-              "data",
-              "embedded_api_spec.json",
-            );
+            const specPath = SPEC_CACHE_PATH; 
 
             if (!fs.existsSync(specPath)) {
               console.warn(
@@ -229,12 +225,7 @@ const config = {
             console.log("Loaded embedded API spec from cache");
 
             // Load the freshly generated sidebar (not the cached one from module load)
-            const sidebarPath = path.join(
-              __dirname,
-              "api-docs",
-              "embedded-api",
-              "sidebar.ts",
-            );
+            const sidebarPath = API_SIDEBAR_PATH;
             let freshSidebar = [];
 
             if (fs.existsSync(sidebarPath)) {
@@ -256,8 +247,6 @@ const config = {
               freshSidebar = [];
             }
 
-            // when we have display name correct, we should change this to tag["x-display-name"]
-            // const allowedTags = data.tags.map((tag) => tag["x-displayName"]);
             const allowedTags = data.tags?.map((tag) => tag["name"]) || [];
 
             // Use freshly loaded sidebar items from the generated file
