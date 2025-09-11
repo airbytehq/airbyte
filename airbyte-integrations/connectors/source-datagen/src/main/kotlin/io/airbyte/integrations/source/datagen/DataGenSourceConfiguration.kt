@@ -4,22 +4,16 @@ package io.airbyte.integrations.source.datagen
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.command.SourceConfigurationFactory
-import io.airbyte.cdk.output.DataChannelMedium
-import io.airbyte.cdk.output.DataChannelMedium.SOCKET
-import io.airbyte.cdk.output.DataChannelMedium.STDIO
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.airbyte.integrations.source.datagen.flavor.Flavor
 import io.airbyte.integrations.source.datagen.flavor.increment.IncrementFlavor
-import io.airbyte.integrations.source.datagen.log
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Singleton
 import java.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toJavaDuration
-
-private val log = KotlinLogging.logger {}
 
 // TODO: support configuration to choose flavor
 
@@ -34,7 +28,8 @@ data class DataGenSourceConfiguration(
     override val realPort: Int = 0,
     override val sshTunnel: SshTunnelMethodConfiguration? = null,
     override val sshConnectionOptions: SshConnectionOptions = SshConnectionOptions.fromAdditionalProperties(emptyMap()),
-    val flavor: Flavor
+    val flavor: Flavor,
+    val runDuration: Long
 ) : SourceConfiguration {
     /** Required to inject [DataGenSourceConfiguration] directly. */
     @Factory
@@ -53,6 +48,8 @@ data class DataGenSourceConfiguration(
 class DataGenSourceConfigurationFactory:
     SourceConfigurationFactory<DataGenSourceConfigurationSpecification, DataGenSourceConfiguration> {
 
+    private val log = KotlinLogging.logger {}
+
     override fun makeWithoutExceptionHandling(pojo: DataGenSourceConfigurationSpecification):
         DataGenSourceConfiguration {
         val maxConcurrency: Int = 1
@@ -66,10 +63,13 @@ class DataGenSourceConfigurationFactory:
         log.info { "Effective concurrency: $maxConcurrency" }
 
         //unnecessary rn cuz incremental is default, template for future flavor additions
-        if (pojo.getFlavor() is Incremental) {
-            return DataGenSourceConfiguration(maxConcurrency = maxConcurrency, flavor = IncrementFlavor)
-        }
+//        if (pojo.getFlavor() is Incremental) {
+//            log.info { "Using Incremental Flavor" }
+//            return DataGenSourceConfiguration(maxConcurrency = maxConcurrency, flavor = IncrementFlavor, runDuration = runDuration)
+//        }
 
-        return DataGenSourceConfiguration(maxConcurrency = maxConcurrency, flavor = IncrementFlavor)
+        return DataGenSourceConfiguration(maxConcurrency = maxConcurrency, flavor = IncrementFlavor,
+            runDuration = pojo.runDuration
+        )
     }
 }

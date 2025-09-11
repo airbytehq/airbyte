@@ -26,6 +26,7 @@ object DataGenSource {
         val discoverArgs = arrayOf("--discover", "--config", configPath)
         val readArgs = arrayOf("--read", "--config", configPath, "--catalog", catalogPath)
 
-        AirbyteSourceRunner.run(*args)
+        log.info { "Starting source: DataGenSource" }
+        AirbyteSourceRunner.run(*readArgs)
     }
 }

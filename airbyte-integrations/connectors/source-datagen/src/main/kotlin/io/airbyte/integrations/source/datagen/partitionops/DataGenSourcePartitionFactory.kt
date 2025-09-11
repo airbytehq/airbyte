@@ -7,8 +7,11 @@ import io.airbyte.cdk.read.StreamFeedBootstrap
 import io.airbyte.integrations.source.datagen.partitionobjs.DataGenSharedState
 import io.airbyte.integrations.source.datagen.partitionobjs.DataGenSourcePartition
 import io.airbyte.integrations.source.datagen.partitionobjs.DataGenStreamState
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.ConcurrentHashMap
 import jakarta.inject.Singleton
+
+private val log = KotlinLogging.logger {}
 
 @Singleton
 class DataGenSourcePartitionFactory(val sharedState: DataGenSharedState) {
@@ -20,8 +23,13 @@ class DataGenSourcePartitionFactory(val sharedState: DataGenSharedState) {
         }
 
     fun create(streamFeedBootstrap: StreamFeedBootstrap): DataGenSourcePartition? {
+        log.info { "Starting partition creation for stream: ${streamFeedBootstrap.feed.id}"}
         val stream: Stream = streamFeedBootstrap.feed
         val streamState: DataGenStreamState = streamState(streamFeedBootstrap)
+
+        if (streamFeedBootstrap.currentState == DataGenStreamState.completeState) {
+            return null
+        }
 
         // An empty table stream state will be marked as a nullNode. This prevents repeated attempt
 //        // to read it

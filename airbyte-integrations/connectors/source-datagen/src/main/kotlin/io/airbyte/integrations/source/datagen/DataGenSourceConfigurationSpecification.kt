@@ -44,9 +44,9 @@ class DataGenSourceConfigurationSpecification : ConfigurationSpecification() {
     // TODO: add maximum?
     @JsonProperty("run_duration")
     @JsonSchemaTitle("Run Duration")
-    @JsonSchemaDescription("The duration (in minutes) to run the data generation for before timeout.")
-    @JsonSchemaInject(json = """{"default":"5","required":true}""")
-    var runDuration: Int = 5
+    @JsonSchemaDescription("The duration (in seconds) to run the data generation for before timeout.")
+    @JsonSchemaInject(json = """{"default":"300","required":true}""")
+    var runDuration: Long = 300
 }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "data_type")
