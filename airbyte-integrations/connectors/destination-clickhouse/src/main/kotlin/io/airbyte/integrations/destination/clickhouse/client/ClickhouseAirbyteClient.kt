@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.clickhouse.client
 import com.clickhouse.client.api.Client as ClickHouseClientRaw
 import com.clickhouse.client.api.command.CommandResponse
 import com.clickhouse.client.api.data_formats.ClickHouseBinaryFormatReader
+import com.clickhouse.client.api.metadata.TableSchema
 import com.clickhouse.client.api.query.QueryResponse
 import com.clickhouse.data.ClickHouseColumn
 import com.clickhouse.data.ClickHouseDataType
@@ -22,6 +23,7 @@ import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNativeOperations
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableSqlOperations
 import io.airbyte.integrations.destination.clickhouse.client.ClickhouseSqlGenerator.Companion.DATETIME_WITH_PRECISION
+import io.airbyte.integrations.destination.clickhouse.client.ClickhouseSqlGenerator.Companion.DECIMAL_WITH_PRECISION_AND_SCALE
 import io.airbyte.integrations.destination.clickhouse.config.ClickhouseFinalTableNameGenerator
 import io.airbyte.integrations.destination.clickhouse.config.toClickHouseCompatibleName
 import io.airbyte.integrations.destination.clickhouse.model.AlterationSummary
@@ -113,7 +115,10 @@ class ClickhouseAirbyteClient(
         columnNameMapping: ColumnNameMapping
     ) {
         val properTableName = nameGenerator.getTableName(stream.mappedDescriptor)
-        val tableSchema = client.getTableSchema(properTableName.name, properTableName.namespace)
+        val tableSchema: TableSchema =
+            client.getTableSchema(properTableName.name, properTableName.namespace)
+
+        log.info { "Fetch the clickhouse table schema: $tableSchema" }
 
         val hasAllAirbyteColumn =
             tableSchema.columns.map { it.columnName }.containsAll(COLUMN_NAMES)
@@ -128,6 +133,8 @@ class ClickhouseAirbyteClient(
         val tableSchemaWithoutAirbyteColumns: List<ClickHouseColumn> =
             tableSchema.columns.filterNot { column -> column.columnName in COLUMN_NAMES }
 
+        log.info { "Found Clickhouse columns: $tableSchemaWithoutAirbyteColumns" }
+
         if (!stream.schema.isObject) {
             val error =
                 "The root of the schema is not an Object which is not expected, the schema changes won't be propagated"
@@ -135,11 +142,6 @@ class ClickhouseAirbyteClient(
             throw IllegalStateException(error)
         }
 
-        val airbyteSchemaWithClickhouseType: Map<String, String> =
-            getAirbyteSchemaWithClickhouseType(stream)
-
-        val clickhousePks: List<String> =
-            tableSchemaWithoutAirbyteColumns.filterNot { it.isNullable }.map { it.columnName }
         val currentPKs: List<String> =
             when (stream.importType) {
                 is Dedupe ->
@@ -149,6 +151,14 @@ class ClickhouseAirbyteClient(
                     )
                 else -> listOf()
             }
+
+        val airbyteSchemaWithClickhouseType: Map<String, String> =
+            getAirbyteSchemaWithClickhouseType(stream, currentPKs)
+
+        log.info { "Airbyte columns: $airbyteSchemaWithClickhouseType" }
+
+        val clickhousePks: List<String> =
+            tableSchemaWithoutAirbyteColumns.filterNot { it.isNullable }.map { it.columnName }
 
         val columnChanges: AlterationSummary =
             getChangedColumns(
@@ -226,7 +236,8 @@ class ClickhouseAirbyteClient(
     }
 
     internal fun getAirbyteSchemaWithClickhouseType(
-        stream: DestinationStream
+        stream: DestinationStream,
+        pks: List<String>
     ): Map<String, String> =
         stream.schema
             .asColumns()
@@ -236,7 +247,13 @@ class ClickhouseAirbyteClient(
                 // nullable in the destination
                 // Add map key
                 fieldName.toClickHouseCompatibleName() to
-                    fieldType.type.toDialectType(clickhouseConfiguration.enableJson)
+                    if (pks.contains(fieldName)) {
+                        fieldType.type.toDialectType(clickhouseConfiguration.enableJson)
+                    } else {
+                        fieldType.type
+                            .toDialectType(clickhouseConfiguration.enableJson)
+                            .sqlNullable()
+                    }
             }
             .toMap()
 
@@ -257,7 +274,10 @@ class ClickhouseAirbyteClient(
             if (!mutableCatalogColumns.containsKey(clickhouseColumn.columnName)) {
                 deleted.add(clickhouseColumn.columnName)
             } else {
-                val clickhouseType = clickhouseColumn.dataType.getDataTypeAsString()
+                val clickhouseType =
+                    if (clickhouseColumn.isNullable)
+                        clickhouseColumn.dataType.getDataTypeAsString().sqlNullable()
+                    else clickhouseColumn.dataType.getDataTypeAsString()
                 if (mutableCatalogColumns[clickhouseColumn.columnName] != clickhouseType) {
                     modified[clickhouseColumn.columnName] =
                         mutableCatalogColumns[clickhouseColumn.columnName]!!
@@ -271,12 +291,17 @@ class ClickhouseAirbyteClient(
         val hasDedupChange =
             !(clickhousePks.containsAll(airbytePks) && airbytePks.containsAll(clickhousePks))
 
-        return AlterationSummary(
-            added = added,
-            modified = modified,
-            deleted = deleted,
-            hasDedupChange = hasDedupChange
-        )
+        val alterationSummary =
+            AlterationSummary(
+                added = added,
+                modified = modified,
+                deleted = deleted,
+                hasDedupChange = hasDedupChange
+            )
+
+        log.info { "Alteration summary: $alterationSummary" }
+
+        return alterationSummary
     }
 
     override suspend fun countTable(tableName: TableName): Long? {
@@ -318,6 +343,8 @@ class ClickhouseAirbyteClient(
     private fun ClickHouseDataType.getDataTypeAsString(): String {
         return if (this.name == "DateTime64") {
             DATETIME_WITH_PRECISION
+        } else if (this.name == "Decimal") {
+            DECIMAL_WITH_PRECISION_AND_SCALE
         } else {
             this.name
         }
