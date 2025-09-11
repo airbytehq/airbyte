@@ -31,6 +31,7 @@ import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
+import javax.sql.DataSource
 
 internal const val CSV_FIELD_DELIMITER = ","
 internal const val CSV_RECORD_DELIMITER = "\n"
@@ -38,7 +39,7 @@ internal const val CSV_RECORD_DELIMITER = "\n"
 private val log = KotlinLogging.logger {}
 
 @Singleton
-class SnowflakeDirectLoadSqlGenerator() {
+class SnowflakeDirectLoadSqlGenerator(private val dataSource: DataSource) {
 
     /**
      * This extension is here to avoid writing `.also { log.info { it }}` for every returned string
@@ -50,12 +51,22 @@ class SnowflakeDirectLoadSqlGenerator() {
     }
 
     fun countTable(tableName: TableName): String {
-        return "SELECT COUNT(*) AS total FROM ${tableName.toPrettyString()}".andLog()
+        return "SELECT COUNT(*) AS \"total\" FROM ${tableName.toPrettyString(quote=QUOTE)}".andLog()
     }
 
     fun createNamespace(namespace: String): String {
         return "CREATE SCHEMA IF NOT EXISTS \"$namespace\"".andLog()
     }
+
+    fun columnsAndTypes(stream: DestinationStream, columnNameMapping: ColumnNameMapping): String =
+        stream.schema
+            .asColumns()
+            .map { (fieldName, type) ->
+                val columnName = columnNameMapping[fieldName] ?: fieldName
+                val typeName = toDialectType(type.type)
+                "\"$columnName\" $typeName"
+            }
+            .joinToString(",\n")
 
     fun createTable(
         stream: DestinationStream,
@@ -63,19 +74,6 @@ class SnowflakeDirectLoadSqlGenerator() {
         columnNameMapping: ColumnNameMapping,
         replace: Boolean
     ): String {
-        fun columnsAndTypes(
-            stream: DestinationStream,
-            columnNameMapping: ColumnNameMapping
-        ): String =
-            stream.schema
-                .asColumns()
-                .map { (fieldName, type) ->
-                    val columnName = columnNameMapping[fieldName]!!
-                    val typeName = toDialectType(type.type)
-                    "\"$columnName\" $typeName"
-                }
-                .joinToString(",\n")
-
         val columnDeclarations = columnsAndTypes(stream, columnNameMapping)
 
         // Snowflake supports CREATE OR REPLACE TABLE, which is simpler than drop+recreate
@@ -83,7 +81,7 @@ class SnowflakeDirectLoadSqlGenerator() {
 
         val createTableStatement =
             """
-            $createOrReplace TABLE ${tableName.toPrettyString(QUOTE)} (
+            $createOrReplace TABLE ${tableName.toPrettyString(quote=QUOTE)} (
               "$COLUMN_NAME_AB_RAW_ID" VARCHAR NOT NULL,
               "$COLUMN_NAME_AB_EXTRACTED_AT" TIMESTAMP_TZ NOT NULL,
               "$COLUMN_NAME_AB_META" VARIANT NOT NULL,
@@ -93,6 +91,20 @@ class SnowflakeDirectLoadSqlGenerator() {
         """.trimIndent()
 
         return createTableStatement.andLog()
+    }
+
+    fun showColumns(tableName: TableName): List<String> {
+        dataSource.connection.use { connection ->
+            val resultSet =
+                connection
+                    .createStatement()
+                    .executeQuery("SHOW COLUMNS IN TABLE ${tableName.toPrettyString(quote=QUOTE)};")
+            val columns = mutableListOf<String>()
+            while (resultSet.next()) {
+                columns.add(resultSet.getString("column_name"))
+            }
+            return columns
+        }
     }
 
     //    fun overwriteTable(sourceTableName: TableName, targetTableName: TableName): String {
@@ -108,7 +120,7 @@ class SnowflakeDirectLoadSqlGenerator() {
             columnNameMapping.map { (_, actualName) -> actualName }.joinToString(",") { "\"$it\"" }
 
         return """
-            INSERT INTO ${targetTableName.toPrettyString(QUOTE)}
+            INSERT INTO ${targetTableName.toPrettyString(quote=QUOTE)}
             (
                 "$COLUMN_NAME_AB_RAW_ID",
                 "$COLUMN_NAME_AB_EXTRACTED_AT",
@@ -122,7 +134,7 @@ class SnowflakeDirectLoadSqlGenerator() {
                 "$COLUMN_NAME_AB_META",
                 "$COLUMN_NAME_AB_GENERATION_ID",
                 $columnNames
-            FROM ${sourceTableName.toPrettyString(QUOTE)}
+            FROM ${sourceTableName.toPrettyString(quote=QUOTE)}
             """
             .trimIndent()
             .andLog()
@@ -290,6 +302,10 @@ class SnowflakeDirectLoadSqlGenerator() {
         return "DROP TABLE IF EXISTS ${tableName.toPrettyString(QUOTE)}".andLog()
     }
 
+    fun dropStage(tableName: TableName): String {
+        return "DROP STAGE IF EXISTS ${buildSnowflakeStageName(tableName)}".andLog()
+    }
+
     fun getGenerationId(
         tableName: TableName,
         alias: String = "",
@@ -309,8 +325,6 @@ class SnowflakeDirectLoadSqlGenerator() {
             CREATE OR REPLACE FILE FORMAT $STAGE_FORMAT_NAME
             TYPE = 'CSV'
             FIELD_DELIMITER = '$CSV_FIELD_DELIMITER'
-            RECORD_DELIMITER = '$CSV_RECORD_DELIMITER'
-            SKIP_HEADER = 1
             FIELD_OPTIONALLY_ENCLOSED_BY = '"'
             TRIM_SPACE = TRUE
             ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE
@@ -326,9 +340,10 @@ class SnowflakeDirectLoadSqlGenerator() {
 
     fun createSnowflakeStage(tableName: TableName): String {
         val stageName = buildSnowflakeStageName(tableName)
+        val fileFormatName = STAGE_FORMAT_NAME
         return """
             CREATE OR REPLACE STAGE $stageName
-                FILE_FORMAT = my_csv_format;
+                FILE_FORMAT = $fileFormatName;
         """
             .trimIndent()
             .andLog()
@@ -349,12 +364,10 @@ class SnowflakeDirectLoadSqlGenerator() {
         val stageName = buildSnowflakeStageName(tableName)
 
         return """
-            COPY INTO ${tableName.toPrettyString(QUOTE)}
+            COPY INTO ${tableName.toPrettyString(quote=QUOTE)}
             FROM @$stageName
             FILE_FORMAT = $STAGE_FORMAT_NAME
-            MATCH_BY_COLUMN_NAME = 'CASE_INSENSITIVE'
             ON_ERROR = 'ABORT_STATEMENT'
-            PURGE = TRUE
         """
             .trimIndent()
             .andLog()

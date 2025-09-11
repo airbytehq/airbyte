@@ -25,7 +25,14 @@ class SnowflakeAggregateFactory(
 
         runBlocking { snowflakeClient.createSnowflakeStage(tableName) }
 
-        val buffer = SnowflakeInsertBuffer(tableName = tableName, snowflakeClient = snowflakeClient)
+        val columns = snowflakeClient.describeTable(tableName)
+
+        val buffer =
+            SnowflakeInsertBuffer(
+                tableName = tableName,
+                columns = columns,
+                snowflakeClient = snowflakeClient
+            )
 
         return SnowflakeAggregate(buffer = buffer)
     }

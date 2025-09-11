@@ -12,6 +12,7 @@ import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
+import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.integrations.destination.snowflake.SnowflakeSqlNameTransformer
@@ -19,6 +20,7 @@ import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClie
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeInsertBuffer
 import jakarta.inject.Singleton
+import java.time.OffsetDateTime
 import java.util.UUID
 import kotlinx.coroutines.runBlocking
 
@@ -31,7 +33,17 @@ class SnowflakeChecker(
 
     override fun check() {
         val columnName = "testKey"
-        val data = mapOf(columnName to AirbyteValue.from("test-value"))
+        val data =
+            mapOf(
+                Meta.AirbyteMetaFields.RAW_ID.fieldName to
+                    AirbyteValue.from(UUID.randomUUID().toString()),
+                Meta.AirbyteMetaFields.EXTRACTED_AT.fieldName to
+                    AirbyteValue.from(OffsetDateTime.now()),
+                Meta.AirbyteMetaFields.META.fieldName to
+                    AirbyteValue.from(emptyMap<String, String>()),
+                Meta.AirbyteMetaFields.GENERATION_ID.fieldName to AirbyteValue.from(0),
+                columnName to AirbyteValue.from("test-value")
+            )
         val outputSchema = snowflakeSqlNameTransformer.transform(snowflakeConfiguration.schema)
         val tableName =
             snowflakeSqlNameTransformer.transform(
@@ -51,12 +63,6 @@ class SnowflakeChecker(
                 syncId = 0L,
                 namespaceMapper = NamespaceMapper()
             )
-        val snowflakeInsertBuffer =
-            SnowflakeInsertBuffer(
-                tableName = qualifiedTableName,
-                snowflakeClient = snowflakeAirbyteClient
-            )
-
         runBlocking {
             try {
                 snowflakeAirbyteClient.createNamespace(outputSchema)
@@ -68,9 +74,16 @@ class SnowflakeChecker(
                     replace = true,
                 )
 
+                val columns = snowflakeAirbyteClient.describeTable(qualifiedTableName)
+                val snowflakeInsertBuffer =
+                    SnowflakeInsertBuffer(
+                        tableName = qualifiedTableName,
+                        columns = columns,
+                        snowflakeClient = snowflakeAirbyteClient
+                    )
+
                 snowflakeInsertBuffer.accumulate(data)
                 snowflakeInsertBuffer.flush()
-
                 val tableCount = snowflakeAirbyteClient.countTable(qualifiedTableName)
                 require(tableCount == 1L) {
                     "Failed to insert expected rows into check table. Actual written: $tableCount"

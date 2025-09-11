@@ -12,7 +12,6 @@ import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNat
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableSqlOperations
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
-import java.sql.ResultSet
 import javax.sql.DataSource
 
 private val log = KotlinLogging.logger {}
@@ -23,7 +22,13 @@ class SnowflakeAirbyteClient(
     private val sqlGenerator: SnowflakeDirectLoadSqlGenerator,
 ) : AirbyteClient, DirectLoadTableSqlOperations, DirectLoadTableNativeOperations {
     override suspend fun countTable(tableName: TableName): Long {
-        return execute(sqlGenerator.countTable(tableName)).getInt("total").toLong()
+        return dataSource.connection.use { connection ->
+            connection
+                .createStatement()
+                .executeQuery(sqlGenerator.countTable(tableName))
+                .getInt("total")
+                .toLong()
+        }
     }
 
     override suspend fun createNamespace(namespace: String) {
@@ -63,6 +68,7 @@ class SnowflakeAirbyteClient(
     }
 
     override suspend fun dropTable(tableName: TableName) {
+        execute(sqlGenerator.dropStage(tableName))
         execute(sqlGenerator.dropTable(tableName))
     }
 
@@ -77,12 +83,14 @@ class SnowflakeAirbyteClient(
     override suspend fun getGenerationId(tableName: TableName): Long {
         return try {
             val sql = sqlGenerator.getGenerationId(tableName, "generation")
-            val resultSet = execute(sql)
-            if (resultSet.next()) {
-                resultSet.getLong("generation")
-            } else {
-                log.warn { "No generation ID found for table $tableName, returning 0" }
-                0L
+            dataSource.connection.use { connection ->
+                val resultSet = connection.createStatement().executeQuery(sql)
+                if (resultSet.next()) {
+                    resultSet.getLong("generation")
+                } else {
+                    log.warn { "No generation ID found for table $tableName, returning 0" }
+                    0L
+                }
             }
         } catch (e: Exception) {
             log.error(e) { "Failed to retrieve the generation ID for table $tableName" }
@@ -107,7 +115,9 @@ class SnowflakeAirbyteClient(
         execute(sqlGenerator.copyFromStage(tableName))
     }
 
-    internal fun execute(query: String): ResultSet {
+    fun describeTable(tableName: TableName): List<String> = sqlGenerator.showColumns(tableName)
+
+    internal fun execute(query: String) {
         return dataSource.connection.use { connection ->
             connection.createStatement().executeQuery(query)
         }
