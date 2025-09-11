@@ -230,6 +230,7 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.50.7      | 2025-09-10 | [66179](https://github.com/airbytehq/airbyte/pull/66179)   | Bump to the latest CDK fixing protobuf encoding of certain column types                                                                         |
 | 3.50.6      | 2025-08-08 | [64569](https://github.com/airbytehq/airbyte/pull/64569)   | Moved db version logging from connector to new CDK version                                                                                      |
 | 3.50.5      | 2025-07-30 | [63377](https://github.com/airbytehq/airbyte/pull/63377)   | Global state compatibility in speed mode                                                                                                        |
 | 3.50.4      | 2025-07-30 | [64134](https://github.com/airbytehq/airbyte/pull/64134)   | Log db version for mysql                                                                                                                        |
