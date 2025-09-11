@@ -34,7 +34,7 @@ logger = logging.getLogger("auto_merge")
 logger.setLevel(logging.INFO)
 
 
-def get_required_checks_from_legacy_api(repo: GithubRepo, branch_name: str) -> set[str]:
+def get_required_checks_from_legacy_api(repo: GithubRepo, branch_name: str) -> Optional[set[str]]:
     """Get required status checks from legacy branch protection API.
 
     Args:
@@ -42,16 +42,20 @@ def get_required_checks_from_legacy_api(repo: GithubRepo, branch_name: str) -> s
         branch_name (str): The branch name to get required checks for
 
     Returns:
-        set[str]: Set of required status check contexts from legacy API
+        Optional[set[str]]: Set of required status check contexts from legacy API, or None if not available
 
     Raises:
         Exception: If the legacy API call fails
     """
     branch = repo.get_branch(branch_name)
-    return set(branch.get_required_status_checks().contexts)
+    required_status_checks = branch.get_required_status_checks()
+    if required_status_checks is None:
+        return None
+    contexts = required_status_checks.contexts
+    return set(contexts) if contexts else None
 
 
-def get_required_checks_from_rulesets_api(repo: GithubRepo, branch_name: str) -> set[str]:
+def get_required_checks_from_rulesets_api(repo: GithubRepo, branch_name: str) -> Optional[set[str]]:
     """Get required status checks from GitHub rulesets API.
 
     Args:
@@ -59,7 +63,7 @@ def get_required_checks_from_rulesets_api(repo: GithubRepo, branch_name: str) ->
         branch_name (str): The branch name to get required checks for
 
     Returns:
-        set[str]: Set of required status check contexts from rulesets
+        Optional[set[str]]: Set of required status check contexts from rulesets, or None if not available
 
     Raises:
         Exception: If the rulesets API call fails
@@ -72,7 +76,7 @@ def get_required_checks_from_rulesets_api(repo: GithubRepo, branch_name: str) ->
     response = requests.get(url, headers=headers)
 
     if response.status_code == 404:
-        return required_checks
+        return None
 
     response.raise_for_status()
     rules_data = response.json()
@@ -87,7 +91,7 @@ def get_required_checks_from_rulesets_api(repo: GithubRepo, branch_name: str) ->
                     elif isinstance(check, str):
                         required_checks.add(check)
 
-    return required_checks
+    return required_checks if required_checks else None
 
 
 def get_required_status_checks_from_all_sources(repo: GithubRepo, branch_name: str) -> set[str]:
@@ -111,15 +115,21 @@ def get_required_status_checks_from_all_sources(repo: GithubRepo, branch_name: s
 
     try:
         legacy_checks = get_required_checks_from_legacy_api(repo, branch_name)
-        required_checks.update(legacy_checks)
-        logger.info(f"Found {len(legacy_checks)} required checks from legacy branch protection API")
+        if legacy_checks:
+            required_checks.update(legacy_checks)
+            logger.info(f"Found {len(legacy_checks)} required checks from legacy branch protection API")
+        else:
+            logger.info("No required checks found from legacy branch protection API")
     except Exception as e:
         logger.info(f"Legacy branch protection API not available or failed: {e}")
 
     try:
         rulesets_checks = get_required_checks_from_rulesets_api(repo, branch_name)
-        required_checks.update(rulesets_checks)
-        logger.info(f"Found {len(rulesets_checks)} required checks from rulesets API")
+        if rulesets_checks:
+            required_checks.update(rulesets_checks)
+            logger.info(f"Found {len(rulesets_checks)} required checks from rulesets API")
+        else:
+            logger.info("No required checks found from rulesets API")
     except Exception as e:
         logger.info(f"Rulesets API not available or failed: {e}")
 
