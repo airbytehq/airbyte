@@ -2,9 +2,28 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
+import sys
+from pathlib import Path
 from pytest import fixture
 
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+
+
+def _get_manifest_path() -> Path:
+    return Path(__file__).parent.parent
+
+_SOURCE_FOLDER_PATH = _get_manifest_path()
+_YAML_FILE_PATH = _SOURCE_FOLDER_PATH / "source_okta" / "manifest.yaml"
+
+sys.path.append(str(_SOURCE_FOLDER_PATH))
+
+
+def find_stream(stream_name, config):
+    for stream in YamlDeclarativeSource(config=config, catalog=None, state=None, path_to_yaml=str(_YAML_FILE_PATH)).streams(config=config):
+        if stream.name == stream_name:
+            return stream
+    raise ValueError(f"Stream {stream_name} not found")
 
 
 @fixture
