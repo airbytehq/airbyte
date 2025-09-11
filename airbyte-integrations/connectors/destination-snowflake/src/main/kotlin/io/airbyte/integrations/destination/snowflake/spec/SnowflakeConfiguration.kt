@@ -43,9 +43,9 @@ class SnowflakeConfigurationFactory :
         pojo: SnowflakeSpecification
     ): SnowflakeConfiguration {
         val authTypeConfig =
-            when (pojo.authType) {
+            when (pojo.credentials) {
                 is KeyPairAuthSpecification -> {
-                    val keyPairAuthSpec = pojo.authType as KeyPairAuthSpecification
+                    val keyPairAuthSpec = pojo.credentials as KeyPairAuthSpecification
                     KeyPairAuthConfiguration(
                         keyPairAuthSpec.privateKey,
                         keyPairAuthSpec.privateKeyPassword
@@ -53,7 +53,7 @@ class SnowflakeConfigurationFactory :
                 }
                 is UsernamePasswordAuthSpecification -> {
                     val usernamePasswordAuthSpec =
-                        pojo.authType as UsernamePasswordAuthSpecification
+                        pojo.credentials as UsernamePasswordAuthSpecification
                     UsernamePasswordAuthConfiguration(usernamePasswordAuthSpec.password)
                 }
                 null -> {
