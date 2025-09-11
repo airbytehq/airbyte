@@ -15,21 +15,15 @@ from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 from airbyte_cdk.utils import AirbyteTracedException
-from source_pinterest.reports import CampaignAnalyticsReport
 
 from .reports.reports import (
-    AdGroupReport,
     AdGroupTargetingReport,
-    AdvertiserReport,
     AdvertiserTargetingReport,
     CampaignTargetingReport,
     CustomReport,
     KeywordReport,
-    PinPromotionReport,
     PinPromotionTargetingReport,
-    ProductGroupReport,
     ProductGroupTargetingReport,
-    ProductItemReport,
 )
 from .streams import AdAccounts, AdAccountValidationStream, PinterestStream
 
@@ -107,7 +101,6 @@ class SourcePinterest(YamlDeclarativeSource):
         # Report streams involve async data fetch, which is currently not supported in low-code
         ad_accounts = AdAccounts(transformed_config)
         report_streams = [
-            CampaignAnalyticsReport(ad_accounts, config=transformed_config),
             CampaignTargetingReport(ad_accounts, config=transformed_config),
             AdvertiserTargetingReport(ad_accounts, config=transformed_config),
             AdGroupTargetingReport(ad_accounts, config=transformed_config),

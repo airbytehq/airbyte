@@ -6,7 +6,6 @@ from typing import Any, Mapping
 from unittest.mock import MagicMock
 
 from pytest import fixture
-from source_pinterest.reports import CampaignAnalyticsReport
 from source_pinterest.source import SourcePinterest
 
 from airbyte_cdk.sources.streams import Stream
@@ -83,8 +82,13 @@ def test_response_single_account() -> MagicMock:
 
 
 @fixture
-def analytics_report_stream() -> CampaignAnalyticsReport:
-    return CampaignAnalyticsReport(parent=None, config=MagicMock())
+def analytics_report_stream() -> Any:
+    return get_stream_by_name("campaign_analytics_report", {
+        "client_id": "test_client_id",
+        "client_secret": "test_client_secret",
+        "refresh_token": "test_refresh_token",
+        "start_date": "2021-05-07",
+    })
 
 
 @fixture
