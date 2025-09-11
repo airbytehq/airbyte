@@ -12,14 +12,16 @@ import io.airbyte.integrations.source.datagen.partitionobjs.DataGenSharedState
 import io.airbyte.integrations.source.datagen.partitionobjs.DataGenSourcePartition
 import io.airbyte.integrations.source.datagen.partitionobjs.DataGenStreamState
 import jakarta.inject.Singleton
+import java.time.Clock
+import java.time.LocalTime
 import java.util.concurrent.atomic.AtomicReference
 
-//
-
-@Singleton
 class DataGenPartitionCreator (
     val partition: DataGenSourcePartition,
-    val partitionFactory: DataGenSourcePartitionFactory): PartitionsCreator {
+    val partitionFactory: DataGenSourcePartitionFactory,
+    val clock: Clock,
+    val endTime: LocalTime
+): PartitionsCreator {
 
     val streamState: DataGenStreamState = partition.streamState
     val stream: Stream = streamState.stream
@@ -37,7 +39,7 @@ class DataGenPartitionCreator (
 
     override suspend fun run(): List<PartitionReader> {
         // TODO: add split()
-        val partitionReader = DataGenPartitionReader(partition)
+        val partitionReader = DataGenPartitionReader(partition, clock, endTime)
         return listOf(partitionReader)
     }
 
