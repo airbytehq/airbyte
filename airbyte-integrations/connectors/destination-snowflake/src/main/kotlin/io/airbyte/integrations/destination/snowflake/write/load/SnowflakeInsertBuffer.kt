@@ -6,7 +6,9 @@ package io.airbyte.integrations.destination.snowflake.write.load
 
 import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.csv.toCsvValue
 import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.integrations.destination.snowflake.client.CSV_FIELD_DELIMITER
 import io.airbyte.integrations.destination.snowflake.client.CSV_RECORD_DELIMITER
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeDirectLoadSqlGenerator.Companion.QUOTE
@@ -62,15 +64,12 @@ class SnowflakeInsertBuffer(
         val csvFile = File.createTempFile("snowflake", ".csv")
         csvFile.deleteOnExit()
         csvFile.bufferedWriter(Charsets.UTF_8).use { writer ->
-            //            records.forEach { record ->
-            //                writer.write(
-            //                    "${columns.map { columnName -> record[columnName].toCsvValue()
-            // }.joinToString(CSV_FIELD_DELIMITER)}$CSV_RECORD_DELIMITER"
-            //                )
-            //            }
-            writer.write(
-                "41d7dff7-6047-4f8d-b60c-5b330242bf90,2025-09-11T19:27:00.736061405Z,{},0,test-value$CSV_RECORD_DELIMITER"
-            )
+            records.forEach { record ->
+                writer.write(
+                    "${columns.map { columnName -> record[columnName].toCsvValue()
+             }.joinToString(CSV_FIELD_DELIMITER)}$CSV_RECORD_DELIMITER"
+                )
+            }
         }
         return csvFile.absolutePath
     }
