@@ -30,7 +30,7 @@ jobs:
           comment-id: ${{ github.event.inputs.comment-id }}
           issue-number: ${{ github.event.inputs.pr }}
           body: |
-            > Update CDK version job started for `${{ github.event.inputs.connector-name }}`. Check the [job logs](${{ steps.resolve-job-vars.outputs.run-url }}) for details.
+            > Update CDK version job started for `${{ github.event.inputs.connector }}`. Check the [job logs](${{ steps.resolve-job-vars.outputs.run-url }}) for details.
 
       - name: Validate connector
         id: validate-connector
@@ -106,14 +106,14 @@ jobs:
 #          body: |
 #            > ✅ CDK version for `${{ github.event.inputs.connector }}` was already up to date (no changes made).
 #
-#      - name: Append validation failure comment
-#        uses: peter-evans/create-or-update-comment@v4
-#        if: failure() && steps.validate-connector.outputs.error
-#        with:
-#          comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
-#          reactions: confused
-#          body: |
-#            > 🔴 **Validation Error**: ${{ steps.validate-connector.outputs.error }}
+      - name: Append validation failure comment
+        uses: peter-evans/create-or-update-comment@v4
+        if: failure() && steps.validate-connector.outputs.error
+        with:
+          comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
+          reactions: confused
+          body: |
+            > 🔴 **Validation Error**: ${{ steps.validate-connector.outputs.error }}
 #
 #      - name: Append failure comment
 #        uses: peter-evans/create-or-update-comment@v4
