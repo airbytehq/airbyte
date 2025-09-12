@@ -67,7 +67,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Run CDK upgrade
-        run: ./gradlew ":airbyte-integrations:connectors:${github.event.inputs.connector}:upgradeCdk"
+        run: ./gradlew ":airbyte-integrations:connectors:${{ github.event.inputs.connector }}:upgradeCdk"
 
       - name: Check for changes
         id: git-diff
