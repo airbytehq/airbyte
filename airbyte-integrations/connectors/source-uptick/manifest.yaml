@@ -1683,7 +1683,7 @@ streams:
           ordering: "-updated"
           show_deleted: "true"
           fields[Property]: >-
-            id,access_code,access_inductionreq,access_logbookreq,access_note,access_procedure,access_schedule,access_signaturereq,address,agm_date,authorisation_ref,autocomp_label,billing_manual,billing_requirements,bsecure_latest_sticker_guid,bsecure_resolved_guid,building_classes,building_construction_class,building_era,building_part,building_size,building_sizesqm,building_stories_above_ground,building_stories_below_ground,building_tenancies,building_type,certification_date,client_ref,client_signature_required,cofo_date,cofo_location,cofo_number,coords,created,extra_fields,inactive_date,internal_note,is_compliant,local_government_area,name,ocsp_number,organisation,ref,report_manual,report_requirements,restricted_access_hours,review_date,round_number,safety_requirements,service_requirements,status,timezone,updated
+            id,access_code,access_inductionreq,access_logbookreq,access_note,access_procedure,access_schedule,access_signaturereq,address,agm_date,authorisation_ref,autocomp_label,billing_manual,billing_requirements,bsecure_latest_sticker_guid,bsecure_resolved_guid,building_classes,building_construction_class,building_era,building_part,building_size,building_sizesqm,building_stories_above_ground,building_stories_below_ground,building_tenancies,building_type,certification_date,client_ref,client_signature_required,cofo_date,cofo_location,cofo_number,coords,created,extra_fields,inactive_date,internal_note,is_compliant,local_government_area,name,ocsp_number,organisation,ref,report_manual,report_requirements,restricted_access_hours,review_date,round_number,safety_requirements,service_requirements,status,timezone,updated,extra_fields
       record_selector:
         type: RecordSelector
         extractor:
@@ -1810,7 +1810,10 @@ streams:
             type:
               - string
               - "null"
-
+          extra_fields:
+            type:
+              - object
+              - "null"
         required:
           - id
           - updated
@@ -1972,7 +1975,12 @@ streams:
             path:
               - bsecure_resolved_guid
             value: "{{ record['attributes']['bsecure_resolved_guid'] }}"
-
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - extra_fields
+            value: "{{ record['attributes']['extra_fields'] }}"
       - type: RemoveFields
         field_pointers:
           - - attributes
