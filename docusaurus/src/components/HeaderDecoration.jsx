@@ -365,6 +365,7 @@ export const HeaderDecoration = ({
   usageRate,
   lastUpdated,
   definitionId,
+  "enterprise-connector": enterpriseConnector,
 }) => {
   const isOss = boolStringToBool(isOssString);
   const isCloud = boolStringToBool(isCloudString);
@@ -376,7 +377,7 @@ export const HeaderDecoration = ({
     <>
       <div
         className={styles.connectorHeader}
-   
+        data-enterprise-connector={enterpriseConnector}
       >
         <ConnectorTitle
           iconUrl={iconUrl}
