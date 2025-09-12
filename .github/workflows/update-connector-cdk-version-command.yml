@@ -112,13 +112,13 @@ jobs:
           reactions: confused
           body: |
             > 🔴 **Validation Error**: ${{ steps.validate-connector.outputs.error }}
-#
-#      - name: Append failure comment
-#        uses: peter-evans/create-or-update-comment@v4
-#        if: failure() && !steps.validate-connector.outputs.error
-#        with:
-#          comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
-#          reactions: confused
-#          body: |
-#            > 🔴 Job failed while updating CDK version for `${{ github.event.inputs.connector }}`. Check the [job logs](${{ steps.resolve-job-vars.outputs.run-url }}) for details.
-#
+
+      - name: Append failure comment
+        uses: peter-evans/create-or-update-comment@v4
+        if: failure() && !steps.validate-connector.outputs.error
+        with:
+          comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
+          reactions: confused
+          body: |
+            > 🔴 Job failed while updating CDK version for `${{ github.event.inputs.connector }}`. Check the [job logs](${{ steps.resolve-job-vars.outputs.run-url }}) for details.
+
