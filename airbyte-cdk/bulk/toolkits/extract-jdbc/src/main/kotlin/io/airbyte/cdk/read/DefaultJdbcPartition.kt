@@ -109,7 +109,7 @@ sealed class DefaultJdbcSplittablePartition(
         val querySpec =
             SelectQuerySpec(
                 SelectColumns(stream.fields + checkpointColumns),
-                FromSample(stream.name, stream.namespace, sampleRateInvPow2, sampleSize),
+                FromSample(stream.name, stream.namespace, sampleRateInvPow2, sampleSize, where),
                 where,
                 OrderBy(checkpointColumns),
             )
