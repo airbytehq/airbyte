@@ -101,8 +101,9 @@ class SourcePinterest(YamlDeclarativeSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         declarative_streams = super().streams(config)
 
-        transformed_config = self._validate_and_transform(config, amount_of_days_allowed_for_lookup=913)
-        transformed_config["authenticator"] = self.get_authenticator(config)
+        transformed_config = copy.deepcopy(config)
+        transformed_config["authenticator"] = self.get_authenticator(transformed_config)
+        transformed_config = self._validate_and_transform(transformed_config, amount_of_days_allowed_for_lookup=913)
 
         # Report streams involve async data fetch, which is currently not supported in low-code
         ad_accounts = AdAccounts(transformed_config)
