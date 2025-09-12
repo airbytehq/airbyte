@@ -113,7 +113,7 @@ data class Meta(
                 ),
             ),
         ),
-        GENERATION_ID(COLUMN_NAME_AB_META, IntegerType),
+        GENERATION_ID(COLUMN_NAME_AB_GENERATION_ID, IntegerType),
     }
 
     companion object {
