@@ -7,6 +7,9 @@
     "MD033": false, // Disable the "no-inline-html" rule (allows inline HTML in Markdown)
     "MD010": false, // Disable the "no-hard-tabs" rule (allows hard tabs instead of spaces)
     "MD041": false, // Disable the "first-line-heading/first-line-h1" rule (allows files without a top-level heading as the first line)
+    "MD046": { 
+        "style": "fenced" // Enforce fenced code blocks (e.g. ` or ```) and don't permit code sample indentation without fences
+    },
     "MD004": {
         "style": "dash" // Enforce "dash" style for unordered list items (e.g., "- item")
     }

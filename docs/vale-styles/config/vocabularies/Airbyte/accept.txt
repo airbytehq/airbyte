@@ -10,6 +10,7 @@ Cloud
 Cloud Teams
 Enterprise Flex
 abctl
+Airbox
 PyAirbyte
 [Nn]amespace
 Connector Builder
