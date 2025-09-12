@@ -72,10 +72,9 @@ jobs:
       - name: Check for changes
         id: git-diff
         run: |
+          exit 1
           git diff --quiet && echo "No changes to commit" || echo "changes=true" | tee -a $GITHUB_OUTPUT
         shell: bash
-
-
 #
 #      - name: Commit changes
 #        if: steps.git-diff.outputs.changes == 'true'
