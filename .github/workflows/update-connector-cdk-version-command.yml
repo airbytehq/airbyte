@@ -58,15 +58,12 @@ jobs:
           fi
 
       - name: Setup Java
-        if: steps.git-diff.outputs.changes == 'true'
         uses: actions/setup-java@v4
         with:
           distribution: "zulu"
           java-version: "21"
 
       - name: Setup Gradle
-        if: steps.git-diff.outputs.changes == 'true'
-
         uses: gradle/actions/setup-gradle@v4
 #
 #      - name: Check for changes
