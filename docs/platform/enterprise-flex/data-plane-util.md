@@ -30,12 +30,13 @@ Before you begin, ensure you satisfy all of these requirements.
 
 ### Software requirements
 
-To manage and monitor your data plane after installation, you should also install these command line tools.
-
-- [Helm](https://helm.sh/)
-- [kind](https://kind.sigs.k8s.io/)
-- [kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl)
 - Docker Desktop or Docker Engine (installation is described below)
+
+- To manage and monitor your data plane after installation, you should also install these command line tools, although this isn't strictly necessary.
+
+    - [Helm](https://helm.sh/)
+    - [kind](https://kind.sigs.k8s.io/)
+    - [kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl)
 
 ### Security considerations
 
@@ -48,7 +49,7 @@ You should already have considered [what regions and workspaces](getting-started
 
 ## Part 1. Install Airbox
 
-You can install Airbox [as a binary executable](https://github.com/airbytehq/abctl/releases/tag/airbox-v0.1.0-beta1). Downloads are available for Windows, Mac, and Linux.
+You can install Airbox [as a binary](https://github.com/airbytehq/abctl/releases/tag/airbox-v0.1.0-beta1). Downloads are available for Windows, Mac, and Linux.
 
 ## Part 2: Install Docker Desktop
 
@@ -56,7 +57,7 @@ Install Docker Desktop on the machine that will host your data plane. Follow the
 
 - [Mac](https://docs.docker.com/desktop/install/mac-install/)
 - [Windows](https://docs.docker.com/desktop/install/windows-install/)
-ß- [Linux](https://docs.docker.com/desktop/install/linux-install/) - If you're installing on a Linux headless virtual machine, it's easier to use [Docker Engine](https://docs.docker.com/engine/install/) instead of Docker Desktop.
+- [Linux](https://docs.docker.com/desktop/install/linux-install/) - If you're installing on a Linux headless virtual machine, it's easier to use [Docker Engine](https://docs.docker.com/engine/install/) instead of Docker Desktop.
 
 You don't need to do anything with Docker, but you do need to run it in the background. Once it's open, minimize it and proceed to Part 3.
 
@@ -113,6 +114,8 @@ Connecting to: https://api.airbyte.com
 Successfully authenticated!
 ```
 
+Continue to Part 6.
+
 ### Log out
 
 If you need to clear the authentication token Airbox uses to access your data plane, log out.
@@ -125,13 +128,15 @@ This doesn't remove the client ID and client secret from Airbyte. If you need to
 
 ### Switch organizations
 
-If you use multiple Airbyte organizations, you can switch between them with the following command.
+1. If you use multiple Airbyte organizations, you can switch between them with the following command.
 
-```bash
-airbox auth switch-organization
-```
+    ```bash
+    airbox auth switch-organization
+    ```
 
-Choose the new organization you want to connect to and press <kbd>Enter</kbd>.
+    If you belong to multiple organizations, Airbox shows you that list. If not, Airbox automatically sets you to your single organization again.
+
+2. Choose the new organization you want to connect to and press <kbd>Enter</kbd>.
 
 ## Part 6: Deploy a data plane
 
