@@ -5,7 +5,7 @@ import io.airbyte.cdk.read.Resource
 import io.airbyte.cdk.read.ResourceAcquirer
 import io.airbyte.cdk.read.ResourceType
 import io.airbyte.integrations.source.datagen.DataGenSourceConfiguration
-import io.airbyte.integrations.source.datagen.partitionops.DataGenPartitionCreator
+import io.airbyte.integrations.source.datagen.partitionops.DataGenPartitionsCreator
 import io.airbyte.integrations.source.datagen.partitionops.DataGenPartitionReader
 import jakarta.inject.Singleton
 
@@ -15,10 +15,10 @@ class DataGenSharedState(
     val concurrencyResource: ConcurrencyResource,
     val resourceAcquirer: ResourceAcquirer
 ) {
-    fun tryAcquireResourcesForCreator(): DataGenPartitionCreator.AcquiredResources? {
+    fun tryAcquireResourcesForCreator(): DataGenPartitionsCreator.AcquiredResources? {
         val acquiredThread: ConcurrencyResource.AcquiredThread =
             concurrencyResource.tryAcquire() ?: return null
-        return DataGenPartitionCreator.AcquiredResources { acquiredThread.close() }
+        return DataGenPartitionsCreator.AcquiredResources { acquiredThread.close() }
     }
 
     fun tryAcquireResourcesForReader(
