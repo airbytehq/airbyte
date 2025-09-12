@@ -6,8 +6,10 @@ from typing import List
 
 import requests
 
+import re
+from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
-from airbyte_cdk.sources.declarative.types import Config, Record
+from airbyte_cdk.sources.declarative.types import Record
 
 
 class AdAccountRecordExtractor(RecordExtractor):
@@ -33,3 +35,19 @@ class AdAccountRecordExtractor(RecordExtractor):
         if isinstance(data, dict):
             return [data]
         return []
+
+
+class PinterestAnalyticsBackoffStrategy(BackoffStrategy):
+    _re = re.compile(r"Retry after\s+(\d+)\s+seconds", re.IGNORECASE)
+
+    def backoff_time(self, response_or_exception, attempt_count: int) -> float:
+        try:
+            if isinstance(response_or_exception, requests.Response):
+                data = response_or_exception.json()
+                msg = str(data.get("message", ""))
+                m = self._re.search(msg)
+                if m:
+                    return float(m.group(1))
+        except Exception:
+            pass
+        return min(2 ** attempt_count, 120.0)
