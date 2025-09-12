@@ -48,8 +48,8 @@ definitions:
   analytics_error_handler:
     type: DefaultErrorHandler
     backoff_strategies:
-      - type: ConstantBackoffStrategy
-        backoff_time_in_seconds: 1
+      - type: CustomBackoffStrategy
+        class_name: source_pinterest.components.components.PinterestAnalyticsBackoffStrategy
     response_filters:
       - type: HttpResponseFilter
         action: RETRY
@@ -3203,3 +3203,29 @@ concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: "{{ config['num_threads'] or 3 }}"
   max_concurrency: 50
+
+api_budget:
+  type: HTTPAPIBudget
+  status_codes_for_ratelimit_hit: [429]
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - interval: "PT60S"
+          limit: 300
+      matchers:
+        # ad account analytics (NOT user_account/analytics)
+        - type: HttpRequestRegexMatcher
+          method: GET
+          url_path_pattern: "ad_accounts/[^/]+/analytics"
+        # campaign analytics
+        - type: HttpRequestRegexMatcher
+          method: GET
+          url_path_pattern: "ad_accounts/[^/]+/campaigns/analytics"
+        # ad group analytics
+        - type: HttpRequestRegexMatcher
+          method: GET
+          url_path_pattern: "ad_accounts/[^/]+/ad_groups/analytics"
+        # ad analytics
+        - type: HttpRequestRegexMatcher
+          method: GET
+          url_path_pattern: "ad_accounts/[^/]+/ads/analytics"
