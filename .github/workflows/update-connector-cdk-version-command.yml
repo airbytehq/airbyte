@@ -38,19 +38,19 @@ jobs:
         run: |
           connector_path="airbyte-integrations/connectors/${{ github.event.inputs.connector }}"
           if [ ! -d "$connector_path" ]; then
-          echo "error=Connector directory not found: $connector_path" >> $GITHUB_OUTPUT
+          echo "error=Connector directory not found: $connector_path" | tee -a $GITHUB_OUTPUT
           exit 1
           fi
 
           build_file="$connector_path/build.gradle"
           if [ ! -f "$build_file" ]; then
-          echo "error=This connector does not use Gradle (no build.gradle found). CDK upgrades are only supported for Java/Kotlin connectors." >> $GITHUB_OUTPUT
+          echo "error=This connector does not use Gradle (no build.gradle found). CDK upgrades are only supported for Java/Kotlin connectors." | tee -a $GITHUB_OUTPUT
           exit 1
           fi
 
           # Check if connector uses airbyteBulkConnector plugin
           if ! grep -q "airbyte-bulk-connector" "$build_file"; then
-          echo "error=This connector does not use the airbyte-bulk-connector plugin. CDK upgrades are only supported for connectors using the bulk CDK." >> $GITHUB_OUTPUT
+          echo "error=This connector does not use the airbyte-bulk-connector plugin. CDK upgrades are only supported for connectors using the bulk CDK." | tee -a $GITHUB_OUTPUT
           exit 1
           fi
 
