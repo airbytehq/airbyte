@@ -1,5 +1,8 @@
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import java.util.Properties
+import java.io.FileNotFoundException
+import java.io.UncheckedIOException
 
 class AirbyteBulkConnectorExtension {
 
@@ -271,6 +274,73 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
             systemProperties(["mockk.junit.extension.requireParallelTesting": "true"])
         }
 
-        project.extensions.create('airbyteBulkConnector', AirbyteBulkConnectorExtension, project)
+        def extension = project.extensions.create('airbyteBulkConnector', AirbyteBulkConnectorExtension, project)
+
+        project.tasks.register('getCdkVersion') {
+            description = 'Gets the CDK version used by the connector'
+            group = 'airbyte-bulk-connector'
+
+            doLast {
+                println extension.cdk
+            }
+        }
+
+        project.tasks.register('upgradeCdk') {
+            description = 'Upgrades the CDK version used by the connector. If no version is specified, upgrades to the local CDK version.'
+            group = 'airbyte-bulk-connector'
+
+            doLast {
+                String targetVersion = project.hasProperty('cdkVersion') ? project.property('cdkVersion') : null
+
+                if (targetVersion == null) {
+                    targetVersion = getLocalCdkVersion(project)
+                    println "No version specified, upgrading to local CDK version: $targetVersion"
+                } else {
+                    println "Version specified, using the provided CDK versionn: $targetVersion"
+                }
+
+                updateCdkVersion(project, targetVersion)
+            }
+        }
+    }
+
+    private static String getLocalCdkVersion(Project project) throws IOException {
+        File versionPropsFile = new File(project.rootDir, 'airbyte-cdk/bulk/version.properties')
+        if (!versionPropsFile.exists()) {
+            throw new FileNotFoundException("CDK version file not found: ${versionPropsFile.absolutePath}")
+        }
+
+        Properties props = new Properties()
+        versionPropsFile.withInputStream { stream -> props.load(stream) }
+        if (!props.containsKey('version')) {
+            throw new NoSuchElementException("Missing 'version' property in ${versionPropsFile.absolutePath}")
+        }
+
+        String localVersion = props.getProperty('version')?.trim()
+        if (!localVersion) {
+            throw new IllegalStateException("'version' property is empty in ${versionPropsFile.absolutePath}")
+        }
+
+        project.logger.info("Found local CDK version from version.properties: ${localVersion}")
+        return localVersion
+    }
+
+    private static void updateCdkVersion(Project project, String version) {
+        File buildFile = project.buildFile
+        String content = buildFile.text
+
+        // regex that extracts the CDK version from the airbyteBulkConnector block
+        def pattern = /(?s)(airbyteBulkConnector\s*\{.*?cdk\s*=\s*['"])([^'"]+)(['"].*?\})/
+
+        def matcher = content =~ pattern
+        if (matcher.find()) {
+            String updatedContent = content.replaceAll(pattern, "\$1${version}\$3")
+            buildFile.text = updatedContent
+            project.logger.info("Updated CDK version from '${matcher.group(2)}' to '${version}' in ${buildFile.absolutePath}")
+        } else {
+            throw new NoSuchElementException("No CDK version configuration found in ${buildFile.absolutePath}. " +
+                    "Please ensure the connector uses airbyteBulkConnector plugin" +
+                    "and has a 'cdk' property set.")
+        }
     }
 }
