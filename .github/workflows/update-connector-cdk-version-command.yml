@@ -91,17 +91,17 @@ jobs:
           comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
           reactions: hooray
           body: |
-            > ✅ Successfully updated CDK version for `${{ github.event.inputs.connector }}` to `${{ steps.upgrade-cdk.outputs.updated-version }}`. (${{ steps.commit-step.outputs.sha }})
+            > ✅ Successfully updated CDK version for `${{ github.event.inputs.connector }}`.
 
-#      - name: Append success comment (no-op)
-#        uses: peter-evans/create-or-update-comment@v4
-#        if: steps.git-diff.outputs.changes != 'true'
-#        with:
-#          comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
-#          reactions: hooray
-#          body: |
-#            > ✅ CDK version for `${{ github.event.inputs.connector }}` was already up to date (no changes made).
-#
+      - name: Append success comment (no-op)
+        uses: peter-evans/create-or-update-comment@v4
+        if: steps.git-diff.outputs.changes != 'true'
+        with:
+          comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
+          reactions: hooray
+          body: |
+            > ✅ CDK version for `${{ github.event.inputs.connector }}` was already up to date (no changes made).
+
       - name: Append validation failure comment
         uses: peter-evans/create-or-update-comment@v4
         if: failure() && steps.validate-connector.outputs.error
