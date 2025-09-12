@@ -305,7 +305,7 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
     }
 
     private static String getLocalCdkVersion(Project project) throws IOException {
-        File versionPropsFile = new File(project.rootDir, 'airbyte-cdk/bulk/version.properties')
+        File versionPropsFile = new File(project.rootDir, 'airbyte-cdk/bulk/core/base/src/main/resources/version.properties')
         if (!versionPropsFile.exists()) {
             throw new FileNotFoundException("CDK version file not found: ${versionPropsFile.absolutePath}")
         }
