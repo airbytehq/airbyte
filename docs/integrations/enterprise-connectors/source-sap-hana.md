@@ -1,5 +1,6 @@
 ---
 dockerRepository: airbyte/source-sap-hana-enterprise
+enterprise-connector: true
 ---
 
 # Source SAP HANA

@@ -1,5 +1,6 @@
 ---
 dockerRepository: airbyte/source-db2
+enterprise-connector: true
 ---
 # Source Db2
 

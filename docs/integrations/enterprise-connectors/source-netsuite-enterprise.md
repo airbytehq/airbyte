@@ -1,5 +1,6 @@
 ---
 dockerRepository: airbyte/source-netsuite-enterprise
+enterprise-connector: true
 ---
 # Source Netsuite
 
