@@ -1,6 +1,6 @@
 # Source ServiceNow
 
-Airbyte’s incubating ServiceNow enterprise source connector currently offers Full Refresh syncs for streams that are part of Software Asset Management and Configuration Management Database applications.
+Airbyte’s community ServiceNow source connector currently offers Full Refresh syncs for streams that are part of Software Asset Management and Configuration Management Database applications.
 
 ## Features
 
@@ -45,4 +45,3 @@ Airbyte’s incubating ServiceNow enterprise source connector currently offers F
 - cmdb_model_category
 - sam_sw_product_lifecycle
 - alm_license
-
