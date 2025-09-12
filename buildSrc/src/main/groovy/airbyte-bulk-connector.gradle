@@ -266,6 +266,15 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
             systemProperties(["mockk.junit.extension.requireParallelTesting": "true"])
         }
 
-        project.extensions.create('airbyteBulkConnector', AirbyteBulkConnectorExtension, project)
+        def extension = project.extensions.create('airbyteBulkConnector', AirbyteBulkConnectorExtension, project)
+
+        project.tasks.register('getCdkVersion') {
+            description = 'Gets the CDK version used by the connector'
+            group = 'airbyte-bulk-connector'
+
+            doLast {
+                println extension.cdk
+            }
+        }
     }
 }
