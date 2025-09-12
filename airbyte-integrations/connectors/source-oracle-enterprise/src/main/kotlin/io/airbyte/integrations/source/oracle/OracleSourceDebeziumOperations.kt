@@ -210,8 +210,18 @@ class OracleSourceDebeziumOperations(
 
         override fun get(): CurrentDatabaseState =
             jdbcConnectionFactory.get().use { connection: Connection ->
+                val maybeDbDomain: String? =
+                    connection.createStatement().use { statement ->
+                        statement.executeQuery(CurrentDatabaseState.vparameterSQL).use { rs ->
+                            require(rs.next())
+                            val dbDomain: String? = rs.getString(1)
+                            require(!rs.next())
+                            if (rs.wasNull()) null else dbDomain
+                        }
+                    }
+
                 connection.createStatement().use { statement: Statement ->
-                    statement.executeQuery(CurrentDatabaseState.SQL).use { rs: ResultSet ->
+                    statement.executeQuery(CurrentDatabaseState.vdatabaseSQL).use { rs: ResultSet ->
                         require(rs.next())
                         val isContainerDatabase: Boolean = rs.getString(1)?.uppercase() == "YES"
                         val pluggableDatabaseName: String? =
@@ -220,6 +230,7 @@ class OracleSourceDebeziumOperations(
                             address = jdbcConnectionFactory.ensureTunnelSession().address,
                             pluggableDatabaseName,
                             databaseName = rs.getString(3)!!,
+                            databaseDomain = maybeDbDomain,
                             position = OracleSourcePosition(rs.getLong(4)),
                         )
                     }
@@ -230,14 +241,18 @@ class OracleSourceDebeziumOperations(
     data class CurrentDatabaseState(
         val address: InetSocketAddress,
         val pluggableDatabaseName: String?,
-        val databaseName: String,
+        private val databaseName: String,
+        val databaseDomain: String?,
         val position: OracleSourcePosition,
     ) {
         val debeziumName: String
             get() = pluggableDatabaseName ?: databaseName
 
+        val fullyQualifiedDatabaseName: String
+            get() = databaseDomain?.let { "$databaseName.$databaseDomain" } ?: databaseName
+
         companion object {
-            const val SQL =
+            const val vdatabaseSQL =
                 """
     SELECT
         cdb,
@@ -245,6 +260,10 @@ class OracleSourceDebeziumOperations(
         name AS db_name,
         current_scn
     FROM v${'$'}database
+            """
+            const val vparameterSQL =
+                """
+                SELECT VALUE FROM v${'$'}parameter WHERE NAME = 'db_domain'
             """
         }
     }
@@ -262,7 +281,7 @@ class OracleSourceDebeziumOperations(
             .withDatabase(configuration.jdbcProperties)
             .withDatabase("hostname", address.hostName)
             .withDatabase("port", address.port.toString())
-            .withDatabase("dbname", currentDatabaseState.databaseName)
+            .withDatabase("dbname", currentDatabaseState.fullyQualifiedDatabaseName)
             .also {
                 val pdbName: String = currentDatabaseState.pluggableDatabaseName ?: return@also
                 it.withDatabase("pdb.name", pdbName)

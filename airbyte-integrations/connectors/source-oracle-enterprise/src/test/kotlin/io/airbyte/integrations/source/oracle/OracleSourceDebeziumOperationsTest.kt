@@ -44,6 +44,7 @@ class OracleSourceDebeziumOperationsTest {
                 address = InetSocketAddress.createUnresolved("localhost", 12345),
                 pluggableDatabaseName = "FREEPDB1",
                 databaseName = "FREE",
+                databaseDomain = "domain.name",
                 position = OracleSourcePosition(54321L),
             )
         }
@@ -116,5 +117,13 @@ class OracleSourceDebeziumOperationsTest {
         state as ValidDebeziumWarmStartState
         val bigHistory: List<HistoryRecord> = (1..20).flatMap { state.schemaHistory!!.wrapped }
         return state.copy(schemaHistory = DebeziumSchemaHistory(bigHistory))
+    }
+
+    @Test
+    fun testFullyQualifiedDatabaseName() {
+        Assertions.assertEquals(
+            "FREE.domain.name",
+            ops.oracleDatabaseStateSupplier.get().fullyQualifiedDatabaseName
+        )
     }
 }
