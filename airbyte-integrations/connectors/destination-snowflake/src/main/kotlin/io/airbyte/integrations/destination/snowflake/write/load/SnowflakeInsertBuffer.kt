@@ -8,9 +8,10 @@ import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.csv.toCsvValue
 import io.airbyte.cdk.load.orchestration.db.TableName
-import io.airbyte.integrations.destination.snowflake.client.CSV_FIELD_DELIMITER
-import io.airbyte.integrations.destination.snowflake.client.CSV_RECORD_DELIMITER
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
+import io.airbyte.integrations.destination.snowflake.sql.CSV_FIELD_DELIMITER
+import io.airbyte.integrations.destination.snowflake.sql.CSV_RECORD_DELIMITER
+import io.airbyte.integrations.destination.snowflake.sql.QUOTE
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import java.nio.file.Files
@@ -22,6 +23,7 @@ private val logger = KotlinLogging.logger {}
 
 class SnowflakeInsertBuffer(
     private val tableName: TableName,
+    private val columns: List<String>,
     private val snowflakeClient: SnowflakeAirbyteClient
 ) {
 
@@ -35,7 +37,7 @@ class SnowflakeInsertBuffer(
     suspend fun flush() {
         var tempFilePath = ""
         try {
-            logger.info { "Beginning insert into ${tableName.name}" }
+            logger.info { "Beginning insert into ${tableName.toPrettyString(quote=QUOTE)}" }
             // First, get all accumulated records
             val records = mutableListOf<Map<String, AirbyteValue>>()
             recordQueue.drainTo(records)
@@ -45,7 +47,9 @@ class SnowflakeInsertBuffer(
             snowflakeClient.putInStage(tableName, tempFilePath)
             // Finally, copy the data from the staging table to the final table
             snowflakeClient.copyFromStage(tableName)
-            logger.info { "Finished insert of ${records.size} row(s) into ${tableName.name}" }
+            logger.info {
+                "Finished insert of ${records.size} row(s) into ${tableName.toPrettyString(quote=QUOTE)}"
+            }
         } finally {
             if (tempFilePath.isNotBlank()) {
                 // Eagerly delete temp file to avoid build up during long syncs.
@@ -60,7 +64,7 @@ class SnowflakeInsertBuffer(
         csvFile.bufferedWriter(Charsets.UTF_8).use { writer ->
             records.forEach { record ->
                 writer.write(
-                    "${record.values.map { it.toCsvValue()}.joinToString(CSV_FIELD_DELIMITER)}$CSV_RECORD_DELIMITER"
+                    "${columns.map { columnName -> record[columnName].toCsvValue()}.joinToString(CSV_FIELD_DELIMITER)}$CSV_RECORD_DELIMITER"
                 )
             }
         }

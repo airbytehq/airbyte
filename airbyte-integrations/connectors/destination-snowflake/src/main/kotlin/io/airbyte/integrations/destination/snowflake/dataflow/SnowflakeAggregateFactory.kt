@@ -12,7 +12,6 @@ import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeInsertBuffer
 import jakarta.inject.Singleton
-import kotlinx.coroutines.runBlocking
 
 @Singleton
 class SnowflakeAggregateFactory(
@@ -22,10 +21,14 @@ class SnowflakeAggregateFactory(
 
     override fun create(key: StoreKey): Aggregate {
         val tableName = streamStateStore.get(key)!!.tableName
+        val columns = snowflakeClient.describeTable(tableName)
 
-        runBlocking { snowflakeClient.createSnowflakeStage(tableName) }
-
-        val buffer = SnowflakeInsertBuffer(tableName = tableName, snowflakeClient = snowflakeClient)
+        val buffer =
+            SnowflakeInsertBuffer(
+                tableName = tableName,
+                columns = columns,
+                snowflakeClient = snowflakeClient
+            )
 
         return SnowflakeAggregate(buffer = buffer)
     }

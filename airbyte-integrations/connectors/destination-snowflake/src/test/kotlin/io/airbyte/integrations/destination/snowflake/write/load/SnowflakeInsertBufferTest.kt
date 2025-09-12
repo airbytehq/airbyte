@@ -18,11 +18,14 @@ internal class SnowflakeInsertBufferTest {
     @Test
     fun testAccumulate() {
         val tableName = mockk<TableName>()
+        val column = "columnName"
+        val columns = listOf(column)
         val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
-        val record = mapOf("columnName" to AirbyteValue.from("test-value"))
+        val record = mapOf(column to AirbyteValue.from("test-value"))
         val buffer =
             SnowflakeInsertBuffer(
                 tableName = tableName,
+                columns = columns,
                 snowflakeClient = snowflakeAirbyteClient,
             )
 
@@ -34,11 +37,14 @@ internal class SnowflakeInsertBufferTest {
     @Test
     fun testFlush() {
         val tableName = mockk<TableName>()
+        val column = "columnName"
+        val columns = listOf(column)
         val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
-        val record = mapOf("columnName" to AirbyteValue.from("test-value"))
+        val record = mapOf(column to AirbyteValue.from("test-value"))
         val buffer =
             SnowflakeInsertBuffer(
                 tableName = tableName,
+                columns = columns,
                 snowflakeClient = snowflakeAirbyteClient,
             )
 

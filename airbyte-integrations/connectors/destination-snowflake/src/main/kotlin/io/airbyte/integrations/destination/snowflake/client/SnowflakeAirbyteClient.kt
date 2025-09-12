@@ -10,10 +10,14 @@ import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNativeOperations
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableSqlOperations
+import io.airbyte.integrations.destination.snowflake.sql.COUNT_TOTAL_ALIAS
+import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
-import java.sql.ResultSet
 import javax.sql.DataSource
+
+internal const val DESCRIBE_TABLE_COLUMN_NAME_FIELD = "column_name"
+internal const val GENERATION_ID_ALIAS = "generation"
 
 private val log = KotlinLogging.logger {}
 
@@ -23,7 +27,16 @@ class SnowflakeAirbyteClient(
     private val sqlGenerator: SnowflakeDirectLoadSqlGenerator,
 ) : AirbyteClient, DirectLoadTableSqlOperations, DirectLoadTableNativeOperations {
     override suspend fun countTable(tableName: TableName): Long {
-        return execute(sqlGenerator.countTable(tableName)).getInt("total").toLong()
+        return dataSource.connection.use { connection ->
+            val resultSet =
+                connection.createStatement().executeQuery(sqlGenerator.countTable(tableName))
+
+            if (resultSet.next()) {
+                resultSet.getLong(COUNT_TOTAL_ALIAS)
+            } else {
+                0L
+            }
+        }
     }
 
     override suspend fun createNamespace(namespace: String) {
@@ -37,6 +50,7 @@ class SnowflakeAirbyteClient(
         replace: Boolean
     ) {
         execute(sqlGenerator.createTable(stream, tableName, columnNameMapping, replace))
+        execute(sqlGenerator.createSnowflakeStage(tableName))
     }
 
     override suspend fun overwriteTable(sourceTableName: TableName, targetTableName: TableName) {
@@ -63,6 +77,7 @@ class SnowflakeAirbyteClient(
     }
 
     override suspend fun dropTable(tableName: TableName) {
+        execute(sqlGenerator.dropStage(tableName))
         execute(sqlGenerator.dropTable(tableName))
     }
 
@@ -76,13 +91,15 @@ class SnowflakeAirbyteClient(
 
     override suspend fun getGenerationId(tableName: TableName): Long {
         return try {
-            val sql = sqlGenerator.getGenerationId(tableName, "generation")
-            val resultSet = execute(sql)
-            if (resultSet.next()) {
-                resultSet.getLong("generation")
-            } else {
-                log.warn { "No generation ID found for table $tableName, returning 0" }
-                0L
+            val sql = sqlGenerator.getGenerationId(tableName, GENERATION_ID_ALIAS)
+            dataSource.connection.use { connection ->
+                val resultSet = connection.createStatement().executeQuery(sql)
+                if (resultSet.next()) {
+                    resultSet.getLong(GENERATION_ID_ALIAS)
+                } else {
+                    log.warn { "No generation ID found for table $tableName, returning 0" }
+                    0L
+                }
             }
         } catch (e: Exception) {
             log.error(e) { "Failed to retrieve the generation ID for table $tableName" }
@@ -107,7 +124,18 @@ class SnowflakeAirbyteClient(
         execute(sqlGenerator.copyFromStage(tableName))
     }
 
-    internal fun execute(query: String): ResultSet {
+    fun describeTable(tableName: TableName): List<String> =
+        dataSource.connection.use { connection ->
+            val resultSet =
+                connection.createStatement().executeQuery(sqlGenerator.showColumns(tableName))
+            val columns = mutableListOf<String>()
+            while (resultSet.next()) {
+                columns.add(resultSet.getString(DESCRIBE_TABLE_COLUMN_NAME_FIELD))
+            }
+            return columns
+        }
+
+    internal fun execute(query: String) {
         return dataSource.connection.use { connection ->
             connection.createStatement().executeQuery(query)
         }

@@ -8,14 +8,18 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.airbyte.cdk.Operation
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
+import io.airbyte.cdk.load.check.CheckOperationV2
+import io.airbyte.cdk.load.check.DestinationCheckerV2
 import io.airbyte.cdk.load.orchestration.db.DefaultTempTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
+import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.integrations.destination.snowflake.spec.KeyPairAuthConfiguration
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfigurationFactory
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeSpecification
 import io.airbyte.integrations.destination.snowflake.spec.UsernamePasswordAuthConfiguration
 import io.micronaut.context.annotation.Factory
+import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Named
@@ -247,4 +251,12 @@ class SnowflakeBeanFactory {
             .setProperties(properties)
             .build()
     }
+
+    @Primary
+    @Singleton
+    @Requires(property = Operation.PROPERTY, value = "check")
+    fun checkOperation(
+        destinationChecker: DestinationCheckerV2,
+        outputConsumer: OutputConsumer,
+    ) = CheckOperationV2(destinationChecker, outputConsumer)
 }
