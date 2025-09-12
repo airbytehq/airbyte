@@ -42,6 +42,9 @@ dependencies {
     implementation("net.snowflake:snowflake-jdbc-thin:3.26.1")
     implementation("net.snowflake:snowflake-ingest-sdk:4.3.0")
     implementation("com.zaxxer:HikariCP:7.0.2")
+    implementation("com.google.guava:guava:32.1.1-jre")
+
+    integrationTestImplementation("com.zaxxer:HikariCP:7.0.2")
 
     testImplementation("io.mockk:mockk:1.14.5")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
