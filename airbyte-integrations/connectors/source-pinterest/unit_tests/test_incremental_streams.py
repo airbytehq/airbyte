@@ -12,8 +12,9 @@ from source_pinterest.streams import IncrementalPinterestSubStream
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
+from airbyte_cdk.test.state_builder import StateBuilder
 
-from .conftest import get_stream_by_name
+from .conftest import get_stream_by_name, read_from_stream
 from .utils import create_requests_response
 
 
@@ -119,8 +120,10 @@ def test_should_retry(requests_mock, test_config, http_status, expected_response
     ),
 )
 def test_semi_incremental_read(requests_mock, test_config, start_date, stream_state, expected_records):
-    stream = get_stream_by_name("campaigns", test_config)
-    stream.config["start_date"] = start_date
+    if start_date is None:
+        del test_config["start_date"]
+    else:
+        test_config["start_date"] = start_date
 
     ad_account_id = "ad_account_id"
     requests_mock.get(url="https://api.pinterest.com/v5/ad_accounts", json={"items": [{"id": ad_account_id}]})
@@ -134,10 +137,16 @@ def test_semi_incremental_read(requests_mock, test_config, start_date, stream_st
         },
     )
 
-    stream.state = stream_state
+    state = (
+        StateBuilder()
+        .with_stream_state(
+            "campaigns",
+            stream_state,
+        )
+        .build()
+    )
+
     actual_records = [
-        dict(record)
-        for stream_slice in stream.stream_slices(sync_mode=SyncMode.incremental)
-        for record in stream.read_records(sync_mode=SyncMode.incremental, stream_slice=stream_slice)
+        record.record.data for record in read_from_stream(test_config, "campaigns", sync_mode=SyncMode.incremental, state=state).records
     ]
     assert actual_records == expected_records
