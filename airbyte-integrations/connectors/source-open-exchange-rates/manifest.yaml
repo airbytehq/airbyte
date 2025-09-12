@@ -91,7 +91,7 @@ spec:
         title: symbols
       end_date:
         type: string
-        description: If filled, returns data up to the end date, otherwise until today
+        description: If provided, returns data up to the end date, otherwise until today
         order: 2
         title: end_date
         format: date
