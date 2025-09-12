@@ -31,7 +31,6 @@ class SnowflakeInsertBuffer(
     internal val recordQueue: BlockingQueue<Map<String, AirbyteValue>> = LinkedBlockingQueue()
 
     fun accumulate(recordFields: Map<String, AirbyteValue>) {
-        logger.info { "Accumulating $recordFields" }
         recordQueue.offer(recordFields)
     }
 
