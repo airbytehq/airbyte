@@ -33,7 +33,7 @@ class FormIdPartitionRouter(SubstreamPartitionRouter):
         else:
             for parent_stream_config in self.parent_stream_configs:
                 for partition in parent_stream_config.stream.generate_partitions():
-                    for item in partition.read() :
+                    for item in partition.read():
                         yield StreamSlice(partition={"form_id": item["id"]}, cursor_slice={})
 
         yield from []
