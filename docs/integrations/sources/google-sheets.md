@@ -54,17 +54,17 @@ If your spreadsheet is viewable by anyone with its link, no further action is ne
 
 ### Using OAuth
 
-When using OAuth, you can either provide a Client ID and secret via the UI and use the interactive prompt, or by configuring manually via "Set up manually" and providing a Client ID, Client Secret, and a refresh token. 
+When using OAuth, you can either provide a Client ID and secret via the UI and use the interactive prompt, or by configuring manually via "Set up manually" and providing a Client ID, Client Secret, and a refresh token.
 
 :::info
-If using the interactive prompt, ensure that your have configured your application to have the following redirct URI configured. 
+If using the interactive prompt, ensure that your have configured your application to have the following redirct URI configured.
 
 **If using Airbyte Cloud**, use `https://cloud.airbyte.com/auth_flow`
 
 **If using Airbyte Open Source**, use `<airbyte_url>/auth_flow`.
 :::
 
-#### Generating a refresh token 
+#### Generating a refresh token
 
 1. Create a new [Google Cloud project](https://console.cloud.google.com/projectcreate).
 2. Enable the [Google Sheets API](https://console.cloud.google.com/apis/library/sheets.googleapis.com).
@@ -95,6 +95,7 @@ If using the interactive prompt, ensure that your have configured your applicati
 4. Enter a name for the Google Sheets connector.
 <!-- /env:oss -->
 5. Select your authentication method:
+
 - **(Recommended)** Select **Service Account Key Authentication** from the dropdown and enter your Google Cloud service account key in JSON format:
 
 ```json
@@ -105,6 +106,7 @@ If using the interactive prompt, ensure that your have configured your applicati
     ...
   }
 ```
+
 - **To use OAuth** Select **Authenticate via Google (OAuth)** from the Authentication dropdown, click **Sign in with Google** and complete the authentication workflow.
   - When using Airbyte Open Source, to authenticate your Google account via OAuth, select **Authenticate via Google (OAuth)** from the dropdown and enter your Google application's Client ID and Client Secret.
   - Alternatively, you can configure OAuth with an existing refresh token by using the **Set up manually** option and entering your Client ID, Client Secret, and Refresh Token.
