@@ -10,6 +10,8 @@ from source_pinterest.reports import CampaignAnalyticsReport
 from source_pinterest.source import SourcePinterest
 
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 
 
 @fixture
@@ -99,8 +101,13 @@ def mock_auth(requests_mock) -> None:
 
 
 def get_stream_by_name(stream_name: str, config: Mapping[str, Any]) -> Stream:
-    source = SourcePinterest()
+    source = SourcePinterest(None, config, None)
     matches_by_name = [stream_config for stream_config in source.streams(config) if stream_config.name == stream_name]
     if not matches_by_name:
         raise ValueError("Please provide a valid stream name.")
     return matches_by_name[0]
+
+
+def read_from_stream(cfg, stream: str, sync_mode, state=None, expecting_exception: bool = False) -> EntrypointOutput:
+    catalog = CatalogBuilder().with_stream(stream, sync_mode).build()
+    return read(SourcePinterest(None, cfg, state), cfg, catalog, state, expecting_exception)
