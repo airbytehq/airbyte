@@ -32,6 +32,9 @@ jobs:
           body: |
             > Update CDK version job started for `${{ github.event.inputs.connector }}`. Check the [job logs](${{ steps.resolve-job-vars.outputs.run-url }}) for details.
 
+      - name: Checkout Airbyte
+        uses: actions/checkout@v4
+
       - name: Validate connector
         id: validate-connector
         shell: bash
@@ -54,8 +57,7 @@ jobs:
           exit 1
           fi
 
-#      - name: Checkout Airbyte
-#        uses: actions/checkout@v4
+
 #
 #      - name: Check for changes
 #        id: git-diff
