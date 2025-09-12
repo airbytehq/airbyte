@@ -65,18 +65,17 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
-#
-#      - name: Check for changes
-#        id: git-diff
-#        run: |
-#          git diff --quiet && echo "No changes to commit" || echo "changes=true" >> $GITHUB_OUTPUT
-#        shell: bash
-#
 
-#
-#      - name: Run CDK upgrade
-#        if: steps.git-diff.outputs.changes == 'true'
-#        run: ./gradlew ":airbyte-integrations:connectors:${github.event.inputs.connector}:upgradeCdk"
+      - name: Run CDK upgrade
+        run: ./gradlew ":airbyte-integrations:connectors:${github.event.inputs.connector}:upgradeCdk"
+
+      - name: Check for changes
+        id: git-diff
+        run: |
+          git diff --quiet && echo "No changes to commit" || echo "changes=true" | tee -a $GITHUB_OUTPUT
+        shell: bash
+
+
 #
 #      - name: Commit changes
 #        if: steps.git-diff.outputs.changes == 'true'
