@@ -19,26 +19,28 @@ Before you begin, ensure you satisfy all of these requirements.
 ### Subscription and permission requirements
 
 - An active subscription to Airbyte Enterprise Flex
-- You must be an Instance Admin to manage data planes
+- You must be an organization Admin to manage data planes
 
 ### Infrastructure requirements
 
-- A single-node to which to deploy your data plane. This can be a virtual machine with a Cloud provider, a bare metal server, or even your local machine.
+- A single-node on which to deploy your data plane. This can be a virtual machine from a Cloud provider, a bare metal server, or even your local computer.
 
-<!-- We should actually specify the size here -->
+    - Minimum specs: 8 CPUs and 16 GB of RAM
+    - Recommended specs: 8 CPUs and 24 GB of RAM
+
+### Software requirements
 
 To manage and monitor your data plane after installation, you should also install these command line tools.
 
 - [Helm](https://helm.sh/)
 - [kind](https://kind.sigs.k8s.io/)
 - [kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl)
+- Docker Desktop or Docker Engine (installation is described below)
 
 ### Security considerations
 
 - Self-managed data planes require egress from your network to Airbyte's managed control plane.
-- Self-managed data planes only send requests to the control plane. The control planes must be able to send responses to the data plane, but not requests.
-
-<!-- To follow. Bryce's team should provide any additional consideratons. -->
+- Self-managed data planes only send requests to the control plane. The control plane must be able to send responses to the data plane, but not requests.
 
 ### Workspaces
 
@@ -46,7 +48,7 @@ You should already have considered [what regions and workspaces](getting-started
 
 ## Part 1. Install Airbox
 
-<!-- We'll probably distribute this with brew or something like abctl. For now, you have to build it manually. -->
+You can install Airbox [as a binary executable](https://github.com/airbytehq/abctl/releases/tag/airbox-v0.1.0-beta1). Downloads are available for Windows, Mac, and Linux.
 
 ## Part 2: Install Docker Desktop
 
@@ -87,9 +89,7 @@ After you enter your client ID and client secret, configure Airbox to access you
     airbox config init
     ```
 
-    Airbyte asks you to select your deployment type.
-
-2. Select **Cloud**.
+2. Select **Enterprise Flex** and press <kbd>Enter</kbd>
 
 ## Part 5: Authenticate with Airbyte
 
@@ -97,7 +97,7 @@ After configuring Airbyte, but before you can manage data planes, you must authe
 
 ### Log in
 
-After you configure Airbyte, authenticate with it. Run the following command so Airbox can use the client ID and client secret you set earlier to control your Airbyte environment using your Instance Admin permissions.
+After you configure Airbyte, authenticate with it. Run the following command so Airbox can use the client ID and client secret you set earlier to authenticate with your Airbyte environment.
 
 ```bash
 airbox auth login
@@ -115,13 +115,13 @@ Successfully authenticated!
 
 ### Log out
 
-If you need to log out and clear your stored credentials, run this command.
+If you need to clear the authentication token Airbox uses to access your data plane, log out.
 
 ```bash
 airbox auth logout
 ```
 
-To manage data planes again, return to [Part 3: Set credentials](#set-credentials).
+This doesn't remove the client ID and client secret from Airbyte. If you need to rotate credentials, you must also delete [your application](../using-airbyte/configuring-api-access).
 
 ### Switch organizations
 
@@ -146,7 +146,7 @@ After you authenticate with Airbyte, run the install command. This begins a proc
 2. Follow the prompts in the terminal.
 
     1. Choose whether you want to create a new region or use an existing one (if you have some).
-    
+
         :::tip
         To avoid confusion later, your regions in Airbyte should reflect the actual regions your data planes run in. For example, if you are installing this data plane in the AWS `us-west-1` region, you may wish to call it `us-west-1` or something similar.
         :::
@@ -181,7 +181,7 @@ After you authenticate with Airbyte, run the install command. This begins a proc
 
 ## Part 7: Assign a workspace to your data plane
 
-In Airbyte's UI, follow these steps.
+If this data plane is in a new region, or you want a workspace to use this region now, in Airbyte's UI, follow these steps.
 
 1. Click **Workspace settings** > **General**.
 
@@ -199,7 +199,7 @@ Once you assign your workspace to your data plane, verify that data plane runs s
 
     3. [Create a connection](../move-data/add-connection) between that source and destination.
 
-2. In your terminal, run `kubectl get po -w`. This command allows you to watch pods progress in your Kubernetes cluster.
+2. In your terminal, run `watch kubectl get po` or `kubectl get po -w`. This allows you to watch pods progress in your Kubernetes cluster.
 
 3. In Airbyte's UI, start the sync.
 
@@ -248,7 +248,7 @@ airbox get dataplane
 The following command removes the data plane registration from Airbyte.
 
 ```bash
-airbox delete dataplane <my-dataplane>
+airbox delete dataplane <dataplane_id>
 ```
 
 However, the data plane continues to exist. To complete deletion, use Helm to uninstall the release from Kubernetes.
@@ -290,3 +290,7 @@ Airbox stores configuration data in `~/.airbyte/airbox/config.yaml`. This includ
 ## Restart a data plane
 
 As long as Docker Desktop is running in the background, your data plane remains available. If you quit Docker Desktop or restart your virtual machine and want to restore your data plane, start Docker Desktop again. Once your containers are running, your data plane can resume work.
+
+## Values.yaml not currently supported
+
+Airbox doesn't currently support deployment customization with values.yaml files.
