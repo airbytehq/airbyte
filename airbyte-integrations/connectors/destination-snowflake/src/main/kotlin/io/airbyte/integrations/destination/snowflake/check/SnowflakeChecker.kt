@@ -24,6 +24,8 @@ import java.time.OffsetDateTime
 import java.util.UUID
 import kotlinx.coroutines.runBlocking
 
+internal const val CHECK_COLUMN_NAME = "test_key"
+
 @Singleton
 class SnowflakeChecker(
     private val snowflakeAirbyteClient: SnowflakeAirbyteClient,
@@ -32,7 +34,6 @@ class SnowflakeChecker(
 ) : DestinationCheckerV2 {
 
     override fun check() {
-        val columnName = "testKey"
         val data =
             mapOf(
                 Meta.AirbyteMetaFields.RAW_ID.fieldName to
@@ -42,7 +43,7 @@ class SnowflakeChecker(
                 Meta.AirbyteMetaFields.META.fieldName to
                     AirbyteValue.from(emptyMap<String, String>()),
                 Meta.AirbyteMetaFields.GENERATION_ID.fieldName to AirbyteValue.from(0),
-                columnName to AirbyteValue.from("test-value")
+                CHECK_COLUMN_NAME to AirbyteValue.from("test-value")
             )
         val outputSchema = snowflakeSqlNameTransformer.transform(snowflakeConfiguration.schema)
         val tableName =
@@ -57,7 +58,9 @@ class SnowflakeChecker(
                 unmappedName = tableName,
                 importType = Append,
                 schema =
-                    ObjectType(linkedMapOf(columnName to FieldType(StringType, nullable = false))),
+                    ObjectType(
+                        linkedMapOf(CHECK_COLUMN_NAME to FieldType(StringType, nullable = false))
+                    ),
                 generationId = 0L,
                 minimumGenerationId = 0L,
                 syncId = 0L,
@@ -66,7 +69,6 @@ class SnowflakeChecker(
         runBlocking {
             try {
                 snowflakeAirbyteClient.createNamespace(outputSchema)
-                snowflakeAirbyteClient.createSnowflakeStage(qualifiedTableName)
                 snowflakeAirbyteClient.createTable(
                     stream = destinationStream,
                     tableName = qualifiedTableName,

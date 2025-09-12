@@ -2,44 +2,42 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.snowflake.client
+package io.airbyte.integrations.destination.snowflake.sql
 
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.data.AirbyteType
-import io.airbyte.cdk.load.data.ArrayType
-import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
-import io.airbyte.cdk.load.data.BooleanType
-import io.airbyte.cdk.load.data.DateType
-import io.airbyte.cdk.load.data.IntegerType
-import io.airbyte.cdk.load.data.NumberType
-import io.airbyte.cdk.load.data.ObjectType
-import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
-import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
-import io.airbyte.cdk.load.data.StringType
-import io.airbyte.cdk.load.data.TimeTypeWithTimezone
-import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
-import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
-import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
-import io.airbyte.cdk.load.data.UnionType
-import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
-import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
-import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import javax.sql.DataSource
 
+internal const val COUNT_TOTAL_ALIAS = "total"
 internal const val CSV_FIELD_DELIMITER = ","
 internal const val CSV_RECORD_DELIMITER = "\n"
+internal const val QUOTE: String = "\""
+internal const val STAGE_FORMAT_NAME: String = "airbyte_csv_format"
+internal const val STAGE_NAME_PREFIX = "airbyte_stage_"
+internal val FILE_FORMAT_STATEMENT =
+    """
+            CREATE OR REPLACE FILE FORMAT $STAGE_FORMAT_NAME
+            TYPE = 'CSV'
+            FIELD_DELIMITER = '$CSV_FIELD_DELIMITER'
+            FIELD_OPTIONALLY_ENCLOSED_BY = '"'
+            TRIM_SPACE = TRUE
+            ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE
+            REPLACE_INVALID_CHARACTERS = TRUE
+        """.trimIndent()
 
 private val log = KotlinLogging.logger {}
 
 @Singleton
-class SnowflakeDirectLoadSqlGenerator(private val dataSource: DataSource) {
+class SnowflakeDirectLoadSqlGenerator(
+    private val dataSource: DataSource,
+    private val columnUtils: SnowflakeColumnUtils,
+) {
 
     /**
      * This extension is here to avoid writing `.also { log.info { it }}` for every returned string
@@ -51,22 +49,12 @@ class SnowflakeDirectLoadSqlGenerator(private val dataSource: DataSource) {
     }
 
     fun countTable(tableName: TableName): String {
-        return "SELECT COUNT(*) AS \"total\" FROM ${tableName.toPrettyString(quote=QUOTE)}".andLog()
+        return "SELECT COUNT(*) AS \"$COUNT_TOTAL_ALIAS\" FROM ${tableName.toPrettyString(quote=QUOTE)}".andLog()
     }
 
     fun createNamespace(namespace: String): String {
         return "CREATE SCHEMA IF NOT EXISTS \"$namespace\"".andLog()
     }
-
-    fun columnsAndTypes(stream: DestinationStream, columnNameMapping: ColumnNameMapping): String =
-        stream.schema
-            .asColumns()
-            .map { (fieldName, type) ->
-                val columnName = columnNameMapping[fieldName] ?: fieldName
-                val typeName = toDialectType(type.type)
-                "\"$columnName\" $typeName"
-            }
-            .joinToString(",\n")
 
     fun createTable(
         stream: DestinationStream,
@@ -74,7 +62,10 @@ class SnowflakeDirectLoadSqlGenerator(private val dataSource: DataSource) {
         columnNameMapping: ColumnNameMapping,
         replace: Boolean
     ): String {
-        val columnDeclarations = columnsAndTypes(stream, columnNameMapping)
+        val columnDeclarations =
+            columnUtils
+                .columnsAndTypes(stream.schema.asColumns(), columnNameMapping)
+                .joinToString(",\n")
 
         // Snowflake supports CREATE OR REPLACE TABLE, which is simpler than drop+recreate
         val createOrReplace = if (replace) "CREATE OR REPLACE" else "CREATE"
@@ -82,34 +73,15 @@ class SnowflakeDirectLoadSqlGenerator(private val dataSource: DataSource) {
         val createTableStatement =
             """
             $createOrReplace TABLE ${tableName.toPrettyString(quote=QUOTE)} (
-              "$COLUMN_NAME_AB_RAW_ID" VARCHAR NOT NULL,
-              "$COLUMN_NAME_AB_EXTRACTED_AT" TIMESTAMP_TZ NOT NULL,
-              "$COLUMN_NAME_AB_META" VARIANT NOT NULL,
-              "$COLUMN_NAME_AB_GENERATION_ID" NUMBER,
-              $columnDeclarations
+                $columnDeclarations
             )
         """.trimIndent()
 
         return createTableStatement.andLog()
     }
 
-    fun showColumns(tableName: TableName): List<String> {
-        dataSource.connection.use { connection ->
-            val resultSet =
-                connection
-                    .createStatement()
-                    .executeQuery("SHOW COLUMNS IN TABLE ${tableName.toPrettyString(quote=QUOTE)};")
-            val columns = mutableListOf<String>()
-            while (resultSet.next()) {
-                columns.add(resultSet.getString("column_name"))
-            }
-            return columns
-        }
-    }
-
-    //    fun overwriteTable(sourceTableName: TableName, targetTableName: TableName): String {
-    //        TODO("Not yet implemented")
-    //    }
+    fun showColumns(tableName: TableName): String =
+        "SHOW COLUMNS IN TABLE ${tableName.toPrettyString(quote=QUOTE)};"
 
     fun copyTable(
         columnNameMapping: ColumnNameMapping,
@@ -117,22 +89,17 @@ class SnowflakeDirectLoadSqlGenerator(private val dataSource: DataSource) {
         targetTableName: TableName
     ): String {
         val columnNames =
-            columnNameMapping.map { (_, actualName) -> actualName }.joinToString(",") { "\"$it\"" }
+            DEFAULT_COLUMNS.map { it.columnName }.joinToString(",") { "\"$it\"" } +
+                columnNameMapping
+                    .map { (_, actualName) -> actualName }
+                    .joinToString(",") { "\"$it\"" }
 
         return """
             INSERT INTO ${targetTableName.toPrettyString(quote=QUOTE)}
             (
-                "$COLUMN_NAME_AB_RAW_ID",
-                "$COLUMN_NAME_AB_EXTRACTED_AT",
-                "$COLUMN_NAME_AB_META",
-                "$COLUMN_NAME_AB_GENERATION_ID",
                 $columnNames
             )
             SELECT
-                "$COLUMN_NAME_AB_RAW_ID",
-                "$COLUMN_NAME_AB_EXTRACTED_AT",
-                "$COLUMN_NAME_AB_META",
-                "$COLUMN_NAME_AB_GENERATION_ID",
                 $columnNames
             FROM ${sourceTableName.toPrettyString(quote=QUOTE)}
             """
@@ -153,7 +120,7 @@ class SnowflakeDirectLoadSqlGenerator(private val dataSource: DataSource) {
             if (importType.primaryKey.isNotEmpty()) {
                 importType.primaryKey.joinToString(" AND ") { fieldPath ->
                     val fieldName = fieldPath.first()
-                    val columnName = columnNameMapping[fieldName]!!
+                    val columnName = columnNameMapping[fieldName] ?: fieldName
                     """(target_table."$columnName" = new_record."$columnName" OR (target_table."$columnName" IS NULL AND new_record."$columnName" IS NULL))"""
                 }
             } else {
@@ -163,16 +130,22 @@ class SnowflakeDirectLoadSqlGenerator(private val dataSource: DataSource) {
 
         // Build column lists for INSERT and UPDATE
         val columnList: String =
-            stream.schema.asColumns().keys.joinToString(",\n") { fieldName ->
-                val columnName = columnNameMapping[fieldName]!!
-                "\"$columnName\""
-            }
+            columnUtils
+                .columnsAndTypes(
+                    columns = stream.schema.asColumns(),
+                    columnNameMapping = columnNameMapping
+                )
+                .map { it.columnName }
+                .joinToString(",\n") { "\"$it\"" }
 
         val newRecordColumnList: String =
-            stream.schema.asColumns().keys.joinToString(",\n") { fieldName ->
-                val columnName = columnNameMapping[fieldName]!!
-                "new_record.\"$columnName\""
-            }
+            columnUtils
+                .columnsAndTypes(
+                    columns = stream.schema.asColumns(),
+                    columnNameMapping = columnNameMapping
+                )
+                .map { it.columnName }
+                .joinToString(",\n") { "new_record.\"$it\"" }
 
         // Get deduped records from source
         val selectSourceRecords = selectDedupedRecords(stream, sourceTableName, columnNameMapping)
@@ -181,7 +154,7 @@ class SnowflakeDirectLoadSqlGenerator(private val dataSource: DataSource) {
         val cursorComparison: String
         if (importType.cursor.isNotEmpty()) {
             val cursorFieldName = importType.cursor.first()
-            val cursorColumnName = columnNameMapping[cursorFieldName]!!
+            val cursorColumnName = columnNameMapping[cursorFieldName] ?: cursorFieldName
             val cursor = "\"$cursorColumnName\""
             cursorComparison =
                 """
@@ -201,7 +174,7 @@ class SnowflakeDirectLoadSqlGenerator(private val dataSource: DataSource) {
         // Build column assignments for UPDATE
         val columnAssignments: String =
             stream.schema.asColumns().keys.joinToString(",\n") { fieldName ->
-                val column = columnNameMapping[fieldName]!!
+                val column = columnNameMapping[fieldName] ?: fieldName
                 "\"$column\" = new_record.\"$column\""
             }
 
@@ -214,23 +187,11 @@ class SnowflakeDirectLoadSqlGenerator(private val dataSource: DataSource) {
             ) AS new_record
             ON $pkEquivalent
             WHEN MATCHED AND $cursorComparison THEN UPDATE SET
-              $columnAssignments,
-              "$COLUMN_NAME_AB_META" = new_record."$COLUMN_NAME_AB_META",
-              "$COLUMN_NAME_AB_RAW_ID" = new_record."$COLUMN_NAME_AB_RAW_ID",
-              "$COLUMN_NAME_AB_EXTRACTED_AT" = new_record."$COLUMN_NAME_AB_EXTRACTED_AT",
-              "$COLUMN_NAME_AB_GENERATION_ID" = new_record."$COLUMN_NAME_AB_GENERATION_ID"
+              $columnAssignments
             WHEN NOT MATCHED THEN INSERT (
-              $columnList,
-              "$COLUMN_NAME_AB_META",
-              "$COLUMN_NAME_AB_RAW_ID",
-              "$COLUMN_NAME_AB_EXTRACTED_AT",
-              "$COLUMN_NAME_AB_GENERATION_ID"
+              $columnList
             ) VALUES (
-              $newRecordColumnList,
-              new_record."$COLUMN_NAME_AB_META",
-              new_record."$COLUMN_NAME_AB_RAW_ID",
-              new_record."$COLUMN_NAME_AB_EXTRACTED_AT",
-              new_record."$COLUMN_NAME_AB_GENERATION_ID"
+              $newRecordColumnList
             )
         """.trimIndent()
 
@@ -248,7 +209,7 @@ class SnowflakeDirectLoadSqlGenerator(private val dataSource: DataSource) {
     ): String {
         val columnList: String =
             stream.schema.asColumns().keys.joinToString(",\n") { fieldName ->
-                val columnName = columnNameMapping[fieldName]!!
+                val columnName = columnNameMapping[fieldName] ?: fieldName
                 "\"$columnName\""
             }
 
@@ -258,7 +219,7 @@ class SnowflakeDirectLoadSqlGenerator(private val dataSource: DataSource) {
         val pkList =
             if (importType.primaryKey.isNotEmpty()) {
                 importType.primaryKey.joinToString(",") { fieldPath ->
-                    val columnName = columnNameMapping[fieldPath.first()]!!
+                    val columnName = columnNameMapping[fieldPath.first()] ?: fieldPath.first()
                     "\"$columnName\""
                 }
             } else {
@@ -269,7 +230,8 @@ class SnowflakeDirectLoadSqlGenerator(private val dataSource: DataSource) {
         // Build cursor order clause for sorting within each partition
         val cursorOrderClause =
             if (importType.cursor.isNotEmpty()) {
-                val columnName = columnNameMapping[importType.cursor.first()]!!
+                val columnName =
+                    columnNameMapping[importType.cursor.first()] ?: importType.cursor.first()
                 "\"$columnName\" DESC NULLS LAST,"
             } else {
                 ""
@@ -278,11 +240,7 @@ class SnowflakeDirectLoadSqlGenerator(private val dataSource: DataSource) {
         return """
             WITH records AS (
               SELECT
-                $columnList,
-                "$COLUMN_NAME_AB_META",
-                "$COLUMN_NAME_AB_RAW_ID",
-                "$COLUMN_NAME_AB_EXTRACTED_AT",
-                "$COLUMN_NAME_AB_GENERATION_ID"
+                $columnList
               FROM ${sourceTableName.toPrettyString(QUOTE)}
             ), numbered_rows AS (
               SELECT *, ROW_NUMBER() OVER (
@@ -290,7 +248,7 @@ class SnowflakeDirectLoadSqlGenerator(private val dataSource: DataSource) {
               ) AS row_number
               FROM records
             )
-            SELECT $columnList, "$COLUMN_NAME_AB_META", "$COLUMN_NAME_AB_RAW_ID", "$COLUMN_NAME_AB_EXTRACTED_AT", "$COLUMN_NAME_AB_GENERATION_ID"
+            SELECT $columnList
             FROM numbered_rows
             WHERE row_number = 1
         """
@@ -320,30 +278,17 @@ class SnowflakeDirectLoadSqlGenerator(private val dataSource: DataSource) {
             .andLog()
     }
 
-    fun createFileFormat(): String {
-        return """
-            CREATE OR REPLACE FILE FORMAT $STAGE_FORMAT_NAME
-            TYPE = 'CSV'
-            FIELD_DELIMITER = '$CSV_FIELD_DELIMITER'
-            FIELD_OPTIONALLY_ENCLOSED_BY = '"'
-            TRIM_SPACE = TRUE
-            ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE
-            REPLACE_INVALID_CHARACTERS = TRUE
-        """
-            .trimIndent()
-            .andLog()
-    }
+    fun createFileFormat(): String = FILE_FORMAT_STATEMENT.andLog()
 
     private fun buildSnowflakeStageName(tableName: TableName): String {
-        return "airbyte_stage_${tableName.name}"
+        return "$STAGE_NAME_PREFIX${tableName.name}"
     }
 
     fun createSnowflakeStage(tableName: TableName): String {
         val stageName = buildSnowflakeStageName(tableName)
-        val fileFormatName = STAGE_FORMAT_NAME
         return """
             CREATE OR REPLACE STAGE $stageName
-                FILE_FORMAT = $fileFormatName;
+                FILE_FORMAT = $STAGE_FORMAT_NAME;
         """
             .trimIndent()
             .andLog()
@@ -371,35 +316,5 @@ class SnowflakeDirectLoadSqlGenerator(private val dataSource: DataSource) {
         """
             .trimIndent()
             .andLog()
-    }
-
-    companion object {
-        const val QUOTE: String = "\""
-        const val STAGE_FORMAT_NAME: String = "airbyte_csv_format"
-
-        fun toDialectType(type: AirbyteType): String =
-            when (type) {
-                BooleanType -> SnowflakeDataType.BOOLEAN.typeName
-                DateType -> SnowflakeDataType.DATE.typeName
-                IntegerType -> SnowflakeDataType.INTEGER.typeName
-                NumberType -> SnowflakeDataType.NUMBER.typeName
-                StringType -> SnowflakeDataType.VARCHAR.typeName
-                TimeTypeWithTimezone -> SnowflakeDataType.TIME.typeName
-                TimeTypeWithoutTimezone -> SnowflakeDataType.TIME.typeName
-                TimestampTypeWithTimezone -> SnowflakeDataType.TIMESTAMP_TZ.typeName
-                TimestampTypeWithoutTimezone -> SnowflakeDataType.TIMESTAMP_NTZ.typeName
-                is ArrayType,
-                ArrayTypeWithoutSchema,
-                is ObjectType,
-                ObjectTypeWithEmptySchema,
-                ObjectTypeWithoutSchema -> SnowflakeDataType.VARIANT.typeName
-                is UnionType ->
-                    if (type.isLegacyUnion) {
-                        toDialectType(type.chooseType())
-                    } else {
-                        SnowflakeDataType.VARIANT.typeName
-                    }
-                is UnknownType -> SnowflakeDataType.VARIANT.typeName
-            }
     }
 }

@@ -8,10 +8,10 @@ import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.csv.toCsvValue
 import io.airbyte.cdk.load.orchestration.db.TableName
-import io.airbyte.integrations.destination.snowflake.client.CSV_FIELD_DELIMITER
-import io.airbyte.integrations.destination.snowflake.client.CSV_RECORD_DELIMITER
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
-import io.airbyte.integrations.destination.snowflake.client.SnowflakeDirectLoadSqlGenerator.Companion.QUOTE
+import io.airbyte.integrations.destination.snowflake.sql.CSV_FIELD_DELIMITER
+import io.airbyte.integrations.destination.snowflake.sql.CSV_RECORD_DELIMITER
+import io.airbyte.integrations.destination.snowflake.sql.QUOTE
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import java.nio.file.Files

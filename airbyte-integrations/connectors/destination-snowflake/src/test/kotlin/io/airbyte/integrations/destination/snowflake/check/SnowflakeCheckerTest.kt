@@ -38,7 +38,6 @@ internal class SnowflakeCheckerTest {
         checker.check()
 
         coVerify(exactly = 1) { snowflakeAirbyteClient.createNamespace(testSchema) }
-        coVerify(exactly = 1) { snowflakeAirbyteClient.createSnowflakeStage(any()) }
         coVerify(exactly = 1) { snowflakeAirbyteClient.createTable(any(), any(), any(), any()) }
         coVerify(exactly = 1) { snowflakeAirbyteClient.dropTable(any()) }
     }
@@ -66,7 +65,6 @@ internal class SnowflakeCheckerTest {
         assertThrows<IllegalArgumentException> { checker.check() }
 
         coVerify(exactly = 1) { snowflakeAirbyteClient.createNamespace(testSchema) }
-        coVerify(exactly = 1) { snowflakeAirbyteClient.createSnowflakeStage(any()) }
         coVerify(exactly = 1) { snowflakeAirbyteClient.createTable(any(), any(), any(), any()) }
         coVerify(exactly = 1) { snowflakeAirbyteClient.dropTable(any()) }
     }
