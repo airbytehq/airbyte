@@ -72,7 +72,7 @@ def test_read_records(requests_mock, analytics_report_stream, date_range):
 
 
 def test_streams(test_config):
-    source = SourcePinterest()
+    source = SourcePinterest(None, test_config, None)
     streams = source.streams(test_config)
     expected_streams_number = 32
     assert len(streams) == expected_streams_number
@@ -94,7 +94,7 @@ def test_custom_streams(test_config):
             "start_date": "2023-01-08",
         }
     ]
-    source = SourcePinterest()
+    source = SourcePinterest(None, config, None)
     streams = source.streams(config)
     expected_streams_number = 33
     assert len(streams) == expected_streams_number
