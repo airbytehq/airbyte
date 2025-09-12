@@ -44,7 +44,6 @@ class SnowflakeInsertBuffer(
             recordQueue.drainTo(records)
             // Next, generate a CSV file from the accumulated records
             tempFilePath = generateCsvFile(records)
-            logger.info { "CSV contents: ${File(tempFilePath).readText()}" }
             // Next, put the CSV file into the staging table
             snowflakeClient.putInStage(tableName, tempFilePath)
             // Finally, copy the data from the staging table to the final table
@@ -66,8 +65,7 @@ class SnowflakeInsertBuffer(
         csvFile.bufferedWriter(Charsets.UTF_8).use { writer ->
             records.forEach { record ->
                 writer.write(
-                    "${columns.map { columnName -> record[columnName].toCsvValue()
-             }.joinToString(CSV_FIELD_DELIMITER)}$CSV_RECORD_DELIMITER"
+                    "${columns.map { columnName -> record[columnName].toCsvValue()}.joinToString(CSV_FIELD_DELIMITER)}$CSV_RECORD_DELIMITER"
                 )
             }
         }

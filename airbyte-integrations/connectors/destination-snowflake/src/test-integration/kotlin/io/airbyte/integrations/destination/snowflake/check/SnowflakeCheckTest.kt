@@ -19,11 +19,6 @@ class SnowflakeCheckTest :
     CheckIntegrationTest<SnowflakeSpecification>(
         successConfigFilenames =
             listOf(
-                //        CheckTestConfig(
-                //            configContents =
-                // getConfig(SnowflakeTestUtils.KEYPAIR_AUTH_CONFIG_PATH),
-                //            featureFlags = setOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT),
-                //        ),
                 CheckTestConfig(
                     configContents = getConfig(SnowflakeTestUtils.USERNAME_AUTH_CONFIG_PATH),
                     featureFlags = setOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT),
