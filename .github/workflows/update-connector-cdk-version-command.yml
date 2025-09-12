@@ -72,6 +72,7 @@ jobs:
       - name: Check for changes
         id: git-diff
         run: |
+          git diff
           git diff --quiet && echo "No changes to commit" || echo "changes=true" | tee -a $GITHUB_OUTPUT
         shell: bash
 
