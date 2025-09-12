@@ -47,6 +47,11 @@ data:
     - suite: unitTests
     - suite: integrationTests
       testSecrets:
+        - name: SECRET_DESTINATION-SNOWFLAKE_USERNAME_AUTH
+          fileName: snowflake_username_auth.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
         - name: SECRET_DESTINATION-SNOWFLAKE_INTERNAL_STAGING_CONFIG_DISABLETD
           fileName: 1s1t_disabletd_internal_staging_config.json
           secretStore:
