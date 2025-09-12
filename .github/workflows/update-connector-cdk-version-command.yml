@@ -1,3 +1,6 @@
+# Workflow to bump the CDK version for a specified Airbyte connector.
+# This is intended to be triggered via a slash command from a PR, but can also be
+# triggered manually via the GitHub UI.
 name: Bump Connector CDK Version
 on:
   workflow_dispatch:
