@@ -3206,7 +3206,7 @@ concurrency_level:
 
 api_budget:
   type: HTTPAPIBudget
-  status_codes_for_ratelimit_hit: [ 429 ]
+  status_codes_for_ratelimit_hit: [429]
   policies:
     - type: MovingWindowCallRatePolicy
       rates:

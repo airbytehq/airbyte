@@ -2,14 +2,14 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
+import re
 from typing import List
 
 import requests
 
-import re
-from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.types import Record
+from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy
 
 
 class AdAccountRecordExtractor(RecordExtractor):
@@ -50,4 +50,4 @@ class PinterestAnalyticsBackoffStrategy(BackoffStrategy):
                     return float(m.group(1))
         except Exception:
             pass
-        return min(2 ** attempt_count, 120.0)
+        return min(2**attempt_count, 120.0)
