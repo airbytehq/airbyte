@@ -81,18 +81,18 @@ jobs:
           git config --global user.name "Octavia Squidington III"
           git config --global user.email "octavia-squidington-iii@users.noreply.github.com"
           git add .
-          git commit -m "Bump ${{ github.event.inputs.connector }} cdk version."
+          git commit -m "Bump ${{ github.event.inputs.connector }} cdk version"
           git push
-#
-#      - name: Append success comment
-#        uses: peter-evans/create-or-update-comment@v4
-#        if: steps.git-diff.outputs.changes == 'true'
-#        with:
-#          comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
-#          reactions: hooray
-#          body: |
-#            > ✅ Successfully updated CDK version for `${{ github.event.inputs.connector }}` to `${{ steps.upgrade-cdk.outputs.updated-version }}`. (${{ steps.commit-step.outputs.sha }})
-#
+
+      - name: Append success comment
+        uses: peter-evans/create-or-update-comment@v4
+        if: steps.git-diff.outputs.changes == 'true'
+        with:
+          comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
+          reactions: hooray
+          body: |
+            > ✅ Successfully updated CDK version for `${{ github.event.inputs.connector }}` to `${{ steps.upgrade-cdk.outputs.updated-version }}`. (${{ steps.commit-step.outputs.sha }})
+
 #      - name: Append success comment (no-op)
 #        uses: peter-evans/create-or-update-comment@v4
 #        if: steps.git-diff.outputs.changes != 'true'
