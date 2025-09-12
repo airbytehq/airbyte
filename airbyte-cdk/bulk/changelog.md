@@ -1,3 +1,57 @@
+## Version 0.1.28
+
+**Extract CDK**
+
+* **Changed:** Protobuf encoding fixes to make various types compatible with load(destination) decoding.
+
+**Load CDK**
+
+## Version 0.1.27
+
+* **Changed:** Allow per-test properties for spec integration test
+
+## Version 0.1.26
+
+* **Changed:** Improve load-azure-blob-storage documentation.
+
+## Version 0.1.25
+
+* **Changed:** Adds proto support to dataflow. Misc transform package cleanup (developer-facing).
+
+## Version 0.1.24
+
+* **Changed:** Adds byte counts to emitted state stats.
+
+## Version 0.1.23
+
+* **Changed:** Dataflow CDK fails syncs if there are unflushed states at the end of a sync.
+
+## Version 0.1.22
+
+* **Changed:** Add EntraID support to azure-blob-storage.
+
+## Version 0.1.21
+
+* **Changed:** Adds basic socket support.
+
+## Version 0.1.20
+
+* **Changed:** Fix hard failure edge case in stream initialization for in dataflow cdk lifecycle. 
+
+## Version 0.1.18
+
+* **Changed:** Update load dataflow package accounts for stream completes and dest stats.
+
+## Version 0.1.17
+
+* **Changed:** Run aggregate and flush steps on different dispatchers (default and IO respectively).
+
+## Version 0.1.16
+
+**Load CDK**
+
+* **Changed:** Ensure sequential state emission. Remove flushed state/partition keys.
+
 ## Version 0.1.15
 
 **Extract CDK**
@@ -5,6 +59,8 @@
 * **Changed:** Extract CDK logs DB version during Check for all JDBC databases.
 
 ## Version 0.1.14
+
+**Load CDK**
 
 * **Changed:** Add agent.
 

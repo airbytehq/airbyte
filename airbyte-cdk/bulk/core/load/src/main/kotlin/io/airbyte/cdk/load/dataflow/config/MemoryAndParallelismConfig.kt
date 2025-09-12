@@ -4,9 +4,6 @@
 
 package io.airbyte.cdk.load.dataflow.config
 
-import io.micronaut.context.annotation.Factory
-import io.micronaut.context.annotation.Secondary
-import jakarta.inject.Singleton
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
@@ -17,8 +14,8 @@ import kotlin.time.Duration.Companion.minutes
  * progress.
  * - maxEstBytesPerAgg configures the estimated size of each aggregate.
  * - The max memory consumption is (maxEstBytesPerAgg * maxConcurrentAggregates) +
- * (maxEstBytesPerAgg * 2). Example with default values: (70,000,000 * 5) + (70,000,000 * 2) =
- * 350,000,000 + 140,000,000 = 490,000,000 bytes (approx 0.49 GB).
+ * (maxEstBytesPerAgg * maxBufferedAggregates). Example with default values: (50,000,000 * 5) +
+ * (50,000,000 * 3) = 300,000,000 + 150,000,000 = 450,000,000 bytes (approx 0.45 GB).
  * - stalenessDeadlinePerAggMs is how long we will wait to flush an aggregate if it is not
  * fulfilling the requirement of entry count or max memory.
  * - maxRecordsPerAgg configures the max number of records in an aggregate.
@@ -26,10 +23,10 @@ import kotlin.time.Duration.Companion.minutes
  */
 data class MemoryAndParallelismConfig(
     val maxOpenAggregates: Int = 5,
-    val maxBufferedAggregates: Int = 5,
+    val maxBufferedAggregates: Int = 3,
     val stalenessDeadlinePerAgg: Duration = 5.minutes,
     val maxRecordsPerAgg: Long = 100_000L,
-    val maxEstBytesPerAgg: Long = 70_000_000L,
+    val maxEstBytesPerAgg: Long = 50_000_000L,
     val maxConcurrentLifecycleOperations: Int = 10,
 ) {
     init {
@@ -41,9 +38,4 @@ data class MemoryAndParallelismConfig(
             "maxConcurrentLifecycleOperations must be greater than 0"
         }
     }
-}
-
-@Factory
-class MemoryAndParallelismConfigFactory {
-    @Singleton @Secondary fun getMemoryAndParallelismConfig() = MemoryAndParallelismConfig()
 }

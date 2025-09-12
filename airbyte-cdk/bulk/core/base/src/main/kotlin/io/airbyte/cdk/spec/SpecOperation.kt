@@ -15,16 +15,29 @@ import java.net.URI
 @Requires(property = Operation.PROPERTY, value = "spec")
 class SpecOperation(
     @Value("\${airbyte.connector.metadata.documentation-url}") val documentationUrl: String,
-    val configJsonObjectSupplier: ConfigurationSpecificationSupplier<*>,
-    val extendSpecification: SpecificationExtender,
+    val specificationFactory: SpecificationFactory,
     val outputConsumer: OutputConsumer,
 ) : Operation {
     override fun execute() {
-        val spec =
+        val spec = specificationFactory.create().withDocumentationUrl(URI.create(documentationUrl))
+        outputConsumer.accept(spec)
+    }
+}
+
+interface SpecificationFactory {
+    fun create(): ConnectorSpecification
+}
+
+@Singleton
+class ConfigurationSupplierSpecificationFactory(
+    val configJsonObjectSupplier: ConfigurationSpecificationSupplier<*>,
+    val extendSpecification: SpecificationExtender,
+) : SpecificationFactory {
+    override fun create(): ConnectorSpecification {
+        return extendSpecification(
             ConnectorSpecification()
-                .withDocumentationUrl(URI.create(documentationUrl))
                 .withConnectionSpecification(configJsonObjectSupplier.jsonSchema)
-        outputConsumer.accept(extendSpecification(spec))
+        )
     }
 }
 

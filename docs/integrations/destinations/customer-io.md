@@ -3,7 +3,7 @@
 This page contains the setup guide and reference information for the Customer IO destination connector.
 
 :::info
-Data activation is in early access. If you'd like to be an early adopter for this connector, [fill out this form](https://form.typeform.com/to/STc7a0jx).
+Data activation is in **early access**. Try it today with the HubSpot and Customer.io destinations in Airbyte Cloud or Self-Managed version 1.8 and later. If you'd like to be an early adopter, chat with the team, and share feedback, [fill out this form](https://form.typeform.com/to/STc7a0jx).
 :::
 
 ## Overview
@@ -53,6 +53,8 @@ In order to configure this connector, you need to generate your Track API Key an
 
 | Version | Date       | Pull Request                                             | Subject                                                  |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------|
+| 0.0.5   | 2025-09-08 | [65157](https://github.com/airbytehq/airbyte/pull/65157)        | Update following breaking changes on spec |
+| 0.0.4   | 2025-08-20 | [#65113](https://github.com/airbytehq/airbyte/pull/65113) | Update logo                                              |
 | 0.0.3   | 2025-07-08 | [#62848](https://github.com/airbytehq/airbyte/pull/62848) | Improve UX on connector configuration                    |
 | 0.0.2   | 2025-07-08 | [#62843](https://github.com/airbytehq/airbyte/pull/62843) | Checker should validate DLQ                              |
 | 0.0.1   | 2025-07-07 | [#62083](https://github.com/airbytehq/airbyte/pull/62083) | Initial release of the Customer IO destination connector |
