@@ -15,7 +15,6 @@ import io.airbyte.cdk.load.checker.HttpRequestChecker
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.ImportType
-import io.airbyte.cdk.load.command.Overwrite
 import io.airbyte.cdk.load.command.SoftDelete
 import io.airbyte.cdk.load.command.Update
 import io.airbyte.cdk.load.command.dlq.DisabledObjectStorageConfig
@@ -34,12 +33,11 @@ import io.airbyte.cdk.load.interpolation.StringInterpolator
 import io.airbyte.cdk.load.model.DeclarativeDestination as DeclarativeDestinationModel
 import io.airbyte.cdk.load.model.checker.Checker as CheckerModel
 import io.airbyte.cdk.load.model.checker.HttpRequestChecker as HttpRequestCheckerModel
-import io.airbyte.cdk.load.model.destination_import_mode.Append as AppendModel
-import io.airbyte.cdk.load.model.destination_import_mode.Dedupe as DedupeModel
 import io.airbyte.cdk.load.model.destination_import_mode.DestinationImportMode as DestinationImportModeModel
-import io.airbyte.cdk.load.model.destination_import_mode.Overwrite as OverwriteModel
+import io.airbyte.cdk.load.model.destination_import_mode.Insert as InsertModel
 import io.airbyte.cdk.load.model.destination_import_mode.SoftDelete as SoftDeleteModel
 import io.airbyte.cdk.load.model.destination_import_mode.Update as UpdateModel
+import io.airbyte.cdk.load.model.destination_import_mode.Upsert as UpsertModel
 import io.airbyte.cdk.load.model.discover.CatalogOperation as CatalogOperationModel
 import io.airbyte.cdk.load.model.discover.CompositeCatalogOperations as CompositeCatalogOperationsModel
 import io.airbyte.cdk.load.model.discover.StaticCatalogOperation as StaticCatalogOperationModel
@@ -147,9 +145,8 @@ class DeclarativeDestinationFactory(config: JsonNode?) {
         model: DestinationImportModeModel,
     ): ImportType =
         when (model) {
-            is AppendModel -> Append
-            is DedupeModel -> Dedupe(model.primaryKey ?: emptyList(), model.cursor ?: emptyList())
-            is OverwriteModel -> Overwrite
+            is InsertModel -> Append
+            is UpsertModel -> Dedupe(emptyList(), emptyList())
             is UpdateModel -> Update
             is SoftDeleteModel -> SoftDelete
         }

@@ -7,7 +7,7 @@ package io.airbyte.cdk.load.lowcode
 import io.airbyte.cdk.load.model.DeclarativeDestination
 import io.airbyte.cdk.load.model.checker.Checker
 import io.airbyte.cdk.load.model.checker.HttpRequestChecker
-import io.airbyte.cdk.load.model.destination_import_mode.Append
+import io.airbyte.cdk.load.model.destination_import_mode.Insert as InsertModel
 import io.airbyte.cdk.load.model.discover.CatalogOperation
 import io.airbyte.cdk.load.model.discover.CompositeCatalogOperations
 import io.airbyte.cdk.load.model.discover.StaticCatalogOperation
@@ -35,7 +35,7 @@ class ManifestBuilder {
                 listOf<CatalogOperation>(
                     StaticCatalogOperation(
                         objectName = "test",
-                        destinationImportMode = Append,
+                        destinationImportMode = InsertModel,
                         schema = Jsons.objectNode()
                     ),
                 )

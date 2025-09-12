@@ -9,7 +9,6 @@ import io.airbyte.cdk.load.check.dlq.DlqChecker
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationOperation
-import io.airbyte.cdk.load.command.Overwrite
 import io.airbyte.cdk.load.command.SoftDelete
 import io.airbyte.cdk.load.command.Update
 import io.airbyte.cdk.load.data.FieldType
@@ -17,11 +16,10 @@ import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.http.authentication.BasicAccessAuthenticator
 import io.airbyte.cdk.load.model.checker.HttpRequestChecker
-import io.airbyte.cdk.load.model.destination_import_mode.Append as AppendModel
-import io.airbyte.cdk.load.model.destination_import_mode.Dedupe as DedupeModel
-import io.airbyte.cdk.load.model.destination_import_mode.Overwrite as OverwriteModel
+import io.airbyte.cdk.load.model.destination_import_mode.Insert as InsertModel
 import io.airbyte.cdk.load.model.destination_import_mode.SoftDelete as SoftDeleteModel
 import io.airbyte.cdk.load.model.destination_import_mode.Update as UpdateModel
+import io.airbyte.cdk.load.model.destination_import_mode.Upsert as UpsertModel
 import io.airbyte.cdk.load.model.discover.CatalogOperation
 import io.airbyte.cdk.load.model.discover.CompositeCatalogOperations
 import io.airbyte.cdk.load.model.discover.StaticCatalogOperation
@@ -76,11 +74,7 @@ class DeclarativeDestinationFactoryTest {
                             listOf<CatalogOperation>(
                                 StaticCatalogOperation(
                                     objectName = "player",
-                                    destinationImportMode =
-                                        DedupeModel(
-                                            primaryKey = listOf(listOf("name")),
-                                            cursor = listOf("updated_at"),
-                                        ),
+                                    destinationImportMode = UpsertModel,
                                     schema =
                                         mapper.valueToTree(
                                             mapOf(
@@ -102,24 +96,6 @@ class DeclarativeDestinationFactoryTest {
                 .build()
         )
 
-        val expectedOperations =
-            listOf<DestinationOperation>(
-                DestinationOperation(
-                    "player",
-                    Dedupe(listOf(listOf("name")), listOf("updated_at")),
-                    ObjectType(
-                        properties =
-                            linkedMapOf(
-                                "name" to FieldType(StringType, true),
-                                "updated_at" to FieldType(StringType, true),
-                            ),
-                        additionalProperties = true,
-                        required = listOf("name"),
-                    ),
-                    matchingKeys = listOf(listOf("test"))
-                )
-            )
-
         mockkConstructor(BasicAccessAuthenticator::class)
         val dlqChecker = mockk<DlqChecker>()
         every { dlqChecker.check(any()) } returns Unit
@@ -134,10 +110,6 @@ class DeclarativeDestinationFactoryTest {
                     )
                     .intercept(any())
             }
-
-            val actualOperations =
-                DeclarativeDestinationFactory(config).createOperationProvider().get()
-            assertEquals(expectedOperations, actualOperations)
         } finally {
             unmockkStatic("io.airbyte.cdk.util.ResourceUtils") // Clean up mocks
         }
@@ -197,11 +169,7 @@ class DeclarativeDestinationFactoryTest {
                             listOf<CatalogOperation>(
                                 StaticCatalogOperation(
                                     objectName = "player",
-                                    destinationImportMode =
-                                        DedupeModel(
-                                            primaryKey = listOf(listOf("name")),
-                                            cursor = listOf("updated_at"),
-                                        ),
+                                    destinationImportMode = UpsertModel,
                                     schema =
                                         mapper.valueToTree(
                                             mapOf(
@@ -218,7 +186,7 @@ class DeclarativeDestinationFactoryTest {
                                 ),
                                 StaticCatalogOperation(
                                     objectName = "position",
-                                    destinationImportMode = AppendModel,
+                                    destinationImportMode = InsertModel,
                                     schema =
                                         mapper.valueToTree(
                                             mapOf(
@@ -230,20 +198,6 @@ class DeclarativeDestinationFactoryTest {
                                                         "name" to mapOf("type" to "string"),
                                                         "side" to mapOf("type" to "string")
                                                     )
-                                            )
-                                        )
-                                ),
-                                StaticCatalogOperation(
-                                    objectName = "coaching_staff",
-                                    destinationImportMode = OverwriteModel,
-                                    schema =
-                                        mapper.valueToTree(
-                                            mapOf(
-                                                "type" to "object",
-                                                "required" to listOf("name"),
-                                                "additionalProperties" to true,
-                                                "properties" to
-                                                    mapOf("name" to mapOf("type" to "string"))
                                             )
                                         )
                                 ),
@@ -285,7 +239,7 @@ class DeclarativeDestinationFactoryTest {
             listOf(
                 DestinationOperation(
                     "player",
-                    Dedupe(listOf(listOf("name")), listOf("updated_at")),
+                    Dedupe(emptyList(), emptyList()),
                     ObjectType(
                         properties =
                             linkedMapOf(
@@ -305,19 +259,6 @@ class DeclarativeDestinationFactoryTest {
                             linkedMapOf(
                                 "name" to FieldType(StringType, true),
                                 "side" to FieldType(StringType, true),
-                            ),
-                        additionalProperties = true,
-                        required = listOf("name"),
-                    ),
-                    matchingKeys = emptyList()
-                ),
-                DestinationOperation(
-                    "coaching_staff",
-                    Overwrite,
-                    ObjectType(
-                        properties =
-                            linkedMapOf(
-                                "name" to FieldType(StringType, true),
                             ),
                         additionalProperties = true,
                         required = listOf("name"),
@@ -355,8 +296,6 @@ class DeclarativeDestinationFactoryTest {
         mockkConstructor(BasicAccessAuthenticator::class)
         val config =
             Jsons.readTree("""{"api_id": "$VALID_API_ID", "api_token": "$VALID_API_TOKEN"}""")
-        val dlqChecker = mockk<DlqChecker>()
-        every { dlqChecker.check(any()) } returns Unit
 
         val actualOperations = DeclarativeDestinationFactory(config).createOperationProvider().get()
         assertEquals(expectedOperations, actualOperations)
