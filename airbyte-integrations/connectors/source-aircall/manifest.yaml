@@ -26,6 +26,11 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /calls
           http_method: GET
+          request_parameters:
+            from: "{{ timestamp(config['start_date']) | int }}"
+            to: >-
+              "{{ timestamp(config.get('end_date', 0)) | int or
+              now_utc().strftime('%s') }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -90,6 +95,11 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /contacts
           http_method: GET
+          request_parameters:
+            from: "{{ timestamp(config['start_date']) | int }}"
+            to: >-
+              "{{ timestamp(config.get('end_date', 0)) | int or
+              now_utc().strftime('%s') }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -124,6 +134,11 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /numbers
           http_method: GET
+          request_parameters:
+            from: "{{ timestamp(config['start_date']) | int }}"
+            to: >-
+              "{{ timestamp(config.get('end_date', 0)) | int or
+              now_utc().strftime('%s') }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -209,6 +224,11 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /users/availabilities
           http_method: GET
+          request_parameters:
+            from: "{{ timestamp(config['start_date']) | int }}"
+            to: >-
+              "{{ timestamp(config.get('end_date', 0)) | int or
+              now_utc().strftime('%s') }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -230,6 +250,11 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: /users
           http_method: GET
+          request_parameters:
+            from: "{{ timestamp(config['start_date']) | int }}"
+            to: >-
+              "{{ timestamp(config.get('end_date', 0)) | int or
+              now_utc().strftime('%s') }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -381,6 +406,17 @@ spec:
           - "2022-03-01T00:00:00.000Z"
         format: date-time
         order: 2
+      end_date:
+        type: string
+        description: >-
+          Date time filter for incremental filter, Specify which date to extract
+          to.
+        title: Date-To Filter
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}Z$
+        examples:
+          - "2022-03-01T00:00:00.000Z"
+        format: date-time
+        order: 3
     additionalProperties: true
 
 metadata:

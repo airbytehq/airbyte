@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 912eb6b7-a893-4a5b-b1c0-36ebbe2de8cd
-  dockerImageTag: 0.4.0
+  dockerImageTag: 0.5.0
   dockerRepository: airbyte/source-aircall
   githubIssueLabel: source-aircall
   icon: aircall.svg
