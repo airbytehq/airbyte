@@ -356,6 +356,7 @@ This response indicates that the Facebook Graph API requires you to reduce the f
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.1 | 2025-09-10 | [65828](https://github.com/airbytehq/airbyte/pull/65828) | Update dependencies |
 | 4.0.0 | 2025-08-25 | [65533](https://github.com/airbytehq/airbyte/pull/65533) | Migrate to Marketing API v23 |
 | 3.5.12 | 2025-08-23 | [65288](https://github.com/airbytehq/airbyte/pull/65288) | Update dependencies |
 | 3.5.11 | 2025-08-19 | [64911](https://github.com/airbytehq/airbyte/pull/64911) | Allow overriding action breakdowns for default Ads Insights stream. |
