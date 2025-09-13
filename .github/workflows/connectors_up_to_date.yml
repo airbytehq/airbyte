@@ -81,3 +81,29 @@ jobs:
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           subcommand: "connectors --concurrency=10 ${{ matrix.connector_names}} up-to-date  --create-prs --auto-merge"
+
+      - name: Parse PR numbers from output
+        id: parse-prs
+        if: success()
+        run: |
+          echo "Parsing PR numbers from airbyte-ci output..."
+          PR_NUMBERS=$(echo "${{ steps.airbyte-ci-connectors-up-to-date-workflow-dispatch.outputs.stdout }}" | grep -oE 'PR #[0-9]+' | grep -oE '[0-9]+' | tr '\n' ',' | sed 's/,$//')
+          echo "pr-numbers=$PR_NUMBERS" >> $GITHUB_OUTPUT
+          echo "Found PR numbers: $PR_NUMBERS"
+
+      - name: Trigger Auto Approval for Created PRs
+        if: success() && steps.parse-prs.outputs.pr-numbers != ''
+        run: |
+          IFS=',' read -ra PR_ARRAY <<< "${{ steps.parse-prs.outputs.pr-numbers }}"
+          for pr_number in "${PR_ARRAY[@]}"; do
+            if [ -n "$pr_number" ]; then
+              echo "Triggering auto-approval for PR #$pr_number"
+              gh api \
+                --method POST \
+                /repos/${{ github.repository }}/dispatches \
+                -f event_type='auto-approve' \
+                -f client_payload='{"pr-number":'$pr_number',"requester":"'${{ github.actor }}'","reason":"Automated connector up-to-date PR"}'
+            fi
+          done
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
