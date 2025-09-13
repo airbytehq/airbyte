@@ -8,19 +8,13 @@ from unittest.mock import MagicMock
 
 import pytest
 from source_pinterest import SourcePinterest
-from source_pinterest.reports import CampaignAnalyticsReport
 from source_pinterest.reports.reports import (
-    AdGroupReport,
     AdGroupTargetingReport,
-    AdvertiserReport,
     AdvertiserTargetingReport,
     CampaignTargetingReport,
     KeywordReport,
-    PinPromotionReport,
     PinPromotionTargetingReport,
-    ProductGroupReport,
     ProductGroupTargetingReport,
-    ProductItemReport,
 )
 from source_pinterest.utils import get_analytics_columns
 
@@ -37,9 +31,10 @@ def test_request_body_json(analytics_report_stream, date_range):
         "end_date": date_range["end_date"],
         "granularity": granularity,
         "columns": columns.split(","),
-        "level": analytics_report_stream.level,
+        "level": "CAMPAIGN",
     }
 
+    read_from_stream
     body = analytics_report_stream.request_body_json(date_range)
     assert body == expected_body
 
@@ -103,17 +98,11 @@ def test_custom_streams(test_config):
 @pytest.mark.parametrize(
     ("report_name", "expected_level"),
     (
-        [CampaignAnalyticsReport, "CAMPAIGN"],
         [CampaignTargetingReport, "CAMPAIGN_TARGETING"],
-        [AdvertiserReport, "ADVERTISER"],
         [AdvertiserTargetingReport, "ADVERTISER_TARGETING"],
-        [AdGroupReport, "AD_GROUP"],
         [AdGroupTargetingReport, "AD_GROUP_TARGETING"],
-        [PinPromotionReport, "PIN_PROMOTION"],
         [PinPromotionTargetingReport, "PIN_PROMOTION_TARGETING"],
-        [ProductGroupReport, "PRODUCT_GROUP"],
         [ProductGroupTargetingReport, "PRODUCT_GROUP_TARGETING"],
-        [ProductItemReport, "PRODUCT_ITEM"],
         [KeywordReport, "KEYWORD"],
     ),
 )

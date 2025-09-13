@@ -192,22 +192,10 @@ class PinterestAnalyticsTargetingReportStream(PinterestAnalyticsReportStream):
         return self._construct_request_body(stream_slice["start_date"], stream_slice["end_date"], self.granularity, columns)
 
 
-class CampaignAnalyticsReport(PinterestAnalyticsReportStream):
-    @property
-    def level(self):
-        return "CAMPAIGN"
-
-
 class CampaignTargetingReport(PinterestAnalyticsTargetingReportStream):
     @property
     def level(self):
         return "CAMPAIGN_TARGETING"
-
-
-class AdvertiserReport(PinterestAnalyticsReportStream):
-    @property
-    def level(self):
-        return "ADVERTISER"
 
 
 class AdvertiserTargetingReport(PinterestAnalyticsTargetingReportStream):
@@ -216,22 +204,10 @@ class AdvertiserTargetingReport(PinterestAnalyticsTargetingReportStream):
         return "ADVERTISER_TARGETING"
 
 
-class AdGroupReport(PinterestAnalyticsReportStream):
-    @property
-    def level(self):
-        return "AD_GROUP"
-
-
 class AdGroupTargetingReport(PinterestAnalyticsTargetingReportStream):
     @property
     def level(self):
         return "AD_GROUP_TARGETING"
-
-
-class PinPromotionReport(PinterestAnalyticsReportStream):
-    @property
-    def level(self):
-        return "PIN_PROMOTION"
 
 
 class PinPromotionTargetingReport(PinterestAnalyticsTargetingReportStream):
@@ -240,22 +216,10 @@ class PinPromotionTargetingReport(PinterestAnalyticsTargetingReportStream):
         return "PIN_PROMOTION_TARGETING"
 
 
-class ProductGroupReport(PinterestAnalyticsReportStream):
-    @property
-    def level(self):
-        return "PRODUCT_GROUP"
-
-
 class ProductGroupTargetingReport(PinterestAnalyticsTargetingReportStream):
     @property
     def level(self):
         return "PRODUCT_GROUP_TARGETING"
-
-
-class ProductItemReport(PinterestAnalyticsReportStream):
-    @property
-    def level(self):
-        return "PRODUCT_ITEM"
 
 
 class KeywordReport(PinterestAnalyticsTargetingReportStream):

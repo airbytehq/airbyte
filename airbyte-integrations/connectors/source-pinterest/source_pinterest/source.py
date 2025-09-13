@@ -15,21 +15,15 @@ from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 from airbyte_cdk.utils import AirbyteTracedException
-from source_pinterest.reports import CampaignAnalyticsReport
 
 from .reports.reports import (
-    AdGroupReport,
     AdGroupTargetingReport,
-    AdvertiserReport,
     AdvertiserTargetingReport,
     CampaignTargetingReport,
     CustomReport,
     KeywordReport,
-    PinPromotionReport,
     PinPromotionTargetingReport,
-    ProductGroupReport,
     ProductGroupTargetingReport,
-    ProductItemReport,
 )
 from .streams import AdAccounts, AdAccountValidationStream, PinterestStream
 
@@ -108,18 +102,12 @@ class SourcePinterest(YamlDeclarativeSource):
         # Report streams involve async data fetch, which is currently not supported in low-code
         ad_accounts = AdAccounts(transformed_config)
         report_streams = [
-            CampaignAnalyticsReport(ad_accounts, config=transformed_config),
             CampaignTargetingReport(ad_accounts, config=transformed_config),
-            AdvertiserReport(ad_accounts, config=transformed_config),
             AdvertiserTargetingReport(ad_accounts, config=transformed_config),
-            AdGroupReport(ad_accounts, config=transformed_config),
             AdGroupTargetingReport(ad_accounts, config=transformed_config),
-            PinPromotionReport(ad_accounts, config=transformed_config),
             PinPromotionTargetingReport(ad_accounts, config=transformed_config),
-            ProductGroupReport(ad_accounts, config=transformed_config),
             ProductGroupTargetingReport(ad_accounts, config=transformed_config),
             KeywordReport(ad_accounts, config=transformed_config),
-            ProductItemReport(ad_accounts, config=transformed_config),
         ] + self.get_custom_report_streams(config=transformed_config, ad_accounts_stream=ad_accounts)
 
         return declarative_streams + report_streams
