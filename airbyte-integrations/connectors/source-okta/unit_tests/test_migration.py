@@ -28,6 +28,7 @@ class TestMigrateConfig:
     def test_migrate_config(self, capsys):
         config = load_config(self.test_not_migrated_config_path)
         assert "domain" not in config
+        assert "credentials" not in config
         migration_instance = OktaConfigMigration()
         migration_instance.migrate([CMD, "--config", self.test_not_migrated_config_path], SOURCE)
         control_msg = json.loads(capsys.readouterr().out)
