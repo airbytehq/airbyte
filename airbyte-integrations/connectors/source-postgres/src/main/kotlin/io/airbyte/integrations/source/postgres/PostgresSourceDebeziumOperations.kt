@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.postgres
 
 import io.airbyte.cdk.command.OpaqueStateValue
@@ -15,8 +19,8 @@ import org.apache.kafka.connect.source.SourceRecord
 
 @Singleton
 class PostgresSourceDebeziumOperations :
-CdcPartitionsCreatorDebeziumOperations<PostgresSourceCdcPosition>,
-CdcPartitionReaderDebeziumOperations<PostgresSourceCdcPosition>{
+    CdcPartitionsCreatorDebeziumOperations<PostgresSourceCdcPosition>,
+    CdcPartitionReaderDebeziumOperations<PostgresSourceCdcPosition> {
     override fun position(offset: DebeziumOffset): PostgresSourceCdcPosition {
         TODO("Not yet implemented")
     }
@@ -45,17 +49,11 @@ CdcPartitionReaderDebeziumOperations<PostgresSourceCdcPosition>{
         TODO("Not yet implemented")
     }
 
-    override fun findStreamNamespace(
-        key: DebeziumRecordKey,
-        value: DebeziumRecordValue
-    ): String? {
+    override fun findStreamNamespace(key: DebeziumRecordKey, value: DebeziumRecordValue): String? {
         TODO("Not yet implemented")
     }
 
-    override fun findStreamName(
-        key: DebeziumRecordKey,
-        value: DebeziumRecordValue
-    ): String? {
+    override fun findStreamName(key: DebeziumRecordKey, value: DebeziumRecordValue): String? {
         TODO("Not yet implemented")
     }
 

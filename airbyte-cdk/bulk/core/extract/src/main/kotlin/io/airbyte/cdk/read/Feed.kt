@@ -2,8 +2,8 @@
 package io.airbyte.cdk.read
 
 import io.airbyte.cdk.StreamIdentifier
-import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.DataOrMetaField
+import io.airbyte.cdk.discover.Field
 
 /**
  * [Feed] identifies part of the data consumed during a READ operation.

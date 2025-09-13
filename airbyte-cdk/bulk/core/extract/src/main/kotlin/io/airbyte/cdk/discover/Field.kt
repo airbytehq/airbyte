@@ -19,7 +19,8 @@ sealed interface DataOrMetaField {
 
 @Deprecated(
     message = "Use `DataOrMetaField` directly instead.",
-    replaceWith = ReplaceWith("DataOrMetaField"))
+    replaceWith = ReplaceWith("DataOrMetaField")
+)
 typealias FieldOrMetaField = DataOrMetaField
 /**
  * Root of our own type hierarchy for Airbyte record fields.
@@ -43,11 +44,12 @@ interface LosslessFieldType : FieldType {
     val jsonDecoder: JsonDecoder<*>
 }
 
-interface DataField: DataOrMetaField
+interface DataField : DataOrMetaField
 
 @Deprecated(
     message = "Use `EmittedField` directly instead.",
-    replaceWith = ReplaceWith("EmittedField"))
+    replaceWith = ReplaceWith("EmittedField")
+)
 typealias Field = EmittedField
 /**
  * Internal equivalent of [io.airbyte.protocol.models.Field] for values which come from the source
