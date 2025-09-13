@@ -5,7 +5,6 @@
 from dataclasses import dataclass
 from typing import Any, Iterable, Mapping
 
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.auth.oauth import DeclarativeSingleUseRefreshTokenOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.token import BearerAuthenticator
@@ -33,7 +32,8 @@ class FormIdPartitionRouter(SubstreamPartitionRouter):
                 yield StreamSlice(partition={"form_id": item}, cursor_slice={})
         else:
             for parent_stream_config in self.parent_stream_configs:
-                for item in parent_stream_config.stream.read_records(sync_mode=SyncMode.full_refresh):
-                    yield StreamSlice(partition={"form_id": item["id"]}, cursor_slice={})
+                for partition in parent_stream_config.stream.generate_partitions():
+                    for item in partition.read():
+                        yield StreamSlice(partition={"form_id": item["id"]}, cursor_slice={})
 
         yield from []
