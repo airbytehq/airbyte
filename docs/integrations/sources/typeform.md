@@ -101,6 +101,7 @@ API rate limits \(2 requests per second\): [https://developer.typeform.com/get-s
 
 | Version | Date       | Pull Request                                             | Subject                                                                                         |
 |:--------|:-----------| :------------------------------------------------------- |:------------------------------------------------------------------------------------------------|
+| 1.4.3 | 2025-09-09 | [61473](https://github.com/airbytehq/airbyte/pull/61473) | Update dependencies |
 | 1.4.2 | 2025-05-31 | [53033](https://github.com/airbytehq/airbyte/pull/53033) | Update dependencies |
 | 1.4.1 | 2025-02-26 | [54690](https://github.com/airbytehq/airbyte/pull/54690) | Fix missing records for non `image` streams & formatting |
 | 1.4.0 | 2025-02-22 | [47018](https://github.com/airbytehq/airbyte/pull/47018) | Migrate to manifest-only format |
