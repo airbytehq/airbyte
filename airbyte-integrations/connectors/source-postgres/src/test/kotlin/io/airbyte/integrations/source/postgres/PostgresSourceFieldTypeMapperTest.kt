@@ -88,7 +88,6 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
                 "'A'" to "\"A\"",
             )
         )
-        // TODO: Old version maps BIT to text and BIT[] to Array<Boolean>(?!?)
         scalarAndArray(
             "BIT(1)",
             LeafAirbyteSchemaType.BOOLEAN,
@@ -153,7 +152,6 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
             LeafAirbyteSchemaType.DATE,
             AnsiSql.dateValues.plus(preservedInfinities).mapKeys { "${it.key}::date" }
         )
-
         scalarAndArray(
             "TIME",
             LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE,

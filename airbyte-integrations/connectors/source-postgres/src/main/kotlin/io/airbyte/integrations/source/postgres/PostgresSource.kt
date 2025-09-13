@@ -17,13 +17,6 @@ object PostgresSource {
                 log.info { (File(arg).readText()) }
             }
         }
-        val rootPath = "/Users/matt.bayley/dev/airbyte/secrets/airbyte/postgres"
-        val configPath = "$rootPath/config.json"
-        val catalogPath = "$rootPath/catalog.json"
-        val statePath = "$rootPath/state.json"
-        val checkArgs = arrayOf("--check", "--config", configPath)
-        val discoverArgs = arrayOf("--discover", "--config", configPath)
-        val readArgs = arrayOf("--read", "--config", configPath, "--catalog", catalogPath)
-        AirbyteSourceRunner.run(*readArgs)
+        AirbyteSourceRunner.run(*args)
     }
 }

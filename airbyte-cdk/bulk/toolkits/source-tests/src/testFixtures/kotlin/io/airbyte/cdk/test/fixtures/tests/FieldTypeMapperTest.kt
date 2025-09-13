@@ -241,9 +241,6 @@ abstract class FieldTypeMapperTest {
                 return mapOf(
                     tableName.uppercase() to
                         values.values.map {
-                            // TODO: don't break existing tests
-                            // Jsons.readTree("""{"${columnName.uppercase()}":$it}""")
-                            // val colName = entityNameDefaultCapitalization.transform(columnName)
                             Jsons.readTree("""{"${columnName}":$it}""")
                         }
                 )
@@ -265,14 +262,6 @@ abstract class FieldTypeMapperTest {
 }
 
 object AnsiSql {
-
-    val floatValues =
-        mapOf(
-            "null" to "null",
-            "45.67" to "45.67",
-            "98.76" to "98.76",
-            "0.12" to "0.12",
-        )
 
     val intValues =
         mapOf(
@@ -355,13 +344,6 @@ object AnsiSql {
             "'12345'" to "\"12345\"",
             "' '" to "\" \"",
             "''" to "\"\"",
-        )
-
-    val binary20Values =
-        mapOf(
-            "null" to "null",
-            "X'0123'" to "\"ASMAAAAAAAAAAAAAAAAAAAAAAAA=\"",
-            "X'0123456789ABCDEF'" to "\"ASNFZ4mrze8AAAAAAAAAAAAAAAA=\"",
         )
 
     val dateValues =

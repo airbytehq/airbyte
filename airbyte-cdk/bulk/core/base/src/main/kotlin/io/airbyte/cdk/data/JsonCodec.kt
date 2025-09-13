@@ -336,6 +336,7 @@ data class ArrayEncoder<T>(
     override fun encode(decoded: List<T>): JsonNode =
         Jsons.arrayNode().apply {
             for (e in decoded) {
+                // Note: in generics, T can be nullable!
                 if (e == null) add(NullCodec.encode(e)) else add(elementEncoder.encode(e))
             }
         }
