@@ -304,14 +304,13 @@ class IncrementalTest(TestCase):
     def test_given_state_earlier_than_30_days_when_read_then_query_events_using_types_and_event_lower_boundary(
         self, http_mocker: HttpMocker
     ) -> None:
-        # this seems odd as we would miss some data between start_date and events_lower_boundary. In that case, we should hit the
-        # external_accounts endpoint
+        # Since min_datetime was removed, the system now uses the actual state value instead of the 30-day boundary
         start_date = _NOW - timedelta(days=40)
         state_value = _NOW - timedelta(days=39)
         events_lower_boundary = _NOW - timedelta(days=30)
         http_mocker.get(
             _events_request()
-            .with_created_gte(events_lower_boundary)
+            .with_created_gte(state_value)
             .with_created_lte(_NOW)
             .with_limit(100)
             .with_types(_EVENT_TYPES)
