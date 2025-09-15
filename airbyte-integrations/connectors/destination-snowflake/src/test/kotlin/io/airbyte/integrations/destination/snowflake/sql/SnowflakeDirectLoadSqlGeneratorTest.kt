@@ -52,6 +52,13 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
     }
 
     @Test
+    fun testGenerateUseSchemaStatement() {
+        val namespace = "namespace"
+        val sql = snowflakeDirectLoadSqlGenerator.useSchema(namespace)
+        assertEquals("USE SCHEMA \"$namespace\"", sql)
+    }
+
+    @Test
     fun testGenerateCreateTableStatement() {
         val columnAndType =
             ColumnAndType(columnName = "column-name", columnType = "VARCHAR NOT NULL")
