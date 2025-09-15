@@ -14,6 +14,7 @@ import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.message.InputRecord
 import io.airbyte.cdk.load.message.InputStreamCheckpoint
 import io.airbyte.cdk.load.message.Meta.Change
+import io.airbyte.cdk.load.spec.NoopSpec
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
@@ -21,7 +22,6 @@ import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.UnionBehavior
 import io.airbyte.cdk.load.write.Untyped
-import io.airbyte.integrations.destination.salesforce.SalesforceSpecification
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.nio.file.Files
@@ -53,7 +53,7 @@ object SalesforceDataCleaner : DestinationCleaner {
 class SalesforceWriterTest() :
     BasicFunctionalityIntegrationTest(
         configContents = Files.readString(Path.of("secrets/config.json")),
-        configSpecClass = SalesforceSpecification::class.java,
+        configSpecClass = NoopSpec::class.java,
         dataDumper = SalesforceDataDumper(),
         destinationCleaner = SalesforceDataCleaner,
         commitDataIncrementally = true,

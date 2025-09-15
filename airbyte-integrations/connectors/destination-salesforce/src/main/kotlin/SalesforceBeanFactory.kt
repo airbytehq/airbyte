@@ -6,18 +6,28 @@ package io.airbyte.integrations.destination.salesforce
 
 import com.google.common.base.Suppliers
 import dev.failsafe.RetryPolicy
+import io.airbyte.cdk.Operation
+import io.airbyte.cdk.load.check.CheckOperationV2
 import io.airbyte.cdk.load.check.dlq.DlqChecker
+import io.airbyte.cdk.load.checker.CompositeDlqChecker
 import io.airbyte.cdk.load.command.DestinationCatalog
-import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.http.HttpClient
 import io.airbyte.cdk.load.http.authentication.OAuthAuthenticator
 import io.airbyte.cdk.load.http.okhttp.AirbyteOkHttpClient
+import io.airbyte.cdk.load.lowcode.DeclarativeDestinationFactory
 import io.airbyte.cdk.load.pipeline.LoadPipeline
+import io.airbyte.cdk.load.spec.DeclarativeCdkConfiguration
 import io.airbyte.cdk.load.write.dlq.DlqPipelineFactory
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
+import io.airbyte.cdk.output.OutputConsumer
+import io.airbyte.cdk.spec.SpecificationFactory
+import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.destination.salesforce.io.airbyte.integrations.destination.salesforce.http.SalesforceOperationRepository
 import io.airbyte.integrations.destination.salesforce.io.airbyte.integrations.destination.salesforce.http.job.JobRepository
 import io.micronaut.context.annotation.Factory
+import io.micronaut.context.annotation.Primary
+import io.micronaut.context.annotation.Requires
+import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
 import java.lang.IllegalStateException
 import java.util.function.Supplier
@@ -25,25 +35,65 @@ import okhttp3.OkHttpClient
 
 @Factory
 class SalesforceBeanFactory {
+
+    @Primary
     @Singleton
-    fun check(httpClient: HttpClient, baseUrl: Supplier<String>, dlqChecker: DlqChecker) =
-        SalesforceChecker(httpClient, baseUrl, dlqChecker)
+    @Requires(property = Operation.PROPERTY, value = "check")
+    @Requires(env = ["destination"])
+    fun checkOperation(
+        httpClient: HttpClient,
+        baseUrl: Supplier<String>,
+        dlqChecker: DlqChecker,
+        config: DeclarativeCdkConfiguration,
+        outputConsumer: OutputConsumer
+    ): Operation =
+        CheckOperationV2(
+            CompositeDlqChecker(
+                SalesforceChecker(httpClient, baseUrl),
+                dlqChecker,
+                config.objectStorageConfig,
+            ),
+            outputConsumer,
+        )
 
     @Singleton
     fun discover(operationRepository: SalesforceOperationRepository) =
         SalesforceDiscoverer(operationRepository)
 
-    @Singleton fun getConfig(config: DestinationConfiguration) = config as SalesforceConfiguration
+    @Singleton
+    fun connectorFactory(
+        @Value("\${airbyte.connector.config.json}") configAsJsonString: String? = null,
+    ): DeclarativeDestinationFactory =
+        DeclarativeDestinationFactory(
+            configAsJsonString?.let { Jsons.readTree(configAsJsonString) }
+        )
+
+    @Primary
+    @Singleton
+    fun cdkConfiguration(factory: DeclarativeDestinationFactory): DeclarativeCdkConfiguration =
+        factory.cdkConfiguration
+
+    @Primary
+    @Singleton
+    fun specificationFactory(
+        factory: DeclarativeDestinationFactory,
+    ): SpecificationFactory = factory.createSpecificationFactory()
 
     @Singleton
-    fun getAuthenticator(config: SalesforceConfiguration): OAuthAuthenticator {
-        val authEndpoint: String =
-            "https://${if (config.isSandbox) "test" else "login"}.salesforce.com/services/oauth2/token"
+    fun getAuthenticator(factory: DeclarativeDestinationFactory): OAuthAuthenticator {
+        if (factory.config == null) {
+            throw IllegalArgumentException(
+                "Config should be provided when running operations that requires authentication"
+            )
+        }
+
+        val authEndpoint =
+            "https://${if (factory.config!!.get("is_sandbox").asBoolean()) "test" else "login"}.salesforce.com/services/oauth2/token"
         return OAuthAuthenticator(
             authEndpoint,
-            config.clientId,
-            config.clientSecret,
-            config.refreshToken
+            factory.config!!.get("client_id").asText(),
+            factory.config!!.get("client_secret").asText(),
+            factory.config!!.get("refresh_token").asText(),
         )
     }
 

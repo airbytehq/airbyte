@@ -1,0 +1,104 @@
+checker:
+  # Note that the checker is not used for salesforce because we need interpolation on the OAuth response in order to
+  # get the instance URL
+  type: HttpRequestChecker
+  requester:
+    type: HttpRequester
+    url: "{{ instance_url }}/services/data/v62.0/sobjects/Contact/describe/"
+    method: GET
+    authenticator:
+      type: OAuthAuthenticator
+      # url interpolation to be tested once we migrate to low-code checker
+      url: 'https://{{ "test" if config["is_sandbox"] else "login"}}.salesforce.com/services/oauth2/token'
+      client_id: '{{ config["client_id"] }}'
+      client_secret: '{{ config["client_secret"] }}'
+      refresh_token: '{{ config["refresh_token"] }}'
+spec:
+  connection_specification:
+    "$schema": http://json-schema.org/draft-07/schema#
+    title: Salesforce Specification
+    type: object
+    additionalProperties: true
+    properties:
+      client_id:
+        type: string
+        description:
+          Enter your Salesforce developer application's <a href="https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG">Client
+          ID</a>.
+        title: Client ID
+        order: 0
+      client_secret:
+        type: string
+        description:
+          Enter your Salesforce developer application's <a href="https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG">Client
+          secret</a>.
+        title: Client Secret
+        order: 1
+        airbyte_secret: true
+      refresh_token:
+        type: string
+        description:
+          Enter your application's <a href="https://developer.salesforce.com/docs/atlas.en-us.mobile_sdk.meta/mobile_sdk/oauth_refresh_token_flow.htm">Salesforce
+          Refresh Token</a> used for Airbyte to access your Salesforce account.
+        title: Refresh Token
+        order: 2
+        airbyte_secret: true
+      is_sandbox:
+        type: boolean
+        description:
+          Toggle if you're using a <a href="https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5">Salesforce
+          Sandbox</a>.
+        title: Is Sandbox
+        order: 3
+        default: false
+      auth_type:
+        type: string
+        const: Client
+    required:
+      - client_id
+      - client_secret
+      - refresh_token
+      - is_sandbox
+      - auth_type
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+      - auth_type
+    predicate_value: Client
+    oauth_config_specification:
+      oauth_user_input_from_connector_config_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          is_sandbox:
+            type: boolean
+            path_in_connector_config:
+              - is_sandbox
+      complete_oauth_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          refresh_token:
+            type: string
+            path_in_connector_config:
+              - refresh_token
+      complete_oauth_server_input_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+              - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+              - client_secret

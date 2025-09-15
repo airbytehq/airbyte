@@ -6,7 +6,39 @@
     "type" : "object",
     "additionalProperties" : true,
     "properties" : {
+      "client_id" : {
+        "type" : "string",
+        "description" : "Enter your Salesforce developer application's <a href=\"https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG\">Client ID</a>.",
+        "title" : "Client ID",
+        "order" : 0
+      },
+      "client_secret" : {
+        "type" : "string",
+        "description" : "Enter your Salesforce developer application's <a href=\"https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG\">Client secret</a>.",
+        "title" : "Client Secret",
+        "order" : 1,
+        "airbyte_secret" : true
+      },
+      "refresh_token" : {
+        "type" : "string",
+        "description" : "Enter your application's <a href=\"https://developer.salesforce.com/docs/atlas.en-us.mobile_sdk.meta/mobile_sdk/oauth_refresh_token_flow.htm\">Salesforce Refresh Token</a> used for Airbyte to access your Salesforce account.",
+        "title" : "Refresh Token",
+        "order" : 2,
+        "airbyte_secret" : true
+      },
+      "is_sandbox" : {
+        "type" : "boolean",
+        "description" : "Toggle if you're using a <a href=\"https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5\">Salesforce Sandbox</a>.",
+        "title" : "Is Sandbox",
+        "order" : 3,
+        "default" : false
+      },
+      "auth_type" : {
+        "type" : "string",
+        "const" : "Client"
+      },
       "object_storage_config" : {
+        "title" : "Object Storage Spec",
         "oneOf" : [ {
           "type" : "object",
           "additionalProperties" : true,
@@ -178,39 +210,7 @@
           "title" : "S3",
           "required" : [ "storage_type", "s3_bucket_name", "s3_bucket_region", "bucket_path", "format" ]
         } ],
-        "title" : "Object Storage Configuration",
         "type" : "object"
-      },
-      "client_id" : {
-        "type" : "string",
-        "description" : "Enter your Salesforce developer application's <a href=\"https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG\">Client ID</a>.",
-        "title" : "Client ID",
-        "order" : 0
-      },
-      "client_secret" : {
-        "type" : "string",
-        "description" : "Enter your Salesforce developer application's <a href=\"https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG\">Client secret</a>.",
-        "title" : "Client Secret",
-        "order" : 1,
-        "airbyte_secret" : true
-      },
-      "refresh_token" : {
-        "type" : "string",
-        "description" : "Enter your application's <a href=\"https://developer.salesforce.com/docs/atlas.en-us.mobile_sdk.meta/mobile_sdk/oauth_refresh_token_flow.htm\">Salesforce Refresh Token</a> used for Airbyte to access your Salesforce account.",
-        "title" : "Refresh Token",
-        "order" : 2,
-        "airbyte_secret" : true
-      },
-      "is_sandbox" : {
-        "type" : "boolean",
-        "description" : "Toggle if you're using a <a href=\"https://help.salesforce.com/s/articleView?id=sf.deploy_sandboxes_parent.htm&type=5\">Salesforce Sandbox</a>.",
-        "title" : "Is Sandbox",
-        "order" : 3,
-        "default" : false
-      },
-      "auth_type" : {
-        "type" : "string",
-        "const" : "Client"
       }
     },
     "required" : [ "client_id", "client_secret", "refresh_token", "is_sandbox", "auth_type" ]

@@ -12,11 +12,11 @@ data:
   connectorSubtype: api
   connectorType: destination
   definitionId: c0b24000-d34d-b33f-fea7-6b96dc0e5f0d
-  dockerImageTag: 0.0.6
+  dockerImageTag: 0.0.7
   dockerRepository: airbyte/destination-salesforce
   githubIssueLabel: destination-salesforce
   icon: salesforce.svg
-  license: MIT
+  license: ELv2
   name: Salesforce
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/enterprise-connectors/destination-salesforce
@@ -32,6 +32,20 @@ data:
     sl: 100
     ql: 100
     isEnterprise: true
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION-SALESFORCE_CREDENTIALS__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+        - name: SECRET_DESTINATION-SALESFORCE_INVALID_CREDENTIALS__CREDS
+          fileName: invalid-config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
   supportLevel: certified
   supportsDataActivation: true
   supportsRefreshes: true # needed for the CDK to work as it relies on the generation/sync ids to work

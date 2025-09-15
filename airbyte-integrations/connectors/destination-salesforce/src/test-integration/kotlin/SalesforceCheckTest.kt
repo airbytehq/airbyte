@@ -4,13 +4,13 @@
 
 import io.airbyte.cdk.load.check.CheckIntegrationTest
 import io.airbyte.cdk.load.check.CheckTestConfig
-import io.airbyte.integrations.destination.salesforce.SalesforceSpecification
+import io.airbyte.cdk.load.spec.NoopSpec
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.regex.Pattern
 
 class SalesforceCheckTest :
-    CheckIntegrationTest<SalesforceSpecification>(
+    CheckIntegrationTest<NoopSpec>(
         successConfigFilenames =
             listOf(
                 CheckTestConfig(
