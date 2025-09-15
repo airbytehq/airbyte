@@ -1,21 +1,23 @@
 ---
 products: enterprise-flex
+sidebar_label: Deploy a data plane with Helm
 ---
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Multiple region deployments
+# Deploy a data plane with Helm in Enterprise Flex
 
 Airbyte Enterprise Flex customers can use Airbyte's public API to define regions and create independent data planes that operate in those regions. This ensures you're satisfying your data residency and governance requirements with a single Airbyte Cloud deployment, and it can help you reduce data egress costs with cloud providers.
 
 ![Stylized diagram showing a control plane above multiple data planes in different global regions](img/data-planes.png)
 
 ## How it works
+
 If you're not familiar with Kubernetes, think of the control plane as the brain and data planes as the muscles doing work the brain tells them to do.
 
 - The control plane is responsible for Airbyte's user interface, APIs, Terraform provider, and orchestrating work. Airbyte manages this for you in the cloud, reducing the time and resources it takes to start moving your data.
-- The data plane initiates jobs, syncs data, completes jobs, and reports its status back to the control plane. We offer [cloud regions](https://docs.airbyte.com/platform/cloud/managing-airbyte-cloud/manage-data-residency) equipped to do this for you, but you also have the flexibility to deploy your own to keep sensitive data protected or meet local data residency requirements. 
+- The data plane initiates jobs, syncs data, completes jobs, and reports its status back to the control plane. We offer [cloud regions](https://docs.airbyte.com/platform/cloud/managing-airbyte-cloud/manage-data-residency) equipped to do this for you, but you also have the flexibility to deploy your own to keep sensitive data protected or meet local data residency requirements.
 
 This separation of duties is what allows a single Airbyte deployment to ensure your data remains segregated and compliant.
 
@@ -35,10 +37,72 @@ If you have not already, ensure you have the [required infrastructure](https://d
 
 Before you begin, make sure you've completed the following:
 
- - You must be an Organization Administrator to manage regions and data planes.
+- You must be an Organization Administrator to manage regions and data planes.
+
 - You need a Kubernetes cluster on which your data plane can run. For example, if you want your data plane to run on eu-west-1, create an EKS cluster on eu-west-1.
+
 - You need to use a [secrets manager](https://docs.airbyte.com/platform/deploying-airbyte/integrations/secrets) for the connections on your data plane. Modifying the configuration of connector secret storage will cause all existing connectors to fail, so we recommend only using newly created workspaces on the data plane.
+
 - If you haven't already, get access to Airbyte's API by creating an application and generating an access token. For help, see [Configuring API access](https://docs.airbyte.com/platform/using-airbyte/configuring-api-access).
+
+### Infrastructure prerequisites
+
+For a production-ready deployment of self-managed data planes, you require the following infrastructure components. Airbyte recommend deploying to Amazon EKS, Google Kubernetes Engine, or Azure Kubernetes Service.
+
+<Tabs>
+<TabItem value="Amazon" label="Amazon" default>
+
+| Component                | Recommendation                                                                                                                                                            |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Kubernetes Cluster       | Amazon EKS cluster running on EC2 instances in [2 or more availability zones](https://docs.aws.amazon.com/eks/latest/userguide/disaster-recovery-resiliency.html). |
+| External Secrets Manager | [Amazon Secrets Manager](/platform/operator-guides/configuring-airbyte#secrets) for storing connector secrets, using a dedicated Airbyte role using a [policy with all required permissions](/platform/enterprise-setup/implementation-guide#aws-secret-manager-policy). |
+| Object Storage (Optional)| Amazon S3 bucket with a directory for log storage.                                                                         |
+
+</TabItem>
+</Tabs>
+
+A few notes on Kubernetes cluster provisioning for self-managed data planes and Airbyte Enterprise Flex:
+
+- We support Amazon Elastic Kubernetes Service (EKS) on EC2, Google Kubernetes Engine (GKE) on Google Compute Engine (GCE), or Azure Kubernetes Service (AKS) on Azure.
+- While we support GKE Autopilot, we do not support Amazon EKS on Fargate.
+
+We require you to install and configure the following Kubernetes tooling:
+
+1. Install `helm` by following [these instructions](https://helm.sh/docs/intro/install/)
+2. Install `kubectl` by following [these instructions](https://kubernetes.io/docs/tasks/tools/).
+3. Configure `kubectl` to connect to your cluster by using `kubectl use-context my-cluster-name`:
+
+<details>
+<summary>Configure kubectl to connect to your cluster</summary>
+
+<Tabs>
+<TabItem value="Amazon EKS" label="Amazon EKS" default>
+
+1. Configure your [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html) to connect to your project.
+2. Install [eksctl](https://eksctl.io/introduction/).
+3. Run `eksctl utils write-kubeconfig --cluster=$CLUSTER_NAME` to make the context available to kubectl.
+4. Use `kubectl config get-contexts` to show the available contexts.
+5. Run `kubectl config use-context $EKS_CONTEXT` to access the cluster with kubectl.
+
+</TabItem>
+
+<TabItem value="GKE" label="GKE">
+
+1. Configure `gcloud` with `gcloud auth login`.
+2. On the Google Cloud Console, the cluster page will have a "Connect" button, with a command to run locally: `gcloud container clusters get-credentials $CLUSTER_NAME --zone $ZONE_NAME --project $PROJECT_NAME`.
+3. Use `kubectl config get-contexts` to show the available contexts.
+4. Run `kubectl config use-context $EKS_CONTEXT` to access the cluster with kubectl.
+
+</TabItem>
+</Tabs>
+
+</details>
+
+We also require you to create a Kubernetes namespace for your Airbyte deployment:
+
+```
+kubectl create namespace airbyte
+```
 
 ## 1. Create a region {#step-1}
 
@@ -159,7 +223,7 @@ kind: Secret
 metadata:
   name: airbyte-config-secrets
 type: Opaque
-data:
+stringData:
   # Insert the data plane credentials received in step 2
   DATA_PLANE_CLIENT_ID: your-data-plane-client-id
   DATA_PLANE_CLIENT_SECRET: your-data-plane-client-secret
