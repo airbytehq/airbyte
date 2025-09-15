@@ -6101,7 +6101,6 @@ streams:
             description: Represents an unsupported block.
             type: object
 
-
 concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: 3
