@@ -334,10 +334,10 @@ const ConnectorMetadataCallout = ({
   </Callout>
 );
 
-const ConnectorTitle = ({ iconUrl, originalTitle, isArchived }) => (
+const ConnectorTitle = ({ iconUrl, originalTitle, isArchived, enterpriseConnector }) => (
   <div className={styles.header}>
     <img src={iconUrl} alt="" className={styles.connectorIcon} />
-    <h1>
+    <h1 data-enterprise-connector={enterpriseConnector}>
       {isArchived ? (
         <span>
           {originalTitle} <span style={{ color: "gray" }}>[ARCHIVED]</span>
@@ -365,6 +365,7 @@ export const HeaderDecoration = ({
   usageRate,
   lastUpdated,
   definitionId,
+  "enterprise-connector": enterpriseConnector,
 }) => {
   const isOss = boolStringToBool(isOssString);
   const isCloud = boolStringToBool(isCloudString);
@@ -376,12 +377,12 @@ export const HeaderDecoration = ({
     <>
       <div
         className={styles.connectorHeader}
-   
       >
         <ConnectorTitle
           iconUrl={iconUrl}
           originalTitle={originalTitle}
           isArchived={isArchived}
+          enterpriseConnector={enterpriseConnector}
         />
         <CopyPageButton />
       </div>
