@@ -26,7 +26,7 @@ class SnowflakeCheckTest :
             ),
         failConfigFilenamesAndFailureReasons = emptyMap(),
         additionalMicronautEnvs = emptyList(),
-        micronautProperties = mapOf(AIRBYTE_EDITION to "CLOUD")
+        micronautProperties = mapOf(AIRBYTE_EDITION to "OSS")
     ) {
     @Test
     @Timeout(5, unit = TimeUnit.MINUTES)
