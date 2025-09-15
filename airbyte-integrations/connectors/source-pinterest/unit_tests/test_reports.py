@@ -6,11 +6,9 @@ import copy
 import json
 import os
 from unittest.mock import MagicMock
-from freezegun import freeze_time
 
 import pytest
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.test.state_builder import StateBuilder
+from freezegun import freeze_time
 from source_pinterest import SourcePinterest
 from source_pinterest.reports.reports import (
     AdGroupTargetingReport,
@@ -21,7 +19,11 @@ from source_pinterest.reports.reports import (
     ProductGroupTargetingReport,
 )
 from source_pinterest.utils import get_analytics_columns
+
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.test.state_builder import StateBuilder
 from unit_tests.conftest import read_from_stream
+
 
 os.environ["REQUEST_CACHE_PATH"] = "/tmp"
 
@@ -96,7 +98,10 @@ def test_read_records(requests_mock, test_config, analytics_report_stream, date_
         .build()
     )
 
-    records = [record.record.data for record in read_from_stream(test_config, "campaign_analytics_report", SyncMode.incremental, state=state).records]
+    records = [
+        record.record.data
+        for record in read_from_stream(test_config, "campaign_analytics_report", SyncMode.incremental, state=state).records
+    ]
     expected_record = {"metric": 1}
 
     assert records[0] == expected_record

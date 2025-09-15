@@ -10,13 +10,13 @@ from urllib.parse import urljoin
 
 import backoff
 import requests
+from source_pinterest.streams import PinterestAnalyticsStream
+from source_pinterest.utils import get_analytics_columns
 
 import airbyte_cdk.sources.utils.casing as casing
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
-from source_pinterest.streams import PinterestAnalyticsStream
-from source_pinterest.utils import get_analytics_columns
 
 from .errors import ReportGenerationFailure, ReportGenerationInProgress, ReportStatusError, RetryableException
 from .models import ReportInfo, ReportStatus, ReportStatusDetails
