@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.command.EnvVarConstants.AIRBYTE_EDITION
 import io.airbyte.cdk.load.config.DataChannelFormat
 import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.data.AirbyteValue
@@ -78,7 +77,6 @@ abstract class SnowflakeAcceptanceTest(
         dedupChangeUsesDefault = false,
         testSpeedModeStatsEmission = false,
         configUpdater = SnowflakeMigrationConfigurationUpdater(),
-        micronautProperties = mapOf(AIRBYTE_EDITION to "OSS"),
         dataChannelMedium = dataChannelMedium,
         dataChannelFormat = dataChannelFormat,
         mismatchedTypesUnrepresentable = false,

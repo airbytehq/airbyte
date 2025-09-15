@@ -99,7 +99,7 @@ class SnowflakeBeanFactory {
         snowflakeSqlNameTransformer: SnowflakeSqlNameTransformer,
         @Named("snowflakePrivateKeyFileName")
         snowflakePrivateKeyFileName: String = PRIVATE_KEY_FILE_NAME,
-        @Value("\${airbyte.edition}") airbyteEdition: String,
+        @Value("\${airbyte.edition:COMMUNITY}") airbyteEdition: String,
     ): HikariDataSource {
         val snowflakeJdbcUrl =
             "jdbc:snowflake://${snowflakeConfiguration.host}/?${snowflakeConfiguration.jdbcUrlParams}"
