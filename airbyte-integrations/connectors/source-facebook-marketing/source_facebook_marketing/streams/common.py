@@ -150,7 +150,6 @@ def deep_merge(a: Any, b: Any) -> Any:
 
 FACEBOOK_CONFIG_ERRORS_TO_CATCH = [  # list of tuples (code, error_subcode)
     (100, 2446289),
-    (100, 1487534),
 ]
 
 
