@@ -41,7 +41,9 @@ class SnowflakeAirbyteClient(
                 }
             }
         } catch (e: SnowflakeSQLException) {
-            log.debug(e) { "Table ${tableName.toPrettyString(quote=QUOTE)} does not exist.  Returning a null count to signal a missing table." }
+            log.debug(e) {
+                "Table ${tableName.toPrettyString(quote=QUOTE)} does not exist.  Returning a null count to signal a missing table."
+            }
             null
         }
 

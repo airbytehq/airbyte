@@ -65,7 +65,8 @@ internal class SnowflakeAirbyteClientTest {
     @Test
     fun testCountMissingTable() {
         val tableName = TableName(namespace = "namespace", name = "name")
-        val statement = mockk<Statement> { every { executeQuery(any()) } throws SnowflakeSQLException("test") }
+        val statement =
+            mockk<Statement> { every { executeQuery(any()) } throws SnowflakeSQLException("test") }
         val mockConnection =
             mockk<Connection> {
                 every { close() } just Runs
