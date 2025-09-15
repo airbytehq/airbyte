@@ -4,14 +4,21 @@
 
 package io.airbyte.integrations.destination.s3_v2
 
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonPropertyDescription
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.aws.AWSAccessKeySpecification
 import io.airbyte.cdk.load.command.aws.AWSArnRoleSpecification
+import io.airbyte.cdk.load.command.object_storage.CSVFormatSpecification
 import io.airbyte.cdk.load.command.object_storage.DeprecatedJsonFormatSpecification
 import io.airbyte.cdk.load.command.object_storage.DeprecatedObjectStorageFormatSpecification
 import io.airbyte.cdk.load.command.object_storage.DeprecatedObjectStorageFormatSpecificationProvider
+import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionSpecification
+import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionSpecificationProvider
+import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatSpecification
+import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatSpecificationProvider
 import io.airbyte.cdk.load.command.s3.S3BucketRegion
 import io.airbyte.cdk.load.command.s3.S3BucketSpecification
 import io.airbyte.cdk.load.command.s3.S3PathSpecification
@@ -28,7 +35,7 @@ class S3V2Specification :
     AWSArnRoleSpecification,
     S3BucketSpecification,
     S3PathSpecification,
-    DeprecatedObjectStorageFormatSpecificationProvider {
+    ObjectStorageCompressionSpecificationProvider {
 
     @get:JsonSchemaInject(
         json =
@@ -58,8 +65,7 @@ class S3V2Specification :
     override val s3BucketRegion: S3BucketRegion = S3BucketRegion.NO_REGION
 
     @get:JsonSchemaInject(json = """{"order":6}""")
-    override val format: DeprecatedObjectStorageFormatSpecification =
-        DeprecatedJsonFormatSpecification()
+    override val compression: ObjectStorageCompressionSpecification? = null
 
     @get:JsonSchemaInject(json = """{"examples":["http://localhost:9000"],"order":7}""")
     override val s3Endpoint: String? = null
