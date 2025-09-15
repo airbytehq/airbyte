@@ -15,7 +15,7 @@ import java.util.Locale
 import java.util.UUID
 
 @Singleton
-class ClickhouseFinalTableNameGenerator(private val config: SnowflakeConfiguration) :
+class SnowflakeFinalTableNameGenerator(private val config: SnowflakeConfiguration) :
     FinalTableNameGenerator {
     override fun getTableName(streamDescriptor: DestinationStream.Descriptor) =
         TableName(
@@ -27,7 +27,7 @@ class ClickhouseFinalTableNameGenerator(private val config: SnowflakeConfigurati
 }
 
 @Singleton
-class ClickhouseColumnNameGenerator : ColumnNameGenerator {
+class SnowflakeColumnNameGenerator : ColumnNameGenerator {
     override fun getColumnName(column: String): ColumnNameGenerator.ColumnName {
         return ColumnNameGenerator.ColumnName(
             column.toSnowflakeCompatibleName(),
