@@ -1,6 +1,8 @@
 ---
 dockerRepository: airbyte/destination-salesforce
+enterprise-connector: true
 ---
+
 # Salesforce Destination
 
 The Salesforce destination connector enables [data activation](/platform/next/move-data/elt-data-activation) by syncing data from your data warehouse to Salesforce objects. This connector is designed for operational workflows where you need to deliver modeled data directly to your CRM for sales, marketing, and customer success teams.

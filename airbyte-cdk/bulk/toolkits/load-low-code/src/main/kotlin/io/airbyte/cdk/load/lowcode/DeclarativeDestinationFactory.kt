@@ -12,9 +12,18 @@ import io.airbyte.cdk.command.ValidatedJsonUtils
 import io.airbyte.cdk.load.check.dlq.DlqChecker
 import io.airbyte.cdk.load.checker.CompositeDlqChecker
 import io.airbyte.cdk.load.checker.HttpRequestChecker
+import io.airbyte.cdk.load.command.Append
+import io.airbyte.cdk.load.command.Dedupe
+import io.airbyte.cdk.load.command.ImportType
+import io.airbyte.cdk.load.command.SoftDelete
+import io.airbyte.cdk.load.command.Update
 import io.airbyte.cdk.load.command.dlq.DisabledObjectStorageConfig
 import io.airbyte.cdk.load.command.dlq.ObjectStorageSpec
 import io.airbyte.cdk.load.command.dlq.toObjectStorageConfig
+import io.airbyte.cdk.load.data.json.JsonSchemaToAirbyteType
+import io.airbyte.cdk.load.discoverer.operation.CompositeOperationProvider
+import io.airbyte.cdk.load.discoverer.operation.OperationProvider
+import io.airbyte.cdk.load.discoverer.operation.StaticOperationProvider
 import io.airbyte.cdk.load.http.HttpRequester
 import io.airbyte.cdk.load.http.RequestMethod
 import io.airbyte.cdk.load.http.authentication.BasicAccessAuthenticator
@@ -24,6 +33,14 @@ import io.airbyte.cdk.load.interpolation.StringInterpolator
 import io.airbyte.cdk.load.model.DeclarativeDestination as DeclarativeDestinationModel
 import io.airbyte.cdk.load.model.checker.Checker as CheckerModel
 import io.airbyte.cdk.load.model.checker.HttpRequestChecker as HttpRequestCheckerModel
+import io.airbyte.cdk.load.model.destination_import_mode.DestinationImportMode as DestinationImportModeModel
+import io.airbyte.cdk.load.model.destination_import_mode.Insert as InsertModel
+import io.airbyte.cdk.load.model.destination_import_mode.SoftDelete as SoftDeleteModel
+import io.airbyte.cdk.load.model.destination_import_mode.Update as UpdateModel
+import io.airbyte.cdk.load.model.destination_import_mode.Upsert as UpsertModel
+import io.airbyte.cdk.load.model.discover.CatalogOperation as CatalogOperationModel
+import io.airbyte.cdk.load.model.discover.CompositeCatalogOperations as CompositeCatalogOperationsModel
+import io.airbyte.cdk.load.model.discover.StaticCatalogOperation as StaticCatalogOperationModel
 import io.airbyte.cdk.load.model.http.HttpMethod
 import io.airbyte.cdk.load.model.http.HttpRequester as HttpRequesterModel
 import io.airbyte.cdk.load.model.http.authenticator.Authenticator as AuthenticatorModel
@@ -80,6 +97,19 @@ class DeclarativeDestinationFactory(config: JsonNode?) {
         )
     }
 
+    fun createOperationProvider(): OperationProvider {
+        // todo: 'discovery' component in the long term should be a required field, but since
+        //  the first PR only implements static discovery not dynamic, we don't want to make the
+        //  component required until connectors like Hubspot can define it.
+        if (manifest.discover == null) {
+            throw IllegalArgumentException(
+                "manifest.yaml is missing expected 'discovery' component"
+            )
+        } else {
+            return createOperationProvider(manifest.discover)
+        }
+    }
+
     private fun createAuthenticator(
         model: AuthenticatorModel,
     ): Interceptor =
@@ -93,6 +123,32 @@ class DeclarativeDestinationFactory(config: JsonNode?) {
     ): HttpRequestChecker =
         when (model) {
             is HttpRequestCheckerModel -> HttpRequestChecker(model.requester.toRequester())
+        }
+
+    private fun createOperationProvider(model: CatalogOperationModel): OperationProvider =
+        when (model) {
+            is CompositeCatalogOperationsModel ->
+                CompositeOperationProvider(model.operations.map { createOperationProvider(it) })
+            is StaticCatalogOperationModel ->
+                StaticOperationProvider(
+                    model.objectName,
+                    mapImportMode(model.destinationImportMode),
+                    JsonSchemaToAirbyteType(
+                            unionBehavior = JsonSchemaToAirbyteType.UnionBehavior.DEFAULT
+                        )
+                        .convert(model.schema),
+                    model.matchingKeys ?: emptyList()
+                )
+        }
+
+    private fun mapImportMode(
+        model: DestinationImportModeModel,
+    ): ImportType =
+        when (model) {
+            is InsertModel -> Append
+            is UpsertModel -> Dedupe(emptyList(), emptyList())
+            is UpdateModel -> Update
+            is SoftDeleteModel -> SoftDelete
         }
 
     fun BasicAccessAuthenticatorModel.toInterceptor(

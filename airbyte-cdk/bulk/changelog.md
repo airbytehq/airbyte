@@ -1,3 +1,15 @@
+## Version 0.1.30
+
+**Load CDK**
+
+* **Changed:** Low-code API destination support for statically defined discover operations
+
+## Version 0.1.29
+
+**Load CDK**
+
+* Use correct field name for generation ID meta column.
+
 ## Version 0.1.28
 
 **Extract CDK**
