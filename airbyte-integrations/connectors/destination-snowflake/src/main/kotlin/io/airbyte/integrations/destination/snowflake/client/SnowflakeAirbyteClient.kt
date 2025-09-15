@@ -11,7 +11,6 @@ import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNativeOperations
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableSqlOperations
 import io.airbyte.integrations.destination.snowflake.sql.COUNT_TOTAL_ALIAS
-import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import javax.sql.DataSource
@@ -89,8 +88,8 @@ class SnowflakeAirbyteClient(
         TODO("Not yet implemented")
     }
 
-    override suspend fun getGenerationId(tableName: TableName): Long {
-        return try {
+    override suspend fun getGenerationId(tableName: TableName): Long =
+        try {
             val sql = sqlGenerator.getGenerationId(tableName, GENERATION_ID_ALIAS)
             dataSource.connection.use { connection ->
                 val resultSet = connection.createStatement().executeQuery(sql)
@@ -106,7 +105,6 @@ class SnowflakeAirbyteClient(
             // Return 0 if we can't get the generation ID (similar to ClickHouse approach)
             0L
         }
-    }
 
     suspend fun createFileFormat() {
         execute(sqlGenerator.createFileFormat())
@@ -135,9 +133,6 @@ class SnowflakeAirbyteClient(
             return columns
         }
 
-    internal fun execute(query: String) {
-        return dataSource.connection.use { connection ->
-            connection.createStatement().executeQuery(query)
-        }
-    }
+    internal fun execute(query: String) =
+        dataSource.connection.use { connection -> connection.createStatement().executeQuery(query) }
 }

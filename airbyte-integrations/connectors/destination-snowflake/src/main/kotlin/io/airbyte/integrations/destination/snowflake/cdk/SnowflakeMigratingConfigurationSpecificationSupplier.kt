@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.snowflake.cdk
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.CONNECTOR_CONFIG_PREFIX
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
@@ -28,6 +29,51 @@ internal val PASSWORD_REGEX = "$PASSWORD_PROPERTY\\s*:\\s*\"([^\"}]*)".toRegex()
 
 private val logger = KotlinLogging.logger {}
 
+@VisibleForTesting
+fun migrateJson(json: String): String =
+    if (!json.contains(CREDENTIALS_PROPERTY) && json.contains(PASSWORD_PROPERTY)) {
+        migrateRootLevelPassword(json)
+    } else if (json.contains(CREDENTIALS_PROPERTY) && !json.contains(AUTH_TYPE_PROPERTY)) {
+        migrationMissingAuthType(json)
+    } else {
+        json
+    }
+
+internal fun migrationMissingAuthType(json: String): String {
+    logger.info {
+        "Detected legacy specification with credentials without auth type.  Attempting to migration configuration..."
+    }
+    val result = CREDENTIALS_REGEX.find(json)
+    return result?.let {
+        val credentials = result.groupValues[1]
+        val authType =
+            if (credentials.contains(PASSWORD_PROPERTY))
+                CredentialsSpecification.Type.USERNAME_PASSWORD.authTypeName
+            else CredentialsSpecification.Type.PRIVATE_KEY.authTypeName
+        json.replace(
+            CREDENTIALS_REGEX,
+            "$CREDENTIALS_PROPERTY:{$AUTH_TYPE_PROPERTY:\"$authType\",$credentials}"
+        )
+    }
+        ?: json
+}
+
+internal fun migrateRootLevelPassword(json: String): String {
+    logger.info {
+        "Detected legacy specification with root level password.  Attempting to migration configuration..."
+    }
+    val result = PASSWORD_REGEX.find(json)
+    return result?.let {
+        val password = result.groupValues[1]
+        json
+            .replace(
+                PASSWORD_REGEX,
+                "$CREDENTIALS_PROPERTY:{$AUTH_TYPE_PROPERTY:\"${CredentialsSpecification.Type.USERNAME_PASSWORD.authTypeName}\",$PASSWORD_PROPERTY:\"$password\"}"
+            )
+            .replace("}\"", "}")
+    }
+        ?: json
+}
 /**
  * This is a custom override of the [ConfigurationSpecificationSupplier] in the CDK in order to
  * handle multiple types of legacy configurations for the Snowflake destination and coerce them into
@@ -66,58 +112,7 @@ class SnowflakeMigratingConfigurationSpecificationSupplier(
                 )
             }
         }
-        val json: String = jsonPropertyValue ?: jsonMicronautFallback
-        return try {
-            if (!json.contains(CREDENTIALS_PROPERTY) && json.contains(PASSWORD_PROPERTY)) {
-                handleRootLevelPassword(json)
-            } else {
-                ValidatedJsonUtils.parseUnvalidated(json, specificationJavaClass)
-            }
-        } catch (e: ConfigErrorException) {
-            handleMissingAuthType(json = json, originalException = e)
-        }
-    }
-
-    private fun handleRootLevelPassword(json: String): SnowflakeSpecification {
-        logger.info {
-            "Detected legacy specification with root level password.  Attempting to update..."
-        }
-        val result = PASSWORD_REGEX.find(json)
-        val updatedJson =
-            result?.let {
-                val password = result.groupValues[1]
-                json
-                    .replace(
-                        PASSWORD_REGEX,
-                        "$CREDENTIALS_PROPERTY:{$AUTH_TYPE_PROPERTY:\"${CredentialsSpecification.Type.USERNAME_PASSWORD.authTypeName}\",$PASSWORD_PROPERTY:\"$password\"}"
-                    )
-                    .replace("}\"", "}")
-            }
-                ?: json
-        return ValidatedJsonUtils.parseUnvalidated(updatedJson, specificationJavaClass)
-    }
-
-    private fun handleMissingAuthType(
-        json: String,
-        originalException: Exception
-    ): SnowflakeSpecification {
-        logger.info {
-            "Detected legacy specification with credentials without auth type.  Attempting to update..."
-        }
-        val result = CREDENTIALS_REGEX.find(json)
-        return result?.let {
-            val credentials = result.groupValues[1]
-            val authType =
-                if (credentials.contains(PASSWORD_PROPERTY))
-                    CredentialsSpecification.Type.USERNAME_PASSWORD.authTypeName
-                else CredentialsSpecification.Type.PRIVATE_KEY.authTypeName
-            val updatedJson =
-                json.replace(
-                    CREDENTIALS_REGEX,
-                    "$CREDENTIALS_PROPERTY:{$AUTH_TYPE_PROPERTY:\"$authType\",$credentials}"
-                )
-            ValidatedJsonUtils.parseUnvalidated(updatedJson, specificationJavaClass)
-        }
-            ?: throw originalException
+        val json: String = migrateJson(jsonPropertyValue ?: jsonMicronautFallback)
+        return ValidatedJsonUtils.parseUnvalidated(json, specificationJavaClass)
     }
 }
