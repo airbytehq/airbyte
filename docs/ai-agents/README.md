@@ -27,7 +27,7 @@ Before using any Airbyte developer tools, ensure you have:
 Airbyte Embedded creates isolated workspaces for each of your customers, allowing them to configure their own data sources while keeping their data separate and secure. The Embedded Widget provides a pre-built UI component that handles the entire user onboarding flow, from authentication to source configuration.
 
 :::info
-Currently, S3 is the only supported destination for Airbyte Embedded. Additional destinations will be supported in the future.
+Currently, S3, Azure Blob Storage, Iceberge, and GCS are the only supported destinations for Airbyte Embedded. We find these destinations are the most ideal for an AI workflow by allowing a staging environment for your customers' data. From there you can leverage Airbyte to ingest into your data warehouse or lakehouse. Additional destinations will be supported in the future with Embedded.
 :::
 
 Once your Organization is enabled via Airbyte Embedded, you can begin onboarding customers via the Embedded Widget. You can download the code for the onboarding app [via GitHub](https://github.com/airbytehq/embedded-demoapp).
