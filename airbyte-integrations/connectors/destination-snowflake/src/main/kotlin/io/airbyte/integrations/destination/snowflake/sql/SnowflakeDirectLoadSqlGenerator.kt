@@ -56,6 +56,10 @@ class SnowflakeDirectLoadSqlGenerator(
         return "CREATE SCHEMA IF NOT EXISTS \"$namespace\"".andLog()
     }
 
+    fun useSchema(namespace: String): String {
+        return "USE SCHEMA \"$namespace\"".andLog()
+    }
+
     fun createTable(
         stream: DestinationStream,
         tableName: TableName,

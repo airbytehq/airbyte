@@ -13,6 +13,7 @@ import io.airbyte.cdk.load.orchestration.db.DefaultTempTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
 import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.integrations.destination.snowflake.cdk.SnowflakeMigratingConfigurationSpecificationSupplier
+import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.KeyPairAuthConfiguration
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfigurationFactory
@@ -96,7 +97,6 @@ class SnowflakeBeanFactory {
     @Requires(property = Operation.PROPERTY, notEquals = "spec")
     fun snowflakeDataSource(
         snowflakeConfiguration: SnowflakeConfiguration,
-        snowflakeSqlNameTransformer: SnowflakeSqlNameTransformer,
         @Named("snowflakePrivateKeyFileName")
         snowflakePrivateKeyFileName: String = PRIVATE_KEY_FILE_NAME,
         @Value("\${airbyte.edition:COMMUNITY}") airbyteEdition: String,
@@ -155,7 +155,7 @@ class SnowflakeBeanFactory {
                 addDataSourceProperty(DATA_SOURCE_PROPERTY_ROLE, snowflakeConfiguration.role)
                 addDataSourceProperty(
                     DATA_SOURCE_PROPERTY_SCHEMA,
-                    snowflakeSqlNameTransformer.transform(snowflakeConfiguration.schema)
+                    snowflakeConfiguration.schema.toSnowflakeCompatibleName()
                 )
                 addDataSourceProperty(
                     DATA_SOURCE_PROPERTY_NETWORK_TIMEOUT,
@@ -191,7 +191,6 @@ class SnowflakeBeanFactory {
     @Singleton
     fun snowflakeStreamingIngestClient(
         snowflakeConfiguration: SnowflakeConfiguration,
-        snowflakeSqlNameTransformer: SnowflakeSqlNameTransformer,
         @Named("snowflakePrivateKeyFileName") snowflakePrivateKeyFileName: String,
         @Value("\${airbyte.edition}") airbyteEdition: String,
     ): SnowflakeStreamingIngestClient {
@@ -204,10 +203,7 @@ class SnowflakeBeanFactory {
                 setProperty("role", snowflakeConfiguration.role)
                 setProperty("warehouse", snowflakeConfiguration.warehouse)
                 setProperty("database", snowflakeConfiguration.database)
-                setProperty(
-                    "schema",
-                    snowflakeSqlNameTransformer.transform(snowflakeConfiguration.schema)
-                )
+                setProperty("schema", snowflakeConfiguration.schema.toSnowflakeCompatibleName())
 
                 // Authentication
                 when (snowflakeConfiguration.authType) {

@@ -118,7 +118,9 @@ internal class SnowflakeAirbyteClientTest {
         runBlocking {
             client.createNamespace(namespace)
             verify(exactly = 1) { sqlGenerator.createNamespace(namespace) }
-            verify(exactly = 1) { mockConnection.close() }
+            verify(exactly = 1) { sqlGenerator.useSchema(namespace) }
+            verify(exactly = 1) { sqlGenerator.createFileFormat() }
+            verify(exactly = 3) { mockConnection.close() }
         }
     }
 
@@ -300,25 +302,6 @@ internal class SnowflakeAirbyteClientTest {
             val result = client.getGenerationId(tableName)
             assertEquals(0L, result)
             verify(exactly = 1) { sqlGenerator.getGenerationId(tableName, GENERATION_ID_ALIAS) }
-            verify(exactly = 1) { mockConnection.close() }
-        }
-    }
-
-    @Test
-    fun testCreateFileFormat() {
-        val resultSet = mockk<ResultSet>(relaxed = true)
-        val statement = mockk<Statement> { every { executeQuery(any()) } returns resultSet }
-        val mockConnection =
-            mockk<Connection> {
-                every { close() } just Runs
-                every { createStatement() } returns statement
-            }
-
-        every { dataSource.connection } returns mockConnection
-
-        runBlocking {
-            client.createFileFormat()
-            verify(exactly = 1) { sqlGenerator.createFileFormat() }
             verify(exactly = 1) { mockConnection.close() }
         }
     }

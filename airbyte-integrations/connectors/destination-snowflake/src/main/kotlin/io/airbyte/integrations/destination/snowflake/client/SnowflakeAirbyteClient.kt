@@ -28,6 +28,7 @@ class SnowflakeAirbyteClient(
     private val dataSource: DataSource,
     private val sqlGenerator: SnowflakeDirectLoadSqlGenerator,
 ) : AirbyteClient, DirectLoadTableSqlOperations, DirectLoadTableNativeOperations {
+
     override suspend fun countTable(tableName: TableName): Long? =
         try {
             dataSource.connection.use { connection ->
@@ -48,7 +49,12 @@ class SnowflakeAirbyteClient(
         }
 
     override suspend fun createNamespace(namespace: String) {
+        // Create the schema if it doesn't exist
         execute(sqlGenerator.createNamespace(namespace))
+        // Switch the context to the schema
+        execute(sqlGenerator.useSchema(namespace))
+        // Create the CSV file format in the schema if it does not exist
+        execute(sqlGenerator.createFileFormat())
     }
 
     override suspend fun createTable(
@@ -114,10 +120,6 @@ class SnowflakeAirbyteClient(
             // Return 0 if we can't get the generation ID (similar to ClickHouse approach)
             0L
         }
-
-    suspend fun createFileFormat() {
-        execute(sqlGenerator.createFileFormat())
-    }
 
     suspend fun createSnowflakeStage(tableName: TableName) {
         execute(sqlGenerator.createSnowflakeStage(tableName))

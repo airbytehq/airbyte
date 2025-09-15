@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.snowflake.check
 
-import io.airbyte.integrations.destination.snowflake.SnowflakeSqlNameTransformer
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.mockk.coEvery
@@ -20,9 +19,6 @@ internal class SnowflakeCheckerTest {
     fun testSuccessfulCheck() {
         val snowflakeAirbyteClient: SnowflakeAirbyteClient =
             mockk(relaxed = true) { coEvery { countTable(any()) } returns 1L }
-        val snowflakeSqlNameTransformer: SnowflakeSqlNameTransformer = mockk {
-            every { transform(any()) } answers { firstArg() }
-        }
 
         val testSchema = "test-schema"
         val snowflakeConfiguration: SnowflakeConfiguration = mockk {
@@ -33,7 +29,6 @@ internal class SnowflakeCheckerTest {
             SnowflakeChecker(
                 snowflakeAirbyteClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
-                snowflakeSqlNameTransformer = snowflakeSqlNameTransformer,
             )
         checker.check()
 
@@ -46,9 +41,6 @@ internal class SnowflakeCheckerTest {
     fun testUnsuccessfulCheck() {
         val snowflakeAirbyteClient: SnowflakeAirbyteClient =
             mockk(relaxed = true) { coEvery { countTable(any()) } returns 0L }
-        val snowflakeSqlNameTransformer: SnowflakeSqlNameTransformer = mockk {
-            every { transform(any()) } answers { firstArg() }
-        }
 
         val testSchema = "test-schema"
         val snowflakeConfiguration: SnowflakeConfiguration = mockk {
@@ -59,7 +51,6 @@ internal class SnowflakeCheckerTest {
             SnowflakeChecker(
                 snowflakeAirbyteClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
-                snowflakeSqlNameTransformer = snowflakeSqlNameTransformer,
             )
 
         assertThrows<IllegalArgumentException> { checker.check() }

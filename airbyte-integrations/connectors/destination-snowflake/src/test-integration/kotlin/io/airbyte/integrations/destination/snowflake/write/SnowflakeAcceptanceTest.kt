@@ -26,7 +26,6 @@ import io.airbyte.cdk.load.write.StronglyTyped
 import io.airbyte.cdk.load.write.UnionBehavior
 import io.airbyte.cdk.load.write.UnknownTypesBehavior
 import io.airbyte.integrations.destination.snowflake.SnowflakeBeanFactory
-import io.airbyte.integrations.destination.snowflake.SnowflakeSqlNameTransformer
 import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.CONFIG_WITH_AUTH_STAGING
 import io.airbyte.integrations.destination.snowflake.cdk.SnowflakeMigratingConfigurationSpecificationSupplier
 import io.airbyte.integrations.destination.snowflake.cdk.migrateJson
@@ -94,15 +93,16 @@ object SnowflakeDataCleaner : DestinationCleaner {
                 )
         val dataSource =
             SnowflakeBeanFactory()
-                .snowflakeDataSource(config, SnowflakeSqlNameTransformer(), airbyteEdition = "OSS")
+                .snowflakeDataSource(snowflakeConfiguration = config, airbyteEdition = "COMMUNITY")
         dataSource.connection.use { connection ->
             val statement = connection.createStatement()
             val schemas = connection.metaData.getSchemas(null, "TEST_%")
             while (schemas.next()) {
-                val schemaName = schemas.getString("TABLE_SCHEM")
+                val schemaName = schemas.getString("TABLE_SCHEMA")
                 statement.execute("DROP SCHEMA IF EXISTS \"$schemaName\" CASCADE")
             }
         }
+        dataSource.close()
     }
 }
 
@@ -144,7 +144,7 @@ class SnowflakeDataDumper(
         val config = configProvider(spec)
         val dataSource =
             SnowflakeBeanFactory()
-                .snowflakeDataSource(config, SnowflakeSqlNameTransformer(), airbyteEdition = "OSS")
+                .snowflakeDataSource(snowflakeConfiguration = config, airbyteEdition = "COMMUNITY")
 
         val output = mutableListOf<OutputRecord>()
 
@@ -182,6 +182,8 @@ class SnowflakeDataDumper(
                 }
             }
         }
+
+        dataSource.close()
 
         return output
     }

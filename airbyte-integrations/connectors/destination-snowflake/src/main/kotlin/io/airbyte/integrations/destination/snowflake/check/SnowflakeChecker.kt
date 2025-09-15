@@ -15,8 +15,8 @@ import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
-import io.airbyte.integrations.destination.snowflake.SnowflakeSqlNameTransformer
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
+import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeInsertBuffer
 import jakarta.inject.Singleton
@@ -30,7 +30,6 @@ internal const val CHECK_COLUMN_NAME = "test_key"
 class SnowflakeChecker(
     private val snowflakeAirbyteClient: SnowflakeAirbyteClient,
     private val snowflakeConfiguration: SnowflakeConfiguration,
-    private val snowflakeSqlNameTransformer: SnowflakeSqlNameTransformer,
 ) : DestinationCheckerV2 {
 
     override fun check() {
@@ -45,12 +44,10 @@ class SnowflakeChecker(
                 Meta.AirbyteMetaFields.GENERATION_ID.fieldName to AirbyteValue.from(0),
                 CHECK_COLUMN_NAME to AirbyteValue.from("test-value")
             )
-        val outputSchema = snowflakeSqlNameTransformer.transform(snowflakeConfiguration.schema)
+        val outputSchema = snowflakeConfiguration.schema.toSnowflakeCompatibleName()
         val tableName =
-            snowflakeSqlNameTransformer.transform(
-                "_airbyte_connection_test_${
-                UUID.randomUUID().toString().replace("-".toRegex(), "")}"
-            )
+            "_airbyte_connection_test_${
+                UUID.randomUUID().toString().replace("-".toRegex(), "")}".toSnowflakeCompatibleName()
         val qualifiedTableName = TableName(namespace = outputSchema, name = tableName)
         val destinationStream =
             DestinationStream(
