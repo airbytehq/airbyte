@@ -1,3 +1,9 @@
+airbyte:
+  destination:
+    core:
+      types:
+        unions: DEFAULT
+
 logger:
   levels:
     com.zaxxer.hikari: ERROR
