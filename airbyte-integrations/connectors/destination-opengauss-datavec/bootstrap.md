@@ -1,4 +1,4 @@
-# openGauss Datavec Destination Connector Bootstrap
+# openGauss DataVec Destination Connector Bootstrap
 
 This destination does three things:
 
@@ -10,4 +10,4 @@ The record processing is using the text split components from https://python.lan
 
 There are various possible providers for generating embeddings, delivered as part of the CDK (`airbyte_cdk.destinations.vector_db_based`).
 
-Embedded documents are stored in the openGauss Datavec vector database.
+Embedded documents are stored in the openGauss DataVec vector database.

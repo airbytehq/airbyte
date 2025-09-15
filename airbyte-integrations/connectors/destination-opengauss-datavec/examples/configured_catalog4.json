@@ -1,0 +1,19 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "this_is_a_very_long_stream_name_that_is_designed_to_exceed_the_sixty_three_character_limit_for_postgres",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": false,
+        "default_cursor_field": ["column_name"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append"
+    }
+  ]
+}

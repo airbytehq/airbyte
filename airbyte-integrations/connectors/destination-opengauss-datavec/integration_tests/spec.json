@@ -317,66 +317,51 @@
         "type": "object",
         "properties": {
           "host": {
-            "title": "Database Host",
-            "description": "The host of the openGauss database instance. ",
+            "title": "Host",
+            "description": "Hostname of the database.",
             "order": 1,
-            "examples": [
-              "localhost",
-              "my-opengauss-host.com",
-              "192.168.1.100"
-            ],
             "type": "string"
-          },
-          "port": {
-            "title": "Port",
-            "description": "The port of the openGauss database instance",
-            "default": 5432,
-            "order": 2,
-            "type": "integer"
           },
           "database": {
-            "title": "Database Name",
-            "description": "The database name to connect to",
-            "order": 3,
+            "title": "Database",
+            "description": "Enter the name of the database that you want to sync data into",
+            "order": 2,
+            "examples": ["AIRBYTE_DATABASE", "postgres"],
             "type": "string"
           },
-          "schema": {
-            "title": "Schema",
-            "description": "The schema to use for the tables",
-            "default": "public",
-            "order": 4,
-            "type": "string"
-          },
-
           "username": {
             "title": "Username",
-            "description": "Username for the openGauss database",
-            "order": 6,
+            "description": "Enter the name of the user you want to use to access the database",
+            "order": 3,
+            "examples": ["root"],
             "type": "string"
           },
           "password": {
             "title": "Password",
-            "description": "Password for the openGauss database",
+            "description": "Enter the password of the user you want to use to access the database",
+            "order": 4,
             "airbyte_secret": true,
-            "order": 7,
             "type": "string"
           },
-          "vector_field": {
-            "title": "Vector Field",
-            "description": "The field in the entity that contains the vector",
-            "default": "vector",
-            "type": "string"
+          "port": {
+            "title": "Port",
+            "description": "Enter the port you want to use to access the database",
+            "default": 5432,
+            "examples": ["5432"],
+            "type": "integer"
           },
-          "text_field": {
-            "title": "Text Field",
-            "description": "The field in the entity that contains the embedded text",
-            "default": "text",
+          "default_schema": {
+            "title": "Default Schema",
+            "description": "Enter the name of the default schema",
+            "default": "public",
+            "order": 6,
+            "examples": ["AIRBYTE_SCHEMA"],
             "type": "string"
           }
         },
-        "required": ["host", "port", "database", "username", "password"],
-        "group": "indexing",
-        "description": "Indexing configuration"
+        "required": ["host", "database", "username", "password"],
+        "description": "Indexing configuration",
+        "group": "indexing"
       }
     },
     "required": ["embedding", "processing", "indexing"],

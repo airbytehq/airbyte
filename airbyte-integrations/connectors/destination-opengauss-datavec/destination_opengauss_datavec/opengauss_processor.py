@@ -5,14 +5,11 @@ from __future__ import annotations
 
 import uuid
 from pathlib import Path
-from textwrap import dedent
-from typing import Any, Iterable, Union
-import contextlib
+from typing import Any, Union
 
 import dpath
 import sqlalchemy
 from airbyte.secrets import SecretString
-from airbyte.strategies import WriteStrategy
 from airbyte._processors.file.jsonl import JsonlWriter
 from airbyte_cdk.destinations.vector_db_based import embedder
 from airbyte_cdk.destinations.vector_db_based.document_processor import (
@@ -21,7 +18,12 @@ from airbyte_cdk.destinations.vector_db_based.document_processor import (
 from airbyte_cdk.destinations.vector_db_based.document_processor import (
     ProcessingConfigModel as DocumentSplitterConfig,
 )
-from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage
+from airbyte_cdk.models import AirbyteRecordMessage
+from sqlalchemy import (
+    insert,
+    select,
+    delete,
+)
 from overrides import overrides
 from typing_extensions import Protocol
 from destination_opengauss_datavec.common.catalog.catalog_providers import CatalogProvider
@@ -39,8 +41,6 @@ from opengauss_sqlalchemy.usertype import Vector
 
 # Import the SQL config base class
 from destination_opengauss_datavec.common.sql.sql_processor import SqlConfig, SqlProcessorBase
-
-
 
 
 class OpenGaussConfig(SqlConfig):
@@ -152,32 +152,27 @@ class OpenGaussDataVecProcessor(SqlProcessorBase):
         final_table_name: str,
     ) -> None:
         """Emulate the merge operation using a series of SQL commands."""
+        final_table = self._get_table_by_name(final_table_name)
+        temp_table = self._get_table_by_name(temp_table_name)
+
         columns_list: list[str] = list(
             self._get_sql_column_definitions(stream_name=stream_name).keys()
         )
 
-        delete_statement = dedent(
-            f"""
-            DELETE FROM {final_table_name}
-            WHERE {DOCUMENT_ID_COLUMN} IN (
-                SELECT {DOCUMENT_ID_COLUMN}
-                FROM {temp_table_name}
-            );
-            """
+        subquery = select(temp_table.c[DOCUMENT_ID_COLUMN])
+        delete_statement = delete(final_table).where(
+            final_table.c[DOCUMENT_ID_COLUMN].in_(subquery)
         )
-        append_statement = dedent(
-            f"""
-            INSERT INTO {final_table_name}
-                ({", ".join(columns_list)})
-            SELECT {", ".join(columns_list)}
-            FROM {temp_table_name};
-            """
+
+        select_all_from_temp = select(temp_table)
+        insert_statement = insert(final_table).from_select(
+            columns_list, select_all_from_temp
         )
 
         with self.get_sql_connection() as conn:
             # This is a transactional operation to avoid "outages"
             conn.execute(delete_statement)
-            conn.execute(append_statement)
+            conn.execute(insert_statement)
 
     def process_record_message(
         self,

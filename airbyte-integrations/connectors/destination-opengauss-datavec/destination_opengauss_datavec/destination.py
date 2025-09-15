@@ -77,7 +77,7 @@ class DestinationOpenGaussDataVec(Destination):
 
     def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
         return ConnectorSpecification(
-            documentationUrl="https://docs.airbyte.com/integrations/destinations/pgvector",
+            documentationUrl="https://docs.airbyte.com/integrations/destinations/opengauss-datavec",
             supportsIncremental=True,
             supported_destination_sync_modes=[DestinationSyncMode.overwrite, DestinationSyncMode.append, DestinationSyncMode.append_dedup],
             connectionSpecification=ConfigModel.schema(),  # type: ignore[attr-defined]

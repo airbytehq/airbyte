@@ -6,6 +6,8 @@ from __future__ import annotations
 import abc
 import contextlib
 import enum
+import hashlib
+import logging
 from contextlib import contextmanager
 from functools import cached_property
 from pathlib import Path
@@ -25,6 +27,8 @@ from pandas import Index
 from pydantic import BaseModel
 from sqlalchemy import Column, Table, and_, create_engine, insert, null, select, text, update
 from sqlalchemy.sql.elements import TextClause
+
+logger = logging.getLogger(__name__)
 
 from destination_opengauss_datavec.common.destinations.record_processor import RecordProcessorBase
 from destination_opengauss_datavec.common.state.state_writers import StdOutStateWriter
@@ -198,10 +202,27 @@ class SqlProcessorBase(RecordProcessorBase):
         table_prefix = self.sql_config.table_prefix
 
         # TODO: Add default prefix based on the source name.
+        long_name = f"{table_prefix}{stream_name}"
+        normalized_name = self.normalizer.normalize(long_name)
 
-        return self.normalizer.normalize(
-            f"{table_prefix}{stream_name}",
+        if len(normalized_name) <= 63:
+            return normalized_name
+
+        # The max length for an identifier in postgres is 63 characters.
+        # We use a part of the stream name for readability, and a hash for uniqueness to avoid collisions.
+        hash_suffix = hashlib.md5(normalized_name.encode("utf-8")).hexdigest()
+
+        # 63 characters max, 1 for the underscore, 32 for the hash
+        truncate_limit = 63 - 1 - 32
+
+        truncated_name = normalized_name[:truncate_limit]
+        short_name = f"{truncated_name}_{hash_suffix}"
+        logger.warning(
+            f"Table name '{normalized_name}' is too long ({len(normalized_name)} > 63). "
+            f"Truncating to '{short_name}'."
         )
+
+        return short_name
 
     @final
     def get_sql_table(
@@ -328,7 +349,22 @@ class SqlProcessorBase(RecordProcessorBase):
     ) -> str:
         """Return a new (unique) temporary table name."""
         batch_id = batch_id or str(ulid.ULID())
-        return self.normalizer.normalize(f"{stream_name}_{batch_id}")
+        long_name = f"{stream_name}_{batch_id}"
+        normalized_name = self.normalizer.normalize(long_name)
+
+        if len(normalized_name) <= 63:
+            return normalized_name
+
+        # The max length for an identifier in postgres is 63 characters.
+        # We use a part of the stream name for readability, and a hash for uniqueness to avoid collisions.
+        hash_suffix = hashlib.md5(normalized_name.encode("utf-8")).hexdigest()
+        
+        # 63 characters max, 1 for the underscore, 32 for the hash
+        truncate_limit = 63 - 1 - 32
+        
+        truncated_name = normalized_name[:truncate_limit]
+
+        return f"{truncated_name}_{hash_suffix}"
 
     def _fully_qualified(
         self,
