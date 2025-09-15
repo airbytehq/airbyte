@@ -11,21 +11,37 @@ import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationOperation
 import io.airbyte.cdk.load.command.SoftDelete
 import io.airbyte.cdk.load.command.Update
+import io.airbyte.cdk.load.data.BooleanType
 import io.airbyte.cdk.load.data.FieldType
+import io.airbyte.cdk.load.data.NumberType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
+import io.airbyte.cdk.load.http.HttpRequester
+import io.airbyte.cdk.load.http.Response
 import io.airbyte.cdk.load.http.authentication.BasicAccessAuthenticator
 import io.airbyte.cdk.load.model.checker.HttpRequestChecker
 import io.airbyte.cdk.load.model.destination_import_mode.Insert as InsertModel
 import io.airbyte.cdk.load.model.destination_import_mode.SoftDelete as SoftDeleteModel
 import io.airbyte.cdk.load.model.destination_import_mode.Update as UpdateModel
 import io.airbyte.cdk.load.model.destination_import_mode.Upsert as UpsertModel
+import io.airbyte.cdk.load.model.discover.ArrayType as ArrayTypeModel
+import io.airbyte.cdk.load.model.discover.BooleanType as BooleanTypeModel
 import io.airbyte.cdk.load.model.discover.CatalogOperation
 import io.airbyte.cdk.load.model.discover.CompositeCatalogOperations
+import io.airbyte.cdk.load.model.discover.DynamicCatalogOperation
+import io.airbyte.cdk.load.model.discover.DynamicDestinationObjects
+import io.airbyte.cdk.load.model.discover.FieldType as FieldTypeModel
+import io.airbyte.cdk.load.model.discover.InsertionMethod
+import io.airbyte.cdk.load.model.discover.NumberType as NumberTypeModel
+import io.airbyte.cdk.load.model.discover.SchemaConfiguration
 import io.airbyte.cdk.load.model.discover.StaticCatalogOperation
+import io.airbyte.cdk.load.model.discover.StaticDestinationObjects
+import io.airbyte.cdk.load.model.discover.StringType as StringTypeModel
+import io.airbyte.cdk.load.model.discover.TypesMap
 import io.airbyte.cdk.load.model.http.HttpMethod
-import io.airbyte.cdk.load.model.http.HttpRequester
+import io.airbyte.cdk.load.model.http.HttpRequester as HttpRequesterModel
 import io.airbyte.cdk.load.model.http.authenticator.BasicAccessAuthenticator as BasicAccessAuthenticatorModel
+import io.airbyte.cdk.load.model.retriever.Retriever
 import io.airbyte.cdk.load.model.spec.Spec
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.cdk.util.ResourceUtils
@@ -57,7 +73,7 @@ class DeclarativeDestinationFactoryTest {
             ManifestBuilder()
                 .withChecker(
                     HttpRequestChecker(
-                        HttpRequester(
+                        HttpRequesterModel(
                             url = "https://airbyte.io/",
                             method = HttpMethod.GET,
                             authenticator =
@@ -68,7 +84,7 @@ class DeclarativeDestinationFactoryTest {
                         ),
                     )
                 )
-                .withCompositeOperation(
+                .withCatalogOperation(
                     CompositeCatalogOperations(
                         operations =
                             listOf<CatalogOperation>(
@@ -152,7 +168,7 @@ class DeclarativeDestinationFactoryTest {
             ManifestBuilder()
                 .withChecker(
                     HttpRequestChecker(
-                        HttpRequester(
+                        HttpRequesterModel(
                             url = "https://airbyte.io/",
                             method = HttpMethod.GET,
                             authenticator =
@@ -163,7 +179,7 @@ class DeclarativeDestinationFactoryTest {
                         ),
                     )
                 )
-                .withCompositeOperation(
+                .withCatalogOperation(
                     CompositeCatalogOperations(
                         operations =
                             listOf<CatalogOperation>(
@@ -301,9 +317,309 @@ class DeclarativeDestinationFactoryTest {
         assertEquals(expectedOperations, actualOperations)
     }
 
+    @Test
+    internal fun `test dynamic operations with static destination objects`() {
+        val config =
+            Jsons.readTree("""{"api_id": "$VALID_API_ID", "api_token": "$VALID_API_TOKEN"}""")
+
+        val mockedResponse =
+            mapOf<String, Any>(
+                "properties" to
+                    listOf(
+                        mapOf("name" to "name", "type" to "string"),
+                        mapOf("name" to "breathingForm", "type" to "art"),
+                        mapOf("name" to "age", "type" to "numberlike")
+                    )
+            )
+
+        val objectsResponse: Response = mockk<Response>()
+        every { objectsResponse.statusCode } returns 200
+        every { objectsResponse.body } returns
+            createObjectsResponse(mockedResponse).byteInputStream(Charsets.UTF_8)
+        every { objectsResponse.close() } returns Unit
+
+        mockkConstructor(HttpRequester::class)
+        every { anyConstructed<HttpRequester>().send(any()) } returns objectsResponse
+
+        mockManifest(
+            ManifestBuilder()
+                .withChecker(
+                    HttpRequestChecker(
+                        HttpRequesterModel(
+                            url = "https://hashira.net/me",
+                            method = HttpMethod.GET,
+                            authenticator =
+                                BasicAccessAuthenticatorModel(
+                                    """{{ config["api_id"] }}""",
+                                    """{{ config["api_token"] }}""",
+                                ),
+                        ),
+                    )
+                )
+                .withCatalogOperation(
+                    DynamicCatalogOperation(
+                        objects = StaticDestinationObjects(objects = listOf("hashiras")),
+                        objectNamePath = emptyList(),
+                        schema =
+                            SchemaConfiguration(
+                                propertiesPath = listOf("properties"),
+                                propertyNamePath = listOf("name"),
+                                typePath = listOf("type"),
+                                typeMapping =
+                                    listOf(
+                                        TypesMap(
+                                            apiType = listOf("string", "art"),
+                                            airbyteType = listOf(StringTypeModel)
+                                        ),
+                                        TypesMap(
+                                            apiType = listOf("numberlike"),
+                                            airbyteType = listOf(NumberTypeModel)
+                                        ),
+                                        TypesMap(
+                                            apiType = listOf("array"),
+                                            airbyteType =
+                                                listOf(
+                                                    ArrayTypeModel(
+                                                        items =
+                                                            FieldTypeModel(StringTypeModel, true)
+                                                    )
+                                                )
+                                        ),
+                                    )
+                            ),
+                        schemaRetriever =
+                            Retriever(
+                                httpRequester =
+                                    HttpRequesterModel(
+                                        url = "https://hashira.net/object_schemas",
+                                        method = HttpMethod.GET,
+                                        authenticator =
+                                            BasicAccessAuthenticatorModel(
+                                                username = "username",
+                                                password = "password",
+                                            )
+                                    ),
+                                selector = listOf("properties")
+                            ),
+                        insertionMethods =
+                            listOf(
+                                InsertionMethod(
+                                    destinationImportMode = InsertModel,
+                                    availabilityPredicate = "{{ true }}",
+                                    matchingKeyPredicate = "{{ property['type'] != 'ignore_me' }}",
+                                    requiredPredicate = ""
+                                )
+                            )
+                    )
+                )
+                .build()
+        )
+
+        val expectedOperations =
+            listOf(
+                DestinationOperation(
+                    "hashiras",
+                    Append,
+                    ObjectType(
+                        properties =
+                            linkedMapOf(
+                                "name" to FieldType(StringType, true),
+                                "breathingForm" to FieldType(StringType, true),
+                                "age" to FieldType(NumberType, true),
+                            ),
+                        additionalProperties = false,
+                        required = emptyList(),
+                    ),
+                    matchingKeys = listOf(listOf("name"), listOf("breathingForm"), listOf("age")),
+                ),
+            )
+
+        try {
+            val actualOperations =
+                DeclarativeDestinationFactory(config).createOperationProvider().get()
+            assertEquals(expectedOperations, actualOperations)
+        } finally {
+            unmockkStatic("io.airbyte.cdk.util.ResourceUtils") // Clean up mocks
+        }
+    }
+
+    @Test
+    internal fun `test dynamic operations with dynamic destination objects`() {
+        val config =
+            Jsons.readTree("""{"api_id": "$VALID_API_ID", "api_token": "$VALID_API_TOKEN"}""")
+
+        val objectsMockBody =
+            mapOf<String, Any>(
+                "results" to
+                    listOf(
+                        mapOf(
+                            "name" to "breathingStyle",
+                        ),
+                    )
+            )
+
+        val schemaMockBody =
+            mapOf<String, Any>(
+                "properties" to
+                    listOf(
+                        mapOf("name" to "name", "type" to "string"),
+                        mapOf("name" to "isMainStyle", "type" to "bool"),
+                        mapOf("name" to "numberOfForms", "type" to "numberlike")
+                    )
+            )
+
+        val objectsResponse: Response = mockk<Response>()
+        every { objectsResponse.statusCode } returns 200
+        every { objectsResponse.body } returns
+            createObjectsResponse(objectsMockBody).byteInputStream(Charsets.UTF_8)
+        every { objectsResponse.close() } returns Unit
+
+        val schemaResponse: Response = mockk<Response>()
+        every { schemaResponse.statusCode } returns 200
+        every { schemaResponse.body } returns
+            createObjectsResponse(schemaMockBody).byteInputStream(Charsets.UTF_8)
+        every { schemaResponse.close() } returns Unit
+
+        // Not a fan because this just brute force mocks one request after the other
+        mockkConstructor(HttpRequester::class)
+        every { anyConstructed<HttpRequester>().send(any()) } returnsMany
+            listOf(objectsResponse, schemaResponse)
+
+        // This feels kind of jank to have to mock based on the incoming url parameter of the
+        // constructor, but we shouldn't check the url during send() because its private.
+        // Ideally this should mock based on the url field, but maybest instead mock the HttpClient
+        // instance instead. i'm looking into a better way
+        //        every {
+        //            constructedWith<HttpRequester>(
+        //                any(),
+        //                any(),
+        //                EqMatcher("https://hashira.net/objects")
+        //            ).send(any())
+        //        } returns objectsResponse
+        //        every {
+        //            constructedWith<HttpRequester>(
+        //                any(),
+        //                any(),
+        //                EqMatcher("https://hashira.net/object_schemas")
+        //            ).send(any())
+        //        } returns schemaResponse
+
+        mockManifest(
+            ManifestBuilder()
+                .withChecker(
+                    HttpRequestChecker(
+                        HttpRequesterModel(
+                            url = "https://hashira.net/me",
+                            method = HttpMethod.GET,
+                            authenticator =
+                                BasicAccessAuthenticatorModel(
+                                    """{{ config["api_id"] }}""",
+                                    """{{ config["api_token"] }}""",
+                                ),
+                        ),
+                    )
+                )
+                .withCatalogOperation(
+                    DynamicCatalogOperation(
+                        objects =
+                            DynamicDestinationObjects(
+                                retriever =
+                                    Retriever(
+                                        httpRequester =
+                                            HttpRequesterModel(
+                                                url = "https://hashira.net/objects",
+                                                method = HttpMethod.GET,
+                                            ),
+                                        selector = listOf("results")
+                                    ),
+                                namePath = listOf("name"),
+                            ),
+                        objectNamePath = listOf("name"), // todo: confirm what this is used for
+                        schema =
+                            SchemaConfiguration(
+                                propertiesPath = listOf("properties"),
+                                propertyNamePath = listOf("name"),
+                                typePath = listOf("type"),
+                                typeMapping =
+                                    listOf(
+                                        TypesMap(
+                                            apiType = listOf("string", ""),
+                                            airbyteType = listOf(StringTypeModel)
+                                        ),
+                                        TypesMap(
+                                            apiType = listOf("bool"),
+                                            airbyteType = listOf(BooleanTypeModel)
+                                        ),
+                                        TypesMap(
+                                            apiType = listOf("numberlike"),
+                                            airbyteType = listOf(NumberTypeModel)
+                                        ),
+                                    )
+                            ),
+                        schemaRetriever =
+                            Retriever(
+                                httpRequester =
+                                    HttpRequesterModel(
+                                        url = "https://hashira.net/object_schemas",
+                                        method = HttpMethod.GET,
+                                        authenticator =
+                                            BasicAccessAuthenticatorModel(
+                                                username = "username",
+                                                password = "password",
+                                            )
+                                    ),
+                                selector = listOf("properties")
+                            ),
+                        insertionMethods =
+                            listOf(
+                                InsertionMethod(
+                                    destinationImportMode = InsertModel,
+                                    availabilityPredicate = "{{ true }}",
+                                    matchingKeyPredicate = "{{ property['type'] != 'ignore_me' }}",
+                                    requiredPredicate = ""
+                                )
+                            )
+                    )
+                )
+                .build()
+        )
+
+        val expectedOperations =
+            listOf(
+                DestinationOperation(
+                    "breathingStyle",
+                    Append,
+                    ObjectType(
+                        properties =
+                            linkedMapOf(
+                                "name" to FieldType(StringType, true),
+                                "isMainStyle" to FieldType(BooleanType, true),
+                                "numberOfForms" to FieldType(NumberType, true),
+                            ),
+                        additionalProperties = false,
+                        required = emptyList(),
+                    ),
+                    matchingKeys =
+                        listOf(listOf("name"), listOf("isMainStyle"), listOf("numberOfForms")),
+                ),
+            )
+
+        try {
+            val actualOperations =
+                DeclarativeDestinationFactory(config).createOperationProvider().get()
+            assertEquals(expectedOperations, actualOperations)
+        } finally {
+            unmockkStatic("io.airbyte.cdk.util.ResourceUtils") // Clean up mocks
+        }
+    }
+
     private fun mockManifest(manifestContent: String) {
         // Mock ResourceUtils to return our test manifest
         mockkStatic("io.airbyte.cdk.util.ResourceUtils")
         every { ResourceUtils.readResource("manifest.yaml") } returns manifestContent
+    }
+
+    private fun createObjectsResponse(responseBody: Map<String, Any>): String {
+        return ObjectMapper().writeValueAsString(responseBody)
     }
 }

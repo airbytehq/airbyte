@@ -19,7 +19,6 @@ import io.airbyte.cdk.load.write.dlq.DlqPipelineFactory
 import io.airbyte.cdk.load.write.object_storage.ObjectLoader
 import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.cdk.util.Jsons
-import io.airbyte.integrations.destination.hubspot.http.HubSpotOperationRepository
 import io.airbyte.integrations.destination.hubspot.io.airbyte.integrations.destination.hubspot.http.HubSpotObjectTypeIdMapper
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Primary
@@ -47,8 +46,9 @@ class HubSpotBeanFactory {
         DeclarativeDestinationFactory(Jsons.readTree(jsonPropertyValue))
 
     @Singleton
-    fun discover(httpClient: HttpClient): HubSpotDiscoverer {
-        return HubSpotDiscoverer(HubSpotOperationRepository(httpClient))
+    fun discover(factory: DeclarativeDestinationFactory): HubSpotDiscoverer {
+        return HubSpotDiscoverer(factory.createOperationProvider())
+        // return HubSpotDiscoverer(HubSpotOperationRepository(httpClient))
     }
 
     @Singleton fun getConfig(config: DestinationConfiguration) = config as HubSpotConfiguration

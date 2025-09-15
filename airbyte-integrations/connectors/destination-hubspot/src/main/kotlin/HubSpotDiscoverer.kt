@@ -6,11 +6,11 @@ package io.airbyte.integrations.destination.hubspot
 
 import io.airbyte.cdk.load.command.DestinationDiscoverCatalog
 import io.airbyte.cdk.load.discover.DestinationDiscoverer
-import io.airbyte.integrations.destination.hubspot.http.HubSpotOperationRepository
+import io.airbyte.cdk.load.discoverer.operation.OperationProvider
 
-class HubSpotDiscoverer(private val operationRepository: HubSpotOperationRepository) :
-    DestinationDiscoverer {
+class HubSpotDiscoverer(private val operationProvider: OperationProvider) : DestinationDiscoverer {
     override fun discover(): DestinationDiscoverCatalog {
-        return DestinationDiscoverCatalog(operationRepository.fetchAll())
+        return DestinationDiscoverCatalog(operationProvider.get())
+        // return DestinationDiscoverCatalog(operationRepository.fetchAll())
     }
 }

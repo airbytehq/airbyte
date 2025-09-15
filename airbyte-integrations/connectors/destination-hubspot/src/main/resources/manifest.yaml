@@ -12,3 +12,151 @@ checker:
       refresh_token: '{{ config["credentials"]["refresh_token"] }}'
 spec:
   connection_specification: {}
+discover:
+  type: CompositeCatalogOperations
+  operations:
+    - type: DynamicCatalogOperation
+      objects:
+        type: StaticDestinationObjects
+        objects:
+          - CONTACT
+      object_name_path:
+        - name
+      schema_retriever:
+        type: Retriever
+        http_requester:
+          type: HttpRequester
+          url: https://api.hubapi.com/crm/v3/schemas/{{ object["name"] }}
+          method: GET
+          authenticator:
+            type: OAuthAuthenticator
+            url: https://api.hubapi.com/oauth/v1/token
+            client_id: '{{ config["credentials"]["client_id"] }}'
+            client_secret: '{{ config["credentials"]["client_secret"] }}'
+            refresh_token: '{{ config["credentials"]["refresh_token"] }}'
+        selector: []
+      schema:
+        type: SchemaConfiguration
+        properties_path: ["properties"]
+        property_name_path: ["name"]
+        type_path: ["type"]
+        type_mapping:
+          - type: TypesMap
+            api_type: ["string", "enumeration", "phone_number"]
+            airbyte_type: ["string"]
+          - type: TypesMap
+            api_type: ["number"]
+            airbyte_type: ["number"]
+          - type: TypesMap
+            api_type: ["bool"]
+            airbyte_type: ["boolean"]
+          - type: TypesMap
+            api_type: ["date"]
+            airbyte_type: ["date"]
+          - type: TypesMap
+            api_type: ["datetime"]
+            airbyte_type: ["timestamp_with_timezone"]
+      insertion_methods:
+        - type: InsertionMethod
+          destination_import_mode:
+            type: Dedupe
+          availability_predicate: '{{ property["type"] != "object_coordinates" && property["modificationMetadata"]["readOnlyValue"] == false && property["calculated"] == false }}'
+          matching_key_predicate: '{{ property["name"] == "email" }}'
+          required_predicate: "{{ false }}"
+    - type: DynamicCatalogOperation
+      objects:
+        type: StaticDestinationObjects
+        objects:
+          - COMPANY
+          - DEAL
+      object_name_path:
+        - name
+      schema_retriever:
+        type: Retriever
+        http_requester:
+          type: HttpRequester
+          url: https://api.hubapi.com/crm/v3/schemas/{{ object["name"] }}
+          method: GET
+          authenticator:
+            type: OAuthAuthenticator
+            url: https://api.hubapi.com/oauth/v1/token
+            client_id: '{{ config["credentials"]["client_id"] }}'
+            client_secret: '{{ config["credentials"]["client_secret"] }}'
+            refresh_token: '{{ config["credentials"]["refresh_token"] }}'
+        selector: []
+      schema:
+        type: SchemaConfiguration
+        properties_path: ["properties"]
+        property_name_path: ["name"]
+        type_path: ["type"]
+        type_mapping:
+          - type: TypesMap
+            api_type: ["string", "enumeration", "phone_number"]
+            airbyte_type: ["string"]
+          - type: TypesMap
+            api_type: ["number"]
+            airbyte_type: ["number"]
+          - type: TypesMap
+            api_type: ["bool"]
+            airbyte_type: ["boolean"]
+          - type: TypesMap
+            api_type: ["date"]
+            airbyte_type: ["date"]
+          - type: TypesMap
+            api_type: ["datetime"]
+            airbyte_type: ["timestamp_with_timezone"]
+      insertion_methods:
+        - type: InsertionMethod
+          destination_import_mode:
+            type: Dedupe
+          availability_predicate: '{{ property["type"] != "object_coordinates" && property["modificationMetadata"]["readOnlyValue"] == false && property["calculated"] == false }}'
+          matching_key_predicate: '{{ property["hasUniqueValue"] && property["modificationMetadata"]["readOnlyValue"] == false }}'
+          required_predicate: "{{ false }}"
+    - type: DynamicCatalogOperation
+      objects:
+        type: DynamicDestinationObjects
+        retriever:
+          type: Retriever
+          http_requester:
+            type: HttpRequester
+            url: https://api.hubapi.com/crm/v3/schemas/{{ object["name"] }}
+            method: GET
+            authenticator:
+              type: OAuthAuthenticator
+              url: https://api.hubapi.com/oauth/v1/token
+              client_id: '{{ config["credentials"]["client_id"] }}'
+              client_secret: '{{ config["credentials"]["client_secret"] }}'
+              refresh_token: '{{ config["credentials"]["refresh_token"] }}'
+          selector: ["results"]
+      object_name_path:
+        - name
+      schema:
+        type: SchemaConfiguration
+        properties_path: ["properties"]
+        property_name_path: ["name"]
+        type_path: ["type"]
+        type_mapping:
+          - type: TypesMap
+            api_type: ["string", "enumeration", "phone_number"]
+            airbyte_type:
+              - type: string
+          - type: TypesMap
+            api_type: ["number"]
+            airbyte_type:
+              - type: number
+          - type: TypesMap
+            api_type: ["bool"]
+            airbyte_type: ["boolean"]
+          - type: TypesMap
+            api_type: ["date"]
+            airbyte_type: ["date"]
+          - type: TypesMap
+            api_type: ["datetime"]
+            airbyte_type: ["timestamp_with_timezone"]
+      insertion_methods:
+        - type: InsertionMethod
+          destination_import_mode:
+            type: Dedupe
+          availability_predicate: '{{ property["type"] != "object_coordinates" && property["modificationMetadata"]["readOnlyValue"] == false && property["calculated"] == false }}'
+          matching_key_predicate: '{{ property["hasUniqueValue"] && property["modificationMetadata"]["readOnlyValue"] == false }}'
+          required_predicate: "{{ false }}"
