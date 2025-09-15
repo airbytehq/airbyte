@@ -72,3 +72,9 @@ Sync summary: {
 In most cases, it's important to repair rejected records if you can. They may contain valuable data that you want to sync, and in large numbers, can erode the effectiveness of your data activation initiative.
 
 You can repair rejected records in your source data warehouse or the upstream source that syncs to your data warehouse. Once you repair them, Airbyte can process them again during your next sync.
+
+## Limitations
+
+Some source connectors do not support sending statistics with the Full Refresh sync mode. As a result, the Airbyte Platform cannot count rejected records when these sources are used for data activation amd the Full Refresh sync mode has been selected. This limitation does not apply to Incremental syncs.
+
+If you have configured an S3 bucket for rejected records, they will still end up there. This limitation only affects the rejected record count that is visible in the Airbyte UI.
