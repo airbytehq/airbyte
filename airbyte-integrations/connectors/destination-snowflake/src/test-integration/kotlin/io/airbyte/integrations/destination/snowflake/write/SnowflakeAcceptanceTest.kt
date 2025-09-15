@@ -9,6 +9,8 @@ import com.fasterxml.jackson.databind.node.ArrayNode
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.EnvVarConstants.AIRBYTE_EDITION
+import io.airbyte.cdk.load.config.DataChannelFormat
+import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.message.Meta
@@ -36,10 +38,14 @@ import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.nio.file.Files
 import java.nio.file.Path
 
-class SnowflakeInsertAcceptanceTest : SnowflakeAcceptanceTest(Path.of(INTERNAL_STAGING_CREDS))
+internal val CONFIG_PATH = Path.of(INTERNAL_STAGING_CREDS)
+
+class SnowflakeInsertAcceptanceTest : SnowflakeAcceptanceTest(configPath = CONFIG_PATH)
 
 abstract class SnowflakeAcceptanceTest(
     configPath: Path,
+    dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
+    dataChannelFormat: DataChannelFormat = DataChannelFormat.JSONL,
 ) :
     BasicFunctionalityIntegrationTest(
         configContents = Files.readString(configPath),
@@ -48,7 +54,7 @@ abstract class SnowflakeAcceptanceTest(
             SnowflakeDataDumper { spec ->
                 SnowflakeConfigurationFactory().make(spec as SnowflakeSpecification)
             },
-        destinationCleaner = SnowflakeDataCleaner(configPath),
+        destinationCleaner = SnowflakeDataCleaner,
         isStreamSchemaRetroactive = true,
         dedupBehavior = DedupBehavior(DedupBehavior.CdcDeletionMode.HARD_DELETE),
         stringifySchemalessObjects = true,
@@ -72,16 +78,19 @@ abstract class SnowflakeAcceptanceTest(
         dedupChangeUsesDefault = false,
         testSpeedModeStatsEmission = false,
         configUpdater = SnowflakeMigrationConfigurationUpdater(),
-        micronautProperties = mapOf(AIRBYTE_EDITION to "CLOUD"),
+        micronautProperties = mapOf(AIRBYTE_EDITION to "OSS"),
+        dataChannelMedium = dataChannelMedium,
+        dataChannelFormat = dataChannelFormat,
+        mismatchedTypesUnrepresentable = false,
     )
 
-class SnowflakeDataCleaner(private val configPath: Path) : DestinationCleaner {
+object SnowflakeDataCleaner : DestinationCleaner {
     override fun cleanup() {
         val config =
             SnowflakeConfigurationFactory()
                 .make(
                     SnowflakeMigratingConfigurationSpecificationSupplier(
-                            Files.readString(configPath)
+                            Files.readString(CONFIG_PATH)
                         )
                         .get()
                 )
