@@ -1,0 +1,182 @@
+{
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "description": "The unique identifier of the company location",
+      "type": ["null", "integer"]
+    },
+    "admin_graphql_api_id": {
+      "description": "The unique identifier of the company location in the GraphQL Admin API",
+      "type": ["null", "string"]
+    },
+    "name": {
+      "description": "The name of the company location",
+      "type": ["null", "string"]
+    },
+    "external_id": {
+      "description": "External identifier for the company location",
+      "type": ["null", "string"]
+    },
+    "note": {
+      "description": "Additional notes about the company location",
+      "type": ["null", "string"]
+    },
+    "company": {
+      "description": "The parent company information",
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "description": "The unique identifier of the parent company",
+          "type": ["null", "integer"]
+        },
+        "name": {
+          "description": "The name of the parent company",
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "billing_address": {
+      "description": "Billing address for the company location",
+      "type": ["null", "object"],
+      "properties": {
+        "first_name": {
+          "description": "First name on the billing address",
+          "type": ["null", "string"]
+        },
+        "last_name": {
+          "description": "Last name on the billing address",
+          "type": ["null", "string"]
+        },
+        "company": {
+          "description": "Company name on the billing address",
+          "type": ["null", "string"]
+        },
+        "address1": {
+          "description": "First line of the billing address",
+          "type": ["null", "string"]
+        },
+        "address2": {
+          "description": "Second line of the billing address",
+          "type": ["null", "string"]
+        },
+        "city": {
+          "description": "City of the billing address",
+          "type": ["null", "string"]
+        },
+        "province": {
+          "description": "Province or state of the billing address",
+          "type": ["null", "string"]
+        },
+        "country": {
+          "description": "Country of the billing address",
+          "type": ["null", "string"]
+        },
+        "zip": {
+          "description": "Postal or ZIP code of the billing address",
+          "type": ["null", "string"]
+        },
+        "phone": {
+          "description": "Phone number for the billing address",
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "shipping_address": {
+      "description": "Shipping address for the company location",
+      "type": ["null", "object"],
+      "properties": {
+        "first_name": {
+          "description": "First name on the shipping address",
+          "type": ["null", "string"]
+        },
+        "last_name": {
+          "description": "Last name on the shipping address",
+          "type": ["null", "string"]
+        },
+        "company": {
+          "description": "Company name on the shipping address",
+          "type": ["null", "string"]
+        },
+        "address1": {
+          "description": "First line of the shipping address",
+          "type": ["null", "string"]
+        },
+        "address2": {
+          "description": "Second line of the shipping address",
+          "type": ["null", "string"]
+        },
+        "city": {
+          "description": "City of the shipping address",
+          "type": ["null", "string"]
+        },
+        "province": {
+          "description": "Province or state of the shipping address",
+          "type": ["null", "string"]
+        },
+        "country": {
+          "description": "Country of the shipping address",
+          "type": ["null", "string"]
+        },
+        "zip": {
+          "description": "Postal or ZIP code of the shipping address",
+          "type": ["null", "string"]
+        },
+        "phone": {
+          "description": "Phone number for the shipping address",
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "currency": {
+      "description": "The currency associated with the company location",
+      "type": ["null", "string"]
+    },
+    "market": {
+      "description": "Market information for the company location",
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "description": "The unique identifier of the market",
+          "type": ["null", "integer"]
+        },
+        "name": {
+          "description": "The name of the market",
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "total_spent": {
+      "description": "Total amount spent by the company location",
+      "type": ["null", "object"],
+      "properties": {
+        "amount": {
+          "description": "The monetary amount",
+          "type": ["null", "string"]
+        },
+        "currency_code": {
+          "description": "The currency code",
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "orders_count": {
+      "description": "Total number of orders placed by the company location",
+      "type": ["null", "integer"]
+    },
+    "created_at": {
+      "description": "The date and time when the company location was created",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "description": "The date and time when the company location was last updated",
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "shop_url": {
+      "description": "URL of the associated shop",
+      "type": ["null", "string"]
+    }
+  }
+}
