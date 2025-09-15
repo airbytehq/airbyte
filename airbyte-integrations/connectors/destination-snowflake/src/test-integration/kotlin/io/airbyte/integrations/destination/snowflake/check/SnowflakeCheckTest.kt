@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.snowflake.check
 import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.load.check.CheckIntegrationTest
 import io.airbyte.cdk.load.check.CheckTestConfig
-import io.airbyte.cdk.load.command.EnvVarConstants.AIRBYTE_EDITION
 import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.INTERNAL_STAGING_CREDS
 import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.getConfig
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeSpecification
