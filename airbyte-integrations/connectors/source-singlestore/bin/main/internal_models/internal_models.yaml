@@ -1,0 +1,48 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+title: SingleStore Models
+type: object
+description: SingleStore Models
+properties:
+  state_type:
+    "$ref": "#/definitions/StateType"
+  primary_key_state:
+    "$ref": "#/definitions/PrimaryKeyLoadStatus"
+  cursor_based_state:
+    "$ref": "#/definitions/CursorBasedStatus"
+definitions:
+  StateType:
+    description: Enum to define the sync mode of state.
+    type: string
+    enum:
+      - cursor_based
+      - primary_key
+  CursorBasedStatus:
+    type: object
+    extends:
+      type: object
+      existingJavaType: "io.airbyte.cdk.integrations.source.relationaldb.models.DbStreamState"
+    properties:
+      state_type:
+        "$ref": "#/definitions/StateType"
+      version:
+        description: Version of state.
+        type: integer
+  PrimaryKeyLoadStatus:
+    type: object
+    properties:
+      version:
+        description: Version of state.
+        type: integer
+      state_type:
+        "$ref": "#/definitions/StateType"
+      pk_name:
+        description: primary key name
+        type: string
+      pk_val:
+        description: primary key watermark
+        type: string
+      incremental_state:
+        description: State to switch to after completion of primary key initial sync
+        type: object
+        existingJavaType: com.fasterxml.jackson.databind.JsonNode

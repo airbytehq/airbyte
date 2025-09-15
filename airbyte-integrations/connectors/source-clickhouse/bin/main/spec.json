@@ -1,0 +1,60 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/clickhouse",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "ClickHouse Source Spec",
+    "type": "object",
+    "required": ["host", "port", "database", "username"],
+    "properties": {
+      "host": {
+        "description": "The host endpoint of the Clickhouse cluster.",
+        "title": "Host",
+        "type": "string",
+        "order": 0
+      },
+      "port": {
+        "description": "The port of the database.",
+        "title": "Port",
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 65536,
+        "default": 8123,
+        "examples": ["8123"],
+        "order": 1
+      },
+      "database": {
+        "description": "The name of the database.",
+        "title": "Database",
+        "type": "string",
+        "examples": ["default"],
+        "order": 2
+      },
+      "username": {
+        "description": "The username which is used to access the database.",
+        "title": "Username",
+        "type": "string",
+        "order": 3
+      },
+      "password": {
+        "description": "The password associated with this username.",
+        "title": "Password",
+        "type": "string",
+        "airbyte_secret": true,
+        "order": 4
+      },
+      "jdbc_url_params": {
+        "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (Eg. key1=value1&key2=value2&key3=value3). For more information read about <a href=\"https://jdbc.postgresql.org/documentation/head/connect.html\">JDBC URL parameters</a>.",
+        "title": "JDBC URL Parameters (Advanced)",
+        "type": "string",
+        "order": 5
+      },
+      "ssl": {
+        "title": "SSL Connection",
+        "description": "Encrypt data using SSL.",
+        "type": "boolean",
+        "default": true,
+        "order": 6
+      }
+    }
+  }
+}

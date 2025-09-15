@@ -365,7 +365,10 @@ class Leads(MarketoExportBase):
 
     @property
     def stream_fields(self):
-        standard_properties = set(self.get_json_schema()["properties"])
+        """
+        Return all available fields from Marketo API, including custom fields.
+        This replaces the previous behavior of intersecting with static schema.
+        """
         resp = self._session.get(f"{self._url_base}rest/v1/leads/describe.json", headers=self._session.auth.get_auth_header())
 
         available_fields = set()
@@ -379,13 +382,84 @@ class Leads(MarketoExportBase):
 
         if not available_fields:
             self.logger.warning("No valid fields found in leads/describe response")
+            # Fall back to basic fields if API call fails
+            return ["id", "updatedAt", "createdAt", "email", "firstName", "lastName"]
 
-        return list(standard_properties & available_fields)
+        return list(available_fields)
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        # TODO: make schema truly dynamic like in stream Activities
-        #  now blocked by https://github.com/airbytehq/airbyte/issues/30530 due to potentially > 500 fields in schema (can cause OOM)
-        return super().get_json_schema()
+        """
+        Generate dynamic schema based on available fields from Marketo API.
+        This enables support for custom fields in addition to standard fields.
+        """
+        # Start with base properties that are always present
+        properties = {
+            "id": {"type": ["integer", "null"], "description": "The unique identifier for the lead."},
+            "updatedAt": {"type": ["string", "null"], "format": "date-time", "description": "The timestamp when the lead was last updated."},
+            "createdAt": {"type": ["string", "null"], "format": "date-time", "description": "The timestamp when the lead was created."}
+        }
+        
+        try:
+            # Fetch field descriptions from Marketo API
+            resp = self._session.get(
+                f"{self._url_base}rest/v1/leads/describe.json", 
+                headers=self._session.auth.get_auth_header()
+            )
+            
+            if resp.status_code == 200:
+                result = resp.json().get("result", [])
+                
+                for field_info in result:
+                    rest = field_info.get("rest")
+                    if not rest or "name" not in rest:
+                        continue  # Skip SOAP-only fields
+                    
+                    field_name = rest["name"]
+                    data_type = rest.get("dataType", "string")
+                    
+                    # Map Marketo data types to JSON schema types
+                    if data_type in ["integer", "score", "percent"]:
+                        field_schema = {"type": ["integer", "null"]}
+                    elif data_type in ["float", "currency"]:
+                        field_schema = {"type": ["number", "null"]}
+                    elif data_type == "boolean":
+                        field_schema = {"type": ["boolean", "null"]}
+                    elif data_type == "date":
+                        field_schema = {"type": ["string", "null"], "format": "date"}
+                    elif data_type == "datetime":
+                        field_schema = {"type": ["string", "null"], "format": "date-time"}
+                    elif data_type == "email":
+                        field_schema = {"type": ["string", "null"], "format": "email"}
+                    elif data_type == "url":
+                        field_schema = {"type": ["string", "null"], "format": "uri"}
+                    else:
+                        # Default to string for text, textarea, phone, etc.
+                        field_schema = {"type": ["string", "null"]}
+                    
+                    # Add description if available
+                    display_name = rest.get("displayName", field_name)
+                    field_schema["description"] = f"The {display_name.lower()} field."
+                    
+                    properties[field_name] = field_schema
+                    
+            else:
+                self.logger.warning(f"Failed to fetch field descriptions from Marketo API: {resp.status_code}")
+                # Fall back to static schema if API call fails
+                return super().get_json_schema()
+                
+        except Exception as e:
+            self.logger.warning(f"Error fetching dynamic schema from Marketo API: {e}")
+            # Fall back to static schema if there's an error
+            return super().get_json_schema()
+        
+        schema = {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": ["object", "null"],
+            "additionalProperties": True,
+            "properties": properties,
+        }
+        
+        return schema
 
 
 class Activities(MarketoExportBase):

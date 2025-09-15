@@ -1,0 +1,5 @@
+airbyte:
+  destination:
+    core:
+      types:
+        unions: LEGACY
