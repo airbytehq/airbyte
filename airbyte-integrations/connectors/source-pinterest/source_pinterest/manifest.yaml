@@ -149,6 +149,8 @@ definitions:
       $ref: "#/definitions/requester"
       path: ad_accounts/{{ stream_partition['id'] }}/reports
       http_method: POST
+      error_handler:
+        $ref: "#/definitions/analytics_error_handler"
       request_body:
         type: RequestBodyJsonObject
         value:
@@ -156,7 +158,7 @@ definitions:
           end_date: "{{ stream_interval['end_time'] }}"
           granularity: DAY
           columns:
-            - ADVERTISER_ID # dimension
+            - ADVERTISER_ID
             - AD_ACCOUNT_ID
             - AD_GROUP_ENTITY_STATUS
             - AD_GROUP_ID
@@ -167,9 +169,9 @@ definitions:
             - CAMPAIGN_LIFETIME_SPEND_CAP
             - CAMPAIGN_NAME
             - CHECKOUT_ROAS
-            - CLICKTHROUGH_1 # metric
-            - CLICKTHROUGH_1_GROSS # metric
-            - CLICKTHROUGH_2 # metric
+            - CLICKTHROUGH_1
+            - CLICKTHROUGH_1_GROSS
+            - CLICKTHROUGH_2
             - CPC_IN_MICRO_DOLLAR
             - CPM_IN_DOLLAR
             - CPM_IN_MICRO_DOLLAR
@@ -184,8 +186,8 @@ definitions:
             - ECPV_IN_DOLLAR
             - ECTR
             - EENGAGEMENT_RATE
-            - ENGAGEMENT_1 # metric
-            - ENGAGEMENT_2 # metric
+            - ENGAGEMENT_1
+            - ENGAGEMENT_2
             - ENGAGEMENT_RATE
             - IDEA_PIN_PRODUCT_TAG_VISIT_1
             - IDEA_PIN_PRODUCT_TAG_VISIT_2
@@ -198,35 +200,35 @@ definitions:
             - PAGE_VISIT_COST_PER_ACTION
             - PAGE_VISIT_ROAS
             - PAID_IMPRESSION
-            - PIN_ID # dimension
-            - PIN_PROMOTION_ID # dimension
-            - REPIN_1 # metric
-            - REPIN_2 # metric
+            - PIN_ID
+            - PIN_PROMOTION_ID
+            - REPIN_1
+            - REPIN_2
             - REPIN_RATE
             - SPEND_IN_DOLLAR
             - SPEND_IN_MICRO_DOLLAR
             - TOTAL_CHECKOUT
             - TOTAL_CHECKOUT_VALUE_IN_MICRO_DOLLAR
             - TOTAL_CLICKTHROUGH
-            - TOTAL_CLICK_ADD_TO_CART # metric
+            - TOTAL_CLICK_ADD_TO_CART
             - TOTAL_CLICK_CHECKOUT
             - TOTAL_CLICK_CHECKOUT_VALUE_IN_MICRO_DOLLAR
-            - TOTAL_CLICK_LEAD # metric
+            - TOTAL_CLICK_LEAD
             - TOTAL_CLICK_SIGNUP
             - TOTAL_CLICK_SIGNUP_VALUE_IN_MICRO_DOLLAR
             - TOTAL_CONVERSIONS
-            - TOTAL_CUSTOM # metric
-            - TOTAL_ENGAGEMENT # metric
+            - TOTAL_CUSTOM
+            - TOTAL_ENGAGEMENT
             - TOTAL_ENGAGEMENT_CHECKOUT
             - TOTAL_ENGAGEMENT_CHECKOUT_VALUE_IN_MICRO_DOLLAR
-            - TOTAL_ENGAGEMENT_LEAD # metric
+            - TOTAL_ENGAGEMENT_LEAD
             - TOTAL_ENGAGEMENT_SIGNUP
             - TOTAL_ENGAGEMENT_SIGNUP_VALUE_IN_MICRO_DOLLAR
             - TOTAL_IDEA_PIN_PRODUCT_TAG_VISIT
             - TOTAL_IMPRESSION_FREQUENCY
             - TOTAL_IMPRESSION_USER
-            - TOTAL_LEAD # metric
-            - TOTAL_OFFLINE_CHECKOUT # metric
+            - TOTAL_LEAD
+            - TOTAL_OFFLINE_CHECKOUT
             - TOTAL_PAGE_VISIT
             - TOTAL_REPIN_RATE
             - TOTAL_SIGNUP
@@ -240,10 +242,10 @@ definitions:
             - TOTAL_VIDEO_P50_COMBINED
             - TOTAL_VIDEO_P75_COMBINED
             - TOTAL_VIDEO_P95_COMBINED
-            - TOTAL_VIEW_ADD_TO_CART # metric
+            - TOTAL_VIEW_ADD_TO_CART
             - TOTAL_VIEW_CHECKOUT
             - TOTAL_VIEW_CHECKOUT_VALUE_IN_MICRO_DOLLAR
-            - TOTAL_VIEW_LEAD # metric
+            - TOTAL_VIEW_LEAD
             - TOTAL_VIEW_SIGNUP
             - TOTAL_VIEW_SIGNUP_VALUE_IN_MICRO_DOLLAR
             - TOTAL_WEB_CHECKOUT
@@ -252,11 +254,11 @@ definitions:
             - TOTAL_WEB_CLICK_CHECKOUT_VALUE_IN_MICRO_DOLLAR
             - TOTAL_WEB_ENGAGEMENT_CHECKOUT
             - TOTAL_WEB_ENGAGEMENT_CHECKOUT_VALUE_IN_MICRO_DOLLAR
-            - TOTAL_WEB_SESSIONS # metric
+            - TOTAL_WEB_SESSIONS
             - TOTAL_WEB_VIEW_CHECKOUT
             - TOTAL_WEB_VIEW_CHECKOUT_VALUE_IN_MICRO_DOLLAR
             - VIDEO_3SEC_VIEWS_2
-            - VIDEO_LENGTH # dimension
+            - VIDEO_LENGTH
             - VIDEO_MRC_VIEWS_2
             - VIDEO_P0_COMBINED_2
             - VIDEO_P100_COMPLETE_2
@@ -266,8 +268,8 @@ definitions:
             - VIDEO_P95_COMBINED_2
             - WEB_CHECKOUT_COST_PER_ACTION
             - WEB_CHECKOUT_ROAS
-            - WEB_SESSIONS_1 # metric
-            - WEB_SESSIONS_2 # metric
+            - WEB_SESSIONS_1
+            - WEB_SESSIONS_2
           level: "{{ parameters['level'] }}"
     download_target_extractor:
       type: DpathExtractor
