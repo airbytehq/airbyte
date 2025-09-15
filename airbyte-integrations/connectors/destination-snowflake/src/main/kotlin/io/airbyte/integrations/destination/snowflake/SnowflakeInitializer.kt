@@ -4,21 +4,21 @@
 
 package io.airbyte.integrations.destination.snowflake
 
-import io.airbyte.cdk.Operation
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
-import io.micronaut.context.annotation.Requires
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.event.StartupEvent
 import io.micronaut.runtime.event.annotation.EventListener
 import jakarta.inject.Singleton
 import kotlinx.coroutines.runBlocking
+
+private val logger = KotlinLogging.logger {}
 
 /**
  * Singleton that performs any once-per-run startup initialization required to interact with
  * Snowflake.
  */
 @Singleton
-@Requires(property = Operation.PROPERTY, notEquals = "spec")
 class SnowflakeInitializer(
     private val snowflakeAirbyteClient: SnowflakeAirbyteClient,
     private val snowflakeConfiguration: SnowflakeConfiguration,
@@ -28,11 +28,15 @@ class SnowflakeInitializer(
     @EventListener
     internal fun onStartup(@Suppress("UNUSED_PARAMETER") event: StartupEvent) {
         runBlocking {
+            logger.info { "Initializing Snowflake destination..." }
             snowflakeAirbyteClient.execute("USE DATABASE \"${snowflakeConfiguration.database}\";")
             snowflakeAirbyteClient.execute(
                 "USE SCHEMA \"${snowflakeSqlNameTransformer.transform(snowflakeConfiguration.schema)}\";"
             )
             snowflakeAirbyteClient.createFileFormat()
+            logger.info {
+                "Snowflake destination initialized for database ${snowflakeConfiguration.database} and schema ${snowflakeConfiguration.schema}."
+            }
         }
     }
 }

@@ -27,7 +27,7 @@ import io.airbyte.cdk.load.write.UnionBehavior
 import io.airbyte.cdk.load.write.UnknownTypesBehavior
 import io.airbyte.integrations.destination.snowflake.SnowflakeBeanFactory
 import io.airbyte.integrations.destination.snowflake.SnowflakeSqlNameTransformer
-import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.INTERNAL_STAGING_CREDS
+import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.CONFIG_WITH_AUTH_STAGING
 import io.airbyte.integrations.destination.snowflake.cdk.SnowflakeMigratingConfigurationSpecificationSupplier
 import io.airbyte.integrations.destination.snowflake.cdk.migrateJson
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
@@ -37,7 +37,7 @@ import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.nio.file.Files
 import java.nio.file.Path
 
-internal val CONFIG_PATH = Path.of(INTERNAL_STAGING_CREDS)
+internal val CONFIG_PATH = Path.of(CONFIG_WITH_AUTH_STAGING)
 
 class SnowflakeInsertAcceptanceTest : SnowflakeAcceptanceTest(configPath = CONFIG_PATH)
 

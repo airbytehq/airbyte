@@ -20,6 +20,7 @@ import java.sql.SQLException
 import java.sql.Statement
 import javax.sql.DataSource
 import kotlinx.coroutines.runBlocking
+import net.snowflake.client.jdbc.SnowflakeSQLException
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -57,6 +58,25 @@ internal class SnowflakeAirbyteClientTest {
         runBlocking {
             val result = client.countTable(tableName)
             assertEquals(1L, result)
+            verify(exactly = 1) { mockConnection.close() }
+        }
+    }
+
+    @Test
+    fun testCountMissingTable() {
+        val tableName = TableName(namespace = "namespace", name = "name")
+        val statement = mockk<Statement> { every { executeQuery(any()) } throws SnowflakeSQLException("test") }
+        val mockConnection =
+            mockk<Connection> {
+                every { close() } just Runs
+                every { createStatement() } returns statement
+            }
+
+        every { dataSource.connection } returns mockConnection
+
+        runBlocking {
+            val result = client.countTable(tableName)
+            assertEquals(null, result)
             verify(exactly = 1) { mockConnection.close() }
         }
     }

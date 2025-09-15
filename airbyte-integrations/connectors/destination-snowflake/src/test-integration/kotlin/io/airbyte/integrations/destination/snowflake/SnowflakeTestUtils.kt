@@ -17,6 +17,7 @@ object SnowflakeTestUtils {
         "secrets/1s1t_internal_staging_config_raw_schema_override.json"
     const val INSUFFICIENT_PERMISSIONS_CREDS = "secrets/config.json"
     const val QUOTED_IDENTIFIERS_IGNORE_CASE_CREDS = "secrets/1s1t_case_insensitive.json"
+    const val CONFIG_WITH_AUTH_STAGING = "secrets/config_with_auth_staging.json"
 
     fun getConfig(configPath: String): String = Files.readString(Path.of(configPath))
 }

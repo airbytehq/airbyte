@@ -11,9 +11,12 @@ import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNativeOperations
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableSqlOperations
 import io.airbyte.integrations.destination.snowflake.sql.COUNT_TOTAL_ALIAS
+import io.airbyte.integrations.destination.snowflake.sql.QUOTE
+import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import javax.sql.DataSource
+import net.snowflake.client.jdbc.SnowflakeSQLException
 
 internal const val DESCRIBE_TABLE_COLUMN_NAME_FIELD = "column_name"
 internal const val GENERATION_ID_ALIAS = "generation"
@@ -25,18 +28,22 @@ class SnowflakeAirbyteClient(
     private val dataSource: DataSource,
     private val sqlGenerator: SnowflakeDirectLoadSqlGenerator,
 ) : AirbyteClient, DirectLoadTableSqlOperations, DirectLoadTableNativeOperations {
-    override suspend fun countTable(tableName: TableName): Long {
-        return dataSource.connection.use { connection ->
-            val resultSet =
-                connection.createStatement().executeQuery(sqlGenerator.countTable(tableName))
+    override suspend fun countTable(tableName: TableName): Long? =
+        try {
+            dataSource.connection.use { connection ->
+                val resultSet =
+                    connection.createStatement().executeQuery(sqlGenerator.countTable(tableName))
 
-            if (resultSet.next()) {
-                resultSet.getLong(COUNT_TOTAL_ALIAS)
-            } else {
-                0L
+                if (resultSet.next()) {
+                    resultSet.getLong(COUNT_TOTAL_ALIAS)
+                } else {
+                    0L
+                }
             }
+        } catch (e: SnowflakeSQLException) {
+            log.debug(e) { "Table ${tableName.toPrettyString(quote=QUOTE)} does not exist.  Returning a null count to signal a missing table." }
+            null
         }
-    }
 
     override suspend fun createNamespace(namespace: String) {
         execute(sqlGenerator.createNamespace(namespace))
