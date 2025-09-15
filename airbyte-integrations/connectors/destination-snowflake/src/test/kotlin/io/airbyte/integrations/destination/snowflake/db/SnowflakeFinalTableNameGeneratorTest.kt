@@ -25,8 +25,8 @@ internal class SnowflakeFinalTableNameGeneratorTest {
                 every { name } returns streamName
             }
         val tableName = generator.getTableName(streamDescriptor)
-        assertEquals(streamName, tableName.name)
-        assertEquals(streamNamespace, tableName.namespace)
+        assertEquals(streamName.toSnowflakeCompatibleName(), tableName.name)
+        assertEquals(streamNamespace.toSnowflakeCompatibleName(), tableName.namespace)
     }
 
     @Test
@@ -42,7 +42,7 @@ internal class SnowflakeFinalTableNameGeneratorTest {
                 every { name } returns streamName
             }
         val tableName = generator.getTableName(streamDescriptor)
-        assertEquals(streamName, tableName.name)
-        assertEquals(defaultNamespace, tableName.namespace)
+        assertEquals(streamName.toSnowflakeCompatibleName(), tableName.name)
+        assertEquals(defaultNamespace.toSnowflakeCompatibleName(), tableName.namespace)
     }
 }
