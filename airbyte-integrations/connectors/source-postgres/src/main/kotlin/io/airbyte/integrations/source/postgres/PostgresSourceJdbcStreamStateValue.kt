@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.postgres
 
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -17,15 +21,14 @@ data class PostgresSourceJdbcStreamStateValue(
 ) {
     companion object {
         val snapshotCompleted: OpaqueStateValue
-            get() = Jsons.valueToTree(
-                PostgresSourceJdbcStreamStateValue(
-                    stateType = StateType.CTID_BASED.serialized,
+            get() =
+                Jsons.valueToTree(
+                    PostgresSourceJdbcStreamStateValue(
+                        stateType = StateType.CTID_BASED.serialized,
+                    )
                 )
-            )
 
-        fun snapshotCheckpoint(
-            ctidCheckpoint: JsonNode
-        ) : OpaqueStateValue =
+        fun snapshotCheckpoint(ctidCheckpoint: JsonNode): OpaqueStateValue =
             Jsons.valueToTree(
                 PostgresSourceJdbcStreamStateValue(
                     ctid = ctidCheckpoint.asText(),
@@ -39,9 +42,12 @@ data class PostgresSourceJdbcStreamStateValue(
         ): OpaqueStateValue =
             when (cursorCheckpoint.isNull) {
                 true -> Jsons.nullNode()
-                false -> Jsons.valueToTree(PostgresSourceJdbcStreamStateValue(
-                    cursors = mapOf(cursor.id to cursorCheckpoint)
-                ))
+                false ->
+                    Jsons.valueToTree(
+                        PostgresSourceJdbcStreamStateValue(
+                            cursors = mapOf(cursor.id to cursorCheckpoint)
+                        )
+                    )
             }
 
         fun snapshotWithCursorCheckpoint(
@@ -49,14 +55,15 @@ data class PostgresSourceJdbcStreamStateValue(
             cursor: DataField,
             cursorCheckpoint: JsonNode,
         ): OpaqueStateValue =
-            Jsons.valueToTree(PostgresSourceJdbcStreamStateValue(
-                ctid = ctidCheckpoint.asText(),
-                cursors = mapOf(cursor.id to cursorCheckpoint),
-                stateType = StateType.CTID_BASED.serialized,
-            ))
+            Jsons.valueToTree(
+                PostgresSourceJdbcStreamStateValue(
+                    ctid = ctidCheckpoint.asText(),
+                    cursors = mapOf(cursor.id to cursorCheckpoint),
+                    stateType = StateType.CTID_BASED.serialized,
+                )
+            )
     }
 }
-
 
 enum class StateType {
     CTID_BASED,
@@ -65,4 +72,3 @@ enum class StateType {
 
     val serialized: String = name.lowercase()
 }
-

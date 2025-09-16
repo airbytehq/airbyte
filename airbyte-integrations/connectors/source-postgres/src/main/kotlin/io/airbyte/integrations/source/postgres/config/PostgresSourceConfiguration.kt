@@ -170,10 +170,10 @@ constructor(
 
         log.info { "maxDBConnections: $maxDBConnections. socket paths: ${socketPaths.size}" }
 
-        //TODO: by channel medium
+        // TODO: by channel medium
         // If max_db_connections is set, we use it.
         // Otherwise, we use the number of socket paths provided.
-        val maxConcurrency: Int = maxDBConnections ?: /*socketPaths.size*/1
+        val maxConcurrency: Int = maxDBConnections ?: /*socketPaths.size*/ 1
         log.info { "Effective concurrency: $maxConcurrency" }
 
         return PostgresSourceConfiguration(

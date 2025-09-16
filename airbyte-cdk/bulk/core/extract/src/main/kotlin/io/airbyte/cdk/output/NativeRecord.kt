@@ -81,7 +81,7 @@ fun <T> JsonEncoder<T>.toProtobufEncoder(): ProtoEncoder<*> {
         is LocalTimeCodec, -> localTimeProtoEncoder
         is LocalDateTimeCodec, -> localDateTimeProtoEncoder
         is OffsetTimeCodec, -> offsetTimeProtoEncoder
-        is ArrayEncoder<*>, -> anyProtoEncoder
+        is ArrayEncoder<*>, -> arrayProtoEncoder
         else -> anyProtoEncoder
     }
 }
@@ -162,7 +162,9 @@ val floatProtoEncoder =
 
 val nullProtoEncoder = generateProtoEncoder<Any?> { builder, _ -> builder.setIsNull(true) }
 val anyProtoEncoder = textProtoEncoder
-// typealias AnyProtoEncoder = TextProtoEncoder
+
+// For now arrays are encoded in protobuf as json strings
+val arrayProtoEncoder = textProtoEncoder
 
 fun NativeRecordPayload.toProtobuf(
     schema: Set<FieldOrMetaField>,
@@ -170,25 +172,25 @@ fun NativeRecordPayload.toProtobuf(
     valueBuilder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder
 ): AirbyteRecordMessageProtobuf.Builder {
     return recordMessageBuilder.apply {
-        schema
-            .sortedBy { it.id }
-            .forEachIndexed { index, field ->
-                // Protobuf does not have field names, so we use a sorted order of fields
-                // So for destination to know which fields it is, we order the fields alphabetically
-                // to make sure that the order is consistent.
-                this@toProtobuf[field.id]?.let { value ->
-                    @Suppress("UNCHECKED_CAST")
-                    setData(
-                        index,
-                        value.fieldValue?.let {
-                            (value.jsonEncoder.toProtobufEncoder() as ProtoEncoder<Any>).encode(
-                                valueBuilder.clear(),
-                                value.fieldValue
-                            )
+        // We use toSortedMap() to ensure that the order is consistent
+        // Since protobuf has no field name the contract with destination is that
+        // field are alphabetically ordered.
+        this@toProtobuf.toSortedMap().onEachIndexed { index, entry ->
+            @Suppress("UNCHECKED_CAST")
+            setData(
+                index,
+                entry.value.fieldValue?.let {
+                    (entry.value.jsonEncoder.toProtobufEncoder() as ProtoEncoder<Any>).encode(
+                        valueBuilder.clear(),
+                        when (entry.value.jsonEncoder) {
+                            // For arrays we use the value of its json string.
+                            is ArrayEncoder<*> -> entry.value.encode().toString()
+                            else -> entry.value.fieldValue!!
                         }
-                            ?: nullProtoEncoder.encode(valueBuilder.clear(), null)
+
                     )
                 }
-            }
+            )
+        }
     }
 }

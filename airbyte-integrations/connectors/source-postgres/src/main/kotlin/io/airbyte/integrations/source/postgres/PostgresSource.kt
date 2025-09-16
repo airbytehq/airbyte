@@ -10,6 +10,7 @@ private val log = KotlinLogging.logger {}
 object PostgresSource {
     @JvmStatic
     fun main(args: Array<String>) {
+        // TODO: Remove before merging
         args.forEachIndexed { index, arg ->
             log.info { "***$index $arg" }
             if (index in listOf(2, 4, 6)) {

@@ -151,8 +151,9 @@ class JdbcSequentialPartitionsCreator<
         }
         if (streamState.fetchSize == null) {
             if (sharedState.withSampling) {
-                val rowByteSizeSample: Sample<Long> =
-                    collectSample { sharedState.rowByteSizeEstimator().apply(it.data.toJson()) }
+                val rowByteSizeSample: Sample<Long> = collectSample {
+                    sharedState.rowByteSizeEstimator().apply(it.data.toJson())
+                }
                 val expectedTableByteSize: Long =
                     rowByteSizeSample.sampledValues.sum() * rowByteSizeSample.valueWeight
                 log.info { "Table memory size estimated at ${expectedTableByteSize shr 20} MiB." }
@@ -212,12 +213,14 @@ class JdbcConcurrentPartitionsCreator<
             return listOf(JdbcNonResumablePartitionReader(partition))
         }
         // Sample the table for partition split boundaries and for record byte sizes.
-        val sample: Sample<Pair<OpaqueStateValue?, Long>> = collectSample { record: SelectQuerier.ResultRow ->
-            val boundary: OpaqueStateValue? =
-                (partition as? JdbcSplittablePartition<*>)?.incompleteState(record)
-            val rowByteSize: Long = sharedState.rowByteSizeEstimator().apply(record.data.toJson())
-            boundary to rowByteSize
-        }
+        val sample: Sample<Pair<OpaqueStateValue?, Long>> =
+            collectSample { record: SelectQuerier.ResultRow ->
+                val boundary: OpaqueStateValue? =
+                    (partition as? JdbcSplittablePartition<*>)?.incompleteState(record)
+                val rowByteSize: Long =
+                    sharedState.rowByteSizeEstimator().apply(record.data.toJson())
+                boundary to rowByteSize
+            }
         if (sample.kind == Sample.Kind.EMPTY) {
             log.info { "Sampling query found that the table was empty." }
             return listOf(CheckpointOnlyPartitionReader())

@@ -9,7 +9,6 @@ import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.command.SourceConfigurationFactory
 import io.airbyte.cdk.discover.DiscoveredStream
 import io.airbyte.cdk.discover.EmittedField
-import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.JdbcAirbyteStreamFactory
 import io.airbyte.cdk.jdbc.BigIntegerFieldType
 import io.airbyte.cdk.jdbc.LocalDateTimeFieldType

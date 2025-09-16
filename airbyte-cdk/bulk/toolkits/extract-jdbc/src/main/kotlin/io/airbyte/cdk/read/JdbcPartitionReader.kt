@@ -1,7 +1,6 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.read
 
-import com.fasterxml.jackson.databind.node.ObjectNode
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
@@ -9,8 +8,6 @@ import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.output.DataChannelMedium.*
 import io.airbyte.cdk.output.OutputMessageRouter
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
-import io.airbyte.cdk.output.sockets.toJson
-import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import java.time.Duration
@@ -196,7 +193,7 @@ class JdbcResumablePartitionReader<P : JdbcSplittablePartition<*>>(
             .use { result: SelectQuerier.Result ->
                 for (row in result) {
                     out(row)
-//                    lastRecord.set(row.data.toJson(Jsons.objectNode()))
+                    //                    lastRecord.set(row.data.toJson(Jsons.objectNode()))
                     lastRecord.set(row)
                     // Check activity periodically to handle timeout.
                     if (numRecords.incrementAndGet() % fetchSize == 0L) {
