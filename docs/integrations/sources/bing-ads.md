@@ -319,6 +319,7 @@ The Bing Ads API limits the number of requests for all Microsoft Advertising cli
 
 | Version     | Date       | Pull Request                                                                                                                     | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.23.4 | 2025-09-15 | [66234](https://github.com/airbytehq/airbyte/pull/66234) | Promoting release candidate 2.23.4-rc.1 to a main version. |
 | 2.23.4-rc.1 | 2025-09-10 | [65894](https://github.com/airbytehq/airbyte/pull/65894) | Fix Custom Report Names - Add Option to Disable camel_case_to_snake_case |
 | 2.23.3 | 2025-09-08 | [65995](https://github.com/airbytehq/airbyte/pull/65995) | Update to CDK v7 |
 | 2.23.2 | 2025-08-15 | [64952](https://github.com/airbytehq/airbyte/pull/64952) | Always decompress bulk download response |
