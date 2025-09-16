@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.mockk.every
 import io.mockk.mockk
@@ -284,6 +285,23 @@ new_record."_airbyte_generation_id"
         val sql = snowflakeDirectLoadSqlGenerator.copyFromStage(tableName)
         assertEquals(
             "COPY INTO ${tableName.toPrettyString(quote=QUOTE)}\nFROM @${buildSnowflakeStageName(tableName)}\nFILE_FORMAT = $STAGE_FORMAT_NAME\nON_ERROR = 'ABORT_STATEMENT'",
+            sql
+        )
+    }
+
+    @Test
+    fun testAlterTable() {
+        val tableName = TableName(namespace = "namespace", name = "name")
+        val addedColumns = setOf(ColumnDefinition("col1", "TEXT", false))
+        val deletedColumns = setOf(ColumnDefinition("col2", "TEXT", false))
+        val modifiedColumns = setOf(ColumnDefinition("col3", "NUMBER", false))
+        val sql = snowflakeDirectLoadSqlGenerator.alterTable(tableName, addedColumns, deletedColumns, modifiedColumns)
+        assertEquals(
+            setOf(
+                "ALTER TABLE \"namespace\".\"name\" ADD COLUMN col1 TEXT",
+                "ALTER TABLE \"namespace\".\"name\" DROP COLUMN col2",
+                "ALTER TABLE \"namespace\".\"name\" ALTER col3 SET DATA TYPE NUMBER"
+            ),
             sql
         )
     }

@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
@@ -331,5 +332,24 @@ class SnowflakeDirectLoadSqlGenerator(
         """
             .trimIndent()
             .andLog()
+    }
+
+    fun alterTable(
+        tableName: TableName,
+        addedColumns: Set<ColumnDefinition>,
+        deletedColumns: Set<ColumnDefinition>,
+        modifiedColumns: Set<ColumnDefinition>,
+    ): Set<String> {
+        val clauses = mutableSetOf<String>()
+        addedColumns.forEach {
+            clauses.add("ALTER TABLE ${tableName.toPrettyString(quote = QUOTE)} ADD COLUMN ${it.name} ${it.type}")
+        }
+        deletedColumns.forEach {
+            clauses.add("ALTER TABLE ${tableName.toPrettyString(quote = QUOTE)} DROP COLUMN ${it.name}")
+        }
+        modifiedColumns.forEach {
+            clauses.add("ALTER TABLE ${tableName.toPrettyString(quote = QUOTE)} ALTER ${it.name} SET DATA TYPE ${it.type}")
+        }
+        return clauses
     }
 }

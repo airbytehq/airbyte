@@ -7,6 +7,8 @@ package io.airbyte.integrations.destination.snowflake.client
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
+import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 import io.airbyte.integrations.destination.snowflake.sql.COUNT_TOTAL_ALIAS
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlGenerator
 import io.mockk.Runs
@@ -30,12 +32,14 @@ internal class SnowflakeAirbyteClientTest {
     private lateinit var client: SnowflakeAirbyteClient
     private lateinit var dataSource: DataSource
     private lateinit var sqlGenerator: SnowflakeDirectLoadSqlGenerator
+    private lateinit var columnUtils: SnowflakeColumnUtils
 
     @BeforeEach
     fun setup() {
         dataSource = mockk()
         sqlGenerator = mockk(relaxed = true)
-        client = SnowflakeAirbyteClient(dataSource, sqlGenerator)
+        columnUtils = mockk(relaxed = true)
+        client = SnowflakeAirbyteClient(dataSource, sqlGenerator, columnUtils)
     }
 
     @Test
@@ -119,7 +123,7 @@ internal class SnowflakeAirbyteClientTest {
             client.createNamespace(namespace)
             verify(exactly = 1) { sqlGenerator.createNamespace(namespace) }
             verify(exactly = 1) { sqlGenerator.createFileFormat(namespace) }
-            verify(exactly = 3) { mockConnection.close() }
+            verify(exactly = 2) { mockConnection.close() }
         }
     }
 

@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNativeOperations
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableSqlOperations
+import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
 import io.airbyte.integrations.destination.snowflake.sql.COUNT_TOTAL_ALIAS
 import io.airbyte.integrations.destination.snowflake.sql.QUOTE
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
@@ -18,7 +19,6 @@ import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlG
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.sql.ResultSet
-import java.sql.ResultSetMetaData
 import javax.sql.DataSource
 import net.snowflake.client.jdbc.SnowflakeSQLException
 
@@ -100,16 +100,6 @@ class SnowflakeAirbyteClient(
         execute(sqlGenerator.dropTable(tableName))
     }
 
-    /**
-     * Jdbc destination column definition representation
-     *
-     * @param name
-     * @param type
-     * @param columnSize
-     */
-    data class ColumnDefinition(val name: String, val type: String, val isPrimaryKey: Boolean)
-
-
     override suspend fun ensureSchemaMatches(
         stream: DestinationStream,
         tableName: TableName,
@@ -118,7 +108,7 @@ class SnowflakeAirbyteClient(
         val sql = sqlGenerator.getTable(schemaName = tableName.namespace, tableName = tableName.name)
         dataSource.connection.use { connection ->
             val rs: ResultSet = connection.createStatement().executeQuery(sql)
-            val columnsInDb: MutableMap<String, ColumnDefinition> = mutableMapOf()
+            val columnsInDb: MutableSet<ColumnDefinition> = mutableSetOf()
 
             while (rs.next()) {
                 val columnName = rs.getString("name")
@@ -127,40 +117,30 @@ class SnowflakeAirbyteClient(
                     continue
                 }
                 val dataType =
-                    when (
-                        val snowflakeDataType =
                             rs.getString("type").takeWhile { char -> char != '(' }
-                    ) {
-                        "VARCHAR" -> "TEXT"
-                        else -> snowflakeDataType
-                    }
 
-                val isPrimaryKey = rs.getString("primary key") == "Y"
-                columnsInDb[columnName] =
-                    ColumnDefinition(columnName, dataType, isPrimaryKey)
+                val isNullable = rs.getString("null?") == "Y"
+                columnsInDb.add(ColumnDefinition(columnName, dataType, isNullable))
             }
 
-
-
-            val columnsInStream = stream.schema.asColumns().map { (name, fieldType) ->
+            val columnsInStream: Set<ColumnDefinition> = stream.schema.asColumns().map { (name, fieldType) ->
                 // Snowflake is case-insensitive by default and stores identifiers in uppercase.
                 // We should probably be using the mapping in columnNameMapping, but for now, this is a good enough approximation.
                 val mappedName = columnNameMapping.get(name) ?: name
-                mappedName to ColumnDefinition(mappedName, snowflakeColumnUtils.toDialectType(fieldType.type), fieldType.nullable)
-            }.toMap()
+                ColumnDefinition(mappedName, snowflakeColumnUtils.toDialectType(fieldType.type), fieldType.nullable)
+            }.toSet()
 
-            val addedColumns = columnsInStream.keys - columnsInDb.keys
-            val deletedColumns = columnsInDb.keys - columnsInStream.keys
-            val commonColumns = columnsInStream.keys.intersect(columnsInDb.keys)
-            val updatedColumns = commonColumns.filter {
-                log.error { "Comparing column ${it}: ${columnsInStream[it]} vs ${columnsInDb[it]}" }
-                columnsInStream[it] != columnsInDb[it]
+            val addedColumns = columnsInStream.filter { it !in columnsInDb }.toSet()
+            val deletedColumns = columnsInDb.filter { it !in columnsInStream }.toSet()
+            val commonColumns = columnsInStream.filter { it.name in columnsInDb.map { it.name } }
+            val modifiedColumns = commonColumns.filter {
+                val dbType = columnsInDb.find { column -> it.name == column.name }?.type
+                it.type != dbType
+            }.toSet()
+
+            if (addedColumns.isNotEmpty() || deletedColumns.isNotEmpty() || modifiedColumns.isNotEmpty()) {
+                sqlGenerator.alterTable(tableName, addedColumns, deletedColumns, modifiedColumns).forEach { execute(it) }
             }
-
-            log.error { "Schema comparison for table ${tableName.name}:" }
-            log.error { "Added columns: $addedColumns" }
-            log.error { "Deleted columns: $deletedColumns" }
-            log.error { "Updated columns: $updatedColumns" }
         }
     }
 
