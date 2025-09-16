@@ -15,5 +15,6 @@ data class DataFlowStageIO(
     var partitionKey: PartitionKey? = null,
     var munged: RecordDTO? = null,
     var aggregate: Aggregate? = null,
-    var partitionHistogram: PartitionHistogram? = null,
+    var partitionCountsHistogram: PartitionHistogram? = null,
+    var partitionBytesHistogram: PartitionHistogram? = null,
 )

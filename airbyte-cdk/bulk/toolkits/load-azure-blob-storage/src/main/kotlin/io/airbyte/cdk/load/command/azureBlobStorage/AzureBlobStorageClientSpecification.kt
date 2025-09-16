@@ -34,7 +34,7 @@ interface AzureBlobStorageClientSpecification {
 
     @get:JsonSchemaTitle("Shared Access Signature")
     @get:JsonPropertyDescription(
-        "A shared access signature (SAS) provides secure delegated access to resources in your storage account. Read more <a href=\"https://learn.microsoft.com/en-gb/azure/storage/common/storage-sas-overview?toc=%2Fazure%2Fstorage%2Fblobs%2Ftoc.json&bc=%2Fazure%2Fstorage%2Fblobs%2Fbreadcrumb%2Ftoc.json\">here</a>. If you set this value, you must not set the account key or Entra ID authentication."
+        "A shared access signature (SAS) provides secure delegated access to resources in your storage account. Read more <a href=\"https://learn.microsoft.com/en-gb/azure/storage/common/storage-sas-overview?toc=%2Fazure%2Fstorage%2Fblobs%2Ftoc.json&bc=%2Fazure%2Fstorage%2Fblobs%2Fbreadcrumb%2Ftoc.json\">here</a>. If you set this value, you must not set the \"Azure Blob Storage Account Key\", \"Azure Tenant ID\", \"Azure Client ID\", or \"Azure Client Secret\" fields."
     )
     @get:JsonProperty("shared_access_signature")
     @get:JsonSchemaInject(
@@ -43,9 +43,9 @@ interface AzureBlobStorageClientSpecification {
     )
     val azureBlobStorageSharedAccessSignature: String?
 
-    @get:JsonSchemaTitle("Azure Blob Storage account key")
+    @get:JsonSchemaTitle("Azure Blob Storage Account Key")
     @get:JsonPropertyDescription(
-        "The Azure blob storage account key. If you set this value, you must not set the Shared Access Signature or Entra ID authentication."
+        "The Azure Blob Storage account key. If you set this value, you must not set the \"Shared Access Signature\", \"Azure Tenant ID\", \"Azure Client ID\", or \"Azure Client Secret\" fields."
     )
     @get:JsonProperty("azure_blob_storage_account_key")
     @get:JsonSchemaInject(

@@ -17,7 +17,7 @@ class StateHistogramTest {
         val stateKey = StateKey(1L, listOf(PartitionKey("partition-1")))
 
         // When
-        histogram.increment(stateKey)
+        histogram.increment(stateKey, 1)
 
         // Then
         assertEquals(1L, histogram.get(stateKey))
@@ -30,9 +30,9 @@ class StateHistogramTest {
         val stateKey = StateKey(1L, listOf(PartitionKey("partition-1")))
 
         // When
-        histogram.increment(stateKey)
-        histogram.increment(stateKey)
-        histogram.increment(stateKey)
+        histogram.increment(stateKey, 1)
+        histogram.increment(stateKey, 1)
+        histogram.increment(stateKey, 1)
 
         // Then
         assertEquals(3L, histogram.get(stateKey))
@@ -46,9 +46,9 @@ class StateHistogramTest {
         val stateKey2 = StateKey(2L, listOf(PartitionKey("partition-2")))
 
         // When
-        histogram.increment(stateKey1)
-        histogram.increment(stateKey1)
-        histogram.increment(stateKey2)
+        histogram.increment(stateKey1, 1)
+        histogram.increment(stateKey1, 1)
+        histogram.increment(stateKey2, 1)
 
         // Then
         assertEquals(2L, histogram.get(stateKey1))
@@ -77,13 +77,13 @@ class StateHistogramTest {
         val stateKey2 = StateKey(2L, listOf(PartitionKey("partition-2")))
         val sharedKey = StateKey(3L, listOf(PartitionKey("partition-3")))
 
-        histogram1.increment(stateKey1)
-        histogram1.increment(stateKey1)
-        histogram1.increment(sharedKey)
+        histogram1.increment(stateKey1, 1)
+        histogram1.increment(stateKey1, 1)
+        histogram1.increment(sharedKey, 1)
 
-        histogram2.increment(stateKey2)
-        histogram2.increment(sharedKey)
-        histogram2.increment(sharedKey)
+        histogram2.increment(stateKey2, 1)
+        histogram2.increment(sharedKey, 1)
+        histogram2.increment(sharedKey, 1)
 
         // When
         histogram1.merge(histogram2)
@@ -102,8 +102,8 @@ class StateHistogramTest {
         val stateKey1 = StateKey(1L, listOf(PartitionKey("partition-1")))
         val stateKey2 = StateKey(2L, listOf(PartitionKey("partition-2")))
 
-        histogram1.increment(stateKey1)
-        histogram2.increment(stateKey2)
+        histogram1.increment(stateKey1, 1)
+        histogram2.increment(stateKey2, 1)
 
         // When
         histogram1.merge(histogram2)
@@ -120,8 +120,8 @@ class StateHistogramTest {
         // Given
         val histogram = StateHistogram()
         val stateKey = StateKey(1L, listOf(PartitionKey("partition-1")))
-        histogram.increment(stateKey)
-        histogram.increment(stateKey)
+        histogram.increment(stateKey, 1)
+        histogram.increment(stateKey, 1)
 
         // When
         val removedValue = histogram.remove(stateKey)

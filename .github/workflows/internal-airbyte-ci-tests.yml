@@ -92,6 +92,15 @@ jobs:
         id: fetch_last_commit_id_wd
         run: echo "commit_id=$(git rev-parse origin/${{ steps.extract_branch.outputs.branch }})" >> $GITHUB_OUTPUT
 
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@v2
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
       - name: Run poe tasks for modified internal packages [PULL REQUEST]
         if: github.event_name == 'pull_request'
         id: run-airbyte-ci-test-pr
@@ -105,7 +114,7 @@ jobs:
           gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           git_branch: ${{ github.head_ref }}
           git_revision: ${{ steps.fetch_last_commit_id_pr.outputs.commit_id }}
-          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
+          github_token: ${{ steps.get-app-token.outputs.token }}
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           subcommand: "test --modified"
 
@@ -122,6 +131,6 @@ jobs:
           gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           git_branch: ${{ steps.extract_branch.outputs.branch }}
           git_revision: ${{ steps.fetch_last_commit_id_pr.outputs.commit_id }}
-          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
+          github_token: ${{ steps.get-app-token.outputs.token }}
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           subcommand: "test ${{ inputs.airbyte_ci_subcommand}}"

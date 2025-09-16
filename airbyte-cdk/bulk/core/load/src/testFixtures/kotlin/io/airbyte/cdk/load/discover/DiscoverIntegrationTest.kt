@@ -15,6 +15,7 @@ import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopExpectedRecordMapper
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import kotlin.test.assertEquals
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Test
@@ -50,7 +51,7 @@ abstract class DiscoverIntegrationTest<T : ConfigurationSpecification>(
                     featureFlags = tc.featureFlags.toTypedArray(),
                     micronautProperties = micronautProperties,
                 )
-            runBlocking { process.run() }
+            runBlocking((Dispatchers.IO)) { process.run() }
             val messages = process.readMessages()
             val catalogMessages =
                 messages.filter { it.type == AirbyteMessage.Type.DESTINATION_CATALOG }

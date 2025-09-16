@@ -199,7 +199,7 @@ class TestAdsReportHourly(TestCase):
             state=self.state(cursor=self.legacy_cursor),
         )
 
-        assert len(output.records) == 1
+        assert len(output.records) == 2
         assert output.state_messages[1].state.stream.stream_state.states == [
             {"cursor": {"stat_time_hour": self.legacy_cursor}, "partition": {"advertiser_id": self.advertiser_id, "parent_slice": {}}}
         ]
@@ -383,7 +383,7 @@ class TestAdGroupsReportsHourly(TestCase):
             state=self.state(),
         )
 
-        assert len(output.records) == 1
+        assert len(output.records) == 2
         assert output.state_messages[1].state.stream.stream_state.states == [
             {"cursor": {"stat_time_hour": self.cursor}, "partition": {"advertiser_id": self.advertiser_id, "parent_slice": {}}}
         ]
@@ -544,7 +544,7 @@ class TestAdvertisersReportsHourly(TestCase):
             state=self.state(),
         )
 
-        assert len(output.records) == 1
+        assert len(output.records) == 2
         assert output.state_messages[1].state.stream.stream_state.states == [
             {"cursor": {"stat_time_hour": self.cursor}, "partition": {"advertiser_id": self.advertiser_id, "parent_slice": {}}}
         ]
@@ -662,7 +662,7 @@ class TestCampaignsReportsHourly(TestCase):
             state=self.state(),
         )
 
-        assert len(output.records) == 1
+        assert len(output.records) == 2
         assert output.state_messages[1].state.stream.stream_state.states == [
             {"cursor": {"stat_time_hour": self.cursor}, "partition": {"advertiser_id": self.advertiser_id, "parent_slice": {}}}
         ]

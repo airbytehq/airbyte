@@ -1,5 +1,6 @@
 ---
 dockerRepository: airbyte/source-workday
+enterprise-connector: true
 ---
 # Source Workday
 

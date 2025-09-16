@@ -46,8 +46,8 @@ class GroupStreamsPartitionRouter(SubstreamPartitionRouter):
         groups_list = self.config.get("groups_list")
         selected_parent = parent_streams["include_descendant_groups"] if groups_list else parent_streams["groups_list"]
 
-        for stream_slice in selected_parent.stream_slices(sync_mode=SyncMode.full_refresh):
-            for record in selected_parent.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
+        for partition in selected_parent.generate_partitions():
+            for record in partition.read():
                 yield StreamSlice(partition={"id": record["id"]}, cursor_slice={})
 
 
@@ -58,8 +58,8 @@ class ProjectStreamsPartitionRouter(SubstreamPartitionRouter):
         projects_list = self.config.get("projects_list", [])
 
         group_project_ids = []
-        for stream_slice in parent_stream.stream_slices(sync_mode=SyncMode.full_refresh):
-            for record in parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
+        for partition in parent_stream.generate_partitions():
+            for record in partition.read():
                 group_project_ids.extend([i["path_with_namespace"] for i in record["projects"]])
 
         if group_project_ids:

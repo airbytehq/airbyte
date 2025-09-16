@@ -51,6 +51,9 @@ data class FromSample(
     val namespace: String?,
     val sampleRateInvPow2: Int,
     val sampleSize: Int,
+    val where: WhereNode? =
+        null, // Include where clause because we want to apply all filters to the inner sample
+// query, so we don't do sampling on the whole table all the time.
 ) : FromNode {
     val sampleRatePercentage: BigDecimal
         get() = sampleRate.multiply(BigDecimal.valueOf(100L))

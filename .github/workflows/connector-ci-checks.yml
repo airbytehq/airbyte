@@ -494,8 +494,6 @@ jobs:
         if: always() && !cancelled()
         continue-on-error: true
         with:
-          owner: "airbytehq"
-          repositories: "airbyte"
           app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
           private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
 
@@ -506,7 +504,6 @@ jobs:
         uses: LouisBrunner/checks-action@v2.0.0
         with:
           name: "Connector CI Checks Summary" # << Name of the 'Required' check
-          repo: "airbytehq/airbyte" # Post to the main repo, not the fork
           sha: ${{ needs.generate-matrix.outputs.commit-sha }}
           status: completed
           conclusion: ${{ steps.evaluate-status.outputs.result }}
