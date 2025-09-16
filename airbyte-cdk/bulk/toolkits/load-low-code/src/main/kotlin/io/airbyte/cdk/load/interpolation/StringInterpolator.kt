@@ -93,6 +93,11 @@ class StringInterpolator {
         )
 
     companion object {
+        /**
+         * Note that those values would match with something like `not_a_record["key"]`. We assume
+         * that we will not match on these with the current solution because we chose which variable
+         * names are passed through the context.
+         */
         private const val bracketAccessorRegex = """record\s*\[\s*["']([^"']+)["']\s*\]"""
         private const val getMethodAccessorRegex = """record\.get\s*\(\s*["']([^"']+)["']\s*\)"""
 
@@ -112,7 +117,7 @@ class StringInterpolator {
     }
 
     private fun extractKeysFromExpression(expression: String): Set<String> {
-        return recordAccessorRegexes.flatMapTo(HashSet()) { regex -> regex.findAll(expression).map { match -> match.groupValues[1] } }
+        return recordAccessorRegexes.flatMapTo(HashSet()) { regex -> regex.findAll(expression).filter { match -> match.groupValues.size > 1 }.map { match -> match.groupValues[1] } }
     }
 
 }
