@@ -48,7 +48,6 @@ data class StaticCatalogOperation(
  */
 data class DynamicCatalogOperation(
     @JsonProperty("objects") val objects: DestinationObjects,
-    @JsonProperty("object_name_path") val objectNamePath: List<String>, // Wait this is not used?
     @JsonProperty("schema") val schema: SchemaConfiguration,
     @JsonProperty("schema_retriever") val schemaRetriever: Retriever? = null,
     @JsonProperty("insertion_methods") val insertionMethods: List<InsertionMethod>,

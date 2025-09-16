@@ -20,8 +20,6 @@ discover:
         type: StaticDestinationObjects
         objects:
           - CONTACT
-      object_name_path:
-        - name
       schema_retriever:
         type: Retriever
         http_requester:
@@ -43,23 +41,28 @@ discover:
         type_mapping:
           - type: TypesMap
             api_type: ["string", "enumeration", "phone_number"]
-            airbyte_type: ["string"]
+            airbyte_type:
+              - type: "string"
           - type: TypesMap
             api_type: ["number"]
-            airbyte_type: ["number"]
+            airbyte_type:
+              - type: "number"
           - type: TypesMap
             api_type: ["bool"]
-            airbyte_type: ["boolean"]
+            airbyte_type:
+              - type: "boolean"
           - type: TypesMap
             api_type: ["date"]
-            airbyte_type: ["date"]
+            airbyte_type:
+              - type: "date"
           - type: TypesMap
             api_type: ["datetime"]
-            airbyte_type: ["timestamp_with_timezone"]
+            airbyte_type:
+              - type: "timestamp_with_timezone"
       insertion_methods:
         - type: InsertionMethod
           destination_import_mode:
-            type: Dedupe
+            type: Upsert
           availability_predicate: '{{ property["type"] != "object_coordinates" && property["modificationMetadata"]["readOnlyValue"] == false && property["calculated"] == false }}'
           matching_key_predicate: '{{ property["name"] == "email" }}'
           required_predicate: "{{ false }}"
@@ -69,8 +72,7 @@ discover:
         objects:
           - COMPANY
           - DEAL
-      object_name_path:
-        - name
+          - PRODUCT
       schema_retriever:
         type: Retriever
         http_requester:
@@ -92,23 +94,28 @@ discover:
         type_mapping:
           - type: TypesMap
             api_type: ["string", "enumeration", "phone_number"]
-            airbyte_type: ["string"]
+            airbyte_type:
+              - type: "string"
           - type: TypesMap
             api_type: ["number"]
-            airbyte_type: ["number"]
+            airbyte_type:
+              - type: "number"
           - type: TypesMap
             api_type: ["bool"]
-            airbyte_type: ["boolean"]
+            airbyte_type:
+              - type: "boolean"
           - type: TypesMap
             api_type: ["date"]
-            airbyte_type: ["date"]
+            airbyte_type:
+              - type: "date"
           - type: TypesMap
             api_type: ["datetime"]
-            airbyte_type: ["timestamp_with_timezone"]
+            airbyte_type:
+              - type: "timestamp_with_timezone"
       insertion_methods:
         - type: InsertionMethod
           destination_import_mode:
-            type: Dedupe
+            type: Upsert
           availability_predicate: '{{ property["type"] != "object_coordinates" && property["modificationMetadata"]["readOnlyValue"] == false && property["calculated"] == false }}'
           matching_key_predicate: '{{ property["hasUniqueValue"] && property["modificationMetadata"]["readOnlyValue"] == false }}'
           required_predicate: "{{ false }}"
@@ -128,8 +135,8 @@ discover:
               client_secret: '{{ config["credentials"]["client_secret"] }}'
               refresh_token: '{{ config["credentials"]["refresh_token"] }}'
           selector: ["results"]
-      object_name_path:
-        - name
+        name_path:
+          - name
       schema:
         type: SchemaConfiguration
         properties_path: ["properties"]
@@ -139,24 +146,27 @@ discover:
           - type: TypesMap
             api_type: ["string", "enumeration", "phone_number"]
             airbyte_type:
-              - type: string
+              - type: "string"
           - type: TypesMap
             api_type: ["number"]
             airbyte_type:
-              - type: number
+              - type: "number"
           - type: TypesMap
             api_type: ["bool"]
-            airbyte_type: ["boolean"]
+            airbyte_type:
+              - type: "boolean"
           - type: TypesMap
             api_type: ["date"]
-            airbyte_type: ["date"]
+            airbyte_type:
+              - type: "date"
           - type: TypesMap
             api_type: ["datetime"]
-            airbyte_type: ["timestamp_with_timezone"]
+            airbyte_type:
+              - type: "timestamp_with_timezone"
       insertion_methods:
         - type: InsertionMethod
           destination_import_mode:
-            type: Dedupe
+            type: Upsert
           availability_predicate: '{{ property["type"] != "object_coordinates" && property["modificationMetadata"]["readOnlyValue"] == false && property["calculated"] == false }}'
           matching_key_predicate: '{{ property["hasUniqueValue"] && property["modificationMetadata"]["readOnlyValue"] == false }}'
           required_predicate: "{{ false }}"
