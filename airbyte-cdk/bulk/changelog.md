@@ -1,3 +1,9 @@
+## Version 0.1.32
+
+**Load CDK**
+
+* **Changed:** Fix input stream wiring for non-dockerized acceptance tests
+
 ## Version 0.1.31
 
 **Extract CDK**
