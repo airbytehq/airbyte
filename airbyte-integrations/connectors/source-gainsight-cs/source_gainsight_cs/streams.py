@@ -42,7 +42,8 @@ class GainsightCsObjectStream(GainsightCsStream):
         "JSON": ["null", "object"],
         "JSONBOOLEAN": ["null", "boolean"],
         "JSONNUMBER": ["null", "number"],
-        "JSONSTRING": ["null", "string"]
+        "JSONSTRING": ["null", "string"],
+        "DATE": ["null", "date"]
     }
 
     def __init__(self, name: str, authenticator: GainsightCsAuthenticator, **kwargs):
