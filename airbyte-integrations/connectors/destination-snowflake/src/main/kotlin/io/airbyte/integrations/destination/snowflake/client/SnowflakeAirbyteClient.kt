@@ -22,7 +22,6 @@ import java.sql.ResultSet
 import javax.sql.DataSource
 import net.snowflake.client.jdbc.SnowflakeSQLException
 
-
 internal const val DESCRIBE_TABLE_COLUMN_NAME_FIELD = "column_name"
 internal const val GENERATION_ID_ALIAS = "generation"
 
@@ -105,7 +104,8 @@ class SnowflakeAirbyteClient(
         tableName: TableName,
         columnNameMapping: ColumnNameMapping
     ) {
-        val sql = sqlGenerator.getTable(schemaName = tableName.namespace, tableName = tableName.name)
+        val sql =
+            sqlGenerator.getTable(schemaName = tableName.namespace, tableName = tableName.name)
         dataSource.connection.use { connection ->
             val rs: ResultSet = connection.createStatement().executeQuery(sql)
             val columnsInDb: MutableSet<ColumnDefinition> = mutableSetOf()
@@ -116,35 +116,60 @@ class SnowflakeAirbyteClient(
                 if (COLUMN_NAMES.contains(columnName)) {
                     continue
                 }
-                val dataType =
-                            rs.getString("type").takeWhile { char -> char != '(' }
+                val dataType = rs.getString("type").takeWhile { char -> char != '(' }
 
                 val isNullable = rs.getString("null?") == "Y"
                 columnsInDb.add(ColumnDefinition(columnName, dataType, isNullable))
             }
 
-            val columnsInStream: Set<ColumnDefinition> = stream.schema.asColumns().map { (name, fieldType) ->
-                // Snowflake is case-insensitive by default and stores identifiers in uppercase.
-                // We should probably be using the mapping in columnNameMapping, but for now, this is a good enough approximation.
-                val mappedName = columnNameMapping.get(name) ?: name
-                ColumnDefinition(mappedName, snowflakeColumnUtils.toDialectType(fieldType.type), fieldType.nullable)
-            }.toSet()
+            val columnsInStream: Set<ColumnDefinition> =
+                stream.schema
+                    .asColumns()
+                    .map { (name, fieldType) ->
+                        // Snowflake is case-insensitive by default and stores identifiers in
+                        // uppercase.
+                        // We should probably be using the mapping in columnNameMapping, but for
+                        // now, this is a good enough approximation.
+                        val mappedName = columnNameMapping.get(name) ?: name
+                        ColumnDefinition(
+                            mappedName,
+                            snowflakeColumnUtils.toDialectType(fieldType.type),
+                            fieldType.nullable
+                        )
+                    }
+                    .toSet()
 
             val addedColumns = columnsInStream.filter { it !in columnsInDb }.toSet()
             val deletedColumns = columnsInDb.filter { it !in columnsInStream }.toSet()
             val commonColumns = columnsInStream.filter { it.name in columnsInDb.map { it.name } }
-            val modifiedColumns = commonColumns.filter {
-                val dbType = columnsInDb.find { column -> it.name == column.name }?.type
-                it.type != dbType
-            }.toSet()
+            val modifiedColumns =
+                commonColumns
+                    .filter {
+                        val dbType = columnsInDb.find { column -> it.name == column.name }?.type
+                        it.type != dbType
+                    }
+                    .toSet()
 
-            if (addedColumns.isNotEmpty() || deletedColumns.isNotEmpty() || modifiedColumns.isNotEmpty()) {
+            if (
+                addedColumns.isNotEmpty() ||
+                    deletedColumns.isNotEmpty() ||
+                    modifiedColumns.isNotEmpty()
+            ) {
                 log.error { "Summary of the table alterations:" }
                 log.error { "Added columns: $addedColumns" }
                 log.error { "Deleted columns: $deletedColumns" }
                 log.error { "Modified columns: $modifiedColumns" }
-                log.error { sqlGenerator.alterTable(tableName, addedColumns, deletedColumns, modifiedColumns) }
-                sqlGenerator.alterTable(tableName, addedColumns, deletedColumns, modifiedColumns).forEach { execute(it) }
+                log.error {
+                    sqlGenerator.alterTable(
+                        tableName,
+                        addedColumns,
+                        deletedColumns,
+                        modifiedColumns
+                    )
+                }
+                sqlGenerator
+                    .alterTable(tableName, addedColumns, deletedColumns, modifiedColumns)
+                    .forEach { execute(it) }
             }
         }
     }

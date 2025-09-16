@@ -295,7 +295,13 @@ new_record."_airbyte_generation_id"
         val addedColumns = setOf(ColumnDefinition("col1", "TEXT", false))
         val deletedColumns = setOf(ColumnDefinition("col2", "TEXT", false))
         val modifiedColumns = setOf(ColumnDefinition("col3", "NUMBER", false))
-        val sql = snowflakeDirectLoadSqlGenerator.alterTable(tableName, addedColumns, deletedColumns, modifiedColumns)
+        val sql =
+            snowflakeDirectLoadSqlGenerator.alterTable(
+                tableName,
+                addedColumns,
+                deletedColumns,
+                modifiedColumns
+            )
         assertEquals(
             setOf(
                 "ALTER TABLE \"namespace\".\"name\" ADD COLUMN col1 TEXT",

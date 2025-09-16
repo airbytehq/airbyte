@@ -320,7 +320,7 @@ class SnowflakeDirectLoadSqlGenerator(
     fun getTable(
         schemaName: String,
         tableName: String,
-    ): String= """DESCRIBE TABLE "$schemaName"."$tableName" """.andLog()
+    ): String = """DESCRIBE TABLE "$schemaName"."$tableName" """.andLog()
 
     fun swapTableWith(sourceTableName: TableName, targetTableName: TableName): String {
         return """
@@ -342,13 +342,19 @@ class SnowflakeDirectLoadSqlGenerator(
     ): Set<String> {
         val clauses = mutableSetOf<String>()
         addedColumns.forEach {
-            clauses.add("ALTER TABLE ${tableName.toPrettyString(quote = QUOTE)} ADD COLUMN ${it.name} ${it.type}".andLog())
+            clauses.add(
+                "ALTER TABLE ${tableName.toPrettyString(quote = QUOTE)} ADD COLUMN ${it.name} ${it.type}".andLog()
+            )
         }
         deletedColumns.forEach {
-            clauses.add("ALTER TABLE ${tableName.toPrettyString(quote = QUOTE)} DROP COLUMN ${it.name}".andLog())
+            clauses.add(
+                "ALTER TABLE ${tableName.toPrettyString(quote = QUOTE)} DROP COLUMN ${it.name}".andLog()
+            )
         }
         modifiedColumns.forEach {
-            clauses.add("ALTER TABLE ${tableName.toPrettyString(quote = QUOTE)} ALTER ${it.name} SET DATA TYPE ${it.type}".andLog())
+            clauses.add(
+                "ALTER TABLE ${tableName.toPrettyString(quote = QUOTE)} ALTER ${it.name} SET DATA TYPE ${it.type}".andLog()
+            )
         }
         return clauses
     }
