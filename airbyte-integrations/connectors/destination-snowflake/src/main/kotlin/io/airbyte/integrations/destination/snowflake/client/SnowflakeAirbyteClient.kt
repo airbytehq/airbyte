@@ -68,7 +68,8 @@ class SnowflakeAirbyteClient(
     }
 
     override suspend fun overwriteTable(sourceTableName: TableName, targetTableName: TableName) {
-        TODO("Not yet implemented")
+        execute(sqlGenerator.swapTableWith(sourceTableName, targetTableName))
+        execute(sqlGenerator.dropTable(sourceTableName))
     }
 
     override suspend fun copyTable(
