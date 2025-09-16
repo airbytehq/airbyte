@@ -17,6 +17,7 @@ import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
+import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import jakarta.inject.Singleton
 
 @Singleton
@@ -32,7 +33,7 @@ class SnowflakeWriter(
     override suspend fun setup() {
         names.values
             .map { (tableNames, _) -> tableNames.finalTableName!!.namespace }
-            .forEach { snowflakeClient.createNamespace(it) }
+            .forEach { snowflakeClient.createNamespace(it.toSnowflakeCompatibleName()) }
 
         initialStatuses = stateGatherer.gatherInitialStatus(names)
     }

@@ -6,13 +6,13 @@ package io.airbyte.integrations.destination.snowflake
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.CdcDeletionMode
 import io.airbyte.integrations.destination.snowflake.spec.KeyPairAuthConfiguration
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.spec.UsernamePasswordAuthConfiguration
-import io.mockk.every
-import io.mockk.mockk
 import java.io.File
+import java.util.logging.Level
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 import net.snowflake.client.jdbc.SnowflakeDriver
@@ -57,13 +57,10 @@ internal class SnowflakeBeanFactoryTest {
                 retentionPeriodDays = 1,
                 useMergeForUpsert = false,
             )
-        val snowflakeSqlNameTransformer =
-            mockk<SnowflakeSqlNameTransformer> { every { transform(any()) } answers { firstArg() } }
         val factory = SnowflakeBeanFactory()
         val dataSource =
             factory.snowflakeDataSource(
                 snowflakeConfiguration = snowflakeConfiguration,
-                snowflakeSqlNameTransformer = snowflakeSqlNameTransformer,
                 snowflakePrivateKeyFileName = privateKeyFile.path,
                 airbyteEdition = airbyteEdition,
             )
@@ -104,6 +101,10 @@ internal class SnowflakeBeanFactoryTest {
                     .dataSourceProperties[DATA_SOURCE_PROPERTY_PRIVATE_KEY_PASSWORD]
             )
             assertEquals(
+                Level.SEVERE.name,
+                (dataSource as HikariConfig).dataSourceProperties[DATA_SOURCE_PROPERTY_TRACING]
+            )
+            assertEquals(
                 warehouse,
                 (dataSource as HikariConfig).dataSourceProperties[DATA_SOURCE_PROPERTY_WAREHOUSE]
             )
@@ -116,7 +117,7 @@ internal class SnowflakeBeanFactoryTest {
                 (dataSource as HikariConfig).dataSourceProperties[DATA_SOURCE_PROPERTY_ROLE]
             )
             assertEquals(
-                schema,
+                schema.toSnowflakeCompatibleName(),
                 (dataSource as HikariConfig).dataSourceProperties[DATA_SOURCE_PROPERTY_SCHEMA]
             )
             assertEquals(
@@ -150,7 +151,7 @@ internal class SnowflakeBeanFactoryTest {
     }
 
     @ParameterizedTest
-    @CsvSource(value = ["OSS", "CLOUD", "ENTERPRISE"])
+    @CsvSource(value = ["COMMUNITY", "CLOUD", "ENTERPRISE"])
     fun testCreateSnowflakeDataSourceUsernamePasswordAuth(airbyteEdition: String) {
         val password = "test-password"
         val authType =
@@ -180,13 +181,10 @@ internal class SnowflakeBeanFactoryTest {
                 retentionPeriodDays = 1,
                 useMergeForUpsert = false,
             )
-        val snowflakeSqlNameTransformer =
-            mockk<SnowflakeSqlNameTransformer> { every { transform(any()) } answers { firstArg() } }
         val factory = SnowflakeBeanFactory()
         val dataSource =
             factory.snowflakeDataSource(
                 snowflakeConfiguration = snowflakeConfiguration,
-                snowflakeSqlNameTransformer = snowflakeSqlNameTransformer,
                 airbyteEdition = airbyteEdition,
             )
         try {
@@ -216,6 +214,10 @@ internal class SnowflakeBeanFactoryTest {
                 (dataSource as HikariConfig).jdbcUrl
             )
             assertEquals(
+                Level.SEVERE.name,
+                (dataSource as HikariConfig).dataSourceProperties[DATA_SOURCE_PROPERTY_TRACING]
+            )
+            assertEquals(
                 warehouse,
                 (dataSource as HikariConfig).dataSourceProperties[DATA_SOURCE_PROPERTY_WAREHOUSE]
             )
@@ -228,7 +230,7 @@ internal class SnowflakeBeanFactoryTest {
                 (dataSource as HikariConfig).dataSourceProperties[DATA_SOURCE_PROPERTY_ROLE]
             )
             assertEquals(
-                schema,
+                schema.toSnowflakeCompatibleName(),
                 (dataSource as HikariConfig).dataSourceProperties[DATA_SOURCE_PROPERTY_SCHEMA]
             )
             assertEquals(
