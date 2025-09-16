@@ -13,6 +13,10 @@ from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 from airbyte_cdk.sources.streams.core import StreamData
 
 
+# maximum block hierarchy recursive request depth
+MAX_BLOCK_DEPTH = 30
+
+
 @dataclass
 class NotionUserTransformation(RecordTransformation):
     """
@@ -100,13 +104,22 @@ class BlocksRetriever(SimpleRetriever):
 
     """
 
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        super().__post_init__(parameters)
+        self.current_block_depth = 0
+
     def read_records(
         self,
         records_schema: Mapping[str, Any],
         stream_slice: Optional[StreamSlice] = None,
     ) -> Iterable[StreamData]:
+        # if reached recursive limit, don't read anymore
+        if self.current_block_depth > MAX_BLOCK_DEPTH:
+            return
+
         for stream_data in super().read_records(records_schema, stream_slice):
             if stream_data.data.get("has_children"):
+                self.current_block_depth += 1
                 child_stream_slice = StreamSlice(
                     partition={"block_id": stream_data.data["id"], "parent_slice": {}},
                     cursor_slice=stream_slice.cursor_slice,
