@@ -139,6 +139,11 @@ class SnowflakeAirbyteClient(
             }.toSet()
 
             if (addedColumns.isNotEmpty() || deletedColumns.isNotEmpty() || modifiedColumns.isNotEmpty()) {
+                log.error { "Summary of the table alterations:" }
+                log.error { "Added columns: $addedColumns" }
+                log.error { "Deleted columns: $deletedColumns" }
+                log.error { "Modified columns: $modifiedColumns" }
+                log.error { sqlGenerator.alterTable(tableName, addedColumns, deletedColumns, modifiedColumns) }
                 sqlGenerator.alterTable(tableName, addedColumns, deletedColumns, modifiedColumns).forEach { execute(it) }
             }
         }
