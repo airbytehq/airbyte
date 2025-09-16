@@ -21,8 +21,8 @@ class InsertionMethod(
     private val importType: ImportType,
     private val namePath: List<String>,
     private val typePath: List<String>,
-    private val matchingKeyPredicate: Predicate<JsonNode>?,
     private val availabilityPredicate: Predicate<JsonNode>,
+    private val matchingKeyPredicate: Predicate<JsonNode>?,
     private val requiredPredicate: Predicate<JsonNode>,
     private val typeMapper: Map<String, AirbyteType>,
 ) {

@@ -51,8 +51,8 @@ class ManifestBuilder {
         return this
     }
 
-    fun withCompositeOperation(compositeOperations: CompositeCatalogOperations): ManifestBuilder {
-        this.discovery = compositeOperations
+    fun withCatalogOperation(catalogOperation: CatalogOperation): ManifestBuilder {
+        this.discovery = catalogOperation
         return this
     }
 
