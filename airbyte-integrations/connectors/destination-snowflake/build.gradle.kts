@@ -44,6 +44,7 @@ dependencies {
     implementation("net.snowflake:snowflake-ingest-sdk:4.3.0")
     implementation("com.zaxxer:HikariCP:$hikariCpVersion")
     implementation("com.google.guava:guava:32.1.1-jre")
+    implementation("org.apache.commons:commons-csv:1.14.1")
 
     integrationTestImplementation("com.zaxxer:HikariCP:7.0.2")
 

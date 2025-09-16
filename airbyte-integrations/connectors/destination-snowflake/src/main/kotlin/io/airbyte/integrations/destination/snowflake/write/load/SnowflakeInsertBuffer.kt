@@ -9,8 +9,6 @@ import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.csv.toCsvValue
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
-import io.airbyte.integrations.destination.snowflake.sql.CSV_FIELD_DELIMITER
-import io.airbyte.integrations.destination.snowflake.sql.CSV_RECORD_DELIMITER
 import io.airbyte.integrations.destination.snowflake.sql.QUOTE
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
@@ -18,6 +16,8 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.LinkedBlockingQueue
+import org.apache.commons.csv.CSVFormat
+import org.apache.commons.csv.CSVPrinter
 
 private val logger = KotlinLogging.logger {}
 
@@ -62,10 +62,12 @@ class SnowflakeInsertBuffer(
         val csvFile = File.createTempFile("snowflake", ".csv")
         csvFile.deleteOnExit()
         csvFile.bufferedWriter(Charsets.UTF_8).use { writer ->
-            records.forEach { record ->
-                writer.write(
-                    "${columns.map { columnName -> record[columnName].toCsvValue()}.joinToString(CSV_FIELD_DELIMITER)}$CSV_RECORD_DELIMITER"
-                )
+            val printer = CSVPrinter(writer, CSVFormat.DEFAULT)
+            printer.use {
+                records.forEach { record ->
+                    val csvRecord = columns.map { columnName -> record[columnName].toCsvValue() }
+                    printer.printRecord(*csvRecord.toTypedArray())
+                }
             }
         }
         return csvFile.absolutePath
