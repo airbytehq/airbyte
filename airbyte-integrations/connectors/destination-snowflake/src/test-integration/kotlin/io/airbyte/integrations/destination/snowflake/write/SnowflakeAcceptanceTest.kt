@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.config.DataChannelFormat
 import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.test.util.ConfigurationUpdater
@@ -36,6 +37,7 @@ import io.airbyte.integrations.destination.snowflake.spec.SnowflakeSpecification
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.nio.file.Files
 import java.nio.file.Path
+import net.snowflake.client.jdbc.SnowflakeTimestampWithTimezone
 import org.junit.jupiter.api.Test
 
 internal val CONFIG_PATH = getConfigPath(CONFIG_WITH_AUTH_STAGING)
@@ -168,7 +170,9 @@ class SnowflakeDataDumper(
                     for (i in 1..resultSet.metaData.columnCount) {
                         val columnName = resultSet.metaData.getColumnName(i)
                         if (!Meta.COLUMN_NAMES.contains(columnName)) {
-                            dataMap[columnName] = AirbyteValue.from(resultSet.getObject(i))
+                            val value = resultSet.getObject(i)
+                            dataMap[columnName] =
+                                value?.let { AirbyteValue.from(convertValue(value)) } ?: NullValue
                         }
                     }
                     val outputRecord =
@@ -201,6 +205,15 @@ class SnowflakeDataDumper(
     ): Map<String, String> {
         throw UnsupportedOperationException("Snowflake does not support file transfer.")
     }
+
+    private fun convertValue(value: Any): Any =
+        when (value) {
+            is java.sql.Date -> value.toLocalDate()
+            is SnowflakeTimestampWithTimezone -> value.toZonedDateTime()
+            is java.sql.Time -> value.toLocalTime()
+            is java.sql.Timestamp -> value.toLocalDateTime()
+            else -> value
+        }
 }
 
 class SnowflakeMigrationConfigurationUpdater : ConfigurationUpdater {

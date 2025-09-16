@@ -78,11 +78,11 @@ internal class SnowflakeColumnUtilsTest {
         )
         assertEquals(SnowflakeDataType.DATE.typeName, snowflakeColumnUtils.toDialectType(DateType))
         assertEquals(
-            SnowflakeDataType.INTEGER.typeName,
+            SnowflakeDataType.NUMBER.typeName,
             snowflakeColumnUtils.toDialectType(IntegerType)
         )
         assertEquals(
-            SnowflakeDataType.NUMBER.typeName,
+            SnowflakeDataType.FLOAT.typeName,
             snowflakeColumnUtils.toDialectType(NumberType)
         )
         assertEquals(
@@ -90,7 +90,7 @@ internal class SnowflakeColumnUtilsTest {
             snowflakeColumnUtils.toDialectType(StringType)
         )
         assertEquals(
-            SnowflakeDataType.TIME.typeName,
+            SnowflakeDataType.VARCHAR.typeName,
             snowflakeColumnUtils.toDialectType(TimeTypeWithTimezone)
         )
         assertEquals(
