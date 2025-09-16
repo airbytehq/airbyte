@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.datagen.partitionobjs
 
 import io.airbyte.cdk.read.ConcurrencyResource
@@ -5,8 +9,8 @@ import io.airbyte.cdk.read.Resource
 import io.airbyte.cdk.read.ResourceAcquirer
 import io.airbyte.cdk.read.ResourceType
 import io.airbyte.integrations.source.datagen.DataGenSourceConfiguration
-import io.airbyte.integrations.source.datagen.partitionops.DataGenPartitionsCreator
 import io.airbyte.integrations.source.datagen.partitionops.DataGenPartitionReader
+import io.airbyte.integrations.source.datagen.partitionops.DataGenPartitionsCreator
 import jakarta.inject.Singleton
 
 @Singleton
