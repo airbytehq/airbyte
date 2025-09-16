@@ -60,10 +60,10 @@ class SnowflakeColumnUtils {
         when (type) {
             BooleanType -> SnowflakeDataType.BOOLEAN.typeName
             DateType -> SnowflakeDataType.DATE.typeName
-            IntegerType -> SnowflakeDataType.INTEGER.typeName
-            NumberType -> SnowflakeDataType.NUMBER.typeName
+            IntegerType -> SnowflakeDataType.NUMBER.typeName
+            NumberType -> SnowflakeDataType.FLOAT.typeName
             StringType -> SnowflakeDataType.VARCHAR.typeName
-            TimeTypeWithTimezone -> SnowflakeDataType.TIME.typeName
+            TimeTypeWithTimezone -> SnowflakeDataType.VARCHAR.typeName
             TimeTypeWithoutTimezone -> SnowflakeDataType.TIME.typeName
             TimestampTypeWithTimezone -> SnowflakeDataType.TIMESTAMP_TZ.typeName
             TimestampTypeWithoutTimezone -> SnowflakeDataType.TIMESTAMP_NTZ.typeName
