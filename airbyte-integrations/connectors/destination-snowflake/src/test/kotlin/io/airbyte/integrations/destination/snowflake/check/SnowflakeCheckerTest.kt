@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.snowflake.check
 
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
+import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -32,7 +33,9 @@ internal class SnowflakeCheckerTest {
             )
         checker.check()
 
-        coVerify(exactly = 1) { snowflakeAirbyteClient.createNamespace(testSchema) }
+        coVerify(exactly = 1) {
+            snowflakeAirbyteClient.createNamespace(testSchema.toSnowflakeCompatibleName())
+        }
         coVerify(exactly = 1) { snowflakeAirbyteClient.createTable(any(), any(), any(), any()) }
         coVerify(exactly = 1) { snowflakeAirbyteClient.dropTable(any()) }
     }
@@ -55,7 +58,9 @@ internal class SnowflakeCheckerTest {
 
         assertThrows<IllegalArgumentException> { checker.check() }
 
-        coVerify(exactly = 1) { snowflakeAirbyteClient.createNamespace(testSchema) }
+        coVerify(exactly = 1) {
+            snowflakeAirbyteClient.createNamespace(testSchema.toSnowflakeCompatibleName())
+        }
         coVerify(exactly = 1) { snowflakeAirbyteClient.createTable(any(), any(), any(), any()) }
         coVerify(exactly = 1) { snowflakeAirbyteClient.dropTable(any()) }
     }
