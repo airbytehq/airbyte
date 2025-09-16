@@ -80,16 +80,17 @@ private class MapGetOperatorELResolver : ELResolver() {
 
 class StringInterpolator {
 
-    private val interpolator = Jinjava(
-        JinjavaConfig.newBuilder()
-            .withElResolver(
-                CompositeELResolver().apply {
-                    this.add(MapGetOperatorELResolver())
-                    this.add(JinjavaInterpreterResolver.DEFAULT_RESOLVER_READ_ONLY)
-                },
-            )
-            .build()
-    )
+    private val interpolator =
+        Jinjava(
+            JinjavaConfig.newBuilder()
+                .withElResolver(
+                    CompositeELResolver().apply {
+                        this.add(MapGetOperatorELResolver())
+                        this.add(JinjavaInterpreterResolver.DEFAULT_RESOLVER_READ_ONLY)
+                    },
+                )
+                .build()
+        )
 
     companion object {
         private const val bracketAccessorRegex = """record\s*\[\s*["']([^"']+)["']\s*\]"""
