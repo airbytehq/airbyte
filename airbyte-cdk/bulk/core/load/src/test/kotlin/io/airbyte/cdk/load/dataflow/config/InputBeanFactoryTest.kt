@@ -172,7 +172,7 @@ class InputBeanFactoryTest {
         // Given
         val inputStream1 = ByteArrayInputStream("stream1".toByteArray())
         val inputStream2 = ByteArrayInputStream("stream2".toByteArray())
-        val inputStreams = listOf(inputStream1, inputStream2)
+        val inputStreams = ConnectorInputStreams(listOf(inputStream1, inputStream2))
 
         // When
         val result =
@@ -285,7 +285,7 @@ class InputBeanFactoryTest {
 
         every { aggregateStoreFactory.make() } returns mockk()
 
-        val inputStreams = listOf(mockInputStream1, mockInputStream2)
+        val inputStreams = ConnectorInputStreams(listOf(mockInputStream1, mockInputStream2))
 
         val messageFlows =
             factory.messageFlows(

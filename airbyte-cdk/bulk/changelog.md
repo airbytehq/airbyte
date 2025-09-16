@@ -1,3 +1,7 @@
+## Version 0.1.35
+
+* **Changed:** Fix input stream wiring for dockerized acceptance tests
+
 ## Version 0.1.34
 
 * **Changed:** Moved version declaration from build.gradle to version.properties
