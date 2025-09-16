@@ -81,7 +81,7 @@ abstract class SnowflakeAcceptanceTest(
         unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
         nullEqualsUnset = true,
         dedupChangeUsesDefault = false,
-        testSpeedModeStatsEmission = false,
+        testSpeedModeStatsEmission = true,
         configUpdater = SnowflakeMigrationConfigurationUpdater(),
         dataChannelMedium = dataChannelMedium,
         dataChannelFormat = dataChannelFormat,
