@@ -209,8 +209,9 @@ class SnowflakeMigrationConfigurationUpdater : ConfigurationUpdater {
     override fun setDefaultNamespace(
         config: String,
         defaultNamespace: String
-    ): DefaultNamespaceResult = DefaultNamespaceResult(
-        updatedConfig = config.replace("TEXT_SCHEMA", defaultNamespace),
-        actualDefaultNamespace = defaultNamespace
-    )
+    ): DefaultNamespaceResult =
+        DefaultNamespaceResult(
+            updatedConfig = config.replace("TEXT_SCHEMA", defaultNamespace),
+            actualDefaultNamespace = defaultNamespace
+        )
 }

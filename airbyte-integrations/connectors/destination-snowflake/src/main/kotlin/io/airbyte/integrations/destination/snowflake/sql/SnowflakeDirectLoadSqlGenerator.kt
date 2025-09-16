@@ -321,4 +321,16 @@ class SnowflakeDirectLoadSqlGenerator(
             .trimIndent()
             .andLog()
     }
+
+    fun swapTableWith(sourceTableName: TableName, targetTableName: TableName): String {
+        return """
+            ALTER TABLE ${sourceTableName.toPrettyString(quote = QUOTE)} SWAP WITH ${
+            targetTableName.toPrettyString(
+                quote = QUOTE
+            )
+        };
+        """
+            .trimIndent()
+            .andLog()
+    }
 }
