@@ -66,6 +66,10 @@ data class DestinationStream(
     val matchingKey: List<String>? = null,
     private val namespaceMapper: NamespaceMapper
 ) {
+    val unmappedDescriptor = StreamDescriptor()
+        .withName(unmappedName)
+        .withNamespace(unmappedNamespace)
+
     val mappedDescriptor = namespaceMapper.map(namespace = unmappedNamespace, name = unmappedName)
     val unknownColumnChanges by lazy { schema.computeUnknownColumnChanges() }
 
