@@ -246,7 +246,7 @@ global:
   auth:
     identityProvider: 
       type: generic-oidc
-      generic-oidc: 
+      genericOidc: 
         clientId: YOUR_CLIENT_ID
         audience: YOUR_AUDIENCE
         extraScopes: YOUR_EXTRA_SCOPES

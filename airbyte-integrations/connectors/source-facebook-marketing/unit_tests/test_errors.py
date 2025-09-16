@@ -222,6 +222,22 @@ CONFIG_ERRORS = [
             },
         },
     ),
+    (
+        "error_100_subcode_2446289_no_access_to_resource",
+        "No access to resource.",
+        {
+            "status_code": 400,
+            "json": {
+                "error": {
+                    "message": "(#100) No access to resource.",
+                    "type": "OAuthException",
+                    "code": 100,
+                    "error_subcode": 2446289,
+                    "fbtrace_id": "Ag-P22y80OSEXM4qsGk2T9P",
+                }
+            },
+        },
+    ),
     # ("error_400_unsupported request",
     #  "Re-authenticate because current credential missing permissions",
     #  {
