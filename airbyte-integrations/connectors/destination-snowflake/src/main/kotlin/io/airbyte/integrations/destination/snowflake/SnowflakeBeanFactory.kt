@@ -7,15 +7,19 @@ package io.airbyte.integrations.destination.snowflake
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.airbyte.cdk.Operation
-import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
+import io.airbyte.cdk.load.check.CheckOperationV2
+import io.airbyte.cdk.load.check.DestinationCheckerV2
 import io.airbyte.cdk.load.orchestration.db.DefaultTempTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
+import io.airbyte.cdk.output.OutputConsumer
+import io.airbyte.integrations.destination.snowflake.cdk.SnowflakeMigratingConfigurationSpecificationSupplier
+import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.KeyPairAuthConfiguration
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfigurationFactory
-import io.airbyte.integrations.destination.snowflake.spec.SnowflakeSpecification
 import io.airbyte.integrations.destination.snowflake.spec.UsernamePasswordAuthConfiguration
 import io.micronaut.context.annotation.Factory
+import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Named
@@ -25,6 +29,7 @@ import java.io.PrintWriter
 import java.nio.charset.StandardCharsets
 import java.sql.Connection
 import java.util.Properties
+import java.util.logging.Level
 import java.util.logging.Logger
 import javax.sql.DataSource
 import kotlin.time.DurationUnit
@@ -45,6 +50,7 @@ internal const val DATA_SOURCE_PROPERTY_PRIVATE_KEY_FILE = "private_key_file"
 internal const val DATA_SOURCE_PROPERTY_PRIVATE_KEY_PASSWORD = "private_key_file_pwd"
 internal const val DATA_SOURCE_PROPERTY_ROLE = "role"
 internal const val DATA_SOURCE_PROPERTY_SCHEMA = "schema"
+internal const val DATA_SOURCE_PROPERTY_TRACING = "tracing"
 internal const val DATA_SOURCE_PROPERTY_WAREHOUSE = "warehouse"
 internal const val JSON_FORMAT = "JSON"
 internal const val NETWORK_TIMEOUT_MINUTES: Long = 1L
@@ -58,10 +64,9 @@ class SnowflakeBeanFactory {
     @Singleton
     fun snowflakeConfiguration(
         configFactory: SnowflakeConfigurationFactory,
-        specFactory: ConfigurationSpecificationSupplier<SnowflakeSpecification>,
+        specFactory: SnowflakeMigratingConfigurationSpecificationSupplier,
     ): SnowflakeConfiguration {
         val spec = specFactory.get()
-
         return configFactory.makeWithoutExceptionHandling(spec)
     }
 
@@ -94,10 +99,9 @@ class SnowflakeBeanFactory {
     @Requires(property = Operation.PROPERTY, notEquals = "spec")
     fun snowflakeDataSource(
         snowflakeConfiguration: SnowflakeConfiguration,
-        snowflakeSqlNameTransformer: SnowflakeSqlNameTransformer,
         @Named("snowflakePrivateKeyFileName")
         snowflakePrivateKeyFileName: String = PRIVATE_KEY_FILE_NAME,
-        @Value("\${airbyte.edition}") airbyteEdition: String,
+        @Value("\${airbyte.edition:COMMUNITY}") airbyteEdition: String,
     ): HikariDataSource {
         val snowflakeJdbcUrl =
             "jdbc:snowflake://${snowflakeConfiguration.host}/?${snowflakeConfiguration.jdbcUrlParams}"
@@ -142,6 +146,8 @@ class SnowflakeBeanFactory {
                     }
                 }
 
+                // https://docs.snowflake.com/en/developer-guide/jdbc/jdbc-parameters#tracing
+                addDataSourceProperty(DATA_SOURCE_PROPERTY_TRACING, Level.SEVERE.name)
                 addDataSourceProperty(
                     DATA_SOURCE_PROPERTY_WAREHOUSE,
                     snowflakeConfiguration.warehouse
@@ -153,7 +159,7 @@ class SnowflakeBeanFactory {
                 addDataSourceProperty(DATA_SOURCE_PROPERTY_ROLE, snowflakeConfiguration.role)
                 addDataSourceProperty(
                     DATA_SOURCE_PROPERTY_SCHEMA,
-                    snowflakeSqlNameTransformer.transform(snowflakeConfiguration.schema)
+                    snowflakeConfiguration.schema.toSnowflakeCompatibleName()
                 )
                 addDataSourceProperty(
                     DATA_SOURCE_PROPERTY_NETWORK_TIMEOUT,
@@ -189,7 +195,6 @@ class SnowflakeBeanFactory {
     @Singleton
     fun snowflakeStreamingIngestClient(
         snowflakeConfiguration: SnowflakeConfiguration,
-        snowflakeSqlNameTransformer: SnowflakeSqlNameTransformer,
         @Named("snowflakePrivateKeyFileName") snowflakePrivateKeyFileName: String,
         @Value("\${airbyte.edition}") airbyteEdition: String,
     ): SnowflakeStreamingIngestClient {
@@ -202,10 +207,7 @@ class SnowflakeBeanFactory {
                 setProperty("role", snowflakeConfiguration.role)
                 setProperty("warehouse", snowflakeConfiguration.warehouse)
                 setProperty("database", snowflakeConfiguration.database)
-                setProperty(
-                    "schema",
-                    snowflakeSqlNameTransformer.transform(snowflakeConfiguration.schema)
-                )
+                setProperty("schema", snowflakeConfiguration.schema.toSnowflakeCompatibleName())
 
                 // Authentication
                 when (snowflakeConfiguration.authType) {
@@ -247,4 +249,12 @@ class SnowflakeBeanFactory {
             .setProperties(properties)
             .build()
     }
+
+    @Primary
+    @Singleton
+    @Requires(property = Operation.PROPERTY, value = "check")
+    fun checkOperation(
+        destinationChecker: DestinationCheckerV2,
+        outputConsumer: OutputConsumer,
+    ) = CheckOperationV2(destinationChecker, outputConsumer)
 }
