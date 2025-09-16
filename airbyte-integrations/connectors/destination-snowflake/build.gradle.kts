@@ -35,14 +35,16 @@ application {
     )
 }
 
+val hikariCpVersion = "7.0.2"
 val junitVersion = "5.13.4"
 val junitPlatformVersion = "1.13.4"
 
 dependencies {
     implementation("net.snowflake:snowflake-jdbc-thin:3.26.1")
     implementation("net.snowflake:snowflake-ingest-sdk:4.3.0")
-    implementation("com.zaxxer:HikariCP:7.0.2")
+    implementation("com.zaxxer:HikariCP:$hikariCpVersion")
     implementation("com.google.guava:guava:32.1.1-jre")
+    implementation("org.apache.commons:commons-csv:1.14.1")
 
     integrationTestImplementation("com.zaxxer:HikariCP:7.0.2")
 
@@ -52,4 +54,6 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-engine:$junitPlatformVersion")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:$junitPlatformVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
+
+    integrationTestImplementation("com.zaxxer:HikariCP:${hikariCpVersion}")
 }
