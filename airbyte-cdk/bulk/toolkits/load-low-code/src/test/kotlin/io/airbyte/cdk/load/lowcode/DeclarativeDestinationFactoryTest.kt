@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.lowcode
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.airbyte.cdk.load.check.dlq.DlqChecker
 import io.airbyte.cdk.load.command.Append
@@ -59,6 +60,7 @@ import org.junit.jupiter.api.Test
 
 val VALID_API_ID: String = "api_id"
 val VALID_API_TOKEN: String = "api_token"
+val ANY_CONFIG: JsonNode = convertMapToJsonNode(emptyMap())
 
 class DeclarativeDestinationFactoryTest {
 
@@ -310,18 +312,14 @@ class DeclarativeDestinationFactoryTest {
             )
 
         mockkConstructor(BasicAccessAuthenticator::class)
-        val config =
-            Jsons.readTree("""{"api_id": "$VALID_API_ID", "api_token": "$VALID_API_TOKEN"}""")
 
-        val actualOperations = DeclarativeDestinationFactory(config).createOperationProvider().get()
+        val actualOperations =
+            DeclarativeDestinationFactory(ANY_CONFIG).createOperationProvider().get()
         assertEquals(expectedOperations, actualOperations)
     }
 
     @Test
     internal fun `test dynamic operations with static destination objects`() {
-        val config =
-            Jsons.readTree("""{"api_id": "$VALID_API_ID", "api_token": "$VALID_API_TOKEN"}""")
-
         val mockedResponse =
             mapOf<String, Any>(
                 "properties" to
@@ -343,19 +341,6 @@ class DeclarativeDestinationFactoryTest {
 
         mockManifest(
             ManifestBuilder()
-                .withChecker(
-                    HttpRequestChecker(
-                        HttpRequesterModel(
-                            url = "https://hashira.net/me",
-                            method = HttpMethod.GET,
-                            authenticator =
-                                BasicAccessAuthenticatorModel(
-                                    """{{ config["api_id"] }}""",
-                                    """{{ config["api_token"] }}""",
-                                ),
-                        ),
-                    )
-                )
                 .withCatalogOperation(
                     DynamicCatalogOperation(
                         objects = StaticDestinationObjects(objects = listOf("hashiras")),
@@ -436,7 +421,7 @@ class DeclarativeDestinationFactoryTest {
 
         try {
             val actualOperations =
-                DeclarativeDestinationFactory(config).createOperationProvider().get()
+                DeclarativeDestinationFactory(ANY_CONFIG).createOperationProvider().get()
             assertEquals(expectedOperations, actualOperations)
         } finally {
             unmockkStatic("io.airbyte.cdk.util.ResourceUtils") // Clean up mocks
@@ -445,9 +430,6 @@ class DeclarativeDestinationFactoryTest {
 
     @Test
     internal fun `test dynamic operations with dynamic destination objects`() {
-        val config =
-            Jsons.readTree("""{"api_id": "$VALID_API_ID", "api_token": "$VALID_API_TOKEN"}""")
-
         val objectsMockBody =
             mapOf<String, Any>(
                 "results" to
@@ -485,10 +467,11 @@ class DeclarativeDestinationFactoryTest {
         every { anyConstructed<HttpRequester>().send(any()) } returnsMany
             listOf(objectsResponse, schemaResponse)
 
-        // This feels kind of jank to have to mock based on the incoming url parameter of the
-        // constructor, but we shouldn't check the url during send() because its private.
-        // Ideally this should mock based on the url field, but maybest instead mock the HttpClient
-        // instance instead. i'm looking into a better way
+        // This doesn't quite accurately test the mock based on the incoming url parameter of the
+        // constructor, but we can't check the url during send() because its private. Ideally,
+        // this should mock based on the url field so we adequately test inputs are sent as
+        // expected. but we don't currently have a good mechanism to do so. Leaving a little
+        // bit of experimental code for the moment. The mocker is out of scope for the moment
         //        every {
         //            constructedWith<HttpRequester>(
         //                any(),
@@ -506,19 +489,6 @@ class DeclarativeDestinationFactoryTest {
 
         mockManifest(
             ManifestBuilder()
-                .withChecker(
-                    HttpRequestChecker(
-                        HttpRequesterModel(
-                            url = "https://hashira.net/me",
-                            method = HttpMethod.GET,
-                            authenticator =
-                                BasicAccessAuthenticatorModel(
-                                    """{{ config["api_id"] }}""",
-                                    """{{ config["api_token"] }}""",
-                                ),
-                        ),
-                    )
-                )
                 .withCatalogOperation(
                     DynamicCatalogOperation(
                         objects =
@@ -606,7 +576,7 @@ class DeclarativeDestinationFactoryTest {
 
         try {
             val actualOperations =
-                DeclarativeDestinationFactory(config).createOperationProvider().get()
+                DeclarativeDestinationFactory(ANY_CONFIG).createOperationProvider().get()
             assertEquals(expectedOperations, actualOperations)
         } finally {
             unmockkStatic("io.airbyte.cdk.util.ResourceUtils") // Clean up mocks
@@ -623,3 +593,5 @@ class DeclarativeDestinationFactoryTest {
         return ObjectMapper().writeValueAsString(responseBody)
     }
 }
+
+private fun convertMapToJsonNode(map: Map<String, Any>): JsonNode = ObjectMapper().valueToTree(map)

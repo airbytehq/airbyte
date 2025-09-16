@@ -1,3 +1,9 @@
+## Version 0.1.31
+
+**Load CDK**
+
+* **Changed:** Low-code API destination support for dynamically defined discover objects and operations
+
 ## Version 0.1.30
 
 **Load CDK**

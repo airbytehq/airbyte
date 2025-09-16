@@ -302,20 +302,29 @@ class DeclarativeDestinationFactory(config: JsonNode?) {
             schemaModel.typeMapping?.let { createTypeMapping(it) } ?: emptyMap(),
         )
 
-    private fun createTypeMapping(model: List<TypesMapModel>): Map<String, AirbyteType> =
+    private fun createTypeMapping(model: List<TypesMapModel>): Map<String, AirbyteType> {
         /*
          *  mapping.airbyteType[0] is not what we want long term. The protocol allows for an API
          *  type to map to multiple types, but this doesn't map to the runtime InsertionMethod's
          *  typeMapping which is 1:1 between API type -> Airbyte type. If multiple are provided
-         *  we take the first right now, but in a subsequent change, the InsertionMethod.typeMapper
+         *  we fail loudly for now, but in a subsequent change, the InsertionMethod.typeMapper
          *  should become Map<String, List<AirbyteType> to support this. But out of scope for
          *  the initial change to support dynamic schema discovery.
          */
-        model
+        model.forEach { mapping ->
+            if (mapping.airbyteType.size != 1) {
+                throw IllegalArgumentException(
+                    "Mapping with api_type(s) ${mapping.apiType} maps to ${mapping.airbyteType.size}, but only 1 airbyte_type is allowed."
+                )
+            }
+        }
+
+        return model
             .flatMap { mapping ->
                 mapping.apiType.map { apiType -> apiType to mapping.airbyteType[0].toAirbyteType() }
             }
             .toMap()
+    }
 
     fun AirbyteTypeModel.toAirbyteType(): AirbyteType =
         when (this) {
