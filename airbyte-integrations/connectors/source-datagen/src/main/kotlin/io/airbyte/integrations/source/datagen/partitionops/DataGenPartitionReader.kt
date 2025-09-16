@@ -75,8 +75,9 @@ class DataGenPartitionReader(val partition: DataGenSourcePartition) : PartitionR
 
         val configuration = sharedState.configuration
         val sourceDataGenerator = configuration.flavor.dataGenerator
+        val recordCountPerPartition = configuration.maxRecords / partition.modulo
 
-        for (i in 0L until configuration.maxRecords) {
+        for (i in 0L until recordCountPerPartition) {
             val record = sourceDataGenerator.generateData(i, partition.modulo, partition.offset)
             outputRoute(record, null)
             numRecords.incrementAndGet()

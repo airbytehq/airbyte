@@ -47,7 +47,7 @@ class DataGenSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonProperty("max_records")
     @JsonSchemaTitle("Max Record")
     @JsonSchemaDescription(
-        "The maximum number of records to generate per partition. Min 1. Max 100 billion."
+        "The number of record messages to emit from this connector. Min 1. Max 100 billion."
     )
     @JsonSchemaInject(json = """{"default":"100"}""")
     var maxRecords: Long = 100
