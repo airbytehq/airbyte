@@ -344,7 +344,6 @@ class DeclarativeDestinationFactoryTest {
                 .withCatalogOperation(
                     DynamicCatalogOperation(
                         objects = StaticDestinationObjects(objects = listOf("hashiras")),
-                        objectNamePath = emptyList(),
                         schema =
                             SchemaConfiguration(
                                 propertiesPath = listOf("properties"),
@@ -504,7 +503,6 @@ class DeclarativeDestinationFactoryTest {
                                     ),
                                 namePath = listOf("name"),
                             ),
-                        objectNamePath = listOf("name"), // todo: confirm what this is used for
                         schema =
                             SchemaConfiguration(
                                 propertiesPath = listOf("properties"),
