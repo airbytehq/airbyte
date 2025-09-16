@@ -1,3 +1,33 @@
+## Version 0.1.33
+
+**Load CDK**
+
+* **Changed:** Low-code API destination support for dynamically defined discover objects and operations
+
+## Version 0.1.32
+
+**Load CDK**
+
+* **Changed:** Fix input stream wiring for non-dockerized acceptance tests
+
+## Version 0.1.31
+
+**Extract CDK**
+
+* **Changed:** Pass WhereNode to FromSample node so we can apply filters to the sample query.
+
+## Version 0.1.30
+
+**Load CDK**
+
+* **Changed:** Low-code API destination support for statically defined discover operations
+
+## Version 0.1.29
+
+**Load CDK**
+
+* Use correct field name for generation ID meta column.
+
 ## Version 0.1.28
 
 **Extract CDK**
