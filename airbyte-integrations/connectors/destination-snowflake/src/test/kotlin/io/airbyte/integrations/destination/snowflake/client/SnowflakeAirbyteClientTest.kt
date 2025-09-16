@@ -118,8 +118,7 @@ internal class SnowflakeAirbyteClientTest {
         runBlocking {
             client.createNamespace(namespace)
             verify(exactly = 1) { sqlGenerator.createNamespace(namespace) }
-            verify(exactly = 1) { sqlGenerator.useSchema(namespace) }
-            verify(exactly = 1) { sqlGenerator.createFileFormat() }
+            verify(exactly = 1) { sqlGenerator.createFileFormat(namespace) }
             verify(exactly = 3) { mockConnection.close() }
         }
     }
