@@ -11,6 +11,7 @@ import io.micronaut.context.annotation.Requires
 import io.micronaut.context.env.Environment
 import jakarta.inject.Named
 import jakarta.inject.Singleton
+import java.io.InputStream
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.toJavaDuration
 
@@ -22,6 +23,17 @@ import kotlin.time.toJavaDuration
 @Factory
 @Requires(env = [Environment.TEST])
 class TestBeanOverrideFactory {
+    // non-dockerized std-in acceptance tests create an input stream bean at runtime it uses
+    // to send messages to the destination, so we must wire that up here
+    @Requires(notEnv = ["docker"])
+    @Requires(property = "airbyte.destination.core.data-channel.medium", value = "STDIO")
+    @Singleton
+    @Primary
+    @Named("inputStreams")
+    fun testStdInStreams(
+        @Named("inputStream") testInputStream: InputStream,
+    ): List<InputStream> = listOf(testInputStream)
+
     @Singleton
     @Primary
     fun testConfig() =

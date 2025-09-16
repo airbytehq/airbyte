@@ -147,6 +147,8 @@ The connector is restricted by [requests limitation](https://business-api.tiktok
 
 | Version   | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.8.2-rc.1 | 2025-09-11 | [65527](https://github.com/airbytehq/airbyte/pull/65527) | Fix missing records for hourly streams: remove record filter|
+| 4.8.1 | 2025-09-10 | [66161](https://github.com/airbytehq/airbyte/pull/66161) | Promoting release candidate 4.8.1-rc.1 to a main version. |
 | 4.8.1-rc.1 | 2025-09-05 | [65602](https://github.com/airbytehq/airbyte/pull/65602) | Add record filter to `ads` stream to filter records without `modify_time`.|
 | 4.8.0 | 2025-06-24 | [62048](https://github.com/airbytehq/airbyte/pull/62048) | Promoting release candidate 4.8.0-rc.1 to a main version. |
 | 4.8.0-rc.1     | 2025-06-16 | [61580](https://github.com/airbytehq/airbyte/pull/61580)  | Convert to manifest-only format                                                                                                                               |
