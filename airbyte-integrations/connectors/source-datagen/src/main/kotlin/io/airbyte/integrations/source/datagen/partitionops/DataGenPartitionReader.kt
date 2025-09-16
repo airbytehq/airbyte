@@ -7,12 +7,11 @@ import io.airbyte.cdk.output.OutputMessageRouter
 import io.airbyte.cdk.read.PartitionReadCheckpoint
 import io.airbyte.cdk.read.PartitionReader
 import io.airbyte.cdk.read.Resource
-import io.airbyte.cdk.read.ResourceAcquirer
 import io.airbyte.cdk.read.ResourceType
 import io.airbyte.cdk.read.ResourceType.RESOURCE_DB_CONNECTION
 import io.airbyte.cdk.read.ResourceType.RESOURCE_OUTPUT_SOCKET
 import io.airbyte.cdk.read.Stream
-import io.airbyte.cdk.read.StreamFeedBootstrap
+import io.airbyte.cdk.read.generatePartitionId
 import io.airbyte.integrations.source.datagen.partitionobjs.DataGenSharedState
 import io.airbyte.integrations.source.datagen.partitionobjs.DataGenSourcePartition
 import io.airbyte.integrations.source.datagen.partitionobjs.DataGenStreamState
@@ -29,9 +28,7 @@ class DataGenPartitionReader (val partition: DataGenSourcePartition) : Partition
 
     val numRecords = AtomicLong()
     val runComplete = AtomicBoolean(false)
-    // dont need this rn cuz just doing 1 partition
-    // protected var partitionId: String = generatePartitionId(4)
-    protected var partitionId: String = "1"
+    protected var partitionId: String = generatePartitionId(4)
     val streamState: DataGenStreamState = partition.streamState
     val stream: Stream = streamState.stream
     val sharedState: DataGenSharedState = streamState.sharedState
@@ -79,8 +76,7 @@ class DataGenPartitionReader (val partition: DataGenSourcePartition) : Partition
         val sourceDataGenerator = configuration.flavor.dataGenerator
 
         for (i in 0L until configuration.maxRecords) {
-            val record = sourceDataGenerator.generateData()
-
+            val record = sourceDataGenerator.generateData(i, partition.modulo, partition.offset)
             outputRoute(record, null)
             numRecords.incrementAndGet()
         }
@@ -92,14 +88,6 @@ class DataGenPartitionReader (val partition: DataGenSourcePartition) : Partition
     }
 
     override fun checkpoint(): PartitionReadCheckpoint {
-//        return PartitionReadCheckpoint(
-//            streamFeedBootstrap.currentState ?: Jsons.objectNode(),
-//            (acquiredResources.get().size).toLong(),
-//            when (streamFeedBootstrap.dataChannelMedium) {
-//                STDIO -> null
-//                SOCKET -> partitionId
-//            }
-//        )
         val opaqueStateValue =
             if (runComplete.get()) {
                 DataGenStreamState.completeState
@@ -109,7 +97,10 @@ class DataGenPartitionReader (val partition: DataGenSourcePartition) : Partition
         return PartitionReadCheckpoint(
             opaqueStateValue,
             numRecords.get(),
-            partitionId
+            when (streamState.streamFeedBootstrap.dataChannelMedium) {
+                SOCKET -> partitionId
+                STDIO -> null
+            }
         )
     }
 
@@ -118,6 +109,6 @@ class DataGenPartitionReader (val partition: DataGenSourcePartition) : Partition
             outputMessageRouter.close()
         }
         acquiredResources.getAndSet(null)?.forEach { it.value.close() }
-        // partitionId = generatePartitionId(4)
+        partitionId = generatePartitionId(4)
     }
 }

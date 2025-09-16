@@ -1,9 +1,6 @@
 package io.airbyte.integrations.source.datagen.partitionops
 
-import com.fasterxml.jackson.databind.node.TextNode
 import io.airbyte.cdk.StreamIdentifier
-import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.StreamFeedBootstrap
 import io.airbyte.integrations.source.datagen.partitionobjs.DataGenSharedState
 import io.airbyte.integrations.source.datagen.partitionobjs.DataGenSourcePartition
@@ -25,7 +22,6 @@ class DataGenSourcePartitionFactory(val sharedState: DataGenSharedState) {
 
     fun create(streamFeedBootstrap: StreamFeedBootstrap): DataGenSourcePartition? {
         log.info { "Starting partition creation for stream: ${streamFeedBootstrap.feed.id}"}
-        //val streamState: DataGenStreamState = streamState(streamFeedBootstrap)
 
         if (streamFeedBootstrap.currentState == DataGenStreamState.completeState) {
             return null
@@ -40,9 +36,12 @@ class DataGenSourcePartitionFactory(val sharedState: DataGenSharedState) {
         return DataGenSourcePartition(streamState(streamFeedBootstrap))
     }
 
-    fun split(unsplitPartition: DataGenSourcePartition, opaqueStateValues: List<OpaqueStateValue>
+    fun split(unsplitPartition: DataGenSourcePartition
     ): List<DataGenSourcePartition> {
-        return listOf(unsplitPartition)
+        val modulo = sharedState.configuration.maxConcurrency
+        return List(modulo) { i ->
+            DataGenSourcePartition(unsplitPartition.streamState, modulo, i)
+        }
     }
 
 }

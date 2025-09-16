@@ -1,8 +1,8 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.source.datagen
 
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
-import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.command.SourceConfigurationFactory
 import io.airbyte.cdk.output.DataChannelMedium
@@ -21,8 +21,6 @@ import jakarta.inject.Singleton
 import java.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toJavaDuration
-
-// TODO: support configuration to choose flavor
 
 /** Dev data gen-specific implementation of [SourceConfiguration] */
 data class DataGenSourceConfiguration(
@@ -65,18 +63,20 @@ class DataGenSourceConfigurationFactory
 
     override fun makeWithoutExceptionHandling(pojo: DataGenSourceConfigurationSpecification):
         DataGenSourceConfiguration {
-        val maxConcurrencyLegacy: Int = pojo.concurrency
+        if ((pojo.concurrency ?: 1) <= 0) {
+            throw ConfigErrorException("Concurrency setting should be positive")
+        }
 
         val maxConcurrency: Int =
             when (DataChannelMedium.valueOf(dataChannelMedium)) {
-                STDIO -> maxConcurrencyLegacy
+                STDIO -> pojo.concurrency ?: 1
                 SOCKET -> {
-                    maxConcurrencyLegacy.takeIf { it != 1 } ?: socketPaths.size
+                    pojo.concurrency?: socketPaths.size
                 }
             }
         log.info { "Effective concurrency: $maxConcurrency" }
 
-        //unnecessary rn cuz incremental is default, template for future flavor additions
+        // unnecessary rn cuz incremental is default, template for future flavor additions
 //        if (pojo.getFlavor() is Incremental) {
 //            log.info { "Using Incremental Flavor" }
 //            return DataGenSourceConfiguration(maxConcurrency = maxConcurrency, flavor = IncrementFlavor, runDuration = runDuration)

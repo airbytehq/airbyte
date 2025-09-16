@@ -3,7 +3,6 @@ package io.airbyte.integrations.source.datagen.partitionops
 import io.airbyte.cdk.read.PartitionReader
 import io.airbyte.cdk.read.PartitionsCreator
 import io.airbyte.cdk.read.PartitionsCreator.TryAcquireResourcesStatus
-import io.airbyte.cdk.read.Stream
 import io.airbyte.integrations.source.datagen.partitionobjs.DataGenSharedState
 import io.airbyte.integrations.source.datagen.partitionobjs.DataGenSourcePartition
 import io.airbyte.integrations.source.datagen.partitionobjs.DataGenStreamState
@@ -15,7 +14,6 @@ class DataGenPartitionsCreator (
 ): PartitionsCreator {
 
     val streamState: DataGenStreamState = partition.streamState
-    val stream: Stream = streamState.stream
     val sharedState: DataGenSharedState = streamState.sharedState
 
     private val acquiredResources = AtomicReference<AcquiredResources?>()
@@ -29,9 +27,9 @@ class DataGenPartitionsCreator (
     }
 
     override suspend fun run(): List<PartitionReader> {
-        // TODO: add split()
-        val partitionReader = DataGenPartitionReader(partition)
-        return listOf(partitionReader)
+        val splitPartitions = partitionFactory.split(partition)
+        val partitionReaders = splitPartitions.map { splitPartition -> DataGenPartitionReader(splitPartition) }
+        return partitionReaders
     }
 
     override fun releaseResources() {
