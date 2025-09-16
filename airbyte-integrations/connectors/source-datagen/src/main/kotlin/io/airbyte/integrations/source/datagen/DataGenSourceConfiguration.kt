@@ -6,8 +6,8 @@ import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.command.SourceConfigurationFactory
 import io.airbyte.cdk.output.DataChannelMedium
-import io.airbyte.cdk.output.DataChannelMedium.STDIO
 import io.airbyte.cdk.output.DataChannelMedium.SOCKET
+import io.airbyte.cdk.output.DataChannelMedium.STDIO
 import io.airbyte.cdk.output.sockets.DATA_CHANNEL_PROPERTY_PREFIX
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
@@ -32,7 +32,8 @@ data class DataGenSourceConfiguration(
     override val realHost: String = "unused",
     override val realPort: Int = 0,
     override val sshTunnel: SshTunnelMethodConfiguration? = null,
-    override val sshConnectionOptions: SshConnectionOptions = SshConnectionOptions.fromAdditionalProperties(emptyMap()),
+    override val sshConnectionOptions: SshConnectionOptions =
+        SshConnectionOptions.fromAdditionalProperties(emptyMap()),
     val flavor: Flavor,
     val maxRecords: Long
 ) : SourceConfiguration {
@@ -42,8 +43,8 @@ data class DataGenSourceConfiguration(
         @Singleton
         fun dataGenSourceConfig(
             factory:
-            SourceConfigurationFactory<
-                DataGenSourceConfigurationSpecification, DataGenSourceConfiguration>,
+                SourceConfigurationFactory<
+                    DataGenSourceConfigurationSpecification, DataGenSourceConfiguration>,
             supplier: ConfigurationSpecificationSupplier<DataGenSourceConfigurationSpecification>,
         ): DataGenSourceConfiguration = factory.make(supplier.get())
     }
@@ -51,18 +52,20 @@ data class DataGenSourceConfiguration(
 
 @Singleton
 class DataGenSourceConfigurationFactory
-    @Inject
-    constructor(
-        @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.medium}") val dataChannelMedium: String = STDIO.name,
-        @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.socket-paths}")
-        val socketPaths: List<String> = emptyList()
-    ):
-    SourceConfigurationFactory<DataGenSourceConfigurationSpecification, DataGenSourceConfiguration> {
+@Inject
+constructor(
+    @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.medium}") val dataChannelMedium: String = STDIO.name,
+    @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.socket-paths}")
+    val socketPaths: List<String> = emptyList()
+) :
+    SourceConfigurationFactory<
+        DataGenSourceConfigurationSpecification, DataGenSourceConfiguration> {
 
     private val log = KotlinLogging.logger {}
 
-    override fun makeWithoutExceptionHandling(pojo: DataGenSourceConfigurationSpecification):
-        DataGenSourceConfiguration {
+    override fun makeWithoutExceptionHandling(
+        pojo: DataGenSourceConfigurationSpecification
+    ): DataGenSourceConfiguration {
         if ((pojo.concurrency ?: 1) <= 0) {
             throw ConfigErrorException("Concurrency setting should be positive")
         }
@@ -71,18 +74,21 @@ class DataGenSourceConfigurationFactory
             when (DataChannelMedium.valueOf(dataChannelMedium)) {
                 STDIO -> pojo.concurrency ?: 1
                 SOCKET -> {
-                    pojo.concurrency?: socketPaths.size
+                    pojo.concurrency ?: socketPaths.size
                 }
             }
         log.info { "Effective concurrency: $maxConcurrency" }
 
         // unnecessary rn cuz incremental is default, template for future flavor additions
-//        if (pojo.getFlavor() is Incremental) {
-//            log.info { "Using Incremental Flavor" }
-//            return DataGenSourceConfiguration(maxConcurrency = maxConcurrency, flavor = IncrementFlavor, runDuration = runDuration)
-//        }
+        //        if (pojo.getFlavor() is Incremental) {
+        //            log.info { "Using Incremental Flavor" }
+        //            return DataGenSourceConfiguration(maxConcurrency = maxConcurrency, flavor =
+        // IncrementFlavor, runDuration = runDuration)
+        //        }
 
-        return DataGenSourceConfiguration(maxConcurrency = maxConcurrency, flavor = IncrementFlavor,
+        return DataGenSourceConfiguration(
+            maxConcurrency = maxConcurrency,
+            flavor = IncrementFlavor,
             maxRecords = pojo.maxRecords
         )
     }

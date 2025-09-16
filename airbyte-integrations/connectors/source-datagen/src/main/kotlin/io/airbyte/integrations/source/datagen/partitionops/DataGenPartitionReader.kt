@@ -1,6 +1,9 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.datagen.partitionops
 
-import com.fasterxml.jackson.databind.node.TextNode
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.output.DataChannelMedium.*
 import io.airbyte.cdk.output.OutputMessageRouter
@@ -20,9 +23,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 
-
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
-class DataGenPartitionReader (val partition: DataGenSourcePartition) : PartitionReader {
+class DataGenPartitionReader(val partition: DataGenSourcePartition) : PartitionReader {
     private val log = KotlinLogging.logger {}
     lateinit var outputMessageRouter: OutputMessageRouter
 
@@ -36,14 +38,13 @@ class DataGenPartitionReader (val partition: DataGenSourcePartition) : Partition
     interface AcquiredResource : AutoCloseable {
         val resource: Resource.Acquired?
     }
-    private val acquiredResources = AtomicReference<Map<ResourceType,AcquiredResource>>()
+    private val acquiredResources = AtomicReference<Map<ResourceType, AcquiredResource>>()
 
-    override fun tryAcquireResources() : PartitionReader.TryAcquireResourcesStatus{
+    override fun tryAcquireResources(): PartitionReader.TryAcquireResourcesStatus {
         val resourceType =
             when (streamState.streamFeedBootstrap.dataChannelMedium) {
                 STDIO -> listOf(RESOURCE_DB_CONNECTION)
-                SOCKET ->
-                    listOf(RESOURCE_DB_CONNECTION, RESOURCE_OUTPUT_SOCKET)
+                SOCKET -> listOf(RESOURCE_DB_CONNECTION, RESOURCE_OUTPUT_SOCKET)
             }
 
         val resources: Map<ResourceType, AcquiredResource> =
@@ -81,7 +82,9 @@ class DataGenPartitionReader (val partition: DataGenSourcePartition) : Partition
             numRecords.incrementAndGet()
         }
 
-        log.info { "Completed data generation for partition $partitionId. Total records generated: ${numRecords.get()}." }
+        log.info {
+            "Completed data generation for partition $partitionId. Total records generated: ${numRecords.get()}."
+        }
         runComplete.set(true)
 
         return

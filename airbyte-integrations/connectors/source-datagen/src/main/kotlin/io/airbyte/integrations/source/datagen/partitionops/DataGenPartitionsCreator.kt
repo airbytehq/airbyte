@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.datagen.partitionops
 
 import io.airbyte.cdk.read.PartitionReader
@@ -8,10 +12,10 @@ import io.airbyte.integrations.source.datagen.partitionobjs.DataGenSourcePartiti
 import io.airbyte.integrations.source.datagen.partitionobjs.DataGenStreamState
 import java.util.concurrent.atomic.AtomicReference
 
-class DataGenPartitionsCreator (
+class DataGenPartitionsCreator(
     val partition: DataGenSourcePartition,
     val partitionFactory: DataGenSourcePartitionFactory
-): PartitionsCreator {
+) : PartitionsCreator {
 
     val streamState: DataGenStreamState = partition.streamState
     val sharedState: DataGenSharedState = streamState.sharedState
@@ -19,16 +23,18 @@ class DataGenPartitionsCreator (
     private val acquiredResources = AtomicReference<AcquiredResources?>()
     fun interface AcquiredResources : AutoCloseable
 
-    override fun tryAcquireResources() : TryAcquireResourcesStatus {
-        val acquiredResources: AcquiredResources = sharedState.tryAcquireResourcesForCreator()
-            ?: return TryAcquireResourcesStatus.RETRY_LATER
+    override fun tryAcquireResources(): TryAcquireResourcesStatus {
+        val acquiredResources: AcquiredResources =
+            sharedState.tryAcquireResourcesForCreator()
+                ?: return TryAcquireResourcesStatus.RETRY_LATER
         this.acquiredResources.set(acquiredResources)
         return TryAcquireResourcesStatus.READY_TO_RUN
     }
 
     override suspend fun run(): List<PartitionReader> {
         val splitPartitions = partitionFactory.split(partition)
-        val partitionReaders = splitPartitions.map { splitPartition -> DataGenPartitionReader(splitPartition) }
+        val partitionReaders =
+            splitPartitions.map { splitPartition -> DataGenPartitionReader(splitPartition) }
         return partitionReaders
     }
 

@@ -17,8 +17,8 @@ data:
   connectorIPCOptions:
     dataChannel:
       version: "0.0.1"
-      supportedSerialization: [ "JSONL" ] # TODO: add support for PROTOBUF
-      supportedTransport: [ "STDIO" ] # TODO: add support for SOCKET
+      supportedSerialization: ["JSONL"] # TODO: add support for PROTOBUF
+      supportedTransport: ["STDIO"] # TODO: add support for SOCKET
   registryOverrides:
     cloud:
       enabled: false

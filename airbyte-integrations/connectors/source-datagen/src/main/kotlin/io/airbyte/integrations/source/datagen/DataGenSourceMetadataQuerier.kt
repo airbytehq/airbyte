@@ -32,14 +32,16 @@ class DataGenSourceMetadataQuerier() : MetadataQuerier {
     }
 
     override fun streamNamespaces(): List<String> {
-         return flavors.keys.toList()
+        return flavors.keys.toList()
     }
 
     override fun streamNames(streamNamespace: String?): List<StreamIdentifier> {
-         val flavor = streamNamespace?.let { flavors[it] } ?: return emptyList()
-         return flavor.tableNames
-             .map { tableName -> StreamDescriptor().withName(tableName).withNamespace(streamNamespace) }
-             .map(StreamIdentifier::from)
+        val flavor = streamNamespace?.let { flavors[it] } ?: return emptyList()
+        return flavor.tableNames
+            .map { tableName ->
+                StreamDescriptor().withName(tableName).withNamespace(streamNamespace)
+            }
+            .map(StreamIdentifier::from)
     }
 
     override fun primaryKey(

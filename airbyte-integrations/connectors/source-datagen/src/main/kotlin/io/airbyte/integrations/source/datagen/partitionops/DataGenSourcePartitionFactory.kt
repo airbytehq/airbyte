@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.datagen.partitionops
 
 import io.airbyte.cdk.StreamIdentifier
@@ -6,8 +10,8 @@ import io.airbyte.integrations.source.datagen.partitionobjs.DataGenSharedState
 import io.airbyte.integrations.source.datagen.partitionobjs.DataGenSourcePartition
 import io.airbyte.integrations.source.datagen.partitionobjs.DataGenStreamState
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.util.concurrent.ConcurrentHashMap
 import jakarta.inject.Singleton
+import java.util.concurrent.ConcurrentHashMap
 
 private val log = KotlinLogging.logger {}
 
@@ -21,7 +25,7 @@ class DataGenSourcePartitionFactory(val sharedState: DataGenSharedState) {
         }
 
     fun create(streamFeedBootstrap: StreamFeedBootstrap): DataGenSourcePartition? {
-        log.info { "Starting partition creation for stream: ${streamFeedBootstrap.feed.id}"}
+        log.info { "Starting partition creation for stream: ${streamFeedBootstrap.feed.id}" }
 
         if (streamFeedBootstrap.currentState == DataGenStreamState.completeState) {
             return null
@@ -36,12 +40,8 @@ class DataGenSourcePartitionFactory(val sharedState: DataGenSharedState) {
         return DataGenSourcePartition(streamState(streamFeedBootstrap))
     }
 
-    fun split(unsplitPartition: DataGenSourcePartition
-    ): List<DataGenSourcePartition> {
+    fun split(unsplitPartition: DataGenSourcePartition): List<DataGenSourcePartition> {
         val modulo = sharedState.configuration.maxConcurrency
-        return List(modulo) { i ->
-            DataGenSourcePartition(unsplitPartition.streamState, modulo, i)
-        }
+        return List(modulo) { i -> DataGenSourcePartition(unsplitPartition.streamState, modulo, i) }
     }
-
 }

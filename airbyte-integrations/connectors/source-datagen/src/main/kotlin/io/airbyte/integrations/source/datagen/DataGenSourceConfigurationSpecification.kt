@@ -22,11 +22,9 @@ import jakarta.inject.Singleton
  */
 @Singleton
 class DataGenSourceConfigurationSpecification : ConfigurationSpecification() {
-    @JsonIgnore
-    private var flavorInternal: FlavorSpec = Incremental // default
+    @JsonIgnore private var flavorInternal: FlavorSpec = Incremental // default
 
-    @JsonIgnore
-    private var flavorJson: FlavorSpec? = null
+    @JsonIgnore private var flavorJson: FlavorSpec? = null
 
     @JsonSetter("flavor")
     fun setFlavor(value: FlavorSpec) {
@@ -41,12 +39,16 @@ class DataGenSourceConfigurationSpecification : ConfigurationSpecification() {
 
     @JsonProperty("concurrency")
     @JsonSchemaTitle("Max Concurrent Queries to Database")
-    @JsonSchemaDescription("Maximum number of concurrent queries to the database. Leave empty to let Airbyte optimize performance.")
+    @JsonSchemaDescription(
+        "Maximum number of concurrent queries to the database. Leave empty to let Airbyte optimize performance."
+    )
     var concurrency: Int? = null
 
     @JsonProperty("max_records")
     @JsonSchemaTitle("Max Record")
-    @JsonSchemaDescription("The maximum number of records to generate per partition. Min 1. Max 100 billion.")
+    @JsonSchemaDescription(
+        "The maximum number of records to generate per partition. Min 1. Max 100 billion."
+    )
     @JsonSchemaInject(json = """{"default":"100"}""")
     var maxRecords: Long = 100
 }

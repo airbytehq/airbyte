@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.datagen.partitionops
 
 import io.airbyte.cdk.read.FeedBootstrap
@@ -12,8 +16,8 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 
 @Singleton
-class DataGenSourcePartitionsCreatorFactory(
-    val partitionFactory: DataGenSourcePartitionFactory) : PartitionsCreatorFactory {
+class DataGenSourcePartitionsCreatorFactory(val partitionFactory: DataGenSourcePartitionFactory) :
+    PartitionsCreatorFactory {
     private val log = KotlinLogging.logger {}
 
     override fun make(feedBootstrap: FeedBootstrap<*>): PartitionsCreator? {
@@ -29,8 +33,9 @@ class DataGenSourcePartitionsCreatorFactory(
 }
 
 @Singleton
-class DataGenSourcePartitionsCreatorFactorySupplier (val factory: DataGenSourcePartitionsCreatorFactory):
-    PartitionsCreatorFactorySupplier<DataGenSourcePartitionsCreatorFactory> {
+class DataGenSourcePartitionsCreatorFactorySupplier(
+    val factory: DataGenSourcePartitionsCreatorFactory
+) : PartitionsCreatorFactorySupplier<DataGenSourcePartitionsCreatorFactory> {
     override fun get() = factory
 }
 
