@@ -2,7 +2,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
-  connectorSubtype: java
+  connectorSubtype: database
   connectorType: source
   definitionId: f14d5125-dc0d-4f6c-abe5-acde821a2203
   dockerImageTag: 0.1.0
