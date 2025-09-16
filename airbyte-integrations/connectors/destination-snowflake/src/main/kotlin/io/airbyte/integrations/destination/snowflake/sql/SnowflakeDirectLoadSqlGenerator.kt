@@ -20,6 +20,10 @@ internal const val QUOTE: String = "\""
 internal const val STAGE_FORMAT_NAME: String = "airbyte_csv_format"
 internal const val STAGE_NAME_PREFIX = "airbyte_stage_"
 
+internal fun buildSnowflakeStageName(tableName: TableName): String {
+    return "\"${tableName.namespace}\".\"$STAGE_NAME_PREFIX${tableName.name}\""
+}
+
 private val log = KotlinLogging.logger {}
 
 @Singleton
@@ -276,10 +280,6 @@ class SnowflakeDirectLoadSqlGenerator(
             ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE
             REPLACE_INVALID_CHARACTERS = TRUE
         """.trimIndent()
-    }
-
-    private fun buildSnowflakeStageName(tableName: TableName): String {
-        return "\"${tableName.namespace}\".\"$STAGE_NAME_PREFIX${tableName.name}\""
     }
 
     fun createSnowflakeStage(tableName: TableName): String {

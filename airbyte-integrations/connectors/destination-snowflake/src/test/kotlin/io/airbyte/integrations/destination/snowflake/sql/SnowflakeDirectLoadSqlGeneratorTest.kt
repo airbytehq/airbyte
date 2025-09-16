@@ -262,7 +262,7 @@ new_record."_airbyte_generation_id"
         val tableName = TableName(namespace = "namespace", name = "name")
         val sql = snowflakeDirectLoadSqlGenerator.createSnowflakeStage(tableName)
         assertEquals(
-            "CREATE OR REPLACE STAGE \"${tableName.namespace}\".\"$STAGE_NAME_PREFIX${tableName.name}\"\n    FILE_FORMAT = $STAGE_FORMAT_NAME;",
+            "CREATE OR REPLACE STAGE ${buildSnowflakeStageName(tableName)}\n    FILE_FORMAT = $STAGE_FORMAT_NAME;",
             sql
         )
     }
@@ -273,7 +273,7 @@ new_record."_airbyte_generation_id"
         val tempFilePath = "/some/file/path.csv"
         val sql = snowflakeDirectLoadSqlGenerator.putInStage(tableName, tempFilePath)
         assertEquals(
-            "PUT 'file://$tempFilePath' @\"${tableName.namespace}\".\"$STAGE_NAME_PREFIX${tableName.name}\"\nAUTO_COMPRESS = TRUE\nOVERWRITE = TRUE",
+            "PUT 'file://$tempFilePath' @${buildSnowflakeStageName(tableName)}\nAUTO_COMPRESS = TRUE\nOVERWRITE = TRUE",
             sql
         )
     }
@@ -283,7 +283,7 @@ new_record."_airbyte_generation_id"
         val tableName = TableName(namespace = "namespace", name = "name")
         val sql = snowflakeDirectLoadSqlGenerator.copyFromStage(tableName)
         assertEquals(
-            "COPY INTO ${tableName.toPrettyString(quote=QUOTE)}\nFROM @\"${tableName.namespace}\".\"$STAGE_NAME_PREFIX${tableName.name}\"\nFILE_FORMAT = $STAGE_FORMAT_NAME\nON_ERROR = 'ABORT_STATEMENT'",
+            "COPY INTO ${tableName.toPrettyString(quote=QUOTE)}\nFROM @${buildSnowflakeStageName(tableName)}\nFILE_FORMAT = $STAGE_FORMAT_NAME\nON_ERROR = 'ABORT_STATEMENT'",
             sql
         )
     }
