@@ -174,7 +174,7 @@ class SnowflakeDirectLoadSqlGenerator(
         val cdcSkipInsertClause: String
         if (
             stream.schema.asColumns().containsKey(CDC_DELETED_AT_COLUMN) &&
-            cdcDeletionMode == CdcDeletionMode.HARD_DELETE
+                cdcDeletionMode == CdcDeletionMode.HARD_DELETE
         ) {
             // Execute CDC deletions if there's already a record
             cdcDeleteClause =
@@ -189,8 +189,9 @@ class SnowflakeDirectLoadSqlGenerator(
         }
 
         // Build the MERGE statement
-        val mergeStatement = if (cdcDeleteClause.isNotEmpty()) {
-            """
+        val mergeStatement =
+            if (cdcDeleteClause.isNotEmpty()) {
+                """
             MERGE INTO ${targetTableName.toPrettyString(QUOTE)} AS target_table
             USING (
               $selectSourceRecords
@@ -205,8 +206,8 @@ class SnowflakeDirectLoadSqlGenerator(
               $newRecordColumnList
             )
         """.trimIndent()
-        } else {
-            """
+            } else {
+                """
             MERGE INTO ${targetTableName.toPrettyString(QUOTE)} AS target_table
             USING (
               $selectSourceRecords
@@ -220,7 +221,7 @@ class SnowflakeDirectLoadSqlGenerator(
               $newRecordColumnList
             )
         """.trimIndent()
-        }
+            }
 
         return mergeStatement.andLog()
     }
