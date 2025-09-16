@@ -19,5 +19,6 @@ object SnowflakeTestUtils {
     const val QUOTED_IDENTIFIERS_IGNORE_CASE_CREDS = "secrets/1s1t_case_insensitive.json"
     const val CONFIG_WITH_AUTH_STAGING = "secrets/config_with_auth_staging.json"
 
-    fun getConfig(configPath: String): String = Files.readString(Path.of(configPath))
+    fun getConfig(configPath: String): String = Files.readString(getConfigPath(configPath))
+    fun getConfigPath(configPath: String): Path = Path.of(configPath)
 }

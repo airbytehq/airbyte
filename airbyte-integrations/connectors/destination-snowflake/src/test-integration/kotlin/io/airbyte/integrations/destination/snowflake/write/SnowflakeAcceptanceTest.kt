@@ -27,6 +27,7 @@ import io.airbyte.cdk.load.write.UnionBehavior
 import io.airbyte.cdk.load.write.UnknownTypesBehavior
 import io.airbyte.integrations.destination.snowflake.SnowflakeBeanFactory
 import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.CONFIG_WITH_AUTH_STAGING
+import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.getConfigPath
 import io.airbyte.integrations.destination.snowflake.cdk.SnowflakeMigratingConfigurationSpecificationSupplier
 import io.airbyte.integrations.destination.snowflake.cdk.migrateJson
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
@@ -37,7 +38,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import org.junit.jupiter.api.Test
 
-internal val CONFIG_PATH = Path.of(CONFIG_WITH_AUTH_STAGING)
+internal val CONFIG_PATH = getConfigPath(CONFIG_WITH_AUTH_STAGING)
 
 class SnowflakeInsertAcceptanceTest : SnowflakeAcceptanceTest(configPath = CONFIG_PATH) {
     @Test
