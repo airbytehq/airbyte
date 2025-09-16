@@ -29,6 +29,7 @@ import java.io.PrintWriter
 import java.nio.charset.StandardCharsets
 import java.sql.Connection
 import java.util.Properties
+import java.util.logging.Level
 import java.util.logging.Logger
 import javax.sql.DataSource
 import kotlin.time.DurationUnit
@@ -49,6 +50,7 @@ internal const val DATA_SOURCE_PROPERTY_PRIVATE_KEY_FILE = "private_key_file"
 internal const val DATA_SOURCE_PROPERTY_PRIVATE_KEY_PASSWORD = "private_key_file_pwd"
 internal const val DATA_SOURCE_PROPERTY_ROLE = "role"
 internal const val DATA_SOURCE_PROPERTY_SCHEMA = "schema"
+internal const val DATA_SOURCE_PROPERTY_TRACING = "tracing"
 internal const val DATA_SOURCE_PROPERTY_WAREHOUSE = "warehouse"
 internal const val JSON_FORMAT = "JSON"
 internal const val NETWORK_TIMEOUT_MINUTES: Long = 1L
@@ -144,6 +146,8 @@ class SnowflakeBeanFactory {
                     }
                 }
 
+                // https://docs.snowflake.com/en/developer-guide/jdbc/jdbc-parameters#tracing
+                addDataSourceProperty(DATA_SOURCE_PROPERTY_TRACING, Level.SEVERE.name)
                 addDataSourceProperty(
                     DATA_SOURCE_PROPERTY_WAREHOUSE,
                     snowflakeConfiguration.warehouse

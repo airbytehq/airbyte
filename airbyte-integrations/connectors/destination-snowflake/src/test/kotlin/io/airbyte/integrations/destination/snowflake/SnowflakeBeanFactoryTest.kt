@@ -12,6 +12,7 @@ import io.airbyte.integrations.destination.snowflake.spec.KeyPairAuthConfigurati
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.spec.UsernamePasswordAuthConfiguration
 import java.io.File
+import java.util.logging.Level
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 import net.snowflake.client.jdbc.SnowflakeDriver
@@ -98,6 +99,10 @@ internal class SnowflakeBeanFactoryTest {
                 privateKeyPassword,
                 (dataSource as HikariConfig)
                     .dataSourceProperties[DATA_SOURCE_PROPERTY_PRIVATE_KEY_PASSWORD]
+            )
+            assertEquals(
+                Level.SEVERE.name,
+                (dataSource as HikariConfig).dataSourceProperties[DATA_SOURCE_PROPERTY_TRACING]
             )
             assertEquals(
                 warehouse,
@@ -207,6 +212,10 @@ internal class SnowflakeBeanFactoryTest {
             assertEquals(
                 "jdbc:snowflake://${snowflakeConfiguration.host}/?${snowflakeConfiguration.jdbcUrlParams}",
                 (dataSource as HikariConfig).jdbcUrl
+            )
+            assertEquals(
+                Level.SEVERE.name,
+                (dataSource as HikariConfig).dataSourceProperties[DATA_SOURCE_PROPERTY_TRACING]
             )
             assertEquals(
                 warehouse,

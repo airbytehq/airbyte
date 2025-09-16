@@ -8,3 +8,4 @@ logger:
   levels:
     com.zaxxer.hikari: ERROR
     com.zaxxer.hikari.pool: ERROR
+    net.snowflake: ERROR
