@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.postgres.operations.types
 
 import com.fasterxml.jackson.databind.JsonNode

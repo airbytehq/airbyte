@@ -240,9 +240,7 @@ abstract class FieldTypeMapperTest {
             get() {
                 return mapOf(
                     tableName.uppercase() to
-                        values.values.map {
-                            Jsons.readTree("""{"${columnName}":$it}""")
-                        }
+                        values.values.map { Jsons.readTree("""{"${columnName}":$it}""") }
                 )
             }
     }
