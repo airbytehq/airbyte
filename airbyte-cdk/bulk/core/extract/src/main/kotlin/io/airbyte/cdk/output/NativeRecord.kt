@@ -187,7 +187,6 @@ fun NativeRecordPayload.toProtobuf(
                             is ArrayEncoder<*> -> entry.value.encode().toString()
                             else -> entry.value.fieldValue!!
                         }
-
                     )
                 }
             )
