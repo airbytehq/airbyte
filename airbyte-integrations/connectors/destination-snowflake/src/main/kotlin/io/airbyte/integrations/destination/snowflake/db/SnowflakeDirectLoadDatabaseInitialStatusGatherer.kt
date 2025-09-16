@@ -2,7 +2,7 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.snowflake.config
+package io.airbyte.integrations.destination.snowflake.db
 
 import io.airbyte.cdk.load.client.AirbyteClient
 import io.airbyte.cdk.load.orchestration.db.BaseDirectLoadInitialStatusGatherer
