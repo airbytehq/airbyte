@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
+import io.airbyte.integrations.destination.snowflake.spec.CdcDeletionMode
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -28,6 +29,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         snowflakeDirectLoadSqlGenerator =
             SnowflakeDirectLoadSqlGenerator(
                 columnUtils = columnUtils,
+                cdcDeletionMode = CdcDeletionMode.HARD_DELETE,
             )
     }
 

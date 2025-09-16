@@ -8,9 +8,11 @@ import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
+import io.airbyte.cdk.load.orchestration.db.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
+import io.airbyte.integrations.destination.snowflake.spec.CdcDeletionMode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 
@@ -25,6 +27,7 @@ private val log = KotlinLogging.logger {}
 @Singleton
 class SnowflakeDirectLoadSqlGenerator(
     private val columnUtils: SnowflakeColumnUtils,
+    private val cdcDeletionMode: CdcDeletionMode,
 ) {
 
     /**
@@ -166,8 +169,43 @@ class SnowflakeDirectLoadSqlGenerator(
                 "\"$column\" = new_record.\"$column\""
             }
 
+        // Handle CDC deletions based on mode
+        val cdcDeleteClause: String
+        val cdcSkipInsertClause: String
+        if (
+            stream.schema.asColumns().containsKey(CDC_DELETED_AT_COLUMN) &&
+            cdcDeletionMode == CdcDeletionMode.HARD_DELETE
+        ) {
+            // Execute CDC deletions if there's already a record
+            cdcDeleteClause =
+                "WHEN MATCHED AND new_record.\"_ab_cdc_deleted_at\" IS NOT NULL AND $cursorComparison THEN DELETE"
+            // And skip insertion entirely if there's no matching record.
+            // (This is possible if a single T+D batch contains both an insertion and deletion for
+            // the same PK)
+            cdcSkipInsertClause = "AND new_record.\"_ab_cdc_deleted_at\" IS NULL"
+        } else {
+            cdcDeleteClause = ""
+            cdcSkipInsertClause = ""
+        }
+
         // Build the MERGE statement
-        val mergeStatement =
+        val mergeStatement = if (cdcDeleteClause.isNotEmpty()) {
+            """
+            MERGE INTO ${targetTableName.toPrettyString(QUOTE)} AS target_table
+            USING (
+              $selectSourceRecords
+            ) AS new_record
+            ON $pkEquivalent
+            $cdcDeleteClause
+            WHEN MATCHED AND $cursorComparison THEN UPDATE SET
+              $columnAssignments
+            WHEN NOT MATCHED $cdcSkipInsertClause THEN INSERT (
+              $columnList
+            ) VALUES (
+              $newRecordColumnList
+            )
+        """.trimIndent()
+        } else {
             """
             MERGE INTO ${targetTableName.toPrettyString(QUOTE)} AS target_table
             USING (
@@ -182,6 +220,7 @@ class SnowflakeDirectLoadSqlGenerator(
               $newRecordColumnList
             )
         """.trimIndent()
+        }
 
         return mergeStatement.andLog()
     }
