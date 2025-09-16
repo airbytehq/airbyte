@@ -10,32 +10,24 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
-import javax.sql.DataSource
 
 internal const val COUNT_TOTAL_ALIAS = "total"
 internal const val CSV_FIELD_DELIMITER = ","
-internal const val CSV_RECORD_DELIMITER = "\n"
 internal const val QUOTE: String = "\""
 internal const val STAGE_FORMAT_NAME: String = "airbyte_csv_format"
 internal const val STAGE_NAME_PREFIX = "airbyte_stage_"
-internal val FILE_FORMAT_STATEMENT =
-    """
-            CREATE OR REPLACE FILE FORMAT $STAGE_FORMAT_NAME
-            TYPE = 'CSV'
-            FIELD_DELIMITER = '$CSV_FIELD_DELIMITER'
-            FIELD_OPTIONALLY_ENCLOSED_BY = '"'
-            TRIM_SPACE = TRUE
-            ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE
-            REPLACE_INVALID_CHARACTERS = TRUE
-        """.trimIndent()
+
+internal fun buildSnowflakeStageName(tableName: TableName): String {
+    return "\"${tableName.namespace}\".\"$STAGE_NAME_PREFIX${tableName.name}\""
+}
 
 private val log = KotlinLogging.logger {}
 
 @Singleton
 class SnowflakeDirectLoadSqlGenerator(
-    private val dataSource: DataSource,
     private val columnUtils: SnowflakeColumnUtils,
 ) {
 
@@ -53,11 +45,7 @@ class SnowflakeDirectLoadSqlGenerator(
     }
 
     fun createNamespace(namespace: String): String {
-        return "CREATE SCHEMA IF NOT EXISTS \"$namespace\"".andLog()
-    }
-
-    fun useSchema(namespace: String): String {
-        return "USE SCHEMA \"$namespace\"".andLog()
+        return "CREATE SCHEMA IF NOT EXISTS \"${namespace.toSnowflakeCompatibleName()}\"".andLog()
     }
 
     fun createTable(
@@ -282,10 +270,16 @@ class SnowflakeDirectLoadSqlGenerator(
             .andLog()
     }
 
-    fun createFileFormat(): String = FILE_FORMAT_STATEMENT.andLog()
-
-    private fun buildSnowflakeStageName(tableName: TableName): String {
-        return "$STAGE_NAME_PREFIX${tableName.name}"
+    fun createFileFormat(namespace: String): String {
+        return """
+            CREATE OR REPLACE FILE FORMAT "${namespace.toSnowflakeCompatibleName()}".$STAGE_FORMAT_NAME
+            TYPE = 'CSV'
+            FIELD_DELIMITER = '$CSV_FIELD_DELIMITER'
+            FIELD_OPTIONALLY_ENCLOSED_BY = '"'
+            TRIM_SPACE = TRUE
+            ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE
+            REPLACE_INVALID_CHARACTERS = TRUE
+        """.trimIndent()
     }
 
     fun createSnowflakeStage(tableName: TableName): String {
@@ -326,4 +320,16 @@ class SnowflakeDirectLoadSqlGenerator(
         schemaName: String,
         tableName: String,
     ): String= """DESCRIBE TABLE "$schemaName"."$tableName" """.andLog()
+
+    fun swapTableWith(sourceTableName: TableName, targetTableName: TableName): String {
+        return """
+            ALTER TABLE ${sourceTableName.toPrettyString(quote = QUOTE)} SWAP WITH ${
+            targetTableName.toPrettyString(
+                quote = QUOTE
+            )
+        };
+        """
+            .trimIndent()
+            .andLog()
+    }
 }

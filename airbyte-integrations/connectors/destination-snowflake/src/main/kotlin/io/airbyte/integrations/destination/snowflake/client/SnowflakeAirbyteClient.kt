@@ -57,10 +57,8 @@ class SnowflakeAirbyteClient(
     override suspend fun createNamespace(namespace: String) {
         // Create the schema if it doesn't exist
         execute(sqlGenerator.createNamespace(namespace))
-        // Switch the context to the schema
-        execute(sqlGenerator.useSchema(namespace))
         // Create the CSV file format in the schema if it does not exist
-        execute(sqlGenerator.createFileFormat())
+        execute(sqlGenerator.createFileFormat(namespace))
     }
 
     override suspend fun createTable(
@@ -74,7 +72,8 @@ class SnowflakeAirbyteClient(
     }
 
     override suspend fun overwriteTable(sourceTableName: TableName, targetTableName: TableName) {
-        // TODO("Not yet implemented")
+        execute(sqlGenerator.swapTableWith(sourceTableName, targetTableName))
+        execute(sqlGenerator.dropTable(sourceTableName))
     }
 
     override suspend fun copyTable(

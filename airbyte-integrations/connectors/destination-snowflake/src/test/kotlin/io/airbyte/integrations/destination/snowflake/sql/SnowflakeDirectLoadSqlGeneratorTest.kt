@@ -10,9 +10,9 @@ import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.mockk.every
 import io.mockk.mockk
-import javax.sql.DataSource
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -20,16 +20,13 @@ import org.junit.jupiter.api.Test
 internal class SnowflakeDirectLoadSqlGeneratorTest {
 
     private lateinit var columnUtils: SnowflakeColumnUtils
-    private lateinit var dataSource: DataSource
     private lateinit var snowflakeDirectLoadSqlGenerator: SnowflakeDirectLoadSqlGenerator
 
     @BeforeEach
     fun setUp() {
         columnUtils = mockk()
-        dataSource = mockk()
         snowflakeDirectLoadSqlGenerator =
             SnowflakeDirectLoadSqlGenerator(
-                dataSource = dataSource,
                 columnUtils = columnUtils,
             )
     }
@@ -49,13 +46,6 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         val namespace = "namespace"
         val sql = snowflakeDirectLoadSqlGenerator.createNamespace(namespace)
         assertEquals("CREATE SCHEMA IF NOT EXISTS \"$namespace\"", sql)
-    }
-
-    @Test
-    fun testGenerateUseSchemaStatement() {
-        val namespace = "namespace"
-        val sql = snowflakeDirectLoadSqlGenerator.useSchema(namespace)
-        assertEquals("USE SCHEMA \"$namespace\"", sql)
     }
 
     @Test
@@ -222,7 +212,10 @@ new_record."_airbyte_generation_id"
     fun testGenerateDropStage() {
         val tableName = TableName(namespace = "namespace", name = "name")
         val sql = snowflakeDirectLoadSqlGenerator.dropStage(tableName)
-        assertEquals("DROP STAGE IF EXISTS airbyte_stage_${tableName.name}", sql)
+        assertEquals(
+            "DROP STAGE IF EXISTS \"${tableName.namespace}\".\"airbyte_stage_${tableName.name}\"",
+            sql
+        )
     }
 
     @Test
@@ -249,8 +242,19 @@ new_record."_airbyte_generation_id"
 
     @Test
     fun testGenerateCreateFileFormat() {
-        val sql = snowflakeDirectLoadSqlGenerator.createFileFormat()
-        assertEquals(FILE_FORMAT_STATEMENT, sql)
+        val namespace = "test-namespace"
+        val expected =
+            """
+            CREATE OR REPLACE FILE FORMAT "${namespace.toSnowflakeCompatibleName()}".$STAGE_FORMAT_NAME
+            TYPE = 'CSV'
+            FIELD_DELIMITER = '$CSV_FIELD_DELIMITER'
+            FIELD_OPTIONALLY_ENCLOSED_BY = '"'
+            TRIM_SPACE = TRUE
+            ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE
+            REPLACE_INVALID_CHARACTERS = TRUE
+        """.trimIndent()
+        val sql = snowflakeDirectLoadSqlGenerator.createFileFormat(namespace)
+        assertEquals(expected, sql)
     }
 
     @Test
@@ -258,7 +262,7 @@ new_record."_airbyte_generation_id"
         val tableName = TableName(namespace = "namespace", name = "name")
         val sql = snowflakeDirectLoadSqlGenerator.createSnowflakeStage(tableName)
         assertEquals(
-            "CREATE OR REPLACE STAGE $STAGE_NAME_PREFIX${tableName.name}\n    FILE_FORMAT = $STAGE_FORMAT_NAME;",
+            "CREATE OR REPLACE STAGE ${buildSnowflakeStageName(tableName)}\n    FILE_FORMAT = $STAGE_FORMAT_NAME;",
             sql
         )
     }
@@ -269,7 +273,7 @@ new_record."_airbyte_generation_id"
         val tempFilePath = "/some/file/path.csv"
         val sql = snowflakeDirectLoadSqlGenerator.putInStage(tableName, tempFilePath)
         assertEquals(
-            "PUT 'file://$tempFilePath' @$STAGE_NAME_PREFIX${tableName.name}\nAUTO_COMPRESS = TRUE\nOVERWRITE = TRUE",
+            "PUT 'file://$tempFilePath' @${buildSnowflakeStageName(tableName)}\nAUTO_COMPRESS = TRUE\nOVERWRITE = TRUE",
             sql
         )
     }
@@ -279,7 +283,7 @@ new_record."_airbyte_generation_id"
         val tableName = TableName(namespace = "namespace", name = "name")
         val sql = snowflakeDirectLoadSqlGenerator.copyFromStage(tableName)
         assertEquals(
-            "COPY INTO ${tableName.toPrettyString(quote=QUOTE)}\nFROM @$STAGE_NAME_PREFIX${tableName.name}\nFILE_FORMAT = $STAGE_FORMAT_NAME\nON_ERROR = 'ABORT_STATEMENT'",
+            "COPY INTO ${tableName.toPrettyString(quote=QUOTE)}\nFROM @${buildSnowflakeStageName(tableName)}\nFILE_FORMAT = $STAGE_FORMAT_NAME\nON_ERROR = 'ABORT_STATEMENT'",
             sql
         )
     }
