@@ -6,17 +6,22 @@ package io.airbyte.integrations.destination.snowflake.client
 
 import io.airbyte.cdk.load.client.AirbyteClient
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAMES
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNativeOperations
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableSqlOperations
 import io.airbyte.integrations.destination.snowflake.sql.COUNT_TOTAL_ALIAS
 import io.airbyte.integrations.destination.snowflake.sql.QUOTE
+import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
+import java.sql.ResultSet
+import java.sql.ResultSetMetaData
 import javax.sql.DataSource
 import net.snowflake.client.jdbc.SnowflakeSQLException
+
 
 internal const val DESCRIBE_TABLE_COLUMN_NAME_FIELD = "column_name"
 internal const val GENERATION_ID_ALIAS = "generation"
@@ -27,6 +32,7 @@ private val log = KotlinLogging.logger {}
 class SnowflakeAirbyteClient(
     private val dataSource: DataSource,
     private val sqlGenerator: SnowflakeDirectLoadSqlGenerator,
+    private val snowflakeColumnUtils: SnowflakeColumnUtils
 ) : AirbyteClient, DirectLoadTableSqlOperations, DirectLoadTableNativeOperations {
 
     override suspend fun countTable(tableName: TableName): Long? =
@@ -68,7 +74,7 @@ class SnowflakeAirbyteClient(
     }
 
     override suspend fun overwriteTable(sourceTableName: TableName, targetTableName: TableName) {
-        TODO("Not yet implemented")
+        // TODO("Not yet implemented")
     }
 
     override suspend fun copyTable(
@@ -86,7 +92,7 @@ class SnowflakeAirbyteClient(
         targetTableName: TableName
     ) {
         execute(
-            sqlGenerator.upsertTable(stream, columnNameMapping, sourceTableName, targetTableName)
+            sqlGenerator.upsertTable(stream, columnNameMapping, sourceTableName, targetTableName),
         )
     }
 
@@ -95,12 +101,68 @@ class SnowflakeAirbyteClient(
         execute(sqlGenerator.dropTable(tableName))
     }
 
+    /**
+     * Jdbc destination column definition representation
+     *
+     * @param name
+     * @param type
+     * @param columnSize
+     */
+    data class ColumnDefinition(val name: String, val type: String, val isPrimaryKey: Boolean)
+
+
     override suspend fun ensureSchemaMatches(
         stream: DestinationStream,
         tableName: TableName,
         columnNameMapping: ColumnNameMapping
     ) {
-        TODO("Not yet implemented")
+        val sql = sqlGenerator.getTable(schemaName = tableName.namespace, tableName = tableName.name)
+        dataSource.connection.use { connection ->
+            val rs: ResultSet = connection.createStatement().executeQuery(sql)
+            val columnsInDb: MutableMap<String, ColumnDefinition> = mutableMapOf()
+
+            while (rs.next()) {
+                val columnName = rs.getString("name")
+                // Filter out airbyte columns
+                if (COLUMN_NAMES.contains(columnName)) {
+                    continue
+                }
+                val dataType =
+                    when (
+                        val snowflakeDataType =
+                            rs.getString("type").takeWhile { char -> char != '(' }
+                    ) {
+                        "VARCHAR" -> "TEXT"
+                        else -> snowflakeDataType
+                    }
+
+                val isPrimaryKey = rs.getString("primary key") == "Y"
+                columnsInDb[columnName] =
+                    ColumnDefinition(columnName, dataType, isPrimaryKey)
+            }
+
+
+
+            val columnsInStream = stream.schema.asColumns().map { (name, fieldType) ->
+                // Snowflake is case-insensitive by default and stores identifiers in uppercase.
+                // We should probably be using the mapping in columnNameMapping, but for now, this is a good enough approximation.
+                val mappedName = columnNameMapping.get(name) ?: name
+                mappedName to ColumnDefinition(mappedName, snowflakeColumnUtils.toDialectType(fieldType.type), fieldType.nullable)
+            }.toMap()
+
+            val addedColumns = columnsInStream.keys - columnsInDb.keys
+            val deletedColumns = columnsInDb.keys - columnsInStream.keys
+            val commonColumns = columnsInStream.keys.intersect(columnsInDb.keys)
+            val updatedColumns = commonColumns.filter {
+                log.error { "Comparing column ${it}: ${columnsInStream[it]} vs ${columnsInDb[it]}" }
+                columnsInStream[it] != columnsInDb[it]
+            }
+
+            log.error { "Schema comparison for table ${tableName.name}:" }
+            log.error { "Added columns: $addedColumns" }
+            log.error { "Deleted columns: $deletedColumns" }
+            log.error { "Updated columns: $updatedColumns" }
+        }
     }
 
     override suspend fun getGenerationId(tableName: TableName): Long =
