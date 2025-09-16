@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.test.config
 
+import io.airbyte.cdk.load.dataflow.config.ConnectorInputStreams
 import io.airbyte.cdk.load.dataflow.config.MemoryAndParallelismConfig
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Primary
@@ -32,7 +33,7 @@ class TestBeanOverrideFactory {
     @Named("inputStreams")
     fun testStdInStreams(
         @Named("inputStream") testInputStream: InputStream,
-    ): List<InputStream> = listOf(testInputStream)
+    ) = ConnectorInputStreams(listOf(testInputStream))
 
     @Singleton
     @Primary
