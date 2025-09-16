@@ -1,0 +1,65 @@
+name: Canonical Generate Image
+
+on:
+  workflow_dispatch:
+    inputs:
+      connector_name:
+        description: "Airbyte connector name (e.g. source-bigquery)"
+        required: true
+        type: string
+      image_version:
+        description: "Canonical image version (e.g. 1.0.0)"
+        required: true
+        type: string
+
+jobs:
+  generate_and_push_image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Read dockerImageTag from metadata.yaml
+        id: get_tag
+        run: |
+          METADATA_FILE="airbyte-integrations/connectors/${{ github.event.inputs.connector_name }}/metadata.yaml"
+          if [ ! -f "$METADATA_FILE" ]; then
+            echo "❌ metadata.yaml not found for connector ${{ github.event.inputs.connector_name }}"
+            exit 1
+          fi
+          DOCKER_IMAGE_TAG=$(grep 'dockerImageTag:' "$METADATA_FILE" | head -n1 | cut -d':' -f2 | tr -d ' "')
+          if [ -z "$DOCKER_IMAGE_TAG" ]; then
+            echo "❌ dockerImageTag not found in $METADATA_FILE"
+            exit 1
+          fi
+          echo "docker_image_tag=$DOCKER_IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      - name: Build Docker image with proxy
+        env:
+          CONNECTOR_NAME: ${{ github.event.inputs.connector_name }}
+          IMAGE_VERSION: ${{ github.event.inputs.image_version }}
+          DOCKER_IMAGE_TAG: ${{ steps.get_tag.outputs.docker_image_tag }}
+          IMAGE_HTTP_PROXY: ${{ vars.HTTP_PROXY }}
+          IMAGE_HTTPS_PROXY: ${{ vars.HTTPS_PROXY }}
+        run: |
+          IMAGE_NAME="ghcr.io/canonical/airbyte/${CONNECTOR_NAME}:${IMAGE_VERSION}"
+          DEV_IMAGE="airbyte/${CONNECTOR_NAME}:${DOCKER_IMAGE_TAG}"
+          echo "Building image $IMAGE_NAME from dev image $DEV_IMAGE using build_custom_docker_image.sh"
+          .github/scripts/build_custom_docker_image.sh "$IMAGE_NAME" "$DEV_IMAGE"
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push Docker image to GHCR
+        env:
+          CONNECTOR_NAME: ${{ github.event.inputs.connector_name }}
+          IMAGE_VERSION: ${{ github.event.inputs.image_version }}
+        run: |
+          IMAGE_NAME="ghcr.io/canonical/airbyte/${CONNECTOR_NAME}:${IMAGE_VERSION}"
+          echo "Pushing $IMAGE_NAME"
+          docker push "$IMAGE_NAME"
+          echo "✅ Successfully pushed $IMAGE_NAME"
