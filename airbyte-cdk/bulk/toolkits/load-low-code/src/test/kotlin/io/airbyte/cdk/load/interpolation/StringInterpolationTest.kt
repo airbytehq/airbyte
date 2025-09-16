@@ -113,4 +113,12 @@ class StringInterpolationTest {
                 )
         assertEquals("true", interpolatedValue)
     }
+
+    @Test
+    internal fun `test given multiple keys when extract record keys then return all the keys`() {
+        val template = """{{ record["prefix"] }} I'm a potato: {{ record["suffix"] }}"""
+        val extractedKeys = StringInterpolator().extractAccessedRecordKeys(template)
+        assertEquals(setOf("prefix", "suffix"), extractedKeys)
+    }
+
 }

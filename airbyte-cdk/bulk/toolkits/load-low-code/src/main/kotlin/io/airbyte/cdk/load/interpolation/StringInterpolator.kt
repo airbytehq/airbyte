@@ -9,6 +9,8 @@ import com.fasterxml.jackson.module.kotlin.jacksonTypeRef
 import com.hubspot.jinjava.Jinjava
 import com.hubspot.jinjava.JinjavaConfig
 import com.hubspot.jinjava.el.JinjavaInterpreterResolver
+import com.hubspot.jinjava.tree.ExpressionNode
+import com.hubspot.jinjava.tree.parse.ExpressionToken
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.util.Jsons
 import java.beans.FeatureDescriptor
@@ -26,7 +28,7 @@ import jinjava.javax.el.PropertyNotWritableException
 @SuppressFBWarnings(
     "NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE",
     justification =
-        "The param in getValue needs to be nullable because it's a Java class but we fail if it's null"
+        "The param in getValue needs to be nullable because it's a Java class but we fail if it's null",
 )
 private class MapGetOperatorELResolver : ELResolver() {
     override fun getCommonPropertyType(context: ELContext?, base: Any?): Class<*>? {
@@ -75,23 +77,43 @@ private class MapGetOperatorELResolver : ELResolver() {
     private fun isBaseValid(base: Any?): Boolean = base != null && base is Map<*, *>
 }
 
+
 class StringInterpolator {
-    private val interpolator =
-        Jinjava(
-            JinjavaConfig.newBuilder()
-                .withElResolver(
-                    CompositeELResolver().apply {
-                        this.add(MapGetOperatorELResolver())
-                        this.add(JinjavaInterpreterResolver.DEFAULT_RESOLVER_READ_ONLY)
-                    }
-                )
-                .build()
+
+    private val interpolator = Jinjava(
+        JinjavaConfig.newBuilder()
+            .withElResolver(
+                CompositeELResolver().apply {
+                    this.add(MapGetOperatorELResolver())
+                    this.add(JinjavaInterpreterResolver.DEFAULT_RESOLVER_READ_ONLY)
+                },
+            )
+            .build()
+    )
+
+    companion object {
+        private const val bracketAccessorRegex = """record\s*\[\s*["']([^"']+)["']\s*\]"""
+        private const val getMethodAccessorRegex = """record\.get\s*\(\s*["']([^"']+)["']\s*\)"""
+
+        val recordAccessorRegexes = listOf(
+            Regex(bracketAccessorRegex),
+            Regex(getMethodAccessorRegex),
         )
+    }
 
     /** Possible improvement: validate if all variables have been resolved and if not, throw. */
     fun interpolate(string: String, context: Map<String, Any>): String {
         return interpolator.render(string, context)
     }
+
+    fun extractAccessedRecordKeys(string: String): Set<String> {
+        return interpolator.newInterpreter().parse(string).children.filter { it is ExpressionNode }.flatMapTo(HashSet()) { extractKeysFromExpression((it.master as ExpressionToken).expr) }
+    }
+
+    private fun extractKeysFromExpression(expression: String): Set<String> {
+        return recordAccessorRegexes.flatMapTo(HashSet()) { regex -> regex.findAll(expression).map { match -> match.groupValues[1] } }
+    }
+
 }
 
 fun JsonNode.toInterpolationContext(): Any = Jsons.convertValue(this, jacksonTypeRef<Any>())
