@@ -20,24 +20,6 @@
     },
     {
       "stream": {
-        "name": "calls",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"]
-      },
-      "destination_sync_mode": "overwrite",
-      "sync_mode": "full_refresh"
-    },
-    {
-      "stream": {
-        "name": "call_metrics",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"]
-      },
-      "destination_sync_mode": "overwrite",
-      "sync_mode": "full_refresh"
-    },
-    {
-      "stream": {
         "name": "call_metrics",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
@@ -45,7 +27,7 @@
         "default_cursor_field": ["created_time"],
         "source_defined_primary_key": [["id"]]
       },
-      "destination_sync_mode": "append",
+      "destination_sync_mode": "overwrite",
       "cursor_field": ["created_time"],
       "sync_mode": "incremental"
     },
@@ -58,7 +40,7 @@
         "default_cursor_field": ["created_time"],
         "source_defined_primary_key": [["id"]]
       },
-      "destination_sync_mode": "append",
+      "destination_sync_mode": "overwrite",
       "cursor_field": ["created_time"],
       "sync_mode": "incremental"
     }
