@@ -60,24 +60,32 @@ class PostgresSourceJdbcPartitionFactory(
     ): PostgresSourceJdbcPartition {
         val stream: Stream = streamState.stream
         if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH || config.global) {
-            return PostgresSourceJdbcSplittableSnapshotPartition(
+            return filenode?.let {
+                PostgresSourceJdbcSplittableSnapshotPartition(
+                    selectQueryGenerator,
+                    streamState,
+                    lowerBound = null,
+                    upperBound = null,
+                    filenode
+                )
+            } ?: PostgresSourceJdbcUnsplittableSnapshotPartition(selectQueryGenerator, streamState)
+        }
+        val cursorChosenFromCatalog: DataField =
+            stream.configuredCursor as? DataField ?: throw ConfigErrorException("no cursor")
+        return filenode?.let {
+            PostgresSourceJdbcSplittableSnapshotWithCursorPartition(
                 selectQueryGenerator,
                 streamState,
                 lowerBound = null,
                 upperBound = null,
+                cursorChosenFromCatalog,
+                cursorUpperBound = null,
                 filenode
             )
-        }
-        val cursorChosenFromCatalog: DataField =
-            stream.configuredCursor as? DataField ?: throw ConfigErrorException("no cursor")
-        return PostgresSourceJdbcSplittableSnapshotWithCursorPartition(
+        } ?: PostgresSourceJdbcUnsplittableSnapshotWithCursorPartition(
             selectQueryGenerator,
             streamState,
-            lowerBound = null,
-            upperBound = null,
-            cursorChosenFromCatalog,
-            cursorUpperBound = null,
-            filenode
+            cursorChosenFromCatalog
         )
     }
 
@@ -146,7 +154,9 @@ class PostgresSourceJdbcPartitionFactory(
             }
         } else {
             val (cursor: DataField, cursorCheckpoint: JsonNode) = cursorPair
-            if (!isCursorBasedIncremental || fileNodeChange != FILENODE_NO_CHANGE) {
+            if (!isCursorBasedIncremental || fileNodeChange !in listOf(FILENODE_NO_CHANGE,
+                    NO_FILENODE
+                )) {
                 handler.accept(ResetStream(stream.id))
                 streamState.reset()
                 coldStart(streamState, filenode)
@@ -165,14 +175,22 @@ class PostgresSourceJdbcPartitionFactory(
                 // Incremental complete
                 null
             } else {
-                // Incremental ongoing
-                PostgresSourceJdbcCursorIncrementalPartition(
+                filenode?.let {                 // Incremental ongoing
+                    PostgresSourceJdbcCursorIncrementalPartition(
+                        selectQueryGenerator,
+                        streamState,
+                        cursor,
+                        cursorLowerBound = cursorCheckpoint,
+                        isLowerBoundIncluded = true,
+                        cursorUpperBound = streamState.cursorUpperBound,
+                    )
+                } ?: PostgresSourceJdbcUnsplittableCursorIncrementalPartition(
                     selectQueryGenerator,
                     streamState,
                     cursor,
                     cursorLowerBound = cursorCheckpoint,
                     isLowerBoundIncluded = true,
-                    cursorUpperBound = streamState.cursorUpperBound,
+                    explicitCursorUpperBound = streamState.cursorUpperBound,
                 )
             }
         }
