@@ -14,6 +14,7 @@ import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
+import java.util.UUID
 
 internal const val COUNT_TOTAL_ALIAS = "total"
 internal const val CSV_FIELD_DELIMITER = ","
@@ -350,17 +351,30 @@ class SnowflakeDirectLoadSqlGenerator(
         val clauses = mutableSetOf<String>()
         addedColumns.forEach {
             clauses.add(
-                "ALTER TABLE ${tableName.toPrettyString(quote = QUOTE)} ADD COLUMN ${it.name} ${it.type}".andLog()
+                "ALTER TABLE ${tableName.toPrettyString(quote = QUOTE)} ADD COLUMN \"${it.name}\" ${it.type};".andLog()
             )
         }
         deletedColumns.forEach {
             clauses.add(
-                "ALTER TABLE ${tableName.toPrettyString(quote = QUOTE)} DROP COLUMN ${it.name}".andLog()
+                "ALTER TABLE ${tableName.toPrettyString(quote = QUOTE)} DROP COLUMN \"${it.name}\";".andLog()
             )
         }
         modifiedColumns.forEach {
+            val tempColumn = "${it.name}${UUID.randomUUID()}"
+            clauses.add("ALTER TABLE ${tableName.toPrettyString(quote = QUOTE)} ADD COLUMN \"$tempColumn\" ${it.type};".andLog())
+            clauses.add("UPDATE ${tableName.toPrettyString(quote = QUOTE)} SET \"$tempColumn\" = CAST(\"${it.name}\" AS ${it.type});".andLog())
+            val backupColumn = "${tempColumn}_backup"
+            clauses.add("""ALTER TABLE ${tableName.toPrettyString(quote = QUOTE)}
+                RENAME COLUMN "${it.name}" TO "$backupColumn";
+            """.trimIndent())
+            clauses.add("""ALTER TABLE ${tableName.toPrettyString(quote = QUOTE)}
+                RENAME COLUMN "$tempColumn" TO "${it.name}";
+            """.trimIndent())
             clauses.add(
-                "ALTER TABLE ${tableName.toPrettyString(quote = QUOTE)} ALTER ${it.name} SET DATA TYPE ${it.type}".andLog()
+                "ALTER TABLE ${tableName.toPrettyString(quote = QUOTE)} DROP COLUMN \"$backupColumn\";".andLog()
+            )
+            clauses.add(
+                "ALTER TABLE ${tableName.toPrettyString(quote = QUOTE)} ALTER \"${it.name}\" SET DATA TYPE ${it.type};".andLog()
             )
         }
         return clauses

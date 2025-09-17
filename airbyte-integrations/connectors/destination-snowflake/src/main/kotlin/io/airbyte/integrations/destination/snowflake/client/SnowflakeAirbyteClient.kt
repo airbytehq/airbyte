@@ -139,9 +139,9 @@ class SnowflakeAirbyteClient(
                     }
                     .toSet()
 
-            val addedColumns = columnsInStream.filter { it !in columnsInDb }.toSet()
-            val deletedColumns = columnsInDb.filter { it !in columnsInStream }.toSet()
-            val commonColumns = columnsInStream.filter { it.name in columnsInDb.map { it.name } }
+            val addedColumns = columnsInStream.filter { it.name !in columnsInDb.map { it.name } }.toSet()
+            val deletedColumns = columnsInDb.filter { it.name !in columnsInStream.map { it.name } }.toSet()
+            val commonColumns = columnsInStream.filter { it.name in columnsInDb.map { it.name } }.toSet()
             val modifiedColumns =
                 commonColumns
                     .filter {
