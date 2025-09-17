@@ -27,6 +27,7 @@ The Airbyte connector for Eventee enables seamless integration and automated dat
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.35 | 2025-09-16 | [66290](https://github.com/airbytehq/airbyte/pull/66290) | Update dependencies |
 | 0.0.34 | 2025-09-09 | [65874](https://github.com/airbytehq/airbyte/pull/65874) | Update dependencies |
 | 0.0.33 | 2025-08-23 | [65243](https://github.com/airbytehq/airbyte/pull/65243) | Update dependencies |
 | 0.0.32 | 2025-08-09 | [64755](https://github.com/airbytehq/airbyte/pull/64755) | Update dependencies |
