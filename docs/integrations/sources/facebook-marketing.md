@@ -356,6 +356,7 @@ This response indicates that the Facebook Graph API requires you to reduce the f
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.2 | 2025-09-16 | [65828](https://github.com/airbytehq/airbyte/pull/65828) | Update dependencies |
 | 4.0.1 | 2025-09-15 | [66182](https://github.com/airbytehq/airbyte/pull/66182) | Classify subcode 2446289 error as config error |
 | 4.0.0 | 2025-08-25 | [65533](https://github.com/airbytehq/airbyte/pull/65533) | Migrate to Marketing API v23 |
 | 3.5.12 | 2025-08-23 | [65288](https://github.com/airbytehq/airbyte/pull/65288) | Update dependencies |
