@@ -18,6 +18,7 @@ import io.airbyte.cdk.load.util.UUIDGenerator
 import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.CdcDeletionMode
+import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.mockk.every
 import io.mockk.mockk
 import java.util.UUID
@@ -31,15 +32,17 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
     private lateinit var columnUtils: SnowflakeColumnUtils
     private lateinit var snowflakeDirectLoadSqlGenerator: SnowflakeDirectLoadSqlGenerator
     private val uuidGenerator: UUIDGenerator = mockk()
+    private val snowflakeConfiguration: SnowflakeConfiguration = mockk()
 
     @BeforeEach
     fun setUp() {
+        every { snowflakeConfiguration.cdcDeletionMode } returns CdcDeletionMode.HARD_DELETE
         columnUtils = mockk()
         snowflakeDirectLoadSqlGenerator =
             SnowflakeDirectLoadSqlGenerator(
                 columnUtils = columnUtils,
-                cdcDeletionMode = CdcDeletionMode.HARD_DELETE,
-                uuidGenerator
+                uuidGenerator = uuidGenerator,
+                snowflakeConfiguration = snowflakeConfiguration,
             )
     }
 
@@ -370,11 +373,12 @@ new_record."_airbyte_generation_id"
     @Test
     fun testGenerateUpsertTableWithCdcSoftDelete() {
         // Test with CDC soft delete mode - should NOT add delete clauses
+        every { snowflakeConfiguration.cdcDeletionMode } returns CdcDeletionMode.SOFT_DELETE
         val softDeleteGenerator =
             SnowflakeDirectLoadSqlGenerator(
                 columnUtils = columnUtils,
-                cdcDeletionMode = CdcDeletionMode.SOFT_DELETE,
                 uuidGenerator = uuidGenerator,
+                snowflakeConfiguration = snowflakeConfiguration,
             )
 
         val primaryKey = listOf(listOf("id"))
