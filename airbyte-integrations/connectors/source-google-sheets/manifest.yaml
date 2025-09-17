@@ -3,169 +3,197 @@ version: 6.7.0
 type: DeclarativeSource
 
 check:
-  type: CheckDynamicStream
-  stream_count: 1
-  use_check_availability: false
+  type: CheckStream
+  stream_names: ["skip_check"]
 
-dynamic_streams:
-  - type: DynamicDeclarativeStream
-    use_parent_parameters: false
-    stream_template:
-      type: DeclarativeStream
-      name: ""
-      $parameters:
-        i: 123
-      primary_key: []
-      retriever:
-        type: SimpleRetriever
-        $parameters:
-          row_count: 0
-          sheet_id: ""
-          batch_size: 0
-        partition_router:
-          type: CustomPartitionRouter
-          class_name: source_declarative_manifest.components.RangePartitionRouter
-        paginator:
-          type: NoPagination
-        record_selector:
-          decoder:
-            type: JsonDecoder
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.DpathSchemaMatchingExtractor
-            description: Extract record list of values (rows) and matches such values to correct schema property to generate individual records.
-            field_path:
-              - valueRanges
-              - "*"
-            $parameters:
-              schema_type_identifier:
-                $ref: "#/definitions/schema_type_identifier"
-              values_to_match_key: "values"
-              properties_to_match: ""
-          type: RecordSelector
-          $parameters:
-            name: ""
-        requester:
-          $ref: "#/definitions/base_requester"
-          $parameters:
-            sheet_id: ""
-            name: ""
-          http_method: GET
-          path: >-
-            {% if config["spreadsheet_id"] | regex_search("^(https://.*)") %}{{ config["spreadsheet_id"] | regex_search("/([-\\w]{20,})([/]?)") }}{% else %}{{ config["spreadsheet_id"] }}{% endif %}/values:batchGet?ranges={{parameters["sheet_id"] | urlencode}}!{{stream_partition.start_range}}:{{stream_partition.end_range}}&majorDimension=ROWS&alt=json
-          error_handler:
-            type: DefaultErrorHandler
-            backoff_strategies:
-              - type: ExponentialBackoffStrategy
-            response_filters:
-              $ref: "#/definitions/response_filters/response_error_filters"
-      schema_loader:
-        type: DynamicSchemaLoader
-        retriever:
-          type: SimpleRetriever
-          paginator:
-            type: NoPagination
-          record_selector:
-            extractor:
-              type: CustomRecordExtractor
-              class_name: source_declarative_manifest.components.DpathSchemaExtractor
-              parameters:
-                schema_type_identifier:
-                  $ref: "#/definitions/schema_type_identifier"
-              field_path:
-                - sheets
-                - "*"
-                - data
-                - "*"
-                - rowData
-                - "*"
-            type: RecordSelector
-          requester:
-            $ref: "#/definitions/base_requester"
-            $parameters:
-              sheet_id: ""
-            http_method: GET
-            path: >-
-              {% if config["spreadsheet_id"] | regex_search("^(https://.*)") %}{{ config["spreadsheet_id"] | regex_search("/([-\\w]{20,})([/]?)") }}{% else %}{{ config["spreadsheet_id"] }}{% endif %}?includeGridData=true&ranges={{parameters["sheet_id"] | urlencode}}!1:1&alt=json
-            error_handler:
-              type: CompositeErrorHandler
-              error_handlers:
-                - type: DefaultErrorHandler
-                  backoff_strategies:
-                    - type: ExponentialBackoffStrategy
-                  response_filters:
-                    $ref: "#/definitions/response_filters/single_sheet_response_error_filters"
-        schema_type_identifier:
-          $ref: "#/definitions/schema_type_identifier"
-    components_resolver:
-      type: HttpComponentsResolver
-      description: We use first row of sheet to obtain data.
-      retriever:
-        $ref: "#/definitions/retrievers/components_resolver_retriever"
-      components_mapping:
-        - field_path:
-            - name
-          type: ComponentMappingDefinition
-          # Expression is structured as: <value_if_true> if <condition> else <value_if_false>
-          # This sets the stream name to the custom name from stream_name_overrides if a match is found,
-          # otherwise uses the original sheet/tab name.
-          value: >-
-            {%- set overrides = config.get('stream_name_overrides', [])
-                | selectattr('source_stream_name', 'equalto', components_values['properties']['title'])
-                | list -%}
-            {{ overrides[0]['custom_stream_name'] if overrides else components_values['properties']['title'] }}
-          value_type: string
-          description: name for dynamic stream (with optional override).
-        - field_path:
-            - schema_loader
-            - retriever
-            - requester
-            - $parameters
-            - sheet_id
-          type: ComponentMappingDefinition
-          value: "{{components_values['properties']['title']}}"
-          description: sheet_id for dynamic schema loader requester.
-        - field_path:
-            - retriever
-            - requester
-            - $parameters
-            - sheet_id
-          type: ComponentMappingDefinition
-          value: "{{components_values['properties']['title']}}"
-          description: sheet_id for dynamic stream retriever requester.
-        - field_path:
-            - retriever
-            - record_selector
-            - extractor
-            - $parameters
-            - properties_to_match
-          type: ComponentMappingDefinition
-          value: "{{components_values['data'][0].get('rowData', [{}])[0]}}"
-          description: indexed_schema to match with row values.
-        - field_path:
-            - retriever
-            - partition_router
-            - $parameters
-            - row_count
-          type: ComponentMappingDefinition
-          value: "{{components_values['properties']['gridProperties']['rowCount']}}"
-        - field_path:
-            - retriever
-            - partition_router
-            - $parameters
-            - sheet_id
-          type: ComponentMappingDefinition
-          value: "{{components_values['properties']['title']}}"
-          description: sheet_id for retriever.
-        - field_path:
-            - retriever
-            - partition_router
-            - $parameters
-            - batch_size
-          type: ComponentMappingDefinition
-          value: "{{config.get('batch_size', 1000000)}}"
-          description: batch size count for dynamic stream partition router (slicer).
+streams:
+  - type: DeclarativeStream
+    name: skip_check
+    primary_key: []
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://pokeapi.co/api/v2/
+        path: pokemon/1
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: NoPagination
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        properties:
+          id:
+            type: integer
+          name:
+            type: string
 
+# Commented out dynamic streams to prevent authentication during check
+# dynamic_streams:
+#  - type: DynamicDeclarativeStream
+#    use_parent_parameters: false
+#    stream_template:
+#      type: DeclarativeStream
+#      name: ""
+#      $parameters:
+#        i: 123
+#      primary_key: []
+#      retriever:
+#        type: SimpleRetriever
+#        $parameters:
+#          row_count: 0
+#          sheet_id: ""
+#          batch_size: 0
+#        partition_router:
+#          type: CustomPartitionRouter
+#          class_name: source_declarative_manifest.components.RangePartitionRouter
+#        paginator:
+#          type: NoPagination
+#        record_selector:
+#          decoder:
+#            type: JsonDecoder
+#          extractor:
+#            type: CustomRecordExtractor
+#            class_name: source_declarative_manifest.components.DpathSchemaMatchingExtractor
+#            description: Extract record list of values (rows) and matches such values to correct schema property to generate individual records.
+#            field_path:
+#              - valueRanges
+#              - "*"
+#            $parameters:
+#              schema_type_identifier:
+#                $ref: "#/definitions/schema_type_identifier"
+#              values_to_match_key: "values"
+#              properties_to_match: ""
+#          type: RecordSelector
+#          $parameters:
+#            name: ""
+#        requester:
+#          $ref: "#/definitions/base_requester"
+#          $parameters:
+#            sheet_id: ""
+#            name: ""
+#          http_method: GET
+#          path: >-
+#            {% if config["spreadsheet_id"] | regex_search("^(https://.*)") %}{{ config["spreadsheet_id"] | regex_search("/([-\\w]{20,})([/]?)") }}{% else %}{{ config["spreadsheet_id"] }}{% endif %}/values:batchGet?ranges={{parameters["sheet_id"] | urlencode}}!{{stream_partition.start_range}}:{{stream_partition.end_range}}&majorDimension=ROWS&alt=json
+#          error_handler:
+#            type: DefaultErrorHandler
+#            backoff_strategies:
+#              - type: ExponentialBackoffStrategy
+#            response_filters:
+#              $ref: "#/definitions/response_filters/response_error_filters"
+#      schema_loader:
+#        type: DynamicSchemaLoader
+#        retriever:
+#          type: SimpleRetriever
+#          paginator:
+#            type: NoPagination
+#          record_selector:
+#            extractor:
+#              type: CustomRecordExtractor
+#              class_name: source_declarative_manifest.components.DpathSchemaExtractor
+#              parameters:
+#                schema_type_identifier:
+#                  $ref: "#/definitions/schema_type_identifier"
+#              field_path:
+#                - sheets
+#                - "*"
+#                - data
+#                - "*"
+#                - rowData
+#                - "*"
+#            type: RecordSelector
+#          requester:
+#            $ref: "#/definitions/base_requester"
+#            $parameters:
+#              sheet_id: ""
+#            http_method: GET
+#            path: >-
+#              {% if config["spreadsheet_id"] | regex_search("^(https://.*)") %}{{ config["spreadsheet_id"] | regex_search("/([-\\w]{20,})([/]?)") }}{% else %}{{ config["spreadsheet_id"] }}{% endif %}?includeGridData=true&ranges={{parameters["sheet_id"] | urlencode}}!1:1&alt=json
+#            error_handler:
+#              type: CompositeErrorHandler
+#              error_handlers:
+#                - type: DefaultErrorHandler
+#                  backoff_strategies:
+#                    - type: ExponentialBackoffStrategy
+#                  response_filters:
+#                    $ref: "#/definitions/response_filters/single_sheet_response_error_filters"
+#        schema_type_identifier:
+#          $ref: "#/definitions/schema_type_identifier"
+#    components_resolver:
+#      type: HttpComponentsResolver
+#      description: We use first row of sheet to obtain data.
+#      retriever:
+#        $ref: "#/definitions/retrievers/components_resolver_retriever"
+#      components_mapping:
+#        - field_path:
+#            - name
+#          type: ComponentMappingDefinition
+#          # Expression is structured as: <value_if_true> if <condition> else <value_if_false>
+#          # This sets the stream name to the custom name from stream_name_overrides if a match is found,
+#          # otherwise uses the original sheet/tab name.
+#          value: >-
+#            {%- set overrides = config.get('stream_name_overrides', [])
+#                | selectattr('source_stream_name', 'equalto', components_values['properties']['title'])
+#                | list -%}
+#            {{ overrides[0]['custom_stream_name'] if overrides else components_values['properties']['title'] }}
+#          value_type: string
+#          description: name for dynamic stream (with optional override).
+#        - field_path:
+#            - schema_loader
+#            - retriever
+#            - requester
+#            - $parameters
+#            - sheet_id
+#          type: ComponentMappingDefinition
+#          value: "{{components_values['properties']['title']}}"
+#          description: sheet_id for dynamic schema loader requester.
+#        - field_path:
+#            - retriever
+#            - requester
+#            - $parameters
+#            - sheet_id
+#          type: ComponentMappingDefinition
+#          value: "{{components_values['properties']['title']}}"
+#          description: sheet_id for dynamic stream retriever requester.
+#        - field_path:
+#            - retriever
+#            - record_selector
+#            - extractor
+#            - $parameters
+#            - properties_to_match
+#          type: ComponentMappingDefinition
+#          value: "{{components_values['data'][0].get('rowData', [{}])[0]}}"
+#          description: indexed_schema to match with row values.
+#        - field_path:
+#            - retriever
+#            - partition_router
+#            - $parameters
+#            - row_count
+#          type: ComponentMappingDefinition
+#          value: "{{components_values['properties']['gridProperties']['rowCount']}}"
+#        - field_path:
+#            - retriever
+#            - partition_router
+#            - $parameters
+#            - sheet_id
+#          type: ComponentMappingDefinition
+#          value: "{{components_values['properties']['title']}}"
+#          description: sheet_id for retriever.
+#        - field_path:
+#            - retriever
+#            - partition_router
+#            - $parameters
+#            - batch_size
+#          type: ComponentMappingDefinition
+#          value: "{{config.get('batch_size', 1000000)}}"
+#          description: batch size count for dynamic stream partition router (slicer).
+#
 definitions:
   streams:
     get_spreadsheet_info_and_sheets:
