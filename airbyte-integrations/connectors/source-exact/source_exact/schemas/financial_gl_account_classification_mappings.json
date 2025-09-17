@@ -1,0 +1,85 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "FinancialGLAccountClassificationMapping",
+  "additionalProperties": true,
+  "properties": {
+    "ID": {
+      "description": "Primary key",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "Classification": {
+      "description": "ID of the classification",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "ClassificationCode": {
+      "description": "Code of the classifications",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "ClassificationDescription": {
+      "description": "Description of the classification",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "Division": {
+      "description": "Division is optional. For taxonomies of Taxonomies.Type = 0 (general taxonomies), the Division is empty. For division specific taxonomies it is mandatory",
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "GLAccount": {
+      "description": "ID of the general ledger account",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "GLAccountCode": {
+      "description": "Code of the general ledger account",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "GLAccountDescription": {
+      "description": "Description of the general ledger account",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "GLSchemeCode": {
+      "description": "Code of the general ledger scheme",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "GLSchemeDescription": {
+      "description": "Description of the general ledger scheme",
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "GLSchemeID": {
+      "description": "General ledger scheme ID of the element",
+      "type": [
+        "null",
+        "string"
+      ]
+    }
+  }
+}
