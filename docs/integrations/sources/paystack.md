@@ -68,6 +68,7 @@ The Paystack connector should not run into Paystack API limitations under normal
 
 | Version | Date       | Pull Request                                             | Subject                                                        |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------- |
+| 1.1.14 | 2025-09-17 | [66387](https://github.com/airbytehq/airbyte/pull/66387) | Update dependencies |
 | 1.1.13 | 2025-09-09 | [65780](https://github.com/airbytehq/airbyte/pull/65780) | Update dependencies |
 | 1.1.12 | 2025-08-23 | [65186](https://github.com/airbytehq/airbyte/pull/65186) | Update dependencies |
 | 1.1.11 | 2025-08-09 | [64765](https://github.com/airbytehq/airbyte/pull/64765) | Update dependencies |
