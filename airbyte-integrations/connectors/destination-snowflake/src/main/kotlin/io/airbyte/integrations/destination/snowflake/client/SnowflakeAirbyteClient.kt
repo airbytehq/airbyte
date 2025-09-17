@@ -105,7 +105,7 @@ class SnowflakeAirbyteClient(
         columnNameMapping: ColumnNameMapping
     ) {
         val sql =
-            sqlGenerator.getTable(schemaName = tableName.namespace, tableName = tableName.name)
+            sqlGenerator.describeTable(schemaName = tableName.namespace, tableName = tableName.name)
         dataSource.connection.use { connection ->
             val rs: ResultSet = connection.createStatement().executeQuery(sql)
             val columnsInDb: MutableSet<ColumnDefinition> = mutableSetOf()
