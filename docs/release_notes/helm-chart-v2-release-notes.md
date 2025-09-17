@@ -3,8 +3,8 @@
 This page documents changes to user-configurable values in the Airbyte V2 Helm Chart across versions. **These release notes only apply to users deploying Airbyte using Helm Chart V2.** If you are still using the V1 Helm Chart, these changes do not affect your deployment.
 
 For users migrating from V1 to V2, please refer to the migration guides:
-- [Self-Managed Community V2 Migration Guide](../platform/deploying-airbyte/chart-v2-community.mdx)
-- [Self-Managed Enterprise V2 Migration Guide](../platform/enterprise-setup/chart-v2-enterprise.mdx)
+- [Self-Managed Community V2 Migration Guide](/platform/deploying-airbyte/chart-v2-community)
+- [Self-Managed Enterprise V2 Migration Guide](/platform/enterprise-setup/chart-v2-enterprise)
 
 These release notes focus on configuration options that users can modify when deploying Airbyte with the V2 Helm Chart.
 
@@ -123,4 +123,4 @@ Initial release of the V2 Helm Chart with comprehensive user-configurable option
 - Worker and deployment settings
 - Monitoring and observability options
 
-**Migration from V1**: See the [V2 Migration Guide](../platform/deploying-airbyte/chart-v2-community.mdx) for complete migration instructions from V1 to V2 charts.
+**Migration from V1**: See the [V2 Migration Guide](/platform/deploying-airbyte/chart-v2-community) for complete migration instructions from V1 to V2 charts.
