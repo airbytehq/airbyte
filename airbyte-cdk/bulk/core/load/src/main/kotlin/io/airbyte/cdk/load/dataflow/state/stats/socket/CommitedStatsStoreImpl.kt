@@ -22,10 +22,10 @@ class CommittedStatsStoreImpl : CommittedStatsStore {
 
     override fun acceptStats(
         s: DestinationStream.Descriptor,
-        flushed: PartitionHistogram,
+        counts: PartitionHistogram,
         bytes: PartitionHistogram,
     ) {
-        aggregatedStats.merge(s, PartitionStats(flushed, bytes), PartitionStats::merge)
+        aggregatedStats.merge(s, PartitionStats(counts, bytes), PartitionStats::merge)
     }
 
     fun removeStats(s: DestinationStream.Descriptor, ps: List<PartitionKey>) =
@@ -35,21 +35,21 @@ class CommittedStatsStoreImpl : CommittedStatsStore {
     fun removeStats(s: DestinationStream.Descriptor, p: PartitionKey): EmissionStats? =
         aggregatedStats[s]?.let {
             EmissionStats(
-                count = it.flushed.remove(p) ?: 0,
+                count = it.counts.remove(p) ?: 0,
                 bytes = it.bytes.remove(p) ?: 0,
             )
         }
 }
 
 data class PartitionStats(
-    // Counts of flushed messages by partition id
-    val flushed: PartitionHistogram = PartitionHistogram(),
-    // Counts of flushed bytes by partition id
+    // Counts of committed messages by partition id
+    val counts: PartitionHistogram = PartitionHistogram(),
+    // Counts of committed bytes by partition id
     val bytes: PartitionHistogram = PartitionHistogram(),
 ) {
     fun merge(other: PartitionStats): PartitionStats =
         this.apply {
-            flushed.merge(other.flushed)
+            counts.merge(other.counts)
             bytes.merge(other.bytes)
         }
 }
