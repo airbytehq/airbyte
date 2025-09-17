@@ -128,6 +128,7 @@ class BumpBulkCdkVersionTask extends DefaultTask {
     private boolean patch = false
     private boolean minor = false
     private boolean major = false
+    private String changelogEntry = null
     private File versionFile
 
     BumpBulkCdkVersionTask() {
@@ -153,6 +154,11 @@ class BumpBulkCdkVersionTask extends DefaultTask {
         this.major = major
     }
 
+    @Option(option = "changelog", description = "The changelog entry to populate")
+    void setChangelogEntry(String changelogEntry) {
+        this.changelogEntry = changelogEntry
+    }
+
     @TaskAction
     void bumpVersion() {
         // Parse flags
@@ -165,17 +171,20 @@ class BumpBulkCdkVersionTask extends DefaultTask {
             throw new GradleException("Please specify only one version bump type")
         }
 
-        // Read changelog entry from stdin
-        println "Enter changelog entry (press Ctrl+D when done):"
-        def changelogEntry = new StringBuilder()
-        System.in.withReader { reader ->
-            def line
-            while ((line = reader.readLine()) != null) {
-                changelogEntry.append(line).append('\n')
+        if (changelogEntry == null) {
+            // Read changelog entry from stdin
+            println "Enter changelog entry (press Ctrl+D when done):"
+            def changelogEntryBuilder = new StringBuilder()
+            System.in.withReader { reader ->
+                def line
+                while ((line = reader.readLine()) != null) {
+                    changelogEntryBuilder.append(line).append('\n')
+                }
             }
-        }
-        if (changelogEntry.length() == 0) {
-            throw new GradleException("Changelog entry cannot be empty")
+            if (changelogEntryBuilder.length() == 0) {
+                throw new GradleException("Changelog entry cannot be empty")
+            }
+            changelogEntry = changelogEntryBuilder.toString()
         }
 
         // Compute new version number
@@ -206,7 +215,7 @@ class BumpBulkCdkVersionTask extends DefaultTask {
         def newChangelog = new StringBuilder()
         // Add new version entry
         newChangelog.append("## Version ${newVersion}\n\n")
-        newChangelog.append("* **Changed:** ${changelogEntry.toString().trim()}\n\n")
+        newChangelog.append("${changelogEntry.toString().trim()}\n\n")
         // Add the rest of the existing changelog
         newChangelog.append(currentChangelog)
         // Write back to file
