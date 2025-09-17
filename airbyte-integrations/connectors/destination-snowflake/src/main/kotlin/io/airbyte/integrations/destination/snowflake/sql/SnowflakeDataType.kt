@@ -10,7 +10,7 @@ package io.airbyte.integrations.destination.snowflake.sql
  */
 enum class SnowflakeDataType(val typeName: String) {
     // Numeric types
-    NUMBER("NUMBER"),
+    NUMBER("NUMBER(38,0)"),
     DECIMAL("DECIMAL"),
     NUMERIC("NUMERIC"),
     INT("INT"),
