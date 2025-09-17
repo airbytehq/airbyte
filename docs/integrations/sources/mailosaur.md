@@ -24,6 +24,7 @@ Docs : https://mailosaur.com/docs
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.33 | 2025-09-16 | [66338](https://github.com/airbytehq/airbyte/pull/66338) | Update dependencies |
 | 0.0.32 | 2025-09-09 | [65747](https://github.com/airbytehq/airbyte/pull/65747) | Update dependencies |
 | 0.0.31 | 2025-08-23 | [65198](https://github.com/airbytehq/airbyte/pull/65198) | Update dependencies |
 | 0.0.30 | 2025-08-09 | [64666](https://github.com/airbytehq/airbyte/pull/64666) | Update dependencies |
