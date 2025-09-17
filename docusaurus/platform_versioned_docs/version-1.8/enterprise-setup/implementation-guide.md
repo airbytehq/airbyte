@@ -791,7 +791,6 @@ spec:
     - host: airbyte.example.com # replace with your host
       http:
         paths:
-          # BEGIN: Self-Managed Enterprise only - Keycloak authentication service
           - backend:
               service:
                 # format is ${RELEASE_NAME}-airbyte-keycloak-svc 
@@ -800,7 +799,6 @@ spec:
                   number: 8180 
             path: /auth
             pathType: Prefix
-          # END: Self-Managed Enterprise only
           - backend:
               service:
                 # format is ${RELEASE_NAME}-airbyte-connector-builder-server-svc
@@ -848,7 +846,6 @@ spec:
     - host: airbyte.example.com # replace with your host
       http:
         paths:
-          # BEGIN: Self-Managed Enterprise only - Keycloak authentication service
           - backend:
               service:
                 name: airbyte-enterprise-airbyte-keycloak-svc
@@ -856,7 +853,6 @@ spec:
                   number: 8180
             path: /auth
             pathType: Prefix
-          # END: Self-Managed Enterprise only
           - backend:
               service:
                 name: airbyte-enterprise-airbyte-connector-builder-server-svc
