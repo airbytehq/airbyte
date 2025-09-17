@@ -141,9 +141,12 @@ class SnowflakeAirbyteClient(
                     }
                     .toSet()
 
-            val addedColumns = columnsInStream.filter { it.name !in columnsInDb.map { it.name } }.toSet()
-            val deletedColumns = columnsInDb.filter { it.name !in columnsInStream.map { it.name } }.toSet()
-            val commonColumns = columnsInStream.filter { it.name in columnsInDb.map { it.name } }.toSet()
+            val addedColumns =
+                columnsInStream.filter { it.name !in columnsInDb.map { it.name } }.toSet()
+            val deletedColumns =
+                columnsInDb.filter { it.name !in columnsInStream.map { it.name } }.toSet()
+            val commonColumns =
+                columnsInStream.filter { it.name in columnsInDb.map { it.name } }.toSet()
             val modifiedColumns =
                 commonColumns
                     .filter {
@@ -154,8 +157,8 @@ class SnowflakeAirbyteClient(
 
             if (
                 addedColumns.isNotEmpty() ||
-                deletedColumns.isNotEmpty() ||
-                modifiedColumns.isNotEmpty()
+                    deletedColumns.isNotEmpty() ||
+                    modifiedColumns.isNotEmpty()
             ) {
                 log.error { "Summary of the table alterations:" }
                 log.error { "Added columns: $addedColumns" }

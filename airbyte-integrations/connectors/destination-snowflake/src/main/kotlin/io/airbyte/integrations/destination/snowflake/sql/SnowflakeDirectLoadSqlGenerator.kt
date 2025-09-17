@@ -15,6 +15,7 @@ import io.airbyte.cdk.load.util.UUIDGenerator
 import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.CdcDeletionMode
+import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 
@@ -33,8 +34,8 @@ private val log = KotlinLogging.logger {}
 @Singleton
 class SnowflakeDirectLoadSqlGenerator(
     private val columnUtils: SnowflakeColumnUtils,
-    private val cdcDeletionMode: CdcDeletionMode,
     private val uuidGenerator: UUIDGenerator,
+    private val snowflakeConfiguration: SnowflakeConfiguration,
 ) {
 
     /**
@@ -181,7 +182,7 @@ class SnowflakeDirectLoadSqlGenerator(
         val cdcSkipInsertClause: String
         if (
             stream.schema.asColumns().containsKey(CDC_DELETED_AT_COLUMN) &&
-                cdcDeletionMode == CdcDeletionMode.HARD_DELETE
+                snowflakeConfiguration.cdcDeletionMode == CdcDeletionMode.HARD_DELETE
         ) {
             // Execute CDC deletions if there's already a record
             cdcDeleteClause =
@@ -390,24 +391,28 @@ class SnowflakeDirectLoadSqlGenerator(
             )
         }
         deletedColumns.forEach {
-            clauses.add(
-                "ALTER TABLE $prettyTableName DROP COLUMN \"${it.name}\";".andLog()
-            )
+            clauses.add("ALTER TABLE $prettyTableName DROP COLUMN \"${it.name}\";".andLog())
         }
         modifiedColumns.forEach {
             val tempColumn = "${it.name}_${uuidGenerator.v4()}"
-            clauses.add("ALTER TABLE $prettyTableName ADD COLUMN \"$tempColumn\" ${it.type};".andLog())
-            clauses.add("UPDATE $prettyTableName SET \"$tempColumn\" = CAST(\"${it.name}\" AS ${it.type});".andLog())
-            val backupColumn = "${tempColumn}_backup"
-            clauses.add("""ALTER TABLE $prettyTableName
-                RENAME COLUMN "${it.name}" TO "$backupColumn";
-            """.trimIndent())
-            clauses.add("""ALTER TABLE $prettyTableName
-                RENAME COLUMN "$tempColumn" TO "${it.name}";
-            """.trimIndent())
             clauses.add(
-                "ALTER TABLE $prettyTableName DROP COLUMN \"$backupColumn\";".andLog()
+                "ALTER TABLE $prettyTableName ADD COLUMN \"$tempColumn\" ${it.type};".andLog()
             )
+            clauses.add(
+                "UPDATE $prettyTableName SET \"$tempColumn\" = CAST(\"${it.name}\" AS ${it.type});".andLog()
+            )
+            val backupColumn = "${tempColumn}_backup"
+            clauses.add(
+                """ALTER TABLE $prettyTableName
+                RENAME COLUMN "${it.name}" TO "$backupColumn";
+            """.trimIndent()
+            )
+            clauses.add(
+                """ALTER TABLE $prettyTableName
+                RENAME COLUMN "$tempColumn" TO "${it.name}";
+            """.trimIndent()
+            )
+            clauses.add("ALTER TABLE $prettyTableName DROP COLUMN \"$backupColumn\";".andLog())
         }
         return clauses
     }
