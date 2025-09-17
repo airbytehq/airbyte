@@ -10,24 +10,27 @@ import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.cdk.load.util.UUIDGenerator
 import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
 import io.mockk.every
 import io.mockk.mockk
+import java.util.UUID
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 internal class SnowflakeDirectLoadSqlGeneratorTest {
 
-    private lateinit var columnUtils: SnowflakeColumnUtils
+    private val columnUtils: SnowflakeColumnUtils = mockk()
     private lateinit var snowflakeDirectLoadSqlGenerator: SnowflakeDirectLoadSqlGenerator
+    private val uuidGenerator: UUIDGenerator = mockk()
 
     @BeforeEach
     fun setUp() {
-        columnUtils = mockk()
         snowflakeDirectLoadSqlGenerator =
             SnowflakeDirectLoadSqlGenerator(
                 columnUtils = columnUtils,
+                uuidGenerator = uuidGenerator,
             )
     }
 
@@ -123,7 +126,8 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
             SELECT
                 $columnNames
             FROM ${sourceTableName.toPrettyString(quote=QUOTE)}
-            """.trimIndent()
+            """
+            .trimIndent()
         val sql =
             snowflakeDirectLoadSqlGenerator.copyTable(
                 columnNameMapping = columnNameMapping,
@@ -189,7 +193,8 @@ new_record."_airbyte_extracted_at",
 new_record."_airbyte_meta",
 new_record."_airbyte_generation_id"
             )
-        """.trimIndent()
+        """
+            .trimIndent()
 
         val sql =
             snowflakeDirectLoadSqlGenerator.upsertTable(
@@ -252,7 +257,8 @@ new_record."_airbyte_generation_id"
             TRIM_SPACE = TRUE
             ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE
             REPLACE_INVALID_CHARACTERS = TRUE
-        """.trimIndent()
+        """
+            .trimIndent()
         val sql = snowflakeDirectLoadSqlGenerator.createFileFormat(namespace)
         assertEquals(expected, sql)
     }
@@ -290,22 +296,30 @@ new_record."_airbyte_generation_id"
 
     @Test
     fun testAlterTable() {
+        val uuid = UUID.randomUUID()
+        every { uuidGenerator.v4() } returns uuid
         val tableName = TableName(namespace = "namespace", name = "name")
         val addedColumns = setOf(ColumnDefinition("col1", "TEXT", false))
         val deletedColumns = setOf(ColumnDefinition("col2", "TEXT", false))
-        val modifiedColumns = setOf(ColumnDefinition("col3", "NUMBER", false))
-        val sql =
-            snowflakeDirectLoadSqlGenerator.alterTable(
+        val modifiedColumns = setOf(ColumnDefinition("col3", "TEXT", false))
+        val sql = snowflakeDirectLoadSqlGenerator.alterTable(
                 tableName,
                 addedColumns,
                 deletedColumns,
                 modifiedColumns
             )
+
         assertEquals(
             setOf(
-                "ALTER TABLE \"namespace\".\"name\" ADD COLUMN col1 TEXT",
-                "ALTER TABLE \"namespace\".\"name\" DROP COLUMN col2",
-                "ALTER TABLE \"namespace\".\"name\" ALTER col3 SET DATA TYPE NUMBER"
+                """ALTER TABLE "namespace"."name" ADD COLUMN "col1" TEXT;""",
+                """ALTER TABLE "namespace"."name" DROP COLUMN "col2";""",
+                """ALTER TABLE "namespace"."name" ADD COLUMN "col3_${uuid}" TEXT;""",
+                """UPDATE "namespace"."name" SET "col3_${uuid}" = CAST("col3" AS TEXT);""",
+                """ALTER TABLE "namespace"."name"
+                RENAME COLUMN "col3" TO "col3_${uuid}_backup";""".trimIndent(),
+                """ALTER TABLE "namespace"."name"
+                RENAME COLUMN "col3_${uuid}" TO "col3";""".trimIndent(),
+                """ALTER TABLE "namespace"."name" DROP COLUMN "col3_${uuid}_backup";"""
             ),
             sql
         )

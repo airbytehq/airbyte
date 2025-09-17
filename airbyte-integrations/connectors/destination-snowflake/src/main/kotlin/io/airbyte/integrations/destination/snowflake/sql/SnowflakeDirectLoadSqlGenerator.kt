@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.cdk.load.util.UUIDGenerator
 import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -35,6 +36,7 @@ private val log = KotlinLogging.logger {}
 @Singleton
 class SnowflakeDirectLoadSqlGenerator(
     private val columnUtils: SnowflakeColumnUtils,
+    private val uuidGenerator: UUIDGenerator,
 ) {
 
     /**
@@ -349,32 +351,30 @@ class SnowflakeDirectLoadSqlGenerator(
         modifiedColumns: Set<ColumnDefinition>,
     ): Set<String> {
         val clauses = mutableSetOf<String>()
+        val prettyTableName = tableName.toPrettyString(quote = QUOTE)
         addedColumns.forEach {
             clauses.add(
-                "ALTER TABLE ${tableName.toPrettyString(quote = QUOTE)} ADD COLUMN \"${it.name}\" ${it.type};".andLog()
+                "ALTER TABLE $prettyTableName ADD COLUMN \"${it.name}\" ${it.type};".andLog()
             )
         }
         deletedColumns.forEach {
             clauses.add(
-                "ALTER TABLE ${tableName.toPrettyString(quote = QUOTE)} DROP COLUMN \"${it.name}\";".andLog()
+                "ALTER TABLE $prettyTableName DROP COLUMN \"${it.name}\";".andLog()
             )
         }
         modifiedColumns.forEach {
-            val tempColumn = "${it.name}${UUID.randomUUID()}"
-            clauses.add("ALTER TABLE ${tableName.toPrettyString(quote = QUOTE)} ADD COLUMN \"$tempColumn\" ${it.type};".andLog())
-            clauses.add("UPDATE ${tableName.toPrettyString(quote = QUOTE)} SET \"$tempColumn\" = CAST(\"${it.name}\" AS ${it.type});".andLog())
+            val tempColumn = "${it.name}_${uuidGenerator.v4()}"
+            clauses.add("ALTER TABLE $prettyTableName ADD COLUMN \"$tempColumn\" ${it.type};".andLog())
+            clauses.add("UPDATE $prettyTableName SET \"$tempColumn\" = CAST(\"${it.name}\" AS ${it.type});".andLog())
             val backupColumn = "${tempColumn}_backup"
-            clauses.add("""ALTER TABLE ${tableName.toPrettyString(quote = QUOTE)}
+            clauses.add("""ALTER TABLE $prettyTableName
                 RENAME COLUMN "${it.name}" TO "$backupColumn";
             """.trimIndent())
-            clauses.add("""ALTER TABLE ${tableName.toPrettyString(quote = QUOTE)}
+            clauses.add("""ALTER TABLE $prettyTableName
                 RENAME COLUMN "$tempColumn" TO "${it.name}";
             """.trimIndent())
             clauses.add(
-                "ALTER TABLE ${tableName.toPrettyString(quote = QUOTE)} DROP COLUMN \"$backupColumn\";".andLog()
-            )
-            clauses.add(
-                "ALTER TABLE ${tableName.toPrettyString(quote = QUOTE)} ALTER \"${it.name}\" SET DATA TYPE ${it.type};".andLog()
+                "ALTER TABLE $prettyTableName DROP COLUMN \"$backupColumn\";".andLog()
             )
         }
         return clauses
