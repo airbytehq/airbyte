@@ -198,7 +198,7 @@ class BumpBulkCdkVersionTask extends DefaultTask {
         println "Bumping version from ${currentVersion} to ${newVersion}"
 
         // Write out the new version number
-        versionFile.text = "${newVersion}\n"
+        versionFile.text = "version=${newVersion}\n"
 
         // Update changelog file
         def changelogFile = project.file("changelog.md")
