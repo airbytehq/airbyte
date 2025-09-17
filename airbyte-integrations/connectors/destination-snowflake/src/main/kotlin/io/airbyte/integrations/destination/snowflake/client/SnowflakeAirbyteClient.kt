@@ -133,7 +133,7 @@ class SnowflakeAirbyteClient(
                         val mappedName = columnNameMapping.get(name) ?: name
                         ColumnDefinition(
                             mappedName,
-                            snowflakeColumnUtils.toDialectType(fieldType.type),
+                            snowflakeColumnUtils.toDialectType(fieldType.type).takeWhile { char -> char != '(' },
                             fieldType.nullable
                         )
                     }
