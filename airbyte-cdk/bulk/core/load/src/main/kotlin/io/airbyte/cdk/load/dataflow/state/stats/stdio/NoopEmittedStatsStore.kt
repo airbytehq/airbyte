@@ -14,4 +14,6 @@ import jakarta.inject.Singleton
 @Singleton
 class NoopEmittedStatsStore : EmittedStatsStore {
     override fun increment(s: DestinationStream.Descriptor, count: Long, bytes: Long) = Unit
+
+    override fun getStats() = null
 }
