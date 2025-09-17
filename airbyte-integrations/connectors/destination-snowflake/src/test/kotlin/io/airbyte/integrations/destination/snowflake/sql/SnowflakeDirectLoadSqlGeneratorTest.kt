@@ -11,7 +11,6 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
-import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -246,7 +245,7 @@ new_record."_airbyte_generation_id"
         val namespace = "test-namespace"
         val expected =
             """
-            CREATE OR REPLACE FILE FORMAT "${namespace.toSnowflakeCompatibleName()}".$STAGE_FORMAT_NAME
+            CREATE OR REPLACE FILE FORMAT ${buildSnowflakeFormatName(namespace)}
             TYPE = 'CSV'
             FIELD_DELIMITER = '$CSV_FIELD_DELIMITER'
             FIELD_OPTIONALLY_ENCLOSED_BY = '"'
@@ -263,7 +262,7 @@ new_record."_airbyte_generation_id"
         val tableName = TableName(namespace = "namespace", name = "name")
         val sql = snowflakeDirectLoadSqlGenerator.createSnowflakeStage(tableName)
         assertEquals(
-            "CREATE OR REPLACE STAGE ${buildSnowflakeStageName(tableName)}\n    FILE_FORMAT = $STAGE_FORMAT_NAME;",
+            "CREATE OR REPLACE STAGE ${buildSnowflakeStageName(tableName)}\n    FILE_FORMAT = ${buildSnowflakeFormatName(tableName.namespace)};",
             sql
         )
     }
@@ -284,7 +283,7 @@ new_record."_airbyte_generation_id"
         val tableName = TableName(namespace = "namespace", name = "name")
         val sql = snowflakeDirectLoadSqlGenerator.copyFromStage(tableName)
         assertEquals(
-            "COPY INTO ${tableName.toPrettyString(quote=QUOTE)}\nFROM @${buildSnowflakeStageName(tableName)}\nFILE_FORMAT = $STAGE_FORMAT_NAME\nON_ERROR = 'ABORT_STATEMENT'",
+            "COPY INTO ${tableName.toPrettyString(quote=QUOTE)}\nFROM @${buildSnowflakeStageName(tableName)}\nFILE_FORMAT = ${buildSnowflakeFormatName(tableName.namespace)}\nON_ERROR = 'ABORT_STATEMENT'",
             sql
         )
     }

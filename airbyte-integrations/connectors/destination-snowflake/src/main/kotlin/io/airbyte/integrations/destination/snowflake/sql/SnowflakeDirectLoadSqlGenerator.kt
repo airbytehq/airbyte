@@ -25,6 +25,10 @@ internal fun buildSnowflakeStageName(tableName: TableName): String {
     return "\"${tableName.namespace}\".\"$STAGE_NAME_PREFIX${tableName.name}\""
 }
 
+internal fun buildSnowflakeFormatName(namespace: String): String {
+    return "\"${namespace.toSnowflakeCompatibleName()}\".\"$STAGE_FORMAT_NAME\""
+}
+
 private val log = KotlinLogging.logger {}
 
 @Singleton
@@ -272,8 +276,9 @@ class SnowflakeDirectLoadSqlGenerator(
     }
 
     fun createFileFormat(namespace: String): String {
+        val formatName = buildSnowflakeFormatName(namespace)
         return """
-            CREATE OR REPLACE FILE FORMAT "${namespace.toSnowflakeCompatibleName()}".$STAGE_FORMAT_NAME
+            CREATE OR REPLACE FILE FORMAT $formatName
             TYPE = 'CSV'
             FIELD_DELIMITER = '$CSV_FIELD_DELIMITER'
             FIELD_OPTIONALLY_ENCLOSED_BY = '"'
@@ -285,9 +290,10 @@ class SnowflakeDirectLoadSqlGenerator(
 
     fun createSnowflakeStage(tableName: TableName): String {
         val stageName = buildSnowflakeStageName(tableName)
+        val formatName = buildSnowflakeFormatName(tableName.namespace)
         return """
             CREATE OR REPLACE STAGE $stageName
-                FILE_FORMAT = $STAGE_FORMAT_NAME;
+                FILE_FORMAT = $formatName;
         """
             .trimIndent()
             .andLog()
@@ -306,11 +312,12 @@ class SnowflakeDirectLoadSqlGenerator(
 
     fun copyFromStage(tableName: TableName): String {
         val stageName = buildSnowflakeStageName(tableName)
+        val formatName = buildSnowflakeFormatName(tableName.namespace)
 
         return """
             COPY INTO ${tableName.toPrettyString(quote=QUOTE)}
             FROM @$stageName
-            FILE_FORMAT = $STAGE_FORMAT_NAME
+            FILE_FORMAT = $formatName
             ON_ERROR = 'ABORT_STATEMENT'
         """
             .trimIndent()
