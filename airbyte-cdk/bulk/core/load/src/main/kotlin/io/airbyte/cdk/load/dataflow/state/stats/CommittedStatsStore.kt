@@ -11,7 +11,7 @@ import io.airbyte.cdk.load.dataflow.state.PartitionHistogram
 interface CommittedStatsStore {
     fun acceptStats(
         s: DestinationStream.Descriptor,
-        flushed: PartitionHistogram,
+        counts: PartitionHistogram,
         bytes: PartitionHistogram,
     )
 }

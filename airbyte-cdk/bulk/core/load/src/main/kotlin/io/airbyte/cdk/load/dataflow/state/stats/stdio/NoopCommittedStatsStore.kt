@@ -16,7 +16,7 @@ import jakarta.inject.Singleton
 class NoopCommittedStatsStore : CommittedStatsStore {
     override fun acceptStats(
         s: DestinationStream.Descriptor,
-        flushed: PartitionHistogram,
+        counts: PartitionHistogram,
         bytes: PartitionHistogram
     ) = Unit
 }
