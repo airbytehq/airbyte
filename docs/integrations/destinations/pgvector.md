@@ -189,6 +189,7 @@ All streams will be indexed/stored into a table with the same name. The table wi
 
 | Version | Date       | Pull Request                                                  | Subject                                                                                                                                              |
 |:--------| :--------- |:--------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.1.5 | 2025-09-10 | [65045](https://github.com/airbytehq/airbyte/pull/65045) | Update dependencies |
 | 0.1.4 | 2025-07-05 | [61623](https://github.com/airbytehq/airbyte/pull/61623) | Update dependencies |
 | 0.1.3 | 2025-05-17 | [51728](https://github.com/airbytehq/airbyte/pull/51728) | Update dependencies |
 | 0.1.2 | 2025-01-11 | [45767](https://github.com/airbytehq/airbyte/pull/45767) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
