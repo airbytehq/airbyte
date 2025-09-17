@@ -1,5 +1,8 @@
+import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.options.Option
 
 // This extension does a lot of heavy lifting, because the property values (core/toolkits)
 // aren't yet set when the plugin's `apply` method is called.
@@ -277,23 +280,33 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
             }
         }
 
-        project.tasks.register('upgradeCdk') {
-            description = 'Upgrades the CDK version used by the connector. If no version is specified, upgrades to the local CDK version.'
-            group = 'airbyte-bulk-connector'
+        project.tasks.register('upgradeCdk', BumpConnectorCdkVersion)
+    }
+}
 
-            doLast {
-                String targetVersion = project.hasProperty('cdkVersion') ? project.property('cdkVersion') : null
+class BumpConnectorCdkVersion extends DefaultTask {
+    private String targetVersion = null
 
-                if (targetVersion == null) {
-                    targetVersion = getLocalCdkVersion(project)
-                    println "No version specified, upgrading to local CDK version: $targetVersion"
-                } else {
-                    println "Version specified, using the provided CDK versionn: $targetVersion"
-                }
+    BumpConnectorCdkVersion() {
+        description = 'Bump the bulk CDK version number'
+        group = 'airbyte-bulk-connector'
+    }
 
-                updateCdkVersion(project, targetVersion)
-            }
+    @Option(option = "cdkVersion", description = "The bulk CDK version to use. If not provided, defaults to the latest CDK version.")
+    void setTargetVersion(String targetVersion) {
+        this.targetVersion = targetVersion
+    }
+
+    @TaskAction
+    void bumpVersion() {
+        if (targetVersion == null) {
+            targetVersion = getLocalCdkVersion(project)
+            println "No version specified, upgrading to local CDK version: $targetVersion"
+        } else {
+            println "Version specified, using the provided CDK versionn: $targetVersion"
         }
+
+        updateCdkVersion(project, targetVersion)
     }
 
     private static String getLocalCdkVersion(Project project) throws IOException {
