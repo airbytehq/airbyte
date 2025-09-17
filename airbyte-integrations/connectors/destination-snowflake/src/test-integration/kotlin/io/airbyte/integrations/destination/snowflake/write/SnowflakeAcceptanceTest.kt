@@ -10,14 +10,20 @@ import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.config.DataChannelFormat
 import io.airbyte.cdk.load.config.DataChannelMedium
+import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.ObjectValue
+import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.TimeWithTimezoneValue
+import io.airbyte.cdk.load.data.json.toJson
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.test.util.ConfigurationUpdater
 import io.airbyte.cdk.load.test.util.DefaultNamespaceResult
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
+import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
@@ -31,10 +37,13 @@ import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.CONFIG_W
 import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.getConfigPath
 import io.airbyte.integrations.destination.snowflake.cdk.SnowflakeMigratingConfigurationSpecificationSupplier
 import io.airbyte.integrations.destination.snowflake.cdk.migrateJson
+import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfigurationFactory
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeSpecification
+import io.airbyte.integrations.destination.snowflake.write.transform.isValid
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
+import java.math.BigDecimal
 import java.nio.file.Files
 import java.nio.file.Path
 import net.snowflake.client.jdbc.SnowflakeTimestampWithTimezone
@@ -88,7 +97,36 @@ abstract class SnowflakeAcceptanceTest(
         dataChannelMedium = dataChannelMedium,
         dataChannelFormat = dataChannelFormat,
         mismatchedTypesUnrepresentable = false,
+        recordMangler = SnowflakeExpectedRecordMapper,
     )
+
+object SnowflakeExpectedRecordMapper : ExpectedRecordMapper {
+
+    override fun mapRecord(expectedRecord: OutputRecord, schema: AirbyteType): OutputRecord {
+        val mappedData =
+            ObjectValue(
+                expectedRecord.data.values
+                    .mapValuesTo(linkedMapOf()) { (_, value) -> mapAirbyteValue(value) }
+                    .mapKeysTo(linkedMapOf()) { it.key.toSnowflakeCompatibleName() }
+            )
+        return expectedRecord.copy(data = mappedData)
+    }
+
+    private fun mapAirbyteValue(value: AirbyteValue): AirbyteValue {
+        return when (value) {
+            is TimeWithTimezoneValue -> StringValue(value.value.toString())
+            is ArrayValue,
+            is ObjectValue -> {
+                if (isValid(value)) {
+                    StringValue(value.toJson().toPrettyString().replace("\\s+:".toRegex(), ":"))
+                } else {
+                    NullValue
+                }
+            }
+            else -> if (isValid(value)) value else NullValue
+        }
+    }
+}
 
 object SnowflakeDataCleaner : DestinationCleaner {
     override fun cleanup() {
@@ -208,6 +246,7 @@ class SnowflakeDataDumper(
 
     private fun convertValue(value: Any): Any =
         when (value) {
+            is BigDecimal -> value.toBigInteger()
             is java.sql.Date -> value.toLocalDate()
             is SnowflakeTimestampWithTimezone -> value.toZonedDateTime()
             is java.sql.Time -> value.toLocalTime()

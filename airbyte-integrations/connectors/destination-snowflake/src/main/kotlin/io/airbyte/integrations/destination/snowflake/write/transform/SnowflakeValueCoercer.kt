@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.snowflake.write.transform
 
+import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.IntegerValue
@@ -27,6 +28,17 @@ internal const val MINIMUM_FLOAT_VALUE = -9.007199E15f
 internal const val VARCHAR_LIMIT_BYTES = 134217728 // 128 MB
 internal const val VARIANT_LIMIT_BYTES = 134217728 // 128 MB
 
+fun isValid(value: AirbyteValue): Boolean {
+    return when (value) {
+        is ArrayValue,
+        is ObjectValue -> value.toCsvValue().toString().toByteArray().size <= VARIANT_LIMIT_BYTES
+        is IntegerValue -> value.value.toBigDecimal().precision() <= INTEGER_PRECISION_LIMIT
+        is NumberValue -> value.value.toFloat() !in MINIMUM_FLOAT_VALUE..MAXIMUM_FLOAT_VALUE
+        is StringValue -> value.toString().toByteArray().size <= VARCHAR_LIMIT_BYTES
+        else -> true
+    }
+}
+
 @Singleton
 class SnowflakeValueCoercer : ValueCoercer {
     override fun map(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
@@ -34,37 +46,8 @@ class SnowflakeValueCoercer : ValueCoercer {
     }
 
     override fun validate(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
-        when (val abValue = value.abValue) {
-            is ArrayValue,
-            is ObjectValue -> {
-                if (abValue.toCsvValue().toString().toByteArray().size > VARIANT_LIMIT_BYTES) {
-                    value.nullify(
-                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
-                    )
-                }
-            }
-            is IntegerValue -> {
-                if (abValue.value.toBigDecimal().precision() > INTEGER_PRECISION_LIMIT) {
-                    value.nullify(
-                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
-                    )
-                }
-            }
-            is NumberValue -> {
-                if (abValue.value.toFloat() !in MINIMUM_FLOAT_VALUE..MAXIMUM_FLOAT_VALUE) {
-                    value.nullify(
-                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
-                    )
-                }
-            }
-            is StringValue -> {
-                if (abValue.toString().toByteArray().size > VARCHAR_LIMIT_BYTES) {
-                    value.nullify(
-                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
-                    )
-                }
-            }
-            else -> {}
+        if (!isValid(value.abValue)) {
+            value.nullify(AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION)
         }
 
         return value
