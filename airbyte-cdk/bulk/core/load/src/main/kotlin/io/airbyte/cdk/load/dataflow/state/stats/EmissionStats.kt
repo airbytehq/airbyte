@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.load.dataflow.state.stats
 
-/** Simple record level stat data. */
+/** Simple record level stat data. Used for committed and emitted stats. */
 data class EmissionStats(var count: Long = 0, var bytes: Long = 0) {
     fun merge(other: EmissionStats) =
         this.apply {
