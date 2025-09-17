@@ -320,6 +320,7 @@ By default, this stream is enabled and retrieves information about **users and g
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------|
+| 0.4.7 | 2025-09-16 | [66169](https://github.com/airbytehq/airbyte/pull/66169) | Update dependencies |
 | 0.4.6 | 2025-09-10 | [66009](https://github.com/airbytehq/airbyte/pull/66009) | Update to CDK v7 |
 | 0.4.5 | 2025-09-09 | [66108](https://github.com/airbytehq/airbyte/pull/66108) | Update dependencies |
 | 0.4.4 | 2025-08-23 | [61127](https://github.com/airbytehq/airbyte/pull/61127) | Update dependencies |
