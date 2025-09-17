@@ -5,8 +5,15 @@ import javax.xml.xpath.XPathConstants
 import javax.xml.xpath.XPathFactory
 import org.w3c.dom.Document
 
+final var cdkVersion = {
+    var props = new Properties()
+    file("version.properties").withInputStream(props::load)
+    return props.getProperty('version', 'undefined')
+}()
+
+
 allprojects {
-    version = "0.1.26"
+    version = cdkVersion
     apply plugin: 'java-library'
     apply plugin: 'maven-publish'
 
