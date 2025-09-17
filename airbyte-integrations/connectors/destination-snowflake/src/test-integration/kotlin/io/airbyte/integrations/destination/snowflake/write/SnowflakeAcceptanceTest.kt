@@ -32,6 +32,7 @@ import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.StronglyTyped
 import io.airbyte.cdk.load.write.UnionBehavior
 import io.airbyte.cdk.load.write.UnknownTypesBehavior
+import io.airbyte.commons.json.Jsons.deserializeExact
 import io.airbyte.integrations.destination.snowflake.SnowflakeBeanFactory
 import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.CONFIG_WITH_AUTH_STAGING
 import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.getConfigPath
@@ -118,7 +119,7 @@ object SnowflakeExpectedRecordMapper : ExpectedRecordMapper {
             is ArrayValue,
             is ObjectValue -> {
                 if (isValid(value)) {
-                    StringValue(value.toJson().toPrettyString().replace("\\s+:".toRegex(), ":"))
+                    StringValue(value.toJson().toPrettyString())
                 } else {
                     NullValue
                 }
@@ -207,10 +208,21 @@ class SnowflakeDataDumper(
                     val dataMap = linkedMapOf<String, AirbyteValue>()
                     for (i in 1..resultSet.metaData.columnCount) {
                         val columnName = resultSet.metaData.getColumnName(i)
+                        val columnType = resultSet.metaData.getColumnTypeName(i)
                         if (!Meta.COLUMN_NAMES.contains(columnName)) {
                             val value = resultSet.getObject(i)
                             dataMap[columnName] =
-                                value?.let { AirbyteValue.from(convertValue(value)) } ?: NullValue
+                                value?.let {
+                                    AirbyteValue.from(
+                                        convertValue(
+                                            unformatJsonValue(
+                                                columnType = columnType,
+                                                value = value
+                                            )
+                                        )
+                                    )
+                                }
+                                    ?: NullValue
                         }
                     }
                     val outputRecord =
@@ -242,6 +254,24 @@ class SnowflakeDataDumper(
         stream: DestinationStream
     ): Map<String, String> {
         throw UnsupportedOperationException("Snowflake does not support file transfer.")
+    }
+
+    private fun unformatJsonValue(columnType: String, value: Any): Any {
+        /*
+         * Snowflake automatically pretty-prints JSON results for variant, object and array
+         * when selecting them via a SQL query.  You can get around this by using the `TO_JSON`
+         * function on the column when running the query.  However, we do not have access to the
+         * catalog in the dumper to know which columns need to be un-prettied/modified to match
+         * the toPrettyString() method of the Jackson JsonNode.  To compensate for this, we will
+         * read the JSON string into a JsonNode and then re-pretty-ify it into a string so that
+         * it can match what the expected record mapper is doing.
+         */
+        return when (columnType.lowercase()) {
+            "variant",
+            "array",
+            "object" -> deserializeExact(value.toString()).toPrettyString()
+            else -> value
+        }
     }
 
     private fun convertValue(value: Any): Any =
