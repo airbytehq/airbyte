@@ -31,7 +31,7 @@ private val log = KotlinLogging.logger {}
 class SnowflakeAirbyteClient(
     private val dataSource: DataSource,
     private val sqlGenerator: SnowflakeDirectLoadSqlGenerator,
-    private val snowflakeColumnUtils: SnowflakeColumnUtils
+    private val snowflakeColumnUtils: SnowflakeColumnUtils,
 ) : AirbyteClient, DirectLoadTableSqlOperations, DirectLoadTableNativeOperations {
 
     override suspend fun countTable(tableName: TableName): Long? =
@@ -90,7 +90,7 @@ class SnowflakeAirbyteClient(
         targetTableName: TableName
     ) {
         execute(
-            sqlGenerator.upsertTable(stream, columnNameMapping, sourceTableName, targetTableName),
+            sqlGenerator.upsertTable(stream, columnNameMapping, sourceTableName, targetTableName)
         )
     }
 
@@ -154,8 +154,8 @@ class SnowflakeAirbyteClient(
 
             if (
                 addedColumns.isNotEmpty() ||
-                    deletedColumns.isNotEmpty() ||
-                    modifiedColumns.isNotEmpty()
+                deletedColumns.isNotEmpty() ||
+                modifiedColumns.isNotEmpty()
             ) {
                 log.error { "Summary of the table alterations:" }
                 log.error { "Added columns: $addedColumns" }

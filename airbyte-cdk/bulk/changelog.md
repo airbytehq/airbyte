@@ -1,3 +1,11 @@
+## Version 0.1.35
+
+* **Changed:** Fix input stream wiring for dockerized acceptance tests
+
+## Version 0.1.34
+
+* **Changed:** Moved version declaration from build.gradle to version.properties
+
 ## Version 0.1.33
 
 **Load CDK**
@@ -66,7 +74,7 @@
 
 ## Version 0.1.20
 
-* **Changed:** Fix hard failure edge case in stream initialization for in dataflow cdk lifecycle. 
+* **Changed:** Fix hard failure edge case in stream initialization for in dataflow cdk lifecycle.
 
 ## Version 0.1.18
 

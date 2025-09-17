@@ -31,14 +31,13 @@ internal class SnowflakeAirbyteClientTest {
     private lateinit var client: SnowflakeAirbyteClient
     private lateinit var dataSource: DataSource
     private lateinit var sqlGenerator: SnowflakeDirectLoadSqlGenerator
-    private lateinit var columnUtils: SnowflakeColumnUtils
+    private val snowflakeColumnUtils: SnowflakeColumnUtils = mockk()
 
     @BeforeEach
     fun setup() {
         dataSource = mockk()
         sqlGenerator = mockk(relaxed = true)
-        columnUtils = mockk(relaxed = true)
-        client = SnowflakeAirbyteClient(dataSource, sqlGenerator, columnUtils)
+        client = SnowflakeAirbyteClient(dataSource, sqlGenerator, snowflakeColumnUtils)
     }
 
     @Test
@@ -122,7 +121,7 @@ internal class SnowflakeAirbyteClientTest {
             client.createNamespace(namespace)
             verify(exactly = 1) { sqlGenerator.createNamespace(namespace) }
             verify(exactly = 1) { sqlGenerator.createFileFormat(namespace) }
-            verify(exactly = 2) { mockConnection.close() }
+            verify(exactly = 3) { mockConnection.close() }
         }
     }
 

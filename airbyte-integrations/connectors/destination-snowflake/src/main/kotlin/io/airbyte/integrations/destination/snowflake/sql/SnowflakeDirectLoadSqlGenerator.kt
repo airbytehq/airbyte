@@ -8,14 +8,15 @@ import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
+import io.airbyte.cdk.load.orchestration.db.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.util.UUIDGenerator
 import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
+import io.airbyte.integrations.destination.snowflake.spec.CdcDeletionMode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
-import java.util.UUID
 
 internal const val COUNT_TOTAL_ALIAS = "total"
 internal const val CSV_FIELD_DELIMITER = ","
@@ -27,15 +28,12 @@ internal fun buildSnowflakeStageName(tableName: TableName): String {
     return "\"${tableName.namespace}\".\"$STAGE_NAME_PREFIX${tableName.name}\""
 }
 
-internal fun buildSnowflakeFormatName(namespace: String): String {
-    return "\"${namespace.toSnowflakeCompatibleName()}\".\"$STAGE_FORMAT_NAME\""
-}
-
 private val log = KotlinLogging.logger {}
 
 @Singleton
 class SnowflakeDirectLoadSqlGenerator(
     private val columnUtils: SnowflakeColumnUtils,
+    private val cdcDeletionMode: CdcDeletionMode,
     private val uuidGenerator: UUIDGenerator,
 ) {
 
@@ -178,9 +176,45 @@ class SnowflakeDirectLoadSqlGenerator(
                 "\"$column\" = new_record.\"$column\""
             }
 
+        // Handle CDC deletions based on mode
+        val cdcDeleteClause: String
+        val cdcSkipInsertClause: String
+        if (
+            stream.schema.asColumns().containsKey(CDC_DELETED_AT_COLUMN) &&
+                cdcDeletionMode == CdcDeletionMode.HARD_DELETE
+        ) {
+            // Execute CDC deletions if there's already a record
+            cdcDeleteClause =
+                "WHEN MATCHED AND new_record.\"_ab_cdc_deleted_at\" IS NOT NULL AND $cursorComparison THEN DELETE"
+            // And skip insertion entirely if there's no matching record.
+            // (This is possible if a single T+D batch contains both an insertion and deletion for
+            // the same PK)
+            cdcSkipInsertClause = "AND new_record.\"_ab_cdc_deleted_at\" IS NULL"
+        } else {
+            cdcDeleteClause = ""
+            cdcSkipInsertClause = ""
+        }
+
         // Build the MERGE statement
         val mergeStatement =
-            """
+            if (cdcDeleteClause.isNotEmpty()) {
+                """
+            MERGE INTO ${targetTableName.toPrettyString(QUOTE)} AS target_table
+            USING (
+              $selectSourceRecords
+            ) AS new_record
+            ON $pkEquivalent
+            $cdcDeleteClause
+            WHEN MATCHED AND $cursorComparison THEN UPDATE SET
+              $columnAssignments
+            WHEN NOT MATCHED $cdcSkipInsertClause THEN INSERT (
+              $columnList
+            ) VALUES (
+              $newRecordColumnList
+            )
+        """.trimIndent()
+            } else {
+                """
             MERGE INTO ${targetTableName.toPrettyString(QUOTE)} AS target_table
             USING (
               $selectSourceRecords
@@ -194,6 +228,7 @@ class SnowflakeDirectLoadSqlGenerator(
               $newRecordColumnList
             )
         """.trimIndent()
+            }
 
         return mergeStatement.andLog()
     }
@@ -279,9 +314,8 @@ class SnowflakeDirectLoadSqlGenerator(
     }
 
     fun createFileFormat(namespace: String): String {
-        val formatName = buildSnowflakeFormatName(namespace)
         return """
-            CREATE OR REPLACE FILE FORMAT $formatName
+            CREATE OR REPLACE FILE FORMAT "${namespace.toSnowflakeCompatibleName()}".$STAGE_FORMAT_NAME
             TYPE = 'CSV'
             FIELD_DELIMITER = '$CSV_FIELD_DELIMITER'
             FIELD_OPTIONALLY_ENCLOSED_BY = '"'
@@ -293,10 +327,9 @@ class SnowflakeDirectLoadSqlGenerator(
 
     fun createSnowflakeStage(tableName: TableName): String {
         val stageName = buildSnowflakeStageName(tableName)
-        val formatName = buildSnowflakeFormatName(tableName.namespace)
         return """
             CREATE OR REPLACE STAGE $stageName
-                FILE_FORMAT = $formatName;
+                FILE_FORMAT = $STAGE_FORMAT_NAME;
         """
             .trimIndent()
             .andLog()
@@ -315,22 +348,16 @@ class SnowflakeDirectLoadSqlGenerator(
 
     fun copyFromStage(tableName: TableName): String {
         val stageName = buildSnowflakeStageName(tableName)
-        val formatName = buildSnowflakeFormatName(tableName.namespace)
 
         return """
             COPY INTO ${tableName.toPrettyString(quote=QUOTE)}
             FROM @$stageName
-            FILE_FORMAT = $formatName
+            FILE_FORMAT = $STAGE_FORMAT_NAME
             ON_ERROR = 'ABORT_STATEMENT'
         """
             .trimIndent()
             .andLog()
     }
-
-    fun describeTable(
-        schemaName: String,
-        tableName: String,
-    ): String = """DESCRIBE TABLE "$schemaName"."$tableName" """.andLog()
 
     fun swapTableWith(sourceTableName: TableName, targetTableName: TableName): String {
         return """
@@ -343,6 +370,11 @@ class SnowflakeDirectLoadSqlGenerator(
             .trimIndent()
             .andLog()
     }
+
+    fun describeTable(
+        schemaName: String,
+        tableName: String,
+    ): String = """DESCRIBE TABLE "$schemaName"."$tableName" """.andLog()
 
     fun alterTable(
         tableName: TableName,
