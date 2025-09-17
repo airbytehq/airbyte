@@ -115,9 +115,14 @@ public class RedshiftSource extends AbstractJdbcSource<JDBCType> {
         connection -> {
           connection.setAutoCommit(true);
           final PreparedStatement ps = connection.prepareStatement(
-              "SELECT schemaname, tablename "
-                  + "FROM   pg_tables "
-                  + "WHERE  has_table_privilege(schemaname||'.'||tablename, 'select') = true AND schemaname = ?;");
+              "SELECT "
+                + "  v.schemaname as schemaname, "
+                + "  v.resourcename as tablename "
+                + "FROM "
+                + "  (SELECT schemaname, viewname as resourcename FROM pg_views "
+                + "  UNION ALL SELECT schemaname, tablename as resourcename from pg_tables) v "
+                + "WHERE "
+                + "    has_table_privilege(current_user, v.schemaname || '.' || quote_ident(v.resourcename), 'select') = true and v.schemaname = ?;");
           ps.setString(1, schema);
           return ps.executeQuery();
         },
