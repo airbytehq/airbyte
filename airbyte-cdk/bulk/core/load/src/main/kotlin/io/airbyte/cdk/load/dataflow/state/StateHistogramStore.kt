@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.dataflow.state
 
+import io.airbyte.cdk.load.dataflow.state.stats.EmissionStats
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 
@@ -38,7 +39,7 @@ class StateHistogramStore {
         return expectedCount == flushedCount
     }
 
-    fun remove(key: StateKey): StateHistogramStats {
+    fun remove(key: StateKey): EmissionStats {
         val bytes =
             key.partitionKeys.sumOf {
                 flushed.remove(it)
@@ -46,8 +47,6 @@ class StateHistogramStore {
             }
         val count = expected.remove(key) ?: 0
 
-        return StateHistogramStats(count, bytes)
+        return EmissionStats(count, bytes)
     }
 }
-
-data class StateHistogramStats(val count: Long, val bytes: Long)
