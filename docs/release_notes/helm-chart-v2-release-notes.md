@@ -3,6 +3,7 @@
 This page documents changes to user-configurable values in the Airbyte V2 Helm Chart across versions. **These release notes only apply to users deploying Airbyte using Helm Chart V2.** If you are still using the V1 Helm Chart, these changes do not affect your deployment.
 
 For users migrating from V1 to V2, please refer to the migration guides:
+
 - [Self-Managed Community V2 Migration Guide](/platform/deploying-airbyte/chart-v2-community)
 - [Self-Managed Enterprise V2 Migration Guide](/platform/enterprise-setup/chart-v2-enterprise)
 
@@ -11,14 +12,17 @@ These release notes focus on configuration options that users can modify when de
 ## Version 2.0.12
 
 ### Added
+
 - `auth.internalApi: {}` - New internal API authentication configuration
 
 ### Removed
+
 - **Manifest Runner Component**: Complete removal of `manifestRunner.*` configuration section
   - All manifest runner deployment, ingress, and security configurations have been removed
   - **Migration**: Remove any `manifestRunner.*` configurations from your values.yaml file
 
 ### Changed
+
 - **Connector Registry**: `connectorRegistry.seedProvider` changed from `"remote"` to `"local"`
   - **Migration**: No action required - this change improves reliability by using local connector definitions
 - **Update Definitions Job**: `cron.jobs.updateDefinitions.enabled` changed from `true` to `false`
@@ -37,6 +41,7 @@ No user-configurable changes in this version.
 ## Version 2.0.9
 
 ### Added
+
 - **AWS Configuration**: New `global.aws.assumeRole.*` section for AWS role assumption
   - `global.aws.assumeRole.accessKeyId`
   - `global.aws.assumeRole.accessKeyIdSecretKey`
@@ -45,6 +50,7 @@ No user-configurable changes in this version.
 - **Cloud SQL Proxy**: New `global.cloudSqlProxy.enabled` configuration
 
 ### Changed
+
 - **API Configuration**: Simplified `global.api` from `authHeaderName: X-Airbyte-Auth` to empty object `{}`
   - **Migration**: Remove `global.api.authHeaderName` from your values.yaml if present
 - **Database Port**: Fixed formatting consistency in database port configuration
@@ -60,6 +66,7 @@ No user-configurable changes in this version.
 ## Version 2.0.6
 
 ### Changed
+
 - **Database Configuration**: `global.database.database` renamed to `global.database.name`
   - **Migration**: Update your values.yaml to use `global.database.name` instead of `global.database.database`
 
@@ -74,6 +81,7 @@ No user-configurable changes in this version.
 ## Version 2.0.3
 
 ### Added
+
 - **Audit Logging**: New `storage.bucket.auditLogging` configuration for audit log storage
 - **Webapp Analytics Configuration**: Complete new section `webapp.*` with analytics and monitoring integrations:
   - `webapp.datadogApplicationId`
@@ -91,6 +99,7 @@ No user-configurable changes in this version.
   - `worker.maxSyncWorkers`
 
 ### Removed
+
 - **Cloud API**: Removed `global.cloudApi.url` configuration
   - **Migration**: Remove `global.cloudApi.url` from your values.yaml if present
 - **Connector Builder Server**: Removed `webapp.connectorBuilderServer.url` configuration
@@ -99,6 +108,7 @@ No user-configurable changes in this version.
   - **Migration**: If you need to set worker limits, use the new configurable worker options
 
 ### Changed
+
 - **Temporal Version**: Updated from `"1.23.0"` to `"1.27.2"`
   - **Migration**: No action required - this is an internal dependency update
 - **Database Engine**: Changed from `"postgresql"` to `"postgres12"`
@@ -117,6 +127,7 @@ No user-configurable changes in this version.
 ## Version 2.0.0
 
 Initial release of the V2 Helm Chart with comprehensive user-configurable options including:
+
 - Global configuration settings
 - Authentication and security framework
 - Database and storage configurations
