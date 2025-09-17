@@ -445,6 +445,7 @@ WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configura
 
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                         |
 |:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.3.0   | 2025-08-22 | [61547](https://github.com/airbytehq/airbyte/pull/61547) | Add support for [Azure Entra authentication](https://learn.microsoft.com/en-us/sql/connect/jdbc/connecting-using-azure-active-directory-authentication?view=sql-server-ver16). |
 | 4.2.5 | 2025-08-13 | [64905](https://github.com/airbytehq/airbyte/pull/64905) | bumping up java cdk version for mssql |
 | 4.2.4 | 2025-07-03 | [62491](https://github.com/airbytehq/airbyte/pull/62491) | Improve Debezium performance by configuring the poll interval parameter. |
 | 4.2.3 | 2025-07-01 | [62052](https://github.com/airbytehq/airbyte/pull/62052) | Revert change to CDK interface signature. |
