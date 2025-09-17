@@ -39,6 +39,7 @@ This Airbyte connector for Mode allows you to seamlessly sync data between Mode 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.34 | 2025-09-16 | [66341](https://github.com/airbytehq/airbyte/pull/66341) | Update dependencies |
 | 0.0.33 | 2025-09-09 | [65786](https://github.com/airbytehq/airbyte/pull/65786) | Update dependencies |
 | 0.0.32 | 2025-08-23 | [65166](https://github.com/airbytehq/airbyte/pull/65166) | Update dependencies |
 | 0.0.31 | 2025-08-09 | [64677](https://github.com/airbytehq/airbyte/pull/64677) | Update dependencies |
