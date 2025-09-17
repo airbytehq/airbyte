@@ -9,7 +9,7 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.options.Option
 import org.w3c.dom.Document
 
-final var versionFile = file("core/base/src/main/resources/version.properties")
+final var versionFile = file("version.properties")
 
 final var cdkVersion = {
     var props = new Properties()
@@ -179,7 +179,7 @@ class BumpBulkCdkVersionTask extends DefaultTask {
         }
 
         // Compute new version number
-        def currentVersion = versionFile.text.trim()
+        def currentVersion = versionFile.text.trim().replace("version=", "")
         def versionParts = currentVersion.split('\\.')
         def majorNum = Integer.parseInt(versionParts[0])
         def minorNum = Integer.parseInt(versionParts[1])
@@ -203,22 +203,12 @@ class BumpBulkCdkVersionTask extends DefaultTask {
         // Update changelog file
         def changelogFile = project.file("changelog.md")
         def currentChangelog = changelogFile.text
-        // Find the insertion point (after the first line "**Load CDK**")
-        def lines = currentChangelog.split('\n')
         def newChangelog = new StringBuilder()
-        // Add the header line
-        newChangelog.append(lines[0]).append('\n\n')
         // Add new version entry
         newChangelog.append("## Version ${newVersion}\n\n")
         newChangelog.append("* **Changed:** ${changelogEntry.toString().trim()}\n\n")
-        // Add the rest of the existing changelog (skip the first empty line if it exists)
-        def startIndex = 1
-        if (startIndex < lines.length && lines[startIndex].trim().isEmpty()) {
-            startIndex = 2
-        }
-        for (int i = startIndex; i < lines.length; i++) {
-            newChangelog.append(lines[i]).append('\n')
-        }
+        // Add the rest of the existing changelog
+        newChangelog.append(currentChangelog)
         // Write back to file
         changelogFile.text = newChangelog.toString()
 
