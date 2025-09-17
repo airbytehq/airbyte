@@ -12,7 +12,7 @@ plugins {
 airbyteBulkConnector {
     core = "load"
     toolkits = listOf("load-csv", "load-dlq", "load-http", "load-low-code")
-    cdk = "0.1.30"
+    cdk = "local"
 }
 
 application {

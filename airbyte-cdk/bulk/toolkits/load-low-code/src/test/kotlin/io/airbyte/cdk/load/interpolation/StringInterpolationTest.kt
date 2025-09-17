@@ -165,4 +165,13 @@ class StringInterpolationTest {
         assertEquals(setOf("prefix", "suffix"), extractedKeys)
     }
 
+    @Test
+    internal fun `test given invalid string interpolation when extract record keys then return empty set`() {
+        // This happens because Jinja does not identify this string as an expression and therefore
+        // it is filtered out
+        val template = """{{ record["prefix"] other text "] }}"""
+        val extractedKeys = StringInterpolator().extractAccessedRecordKeys(template)
+        assertEquals(emptySet(), extractedKeys)
+    }
+
 }
