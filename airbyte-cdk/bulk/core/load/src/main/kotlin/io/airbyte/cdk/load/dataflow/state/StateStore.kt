@@ -40,10 +40,10 @@ class StateStore(
         if (!histogramStore.isComplete(key)) return null
 
         stateSequence.incrementAndGet()
+        histogramStore.remove(key)
         val msg = states.remove(key)!!
-        val topLevelStats = histogramStore.remove(key)
 
-        return stateStatsEnricher.enrich(msg, topLevelStats, key.partitionKeys)
+        return stateStatsEnricher.enrich(msg, key.partitionKeys)
     }
 
     fun hasStates(): Boolean = states.isNotEmpty()
