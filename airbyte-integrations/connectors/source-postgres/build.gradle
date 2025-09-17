@@ -15,8 +15,9 @@ airbyteBulkConnector {
 }
 
 dependencies {
-    implementation 'org.postgresql:postgresql:42.7.7'
+    implementation 'com.azure:azure-identity:1.17.0'
     implementation 'io.debezium:debezium-connector-postgres'
+    implementation 'org.postgresql:postgresql:42.7.7'
 
     testImplementation 'org.testcontainers:postgresql:1.21.3'
 }

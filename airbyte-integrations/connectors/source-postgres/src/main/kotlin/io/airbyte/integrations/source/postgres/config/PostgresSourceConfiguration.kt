@@ -4,6 +4,9 @@
 
 package io.airbyte.integrations.source.postgres.config
 
+import com.azure.core.credential.AccessToken
+import com.azure.core.credential.TokenRequestContext
+import com.azure.identity.ClientSecretCredentialBuilder
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.CdcSourceConfiguration
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
@@ -58,7 +61,9 @@ data class PostgresSourceConfiguration(
         fun postgresSourceConfig(
             factory:
                 SourceConfigurationFactory<
-                    PostgresSourceConfigurationSpecification, PostgresSourceConfiguration>,
+                    PostgresSourceConfigurationSpecification,
+                    PostgresSourceConfiguration,
+                >,
             supplier: ConfigurationSpecificationSupplier<PostgresSourceConfigurationSpecification>
         ) = factory.make(supplier.get())
     }
@@ -89,7 +94,9 @@ constructor(
     val socketPaths: List<String> = emptyList(),
 ) :
     SourceConfigurationFactory<
-        PostgresSourceConfigurationSpecification, PostgresSourceConfiguration> {
+        PostgresSourceConfigurationSpecification,
+        PostgresSourceConfiguration,
+    > {
 
     constructor() : this(emptySet(), STDIO.name, emptyList())
 
@@ -100,7 +107,7 @@ constructor(
         val realPort: Int = pojo.port
         val jdbcProperties = mutableMapOf<String, String>()
         jdbcProperties["user"] = pojo.username
-        pojo.password?.let { jdbcProperties["password"] = it }
+        passwordOrToken(pojo)?.let { jdbcProperties["password"] = it }
 
         // Parse URL parameters.
         val pattern = "^([^=]+)=(.*)$".toRegex()
@@ -214,4 +221,26 @@ constructor(
                 )
             }
         }
+
+    private fun passwordOrToken(pojo: PostgresSourceConfigurationSpecification): String? {
+        if (pojo.servicePrincipalAuth) {
+            val credential =
+                ClientSecretCredentialBuilder()
+                    .clientId(pojo.clientId)
+                    .clientSecret(pojo.password)
+                    .tenantId(pojo.tenantId)
+                    .build()
+
+            val tokenRequestContext =
+                TokenRequestContext()
+                    .addScopes("https://ossrdbms-aad.database.windows.net/.default")
+
+            val accessToken: AccessToken =
+                credential.getToken(tokenRequestContext).retry(3L).blockOptional().orElseThrow {
+                    RuntimeException("Failed to retrieve token for Entra service principal")
+                }
+
+            return accessToken.getToken()
+        } else return pojo.password
+    }
 }

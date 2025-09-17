@@ -44,6 +44,9 @@ import jakarta.inject.Singleton
             "port",
             "username",
             "password",
+            "entra_service_principal_auth",
+            "entra_tenant_id",
+            "entra_client_id",
             "schemas",
             "jdbc_url_params",
             "encryption",
@@ -86,13 +89,37 @@ class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonSchemaInject(json = """{"order":5,"always_show":true,"airbyte_secret":true}""")
     var password: String? = null
 
+    @JsonProperty("entra_service_principal_auth")
+    @JsonSchemaTitle("Azure Entra Service Principal Authentication")
+    @JsonPropertyDescription(
+        "Interpret password as a client secret for a Microsoft Entra service principal"
+    )
+    @JsonSchemaInject(json = """{"order":6,"always_show":true}""")
+    var servicePrincipalAuth: Boolean = false
+
+    // TODO: hide when not service principal auth
+    @JsonProperty("entra_tenant_id")
+    @JsonSchemaTitle("Azure Entra Tenant Id")
+    @JsonPropertyDescription("If using Entra service principal, the ID of the tenant")
+    @JsonSchemaInject(json = """{"order":7}""")
+    var tenantId: String? = null
+
+    // TODO: hide when not service principal auth
+    @JsonProperty("entra_client_id")
+    @JsonSchemaTitle("Azure Entra Client Id")
+    @JsonPropertyDescription(
+        "If using Entra service principal, the application ID of the service principal"
+    )
+    @JsonSchemaInject(json = """{"order":8}""")
+    var clientId: String? = null
+
     @JsonProperty("schemas")
     @JsonSchemaTitle("Schemas")
     @JsonSchemaArrayWithUniqueItems("schemas")
     @JsonPropertyDescription(
         "The list of schemas to sync from. Defaults to public. Case sensitive."
     )
-    @JsonSchemaInject(json = """{"order":6,"always_show":true,"uniqueItems":true}""")
+    @JsonSchemaInject(json = """{"order":9,"always_show":true,"uniqueItems":true}""")
     var schemas: List<String>? = listOf("public")
 
     @JsonProperty("jdbc_url_params")
@@ -102,7 +129,7 @@ class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
             "formatted as 'key=value' pairs separated by the symbol '&'. " +
             "(example: key1=value1&key2=value2&key3=value3).",
     )
-    @JsonSchemaInject(json = """{"order":7}""")
+    @JsonSchemaInject(json = """{"order":10}""")
     var jdbcUrlParams: String? = null
 
     // TODO: SSL config maps to JDBC parameters
@@ -124,7 +151,7 @@ class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
         "Whether to initiate an SSH tunnel before connecting to the database, " +
             "and if so, which kind of authentication to use.",
     )
-    @JsonSchemaInject(json = """{"order":9}""")
+    @JsonSchemaInject(json = """{"order":11}""")
     fun getTunnelMethodValue(): SshTunnelMethodConfiguration =
         tunnelMethodJson ?: tunnelMethod.asSshTunnelMethod()
 
@@ -144,20 +171,20 @@ class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonGetter("cursor")
     @JsonSchemaTitle("Update Method")
     @JsonPropertyDescription("Configures how data is extracted from the database.")
-    @JsonSchemaInject(json = """{"order":10,"display_type":"radio"}""")
+    @JsonSchemaInject(json = """{"order":12,"display_type":"radio"}""")
     fun getIncrementalConfigurationSpecificationValue(): IncrementalConfigurationSpecification =
         cursorJson ?: cursor.asIncrementalConfigurationSpecification()
 
     @JsonProperty("checkpoint_target_interval_seconds")
     @JsonSchemaTitle("Checkpoint Target Time Interval")
-    @JsonSchemaInject(json = """{"order":11}""")
+    @JsonSchemaInject(json = """{"order":13}""")
     @JsonSchemaDefault("300")
     @JsonPropertyDescription("How often (in seconds) a stream should checkpoint, when possible.")
     var checkpointTargetIntervalSeconds: Int? = 300
 
     @JsonProperty("max_db_connections")
     @JsonSchemaTitle("Max Concurrent Queries to Database")
-    @JsonSchemaInject(json = """{"order":12}""")
+    @JsonSchemaInject(json = """{"order":14}""")
     @JsonPropertyDescription(
         "Maximum number of concurrent queries to the database. Leave empty to let Airbyte optimize performance."
     )
@@ -165,7 +192,7 @@ class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
 
     @JsonProperty("check_privileges")
     @JsonSchemaTitle("Check Table and Column Access Privileges")
-    @JsonSchemaInject(json = """{"order":13}""")
+    @JsonSchemaInject(json = """{"order":15}""")
     @JsonSchemaDefault("true")
     @JsonPropertyDescription(
         "When this feature is enabled, during schema discovery the connector " +
