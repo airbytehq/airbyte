@@ -4616,6 +4616,18 @@ schemas:
         type:
           - "null"
           - string
+      allEmailCampaignIds:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      primaryEmailCampaignId:
+        type:
+          - "null"
+          - string
       feedbackSurveyId:
         type:
           - "null"
@@ -4917,6 +4929,10 @@ schemas:
               - "null"
               - string
           subscriptionId:
+            type:
+              - "null"
+              - string
+          subscriptionName:
             type:
               - "null"
               - string
