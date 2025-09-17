@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.dataflow.state.stats
 
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.protocol.models.v0.AirbyteMessage
 
 /** tallies "emitted" record and byte counts from records on read */
 interface EmittedStatsStore {
@@ -13,4 +14,6 @@ interface EmittedStatsStore {
         count: Long,
         bytes: Long,
     )
+
+    fun getStats(): List<AirbyteMessage>?
 }
