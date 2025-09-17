@@ -264,7 +264,10 @@ abstract class IntegrationTest(
             )
         return runBlocking(Dispatchers.IO) {
             launch { destination.run() }
-            messages.forEach { destination.sendMessage(it) }
+            messages.forEach {
+                destination.sendMessage(it)
+                delay(3000)
+            }
             if (streamStatus != null) {
                 catalog.streams.forEach {
                     val streamStatusMessage =
@@ -342,7 +345,10 @@ abstract class IntegrationTest(
         fun doRun() =
             runBlocking(Dispatchers.IO) {
                 launch { destination.run() }
-                records.forEach { destination.sendMessage(it) }
+                records.forEach {
+                    destination.sendMessage(it)
+                    delay(3000)
+                }
                 destination.sendMessage(InputStreamCheckpoint(inputStateMessage))
                 val noopTraceMessage =
                     AirbyteMessage()
