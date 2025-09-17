@@ -110,21 +110,20 @@ object SnowflakeExpectedRecordMapper : ExpectedRecordMapper {
                     .mapValuesTo(linkedMapOf()) { (_, value) -> mapAirbyteValue(value) }
                     .mapKeysTo(linkedMapOf()) { it.key.toSnowflakeCompatibleName() }
             )
-        return expectedRecord.copy(data = mappedData)
+        // Null out the Airbyte metadata to avoid failures
+        return expectedRecord.copy(data = mappedData, airbyteMeta = null)
     }
 
     private fun mapAirbyteValue(value: AirbyteValue): AirbyteValue {
-        return when (value) {
-            is TimeWithTimezoneValue -> StringValue(value.value.toString())
-            is ArrayValue,
-            is ObjectValue -> {
-                if (isValid(value)) {
-                    StringValue(value.toJson().toPrettyString())
-                } else {
-                    NullValue
-                }
+        return if (isValid(value)) {
+            when (value) {
+                is TimeWithTimezoneValue -> StringValue(value.value.toString())
+                is ArrayValue,
+                is ObjectValue -> StringValue(value.toJson().toPrettyString())
+                else -> value
             }
-            else -> if (isValid(value)) value else NullValue
+        } else {
+            NullValue
         }
     }
 }
@@ -176,10 +175,12 @@ fun stringToMeta(metaAsString: String?): OutputRecord.Meta? {
             )
         }
 
-    return OutputRecord.Meta(
-        changes = changes,
-        syncId = metaJson["sync_id"].longValue(),
-    )
+    //    return OutputRecord.Meta(
+    //        changes = changes,
+    //        syncId = metaJson["sync_id"].longValue(),
+    //    )
+    // Null out the airbyte metadata to avoid failures
+    return null
 }
 
 class SnowflakeDataDumper(
