@@ -21,6 +21,7 @@ The Airbyte connector for [OpinionStage](https://opinionstage.com) enables seaml
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.35 | 2025-09-17 | [66377](https://github.com/airbytehq/airbyte/pull/66377) | Update dependencies |
 | 0.0.34 | 2025-09-09 | [65796](https://github.com/airbytehq/airbyte/pull/65796) | Update dependencies |
 | 0.0.33 | 2025-08-23 | [65164](https://github.com/airbytehq/airbyte/pull/65164) | Update dependencies |
 | 0.0.32 | 2025-08-09 | [64768](https://github.com/airbytehq/airbyte/pull/64768) | Update dependencies |
