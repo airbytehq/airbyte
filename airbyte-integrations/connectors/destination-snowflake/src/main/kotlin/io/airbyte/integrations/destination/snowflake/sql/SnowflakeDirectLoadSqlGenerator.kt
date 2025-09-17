@@ -327,7 +327,7 @@ class SnowflakeDirectLoadSqlGenerator(
             .andLog()
     }
 
-    fun getTable(
+    fun describeTable(
         schemaName: String,
         tableName: String,
     ): String = """DESCRIBE TABLE "$schemaName"."$tableName" """.andLog()
