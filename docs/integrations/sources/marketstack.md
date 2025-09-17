@@ -25,6 +25,7 @@ Using this connector we can extract Historical Data , Splits and Dividends data 
 
 | Version | Date              | Pull Request | Subject        |
 |---------|-------------------|--------------|----------------|
+| 0.0.36 | 2025-09-16 | [66349](https://github.com/airbytehq/airbyte/pull/66349) | Update dependencies |
 | 0.0.35 | 2025-09-09 | [65771](https://github.com/airbytehq/airbyte/pull/65771) | Update dependencies |
 | 0.0.34 | 2025-09-05 | [65966](https://github.com/airbytehq/airbyte/pull/65966) | Update to CDK v7.0.0 |
 | 0.0.33 | 2025-08-23 | [65185](https://github.com/airbytehq/airbyte/pull/65185) | Update dependencies |
