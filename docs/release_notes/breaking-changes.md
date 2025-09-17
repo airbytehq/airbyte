@@ -13,7 +13,6 @@ When you upgrade your Self-Managed instance of Airbyte to a version with a break
 ### 1.7.x to 1.8.x
 
 - Airbyte no longer publishes a `webapp` image and it's no longer independently deployable. To mitigate this, complete 1.7 ingress update.
-- Self-Managed Enterprise customers using Keycloak for authentication must add Keycloak service configuration to their ingress rules. [Update your ingress](/platform/deploying-airbyte/integrations/ingress-1-7#self-managed-enterprise-with-keycloak).
 
 ### 1.6.x to 1.7.x
 
@@ -24,7 +23,6 @@ When you upgrade your Self-Managed instance of Airbyte to a version with a break
 ### 1.7.x to 1.8.x
 
 - Airbyte no longer publishes a `webapp` image and it's no longer independently deployable. To mitigate this, complete 1.7 ingress update.
-- Self-Managed Enterprise customers using Keycloak for authentication must add Keycloak service configuration to their ingress rules. [Update your ingress](/platform/deploying-airbyte/integrations/ingress-1-7#self-managed-enterprise-with-keycloak).
 
 ### 1.6.x to 1.7.x
 

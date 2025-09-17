@@ -21,6 +21,10 @@ Update ingress rules on your deployment to handle `airbyte-server-svc` and `airb
 
 Review the following examples and use them as a guide to update your own ingress settings.
 
+### Self-Managed Enterprise with Keycloak
+
+If you're a Self-Managed Enterprise customer using Keycloak for authentication, you need to add an additional ingress rule for the Keycloak service. The Keycloak service block must be added before the connector-builder and server services to ensure proper path routing.
+
 <Tabs>
 <TabItem value="banana" label="NGINX">
 
@@ -37,6 +41,14 @@ spec:
     - host: airbyte.example.com # replace with your host
       http:
         paths:
+          - backend:
+              service:
+                # format is ${RELEASE_NAME}-airbyte-keycloak-svc 
+                name: airbyte-airbyte-keycloak-svc 
+                port: 
+                  number: 8180 
+            path: /auth
+            pathType: Prefix
           - backend:
               service:
                 # format is ${RELEASE_NAME}-airbyte-connector-builder-server-svc
@@ -82,6 +94,13 @@ spec:
     - host: airbyte.example.com # replace with your host
       http:
         paths:
+          - backend:
+              service:
+                name: airbyte-airbyte-keycloak-svc
+                port:
+                  number: 8180
+            path: /auth
+            pathType: Prefix
           - backend:
               service:
                 name: airbyte-airbyte-connector-builder-server-svc
