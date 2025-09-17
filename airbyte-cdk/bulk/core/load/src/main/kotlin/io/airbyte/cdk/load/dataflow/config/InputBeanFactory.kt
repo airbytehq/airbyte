@@ -18,6 +18,7 @@ import io.airbyte.cdk.load.dataflow.stages.AggregateStage
 import io.airbyte.cdk.load.dataflow.state.StateHistogramStore
 import io.airbyte.cdk.load.dataflow.state.StateKeyClient
 import io.airbyte.cdk.load.dataflow.state.StateStore
+import io.airbyte.cdk.load.dataflow.state.stats.StreamStatsStore
 import io.airbyte.cdk.load.file.ClientSocket
 import io.airbyte.cdk.load.file.ProtobufDataChannelReader
 import io.airbyte.cdk.load.message.DestinationMessage
@@ -100,6 +101,7 @@ class InputBeanFactory {
         stateStore: StateStore,
         stateKeyClient: StateKeyClient,
         completionTracker: StreamCompletionTracker,
+        streamStatsStore: StreamStatsStore,
     ): List<DataFlowPipelineInputFlow> =
         messageFlows.map {
             DataFlowPipelineInputFlow(
@@ -107,6 +109,7 @@ class InputBeanFactory {
                 stateStore = stateStore,
                 stateKeyClient = stateKeyClient,
                 completionTracker = completionTracker,
+                streamStatsStore = streamStatsStore,
             )
         }
 

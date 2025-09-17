@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.dataflow.state
 
+import io.airbyte.cdk.load.dataflow.state.stats.EmissionStats
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.mockk.every
@@ -32,7 +33,7 @@ class StateStoreTest {
     @BeforeEach
     fun setUp() {
         stateStore = StateStore(keyClient, histogramStore)
-        every { histogramStore.remove(any()) } returns StateHistogramStats(1, 1)
+        every { histogramStore.remove(any()) } returns EmissionStats(1, 1)
     }
 
     @Test
@@ -209,7 +210,7 @@ class StateStoreTest {
         every { histogramStore.acceptExpectedCounts(stateKey, recordCount) } returns mockk()
         every { histogramStore.isComplete(stateKey) } returns true
         every { histogramStore.remove(stateKey) } returns
-            StateHistogramStats(count = recordCount, bytes = byteCount)
+            EmissionStats(count = recordCount, bytes = byteCount)
 
         stateStore.accept(checkpointMessage)
 
@@ -246,7 +247,7 @@ class StateStoreTest {
         every { histogramStore.acceptExpectedCounts(stateKey, expectedRecordCount) } returns mockk()
         every { histogramStore.isComplete(stateKey) } returns true
         every { histogramStore.remove(stateKey) } returns
-            StateHistogramStats(count = actualRecordCount, bytes = actualByteCount)
+            EmissionStats(count = actualRecordCount, bytes = actualByteCount)
 
         stateStore.accept(checkpointMessage)
 

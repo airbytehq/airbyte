@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.dataflow.finalization.StreamCompletionTracker
 import io.airbyte.cdk.load.dataflow.pipeline.DataFlowStageIO
 import io.airbyte.cdk.load.dataflow.state.StateKeyClient
 import io.airbyte.cdk.load.dataflow.state.StateStore
+import io.airbyte.cdk.load.dataflow.state.stats.StreamStatsStore
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationRecord
@@ -27,6 +28,7 @@ class DataFlowPipelineInputFlow(
     private val stateStore: StateStore,
     private val stateKeyClient: StateKeyClient,
     private val completionTracker: StreamCompletionTracker,
+    private val streamStatsStore: StreamStatsStore,
 ) : Flow<DataFlowStageIO> {
     val log = KotlinLogging.logger {}
 
@@ -35,8 +37,14 @@ class DataFlowPipelineInputFlow(
     ) {
         inputFlow.collect {
             when (it) {
-                is CheckpointMessage -> stateStore.accept(it)
+                is CheckpointMessage -> {
+                    stateStore.accept(it)
+                    streamStatsStore.configure(it)
+                }
                 is DestinationRecord -> {
+                    // tally read count
+                    streamStatsStore.incrementReadCount(it.stream.unmappedDescriptor)
+                    // wrap, annotate and pass to pipeline
                     val raw = it.asDestinationRecordRaw()
                     val io =
                         DataFlowStageIO(
