@@ -21,10 +21,6 @@ Update ingress rules on your deployment to handle `airbyte-server-svc` and `airb
 
 Review the following examples and use them as a guide to update your own ingress settings.
 
-### Self-Managed Enterprise with Keycloak
-
-If you're a Self-Managed Enterprise customer using Keycloak for authentication, you need to add an additional ingress rule for the Keycloak service. The Keycloak service block must be added before the connector-builder and server services to ensure proper path routing.
-
 <Tabs>
 <TabItem value="banana" label="NGINX">
 
