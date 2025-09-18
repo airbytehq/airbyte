@@ -1,0 +1,29 @@
+acceptance-test-config.yml:
+version: 1.0
+tests:
+  - name: test_connection
+    description: Test the connection to the mock API
+    expected_result: success
+    config:
+      api_url: "https://mockapi.io"
+      api_key: "your_api_key_here"
+  - name: test_write_user
+    description: Test writing user data to the mock API
+    expected_result: success
+    input_data:
+      id: 1
+      name: "John Doe"
+      email: "john.doe@example.com"
+    config:
+      api_url: "https://mockapi.io"
+      api_key: "your_api_key_here"
+  - name: test_write_deal
+    description: Test writing deal data to the mock API
+    expected_result: success
+    input_data:
+      id: 1
+      title: "Deal Title"
+      amount: 1000
+    config:
+      api_url: "https://mockapi.io"
+      api_key: "your_api_key_here"

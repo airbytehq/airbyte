@@ -1,0 +1,31 @@
+[tool.poetry]
+name = "destination-mockapi"
+version = "0.1.0"
+description = "Airbyte destination connector for Mock API"
+authors = ["btkcodedev btk.codedev@gmail.com"]
+license = "MIT"
+packages = [{include = "destination_mockapi", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.10,<3.12"
+airbyte-cdk = "^4.6.2"
+requests = "^2.25.1"
+pydantic = ">=2.7,<3.0"
+
+[tool.poetry.scripts]
+destination-mockapi = "destination_mockapi.run:run"
+
+[tool.poetry.dev-dependencies]
+pytest = "^8.3.2"
+pytest-cov = "^2.12.1"
+mypy = "^0.910"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.4.2"
+pytest-asyncio = "^1.2.0"
+pytest-mock = "^3.15.1"
+requests-mock = "^1.12.1"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

@@ -1,0 +1,31 @@
+{
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/mockapi",
+  "connectionSpecification": {
+    "type": "object",
+    "required": ["api_url"],
+    "properties": {
+      "api_url": {
+        "type": "string",
+        "title": "API URL",
+        "description": "MockAPI endpoint URL",
+        "examples": ["https://68cc13e1716562cf50764f2b.mockapi.io/api/v1"]
+      },
+      "batch_size": {
+        "type": "integer",
+        "title": "Batch Size",
+        "description": "Number of records to process in each batch",
+        "default": 100,
+        "minimum": 1,
+        "maximum": 1000
+      },
+      "timeout": {
+        "type": "integer", 
+        "title": "Timeout",
+        "description": "Request timeout in seconds",
+        "default": 30,
+        "minimum": 1,
+        "maximum": 300
+      }
+    }
+  }
+}

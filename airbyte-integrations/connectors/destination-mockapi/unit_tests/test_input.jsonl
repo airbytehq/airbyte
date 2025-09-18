@@ -1,0 +1,4 @@
+{"type": "RECORD", "record": {"stream": "users", "data": {"name": "Test User 1", "email": "test1@example.com", "avatar": "https://example.com/user1.jpg"}, "emitted_at": 1695052800000}}
+{"type": "RECORD", "record": {"stream": "users", "data": {"name": "Test User 2", "email": "test2@example.com", "avatar": "https://example.com/user2.jpg"}, "emitted_at": 1695052800000}}
+{"type": "RECORD", "record": {"stream": "deals", "data": {"name": "Test Deal 1", "avatar": "https://example.com/deal1.jpg"}, "emitted_at": 1695052800000}}
+{"type": "RECORD", "record": {"stream": "deals", "data": {"name": "Test Deal 2", "avatar": "https://example.com/deal2.jpg"}, "emitted_at": 1695052800000}}

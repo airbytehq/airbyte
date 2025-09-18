@@ -1,0 +1,34 @@
+name: mockapi
+version: 0.1.0
+description: A destination connector for Airbyte that sends data to a mock API.
+documentation: https://mockapi.io/
+type: destination
+icon: icon.svg
+source_type: airbyte
+destination_type: mockapi
+schemas:
+  - name: users
+    description: Schema for user data
+    fields:
+      - name: id
+        type: integer
+      - name: name
+        type: string
+      - name: email
+        type: string
+  - name: deals
+    description: Schema for deal data
+    fields:
+      - name: id
+        type: integer
+      - name: title
+        type: string
+      - name: amount
+        type: number
+  - name: other_schema
+    description: Additional schema for future use
+    fields:
+      - name: field1
+        type: string
+      - name: field2
+        type: string
