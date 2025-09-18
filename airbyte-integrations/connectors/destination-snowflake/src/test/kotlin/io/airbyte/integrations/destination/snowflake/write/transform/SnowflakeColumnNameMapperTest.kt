@@ -15,16 +15,16 @@ internal class SnowflakeColumnNameMapperTest {
 
     @Test
     fun testGetMappedColumnName() {
-        val columnName = "test-column-name"
-        val expectedMappedName = "TEST_COLUMN_NAME"
+        val columnName = "tést-column-name"
+        val expectedName = "test-column-name"
         val stream = mockk<DestinationStream>()
         val tableCatalog = mockk<TableCatalog>()
 
         // Configure the mock to return the expected mapped column name
-        every { tableCatalog.getMappedColumnName(stream, columnName) } returns expectedMappedName
+        every { tableCatalog.getMappedColumnName(stream, columnName) } returns expectedName
 
         val mapper = SnowflakeColumnNameMapper(tableCatalog)
         val result = mapper.getMappedColumnName(stream = stream, columnName = columnName)
-        assertEquals(expectedMappedName, result)
+        assertEquals(expectedName, result)
     }
 }
