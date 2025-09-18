@@ -47,7 +47,7 @@ class SnowflakeDirectLoadSqlGenerator(
      * we want to log
      */
     private fun String.andLog(): String {
-        log.info { this }
+        log.info { this.trim() }
         return this
     }
 
