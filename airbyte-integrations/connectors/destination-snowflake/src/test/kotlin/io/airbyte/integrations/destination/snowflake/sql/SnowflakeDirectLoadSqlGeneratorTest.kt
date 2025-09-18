@@ -14,10 +14,14 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.orchestration.db.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.cdk.load.util.UUIDGenerator
+import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.CdcDeletionMode
+import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.mockk.every
 import io.mockk.mockk
+import java.util.UUID
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
@@ -27,14 +31,18 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
 
     private lateinit var columnUtils: SnowflakeColumnUtils
     private lateinit var snowflakeDirectLoadSqlGenerator: SnowflakeDirectLoadSqlGenerator
+    private val uuidGenerator: UUIDGenerator = mockk()
+    private val snowflakeConfiguration: SnowflakeConfiguration = mockk()
 
     @BeforeEach
     fun setUp() {
+        every { snowflakeConfiguration.cdcDeletionMode } returns CdcDeletionMode.HARD_DELETE
         columnUtils = mockk()
         snowflakeDirectLoadSqlGenerator =
             SnowflakeDirectLoadSqlGenerator(
                 columnUtils = columnUtils,
-                cdcDeletionMode = CdcDeletionMode.HARD_DELETE,
+                uuidGenerator = uuidGenerator,
+                snowflakeConfiguration = snowflakeConfiguration,
             )
     }
 
@@ -365,10 +373,12 @@ new_record."_airbyte_generation_id"
     @Test
     fun testGenerateUpsertTableWithCdcSoftDelete() {
         // Test with CDC soft delete mode - should NOT add delete clauses
+        every { snowflakeConfiguration.cdcDeletionMode } returns CdcDeletionMode.SOFT_DELETE
         val softDeleteGenerator =
             SnowflakeDirectLoadSqlGenerator(
                 columnUtils = columnUtils,
-                cdcDeletionMode = CdcDeletionMode.SOFT_DELETE,
+                uuidGenerator = uuidGenerator,
+                snowflakeConfiguration = snowflakeConfiguration,
             )
 
         val primaryKey = listOf(listOf("id"))
@@ -570,6 +580,38 @@ new_record."_airbyte_generation_id"
         val sql = snowflakeDirectLoadSqlGenerator.swapTableWith(sourceTableName, targetTableName)
         assertEquals(
             "ALTER TABLE ${sourceTableName.toPrettyString(quote = QUOTE)} SWAP WITH ${targetTableName.toPrettyString(quote = QUOTE)};",
+            sql
+        )
+    }
+
+    @Test
+    fun testAlterTable() {
+        val uuid = UUID.randomUUID()
+        every { uuidGenerator.v4() } returns uuid
+        val tableName = TableName(namespace = "namespace", name = "name")
+        val addedColumns = setOf(ColumnDefinition("col1", "TEXT", false))
+        val deletedColumns = setOf(ColumnDefinition("col2", "TEXT", false))
+        val modifiedColumns = setOf(ColumnDefinition("col3", "TEXT", false))
+        val sql =
+            snowflakeDirectLoadSqlGenerator.alterTable(
+                tableName,
+                addedColumns,
+                deletedColumns,
+                modifiedColumns
+            )
+
+        assertEquals(
+            setOf(
+                """ALTER TABLE "namespace"."name" ADD COLUMN "col1" TEXT;""",
+                """ALTER TABLE "namespace"."name" DROP COLUMN "col2";""",
+                """ALTER TABLE "namespace"."name" ADD COLUMN "col3_${uuid}" TEXT;""",
+                """UPDATE "namespace"."name" SET "col3_${uuid}" = CAST("col3" AS TEXT);""",
+                """ALTER TABLE "namespace"."name"
+                RENAME COLUMN "col3" TO "col3_${uuid}_backup";""".trimIndent(),
+                """ALTER TABLE "namespace"."name"
+                RENAME COLUMN "col3_${uuid}" TO "col3";""".trimIndent(),
+                """ALTER TABLE "namespace"."name" DROP COLUMN "col3_${uuid}_backup";"""
+            ),
             sql
         )
     }
