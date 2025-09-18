@@ -50,7 +50,10 @@ class EmittedStatsStoreImpl(
         )
 
     @VisibleForTesting
-    internal fun buildMessage(s: DestinationStream.Descriptor, stats: EmissionStats): AirbyteMessage =
+    internal fun buildMessage(
+        s: DestinationStream.Descriptor,
+        stats: EmissionStats,
+    ): AirbyteMessage =
         AirbyteMessage()
             .withType(AirbyteMessage.Type.RECORD)
             .withRecord(

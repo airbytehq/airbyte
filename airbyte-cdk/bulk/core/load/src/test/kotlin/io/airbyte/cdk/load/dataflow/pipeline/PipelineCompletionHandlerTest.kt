@@ -106,8 +106,12 @@ class PipelineCompletionHandlerTest {
         coVerify(exactly = 1) { mockAggregate2.flush() }
         verify(exactly = 1) { stateHistogramStore.acceptFlushedCounts(mockCountsHistogram1) }
         verify(exactly = 1) { stateHistogramStore.acceptFlushedCounts(mockCountsHistogram2) }
-        verify(exactly = 1) { statsStore.acceptStats(Fixtures.key, mockCountsHistogram1, mockBytesHistogram1) }
-        verify(exactly = 1) { statsStore.acceptStats(Fixtures.key, mockCountsHistogram2, mockBytesHistogram2) }
+        verify(exactly = 1) {
+            statsStore.acceptStats(Fixtures.key, mockCountsHistogram1, mockBytesHistogram1)
+        }
+        verify(exactly = 1) {
+            statsStore.acceptStats(Fixtures.key, mockCountsHistogram2, mockBytesHistogram2)
+        }
     }
 
     @Test
@@ -121,6 +125,7 @@ class PipelineCompletionHandlerTest {
         // Then
         verify(exactly = 1) { aggStore.getAll() }
         verify(exactly = 0) { stateHistogramStore.acceptFlushedCounts(any()) }
+        verify(exactly = 0) { statsStore.acceptStats(any(), any(), any()) }
     }
 
     @Test

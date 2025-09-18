@@ -49,6 +49,7 @@ class AggregateStageTest {
         val mockBytesHistogram = mockk<PartitionHistogram>()
         val aggregateEntry =
             mockk<AggregateEntry> {
+                every { key } returns streamDescriptor
                 every { value } returns mockAggregate
                 every { partitionCountsHistogram } returns mockCountsHistogram
                 every { partitionBytesHistogram } returns mockBytesHistogram
@@ -127,6 +128,7 @@ class AggregateStageTest {
         val mockBytes1 = mockk<PartitionHistogram>()
         val aggregateEntry1 =
             mockk<AggregateEntry> {
+                every { key } returns streamDescriptor
                 every { value } returns mockAggregate1
                 every { partitionCountsHistogram } returns mockCounts1
                 every { partitionBytesHistogram } returns mockBytes1
@@ -137,6 +139,7 @@ class AggregateStageTest {
         val mockBytes2 = mockk<PartitionHistogram>()
         val aggregateEntry2 =
             mockk<AggregateEntry> {
+                every { key } returns streamDescriptor
                 every { value } returns mockAggregate2
                 every { partitionCountsHistogram } returns mockCounts2
                 every { partitionBytesHistogram } returns mockBytes2
