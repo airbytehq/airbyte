@@ -43,7 +43,7 @@ class StateStore(
         histogramStore.remove(key)
         val msg = states.remove(key)!!
 
-        return stateStatsEnricher.enrich(msg, key.partitionKeys)
+        return stateStatsEnricher.enrich(msg, key)
     }
 
     fun hasStates(): Boolean = states.isNotEmpty()

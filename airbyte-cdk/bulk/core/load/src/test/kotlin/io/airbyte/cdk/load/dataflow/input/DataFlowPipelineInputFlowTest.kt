@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.dataflow.pipeline.DataFlowStageIO
 import io.airbyte.cdk.load.dataflow.state.PartitionKey
 import io.airbyte.cdk.load.dataflow.state.StateKeyClient
 import io.airbyte.cdk.load.dataflow.state.StateStore
+import io.airbyte.cdk.load.dataflow.state.stats.EmittedStatsStore
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationRecord
@@ -35,8 +36,9 @@ class DataFlowPipelineInputFlowTest {
         val stateStore = mockk<StateStore>(relaxed = true)
         val stateKeyClient = mockk<StateKeyClient>()
         val completionTracker = mockk<StreamCompletionTracker>()
+        val statsStore = mockk<EmittedStatsStore>(relaxed = true)
         val dataFlowPipelineInputFlow =
-            DataFlowPipelineInputFlow(inputFlow, stateStore, stateKeyClient, completionTracker)
+            DataFlowPipelineInputFlow(inputFlow, stateStore, stateKeyClient, completionTracker, statsStore)
 
         // When
         val result = dataFlowPipelineInputFlow.toList()
@@ -66,10 +68,12 @@ class DataFlowPipelineInputFlowTest {
         val stateStore = mockk<StateStore>()
         val stateKeyClient = mockk<StateKeyClient>()
         val completionTracker = mockk<StreamCompletionTracker>()
+        val statsStore = mockk<EmittedStatsStore>(relaxed = true)
         val partitionKey = PartitionKey("partitionKey")
         every { stateKeyClient.getPartitionKey(any()) } returns partitionKey
         val dataFlowPipelineInputFlow =
-            DataFlowPipelineInputFlow(inputFlow, stateStore, stateKeyClient, completionTracker)
+            DataFlowPipelineInputFlow(
+                inputFlow, stateStore, stateKeyClient, completionTracker, statsStore)
 
         // When
         val result = dataFlowPipelineInputFlow.toList()
@@ -101,10 +105,11 @@ class DataFlowPipelineInputFlowTest {
         val stateStore = mockk<StateStore>()
         val stateKeyClient = mockk<StateKeyClient>()
         val completionTracker = mockk<StreamCompletionTracker>(relaxed = true)
+        val statsStore = mockk<EmittedStatsStore>(relaxed = true)
         val partitionKey = PartitionKey("partitionKey")
         every { stateKeyClient.getPartitionKey(any()) } returns partitionKey
         val dataFlowPipelineInputFlow =
-            DataFlowPipelineInputFlow(inputFlow, stateStore, stateKeyClient, completionTracker)
+            DataFlowPipelineInputFlow(inputFlow, stateStore, stateKeyClient, completionTracker, statsStore)
 
         // When
         val result = dataFlowPipelineInputFlow.toList()
@@ -122,8 +127,9 @@ class DataFlowPipelineInputFlowTest {
         val stateStore = mockk<StateStore>()
         val stateKeyClient = mockk<StateKeyClient>()
         val completionTracker = mockk<StreamCompletionTracker>()
+        val statsStore = mockk<EmittedStatsStore>(relaxed = true)
         val dataFlowPipelineInputFlow =
-            DataFlowPipelineInputFlow(inputFlow, stateStore, stateKeyClient, completionTracker)
+            DataFlowPipelineInputFlow(inputFlow, stateStore, stateKeyClient, completionTracker, statsStore)
 
         // When
         val result = dataFlowPipelineInputFlow.toList()

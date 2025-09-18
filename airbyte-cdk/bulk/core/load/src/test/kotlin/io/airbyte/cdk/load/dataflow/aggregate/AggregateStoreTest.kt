@@ -210,6 +210,7 @@ class AggregateStoreTest {
     fun `AggregateEntry isComplete should return true when record count trigger is complete`() {
         val entry =
             AggregateEntry(
+                key = Fixtures.key,
                 value = mockAggregate,
                 partitionCountsHistogram = PartitionHistogram(),
                 partitionBytesHistogram = PartitionHistogram(),
@@ -225,6 +226,7 @@ class AggregateStoreTest {
     fun `AggregateEntry isComplete should return true when bytes trigger is complete`() {
         val entry =
             AggregateEntry(
+                key = Fixtures.key,
                 value = mockAggregate,
                 partitionCountsHistogram = PartitionHistogram(),
                 partitionBytesHistogram = PartitionHistogram(),
@@ -240,6 +242,7 @@ class AggregateStoreTest {
     fun `AggregateEntry isComplete should return false when neither trigger is complete`() {
         val entry =
             AggregateEntry(
+                key = Fixtures.key,
                 value = mockAggregate,
                 partitionCountsHistogram = PartitionHistogram(),
                 partitionBytesHistogram = PartitionHistogram(),
@@ -255,6 +258,7 @@ class AggregateStoreTest {
     fun `AggregateEntry isStale should delegate to time trigger`() {
         val entry =
             AggregateEntry(
+                key = Fixtures.key,
                 value = mockAggregate,
                 partitionCountsHistogram = PartitionHistogram(),
                 partitionBytesHistogram = PartitionHistogram(),
@@ -297,6 +301,8 @@ class AggregateStoreTest {
     }
 
     object Fixtures {
+        val key = StoreKey("namespace", "name")
+
         fun dto(partitionKey: String, sizeBytes: Long, emittedAtMs: Long): RecordDTO =
             RecordDTO(
                 fields = mapOf(),

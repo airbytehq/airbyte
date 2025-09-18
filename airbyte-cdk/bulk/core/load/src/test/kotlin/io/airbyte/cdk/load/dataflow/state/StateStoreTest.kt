@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.dataflow.state
 
 import io.airbyte.cdk.load.dataflow.state.stats.EmissionStats
+import io.airbyte.cdk.load.dataflow.state.stats.StateStatsEnricher
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.mockk.every
@@ -28,12 +29,14 @@ class StateStoreTest {
 
     @MockK private lateinit var histogramStore: StateHistogramStore
 
+    @MockK private lateinit var stateStatsEnricher: StateStatsEnricher
+
     private lateinit var stateStore: StateStore
 
     @BeforeEach
     fun setUp() {
-        stateStore = StateStore(keyClient, histogramStore)
-        every { histogramStore.remove(any()) } returns EmissionStats(1, 1)
+        stateStore = StateStore(keyClient, histogramStore, stateStatsEnricher)
+        every { histogramStore.remove(any()) } returns 1
     }
 
     @Test
@@ -204,13 +207,11 @@ class StateStoreTest {
             )
         val stateKey = StateKey(1L, listOf(PartitionKey("partition-1")))
         val recordCount = 150L
-        val byteCount = 50000L
 
         every { keyClient.getStateKey(checkpointMessage) } returns stateKey
         every { histogramStore.acceptExpectedCounts(stateKey, recordCount) } returns mockk()
         every { histogramStore.isComplete(stateKey) } returns true
-        every { histogramStore.remove(stateKey) } returns
-            EmissionStats(count = recordCount, bytes = byteCount)
+        every { histogramStore.remove(stateKey) } returns recordCount
 
         stateStore.accept(checkpointMessage)
 
@@ -221,7 +222,6 @@ class StateStoreTest {
         assertNotNull(result)
         assertEquals(recordCount, result.destinationStats?.recordCount)
         assertEquals(recordCount, result.totalRecords)
-        assertEquals(byteCount, result.totalBytes)
 
         // Verify histogram stats were removed
         verify { histogramStore.remove(stateKey) }
@@ -246,8 +246,7 @@ class StateStoreTest {
         every { keyClient.getStateKey(checkpointMessage) } returns stateKey
         every { histogramStore.acceptExpectedCounts(stateKey, expectedRecordCount) } returns mockk()
         every { histogramStore.isComplete(stateKey) } returns true
-        every { histogramStore.remove(stateKey) } returns
-            EmissionStats(count = actualRecordCount, bytes = actualByteCount)
+        every { histogramStore.remove(stateKey) } returns actualRecordCount
 
         stateStore.accept(checkpointMessage)
 

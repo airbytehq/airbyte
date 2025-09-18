@@ -42,14 +42,15 @@ class EmittedStatsStoreImpl(
             .filter { it.second.count > 0 }
             .map { buildMessage(it.first, it.second) }
 
-    fun get(s: DestinationStream.Descriptor) =
+    @VisibleForTesting
+    internal fun get(s: DestinationStream.Descriptor) =
         EmissionStats(
             count = readCounts.get(s) ?: 0,
             bytes = readBytes.get(s) ?: 0,
         )
 
     @VisibleForTesting
-    fun buildMessage(s: DestinationStream.Descriptor, stats: EmissionStats): AirbyteMessage =
+    internal fun buildMessage(s: DestinationStream.Descriptor, stats: EmissionStats): AirbyteMessage =
         AirbyteMessage()
             .withType(AirbyteMessage.Type.RECORD)
             .withRecord(
