@@ -673,6 +673,94 @@ class GoogleAdsCriterionParentStateMigration(StateMigration):
         return {"parent_state": stream_state}
 
 
+@dataclass(repr=False, eq=False, frozen=True)
+class GAQL:
+    """
+    Simple regex parser of Google Ads Query Language
+    https://developers.google.com/google-ads/api/docs/query/grammar
+    """
+
+    fields: Tuple[str]
+    resource_name: str
+    where: str
+    order_by: str
+    limit: Optional[int]
+    parameters: str
+
+    REGEX = re.compile(
+        r"""\s*
+            SELECT\s+(?P<FieldNames>\S.*)
+            \s+
+            FROM\s+(?P<ResourceNames>[a-z][a-zA-Z_]*(\s*,\s*[a-z][a-zA-Z_]*)*)
+            \s*
+            (\s+WHERE\s+(?P<WhereClause>\S.*?))?
+            (\s+ORDER\s+BY\s+(?P<OrderByClause>\S.*?))?
+            (\s+LIMIT\s+(?P<LimitClause>[1-9]([0-9])*))?
+            \s*
+            (\s+PARAMETERS\s+(?P<ParametersClause>\S.*?))?
+            $""",
+        flags=re.I | re.DOTALL | re.VERBOSE,
+    )
+
+    REGEX_FIELD_NAME = re.compile(r"^[a-z][a-z0-9._]*$", re.I)
+
+    @classmethod
+    def parse(cls, query):
+        m = cls.REGEX.match(query)
+        if not m:
+            raise ValueError
+
+        fields = [f.strip() for f in m.group("FieldNames").split(",")]
+        for field in fields:
+            if not cls.REGEX_FIELD_NAME.match(field):
+                raise ValueError
+
+        resource_names = re.split(r"\s*,\s*", m.group("ResourceNames"))
+        if len(resource_names) > 1:
+            raise ValueError
+        resource_name = resource_names[0]
+
+        where = cls._normalize(m.group("WhereClause") or "")
+        order_by = cls._normalize(m.group("OrderByClause") or "")
+        limit = m.group("LimitClause")
+        if limit:
+            limit = int(limit)
+        parameters = cls._normalize(m.group("ParametersClause") or "")
+        return cls(tuple(fields), resource_name, where, order_by, limit, parameters)
+
+    def __str__(self):
+        fields = ", ".join(self.fields)
+        query = f"SELECT {fields} FROM {self.resource_name}"
+        if self.where:
+            query += " WHERE " + self.where
+        if self.order_by:
+            query += " ORDER BY " + self.order_by
+        if self.limit is not None:
+            query += " LIMIT " + str(self.limit)
+        if self.parameters:
+            query += " PARAMETERS " + self.parameters
+        return query
+
+    def __repr__(self):
+        return self.__str__()
+
+    @staticmethod
+    def _normalize(s):
+        s = s.strip()
+        return re.sub(r"\s+", " ", s)
+
+    def set_where(self, value: str):
+        return self.__class__(self.fields, self.resource_name, value, self.order_by, self.limit, self.parameters)
+
+    def set_limit(self, value: int):
+        return self.__class__(self.fields, self.resource_name, self.where, self.order_by, value, self.parameters)
+
+    def append_field(self, value):
+        fields = list(self.fields)
+        fields.append(value)
+        return self.__class__(tuple(fields), self.resource_name, self.where, self.order_by, self.limit, self.parameters)
+
+
 class CustomGAQueryHttpRequester(HttpRequester):
     """
     Custom HTTP requester for custom query streams.
@@ -682,10 +770,28 @@ class CustomGAQueryHttpRequester(HttpRequester):
 
     def __post_init__(self, parameters: Mapping[str, Any]):
         super().__post_init__(parameters=parameters)
-        self.query = parameters.get("query")
-        self._cursor_field = (
-            InterpolatedString.create(parameters.get("cursor_field", ""), parameters={}) if parameters.get("cursor_field") else None
-        )
+        self.query = GAQL.parse(parameters.get("query"))
+
+    @staticmethod
+    def is_metrics_in_custom_query(query: GAQL) -> bool:
+        for field in query.fields:
+            if field.split(".")[0] == "metrics":
+                return True
+        return False
+
+    @staticmethod
+    def is_custom_query_incremental(query: GAQL) -> bool:
+        time_segment_in_select, time_segment_in_where = ["segments.date" in clause for clause in [query.fields, query.where]]
+        return time_segment_in_select and not time_segment_in_where
+
+    @staticmethod
+    def _insert_segments_date_expr(query: GAQL, start_date: str, end_date: str) -> GAQL:
+        if "segments.date" not in query.fields:
+            query = query.append_field("segments.date")
+        condition = f"segments.date BETWEEN '{start_date}' AND '{end_date}'"
+        if query.where:
+            return query.set_where(query.where + " AND " + condition)
+        return query.set_where(condition)
 
     def get_request_body_json(
         self,
@@ -710,37 +816,14 @@ class CustomGAQueryHttpRequester(HttpRequester):
         }
 
     def _build_query(self, stream_slice: StreamSlice) -> str:
-        fields = self._get_list_of_fields()
-        resource_name = self._get_resource_name()
+        is_incremental = self.is_custom_query_incremental(self.query)
 
-        cursor_field = self._cursor_field.eval(self.config) if self._cursor_field else None
-
-        if cursor_field:
-            fields.append(cursor_field)
-
-        if "start_time" in stream_slice and "end_time" in stream_slice and cursor_field:
-            query = f"SELECT {', '.join(fields)} FROM {resource_name} WHERE {cursor_field} BETWEEN '{stream_slice['start_time']}' AND '{stream_slice['end_time']}' ORDER BY {cursor_field} ASC"
+        if is_incremental:
+            start_date = stream_slice["start_time"]
+            end_date = stream_slice["end_time"]
+            return str(self._insert_segments_date_expr(self.query, start_date, end_date))
         else:
-            query = f"SELECT {', '.join(fields)} FROM {resource_name}"
-
-        self._validate_query(query)
-
-        return query
-
-    def _get_list_of_fields(self) -> List[str]:
-        """
-        Extract field names from the `SELECT` clause of the query.
-        e.g. Parses a query "SELECT field1, field2, field3 FROM table" and returns ["field1", "field2", "field3"].
-        """
-        query_upper = self.query.upper()
-        select_index = query_upper.find("SELECT")
-        from_index = query_upper.find("FROM")
-
-        fields_portion = self.query[select_index + 6 : from_index].strip()
-
-        fields = [field.strip() for field in fields_portion.split(",")]
-
-        return fields
+            return str(self.query)
 
     def _get_resource_name(self) -> str:
         """
@@ -750,12 +833,6 @@ class CustomGAQueryHttpRequester(HttpRequester):
         query_upper = self.query.upper()
         from_index = query_upper.find("FROM")
         return self.query[from_index + 4 :].strip()
-
-    def _validate_query(self, query: str):
-        try:
-            GAQL.parse(query)
-        except ValueError:
-            raise ValueError("GAQL query validation failed.")
 
 
 @dataclass()
@@ -863,91 +940,3 @@ class CustomGAQuerySchemaLoader(SchemaLoader):
                 internal_message=f"The provided query is invalid: {query}. Please refer to the Google Ads API documentation for the correct syntax: https://developers.google.com/google-ads/api/fields/v20/overview and test validate your query using the Google Ads Query Builder: https://developers.google.com/google-ads/api/fields/v20/query_validator",
                 message=f"The provided query is invalid: {query}. Please refer to the Google Ads API documentation for the correct syntax: https://developers.google.com/google-ads/api/fields/v20/overview and test validate your query using the Google Ads Query Builder: https://developers.google.com/google-ads/api/fields/v20/query_validator",
             )
-
-
-@dataclass(repr=False, eq=False, frozen=True)
-class GAQL:
-    """
-    Simple regex parser of Google Ads Query Language
-    https://developers.google.com/google-ads/api/docs/query/grammar
-    """
-
-    fields: Tuple[str]
-    resource_name: str
-    where: str
-    order_by: str
-    limit: Optional[int]
-    parameters: str
-
-    REGEX = re.compile(
-        r"""\s*
-            SELECT\s+(?P<FieldNames>\S.*)
-            \s+
-            FROM\s+(?P<ResourceNames>[a-z][a-zA-Z_]*(\s*,\s*[a-z][a-zA-Z_]*)*)
-            \s*
-            (\s+WHERE\s+(?P<WhereClause>\S.*?))?
-            (\s+ORDER\s+BY\s+(?P<OrderByClause>\S.*?))?
-            (\s+LIMIT\s+(?P<LimitClause>[1-9]([0-9])*))?
-            \s*
-            (\s+PARAMETERS\s+(?P<ParametersClause>\S.*?))?
-            $""",
-        flags=re.I | re.DOTALL | re.VERBOSE,
-    )
-
-    REGEX_FIELD_NAME = re.compile(r"^[a-z][a-z0-9._]*$", re.I)
-
-    @classmethod
-    def parse(cls, query):
-        m = cls.REGEX.match(query)
-        if not m:
-            raise ValueError
-
-        fields = [f.strip() for f in m.group("FieldNames").split(",")]
-        for field in fields:
-            if not cls.REGEX_FIELD_NAME.match(field):
-                raise ValueError
-
-        resource_names = re.split(r"\s*,\s*", m.group("ResourceNames"))
-        if len(resource_names) > 1:
-            raise ValueError
-        resource_name = resource_names[0]
-
-        where = cls._normalize(m.group("WhereClause") or "")
-        order_by = cls._normalize(m.group("OrderByClause") or "")
-        limit = m.group("LimitClause")
-        if limit:
-            limit = int(limit)
-        parameters = cls._normalize(m.group("ParametersClause") or "")
-        return cls(tuple(fields), resource_name, where, order_by, limit, parameters)
-
-    def __str__(self):
-        fields = ", ".join(self.fields)
-        query = f"SELECT {fields} FROM {self.resource_name}"
-        if self.where:
-            query += " WHERE " + self.where
-        if self.order_by:
-            query += " ORDER BY " + self.order_by
-        if self.limit is not None:
-            query += " LIMIT " + str(self.limit)
-        if self.parameters:
-            query += " PARAMETERS " + self.parameters
-        return query
-
-    def __repr__(self):
-        return self.__str__()
-
-    @staticmethod
-    def _normalize(s):
-        s = s.strip()
-        return re.sub(r"\s+", " ", s)
-
-    def set_where(self, value: str):
-        return self.__class__(self.fields, self.resource_name, value, self.order_by, self.limit, self.parameters)
-
-    def set_limit(self, value: int):
-        return self.__class__(self.fields, self.resource_name, self.where, self.order_by, value, self.parameters)
-
-    def append_field(self, value):
-        fields = list(self.fields)
-        fields.append(value)
-        return self.__class__(tuple(fields), self.resource_name, self.where, self.order_by, self.limit, self.parameters)
