@@ -11,7 +11,6 @@ import io.airbyte.cdk.load.dataflow.state.StateHistogramStore
 import io.airbyte.cdk.load.dataflow.state.stats.CommittedStatsStore
 import io.mockk.mockk
 import io.mockk.verify
-import kotlin.test.assertFailsWith
 import kotlin.test.assertSame
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach

@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.dataflow.state
 
-import io.airbyte.cdk.load.dataflow.state.stats.EmissionStats
 import io.airbyte.cdk.load.dataflow.state.stats.StateStatsEnricher
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.StreamCheckpoint
@@ -37,6 +36,7 @@ class StateStoreTest {
     fun setUp() {
         stateStore = StateStore(keyClient, histogramStore, stateStatsEnricher)
         every { histogramStore.remove(any()) } returns 1
+        every { stateStatsEnricher.enrich(any(), any()) } answers { firstArg() }
     }
 
     @Test
@@ -158,6 +158,8 @@ class StateStoreTest {
         // Verify state was removed
         val secondResult = stateStore.getNextComplete()
         assertNull(secondResult)
+        // Verify histogram stats were removed
+        verify { histogramStore.remove(stateKey) }
     }
 
     @Test
@@ -196,7 +198,7 @@ class StateStoreTest {
     }
 
     @Test
-    fun `getNextComplete should add byte counts and record counts to destination stats`() {
+    fun `getNextComplete should use the StateStatsEnricher to enrich the state`() {
         // Given
         val sourceStats = CheckpointMessage.Stats(recordCount = 150L)
         val checkpointMessage =
@@ -220,44 +222,8 @@ class StateStoreTest {
 
         // Then
         assertNotNull(result)
-        assertEquals(recordCount, result.destinationStats?.recordCount)
-        assertEquals(recordCount, result.totalRecords)
 
-        // Verify histogram stats were removed
-        verify { histogramStore.remove(stateKey) }
-    }
-
-    @Test
-    fun `getNextComplete should handle different byte and record counts from histogram`() {
-        // Given
-        val expectedRecordCount = 100L
-        val actualRecordCount = 98L // Slightly different
-        val actualByteCount = 32768L
-
-        val sourceStats = CheckpointMessage.Stats(recordCount = expectedRecordCount)
-        val checkpointMessage =
-            StreamCheckpoint(
-                checkpoint = mockk(),
-                sourceStats = sourceStats,
-                serializedSizeBytes = 1L,
-            )
-        val stateKey = StateKey(1L, listOf(PartitionKey("partition-1")))
-
-        every { keyClient.getStateKey(checkpointMessage) } returns stateKey
-        every { histogramStore.acceptExpectedCounts(stateKey, expectedRecordCount) } returns mockk()
-        every { histogramStore.isComplete(stateKey) } returns true
-        every { histogramStore.remove(stateKey) } returns actualRecordCount
-
-        stateStore.accept(checkpointMessage)
-
-        // When
-        val result = stateStore.getNextComplete()
-
-        // Then
-        assertNotNull(result)
-        assertEquals(actualRecordCount, result.destinationStats?.recordCount)
-        assertEquals(actualRecordCount, result.totalRecords)
-        assertEquals(actualByteCount, result.totalBytes)
+        verify { stateStatsEnricher.enrich(checkpointMessage, stateKey) }
     }
 
     @Test

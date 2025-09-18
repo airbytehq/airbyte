@@ -84,8 +84,8 @@ class AggregateStoreTest {
     fun `acceptFor makes new entries per key`() {
         val newKey = DestinationStream.Descriptor(namespace = "test", name = "other-stream")
         val newAggregate = mockk<Aggregate>(relaxed = true)
-        every { aggregateFactory.create(newKey) } returns newAggregate
         every { aggregateFactory.create(testKey) } returns mockAggregate
+        every { aggregateFactory.create(newKey) } returns newAggregate
 
         val record1 = Fixtures.dto(partitionKey = "partition1", sizeBytes = 50, emittedAtMs = 1000L)
         val record2 = Fixtures.dto(partitionKey = "partition2", sizeBytes = 30, emittedAtMs = 2000L)
@@ -100,6 +100,8 @@ class AggregateStoreTest {
 
         val entries = aggregateStore.getAll()
         assertEquals(2, entries.size)
+        assertTrue(entries.any { it.key == testKey })
+        assertTrue(entries.any { it.key == newKey })
     }
 
     @Test

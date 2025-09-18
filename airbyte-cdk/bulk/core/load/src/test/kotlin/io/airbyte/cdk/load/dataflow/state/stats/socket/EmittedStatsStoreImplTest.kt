@@ -27,8 +27,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 @ExtendWith(MockKExtension::class)
 class EmittedStatsStoreImplTest {
 
-    @MockK
-    private lateinit var catalog: DestinationCatalog
+    @MockK private lateinit var catalog: DestinationCatalog
 
     private lateinit var store: EmittedStatsStoreImpl
 
@@ -41,10 +40,10 @@ class EmittedStatsStoreImplTest {
     fun `increment should add counts and bytes for a stream`() {
         // Given
         val descriptor = DestinationStream.Descriptor("namespace1", "stream1")
-        
+
         // When
         store.increment(descriptor, 10L, 1000L)
-        
+
         // Then
         val stats = store.get(descriptor)
         assertEquals(10L, stats.count)
@@ -55,12 +54,12 @@ class EmittedStatsStoreImplTest {
     fun `increment should accumulate multiple increments for the same stream`() {
         // Given
         val descriptor = DestinationStream.Descriptor("namespace1", "stream1")
-        
+
         // When
         store.increment(descriptor, 10L, 1000L)
         store.increment(descriptor, 5L, 500L)
         store.increment(descriptor, 15L, 1500L)
-        
+
         // Then
         val stats = store.get(descriptor)
         assertEquals(30L, stats.count)
@@ -73,19 +72,19 @@ class EmittedStatsStoreImplTest {
         val descriptor1 = DestinationStream.Descriptor("namespace1", "stream1")
         val descriptor2 = DestinationStream.Descriptor("namespace2", "stream2")
         val descriptor3 = DestinationStream.Descriptor(null, "stream3")
-        
+
         // When
         store.increment(descriptor1, 10L, 1000L)
         store.increment(descriptor2, 20L, 2000L)
         store.increment(descriptor3, 30L, 3000L)
-        
+
         // Then
         assertEquals(10L, store.get(descriptor1).count)
         assertEquals(1000L, store.get(descriptor1).bytes)
-        
+
         assertEquals(20L, store.get(descriptor2).count)
         assertEquals(2000L, store.get(descriptor2).bytes)
-        
+
         assertEquals(30L, store.get(descriptor3).count)
         assertEquals(3000L, store.get(descriptor3).bytes)
     }
@@ -94,10 +93,10 @@ class EmittedStatsStoreImplTest {
     fun `get should return zero stats for untracked stream`() {
         // Given
         val descriptor = DestinationStream.Descriptor("namespace1", "stream1")
-        
+
         // When
         val stats = store.get(descriptor)
-        
+
         // Then
         assertEquals(0L, stats.count)
         assertEquals(0L, stats.bytes)
@@ -106,15 +105,16 @@ class EmittedStatsStoreImplTest {
     @Test
     fun `getStats should return empty list when no streams have stats`() {
         // Given
-        val streams = listOf(
-            Fixtures.createStream("namespace1", "stream1"),
-            Fixtures.createStream("namespace2", "stream2")
-        )
+        val streams =
+            listOf(
+                Fixtures.createStream("namespace1", "stream1"),
+                Fixtures.createStream("namespace2", "stream2"),
+            )
         every { catalog.streams } returns streams
-        
+
         // When
         val messages = store.getStats()
-        
+
         // Then
         assertTrue(messages.isEmpty())
     }
@@ -125,25 +125,25 @@ class EmittedStatsStoreImplTest {
         val stream1 = Fixtures.createStream("namespace1", "stream1")
         val stream2 = Fixtures.createStream("namespace2", "stream2")
         val stream3 = Fixtures.createStream("namespace3", "stream3")
-        
+
         every { catalog.streams } returns listOf(stream1, stream2, stream3)
-        
+
         store.increment(stream1.unmappedDescriptor, 10L, 1000L)
         store.increment(stream3.unmappedDescriptor, 30L, 3000L)
         // stream2 has no increments
-        
+
         // When
         val messages = store.getStats()
-        
+
         // Then
         assertEquals(2, messages.size)
-        
+
         val message1 = messages.find { it.record.stream == "stream1" }
         assertNotNull(message1)
         assertEquals("namespace1", message1?.record?.namespace)
         assertEquals(10L, message1?.record?.additionalProperties?.get("emittedRecordsCount"))
         assertEquals(1000L, message1?.record?.additionalProperties?.get("emittedBytesCount"))
-        
+
         val message3 = messages.find { it.record.stream == "stream3" }
         assertNotNull(message3)
         assertEquals("namespace3", message3?.record?.namespace)
@@ -156,16 +156,19 @@ class EmittedStatsStoreImplTest {
         // Given
         val descriptor = DestinationStream.Descriptor("test-namespace", "test-stream")
         val stats = EmissionStats(count = 42L, bytes = 4200L)
-        
+
         // When
         val message = store.buildMessage(descriptor, stats)
-        
+
         // Then
         assertEquals(AirbyteMessage.Type.RECORD, message.type)
         assertEquals("test-namespace", message.record.namespace)
         assertEquals("test-stream", message.record.stream)
         assertEquals(Jsons.emptyObject(), message.record.data)
-        assertEquals(true, message.record.additionalProperties[OutputConsumer.IS_DUMMY_STATS_MESSAGE])
+        assertEquals(
+            true,
+            message.record.additionalProperties[OutputConsumer.IS_DUMMY_STATS_MESSAGE],
+        )
         assertEquals(42L, message.record.additionalProperties["emittedRecordsCount"])
         assertEquals(4200L, message.record.additionalProperties["emittedBytesCount"])
     }
@@ -175,10 +178,10 @@ class EmittedStatsStoreImplTest {
         // Given
         val descriptor = DestinationStream.Descriptor(null, "test-stream")
         val stats = EmissionStats(count = 100L, bytes = 10000L)
-        
+
         // When
         val message = store.buildMessage(descriptor, stats)
-        
+
         // Then
         assertEquals(AirbyteMessage.Type.RECORD, message.type)
         assertEquals(null, message.record.namespace)
@@ -192,43 +195,42 @@ class EmittedStatsStoreImplTest {
         // Given
         val stream1 = Fixtures.createStream("namespace1", "stream1")
         val stream2 = Fixtures.createStream("namespace2", "stream2")
-        
+
         every { catalog.streams } returns listOf(stream1, stream2)
-        
+
         // Multiple increments for stream1
         store.increment(stream1.unmappedDescriptor, 5L, 500L)
         store.increment(stream1.unmappedDescriptor, 10L, 1000L)
         store.increment(stream1.unmappedDescriptor, 15L, 1500L)
-        
+
         // Single increment for stream2
         store.increment(stream2.unmappedDescriptor, 20L, 2000L)
-        
+
         // When
         val messages = store.getStats()
-        
+
         // Then
         assertEquals(2, messages.size)
-        
+
         val message1 = messages.find { it.record.stream == "stream1" }
         assertEquals(30L, message1?.record?.additionalProperties?.get("emittedRecordsCount"))
         assertEquals(3000L, message1?.record?.additionalProperties?.get("emittedBytesCount"))
-        
+
         val message2 = messages.find { it.record.stream == "stream2" }
         assertEquals(20L, message2?.record?.additionalProperties?.get("emittedRecordsCount"))
         assertEquals(2000L, message2?.record?.additionalProperties?.get("emittedBytesCount"))
     }
 
     object Fixtures {
-        private val namespaceMapper = mockk<NamespaceMapper> {
-            every { map(any(), any()) } answers {
-                DestinationStream.Descriptor(firstArg(), secondArg())
+        private val namespaceMapper =
+            mockk<NamespaceMapper> {
+                every { map(any(), any()) } answers
+                    {
+                        DestinationStream.Descriptor(firstArg(), secondArg())
+                    }
             }
-        }
 
-        fun createStream(
-            namespace: String?,
-            name: String
-        ): DestinationStream {
+        fun createStream(namespace: String?, name: String): DestinationStream {
             return DestinationStream(
                 unmappedNamespace = namespace,
                 unmappedName = name,
