@@ -3,7 +3,6 @@
 #
 
 from datetime import date, datetime
-from decimal import Decimal
 from typing import Dict, List, Optional
 
 from .cards import (
@@ -26,15 +25,15 @@ from .dispute import Dispute
 class DisbursementDetails(BaseModel):
     disbursement_date: date
     funds_held: bool
-    settlement_amount: Decimal
-    settlement_base_currency_exchange_rate: Decimal
-    settlement_currency_exchange_rate: Decimal
+    settlement_amount: float
+    settlement_base_currency_exchange_rate: float
+    settlement_currency_exchange_rate: float
     settlement_currency_iso_code: str
     success: bool
 
 
 class StatusHistoryDetails(BaseModel):
-    amount: Decimal
+    amount: float
     status: str
     timestamp: datetime
     transaction_source: str
@@ -44,6 +43,21 @@ class StatusHistoryDetails(BaseModel):
 class SubscriptionDetails(BaseModel):
     billing_period_end_date: Optional[date]
     billing_period_start_date: Optional[date]
+
+
+class LiabilityShift(BaseModel):
+    conditions: List[str]
+    responsible_party: str
+
+
+class RiskData(BaseModel):
+    decision: str
+    decision_reasons: Optional[List[str]]
+    device_data_captured: bool
+    fraud_service_provider: str
+    id: str
+    liability_shift: Optional[LiabilityShift]
+    transaction_risk_score: str
 
 
 class Transaction(BaseModel):
@@ -65,7 +79,7 @@ class Transaction(BaseModel):
     customer_details: Customer
     cvv_response_code: str
     disbursement_details: DisbursementDetails
-    discount_amount: Decimal
+    discount_amount: float
     discounts: List[Discount]
     disputes: List[Dispute]
     escrow_status: str
@@ -73,7 +87,7 @@ class Transaction(BaseModel):
     global_id: str
     graphql_id: str
     id: str
-    installment_count: Decimal
+    installment_count: float
     masterpass_card_details: MasterpassCard
     merchant_account_id: str
     merchant_address: Address
@@ -101,18 +115,19 @@ class Transaction(BaseModel):
     refunded_transaction_id: str
     response_emv_data: str
     retrieval_reference_number: str
+    risk_data: Optional[RiskData]
     samsung_pay_card_details: SamsungPayCard
     sca_exemption_requested: str
-    service_fee_amount: Decimal
+    service_fee_amount: float
     settlement_batch_id: str
-    shipping_amount: Decimal
+    shipping_amount: float
     shipping_details: Address
     ships_from_postal_code: str
     status: str
     status_history: List[StatusHistoryDetails]
     subscription_details: SubscriptionDetails
     subscription_id: str
-    tax_amount: Decimal
+    tax_amount: float
     tax_exempt: bool
     terminal_identification_number: str
     type: str

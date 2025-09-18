@@ -3,7 +3,6 @@
 #
 
 from datetime import date, datetime
-from decimal import Decimal
 from typing import List, Optional, Union
 
 from .common import AllOptional, CatalogModel
@@ -24,8 +23,8 @@ class PaypalMessage(CatalogModel):
 
 
 class Dispute(CatalogModel):
-    amount_disputed: Decimal
-    amount_won: Decimal
+    amount_disputed: float
+    amount_won: float
     case_number: str
     chargeback_protection_level: Optional[str]
     created_at: datetime
