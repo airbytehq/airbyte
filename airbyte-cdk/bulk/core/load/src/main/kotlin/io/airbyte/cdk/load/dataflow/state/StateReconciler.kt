@@ -5,10 +5,8 @@
 package io.airbyte.cdk.load.dataflow.state
 
 import io.airbyte.cdk.load.dataflow.state.stats.EmittedStatsStore
-import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.protocol.models.v0.AirbyteMessage
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.time.Duration
