@@ -5,6 +5,8 @@
 package io.airbyte.integrations.destination.snowflake.write.transform
 
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TableCatalog
+import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -13,10 +15,16 @@ internal class SnowflakeColumnNameMapperTest {
 
     @Test
     fun testGetMappedColumnName() {
-        val columnName = "test-column-name"
+        val columnName = "tést-column-name"
+        val expectedName = "test-column-name"
         val stream = mockk<DestinationStream>()
-        val mapper = SnowflakeColumnNameMapper(mockk(relaxed = true))
+        val tableCatalog = mockk<TableCatalog>()
+
+        // Configure the mock to return the expected mapped column name
+        every { tableCatalog.getMappedColumnName(stream, columnName) } returns expectedName
+
+        val mapper = SnowflakeColumnNameMapper(tableCatalog)
         val result = mapper.getMappedColumnName(stream = stream, columnName = columnName)
-        assertEquals(columnName, result)
+        assertEquals(expectedName, result)
     }
 }
