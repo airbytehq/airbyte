@@ -72,7 +72,7 @@ streams:
       partition_router: []
     transformations:
       - type: CustomTransformation
-        class_name: source_notion.components.NotionUserTransformation
+        class_name: source_declarative_manifest.components.NotionUserTransformation
 
     schema_loader:
       type: InlineSchemaLoader
@@ -204,7 +204,7 @@ streams:
         type: RecordSelector
         record_filter:
           type: CustomRecordFilter
-          class_name: source_notion.components.NotionDataFeedFilter
+          class_name: source_declarative_manifest.components.NotionDataFeedFilter
         extractor:
           type: DpathExtractor
           field_path:
@@ -238,7 +238,7 @@ streams:
       is_data_feed: true
     transformations:
       - type: CustomTransformation
-        class_name: source_notion.components.NotionPropertiesTransformation
+        class_name: source_declarative_manifest.components.NotionPropertiesTransformation
 
     schema_loader:
       type: InlineSchemaLoader
@@ -1381,7 +1381,7 @@ streams:
         type: RecordSelector
         record_filter:
           type: CustomRecordFilter
-          class_name: source_notion.components.NotionDataFeedFilter
+          class_name: source_declarative_manifest.components.NotionDataFeedFilter
         extractor:
           type: DpathExtractor
           field_path:
@@ -1415,7 +1415,7 @@ streams:
       is_data_feed: true
     transformations:
       - type: CustomTransformation
-        class_name: source_notion.components.NotionPropertiesTransformation
+        class_name: source_declarative_manifest.components.NotionPropertiesTransformation
 
     schema_loader:
       type: InlineSchemaLoader
@@ -3160,7 +3160,7 @@ streams:
       global_substream_cursor: true
     retriever:
       type: CustomRetriever
-      class_name: "source_notion.components.BlocksRetriever"
+      class_name: "source_declarative_manifest.components.BlocksRetriever"
       partition_router:
         type: SubstreamPartitionRouter
         stream_name: blocks
