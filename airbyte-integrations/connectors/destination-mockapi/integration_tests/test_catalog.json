@@ -6,9 +6,9 @@
         "json_schema": {
           "type": "object",
           "properties": {
-            "name": {"type": "string"},
-            "email": {"type": "string"}, 
-            "avatar": {"type": "string"}
+            "name": { "type": "string" },
+            "email": { "type": "string" },
+            "avatar": { "type": "string" }
           }
         }
       },
@@ -21,12 +21,12 @@
         "json_schema": {
           "type": "object",
           "properties": {
-            "name": {"type": "string"},
-            "avatar": {"type": "string"}
+            "name": { "type": "string" },
+            "avatar": { "type": "string" }
           }
         }
       },
-      "sync_mode": "full_refresh", 
+      "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
     }
   ]

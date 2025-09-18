@@ -19,7 +19,7 @@
         "maximum": 1000
       },
       "timeout": {
-        "type": "integer", 
+        "type": "integer",
         "title": "Timeout",
         "description": "Request timeout in seconds",
         "default": 30,
