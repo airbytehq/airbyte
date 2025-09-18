@@ -50,26 +50,28 @@ class SnowflakeWriter(
         return when (stream.minimumGenerationId) {
             0L ->
                 when (stream.importType) {
-                    is Dedupe -> DirectLoadTableDedupStreamLoader(
-                        stream,
-                        initialStatus,
-                        realTableName = realTableName,
-                        tempTableName = tempTableName,
-                        columnNameMapping,
-                        snowflakeClient,
-                        snowflakeClient,
-                        streamStateStore,
-                    )
-                    else -> DirectLoadTableAppendStreamLoader(
-                        stream,
-                        initialStatus,
-                        realTableName = realTableName,
-                        tempTableName = tempTableName,
-                        columnNameMapping,
-                        snowflakeClient,
-                        snowflakeClient,
-                        streamStateStore,
-                    )
+                    is Dedupe ->
+                        DirectLoadTableDedupStreamLoader(
+                            stream,
+                            initialStatus,
+                            realTableName = realTableName,
+                            tempTableName = tempTableName,
+                            columnNameMapping,
+                            snowflakeClient,
+                            snowflakeClient,
+                            streamStateStore,
+                        )
+                    else ->
+                        DirectLoadTableAppendStreamLoader(
+                            stream,
+                            initialStatus,
+                            realTableName = realTableName,
+                            tempTableName = tempTableName,
+                            columnNameMapping,
+                            snowflakeClient,
+                            snowflakeClient,
+                            streamStateStore,
+                        )
                 }
             stream.generationId ->
                 when (stream.importType) {
