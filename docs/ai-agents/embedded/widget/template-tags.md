@@ -13,6 +13,7 @@ Template tags are a powerful tool through which you can configure available sour
 - Organizing available source templates by data type (e.g. "Analytics", "CRM", "Cloud Storage")
 
 ## Creating Tags
+
 You can create a tag on your source or connection templates either programmatically or via [our newly released UI](https://app.airbyte.ai).
 
 <img width="936" height="261" alt="Screenshot 2025-09-17 at 9 44 28 PM" src="https://github.com/user-attachments/assets/aebc08af-e922-4cf8-b35f-b5880d57a1f3" />
