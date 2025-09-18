@@ -306,11 +306,9 @@ class SnowflakeDirectLoadSqlGenerator(
 
     fun getGenerationId(
         tableName: TableName,
-        alias: String = "",
     ): String {
-        val aliasClause = if (alias.isNotEmpty()) " AS $alias" else ""
         return """
-            SELECT "$COLUMN_NAME_AB_GENERATION_ID"$aliasClause 
+            SELECT "$COLUMN_NAME_AB_GENERATION_ID"
             FROM ${tableName.toPrettyString(QUOTE)} 
             LIMIT 1
         """
