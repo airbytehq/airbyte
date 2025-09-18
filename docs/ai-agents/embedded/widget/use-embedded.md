@@ -20,7 +20,7 @@ Customers can select a source and input their configuration. Upon save, a custom
 
 ## External User Id
 
-The sample application uses the customer's email as the unique external id to define a workspace within Airbyte Embedded. For production usage, it is recommended to use a UUID or identifier specific to your business.  
+The sample application uses the customer's email as the unique external id to define a workspace within Airbyte Embedded. For production usage, it is recommended to use a unique identifier specific to your business such as a UUID.
 
 If you need to change this logic, pass in a different id to the server token endpoint `/server/server.js` or add custom logic into `/src/airbyteService.js`
 
