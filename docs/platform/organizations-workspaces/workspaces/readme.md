@@ -2,10 +2,28 @@
 products: cloud, oss-enterprise
 ---
 
+import DocCardList from '@theme/DocCardList';
+
 # Workspaces
 
-Each organization consists of one or more **workspaces**. A workspace groups sources, destinations, connections, and other configurations. Workspaces are a more granular layer to manage access, control connections, and monitor usage. You can use a single workspace for everything, or you can divide your organization into multiple workspaces. 
+Each organization consists of one or more **workspaces**. A workspace groups sources, destinations, connections. You can also use workspaces to assign access and permissions. You can use a single workspace for everything, or you can divide your organization into multiple workspaces.
 
-Multiple workspaces are most useful if you're using [Enterprise Flex](../../enterprise-flex/readme) or [Self-Managed Enterprise](../../enterprise-setup/README) and want to self-manage separate data planes, because each workspace runs syncs in a separate region, satisfying data sovereignty and compliance requirements. However, they're also a helpful way to segregate your users into smaller groups who can only access certain data based on their role or permission level in your organization.
+![The Connections page in a workspace](../../images/workspace-homepage.png)
 
-Self-Managed Community deployments can only have one workspace.
+You can use workspaces for the following purposes.
+
+- Manage access and monitor usage at a more granular level. For example, you may want to separate Airbyte users into smaller groups who can only access certain data based on their role of permission level in your organization.
+
+- Organize sources, destinations, and connections into different conceptual buckets.
+
+- Control data residency and sovereignty. Each workspace can run syncs in a separate region.
+
+    - If you use Cloud, you can choose between Airbyte's managed regions.
+
+    - If you use [Enterprise Flex](../../enterprise-flex/readme) or [Self-Managed Enterprise](../../enterprise-setup/README), you can also self-manage your own regions and data planes on your own infrastructure.
+
+- Set up notifications.
+
+If you use Cloud Standard or Self-Managed Community, you only have one workspace.
+
+<DocCardList />

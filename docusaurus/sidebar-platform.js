@@ -374,8 +374,6 @@ module.exports = {
             "using-airbyte/sync-files-and-records",
           ],
         },
-        buildAConnector,
-        sectionHeader("Organizations and workspaces"),
         {
           type: "category",
           label: "Organizations and workspaces",
@@ -444,7 +442,8 @@ module.exports = {
               ],
             },
           ],
-        },        
+        },   
+        buildAConnector,     
         sectionHeader("Deploy and upgrade Airbyte"),
         deployAirbyte,
         {

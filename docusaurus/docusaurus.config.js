@@ -266,6 +266,11 @@ const config = {
             clusterBkg: '#F5F5F5',
             fontFamily: 'var(--ifm-font-family-base)',
           },
+          flowchart: {
+            rankSpacing: 100,   // vertical space
+            subGraphTitleMargin: 10, // space within subgraph border for title
+            nodeSpacing: 100,   // horizontal space
+          },
         },
       },
       docs: {
