@@ -6,15 +6,19 @@ package io.airbyte.integrations.destination.snowflake.client
 
 import io.airbyte.cdk.load.client.AirbyteClient
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAMES
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNativeOperations
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableSqlOperations
+import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
 import io.airbyte.integrations.destination.snowflake.sql.COUNT_TOTAL_ALIAS
 import io.airbyte.integrations.destination.snowflake.sql.QUOTE
+import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
+import java.sql.ResultSet
 import javax.sql.DataSource
 import net.snowflake.client.jdbc.SnowflakeSQLException
 
@@ -27,6 +31,7 @@ private val log = KotlinLogging.logger {}
 class SnowflakeAirbyteClient(
     private val dataSource: DataSource,
     private val sqlGenerator: SnowflakeDirectLoadSqlGenerator,
+    private val snowflakeColumnUtils: SnowflakeColumnUtils,
 ) : AirbyteClient, DirectLoadTableSqlOperations, DirectLoadTableNativeOperations {
 
     override suspend fun countTable(tableName: TableName): Long? =
@@ -99,7 +104,79 @@ class SnowflakeAirbyteClient(
         tableName: TableName,
         columnNameMapping: ColumnNameMapping
     ) {
-        TODO("Not yet implemented")
+        val sql =
+            sqlGenerator.describeTable(schemaName = tableName.namespace, tableName = tableName.name)
+        dataSource.connection.use { connection ->
+            val rs: ResultSet = connection.createStatement().executeQuery(sql)
+            val columnsInDb: MutableSet<ColumnDefinition> = mutableSetOf()
+
+            while (rs.next()) {
+                val columnName = rs.getString("name")
+                // Filter out airbyte columns
+                if (COLUMN_NAMES.contains(columnName)) {
+                    continue
+                }
+                val dataType = rs.getString("type").takeWhile { char -> char != '(' }
+
+                val isNullable = rs.getString("null?") == "Y"
+                columnsInDb.add(ColumnDefinition(columnName, dataType, isNullable))
+            }
+
+            val columnsInStream: Set<ColumnDefinition> =
+                stream.schema
+                    .asColumns()
+                    .map { (name, fieldType) ->
+                        // Snowflake is case-insensitive by default and stores identifiers in
+                        // uppercase.
+                        // We should probably be using the mapping in columnNameMapping, but for
+                        // now, this is a good enough approximation.
+                        val mappedName = columnNameMapping.get(name) ?: name
+                        ColumnDefinition(
+                            mappedName,
+                            snowflakeColumnUtils.toDialectType(fieldType.type).takeWhile { char ->
+                                char != '('
+                            },
+                            fieldType.nullable
+                        )
+                    }
+                    .toSet()
+
+            val addedColumns =
+                columnsInStream.filter { it.name !in columnsInDb.map { it.name } }.toSet()
+            val deletedColumns =
+                columnsInDb.filter { it.name !in columnsInStream.map { it.name } }.toSet()
+            val commonColumns =
+                columnsInStream.filter { it.name in columnsInDb.map { it.name } }.toSet()
+            val modifiedColumns =
+                commonColumns
+                    .filter {
+                        val dbType = columnsInDb.find { column -> it.name == column.name }?.type
+                        it.type != dbType
+                    }
+                    .toSet()
+
+            if (
+                addedColumns.isNotEmpty() ||
+                    deletedColumns.isNotEmpty() ||
+                    modifiedColumns.isNotEmpty()
+            ) {
+                log.error { "Summary of the table alterations:" }
+                log.error { "Added columns: $addedColumns" }
+                log.error { "Deleted columns: $deletedColumns" }
+                log.error { "Modified columns: $modifiedColumns" }
+                log.error {
+                    sqlGenerator.alterTable(
+                        tableName,
+                        addedColumns,
+                        deletedColumns,
+                        modifiedColumns
+                    )
+                }
+                sqlGenerator
+                    .alterTable(tableName, addedColumns, deletedColumns, modifiedColumns)
+                    .forEach { execute(it) }
+            }
+        }
     }
 
     override suspend fun getGenerationId(tableName: TableName): Long =

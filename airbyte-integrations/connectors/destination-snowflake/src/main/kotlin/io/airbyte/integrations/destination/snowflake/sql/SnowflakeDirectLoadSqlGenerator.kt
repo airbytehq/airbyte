@@ -11,8 +11,11 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.orchestration.db.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.cdk.load.util.UUIDGenerator
+import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.CdcDeletionMode
+import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 
@@ -26,12 +29,17 @@ internal fun buildSnowflakeStageName(tableName: TableName): String {
     return "\"${tableName.namespace}\".\"$STAGE_NAME_PREFIX${tableName.name}\""
 }
 
+internal fun buildSnowflakeFormatName(namespace: String): String {
+    return "\"${namespace.toSnowflakeCompatibleName()}\".\"$STAGE_FORMAT_NAME\""
+}
+
 private val log = KotlinLogging.logger {}
 
 @Singleton
 class SnowflakeDirectLoadSqlGenerator(
     private val columnUtils: SnowflakeColumnUtils,
-    private val cdcDeletionMode: CdcDeletionMode,
+    private val uuidGenerator: UUIDGenerator,
+    private val snowflakeConfiguration: SnowflakeConfiguration,
 ) {
 
     /**
@@ -39,7 +47,7 @@ class SnowflakeDirectLoadSqlGenerator(
      * we want to log
      */
     private fun String.andLog(): String {
-        log.info { this }
+        log.info { this.trim() }
         return this
     }
 
@@ -178,7 +186,7 @@ class SnowflakeDirectLoadSqlGenerator(
         val cdcSkipInsertClause: String
         if (
             stream.schema.asColumns().containsKey(CDC_DELETED_AT_COLUMN) &&
-                cdcDeletionMode == CdcDeletionMode.HARD_DELETE
+                snowflakeConfiguration.cdcDeletionMode == CdcDeletionMode.HARD_DELETE
         ) {
             // Execute CDC deletions if there's already a record
             cdcDeleteClause =
@@ -311,8 +319,9 @@ class SnowflakeDirectLoadSqlGenerator(
     }
 
     fun createFileFormat(namespace: String): String {
+        val formatName = buildSnowflakeFormatName(namespace)
         return """
-            CREATE OR REPLACE FILE FORMAT "${namespace.toSnowflakeCompatibleName()}".$STAGE_FORMAT_NAME
+            CREATE OR REPLACE FILE FORMAT $formatName
             TYPE = 'CSV'
             FIELD_DELIMITER = '$CSV_FIELD_DELIMITER'
             FIELD_OPTIONALLY_ENCLOSED_BY = '"'
@@ -324,9 +333,10 @@ class SnowflakeDirectLoadSqlGenerator(
 
     fun createSnowflakeStage(tableName: TableName): String {
         val stageName = buildSnowflakeStageName(tableName)
+        val formatName = buildSnowflakeFormatName(tableName.namespace)
         return """
             CREATE OR REPLACE STAGE $stageName
-                FILE_FORMAT = $STAGE_FORMAT_NAME;
+                FILE_FORMAT = $formatName;
         """
             .trimIndent()
             .andLog()
@@ -345,11 +355,12 @@ class SnowflakeDirectLoadSqlGenerator(
 
     fun copyFromStage(tableName: TableName): String {
         val stageName = buildSnowflakeStageName(tableName)
+        val formatName = buildSnowflakeFormatName(tableName.namespace)
 
         return """
             COPY INTO ${tableName.toPrettyString(quote=QUOTE)}
             FROM @$stageName
-            FILE_FORMAT = $STAGE_FORMAT_NAME
+            FILE_FORMAT = $formatName
             ON_ERROR = 'ABORT_STATEMENT'
         """
             .trimIndent()
@@ -366,5 +377,50 @@ class SnowflakeDirectLoadSqlGenerator(
         """
             .trimIndent()
             .andLog()
+    }
+
+    fun describeTable(
+        schemaName: String,
+        tableName: String,
+    ): String = """DESCRIBE TABLE "$schemaName"."$tableName" """.andLog()
+
+    fun alterTable(
+        tableName: TableName,
+        addedColumns: Set<ColumnDefinition>,
+        deletedColumns: Set<ColumnDefinition>,
+        modifiedColumns: Set<ColumnDefinition>,
+    ): Set<String> {
+        val clauses = mutableSetOf<String>()
+        val prettyTableName = tableName.toPrettyString(quote = QUOTE)
+        addedColumns.forEach {
+            clauses.add(
+                "ALTER TABLE $prettyTableName ADD COLUMN \"${it.name}\" ${it.type};".andLog()
+            )
+        }
+        deletedColumns.forEach {
+            clauses.add("ALTER TABLE $prettyTableName DROP COLUMN \"${it.name}\";".andLog())
+        }
+        modifiedColumns.forEach {
+            val tempColumn = "${it.name}_${uuidGenerator.v4()}"
+            clauses.add(
+                "ALTER TABLE $prettyTableName ADD COLUMN \"$tempColumn\" ${it.type};".andLog()
+            )
+            clauses.add(
+                "UPDATE $prettyTableName SET \"$tempColumn\" = CAST(\"${it.name}\" AS ${it.type});".andLog()
+            )
+            val backupColumn = "${tempColumn}_backup"
+            clauses.add(
+                """ALTER TABLE $prettyTableName
+                RENAME COLUMN "${it.name}" TO "$backupColumn";
+            """.trimIndent()
+            )
+            clauses.add(
+                """ALTER TABLE $prettyTableName
+                RENAME COLUMN "$tempColumn" TO "${it.name}";
+            """.trimIndent()
+            )
+            clauses.add("ALTER TABLE $prettyTableName DROP COLUMN \"$backupColumn\";".andLog())
+        }
+        return clauses
     }
 }
