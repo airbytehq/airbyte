@@ -177,7 +177,7 @@ class SnowflakeDirectLoadSqlGenerator(
 
         // Build column assignments for UPDATE
         val columnAssignments: String =
-            stream.schema.asColumns().keys.joinToString(",\n") { fieldName ->
+            (stream.schema.asColumns().keys + COLUMN_NAMES).joinToString(",\n") { fieldName ->
                 val column = columnNameMapping[fieldName] ?: fieldName
                 "\"$column\" = new_record.\"$column\""
             }
