@@ -1,0 +1,35 @@
+metadataSpecVersion: "1.0"
+data:
+  allowedHosts:
+    hosts:
+      - "api.riseup.ai"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-rise-up
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.61.6@sha256:a86098c6af1cf9d0b4484f33c973981a4d4f16740924ce9325b01ee4c8ca33df
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 65ffabc9-e627-4d6e-bc14-f7bff564c962
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/source-rise-up
+  githubIssueLabel: source-rise-up
+  icon: icon.svg
+  license: MIT
+  name: Rise Up
+  releaseDate: 2025-09-18
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/rise-up
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100
