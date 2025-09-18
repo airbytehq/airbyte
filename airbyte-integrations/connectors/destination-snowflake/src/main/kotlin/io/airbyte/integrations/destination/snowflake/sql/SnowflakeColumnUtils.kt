@@ -72,13 +72,8 @@ class SnowflakeColumnUtils {
             ArrayTypeWithoutSchema,
             is ObjectType,
             ObjectTypeWithEmptySchema,
-            ObjectTypeWithoutSchema -> SnowflakeDataType.VARIANT.typeName
-            is UnionType ->
-                if (type.isLegacyUnion) {
-                    toDialectType(type.chooseType())
-                } else {
-                    SnowflakeDataType.VARIANT.typeName
-                }
+            ObjectTypeWithoutSchema,
+            is UnionType,
             is UnknownType -> SnowflakeDataType.VARIANT.typeName
         }
 }
