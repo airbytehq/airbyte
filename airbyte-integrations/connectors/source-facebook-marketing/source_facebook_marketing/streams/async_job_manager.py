@@ -26,13 +26,13 @@ class InsightAsyncJobManager:
     """
 
     # When current insights throttle hit this value no new jobs added.
-    THROTTLE_LIMIT = 40
+    THROTTLE_LIMIT = 90
     MAX_NUMBER_OF_ATTEMPTS = 20
     # Time to wait before checking job status update again.
     JOB_STATUS_UPDATE_SLEEP_SECONDS = 30
     # Maximum of concurrent jobs that could be scheduled. Since throttling
     # limit is not reliable indicator of async workload capability we still have to use this parameter.
-    MAX_JOBS_IN_QUEUE = 20
+    MAX_JOBS_IN_QUEUE = 100
 
     def __init__(self, api: "API", jobs: Iterator[AsyncJob], account_id: str):
         """Init
@@ -56,7 +56,10 @@ class InsightAsyncJobManager:
             if not job:
                 self._empty = True
                 break
-            job.start()
+            job.start(1)
+            if not job.started:
+                self._jobs = iter(chain([job], self._jobs))
+
             self._running_jobs.append(job)
 
         logger.info(
@@ -97,28 +100,9 @@ class InsightAsyncJobManager:
         self._wait_throttle_limit_down()
         for job in self._running_jobs:
             if job.failed:
-                if isinstance(job, ParentAsyncJob):
-                    # if this job is a ParentAsyncJob, it holds X number of jobs
-                    # we want to check that none of these nested jobs have exceeded MAX_NUMBER_OF_ATTEMPTS
-                    for nested_job in job._jobs:
-                        if nested_job.attempt_number >= self.MAX_NUMBER_OF_ATTEMPTS:
-                            raise JobException(f"{nested_job}: failed more than {self.MAX_NUMBER_OF_ATTEMPTS} times. Terminating...")
-                if job.attempt_number >= self.MAX_NUMBER_OF_ATTEMPTS:
-                    raise JobException(f"{job}: failed more than {self.MAX_NUMBER_OF_ATTEMPTS} times. Terminating...")
-                elif job.attempt_number == 2:
-                    logger.info(
-                        "%s: failed second time, trying to split job into smaller jobs.",
-                        job,
-                    )
-                    smaller_jobs = job.split_job()
-                    self._jobs = iter(chain(smaller_jobs[1:], self._jobs))
-                    smaller_jobs[0].start()
-                    running_jobs.append(smaller_jobs[0])
-                else:
-                    logger.info("%s: failed, restarting", job)
-                    job.restart()
-                    running_jobs.append(job)
-                failed_num += 1
+                running_job, queued_jobs = job.restart_or_split()
+                running_jobs.extend(running_job)
+                self._jobs = iter(chain(queued_jobs, self._jobs))
             elif job.completed:
                 completed_jobs.append(job)
             else:
