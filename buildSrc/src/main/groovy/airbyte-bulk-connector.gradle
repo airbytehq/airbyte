@@ -331,21 +331,21 @@ class BumpConnectorCdkVersion extends DefaultTask {
     }
 
     private static void updateCdkVersion(Project project, String version) {
-        File buildFile = project.buildFile
-        String content = buildFile.text
+        File propertiesFile = project.file('gradle.properties')
 
-        // regex that extracts the CDK version from the airbyteBulkConnector block
-        def pattern = /(?s)(airbyteBulkConnector\s*\{.*?cdk\s*=\s*['"])([^'"]+)(['"].*?\})/
-
-        def matcher = content =~ pattern
-        if (matcher.find()) {
-            String updatedContent = content.replaceAll(pattern, "\$1${version}\$3")
-            buildFile.text = updatedContent
-            project.logger.info("Updated CDK version from '${matcher.group(2)}' to '${version}' in ${buildFile.absolutePath}")
-        } else {
-            throw new NoSuchElementException("No CDK version configuration found in ${buildFile.absolutePath}. " +
-                    "Please ensure the connector uses airbyteBulkConnector plugin" +
-                    "and has a 'cdk' property set.")
+        // Unfortunately, we can't just use a Properties() object and load+store it,
+        // because that would lose any comments in the file.
+        // So we'll edit the file line-by-line.
+        def lines = propertiesFile.readLines()
+        def updatedLines = lines.collect { line ->
+            if (line.startsWith('cdkVersion')) {
+                return "cdkVersion=$version"
+            } else {
+                return line
+            }
         }
+        propertiesFile.text = updatedLines.join('\n') + '\n'
+
+        project.logger.info("Updated CDK version to '${version}' in ${propertiesFile.absolutePath}")
     }
 }
