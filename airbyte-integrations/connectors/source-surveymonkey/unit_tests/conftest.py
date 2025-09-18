@@ -3,12 +3,11 @@
 #
 
 import json
-
-import pendulum
 import pytest
-from source_surveymonkey.source import SourceSurveymonkey
-
 from airbyte_cdk.models import SyncMode
+from source_surveymonkey import SourceSurveymonkey
+import pendulum
+
 from airbyte_cdk.sources.declarative.types import StreamSlice
 
 
@@ -21,16 +20,6 @@ def read_json_fixture(request):
             return json.load(f)
 
     return read_json
-
-
-@pytest.fixture(name="read_records")
-def read_records_fixture(config):
-    def read_records(stream_name, slice=StreamSlice(partition={"survey_id": "307785415"}, cursor_slice={})):
-        stream = next(filter(lambda x: x.name == stream_name, SourceSurveymonkey().streams(config=config)))
-        records = list(map(lambda record: record.data, stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice)))
-        return records
-
-    return read_records
 
 
 @pytest.fixture
@@ -46,3 +35,20 @@ def config(args_mock):
         "credentials": {"access_token": "access_token"},
         "start_date": args_mock["start_date"].to_iso8601_string(),
     }
+
+
+@pytest.fixture
+def read_records(config):
+    def _read_records(stream_name, slice=StreamSlice(partition={"survey_id": "307785415"}, cursor_slice={})):
+        source = SourceSurveymonkey(catalog=None, config=config, state=None)
+        stream = next(filter(lambda x: x.name == stream_name, source.streams(config=config)))
+        
+        # Use CDK v7 pattern - generate_partitions instead of stream_slices
+        records = []
+        try:
+            for partition in stream.generate_partitions():
+                records.extend(list(partition.read()))
+        except AttributeError:
+            records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice))
+        return records
+    return _read_records

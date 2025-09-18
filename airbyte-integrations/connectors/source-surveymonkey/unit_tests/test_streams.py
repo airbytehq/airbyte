@@ -3,11 +3,23 @@
 #
 
 from unittest.mock import Mock
+import json
+from source_surveymonkey import SourceSurveymonkey
 
 import pytest
 from source_surveymonkey.streams import SurveyIds, Surveys
-
+from airbyte_cdk.sources.declarative.types import StreamSlice
 from airbyte_cdk.models import SyncMode
+
+
+def deep_sort_dict(obj):
+    """Recursively sort dictionary keys and list items for consistent comparison"""
+    if isinstance(obj, dict):
+        return {k: deep_sort_dict(v) for k, v in sorted(obj.items())}
+    elif isinstance(obj, list):
+        return [deep_sort_dict(item) for item in obj]
+    else:
+        return obj
 
 
 @pytest.mark.parametrize(
@@ -54,7 +66,11 @@ def test_survey_slices(requests_mock, args_mock, read_json, additional_arguments
     if not additional_arguments:
         requests_mock.get("https://api.surveymonkey.com/v3/surveys", json=read_json("response_survey_ids.json"))
     args_mock.update(additional_arguments)
-    stream_slices = Surveys(**args_mock).stream_slices()
+    surveys_stream = Surveys(**args_mock)
+    mock_session = Mock()
+    mock_session.auth = Mock()
+    surveys_stream._session = mock_session
+    stream_slices = surveys_stream.stream_slices()
     assert list(stream_slices) == expected_slices
 
 
@@ -66,12 +82,37 @@ def test_survey_slices(requests_mock, args_mock, read_json, additional_arguments
         ("survey_collectors", "records_survey_collectors.json"),
     ],
 )
-def test_survey_data(requests_mock, read_records, read_json, endpoint, records_filename):
+def test_survey_data(requests_mock, read_json, endpoint, records_filename, config):
     requests_mock.get("https://api.surveymonkey.com/v3/surveys/307785415/details", json=read_json("response_survey_details.json"))
     requests_mock.get("https://api.surveymonkey.com/v3/surveys/307785415/collectors", json=read_json("response_survey_collectors.json"))
-    records = read_records(endpoint)
+    
+    source = SourceSurveymonkey(catalog=None, config=config, state=None)
+    stream = next(filter(lambda x: x.name == endpoint, source.streams(config=config)))
+    
+    # Use CDK v7 pattern - generate_partitions instead of read_records
+    records = []
+    try:
+        for partition in stream.generate_partitions():
+            records.extend(list(partition.read()))
+    except AttributeError:
+        slice_obj = StreamSlice(partition={"survey_id": "307785415"}, cursor_slice={})
+        records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice_obj))
+    
     expected_records = read_json(records_filename)
-    assert list(records) == expected_records
+
+    actual_records = []
+    for record in records:
+        if hasattr(record, 'data'):
+            actual_records.append(record.data)
+        elif hasattr(record, '__dict__'):
+            actual_records.append(record.__dict__)
+        else:
+            actual_records.append(record)
+
+    actual_json = json.dumps(deep_sort_dict(actual_records), sort_keys=True)
+    expected_json = json.dumps(deep_sort_dict(expected_records), sort_keys=True)
+    
+    assert actual_json == expected_json
 
 
 def test_surveys_next_page_token(args_mock):
