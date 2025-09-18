@@ -22,9 +22,9 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 
 internal const val COUNT_TOTAL_ALIAS = "total"
-internal const val QUOTE: String = "\""
 internal const val STAGE_FORMAT_NAME: String = "airbyte_csv_format"
 internal const val STAGE_NAME_PREFIX = "airbyte_stage_"
+const val QUOTE: String = "\""
 
 internal fun buildSnowflakeStageName(tableName: TableName): String {
     return "\"${tableName.namespace}\".\"$STAGE_NAME_PREFIX${tableName.name}\""
