@@ -296,7 +296,7 @@ new_record."_airbyte_generation_id"
         val tableName = TableName(namespace = "namespace", name = "name")
         val sql = snowflakeDirectLoadSqlGenerator.copyFromStage(tableName)
         assertEquals(
-            "COPY INTO ${tableName.toPrettyString(quote=QUOTE)}\nFROM @${buildSnowflakeStageName(tableName)}\nFILE_FORMAT = ${buildSnowflakeFormatName(tableName.namespace)}\nON_ERROR = 'ABORT_STATEMENT'",
+            "COPY INTO ${tableName.toPrettyString(quote=QUOTE)}\nFROM @${buildSnowflakeStageName(tableName)}\nFILE_FORMAT = ${buildSnowflakeFormatName(tableName.namespace)}\nON_ERROR = 'ABORT_STATEMENT'\nPURGE = TRUE;",
             sql
         )
     }
