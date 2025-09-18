@@ -4,12 +4,8 @@ type: DeclarativeSource
 
 check:
   type: CheckStream
-  # stream_names:
-  #   - campaign
-  dynamic_streams_check_configs:
-    - type: DynamicStreamCheckConfig
-      dynamic_stream_name: dynamic_stream_0
-      stream_count: 1
+  stream_names:
+    - campaign
 
 definitions:
   # Authenticator Definitions
