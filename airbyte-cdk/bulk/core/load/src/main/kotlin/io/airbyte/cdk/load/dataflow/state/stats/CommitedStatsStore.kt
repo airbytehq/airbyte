@@ -55,8 +55,6 @@ class CommittedStatsStore {
                 bytes = it.bytes.remove(p) ?: 0,
             )
         }
-
-    @VisibleForTesting fun getStats(s: DestinationStream.Descriptor) = cumulativeStats[s]
 }
 
 data class CommitStatsResult(
