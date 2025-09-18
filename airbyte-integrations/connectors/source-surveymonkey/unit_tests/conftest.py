@@ -9,7 +9,7 @@ import pytest
 from source_surveymonkey.source import SourceSurveymonkey
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.declarative.incremental.per_partition_cursor import StreamSlice
+from airbyte_cdk.sources.declarative.types import StreamSlice
 
 
 @pytest.fixture(name="read_json")

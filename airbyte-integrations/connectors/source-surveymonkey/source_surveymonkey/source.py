@@ -2,6 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from typing import Any, Mapping, Optional
+
+from airbyte_cdk.models import ConfiguredAirbyteCatalog
+from airbyte_cdk.sources.source import TState
 import logging
 from typing import Any, List, Mapping, Tuple
 
@@ -26,8 +30,8 @@ WARNING: Do not modify this file.
 class SourceSurveymonkey(YamlDeclarativeSource):
     SCOPES = {"responses_read_detail", "surveys_read", "users_read"}
 
-    def __init__(self):
-        super().__init__(**{"path_to_yaml": "manifest.yaml"})
+    def __init__(self, catalog: Optional[ConfiguredAirbyteCatalog], config: Optional[Mapping[str, Any]], state: TState, **kwargs):
+        super().__init__(catalog=catalog, config=config, state=state, **{"path_to_yaml": "manifest.yaml"})
 
     @classmethod
     def _check_scopes(cls, response_json):
