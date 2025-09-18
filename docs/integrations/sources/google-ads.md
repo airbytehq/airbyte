@@ -335,7 +335,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.1.0-rc.4 | 2025-09-18 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Revert to CDK v6.60.12 |
+| 4.1.0-rc.4 | 2025-09-18 | [66522](https://github.com/airbytehq/airbyte/pull/66522) | Revert to CDK v6.60.12 |
 | 4.1.0-rc.3 | 2025-09-17 | [65535](https://github.com/airbytehq/airbyte/pull/65535) | Update custom query dynamic streams to use regex for conditional incremental sync component mapping |
 | 4.1.0-rc.2 | 2025-08-22 | [65149](https://github.com/airbytehq/airbyte/pull/65149) | Update custom query URL to use Google Ads API v20 |
 | 4.1.0-rc.1 | 2025-08-19 | [63344](https://github.com/airbytehq/airbyte/pull/63344) | Migrate `custom_queries` streams to low-code           |
