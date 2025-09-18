@@ -25,7 +25,6 @@ import java.util.UUID
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 internal class SnowflakeDirectLoadSqlGeneratorTest {
@@ -235,7 +234,6 @@ new_record."_airbyte_generation_id"
     }
 
     @Test
-    @Disabled
     fun testGenerateGenerationIdQuery() {
         val tableName = TableName(namespace = "namespace", name = "name")
         val sql = snowflakeDirectLoadSqlGenerator.getGenerationId(tableName = tableName)
@@ -246,7 +244,6 @@ new_record."_airbyte_generation_id"
     }
 
     @Test
-    @Disabled
     fun testGenerateCreateFileFormat() {
         val namespace = "test-namespace"
         val expected =
@@ -264,7 +261,6 @@ new_record."_airbyte_generation_id"
     }
 
     @Test
-    @Disabled
     fun testGenerateCreateStage() {
         val tableName = TableName(namespace = "namespace", name = "name")
         val sql = snowflakeDirectLoadSqlGenerator.createSnowflakeStage(tableName)
@@ -286,7 +282,6 @@ new_record."_airbyte_generation_id"
     }
 
     @Test
-    @Disabled
     fun testGenerateCopyFromStage() {
         val tableName = TableName(namespace = "namespace", name = "name")
         val sql = snowflakeDirectLoadSqlGenerator.copyFromStage(tableName)

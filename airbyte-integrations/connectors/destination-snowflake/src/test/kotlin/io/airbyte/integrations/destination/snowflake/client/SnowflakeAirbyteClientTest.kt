@@ -10,7 +10,6 @@ import io.airbyte.cdk.load.command.Overwrite
 import io.airbyte.cdk.load.config.NamespaceDefinitionType
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.FieldType
-import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
@@ -22,7 +21,6 @@ import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
-import io.mockk.spyk
 import io.mockk.verify
 import java.sql.Connection
 import java.sql.ResultSet
@@ -411,8 +409,14 @@ internal class SnowflakeAirbyteClientTest {
         val tableName = TableName("test_namespace", "test_table")
         val resultSet = mockk<ResultSet>()
         every { resultSet.next() } returns true andThen true andThen true andThen false
-        every { resultSet.getString("name") } returns "COL1" andThen "_AIRBYTE_RAW_ID" andThen "COL2"
-        every { resultSet.getString("type") } returns "VARCHAR(255)" andThen "TEXT" andThen "NUMBER(38,0)"
+        every { resultSet.getString("name") } returns
+            "COL1" andThen
+            "_AIRBYTE_RAW_ID" andThen
+            "COL2"
+        every { resultSet.getString("type") } returns
+            "VARCHAR(255)" andThen
+            "TEXT" andThen
+            "NUMBER(38,0)"
         every { resultSet.getString("null?") } returns "Y" andThen "N" andThen "N"
 
         val statement = mockk<Statement>()
@@ -426,11 +430,12 @@ internal class SnowflakeAirbyteClientTest {
 
         val result = client.getColumnsFromDb(tableName)
 
-        val expectedColumns = setOf(
-            ColumnDefinition("COL1", "VARCHAR", true),
-            ColumnDefinition("_AIRBYTE_RAW_ID", "TEXT", false),
-            ColumnDefinition("COL2", "NUMBER", false)
-        )
+        val expectedColumns =
+            setOf(
+                ColumnDefinition("COL1", "VARCHAR", true),
+                ColumnDefinition("_AIRBYTE_RAW_ID", "TEXT", false),
+                ColumnDefinition("COL2", "NUMBER", false)
+            )
 
         assertEquals(expectedColumns, result)
     }
@@ -438,16 +443,17 @@ internal class SnowflakeAirbyteClientTest {
     @Test
     fun `getColumnsFromStream should return correct column definitions`() {
         val schema = mockk<AirbyteType>()
-        val stream = DestinationStream(
-            unmappedNamespace = "test_namespace",
-            unmappedName = "test_stream",
-            importType = Overwrite,
-            schema = schema,
-            generationId = 1,
-            minimumGenerationId = 1,
-            syncId = 1,
-            namespaceMapper = NamespaceMapper(NamespaceDefinitionType.DESTINATION)
-        )
+        val stream =
+            DestinationStream(
+                unmappedNamespace = "test_namespace",
+                unmappedName = "test_stream",
+                importType = Overwrite,
+                schema = schema,
+                generationId = 1,
+                minimumGenerationId = 1,
+                syncId = 1,
+                namespaceMapper = NamespaceMapper(NamespaceDefinitionType.DESTINATION)
+            )
         val columnNameMapping = mockk<ColumnNameMapping>(relaxed = true)
 
         val col1FieldType = mockk<FieldType>()
@@ -458,10 +464,8 @@ internal class SnowflakeAirbyteClientTest {
         every { col2FieldType.type } returns mockk()
         every { col2FieldType.nullable } returns false
 
-        every { schema.asColumns() } returns linkedMapOf(
-            "col1" to col1FieldType,
-            "col2" to col2FieldType
-        )
+        every { schema.asColumns() } returns
+            linkedMapOf("col1" to col1FieldType, "col2" to col2FieldType)
         every { columnNameMapping.get("col1") } returns "COL1_MAPPED"
         every { columnNameMapping.get("col2") } returns "COL2_MAPPED"
         every { snowflakeColumnUtils.toDialectType(col1FieldType.type) } returns "VARCHAR(255)"
@@ -469,26 +473,29 @@ internal class SnowflakeAirbyteClientTest {
 
         val result = client.getColumnsFromStream(stream, columnNameMapping)
 
-        val expectedColumns = setOf(
-            ColumnDefinition("COL1_MAPPED", "VARCHAR", true),
-            ColumnDefinition("COL2_MAPPED", "NUMBER", false)
-        )
+        val expectedColumns =
+            setOf(
+                ColumnDefinition("COL1_MAPPED", "VARCHAR", true),
+                ColumnDefinition("COL2_MAPPED", "NUMBER", false)
+            )
 
         assertEquals(expectedColumns, result)
     }
 
     @Test
     fun `generateSchemaChanges should correctly identify changes`() {
-        val columnsInDb = setOf(
-            ColumnDefinition("COL1", "VARCHAR", true),
-            ColumnDefinition("COL2", "NUMBER", false),
-            ColumnDefinition("COL3", "BOOLEAN", true)
-        )
-        val columnsInStream = setOf(
-            ColumnDefinition("COL1", "VARCHAR", true), // Unchanged
-            ColumnDefinition("COL3", "TEXT", true), // Modified
-            ColumnDefinition("COL4", "DATE", false) // Added
-        )
+        val columnsInDb =
+            setOf(
+                ColumnDefinition("COL1", "VARCHAR", true),
+                ColumnDefinition("COL2", "NUMBER", false),
+                ColumnDefinition("COL3", "BOOLEAN", true)
+            )
+        val columnsInStream =
+            setOf(
+                ColumnDefinition("COL1", "VARCHAR", true), // Unchanged
+                ColumnDefinition("COL3", "TEXT", true), // Modified
+                ColumnDefinition("COL4", "DATE", false) // Added
+            )
 
         val (added, deleted, modified) = client.generateSchemaChanges(columnsInDb, columnsInStream)
 
