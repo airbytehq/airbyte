@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.snowflake.client
 
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.integrations.destination.snowflake.sql.COUNT_TOTAL_ALIAS
@@ -246,7 +247,7 @@ internal class SnowflakeAirbyteClientTest {
         val resultSet =
             mockk<ResultSet> {
                 every { next() } returns true
-                every { getLong(GENERATION_ID_ALIAS) } returns generationId
+                every { getLong(COLUMN_NAME_AB_GENERATION_ID) } returns generationId
             }
         val statement = mockk<Statement> { every { executeQuery(any()) } returns resultSet }
         val mockConnection =
@@ -260,7 +261,7 @@ internal class SnowflakeAirbyteClientTest {
         runBlocking {
             val result = client.getGenerationId(tableName)
             assertEquals(generationId, result)
-            verify(exactly = 1) { sqlGenerator.getGenerationId(tableName, GENERATION_ID_ALIAS) }
+            verify(exactly = 1) { sqlGenerator.getGenerationId(tableName) }
             verify(exactly = 1) { mockConnection.close() }
         }
     }
@@ -281,7 +282,7 @@ internal class SnowflakeAirbyteClientTest {
         runBlocking {
             val result = client.getGenerationId(tableName)
             assertEquals(0L, result)
-            verify(exactly = 1) { sqlGenerator.getGenerationId(tableName, GENERATION_ID_ALIAS) }
+            verify(exactly = 1) { sqlGenerator.getGenerationId(tableName) }
             verify(exactly = 1) { mockConnection.close() }
         }
     }
@@ -302,7 +303,7 @@ internal class SnowflakeAirbyteClientTest {
         runBlocking {
             val result = client.getGenerationId(tableName)
             assertEquals(0L, result)
-            verify(exactly = 1) { sqlGenerator.getGenerationId(tableName, GENERATION_ID_ALIAS) }
+            verify(exactly = 1) { sqlGenerator.getGenerationId(tableName) }
             verify(exactly = 1) { mockConnection.close() }
         }
     }

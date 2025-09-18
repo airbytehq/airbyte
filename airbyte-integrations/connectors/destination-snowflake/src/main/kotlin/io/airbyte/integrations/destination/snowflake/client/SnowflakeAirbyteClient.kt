@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.snowflake.client
 import io.airbyte.cdk.load.client.AirbyteClient
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAMES
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNativeOperations
@@ -23,7 +24,6 @@ import javax.sql.DataSource
 import net.snowflake.client.jdbc.SnowflakeSQLException
 
 internal const val DESCRIBE_TABLE_COLUMN_NAME_FIELD = "column_name"
-internal const val GENERATION_ID_ALIAS = "generation"
 
 private val log = KotlinLogging.logger {}
 
@@ -181,11 +181,11 @@ class SnowflakeAirbyteClient(
 
     override suspend fun getGenerationId(tableName: TableName): Long =
         try {
-            val sql = sqlGenerator.getGenerationId(tableName, GENERATION_ID_ALIAS)
+            val sql = sqlGenerator.getGenerationId(tableName)
             dataSource.connection.use { connection ->
                 val resultSet = connection.createStatement().executeQuery(sql)
                 if (resultSet.next()) {
-                    resultSet.getLong(GENERATION_ID_ALIAS)
+                    resultSet.getLong(COLUMN_NAME_AB_GENERATION_ID)
                 } else {
                     log.warn { "No generation ID found for table $tableName, returning 0" }
                     0L
