@@ -1,5 +1,6 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 import copy
+import logging
 from dataclasses import dataclass
 from functools import partial
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
@@ -15,6 +16,7 @@ from airbyte_cdk.sources.streams.core import StreamData
 
 # maximum block hierarchy recursive request depth
 MAX_BLOCK_DEPTH = 30
+logger = logging.getLogger("airbyte")
 
 
 @dataclass
@@ -115,6 +117,7 @@ class BlocksRetriever(SimpleRetriever):
     ) -> Iterable[StreamData]:
         # if reached recursive limit, don't read anymore
         if self.current_block_depth > MAX_BLOCK_DEPTH:
+            logger.info("Reached max block depth limit. Exiting.")
             return
 
         for stream_data in super().read_records(records_schema, stream_slice):
