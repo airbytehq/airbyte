@@ -42,7 +42,7 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/templates/sources/{id}/
 ## Filtering and Removing Tags
 
 When you embed the Airbyte widget in your front-end, you generate a widget token. This token is passed to the widget and controls which source and connection templates are available, based on the tag specifications.
-The widget token is created with parameters like ‎`selected_source_template_tags` and ‎`selected_source_template_tags_mode`, which define what the end user can see and select in your web application.
+The widget token is created with parameters like ‎`selected_source_template_tags` and ‎`selected_connection_template_tags_mode`, which define what the end user can see and select in your web application.
 
 Additionally, you can untag connnection and source templates via the same UI presented above or programmatically.
 
