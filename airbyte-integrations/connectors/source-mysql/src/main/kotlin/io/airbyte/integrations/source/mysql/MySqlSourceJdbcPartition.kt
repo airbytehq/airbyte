@@ -529,6 +529,9 @@ class MySqlJdbcConcurrentPartitionsCreator<
                 .mapNotNull { (splitBoundary: OpaqueStateValue?, _) -> splitBoundary }
                 .distinct()
 
+        // Handle edge case with empty split boundaries when sampling rate is too low,
+        // causing random filtering to discard all sampled boundaries, which would
+        // lead to division by zero the in the split() function. Fall back to single partition.
         if (splitBoundaries.isEmpty()) {
             log.warn { "No split boundaries found, using single partition" }
             return listOf(JdbcNonResumablePartitionReader(partition))
