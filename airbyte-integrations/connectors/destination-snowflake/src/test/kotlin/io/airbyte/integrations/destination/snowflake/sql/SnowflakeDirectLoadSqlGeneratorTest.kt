@@ -244,18 +244,6 @@ new_record."_airbyte_generation_id"
     }
 
     @Test
-    fun testGenerateGenerationIdQueryWithAlias() {
-        val alias = "test-alias"
-        val tableName = TableName(namespace = "namespace", name = "name")
-        val sql =
-            snowflakeDirectLoadSqlGenerator.getGenerationId(tableName = tableName, alias = alias)
-        assertEquals(
-            "SELECT \"$COLUMN_NAME_AB_GENERATION_ID\" AS $alias \nFROM ${tableName.toPrettyString(QUOTE)} \nLIMIT 1",
-            sql
-        )
-    }
-
-    @Test
     fun testGenerateCreateFileFormat() {
         val namespace = "test-namespace"
         val expected =
