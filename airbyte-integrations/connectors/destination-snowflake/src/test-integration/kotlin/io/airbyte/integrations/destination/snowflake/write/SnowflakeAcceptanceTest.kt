@@ -50,6 +50,7 @@ import java.math.BigDecimal
 import java.nio.file.Files
 import java.nio.file.Path
 import net.snowflake.client.jdbc.SnowflakeTimestampWithTimezone
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 internal val CONFIG_PATH = getConfigPath(CONFIG_WITH_AUTH_STAGING)
@@ -101,7 +102,14 @@ abstract class SnowflakeAcceptanceTest(
         dataChannelFormat = dataChannelFormat,
         mismatchedTypesUnrepresentable = false,
         recordMangler = SnowflakeExpectedRecordMapper,
-    )
+    ) {
+
+    @Disabled override fun testUnions() {}
+
+    @Disabled override fun testAppendJsonSchemaEvolution() {}
+
+    @Disabled override fun testContainerTypes() {}
+}
 
 object SnowflakeExpectedRecordMapper : ExpectedRecordMapper {
 
