@@ -193,6 +193,7 @@ class S3LegacyJavaClientFactory {
                 // configure it
                 // programmatically
                 .withClientConfiguration(ClientConfiguration().withRetryMode(RetryMode.STANDARD))
+                .withPathStyleAccessEnabled(true)
                 .build()
         return S3LegacyJavaClient(amazonS3, bucket)
     }
