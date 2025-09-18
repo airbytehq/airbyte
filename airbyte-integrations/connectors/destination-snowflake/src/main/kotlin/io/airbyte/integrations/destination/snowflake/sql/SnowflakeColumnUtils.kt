@@ -73,8 +73,8 @@ class SnowflakeColumnUtils {
             is ObjectType,
             ObjectTypeWithEmptySchema,
             ObjectTypeWithoutSchema,
-            is UnionType,
-            is UnknownType -> SnowflakeDataType.VARIANT.typeName
+            is UnionType -> SnowflakeDataType.VARIANT.typeName
+            is UnknownType -> SnowflakeDataType.VARCHAR.typeName
         }
 }
 
