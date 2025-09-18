@@ -171,19 +171,25 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
             """
             MERGE INTO "namespace"."destination" AS target_table
             USING (
-              WITH records AS (
-  SELECT
-    
-  FROM "namespace"."source"
-), numbered_rows AS (
-  SELECT *, ROW_NUMBER() OVER (
-    PARTITION BY "primaryKey" ORDER BY "cursor" DESC NULLS LAST, "_airbyte_extracted_at" DESC
-  ) AS row_number
-  FROM records
-)
-SELECT 
-FROM numbered_rows
-WHERE row_number = 1
+                          WITH records AS (
+              SELECT
+                "_airbyte_raw_id",
+"_airbyte_extracted_at",
+"_airbyte_meta",
+"_airbyte_generation_id"
+              FROM "namespace"."source"
+            ), numbered_rows AS (
+              SELECT *, ROW_NUMBER() OVER (
+                PARTITION BY "primaryKey" ORDER BY "cursor" DESC NULLS LAST, "_airbyte_extracted_at" DESC
+              ) AS row_number
+              FROM records
+            )
+            SELECT "_airbyte_raw_id",
+"_airbyte_extracted_at",
+"_airbyte_meta",
+"_airbyte_generation_id"
+            FROM numbered_rows
+            WHERE row_number = 1
             ) AS new_record
             ON (target_table."primaryKey" = new_record."primaryKey" OR (target_table."primaryKey" IS NULL AND new_record."primaryKey" IS NULL))
             WHEN MATCHED AND (
@@ -192,7 +198,10 @@ WHERE row_number = 1
   OR (target_table."cursor" IS NULL AND new_record."cursor" IS NULL AND target_table."_airbyte_extracted_at" < new_record."_airbyte_extracted_at")
   OR (target_table."cursor" IS NULL AND new_record."cursor" IS NOT NULL)
 ) THEN UPDATE SET
-              
+              "_airbyte_raw_id" = new_record."_airbyte_raw_id",
+"_airbyte_extracted_at" = new_record."_airbyte_extracted_at",
+"_airbyte_meta" = new_record."_airbyte_meta",
+"_airbyte_generation_id" = new_record."_airbyte_generation_id"
             WHEN NOT MATCHED THEN INSERT (
               "_airbyte_raw_id",
 "_airbyte_extracted_at",

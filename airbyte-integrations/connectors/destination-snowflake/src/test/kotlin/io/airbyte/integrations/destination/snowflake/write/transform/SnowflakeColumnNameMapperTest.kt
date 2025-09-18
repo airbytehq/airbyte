@@ -15,7 +15,7 @@ internal class SnowflakeColumnNameMapperTest {
     fun testGetMappedColumnName() {
         val columnName = "test-column-name"
         val stream = mockk<DestinationStream>()
-        val mapper = SnowflakeColumnNameMapper()
+        val mapper = SnowflakeColumnNameMapper(mockk(relaxed = true))
         val result = mapper.getMappedColumnName(stream = stream, columnName = columnName)
         assertEquals(columnName, result)
     }
