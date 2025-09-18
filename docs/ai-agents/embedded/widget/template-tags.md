@@ -47,7 +47,7 @@ Additionally, you can untag connnection and source templates via the same UI pre
 
 To programmatically remove a tag from a connection template, you'll need to make the following request:
 
-```bash 
+```bash
 curl -X DELETE "https://api.airbyte.ai/api/v1/integrations/templates/sources/{id}/tag/{tag_name}" \
   -H "Authorization: Bearer <ACCESS_TOKEN>" \
   -H "X-Organization-Id: <ORGANIZATION_UUID>"
