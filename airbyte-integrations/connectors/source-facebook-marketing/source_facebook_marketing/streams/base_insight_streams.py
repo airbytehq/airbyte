@@ -267,7 +267,7 @@ class AdsInsights(FBMarketingIncrementalStream):
                 interval=interval,
                 params=params,
                 job_timeout=self.insights_job_timeout,
-                primary_key=self.primary_key
+                primary_key=self.primary_key,
             )
 
     def check_breakdowns(self, account_id: str):

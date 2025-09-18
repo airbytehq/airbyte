@@ -4,9 +4,9 @@
 
 import copy
 import logging
+import time
 from abc import ABC, abstractmethod
 from enum import Enum
-import time
 from typing import Any, Iterator, List, Mapping, Optional, Type, Union
 
 import backoff
@@ -90,7 +90,7 @@ class AsyncJob(ABC):
         return self._interval
 
     @abstractmethod
-    def start(self, capacity:int) -> int:
+    def start(self, capacity: int) -> int:
         """Start remote job. Returns capacity used by the job"""
 
     @property
@@ -140,7 +140,7 @@ class AsyncJob(ABC):
 class ParentAsyncJob(AsyncJob):
     """Group of async jobs"""
 
-    def __init__(self, jobs: List["InsightAsyncJob"], primary_key = Optional[List[str]], **kwargs):
+    def __init__(self, jobs: List["InsightAsyncJob"], primary_key=Optional[List[str]], **kwargs):
         """Initialize jobs"""
         super().__init__(**kwargs)
         self._primary_key = primary_key
@@ -416,8 +416,10 @@ class InsightAsyncJob(AsyncJob):
         part_a = split_candidates[:mid]
         part_b = split_candidates[mid:]
 
-        params_a = dict(self._params); params_a["fields"] = self._primary_key + part_a
-        params_b = dict(self._params); params_b["fields"] = self._primary_key + part_b
+        params_a = dict(self._params)
+        params_a["fields"] = self._primary_key + part_a
+        params_b = dict(self._params)
+        params_b["fields"] = self._primary_key + part_b
 
         job_a = InsightAsyncJob(
             api=self._api,
@@ -438,7 +440,7 @@ class InsightAsyncJob(AsyncJob):
         logger.info("%s split by fields: common=%d, A=%d, B=%d", self, len(self._primary_key), len(part_a), len(part_b))
         return ParentAsyncJob(jobs=[job_a, job_b], api=self._api, interval=self._interval, primary_key=self._primary_key)
 
-    def start(self, capacity:int) -> int:
+    def start(self, capacity: int) -> int:
         """Start remote job"""
         if self._job:
             raise RuntimeError(f"{self}: Incorrect usage of start - the job already started, use restart instead")
