@@ -12,14 +12,17 @@ import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClie
 import io.airbyte.integrations.destination.snowflake.sql.QUOTE
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
-import java.nio.file.Files
+import java.io.FileOutputStream
 import java.nio.file.Path
-import java.util.concurrent.BlockingQueue
-import java.util.concurrent.LinkedBlockingQueue
+import kotlin.io.path.bufferedWriter
+import kotlin.io.path.deleteIfExists
+import kotlin.io.path.pathString
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVPrinter
 
 private val logger = KotlinLogging.logger {}
+
+internal val CSV_FORMAT = CSVFormat.DEFAULT
 
 class SnowflakeInsertBuffer(
     private val tableName: TableName,
@@ -27,49 +30,62 @@ class SnowflakeInsertBuffer(
     private val snowflakeClient: SnowflakeAirbyteClient
 ) {
 
-    @VisibleForTesting
-    internal val recordQueue: BlockingQueue<Map<String, AirbyteValue>> = LinkedBlockingQueue()
+    @VisibleForTesting internal var csvFilePath: Path? = null
+
+    @VisibleForTesting internal var recordCount = 0
 
     fun accumulate(recordFields: Map<String, AirbyteValue>) {
-        recordQueue.offer(recordFields)
+        if (csvFilePath == null) {
+            csvFilePath = createCsvFile()
+        }
+
+        writeToCsvFile(csvFilePath, recordFields)
+
+        recordCount++
     }
 
     suspend fun flush() {
-        var tempFilePath = ""
-        try {
-            logger.info { "Beginning insert into ${tableName.toPrettyString(quote=QUOTE)}" }
-            // First, get all accumulated records
-            val records = mutableListOf<Map<String, AirbyteValue>>()
-            recordQueue.drainTo(records)
-            // Next, generate a CSV file from the accumulated records
-            tempFilePath = generateCsvFile(records)
-            // Next, put the CSV file into the staging table
-            snowflakeClient.putInStage(tableName, tempFilePath)
-            // Finally, copy the data from the staging table to the final table
-            snowflakeClient.copyFromStage(tableName)
-            logger.info {
-                "Finished insert of ${records.size} row(s) into ${tableName.toPrettyString(quote=QUOTE)}"
-            }
-        } finally {
-            if (tempFilePath.isNotBlank()) {
-                // Eagerly delete temp file to avoid build up during long syncs.
-                Files.deleteIfExists(Path.of(tempFilePath))
+        csvFilePath?.let { filePath ->
+            try {
+                logger.info { "Beginning insert into ${tableName.toPrettyString(quote = QUOTE)}" }
+                // Next, put the CSV file into the staging table
+                snowflakeClient.putInStage(tableName, filePath.pathString)
+                // Finally, copy the data from the staging table to the final table
+                snowflakeClient.copyFromStage(tableName)
+                logger.info {
+                    "Finished insert of $recordCount row(s) into ${tableName.toPrettyString(quote = QUOTE)}"
+                }
+            } catch (e: Exception) {
+                logger.error(e) { "Unable to flush accumulated data." }
+            } finally {
+                filePath.deleteIfExists()
+                csvFilePath = null
+                recordCount = 0
             }
         }
+            ?: logger.warn { "CSV file path is not set: nothing to upload to staging." }
     }
 
-    private fun generateCsvFile(records: List<Map<String, AirbyteValue>>): String {
+    private fun createCsvFile(): Path {
         val csvFile = File.createTempFile("snowflake", ".csv")
         csvFile.deleteOnExit()
-        csvFile.bufferedWriter(Charsets.UTF_8).use { writer ->
-            val printer = CSVPrinter(writer, CSVFormat.DEFAULT)
-            printer.use {
-                records.forEach { record ->
-                    val csvRecord = columns.map { columnName -> record[columnName].toCsvValue() }
-                    printer.printRecord(*csvRecord.toTypedArray())
+        return csvFile.toPath()
+    }
+
+    private fun writeToCsvFile(csvFilePath: Path?, record: Map<String, AirbyteValue>) {
+        csvFilePath?.let { filePath ->
+            FileOutputStream(filePath.pathString, true).bufferedWriter(Charsets.UTF_8).use { writer
+                ->
+                val printer = CSVPrinter(writer, CSV_FORMAT)
+                printer.use {
+                    val csvRecord =
+                        columns.map { columnName ->
+                            if (record.containsKey(columnName)) record[columnName].toCsvValue()
+                            else ""
+                        }
+                    printer.printRecord(csvRecord)
                 }
             }
         }
-        return csvFile.absolutePath
     }
 }

@@ -18,9 +18,9 @@ import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
-import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -38,9 +38,37 @@ internal class SnowflakeValueCoercerTest {
 
     @Test
     fun testMap() {
-        val airbyteValue = mockk<EnrichedAirbyteValue>()
-        val result = coercer.map(airbyteValue)
-        assertEquals(airbyteValue, result)
+        val airbyteValue = StringValue("test")
+        val enrichedAirbyteValue =
+            EnrichedAirbyteValue(
+                abValue = airbyteValue,
+                type = airbyteValue.airbyteType,
+                name = "test",
+                changes = mutableListOf(),
+                airbyteMetaField = null,
+            )
+        val result = coercer.map(enrichedAirbyteValue)
+        assertEquals(enrichedAirbyteValue, result)
+        assertEquals(airbyteValue, result.abValue)
+    }
+
+    @Test
+    fun testMapUnionType() {
+        val airbyteValue =
+            ObjectValue(
+                values = LinkedHashMap(),
+            )
+        val enrichedAirbyteValue =
+            EnrichedAirbyteValue(
+                abValue = airbyteValue,
+                type = UnionType(options = setOf(StringType), isLegacyUnion = false),
+                name = "test",
+                changes = mutableListOf(),
+                airbyteMetaField = null,
+            )
+        val result = coercer.map(enrichedAirbyteValue)
+        assertEquals(enrichedAirbyteValue, result)
+        assertEquals(StringType, result.abValue.airbyteType)
     }
 
     @Test
