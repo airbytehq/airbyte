@@ -130,6 +130,7 @@ class BumpBulkCdkVersionTask extends DefaultTask {
     private boolean major = false
     private String changelogEntry = null
     private File versionFile
+    private String currentVersion
 
     BumpBulkCdkVersionTask() {
         description = 'Bump the bulk CDK version number'
@@ -137,6 +138,10 @@ class BumpBulkCdkVersionTask extends DefaultTask {
 
     void setVersionFile(File versionFile) {
         this.versionFile = versionFile
+    }
+
+    void setCurrentVersion(String currentVersion) {
+        this.currentVersion = currentVersion
     }
 
     @Option(option = "patch", description = "Bump patch version (x.y.Z)")
@@ -188,7 +193,6 @@ class BumpBulkCdkVersionTask extends DefaultTask {
         }
 
         // Compute new version number
-        def currentVersion = versionFile.text.trim().replace("version=", "")
         def versionParts = currentVersion.split('\\.')
         def majorNum = Integer.parseInt(versionParts[0])
         def minorNum = Integer.parseInt(versionParts[1])
@@ -227,4 +231,5 @@ class BumpBulkCdkVersionTask extends DefaultTask {
 
 tasks.register('bumpVersion', BumpBulkCdkVersionTask) {
     it.versionFile = versionFile
+    it.currentVersion = cdkVersion
 }
