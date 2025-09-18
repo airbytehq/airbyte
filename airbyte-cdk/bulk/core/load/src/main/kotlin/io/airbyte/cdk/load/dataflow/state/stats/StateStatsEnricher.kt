@@ -6,7 +6,7 @@ package io.airbyte.cdk.load.dataflow.state.stats
 
 import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.load.command.NamespaceMapper
-import io.airbyte.cdk.load.dataflow.state.PartitionKey
+import io.airbyte.cdk.load.dataflow.state.StateKey
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.GlobalCheckpoint
 import io.airbyte.cdk.load.message.GlobalSnapshotCheckpoint
@@ -19,11 +19,12 @@ class StateStatsEnricher(
     private val statsStore: CommittedStatsStore,
     private val namespaceMapper: NamespaceMapper,
 ) {
-    fun enrich(msg: CheckpointMessage, ps: List<PartitionKey>): CheckpointMessage {
+    // Enriches provided state message with stats associated with the given state key.
+    fun enrich(msg: CheckpointMessage, key: StateKey): CheckpointMessage {
         return when (msg) {
-            is StreamCheckpoint -> enrichStreamState(msg, ps)
-            is GlobalSnapshotCheckpoint -> enrichGlobalState(msg, msg.checkpoints, ps)
-            is GlobalCheckpoint -> enrichGlobalState(msg, msg.checkpoints, ps)
+            is StreamCheckpoint -> enrichStreamState(msg, key)
+            is GlobalSnapshotCheckpoint -> enrichGlobalState(msg, msg.checkpoints, key)
+            is GlobalCheckpoint -> enrichGlobalState(msg, msg.checkpoints, key)
         }
     }
 
@@ -49,14 +50,14 @@ class StateStatsEnricher(
     @VisibleForTesting
     fun enrichStreamState(
         msg: StreamCheckpoint,
-        ps: List<PartitionKey>,
+        key: StateKey,
     ): CheckpointMessage {
         val desc =
             namespaceMapper.map(
                 namespace = msg.checkpoint.unmappedNamespace,
                 name = msg.checkpoint.unmappedName,
             )
-        val (committed, cumulative) = statsStore.commitStats(desc, ps)
+        val (committed, cumulative) = statsStore.commitStats(desc, key)
 
         enrichTopLevelDestinationStats(msg, committed.count)
         enrichTopLevelStats(msg, cumulative)
@@ -68,7 +69,7 @@ class StateStatsEnricher(
     fun enrichGlobalState(
         msg: CheckpointMessage,
         checkpoints: List<CheckpointMessage.Checkpoint>,
-        ps: List<PartitionKey>,
+        key: StateKey,
     ): CheckpointMessage {
         val (committed, cumulative) =
             checkpoints
@@ -78,7 +79,7 @@ class StateStatsEnricher(
                             namespace = it.unmappedNamespace,
                             name = it.unmappedName,
                         )
-                    val result = statsStore.commitStats(desc, ps)
+                    val result = statsStore.commitStats(desc, key)
                     // Side effect: We update the checkpoints in place before summing
                     it.updateStats(result.cumulativeStats.count, result.cumulativeStats.bytes)
                     result

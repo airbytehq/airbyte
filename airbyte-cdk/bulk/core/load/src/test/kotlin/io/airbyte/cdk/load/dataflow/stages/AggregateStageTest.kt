@@ -68,6 +68,7 @@ class AggregateStageTest {
                     aggregate = mockAggregate,
                     partitionCountsHistogram = mockCountsHistogram,
                     partitionBytesHistogram = mockBytesHistogram,
+                    mappedDesc = streamDescriptor,
                 )
             )
         }
@@ -159,6 +160,7 @@ class AggregateStageTest {
                     aggregate = mockAggregate1,
                     partitionCountsHistogram = mockCounts1,
                     partitionBytesHistogram = mockBytes1,
+                    mappedDesc = streamDescriptor,
                 )
             )
         }
@@ -168,6 +170,7 @@ class AggregateStageTest {
                     aggregate = mockAggregate2,
                     partitionCountsHistogram = mockCounts2,
                     partitionBytesHistogram = mockBytes2,
+                    mappedDesc = streamDescriptor,
                 )
             )
         }

@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.dataflow.state
 
+import io.airbyte.cdk.load.dataflow.state.stats.EmittedStatsStore
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.protocol.models.v0.AirbyteMessage
@@ -31,11 +32,13 @@ class StateReconcilerTest {
 
     @MockK private lateinit var consumer: OutputConsumer
 
+    @MockK private lateinit var emittedStatsStore: EmittedStatsStore
+
     private lateinit var stateReconciler: StateReconciler
 
     @BeforeEach
     fun setUp() {
-        stateReconciler = StateReconciler(stateStore, consumer, null)
+        stateReconciler = StateReconciler(stateStore, emittedStatsStore, consumer, null)
     }
 
     @Test
@@ -80,19 +83,16 @@ class StateReconcilerTest {
     }
 
     @Test
-    fun `publish should convert checkpoint message to protocol message and send to consumer`() {
+    fun `publish should send the protocol message to the ouput consumer`() {
         // Given
-        val checkpointMessage = mockk<CheckpointMessage>()
         val protocolMessage = mockk<AirbyteMessage>()
 
-        every { checkpointMessage.asProtocolMessage() } returns protocolMessage
         every { consumer.accept(protocolMessage) } just Runs
 
         // When
-        stateReconciler.publish(checkpointMessage)
+        stateReconciler.publish(protocolMessage)
 
         // Then
-        verify { checkpointMessage.asProtocolMessage() }
         verify { consumer.accept(protocolMessage) }
     }
 
@@ -171,7 +171,7 @@ class StateReconcilerTest {
 
         // When & Then
         try {
-            stateReconciler.publish(checkpointMessage)
+            stateReconciler.publish(protocolMessage)
         } catch (e: RuntimeException) {
             // Expected - let the exception propagate
             assert(e.message == "Consumer error")

@@ -8,6 +8,7 @@ import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.dataflow.state.PartitionHistogram
 import io.airbyte.cdk.load.dataflow.state.PartitionKey
+import io.airbyte.cdk.load.dataflow.state.StateKey
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 
@@ -27,27 +28,27 @@ class CommittedStatsStore {
         liveStats.merge(s, PartitionStats(counts, bytes), PartitionStats::merge)
     }
 
-    fun commitStats(s: DestinationStream.Descriptor, ps: List<PartitionKey>): CommitStatsResult {
-        val toCommit = removeLiveStats(s, ps)
+    fun commitStats(s: DestinationStream.Descriptor, key: StateKey): CommitStatsResult {
+        val toCommit = removeLiveStats(s, key)
         val cumulativeStats = commitStats(s, toCommit)
         return CommitStatsResult(toCommit, cumulativeStats)
     }
 
     // accumulates stats into the cumulative counts
     @VisibleForTesting
-    fun commitStats(s: DestinationStream.Descriptor, stats: EmissionStats): EmissionStats =
+    internal fun commitStats(s: DestinationStream.Descriptor, stats: EmissionStats): EmissionStats =
         cumulativeStats.merge(s, stats, EmissionStats::merge) ?: EmissionStats()
 
     // removes and gets the summed stats for a stream given a list of partitions
     @VisibleForTesting
-    fun removeLiveStats(s: DestinationStream.Descriptor, ps: List<PartitionKey>) =
-        ps.fold(EmissionStats()) { acc, key ->
+    internal fun removeLiveStats(s: DestinationStream.Descriptor, key: StateKey) =
+        key.partitionKeys.fold(EmissionStats()) { acc, key ->
             removeLiveStats(s, key)?.let { acc.merge(it) } ?: acc
         }
 
     // removes and gets the summed stats for a stream given a single partition
     @VisibleForTesting
-    fun removeLiveStats(s: DestinationStream.Descriptor, p: PartitionKey): EmissionStats? =
+    internal fun removeLiveStats(s: DestinationStream.Descriptor, p: PartitionKey): EmissionStats? =
         liveStats[s]?.let {
             EmissionStats(
                 count = it.counts.remove(p) ?: 0,
