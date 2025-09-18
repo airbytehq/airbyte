@@ -11,8 +11,10 @@ import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.csv.toCsvValue
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
+import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import jakarta.inject.Singleton
 
@@ -33,7 +35,7 @@ fun isValid(value: AirbyteValue): Boolean {
         is ArrayValue,
         is ObjectValue -> value.toCsvValue().toString().toByteArray().size <= VARIANT_LIMIT_BYTES
         is IntegerValue -> value.value.toBigDecimal().precision() <= INTEGER_PRECISION_LIMIT
-        is NumberValue -> value.value.toFloat() !in MINIMUM_FLOAT_VALUE..MAXIMUM_FLOAT_VALUE
+        is NumberValue -> value.value.toFloat() in MINIMUM_FLOAT_VALUE..MAXIMUM_FLOAT_VALUE
         is StringValue -> value.toString().toByteArray().size <= VARCHAR_LIMIT_BYTES
         else -> true
     }
@@ -42,6 +44,12 @@ fun isValid(value: AirbyteValue): Boolean {
 @Singleton
 class SnowflakeValueCoercer : ValueCoercer {
     override fun map(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
+        value.abValue =
+            if (value.type is UnionType) {
+                StringValue(value.abValue.serializeToString())
+            } else {
+                value.abValue
+            }
         return value
     }
 

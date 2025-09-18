@@ -131,7 +131,7 @@ internal class SnowflakeColumnUtilsTest {
             snowflakeColumnUtils.toDialectType(ObjectTypeWithoutSchema)
         )
         assertEquals(
-            SnowflakeDataType.VARCHAR.typeName,
+            SnowflakeDataType.VARIANT.typeName,
             snowflakeColumnUtils.toDialectType(
                 UnionType(
                     options = setOf(StringType),

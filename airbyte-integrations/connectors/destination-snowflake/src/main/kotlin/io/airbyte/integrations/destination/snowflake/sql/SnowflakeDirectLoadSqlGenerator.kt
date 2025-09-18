@@ -16,11 +16,11 @@ import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.CdcDeletionMode
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
+import io.airbyte.integrations.destination.snowflake.write.load.CSV_FORMAT
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 
 internal const val COUNT_TOTAL_ALIAS = "total"
-internal const val CSV_FIELD_DELIMITER = ","
 internal const val QUOTE: String = "\""
 internal const val STAGE_FORMAT_NAME: String = "airbyte_csv_format"
 internal const val STAGE_NAME_PREFIX = "airbyte_stage_"
@@ -321,7 +321,8 @@ class SnowflakeDirectLoadSqlGenerator(
         return """
             CREATE OR REPLACE FILE FORMAT $formatName
             TYPE = 'CSV'
-            FIELD_DELIMITER = '$CSV_FIELD_DELIMITER'
+            FIELD_DELIMITER = '${CSV_FORMAT.delimiterString}'
+            RECORD_DELIMITER = '${CSV_FORMAT.recordSeparator}'
             FIELD_OPTIONALLY_ENCLOSED_BY = '"'
             TRIM_SPACE = TRUE
             ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE
