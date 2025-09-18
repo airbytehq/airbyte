@@ -38,7 +38,7 @@ definitions:
         $ref: "#/schemas"
     authenticator:
       $ref: "#/definitions/authenticator"
-    url_base: "https://googleads.googleapis.com/v20/{{ stream_partition['customer_id'] }}/googleAds:search"
+    url_base: "https://googleads.googleapis.com/v21/{{ stream_partition['customer_id'] }}/googleAds:search"
     http_method: POST
     error_handler:
       $ref: "#/definitions/base_error_handler"
@@ -199,7 +199,7 @@ definitions:
               $ref: "#/schemas"
           authenticator:
             $ref: "#/definitions/authenticator"
-          url_base: "https://googleads.googleapis.com/v20/{{ stream_partition['customer_id'] }}/googleAds:search"
+          url_base: "https://googleads.googleapis.com/v21/{{ stream_partition['customer_id'] }}/googleAds:search"
           http_method: POST
           error_handler:
             $ref: "#/definitions/base_error_handler"
@@ -224,7 +224,7 @@ definitions:
     incremental_stream:
       $ref: "#/definitions/incremental_stream_base"
       $parameters:
-        url_base: "https://googleads.googleapis.com/v20/{{ stream_partition['parent_slice']['customer_id'] }}/googleAds:search"
+        url_base: "https://googleads.googleapis.com/v21/{{ stream_partition['parent_slice']['customer_id'] }}/googleAds:search"
       retriever:
         type: CustomRetriever
         class_name: "source_google_ads.components.CriterionRetriever"
@@ -293,7 +293,7 @@ definitions:
       $ref: "#/definitions/base_retriever"
       requester:
         $ref: "#/definitions/base_requester"
-        url_base: "https://googleads.googleapis.com/v20/customers:listAccessibleCustomers"
+        url_base: "https://googleads.googleapis.com/v21/customers:listAccessibleCustomers"
         http_method: GET
       paginator:
         type: NoPagination
@@ -309,7 +309,7 @@ definitions:
       $ref: "#/definitions/base_retriever"
       requester:
         $ref: "#/definitions/base_requester"
-        url_base: "https://googleads.googleapis.com/v20/customers/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
+        url_base: "https://googleads.googleapis.com/v21/customers/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
         http_method: POST
         request_body:
           type: RequestBodyJsonObject
@@ -346,7 +346,7 @@ definitions:
       $ref: "#/definitions/base_retriever"
       requester:
         $ref: "#/definitions/base_requester"
-        url_base: "https://googleads.googleapis.com/v20/customers/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
+        url_base: "https://googleads.googleapis.com/v21/customers/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
         http_method: POST
         request_body:
           type: RequestBodyJsonObject
@@ -401,7 +401,7 @@ definitions:
         class_name: "source_google_ads.components.CustomGAQueryHttpRequester"
         authenticator:
           $ref: "#/definitions/authenticator"
-        url_base: "https://googleads.googleapis.com/v20/{{ stream_partition['customer_id'] }}/googleAds:search"
+        url_base: "https://googleads.googleapis.com/v21/{{ stream_partition['customer_id'] }}/googleAds:search"
         http_method: POST
         error_handler:
           $ref: "#/definitions/base_error_handler"
@@ -440,7 +440,7 @@ definitions:
       class_name: "source_google_ads.components.CustomGAQuerySchemaLoader"
       requester:
         $ref: "#/definitions/base_requester"
-        url: "https://googleads.googleapis.com/v20/googleAdsFields"
+        url: "https://googleads.googleapis.com/v21/googleAdsFields"
         http_method: GET
         error_handler:
           $ref: "#/definitions/base_error_handler"
@@ -653,7 +653,7 @@ definitions:
             $ref: "#/schemas/click_view"
         authenticator:
           $ref: "#/definitions/authenticator"
-        url_base: "https://googleads.googleapis.com/v20/{{ stream_partition['customer_id'] }}/googleAds:search"
+        url_base: "https://googleads.googleapis.com/v21/{{ stream_partition['customer_id'] }}/googleAds:search"
         http_method: POST
         error_handler:
           $ref: "#/definitions/base_error_handler"
@@ -831,7 +831,7 @@ definitions:
     $ref: "#/definitions/incremental_stream_base"
     name: change_status
     $parameters:
-      url_base: "https://googleads.googleapis.com/v20/{{ stream_partition['customer_id'] }}/googleAds:search"
+      url_base: "https://googleads.googleapis.com/v21/{{ stream_partition['customer_id'] }}/googleAds:search"
     retriever:
       type: CustomRetriever
       class_name: "source_google_ads.components.ChangeStatusRetriever"

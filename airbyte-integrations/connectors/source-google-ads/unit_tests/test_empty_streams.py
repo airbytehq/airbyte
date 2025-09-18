@@ -65,15 +65,15 @@ def test_query_shopping_performance_view_stream(customers, config, requests_mock
     # Register mocks
     requests_mock.register_uri("POST", "https://www.googleapis.com/oauth2/v3/token", access_token_response)
     requests_mock.register_uri(
-        "GET", "https://googleads.googleapis.com/v20/customers:listAccessibleCustomers", accessible_customers_response
+        "GET", "https://googleads.googleapis.com/v21/customers:listAccessibleCustomers", accessible_customers_response
     )
     requests_mock.register_uri(
-        "POST", "https://googleads.googleapis.com/v20/customers/1234567890/googleAds:searchStream", customers_response
+        "POST", "https://googleads.googleapis.com/v21/customers/1234567890/googleAds:searchStream", customers_response
     )
 
     request_history = requests_mock.register_uri(
         "POST",
-        "https://googleads.googleapis.com/v20/customers/123/googleAds:search",
+        "https://googleads.googleapis.com/v21/customers/123/googleAds:search",
         shopping_performance_view_response,
     )
 
@@ -171,7 +171,7 @@ def test_custom_query_stream(customers, config_for_custom_query_tests, requests_
     # Register mocks
     requests_mock.register_uri("POST", "https://www.googleapis.com/oauth2/v3/token", access_token_response)
     requests_mock.get(
-        "https://googleads.googleapis.com/v20/googleAdsFields/campaign_budget.name",
+        "https://googleads.googleapis.com/v21/googleAdsFields/campaign_budget.name",
         json={
             "resourceName": "googleAdsFields/campaign_budget.name",
             "category": "ATTRIBUTE",
@@ -185,7 +185,7 @@ def test_custom_query_stream(customers, config_for_custom_query_tests, requests_
         },
     )
     requests_mock.get(
-        "https://googleads.googleapis.com/v20/googleAdsFields/campaign.name",
+        "https://googleads.googleapis.com/v21/googleAdsFields/campaign.name",
         json={
             "resourceName": "googleAdsFields/campaign.name",
             "category": "ATTRIBUTE",
@@ -199,7 +199,7 @@ def test_custom_query_stream(customers, config_for_custom_query_tests, requests_
         },
     )
     requests_mock.get(
-        "https://googleads.googleapis.com/v20/googleAdsFields/metrics.interaction_event_types",
+        "https://googleads.googleapis.com/v21/googleAdsFields/metrics.interaction_event_types",
         json={
             "resourceName": "googleAdsFields/metrics.interaction_event_types",
             "category": "METRIC",
@@ -209,12 +209,12 @@ def test_custom_query_stream(customers, config_for_custom_query_tests, requests_
             "filterable": True,
             "sortable": False,
             "enumValues": ["UNSPECIFIED", "UNKNOWN", "CLICK", "ENGAGEMENT", "VIDEO_VIEW", "NONE"],
-            "typeUrl": "google.ads.googleads.v20.enums.InteractionEventTypeEnum.InteractionEventType",
+            "typeUrl": "google.ads.googleads.v21.enums.InteractionEventTypeEnum.InteractionEventType",
             "isRepeated": True,
         },
     )
     requests_mock.get(
-        "https://googleads.googleapis.com/v20/googleAdsFields/segments.date",
+        "https://googleads.googleapis.com/v21/googleAdsFields/segments.date",
         json={
             "resourceName": "googleAdsFields/segments.date",
             "category": "SEGMENT",
@@ -228,15 +228,15 @@ def test_custom_query_stream(customers, config_for_custom_query_tests, requests_
         },
     )
     requests_mock.register_uri(
-        "GET", "https://googleads.googleapis.com/v20/customers:listAccessibleCustomers", accessible_customers_response
+        "GET", "https://googleads.googleapis.com/v21/customers:listAccessibleCustomers", accessible_customers_response
     )
     requests_mock.register_uri(
-        "POST", "https://googleads.googleapis.com/v20/customers/1234567890/googleAds:searchStream", customers_response
+        "POST", "https://googleads.googleapis.com/v21/customers/1234567890/googleAds:searchStream", customers_response
     )
 
     request_history = requests_mock.register_uri(
         "POST",
-        "https://googleads.googleapis.com/v20/customers/123/googleAds:search",
+        "https://googleads.googleapis.com/v21/customers/123/googleAds:search",
         custom_query_response,
     )
 
@@ -289,7 +289,7 @@ def test_custom_query_stream_with_different_queries(query, expected_incremental_
     config = config_for_custom_query_tests
     config["custom_queries_array"][0]["query"] = query
 
-    requests_mock.register_uri("POST", "https://googleads.googleapis.com/v20/customers/123/googleAds:search", json={})
+    requests_mock.register_uri("POST", "https://googleads.googleapis.com/v21/customers/123/googleAds:search", json={})
 
     streams = get_source(config=config).streams(config=config)
     stream = next(filter(lambda s: s.name == "custom_ga_query", streams))
@@ -323,7 +323,7 @@ def test_custom_query_stream_with_different_queries(query, expected_incremental_
 
     for field in GAQL.parse(query).fields:
         requests_mock.get(
-            f"https://googleads.googleapis.com/v20/googleAdsFields/{field}",
+            f"https://googleads.googleapis.com/v21/googleAdsFields/{field}",
             json={
                 "resourceName": f"googleAdsFields/{field}",
                 "category": "ATTRIBUTE",
@@ -336,10 +336,10 @@ def test_custom_query_stream_with_different_queries(query, expected_incremental_
 
     requests_mock.register_uri("POST", "https://www.googleapis.com/oauth2/v3/token", access_token_response)
     requests_mock.register_uri(
-        "GET", "https://googleads.googleapis.com/v20/customers:listAccessibleCustomers", accessible_customers_response
+        "GET", "https://googleads.googleapis.com/v21/customers:listAccessibleCustomers", accessible_customers_response
     )
     requests_mock.register_uri(
-        "POST", "https://googleads.googleapis.com/v20/customers/1234567890/googleAds:searchStream", customers_response
+        "POST", "https://googleads.googleapis.com/v21/customers/1234567890/googleAds:searchStream", customers_response
     )
 
     # Verify that the regex matching in the manifest correctly applies incremental sync
