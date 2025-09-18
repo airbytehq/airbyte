@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.integrations.destination.snowflake.sql.COUNT_TOTAL_ALIAS
+import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlGenerator
 import io.mockk.Runs
 import io.mockk.every
@@ -30,12 +31,13 @@ internal class SnowflakeAirbyteClientTest {
     private lateinit var client: SnowflakeAirbyteClient
     private lateinit var dataSource: DataSource
     private lateinit var sqlGenerator: SnowflakeDirectLoadSqlGenerator
+    private val snowflakeColumnUtils: SnowflakeColumnUtils = mockk()
 
     @BeforeEach
     fun setup() {
         dataSource = mockk()
         sqlGenerator = mockk(relaxed = true)
-        client = SnowflakeAirbyteClient(dataSource, sqlGenerator)
+        client = SnowflakeAirbyteClient(dataSource, sqlGenerator, snowflakeColumnUtils)
     }
 
     @Test

@@ -27,6 +27,7 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
+import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import jakarta.inject.Singleton
 import kotlin.collections.component1
 import kotlin.collections.component2
@@ -84,6 +85,6 @@ class SnowflakeColumnUtils {
 
 data class ColumnAndType(val columnName: String, val columnType: String) {
     override fun toString(): String {
-        return "\"$columnName\" $columnType"
+        return "\"${columnName.toSnowflakeCompatibleName()}\" $columnType"
     }
 }
