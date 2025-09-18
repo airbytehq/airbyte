@@ -15,4 +15,5 @@ airbyteBulkConnector {
 
 dependencies {
     // testImplementation 'io.mockk:mockk:1.12.0'
+    implementation("com.fasterxml.jackson.module:jackson-modulgit adde-kotlin:2.17.2")
 }

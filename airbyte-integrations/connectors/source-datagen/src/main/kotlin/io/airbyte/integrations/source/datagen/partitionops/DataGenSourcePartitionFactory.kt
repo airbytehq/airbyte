@@ -39,6 +39,7 @@ class DataGenSourcePartitionFactory(val sharedState: DataGenSharedState) {
 
     fun split(unsplitPartition: DataGenSourcePartition): List<DataGenSourcePartition> {
         val modulo = sharedState.configuration.maxConcurrency
+        log.info { "Splitting partition into $modulo partitions." }
         return List(modulo) { i -> DataGenSourcePartition(unsplitPartition.streamState, modulo, i) }
     }
 }
