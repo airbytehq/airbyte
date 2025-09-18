@@ -12,6 +12,7 @@ import java.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toKotlinDuration
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
@@ -31,7 +32,7 @@ class StateReconciler(
 
     fun run(scope: CoroutineScope) {
         job =
-            scope.launch {
+            scope.launch(Dispatchers.IO) {
                 while (true) {
                     delay(reconciliationInterval)
                     flushCompleteStates()
