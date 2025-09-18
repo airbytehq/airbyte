@@ -149,7 +149,7 @@ internal class SnowflakeColumnUtilsTest {
             )
         )
         assertEquals(
-            SnowflakeDataType.VARIANT.typeName,
+            SnowflakeDataType.VARCHAR.typeName,
             snowflakeColumnUtils.toDialectType(UnknownType(schema = mockk<JsonNode>()))
         )
     }

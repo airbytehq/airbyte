@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.snowflake.sql
 
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAMES
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.orchestration.db.CDC_DELETED_AT_COLUMN
@@ -176,7 +177,7 @@ class SnowflakeDirectLoadSqlGenerator(
 
         // Build column assignments for UPDATE
         val columnAssignments: String =
-            stream.schema.asColumns().keys.joinToString(",\n") { fieldName ->
+            (stream.schema.asColumns().keys + COLUMN_NAMES).joinToString(",\n") { fieldName ->
                 val column = columnNameMapping[fieldName] ?: fieldName
                 "\"$column\" = new_record.\"$column\""
             }
@@ -248,7 +249,7 @@ class SnowflakeDirectLoadSqlGenerator(
         columnNameMapping: ColumnNameMapping
     ): String {
         val columnList: String =
-            stream.schema.asColumns().keys.joinToString(",\n") { fieldName ->
+            (stream.schema.asColumns().keys + COLUMN_NAMES).joinToString(",\n") { fieldName ->
                 val columnName = columnNameMapping[fieldName] ?: fieldName
                 "\"$columnName\""
             }
