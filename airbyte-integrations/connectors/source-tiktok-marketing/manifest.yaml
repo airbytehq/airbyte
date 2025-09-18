@@ -2341,7 +2341,7 @@ definitions:
           type: number
         create_time:
           description: The timestamp when the advertiser account was created.
-          type: integer
+          type: string
         telephone_number:
           description: The telephone number of the advertiser.
           type:
