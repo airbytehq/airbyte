@@ -3,11 +3,12 @@
 #
 
 import json
-import pytest
-from airbyte_cdk.models import SyncMode
-from source_surveymonkey import SourceSurveymonkey
-import pendulum
 
+import pendulum
+import pytest
+from source_surveymonkey import SourceSurveymonkey
+
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice
 
 
@@ -42,7 +43,7 @@ def read_records(config):
     def _read_records(stream_name, slice=StreamSlice(partition={"survey_id": "307785415"}, cursor_slice={})):
         source = SourceSurveymonkey(catalog=None, config=config, state=None)
         stream = next(filter(lambda x: x.name == stream_name, source.streams(config=config)))
-        
+
         # Use CDK v7 pattern - generate_partitions instead of stream_slices
         records = []
         try:
@@ -51,4 +52,5 @@ def read_records(config):
         except AttributeError:
             records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice))
         return records
+
     return _read_records

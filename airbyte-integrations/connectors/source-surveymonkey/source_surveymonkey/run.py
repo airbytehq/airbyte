@@ -9,11 +9,11 @@ from datetime import datetime
 from typing import List
 
 from orjson import orjson
-from airbyte_cdk.entrypoint import launch
-from source_surveymonkey import MigrateAccessTokenToCredentials, SourceSurveymonkey
 
 from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
 from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteMessage, AirbyteMessageSerializer, AirbyteTraceMessage, TraceType, Type
+from source_surveymonkey import MigrateAccessTokenToCredentials, SourceSurveymonkey
+
 
 def _get_source(args: List[str]):
     catalog_path = AirbyteEntrypoint.extract_catalog(args)
@@ -44,6 +44,7 @@ def _get_source(args: List[str]):
             ).decode()
         )
         return None
+
 
 def run():
     _args = sys.argv[1:]

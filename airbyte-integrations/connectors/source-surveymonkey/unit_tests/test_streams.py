@@ -2,14 +2,15 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import Mock
 import json
-from source_surveymonkey import SourceSurveymonkey
+from unittest.mock import Mock
 
 import pytest
+from source_surveymonkey import SourceSurveymonkey
 from source_surveymonkey.streams import SurveyIds, Surveys
-from airbyte_cdk.sources.declarative.types import StreamSlice
+
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.types import StreamSlice
 
 
 def deep_sort_dict(obj):
@@ -85,10 +86,10 @@ def test_survey_slices(requests_mock, args_mock, read_json, additional_arguments
 def test_survey_data(requests_mock, read_json, endpoint, records_filename, config):
     requests_mock.get("https://api.surveymonkey.com/v3/surveys/307785415/details", json=read_json("response_survey_details.json"))
     requests_mock.get("https://api.surveymonkey.com/v3/surveys/307785415/collectors", json=read_json("response_survey_collectors.json"))
-    
+
     source = SourceSurveymonkey(catalog=None, config=config, state=None)
     stream = next(filter(lambda x: x.name == endpoint, source.streams(config=config)))
-    
+
     # Use CDK v7 pattern - generate_partitions instead of read_records
     records = []
     try:
@@ -97,21 +98,21 @@ def test_survey_data(requests_mock, read_json, endpoint, records_filename, confi
     except AttributeError:
         slice_obj = StreamSlice(partition={"survey_id": "307785415"}, cursor_slice={})
         records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice_obj))
-    
+
     expected_records = read_json(records_filename)
 
     actual_records = []
     for record in records:
-        if hasattr(record, 'data'):
+        if hasattr(record, "data"):
             actual_records.append(record.data)
-        elif hasattr(record, '__dict__'):
+        elif hasattr(record, "__dict__"):
             actual_records.append(record.__dict__)
         else:
             actual_records.append(record)
 
     actual_json = json.dumps(deep_sort_dict(actual_records), sort_keys=True)
     expected_json = json.dumps(deep_sort_dict(expected_records), sort_keys=True)
-    
+
     assert actual_json == expected_json
 
 
