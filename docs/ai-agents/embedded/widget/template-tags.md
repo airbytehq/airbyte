@@ -7,6 +7,7 @@ products: embedded
 ## Overview
 
 Template tags are a powerful tool through which you can configure available source and connection templates for use in a specific workspace. They are strings you can include in the template itself that serve as filters via the widget token. By including `selected_source_template_tags` and `selected_connection_template_tags` you define the source and connection templates available in the corresponding workspace's widget. Examples of workflows available via template tags are:
+
 - Assigning unique and separate destinations by customer's workspace.
 - Offering a specific source packages to different customer segments.
 - Organizing available source templates by data type (e.g. "Analytics", "CRM", "Cloud Storage")
