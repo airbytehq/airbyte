@@ -202,7 +202,11 @@ class SnowflakeDataDumper(
         dataSource.let { ds ->
             ds.connection.use { connection ->
                 val statement = connection.createStatement()
-                val tableName = TableName(stream.mappedDescriptor.namespace!!.toSnowflakeCompatibleName(), stream.mappedDescriptor.name.toSnowflakeCompatibleName())
+                val tableName =
+                    TableName(
+                        stream.mappedDescriptor.namespace!!.toSnowflakeCompatibleName(),
+                        stream.mappedDescriptor.name.toSnowflakeCompatibleName()
+                    )
                 val resultSet =
                     statement.executeQuery(
                         "SELECT * FROM ${tableName.toPrettyString(quote = QUOTE)}"

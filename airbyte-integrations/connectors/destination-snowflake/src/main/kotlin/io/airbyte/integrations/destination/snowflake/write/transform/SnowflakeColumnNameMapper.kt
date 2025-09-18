@@ -11,7 +11,7 @@ import jakarta.inject.Singleton
 
 @Singleton
 class SnowflakeColumnNameMapper(private val catalogInfo: TableCatalog) : ColumnNameMapper {
-    override fun getMappedColumnName(stream: DestinationStream, columnName: String): String? {
+    override fun getMappedColumnName(stream: DestinationStream, columnName: String): String {
         return catalogInfo.getMappedColumnName(stream, columnName)!!
     }
 }
