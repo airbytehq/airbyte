@@ -104,6 +104,27 @@ class SnowflakeAirbyteClient(
         tableName: TableName,
         columnNameMapping: ColumnNameMapping
     ) {
+        val columnsInDb = getColumnsFromDb(tableName)
+        val columnsInStream = getColumnsFromStream(stream, columnNameMapping)
+        val (addedColumns, deletedColumns, modifiedColumns) =
+            generateSchemaChanges(columnsInDb, columnsInStream)
+
+        if (
+            addedColumns.isNotEmpty() ||
+                deletedColumns.isNotEmpty() ||
+                modifiedColumns.isNotEmpty()
+        ) {
+            log.info { "Summary of the table alterations:" }
+            log.info { "Added columns: $addedColumns" }
+            log.info { "Deleted columns: $deletedColumns" }
+            log.info { "Modified columns: $modifiedColumns" }
+            sqlGenerator
+                .alterTable(tableName, addedColumns, deletedColumns, modifiedColumns)
+                .forEach { execute(it) }
+        }
+    }
+
+    private fun getColumnsFromDb(tableName: TableName): Set<ColumnDefinition> {
         val sql =
             sqlGenerator.describeTable(schemaName = tableName.namespace, tableName = tableName.name)
         dataSource.connection.use { connection ->
@@ -121,62 +142,51 @@ class SnowflakeAirbyteClient(
                 val isNullable = rs.getString("null?") == "Y"
                 columnsInDb.add(ColumnDefinition(columnName, dataType, isNullable))
             }
-
-            val columnsInStream: Set<ColumnDefinition> =
-                stream.schema
-                    .asColumns()
-                    .map { (name, fieldType) ->
-                        // Snowflake is case-insensitive by default and stores identifiers in
-                        // uppercase.
-                        // We should probably be using the mapping in columnNameMapping, but for
-                        // now, this is a good enough approximation.
-                        val mappedName = columnNameMapping.get(name) ?: name
-                        ColumnDefinition(
-                            mappedName,
-                            snowflakeColumnUtils.toDialectType(fieldType.type).takeWhile { char ->
-                                char != '('
-                            },
-                            fieldType.nullable
-                        )
-                    }
-                    .toSet()
-
-            val addedColumns =
-                columnsInStream.filter { it.name !in columnsInDb.map { it.name } }.toSet()
-            val deletedColumns =
-                columnsInDb.filter { it.name !in columnsInStream.map { it.name } }.toSet()
-            val commonColumns =
-                columnsInStream.filter { it.name in columnsInDb.map { it.name } }.toSet()
-            val modifiedColumns =
-                commonColumns
-                    .filter {
-                        val dbType = columnsInDb.find { column -> it.name == column.name }?.type
-                        it.type != dbType
-                    }
-                    .toSet()
-
-            if (
-                addedColumns.isNotEmpty() ||
-                    deletedColumns.isNotEmpty() ||
-                    modifiedColumns.isNotEmpty()
-            ) {
-                log.error { "Summary of the table alterations:" }
-                log.error { "Added columns: $addedColumns" }
-                log.error { "Deleted columns: $deletedColumns" }
-                log.error { "Modified columns: $modifiedColumns" }
-                log.error {
-                    sqlGenerator.alterTable(
-                        tableName,
-                        addedColumns,
-                        deletedColumns,
-                        modifiedColumns
-                    )
-                }
-                sqlGenerator
-                    .alterTable(tableName, addedColumns, deletedColumns, modifiedColumns)
-                    .forEach { execute(it) }
-            }
+            return columnsInDb
         }
+    }
+
+    internal fun getColumnsFromStream(
+        stream: DestinationStream,
+        columnNameMapping: ColumnNameMapping
+    ): Set<ColumnDefinition> {
+        return stream.schema
+            .asColumns()
+            .map { (name, fieldType) ->
+                // Snowflake is case-insensitive by default and stores identifiers in
+                // uppercase.
+                // We should probably be using the mapping in columnNameMapping, but for
+                // now, this is a good enough approximation.
+                val mappedName = columnNameMapping.get(name) ?: name
+                ColumnDefinition(
+                    mappedName,
+                    snowflakeColumnUtils.toDialectType(fieldType.type).takeWhile { char ->
+                        char != '('
+                    },
+                    fieldType.nullable
+                )
+            }
+            .toSet()
+    }
+
+    internal fun generateSchemaChanges(
+        columnsInDb: Set<ColumnDefinition>,
+        columnsInStream: Set<ColumnDefinition>
+    ): Triple<Set<ColumnDefinition>, Set<ColumnDefinition>, Set<ColumnDefinition>> {
+        val addedColumns =
+            columnsInStream.filter { it.name !in columnsInDb.map { it.name } }.toSet()
+        val deletedColumns =
+            columnsInDb.filter { it.name !in columnsInStream.map { it.name } }.toSet()
+        val commonColumns =
+            columnsInStream.filter { it.name in columnsInDb.map { it.name } }.toSet()
+        val modifiedColumns =
+            commonColumns
+                .filter {
+                    val dbType = columnsInDb.find { column -> it.name == column.name }?.type
+                    it.type != dbType
+                }
+                .toSet()
+        return Triple(addedColumns, deletedColumns, modifiedColumns)
     }
 
     override suspend fun getGenerationId(tableName: TableName): Long =

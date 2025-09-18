@@ -5,9 +5,16 @@
 package io.airbyte.integrations.destination.snowflake.client
 
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.NamespaceMapper
+import io.airbyte.cdk.load.command.Overwrite
+import io.airbyte.cdk.load.config.NamespaceDefinitionType
+import io.airbyte.cdk.load.data.AirbyteType
+import io.airbyte.cdk.load.data.FieldType
+import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
 import io.airbyte.integrations.destination.snowflake.sql.COUNT_TOTAL_ALIAS
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlGenerator
@@ -15,6 +22,7 @@ import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.spyk
 import io.mockk.verify
 import java.sql.Connection
 import java.sql.ResultSet
@@ -122,7 +130,7 @@ internal class SnowflakeAirbyteClientTest {
             client.createNamespace(namespace)
             verify(exactly = 1) { sqlGenerator.createNamespace(namespace) }
             verify(exactly = 1) { sqlGenerator.createFileFormat(namespace) }
-            verify(exactly = 3) { mockConnection.close() }
+            verify(exactly = 2) { mockConnection.close() }
         }
     }
 
@@ -396,5 +404,73 @@ internal class SnowflakeAirbyteClientTest {
             verify(exactly = 1) { sqlGenerator.showColumns(tableName) }
             verify(exactly = 1) { mockConnection.close() }
         }
+    }
+
+    @Test
+    fun `getColumnsFromStream should return correct column definitions`() {
+        val schema = mockk<AirbyteType>()
+        val stream = DestinationStream(
+            unmappedNamespace = "test_namespace",
+            unmappedName = "test_stream",
+            importType = Overwrite,
+            schema = schema,
+            generationId = 1,
+            minimumGenerationId = 1,
+            syncId = 1,
+            namespaceMapper = NamespaceMapper(NamespaceDefinitionType.DESTINATION)
+        )
+        val columnNameMapping = ColumnNameMapping(
+            mapOf(
+                "col1" to "COL1_MAPPED",
+                "col2" to "COL2_MAPPED"
+            )
+        )
+
+        val col1FieldType = mockk<FieldType>()
+        every { col1FieldType.type } returns mockk()
+        every { col1FieldType.nullable } returns true
+
+        val col2FieldType = mockk<FieldType>()
+        every { col2FieldType.type } returns mockk()
+        every { col2FieldType.nullable } returns false
+
+        every { schema.asColumns() } returns linkedMapOf(
+            "col1" to col1FieldType,
+            "col2" to col2FieldType
+        )
+        every { snowflakeColumnUtils.toDialectType(col1FieldType.type) } returns "VARCHAR(255)"
+        every { snowflakeColumnUtils.toDialectType(col2FieldType.type) } returns "NUMBER(38,0)"
+
+        val result = client.getColumnsFromStream(stream, columnNameMapping)
+
+        val expectedColumns = setOf(
+            ColumnDefinition("COL1_MAPPED", "VARCHAR", true),
+            ColumnDefinition("COL2_MAPPED", "NUMBER", false)
+        )
+
+        assertEquals(expectedColumns, result)
+    }
+
+    @Test
+    fun `generateSchemaChanges should correctly identify changes`() {
+        val columnsInDb = setOf(
+            ColumnDefinition("COL1", "VARCHAR", true),
+            ColumnDefinition("COL2", "NUMBER", false),
+            ColumnDefinition("COL3", "BOOLEAN", true)
+        )
+        val columnsInStream = setOf(
+            ColumnDefinition("COL1", "VARCHAR", true), // Unchanged
+            ColumnDefinition("COL3", "TEXT", true), // Modified
+            ColumnDefinition("COL4", "DATE", false) // Added
+        )
+
+        val (added, deleted, modified) = client.generateSchemaChanges(columnsInDb, columnsInStream)
+
+        assertEquals(1, added.size)
+        assertEquals("COL4", added.first().name)
+        assertEquals(1, deleted.size)
+        assertEquals("COL2", deleted.first().name)
+        assertEquals(1, modified.size)
+        assertEquals("COL3", modified.first().name)
     }
 }
