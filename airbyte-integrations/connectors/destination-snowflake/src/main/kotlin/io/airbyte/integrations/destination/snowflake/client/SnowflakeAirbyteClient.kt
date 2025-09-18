@@ -124,7 +124,7 @@ class SnowflakeAirbyteClient(
         }
     }
 
-    private fun getColumnsFromDb(tableName: TableName): Set<ColumnDefinition> {
+    internal fun getColumnsFromDb(tableName: TableName): Set<ColumnDefinition> {
         val sql =
             sqlGenerator.describeTable(schemaName = tableName.namespace, tableName = tableName.name)
         dataSource.connection.use { connection ->

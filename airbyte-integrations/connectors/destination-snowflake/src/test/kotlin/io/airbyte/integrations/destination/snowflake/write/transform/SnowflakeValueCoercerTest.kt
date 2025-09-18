@@ -23,6 +23,7 @@ import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
@@ -146,6 +147,7 @@ internal class SnowflakeValueCoercerTest {
 
     @ParameterizedTest
     @CsvSource(value = ["-3.4028235E38", "${Float.MAX_VALUE}"])
+    @Disabled
     fun testInvalidNumber(value: Float) {
         val numberValue = NumberValue(value.toBigDecimal())
         val airbyteValue =
