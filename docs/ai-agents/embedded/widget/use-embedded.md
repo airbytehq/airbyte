@@ -32,36 +32,14 @@ Line 108: `api.generateWidgetToken(req.user.email)`
 
 ## Versioning the Widget
 
-Depending on your needs, you may version the widget you use to avoid introducing any unexpected changes into your app. As a best practice, it is recommended to pin to minor versions:
-
-In your component:
+It is generally recommended that you pull in a specific version of any npm package to prevent unexpected changes.  If you are pulling in this package as a script, you can do this by importing it as:
 
 ```javascript
-
 <script src="https://cdn.jsdelivr.net/npm/@airbyte-embedded/airbyte-embedded-widget@0.4.2"></script>
-
 ```
 
-or package.json:
+In addition, within the package.json, if you wish to pin to a minor version, use the following syntax:
 
 ```javascript
-
-"@airbyte-embedded/airbyte-embedded-widget": "0.4.2"
-
-```
-
-In addition, within the package.json, if you wish to pin to a min version, use the following syntax:
-
-```javascript
-
 "@airbyte-embedded/airbyte-embedded-widget": "^0.4.2"
-
-```
-
-Should you prefer to always pull the latest version, omit the version number entirely:
-
-```javascript
-
-<script src="https://cdn.jsdelivr.net/npm/@airbyte-embedded/airbyte-embedded-widget"></script>
-
 ```
