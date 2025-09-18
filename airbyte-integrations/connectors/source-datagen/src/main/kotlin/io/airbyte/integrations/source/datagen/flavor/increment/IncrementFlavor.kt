@@ -13,12 +13,12 @@ import io.airbyte.cdk.discover.FieldType
 import io.airbyte.integrations.source.datagen.flavor.Flavor
 
 data object IncrementFlavor : Flavor {
-    val incrementTableName = "increment"
+    val incrementTableName = "data_stream"
 
     override val namespace = "increment"
-    override val tableNames = setOf(incrementTableName)
-    override val fields = mapOf("increment" to listOf(Field("id", IntegerFieldType)))
-    override val primaryKey = listOf("id")
+    override var tableNames = setOf(incrementTableName)
+    override var fields = mapOf(incrementTableName to listOf(Field("id", IntegerFieldType)))
+    override var primaryKey = listOf("id")
     override val dataGenerator = IncrementDataGenerator()
 }
 

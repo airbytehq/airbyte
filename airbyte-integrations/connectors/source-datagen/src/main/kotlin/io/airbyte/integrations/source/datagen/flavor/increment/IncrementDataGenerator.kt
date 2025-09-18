@@ -22,7 +22,6 @@ class IncrementDataGenerator : DataGenerator {
                 incrementedID,
                 (idField.type as IntegerFieldType).jsonEncoder as LongCodec
             )
-
         return recordData
     }
 }
