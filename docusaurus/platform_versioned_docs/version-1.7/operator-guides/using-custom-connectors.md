@@ -40,15 +40,15 @@ To push and pull images to your private Docker registry, you need to authenticat
 
 See the [Airbyte Protocol Docker Interface](../understanding-airbyte/airbyte-protocol-docker.md) page for specific Docker image requirements, such as required environment variables.
 
-### For Kubernetes Airbyte deployments
+## Cloud Provider Managed Registries
 
-#### Cloud Provider Managed Registries
-
-##### AWS EKS + Amazon ECR
+### AWS EKS + Amazon ECR
 
 **Option 1: IAM Roles for Service Accounts (IRSA) - Recommended**
 
 1. Create an IAM role with ECR permissions:
+
+
 ```bash
 aws iam create-role --role-name AirbyteECRRole --assume-role-policy-document '{
   "Version": "2012-10-17",
@@ -69,6 +69,8 @@ aws iam attach-role-policy --role-name AirbyteECRRole --policy-arn arn:aws:iam::
 ```
 
 2. Annotate the Airbyte worker service account:
+
+
 ```bash
 kubectl annotate serviceaccount airbyte-worker -n airbyte eks.amazonaws.com/role-arn=arn:aws:iam::ACCOUNT:role/AirbyteECRRole
 ```
@@ -77,11 +79,13 @@ kubectl annotate serviceaccount airbyte-worker -n airbyte eks.amazonaws.com/role
 
 Attach the `AmazonEC2ContainerRegistryReadOnly` policy to your EKS node group's instance profile. This provides cluster-wide access but is less secure than IRSA.
 
-##### GCP GKE + Artifact Registry
+### GCP GKE + Artifact Registry
 
 **Option 1: Workload Identity - Recommended**
 
 1. Create a Google Service Account:
+
+
 ```bash
 gcloud iam service-accounts create airbyte-registry-reader \
     --description="Airbyte custom connector registry access" \
@@ -89,6 +93,8 @@ gcloud iam service-accounts create airbyte-registry-reader \
 ```
 
 2. Grant Artifact Registry Reader permissions:
+
+
 ```bash
 gcloud projects add-iam-policy-binding PROJECT_ID \
     --member="serviceAccount:airbyte-registry-reader@PROJECT_ID.iam.gserviceaccount.com" \
@@ -96,6 +102,8 @@ gcloud projects add-iam-policy-binding PROJECT_ID \
 ```
 
 3. Enable Workload Identity binding:
+
+
 ```bash
 gcloud iam service-accounts add-iam-policy-binding \
     --role roles/iam.workloadIdentityUser \
@@ -104,21 +112,27 @@ gcloud iam service-accounts add-iam-policy-binding \
 ```
 
 4. Annotate the Kubernetes service account:
+
+
 ```bash
 kubectl annotate serviceaccount airbyte-worker -n airbyte \
     iam.gke.io/gcp-service-account=airbyte-registry-reader@PROJECT_ID.iam.gserviceaccount.com
 ```
 
-##### Azure AKS + Container Registry
+### Azure AKS + Container Registry
 
 **Option 1: Managed Identity - Recommended**
 
 1. Create a managed identity:
+
+
 ```bash
 az identity create --name airbyte-acr-identity --resource-group myResourceGroup
 ```
 
 2. Get the identity's client ID and assign ACR pull permissions:
+
+
 ```bash
 IDENTITY_CLIENT_ID=$(az identity show --name airbyte-acr-identity --resource-group myResourceGroup --query clientId -o tsv)
 ACR_RESOURCE_ID=$(az acr show --name myregistry --query id -o tsv)
@@ -127,13 +141,15 @@ az role assignment create --assignee $IDENTITY_CLIENT_ID --role acrpull --scope 
 ```
 
 3. Configure the AKS cluster to use the managed identity:
+
+
 ```bash
 az aks update --name myAKSCluster --resource-group myResourceGroup --assign-identity $IDENTITY_RESOURCE_ID
 ```
 
-#### Third-Party and Self-Hosted Registries
+## Third-Party and Self-Hosted Registries
 
-##### Using ImagePullSecrets
+### Using ImagePullSecrets
 
 **Create Docker Registry Secret:**
 
@@ -149,6 +165,8 @@ kubectl create secret docker-registry custom-registry-secret \
 **Configure Airbyte to Use the Secret:**
 
 Set the environment variable on the airbyte-worker deployment:
+
+
 ```bash
 kubectl set env deployment/airbyte-worker -n airbyte JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET=custom-registry-secret
 ```
@@ -156,17 +174,21 @@ kubectl set env deployment/airbyte-worker -n airbyte JOB_KUBE_MAIN_CONTAINER_IMA
 **Helm Configuration:**
 
 If using Helm to deploy Airbyte, configure the image pull secret in your values.yaml:
+
+
 ```yaml
 worker:
   env:
     JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET: custom-registry-secret
 ```
 
-#### RBAC and Security Configuration
+## RBAC and Security Configuration
 
 **Service Account Permissions:**
 
 Ensure the airbyte-worker service account has the necessary permissions:
+
+
 ```yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -182,21 +204,27 @@ rules:
   verbs: ["get", "list", "create", "delete", "watch"]
 ```
 
-#### Validation and Testing
+## Validation and Testing
 
 **Test Registry Access:**
 
 1. Verify the secret is created correctly:
+
+
 ```bash
 kubectl get secret custom-registry-secret -n airbyte -o yaml
 ```
 
 2. Test image pull with a temporary pod:
+
+
 ```bash
 kubectl run test-pull --image=your-registry.com/your-custom-connector:latest --restart=Never --rm -i --tty --image-pull-policy=Always
 ```
 
 3. Check airbyte-worker logs for authentication issues:
+
+
 ```bash
 kubectl logs deployment/airbyte-worker -n airbyte | grep -i "pull\|auth\|secret"
 ```
