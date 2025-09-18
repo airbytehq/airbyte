@@ -51,10 +51,11 @@ In order to configure this connector, you need to generate your Track API Key an
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                                  |
-|:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------|
-| 0.0.5   | 2025-09-08 | [65157](https://github.com/airbytehq/airbyte/pull/65157)        | Update following breaking changes on spec |
-| 0.0.4   | 2025-08-20 | [#65113](https://github.com/airbytehq/airbyte/pull/65113) | Update logo                                              |
-| 0.0.3   | 2025-07-08 | [#62848](https://github.com/airbytehq/airbyte/pull/62848) | Improve UX on connector configuration                    |
-| 0.0.2   | 2025-07-08 | [#62843](https://github.com/airbytehq/airbyte/pull/62843) | Checker should validate DLQ                              |
-| 0.0.1   | 2025-07-07 | [#62083](https://github.com/airbytehq/airbyte/pull/62083) | Initial release of the Customer IO destination connector |
+| Version | Date       | Pull Request                                              | Subject                                                   |
+|:--------|:-----------|:----------------------------------------------------------|:----------------------------------------------------------|
+| 0.0.6   | 2025-09-16 | [tbd](https://github.com/airbytehq/airbyte/pull/tbd)      | Use low-code discover definition and pin to a CDK version |
+| 0.0.5   | 2025-09-08 | [65157](https://github.com/airbytehq/airbyte/pull/65157)  | Update following breaking changes on spec                 |
+| 0.0.4   | 2025-08-20 | [#65113](https://github.com/airbytehq/airbyte/pull/65113) | Update logo                                               |
+| 0.0.3   | 2025-07-08 | [#62848](https://github.com/airbytehq/airbyte/pull/62848) | Improve UX on connector configuration                     |
+| 0.0.2   | 2025-07-08 | [#62843](https://github.com/airbytehq/airbyte/pull/62843) | Checker should validate DLQ                               |
+| 0.0.1   | 2025-07-07 | [#62083](https://github.com/airbytehq/airbyte/pull/62083) | Initial release of the Customer IO destination connector  |
