@@ -2908,6 +2908,10 @@ spec:
             title: "Refresh Token"
             description: "Refresh Token to obtain new Access Token, when it's expired."
             airbyte_secret: true
+          refresh_token_expires_in:
+            type: string
+            title: "Refresh Token Expires In"
+            description: "Refresh Token to obtain new Access Token, when it's expired."
       custom_reports:
         title: "Custom Reports"
         description: 'A list which contains ad statistics entries, each entry must have a name and can contains fields, breakdowns or action_breakdowns. Click on "add" to fill this field.'
@@ -3147,6 +3151,9 @@ spec:
           refresh_token:
             type: string
             path_in_connector_config: ["credentials", "refresh_token"]
+          refresh_token_expires_in:
+            type: string
+            path_in_connector_config: [ "credentials", "refresh_token_expires_in" ]
       complete_oauth_server_input_specification:
         type: object
         additionalProperties: false
