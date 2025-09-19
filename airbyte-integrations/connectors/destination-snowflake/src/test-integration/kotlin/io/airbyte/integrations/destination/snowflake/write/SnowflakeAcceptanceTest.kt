@@ -160,12 +160,16 @@ object SnowflakeExpectedRecordMapper : ExpectedRecordMapper {
                     originalData.values[it.key] != NullValue
             }
         return if (nullValues.isNotEmpty()) {
+            // Create a Set of existing change field names for O(1) lookup performance
+            val existingChangeFields =
+                airbyteMetadata?.changes?.map { it.field }?.toSet() ?: emptySet()
+
             val changes =
                 nullValues
                     // If the field null-ed out by this mapper is already in the input metadata
                     // change list, ignore it.  Otherwise, add it to the collection of changes
                     // to synthesize the validation null-ing of the field.
-                    .filter { (k, _) -> airbyteMetadata?.changes?.find { it.field == k } == null }
+                    .filter { (k, _) -> !existingChangeFields.contains(k) }
                     .map { (k, _) ->
                         Meta.Change(
                             field = k,
