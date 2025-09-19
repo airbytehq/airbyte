@@ -428,12 +428,12 @@ class EntitySchemaNormalization(TypeTransformer):
                 if "number" in target_type:
                     # Clean the value for numeric conversion
                     cleaned_value = original_value.replace(",", "").strip()
-                    
+
                     # Check if the cleaned value is empty or just whitespace
                     if not cleaned_value:
                         logger.warning(f"Attempted to cast empty/whitespace field value '{original_value}' to number type, returning None")
                         return None
-                    
+
                     # do not cast numeric IDs into float, use integer instead
                     target_type = int if cleaned_value.isnumeric() else float
 
