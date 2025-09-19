@@ -104,14 +104,7 @@ class PostgresSourceJdbcUnsplittableCursorIncrementalPartition(
     val explicitCursorUpperBound: JsonNode?,
 ): PostgresSourceJdbcUnsplittablePartition(selectQueryGenerator, streamState),
     JdbcCursorPartition<PostgresSourceJdbcStreamState>
-    /*PostgresSourceJdbcCursorIncrementalPartition(
-    selectQueryGenerator,
-    streamState,
-    cursor,
-    cursorLowerBound,
-    isLowerBoundIncluded,
-    cursorUpperBound
-)*/ {
+{
     override fun samplingQuery(sampleRateInvPow2: Int): SelectQuery {
         val sampleSize: Int = streamState.sharedState.maxSampleSize
         val querySpec =

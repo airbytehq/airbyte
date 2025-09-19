@@ -83,7 +83,7 @@ class PostgresSourceJdbcPartitionFactory(
                 streamState,
                 lowerBound = null,
                 upperBound = null,
-\                cursorChosenFromCatalog,
+                cursorChosenFromCatalog,
                 cursorUpperBound = null,
                 filenode,
             )
