@@ -14,6 +14,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import com.fasterxml.jackson.annotation.JsonSetter
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
+import com.fasterxml.jackson.annotation.JsonValue
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaArrayWithUniqueItems
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDefault
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription
@@ -105,7 +106,24 @@ class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonSchemaInject(json = """{"order":7}""")
     var jdbcUrlParams: String? = null
 
-    // TODO: SSL config maps to JDBC parameters
+    @JsonIgnore
+    @ConfigurationBuilder(configurationPrefix = "ssl_mode")
+    var encryption = MicronautPropertiesFriendlyEncryptionSpecification()
+
+    @JsonIgnore var encryptionJson: EncryptionSpecification? = null
+
+    @JsonSetter("ssl_mode")
+    fun setEncryptionValue(value: EncryptionSpecification) {
+        encryptionJson = value
+    }
+
+    @JsonGetter("ssl_mode")
+    @JsonSchemaTitle("Encryption")
+    @JsonPropertyDescription(
+        "The encryption method which is used when communicating with the database.",
+    )
+    @JsonSchemaInject(json = """{"order":8,"default":"require"}""")
+    fun getEncryptionValue(): EncryptionSpecification? = encryptionJson ?: encryption.asEncryption()
 
     @JsonIgnore
     @ConfigurationBuilder(configurationPrefix = "tunnel_method")
@@ -187,6 +205,139 @@ class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
     ) {
         additionalPropertiesMap[name] = value
     }
+}
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "mode")
+@JsonSubTypes(
+    JsonSubTypes.Type(value = EncryptionDisable::class, name = "disable"),
+    JsonSubTypes.Type(value = EncryptionAllow::class, name = "allow"),
+    JsonSubTypes.Type(value = EncryptionPrefer::class, name = "prefer"),
+    JsonSubTypes.Type(value = EncryptionRequire::class, name = "require"),
+    JsonSubTypes.Type(value = SslVerifyCertificate::class, name = "verify_ca"),
+    JsonSubTypes.Type(value = SslVerifyFull::class, name = "verify_full"),
+)
+@JsonSchemaTitle("Encryption")
+@JsonSchemaDescription("The encryption method which is used when communicating with the database.")
+sealed interface EncryptionSpecification
+
+@JsonSchemaTitle("disable")
+@JsonSchemaDescription(
+    "To force communication without encryption.",
+)
+data object EncryptionDisable : EncryptionSpecification
+
+@JsonSchemaTitle("allow")
+@JsonSchemaDescription(
+    "To allow encrypted communication, but not require it.",
+)
+data object EncryptionAllow : EncryptionSpecification
+
+@JsonSchemaTitle("prefer")
+@JsonSchemaDescription(
+    "To allow unencrypted communication only when the source doesn't support encryption.",
+)
+data object EncryptionPrefer : EncryptionSpecification
+
+@JsonSchemaTitle("require")
+@JsonSchemaDescription(
+    "To always require encryption. Note: The connection will fail if the source doesn't support encryption.",
+)
+data object EncryptionRequire : EncryptionSpecification
+
+@JsonSchemaTitle("verify_ca")
+@JsonSchemaDescription(
+    "To always require encryption and verify that the source has a valid SSL certificate."
+)
+@SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
+class SslVerifyCertificate : EncryptionSpecification {
+    @JsonProperty("ca_certificate", required = true)
+    @JsonSchemaTitle("CA certificate")
+    @JsonPropertyDescription(
+        "CA certificate",
+    )
+    @JsonSchemaInject(json = """{"airbyte_secret":true,"multiline":true}""")
+    lateinit var sslCertificate: String
+
+    @JsonProperty("client_certificate", required = false)
+    @JsonSchemaTitle("Client certificate File")
+    @JsonPropertyDescription(
+        "Client certificate (this is not a required field, but if you want to use it, you will need to add the Client key as well)",
+    )
+    @JsonSchemaInject(json = """{"airbyte_secret":true,"multiline":true}""")
+    var sslClientCertificate: String? = null
+
+    @JsonProperty("client_key")
+    @JsonSchemaTitle("Client Key")
+    @JsonPropertyDescription(
+        "Client key (this is not a required field, but if you want to use it, you will need to add the Client certificate as well)",
+    )
+    @JsonSchemaInject(json = """{"airbyte_secret":true,"multiline":true}""")
+    var sslClientKey: String? = null
+
+    @JsonProperty("client_key_password")
+    @JsonSchemaTitle("Client key password")
+    @JsonPropertyDescription(
+        "Password for keystorage. This field is optional. If you do not add it - the password will be generated automatically.",
+    )
+    @JsonSchemaInject(json = """{"airbyte_secret":true,"multiline":true}""")
+    var sslClientPassword: String? = null
+}
+
+@JsonSchemaTitle("verify_full")
+@JsonSchemaDescription(
+    "To always require encryption and verify that the source has a valid SSL certificate."
+)
+@SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
+class SslVerifyFull : EncryptionSpecification {
+    @JsonProperty("ca_certificate", required = true)
+    @JsonSchemaTitle("CA certificate")
+    @JsonPropertyDescription(
+        "CA certificate",
+    )
+    @JsonSchemaInject(json = """{"airbyte_secret":true,"multiline":true}""")
+    lateinit var sslCertificate: String
+
+    @JsonProperty("client_certificate", required = false)
+    @JsonSchemaTitle("Client certificate File")
+    @JsonPropertyDescription(
+        "Client certificate (this is not a required field, but if you want to use it, you will need to add the Client key as well)",
+    )
+    @JsonSchemaInject(json = """{"airbyte_secret":true,"multiline":true}""")
+    var sslClientCertificate: String? = null
+
+    @JsonProperty("client_key")
+    @JsonSchemaTitle("Client Key")
+    @JsonPropertyDescription(
+        "Client key (this is not a required field, but if you want to use it, you will need to add the Client certificate as well)",
+    )
+    @JsonSchemaInject(json = """{"airbyte_secret":true,"multiline":true}""")
+    var sslClientKey: String? = null
+
+    @JsonProperty("client_key_password")
+    @JsonSchemaTitle("Client key password")
+    @JsonPropertyDescription(
+        "Password for keystorage. This field is optional. If you do not add it - the password will be generated automatically.",
+    )
+    @JsonSchemaInject(json = """{"airbyte_secret":true,"multiline":true}""")
+    var sslClientPassword: String? = null
+}
+
+@ConfigurationProperties("$CONNECTOR_CONFIG_PREFIX.ssl_mode")
+class MicronautPropertiesFriendlyEncryptionSpecification {
+    var mode: String = "require"
+    var sslCertificate: String? = null
+
+    @JsonValue
+    fun asEncryption(): EncryptionSpecification =
+        when (mode) {
+            "disable" -> EncryptionDisable
+            "allow" -> EncryptionAllow
+            "prefer" -> EncryptionPrefer
+            "require" -> EncryptionRequire
+            "verify_ca" -> SslVerifyCertificate().also { it.sslCertificate = sslCertificate!! }
+            "verify_full" -> SslVerifyFull().also { it.sslCertificate = sslCertificate!! }
+            else -> throw ConfigErrorException("invalid value $mode")
+        }
 }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "cursor_method")
