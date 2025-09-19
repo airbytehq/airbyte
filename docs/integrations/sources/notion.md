@@ -119,6 +119,7 @@ The connector is restricted by Notion [request limits](https://developers.notion
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.2.0-rc.3  | 2025-09-19 |  | Remove cusom data feed filter, use client side incremental instead                                                                                                     |
 | 3.2.0-rc.2  | 2025-09-19 | [66530](https://github.com/airbytehq/airbyte/pull/66530) | Add default start date in not provided in the config                                                                                                                   |
 | 3.2.0-rc.1  | 2025-09-18 | [66191](https://github.com/airbytehq/airbyte/pull/66191) | Migrate Blocks stream to manifest.                                                                                                                                     |
 | 3.1.0       | 2025-07-30 | [55725](https://github.com/airbytehq/airbyte/pull/55725) | Add sequence_number to fetched Notion blocks                                                                                                                           |

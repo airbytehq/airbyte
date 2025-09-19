@@ -202,9 +202,6 @@ streams:
           filter: '{ "property": "object", "value": "database" }'
       record_selector:
         type: RecordSelector
-        record_filter:
-          type: CustomRecordFilter
-          class_name: source_notion.components.NotionDataFeedFilter
         extractor:
           type: DpathExtractor
           field_path:
@@ -236,6 +233,7 @@ streams:
         datetime: "{{ config.get('start_date', day_delta(-730, '%Y-%m-%dT%H:%M:%S.%fZ'))}}"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       is_data_feed: true
+      is_client_side_incremental: true
     transformations:
       - type: CustomTransformation
         class_name: source_notion.components.NotionPropertiesTransformation
@@ -1379,9 +1377,6 @@ streams:
           filter: '{ "property": "object", "value": "page" }'
       record_selector:
         type: RecordSelector
-        record_filter:
-          type: CustomRecordFilter
-          class_name: source_notion.components.NotionDataFeedFilter
         extractor:
           type: DpathExtractor
           field_path:
@@ -1413,6 +1408,7 @@ streams:
         datetime: "{{ config.get('start_date', day_delta(-730, '%Y-%m-%dT%H:%M:%S.%fZ'))}}"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       is_data_feed: true
+      is_client_side_incremental: true
     transformations:
       - type: CustomTransformation
         class_name: source_notion.components.NotionPropertiesTransformation
