@@ -10,7 +10,8 @@ As various APIs and databases you're syncing with Airbyte evolve over time, we m
 
 This guide helps you understand the types of updates you may see, their impact on your Airbyte environment, and the actions you may need to take in response to certain types of updates.
 
-## Understanding Connector Versions 
+## Understanding Connector Versions
+
 To manage connection updates effectively, it's important to understand versioning and how to interpret the changelog entries. 
 
 Connectors in Airbyte's catalog generally follow semantic versioning ([semver](https://semver.org/)) Major.Minor.Patch (e.g., 1.2.5)
@@ -25,15 +26,15 @@ Each connector's changelog details its update history. You can find it in the [c
 
 <Arcade id="vMZISMWeitH8X7kT1ArF" title="Review a Connector Changelog" paddingBottom="calc(61.37931034482759% + 41px)" />
 
-
 ## How Airbyte Handles Connector Updates
 
 ### Airbyte Cloud
+
 **Minor and Patch Versions:** These are applied automatically and immediately to your instance. You don't need to take any action.
 
 **Major Versions:** A major version will include notable changes that affect your schema or sync success. We will notify you ahead of time to give you a window to prepare for the change. At the end of the window, we will automatically upgrade your connector to ensure you receive the latest updates. Examples of major version changes are shared in our [breaking change documentation](/platform/using-airbyte/schema-change-management#major-connector-version-upgrades).
 
-## Airbyte Open Source (OSS) and Self-Managed Enterprise (SME)
+### Airbyte Open Source (OSS) and Self-Managed Enterprise (SME)
 
 Airbyte recommends using an updated version of Airbyte when updating connections. 
 
@@ -52,12 +53,52 @@ When new major versions are released, we recommended you update promptly to avoi
 
 ## Actions to Take in Response to Connector Updates
 
-### Review the Changelog: 
+### Review the changelog
+
 Before applying any update, carefully review the changelog to understand the changes and their potential impact on your existing connections. You can find the changelog for any connector by navigating to the bottom of the documentation for the connector and expanding the view. Major version releases will also include a migration guide. 
 
-### Plan for Major Updates: 
+### Plan for Major Updates
+
 Major updates may require you to adjust connection settings or even make changes to your data pipelines. Be sure to allocate time and resources for this. Use the migration guide to ensure your transition process goes smoothly.
 
 :::info
 Airbyte provides tooling that guarantees safe connector version bumps and enforces automated version bumps for minor and patch updates.  You will always need to manually update for major version bumps.
 :::
+
+### Update the local connector image (self-managed only)
+
+Self-Managed users must manually update the connector image in their local registry before proceeding with the migration. To do so:
+
+1. In the navigation bar, click **Workspace settings** > **Sources**/**Destinations**.
+
+2. Find the connector you want to update in the list of connectors.
+
+    :::note
+    Airbyte lists two versions, the current in-use version and the latest version available.
+    :::
+
+3. Click **Change** to update your OSS version to the latest available version.
+
+### Pin a specific versions (self-managed only)
+
+If you're unable to upgrade to a new version of a connector, you can pin that connector to a specific version.
+
+1. In the navigation bar, click **Workspace settings** > **Sources**/**Destinations**.
+
+2. Edit the entry for the connector you want to pin.
+
+3. Set the **Default Version** to the version you want to use.
+
+### Update the connector version
+
+:::note
+You must update each instance of the connector separately. If you have multiple instances of a connector, updating one does not affect the others.
+:::
+
+1. In the navigation bar, click **Workspace settings** > **Sources**/**Destinations**.
+
+2. Select the instance of the connector you wish to upgrade.
+
+3. Select **Upgrade**.
+
+4. Follow the prompt to confirm you are ready to upgrade to the new version.
