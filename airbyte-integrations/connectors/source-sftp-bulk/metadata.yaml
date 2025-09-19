@@ -1,14 +1,14 @@
 data:
   resourceRequirements:
     jobSpecific:
-    - jobType: check_connection
-      resourceRequirements:
-        memory_limit: 4096Mi
-        memory_request: 4096Mi
-    - jobType: discover_schema
-      resourceRequirements:
-        memory_limit: 4096Mi
-        memory_request: 4096Mi
+      - jobType: check_connection
+        resourceRequirements:
+          memory_limit: 4096Mi
+          memory_request: 4096Mi
+      - jobType: discover_schema
+        resourceRequirements:
+          memory_limit: 4096Mi
+          memory_request: 4096Mi
   ab_internal:
     ql: 200
     sl: 300
