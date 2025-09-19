@@ -454,7 +454,13 @@ internal class SnowflakeAirbyteClientTest {
                 syncId = 1,
                 namespaceMapper = NamespaceMapper(NamespaceDefinitionType.DESTINATION)
             )
-        val columnNameMapping = mockk<ColumnNameMapping>(relaxed = true)
+        val columnNameMapping =
+            ColumnNameMapping(
+                mapOf(
+                    "col1" to "COL1_MAPPED",
+                    "col2" to "COL2_MAPPED",
+                )
+            )
 
         val col1FieldType = mockk<FieldType>()
         every { col1FieldType.type } returns mockk()
@@ -466,8 +472,6 @@ internal class SnowflakeAirbyteClientTest {
 
         every { schema.asColumns() } returns
             linkedMapOf("col1" to col1FieldType, "col2" to col2FieldType)
-        every { columnNameMapping.get("col1") } returns "COL1_MAPPED"
-        every { columnNameMapping.get("col2") } returns "COL2_MAPPED"
         every { snowflakeColumnUtils.toDialectType(col1FieldType.type) } returns "VARCHAR(255)"
         every { snowflakeColumnUtils.toDialectType(col2FieldType.type) } returns "NUMBER(38,0)"
 
