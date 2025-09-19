@@ -11,19 +11,33 @@ import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.command.SourceConfigurationFactory
+import io.airbyte.cdk.jdbc.SSLCertificateUtils
 import io.airbyte.cdk.output.DataChannelMedium.STDIO
 import io.airbyte.cdk.output.sockets.DATA_CHANNEL_PROPERTY_PREFIX
 import io.airbyte.cdk.ssh.SshConnectionOptions
+import io.airbyte.cdk.ssh.SshNoTunnelMethod
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import java.net.MalformedURLException
+import java.net.URI
+import java.net.URL
 import java.net.URLDecoder
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
+import java.nio.file.FileSystems
+import java.nio.file.Paths
 import java.time.Duration
+import java.util.UUID
+import org.postgresql.jdbc.SslMode.ALLOW
+import org.postgresql.jdbc.SslMode.DISABLE
+import org.postgresql.jdbc.SslMode.PREFER
+import org.postgresql.jdbc.SslMode.REQUIRE
+import org.postgresql.jdbc.SslMode.VERIFY_CA
+import org.postgresql.jdbc.SslMode.VERIFY_FULL
 
 private val log = KotlinLogging.logger {}
 
@@ -123,34 +137,25 @@ constructor(
         val sshOpts: SshConnectionOptions =
             SshConnectionOptions.fromAdditionalProperties(pojo.getAdditionalProperties())
 
-        // TODO: add SSL config to JDBC URL
-        // TODO: require SSL not disabled in cloud
-        /*// Configure SSL encryption.
+        // Configure SSL encryption.
         if (
-            pojo.getEncryptionValue() is EncryptionPreferred &&
-            sshTunnel is SshNoTunnelMethod &&
-            featureFlags.contains(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT)
+            pojo.getEncryptionValue() in
+                listOf(EncryptionDisable, EncryptionAllow, EncryptionPrefer) &&
+                sshTunnel is SshNoTunnelMethod &&
+                featureFlags.contains(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT)
         ) {
             throw ConfigErrorException(
                 "Connection from Airbyte Cloud requires SSL encryption or an SSH tunnel."
             )
         }
+
         val sslJdbcProperties: Map<String, String> = fromEncryptionSpec(pojo.getEncryptionValue()!!)
         jdbcProperties.putAll(sslJdbcProperties)
-        io.airbyte.integrations.source.mysql.log.info { "SSL mode: ${sslJdbcProperties["sslMode"]}" }*/
+        log.info { "SSL mode: ${sslJdbcProperties["sslMode"]}" }
 
         // Configure cursor.
         val incremental: IncrementalConfiguration =
             fromIncrementalSpec(pojo.getIncrementalConfigurationSpecificationValue())
-
-        /*
-        final String encodedDatabaseName = URLEncoder.encode(config.get(JdbcUtils.DATABASE_KEY).asText(), StandardCharsets.UTF_8);
-
-            final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:postgresql://%s:%s/%s?",
-        config.get(JdbcUtils.HOST_KEY).asText(),
-        config.get(JdbcUtils.PORT_KEY).asText(),
-        encodedDatabaseName));
-         */
 
         var encodedDatabaseName = URLEncoder.encode(pojo.database, StandardCharsets.UTF_8.name())
 
@@ -214,4 +219,102 @@ constructor(
                 )
             }
         }
+
+    private fun fromEncryptionSpec(encryptionSpec: EncryptionSpecification): Map<String, String> {
+        val extraJdbcProperties: MutableMap<String, String> = mutableMapOf()
+        val sslData: SslData =
+            when (encryptionSpec) {
+                is EncryptionDisable -> SslData(DISABLE.value)
+                is EncryptionAllow -> SslData(ALLOW.value)
+                is EncryptionPrefer -> SslData(PREFER.value)
+                is EncryptionRequire -> SslData(REQUIRE.value)
+                is SslVerifyCertificate ->
+                    SslData(
+                        mode = VERIFY_CA.value,
+                        caCertificate = encryptionSpec.sslCertificate,
+                        clientCertificate = encryptionSpec.sslClientCertificate,
+                        clientKey = encryptionSpec.sslClientKey,
+                        keyStorePassword = encryptionSpec.sslClientPassword,
+                    )
+                is SslVerifyFull ->
+                    SslData(
+                        mode = VERIFY_FULL.value,
+                        caCertificate = encryptionSpec.sslCertificate,
+                        clientCertificate = encryptionSpec.sslClientCertificate,
+                        clientKey = encryptionSpec.sslClientKey,
+                        keyStorePassword = encryptionSpec.sslClientPassword,
+                    )
+            }
+        extraJdbcProperties[SSL_MODE] = sslData.mode
+        if (sslData.caCertificate.isNullOrBlank()) {
+            // if CA cert is not available - done
+            return extraJdbcProperties
+        }
+        val password: String =
+            sslData.keyStorePassword.takeUnless { it.isNullOrBlank() }
+                ?: UUID.randomUUID().toString()
+
+        extraJdbcProperties[CLIENT_KEY_STORE_PASS] = password
+        // Make keystore for CA cert with given password or generate a new password.
+        val caCertKeyStoreUrl: URL =
+            buildKeyStore("trust") {
+                SSLCertificateUtils.keyStoreFromCertificate(
+                    sslData.caCertificate,
+                    password,
+                    FileSystems.getDefault(),
+                    directory = "",
+                )
+            }
+        extraJdbcProperties[TRUST_KEY_STORE_URL] = Paths.get(caCertKeyStoreUrl.toURI()).toString()
+
+        if (sslData.clientCertificate.isNullOrBlank() || sslData.clientKey.isNullOrBlank()) {
+            // if Client cert is not available - done
+            return extraJdbcProperties
+        }
+        // Make keystore for Client cert with given password or generate a new password.
+        val clientCertKeyStoreUrl: URL =
+            buildKeyStore("client") {
+                SSLCertificateUtils.keyStoreFromClientCertificate(
+                    sslData.clientCertificate,
+                    sslData.clientKey,
+                    password,
+                    directory = ""
+                )
+            }
+        extraJdbcProperties[CLIENT_KEY_STORE_URL] =
+            Paths.get(clientCertKeyStoreUrl.toURI()).toString()
+        return extraJdbcProperties
+    }
+
+    private data class SslData(
+        val mode: String,
+        val caCertificate: String? = null,
+        val clientCertificate: String? = null,
+        val clientKey: String? = null,
+        val keyStorePassword: String? = null,
+    )
+
+    private fun buildKeyStore(kind: String, uriSupplier: () -> URI): URL {
+        val keyStoreUri: URI =
+            try {
+                uriSupplier()
+            } catch (ex: Exception) {
+                throw ConfigErrorException("Failed to create keystore for $kind certificate", ex)
+            }
+        val keyStoreUrl: URL =
+            try {
+                keyStoreUri.toURL()
+            } catch (ex: MalformedURLException) {
+                throw ConfigErrorException("Unable to get a URL for $kind key store", ex)
+            }
+        log.debug { "URL for $kind certificate keystore is $keyStoreUrl" }
+        return keyStoreUrl
+    }
+
+    companion object {
+        const val TRUST_KEY_STORE_URL: String = "sslrootcert"
+        const val CLIENT_KEY_STORE_URL: String = "sslkey"
+        const val CLIENT_KEY_STORE_PASS: String = "sslpassword"
+        const val SSL_MODE: String = "sslmode"
+    }
 }
