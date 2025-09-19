@@ -154,7 +154,7 @@ class StateHistogramStoreTest {
     }
 
     @Test
-    fun `remove should delete both expected and flushed counts for state key and return stats`() {
+    fun `remove should delete both expected and flushed counts for state key and return count`() {
         // Given
         val partitionKey1 = PartitionKey("partition-1")
         val partitionKey2 = PartitionKey("partition-2")
@@ -173,104 +173,15 @@ class StateHistogramStoreTest {
         val partitionBytesHistogram = PartitionHistogram(ConcurrentHashMap())
         partitionBytesHistogram.increment(partitionKey1, bytes1)
         partitionBytesHistogram.increment(partitionKey2, bytes2)
-        stateHistogramStore.acceptFlushedBytes(partitionBytesHistogram)
 
         // When
-        val stats = stateHistogramStore.remove(stateKey)
+        val count = stateHistogramStore.remove(stateKey)
 
         // Then
-        assertEquals(expectedCount, stats.count)
-        assertEquals(bytes1 + bytes2, stats.bytes)
+        assertEquals(expectedCount, count)
         assertFalse(
             stateHistogramStore.isComplete(stateKey)
         ) // Should be false due to missing expected count
-    }
-
-    @Test
-    fun `remove should handle missing byte counts as zero`() {
-        // Given
-        val partitionKey = PartitionKey("partition-1")
-        val stateKey = StateKey(1L, listOf(partitionKey))
-        val expectedCount = 5L
-
-        stateHistogramStore.acceptExpectedCounts(stateKey, expectedCount)
-
-        val partitionCountsHistogram = PartitionHistogram(ConcurrentHashMap())
-        repeat(5) { partitionCountsHistogram.increment(partitionKey, 1) }
-        stateHistogramStore.acceptFlushedCounts(partitionCountsHistogram)
-
-        // No bytes histogram added - should be treated as 0
-
-        // When
-        val stats = stateHistogramStore.remove(stateKey)
-
-        // Then
-        assertEquals(expectedCount, stats.count)
-        assertEquals(0L, stats.bytes) // No bytes were added
-    }
-
-    @Test
-    fun `remove should sum bytes from multiple partitions correctly`() {
-        // Given
-        val partitionKey1 = PartitionKey("partition-1")
-        val partitionKey2 = PartitionKey("partition-2")
-        val partitionKey3 = PartitionKey("partition-3")
-        val stateKey = StateKey(1L, listOf(partitionKey1, partitionKey2, partitionKey3))
-        val expectedCount = 15L
-        val bytes1 = 5000L
-        val bytes2 = 3000L
-        val bytes3 = 7000L
-
-        stateHistogramStore.acceptExpectedCounts(stateKey, expectedCount)
-
-        val partitionCountsHistogram = PartitionHistogram(ConcurrentHashMap())
-        repeat(7) { partitionCountsHistogram.increment(partitionKey1, 1) }
-        repeat(3) { partitionCountsHistogram.increment(partitionKey2, 1) }
-        repeat(5) { partitionCountsHistogram.increment(partitionKey3, 1) }
-        stateHistogramStore.acceptFlushedCounts(partitionCountsHistogram)
-
-        val partitionBytesHistogram = PartitionHistogram(ConcurrentHashMap())
-        partitionBytesHistogram.increment(partitionKey1, bytes1)
-        partitionBytesHistogram.increment(partitionKey2, bytes2)
-        partitionBytesHistogram.increment(partitionKey3, bytes3)
-        stateHistogramStore.acceptFlushedBytes(partitionBytesHistogram)
-
-        // When
-        val stats = stateHistogramStore.remove(stateKey)
-
-        // Then
-        assertEquals(expectedCount, stats.count)
-        assertEquals(bytes1 + bytes2 + bytes3, stats.bytes)
-    }
-
-    @Test
-    fun `remove should handle partial byte counts for partitions`() {
-        // Given
-        val partitionKey1 = PartitionKey("partition-1")
-        val partitionKey2 = PartitionKey("partition-2")
-        val stateKey = StateKey(1L, listOf(partitionKey1, partitionKey2))
-        val expectedCount = 10L
-        val bytes1 = 2500L
-        // partitionKey2 will have no bytes recorded
-
-        stateHistogramStore.acceptExpectedCounts(stateKey, expectedCount)
-
-        val partitionCountsHistogram = PartitionHistogram(ConcurrentHashMap())
-        repeat(6) { partitionCountsHistogram.increment(partitionKey1, 1) }
-        repeat(4) { partitionCountsHistogram.increment(partitionKey2, 1) }
-        stateHistogramStore.acceptFlushedCounts(partitionCountsHistogram)
-
-        val partitionBytesHistogram = PartitionHistogram(ConcurrentHashMap())
-        partitionBytesHistogram.increment(partitionKey1, bytes1)
-        // No bytes for partitionKey2
-        stateHistogramStore.acceptFlushedBytes(partitionBytesHistogram)
-
-        // When
-        val stats = stateHistogramStore.remove(stateKey)
-
-        // Then
-        assertEquals(expectedCount, stats.count)
-        assertEquals(bytes1, stats.bytes) // Only bytes from partition1
     }
 
     @Test

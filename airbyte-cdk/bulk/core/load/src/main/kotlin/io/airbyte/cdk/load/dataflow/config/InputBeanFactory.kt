@@ -18,6 +18,8 @@ import io.airbyte.cdk.load.dataflow.stages.AggregateStage
 import io.airbyte.cdk.load.dataflow.state.StateHistogramStore
 import io.airbyte.cdk.load.dataflow.state.StateKeyClient
 import io.airbyte.cdk.load.dataflow.state.StateStore
+import io.airbyte.cdk.load.dataflow.state.stats.CommittedStatsStore
+import io.airbyte.cdk.load.dataflow.state.stats.EmittedStatsStore
 import io.airbyte.cdk.load.file.ClientSocket
 import io.airbyte.cdk.load.file.ProtobufDataChannelReader
 import io.airbyte.cdk.load.message.DestinationMessage
@@ -100,6 +102,7 @@ class InputBeanFactory {
         stateStore: StateStore,
         stateKeyClient: StateKeyClient,
         completionTracker: StreamCompletionTracker,
+        statsStore: EmittedStatsStore,
     ): List<DataFlowPipelineInputFlow> =
         messageFlows.map {
             DataFlowPipelineInputFlow(
@@ -107,6 +110,7 @@ class InputBeanFactory {
                 stateStore = stateStore,
                 stateKeyClient = stateKeyClient,
                 completionTracker = completionTracker,
+                statsStore = statsStore,
             )
         }
 
@@ -128,12 +132,18 @@ class InputBeanFactory {
         @Named("state") state: DataFlowStage,
         aggregateStoreFactory: AggregateStoreFactory,
         stateHistogramStore: StateHistogramStore,
+        statsStore: CommittedStatsStore,
         memoryAndParallelismConfig: MemoryAndParallelismConfig,
     ): List<DataFlowPipeline> =
         inputFlows.map {
             val aggStore = aggregateStoreFactory.make()
             val aggregate = AggregateStage(aggStore)
-            val completionHandler = PipelineCompletionHandler(aggStore, stateHistogramStore)
+            val completionHandler =
+                PipelineCompletionHandler(
+                    aggStore,
+                    stateHistogramStore,
+                    statsStore,
+                )
 
             DataFlowPipeline(
                 input = it,
