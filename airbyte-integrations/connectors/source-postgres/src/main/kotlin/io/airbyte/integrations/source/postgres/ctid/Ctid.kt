@@ -6,10 +6,7 @@ package io.airbyte.integrations.source.postgres.ctid
 
 import java.util.regex.Pattern
 
-data class Ctid (
-    val page: Long,
-    val tuple: Long
-) {
+data class Ctid(val page: Long, val tuple: Long) {
     override fun toString(): String = "($page,$tuple)"
 
     companion object {

@@ -5,7 +5,6 @@
 package io.airbyte.cdk.read
 
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 
 /**
  * Encapsulates database-specific aspects relating to a JDBC stream partition, consumed by

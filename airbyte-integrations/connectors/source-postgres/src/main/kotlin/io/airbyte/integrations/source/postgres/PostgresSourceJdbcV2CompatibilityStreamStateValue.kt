@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.postgres
 
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -30,33 +34,44 @@ data class PostgresSourceJdbcV2CompatibilityStreamStateValue(
     @JsonProperty("relation_filenode") val filenode: Filenode?,
     @JsonProperty("cursor_field") val cursorField: List<String>?,
     @JsonProperty("cursor") val cursorValue: JsonNode?,
-
 ) {
     companion object {
-        fun toV3StateValue(v2: PostgresSourceJdbcV2CompatibilityStreamStateValue, stream: Stream): PostgresSourceJdbcStreamStateValue {
-            val v3 = PostgresSourceJdbcStreamStateValue(
-                version = 3,
-                stateType = V2StateType.valueOf(v2.stateType).toV3().serialized,
-                ctid = v2.ctid,
-                filenode = v2.filenode,
-
-                cursors = v2.incrementalState?.let {
-                    val incrementalState = Jsons.treeToValue(it, PostgresSourceJdbcV2CompatibilityStreamStateValue::class.java)
-                    when (incrementalState.stateType) {
-                        V2StateType.cursor_based.serialized -> {
-                            val cursorField: DataOrMetaField = stream.fields.first { field -> field.id == incrementalState.cursorField!!.first() }
-                            mapOf(
-                                incrementalState.cursorField!!.first()
-                                    to stateValueToJsonNode(
-                                    cursorField,
-                                    incrementalState.cursorValue!!.asText()
+        fun toV3StateValue(
+            v2: PostgresSourceJdbcV2CompatibilityStreamStateValue,
+            stream: Stream
+        ): PostgresSourceJdbcStreamStateValue {
+            val v3 =
+                PostgresSourceJdbcStreamStateValue(
+                    version = 3,
+                    stateType = V2StateType.valueOf(v2.stateType).toV3().serialized,
+                    ctid = v2.ctid,
+                    filenode = v2.filenode,
+                    cursors =
+                        v2.incrementalState?.let {
+                            val incrementalState =
+                                Jsons.treeToValue(
+                                    it,
+                                    PostgresSourceJdbcV2CompatibilityStreamStateValue::class.java
                                 )
-                            )
+                            when (incrementalState.stateType) {
+                                V2StateType.cursor_based.serialized -> {
+                                    val cursorField: DataOrMetaField =
+                                        stream.fields.first { field ->
+                                            field.id == incrementalState.cursorField!!.first()
+                                        }
+                                    mapOf(
+                                        incrementalState.cursorField!!.first() to
+                                            stateValueToJsonNode(
+                                                cursorField,
+                                                incrementalState.cursorValue!!.asText()
+                                            )
+                                    )
+                                }
+                                else -> mapOf()
+                            }
                         }
-                        else -> mapOf()
-                    }
-                } ?: mapOf()
-            )
+                            ?: mapOf()
+                )
 
             return v3
         }
@@ -66,16 +81,16 @@ data class PostgresSourceJdbcV2CompatibilityStreamStateValue(
 enum class V2StateType {
     ctid,
     cursor_based,
-    xmin
-    ;
+    xmin;
 
     val serialized: String = name
 
-    fun toV3(): StateType = when (this) {
-        ctid -> StateType.CTID_BASED
-        cursor_based -> StateType.CURSOR_BASED
-        xmin -> throw UnsupportedOperationException("xmin is not supported yet")
-    }
+    fun toV3(): StateType =
+        when (this) {
+            ctid -> StateType.CTID_BASED
+            cursor_based -> StateType.CURSOR_BASED
+            xmin -> throw UnsupportedOperationException("xmin is not supported yet")
+        }
 }
 
 fun stateValueToJsonNode(field: DataOrMetaField, stateValue: String?): JsonNode {

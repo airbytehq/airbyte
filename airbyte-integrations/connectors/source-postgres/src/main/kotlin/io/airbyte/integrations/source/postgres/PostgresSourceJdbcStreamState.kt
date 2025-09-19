@@ -24,9 +24,19 @@ class PostgresSourceJdbcStreamState(val base: DefaultJdbcStreamState) :
         get() =
             streamFeedBootstrap.currentState?.let {
                 val ver =
-                    Jsons.treeToValue(it, PostgresSourceJdbcV2VersionOnlyStreamStateValue::class.java)
+                    Jsons.treeToValue(
+                        it,
+                        PostgresSourceJdbcV2VersionOnlyStreamStateValue::class.java
+                    )
                 when (ver?.version) {
-                    2 -> PostgresSourceJdbcV2CompatibilityStreamStateValue.toV3StateValue(Jsons.treeToValue(it, PostgresSourceJdbcV2CompatibilityStreamStateValue::class.java), streamFeedBootstrap.feed)
+                    2 ->
+                        PostgresSourceJdbcV2CompatibilityStreamStateValue.toV3StateValue(
+                            Jsons.treeToValue(
+                                it,
+                                PostgresSourceJdbcV2CompatibilityStreamStateValue::class.java
+                            ),
+                            streamFeedBootstrap.feed
+                        )
                     3 -> Jsons.treeToValue(it, PostgresSourceJdbcStreamStateValue::class.java)
                     else -> {
                         log.warn { "State version not specified. Defaulting to V3" }
@@ -44,15 +54,17 @@ class PostgresSourceJdbcStreamState(val base: DefaultJdbcStreamState) :
         partition: JdbcPartition<*>,
         jdbcConnectionFactory: JdbcConnectionFactory
     ) {
-        val savedFilenode: Filenode? = when (partition) {
-            is PostgresSourceJdbcSplittableSnapshotPartition -> partition.filenode
-            is PostgresSourceJdbcSplittableSnapshotWithCursorPartition -> partition.filenode
-            else -> null
-        }
-        val currentFilenode: Filenode? = PostgresSourceJdbcPartitionFactory.getStreamFilenode(
-            partition.streamState,
-            jdbcConnectionFactory
-        )
+        val savedFilenode: Filenode? =
+            when (partition) {
+                is PostgresSourceJdbcSplittableSnapshotPartition -> partition.filenode
+                is PostgresSourceJdbcSplittableSnapshotWithCursorPartition -> partition.filenode
+                else -> null
+            }
+        val currentFilenode: Filenode? =
+            PostgresSourceJdbcPartitionFactory.getStreamFilenode(
+                partition.streamState,
+                jdbcConnectionFactory
+            )
 
         if (currentFilenode != savedFilenode) {
             throw TransientErrorException(
@@ -61,4 +73,3 @@ class PostgresSourceJdbcStreamState(val base: DefaultJdbcStreamState) :
         }
     }
 }
-
