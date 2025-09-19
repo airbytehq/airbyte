@@ -211,6 +211,7 @@ To enable badges, include `products` in the Markdown metadata. The following val
 **Badge display:** All 5 badges are always shown in order: Core, Standard, Pro, Enterprise Flex, Self-Managed Enterprise. Available badges are highlighted, unavailable badges are grayed out.
 
 **Metadata keys:**
+
 - `all`: Core, Self-Managed Enterprise, and Standard (doesn't include Pro, Enterprise Flex, or Embedded)
 - `oss-community`: Core only
 - `oss-enterprise`: Self-Managed Enterprise only
@@ -220,6 +221,7 @@ To enable badges, include `products` in the Markdown metadata. The following val
 - `embedded`: Embedded only (hidden if not specified - there is no off state for the Embedded badge)
 
 **Cloud tier inheritance:** Higher Cloud plans automatically inherit availability from lower tiers:
+
 - If `cloud` is specified: Standard, Pro, and Enterprise Flex badges are all enabled
 - If `cloud-teams` is specified: Pro and Enterprise Flex badges are enabled (Standard is disabled)
 - If `enterprise-flex` is specified: Only Enterprise Flex badge is enabled

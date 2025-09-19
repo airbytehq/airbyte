@@ -221,6 +221,7 @@ To enable badges, include `products` in the Markdown metadata. The following val
 **Badge display:** All 5 badges are always shown in order: Core, Standard, Pro, Enterprise Flex, Self-Managed Enterprise. Available badges are highlighted, unavailable badges are grayed out.
 
 **Metadata keys:**
+
 - `all`: Core, Self-Managed Enterprise, and Standard (doesn't include Pro, Enterprise Flex, or Embedded)
 - `oss-community`: Core only
 - `oss-enterprise`: Self-Managed Enterprise only
