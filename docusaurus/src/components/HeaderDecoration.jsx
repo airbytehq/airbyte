@@ -245,10 +245,10 @@ const ConnectorMetadataCallout = ({
           {isEnterprise ? (
             <>
               <Chip className={styles.available}>
-                <EnabledIcon isEnabled={true} /> Cloud <b>with Teams add-on</b>
+                <EnabledIcon isEnabled={true} /> Standard <b>with Pro add-on</b>
               </Chip>
               <Chip className={isOss ? styles.available : styles.unavailable}>
-                <EnabledIcon isEnabled={isOss} /> Self-Managed Community
+                <EnabledIcon isEnabled={isOss} /> Core
               </Chip>
               <Chip className={styles.available}>
                 <EnabledIcon isEnabled={true} /> Self-Managed Enterprise
@@ -260,10 +260,10 @@ const ConnectorMetadataCallout = ({
           ) : (
             <>
               <Chip className={isCloud ? styles.available : styles.unavailable}>
-                <EnabledIcon isEnabled={isCloud} /> Cloud
+                <EnabledIcon isEnabled={isCloud} /> Standard
               </Chip>
               <Chip className={isOss ? styles.available : styles.unavailable}>
-                <EnabledIcon isEnabled={isOss} /> Self-Managed Community
+                <EnabledIcon isEnabled={isOss} /> Core
               </Chip>
               <Chip className={isOss ? styles.available : styles.unavailable}>
                 <EnabledIcon isEnabled={isOss} /> Self-Managed Enterprise

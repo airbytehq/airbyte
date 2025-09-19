@@ -9,10 +9,11 @@ import {
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 
-const Badge = ({ available, children }) => {
+const Badge = ({ available, children, title }) => {
   return (
     <span
       className={classNames(styles.badge, { [styles.available]: available })}
+      title={title}
     >
       <FontAwesomeIcon
         icon={available ? faCheck : faXmark}
@@ -46,16 +47,16 @@ export const ProductInformation = ({ products }) => {
       {enterpriseFlex ? (
         <Badge available={true}>Enterprise Flex</Badge>
       ) : (
-        <Badge available={cloud}>
-          Cloud{" "}
+        <Badge available={cloud} title="Formerly Cloud">
+          Standard{" "}
           {cloudTeams ? (
-            <span className={styles.withAddon}>with Teams add-on</span>
+            <span className={styles.withAddon}>with Pro add-on</span>
           ) : (
             ""
           )}
         </Badge>
       )}
-      <Badge available={ossCommunity}>Self-Managed Community</Badge>
+      <Badge available={ossCommunity} title="Formerly Self-Managed Community">Core</Badge>
       <Badge available={ossEnterprise}>Self-Managed Enterprise</Badge>
       {embedded && <Badge available={true}>Embedded</Badge>}
       <a
