@@ -94,7 +94,6 @@ class JdbcSelectQuerier(
         /** Initializes a connection and readies the resultset. */
         fun initQueryExecution() {
             conn = jdbcConnectionFactory.get()
-//            conn?.autoCommit = false // TEMP
             stmt = conn!!.prepareStatement(q.sql)
             parameters.statementFetchSize?.let { fetchSize: Int ->
                 log.info { "Setting Statement fetchSize to $fetchSize." }
@@ -143,7 +142,7 @@ class JdbcSelectQuerier(
                 val jdbcFieldType: JdbcFieldType<*> = column.type as JdbcFieldType<*>
                 try {
                     if (column is NonEmittedField) {
-                        @Suppress("UNCHECKED_CAST")
+                        @Suppress("UNCHECKED_CAST") // TODO: See if we can avoid an unchecked cast
                         resultRow.nonEmittedData[column.id] =
                             FieldValueEncoder(
                                 jdbcFieldType.jdbcGetter.get(rs!!, colIdx),
