@@ -1,16 +1,12 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
-import copy
+
 import logging
 from dataclasses import dataclass
-from functools import partial
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
-from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
-from airbyte_cdk.sources.declarative.incremental import ConcurrentCursorFactory, ConcurrentPerPartitionCursor
-from airbyte_cdk.sources.declarative.partition_routers import SubstreamPartitionRouter
-from airbyte_cdk.sources.declarative.retrievers.simple_retriever import FULL_REFRESH_SYNC_COMPLETE_KEY, SimpleRetriever
+from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
-from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
+from airbyte_cdk.sources.declarative.types import StreamSlice
 from airbyte_cdk.sources.streams.core import StreamData
 
 
