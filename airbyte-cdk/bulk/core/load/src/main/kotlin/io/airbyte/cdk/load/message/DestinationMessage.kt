@@ -113,7 +113,7 @@ data class Meta(
                 ),
             ),
         ),
-        GENERATION_ID(COLUMN_NAME_AB_META, IntegerType),
+        GENERATION_ID(COLUMN_NAME_AB_GENERATION_ID, IntegerType),
     }
 
     companion object {
@@ -505,6 +505,12 @@ sealed interface CheckpointMessage : DestinationMessage {
     }
 
     val checkpointKey: CheckpointKey?
+    val checkpointIdRaw: String?
+        get() = checkpointKey?.checkpointId?.value
+    val checkpointOrdinalRaw: Int?
+        get() = checkpointKey?.checkpointIndex?.value
+    val checkpointPartitionIds: List<String>
+        get() = checkpointIdRaw?.let { listOf(it) } ?: listOf()
 
     val sourceStats: Stats?
     val destinationStats: Stats?
@@ -688,6 +694,12 @@ data class GlobalSnapshotCheckpoint(
     override var totalRejectedRecords: Long? = null,
     val streamCheckpoints: Map<DestinationStream.Descriptor, CheckpointKey>
 ) : CheckpointMessage {
+
+    override val checkpointPartitionIds: List<String>
+        get() = buildList {
+            streamCheckpoints.values.mapTo(this) { it.checkpointId.value }
+            checkpointKey?.checkpointId?.value?.let { add(it) }
+        }
 
     override fun updateStats(
         destinationStats: Stats?,

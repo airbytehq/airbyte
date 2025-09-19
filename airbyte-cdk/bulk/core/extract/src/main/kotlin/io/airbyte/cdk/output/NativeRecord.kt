@@ -6,7 +6,6 @@ package io.airbyte.cdk.output.sockets
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
-import com.google.protobuf.kotlin.toByteString
 import io.airbyte.cdk.data.ArrayEncoder
 import io.airbyte.cdk.data.BigDecimalCodec
 import io.airbyte.cdk.data.BigDecimalIntegerCodec
@@ -29,6 +28,7 @@ import io.airbyte.cdk.data.OffsetTimeCodec
 import io.airbyte.cdk.data.ShortCodec
 import io.airbyte.cdk.data.TextCodec
 import io.airbyte.cdk.data.UrlCodec
+import io.airbyte.cdk.discover.FieldOrMetaField
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteRecordMessageProtobuf
@@ -70,8 +70,7 @@ fun <T> JsonEncoder<T>.toProtobufEncoder(): ProtoEncoder<*> {
         is NullCodec, -> nullProtoEncoder
         is BinaryCodec, -> binaryProtoEncoder
         is BigDecimalCodec, -> bigDecimalProtoEncoder
-        is BigDecimalIntegerCodec, ->
-            bigDecimalProtoEncoder // TODO: check can convert to exact integer
+        is BigDecimalIntegerCodec, -> bigDecimalProtoEncoder
         is ShortCodec, -> shortProtoEncoder
         is ByteCodec, -> byteProtoEncoder
         is DoubleCodec, -> doubleProtoEncoder
@@ -82,7 +81,7 @@ fun <T> JsonEncoder<T>.toProtobufEncoder(): ProtoEncoder<*> {
         is LocalTimeCodec, -> localTimeProtoEncoder
         is LocalDateTimeCodec, -> localDateTimeProtoEncoder
         is OffsetTimeCodec, -> offsetTimeProtoEncoder
-        is ArrayEncoder<*>, -> anyProtoEncoder
+        is ArrayEncoder<*>, -> arrayProtoEncoder
         else -> anyProtoEncoder
     }
 }
@@ -116,19 +115,19 @@ private inline fun <T> generateProtoEncoder(
 
 val offsetTimeProtoEncoder =
     generateProtoEncoder<OffsetTime> { builder, value ->
-        builder.setString(value.format(OffsetTimeCodec.formatter))
+        builder.setTimeWithTimezone(value.format(OffsetTimeCodec.formatter))
     }
 val localDateTimeProtoEncoder =
     generateProtoEncoder<LocalDateTime> { builder, value ->
-        builder.setString(value.format(OffsetTimeCodec.formatter))
+        builder.setTimestampWithoutTimezone(value.format(LocalDateTimeCodec.formatter))
     }
 val localTimeProtoEncoder =
     generateProtoEncoder<LocalTime> { builder, time ->
-        builder.setString(time.format(LocalTimeCodec.formatter))
+        builder.setTimeWithoutTimezone(time.format(LocalTimeCodec.formatter))
     }
 val localDateProtoEncoder =
     generateProtoEncoder<LocalDate> { builder, date ->
-        builder.setString(date.format(LocalDateCodec.formatter))
+        builder.setDate(date.format(LocalDateCodec.formatter))
     }
 val urlProtoEncoder =
     generateProtoEncoder<URL> { builder, url -> builder.setString(url.toExternalForm()) }
@@ -137,13 +136,16 @@ val byteProtoEncoder =
     generateProtoEncoder<Byte> { builder, value -> builder.setInteger(value.toLong()) }
 val binaryProtoEncoder =
     generateProtoEncoder<ByteBuffer> { builder, decoded ->
-        builder.setStringBytes(decoded.toByteString()) // TODO: check here. Need base64 encoded?
+        builder.setString(java.util.Base64.getEncoder().encodeToString(decoded.array()))
     }
 val shortProtoEncoder =
     generateProtoEncoder<Short> { builder, value -> builder.setInteger(value.toLong()) }
 val bigDecimalProtoEncoder =
     generateProtoEncoder<BigDecimal> { builder, decoded ->
-        builder.setBigDecimal(decoded.toPlainString()) // TODO: check here. why string?
+        when (decoded.scale()) {
+            0 -> builder.setBigInteger(decoded.toPlainString()) // no decimal places
+            else -> builder.setBigDecimal(decoded.toPlainString())
+        }
     }
 val longProtoEncoder = generateProtoEncoder<Long> { builder, value -> builder.setInteger(value) }
 val textProtoEncoder = generateProtoEncoder<String> { builder, value -> builder.setString(value) }
@@ -156,13 +158,16 @@ val offsetDateTimeProtoEncoder =
         builder.setTimestampWithTimezone(decoded.format(OffsetDateTimeCodec.formatter))
     }
 val floatProtoEncoder =
-    generateProtoEncoder<Float> { builder, decoded -> builder.setNumber(decoded.toDouble()) }
+    generateProtoEncoder<Float> { builder, decoded -> builder.setBigDecimal(decoded.toString()) }
 
 val nullProtoEncoder = generateProtoEncoder<Any?> { builder, _ -> builder.setIsNull(true) }
 val anyProtoEncoder = textProtoEncoder
-// typealias AnyProtoEncoder = TextProtoEncoder
+
+// For now arrays are encoded in protobuf as json strings
+val arrayProtoEncoder = textProtoEncoder
 
 fun NativeRecordPayload.toProtobuf(
+    schema: Set<FieldOrMetaField>,
     recordMessageBuilder: AirbyteRecordMessageProtobuf.Builder,
     valueBuilder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder
 ): AirbyteRecordMessageProtobuf.Builder {
@@ -177,10 +182,13 @@ fun NativeRecordPayload.toProtobuf(
                 entry.value.fieldValue?.let {
                     (entry.value.jsonEncoder.toProtobufEncoder() as ProtoEncoder<Any>).encode(
                         valueBuilder.clear(),
-                        entry.value.fieldValue!!
+                        when (entry.value.jsonEncoder) {
+                            // For arrays we use the value of its json string.
+                            is ArrayEncoder<*> -> entry.value.encode().toString()
+                            else -> entry.value.fieldValue!!
+                        }
                     )
                 }
-                    ?: nullProtoEncoder.encode(valueBuilder.clear(), null)
             )
         }
     }

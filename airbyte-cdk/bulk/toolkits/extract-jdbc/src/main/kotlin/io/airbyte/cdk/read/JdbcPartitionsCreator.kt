@@ -177,7 +177,7 @@ class JdbcSequentialPartitionsCreator<
             return listOf(JdbcNonResumablePartitionReader(partition))
         }
         // Happy path.
-        log.info { "Table will be read by sequential partition reader(s)." }
+        log.info { "Table will be read by sequential partition reader." }
         return listOf(JdbcResumablePartitionReader(partition))
     }
 }

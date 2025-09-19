@@ -1,0 +1,18 @@
+{
+  "version.label": {
+    "message": "Next",
+    "description": "The label for version current"
+  },
+  "sidebar.releaseNotes.category.Release notes": {
+    "message": "Release notes",
+    "description": "The label for category Release notes in sidebar releaseNotes"
+  },
+  "sidebar.releaseNotes.category.Historical release notes": {
+    "message": "Historical release notes",
+    "description": "The label for category Historical release notes in sidebar releaseNotes"
+  },
+  "sidebar.releaseNotes.category.Historical release notes.link.generated-index.description": {
+    "message": "Historical release notes from before Airbyte 1.0 are preserved here for posterity.",
+    "description": "The generated-index page description for category Historical release notes in sidebar releaseNotes"
+  }
+}

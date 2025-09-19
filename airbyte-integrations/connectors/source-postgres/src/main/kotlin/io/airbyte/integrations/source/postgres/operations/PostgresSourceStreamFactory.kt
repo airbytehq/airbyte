@@ -6,6 +6,7 @@ import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.DataOrMetaField
 import io.airbyte.cdk.discover.JdbcAirbyteStreamFactory
 import io.airbyte.cdk.discover.MetaField
+import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.read.Stream
 import io.airbyte.integrations.source.postgres.PostgresSourceCdcMetaFields
 import io.micronaut.context.annotation.Primary
@@ -26,6 +27,15 @@ class PostgresSourceStreamFactory : JdbcAirbyteStreamFactory {
         stream: Stream,
         recordData: ObjectNode
     ) {
-        throw NotImplementedError()
+        TODO()
+    }
+
+    override fun decorateRecordData(
+        timestamp: OffsetDateTime,
+        globalStateValue: OpaqueStateValue?,
+        stream: Stream,
+        recordData: NativeRecordPayload
+    ) {
+        TODO()
     }
 }

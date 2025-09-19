@@ -8,8 +8,9 @@ Self-Managed Community
 Self-Managed Enterprise
 Cloud
 Cloud Teams
-Cloud Enterprise
+Enterprise Flex
 abctl
+Airbox
 PyAirbyte
 [Nn]amespace
 Connector Builder

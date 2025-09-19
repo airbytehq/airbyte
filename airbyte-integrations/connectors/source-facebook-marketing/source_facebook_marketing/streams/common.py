@@ -148,6 +148,11 @@ def deep_merge(a: Any, b: Any) -> Any:
         return a if b is None else b
 
 
+FACEBOOK_CONFIG_ERRORS_TO_CATCH = [  # list of tuples (code, error_subcode)
+    (100, 2446289),
+]
+
+
 def traced_exception(fb_exception: FacebookRequestError):
     """Add user-friendly message for FacebookRequestError
 
@@ -192,6 +197,9 @@ def traced_exception(fb_exception: FacebookRequestError):
     elif "The start date of the time range cannot be beyond 37 months from the current date" in msg:
         failure_type = FailureType.config_error
         friendly_msg = "Please set the start date of your sync to be within the last 3 years."
+    elif (fb_exception.api_error_code(), fb_exception.api_error_subcode()) in FACEBOOK_CONFIG_ERRORS_TO_CATCH:
+        failure_type = FailureType.config_error
+        friendly_msg = msg
     elif fb_exception.api_error_code() in FACEBOOK_RATE_LIMIT_ERROR_CODES:
         return AirbyteTracedException(
             message="The maximum number of requests on the Facebook API has been reached. See https://developers.facebook.com/docs/graph-api/overview/rate-limiting/ for more information",

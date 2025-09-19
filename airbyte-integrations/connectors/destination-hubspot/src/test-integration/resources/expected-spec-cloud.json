@@ -1,0 +1,292 @@
+{
+  "documentationUrl" : "https://docs.airbyte.com/integrations/destinations/hubspot",
+  "connectionSpecification" : {
+    "$schema" : "http://json-schema.org/draft-07/schema#",
+    "title" : "Hub Spot Specification",
+    "type" : "object",
+    "additionalProperties" : true,
+    "properties" : {
+      "object_storage_config" : {
+        "oneOf" : [ {
+          "type" : "object",
+          "additionalProperties" : true,
+          "properties" : {
+            "storage_type" : {
+              "type" : "string",
+              "enum" : [ "None" ],
+              "default" : "None"
+            }
+          },
+          "title" : "None",
+          "required" : [ "storage_type" ]
+        }, {
+          "type" : "object",
+          "additionalProperties" : true,
+          "properties" : {
+            "storage_type" : {
+              "type" : "string",
+              "enum" : [ "S3" ],
+              "default" : "S3"
+            },
+            "access_key_id" : {
+              "type" : "string",
+              "description" : "The access key ID to access the S3 bucket. Airbyte requires Read and Write permissions to the given bucket. Read more <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">here</a>.",
+              "title" : "Access Key ID",
+              "examples" : [ "A012345678910EXAMPLE" ],
+              "airbyte_secret" : true,
+              "always_show" : true,
+              "order" : 1
+            },
+            "secret_access_key" : {
+              "type" : "string",
+              "description" : "The corresponding secret to the access key ID. Read more <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">here</a>",
+              "title" : "Secret Access Key",
+              "examples" : [ "a012345678910ABCDEFGH/AbCdEfGhEXAMPLEKEY" ],
+              "airbyte_secret" : true,
+              "always_show" : true,
+              "order" : 2
+            },
+            "role_arn" : {
+              "type" : "string",
+              "description" : "The ARN of the AWS role to assume. Only usable in Airbyte Cloud.",
+              "title" : "Role ARN",
+              "examples" : [ "arn:aws:iam::123456789:role/ExternalIdIsYourWorkspaceId" ],
+              "order" : 3
+            },
+            "s3_bucket_name" : {
+              "type" : "string",
+              "description" : "The name of the S3 bucket. Read more <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html\">here</a>.",
+              "title" : "S3 Bucket Name",
+              "examples" : [ "airbyte_sync" ],
+              "order" : 4
+            },
+            "s3_bucket_region" : {
+              "type" : "string",
+              "enum" : [ "", "af-south-1", "ap-east-1", "ap-northeast-1", "ap-northeast-2", "ap-northeast-3", "ap-south-1", "ap-south-2", "ap-southeast-1", "ap-southeast-2", "ap-southeast-3", "ap-southeast-4", "ca-central-1", "ca-west-1", "cn-north-1", "cn-northwest-1", "eu-central-1", "eu-central-2", "eu-north-1", "eu-south-1", "eu-south-2", "eu-west-1", "eu-west-2", "eu-west-3", "il-central-1", "me-central-1", "me-south-1", "sa-east-1", "us-east-1", "us-east-2", "us-gov-east-1", "us-gov-west-1", "us-west-1", "us-west-2" ],
+              "description" : "The region of the S3 bucket. See <a href=\"https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-regions-availability-zones.html#concepts-available-regions\">here</a> for all region codes.",
+              "title" : "S3 Bucket Region",
+              "examples" : [ "us-east-1" ],
+              "order" : 5,
+              "default" : ""
+            },
+            "s3_endpoint" : {
+              "type" : "string",
+              "description" : "Your S3 endpoint url. Read more <a href=\"https://docs.aws.amazon.com/general/latest/gr/s3.html#:~:text=Service%20endpoints-,Amazon%20S3%20endpoints,-When%20you%20use\">here</a>",
+              "title" : "S3 Endpoint",
+              "examples" : [ "http://localhost:9000" ],
+              "order" : 6
+            },
+            "bucket_path" : {
+              "type" : "string",
+              "description" : "All files in the bucket will be prefixed by this.",
+              "title" : "Prefix Path in the Bucket",
+              "examples" : [ "prefix/" ],
+              "order" : 7
+            },
+            "format" : {
+              "oneOf" : [ {
+                "title" : "CSV: Comma-Separated Values",
+                "type" : "object",
+                "additionalProperties" : true,
+                "properties" : {
+                  "format_type" : {
+                    "type" : "string",
+                    "enum" : [ "CSV" ],
+                    "default" : "CSV"
+                  },
+                  "flattening" : {
+                    "type" : "string",
+                    "default" : "No flattening",
+                    "enum" : [ "No flattening", "Root level flattening" ],
+                    "title" : "Flattening"
+                  }
+                },
+                "required" : [ "format_type", "flattening" ]
+              }, {
+                "title" : "JSON Lines: Newline-delimited JSON",
+                "type" : "object",
+                "additionalProperties" : true,
+                "properties" : {
+                  "format_type" : {
+                    "type" : "string",
+                    "enum" : [ "JSONL" ],
+                    "default" : "JSONL"
+                  },
+                  "flattening" : {
+                    "type" : "string",
+                    "default" : "No flattening",
+                    "enum" : [ "No flattening", "Root level flattening" ],
+                    "title" : "Flattening"
+                  }
+                },
+                "required" : [ "format_type" ]
+              } ],
+              "description" : "Format of the data output.",
+              "title" : "Output Format",
+              "examples" : [ "CSV", "JSONL" ],
+              "default" : "CSV",
+              "airbyte_hidden" : true,
+              "order" : 8,
+              "type" : "object"
+            },
+            "compression" : {
+              "oneOf" : [ {
+                "title" : "No Compression",
+                "type" : "object",
+                "additionalProperties" : true,
+                "properties" : {
+                  "compression_type" : {
+                    "type" : "string",
+                    "enum" : [ "No Compression" ],
+                    "default" : "No Compression"
+                  }
+                },
+                "required" : [ "compression_type" ]
+              }, {
+                "title" : "GZIP",
+                "type" : "object",
+                "additionalProperties" : true,
+                "properties" : {
+                  "compression_type" : {
+                    "type" : "string",
+                    "enum" : [ "GZIP" ],
+                    "default" : "GZIP"
+                  }
+                },
+                "required" : [ "compression_type" ]
+              } ],
+              "description" : "Whether the output files should be compressed. If compression is selected, the output filename will have an extra extension (GZIP: \".jsonl.gz\").",
+              "title" : "Compression",
+              "airbyte_hidden" : true,
+              "type" : "object"
+            },
+            "path_format" : {
+              "type" : "string",
+              "examples" : [ "{namespace}/{stream_name}/{year}_{month}_{day}_{epoch}" ],
+              "default" : "{sync_id}/{namespace}/{stream_name}/",
+              "airbyte_hidden" : true,
+              "order" : 10
+            },
+            "file_name_format" : {
+              "type" : "string",
+              "examples" : [ "{date}", "{date:yyyy_MM}", "{timestamp}", "{part_number}", "{sync_id}" ],
+              "default" : "{date}_{timestamp}_{part_number}{format_extension}",
+              "airbyte_hidden" : true,
+              "order" : 11
+            }
+          },
+          "title" : "S3",
+          "required" : [ "storage_type", "s3_bucket_name", "s3_bucket_region", "bucket_path", "format" ]
+        } ],
+        "title" : "Object Storage Configuration",
+        "type" : "object"
+      },
+      "credentials" : {
+        "oneOf" : [ {
+          "type" : "object",
+          "additionalProperties" : true,
+          "properties" : {
+            "type" : {
+              "type" : "string",
+              "enum" : [ "OAuth" ],
+              "default" : "OAuth"
+            },
+            "client_id" : {
+              "type" : "string",
+              "description" : "The Client ID of your HubSpot developer application. See the <a href=\\\"https://legacydocs.hubspot.com/docs/methods/oauth2/oauth2-quickstart\\\">Hubspot docs</a> if you need help finding this ID.",
+              "title" : "Client ID",
+              "order" : 0,
+              "airbyte_secret" : true
+            },
+            "client_secret" : {
+              "type" : "string",
+              "description" : "The client secret for your HubSpot developer application. See the <a href=\\\"https://legacydocs.hubspot.com/docs/methods/oauth2/oauth2-quickstart\\\">Hubspot docs</a> if you need help finding this secret.",
+              "title" : "Client Secret",
+              "order" : 1,
+              "airbyte_secret" : true
+            },
+            "refresh_token" : {
+              "type" : "string",
+              "description" : "Refresh token to renew an expired access token. See the <a href=\\\"https://legacydocs.hubspot.com/docs/methods/oauth2/oauth2-quickstart\\\">Hubspot docs</a> if you need help finding this token.",
+              "title" : "Refresh Token",
+              "order" : 2,
+              "airbyte_secret" : true
+            }
+          },
+          "title" : "OAuth",
+          "required" : [ "type", "client_id", "client_secret", "refresh_token" ]
+        } ],
+        "description" : "Choose how to authenticate to HubSpot.",
+        "title" : "Credentials",
+        "order" : 0,
+        "type" : "object"
+      }
+    },
+    "required" : [ "credentials" ]
+  },
+  "supportsIncremental" : true,
+  "supportsNormalization" : false,
+  "supportsDBT" : false,
+  "supported_destination_sync_modes" : [ "append" ],
+  "advanced_auth" : {
+    "auth_flow_type" : "oauth2.0",
+    "predicate_key" : [ "credentials", "type" ],
+    "predicate_value" : "OAuth",
+    "oauth_config_specification" : {
+      "oauth_connector_input_specification" : {
+        "consent_url" : "https://app.hubspot.com/oauth/authorize?{{ client_id_key }}={{ client_id_value }}&{{ redirect_uri_key }}={{ redirect_uri_value | urlencode }}&{{ scope_key }}={{ scope_value | urlencode }}&optional_scope={{ optional_scope | urlencode }}&{{ state_key }}={{ state_value }}&code_challenge={{ state_value | codechallengeS256 }}",
+        "scope" : "crm.schemas.appointments.read crm.schemas.carts.read crm.schemas.commercepayments.read crm.schemas.companies.read crm.schemas.contacts.read crm.schemas.courses.read crm.schemas.custom.read crm.schemas.deals.read crm.schemas.invoices.read crm.schemas.listings.read crm.schemas.orders.read crm.schemas.services.read crm.schemas.subscriptions.read",
+        "optional_scope" : "crm.objects.appointments.write crm.objects.carts.write crm.objects.commercepayments.write crm.objects.companies.write crm.objects.contacts.write crm.objects.courses.write crm.objects.custom.write crm.objects.deals.write crm.objects.invoices.write crm.objects.listings.write crm.objects.orders.write crm.objects.products.write crm.objects.services.write crm.objects.subscriptions.write",
+        "access_token_url" : "https://api.hubapi.com/oauth/v1/token",
+        "extract_output" : [ "access_token", "refresh_token", "expires_in" ],
+        "access_token_headers" : {
+          "Content-Type" : "application/x-www-form-urlencoded"
+        },
+        "access_token_params" : {
+          "client_id" : "{{ client_id_value }}",
+          "client_secret" : "{{ client_secret_value }}",
+          "code" : "{{ auth_code_value }}",
+          "grant_type" : "authorization_code",
+          "redirect_uri" : "{{ redirect_uri_value }}"
+        }
+      },
+      "complete_oauth_output_specification" : {
+        "type" : "object",
+        "additionalProperties" : false,
+        "properties" : {
+          "refresh_token" : {
+            "type" : "string",
+            "path_in_connector_config" : [ "credentials", "refresh_token" ],
+            "path_in_oauth_response" : [ "refresh_token" ]
+          }
+        }
+      },
+      "complete_oauth_server_input_specification" : {
+        "type" : "object",
+        "additionalProperties" : false,
+        "properties" : {
+          "client_id" : {
+            "type" : "string"
+          },
+          "client_secret" : {
+            "type" : "string"
+          }
+        }
+      },
+      "complete_oauth_server_output_specification" : {
+        "type" : "object",
+        "additionalProperties" : false,
+        "properties" : {
+          "client_id" : {
+            "type" : "string",
+            "path_in_connector_config" : [ "credentials", "client_id" ]
+          },
+          "client_secret" : {
+            "type" : "string",
+            "path_in_connector_config" : [ "credentials", "client_secret" ]
+          }
+        }
+      }
+    }
+  }
+}
