@@ -1,5 +1,3 @@
-# Migrated from airbyte-ci/connectors/base_images/README.md
-
 # https://hub.docker.com/_/amazoncorretto/tags?name=21-al2023
 ARG BASE_IMAGE=docker.io/amazoncorretto:21-al2023
 FROM ${BASE_IMAGE}

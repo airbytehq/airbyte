@@ -25,7 +25,11 @@ import io.airbyte.cdk.read.JdbcStreamState
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.StreamFeedBootstrap
 import io.airbyte.cdk.util.Jsons
-import io.airbyte.integrations.source.postgres.PostgresSourceJdbcPartitionFactory.FilenodeChangeType.*
+import io.airbyte.integrations.source.postgres.PostgresSourceJdbcPartitionFactory.FilenodeChangeType.FILENODE_CHANGED
+import io.airbyte.integrations.source.postgres.PostgresSourceJdbcPartitionFactory.FilenodeChangeType.FILENODE_NEW_STREAM
+import io.airbyte.integrations.source.postgres.PostgresSourceJdbcPartitionFactory.FilenodeChangeType.FILENODE_NOT_FOUND
+import io.airbyte.integrations.source.postgres.PostgresSourceJdbcPartitionFactory.FilenodeChangeType.FILENODE_NO_CHANGE
+import io.airbyte.integrations.source.postgres.PostgresSourceJdbcPartitionFactory.FilenodeChangeType.NO_FILENODE
 import io.airbyte.integrations.source.postgres.config.PostgresSourceConfiguration
 import io.airbyte.integrations.source.postgres.ctid.Ctid
 import io.airbyte.integrations.source.postgres.operations.PostgresSourceSelectQueryGenerator
@@ -44,7 +48,8 @@ class PostgresSourceJdbcPartitionFactory(
     val handler: CatalogValidationFailureHandler,
 ) :
     JdbcPartitionFactory<
-        DefaultJdbcSharedState, PostgresSourceJdbcStreamState, PostgresSourceJdbcPartition> {
+        DefaultJdbcSharedState, PostgresSourceJdbcStreamState, PostgresSourceJdbcPartition,
+        > {
     private val streamStates = ConcurrentHashMap<StreamIdentifier, PostgresSourceJdbcStreamState>()
 
     override fun streamState(
@@ -60,25 +65,37 @@ class PostgresSourceJdbcPartitionFactory(
     ): PostgresSourceJdbcPartition {
         val stream: Stream = streamState.stream
         if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH || config.global) {
-            return PostgresSourceJdbcSplittableSnapshotPartition(
+            return filenode?.let {
+                PostgresSourceJdbcSplittableSnapshotPartition(
+                    selectQueryGenerator,
+                    streamState,
+                    lowerBound = null,
+                    upperBound = null,
+                    filenode,
+                )
+            } ?: PostgresSourceJdbcUnsplittableSnapshotPartition(selectQueryGenerator, streamState)
+        }
+        val cursorChosenFromCatalog: DataField =
+            stream.configuredCursor as? DataField ?: throw ConfigErrorException("no cursor")
+        return filenode?.let {
+            PostgresSourceJdbcSplittableSnapshotWithCursorPartition(
                 selectQueryGenerator,
                 streamState,
                 lowerBound = null,
                 upperBound = null,
-                filenode
+                cursorChosenFromCatalog,
+                cursorUpperBound = null,
+                filenode,
             )
-        }
-        val cursorChosenFromCatalog: DataField =
-            stream.configuredCursor as? DataField ?: throw ConfigErrorException("no cursor")
-        return PostgresSourceJdbcSplittableSnapshotWithCursorPartition(
+        } ?: PostgresSourceJdbcUnsplittableSnapshotWithCursorPartition(
             selectQueryGenerator,
             streamState,
-            lowerBound = null,
-            upperBound = null,
             cursorChosenFromCatalog,
-            cursorUpperBound = null,
-            filenode
         )
+    }
+
+    val TidRangeScanCapableDBServer: Boolean by lazy(mode = LazyThreadSafetyMode.SYNCHRONIZED) {
+        isTidRangeScanCapableDBServer(JdbcConnectionFactory(config))
     }
 
     override fun create(streamFeedBootstrap: StreamFeedBootstrap): PostgresSourceJdbcPartition? {
@@ -92,9 +109,12 @@ class PostgresSourceJdbcPartitionFactory(
             return null
         }
 
-        val filenode: Filenode? = getStreamFilenode(streamState)
+        val filenode: Filenode? = when (TidRangeScanCapableDBServer){
+            true -> getStreamFilenode(streamState)
+            false -> null
+        }
         val fileNodeChange: FilenodeChangeType =
-            ensureNoStreamFilenodeChanged(streamState, filenode)
+            detectStreamFilenodeChange(streamState, filenode)
 
         if (opaqueStateValue == null) {
             return coldStart(streamState, filenode)
@@ -137,16 +157,20 @@ class PostgresSourceJdbcPartitionFactory(
                         streamState,
                         lowerBound =
                             listOf(
-                                Jsons.textNode(streamState.maybeCtid!!.toString())
-                            ), // check if ctid is null
+                                Jsons.textNode(streamState.maybeCtid!!.toString()),
+                            ),
                         upperBound = null,
-                        filenode
+                        filenode,
                     )
                 }
             }
         } else {
             val (cursor: DataField, cursorCheckpoint: JsonNode) = cursorPair
-            if (!isCursorBasedIncremental || fileNodeChange !in listOf(FILENODE_NO_CHANGE, FILENODE_NEW_STREAM)) {
+            if (!isCursorBasedIncremental || fileNodeChange !in listOf(
+                    FILENODE_NO_CHANGE,
+                    NO_FILENODE,
+                    FILENODE_NEW_STREAM, // TODO: check here
+                )) {
                 handler.accept(ResetStream(stream.id))
                 streamState.reset()
                 coldStart(streamState, filenode)
@@ -165,14 +189,22 @@ class PostgresSourceJdbcPartitionFactory(
                 // Incremental complete
                 null
             } else {
-                // Incremental ongoing
-                PostgresSourceJdbcCursorIncrementalPartition(
+                filenode?.let {                 // Incremental ongoing
+                    PostgresSourceJdbcCursorIncrementalPartition(
+                        selectQueryGenerator,
+                        streamState,
+                        cursor,
+                        cursorLowerBound = cursorCheckpoint,
+                        isLowerBoundIncluded = true,
+                        cursorUpperBound = streamState.cursorUpperBound,
+                    )
+                } ?: PostgresSourceJdbcUnsplittableCursorIncrementalPartition(
                     selectQueryGenerator,
                     streamState,
                     cursor,
                     cursorLowerBound = cursorCheckpoint,
                     isLowerBoundIncluded = true,
-                    cursorUpperBound = streamState.cursorUpperBound,
+                    explicitCursorUpperBound = streamState.cursorUpperBound,
                 )
             }
         }
@@ -213,9 +245,21 @@ class PostgresSourceJdbcPartitionFactory(
                 return null
             }
         }
+
+        const val POSTGRESQL_VERSION_TID_RANGE_SCAN_CAPABLE: Int = 14
+        fun isTidRangeScanCapableDBServer(jdbcConnectionFactory: JdbcConnectionFactory): Boolean {
+            jdbcConnectionFactory.get().use { connection ->
+                try {
+                    return connection.metaData.databaseMajorVersion >= POSTGRESQL_VERSION_TID_RANGE_SCAN_CAPABLE
+                } catch (e: Exception) {
+                    log.error(e) { "Failed to get database major version" }
+                    return true
+                }
+            }
+        }
     }
 
-    private fun ensureNoStreamFilenodeChanged(
+    private fun detectStreamFilenodeChange(
         streamState: PostgresSourceJdbcStreamState,
         filenode: Filenode?
     ): FilenodeChangeType =
@@ -223,7 +267,7 @@ class PostgresSourceJdbcPartitionFactory(
             // No filenode - a view?
             streamState.maybeFilenode == null && filenode == null -> NO_FILENODE
             // New stream - filenode assigned
-            streamState.maybeFilenode == null -> FILENODE_NEW_STREAM
+            streamState.maybeFilenode == null ->  FILENODE_NEW_STREAM
             // Existing stream - filenode disappeared
             filenode == null -> FILENODE_NOT_FOUND
             // Existing stream - filenode changed. Must start over reading from ctid (0,0)
@@ -279,7 +323,7 @@ class PostgresSourceJdbcPartitionFactory(
     private fun PostgresSourceJdbcSplittableSnapshotPartition.split(
         splitPointValues: List<PostgresSourceJdbcStreamStateValue>
     ): List<PostgresSourceJdbcSplittableSnapshotPartition> {
-        val inners: List<Ctid> = splitPointValues.map { Ctid(it.ctid!!) }
+        val inners: List<Ctid> = splitPointValues.map { Ctid.of(it.ctid!!) }
         val lbCtid: Ctid? =
             lowerBound?.let {
                 if (it.isNotEmpty()) {
@@ -300,7 +344,7 @@ class PostgresSourceJdbcPartitionFactory(
                 streamState,
                 lowerBound?.let { listOf(Jsons.textNode(it.toString())) },
                 upperBound?.let { listOf(Jsons.textNode(it.toString())) },
-                splitPointValues.first().filenode
+                splitPointValues.first().filenode,
             )
         }
     }
@@ -308,7 +352,7 @@ class PostgresSourceJdbcPartitionFactory(
     private fun PostgresSourceJdbcSplittableSnapshotWithCursorPartition.split(
         splitPointValues: List<PostgresSourceJdbcStreamStateValue>
     ): List<PostgresSourceJdbcSplittableSnapshotWithCursorPartition> {
-        val inners: List<Ctid> = splitPointValues.map { Ctid(it.ctid!!) }
+        val inners: List<Ctid> = splitPointValues.map { Ctid.of(it.ctid!!) }
         val lbCtid: Ctid? =
             lowerBound?.let {
                 if (it.isNotEmpty()) {
@@ -331,7 +375,7 @@ class PostgresSourceJdbcPartitionFactory(
                 upperBound?.let { listOf(Jsons.textNode(it.toString())) },
                 cursor,
                 cursorUpperBound,
-                splitPointValues.first().filenode
+                splitPointValues.first().filenode,
             )
         }
     }

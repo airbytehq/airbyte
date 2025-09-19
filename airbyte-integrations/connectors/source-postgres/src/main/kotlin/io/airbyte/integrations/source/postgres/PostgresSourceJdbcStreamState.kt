@@ -38,13 +38,13 @@ class PostgresSourceJdbcStreamState(val base: DefaultJdbcStreamState) :
     val maybeFilenode: Filenode?
         get() = stateValue?.let { sv -> sv.filenode }
     val maybeCtid: Ctid?
-        get() = stateValue?.let { sv -> sv.ctid?.let { Ctid(it) } }
+        get() = stateValue?.let { sv -> sv.ctid?.let { Ctid.of(it) } }
 
     override fun validatePartition(
         partition: JdbcPartition<*>,
         jdbcConnectionFactory: JdbcConnectionFactory
     ) {
-        val filenode: Filenode? = when (partition) {
+        val savedFilenode: Filenode? = when (partition) {
             is PostgresSourceJdbcSplittableSnapshotPartition -> partition.filenode
             is PostgresSourceJdbcSplittableSnapshotWithCursorPartition -> partition.filenode
             else -> null
@@ -54,9 +54,9 @@ class PostgresSourceJdbcStreamState(val base: DefaultJdbcStreamState) :
             jdbcConnectionFactory
         )
 
-        if (currentFilenode != filenode) {
+        if (currentFilenode != savedFilenode) {
             throw TransientErrorException(
-                "Full vacuum on table ${partition.streamState.stream.id} detected. Filenode changed from ${filenode} to $currentFilenode"
+                "Full vacuum on table ${partition.streamState.stream.id} detected. Filenode changed from ${savedFilenode} to $currentFilenode"
             )
         }
     }

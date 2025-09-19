@@ -1296,7 +1296,7 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path: []
+            field_path: ["subscription"]
         paginator:
           type: DefaultPaginator
           page_token_option:

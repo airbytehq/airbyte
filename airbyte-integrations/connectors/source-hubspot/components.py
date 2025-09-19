@@ -205,6 +205,47 @@ class AddFieldsFromEndpointTransformation(RecordTransformation):
 
 
 @dataclass
+class MarketingEmailStatisticsTransformation(RecordTransformation):
+    """
+    Custom transformation for HubSpot Marketing Emails that fetches statistics from the v3 API.
+
+    This transformation is needed because the v3 API separates email data and statistics into two endpoints:
+    - GET /marketing/v3/emails - for email data
+    - GET /marketing/v3/emails/{emailId}/statistics - for statistics
+
+    This transformation fetches statistics for each email and merges them into the email record.
+    """
+
+    requester: Requester
+    record_selector: HttpSelector
+
+    def transform(
+        self,
+        record: Dict[str, Any],
+        config: Optional[Config] = None,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+    ) -> None:
+        try:
+            # Fetch statistics for this email using the v3 statistics endpoint
+            statistics_response = self.requester.send_request(
+                stream_slice=StreamSlice(partition={"email_id": record["id"]}, cursor_slice={})
+            )
+            statistics_data = self.record_selector.select_records(response=statistics_response, stream_state={}, records_schema={})
+
+            # Merge statistics into the email record
+            for stats in statistics_data:
+                record.update(stats)
+
+        except Exception as e:
+            # Log the error but don't fail the entire sync
+            # This ensures that if statistics are unavailable for some emails,
+            # we still get the email data
+            logger.warning(f"Failed to fetch statistics for email {record.get('id', 'unknown')}: {str(e)}")
+            pass
+
+
+@dataclass
 class HubspotSchemaExtractor(RecordExtractor):
     """
     Transformation that encapsulates the list of properties under a single object because DynamicSchemaLoader only
@@ -341,9 +382,9 @@ class EntitySchemaNormalization(TypeTransformer):
     Convert record's received value according to its declared catalog dynamic schema type and format.
 
     Empty strings for fields that have non string type converts to None.
-    Numeric strings for fields that have number type converts to integer type, otherwise to number.
-    Strings like "true"/"false" with boolean type converts to boolean.
-    Date and Datime fields converts to format datetime string. Set __ab_apply_cast_datetime: false in field definition, if you don't need to format datetime strings.
+    Numeric strings for fields that have number type converts to integer type, otherwise to number. If the value is not numeric, the original value is returned.
+    Strings like "true"/"false" with boolean type converts to boolean else the original value is returned.
+    Date and Datetime fields converts to format datetime string. Set __ab_apply_cast_datetime: false in field definition, if you don't need to format datetime strings.
 
     """
 
@@ -357,9 +398,23 @@ class EntitySchemaNormalization(TypeTransformer):
             target_type = field_schema.get("type")
             target_format = field_schema.get("format")
 
+            # Handle oneOf schema structures by extracting and flattening all types
+            if target_type is None and "oneOf" in field_schema:
+                all_types = set()
+                for one_of_item in field_schema["oneOf"]:
+                    item_type = one_of_item.get("type", [])
+                    if isinstance(item_type, list):
+                        all_types.update(item_type)
+                    elif isinstance(item_type, str):
+                        all_types.add(item_type)
+                target_type = list(all_types)
+
+            if target_type is None:
+                target_type = []
+            elif isinstance(target_type, str):
+                target_type = [target_type]
+
             if "null" in target_type:
-                if original_value is None:
-                    return original_value
                 # Sometimes hubspot output empty string on field with format set.
                 # Set it to null to avoid errors on destination' normalization stage.
                 if target_format and original_value == "":
@@ -784,9 +839,9 @@ class HubspotCustomObjectsSchemaLoader(SchemaLoader):
         elif field_type == "date":
             return {"type": ["null", "string"], "format": "date"}
         elif field_type == "number":
-            return {"type": ["null", "number"]}
+            return {"oneOf": [{"type": ["null", "number"]}, {"type": ["null", "string"]}]}
         elif field_type == "boolean" or field_type == "bool":
-            return {"type": ["null", "boolean"]}
+            return {"oneOf": [{"type": ["null", "boolean"]}, {"type": ["null", "string"]}]}
         else:
             logger.warn(f"Field {field['name']} has unrecognized type: {field['type']} casting to string.")
             return {"type": ["null", "string"]}

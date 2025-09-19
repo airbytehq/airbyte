@@ -66,8 +66,7 @@ class PostgresSourceCursorBasedIntegrationTest {
 
     companion object {
         val log = KotlinLogging.logger {}
-        val dbContainer: PostgreSQLContainer<*> =
-            PostgresContainerFactory.shared(imageName = "postgres:17-bullseye")
+        val dbContainer: PostgreSQLContainer<*> = PostgresContainerFactory.shared17()
 
         val config: PostgresSourceConfigurationSpecification =
             PostgresContainerFactory.config(dbContainer)

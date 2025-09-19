@@ -48,34 +48,130 @@ sealed class PostgresSourceJdbcPartition(
     val from = From(stream.name, stream.namespace)
 }
 
-/*class PostgresSourceJdbcNonResumableSnapshotPartition(
+sealed class PostgresSourceJdbcUnsplittablePartition(
     selectQueryGenerator: SelectQueryGenerator,
-    override val streamState: DefaultJdbcStreamState,
+    streamState: PostgresSourceJdbcStreamState,
 ) : PostgresSourceJdbcPartition(selectQueryGenerator, streamState) {
-    override val completeState: OpaqueStateValue */
-/*PostgresSorouceJdbcStreamStateValue.snapshotCompleted*/
-/*
-        get() = Jsons.nullNode() // TEMP
-
     override val nonResumableQuery: SelectQuery
         get() = selectQueryGenerator.generate(nonResumableQuerySpec.optimize())
 
-    val nonResumableQuerySpec = SelectQuerySpec(SelectColumns(
-        listOf(ctidField) + stream.fields
-    ), from)
+    open val nonResumableQuerySpec = SelectQuerySpec(SelectColumns(stream.fields), from)
 
     override fun samplingQuery(sampleRateInvPow2: Int): SelectQuery {
         val sampleSize: Int = streamState.sharedState.maxSampleSize
-
         val querySpec =
-            SelectQuerySpec(SelectColumns(listOf(ctidField) + stream.fields),
-                FromSample(stream.name, stream.namespace, sampleRateInvPow2, sampleSize),
+            SelectQuerySpec(
+                SelectColumns(stream.fields),
+                From(stream.name, stream.namespace),
+                limit = Limit(sampleSize.toLong())
             )
         return selectQueryGenerator.generate(querySpec.optimize())
     }
 
+}
 
-}*/
+class PostgresSourceJdbcUnsplittableSnapshotPartition(
+    selectQueryGenerator: SelectQueryGenerator,
+    streamState: PostgresSourceJdbcStreamState,
+) : PostgresSourceJdbcUnsplittablePartition(selectQueryGenerator, streamState) {
+    override val completeState: OpaqueStateValue
+        get() = PostgresSourceJdbcStreamStateValue.snapshotCompleted
+
+}
+
+class PostgresSourceJdbcUnsplittableSnapshotWithCursorPartition(
+    selectQueryGenerator: SelectQueryGenerator,
+    streamState: PostgresSourceJdbcStreamState,
+    val cursor: DataField,
+): PostgresSourceJdbcUnsplittablePartition(selectQueryGenerator, streamState),
+    JdbcCursorPartition<PostgresSourceJdbcStreamState> {
+    override val completeState: OpaqueStateValue
+        get() = PostgresSourceJdbcStreamStateValue.cursorIncrementalCheckpoint(cursor, streamState.cursorUpperBound!!)
+
+    override val cursorUpperBoundQuery: SelectQuery
+        get() = selectQueryGenerator.generate(cursorUpperBoundQuerySpec.optimize())
+
+    val cursorUpperBoundQuerySpec = SelectQuerySpec(SelectColumnMaxValue(cursor), from)
+
+}
+
+class PostgresSourceJdbcUnsplittableCursorIncrementalPartition(
+    selectQueryGenerator: SelectQueryGenerator,
+    streamState: PostgresSourceJdbcStreamState,
+    val cursor: DataField,
+    val cursorLowerBound: JsonNode,
+    val isLowerBoundIncluded: Boolean,
+    val explicitCursorUpperBound: JsonNode?,
+): PostgresSourceJdbcUnsplittablePartition(selectQueryGenerator, streamState),
+    JdbcCursorPartition<PostgresSourceJdbcStreamState>
+{
+    override fun samplingQuery(sampleRateInvPow2: Int): SelectQuery {
+        val sampleSize: Int = streamState.sharedState.maxSampleSize
+        val querySpec =
+            SelectQuerySpec(
+                SelectColumns(stream.fields),
+                From(stream.name, stream.namespace),
+                limit = Limit(sampleSize.toLong())
+            )
+        return selectQueryGenerator.generate(querySpec.optimize())
+    }
+
+    val cursorUpperBound: JsonNode
+        get() = explicitCursorUpperBound ?: streamState.cursorUpperBound ?: Jsons.nullNode()
+
+    override val completeState: OpaqueStateValue
+        get() =
+            PostgresSourceJdbcStreamStateValue.cursorIncrementalCheckpoint(cursor, cursorUpperBound)
+
+    override val cursorUpperBoundQuery: SelectQuery
+        get() = selectQueryGenerator.generate(cursorUpperBoundQuerySpec.optimize())
+
+    val cursorUpperBoundQuerySpec = SelectQuerySpec(SelectColumnMaxValue(cursor), from)
+
+    override val nonResumableQuerySpec: SelectQuerySpec
+        get() = SelectQuerySpec(SelectColumns(stream.fields), from, where, OrderBy(cursor))
+
+    val where: Where
+        get() {
+            val checkpointColumns: List<DataField> = listOf(cursor)
+            val lowerBound: List<JsonNode> = listOf(cursorLowerBound)
+            val upperBound: List<JsonNode> = listOf(cursorUpperBound)
+            val zippedLowerBound: List<Pair<DataField, JsonNode>> =
+                lowerBound?.let { checkpointColumns.zip(it) } ?: listOf()
+            val lowerBoundDisj: List<WhereClauseNode> =
+                zippedLowerBound.mapIndexed { idx: Int, (gtCol: DataField, gtValue: JsonNode) ->
+                    val lastLeaf: WhereClauseLeafNode =
+                        if (isLowerBoundIncluded && idx == checkpointColumns.size - 1) {
+                            GreaterOrEqual(gtCol, gtValue)
+                        } else {
+                            Greater(gtCol, gtValue)
+                        }
+                    And(
+                        zippedLowerBound.take(idx).map { (eqCol: DataField, eqValue: JsonNode) ->
+                            Equal(eqCol, eqValue)
+                        } + listOf(lastLeaf),
+                    )
+                }
+            val zippedUpperBound: List<Pair<DataField, JsonNode>> =
+                upperBound?.let { checkpointColumns.zip(it) } ?: listOf()
+            val upperBoundDisj: List<WhereClauseNode> =
+                zippedUpperBound.mapIndexed { idx: Int, (leqCol: DataField, leqValue: JsonNode) ->
+                    val lastLeaf: WhereClauseLeafNode =
+                        if (idx < zippedUpperBound.size - 1) {
+                            Lesser(leqCol, leqValue)
+                        } else {
+                            LesserOrEqual(leqCol, leqValue)
+                        }
+                    And(
+                        zippedUpperBound.take(idx).map { (eqCol: DataField, eqValue: JsonNode) ->
+                            Equal(eqCol, eqValue)
+                        } + listOf(lastLeaf),
+                    )
+                }
+            return Where(And(Or(lowerBoundDisj), Or(upperBoundDisj)))
+        }
+}
+
 
 sealed class PostgresSourceSplittablePartition(
     selectQueryGenerator: SelectQueryGenerator,
@@ -273,7 +369,7 @@ class PostgresSourceJdbcCursorIncrementalPartition(
                 SelectColumns((stream.fields).distinct()),
                 from,
                 where,
-                OrderBy(ctidField),
+                OrderBy(cursor),
                 Limit(limit)
             )
         return selectQueryGenerator.generate(querySpec.optimize())
