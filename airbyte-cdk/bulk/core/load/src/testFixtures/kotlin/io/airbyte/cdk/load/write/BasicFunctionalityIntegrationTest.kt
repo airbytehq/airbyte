@@ -645,7 +645,7 @@ abstract class BasicFunctionalityIntegrationTest(
     }
 
     @Test
-    fun testCDCStateTypes() {
+    open fun testCDCStateTypes() {
         if (
             dataChannelMedium != DataChannelMedium.SOCKET ||
                 dataChannelFormat != DataChannelFormat.PROTOBUF

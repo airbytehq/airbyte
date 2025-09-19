@@ -12,6 +12,8 @@ import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.ValidatedJsonUtils
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.config.DataChannelFormat
+import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.message.Meta
@@ -48,7 +50,6 @@ class ClickhouseDirectLoadWriterWithJson :
         SchematizedNestedValueBehavior.PASS_THROUGH,
         false,
     ) {
-
     /**
      * The way clickhouse handle json makes this test unfit JSON keeps a schema of the JSONs
      * inserted. If a previous row has a JSON with a column A, It is expected that the subsequent
@@ -63,7 +64,17 @@ class ClickhouseDirectLoadWriterWithoutJson :
         Utils.getConfigPath("valid_connection_no_json.json"),
         SchematizedNestedValueBehavior.STRINGIFY,
         true,
-    )
+    ) {
+    @Test
+    override fun testCDCStateTypes() {
+        super.testCDCStateTypes()
+    }
+
+    @Test
+    override fun testDedup() {
+        super.testDedup()
+    }
+}
 
 @Disabled("Requires local bastion and CH instance to pass")
 class ClickhouseDirectLoadWriterWithoutJsonSshTunnel :
@@ -116,7 +127,8 @@ abstract class ClickhouseAcceptanceTest(
         nullEqualsUnset = true,
         configUpdater = ClickhouseConfigUpdater(),
         dedupChangeUsesDefault = true,
-        testSpeedModeStatsEmission = false,
+        dataChannelFormat = DataChannelFormat.PROTOBUF,
+        dataChannelMedium = DataChannelMedium.SOCKET,
     ) {
     companion object {
         @JvmStatic
