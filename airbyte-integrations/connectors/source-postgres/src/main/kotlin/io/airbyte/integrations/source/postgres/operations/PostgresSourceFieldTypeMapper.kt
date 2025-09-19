@@ -52,28 +52,29 @@ class PostgresSourceFieldTypeMapper : JdbcMetadataQuerier.FieldTypeMapper {
                 if (type.scale == 0) BigIntegerFieldType else BigDecimalFieldType
             }
             JDBCType.DATE -> LocalDateFieldType
-//            JDBCType.DATETIME -> LocalDateTimeFieldType
+            //            JDBCType.DATETIME -> LocalDateTimeFieldType
             JDBCType.TIMESTAMP -> OffsetDateTimeFieldType
             JDBCType.TIME -> LocalTimeFieldType
             JDBCType.CHAR,
             JDBCType.VARCHAR,
-//            JDBCType.TINYTEXT,
-//            JDBCType.TEXT,
-//            JDBCType.MEDIUMTEXT,
-//            JDBCType.LONGTEXT,
-//            JDBCType.ENUM,
+            //            JDBCType.TINYTEXT,
+            //            JDBCType.TEXT,
+            //            JDBCType.MEDIUMTEXT,
+            //            JDBCType.LONGTEXT,
+            //            JDBCType.ENUM,
             /*JDBCType.SET*/ -> StringFieldType
-//            JDBCType.JSON -> StringFieldType // TODO: replace this with JsonStringFieldType
-//            JDBCType.TINYBLOB,
+            //            JDBCType.JSON -> StringFieldType // TODO: replace this with
+            // JsonStringFieldType
+            //            JDBCType.TINYBLOB,
             JDBCType.BLOB,
-//            JDBCType.MEDIUMBLOB,
-//            JDBCType.LONGBLOB,
+            //            JDBCType.MEDIUMBLOB,
+            //            JDBCType.LONGBLOB,
             JDBCType.BINARY,
             JDBCType.VARBINARY,
             /*JDBCType.GEOMETRY*/ -> BinaryStreamFieldType
             JDBCType.NULL -> NullFieldType
-//            JDBCType.VECTOR,
-//            JDBCType.UNKNOWN,
+            //            JDBCType.VECTOR,
+            //            JDBCType.UNKNOWN,
             /*null*/
             else -> PokemonFieldType
         }

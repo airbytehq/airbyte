@@ -139,10 +139,10 @@ constructor(
 
         // Configure SSL encryption.
         if (
-            pojo.getEncryptionValue() in listOf(EncryptionDisable,
-                EncryptionAllow, EncryptionPrefer) &&
-            sshTunnel is SshNoTunnelMethod &&
-            featureFlags.contains(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT)
+            pojo.getEncryptionValue() in
+                listOf(EncryptionDisable, EncryptionAllow, EncryptionPrefer) &&
+                sshTunnel is SshNoTunnelMethod &&
+                featureFlags.contains(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT)
         ) {
             throw ConfigErrorException(
                 "Connection from Airbyte Cloud requires SSL encryption or an SSH tunnel."
@@ -152,7 +152,6 @@ constructor(
         val sslJdbcProperties: Map<String, String> = fromEncryptionSpec(pojo.getEncryptionValue()!!)
         jdbcProperties.putAll(sslJdbcProperties)
         log.info { "SSL mode: ${sslJdbcProperties["sslMode"]}" }
-
 
         /*// Configure SSL encryption.
         val sslJdbcProperties: Map<String, String> = fromEncryptionSpec(pojo.getEncryptionValue()!!)
@@ -181,10 +180,10 @@ constructor(
 
         log.info { "maxDBConnections: $maxDBConnections. socket paths: ${socketPaths.size}" }
 
-        //TODO: by channel medium
+        // TODO: by channel medium
         // If max_db_connections is set, we use it.
         // Otherwise, we use the number of socket paths provided.
-        val maxConcurrency: Int = maxDBConnections ?: /*socketPaths.size*/1
+        val maxConcurrency: Int = maxDBConnections ?: /*socketPaths.size*/ 1
         log.info { "Effective concurrency: $maxConcurrency" }
 
         return PostgresSourceConfiguration(
@@ -226,7 +225,7 @@ constructor(
             }
         }
 
-        private fun fromEncryptionSpec(encryptionSpec: EncryptionSpecification): Map<String, String> {
+    private fun fromEncryptionSpec(encryptionSpec: EncryptionSpecification): Map<String, String> {
         val extraJdbcProperties: MutableMap<String, String> = mutableMapOf()
         val sslData: SslData =
             when (encryptionSpec) {
@@ -260,7 +259,7 @@ constructor(
             sslData.keyStorePassword.takeUnless { it.isNullOrBlank() }
                 ?: UUID.randomUUID().toString()
 
-            extraJdbcProperties[CLIENT_KEY_STORE_PASS] = password
+        extraJdbcProperties[CLIENT_KEY_STORE_PASS] = password
         // Make keystore for CA cert with given password or generate a new password.
         val caCertKeyStoreUrl: URL =
             buildKeyStore("trust") {
@@ -287,7 +286,8 @@ constructor(
                     directory = ""
                 )
             }
-        extraJdbcProperties[CLIENT_KEY_STORE_URL] = Paths.get(clientCertKeyStoreUrl.toURI()).toString()
+        extraJdbcProperties[CLIENT_KEY_STORE_URL] =
+            Paths.get(clientCertKeyStoreUrl.toURI()).toString()
         return extraJdbcProperties
     }
 
@@ -299,7 +299,7 @@ constructor(
         val keyStorePassword: String? = null,
     )
 
-        private fun buildKeyStore(kind: String, uriSupplier: () -> URI): URL {
+    private fun buildKeyStore(kind: String, uriSupplier: () -> URI): URL {
         val keyStoreUri: URI =
             try {
                 uriSupplier()
@@ -322,6 +322,4 @@ constructor(
         const val CLIENT_KEY_STORE_PASS: String = "sslpassword"
         const val SSL_MODE: String = "sslmode"
     }
-
-
 }

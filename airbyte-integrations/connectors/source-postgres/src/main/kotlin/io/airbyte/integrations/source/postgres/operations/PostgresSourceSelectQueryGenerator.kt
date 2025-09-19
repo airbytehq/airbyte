@@ -48,7 +48,8 @@ class PostgresSourceSelectQueryGenerator : SelectQueryGenerator {
         SelectQuery(ast.sql(), ast.select.columns, ast.bindings())
 
     fun SelectQuerySpec.sql(): String {
-        val components: List<String> = listOf(select.sql(), from.sql(select.columns), where.sql(), orderBy.sql())
+        val components: List<String> =
+            listOf(select.sql(), from.sql(select.columns), where.sql(), orderBy.sql())
         val sqlWithoutLimit: String = components.filter { it.isNotBlank() }.joinToString(" ")
         val limitClause: String =
             when (limit) {
@@ -77,7 +78,9 @@ class PostgresSourceSelectQueryGenerator : SelectQueryGenerator {
 
     fun DataField.sql(): String = "\"$id\""
 
-    fun FromNode.sql(columns: List<DataField>,): String =
+    fun FromNode.sql(
+        columns: List<DataField>,
+    ): String =
         when (this) {
             NoFrom -> "FROM DUAL"
             is From ->
@@ -90,7 +93,8 @@ class PostgresSourceSelectQueryGenerator : SelectQueryGenerator {
                         " TABLESAMPLE SYSTEM(${sampleRatePercentage.toPlainString()}) REPEATABLE(2472983)"
                     }
                 val innerFrom: String = From(name, namespace).sql(columns) + sample
-                val inner = "SELECT ${columns.joinToString(", ") { it.sql() }} $innerFrom ORDER BY RANDOM()"
+                val inner =
+                    "SELECT ${columns.joinToString(", ") { it.sql() }} $innerFrom ORDER BY RANDOM()"
                 "FROM (SELECT ${columns.joinToString(", ") { it.sql() }} FROM ($inner) LIMIT $sampleSize)"
             }
         }
@@ -105,26 +109,31 @@ class PostgresSourceSelectQueryGenerator : SelectQueryGenerator {
         when (this) {
             is And -> conj.joinToString(") AND (", "(", ")") { it.sql() }
             is Or -> disj.joinToString(") OR (", "(", ")") { it.sql() }
-            is Equal -> when (column) {
-                is NonEmittedField -> "${column.sql()} = ?::tid"
-                else -> "${column.sql()} = ?"
-            }
-            is GreaterOrEqual -> when (column) {
-                is NonEmittedField -> "${column.sql()} >= ?::tid"
-                else -> "${column.sql()} >= ?"
-            }
-            is Greater -> when (column) {
-                is NonEmittedField -> "${column.sql()} > ?::tid"
-                else -> "${column.sql()} > ?"
-            }
-            is LesserOrEqual -> when (column) {
-                is NonEmittedField -> "${column.sql()} <= ?::tid"
-                else -> "${column.sql()} <= ?"
-            }
-            is Lesser ->  when (column) {
-                is NonEmittedField -> "${column.sql()} < ?::tid"
-                else -> "${column.sql()} < ?"
-            }
+            is Equal ->
+                when (column) {
+                    is NonEmittedField -> "${column.sql()} = ?::tid"
+                    else -> "${column.sql()} = ?"
+                }
+            is GreaterOrEqual ->
+                when (column) {
+                    is NonEmittedField -> "${column.sql()} >= ?::tid"
+                    else -> "${column.sql()} >= ?"
+                }
+            is Greater ->
+                when (column) {
+                    is NonEmittedField -> "${column.sql()} > ?::tid"
+                    else -> "${column.sql()} > ?"
+                }
+            is LesserOrEqual ->
+                when (column) {
+                    is NonEmittedField -> "${column.sql()} <= ?::tid"
+                    else -> "${column.sql()} <= ?"
+                }
+            is Lesser ->
+                when (column) {
+                    is NonEmittedField -> "${column.sql()} < ?::tid"
+                    else -> "${column.sql()} < ?"
+                }
         }
 
     fun OrderByNode.sql(): String =
@@ -157,6 +166,4 @@ class PostgresSourceSelectQueryGenerator : SelectQueryGenerator {
             Limit(0) -> listOf()
             is Limit -> listOf(SelectQuery.Binding(Jsons.numberNode(n), LongFieldType))
         }
-
 }
-

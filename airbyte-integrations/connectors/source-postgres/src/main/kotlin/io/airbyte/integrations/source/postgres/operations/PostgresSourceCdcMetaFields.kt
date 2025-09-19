@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.postgres.operations
 
 import io.airbyte.cdk.discover.CdcIntegerMetaFieldType

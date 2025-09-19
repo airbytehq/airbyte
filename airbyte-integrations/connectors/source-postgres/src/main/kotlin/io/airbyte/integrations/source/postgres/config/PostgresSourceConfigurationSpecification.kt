@@ -125,7 +125,6 @@ class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonSchemaInject(json = """{"order":8,"default":"require"}""")
     fun getEncryptionValue(): EncryptionSpecification? = encryptionJson ?: encryption.asEncryption()
 
-
     @JsonIgnore
     @ConfigurationBuilder(configurationPrefix = "tunnel_method")
     val tunnelMethod = MicronautPropertiesFriendlySshTunnelMethodConfigurationSpecification()
@@ -232,7 +231,6 @@ data object EncryptionDisable : EncryptionSpecification
     "To allow encrypted communication, but not require it.",
 )
 data object EncryptionAllow : EncryptionSpecification
-
 
 @JsonSchemaTitle("prefer")
 @JsonSchemaDescription(
@@ -341,7 +339,6 @@ class MicronautPropertiesFriendlyEncryptionSpecification {
             else -> throw ConfigErrorException("invalid value $mode")
         }
 }
-
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "cursor_method")
 @JsonSubTypes(

@@ -14,8 +14,8 @@ import io.airbyte.cdk.command.StreamInputState
 import io.airbyte.cdk.data.AirbyteSchemaType
 import io.airbyte.cdk.data.ArrayAirbyteSchemaType
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
-import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.DataOrMetaField
+import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.MetaField
 import io.airbyte.cdk.discover.MetaFieldDecorator
 import io.airbyte.cdk.discover.MetadataQuerier
