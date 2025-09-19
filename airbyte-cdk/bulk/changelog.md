@@ -1,3 +1,9 @@
+## Version 0.1.38
+
+**Load CDK**
+
+* **Changed:** Adds stats support for "speed" mode
+
 ## Version 0.1.37
 
 * **Changed:** load-s3: S3Client forces path-style access, to enable minio compatibility
