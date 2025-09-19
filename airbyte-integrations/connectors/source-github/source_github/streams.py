@@ -1446,6 +1446,7 @@ class WorkflowRuns(SemiIncrementalMixin, GithubStream):
     API documentation: https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28#list-workflow-runs-for-a-repository
     """
 
+    primary_key = ["id", "run_attempt"]
     # key for accessing slice value from record
     record_slice_key = ["repository", "full_name"]
 
