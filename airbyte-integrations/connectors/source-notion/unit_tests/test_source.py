@@ -12,3 +12,11 @@ def test_streams():
     streams = source.streams(config_mock)
     expected_streams_number = 5
     assert len(streams) == expected_streams_number
+
+
+def test_streams_no_start_date_in_config():
+    config_mock = {"credentials": {"auth_type": "token", "token": "abcd"}}
+    source = SourceNotion(catalog=MagicMock(), config=config_mock, state={})
+    streams = source.streams(config_mock)
+    expected_streams_number = 5
+    assert len(streams) == expected_streams_number
