@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.snowflake.client
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.client.AirbyteClient
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAMES
@@ -28,6 +29,7 @@ internal const val DESCRIBE_TABLE_COLUMN_NAME_FIELD = "column_name"
 private val log = KotlinLogging.logger {}
 
 @Singleton
+@SuppressFBWarnings(value = ["NP_NONNULL_PARAM_VIOLATION"], justification = "kotlin coroutines")
 class SnowflakeAirbyteClient(
     private val dataSource: DataSource,
     private val sqlGenerator: SnowflakeDirectLoadSqlGenerator,
