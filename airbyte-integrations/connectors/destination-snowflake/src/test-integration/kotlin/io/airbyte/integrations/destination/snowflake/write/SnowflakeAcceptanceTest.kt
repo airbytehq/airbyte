@@ -215,6 +215,25 @@ class SnowflakeDataDumper(
                         stream.mappedDescriptor.namespace!!.toSnowflakeCompatibleName(),
                         stream.mappedDescriptor.name.toSnowflakeCompatibleName()
                     )
+
+                // First check if the table exists
+                val tableExistsQuery = """
+                    SELECT COUNT(*) AS TABLE_COUNT
+                    FROM information_schema.tables
+                    WHERE table_schema = '${tableName.namespace}'
+                    AND table_name = '${tableName.name}'
+                """.trimIndent()
+
+                val existsResultSet = statement.executeQuery(tableExistsQuery)
+                existsResultSet.next()
+                val tableExists = existsResultSet.getInt("TABLE_COUNT") > 0
+                existsResultSet.close()
+
+                if (!tableExists) {
+                    // Table doesn't exist, return empty list
+                    return output
+                }
+
                 val resultSet =
                     statement.executeQuery(
                         "SELECT * FROM ${tableName.toPrettyString(quote = QUOTE)}"

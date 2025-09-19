@@ -71,8 +71,31 @@ class SnowflakeAirbyteClient(
     }
 
     override suspend fun overwriteTable(sourceTableName: TableName, targetTableName: TableName) {
-        execute(sqlGenerator.swapTableWith(sourceTableName, targetTableName))
-        execute(sqlGenerator.dropTable(sourceTableName))
+        // Check if the target table exists by trying to count its rows
+        val targetExists = countTable(targetTableName) != null
+
+        log.info {
+            "overwriteTable: source=${sourceTableName.toPrettyString()}, target=${targetTableName.toPrettyString()}, targetExists=$targetExists"
+        }
+
+        if (targetExists) {
+            // If target exists, use SWAP for efficiency
+            log.info { "Using SWAP operation since target table exists" }
+            execute(sqlGenerator.swapTableWith(sourceTableName, targetTableName))
+            execute(sqlGenerator.dropTable(sourceTableName))
+        } else {
+            // If target doesn't exist, rename source to target
+            log.info { "Using RENAME operation since target table doesn't exist" }
+            // Drop target if it somehow exists (defensive programming)
+            try {
+                execute(sqlGenerator.dropTable(targetTableName))
+                log.info { "Dropped existing target table before rename" }
+            } catch (e: Exception) {
+                // Table doesn't exist, which is expected
+                log.debug { "Target table doesn't exist to drop (expected): ${e.message}" }
+            }
+            execute(sqlGenerator.renameTable(sourceTableName, targetTableName))
+        }
     }
 
     override suspend fun copyTable(
