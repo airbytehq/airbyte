@@ -1,17 +1,19 @@
 /*
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
-
 package io.airbyte.cdk.load.file.azureBlobStorage
 
+import com.azure.core.http.rest.Response
 import com.azure.storage.blob.models.BlobStorageException
 import com.azure.storage.blob.models.BlockBlobItem
+import com.azure.storage.blob.options.BlockBlobCommitBlockListOptions
 import com.azure.storage.blob.specialized.BlockBlobClient
 import io.airbyte.cdk.load.command.azureBlobStorage.AzureBlobStorageClientConfiguration
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
+import io.mockk.slot
 import io.mockk.verify
 import java.io.InputStream
 import java.nio.charset.StandardCharsets
@@ -27,7 +29,7 @@ class AzureBlobStreamingUploadTest {
 
     private lateinit var blockBlobClient: BlockBlobClient
     private lateinit var config: AzureBlobStorageClientConfiguration
-    private lateinit var metadata: Map<String, String>
+    private val metadata = mapOf("env" to "dev", "author" to "testUser", "ab_generation_id" to "0")
     private lateinit var streamingUpload: AzureBlobStreamingUpload
 
     @BeforeEach
@@ -37,212 +39,143 @@ class AzureBlobStreamingUploadTest {
             AzureBlobStorageClientConfiguration(
                 accountName = "fakeAccount",
                 containerName = "fakeContainer",
-                sharedAccessSignature = "",
+                sharedAccessSignature = null,
                 accountKey = "test",
+                tenantId = null,
+                clientId = null,
+                clientSecret = null,
             )
-        metadata = mapOf("env" to "dev", "author" to "testUser", "ab_generation_id" to "0")
-
-        // By default, let's assume blobName returns something
         every { blockBlobClient.blobName } returns "testBlob"
-
         streamingUpload = AzureBlobStreamingUpload(blockBlobClient, config, metadata)
     }
 
     @Test
     fun `uploadPart - stages block successfully`() = runBlocking {
-        // Arrange
         val partData = "Hello Azure".toByteArray()
         val index = 1
-
-        // We just mock stageBlock, verifying that it is called with correct block ID and stream
         every { blockBlobClient.stageBlock(any(), any<InputStream>(), any()) } just runs
 
-        // Act
         streamingUpload.uploadPart(partData, index)
 
-        // Assert
         verify(exactly = 1) {
             blockBlobClient.stageBlock(any(), any<InputStream>(), partData.size.toLong())
         }
     }
 
     @Test
-    fun `uploadPart - throws exception if stageBlock fails`(): Unit = runBlocking {
-        // Arrange
-        val partData = ByteArray(10) { 0xA }
+    fun `uploadPart - throws if stageBlock fails`(): Unit = runBlocking {
         every { blockBlobClient.stageBlock(any(), any<InputStream>(), any()) } throws
             BlobStorageException("Staging failed", null, null)
 
-        // Act & Assert
         assertThrows(BlobStorageException::class.java) {
-            runBlocking { streamingUpload.uploadPart(partData, 0) }
+            runBlocking { streamingUpload.uploadPart(ByteArray(4), 0) }
         }
     }
 
     @Test
-    fun `complete - no blocks uploaded`() = runBlocking {
-        // Arrange
-        // No calls to uploadPart => blockIds empty
-        // We want to ensure commitBlockList is NOT called
-        val blobItem = mockk<BlockBlobItem>()
-        every { blockBlobClient.commitBlockList(any(), any()) } returns blobItem
-        // note that generation ID metadata is changed from ab-generation-id -> ab_generation_id
-        every {
-            blockBlobClient.setMetadata(
-                mapOf("env" to "dev", "author" to "testUser", "ab_generation_id" to "0")
-            )
-        } just runs
+    fun `complete - commits empty blob when no parts uploaded`() = runBlocking {
+        val response = mockk<Response<BlockBlobItem>>()
+        val optsSlot = slot<BlockBlobCommitBlockListOptions>()
 
-        // Act
-        val resultBlob = streamingUpload.complete()
+        every { blockBlobClient.commitBlockListWithResponse(capture(optsSlot), null, null) } returns
+            response
 
-        // Assert
-        // 1) We committed the empty blob
-        verify(exactly = 1) { blockBlobClient.commitBlockList(emptyList(), true) }
-        // 2) Metadata still set (the code checks for empty map, but here it's non-empty).
-        verify(exactly = 1) {
-            blockBlobClient.setMetadata(
-                mapOf("env" to "dev", "author" to "testUser", "ab_generation_id" to "0")
-            )
-        }
+        val result = streamingUpload.complete()
 
-        // 3) Return object is AzureBlob
-        assertEquals("testBlob", resultBlob.key)
-        assertEquals(config, resultBlob.storageConfig)
+        verify(exactly = 1) { blockBlobClient.commitBlockListWithResponse(any(), null, null) }
+        assertTrue(optsSlot.captured.base64BlockIds.isEmpty(), "Block list should be empty")
+        assertEquals(metadata, optsSlot.captured.metadata)
+        assertEquals("testBlob", result.key)
+        assertEquals(config, result.storageConfig)
     }
 
     @Test
-    fun `complete - multiple blocks, commits in ascending index order`() = runBlocking {
-        // Arrange
+    fun `complete - commits blocks in ascending index order`() = runBlocking {
+        val response = mockk<Response<BlockBlobItem>>()
+        val optsSlot = slot<BlockBlobCommitBlockListOptions>()
+
         every { blockBlobClient.stageBlock(any(), any<InputStream>(), any()) } just runs
-        val blobItem = mockk<BlockBlobItem>()
-        every { blockBlobClient.commitBlockList(any(), any()) } returns blobItem
-        every { blockBlobClient.setMetadata(any()) } just runs
+        every { blockBlobClient.commitBlockListWithResponse(capture(optsSlot), null, null) } returns
+            response
 
-        // Let's upload 3 parts out of order for demonstration
-        streamingUpload.uploadPart("part-A".toByteArray(), 2)
-        streamingUpload.uploadPart("part-B".toByteArray(), 0)
-        streamingUpload.uploadPart("part-C".toByteArray(), 1)
+        // upload out of order
+        streamingUpload.uploadPart("B".toByteArray(), 2)
+        streamingUpload.uploadPart("A".toByteArray(), 0)
+        streamingUpload.uploadPart("C".toByteArray(), 1)
 
-        // Act
-        val resultBlob = streamingUpload.complete()
+        val result = streamingUpload.complete()
 
-        // Assert
-        // The code sorts by the keys in ascending order (0,1,2). We verify that
-        // commitBlockList is called with the values in ascending order of index.
-        verify(exactly = 1) {
-            blockBlobClient.commitBlockList(
-                withArg { blockList ->
-                    // We can't easily check the entire Base64 ID but can check it has 3 items
-                    assertEquals(3, blockList.size)
-                },
-                true
-            )
-        }
-        verify(exactly = 1) {
-            blockBlobClient.setMetadata(
-                mapOf("env" to "dev", "author" to "testUser", "ab_generation_id" to "0")
-            )
-        }
-        // Confirm the returned object
-        assertEquals("testBlob", resultBlob.key)
-        assertEquals(config, resultBlob.storageConfig)
+        verify(exactly = 1) { blockBlobClient.commitBlockListWithResponse(any(), null, null) }
+        // Ensure 3 blocks & ascending order
+        assertEquals(3, optsSlot.captured.base64BlockIds.size)
+        val ids = optsSlot.captured.base64BlockIds
+        assertTrue(ids == ids.sorted(), "Block IDs must be in ascending order")
+
+        assertEquals(metadata, optsSlot.captured.metadata)
+        assertEquals("testBlob", result.key)
+        assertEquals(config, result.storageConfig)
     }
 
     @Test
-    fun `complete - calls commit only once on repeated calls`() = runBlocking {
-        // Arrange
+    fun `complete - idempotent, commit only once`() = runBlocking {
+        val response = mockk<Response<BlockBlobItem>>()
         every { blockBlobClient.stageBlock(any(), any<InputStream>(), any()) } just runs
-        val blobItem = mockk<BlockBlobItem>()
-        every { blockBlobClient.commitBlockList(any(), true) } returns blobItem
-        every { blockBlobClient.setMetadata(any()) } just runs
+        every { blockBlobClient.commitBlockListWithResponse(any(), null, null) } returns response
 
-        // Upload a single part
         streamingUpload.uploadPart("hello".toByteArray(), 5)
 
-        // First call to complete
-        val firstCall = streamingUpload.complete()
+        val first = streamingUpload.complete()
+        val second = streamingUpload.complete()
 
-        // Second call to complete
-        val secondCall = streamingUpload.complete()
-
-        // Assert
-        verify(exactly = 1) { blockBlobClient.commitBlockList(any(), true) }
-        // setMetadata also only once
-        verify(exactly = 1) {
-            blockBlobClient.setMetadata(
-                mapOf("env" to "dev", "author" to "testUser", "ab_generation_id" to "0")
-            )
-        }
-        // Both calls return the same AzureBlob reference
-        assertEquals("testBlob", firstCall.key)
-        assertEquals("testBlob", secondCall.key)
-        // Confirm same config
-        assertEquals(config, firstCall.storageConfig)
-        assertEquals(config, secondCall.storageConfig)
+        verify(exactly = 1) { blockBlobClient.commitBlockListWithResponse(any(), null, null) }
+        assertEquals(first.key, second.key)
+        assertEquals(config, first.storageConfig)
     }
 
     @Test
-    fun `complete - throws exception if commitBlockList fails`() = runBlocking {
-        // Arrange
+    fun `complete - propagates exception from commitBlockListWithResponse`() = runBlocking {
         every { blockBlobClient.stageBlock(any(), any<InputStream>(), any()) } just runs
-        // Stage one block
-        streamingUpload.uploadPart("abc".toByteArray(), 1)
-
-        every { blockBlobClient.commitBlockList(any(), true) } throws
+        every { blockBlobClient.commitBlockListWithResponse(any(), null, null) } throws
             BlobStorageException("Commit failed", null, null)
 
-        // Act & Assert
+        streamingUpload.uploadPart("abc".toByteArray(), 1)
+
         assertThrows(BlobStorageException::class.java) {
             runBlocking { streamingUpload.complete() }
         }
-
-        // Ensure metadata was never set
-        verify(exactly = 0) { blockBlobClient.setMetadata(any()) }
     }
 
     @Test
-    fun `generateBlockId - verifies fixed-size buffer structure`() {
-        // Set up a real instance (mocks only for constructor args).
-        val mockClient = mockk<BlockBlobClient>(relaxed = true)
-        val config = AzureBlobStorageClientConfiguration("acc", "key", "container", "")
-        val metadata = emptyMap<String, String>()
-        val streamingUpload = AzureBlobStreamingUpload(mockClient, config, metadata)
-
-        // Call the private method with a test index, e.g., 42
-        val blockIdEncoded = streamingUpload.generateBlockId(42)
-
-        // The length of the string should always be the same
-        assertEquals(streamingUpload.generateBlockId(1).length, blockIdEncoded.length)
-
-        // Decode the Base64 string into raw bytes
-        val decodedBytes = Base64.getDecoder().decode(blockIdEncoded)
-
-        // We expect exactly 32 bytes:
-        //  - 10 bytes for the prefix ("block" + 5 spaces),
-        //  - 10 bytes for the zero-padded index,
-        //  - 12 bytes for the random suffix
-        assertEquals(32, decodedBytes.size)
-
-        // Check the prefix is "block     " (that's 5 letters + 5 spaces).
-        val prefixBytes = decodedBytes.copyOfRange(0, 10)
-        val prefixString = prefixBytes.toString(StandardCharsets.US_ASCII)
-        assertEquals("block     ", prefixString, "Prefix must be 'block' + 5 spaces.")
-
-        // Check the next 10 bytes contain the zero-padded index (42 => "0000000042")
-        val indexBytes = decodedBytes.copyOfRange(10, 20)
-        val indexString = indexBytes.toString(StandardCharsets.US_ASCII)
-        assertEquals("0000000042", indexString, "Index must be 10 digits, zero-padded.")
-
-        // Finally, check that the last 12 bytes are uppercase letters (A-Z) or digits (0-9)
-        val suffixBytes = decodedBytes.copyOfRange(20, 32)
-        val suffixString = suffixBytes.toString(StandardCharsets.US_ASCII)
-        assertEquals(12, suffixString.length)
-        suffixString.forEach { c ->
-            assertTrue(
-                (c in 'A'..'Z') || (c in '0'..'9'),
-                "Suffix character '$c' must be uppercase alphanumeric."
+    fun `generateBlockId - returns fixed 32-byte structure`() {
+        val client = mockk<BlockBlobClient>(relaxed = true)
+        val cfg =
+            AzureBlobStorageClientConfiguration(
+                accountName = "acc",
+                containerName = "container",
+                sharedAccessSignature = null,
+                accountKey = "key",
+                tenantId = null,
+                clientId = null,
+                clientSecret = null,
             )
+        val uploader = AzureBlobStreamingUpload(client, cfg, emptyMap())
+
+        val id42 = uploader.generateBlockId(42)
+        val id1 = uploader.generateBlockId(1)
+        assertEquals(id42.length, id1.length, "Base64 strings must be fixed-length")
+
+        val decoded = Base64.getDecoder().decode(id42)
+        assertEquals(32, decoded.size)
+
+        val prefix = decoded.copyOfRange(0, 10).toString(StandardCharsets.US_ASCII)
+        assertEquals("block     ", prefix)
+
+        val idx = decoded.copyOfRange(10, 20).toString(StandardCharsets.US_ASCII)
+        assertEquals("0000000042", idx)
+
+        decoded.copyOfRange(20, 32).forEach { c ->
+            val ch = c.toInt().toChar()
+            assertTrue(ch.isUpperCase() || ch.isDigit(), "Suffix char '$ch' must be A-Z or 0-9")
         }
     }
 }

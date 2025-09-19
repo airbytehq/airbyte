@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test
 @Property(name = "airbyte.connector.config.database", value = "testdb")
 @Property(name = "airbyte.connector.config.cursor.cursor_method", value = "cdc")
 @Property(name = "metadata.resource", value = "discover/metadata-valid.json")
+@Property(name = "airbyte.connector.data-channel.medium", value = "STDIO")
 class StateManagerGlobalStatesTest {
     @Inject lateinit var config: SourceConfiguration
 
@@ -152,10 +153,21 @@ class StateManagerGlobalStatesTest {
                     |"global":{"shared_state":{"cdc":"starting"},
                     |"stream_states":[
                     |{"stream_descriptor":{"name":"KV","namespace":"PUBLIC"},
+                    |"stream_state":{"initial_sync":"ongoing"}},
+                    |{"stream_descriptor":{"name":"EVENTS","namespace":"PUBLIC"},
+                    |"stream_state":{}}
+                    |]},"sourceStats":{"recordCount":456.0}
+                    |}
+                """.trimMargin(),
+                    """{
+                    |"type":"GLOBAL",
+                    |"global":{"shared_state":{"cdc":"starting"},
+                    |"stream_states":[
+                    |{"stream_descriptor":{"name":"KV","namespace":"PUBLIC"},
                     |"stream_state":{"initial_sync":"completed"}},
                     |{"stream_descriptor":{"name":"EVENTS","namespace":"PUBLIC"},
                     |"stream_state":{}}
-                    |]},"sourceStats":{"recordCount":1245.0}
+                    |]},"sourceStats":{"recordCount":789.0}
                     |}
                 """.trimMargin(),
                 )

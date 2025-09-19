@@ -12,7 +12,7 @@ data:
   connectorSubtype: api
   connectorType: destination
   definitionId: c101b15f-2de9-4616-b54f-0ec9d28ca64d
-  dockerImageTag: 0.0.3
+  dockerImageTag: 0.0.5
   dockerRepository: airbyte/destination-customer-io
   githubIssueLabel: destination-customer-io
   icon: icon.svg

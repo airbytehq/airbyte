@@ -27,6 +27,7 @@ const buildAConnector = {
           type: "category",
           label: "Concepts",
           items: [
+            "connector-development/connector-builder-ui/global-configuration",
             "connector-development/connector-builder-ui/authentication",
             "connector-development/connector-builder-ui/record-processing",
             "connector-development/connector-builder-ui/pagination",
@@ -391,6 +392,19 @@ module.exports = {
             "enterprise-setup/upgrade-service-account",
             "enterprise-setup/upgrading-from-community",
             "enterprise-setup/chart-v2-enterprise",
+          ],
+        },
+        {
+          type: "category",
+          label: "Enterprise Flex",
+          link: {
+            type: "doc",
+            id: "enterprise-flex/readme",
+          },
+          items: [
+            "enterprise-flex/getting-started",
+            "enterprise-flex/data-plane",
+            "enterprise-flex/data-plane-util",
           ],
         },
         {

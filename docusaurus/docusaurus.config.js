@@ -66,13 +66,6 @@ const config = {
         content: "plvcr4wcl9abmq0itvi63c",
       },
     },
-    {
-      tagName: "meta",
-      attributes: {
-        name: "google-site-verification",
-        content: "3bGvGd17EJ-wHoyGlRszHtmMGmtWGQ4dDFEQy8ampQ0",
-      },
-    },
     ...(process.env.NODE_ENV === "production" && process.env.SEGMENT_WRITE_KEY
       ? [
           {
@@ -89,6 +82,10 @@ const config = {
         ]
       : []),
   ],
+  i18n: {
+    defaultLocale: 'en',
+    locales: ['en'],
+  },
   // The preset is the "main" docs instance, though in reality, most content does not live under this preset. See the plugins array below, which defines the behavior of each docs instance.
   presets: [
     [
@@ -144,14 +141,14 @@ const config = {
         ],
       },
     ],
-    // This plugin controls Airbyte Developer Tools docs, which are not versioned
+    // This plugin controls AI Agent Tools docs, which are not versioned
     [
       "@docusaurus/plugin-content-docs",
       {
-        id: "developer-tools",
-        path: "../docs/developer-tools",
-        routeBasePath: "/developer-tools",
-        sidebarPath: "./sidebar-developer-tools.js",
+        id: "ai-agents",
+        path: "../docs/ai-agents",
+        routeBasePath: "/ai-agents",
+        sidebarPath: "./sidebar-ai-agents.js",
         editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
         remarkPlugins: [
           docsHeaderDecoration,
@@ -300,9 +297,9 @@ const config = {
           {
             type: "docSidebar",
             position: "left",
-            docsPluginId: "developer-tools",
-            sidebarId: "developer-tools",
-            label: "Developer Tools",
+            docsPluginId: "ai-agents",
+            sidebarId: "ai-agents",
+            label: "AI Agents",
           },
           {
             href: "https://support.airbyte.com/",

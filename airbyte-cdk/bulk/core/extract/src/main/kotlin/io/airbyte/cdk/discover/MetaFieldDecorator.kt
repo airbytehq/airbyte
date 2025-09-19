@@ -6,6 +6,7 @@ package io.airbyte.cdk.discover
 
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.OpaqueStateValue
+import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.read.Stream
 import io.airbyte.protocol.models.v0.AirbyteStream
 import java.time.OffsetDateTime
@@ -53,5 +54,12 @@ interface MetaFieldDecorator {
         globalStateValue: OpaqueStateValue?,
         stream: Stream,
         recordData: ObjectNode
+    )
+
+    fun decorateRecordData(
+        timestamp: OffsetDateTime,
+        globalStateValue: OpaqueStateValue?,
+        stream: Stream,
+        recordData: NativeRecordPayload
     )
 }

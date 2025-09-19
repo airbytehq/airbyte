@@ -61,5 +61,8 @@ class MSSQLBulkLoadConfiguration(
                 containerName = bulkLoadConfig.containerName,
                 sharedAccessSignature = bulkLoadConfig.sharedAccessSignature,
                 accountKey = bulkLoadConfig.accountKey,
+                tenantId = null,
+                clientId = null,
+                clientSecret = null,
             )
 }
