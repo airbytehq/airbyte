@@ -322,7 +322,7 @@ class PostgresSourceJdbcPartitionFactory(
     private fun PostgresSourceJdbcSplittableSnapshotPartition.split(
         splitPointValues: List<PostgresSourceJdbcStreamStateValue>
     ): List<PostgresSourceJdbcSplittableSnapshotPartition> {
-        val inners: List<Ctid> = splitPointValues.map { Ctid(it.ctid!!) }
+        val inners: List<Ctid> = splitPointValues.map { Ctid.of(it.ctid!!) }
         val lbCtid: Ctid? =
             lowerBound?.let {
                 if (it.isNotEmpty()) {
@@ -351,7 +351,7 @@ class PostgresSourceJdbcPartitionFactory(
     private fun PostgresSourceJdbcSplittableSnapshotWithCursorPartition.split(
         splitPointValues: List<PostgresSourceJdbcStreamStateValue>
     ): List<PostgresSourceJdbcSplittableSnapshotWithCursorPartition> {
-        val inners: List<Ctid> = splitPointValues.map { Ctid(it.ctid!!) }
+        val inners: List<Ctid> = splitPointValues.map { Ctid.of(it.ctid!!) }
         val lbCtid: Ctid? =
             lowerBound?.let {
                 if (it.isNotEmpty()) {
