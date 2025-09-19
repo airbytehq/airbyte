@@ -180,7 +180,7 @@ class PostgresSourceJdbcPartitionFactory(
                         listOf(
                             FILENODE_NO_CHANGE,
                             NO_FILENODE,
-                            FILENODE_NEW_STREAM, // TODO: check here
+                            FILENODE_NEW_STREAM,
                         )
             ) {
                 handler.accept(ResetStream(stream.id))
