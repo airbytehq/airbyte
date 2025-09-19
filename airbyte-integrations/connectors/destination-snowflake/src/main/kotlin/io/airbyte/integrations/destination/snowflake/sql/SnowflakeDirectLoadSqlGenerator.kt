@@ -380,6 +380,16 @@ class SnowflakeDirectLoadSqlGenerator(
             .andLog()
     }
 
+    fun renameTable(sourceTableName: TableName, targetTableName: TableName): String {
+        // Snowflake RENAME TO only accepts the table name, not a fully qualified name
+        // The renamed table stays in the same schema
+        return """
+            ALTER TABLE ${sourceTableName.toPrettyString(quote = QUOTE)} RENAME TO ${targetTableName.toPrettyString(quote = QUOTE)};
+        """
+            .trimIndent()
+            .andLog()
+    }
+
     fun describeTable(
         schemaName: String,
         tableName: String,
