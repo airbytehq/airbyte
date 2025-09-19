@@ -1,3 +1,7 @@
+## Version 0.1.36
+
+Add gradle task to bump CDK version + add changelog entry
+
 ## Version 0.1.35
 
 * **Changed:** Fix input stream wiring for dockerized acceptance tests
