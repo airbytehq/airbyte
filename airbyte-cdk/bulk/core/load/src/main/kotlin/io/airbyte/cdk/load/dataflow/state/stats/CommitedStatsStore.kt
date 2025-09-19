@@ -42,8 +42,8 @@ class CommittedStatsStore {
     // removes and gets the summed stats for a stream given a list of partitions
     @VisibleForTesting
     internal fun removeLiveStats(s: DestinationStream.Descriptor, key: StateKey) =
-        key.partitionKeys.fold(EmissionStats()) { acc, key ->
-            removeLiveStats(s, key)?.let { acc.merge(it) } ?: acc
+        key.partitionKeys.fold(EmissionStats()) { acc, p ->
+            removeLiveStats(s, p)?.let { acc.merge(it) } ?: acc
         }
 
     // removes and gets the summed stats for a stream given a single partition
