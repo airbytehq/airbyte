@@ -153,11 +153,6 @@ constructor(
         jdbcProperties.putAll(sslJdbcProperties)
         log.info { "SSL mode: ${sslJdbcProperties["sslMode"]}" }
 
-        /*// Configure SSL encryption.
-        val sslJdbcProperties: Map<String, String> = fromEncryptionSpec(pojo.getEncryptionValue()!!)
-        jdbcProperties.putAll(sslJdbcProperties)
-        io.airbyte.integrations.source.mysql.log.info { "SSL mode: ${sslJdbcProperties["sslMode"]}" }*/
-
         // Configure cursor.
         val incremental: IncrementalConfiguration =
             fromIncrementalSpec(pojo.getIncrementalConfigurationSpecificationValue())
