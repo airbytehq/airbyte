@@ -114,7 +114,7 @@ class PostgresSourceJdbcPartitionFactory(
             false -> null
         }
         val fileNodeChange: FilenodeChangeType =
-            ensureNoStreamFilenodeChanged(streamState, filenode)
+            detectStreamFilenodeChange(streamState, filenode)
 
         if (opaqueStateValue == null) {
             return coldStart(streamState, filenode)
@@ -258,7 +258,7 @@ class PostgresSourceJdbcPartitionFactory(
         }
     }
 
-    private fun ensureNoStreamFilenodeChanged(
+    private fun detectStreamFilenodeChange(
         streamState: PostgresSourceJdbcStreamState,
         filenode: Filenode?
     ): FilenodeChangeType =
