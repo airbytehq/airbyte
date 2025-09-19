@@ -8,15 +8,22 @@ from unittest.mock import MagicMock, Mock, call
 
 import pendulum
 import pytest
-from airbyte_cdk import Record
-from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
-
 from source_google_ads.components import GoogleAdsPerPartitionStateMigration, KeysToSnakeCaseGoogleAdsTransformation
 from source_google_ads.models import CustomerModel
 from source_google_ads.source import SourceGoogleAds
 from source_google_ads.streams import chunk_date_range
 
-from airbyte_cdk.models import AirbyteStream, AirbyteStreamStatus, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode, TraceType
+from airbyte_cdk import Record
+from airbyte_cdk.models import (
+    AirbyteStream,
+    AirbyteStreamStatus,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    DestinationSyncMode,
+    SyncMode,
+    TraceType,
+)
+from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.test.entrypoint_wrapper import read
 
 from .conftest import get_source
@@ -137,8 +144,9 @@ def test_read_missing_stream(config, mock_get_customers):
     output = read(source, config, catalog)
     fake_stream_statuses = list(
         filter(
-            lambda message: message.trace.type == TraceType.STREAM_STATUS and message.trace.stream_status.stream_descriptor.name == "fake_stream",
-            output.trace_messages
+            lambda message: message.trace.type == TraceType.STREAM_STATUS
+            and message.trace.stream_status.stream_descriptor.name == "fake_stream",
+            output.trace_messages,
         )
     )
     assert len(fake_stream_statuses) == 1

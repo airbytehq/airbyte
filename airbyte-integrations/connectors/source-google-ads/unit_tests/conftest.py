@@ -7,14 +7,13 @@ import sys
 from pathlib import Path
 
 import pytest
-from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
-
 from source_google_ads import SourceGoogleAds
 from source_google_ads.models import CustomerModel
 
 from airbyte_cdk import YamlDeclarativeSource
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.state_builder import StateBuilder
 
