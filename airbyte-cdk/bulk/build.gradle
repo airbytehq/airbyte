@@ -7,9 +7,10 @@ import org.w3c.dom.Document
 
 final var cdkVersion = {
     var props = new Properties()
-    file("core/base/src/main/resources/version.properties").withInputStream(props::load)
+    file("version.properties").withInputStream(props::load)
     return props.getProperty('version', 'undefined')
 }()
+
 
 allprojects {
     version = cdkVersion

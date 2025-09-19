@@ -64,6 +64,10 @@ Create client credentials so Airbyte can talk to your application.
 
 1. In Airbyte, click **Organization settings** > **General**.
 
+    :::info
+    Currently, this portion of the setup requires an Airbyte employee. Contact Support to proceed.
+    :::
+
 2. Click **Set up SSO**, then input the following information.
 
     - **Email domain**: The full email domain of users who sign in to Entra ID. For example, `airbyte.io`.
@@ -114,7 +118,7 @@ You will need to create a new Entra ID application for Airbyte. Log into the [Az
 
 From the overview page of Entra ID, press **Add** > **App registration** on the top of the screen. The name you select is your app integration name. Once chosen, **choose who can use the application, typically set to "Accounts in this organization directory only" for specific access,** and configure a **Redirect URI** of type **Web** with the following value:
 
-```
+```text
 <your-airbyte-domain>/auth/realms/airbyte/broker/<app-integration-name>/endpoint
 ```
 
@@ -244,7 +248,7 @@ global:
   auth:
     identityProvider: 
       type: generic-oidc
-      generic-oidc: 
+      genericOidc: 
         clientId: YOUR_CLIENT_ID
         audience: YOUR_AUDIENCE
         extraScopes: YOUR_EXTRA_SCOPES

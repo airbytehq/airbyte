@@ -66,6 +66,10 @@ Follow these steps to set up SSO in Airbyte Cloud.
 
 1. In Airbyte, click **Organization settings** > **General**.
 
+    :::info
+    Currently, this portion of the setup can only be done by an Airbyte employee. Contact Support to proceed.
+    :::
+
 2. Click **Set up SSO**, then input the following information.
 
     - **Email domain**: The full email domain of users who sign in to Okta. For example, `airbyte.io`.
@@ -262,7 +266,7 @@ global:
   auth:
     identityProvider: 
       type: generic-oidc
-      generic-oidc: 
+      genericOidc: 
         clientId: YOUR_CLIENT_ID
         audience: YOUR_AUDIENCE
         extraScopes: YOUR_EXTRA_SCOPES

@@ -15,21 +15,15 @@ from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 from airbyte_cdk.utils import AirbyteTracedException
-from source_pinterest.reports import CampaignAnalyticsReport
 
 from .reports.reports import (
-    AdGroupReport,
     AdGroupTargetingReport,
-    AdvertiserReport,
     AdvertiserTargetingReport,
     CampaignTargetingReport,
     CustomReport,
     KeywordReport,
-    PinPromotionReport,
     PinPromotionTargetingReport,
-    ProductGroupReport,
     ProductGroupTargetingReport,
-    ProductItemReport,
 )
 from .streams import AdAccounts, AdAccountValidationStream, PinterestStream
 
@@ -101,24 +95,19 @@ class SourcePinterest(YamlDeclarativeSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         declarative_streams = super().streams(config)
 
-        transformed_config = self._validate_and_transform(config, amount_of_days_allowed_for_lookup=913)
-        transformed_config["authenticator"] = self.get_authenticator(config)
+        transformed_config = copy.deepcopy(config)
+        transformed_config["authenticator"] = self.get_authenticator(transformed_config)
+        transformed_config = self._validate_and_transform(transformed_config, amount_of_days_allowed_for_lookup=913)
 
         # Report streams involve async data fetch, which is currently not supported in low-code
         ad_accounts = AdAccounts(transformed_config)
         report_streams = [
-            CampaignAnalyticsReport(ad_accounts, config=transformed_config),
             CampaignTargetingReport(ad_accounts, config=transformed_config),
-            AdvertiserReport(ad_accounts, config=transformed_config),
             AdvertiserTargetingReport(ad_accounts, config=transformed_config),
-            AdGroupReport(ad_accounts, config=transformed_config),
             AdGroupTargetingReport(ad_accounts, config=transformed_config),
-            PinPromotionReport(ad_accounts, config=transformed_config),
             PinPromotionTargetingReport(ad_accounts, config=transformed_config),
-            ProductGroupReport(ad_accounts, config=transformed_config),
             ProductGroupTargetingReport(ad_accounts, config=transformed_config),
             KeywordReport(ad_accounts, config=transformed_config),
-            ProductItemReport(ad_accounts, config=transformed_config),
         ] + self.get_custom_report_streams(config=transformed_config, ad_accounts_stream=ad_accounts)
 
         return declarative_streams + report_streams
