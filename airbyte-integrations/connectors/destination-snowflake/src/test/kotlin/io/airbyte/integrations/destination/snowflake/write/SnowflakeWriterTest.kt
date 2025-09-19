@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.snowflake.write
 
 import io.airbyte.cdk.SystemErrorException
+import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.DatabaseInitialStatusGatherer
@@ -71,6 +72,7 @@ internal class SnowflakeWriterTest {
             mockk<DestinationStream> {
                 every { minimumGenerationId } returns 0L
                 every { generationId } returns 0L
+                every { importType } returns Append
             }
         val tableInfo =
             TableNameInfo(
@@ -116,6 +118,7 @@ internal class SnowflakeWriterTest {
             mockk<DestinationStream> {
                 every { minimumGenerationId } returns 1L
                 every { generationId } returns 1L
+                every { importType } returns Append
             }
         val tableInfo =
             TableNameInfo(
