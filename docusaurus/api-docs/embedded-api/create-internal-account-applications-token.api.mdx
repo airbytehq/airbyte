@@ -1,0 +1,71 @@
+---
+id: create-internal-account-applications-token
+title: "Generate Application Token"
+description: "Generate Application Token"
+sidebar_label: "Generate Application Token"
+hide_title: true
+hide_table_of_contents: true
+api: eJztWFtv2zYU/isEH9YNkC0nqXPRW1q0m4ENKRoXGJAE9hF5JLGlSJWk7HiG//twKDm2k7Yrgj0mL7Hpc/346Vy05gFKz7Mbftk0WgkIyhrP7xJuG3Tx20TyjAuHEHCmTEBnQM9ACNuaMIM9rVmwX9DwhDv82qIPb6xc8WzNhTUBTaCPe+LpZ28NnXlRYQ30qXHkNCj0UU0rNGGmJH0JqwZ5xn1wypQ84UEFTQdvoxCbSL5JthoehcPwE1rXneBmk2wlbf4ZRehTUA4lIbML5LGLu53JKeX+sUucb8jkzkRwLcYD31jju+yORyP6J9ELpxoChGf8uhUCvS9azT72wuTzefhBtNVfyg/AuIxyLCZAKEaFWSf9fa0ozqb06ybheN8oh36m9j0RWUp0e0rvOjE2Mf8J+kH0B0EdeHt6Az1sm3gHr7+F8huQrKfo89Gt0XsoI0RgVlcFz24eg7VJHk5MqzXf7AX7V69O2DlnXbSpAtb+qatCoZbPdfQ+Km+S/zvgmbDy2cbekQX2lix8iwcPzGxUlOQ7GXAOVvyRJc8TLrGAVgee3dz9jMknPDl5ypP31uVKysi/F5a8sIS/Pj5+ypJPpnGWahXkGhmaoMLqhTAvhCHx8bfaz6SfoZhHt0DHYt4vjHlhTKTMIVd+R0NTOLK96byf1AjIUFkazhsbJ5kGQsUznkKj0sVRup3V035WT/dn9XQ7WHUk9BG31mme8SqEJktTbQXoqrN8GNSlcvkqILu2Bhy7/DCJkHoUrVNhdU087fjyx3T64Q2CQ7c3FZJ58hvFeMbzToByJ6p/3O0O7+6hbjQ+2gV2o+ijcX9331yZwkaXPdgxUnLa1jW41S6HV57iZw6DU7hAzyQEYNawHCvQBbMFW9nWMdH6YGt0noGRrECUnqnAgu1+hpLqvmBL674U2i798Alot2ZaYXRGzzko49kJI0g8OUEjG6tM8NmtGbD59gqxzlFKlPOMJAatRzcoQChTRkvBMmG1RhGYcCgpBtB+eGDCU+rzjHXrnHU7V6ReYBBVl3ThbP3gpTvytnUCPfsVGuXZL0w6tUD/G1uqULFQoXKUTKHK1qH8fghxD+h2ST/PGGhNyt+JqAYDJT7Y7bSGt+bWTAJTnjkUtq7RSJQk7hsUqlhFg4XV2i4JnApBomPKRGfxioh226mfUJ7P5yuo9a35e3DlSjDqn+hqMJEZs3sHrzxrWyWjQoxhqbRmaHzrkIUKQnTtVFmFAz2KtfUoWWHdQ8pb/xSZAI9daBFw5Rmwmi7cESHqVgfVaDywSThMIiOZNXrFKlggs+ZQKCFixiD7SkQwxUCtwYTZUKFbKo8xIEGRReEClB7eUkWgctBxdjS8GI54wu8H2pbxgdpVCJ+lqZBm2Dgrh0vMvQo4KJRGPxS2Tk9HYxwd5eJ4XJzh0QWcH+PZ67Pz8/T05GQMJxcSzsXFaQ5n4/HxKD8an87+tKUd+kUZKwFVtBpi3zMQy8QPK+HBo/ZQaQLeh7TRoOJaG0Nf90XyhkOjKNcjnvBtoeQJ70slfdp/HdLvn7RtxoqY3fD1OgePn5zebOj4a4tUV27uEr4Ap2gWjB0g4R0XY339glR63nZ9fjDtltkF6DY2lMc9n/pWp0EbehN+KHu31w4+XF1PecLz/vVLHfsjd7CkFRuWPOOcXu90qWXr7mzNNZiyjY2Zdzbp71/P6kn0
+sidebar_class_name: "post api-method"
+info_path: embedded-api///sonar
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Generate Application Token"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"post"}
+  path={"/api/v1/internal/account/applications/token"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Generate Application Token
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={undefined}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={{"content":{"application/json":{"schema":{"properties":{"client_id":{"type":"string","title":"Client Id"},"client_secret":{"type":"string","title":"Client Secret"}},"type":"object","required":["client_id","client_secret"],"title":"TokenRequest"}}},"required":true}}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"properties":{"access_token":{"type":"string","title":"Access Token"},"token_type":{"type":"string","title":"Token Type"},"expires_in":{"type":"integer","title":"Expires In"}},"type":"object","required":["access_token","token_type","expires_in"],"title":"TokenResponse"}}}},"400":{"description":"Bad request","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"403":{"description":"Forbidden","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"422":{"description":"Unprocessable entity","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"500":{"description":"Internal server error","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}}}}
+>
+  
+</StatusCodes>
+
+
+      

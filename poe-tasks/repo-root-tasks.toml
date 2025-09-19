@@ -20,7 +20,7 @@
 help = "Build the docs.airbyte.com site documentation using Docusaurus."
 shell = '''
 cd $POE_ROOT/docusaurus
-pnpm install
+pnpm install --ignore-scripts
 pnpm build
 '''
 
