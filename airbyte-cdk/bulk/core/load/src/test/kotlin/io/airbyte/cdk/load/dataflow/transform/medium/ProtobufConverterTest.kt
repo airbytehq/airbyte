@@ -140,6 +140,7 @@ class ProtobufConverterTest {
                 every { this@mockk.generationId } returns generationId
                 every { this@mockk.syncId } returns syncId
                 every { unknownColumnChanges } returns unknownChanges
+                every { mappedDescriptor } returns DestinationStream.Descriptor("namespace", "name")
             }
         return mockk<DestinationRecordRaw> {
             every { stream } returns destinationStream
