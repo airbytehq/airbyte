@@ -1,4 +1,4 @@
-# Airtable source connector
+# Notion source connector
 
 This directory contains the manifest-only connector for `source-notion`.
 This _manifest-only_ connector is not a Python package on its own, as it runs inside the base `source-declarative-manifest` image.
