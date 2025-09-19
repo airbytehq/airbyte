@@ -44,14 +44,10 @@ export const ProductInformation = ({ products }) => {
 
   return (
     <div className={styles.badges}>
-      {enterpriseFlex ? (
-        <Badge available={true}>Enterprise Flex</Badge>
-      ) : (
-        <Badge available={cloud} title={cloudTeams ? "Formerly Cloud Teams" : "Formerly Cloud"}>
-          {cloudTeams ? "Pro" : "Standard"}
-        </Badge>
-      )}
       <Badge available={ossCommunity} title="Formerly Self-Managed Community">Core</Badge>
+      <Badge available={cloud && !cloudTeams && !enterpriseFlex} title="Formerly Cloud">Standard</Badge>
+      <Badge available={cloudTeams && !enterpriseFlex} title="Formerly Cloud Teams">Pro</Badge>
+      <Badge available={enterpriseFlex}>Enterprise Flex</Badge>
       <Badge available={ossEnterprise}>Self-Managed Enterprise</Badge>
       {embedded && <Badge available={true}>Embedded</Badge>}
       <a
