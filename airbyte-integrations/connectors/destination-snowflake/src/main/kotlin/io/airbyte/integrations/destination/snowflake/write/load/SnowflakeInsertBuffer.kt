@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.snowflake.write.load
 
 import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.csv.toCsvValue
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
@@ -14,7 +15,8 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import java.io.FileOutputStream
 import java.nio.file.Path
-import kotlin.io.path.bufferedWriter
+import java.util.concurrent.BlockingQueue
+import java.util.concurrent.LinkedBlockingQueue
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.pathString
 import org.apache.commons.csv.CSVFormat
@@ -24,17 +26,22 @@ private val logger = KotlinLogging.logger {}
 
 internal val CSV_FORMAT = CSVFormat.DEFAULT
 
-class SnowflakeInsertBuffer(
+interface SnowflakeInsertBuffer {
+    fun accumulate(recordFields: Map<String, AirbyteValue>)
+    suspend fun flush()
+}
+
+class StagingSnowflakeInsertBuffer(
     private val tableName: TableName,
     private val columns: List<String>,
     private val snowflakeClient: SnowflakeAirbyteClient
-) {
+) : SnowflakeInsertBuffer {
 
     @VisibleForTesting internal var csvFilePath: Path? = null
 
     @VisibleForTesting internal var recordCount = 0
 
-    fun accumulate(recordFields: Map<String, AirbyteValue>) {
+    override fun accumulate(recordFields: Map<String, AirbyteValue>) {
         if (csvFilePath == null) {
             csvFilePath = createCsvFile()
         }
@@ -44,7 +51,7 @@ class SnowflakeInsertBuffer(
         recordCount++
     }
 
-    suspend fun flush() {
+    override suspend fun flush() {
         csvFilePath?.let { filePath ->
             try {
                 logger.info { "Beginning insert into ${tableName.toPrettyString(quote = QUOTE)}" }
@@ -87,5 +94,24 @@ class SnowflakeInsertBuffer(
                 }
             }
         }
+    }
+}
+
+class RawSnowflakeInsertBuffer(
+    private val tableName: TableName,
+    private val snowflakeClient: SnowflakeAirbyteClient
+) : SnowflakeInsertBuffer {
+
+    @VisibleForTesting
+    internal val recordQueue: BlockingQueue<Map<String, AirbyteValue>> = LinkedBlockingQueue()
+
+    override fun accumulate(recordFields: Map<String, AirbyteValue>) {
+        // Do not output null values in the JSON raw output
+        val records = recordFields.filter { (_, v) -> v !is NullValue }
+        recordQueue.offer(records)
+    }
+
+    override suspend fun flush() {
+        TODO("Not yet implemented")
     }
 }

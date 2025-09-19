@@ -18,7 +18,7 @@ import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
-import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeInsertBuffer
+import io.airbyte.integrations.destination.snowflake.write.load.StagingSnowflakeInsertBuffer
 import jakarta.inject.Singleton
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -75,7 +75,7 @@ class SnowflakeChecker(
 
                 val columns = snowflakeAirbyteClient.describeTable(qualifiedTableName)
                 val snowflakeInsertBuffer =
-                    SnowflakeInsertBuffer(
+                    StagingSnowflakeInsertBuffer(
                         tableName = qualifiedTableName,
                         columns = columns,
                         snowflakeClient = snowflakeAirbyteClient

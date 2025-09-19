@@ -14,7 +14,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-internal class SnowflakeInsertBufferTest {
+internal class StagingSnowflakeInsertBufferTest {
 
     @Test
     fun testAccumulate() {
@@ -24,7 +24,7 @@ internal class SnowflakeInsertBufferTest {
         val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
         val record = mapOf(column to AirbyteValue.from("test-value"))
         val buffer =
-            SnowflakeInsertBuffer(
+            StagingSnowflakeInsertBuffer(
                 tableName = tableName,
                 columns = columns,
                 snowflakeClient = snowflakeAirbyteClient,
@@ -44,7 +44,7 @@ internal class SnowflakeInsertBufferTest {
         val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
         val record = mapOf(column to AirbyteValue.from("test-value"))
         val buffer =
-            SnowflakeInsertBuffer(
+            StagingSnowflakeInsertBuffer(
                 tableName = tableName,
                 columns = columns,
                 snowflakeClient = snowflakeAirbyteClient,
@@ -68,7 +68,7 @@ internal class SnowflakeInsertBufferTest {
         val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
         val record = mapOf(column1 to AirbyteValue.from("test-value"))
         val buffer =
-            SnowflakeInsertBuffer(
+            StagingSnowflakeInsertBuffer(
                 tableName = tableName,
                 columns = columns,
                 snowflakeClient = snowflakeAirbyteClient,
@@ -76,7 +76,6 @@ internal class SnowflakeInsertBufferTest {
 
         runBlocking {
             buffer.accumulate(record)
-            println("${buffer.csvFilePath?.toFile()?.readText()}")
             assertEquals(
                 "test-value${CSV_FORMAT.delimiterString}${CSV_FORMAT.recordSeparator}",
                 buffer.csvFilePath?.toFile()?.readText()
