@@ -9,11 +9,15 @@ import io.airbyte.cdk.load.dataflow.state.StateStore
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.lang.IllegalStateException
+import kotlin.coroutines.cancellation.CancellationException
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.selects.select
 
 @Singleton
 class PipelineRunner(
@@ -27,17 +31,47 @@ class PipelineRunner(
         log.info { "Destination Pipeline Starting..." }
         log.info { "Running with ${pipelines.size} input streams..." }
 
-        reconciler.run(CoroutineScope(Dispatchers.IO))
+        // Use parent scope so that if the parent gets canceled, the reconciler also gets canceled
+        reconciler.run(this)
+
+        val pipelineScope = CoroutineScope(coroutineContext + Job(coroutineContext[Job]))
+        val firstError = CompletableDeferred<Throwable>()
 
         try {
-            pipelines.map { p -> launch { p.run() } }.joinAll()
-            log.info { "Individual pipelines complete..." }
+            // Launch all pipelines
+            val allJobs =
+                pipelines.map { pipeline ->
+                    pipelineScope.launch {
+                        try {
+                            pipeline.run()
+                        } catch (e: CancellationException) {
+                            throw e
+                        } catch (t: Throwable) {
+                            firstError.complete(t)
+                            throw t
+                        }
+                    }
+                }
+
+            // Create a deferred that completes when all jobs are done
+            val allComplete = pipelineScope.async { allJobs.forEach { it.join() } }
+
+            // Wait for EITHER first error OR all complete
+            select {
+                firstError.onAwait { error ->
+                    log.error(error) { "Pipeline failed" }
+                    pipelineScope.cancel(CancellationException("Pipeline failed", error))
+                    throw error
+                }
+                allComplete.onAwait { log.info { "All pipelines completed successfully" } }
+            }
         } finally {
-            // shutdown the reconciler regardless of success or failure, so we don't hang
+            pipelineScope.cancel()
             log.info { "Disabling reconciler..." }
             reconciler.disable()
         }
 
+        // Success path
         log.info { "Flushing final states..." }
         reconciler.flushCompleteStates()
 
