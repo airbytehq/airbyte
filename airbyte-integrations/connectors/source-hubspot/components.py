@@ -426,18 +426,26 @@ class EntitySchemaNormalization(TypeTransformer):
                     transformed_value = None
                     return transformed_value
                 if "number" in target_type:
+                    # Clean the value for numeric conversion
+                    cleaned_value = original_value.replace(",", "").strip()
+
+                    # Check if the cleaned value is empty or just whitespace
+                    if not cleaned_value:
+                        logger.warning(f"Attempted to cast empty/whitespace field value '{original_value}' to number type, returning None")
+                        return None
+
                     # do not cast numeric IDs into float, use integer instead
-                    target_type = int if original_value.isnumeric() else float
+                    target_type = int if cleaned_value.isnumeric() else float
 
                     # In some cases, the returned value from Hubspot is non-numeric despite the discovered schema explicitly declaring a numeric type.
                     # For example, a field with a type of "number" might return a string: "3092727991;3881228353;15895321999"
                     # So, we attempt to cast the value to the declared type, and failing that, we log the error and return the original value.
                     # This matches the previous behavior in the Python implementation.
                     try:
-                        transformed_value = target_type(original_value.replace(",", ""))
+                        transformed_value = target_type(cleaned_value)
                         return transformed_value
-                    except ValueError:
-                        logger.exception(f"Could not cast field value {original_value} to {target_type}")
+                    except (ValueError, TypeError) as e:
+                        logger.warning(f"Could not cast field value '{original_value}' to {target_type}: {str(e)}")
                         return original_value
                 if "boolean" in target_type and original_value.lower() in ["true", "false"]:
                     transformed_value = str(original_value).lower() == "true"

@@ -599,6 +599,24 @@ def test_extractor_supports_associations_list_interpolation(config, associations
             "1;2",
             id="test_non_numeric_string_returns_original_value_for_number_type_2",
         ),
+        pytest.param(
+            "   ",
+            {"type": ["null", "number"]},
+            None,
+            id="test_whitespace_only_string_returns_none_for_number_type",
+        ),
+        pytest.param(
+            " \t\n ",
+            {"type": ["null", "number"]},
+            None,
+            id="test_mixed_whitespace_string_returns_none_for_number_type",
+        ),
+        pytest.param(
+            "  123.45  ",
+            {"type": ["null", "number"]},
+            123.45,
+            id="test_numeric_string_with_whitespace_gets_cleaned_and_converted",
+        ),
     ],
 )
 def test_entity_schema_normalization(components_module, original_value, field_schema, expected_value):
