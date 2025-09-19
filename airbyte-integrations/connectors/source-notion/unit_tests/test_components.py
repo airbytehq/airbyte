@@ -4,15 +4,15 @@
 from unittest.mock import MagicMock
 
 import pytest
-from source_notion import SourceNotion
-from source_notion.components import *
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalogSerializer
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.state_builder import StateBuilder
 
+from unit_tests.conftest import get_source
 
-def test_users_stream_transformation():
+
+def test_users_stream_transformation(components_module):
     input_record = {
         "object": "user",
         "id": "123",
@@ -55,10 +55,10 @@ def test_users_stream_transformation():
             "workspace_name": "test",
         },
     }
-    assert NotionUserTransformation().transform(input_record) == output_record
+    assert components_module.NotionUserTransformation().transform(input_record) == output_record
 
 
-def test_notion_properties_transformation():
+def test_notion_properties_transformation(components_module):
     input_record = {
         "id": "123",
         "properties": {
@@ -88,7 +88,7 @@ def test_notion_properties_transformation():
             },
         ],
     }
-    assert NotionPropertiesTransformation().transform(input_record) == output_record
+    assert components_module.NotionPropertiesTransformation().transform(input_record) == output_record
 
 
 state_test_records = [
@@ -99,8 +99,8 @@ state_test_records = [
 
 
 @pytest.fixture
-def data_feed_config():
-    return NotionDataFeedFilter(parameters={}, config={"start_date": "2021-01-01T00:00:00.000Z"})
+def data_feed_config(components_module):
+    return components_module.NotionDataFeedFilter(parameters={}, config={"start_date": "2021-01-01T00:00:00.000Z"})
 
 
 @pytest.mark.parametrize(
@@ -333,6 +333,6 @@ def test_blocks_retriever(requests_mock):
         }
     )
     state = StateBuilder().with_stream_state(blocks_stream_name, {}).build()
-    source = SourceNotion(catalog=catalog, config=config_mock, state=state)
+    source = get_source(config_mock, state)
     output = read(source, config=config_mock, catalog=catalog, state=state)
     assert len(output.records) == 3
