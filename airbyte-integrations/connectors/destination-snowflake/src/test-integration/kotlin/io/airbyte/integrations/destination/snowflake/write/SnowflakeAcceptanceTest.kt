@@ -217,7 +217,8 @@ class SnowflakeDataDumper(
                     )
 
                 // First check if the table exists
-                val tableExistsQuery = """
+                val tableExistsQuery =
+                    """
                     SELECT COUNT(*) AS TABLE_COUNT
                     FROM information_schema.tables
                     WHERE table_schema = '${tableName.namespace}'
