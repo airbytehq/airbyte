@@ -1,3 +1,7 @@
+## Version 0.1.36
+
+* **Changed:** load-s3: S3Client forces path-style access, to enable minio compatibility
+
 ## Version 0.1.35
 
 * **Changed:** Fix input stream wiring for dockerized acceptance tests
