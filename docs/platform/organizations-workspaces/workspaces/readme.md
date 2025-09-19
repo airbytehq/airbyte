@@ -20,7 +20,7 @@ You can use workspaces for the following purposes.
 
     - If you use Cloud, you can choose between Airbyte's managed regions.
 
-    - If you use [Enterprise Flex](../../enterprise-flex/readme) or [Self-Managed Enterprise](../../enterprise-setup/README), you can also self-manage your own regions and data planes on your own infrastructure.
+    - If you use [Enterprise Flex](../../enterprise-flex) or [Self-Managed Enterprise](../../enterprise-setup), you can also self-manage your own regions and data planes on your own infrastructure.
 
 - Set up notifications.
 
