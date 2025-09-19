@@ -47,13 +47,8 @@ export const ProductInformation = ({ products }) => {
       {enterpriseFlex ? (
         <Badge available={true}>Enterprise Flex</Badge>
       ) : (
-        <Badge available={cloud} title="Formerly Cloud">
-          Standard{" "}
-          {cloudTeams ? (
-            <span className={styles.withAddon}>with Pro add-on</span>
-          ) : (
-            ""
-          )}
+        <Badge available={cloud} title={cloudTeams ? "Formerly Cloud Teams" : "Formerly Cloud"}>
+          {cloudTeams ? "Pro" : "Standard"}
         </Badge>
       )}
       <Badge available={ossCommunity} title="Formerly Self-Managed Community">Core</Badge>

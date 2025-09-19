@@ -245,7 +245,7 @@ const ConnectorMetadataCallout = ({
           {isEnterprise ? (
             <>
               <Chip className={styles.available}>
-                <EnabledIcon isEnabled={true} /> Standard <b>with Pro add-on</b>
+                <EnabledIcon isEnabled={true} /> Pro
               </Chip>
               <Chip className={isOss ? styles.available : styles.unavailable}>
                 <EnabledIcon isEnabled={isOss} /> Core
