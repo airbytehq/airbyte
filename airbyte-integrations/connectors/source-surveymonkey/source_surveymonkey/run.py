@@ -50,4 +50,5 @@ def run():
     _args = sys.argv[1:]
     source = _get_source(_args)
     if source:
+        MigrateAccessTokenToCredentials.migrate(sys.argv[1:], source)
         launch(source, _args)

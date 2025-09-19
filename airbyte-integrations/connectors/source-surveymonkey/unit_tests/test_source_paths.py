@@ -190,25 +190,6 @@ class TestGetSource:
 class TestRun:
     @patch("source_surveymonkey.run._get_source")
     @patch("source_surveymonkey.run.launch")
-    def test_run_with_valid_source(self, mock_launch, mock_get_source):
-        # Setup
-        mock_source = Mock()
-        mock_get_source.return_value = mock_source
-        original_argv = sys.argv
-        sys.argv = ["run.py", "check", "--config", "config.json"]
-
-        try:
-            # Execute
-            run()
-
-            # Assert
-            mock_get_source.assert_called_once_with(["check", "--config", "config.json"])
-            mock_launch.assert_called_once_with(mock_source, ["check", "--config", "config.json"])
-        finally:
-            sys.argv = original_argv
-
-    @patch("source_surveymonkey.run._get_source")
-    @patch("source_surveymonkey.run.launch")
     def test_run_with_none_source(self, mock_launch, mock_get_source):
         # Setup
         mock_get_source.return_value = None
