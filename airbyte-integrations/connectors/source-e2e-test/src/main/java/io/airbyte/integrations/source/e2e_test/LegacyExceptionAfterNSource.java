@@ -62,9 +62,13 @@ public class LegacyExceptionAfterNSource extends BaseConnector implements Source
 
     final AtomicBoolean hasEmittedStateAtCount = new AtomicBoolean();
     return AutoCloseableIterators.fromIterator(new AbstractIterator<>() {
+      private boolean willCrash = false;
 
       @Override
       protected AirbyteMessage computeNext() {
+        if (willCrash) {
+          throw new IllegalStateException("Scheduled exceptional event.");
+        }
         if (recordsEmitted.get() % 5 == 0 && !hasEmittedStateAtCount.get()) {
 
           LOGGER.info("{}: emitting state record with value {}", LegacyExceptionAfterNSource.class, recordValue.get());
@@ -93,7 +97,20 @@ public class LegacyExceptionAfterNSource extends BaseConnector implements Source
                   .withEmittedAt(Instant.now().toEpochMilli())
                   .withData(Jsons.jsonNode(ImmutableMap.of(LegacyConstants.DEFAULT_COLUMN, recordValue.get()))));
         } else {
-          throw new IllegalStateException("Scheduled exceptional event.");
+          willCrash = true;
+          return new AirbyteMessage()
+              .withType(Type.TRACE)
+              .withTrace(new AirbyteTraceMessage()
+                  .withType(AirbyteTraceMessage.Type.ERROR)
+                  .withEmittedAt((double)Instant.now().toEpochMilli())
+                  .withError(new AirbyteErrorTraceMessage()
+                      .withFailureType(AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR)
+                      .withStreamDescriptor(new StreamDescriptor().withName(LegacyConstants.DEFAULT_STREAM))
+                      .withInternalMessage("internal_message")
+                      .withMessage("external_message")
+                      .withStackTrace("stack_trace")
+                  )
+              );
         }
       }
 
