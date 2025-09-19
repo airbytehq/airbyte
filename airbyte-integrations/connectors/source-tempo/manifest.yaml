@@ -227,7 +227,8 @@ definitions:
           path: plans
           http_method: GET
           request_parameters:
-            to: "{{ day_delta(365, format=\"%Y-%m-%d\") }}"
+            from: "{{ config['start_date'] }}"
+            to: "\"2100-01-01\""
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -260,9 +261,9 @@ definitions:
           type: JsonDecoder
       incremental_sync:
         type: DatetimeBasedCursor
-        cursor_field: startDate
+        cursor_field: updatedAt
         cursor_datetime_formats:
-          - "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%SZ"
         datetime_format: "%Y-%m-%d"
         start_datetime:
           type: MinMaxDatetime
@@ -271,7 +272,7 @@ definitions:
         start_time_option:
           type: RequestOption
           inject_into: request_parameter
-          field_name: from
+          field_name: updatedFrom
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -483,6 +484,13 @@ definitions:
                 $ref: "#/definitions/streams/holiday-schemes"
         decoder:
           type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - schemeId
+              value: "{{ stream_slice['scheme_id'] }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -547,18 +555,18 @@ metadata:
       streamHash: 3a62fd72589bb9e60684fd118ca8cb99bc0257e8
       hasResponse: true
       responsesAreSuccessful: true
-      hasRecords: false
+      hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     customers:
       streamHash: aab3b81e1940147af3026eb559e3004fa33b3e47
       hasResponse: true
       responsesAreSuccessful: true
-      hasRecords: false
+      hasRecords: true
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     worklogs:
-      streamHash: 4306459a64274f9c2e56c35696c76fc8e2cdbdf0
+      streamHash: d7844405a81bc051c3079847f9fc3566a52237c8
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -572,7 +580,7 @@ metadata:
       primaryKeysArePresent: true
       primaryKeysAreUnique: true
     plans:
-      streamHash: b0c80df0b85c6842d4811bb787729fe40041fc03
+      streamHash: 097d557c75c082d9e6276ad024564c2401936dd0
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -607,12 +615,12 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     holiday-scheme-members:
-      hasRecords: true
-      streamHash: 287a31ec234aa16ba1536fb78bf71b8527792126
+      streamHash: 5247dbee9c28e2f3bd41b4ea4ba93d78254064b8
       hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
       responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
   assist: {}
 
 schemas:
@@ -922,7 +930,9 @@ schemas:
           - string
           - "null"
       startDate:
-        type: string
+        type:
+          - string
+          - "null"
       startTime:
         type:
           - string
@@ -940,12 +950,10 @@ schemas:
           - number
           - "null"
       updatedAt:
-        type:
-          - string
-          - "null"
+        type: string
     required:
       - id
-      - startDate
+      - updatedAt
   teams:
     type: object
     $schema: http://json-schema.org/schema#
@@ -1231,6 +1239,10 @@ schemas:
     properties:
       accountId:
         type: string
+      schemeId:
+        type:
+          - number
+          - "null"
       self:
         type:
           - string
