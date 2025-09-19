@@ -12,6 +12,58 @@ There are multiple ways to use this connector:
 
 Please refer to the manifest-only connector documentation for more details.
 
+## Supported Streams
+
+This connector syncs the following streams from Uptick:
+
+### Core Business Entities
+- **tasks** - Work tasks and maintenance requests with scheduling, priority, and assignment details
+- **taskcategories** - Categories for organizing tasks
+- **tasksessions** - Time tracking entries for work performed on tasks
+- **rounds** - Work rounds for technician scheduling and route management
+- **projects** - Project management entities for larger initiatives
+- **clients** - Customer organizations and contact information
+- **clientgroups** - Client organization groupings
+- **properties** - Physical locations where work is performed
+- **contractors** - External service providers and subcontractors
+- **users** - System users including technicians and staff
+- **servicegroups** - Service categorization for organizing work types
+
+### Financial & Billing
+- **invoices** - Customer invoices and billing information
+- **invoicelineitems** - Individual line items within invoices
+- **creditnotes** - Credit notes for refunds and adjustments
+- **creditnotelineitems** - Line items within credit notes
+- **billingcards** - Billing card information for cost allocation
+- **costcentres** - Cost center assignments for financial tracking
+
+### Purchasing & Supply Chain
+- **purchaseorders** - Purchase orders for materials and services
+- **purchaseorderlineitems** - Individual items within purchase orders
+- **purchaseorderbills** - Bills received for purchase orders
+- **purchaseorderbilllineitems** - Line items within purchase order bills
+- **purchaseorderdockets** - Delivery dockets for purchase orders
+- **suppliers** - Vendor and supplier information
+- **products** - Products and materials catalog
+
+### Asset Management & Inspections
+- **assets** - Physical assets requiring maintenance and inspection
+- **assettypes** - Categories and specifications for asset types
+- **assettypevariants** - Variants and configurations of asset types
+- **routines** - Scheduled maintenance and inspection routines
+- **remarks** - Issues, defects, and observations during inspections
+
+### Quality & Compliance
+- **accreditations** - Technician certifications and qualifications
+- **accreditationtypes** - Types of certifications and accreditations
+
+### Sales
+- **servicequotes** - Quotes for service work
+- **defectquotes** - Quotes for remedial work on identified defects
+
+### Organization & Location
+- **branches** - Business locations and organizational units
+
 ## Local Development
 We recommend you use the Connector Builder to edit this connector.
 
