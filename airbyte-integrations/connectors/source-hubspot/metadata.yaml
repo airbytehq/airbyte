@@ -43,10 +43,6 @@ data:
   releases:
     rolloutConfiguration:
       enableProgressiveRollout: false
-    changelog:
-      6.0.3:
-        - Fix empty field casting error in EntitySchemaNormalization that caused sync failures
-
     breakingChanges:
       6.0.0:
         message: >-
