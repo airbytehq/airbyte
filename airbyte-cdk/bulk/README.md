@@ -105,6 +105,8 @@ A utility Gradle task exists to update both of those files:
 ```
 If invoked without the `--changelog` flag, it will prompt for a changelog entry via stdin.
 
+This task can also be invoked by commenting on your Github PR: `/bump-bulk-cdk-version bump=<major|minor|patch> changelog="My cool CDK update"`.
+
 ## Licensing
 
 The license for the Bulk CDK is Elastic License 2.0, as specified by the LICENSE file in the root
