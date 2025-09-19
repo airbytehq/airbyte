@@ -45,5 +45,8 @@ interface JdbcStreamState<A : JdbcSharedState> {
     /** Resets the transient state to its initial setting. */
     fun reset()
 
-    fun validatePartition(partition: JdbcPartition<*>, jdbcConnectionFactory: JdbcConnectionFactory) {}
+    fun validatePartition(
+        partition: JdbcPartition<*>,
+        jdbcConnectionFactory: JdbcConnectionFactory
+    ) {}
 }

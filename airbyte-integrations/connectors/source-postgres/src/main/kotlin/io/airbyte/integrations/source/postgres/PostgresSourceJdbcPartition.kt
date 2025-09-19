@@ -5,11 +5,9 @@
 package io.airbyte.integrations.source.postgres
 
 import com.fasterxml.jackson.databind.JsonNode
-import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.DataField
 import io.airbyte.cdk.discover.NonEmittedField
-import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.StringFieldType
 import io.airbyte.cdk.output.sockets.toJson
 import io.airbyte.cdk.read.And
@@ -67,7 +65,6 @@ sealed class PostgresSourceJdbcUnsplittablePartition(
             )
         return selectQueryGenerator.generate(querySpec.optimize())
     }
-
 }
 
 class PostgresSourceJdbcUnsplittableSnapshotPartition(
@@ -76,23 +73,26 @@ class PostgresSourceJdbcUnsplittableSnapshotPartition(
 ) : PostgresSourceJdbcUnsplittablePartition(selectQueryGenerator, streamState) {
     override val completeState: OpaqueStateValue
         get() = PostgresSourceJdbcStreamStateValue.snapshotCompleted
-
 }
 
 class PostgresSourceJdbcUnsplittableSnapshotWithCursorPartition(
     selectQueryGenerator: SelectQueryGenerator,
     streamState: PostgresSourceJdbcStreamState,
     val cursor: DataField,
-): PostgresSourceJdbcUnsplittablePartition(selectQueryGenerator, streamState),
+) :
+    PostgresSourceJdbcUnsplittablePartition(selectQueryGenerator, streamState),
     JdbcCursorPartition<PostgresSourceJdbcStreamState> {
     override val completeState: OpaqueStateValue
-        get() = PostgresSourceJdbcStreamStateValue.cursorIncrementalCheckpoint(cursor, streamState.cursorUpperBound!!)
+        get() =
+            PostgresSourceJdbcStreamStateValue.cursorIncrementalCheckpoint(
+                cursor,
+                streamState.cursorUpperBound!!
+            )
 
     override val cursorUpperBoundQuery: SelectQuery
         get() = selectQueryGenerator.generate(cursorUpperBoundQuerySpec.optimize())
 
     val cursorUpperBoundQuerySpec = SelectQuerySpec(SelectColumnMaxValue(cursor), from)
-
 }
 
 class PostgresSourceJdbcUnsplittableCursorIncrementalPartition(
@@ -102,9 +102,9 @@ class PostgresSourceJdbcUnsplittableCursorIncrementalPartition(
     val cursorLowerBound: JsonNode,
     val isLowerBoundIncluded: Boolean,
     val explicitCursorUpperBound: JsonNode?,
-): PostgresSourceJdbcUnsplittablePartition(selectQueryGenerator, streamState),
-    JdbcCursorPartition<PostgresSourceJdbcStreamState>
-{
+) :
+    PostgresSourceJdbcUnsplittablePartition(selectQueryGenerator, streamState),
+    JdbcCursorPartition<PostgresSourceJdbcStreamState> {
     override fun samplingQuery(sampleRateInvPow2: Int): SelectQuery {
         val sampleSize: Int = streamState.sharedState.maxSampleSize
         val querySpec =
@@ -171,7 +171,6 @@ class PostgresSourceJdbcUnsplittableCursorIncrementalPartition(
             return Where(And(Or(lowerBoundDisj), Or(upperBoundDisj)))
         }
 }
-
 
 sealed class PostgresSourceSplittablePartition(
     selectQueryGenerator: SelectQueryGenerator,

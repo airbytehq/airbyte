@@ -34,15 +34,17 @@ class PostgresSourceJdbcStreamState(val base: DefaultJdbcStreamState) :
         partition: JdbcPartition<*>,
         jdbcConnectionFactory: JdbcConnectionFactory
     ) {
-        val savedFilenode: Filenode? = when (partition) {
-            is PostgresSourceJdbcSplittableSnapshotPartition -> partition.filenode
-            is PostgresSourceJdbcSplittableSnapshotWithCursorPartition -> partition.filenode
-            else -> null
-        }
-        val currentFilenode: Filenode? = PostgresSourceJdbcPartitionFactory.getStreamFilenode(
-            partition.streamState,
-            jdbcConnectionFactory
-        )
+        val savedFilenode: Filenode? =
+            when (partition) {
+                is PostgresSourceJdbcSplittableSnapshotPartition -> partition.filenode
+                is PostgresSourceJdbcSplittableSnapshotWithCursorPartition -> partition.filenode
+                else -> null
+            }
+        val currentFilenode: Filenode? =
+            PostgresSourceJdbcPartitionFactory.getStreamFilenode(
+                partition.streamState,
+                jdbcConnectionFactory
+            )
 
         if (currentFilenode != savedFilenode) {
             throw TransientErrorException(
@@ -51,4 +53,3 @@ class PostgresSourceJdbcStreamState(val base: DefaultJdbcStreamState) :
         }
     }
 }
-
