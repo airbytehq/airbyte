@@ -28,7 +28,6 @@ import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Named
 import jakarta.inject.Singleton
-import java.io.InputStream
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -59,17 +58,17 @@ class InputBeanFactory {
     @Singleton
     fun socketStreams(
         sockets: List<ClientSocket>,
-    ): List<InputStream> = sockets.map(ClientSocket::openInputStream)
+    ) = ConnectorInputStreams(sockets.map(ClientSocket::openInputStream))
 
     @Requires(property = "airbyte.destination.core.data-channel.medium", value = "STDIO")
     @Named("inputStreams")
     @Singleton
-    fun stdInStreams(): List<InputStream> = listOf(System.`in`)
+    fun stdInStreams() = ConnectorInputStreams(listOf(System.`in`))
 
     @Named("messageFlows")
     @Singleton
     fun messageFlows(
-        @Named("inputStreams") inputStreams: List<InputStream>,
+        @Named("inputStreams") inputStreams: ConnectorInputStreams,
         @Value("\${airbyte.destination.core.data-channel.format}")
         dataChannelFormat: DataChannelFormat,
         deserializer: ProtocolMessageDeserializer,
