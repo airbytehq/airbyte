@@ -33,6 +33,7 @@ class JdbcMetadataQuerier(
     val checkQueries: JdbcCheckQueries,
     jdbcConnectionFactory: JdbcConnectionFactory,
 ) : MetadataQuerier {
+
     val conn: Connection = jdbcConnectionFactory.get()
 
     private val log = KotlinLogging.logger {}
@@ -109,12 +110,14 @@ class JdbcMetadataQuerier(
                 .map { it.catalog to it.schema }
                 .distinct()
                 .forEach { (catalog: String?, schema: String?) ->
-                    dbmd.getPseudoColumns(catalog, schema, null, null).use { rs: ResultSet ->
-                        while (rs.next()) {
-                            val (tableName: TableName, metadata: ColumnMetadata) =
-                                columnMetadataFromResultSet(rs, isPseudoColumn = true)
-                            val joinedTableName: TableName = joinMap[tableName] ?: continue
-                            results.add(joinedTableName to metadata)
+                    if (constants.includePseudoColumns) {
+                        dbmd.getPseudoColumns(catalog, schema, null, null).use { rs: ResultSet ->
+                            while (rs.next()) {
+                                val (tableName: TableName, metadata: ColumnMetadata) =
+                                    columnMetadataFromResultSet(rs, isPseudoColumn = true)
+                                val joinedTableName: TableName = joinMap[tableName] ?: continue
+                                results.add(joinedTableName to metadata)
+                            }
                         }
                     }
                     dbmd.getColumns(catalog, schema, null, null).use { rs: ResultSet ->
@@ -126,7 +129,8 @@ class JdbcMetadataQuerier(
                         }
                     }
                 }
-            log.info { "Discovered ${results.size} column(s) and pseudo-column(s)." }
+            val clause = if (constants.includePseudoColumns) " and pseudo-column(s)" else ""
+            log.info { "Discovered ${results.size} column(s)${clause}." }
         } catch (e: Exception) {
             throw RuntimeException("Column name discovery query failed: ${e.message}", e)
         }
@@ -204,7 +208,7 @@ class JdbcMetadataQuerier(
         streamID: StreamIdentifier,
     ): List<Field> {
         val table: TableName = findTableName(streamID) ?: return listOf()
-        return columnMetadata(table).map { Field(it.label, fieldTypeMapper.toFieldType(it)) }
+        return columnMetadata(table).map { EmittedField(it.label, fieldTypeMapper.toFieldType(it)) }
     }
 
     fun columnMetadata(table: TableName): List<ColumnMetadata> {
@@ -234,7 +238,7 @@ class JdbcMetadataQuerier(
     ): String {
         val querySpec =
             SelectQuerySpec(
-                SelectColumns(columnIDs.map { Field(it, NullFieldType) }),
+                SelectColumns(columnIDs.map { EmittedField(it, NullFieldType) }),
                 From(table.name, table.namespace()),
                 limit = Limit(0),
             )
@@ -355,7 +359,7 @@ class JdbcMetadataQuerier(
                 selectQueryGenerator,
                 fieldTypeMapper,
                 checkQueries,
-                jdbcConnectionFactory,
+                jdbcConnectionFactory
             )
         }
     }
