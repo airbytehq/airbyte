@@ -245,14 +245,14 @@ const ConnectorMetadataCallout = ({
           <Chip className={isOss ? styles.available : styles.unavailable}>
             <EnabledIcon isEnabled={isOss} /> Core
           </Chip>
-          <Chip className={isCloud && !isEnterprise ? styles.available : styles.unavailable}>
-            <EnabledIcon isEnabled={isCloud && !isEnterprise} /> Standard
+          <Chip className={isCloud ? styles.available : styles.unavailable}>
+            <EnabledIcon isEnabled={isCloud} /> Standard
           </Chip>
-          <Chip className={isEnterprise ? styles.available : styles.unavailable}>
-            <EnabledIcon isEnabled={isEnterprise} /> Pro
+          <Chip className={isCloud || isEnterprise ? styles.available : styles.unavailable}>
+            <EnabledIcon isEnabled={isCloud || isEnterprise} /> Pro
           </Chip>
-          <Chip className={styles.unavailable}>
-            <EnabledIcon isEnabled={false} /> Enterprise Flex
+          <Chip className={isCloud || isEnterprise ? styles.available : styles.unavailable}>
+            <EnabledIcon isEnabled={isCloud || isEnterprise} /> Enterprise Flex
           </Chip>
           <Chip className={isOss ? styles.available : styles.unavailable}>
             <EnabledIcon isEnabled={isOss} /> Self-Managed Enterprise
