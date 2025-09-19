@@ -85,7 +85,7 @@ abstract class SnowflakeAcceptanceTest(
         supportFileTransfer = false,
         commitDataIncrementally = false,
         commitDataIncrementallyOnAppend = false,
-        commitDataIncrementallyToEmptyDestinationOnAppend = false,
+        commitDataIncrementallyToEmptyDestinationOnAppend = true,
         commitDataIncrementallyToEmptyDestinationOnDedupe = false,
         allTypesBehavior =
             StronglyTyped(
