@@ -17,7 +17,6 @@ install = [
   "install-cdk-cli",
   "install-unit-tests-project",
 ]
-install-cdk-cli = "uv tool install --upgrade 'airbyte-cdk[dev]'"
 install-unit-tests-project.shell = '''
 if [ -f ${POE_PWD}/unit_tests/pyproject.toml ]; then
   echo "Found 'unit_tests/pyproject.toml' file, installing unit tests..."
@@ -60,6 +59,8 @@ fi
 '''
 
 # Generic tasks (same across all connector types)
+
+install-cdk-cli = "uv tool install --upgrade 'airbyte-cdk[dev]'"
 
 [tasks.get-language]
 cmd = """yq eval '.data.tags[] | select(test("^language:")) | sub("language:","")' ${POE_PWD}/metadata.yaml"""
