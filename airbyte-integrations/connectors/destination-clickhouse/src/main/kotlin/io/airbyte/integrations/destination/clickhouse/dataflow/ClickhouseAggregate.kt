@@ -14,9 +14,12 @@ import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableExe
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.clickhouse.write.load.BinaryRowInsertBuffer
 import io.micronaut.context.annotation.Factory
+import java.lang.RuntimeException
+import java.util.concurrent.atomic.AtomicInteger
 
 class ClickhouseAggregate(
     @VisibleForTesting val buffer: BinaryRowInsertBuffer,
+    val counter: Int,
 ) : Aggregate {
 
     override fun accept(record: RecordDTO) {
@@ -24,6 +27,8 @@ class ClickhouseAggregate(
     }
 
     override suspend fun flush() {
+        if (counter == 20) throw RuntimeException("bang")
+
         buffer.flush()
     }
 }
@@ -33,6 +38,9 @@ class ClickhouseAggregateFactory(
     private val clickhouseClient: Client,
     private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
 ) : AggregateFactory {
+
+    private val count = AtomicInteger(0)
+
     override fun create(key: StoreKey): Aggregate {
 
         val tableName = streamStateStore.get(key)!!.tableName
@@ -43,6 +51,6 @@ class ClickhouseAggregateFactory(
                 clickhouseClient,
             )
 
-        return ClickhouseAggregate(binaryRowInsertBuffer)
+        return ClickhouseAggregate(binaryRowInsertBuffer, count.incrementAndGet())
     }
 }
