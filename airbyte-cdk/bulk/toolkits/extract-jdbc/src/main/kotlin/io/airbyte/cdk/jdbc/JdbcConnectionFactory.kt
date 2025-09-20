@@ -9,7 +9,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.sql.Connection
 import java.sql.DriverManager
-import java.util.*
+import java.util.Properties
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Supplier
 import org.apache.sshd.common.util.net.SshdSocketAddress

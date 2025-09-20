@@ -51,10 +51,10 @@ class PostgresSourceJdbcConcurrentPartitionsCreator<
         for (sampleRateInvPow2 in listOf(20, 16, 8, 0)) {
             val sampleRateInv: Long = 1L shl sampleRateInvPow2
             log.info { "Sampling stream '${stream.label}' at rate 1 / $sampleRateInv." }
-            // First, try sampling the table at a rate of one every 2^16 = 65_536 rows.
+            // First, try sampling the table at a rate of one every 2^20 = 1,048,576 rows.
             // If that's not enough to produce the desired number of sampled rows (1024 by default)
-            // then try sampling at a higher rate of one every 2^8 = 256 rows.
-            // If that's still not enough, don't sample at all.
+            // then try sampling at a higher rate of one every 2^16 = 65,536 rows.
+            // them 2^8 and if that's still not enough, don't sample at all.
             values.clear()
             val samplingQuery: SelectQuery = partition.samplingQuery(sampleRateInvPow2)
             selectQuerier.executeQuery(samplingQuery).use {
