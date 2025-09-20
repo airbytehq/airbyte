@@ -16,7 +16,7 @@ airbyte:
         min-fetch-size: 10
         default-fetch-size: 1024
         max-fetch-size: 1000000000
-        memory-capacity-ratio: 0.6
+        memory-capacity-ratio: 0.3
         estimated-record-overhead-bytes: 16
         estimated-field-overhead-bytes: 16
         namespace-kind: SCHEMA
