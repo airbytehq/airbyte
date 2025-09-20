@@ -74,6 +74,7 @@ HubSpot
 Zendesk
 Okta
 Entra
+Slack
 
 # Acceptable non-words that shouldn't trigger spellcheck
 

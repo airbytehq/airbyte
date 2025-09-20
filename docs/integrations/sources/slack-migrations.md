@@ -42,6 +42,10 @@ To clear your data for the `Threads` stream, follow the steps below:
 
 After the clear succeeds, trigger a sync by clicking **Sync Now**. For more information on clearing your data in Airbyte, see [this page](/platform/operator-guides/clear).
 
+## Connector upgrade guide
+
+[Help with upgrades](/platform/managing-airbyte/connector-updates).
+
 ## Upgrading to 2.0.0
 
 As part of recent changes to the Slack API's [Terms of Service](https://api.slack.com/changelog/2025-05-terms-rate-limit-update-and-faq), we are migrating to a new Marketplace OAuth application. Users will need to re-authenticate their source with the new application to refresh their access token that is used to retrieve data. This does not apply if you use an API token, are on OSS, or supply your own Slack OAuth application credentials.
