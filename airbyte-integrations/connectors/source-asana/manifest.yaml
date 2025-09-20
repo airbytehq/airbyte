@@ -1,0 +1,3504 @@
+version: 6.48.15
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - projects
+
+definitions:
+  streams:
+    projects:
+      type: DeclarativeStream
+      retriever:
+        type: SimpleRetriever
+        requester:
+          use_cache: true
+          $ref: "#/definitions/base_requester"
+          path: /projects
+          http_method: GET
+          request_parameters:
+            workspace: "{{ stream_slice['workspace_gid'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                      - 402
+                      - 404
+                      - 412
+                      - 451
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"next_page\", {}).get(\"offset\", \"\") }}"
+            stop_condition: "{{ not response.get(\"next_page\", {}) }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: gid
+              partition_field: workspace_gid
+              stream:
+                $ref: "#/definitions/streams/workspaces"
+        decoder:
+          type: JsonDecoder
+      name: projects
+      primary_key:
+        - gid
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/projects"
+    sections_compact:
+      type: DeclarativeStream
+      retriever:
+        type: SimpleRetriever
+        requester:
+          use_cache: true
+          $ref: "#/definitions/base_requester"
+          path: /projects/{{ stream_slice['project_id'] }}/sections
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                      - 402
+                      - 404
+                      - 412
+                      - 451
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"next_page\", {}).get(\"offset\", \"\") }}"
+            stop_condition: "{{ not response.get(\"next_page\", {}) }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: gid
+              partition_field: project_id
+              stream:
+                $ref: "#/definitions/streams/projects"
+        decoder:
+          type: JsonDecoder
+      name: sections_compact
+      primary_key:
+        - gid
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sections_compact"
+    sections:
+      type: DeclarativeStream
+      name: sections
+      primary_key:
+        - gid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /sections/{{ stream_slice['section_gid'] }}
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                      - 402
+                      - 404
+                      - 412
+                      - 451
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"next_page\", {}).get(\"offset\", \"\") }}"
+            stop_condition: "{{ not response.get(\"next_page\", {}) }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: gid
+              partition_field: section_gid
+              stream:
+                $ref: "#/definitions/streams/sections_compact"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/sections"
+    tasks:
+      type: DeclarativeStream
+      retriever:
+        type: SimpleRetriever
+        requester:
+          use_cache: true
+          $ref: "#/definitions/base_requester"
+          path: /tasks
+          http_method: GET
+          request_parameters:
+            project: "{{ stream_slice.project_id }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                      - 402
+                      - 404
+                      - 412
+                      - 451
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"next_page\", {}).get(\"offset\", \"\") }}"
+            stop_condition: "{{ not response.get(\"next_page\", {}) }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: gid
+              partition_field: project_id
+              stream:
+                $ref: "#/definitions/streams/projects"
+        decoder:
+          type: JsonDecoder
+      name: tasks
+      primary_key:
+        - gid
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tasks"
+    stories_compact:
+      type: DeclarativeStream
+      retriever:
+        type: SimpleRetriever
+        requester:
+          use_cache: true
+          $ref: "#/definitions/base_requester"
+          path: /tasks/{{ stream_slice['task_gid'] }}/stories
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                      - 402
+                      - 404
+                      - 412
+                      - 451
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"next_page\", {}).get(\"offset\", \"\") }}"
+            stop_condition: "{{ not response.get(\"next_page\", {}) }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: gid
+              partition_field: task_gid
+              stream:
+                $ref: "#/definitions/streams/tasks"
+        decoder:
+          type: JsonDecoder
+      name: stories_compact
+      primary_key:
+        - gid
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/stories_compact"
+    stories:
+      type: DeclarativeStream
+      name: stories
+      primary_key:
+        - gid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /stories/{{ stream_slice['story_gid'] }}
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                      - 402
+                      - 404
+                      - 412
+                      - 451
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"next_page\", {}).get(\"offset\", \"\") }}"
+            stop_condition: "{{ not response.get(\"next_page\", {}) }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: gid
+              partition_field: story_gid
+              stream:
+                $ref: "#/definitions/streams/stories_compact"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/stories"
+    workspaces:
+      type: DeclarativeStream
+      retriever:
+        type: SimpleRetriever
+        requester:
+          use_cache: true
+          $ref: "#/definitions/base_requester"
+          path: /workspaces
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                      - 402
+                      - 404
+                      - 412
+                      - 451
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"next_page\", {}).get(\"offset\", \"\") }}"
+            stop_condition: "{{ not response.get(\"next_page\", {}) }}"
+        decoder:
+          type: JsonDecoder
+      name: workspaces
+      primary_key:
+        - gid
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/workspaces"
+    tags:
+      type: DeclarativeStream
+      name: tags
+      primary_key:
+        - gid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /tags
+          http_method: GET
+          request_parameters:
+            workspace: "{{ stream_slice.workspace_gid }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                      - 402
+                      - 404
+                      - 412
+                      - 451
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"next_page\", {}).get(\"offset\", \"\") }}"
+            stop_condition: "{{ not response.get(\"next_page\", {}) }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: gid
+              partition_field: workspace_gid
+              stream:
+                $ref: "#/definitions/streams/workspaces"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tags"
+    users:
+      type: DeclarativeStream
+      name: users
+      primary_key:
+        - gid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /users
+          http_method: GET
+          request_parameters:
+            workspace: "{{ stream_slice.workspace_gid }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                      - 402
+                      - 404
+                      - 412
+                      - 451
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"next_page\", {}).get(\"offset\", \"\") }}"
+            stop_condition: "{{ not response.get(\"next_page\", {}) }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: gid
+              partition_field: workspace_gid
+              stream:
+                $ref: "#/definitions/streams/workspaces"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/users"
+    teams:
+      type: DeclarativeStream
+      name: teams
+      primary_key:
+        - gid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /organizations/{{ stream_slice['workspace_gid'] }}/teams
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                      - 402
+                      - 404
+                      - 412
+                      - 451
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"next_page\", {}).get(\"offset\", \"\") }}"
+            stop_condition: "{{ not response.get(\"next_page\", {}) }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: gid
+              partition_field: workspace_gid
+              stream:
+                $ref: "#/definitions/streams/workspaces"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/teams"
+    team_memberships:
+      type: DeclarativeStream
+      name: team_memberships
+      primary_key:
+        - gid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /teams/{{ stream_slice['team_gid'] }}/team_memberships
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                      - 402
+                      - 404
+                      - 412
+                      - 451
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"next_page\", {}).get(\"offset\", \"\") }}"
+            stop_condition: "{{ not response.get(\"next_page\", {}) }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: gid
+              partition_field: team_gid
+              stream:
+                $ref: "#/definitions/streams/teams"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/team_memberships"
+    attachments_compact:
+      type: DeclarativeStream
+      retriever:
+        type: SimpleRetriever
+        requester:
+          use_cache: true
+          $ref: "#/definitions/base_requester"
+          path: /attachments
+          http_method: GET
+          request_parameters:
+            parent: "{{ stream_slice.parent_gid }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                      - 402
+                      - 404
+                      - 412
+                      - 451
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"next_page\", {}).get(\"offset\", \"\") }}"
+            stop_condition: "{{ not response.get(\"next_page\", {}) }}"
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: gid
+                partition_field: parent_gid
+                stream:
+                  $ref: "#/definitions/streams/projects"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: gid
+                partition_field: parent_gid
+                stream:
+                  $ref: "#/definitions/streams/tasks"
+        decoder:
+          type: JsonDecoder
+      name: attachments_compact
+      primary_key:
+        - gid
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/attachments_compact"
+    attachments:
+      type: DeclarativeStream
+      name: attachments
+      primary_key:
+        - gid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /attachments/{{ stream_slice['attachments_gid'] }}
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                      - 402
+                      - 404
+                      - 412
+                      - 451
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"next_page\", {}).get(\"offset\", \"\") }}"
+            stop_condition: "{{ not response.get(\"next_page\", {}) }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: gid
+              partition_field: attachments_gid
+              stream:
+                $ref: "#/definitions/streams/attachments_compact"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/attachments"
+    portfolios_compact:
+      type: DeclarativeStream
+      name: portfolios_compact
+      primary_key:
+        - gid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /portfolios
+          http_method: GET
+          request_parameters:
+            owner: "{{ stream_slice['users_gid'] }}"
+            workspace: "{{ stream_slice['workspace_gid'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                      - 402
+                      - 404
+                      - 412
+                      - 451
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"next_page\", {}).get(\"offset\", \"\") }}"
+            stop_condition: "{{ not response.get(\"next_page\", {}) }}"
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: gid
+                partition_field: workspace_gid
+                stream:
+                  $ref: "#/definitions/streams/workspaces"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: gid
+                partition_field: users_gid
+                stream:
+                  $ref: "#/definitions/streams/users"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/portfolios_compact"
+    portfolios:
+      type: DeclarativeStream
+      name: portfolios
+      primary_key:
+        - gid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /portfolios/{{ stream_slice['portfolios_gid'] }}
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                      - 402
+                      - 404
+                      - 412
+                      - 451
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"next_page\", {}).get(\"offset\", \"\") }}"
+            stop_condition: "{{ not response.get(\"next_page\", {}) }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: gid
+              partition_field: portfolios_gid
+              stream:
+                $ref: "#/definitions/streams/portfolios_compact"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/portfolios"
+    portfolios_memberships:
+      type: DeclarativeStream
+      name: portfolios_memberships
+      primary_key:
+        - gid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /portfolio_memberships
+          http_method: GET
+          request_parameters:
+            portfolio: "{{ stream_slice['portfolios_gid'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                      - 402
+                      - 404
+                      - 412
+                      - 451
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"next_page\", {}).get(\"offset\", \"\") }}"
+            stop_condition: "{{ not response.get(\"next_page\", {}) }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: gid
+              partition_field: portfolios_gid
+              stream:
+                $ref: "#/definitions/streams/portfolios_compact"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/portfolios_memberships"
+    custom_fields:
+      type: DeclarativeStream
+      name: custom_fields
+      primary_key:
+        - gid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /workspaces/{{ stream_slice['workspace_gid'] }}/custom_fields
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                      - 402
+                      - 404
+                      - 412
+                      - 451
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"next_page\", {}).get(\"offset\", \"\") }}"
+            stop_condition: "{{ not response.get(\"next_page\", {}) }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: gid
+              partition_field: workspace_gid
+              stream:
+                $ref: "#/definitions/streams/workspaces"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/custom_fields"
+    organization_exports:
+      type: DeclarativeStream
+      name: organization_exports
+      primary_key:
+        - gid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /organization_exports/{{ stream_slice.gid }}
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                      - 402
+                      - 404
+                      - 412
+                      - 451
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"next_page\", {}).get(\"offset\", \"\") }}"
+            stop_condition: "{{ not response.get(\"next_page\", {}) }}"
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config['organization_export_ids' ] }}"
+          cursor_field: gid
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organization_exports"
+    events:
+      type: DeclarativeStream
+      name: events
+      primary_key:
+        - created_at
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /events
+          http_method: GET
+          request_parameters:
+            resource: "{{ stream_slice.parent_gid }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                      - 402
+                      - 404
+                      - 412
+                      - 451
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: sync
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get(\"sync\", {}) }}"
+            stop_condition: "{{ not response.get(\"sync\", {}) }}"
+        partition_router:
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: gid
+                partition_field: parent_gid
+                stream:
+                  $ref: "#/definitions/streams/tasks"
+          - type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: gid
+                partition_field: parent_gid
+                stream:
+                  $ref: "#/definitions/streams/projects"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/events"
+    portfolio_items:
+      type: DeclarativeStream
+      name: portfolio_items
+      primary_key:
+        - gid
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /portfolios/{{ stream_slice['portfolio_gid'] }}/items
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                      - 402
+                      - 404
+                      - 412
+                      - 451
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: offset
+          page_size_option:
+            type: RequestOption
+            field_name: limit
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 100
+            cursor_value: "{{ response.get(\"next_page\", {}).get(\"offset\", \"\") }}"
+            stop_condition: "{{ not response.get(\"next_page\", {}) }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: gid
+              partition_field: portfolio_gid
+              stream:
+                $ref: "#/definitions/streams/portfolios"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/portfolio_items"
+  base_requester:
+    type: CustomRequester
+    class_name: source_declarative_manifest.components.AsanaHttpRequester
+    url_base: https://app.asana.com/api/1.0/
+    authenticator:
+      type: SelectiveAuthenticator
+      authenticator_selection_path:
+        - credentials
+        - option_title
+      authenticators:
+        OAuth Credentials:
+          type: OAuthAuthenticator
+          client_id: "{{ config['credentials']['client_id'] }}"
+          client_secret: "{{ config['credentials']['client_secret'] }}"
+          refresh_token: "{{ config['credentials']['refresh_token'] }}"
+          token_refresh_endpoint: https://app.asana.com/-/oauth_token
+          grant_type: refresh_token
+          access_token_name: access_token
+        PAT Credentials:
+          type: BearerAuthenticator
+          api_token: "{{ config['credentials']['personal_access_token'] }}"
+
+streams:
+  - $ref: "#/definitions/streams/projects"
+  - $ref: "#/definitions/streams/sections_compact"
+  - $ref: "#/definitions/streams/sections"
+  - $ref: "#/definitions/streams/tasks"
+  - $ref: "#/definitions/streams/stories_compact"
+  - $ref: "#/definitions/streams/stories"
+  - $ref: "#/definitions/streams/workspaces"
+  - $ref: "#/definitions/streams/tags"
+  - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/teams"
+  - $ref: "#/definitions/streams/team_memberships"
+  - $ref: "#/definitions/streams/attachments_compact"
+  - $ref: "#/definitions/streams/attachments"
+  - $ref: "#/definitions/streams/portfolios_compact"
+  - $ref: "#/definitions/streams/portfolios"
+  - $ref: "#/definitions/streams/portfolios_memberships"
+  - $ref: "#/definitions/streams/custom_fields"
+  - $ref: "#/definitions/streams/organization_exports"
+  - $ref: "#/definitions/streams/events"
+  - $ref: "#/definitions/streams/portfolio_items"
+
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/asana
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Asana Spec
+    type: object
+    additionalProperties: true
+    properties:
+      credentials:
+        title: Authentication mechanism
+        description: Choose how to authenticate to Github
+        type: object
+        oneOf:
+          - type: object
+            title: Authenticate via Asana (Oauth)
+            required:
+              - client_id
+              - client_secret
+              - refresh_token
+            properties:
+              option_title:
+                type: string
+                title: Credentials title
+                description: OAuth Credentials
+                const: OAuth Credentials
+              client_id:
+                type: string
+                title: ""
+                description: ""
+                airbyte_secret: true
+              client_secret:
+                type: string
+                title: ""
+                description: ""
+                airbyte_secret: true
+              refresh_token:
+                type: string
+                title: ""
+                description: ""
+                airbyte_secret: true
+          - type: object
+            title: Authenticate with Personal Access Token
+            required:
+              - personal_access_token
+            properties:
+              option_title:
+                type: string
+                title: Credentials title
+                description: PAT Credentials
+                const: PAT Credentials
+              personal_access_token:
+                type: string
+                title: Personal Access Token
+                description: Asana Personal Access Token (generate yours <a href="https://app.asana.com/0/developer-console">here</a>).
+                airbyte_secret: true
+      test_mode:
+        type: boolean
+        title: Test Mode
+        description:
+          This flag is used for testing purposes for certain streams that
+          return a lot of data. This flag is not meant to be enabled for prod.
+        airbyte_hidden: true
+      organization_export_ids:
+        title: Organization Export IDs
+        description: Globally unique identifiers for the organization exports
+        type: array
+      num_workers:
+        type: integer
+        title: Number of concurrent workers
+        minimum: 1
+        maximum: 25
+        default: 10
+        examples: [1, 2, 3]
+        description: >-
+          The number of worker threads to use for the sync.
+          The performance upper boundary is based on the limit of your Asana pricing plan.
+          More info about the rate limit tiers can be found on Asana's API <a href="https://developers.asana.com/docs/rate-limits">docs</a>.
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+      - credentials
+      - option_title
+    predicate_value: OAuth Credentials
+    oauth_config_specification:
+      complete_oauth_output_specification:
+        type: object
+        properties:
+          refresh_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - refresh_token
+      complete_oauth_server_input_specification:
+        type: object
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_secret
+
+metadata:
+  autoImportSchema:
+    projects: false
+    sections_compact: false
+    sections: false
+    tasks: false
+    stories_compact: false
+    stories: false
+    workspaces: false
+    tags: false
+    users: false
+    teams: false
+    team_memberships: false
+    attachments_compact: false
+    attachments: false
+    portfolios_compact: false
+    portfolios: false
+    portfolios_memberships: false
+    custom_fields: false
+    organization_exports: false
+    events: false
+    portfolio_items: false
+  testedStreams: {}
+  assist: {}
+
+schemas:
+  projects:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      archived:
+        type:
+          - "null"
+          - boolean
+      color:
+        type:
+          - "null"
+          - string
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      current_status:
+        type:
+          - "null"
+          - object
+        properties:
+          author:
+            type:
+              - "null"
+              - object
+            properties:
+              gid:
+                type:
+                  - "null"
+                  - string
+              name:
+                type:
+                  - "null"
+                  - string
+              resource_type:
+                type:
+                  - "null"
+                  - string
+          color:
+            type:
+              - "null"
+              - string
+          created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          created_by:
+            type:
+              - "null"
+              - object
+            properties:
+              gid:
+                type:
+                  - "null"
+                  - string
+              name:
+                type:
+                  - "null"
+                  - string
+              resource_type:
+                type:
+                  - "null"
+                  - string
+          gid:
+            type:
+              - "null"
+              - string
+          html_text:
+            type:
+              - "null"
+              - string
+          modified_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          resource_type:
+            type:
+              - "null"
+              - string
+          text:
+            type:
+              - "null"
+              - string
+          title:
+            type:
+              - "null"
+              - string
+      custom_field_settings:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            gid:
+              type:
+                - "null"
+                - string
+            resource_type:
+              type:
+                - "null"
+                - string
+      custom_fields:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            type:
+              type:
+                - "null"
+                - string
+            display_value:
+              type:
+                - "null"
+                - string
+            enabled:
+              type:
+                - "null"
+                - boolean
+            enum_options:
+              type:
+                - "null"
+                - array
+              items:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  color:
+                    type:
+                      - "null"
+                      - string
+                  enabled:
+                    type:
+                      - "null"
+                      - boolean
+                  gid:
+                    type:
+                      - "null"
+                      - string
+                  name:
+                    type:
+                      - "null"
+                      - string
+                  resource_type:
+                    type:
+                      - "null"
+                      - string
+            gid:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+            number_value:
+              type:
+                - "null"
+                - number
+            resource_subtype:
+              type:
+                - "null"
+                - string
+            resource_type:
+              type:
+                - "null"
+                - string
+            text_value:
+              type:
+                - "null"
+                - boolean
+      default_view:
+        type:
+          - "null"
+          - string
+      due_date:
+        type:
+          - "null"
+          - string
+        format: date
+      due_on:
+        type:
+          - "null"
+          - string
+        format: date
+      followers:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            gid:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+            resource_type:
+              type:
+                - "null"
+                - string
+      gid:
+        type:
+          - "null"
+          - string
+      html_notes:
+        type:
+          - "null"
+          - string
+      icon:
+        type:
+          - "null"
+          - string
+      is_template:
+        type:
+          - "null"
+          - boolean
+      members:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            gid:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+            resource_type:
+              type:
+                - "null"
+                - string
+      modified_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      name:
+        type:
+          - "null"
+          - string
+      notes:
+        type:
+          - "null"
+          - string
+      owner:
+        type:
+          - "null"
+          - object
+        properties:
+          gid:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          resource_type:
+            type:
+              - "null"
+              - string
+      permalink_url:
+        type:
+          - "null"
+          - string
+      public:
+        type:
+          - "null"
+          - boolean
+      resource_type:
+        type:
+          - "null"
+          - string
+      start_on:
+        type:
+          - "null"
+          - string
+        format: date
+      team:
+        type:
+          - "null"
+          - object
+        properties:
+          gid:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          resource_type:
+            type:
+              - "null"
+              - string
+      workspace:
+        type:
+          - "null"
+          - object
+        properties:
+          gid:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          resource_type:
+            type:
+              - "null"
+              - string
+  sections_compact:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      gid:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      resource_type:
+        type:
+          - "null"
+          - string
+  sections:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      gid:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      project:
+        type:
+          - "null"
+          - object
+        properties:
+          gid:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          resource_type:
+            type:
+              - "null"
+              - string
+      resource_type:
+        type:
+          - "null"
+          - string
+  tasks:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      actual_time_minutes:
+        type:
+          - "null"
+          - integer
+        description: The actual time spent on the task in minutes
+      approval_status:
+        type:
+          - "null"
+          - string
+      assignee:
+        type:
+          - "null"
+          - object
+        properties:
+          gid:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          resource_type:
+            type:
+              - "null"
+              - string
+      completed:
+        type:
+          - "null"
+          - boolean
+      completed_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      completed_by:
+        type:
+          - "null"
+          - object
+        properties:
+          gid:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          resource_type:
+            type:
+              - "null"
+              - string
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      custom_fields:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            type:
+              type:
+                - "null"
+                - string
+            description:
+              type:
+                - "null"
+                - string
+            created_by:
+              type:
+                - "null"
+                - object
+              properties:
+                gid:
+                  type:
+                    - "null"
+                    - string
+                name:
+                  type:
+                    - "null"
+                    - string
+                resource_type:
+                  type:
+                    - "null"
+                    - string
+            currency_code:
+              type:
+                - "null"
+                - string
+            custom_label:
+              type:
+                - "null"
+                - string
+            custom_label_position:
+              type:
+                - "null"
+                - string
+            display_value:
+              type:
+                - "null"
+                - string
+            enabled:
+              type:
+                - "null"
+                - boolean
+            enum_options:
+              type:
+                - "null"
+                - array
+              items:
+                type:
+                  - "null"
+                  - object
+                properties:
+                  color:
+                    type:
+                      - "null"
+                      - string
+                  enabled:
+                    type:
+                      - "null"
+                      - boolean
+                  gid:
+                    type:
+                      - "null"
+                      - string
+                  name:
+                    type:
+                      - "null"
+                      - string
+                  resource_type:
+                    type:
+                      - "null"
+                      - string
+            enum_value:
+              type:
+                - "null"
+                - object
+              properties:
+                color:
+                  type:
+                    - "null"
+                    - string
+                enabled:
+                  type:
+                    - "null"
+                    - boolean
+                gid:
+                  type:
+                    - "null"
+                    - string
+                name:
+                  type:
+                    - "null"
+                    - string
+                resource_type:
+                  type:
+                    - "null"
+                    - string
+            format:
+              type:
+                - "null"
+                - string
+            gid:
+              type:
+                - "null"
+                - string
+            has_notifications_enabled:
+              type:
+                - "null"
+                - boolean
+            is_global_to_workspace:
+              type:
+                - "null"
+                - boolean
+            name:
+              type:
+                - "null"
+                - string
+            number_value:
+              type:
+                - "null"
+                - number
+            precision:
+              type:
+                - "null"
+                - integer
+            resource_subtype:
+              type:
+                - "null"
+                - string
+            resource_type:
+              type:
+                - "null"
+                - string
+            text_value:
+              type:
+                - "null"
+                - string
+      dependencies:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            gid:
+              type:
+                - "null"
+                - string
+            resource_type:
+              type:
+                - "null"
+                - string
+      dependents:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            gid:
+              type:
+                - "null"
+                - string
+            resource_type:
+              type:
+                - "null"
+                - string
+      due_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      due_on:
+        type:
+          - "null"
+          - string
+        format: date
+      external:
+        type:
+          - "null"
+          - object
+        properties:
+          data:
+            type:
+              - "null"
+              - string
+          gid:
+            type:
+              - "null"
+              - string
+      followers:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            gid:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+            resource_type:
+              type:
+                - "null"
+                - string
+      gid:
+        type:
+          - "null"
+          - string
+      hearted:
+        type:
+          - "null"
+          - boolean
+      hearts:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            gid:
+              type:
+                - "null"
+                - string
+            user:
+              type:
+                - "null"
+                - object
+              properties:
+                gid:
+                  type:
+                    - "null"
+                    - string
+                name:
+                  type:
+                    - "null"
+                    - string
+                resource_type:
+                  type:
+                    - "null"
+                    - string
+      html_notes:
+        type:
+          - "null"
+          - string
+      is_rendered_as_separator:
+        type:
+          - "null"
+          - boolean
+      liked:
+        type:
+          - "null"
+          - boolean
+      likes:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            gid:
+              type:
+                - "null"
+                - string
+            user:
+              type:
+                - "null"
+                - object
+              properties:
+                gid:
+                  type:
+                    - "null"
+                    - string
+                name:
+                  type:
+                    - "null"
+                    - string
+                resource_type:
+                  type:
+                    - "null"
+                    - string
+      memberships:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            project:
+              type:
+                - "null"
+                - object
+              properties:
+                gid:
+                  type:
+                    - "null"
+                    - string
+                name:
+                  type:
+                    - "null"
+                    - string
+                resource_type:
+                  type:
+                    - "null"
+                    - string
+            section:
+              type:
+                - "null"
+                - object
+              properties:
+                gid:
+                  type:
+                    - "null"
+                    - string
+                name:
+                  type:
+                    - "null"
+                    - string
+                resource_type:
+                  type:
+                    - "null"
+                    - string
+      modified_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      name:
+        type:
+          - "null"
+          - string
+      notes:
+        type:
+          - "null"
+          - string
+      num_hearts:
+        type:
+          - "null"
+          - integer
+      num_likes:
+        type:
+          - "null"
+          - integer
+      num_subtasks:
+        type:
+          - "null"
+          - integer
+      parent:
+        type:
+          - "null"
+          - object
+        properties:
+          gid:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          resource_type:
+            type:
+              - "null"
+              - string
+      permalink_url:
+        type:
+          - "null"
+          - string
+      projects:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            gid:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+            resource_type:
+              type:
+                - "null"
+                - string
+      resource_subtype:
+        type:
+          - "null"
+          - string
+      resource_type:
+        type:
+          - "null"
+          - string
+      start_on:
+        type:
+          - "null"
+          - string
+        format: date
+      tags:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            gid:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+      workspace:
+        type:
+          - "null"
+          - object
+        properties:
+          gid:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          resource_type:
+            type:
+              - "null"
+              - string
+  stories_compact:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      created_by:
+        type:
+          - "null"
+          - object
+        properties:
+          gid:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          resource_type:
+            type:
+              - "null"
+              - string
+      gid:
+        type:
+          - "null"
+          - string
+      resource_subtype:
+        type:
+          - "null"
+          - string
+      resource_type:
+        type:
+          - "null"
+          - string
+      target:
+        type:
+          - "null"
+          - object
+        properties:
+          gid:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          resource_subtype:
+            type:
+              - "null"
+              - string
+          resource_type:
+            type:
+              - "null"
+              - string
+      task:
+        type:
+          - "null"
+          - object
+        properties:
+          gid:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          resource_subtype:
+            type:
+              - "null"
+              - string
+          resource_type:
+            type:
+              - "null"
+              - string
+      text:
+        type:
+          - "null"
+          - string
+  stories:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      created_by:
+        type:
+          - "null"
+          - object
+        properties:
+          gid:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          resource_type:
+            type:
+              - "null"
+              - string
+      gid:
+        type:
+          - "null"
+          - string
+      html_text:
+        type:
+          - "null"
+          - string
+      is_editable:
+        type:
+          - "null"
+          - boolean
+      is_edited:
+        type:
+          - "null"
+          - boolean
+      is_pinned:
+        type:
+          - "null"
+          - boolean
+      liked:
+        type:
+          - "null"
+          - boolean
+      likes:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            gid:
+              type:
+                - "null"
+                - string
+            user:
+              type:
+                - "null"
+                - object
+              properties:
+                gid:
+                  type:
+                    - "null"
+                    - string
+                name:
+                  type:
+                    - "null"
+                    - string
+                resource_type:
+                  type:
+                    - "null"
+                    - string
+      num_likes:
+        type:
+          - "null"
+          - integer
+      resource_subtype:
+        type:
+          - "null"
+          - string
+      resource_type:
+        type:
+          - "null"
+          - string
+      sticker_name:
+        type:
+          - "null"
+          - string
+      task:
+        type:
+          - "null"
+          - object
+        properties:
+          gid:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          resource_subtype:
+            type:
+              - "null"
+              - string
+          resource_type:
+            type:
+              - "null"
+              - string
+      text:
+        type:
+          - "null"
+          - string
+  workspaces:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      email_domains:
+        type:
+          - "null"
+          - array
+        items:
+          type: string
+      gid:
+        type:
+          - "null"
+          - string
+      is_organization:
+        type:
+          - "null"
+          - boolean
+      name:
+        type:
+          - "null"
+          - string
+      resource_type:
+        type:
+          - "null"
+          - string
+  tags:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      color:
+        type:
+          - "null"
+          - string
+      followers:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            gid:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+            resource_type:
+              type:
+                - "null"
+                - string
+      gid:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      permalink_url:
+        type:
+          - "null"
+          - string
+      resource_type:
+        type:
+          - "null"
+          - string
+      workspace:
+        type:
+          - "null"
+          - object
+        properties:
+          gid:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          resource_type:
+            type:
+              - "null"
+              - string
+  users:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      email:
+        type:
+          - "null"
+          - string
+      gid:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      photo:
+        type:
+          - "null"
+          - object
+        properties:
+          image_128x128:
+            type:
+              - "null"
+              - string
+          image_21x21:
+            type:
+              - "null"
+              - string
+          image_27x27:
+            type:
+              - "null"
+              - string
+          image_36x36:
+            type:
+              - "null"
+              - string
+          image_60x60:
+            type:
+              - "null"
+              - string
+      resource_type:
+        type:
+          - "null"
+          - string
+      workspaces:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            gid:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+            resource_type:
+              type:
+                - "null"
+                - string
+  teams:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - "null"
+          - string
+      gid:
+        type:
+          - "null"
+          - string
+      html_description:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      organization:
+        type:
+          - "null"
+          - object
+        properties:
+          gid:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          resource_type:
+            type:
+              - "null"
+              - string
+      permalink_url:
+        type:
+          - "null"
+          - string
+      resource_type:
+        type:
+          - "null"
+          - string
+  team_memberships:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      gid:
+        type:
+          - "null"
+          - string
+      is_guest:
+        type:
+          - "null"
+          - boolean
+      resource_type:
+        type:
+          - "null"
+          - string
+      team:
+        type:
+          - "null"
+          - object
+        properties:
+          gid:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          resource_type:
+            type:
+              - "null"
+              - string
+      user:
+        type:
+          - "null"
+          - object
+        properties:
+          gid:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          resource_type:
+            type:
+              - "null"
+              - string
+  attachments_compact:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      gid:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      resource_subtype:
+        type:
+          - "null"
+          - string
+      resource_type:
+        type:
+          - "null"
+          - string
+  attachments:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      connected_to_app:
+        type:
+          - "null"
+          - boolean
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      download_url:
+        type:
+          - "null"
+          - string
+      gid:
+        type:
+          - "null"
+          - string
+      host:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      parent:
+        type:
+          - "null"
+          - object
+        properties:
+          created_by:
+            type:
+              - "null"
+              - object
+            properties:
+              gid:
+                type:
+                  - "null"
+                  - string
+              resource_type:
+                type:
+                  - "null"
+                  - string
+          gid:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          resource_subtype:
+            type:
+              - "null"
+              - string
+          resource_type:
+            type:
+              - "null"
+              - string
+      permanent_url:
+        type:
+          - "null"
+          - string
+      resource_subtype:
+        type:
+          - "null"
+          - string
+      resource_type:
+        type:
+          - "null"
+          - string
+      size:
+        type:
+          - "null"
+          - integer
+      view_url:
+        type:
+          - "null"
+          - string
+  portfolios_compact:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      gid:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      resource_type:
+        type:
+          - "null"
+          - string
+  portfolios:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      color:
+        type:
+          - "null"
+          - string
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      created_by:
+        type:
+          - "null"
+          - object
+        properties:
+          gid:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          resource_type:
+            type:
+              - "null"
+              - string
+      current_status_update:
+        type:
+          - "null"
+          - object
+        properties:
+          gid:
+            type:
+              - "null"
+              - string
+          resource_subtype:
+            type:
+              - "null"
+              - string
+          resource_type:
+            type:
+              - "null"
+              - string
+          title:
+            type:
+              - "null"
+              - string
+      due_on:
+        type:
+          - "null"
+          - string
+        format: date-time
+      gid:
+        type:
+          - "null"
+          - string
+      members:
+        type:
+          - "null"
+          - object
+        properties:
+          gid:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          resource_type:
+            type:
+              - "null"
+              - string
+      name:
+        type:
+          - "null"
+          - string
+      owner:
+        type:
+          - "null"
+          - object
+        properties:
+          gid:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          resource_type:
+            type:
+              - "null"
+              - string
+      permalink_url:
+        type:
+          - "null"
+          - string
+      project_templates:
+        type:
+          - "null"
+          - object
+        properties:
+          gid:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          resource_type:
+            type:
+              - "null"
+              - string
+      public:
+        type:
+          - "null"
+          - boolean
+      resource_type:
+        type:
+          - "null"
+          - string
+      start_on:
+        type:
+          - "null"
+          - string
+        format: date-time
+      workspace:
+        type:
+          - "null"
+          - object
+        properties:
+          gid:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          resource_type:
+            type:
+              - "null"
+              - string
+  portfolios_memberships:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      gid:
+        type:
+          - string
+          - "null"
+      portfolio:
+        type:
+          - object
+          - "null"
+        properties:
+          gid:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          resource_type:
+            type:
+              - string
+              - "null"
+      resource_type:
+        type:
+          - string
+          - "null"
+      user:
+        type:
+          - object
+          - "null"
+        properties:
+          gid:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          resource_type:
+            type:
+              - string
+              - "null"
+    title: Portfolio Memberships Schema
+  custom_fields:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+      description:
+        type:
+          - "null"
+          - string
+      created_by:
+        type:
+          - "null"
+          - object
+        properties:
+          gid:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          resource_type:
+            type:
+              - "null"
+              - string
+      currency_code:
+        type:
+          - "null"
+          - string
+      custom_label:
+        type:
+          - "null"
+          - string
+      custom_label_position:
+        type:
+          - "null"
+          - string
+      display_value:
+        type:
+          - "null"
+          - string
+      enabled:
+        type:
+          - "null"
+          - boolean
+      enum_options:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          properties:
+            color:
+              type:
+                - "null"
+                - string
+            enabled:
+              type:
+                - "null"
+                - boolean
+            gid:
+              type:
+                - "null"
+                - string
+            name:
+              type:
+                - "null"
+                - string
+            resource_type:
+              type:
+                - "null"
+                - string
+      enum_value:
+        type:
+          - "null"
+          - object
+        properties:
+          color:
+            type:
+              - "null"
+              - string
+          enabled:
+            type:
+              - "null"
+              - boolean
+          gid:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          resource_type:
+            type:
+              - "null"
+              - string
+      format:
+        type:
+          - "null"
+          - string
+      gid:
+        type:
+          - "null"
+          - string
+      has_notifications_enabled:
+        type:
+          - "null"
+          - boolean
+      is_global_to_workspace:
+        type:
+          - "null"
+          - boolean
+      number_value:
+        type:
+          - "null"
+          - number
+      precision:
+        type:
+          - "null"
+          - integer
+      resource_subtype:
+        type:
+          - "null"
+          - string
+      resource_type:
+        type:
+          - "null"
+          - string
+      text_value:
+        type:
+          - "null"
+          - string
+  organization_exports:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      download_url:
+        type:
+          - "null"
+          - string
+      gid:
+        type:
+          - "null"
+          - string
+      organization:
+        type:
+          - "null"
+          - object
+        properties:
+          gid:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          resource_type:
+            type:
+              - "null"
+              - string
+      resource_type:
+        type:
+          - "null"
+          - string
+      state:
+        type:
+          - "null"
+          - string
+  events:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - "null"
+          - string
+      action:
+        type:
+          - "null"
+          - string
+      change:
+        type:
+          - "null"
+          - object
+        properties:
+          action:
+            type:
+              - "null"
+              - string
+          added_value:
+            type:
+              - "null"
+              - object
+            properties:
+              gid:
+                type:
+                  - "null"
+                  - string
+              resource_type:
+                type:
+                  - "null"
+                  - string
+          field:
+            type:
+              - "null"
+              - string
+          new_value:
+            type:
+              - "null"
+              - object
+            properties:
+              gid:
+                type:
+                  - "null"
+                  - string
+              resource_type:
+                type:
+                  - "null"
+                  - string
+          removed_value:
+            type:
+              - "null"
+              - object
+            properties:
+              gid:
+                type:
+                  - "null"
+                  - string
+              resource_type:
+                type:
+                  - "null"
+                  - string
+      created_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      parent:
+        type:
+          - "null"
+          - object
+        properties:
+          gid:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          resource_type:
+            type:
+              - "null"
+              - string
+      resource:
+        type:
+          - "null"
+          - object
+        properties:
+          gid:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          resource_type:
+            type:
+              - "null"
+              - string
+      user:
+        type:
+          - "null"
+          - object
+        properties:
+          gid:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          resource_type:
+            type:
+              - "null"
+              - string
+  portfolio_items:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      gid:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      resource_type:
+        type:
+          - "null"
+          - string
+
+# Asana rate limiting has two tiers:
+# - Free: 2.5 req/s, 150 req/min
+# - Paid: 25 req/s, 1500 req/min
+#
+# In addition, Asana has a cap on the maximum number of requests in progress concurrently depending
+# on the endpoint HTTP method:
+# - GET: 50 concurrent requests (We're already capping at 25 req/sec, but 50 should be the absolute ceiling)
+# - POST/PUT/PATCH/DELETE: 5 concurrent requests (We don't have any streams using these methods)
+#
+# Lastly, a few specific endpoints have stricter limitation although neither are used at the moment:
+# - /search: 60 req/min
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 3) }}"
+  max_concurrency: 25
