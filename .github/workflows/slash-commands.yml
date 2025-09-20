@@ -36,6 +36,7 @@ jobs:
 
           commands: |
             approve-regression-tests
+            auto-approve
             bump-bulk-cdk-and-release-connectors
             bump-cdk-version-and-merge
             bump-version

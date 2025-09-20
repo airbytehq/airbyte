@@ -1,0 +1,195 @@
+name: Auto Approval Workflow
+permissions:
+  pull-requests: write
+  statuses: write
+on:
+  workflow_call:
+    inputs:
+      pr-number:
+        description: "Pull request number to auto-approve"
+        required: true
+        type: number
+      requester:
+        description: "User who requested the auto-approval"
+        required: false
+        type: string
+      reason:
+        description: "Reason for auto-approval"
+        required: false
+        type: string
+        default: "Automated approval"
+  repository_dispatch:
+    types: [auto-approve]
+  workflow_dispatch:
+    inputs:
+      pr-number:
+        description: "Pull request number to auto-approve"
+        required: true
+        type: number
+      requester:
+        description: "User who requested the auto-approval"
+        required: false
+        type: string
+      reason:
+        description: "Reason for auto-approval"
+        required: false
+        type: string
+        default: "Manual approval request"
+      comment-id:
+        description: "Optional comment-id of the slash command"
+        required: false
+      repo:
+        description: "Repo (for slash command compatibility)"
+        required: false
+        default: "airbytehq/airbyte"
+      gitref:
+        description: "Git ref (for slash command compatibility)"
+        required: false
+
+run-name: "Auto Approval for PR #${{ github.event.inputs.pr-number || github.event.client_payload.pr-number }}"
+
+jobs:
+  auto-approve:
+    name: "Auto Approve PR"
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v4
+
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@v2
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+          # TODO: Consider creating a new GitHub App with only the required scopes for auto-approval
+
+      - name: Get job variables
+        id: job-vars
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            PR_NUMBER="${{ github.event.client_payload.pr-number }}"
+            REQUESTER="${{ github.event.client_payload.requester }}"
+            REASON="${{ github.event.client_payload.reason }}"
+          else
+            PR_NUMBER="${{ github.event.inputs.pr-number }}"
+            REQUESTER="${{ github.event.inputs.requester }}"
+            REASON="${{ github.event.inputs.reason }}"
+          fi
+
+          echo "pr-number=$PR_NUMBER" >> $GITHUB_OUTPUT
+          echo "requester=${REQUESTER:-${{ github.actor }}}" >> $GITHUB_OUTPUT
+          echo "reason=${REASON:-Automated approval}" >> $GITHUB_OUTPUT
+          echo "run-url=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
+
+          PR_JSON=$(gh api repos/${{ github.repository }}/pulls/$PR_NUMBER)
+          echo "pr-title=$(echo "$PR_JSON" | jq -r .title)" >> $GITHUB_OUTPUT
+          echo "pr-author=$(echo "$PR_JSON" | jq -r .user.login)" >> $GITHUB_OUTPUT
+
+      - name: Link comment to Workflow Run
+        if: github.event.inputs.comment-id
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          body: |
+            > :clock2: Auto-approval workflow started: ${{ steps.job-vars.outputs.run-url }}
+
+      - name: Approve Pull Request
+        id: approve-pr
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+        run: |
+          echo "Approving PR #${{ steps.job-vars.outputs.pr-number }}..."
+          gh api \
+            --method POST \
+            /repos/${{ github.repository }}/pulls/${{ steps.job-vars.outputs.pr-number }}/reviews \
+            -f event='APPROVE' \
+            -f body='Auto-approved by workflow. Reason: ${{ steps.job-vars.outputs.reason }}'
+          echo "PR approved successfully"
+
+      - name: Enable Auto-merge
+        id: enable-auto-merge
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+        run: |
+          echo "Enabling auto-merge for PR #${{ steps.job-vars.outputs.pr-number }}..."
+          gh pr merge ${{ steps.job-vars.outputs.pr-number }} --auto --squash
+          echo "Auto-merge enabled successfully"
+
+      - name: Match GitHub User to Slack User
+        id: match-github-to-slack-user
+        uses: ./.github/actions/match-github-to-slack-user
+        env:
+          AIRBYTE_TEAM_BOT_SLACK_TOKEN: ${{ secrets.SLACK_AIRBYTE_TEAM_READ_USERS }}
+          GITHUB_API_TOKEN: ${{ steps.get-app-token.outputs.token }}
+
+      - name: Send Audit Notification to Slack
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          channel-id: C03BEADRPNY
+          payload: |
+            {
+              "text": "🤖 Auto-approval executed for PR #${{ steps.job-vars.outputs.pr-number }}",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "🤖 *Auto-approval executed*"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*PR:* <https://github.com/${{ github.repository }}/pull/${{ steps.job-vars.outputs.pr-number }}|#${{ steps.job-vars.outputs.pr-number }} - ${{ steps.job-vars.outputs.pr-title }}>"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Author:* ${{ steps.job-vars.outputs.pr-author }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Requested by:* ${{ steps.job-vars.outputs.requester }} (<@${{ steps.match-github-to-slack-user.outputs.slack_user_ids }}>)"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Reason:* ${{ steps.job-vars.outputs.reason }}"
+                    }
+                  ]
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "<${{ steps.job-vars.outputs.run-url }}|View workflow run>"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+
+      - name: Add Success Comment
+        if: github.event.inputs.comment-id && success()
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          edit-mode: append
+          body: |
+            > ✅ Auto-approval completed successfully for PR #${{ steps.job-vars.outputs.pr-number }}
+
+      - name: Add Failure Comment
+        if: github.event.inputs.comment-id && failure()
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          edit-mode: append
+          body: |
+            > ❌ Auto-approval failed for PR #${{ steps.job-vars.outputs.pr-number }}
