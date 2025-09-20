@@ -12,6 +12,8 @@ import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.command.SourceConfigurationFactory
 import io.airbyte.cdk.jdbc.SSLCertificateUtils
+import io.airbyte.cdk.output.DataChannelMedium
+import io.airbyte.cdk.output.DataChannelMedium.SOCKET
 import io.airbyte.cdk.output.DataChannelMedium.STDIO
 import io.airbyte.cdk.output.sockets.DATA_CHANNEL_PROPERTY_PREFIX
 import io.airbyte.cdk.ssh.SshConnectionOptions
@@ -175,10 +177,14 @@ constructor(
 
         log.info { "maxDBConnections: $maxDBConnections. socket paths: ${socketPaths.size}" }
 
-        // TODO: by channel medium
         // If max_db_connections is set, we use it.
-        // Otherwise, we use the number of socket paths provided.
-        val maxConcurrency: Int = maxDBConnections ?: /*socketPaths.size*/ 1
+        // Otherwise, we use the number of socket paths provided for speed mode
+        // Or 1 for legacy mode
+        val maxConcurrency: Int =
+            when (DataChannelMedium.valueOf(dataChannelMedium)) {
+                STDIO -> maxDBConnections?: 1
+                SOCKET -> maxDBConnections ?: socketPaths.size
+            }
         log.info { "Effective concurrency: $maxConcurrency" }
 
         return PostgresSourceConfiguration(

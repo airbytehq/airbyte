@@ -18,6 +18,7 @@ data class PostgresSourceJdbcStreamStateValue(
     @JsonProperty("ctid") val ctid: String? = null,
     @JsonProperty("incremental_state") val incrementalState: JsonNode? = null,
     @JsonProperty("cursors") val cursors: Map<String, JsonNode> = mapOf(),
+    @JsonProperty("relation_filenode") val filenode: Filenode? = null,
 ) {
     companion object {
         val snapshotCompleted: OpaqueStateValue
@@ -28,10 +29,14 @@ data class PostgresSourceJdbcStreamStateValue(
                     )
                 )
 
-        fun snapshotCheckpoint(ctidCheckpoint: JsonNode): OpaqueStateValue =
+        fun snapshotCheckpoint(
+            ctidCheckpoint: JsonNode,
+            filenode: Filenode?,
+        ): OpaqueStateValue =
             Jsons.valueToTree(
                 PostgresSourceJdbcStreamStateValue(
                     ctid = ctidCheckpoint.asText(),
+                    filenode = filenode,
                     stateType = StateType.CTID_BASED.serialized,
                 )
             )
@@ -54,11 +59,13 @@ data class PostgresSourceJdbcStreamStateValue(
             ctidCheckpoint: JsonNode,
             cursor: DataField,
             cursorCheckpoint: JsonNode,
+            filenode: Filenode?,
         ): OpaqueStateValue =
             Jsons.valueToTree(
                 PostgresSourceJdbcStreamStateValue(
                     ctid = ctidCheckpoint.asText(),
                     cursors = mapOf(cursor.id to cursorCheckpoint),
+                    filenode = filenode,
                     stateType = StateType.CTID_BASED.serialized,
                 )
             )
