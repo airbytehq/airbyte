@@ -1,4 +1,4 @@
-version: 0.83.0
+version: 5.15.0
 
 type: DeclarativeSource
 
@@ -19,11 +19,11 @@ definitions:
           path: /report
           http_method: GET
           request_parameters:
-            metrics: >-
-              {{ config['metrics'] + config['additional_metrics'] |
-              join(',') }}
-            dimensions: '{{ config["dimensions"] + ["day"] | join(",") }}'
-            date_period: "{{ stream_interval['start_time'] }}:{{ stream_interval['end_time'] }}"
+            metrics: "{{ config['metrics'] + config['additional_metrics'] | join(',') }}"
+            dimensions: "{{ config[\"dimensions\"] + [\"day\"] | join(\",\") }}"
+            date_period: >-
+              {{ stream_interval['start_time'] }}:{{ stream_interval['end_time']
+              }}
         record_selector:
           type: RecordSelector
           extractor:
@@ -43,31 +43,29 @@ definitions:
         end_datetime:
           type: MinMaxDatetime
           datetime: >-
-            {{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') if config['until_today'] else (day_delta(1)).strftime('%Y-%m-%dT%H:%M:%SZ') }}
+            {{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') if config['until_today']
+            else (day_delta(1)).strftime('%Y-%m-%dT%H:%M:%SZ') }}
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         step: P1D
         cursor_granularity: P1D
       schema_loader:
         type: CustomSchemaLoader
-        class_name: source_adjust.components.AdjustSchemaLoader
+        class_name: source_declarative_manifest.components.AdjustSchemaLoader
   base_requester:
     type: HttpRequester
     url_base: https://dash.adjust.com/control-center/reports-service
     authenticator:
       type: BearerAuthenticator
-      api_token: '{{ config["api_token"] }}'
+      api_token: "{{ config[\"api_token\"] }}"
 
 streams:
   - $ref: "#/definitions/streams/AdjustReport"
 
 spec:
   type: Spec
-  documentationUrl: https://docs.airbyte.com/integrations/sources/adjust
   connection_specification:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
-    description: Adjust reporting API connector.
-    additionalProperties: true
     required:
       - api_token
       - ingest_start
@@ -75,22 +73,24 @@ spec:
       - dimensions
     properties:
       api_token:
-        airbyte_secret: true
+        type: string
         description: >-
           Adjust API key, see
           https://help.adjust.com/en/article/report-service-api-authentication
-        order: 1
+        airbyte_secret: true
+        order: 0
         title: API Token
-        type: string
       ingest_start:
+        type: string
         description: Data ingest start date.
         format: date
-        order: 2
+        order: 1
         title: Ingest Start Date
-        type: string
       metrics:
+        type: array
         description: Select at least one metric to query.
         items:
+          type: string
           enum:
             - network_cost
             - network_cost_diff
@@ -154,22 +154,21 @@ spec:
             - ecpi_all
             - ecpi
             - ecpm
-          type: string
         minItems: 1
-        order: 3
+        order: 2
         title: Metrics to ingest
-        type: array
         uniqueItems: true
       additional_metrics:
+        type: array
         description: >-
           Metrics names that are not pre-defined, such as cohort metrics or app
           specific metrics.
         items:
           type: string
-        order: 4
+        order: 3
         title: Additional metrics for ingestion
-        type: array
       dimensions:
+        type: array
         description: >-
           Dimensions allow a user to break down metrics into groups using one or
           several parameters. For example, the number of installs by date,
@@ -177,6 +176,7 @@ spec:
           https://help.adjust.com/en/article/reports-endpoint#dimensions for
           more information about the dimensions.
         items:
+          type: string
           enum:
             - os_name
             - device_type
@@ -204,17 +204,22 @@ spec:
             - region
             - partner_name
             - partner_id
-          type: string
         minItems: 1
-        order: 5
+        order: 4
         title: Dimensions
-        type: array
         uniqueItems: true
       until_today:
-        default: false
+        type: boolean
         description: >-
           Syncs data up until today. Useful when running daily incremental
           syncs, and duplicates are not desired.
-        order: 6
+        default: false
+        order: 5
         title: Until Today
-        type: boolean
+    additionalProperties: true
+
+metadata:
+  autoImportSchema:
+    AdjustReport: false
+  testedStreams: {}
+  assist: {}
