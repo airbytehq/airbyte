@@ -242,37 +242,24 @@ const ConnectorMetadataCallout = ({
     <dl className={styles.connectorMetadata}>
       <MetadataStat label="Availability">
         <div className={styles.availability}>
-          {isEnterprise ? (
-            <>
-              <Chip className={styles.available}>
-                <EnabledIcon isEnabled={true} /> Cloud <b>with Teams add-on</b>
-              </Chip>
-              <Chip className={isOss ? styles.available : styles.unavailable}>
-                <EnabledIcon isEnabled={isOss} /> Self-Managed Community
-              </Chip>
-              <Chip className={styles.available}>
-                <EnabledIcon isEnabled={true} /> Self-Managed Enterprise
-              </Chip>
-              <Chip className={styles.unavailable}>
-                <EnabledIcon isEnabled={false} /> PyAirbyte
-              </Chip>
-            </>
-          ) : (
-            <>
-              <Chip className={isCloud ? styles.available : styles.unavailable}>
-                <EnabledIcon isEnabled={isCloud} /> Cloud
-              </Chip>
-              <Chip className={isOss ? styles.available : styles.unavailable}>
-                <EnabledIcon isEnabled={isOss} /> Self-Managed Community
-              </Chip>
-              <Chip className={isOss ? styles.available : styles.unavailable}>
-                <EnabledIcon isEnabled={isOss} /> Self-Managed Enterprise
-              </Chip>
-              <Chip className={isOss ? styles.available : styles.unavailable}>
-                <EnabledIcon isEnabled={isOss} /> PyAirbyte
-              </Chip>
-            </>
-          )}
+          <Chip className={isOss ? styles.available : styles.unavailable}>
+            <EnabledIcon isEnabled={isOss} /> Core
+          </Chip>
+          <Chip className={isCloud ? styles.available : styles.unavailable}>
+            <EnabledIcon isEnabled={isCloud} /> Standard
+          </Chip>
+          <Chip className={isEnterprise || isCloud ? styles.available : styles.unavailable}>
+            <EnabledIcon isEnabled={isEnterprise || isCloud} /> Pro
+          </Chip>
+          <Chip className={isEnterprise || isCloud ? styles.available : styles.unavailable}>
+            <EnabledIcon isEnabled={isEnterprise || isCloud} /> Enterprise Flex
+          </Chip>
+          <Chip className={isEnterprise || isOss ? styles.available : styles.unavailable}>
+            <EnabledIcon isEnabled={isEnterprise || isOss} /> Self-Managed Enterprise
+          </Chip>
+          <Chip className={isOss ? styles.available : styles.unavailable}>
+            <EnabledIcon isEnabled={isOss} /> PyAirbyte
+          </Chip>
         </div>
       </MetadataStat>
       <MetadataStat label="Support Level">
