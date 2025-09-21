@@ -24,7 +24,7 @@ data:
     breakingChanges:
       1.0.0:
         message: Move adgroups_daily_reports and keywords_daily_reports to use a global_cursor_state`.
-        upgradeDeadline: "2025-09-21"
+        upgradeDeadline: "2025-10-31"
   documentationUrl: https://docs.airbyte.com/integrations/sources/apple-search-ads
   tags:
     - cdk:low-code
