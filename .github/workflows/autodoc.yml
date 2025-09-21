@@ -31,7 +31,7 @@ jobs:
     steps:
       # Step 1: Get the merged PR code
       - name: Checkout merged PR code
-        uses: actions/checkout@v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
         with:
           fetch-depth: 0 # Full history needed for comprehensive analysis
 
