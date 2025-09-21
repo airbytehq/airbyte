@@ -102,7 +102,6 @@ jobs:
           echo "   - Metadata file found: ${{ steps.check-support-level.outputs.metadata_file }}"
           echo "   - Community support: ${{ steps.check-support-level.outputs.community_support }}"
           echo "   - Only community-supported connectors trigger automatic documentation updates"
-          exit 0
 
       # Step 6: Trigger AI documentation update for community connectors
       - name: Start AI documentation update session
