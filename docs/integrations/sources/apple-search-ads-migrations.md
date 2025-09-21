@@ -1,4 +1,4 @@
-# Apple Ads (Apple Search Ads) Migration Guide
+# Apple Ads Migration Guide
 
 ## Upgrading to 1.0.0
 
