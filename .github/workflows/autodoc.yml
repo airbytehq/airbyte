@@ -85,6 +85,7 @@ jobs:
 
           if [ "$SUPPORT_LEVEL" != "community" ]; then
             echo "ℹ️  This connector is not community-supported (level: $SUPPORT_LEVEL)"
+            echo "metadata_file=true" >> $GITHUB_OUTPUT
             echo "community_support=false" >> $GITHUB_OUTPUT
             exit 0
           fi
