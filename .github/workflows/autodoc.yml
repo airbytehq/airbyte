@@ -9,7 +9,11 @@ on:
 jobs:
   write-documentation:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.merged == true && github.event.pull_request.head.repo.full_name == github.repository
+    if: |
+      github.event.pull_request.merged == true && 
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      !contains(fromJSON('["airbyteio", "octavia-bot", "octavia-bot-hoard", "github-actions[bot]", "dependabot[bot]"]'), github.event.pull_request.user.login) &&
+      !endsWith(github.event.pull_request.user.login, '[bot]')
     steps:
       # Checkout code
       - name: Checkout code
