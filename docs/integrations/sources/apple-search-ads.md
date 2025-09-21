@@ -1,4 +1,4 @@
-# Apple Ads (Apple Search Ads)
+# Apple Ads Migration Guide
 
 This page contains the setup guide and reference information for the Apple Ads source connector.
 
