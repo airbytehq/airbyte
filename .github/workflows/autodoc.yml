@@ -58,8 +58,9 @@ jobs:
       - name: Install YAML parser (yq)
         run: |
           echo "📦 Installing yq for metadata.yaml parsing..."
-          sudo apt-get update && sudo apt-get install -y yq
-          echo "✅ yq installed successfully"
+          sudo wget https://github.com/mikefarah/yq/releases/download/v4.47.2/yq_linux_amd64 -O /usr/local/bin/yq
+          sudo chmod +x /usr/local/bin/yq
+          echo "✅ yq v4.47.2 installed successfully"
 
       # Step 4: Determine if this PR affects a community-supported connector
       - name: Determine if connector is community-supported
