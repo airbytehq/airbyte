@@ -103,12 +103,14 @@ jobs:
       # Step 6: Trigger AI documentation update for community connectors
       - name: Start AI documentation update session
         if: steps.check-support-level.outputs.metadata_file == 'true' && steps.check-support-level.outputs.community_support == 'true'
+        env:
+          PROMPT_TEXT: "The pull request to review is ${{ github.event.pull_request.number }}"
         uses: aaronsteers/devin-action@0d74d6d9ff1b16ada5966dc31af53a9d155759f4 # Pinned to specific commit for security
         with:
           devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           playbook-macro: "!connectordocs" # Use the connector documentation playbook
-          prompt-text: "The pull request you are working with is: ${{ github.event.pull_request.number }}"
+          prompt-text: ${{ env.PROMPT_TEXT }}
           tags: |
             area/documentation
             team/documentation
