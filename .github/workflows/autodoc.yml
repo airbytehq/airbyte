@@ -1,5 +1,5 @@
 # Autodoc Workflow
-# 
+#
 # This workflow automatically triggers documentation updates for community-supported connectors
 # when pull requests are merged to master. It uses Devin AI to review connector changes and
 # update the corresponding user documentation to ensure it stays current with code changes.
@@ -27,13 +27,13 @@ jobs:
       github.event.pull_request.head.repo.full_name == github.repository &&
       !contains(fromJSON('["airbyteio", "octavia-bot", "octavia-bot-hoard", "github-actions[bot]", "dependabot[bot]"]'), github.event.pull_request.user.login) &&
       !endsWith(github.event.pull_request.user.login, '[bot]')
-    
+
     steps:
       # Step 1: Get the merged PR code
       - name: Checkout merged PR code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Full history needed for comprehensive analysis
+          fetch-depth: 0 # Full history needed for comprehensive analysis
 
       # Step 2: Analyze what files were changed in this PR
       - name: Fetch list of changed files from PR
@@ -45,12 +45,12 @@ jobs:
           FILES=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files" | \
             jq -r '[.[].filename] | @json')
-          
+
           if [ -z "$FILES" ]; then
             echo "❌ Error: Failed to fetch or parse PR files."
             exit 1
           fi
-          
+
           echo "✅ Successfully fetched changed files list"
           echo "files=$FILES" >> $GITHUB_OUTPUT
 
@@ -66,27 +66,27 @@ jobs:
         id: check-support-level
         run: |
           echo "🔍 Checking if PR contains community-supported connector changes..."
-          
+
           # Look for connector metadata files in the standard location
           METADATA_FILE=$(find . -path "*/airbyte-integrations/connectors/*/metadata.yaml" | head -n 1)
-          
+
           if [ -z "$METADATA_FILE" ]; then
             echo "ℹ️  No connector metadata.yaml file found - this PR doesn't affect connectors"
             echo "metadata_file=false" >> $GITHUB_OUTPUT
             exit 0
           fi
-          
+
           # Parse the support level from the metadata
           SUPPORT_LEVEL=$(yq '.data.supportLevel' "$METADATA_FILE")
           echo "📋 Found metadata file: $METADATA_FILE"
           echo "📋 Support level: $SUPPORT_LEVEL"
-          
+
           if [ "$SUPPORT_LEVEL" != "community" ]; then
             echo "ℹ️  This connector is not community-supported (level: $SUPPORT_LEVEL)"
             echo "community_support=false" >> $GITHUB_OUTPUT
             exit 0
           fi
-          
+
           echo "✅ Community-supported connector detected - documentation update needed"
           echo "metadata_file=true" >> $GITHUB_OUTPUT
           echo "community_support=true" >> $GITHUB_OUTPUT
@@ -103,11 +103,11 @@ jobs:
       # Step 6: Trigger AI documentation update for community connectors
       - name: Start AI documentation update session
         if: steps.check-support-level.outputs.metadata_file == 'true' && steps.check-support-level.outputs.community_support == 'true'
-        uses: aaronsteers/devin-action@0d74d6d9ff1b16ada5966dc31af53a9d155759f4  # Pinned to specific commit for security
+        uses: aaronsteers/devin-action@0d74d6d9ff1b16ada5966dc31af53a9d155759f4 # Pinned to specific commit for security
         with:
           devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          playbook-macro: "!connectordocs"  # Use the connector documentation playbook
+          playbook-macro: "!connectordocs" # Use the connector documentation playbook
           prompt-text: "The pull request you are working with is: ${{ github.event.pull_request.number }}"
           tags: |
             area/documentation
