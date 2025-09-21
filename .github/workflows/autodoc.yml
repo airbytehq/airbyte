@@ -74,6 +74,7 @@ jobs:
           if [ -z "$METADATA_FILE" ]; then
             echo "ℹ️  No connector metadata.yaml file found - this PR doesn't affect connectors"
             echo "metadata_file=false" >> $GITHUB_OUTPUT
+            echo "community_support=false" >> $GITHUB_OUTPUT
             exit 0
           fi
 
@@ -100,6 +101,7 @@ jobs:
           echo "   - Metadata file found: ${{ steps.check-support-level.outputs.metadata_file }}"
           echo "   - Community support: ${{ steps.check-support-level.outputs.community_support }}"
           echo "   - Only community-supported connectors trigger automatic documentation updates"
+          exit 0
 
       # Step 6: Trigger AI documentation update for community connectors
       - name: Start AI documentation update session
