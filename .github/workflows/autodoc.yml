@@ -71,7 +71,7 @@ jobs:
       # Use Devin Action to start documentation update session
       - name: Start Devin documentation session
         if: steps.check-support-level.outputs.metadata_file == 'true' && steps.check-support-level.outputs.community_support == 'true'
-        uses: aaronsteers/devin-action@v0.1.5
+        uses: aaronsteers/devin-action@0d74d6d9ff1b16ada5966dc31af53a9d155759f4
         with:
           devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
