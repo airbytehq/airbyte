@@ -92,11 +92,7 @@ class SnowflakeDirectLoadSqlGenerator(
         sourceTableName: TableName,
         targetTableName: TableName
     ): String {
-        val columnNames =
-            DEFAULT_COLUMNS.map { it.columnName }.joinToString(",") { "\"$it\"" } +
-                columnNameMapping
-                    .map { (_, actualName) -> actualName }
-                    .joinToString(",") { "\"$it\"" }
+        val columnNames = columnUtils.getColumnNames(columnNameMapping)
 
         return """
             INSERT INTO ${targetTableName.toPrettyString(quote=QUOTE)}

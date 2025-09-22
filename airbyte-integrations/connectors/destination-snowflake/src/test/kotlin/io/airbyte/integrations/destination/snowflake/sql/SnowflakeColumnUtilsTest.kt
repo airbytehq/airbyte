@@ -43,6 +43,44 @@ internal class SnowflakeColumnUtilsTest {
     }
 
     @Test
+    fun testDefaultColumns() {
+        assertEquals(DEFAULT_COLUMNS, snowflakeColumnUtils.defaultColumns())
+    }
+
+    @Test
+    fun testDefaultRawColumns() {
+        every { snowflakeConfiguration.legacyRawTablesOnly } returns true
+
+        assertEquals(
+            DEFAULT_COLUMNS + listOf(RAW_DATA_COLUMN),
+            snowflakeColumnUtils.defaultColumns()
+        )
+    }
+
+    @Test
+    fun testGetColumnName() {
+        val columnNameMapping = ColumnNameMapping(mapOf("original" to "actual"))
+        val columnNames = snowflakeColumnUtils.getColumnNames(columnNameMapping)
+        val expectedColumnNames =
+            (DEFAULT_COLUMNS.map { it.columnName } + listOf("actual")).joinToString(",") {
+                "\"$it\""
+            }
+        assertEquals(expectedColumnNames, columnNames)
+    }
+
+    @Test
+    fun testGetRawColumnName() {
+        every { snowflakeConfiguration.legacyRawTablesOnly } returns true
+
+        val columnNameMapping = ColumnNameMapping(mapOf("original" to "actual"))
+        val columnNames = snowflakeColumnUtils.getColumnNames(columnNameMapping)
+        val expectedColumnNames =
+            (DEFAULT_COLUMNS.map { it.columnName } + listOf(RAW_DATA_COLUMN.columnName))
+                .joinToString(",") { "\"$it\"" }
+        assertEquals(expectedColumnNames, columnNames)
+    }
+
+    @Test
     fun testGeneratingRawTableColumnsAndTypesNoColumnMapping() {
         every { snowflakeConfiguration.legacyRawTablesOnly } returns true
 

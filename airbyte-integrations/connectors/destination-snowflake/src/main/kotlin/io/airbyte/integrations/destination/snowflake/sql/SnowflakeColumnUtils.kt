@@ -33,6 +33,8 @@ import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import jakarta.inject.Singleton
 import kotlin.collections.component1
 import kotlin.collections.component2
+import kotlin.collections.joinToString
+import kotlin.collections.plus
 
 internal const val NOT_NULL = "NOT NULL"
 
@@ -67,14 +69,30 @@ class SnowflakeColumnUtils(
     private val snowflakeConfiguration: SnowflakeConfiguration,
 ) {
 
+    fun defaultColumns(): List<ColumnAndType> =
+        if (snowflakeConfiguration.legacyRawTablesOnly == true) {
+            DEFAULT_COLUMNS + listOf(RAW_DATA_COLUMN)
+        } else {
+            DEFAULT_COLUMNS
+        }
+
+    fun getColumnNames(columnNameMapping: ColumnNameMapping): String =
+        if (snowflakeConfiguration.legacyRawTablesOnly == true) {
+            defaultColumns().map { it.columnName }.joinToString(",") { "\"$it\"" }
+        } else {
+            (defaultColumns().map { it.columnName } +
+                    columnNameMapping.map { (_, actualName) -> actualName })
+                .joinToString(",") { "\"$it\"" }
+        }
+
     fun columnsAndTypes(
         columns: Map<String, FieldType>,
         columnNameMapping: ColumnNameMapping
     ): List<ColumnAndType> =
         if (snowflakeConfiguration.legacyRawTablesOnly == true) {
-            DEFAULT_COLUMNS + listOf(RAW_DATA_COLUMN)
+            defaultColumns()
         } else {
-            DEFAULT_COLUMNS +
+            defaultColumns() +
                 columns.map { (fieldName, type) ->
                     val columnName = columnNameMapping[fieldName] ?: fieldName
                     val typeName = toDialectType(type.type)
