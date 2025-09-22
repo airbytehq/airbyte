@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.postgres
 
 import io.airbyte.cdk.read.JdbcConcurrentPartitionsCreator
@@ -34,9 +38,9 @@ class PostgresSourceConcurrentJdbcPartitionsCreatorFactory<
 
 class PostgresSourceJdbcConcurrentPartitionsCreator<
     A : JdbcSharedState, S : JdbcStreamState<A>, P : JdbcPartition<S>>(
-        partition: P,
-        partitionFactory: JdbcPartitionFactory<A, S, P>,
-): JdbcConcurrentPartitionsCreator<A, S, P>(partition, partitionFactory) {
+    partition: P,
+    partitionFactory: JdbcPartitionFactory<A, S, P>,
+) : JdbcConcurrentPartitionsCreator<A, S, P>(partition, partitionFactory) {
     private val log = KotlinLogging.logger {}
 
     override fun <T> collectSample(
@@ -64,7 +68,8 @@ class PostgresSourceJdbcConcurrentPartitionsCreator<
             }
             val kind: Sample.Kind =
                 when (sampleRateInvPow2) {
-                    20, 16 -> Sample.Kind.LARGE
+                    20,
+                    16 -> Sample.Kind.LARGE
                     8 -> Sample.Kind.MEDIUM
                     else -> Sample.Kind.SMALL
                 }
@@ -77,6 +82,7 @@ class PostgresSourceJdbcConcurrentPartitionsCreator<
     }
 
     override suspend fun run(): List<PartitionReader> {
-        return super.run().takeUnless { it.isEmpty() } ?: listOf(JdbcNonResumablePartitionReader(partition))
+        return super.run().takeUnless { it.isEmpty() }
+            ?: listOf(JdbcNonResumablePartitionReader(partition))
     }
 }
