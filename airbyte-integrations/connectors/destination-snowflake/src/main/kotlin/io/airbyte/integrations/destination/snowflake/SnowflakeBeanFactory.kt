@@ -62,7 +62,7 @@ class SnowflakeBeanFactory {
     fun tempTableNameGenerator(
         snowflakeConfig: SnowflakeConfiguration,
     ): TempTableNameGenerator =
-        DefaultTempTableNameGenerator(internalNamespace = snowflakeConfig.internalTableDataset)
+        DefaultTempTableNameGenerator(internalNamespace = snowflakeConfig.internalTableSchema)
 
     @Singleton
     fun snowflakeConfiguration(

@@ -18,7 +18,7 @@ internal class SnowflakeFinalTableNameGeneratorTest {
         val internalNamespace = "test-internal-namespace"
         val configuration =
             mockk<SnowflakeConfiguration> {
-                every { internalTableDataset } returns internalNamespace
+                every { internalTableSchema } returns internalNamespace
             }
         val generator = SnowflakeFinalTableNameGenerator(config = configuration)
         val streamName = "test-stream-name"
@@ -35,7 +35,7 @@ internal class SnowflakeFinalTableNameGeneratorTest {
     @Test
     fun testGetTableNameWithNamespace() {
         val configuration =
-            mockk<SnowflakeConfiguration> { every { internalTableDataset } returns null }
+            mockk<SnowflakeConfiguration> { every { internalTableSchema } returns null }
         val generator = SnowflakeFinalTableNameGenerator(config = configuration)
         val streamName = "test-stream-name"
         val streamNamespace = "test-stream-namespace"
@@ -54,7 +54,7 @@ internal class SnowflakeFinalTableNameGeneratorTest {
         val defaultNamespace = "test-default-namespace"
         val configuration =
             mockk<SnowflakeConfiguration> {
-                every { internalTableDataset } returns null
+                every { internalTableSchema } returns null
                 every { schema } returns defaultNamespace
             }
         val generator = SnowflakeFinalTableNameGenerator(config = configuration)

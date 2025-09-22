@@ -20,7 +20,7 @@ class SnowflakeFinalTableNameGenerator(private val config: SnowflakeConfiguratio
     override fun getTableName(streamDescriptor: DestinationStream.Descriptor) =
         TableName(
             namespace =
-                (config.internalTableDataset ?: (streamDescriptor.namespace ?: config.schema))
+                (config.internalTableSchema ?: (streamDescriptor.namespace ?: config.schema))
                     .toSnowflakeCompatibleName(),
             name = streamDescriptor.name.toSnowflakeCompatibleName(),
         )

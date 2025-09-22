@@ -19,7 +19,7 @@ data class SnowflakeConfiguration(
     val authType: AuthTypeConfiguration,
     val cdcDeletionMode: CdcDeletionMode,
     val legacyRawTablesOnly: Boolean?,
-    val internalTableDataset: String?,
+    val internalTableSchema: String?,
     val jdbcUrlParams: String?,
     val retentionPeriodDays: Int,
     val useMergeForUpsert: Boolean
@@ -71,11 +71,11 @@ class SnowflakeConfigurationFactory :
             authType = authTypeConfig,
             cdcDeletionMode = pojo.cdcDeletionMode ?: CdcDeletionMode.HARD_DELETE,
             legacyRawTablesOnly = pojo.legacyRawTablesOnly ?: false,
-            internalTableDataset =
-                if (pojo.internalTableDataset.isNullOrBlank()) {
+            internalTableSchema =
+                if (pojo.internalTableSchema.isNullOrBlank()) {
                     DbConstants.DEFAULT_RAW_TABLE_NAMESPACE
                 } else {
-                    pojo.internalTableDataset!!
+                    pojo.internalTableSchema!!
                 },
             jdbcUrlParams = pojo.jdbcUrlParams,
             retentionPeriodDays = pojo.retentionPeriodDays ?: 1,
