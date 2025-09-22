@@ -138,7 +138,7 @@ The Airbyte Server caches connector specifications for performance reasons. If y
 
 ## Platform Contributions
 
-1. [Fork](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo) the [ `airbyte-platform`](https://github.com/airbytehq/airbyte-platform) repository.
+1. [Fork](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo) the [`airbyte-platform`](https://github.com/airbytehq/airbyte-platform) repository.
 2. Clone the fork on your workstation:
 
 ```bash
