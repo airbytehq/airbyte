@@ -1,3 +1,15 @@
+## Version 0.1.39
+
+**Load CDK**
+
+* **Changed:** Minor fixes with stream completion logic + proto conversion
+* 
+## Version 0.1.38
+
+**Load CDK**
+
+* **Changed:** Adds stats support for "speed" mode
+
 ## Version 0.1.37
 
 * **Changed:** load-s3: S3Client forces path-style access, to enable minio compatibility
