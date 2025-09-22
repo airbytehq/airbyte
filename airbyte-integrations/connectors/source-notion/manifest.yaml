@@ -233,6 +233,11 @@ streams:
         record_filter:
           type: RecordFilter
           condition: '{{ record["type"] not in ["child_page", "child_database", "ai_block"] }}'
+      paginator:
+        $ref: "#/definitions/request_parameter_paginator"
+        $parameters:
+          # added because custom retriever fails without this
+          url_base: https://api.notion.com/v1/
     schema_loader:
       type: InlineSchemaLoader
       schema:
