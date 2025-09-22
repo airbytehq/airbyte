@@ -124,7 +124,6 @@ The above connector image is tagged with `dev`. You can change this to use anoth
 
 Now when you run a sync with that connector, it will use your local docker image.
 
-
 ### Connector Specification Caching
 
 The Airbyte Server caches connector specifications for performance reasons. If you update the specification of a connector, you need to clear this cache so the new changes are registered. To do this:
