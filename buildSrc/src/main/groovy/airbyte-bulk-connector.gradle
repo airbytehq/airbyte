@@ -29,6 +29,10 @@ class AirbyteBulkConnectorExtension {
         }
     }
 
+    String getCdk() {
+        return cdk
+    }
+
     void setCore(String core) {
         this.core = core
         if (core != "extract" && core != "load") {
