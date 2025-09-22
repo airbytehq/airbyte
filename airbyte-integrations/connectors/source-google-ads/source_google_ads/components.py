@@ -6,6 +6,7 @@ import copy
 import json
 import logging
 import re
+import time
 from dataclasses import dataclass
 from itertools import groupby
 from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
@@ -882,26 +883,71 @@ class CustomGAQuerySchemaLoader(SchemaLoader):
 
     def _get_field_metadata(self, field: str) -> Dict[str, Any]:
         url = f"https://googleads.googleapis.com/v20/googleAdsFields/{field}"
-        logger.debug(f"`GET` request for field metadata for {field}, url: {url}")
-        response = requests.get(
-            url=url,
-            headers=self._get_request_headers(),
-        )
 
-        response.raise_for_status()
+        max_tries = 5
+        base_backoff_time = 5  # Start with 5 seconds for exponential backoff
 
-        response_json = response.json()
-        logger.debug(f"Metadata response for {field}: {response_json}")
-        error = response_json.get("error")
-        if error:
-            failure_type = FailureType.transient_error if error["code"] >= 500 else FailureType.config_error
+        last_exception = None
+
+        for attempt in range(max_tries):
+            try:
+                logger.debug(f"`GET` request for field metadata for {field}, url: {url}, attempt: {attempt + 1}/{max_tries}")
+                response = requests.get(
+                    url=url,
+                    headers=self._get_request_headers(),
+                )
+
+                response.raise_for_status()
+                response_json = response.json()
+                logger.debug(f"Metadata response for {field}: {response_json}")
+
+                # Check for API-level errors in successful HTTP responses
+                error = response_json.get("error")
+                if error:
+                    failure_type = FailureType.transient_error if error["code"] >= 500 else FailureType.config_error
+                    raise AirbyteTracedException(
+                        failure_type=failure_type,
+                        internal_message=f"Failed to get field metadata for {field}, error: {error}",
+                        message=f"The provided field is invalid: Status: '{error.get('status')}', Message: '{error.get('message')}', Field: '{field}'",
+                    )
+
+                return response_json
+
+            except requests.HTTPError as e:
+                last_exception = e
+
+                if (
+                    last_exception.response.status_code >= 400
+                    and last_exception.response.status_code < 500
+                    and last_exception.response.status_code != 429
+                ) or attempt == max_tries - 1:
+                    break
+
+                # Calculate exponential backoff: 5, 10, 20, 40, 80 seconds
+                backoff_time = base_backoff_time * (2**attempt)
+                logger.debug(
+                    f"Request failed on attempt {attempt + 1} with status code {last_exception.response.status_code}, retrying in {backoff_time} seconds"
+                )
+                time.sleep(backoff_time)
+
+        if last_exception.response.status_code == 429:
             raise AirbyteTracedException(
-                failure_type=failure_type,
-                internal_message=f"Failed to get field metadata for {field}, error: {error}",
-                message=f"The provided field is invalid: Status: '{error.get('status')}', Message: '{error.get('message')}', Field: '{field}'",
+                failure_type=FailureType.transient_error,
+                message="The maximum number of requests on the Google Ads API has been reached. See https://developers.google.com/google-ads/api/docs/access-levels#access_levels_2 for more information",
+                internal_message=str(last_exception),
             )
-
-        return response_json
+        elif last_exception.response.status_code >= 400 and last_exception.response.status_code < 500:
+            raise AirbyteTracedException(
+                failure_type=FailureType.config_error,
+                message="The provided field is invalid. Please refer to the Google Ads API documentation for the correct syntax: https://developers.google.com/google-ads/api/fields/v20/overview and test validate your query using the Google Ads Query Builder: https://developers.google.com/google-ads/api/fields/v20/query_validator",
+                internal_message=f"The provided field is invalid: Error: {str(last_exception)}",
+            )
+        else:
+            raise AirbyteTracedException(
+                failure_type=FailureType.transient_error,
+                message="The Google Ads API is temporarily unavailable.",
+                internal_message=f"The Google Ads API is temporarily unavailable: Error: {str(last_exception)}",
+            )
 
     def _get_list_of_fields(self) -> List[str]:
         """
