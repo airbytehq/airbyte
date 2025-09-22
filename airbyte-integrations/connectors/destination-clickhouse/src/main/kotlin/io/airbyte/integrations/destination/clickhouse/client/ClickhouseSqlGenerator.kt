@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.clickhouse.client
 
 import com.clickhouse.data.ClickHouseDataType
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteType
@@ -51,6 +52,25 @@ class ClickhouseSqlGenerator(
         return this
     }
 
+    private fun validateVersionColumnType(fieldName: String, airbyteType: AirbyteType) {
+        // Must be of an integer type or of type Date/DateTime/DateTime64
+        val validTypes =
+            setOf(
+                IntegerType::class,
+                DateType::class,
+                TimestampTypeWithTimezone::class,
+                TimestampTypeWithoutTimezone::class,
+            )
+
+        if (!validTypes.any { it.isInstance(airbyteType) }) {
+            throw ConfigErrorException(
+                "Cursor column '$fieldName' has type '${airbyteType::class.simpleName}' which is not valid for use as a version column in ClickHouse ReplacingMergeTree. " +
+                    "Valid types are: Integer, Date, Timestamp. " +
+                    "Please choose a different cursor column or use a different sync mode."
+            )
+        }
+    }
+
     fun createNamespace(namespace: String): String {
         return "CREATE DATABASE IF NOT EXISTS `$namespace`;".andLog()
     }
@@ -67,7 +87,37 @@ class ClickhouseSqlGenerator(
                 else -> listOf()
             }
 
-        val columnDeclarations = columnsAndTypes(stream, columnNameMapping, pks)
+        // For ReplacingMergeTree, we need to make the cursor column non-nullable if it's used as
+        // version column
+        val nonNullableColumns =
+            mutableSetOf<String>().apply {
+                addAll(pks) // Primary keys are always non-nullable
+                if (stream.importType is Dedupe) {
+                    val dedupeType = stream.importType as Dedupe
+                    if (dedupeType.cursor.isNotEmpty()) {
+                        val cursorFieldName = dedupeType.cursor.first()
+                        val cursorColumnName = columnNameMapping[cursorFieldName] ?: cursorFieldName
+
+                        // Validate that the cursor column type is valid for ClickHouse
+                        // ReplacingMergeTree
+                        val cursorColumnType = stream.schema.asColumns()[cursorFieldName]?.type
+                        if (cursorColumnType != null) {
+                            validateVersionColumnType(cursorFieldName, cursorColumnType)
+                        }
+
+                        add(cursorColumnName) // Make cursor column non-nullable too
+                    } else {
+                        // If no cursor is specified, we'll use _airbyte_extracted_at as version
+                        // column,
+                        // which is already non-nullable by default (defined in CREATE TABLE
+                        // statement)
+                        // No need to add it to nonNullableColumns since it's handled separately
+                    }
+                }
+            }
+
+        val columnDeclarations =
+            columnsAndTypes(stream, columnNameMapping, nonNullableColumns.toList())
 
         val forceCreateTable = if (replace) "OR REPLACE" else ""
 
@@ -79,7 +129,21 @@ class ClickhouseSqlGenerator(
 
         val engine =
             when (stream.importType) {
-                is Dedupe -> "ReplacingMergeTree()"
+                is Dedupe -> {
+                    val dedupeType = stream.importType as Dedupe
+                    // Use cursor column as version column for ReplacingMergeTree if available
+                    val versionColumn =
+                        if (dedupeType.cursor.isNotEmpty()) {
+                            val cursorFieldName = dedupeType.cursor.first()
+                            val cursorColumnName =
+                                columnNameMapping[cursorFieldName] ?: cursorFieldName
+                            "`$cursorColumnName`"
+                        } else {
+                            // Fallback to _airbyte_extracted_at if no cursor is specified
+                            COLUMN_NAME_AB_EXTRACTED_AT
+                        }
+                    "ReplacingMergeTree($versionColumn)"
+                }
                 else -> "MergeTree()"
             }
 
@@ -338,16 +402,16 @@ class ClickhouseSqlGenerator(
     private fun columnsAndTypes(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping,
-        pks: List<String>,
+        nonNullableColumns: List<String>,
     ): String {
         return stream.schema
             .asColumns()
             .map { (fieldName, type) ->
                 val columnName = columnNameMapping[fieldName]!!
                 val typeName = type.type.toDialectType(clickhouseConfiguration.enableJson)
-                "`$columnName` ${if (pks.contains(columnName))
-                    "$typeName" 
-                else 
+                "`$columnName` ${if (nonNullableColumns.contains(columnName))
+                    "$typeName"
+                else
                         "Nullable($typeName)"
                 }"
             }
