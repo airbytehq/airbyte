@@ -90,7 +90,7 @@ class PostgresSourceSelectQueryGenerator : SelectQueryGenerator {
                     if (sampleRateInv == 1L) {
                         ""
                     } else {
-                        " TABLESAMPLE SYSTEM(${sampleRatePercentage.toPlainString()}) REPEATABLE(2472983)"
+                        " TABLESAMPLE SYSTEM(GREATEST(${sampleRatePercentage.toPlainString()}, 0.001))"
                     }
                 val innerFrom: String = From(name, namespace).sql(columns) + sample
                 val inner =
