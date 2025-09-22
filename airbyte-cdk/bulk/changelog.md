@@ -1,3 +1,17 @@
+## Version 0.1.38
+
+**Load CDK**
+
+* **Changed:** Adds stats support for "speed" mode
+
+## Version 0.1.37
+
+* **Changed:** load-s3: S3Client forces path-style access, to enable minio compatibility
+
+## Version 0.1.36
+
+* **Changed:** use dedicated dispatcher for parse+aggregate stage for an individual pipeline + cache column name lookup
+
 ## Version 0.1.35
 
 * **Changed:** Fix input stream wiring for dockerized acceptance tests
