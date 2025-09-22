@@ -70,17 +70,6 @@ definitions:
       page_size: 100
       cursor_value: '{{ response.get("next_cursor") }}'
       stop_condition: '{{ not response.get("has_more") }}'
-  incremental_sync:
-    type: DatetimeBasedCursor
-    cursor_field: last_edited_time
-    cursor_datetime_formats:
-      - "%Y-%m-%dT%H:%M:%S.%fZ"
-    datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-    start_datetime:
-      type: MinMaxDatetime
-      datetime: "{{ config.get('start_date', day_delta(-730, '%Y-%m-%dT%H:%M:%S.%fZ'))}}"
-      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-    is_data_feed: true
   client_side_incremental_sync:
     type: DatetimeBasedCursor
     cursor_field: last_edited_time
