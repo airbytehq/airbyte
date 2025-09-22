@@ -9,8 +9,8 @@ from pathlib import Path
 from typing import MutableMapping
 
 import pytest
-from airbyte_cdk.sources.declarative.retrievers import Retriever
 
+from airbyte_cdk.sources.declarative.retrievers import Retriever
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 from airbyte_cdk.test.catalog_builder import CatalogBuilder, ConfiguredAirbyteStreamBuilder

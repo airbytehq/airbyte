@@ -6,8 +6,9 @@ import logging
 
 import pytest
 
-from .conftest import get_source, parametrized_configs
 from airbyte_cdk.models import Status
+
+from .conftest import get_source, parametrized_configs
 
 
 def get_stream_by_name(stream_name, config):

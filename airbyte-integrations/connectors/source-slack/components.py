@@ -37,7 +37,7 @@ from airbyte_cdk.sources.streams.call_rate import (
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpClient, HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
-from airbyte_cdk.sources.types import EmptyString, StreamState, Config
+from airbyte_cdk.sources.types import Config, EmptyString, StreamState
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 
 
@@ -171,6 +171,7 @@ class ThreadsStateMigration(StateMigration):
     already read, but that's omitted to keep the logic simple to reason about.
     Good luck.
     """
+
     config: Config
 
     def __init__(self, config: Config):
