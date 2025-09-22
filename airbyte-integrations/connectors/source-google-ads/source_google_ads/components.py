@@ -901,7 +901,6 @@ class CustomGAQuerySchemaLoader(SchemaLoader):
                 response_json = response.json()
                 logger.debug(f"Metadata response for {field}: {response_json}")
 
-                # Check for API-level errors in successful HTTP responses
                 error = response_json.get("error")
                 if error:
                     failure_type = FailureType.transient_error if error["code"] >= 500 else FailureType.config_error
@@ -923,7 +922,7 @@ class CustomGAQuerySchemaLoader(SchemaLoader):
                 ) or attempt == max_tries - 1:
                     break
 
-                # Calculate exponential backoff: 5, 10, 20, 40, 80 seconds
+                # exponential backoff
                 backoff_time = base_backoff_time * (2**attempt)
                 logger.debug(
                     f"Request failed on attempt {attempt + 1} with status code {last_exception.response.status_code}, retrying in {backoff_time} seconds"
