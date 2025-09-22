@@ -12,7 +12,7 @@ This guide helps you understand the types of updates you may see, their impact o
 
 ## Understanding Connector Versions
 
-To manage connection updates effectively, it's important to understand versioning and how to interpret the changelog entries. 
+To manage connection updates effectively, it's important to understand versioning and how to interpret the changelog entries.
 
 Connectors in Airbyte's catalog generally follow semantic versioning ([semver](https://semver.org/)) Major.Minor.Patch (e.g., 1.2.5)
 
