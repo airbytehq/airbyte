@@ -55,15 +55,7 @@ class ClickhouseSqlGenerator(
 
     private fun isValidVersionColumnType(airbyteType: AirbyteType): Boolean {
         // Must be of an integer type or of type Date/DateTime/DateTime64
-        val validTypes =
-            setOf(
-                IntegerType::class,
-                DateType::class,
-                TimestampTypeWithTimezone::class,
-                TimestampTypeWithoutTimezone::class,
-            )
-
-        return validTypes.any { it.isInstance(airbyteType) }
+        return VALID_VERSION_COLUMN_TYPES.any { it.isInstance(airbyteType) }
     }
 
     fun createNamespace(namespace: String): String {
@@ -444,6 +436,14 @@ class ClickhouseSqlGenerator(
     companion object {
         const val DATETIME_WITH_PRECISION = "DateTime64(3)"
         const val DECIMAL_WITH_PRECISION_AND_SCALE = "Decimal(38, 9)"
+
+        private val VALID_VERSION_COLUMN_TYPES =
+            setOf(
+                IntegerType::class,
+                DateType::class,
+                TimestampTypeWithTimezone::class,
+                TimestampTypeWithoutTimezone::class,
+            )
     }
 }
 
