@@ -45,14 +45,15 @@ class SnowflakeConfigurationFactory :
         val authTypeConfig =
             when (pojo.credentials) {
                 is KeyPairAuthSpecification -> {
-                    val keyPairAuthSpec = pojo.credentials
+                    val keyPairAuthSpec = pojo.credentials as KeyPairAuthSpecification
                     KeyPairAuthConfiguration(
                         keyPairAuthSpec.privateKey,
                         keyPairAuthSpec.privateKeyPassword
                     )
                 }
                 is UsernamePasswordAuthSpecification -> {
-                    val usernamePasswordAuthSpec = pojo.credentials
+                    val usernamePasswordAuthSpec =
+                        pojo.credentials as UsernamePasswordAuthSpecification
                     UsernamePasswordAuthConfiguration(usernamePasswordAuthSpec.password)
                 }
                 null -> {
