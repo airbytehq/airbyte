@@ -16,6 +16,14 @@ on:
         description: "Optional. Where the workflow status messages will be posted. If not provided, a new messages will be posted."
         required: false
 
+      # These must be declared, but they are unused and ignored.
+      repo:
+        description: "Repo (Ignored)"
+        required: false
+      gitref:
+        description: "Ref (Ignored)"
+        required: false
+
 jobs:
   update-connector-cdk-version:
     name: Update Connector CDK Version
