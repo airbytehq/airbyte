@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.snowflake
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import io.airbyte.cdk.load.dataflow.config.MemoryAndParallelismConfig
 import io.airbyte.cdk.Operation
 import io.airbyte.cdk.load.check.CheckOperationV2
 import io.airbyte.cdk.load.check.DestinationCheckerV2
