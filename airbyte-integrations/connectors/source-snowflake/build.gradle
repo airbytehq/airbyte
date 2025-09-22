@@ -7,7 +7,7 @@ plugins {
 airbyteBulkConnector {
     core = 'extract'
     toolkits = ['extract-jdbc']
-    cdk = 'local'
+    cdk = '0.1.31'
 }
 
 application {

@@ -14,7 +14,7 @@ import jakarta.inject.Singleton
 @Named("parse")
 @Singleton
 class ParseStage(
-    val munger: RecordMunger,
+    private val munger: RecordMunger,
 ) : DataFlowStage {
     override suspend fun apply(input: DataFlowStageIO): DataFlowStageIO {
         val raw = input.raw!!

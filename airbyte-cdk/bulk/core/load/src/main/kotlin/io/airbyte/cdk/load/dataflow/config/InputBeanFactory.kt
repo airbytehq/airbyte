@@ -18,6 +18,8 @@ import io.airbyte.cdk.load.dataflow.stages.AggregateStage
 import io.airbyte.cdk.load.dataflow.state.StateHistogramStore
 import io.airbyte.cdk.load.dataflow.state.StateKeyClient
 import io.airbyte.cdk.load.dataflow.state.StateStore
+import io.airbyte.cdk.load.dataflow.state.stats.CommittedStatsStore
+import io.airbyte.cdk.load.dataflow.state.stats.EmittedStatsStore
 import io.airbyte.cdk.load.file.ClientSocket
 import io.airbyte.cdk.load.file.ProtobufDataChannelReader
 import io.airbyte.cdk.load.message.DestinationMessage
@@ -26,10 +28,8 @@ import io.airbyte.cdk.load.message.ProtocolMessageDeserializer
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Value
-import io.micronaut.context.env.Environment
 import jakarta.inject.Named
 import jakarta.inject.Singleton
-import java.io.InputStream
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -56,23 +56,21 @@ class InputBeanFactory {
         }
 
     @Requires(property = "airbyte.destination.core.data-channel.medium", value = "SOCKET")
-    @Requires(notEnv = [Environment.TEST])
     @Named("inputStreams")
     @Singleton
     fun socketStreams(
         sockets: List<ClientSocket>,
-    ): List<InputStream> = sockets.map(ClientSocket::openInputStream)
+    ) = ConnectorInputStreams(sockets.map(ClientSocket::openInputStream))
 
     @Requires(property = "airbyte.destination.core.data-channel.medium", value = "STDIO")
-    @Requires(notEnv = [Environment.TEST])
     @Named("inputStreams")
     @Singleton
-    fun stdInStreams(): List<InputStream> = listOf(System.`in`)
+    fun stdInStreams() = ConnectorInputStreams(listOf(System.`in`))
 
     @Named("messageFlows")
     @Singleton
     fun messageFlows(
-        @Named("inputStreams") inputStreams: List<InputStream>,
+        @Named("inputStreams") inputStreams: ConnectorInputStreams,
         @Value("\${airbyte.destination.core.data-channel.format}")
         dataChannelFormat: DataChannelFormat,
         deserializer: ProtocolMessageDeserializer,
@@ -104,6 +102,7 @@ class InputBeanFactory {
         stateStore: StateStore,
         stateKeyClient: StateKeyClient,
         completionTracker: StreamCompletionTracker,
+        statsStore: EmittedStatsStore,
     ): List<DataFlowPipelineInputFlow> =
         messageFlows.map {
             DataFlowPipelineInputFlow(
@@ -111,6 +110,7 @@ class InputBeanFactory {
                 stateStore = stateStore,
                 stateKeyClient = stateKeyClient,
                 completionTracker = completionTracker,
+                statsStore = statsStore,
             )
         }
 
@@ -132,12 +132,18 @@ class InputBeanFactory {
         @Named("state") state: DataFlowStage,
         aggregateStoreFactory: AggregateStoreFactory,
         stateHistogramStore: StateHistogramStore,
+        statsStore: CommittedStatsStore,
         memoryAndParallelismConfig: MemoryAndParallelismConfig,
     ): List<DataFlowPipeline> =
         inputFlows.map {
             val aggStore = aggregateStoreFactory.make()
             val aggregate = AggregateStage(aggStore)
-            val completionHandler = PipelineCompletionHandler(aggStore, stateHistogramStore)
+            val completionHandler =
+                PipelineCompletionHandler(
+                    aggStore,
+                    stateHistogramStore,
+                    statsStore,
+                )
 
             DataFlowPipeline(
                 input = it,
