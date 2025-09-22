@@ -6,10 +6,10 @@ package io.airbyte.integrations.destination.snowflake
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import io.airbyte.cdk.load.dataflow.config.MemoryAndParallelismConfig
 import io.airbyte.cdk.Operation
 import io.airbyte.cdk.load.check.CheckOperationV2
 import io.airbyte.cdk.load.check.DestinationCheckerV2
+import io.airbyte.cdk.load.dataflow.config.MemoryAndParallelismConfig
 import io.airbyte.cdk.load.orchestration.db.DefaultTempTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
 import io.airbyte.cdk.output.OutputConsumer
@@ -59,7 +59,6 @@ internal const val PRIVATE_KEY_FILE_NAME: String = "rsa_key.p8"
 
 @Factory
 class SnowflakeBeanFactory {
-
 
     @Singleton
     fun tempTableNameGenerator(): TempTableNameGenerator = DefaultTempTableNameGenerator()
@@ -262,9 +261,7 @@ class SnowflakeBeanFactory {
     ) = CheckOperationV2(destinationChecker, outputConsumer)
 
     @Singleton
-    fun getMemoryAndParallelismConfig(clickhouseConfiguration: ClickhouseConfiguration): MemoryAndParallelismConfig {
-        return MemoryAndParallelismConfig(
-            maxRecordsPerAgg = clickhouseConfiguration.resolvedRecordWindowSize,
-        )
+    fun getMemoryAndParallelismConfig(): MemoryAndParallelismConfig {
+        return MemoryAndParallelismConfig()
     }
 }
