@@ -502,6 +502,16 @@ sealed interface CheckpointMessage : DestinationMessage {
                         }
                     }
                 }
+
+        fun updateStats(committedRecords: Long, bytes: Long, rejectedRecords: Long = 0) {
+            additionalProperties.apply {
+                put(COMMITTED_RECORDS_COUNT, committedRecords)
+                put(COMMITTED_BYTES_COUNT, bytes)
+                if (rejectedRecords > 0) {
+                    put(REJECTED_RECORDS_COUNT, rejectedRecords)
+                }
+            }
+        }
     }
 
     val checkpointKey: CheckpointKey?

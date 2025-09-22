@@ -7,6 +7,7 @@
     "MD033": false, // Disable the "no-inline-html" rule (allows inline HTML in Markdown)
     "MD010": false, // Disable the "no-hard-tabs" rule (allows hard tabs instead of spaces)
     "MD041": false, // Disable the "first-line-heading/first-line-h1" rule (allows files without a top-level heading as the first line)
+    "MD034": false, // Disable the rule that suggests using angle brackets instead of bare URLs. Angle brackets break the Docusaurus build.
     "MD046": { 
         "style": "fenced" // Enforce fenced code blocks (e.g. ` or ```) and don't permit code sample indentation without fences
     },
