@@ -20,8 +20,8 @@ jobs:
         id: detect-changes
         uses: ./.github/actions/detect-changes
         with:
-          base_commit: ${{ github.event.pull_request.base.sha }}
-          head_commit: ${{ github.event.pull_request.head.sha }}
+          base_commit: ${{ github.event.before }}
+          head_commit: ${{ github.sha }}
 
   build_and_push:
     runs-on: ubuntu-latest
