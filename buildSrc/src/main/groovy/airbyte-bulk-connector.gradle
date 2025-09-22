@@ -12,9 +12,9 @@ class AirbyteBulkConnectorExtension {
 
     String core // 'extract' or 'load'
     List<String> toolkits = []  // 'extract-jdbc', etc...
-    private final boolean isDestination
-    final String cdk
-    private final Project project
+    private boolean isDestination
+    private String cdk
+    private Project project
 
     AirbyteBulkConnectorExtension(Project project) {
         this.project = project
