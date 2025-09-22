@@ -365,8 +365,7 @@ definitions:
         # Name
         - type: ComponentMappingDefinition
           field_path: [ name ]
-          #ToDo: add transformation to snake case
-          value: "{{ 'custom_' + components_values['name'] }}"
+          value: "{{ camel_case_to_snake_case('custom_' + components_values['name']) }}"
           create_or_update: true
         # Required request body params
         - type: ComponentMappingDefinition
