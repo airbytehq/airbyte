@@ -45,15 +45,14 @@ class SnowflakeConfigurationFactory :
         val authTypeConfig =
             when (pojo.credentials) {
                 is KeyPairAuthSpecification -> {
-                    val keyPairAuthSpec = pojo.credentials as KeyPairAuthSpecification
+                    val keyPairAuthSpec = pojo.credentials
                     KeyPairAuthConfiguration(
                         keyPairAuthSpec.privateKey,
                         keyPairAuthSpec.privateKeyPassword
                     )
                 }
                 is UsernamePasswordAuthSpecification -> {
-                    val usernamePasswordAuthSpec =
-                        pojo.credentials as UsernamePasswordAuthSpecification
+                    val usernamePasswordAuthSpec = pojo.credentials
                     UsernamePasswordAuthConfiguration(usernamePasswordAuthSpec.password)
                 }
                 null -> {
@@ -72,10 +71,14 @@ class SnowflakeConfigurationFactory :
             cdcDeletionMode = pojo.cdcDeletionMode ?: CdcDeletionMode.HARD_DELETE,
             legacyRawTablesOnly = pojo.legacyRawTablesOnly ?: false,
             internalTableSchema =
-                if (pojo.internalTableSchema.isNullOrBlank()) {
-                    DbConstants.DEFAULT_RAW_TABLE_NAMESPACE
+                if (pojo.legacyRawTablesOnly == true) {
+                    if (pojo.internalTableSchema.isNullOrBlank()) {
+                        DbConstants.DEFAULT_RAW_TABLE_NAMESPACE
+                    } else {
+                        pojo.internalTableSchema
+                    }
                 } else {
-                    pojo.internalTableSchema!!
+                    null
                 },
             jdbcUrlParams = pojo.jdbcUrlParams,
             retentionPeriodDays = pojo.retentionPeriodDays ?: 1,
