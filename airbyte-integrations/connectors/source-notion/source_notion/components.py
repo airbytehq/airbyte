@@ -13,7 +13,8 @@ from airbyte_cdk.sources.declarative.retrievers.simple_retriever import FULL_REF
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 from airbyte_cdk.sources.streams.core import StreamData
-from airbyte_cdk.utils.datetime_helpers import ab_datetime_now, ab_datetime_format
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_format, ab_datetime_now
+
 
 # maximum block hierarchy recursive request depth
 MAX_BLOCK_DEPTH = 30
