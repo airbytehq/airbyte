@@ -14,6 +14,7 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
+import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.COUNT_TOTAL_ALIAS
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlGenerator
@@ -38,13 +39,22 @@ internal class SnowflakeAirbyteClientTest {
     private lateinit var client: SnowflakeAirbyteClient
     private lateinit var dataSource: DataSource
     private lateinit var sqlGenerator: SnowflakeDirectLoadSqlGenerator
-    private val snowflakeColumnUtils: SnowflakeColumnUtils = mockk()
+    private lateinit var snowflakeColumnUtils: SnowflakeColumnUtils
+    private lateinit var snowflakeConfiguration: SnowflakeConfiguration
 
     @BeforeEach
     fun setup() {
         dataSource = mockk()
         sqlGenerator = mockk(relaxed = true)
-        client = SnowflakeAirbyteClient(dataSource, sqlGenerator, snowflakeColumnUtils)
+        snowflakeColumnUtils = mockk(relaxed = true)
+        snowflakeConfiguration = mockk(relaxed = true)
+        client =
+            SnowflakeAirbyteClient(
+                dataSource,
+                sqlGenerator,
+                snowflakeColumnUtils,
+                snowflakeConfiguration
+            )
     }
 
     @Test

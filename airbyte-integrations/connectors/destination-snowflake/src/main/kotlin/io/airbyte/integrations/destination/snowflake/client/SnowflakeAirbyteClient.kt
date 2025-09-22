@@ -14,6 +14,7 @@ import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNativeOperations
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableSqlOperations
 import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
+import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.COUNT_TOTAL_ALIAS
 import io.airbyte.integrations.destination.snowflake.sql.QUOTE
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
@@ -34,6 +35,7 @@ class SnowflakeAirbyteClient(
     private val dataSource: DataSource,
     private val sqlGenerator: SnowflakeDirectLoadSqlGenerator,
     private val snowflakeColumnUtils: SnowflakeColumnUtils,
+    private val snowflakeConfiguration: SnowflakeConfiguration,
 ) : AirbyteClient, DirectLoadTableSqlOperations, DirectLoadTableNativeOperations {
 
     override suspend fun countTable(tableName: TableName): Long? =
@@ -135,7 +137,10 @@ class SnowflakeAirbyteClient(
             generateSchemaChanges(columnsInDb, columnsInStream)
 
         if (
-            addedColumns.isNotEmpty() || deletedColumns.isNotEmpty() || modifiedColumns.isNotEmpty()
+            snowflakeConfiguration.legacyRawTablesOnly != true &&
+                (addedColumns.isNotEmpty() ||
+                    deletedColumns.isNotEmpty() ||
+                    modifiedColumns.isNotEmpty())
         ) {
             log.info { "Summary of the table alterations:" }
             log.info { "Added columns: $addedColumns" }
