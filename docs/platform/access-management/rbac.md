@@ -35,10 +35,10 @@ Permissions are scoped to the specific Workspace in which the user has this role
 
 <Arcade id="pYZ3aHWlV4kJatJG2dJN" title="Organization Permissions" paddingBottom="calc(61.37931034482759% + 41px)" />
 
-In the UI, navigate to `Settings` > `General` to see a list of your Organization or Workspace members. Here, by selecting the role listed under `Organization Role` or `Workspace Role`, you can change the assignment.
+1. In the navigation bar, click **Workspace settings** or **Organization settings** > **Members**.
 
-Note that it is not possible to assign a Workspace member to a role that is more restricted than the role they've been assigned at the Organizational level. 
+2. In the table, under **Workspace role**, click the current role and then select a new role.
 
-For example, a person who is assigned to be an Organization `Admin` would automatically have Admin-level permissions in all Workspaces within the Organization and can not be demoted within a Workspace. On the other hand, a person assigned to the `Reader` role in an Organization could be assigned the `Reader`, `Editor`, or `Admin` role in an individual Workspace.
+    - You can't demote admins.
 
-
+    - If you're assigning roles in a workspace, you can't assign a role that's more restricted than the role that person holds in the organization. For example, an organization admin must also be a workspace admin. However, an organization reader can be a workspace reader, editor, or admin.

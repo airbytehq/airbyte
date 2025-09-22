@@ -123,12 +123,13 @@ curl --request POST \
   "organizationId": "00000000-0000-0000-0000-000000000000"
 }'
 ```
+
 Include the following parameters in your request.
 
 | Body parameter   | Required? | Description                                                                                                                              |
 | ---------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `name`           | Required  | The name of your region in Airbyte. We reccomend as best practice that you include the cloud provider  (if applicable), and actual region in the name. |
-| `organizationId` | Required  | Your Airbyte organization ID. To find this in the UI, navigate to `Settings` > `General`.                                             |
+| `name`           | Required  | The name of your region in Airbyte. We recommend as best practice that you include the cloud provider  (if applicable), and actual region in the name. |
+| `organizationId` | Required  | Your Airbyte organization ID. To find this in the UI, navigate to **Organizaton settings** > **General**.                                             |
 | `enabled`        | Optional  | Defaults to true. Set this to `false` if you don't want this region enabled.                                                             |
 
 For additional request examples, see [the API reference](https://reference.airbyte.com/reference/regions#/).
