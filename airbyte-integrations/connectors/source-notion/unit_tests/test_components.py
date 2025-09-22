@@ -229,7 +229,7 @@ def test_blocks_retriever(requests_mock):
     }
     requests_mock.register_uri(
         "GET",
-        "https://api.notion.com/v1/blocks/page-1/children?page_size=100",
+        "https://api.notion.com/v1/blocks/page-1/children",
         [{"json": page_blocks_response_data}],
     )
 
@@ -278,7 +278,7 @@ def test_blocks_retriever(requests_mock):
     }
     requests_mock.register_uri(
         "GET",
-        "https://api.notion.com/v1/blocks/block-id-2/children?page_size=100",
+        "https://api.notion.com/v1/blocks/block-id-2/children",
         [{"json": block_children_response_data}],
     )
 
