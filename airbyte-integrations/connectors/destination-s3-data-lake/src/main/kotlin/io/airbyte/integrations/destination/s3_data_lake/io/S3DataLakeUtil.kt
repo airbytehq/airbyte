@@ -126,6 +126,10 @@ class S3DataLakeUtil(
                 URI to catalogConfig.serverUri,
                 S3FileIOProperties.ACCESS_KEY_ID to awsAccessKeyId,
                 S3FileIOProperties.SECRET_ACCESS_KEY to awsSecretAccessKey,
+                // this is the client ID + secret
+                "credential" to "root:s3cr3t",
+                // we should maybe figure out if we can use a reduced scope
+                "scope" to "PRINCIPAL_ROLE:ALL",
             )
 
         return restProperties + s3Properties
