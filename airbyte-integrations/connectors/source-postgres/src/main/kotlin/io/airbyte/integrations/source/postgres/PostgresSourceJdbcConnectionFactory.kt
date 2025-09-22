@@ -12,11 +12,12 @@ import java.sql.Connection
 
 @Singleton
 @Primary
-class PostgresSourceJdbcConnectionFactory(config: JdbcSourceConfiguration) : JdbcConnectionFactory(config) {
+class PostgresSourceJdbcConnectionFactory(config: JdbcSourceConfiguration) :
+    JdbcConnectionFactory(config) {
     override fun get(): Connection {
-        // Setting autoCommit to false in pg jdbc allows the driver to start returning result before the
-        // entire result set is received from the server. This improves performance and memory consumption
-        // when fetching large result sets.
+        // Setting autoCommit to false in pg jdbc allows the driver to start returning result before
+        // the entire result set is received from the server. This improves performance and memory
+        // consumption when fetching large result sets.
         return super.get().also { it.autoCommit = false }
     }
 }
