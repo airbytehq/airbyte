@@ -17,7 +17,6 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenti
 from airbyte_cdk.utils import AirbyteTracedException
 
 from .reports.reports import CustomReport
-
 from .streams import AdAccounts, AdAccountValidationStream, PinterestStream
 
 

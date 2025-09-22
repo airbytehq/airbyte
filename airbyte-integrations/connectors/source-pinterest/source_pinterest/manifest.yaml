@@ -3699,7 +3699,6 @@ definitions:
           - number
     additionalProperties: true
 
-
   reports_schema:
     $schema: http://json-schema.org/schema#
     type: object
