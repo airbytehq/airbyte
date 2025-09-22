@@ -262,9 +262,8 @@ class SnowflakeBeanFactory {
     ) = CheckOperationV2(destinationChecker, outputConsumer)
 
     @Singleton
-    fun getMemoryAndParallelismConfig(clickhouseConfiguration: ClickhouseConfiguration): MemoryAndParallelismConfig {
-        return MemoryAndParallelismConfig(
-            maxRecordsPerAgg = clickhouseConfiguration.resolvedRecordWindowSize,
-        )
+    fun getMemoryAndParallelismConfig(snowflakeConfiguration: SnowflakeConfiguration): MemoryAndParallelismConfig {
+        // Unused
+        return MemoryAndParallelismConfig()
     }
 }
