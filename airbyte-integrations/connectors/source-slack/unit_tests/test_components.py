@@ -125,7 +125,7 @@ def test_join_channel_read(requests_mock, token_config, joined_channel, caplog, 
 )
 def test_threads_state_migration(token_config, threads_stream_state, expected_parent_state):
     stream = get_stream_by_name("threads", token_config, StateBuilder().with_stream_state("threads", threads_stream_state).build())
-    assert stream.cursor.state.get("parent_state", {}).get("channel_messages", {}) == expected_parent_state
+    assert stream.cursor.state.get("parent_state", {}).get("channel_messages", None) == expected_parent_state
 
 
 @pytest.mark.parametrize(
