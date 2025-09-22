@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.clickhouse.client
 
 import com.clickhouse.data.ClickHouseDataType
-import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteType
@@ -36,12 +35,14 @@ import io.airbyte.integrations.destination.clickhouse.client.ClickhouseSqlGenera
 import io.airbyte.integrations.destination.clickhouse.client.ClickhouseSqlGenerator.Companion.DECIMAL_WITH_PRECISION_AND_SCALE
 import io.airbyte.integrations.destination.clickhouse.model.AlterationSummary
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 
 @Singleton
 class ClickhouseSqlGenerator(
     val clickhouseConfiguration: ClickhouseConfiguration,
 ) {
+    private val log = KotlinLogging.logger {}
 
     /**
      * This extension is here to avoid writing `.also { log.info { it }}` for every returned string
@@ -52,7 +53,7 @@ class ClickhouseSqlGenerator(
         return this
     }
 
-    private fun validateVersionColumnType(fieldName: String, airbyteType: AirbyteType) {
+    private fun isValidVersionColumnType(airbyteType: AirbyteType): Boolean {
         // Must be of an integer type or of type Date/DateTime/DateTime64
         val validTypes =
             setOf(
@@ -62,13 +63,7 @@ class ClickhouseSqlGenerator(
                 TimestampTypeWithoutTimezone::class,
             )
 
-        if (!validTypes.any { it.isInstance(airbyteType) }) {
-            throw ConfigErrorException(
-                "Cursor column '$fieldName' has type '${airbyteType::class.simpleName}' which is not valid for use as a version column in ClickHouse ReplacingMergeTree. " +
-                    "Valid types are: Integer, Date, Timestamp. " +
-                    "Please choose a different cursor column or use a different sync mode."
-            )
-        }
+        return validTypes.any { it.isInstance(airbyteType) }
     }
 
     fun createNamespace(namespace: String): String {
@@ -88,7 +83,8 @@ class ClickhouseSqlGenerator(
             }
 
         // For ReplacingMergeTree, we need to make the cursor column non-nullable if it's used as
-        // version column
+        // version column. We'll also determine here if we need to fall back to extracted_at.
+        var useCursorAsVersionColumn = false
         val nonNullableColumns =
             mutableSetOf<String>().apply {
                 addAll(pks) // Primary keys are always non-nullable
@@ -98,21 +94,28 @@ class ClickhouseSqlGenerator(
                         val cursorFieldName = dedupeType.cursor.first()
                         val cursorColumnName = columnNameMapping[cursorFieldName] ?: cursorFieldName
 
-                        // Validate that the cursor column type is valid for ClickHouse
+                        // Check if the cursor column type is valid for ClickHouse
                         // ReplacingMergeTree
                         val cursorColumnType = stream.schema.asColumns()[cursorFieldName]?.type
-                        if (cursorColumnType != null) {
-                            validateVersionColumnType(cursorFieldName, cursorColumnType)
+                        if (
+                            cursorColumnType != null && isValidVersionColumnType(cursorColumnType)
+                        ) {
+                            // Cursor column is valid, use it as version column
+                            add(cursorColumnName) // Make cursor column non-nullable too
+                            useCursorAsVersionColumn = true
+                        } else {
+                            // Cursor column is invalid, we'll fall back to _airbyte_extracted_at
+                            log.warn {
+                                "Cursor column '$cursorFieldName' for stream '${stream.mappedDescriptor}' has type '${cursorColumnType?.let { it::class.simpleName }}' which is not valid for use as a version column in ClickHouse ReplacingMergeTree. " +
+                                    "Falling back to using _airbyte_extracted_at as version column. Valid types are: Integer, Date, Timestamp."
+                            }
+                            useCursorAsVersionColumn = false
                         }
-
-                        add(cursorColumnName) // Make cursor column non-nullable too
-                    } else {
-                        // If no cursor is specified, we'll use _airbyte_extracted_at as version
-                        // column,
-                        // which is already non-nullable by default (defined in CREATE TABLE
-                        // statement)
-                        // No need to add it to nonNullableColumns since it's handled separately
                     }
+                    // If no cursor is specified or cursor is invalid, we'll use
+                    // _airbyte_extracted_at
+                    // as version column, which is already non-nullable by default (defined in
+                    // CREATE TABLE statement)
                 }
             }
 
@@ -131,15 +134,17 @@ class ClickhouseSqlGenerator(
             when (stream.importType) {
                 is Dedupe -> {
                     val dedupeType = stream.importType as Dedupe
-                    // Use cursor column as version column for ReplacingMergeTree if available
+                    // Use cursor column as version column for ReplacingMergeTree if available and
+                    // valid
                     val versionColumn =
-                        if (dedupeType.cursor.isNotEmpty()) {
+                        if (dedupeType.cursor.isNotEmpty() && useCursorAsVersionColumn) {
                             val cursorFieldName = dedupeType.cursor.first()
                             val cursorColumnName =
                                 columnNameMapping[cursorFieldName] ?: cursorFieldName
                             "`$cursorColumnName`"
                         } else {
-                            // Fallback to _airbyte_extracted_at if no cursor is specified
+                            // Fallback to _airbyte_extracted_at if no cursor is specified or cursor
+                            // is invalid
                             COLUMN_NAME_AB_EXTRACTED_AT
                         }
                     "ReplacingMergeTree($versionColumn)"
