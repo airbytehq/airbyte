@@ -52,6 +52,10 @@ class SnowflakeDirectLoadSqlGenerator(
         return this
     }
 
+    fun useDatabase(databaseName: String): String {
+        return "USE DATABASE \"${databaseName.toSnowflakeCompatibleName()}\"".andLog()
+    }
+
     fun countTable(tableName: TableName): String {
         return "SELECT COUNT(*) AS \"$COUNT_TOTAL_ALIAS\" FROM ${tableName.toPrettyString(quote=QUOTE)}".andLog()
     }
