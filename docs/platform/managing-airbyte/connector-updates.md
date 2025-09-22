@@ -55,7 +55,7 @@ When new major versions are released, we recommended you update promptly to avoi
 
 ### Review the changelog
 
-Before applying any update, carefully review the changelog to understand the changes and their potential impact on your existing connections. You can find the changelog for any connector by navigating to the bottom of the documentation for the connector and expanding the view. Major version releases will also include a migration guide. 
+Before applying any update, carefully review the changelog to understand the changes and their potential impact on your existing connections. You can find the changelog for any connector by navigating to the bottom of the documentation for the connector and expanding the view. Major version releases will also include a migration guide.
 
 ### Plan for Major Updates
 
