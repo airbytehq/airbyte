@@ -14,8 +14,28 @@ import org.junit.jupiter.api.Test
 internal class SnowflakeFinalTableNameGeneratorTest {
 
     @Test
+    fun testGetTableNameWithInternalNamespace() {
+        val internalNamespace = "test-internal-namespace"
+        val configuration =
+            mockk<SnowflakeConfiguration> {
+                every { internalTableDataset } returns internalNamespace
+            }
+        val generator = SnowflakeFinalTableNameGenerator(config = configuration)
+        val streamName = "test-stream-name"
+        val streamDescriptor =
+            mockk<DestinationStream.Descriptor> {
+                every { namespace } returns null
+                every { name } returns streamName
+            }
+        val tableName = generator.getTableName(streamDescriptor)
+        assertEquals(streamName.toSnowflakeCompatibleName(), tableName.name)
+        assertEquals(internalNamespace.toSnowflakeCompatibleName(), tableName.namespace)
+    }
+
+    @Test
     fun testGetTableNameWithNamespace() {
-        val configuration = mockk<SnowflakeConfiguration>()
+        val configuration =
+            mockk<SnowflakeConfiguration> { every { internalTableDataset } returns null }
         val generator = SnowflakeFinalTableNameGenerator(config = configuration)
         val streamName = "test-stream-name"
         val streamNamespace = "test-stream-namespace"
@@ -33,7 +53,10 @@ internal class SnowflakeFinalTableNameGeneratorTest {
     fun testGetTableNameWithDefaultNamespace() {
         val defaultNamespace = "test-default-namespace"
         val configuration =
-            mockk<SnowflakeConfiguration> { every { schema } returns defaultNamespace }
+            mockk<SnowflakeConfiguration> {
+                every { internalTableDataset } returns null
+                every { schema } returns defaultNamespace
+            }
         val generator = SnowflakeFinalTableNameGenerator(config = configuration)
         val streamName = "test-stream-name"
         val streamDescriptor =

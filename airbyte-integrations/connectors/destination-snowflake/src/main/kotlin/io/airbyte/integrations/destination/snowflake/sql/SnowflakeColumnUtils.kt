@@ -22,40 +22,65 @@ import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
+import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
+import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import jakarta.inject.Singleton
 import kotlin.collections.component1
 import kotlin.collections.component2
 
+internal const val NOT_NULL = "NOT NULL"
+
 internal val DEFAULT_COLUMNS =
     listOf(
-        ColumnAndType(columnName = COLUMN_NAME_AB_RAW_ID, columnType = "VARCHAR NOT NULL"),
+        ColumnAndType(
+            columnName = COLUMN_NAME_AB_RAW_ID,
+            columnType = "${SnowflakeDataType.VARCHAR.typeName} $NOT_NULL"
+        ),
         ColumnAndType(
             columnName = COLUMN_NAME_AB_EXTRACTED_AT,
-            columnType = "TIMESTAMP_TZ NOT NULL"
+            columnType = "${SnowflakeDataType.TIMESTAMP_TZ.typeName} $NOT_NULL"
         ),
-        ColumnAndType(columnName = COLUMN_NAME_AB_META, columnType = "VARIANT NOT NULL"),
-        ColumnAndType(columnName = COLUMN_NAME_AB_GENERATION_ID, columnType = "NUMBER"),
+        ColumnAndType(
+            columnName = COLUMN_NAME_AB_META,
+            columnType = "${SnowflakeDataType.VARIANT.typeName} $NOT_NULL"
+        ),
+        ColumnAndType(
+            columnName = COLUMN_NAME_AB_GENERATION_ID,
+            columnType = SnowflakeDataType.NUMBER.typeName
+        ),
     )
 
 @Singleton
-class SnowflakeColumnUtils {
+class SnowflakeColumnUtils(
+    private val snowflakeConfiguration: SnowflakeConfiguration,
+) {
 
     fun columnsAndTypes(
         columns: Map<String, FieldType>,
         columnNameMapping: ColumnNameMapping
     ): List<ColumnAndType> =
-        DEFAULT_COLUMNS +
-            columns.map { (fieldName, type) ->
-                val columnName = columnNameMapping[fieldName] ?: fieldName
-                val typeName = toDialectType(type.type)
-                ColumnAndType(columnName = columnName, columnType = typeName)
-            }
+        if (snowflakeConfiguration.legacyRawTablesOnly == true) {
+            DEFAULT_COLUMNS +
+                listOf(
+                    ColumnAndType(
+                        columnName = Meta.COLUMN_NAME_DATA,
+                        columnType = "${SnowflakeDataType.VARCHAR.typeName} $NOT_NULL"
+                    ),
+                )
+        } else {
+            DEFAULT_COLUMNS +
+                columns.map { (fieldName, type) ->
+                    val columnName = columnNameMapping[fieldName] ?: fieldName
+                    val typeName = toDialectType(type.type)
+                    ColumnAndType(columnName = columnName, columnType = typeName)
+                }
+        }
 
     fun toDialectType(type: AirbyteType): String =
         when (type) {

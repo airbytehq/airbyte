@@ -59,7 +59,10 @@ internal const val PRIVATE_KEY_FILE_NAME: String = "rsa_key.p8"
 @Factory
 class SnowflakeBeanFactory {
     @Singleton
-    fun tempTableNameGenerator(): TempTableNameGenerator = DefaultTempTableNameGenerator()
+    fun tempTableNameGenerator(
+        snowflakeConfig: SnowflakeConfiguration,
+    ): TempTableNameGenerator =
+        DefaultTempTableNameGenerator(internalNamespace = snowflakeConfig.internalTableDataset)
 
     @Singleton
     fun snowflakeConfiguration(

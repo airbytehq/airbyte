@@ -166,7 +166,7 @@ class SnowflakeDirectLoadSqlGenerator(
                   target_table.$cursor < new_record.$cursor
                   OR (target_table.$cursor = new_record.$cursor AND target_table."$COLUMN_NAME_AB_EXTRACTED_AT" < new_record."$COLUMN_NAME_AB_EXTRACTED_AT")
                   OR (target_table.$cursor IS NULL AND new_record.$cursor IS NULL AND target_table."$COLUMN_NAME_AB_EXTRACTED_AT" < new_record."$COLUMN_NAME_AB_EXTRACTED_AT")
-                  OR (target_table.$cursor IS NULL AND new_record.$cursor IS NOT NULL)
+                  OR (target_table.$cursor IS NULL AND new_record.$cursor IS $NOT_NULL)
                 )
             """.trimIndent()
         } else {

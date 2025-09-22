@@ -22,7 +22,10 @@ import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
+import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
+import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
+import io.mockk.every
 import io.mockk.mockk
 import kotlin.collections.LinkedHashMap
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -31,11 +34,29 @@ import org.junit.jupiter.api.Test
 
 internal class SnowflakeColumnUtilsTest {
 
+    private lateinit var snowflakeConfiguration: SnowflakeConfiguration
     private lateinit var snowflakeColumnUtils: SnowflakeColumnUtils
 
     @BeforeEach
     fun setup() {
-        snowflakeColumnUtils = SnowflakeColumnUtils()
+        snowflakeConfiguration = mockk(relaxed = true)
+        snowflakeColumnUtils = SnowflakeColumnUtils(snowflakeConfiguration)
+    }
+
+    @Test
+    fun testGeneratingRawTableColumnsAndTypesNoColumnMapping() {
+        every { snowflakeConfiguration.legacyRawTablesOnly } returns true
+
+        val columns =
+            snowflakeColumnUtils.columnsAndTypes(
+                columns = emptyMap(),
+                columnNameMapping = ColumnNameMapping(emptyMap())
+            )
+        assertEquals(DEFAULT_COLUMNS.size + 1, columns.size)
+        assertEquals(
+            "${SnowflakeDataType.VARCHAR.typeName} $NOT_NULL",
+            columns.find { it.columnName == Meta.COLUMN_NAME_DATA }?.columnType
+        )
     }
 
     @Test
@@ -50,7 +71,10 @@ internal class SnowflakeColumnUtilsTest {
                 columnNameMapping = ColumnNameMapping(emptyMap())
             )
         assertEquals(DEFAULT_COLUMNS.size + 1, columns.size)
-        assertEquals("VARCHAR", columns.find { it.columnName == columnName }?.columnType)
+        assertEquals(
+            SnowflakeDataType.VARCHAR.typeName,
+            columns.find { it.columnName == columnName }?.columnType
+        )
     }
 
     @Test
@@ -67,7 +91,10 @@ internal class SnowflakeColumnUtilsTest {
                 columnNameMapping = columnNameMapping
             )
         assertEquals(DEFAULT_COLUMNS.size + 1, columns.size)
-        assertEquals("VARCHAR", columns.find { it.columnName == mappedColumnName }?.columnType)
+        assertEquals(
+            SnowflakeDataType.VARCHAR.typeName,
+            columns.find { it.columnName == mappedColumnName }?.columnType
+        )
     }
 
     @Test

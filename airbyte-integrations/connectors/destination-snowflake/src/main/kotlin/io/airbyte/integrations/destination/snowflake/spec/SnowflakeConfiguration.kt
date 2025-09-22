@@ -19,7 +19,7 @@ data class SnowflakeConfiguration(
     val authType: AuthTypeConfiguration,
     val cdcDeletionMode: CdcDeletionMode,
     val legacyRawTablesOnly: Boolean?,
-    val internalTableDataset: String,
+    val internalTableDataset: String?,
     val jdbcUrlParams: String?,
     val retentionPeriodDays: Int,
     val useMergeForUpsert: Boolean
