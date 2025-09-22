@@ -510,4 +510,53 @@ internal class SnowflakeAirbyteClientTest {
         assertEquals(1, modified.size)
         assertEquals("COL3", modified.first().name)
     }
+
+    @Test
+    fun testRenameTable() {
+        val sourceTableName = TableName(namespace = "namespace", name = "source")
+        val targetTableName = TableName(namespace = "namespace", name = "target")
+        val resultSet = mockk<ResultSet>(relaxed = true)
+        val statement = mockk<Statement> { every { executeQuery(any()) } returns resultSet }
+        val mockConnection =
+            mockk<Connection> {
+                every { close() } just Runs
+                every { createStatement() } returns statement
+            }
+
+        every { dataSource.connection } returns mockConnection
+
+        runBlocking {
+            client.renameTable(sourceTableName, targetTableName)
+            verify(exactly = 1) { sqlGenerator.dropTable(targetTableName) }
+            verify(exactly = 1) { sqlGenerator.renameTable(sourceTableName, targetTableName) }
+            verify(exactly = 2) { mockConnection.close() }
+        }
+    }
+
+    @Test
+    fun testRenameTableWithDropFailure() {
+        val sourceTableName = TableName(namespace = "namespace", name = "source")
+        val targetTableName = TableName(namespace = "namespace", name = "target")
+        val resultSet = mockk<ResultSet>(relaxed = true)
+        val statement =
+            mockk<Statement> {
+                every { executeQuery(any()) } throws
+                    SQLException("Table does not exist") andThen
+                    resultSet
+            }
+        val mockConnection =
+            mockk<Connection> {
+                every { close() } just Runs
+                every { createStatement() } returns statement
+            }
+
+        every { dataSource.connection } returns mockConnection
+
+        runBlocking {
+            client.renameTable(sourceTableName, targetTableName)
+            verify(exactly = 1) { sqlGenerator.dropTable(targetTableName) }
+            verify(exactly = 1) { sqlGenerator.renameTable(sourceTableName, targetTableName) }
+            verify(exactly = 2) { mockConnection.close() }
+        }
+    }
 }

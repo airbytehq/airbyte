@@ -72,6 +72,18 @@ class SnowflakeAirbyteClient(
         execute(sqlGenerator.createSnowflakeStage(tableName))
     }
 
+    suspend fun renameTable(sourceTableName: TableName, targetTableName: TableName) {
+        // Drop target if it somehow exists (defensive programming)
+        try {
+            execute(sqlGenerator.dropTable(targetTableName))
+            log.debug { "Dropped existing target table before rename" }
+        } catch (e: Exception) {
+            // Table doesn't exist, which is expected
+            log.debug { "Target table doesn't exist to drop (expected): ${e.message}" }
+        }
+        execute(sqlGenerator.renameTable(sourceTableName, targetTableName))
+    }
+
     override suspend fun overwriteTable(sourceTableName: TableName, targetTableName: TableName) {
         // Check if the target table exists by trying to count its rows
         val targetExists = countTable(targetTableName) != null
@@ -88,15 +100,7 @@ class SnowflakeAirbyteClient(
         } else {
             // If target doesn't exist, rename source to target
             log.info { "Using RENAME operation since target table doesn't exist" }
-            // Drop target if it somehow exists (defensive programming)
-            try {
-                execute(sqlGenerator.dropTable(targetTableName))
-                log.info { "Dropped existing target table before rename" }
-            } catch (e: Exception) {
-                // Table doesn't exist, which is expected
-                log.debug { "Target table doesn't exist to drop (expected): ${e.message}" }
-            }
-            execute(sqlGenerator.renameTable(sourceTableName, targetTableName))
+            renameTable(sourceTableName, targetTableName)
         }
     }
 
