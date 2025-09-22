@@ -233,7 +233,7 @@ streams:
       datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
+        datetime: "{{ config.get('start_date', day_delta(-730, '%Y-%m-%dT%H:%M:%S.%fZ'))}}"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       is_data_feed: true
     transformations:
@@ -1410,7 +1410,7 @@ streams:
       datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config['start_date'] }}"
+        datetime: "{{ config.get('start_date', day_delta(-730, '%Y-%m-%dT%H:%M:%S.%fZ'))}}"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       is_data_feed: true
     transformations:
@@ -2969,7 +2969,7 @@ streams:
                   datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
                   start_datetime:
                     type: MinMaxDatetime
-                    datetime: "{{ config['start_date'] }}"
+                    datetime: "{{ config.get('start_date', day_delta(-730, '%Y-%m-%dT%H:%M:%S.%fZ'))}}"
                     datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
                   is_data_feed: true
     schema_loader:
@@ -3155,7 +3155,7 @@ streams:
       datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
       start_datetime:
         type: MinMaxDatetime
-        datetime: "{{ config['start_date'] or day_delta(-730, '%Y-%m-%dT%H:%M:%S.%fZ')}}"
+        datetime: "{{ config.get('start_date', day_delta(-730, '%Y-%m-%dT%H:%M:%S.%fZ'))}}"
       is_client_side_incremental: true
       global_substream_cursor: true
     retriever:
@@ -3244,7 +3244,7 @@ streams:
                 datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
                 start_datetime:
                   type: MinMaxDatetime
-                  datetime: "{{ config['start_date'] }}"
+                  datetime: "{{ config.get('start_date', day_delta(-730, '%Y-%m-%dT%H:%M:%S.%fZ'))}}"
                   datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
                 is_data_feed: true
       requester:
