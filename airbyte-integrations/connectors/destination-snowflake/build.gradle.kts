@@ -8,7 +8,6 @@ plugins {
 airbyteBulkConnector {
     core = "load"
     toolkits = listOf("load-db")
-    cdk = "local"
 }
 
 tasks.withType<JavaCompile>().configureEach {
