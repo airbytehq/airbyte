@@ -54,4 +54,4 @@ When you assign a region to a workspace, all connections in that workspace run i
 
 3. Under **Region**, select the region you want that workspace to use.
 
-4. Click **Save changes**. 
+4. Click **Save changes**.
