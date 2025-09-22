@@ -92,7 +92,7 @@ class ClientSocket(
 
         val inputStream = Channels.newInputStream(openedSocket).buffered(bufferSizeBytes)
 
-        return SocketInputStream(openedSocket, inputStream)
+        return inputStream
     }
 }
 
