@@ -22,7 +22,6 @@ import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
-import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.mockk.every
@@ -55,7 +54,7 @@ internal class SnowflakeColumnUtilsTest {
         assertEquals(DEFAULT_COLUMNS.size + 1, columns.size)
         assertEquals(
             "${SnowflakeDataType.VARCHAR.typeName} $NOT_NULL",
-            columns.find { it.columnName == Meta.COLUMN_NAME_DATA }?.columnType
+            columns.find { it.columnName == RAW_DATA_COLUMN.columnName }?.columnType
         )
     }
 

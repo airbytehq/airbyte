@@ -56,6 +56,12 @@ internal val DEFAULT_COLUMNS =
         ),
     )
 
+internal val RAW_DATA_COLUMN =
+    ColumnAndType(
+        columnName = Meta.COLUMN_NAME_DATA,
+        columnType = "${SnowflakeDataType.VARCHAR.typeName} $NOT_NULL"
+    )
+
 @Singleton
 class SnowflakeColumnUtils(
     private val snowflakeConfiguration: SnowflakeConfiguration,
@@ -66,13 +72,7 @@ class SnowflakeColumnUtils(
         columnNameMapping: ColumnNameMapping
     ): List<ColumnAndType> =
         if (snowflakeConfiguration.legacyRawTablesOnly == true) {
-            DEFAULT_COLUMNS +
-                listOf(
-                    ColumnAndType(
-                        columnName = Meta.COLUMN_NAME_DATA,
-                        columnType = "${SnowflakeDataType.VARCHAR.typeName} $NOT_NULL"
-                    ),
-                )
+            DEFAULT_COLUMNS + listOf(RAW_DATA_COLUMN)
         } else {
             DEFAULT_COLUMNS +
                 columns.map { (fieldName, type) ->
