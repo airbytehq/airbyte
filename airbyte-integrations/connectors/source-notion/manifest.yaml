@@ -104,6 +104,8 @@ definitions:
         Notion-Version: "2022-06-28"
       error_handler:
         $ref: "#/definitions/error_handler"
+    record_selector:
+      $ref: "#/definitions/record_selector"
 
   pages_stream:
     type: DeclarativeStream
@@ -120,8 +122,6 @@ definitions:
         request_body_json:
           sort: '{ "direction": "descending", "timestamp": "last_edited_time" }'
           filter: '{ "property": "object", "value": "page" }'
-      record_selector:
-        $ref: "#/definitions/record_selector"
       paginator:
         $ref: "#/definitions/body_json_paginator"
       partition_router: [ ]
@@ -148,8 +148,6 @@ streams:
         path: users
         request_parameters: {}
         request_body_json: {}
-      record_selector:
-        $ref: "#/definitions/record_selector"
       paginator:
         $ref: "#/definitions/request_parameter_paginator"
       partition_router: []
@@ -174,8 +172,6 @@ streams:
         request_body_json:
           sort: '{ "direction": "descending", "timestamp": "last_edited_time" }'
           filter: '{ "property": "object", "value": "database" }'
-      record_selector:
-        $ref: "#/definitions/record_selector"
       paginator:
         $ref: "#/definitions/body_json_paginator"
       partition_router: []
@@ -201,8 +197,6 @@ streams:
         path: comments
         request_parameters: {}
         request_body_json: {}
-      record_selector:
-        $ref: "#/definitions/record_selector"
       paginator:
         $ref: "#/definitions/request_parameter_paginator"
       partition_router:
@@ -250,11 +244,6 @@ streams:
         record_filter:
           type: RecordFilter
           condition: '{{ record["type"] not in ["child_page", "child_database", "ai_block"] }}'
-      paginator:
-        $ref: "#/definitions/request_parameter_paginator"
-        $parameters:
-          # added because custom retriever fails without this
-          url_base: https://api.notion.com/v1/
     schema_loader:
       type: InlineSchemaLoader
       schema:
