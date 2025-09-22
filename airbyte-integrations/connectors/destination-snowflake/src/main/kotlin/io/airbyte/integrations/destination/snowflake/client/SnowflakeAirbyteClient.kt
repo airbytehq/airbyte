@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.snowflake.client
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.client.AirbyteClient
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAMES
@@ -28,6 +29,7 @@ internal const val DESCRIBE_TABLE_COLUMN_NAME_FIELD = "column_name"
 private val log = KotlinLogging.logger {}
 
 @Singleton
+@SuppressFBWarnings(value = ["NP_NONNULL_PARAM_VIOLATION"], justification = "kotlin coroutines")
 class SnowflakeAirbyteClient(
     private val dataSource: DataSource,
     private val sqlGenerator: SnowflakeDirectLoadSqlGenerator,
@@ -71,8 +73,31 @@ class SnowflakeAirbyteClient(
     }
 
     override suspend fun overwriteTable(sourceTableName: TableName, targetTableName: TableName) {
-        execute(sqlGenerator.swapTableWith(sourceTableName, targetTableName))
-        execute(sqlGenerator.dropTable(sourceTableName))
+        // Check if the target table exists by trying to count its rows
+        val targetExists = countTable(targetTableName) != null
+
+        log.info {
+            "overwriteTable: source=${sourceTableName.toPrettyString()}, target=${targetTableName.toPrettyString()}, targetExists=$targetExists"
+        }
+
+        if (targetExists) {
+            // If target exists, use SWAP for efficiency
+            log.info { "Using SWAP operation since target table exists" }
+            execute(sqlGenerator.swapTableWith(sourceTableName, targetTableName))
+            execute(sqlGenerator.dropTable(sourceTableName))
+        } else {
+            // If target doesn't exist, rename source to target
+            log.info { "Using RENAME operation since target table doesn't exist" }
+            // Drop target if it somehow exists (defensive programming)
+            try {
+                execute(sqlGenerator.dropTable(targetTableName))
+                log.info { "Dropped existing target table before rename" }
+            } catch (e: Exception) {
+                // Table doesn't exist, which is expected
+                log.debug { "Target table doesn't exist to drop (expected): ${e.message}" }
+            }
+            execute(sqlGenerator.renameTable(sourceTableName, targetTableName))
+        }
     }
 
     override suspend fun copyTable(
