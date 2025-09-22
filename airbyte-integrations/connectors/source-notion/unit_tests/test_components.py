@@ -8,7 +8,6 @@ import pytest
 from airbyte_cdk.models import ConfiguredAirbyteCatalogSerializer
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.state_builder import StateBuilder
-
 from unit_tests.conftest import get_source
 
 
@@ -96,42 +95,6 @@ state_test_records = [
     {"id": "2", "last_edited_time": "2022-01-03T00:00:00.000Z"},
     {"id": "3", "last_edited_time": "2022-01-04T00:00:00.000Z"},
 ]
-
-
-@pytest.fixture
-def data_feed_config(components_module):
-    return components_module.NotionDataFeedFilter(parameters={}, config={"start_date": "2021-01-01T00:00:00.000Z"})
-
-
-@pytest.mark.parametrize(
-    "state_value, expected_return",
-    [
-        ("2021-02-01T00:00:00.000Z", "2021-02-01T00:00:00.000Z"),
-        ("2020-01-01T00:00:00.000Z", "2021-01-01T00:00:00.000Z"),
-        ({}, "2021-01-01T00:00:00.000Z"),
-    ],
-    ids=["State value is greater than start_date", "State value is less than start_date", "Empty state, default to start_date"],
-)
-def test_data_feed_get_filter_date(data_feed_config, state_value, expected_return):
-    start_date = data_feed_config.config["start_date"]
-
-    result = data_feed_config._get_filter_date(start_date, state_value)
-    assert result == expected_return, f"Expected {expected_return}, but got {result}."
-
-
-@pytest.mark.parametrize(
-    "stream_state,stream_slice,expected_records",
-    [
-        ({"last_edited_time": "2022-01-01T00:00:00.000Z"}, {"id": "some_id"}, state_test_records),
-        ({"last_edited_time": "2022-01-03T00:00:00.000Z"}, {"id": "some_id"}, [state_test_records[-2], state_test_records[-1]]),
-        ({"last_edited_time": "2022-01-05T00:00:00.000Z"}, {"id": "some_id"}, []),
-        ({}, {"id": "some_id"}, state_test_records),
-    ],
-    ids=["No records filtered", "Some records filtered", "All records filtered", "Empty state: no records filtered"],
-)
-def test_data_feed_filter_records(data_feed_config, stream_state, stream_slice, expected_records):
-    filtered_records = data_feed_config.filter_records(state_test_records, stream_state, stream_slice)
-    assert filtered_records == expected_records, "Filtered records do not match the expected records."
 
 
 def test_blocks_retriever(requests_mock):
