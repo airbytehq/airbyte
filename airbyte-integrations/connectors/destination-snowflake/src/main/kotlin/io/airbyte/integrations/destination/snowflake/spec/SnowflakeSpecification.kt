@@ -114,7 +114,7 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
         """Airbyte will use this dataset for various internal tables. In legacy raw tables mode, the raw tables will be stored in this dataset. Defaults to "airbyte_internal".""",
     )
     // for backwards compatibility, the JSON property is still called raw_data_dataset.
-    @get:JsonProperty("raw_data_dataset")
+    @get:JsonProperty("raw_data_schema")
     @get:JsonSchemaInject(json = """{"group": "advanced", "order": 8}""")
     val internalTableDataset: String? = null
 
