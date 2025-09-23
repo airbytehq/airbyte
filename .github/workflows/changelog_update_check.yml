@@ -24,6 +24,5 @@ jobs:
             run: |
               if [ "${{ steps.cdk-changes.outputs.changelog }}" != "true" ]; then
                 echo "ERROR: The changelog must be updated when the version.properties file is changed."
-                echo "error=no updates to changelog" >> $GITHUB_OUTPUT
                 exit 1
               fi
