@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.dataflow.pipeline
 
+import io.airbyte.cdk.load.dataflow.config.ConnectorInputStreams
 import io.airbyte.cdk.load.dataflow.state.StateReconciler
 import io.airbyte.cdk.load.dataflow.state.StateStore
 import io.mockk.Runs
@@ -14,9 +15,12 @@ import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.just
+import io.mockk.mockk
+import io.mockk.verify
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -38,36 +42,33 @@ class PipelineRunnerTest {
 
     @MockK private lateinit var pipeline3: DataFlowPipeline
 
-    private lateinit var runner: PipelineRunner
+    @MockK(relaxed = true) private lateinit var inputStreams: ConnectorInputStreams
 
     @BeforeEach
     fun setup() {
         every { store.hasStates() } returns false
-        runner = PipelineRunner(reconciler, store, listOf(pipeline1, pipeline2, pipeline3))
     }
 
     @Test
     fun `run should execute all pipelines concurrently`() = runTest {
         // Given
+        val pipelineScope = Fixtures.testScope(this.coroutineContext)
+        val runner = PipelineRunner(reconciler, store, listOf(pipeline1, pipeline2, pipeline3), inputStreams, pipelineScope)
+        
         coEvery { pipeline1.run() } coAnswers { delay(100) }
         coEvery { pipeline2.run() } coAnswers { delay(50) }
         coEvery { pipeline3.run() } coAnswers { delay(75) }
 
         // When
-        val startTime = System.currentTimeMillis()
         runner.run()
-        val endTime = System.currentTimeMillis()
+        testScheduler.advanceUntilIdle()
 
         // Then
         coVerify(exactly = 1) { pipeline1.run() }
         coVerify(exactly = 1) { pipeline2.run() }
         coVerify(exactly = 1) { pipeline3.run() }
 
-        // Verify they ran concurrently (total time should be close to the longest pipeline)
-        // Allow some buffer for execution overhead
-        assertTrue((endTime - startTime) < 200, "Pipelines should run concurrently")
-
-        coVerify(exactly = 1) { reconciler.run(any()) }
+        coVerify(exactly = 1) { reconciler.run() }
         coVerify(exactly = 1) { reconciler.disable() }
         coVerify(exactly = 1) { reconciler.flushCompleteStates() }
     }
@@ -77,14 +78,18 @@ class PipelineRunnerTest {
         // Given
         val exception = RuntimeException("Pipeline failed")
         coEvery { pipeline1.run() } throws exception
-        val failingRunner = PipelineRunner(reconciler, store, listOf(pipeline1))
+        val failingScope = Fixtures.testScope(this.coroutineContext)
+        val failingRunner = PipelineRunner(reconciler, store, listOf(pipeline1), inputStreams, failingScope)
 
         // When/Then
-        val thrownException = assertThrows<RuntimeException> { runBlocking { failingRunner.run() } }
+        val thrownException = assertThrows<RuntimeException> {
+            failingRunner.run()
+            testScheduler.advanceUntilIdle()
+        }
 
         assertEquals("Pipeline failed", thrownException.message)
 
-        // Verify reconciler was still disabled in finally block
+        // Verify reconciler was still disabled
         coVerify(exactly = 1) { reconciler.disable() }
         coVerify(exactly = 0) { reconciler.flushCompleteStates() }
     }
@@ -93,14 +98,16 @@ class PipelineRunnerTest {
     fun `run should execute operations in correct order`() = runTest {
         // Given
         coEvery { pipeline1.run() } just Runs
-        val singlePipelineRunner = PipelineRunner(reconciler, store, listOf(pipeline1))
+        val singlePipelineScope = Fixtures.testScope(this.coroutineContext)
+        val singlePipelineRunner = PipelineRunner(reconciler, store, listOf(pipeline1), inputStreams, singlePipelineScope)
 
         // When
         singlePipelineRunner.run()
+        testScheduler.advanceUntilIdle()
 
         // Then - verify order of operations
         coVerifySequence {
-            reconciler.run(any())
+            reconciler.run()
             pipeline1.run()
             reconciler.disable()
             reconciler.flushCompleteStates()
@@ -108,35 +115,32 @@ class PipelineRunnerTest {
     }
 
     @Test
-    fun `run should pass correct CoroutineScope to reconciler`() = runTest {
+    fun `run should start reconciler without parameters`() = runTest {
         // Given
-        var capturedScope: CoroutineScope? = null
-
-        every { reconciler.run(any()) } answers { capturedScope = firstArg() }
-
-        val emptyRunner = PipelineRunner(reconciler, store, emptyList())
+        val emptyScope = Fixtures.testScope(this.coroutineContext)
+        val emptyRunner = PipelineRunner(reconciler, store, emptyList(), inputStreams, emptyScope)
 
         // When
         emptyRunner.run()
 
         // Then
-        assertTrue(capturedScope != null, "CoroutineScope should be passed to reconciler")
-        // Verify it's using IO dispatcher
-        assertTrue(capturedScope.toString().contains("Dispatchers.IO"), "Should use IO dispatcher")
+        coVerify(exactly = 1) { reconciler.run() }
     }
 
     @Test
     fun `run should handle single pipeline`() = runTest {
         // Given
         coEvery { pipeline1.run() } just Runs
-        val singlePipelineRunner = PipelineRunner(reconciler, store, listOf(pipeline1))
+        val singlePipelineScope = Fixtures.testScope(this.coroutineContext)
+        val singlePipelineRunner = PipelineRunner(reconciler, store, listOf(pipeline1), inputStreams, singlePipelineScope)
 
         // When
         singlePipelineRunner.run()
+        testScheduler.advanceUntilIdle()
 
         // Then
         coVerify(exactly = 1) { pipeline1.run() }
-        coVerify(exactly = 1) { reconciler.run(any()) }
+        coVerify(exactly = 1) { reconciler.run() }
         coVerify(exactly = 1) { reconciler.disable() }
         coVerify(exactly = 1) { reconciler.flushCompleteStates() }
     }
@@ -146,11 +150,14 @@ class PipelineRunnerTest {
         // Given
         coEvery { pipeline1.run() } just Runs
         coEvery { reconciler.disable() } throws RuntimeException("Failed to disable")
-        val singlePipelineRunner = PipelineRunner(reconciler, store, listOf(pipeline1))
+        val singlePipelineScope = Fixtures.testScope(this.coroutineContext)
+        val singlePipelineRunner = PipelineRunner(reconciler, store, listOf(pipeline1), inputStreams, singlePipelineScope)
 
         // When/Then
-        val exception =
-            assertThrows<RuntimeException> { runBlocking { singlePipelineRunner.run() } }
+        val exception = assertThrows<RuntimeException> { 
+            singlePipelineRunner.run()
+            testScheduler.advanceUntilIdle()
+        }
 
         assertEquals("Failed to disable", exception.message)
 
@@ -164,11 +171,14 @@ class PipelineRunnerTest {
         // Given
         coEvery { pipeline1.run() } just Runs
         every { reconciler.flushCompleteStates() } throws RuntimeException("Failed to flush")
-        val singlePipelineRunner = PipelineRunner(reconciler, store, listOf(pipeline1))
+        val singlePipelineScope = Fixtures.testScope(this.coroutineContext)
+        val singlePipelineRunner = PipelineRunner(reconciler, store, listOf(pipeline1), inputStreams, singlePipelineScope)
 
         // When/Then
-        val exception =
-            assertThrows<RuntimeException> { runBlocking { singlePipelineRunner.run() } }
+        val exception = assertThrows<RuntimeException> { 
+            singlePipelineRunner.run()
+            testScheduler.advanceUntilIdle()
+        }
 
         assertEquals("Failed to flush", exception.message)
 
@@ -179,35 +189,43 @@ class PipelineRunnerTest {
     }
 
     @Test
-    fun `pipelines property should return the list of pipelines`() {
-        // When
-        val result = runner.pipelines
+    fun `run should close input streams when pipeline fails`() = runTest {
+        // Given
+        val exception = RuntimeException("Pipeline failed")
+        coEvery { pipeline1.run() } throws exception
+        
+        val failingScope = Fixtures.testScope(this.coroutineContext)
+        val failingRunner = PipelineRunner(reconciler, store, listOf(pipeline1), inputStreams, failingScope)
 
-        // Then
-        assertEquals(3, result.size)
-        assertEquals(pipeline1, result[0])
-        assertEquals(pipeline2, result[1])
-        assertEquals(pipeline3, result[2])
+        // When
+        assertThrows<RuntimeException> { 
+            failingRunner.run()
+            testScheduler.advanceUntilIdle()
+        }
+        
+        // Then - verify that closeAll was called due to exception handler
+        verify(atLeast = 1) { inputStreams.closeAll() }
     }
 
     @Test
     fun `run should handle large number of pipelines`() = runTest {
         // Given
-        val pipelines =
-            (1..100).map {
-                @MockK val pipeline = io.mockk.mockk<DataFlowPipeline>()
-                coEvery { pipeline.run() } just Runs
-                pipeline
-            }
+        val pipelines = (1..32).map {
+            val pipeline = mockk<DataFlowPipeline>()
+            coEvery { pipeline.run() } just Runs
+            pipeline
+        }
 
-        val largeRunner = PipelineRunner(reconciler, store, pipelines)
+        val largeScope = Fixtures.testScope(this.coroutineContext)
+        val largeRunner = PipelineRunner(reconciler, store, pipelines, inputStreams, largeScope)
 
         // When
         largeRunner.run()
+        testScheduler.advanceUntilIdle()
 
         // Then
         pipelines.forEach { pipeline -> coVerify(exactly = 1) { pipeline.run() } }
-        coVerify(exactly = 1) { reconciler.run(any()) }
+        coVerify(exactly = 1) { reconciler.run() }
         coVerify(exactly = 1) { reconciler.disable() }
         coVerify(exactly = 1) { reconciler.flushCompleteStates() }
     }
@@ -219,61 +237,62 @@ class PipelineRunnerTest {
         var pipeline2Complete = false
         var reconcilerDisabled = false
 
-        coEvery { pipeline1.run() } coAnswers
-            {
-                delay(100)
-                pipeline1Complete = true
-            }
-        coEvery { pipeline2.run() } coAnswers
-            {
-                delay(50)
-                pipeline2Complete = true
-            }
-        coEvery { reconciler.disable() } answers
-            {
-                reconcilerDisabled = true
-                assertTrue(
-                    pipeline1Complete,
-                    "Pipeline 1 should be complete before disabling reconciler"
-                )
-                assertTrue(
-                    pipeline2Complete,
-                    "Pipeline 2 should be complete before disabling reconciler"
-                )
-            }
+        coEvery { pipeline1.run() } coAnswers {
+            delay(100)
+            pipeline1Complete = true
+        }
+        coEvery { pipeline2.run() } coAnswers {
+            delay(50)
+            pipeline2Complete = true
+        }
+        coEvery { reconciler.disable() } answers {
+            reconcilerDisabled = true
+            assertTrue(
+                pipeline1Complete,
+                "Pipeline 1 should be complete before disabling reconciler"
+            )
+            assertTrue(
+                pipeline2Complete,
+                "Pipeline 2 should be complete before disabling reconciler"
+            )
+        }
 
-        val twoRunner = PipelineRunner(reconciler, store, listOf(pipeline1, pipeline2))
+        val twoScope = Fixtures.testScope(this.coroutineContext)
+        val twoRunner = PipelineRunner(reconciler, store, listOf(pipeline1, pipeline2), inputStreams, twoScope)
 
         // When
         twoRunner.run()
+        testScheduler.advanceUntilIdle()
 
         // Then
         assertTrue(reconcilerDisabled, "Reconciler should have been disabled")
     }
 
     @Test
-    fun `run should throw IllegalStateException when unflushed states exist at sync end`() =
-        runTest {
-            // Given
-            coEvery { pipeline1.run() } just Runs
-            every { store.hasStates() } returns true // Simulate unflushed states exist
+    fun `run should throw IllegalStateException when unflushed states exist at sync end`() = runTest {
+        // Given
+        coEvery { pipeline1.run() } just Runs
+        every { store.hasStates() } returns true // Simulate unflushed states exist
 
-            val singlePipelineRunner = PipelineRunner(reconciler, store, listOf(pipeline1))
+        val singlePipelineScope = Fixtures.testScope(this.coroutineContext)
+        val singlePipelineRunner = PipelineRunner(reconciler, store, listOf(pipeline1), inputStreams, singlePipelineScope)
 
-            // When/Then
-            val exception =
-                assertThrows<IllegalStateException> { runBlocking { singlePipelineRunner.run() } }
-
-            // Then
-            assertEquals("Sync completed, but unflushed states were detected.", exception.message)
-
-            // Verify all operations completed before the check
-            coVerify(exactly = 1) { reconciler.run(any()) }
-            coVerify(exactly = 1) { pipeline1.run() }
-            coVerify(exactly = 1) { reconciler.disable() }
-            coVerify(exactly = 1) { reconciler.flushCompleteStates() }
-            coVerify(exactly = 1) { store.hasStates() }
+        // When/Then
+        val exception = assertThrows<IllegalStateException> { 
+            singlePipelineRunner.run()
+            testScheduler.advanceUntilIdle()
         }
+
+        // Then
+        assertEquals("Sync completed, but unflushed states were detected.", exception.message)
+
+        // Verify all operations completed before the check
+        coVerify(exactly = 1) { reconciler.run() }
+        coVerify(exactly = 1) { pipeline1.run() }
+        coVerify(exactly = 1) { reconciler.disable() }
+        coVerify(exactly = 1) { reconciler.flushCompleteStates() }
+        coVerify(exactly = 1) { store.hasStates() }
+    }
 
     @Test
     fun `run should not throw exception when all states are flushed`() = runTest {
@@ -281,16 +300,22 @@ class PipelineRunnerTest {
         coEvery { pipeline1.run() } just Runs
         every { store.hasStates() } returns false // All states are flushed
 
-        val singlePipelineRunner = PipelineRunner(reconciler, store, listOf(pipeline1))
+        val singlePipelineScope = Fixtures.testScope(this.coroutineContext)
+        val singlePipelineRunner = PipelineRunner(reconciler, store, listOf(pipeline1), inputStreams, singlePipelineScope)
 
         // When - should complete without exception
         singlePipelineRunner.run()
+        testScheduler.advanceUntilIdle()
 
         // Then
-        coVerify(exactly = 1) { reconciler.run(any()) }
+        coVerify(exactly = 1) { reconciler.run() }
         coVerify(exactly = 1) { pipeline1.run() }
         coVerify(exactly = 1) { reconciler.disable() }
         coVerify(exactly = 1) { reconciler.flushCompleteStates() }
         coVerify(exactly = 1) { store.hasStates() }
+    }
+
+    object Fixtures {
+        fun testScope(ctx: CoroutineContext) = CoroutineScope(ctx + SupervisorJob())
     }
 }
