@@ -50,6 +50,8 @@ import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
 import java.math.BigDecimal
 import java.nio.file.Files
 import java.nio.file.Path
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 import net.snowflake.client.jdbc.SnowflakeTimestampWithTimezone
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
@@ -202,10 +204,20 @@ object SnowflakeDataCleaner : DestinationCleaner {
                 .snowflakeDataSource(snowflakeConfiguration = config, airbyteEdition = "COMMUNITY")
         dataSource.connection.use { connection ->
             val statement = connection.createStatement()
-            val schemas = connection.metaData.getSchemas(null, "TEST_%")
+            val schemas =
+                statement.executeQuery(
+                    "SHOW SCHEMAS IN DATABASE \"${config.database.toSnowflakeCompatibleName()}\""
+                )
             while (schemas.next()) {
-                val schemaName = schemas.getString("TABLE_SCHEMA")
-                statement.execute("DROP SCHEMA IF EXISTS \"$schemaName\" CASCADE")
+                val schemaName = schemas.getString("name")
+                val createdOn = schemas.getTimestamp("created_on")
+                // Clear all test schemas in the database older than 24 hours
+                if (
+                    schemaName.startsWith(prefix = "test", ignoreCase = true) &&
+                        createdOn.toInstant().isBefore(Instant.now().minus(24, ChronoUnit.HOURS))
+                ) {
+                    statement.execute("DROP SCHEMA IF EXISTS \"$schemaName\" CASCADE")
+                }
             }
         }
         dataSource.close()
