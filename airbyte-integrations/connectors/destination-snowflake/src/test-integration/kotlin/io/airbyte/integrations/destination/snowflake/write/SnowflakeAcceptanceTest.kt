@@ -43,7 +43,7 @@ import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleNam
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfigurationFactory
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeSpecification
-import io.airbyte.integrations.destination.snowflake.sql.QUOTE
+import io.airbyte.integrations.destination.snowflake.sql.SnowflakeSqlNameUtils
 import io.airbyte.integrations.destination.snowflake.write.transform.isValid
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
@@ -248,6 +248,7 @@ class SnowflakeDataDumper(
         stream: DestinationStream
     ): List<OutputRecord> {
         val config = configProvider(spec)
+        val sqlUtils = SnowflakeSqlNameUtils(config)
         val dataSource =
             SnowflakeBeanFactory()
                 .snowflakeDataSource(snowflakeConfiguration = config, airbyteEdition = "COMMUNITY")
@@ -284,7 +285,7 @@ class SnowflakeDataDumper(
 
                 val resultSet =
                     statement.executeQuery(
-                        "SELECT * FROM ${tableName.toPrettyString(quote = QUOTE)}"
+                        "SELECT * FROM ${sqlUtils.fullyQualifiedName(tableName)}"
                     )
 
                 while (resultSet.next()) {
