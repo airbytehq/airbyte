@@ -163,7 +163,7 @@ class JdbcSelectQuerier(
                         log.debug(e) { "Error deserializing value in column $column." }
                     }
                     if (column is EmittedField) {
-                        resultRow.changes.set(column, FieldValueChange.RETRIEVAL_FAILURE_TOTAL)
+                        resultRow.changes[column] = FieldValueChange.RETRIEVAL_FAILURE_TOTAL
                         resultRow.data[column.id] =
                             FieldValueEncoder(
                                 null,
