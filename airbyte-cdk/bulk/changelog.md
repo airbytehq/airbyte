@@ -1,3 +1,7 @@
+## Version 0.1.41
+
+test
+
 ## Version 0.1.40
 
 Add gradle task to bump CDK version + add changelog entry
