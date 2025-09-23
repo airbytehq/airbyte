@@ -87,7 +87,6 @@ class PostgresSourceJdbcUnsplittableSnapshotWithCursorPartition(
             PostgresSourceJdbcStreamStateValue.cursorIncrementalCheckpoint(
                 cursor,
                 streamState.cursorUpperBound!!,
-                null
             )
 
     override val cursorUpperBoundQuery: SelectQuery
@@ -122,7 +121,7 @@ class PostgresSourceJdbcUnsplittableCursorIncrementalPartition(
 
     override val completeState: OpaqueStateValue
         get() =
-            PostgresSourceJdbcStreamStateValue.cursorIncrementalCheckpoint(cursor, cursorUpperBound, null)
+            PostgresSourceJdbcStreamStateValue.cursorIncrementalCheckpoint(cursor, cursorUpperBound,)
 
     override val cursorUpperBoundQuery: SelectQuery
         get() = selectQueryGenerator.generate(cursorUpperBoundQuerySpec.optimize())
@@ -324,7 +323,6 @@ class PostgresSourceJdbcSplittableSnapshotWithCursorPartition(
                     PostgresSourceJdbcStreamStateValue.cursorIncrementalCheckpoint(
                         cursor,
                         cursorUpperBound,
-                        filenode
                     )
                 else ->
                     PostgresSourceJdbcStreamStateValue.snapshotWithCursorCheckpoint(
@@ -382,11 +380,10 @@ class PostgresSourceJdbcCursorIncrementalPartition(
 
     override val completeState: OpaqueStateValue
         get() =
-            PostgresSourceJdbcStreamStateValue.cursorIncrementalCheckpoint(cursor, cursorUpperBound, filenode)
+            PostgresSourceJdbcStreamStateValue.cursorIncrementalCheckpoint(cursor, cursorUpperBound,)
     override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
         PostgresSourceJdbcStreamStateValue.cursorIncrementalCheckpoint(
             cursor,
             lastRecord.data.toJson()[cursor.id] ?: Jsons.nullNode(),
-            filenode
         )
 }

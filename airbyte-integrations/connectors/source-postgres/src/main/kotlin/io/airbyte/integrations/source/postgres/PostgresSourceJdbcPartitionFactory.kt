@@ -243,7 +243,7 @@ class PostgresSourceJdbcPartitionFactory(
             log.info { "Querying filenode for stream ${streamState.stream.id}" }
             jdbcConnectionFactory.get().use { connection ->
                 val sql =
-                    "SELECT pg_relation_filenode('${streamState.stream.namespace}.${streamState.stream.name}')"
+                    """SELECT pg_relation_filenode('"${streamState.stream.namespace}"."${streamState.stream.name}"')"""
                 val stmt: PreparedStatement = connection.prepareStatement(sql)
                 val rs = stmt.executeQuery()
                 if (rs.next()) {
