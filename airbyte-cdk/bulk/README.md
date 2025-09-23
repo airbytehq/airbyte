@@ -97,8 +97,6 @@ The contributor needs to manually bump the version and populate the [changelog](
 
 In the build process, we are checking that the version of the bulk CDK doesn't exist already.
 
-Currently there's no enforcement that PRs update the changelog, but this will be implemented soon (TM).
-
 A utility Gradle task exists to update both of those files:
 ```shell
 ./gradlew :airbyte-cdk:bulk:bumpVersion --<major|minor|patch> [--changelog 'My cool CDK update']

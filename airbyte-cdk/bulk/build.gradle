@@ -138,10 +138,10 @@ class BumpBulkCdkVersionTask extends DefaultTask {
 
     void setVersionFile(File versionFile) {
         this.versionFile = versionFile
-    }
 
-    void setCurrentVersion(String currentVersion) {
-        this.currentVersion = currentVersion
+        var props = new Properties()
+        versionFile.withInputStream(props::load)
+        currentVersion = props.getProperty('version', 'undefined')
     }
 
     @Option(option = "patch", description = "Bump patch version (x.y.Z)")
@@ -231,5 +231,4 @@ class BumpBulkCdkVersionTask extends DefaultTask {
 
 tasks.register('bumpVersion', BumpBulkCdkVersionTask) {
     it.versionFile = versionFile
-    it.currentVersion = cdkVersion
 }

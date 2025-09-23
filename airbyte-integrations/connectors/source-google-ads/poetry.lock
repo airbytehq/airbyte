@@ -704,6 +704,7 @@ optional = false
 python-versions = ">=3.7"
 groups = ["main"]
 files = [
+    {file = "google_cloud_secret_manager-2.24.0-py3-none-any.whl", hash = "sha256:9bea1254827ecc14874bc86c63b899489f8f50bfe1442bfb2517530b30b3a89b"},
     {file = "google_cloud_secret_manager-2.24.0.tar.gz", hash = "sha256:ce573d40ffc2fb7d01719243a94ee17aa243ea642a6ae6c337501e58fbf642b5"},
 ]
 
@@ -2767,4 +2768,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10,<3.12"
-content-hash = "adf72eb0718c5075f2183a507d980a41afbfecb285dd58e0389608626da3274d"
+content-hash = "669b3520cdfd52db3222ed523ac6f377a03a1c7ecfb6073b77c029416b10d007"
