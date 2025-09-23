@@ -113,4 +113,65 @@ class StringInterpolationTest {
                 )
         assertEquals("true", interpolatedValue)
     }
+
+    @Test
+    internal fun `test given bracket accessor on record when extract record keys then return key`() {
+        val template = """{{ record["a_key"] }}"""
+        val extractedKeys = StringInterpolator().extractAccessedRecordKeys(template)
+        assertEquals(setOf("a_key"), extractedKeys)
+    }
+
+    @Test
+    internal fun `test given get accessor on record when extract record keys then return key`() {
+        val template = """{{ record.get("a_key") }}"""
+        val extractedKeys = StringInterpolator().extractAccessedRecordKeys(template)
+        assertEquals(setOf("a_key"), extractedKeys)
+    }
+
+    @Test
+    internal fun `test given object name ends with record when extract record keys then return key`() {
+        // This behavior is tested to show the potential problems with the solutions. See comment on
+        // bracketAccessorRegex to understand why this is acceptable.
+        val template = """{{ not_a_record.get("a_key") }}"""
+        val extractedKeys = StringInterpolator().extractAccessedRecordKeys(template)
+        assertEquals(setOf("a_key"), extractedKeys)
+    }
+
+    @Test
+    internal fun `test given accessor on other object than record when extract record keys then return empty set`() {
+        val template = """{{ response["a_key"] }}"""
+        val extractedKeys = StringInterpolator().extractAccessedRecordKeys(template)
+        assertEquals(setOf(), extractedKeys)
+    }
+
+    @Test
+    internal fun `test given record key with text around it when extract record keys then return all the keys`() {
+        val template = """This is some text {{ record["a_key"] }} there is even text after"""
+        val extractedKeys = StringInterpolator().extractAccessedRecordKeys(template)
+        assertEquals(setOf("a_key"), extractedKeys)
+    }
+
+    @Test
+    internal fun `test given multiple keys in different nodes when extract record keys then return all the keys`() {
+        val template = """{{ record["prefix"] }} I'm a potato: {{ record["suffix"] }}"""
+        val extractedKeys = StringInterpolator().extractAccessedRecordKeys(template)
+        assertEquals(setOf("prefix", "suffix"), extractedKeys)
+    }
+
+    @Test
+    internal fun `test given multiple keys in the same node when extract record keys then return all the keys`() {
+        val template = """{{ record["prefix"] + " I'm a potato: " + {{ record["suffix"] }}"""
+        val extractedKeys = StringInterpolator().extractAccessedRecordKeys(template)
+        assertEquals(setOf("prefix", "suffix"), extractedKeys)
+    }
+
+    @Test
+    internal fun `test given invalid string interpolation when extract record keys then return empty set`() {
+        // This happens because Jinja does not identify this string as an expression and therefore
+        // it is filtered out
+        val template = """{{ record["prefix"] other text "] }}"""
+        val extractedKeys = StringInterpolator().extractAccessedRecordKeys(template)
+        assertEquals(emptySet(), extractedKeys)
+    }
+
 }
