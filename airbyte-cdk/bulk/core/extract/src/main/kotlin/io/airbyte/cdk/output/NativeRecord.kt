@@ -28,7 +28,7 @@ import io.airbyte.cdk.data.OffsetTimeCodec
 import io.airbyte.cdk.data.ShortCodec
 import io.airbyte.cdk.data.TextCodec
 import io.airbyte.cdk.data.UrlCodec
-import io.airbyte.cdk.discover.FieldOrMetaField
+import io.airbyte.cdk.discover.DataOrMetaField
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteRecordMessageProtobuf
@@ -167,7 +167,7 @@ val anyProtoEncoder = textProtoEncoder
 val arrayProtoEncoder = textProtoEncoder
 
 fun NativeRecordPayload.toProtobuf(
-    schema: Set<FieldOrMetaField>,
+    schema: Set<DataOrMetaField>,
     recordMessageBuilder: AirbyteRecordMessageProtobuf.Builder,
     valueBuilder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder
 ): AirbyteRecordMessageProtobuf.Builder {

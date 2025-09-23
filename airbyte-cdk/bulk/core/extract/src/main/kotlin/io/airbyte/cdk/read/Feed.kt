@@ -3,7 +3,7 @@ package io.airbyte.cdk.read
 
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.discover.DataOrMetaField
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 
 /**
  * [Feed] identifies part of the data consumed during a READ operation.
@@ -32,7 +32,7 @@ data class Stream(
     val id: StreamIdentifier,
     val schema: Set<DataOrMetaField>,
     val configuredSyncMode: ConfiguredSyncMode,
-    val configuredPrimaryKey: List<Field>?,
+    val configuredPrimaryKey: List<EmittedField>?,
     val configuredCursor: DataOrMetaField?,
 ) : Feed {
     val name: String
@@ -44,8 +44,8 @@ data class Stream(
     override val label: String
         get() = id.toString()
 
-    val fields: List<Field>
-        get() = schema.filterIsInstance<Field>()
+    val fields: List<EmittedField>
+        get() = schema.filterIsInstance<EmittedField>()
 }
 
 /** List of [Stream]s this [Feed] emits records for. */
