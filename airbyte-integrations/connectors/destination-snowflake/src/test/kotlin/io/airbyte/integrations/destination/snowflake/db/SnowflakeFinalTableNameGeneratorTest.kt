@@ -23,14 +23,15 @@ internal class SnowflakeFinalTableNameGeneratorTest {
             }
         val generator = SnowflakeFinalTableNameGenerator(config = configuration)
         val streamName = "test-stream-name"
+        val streamNamespace = "test-stream-namespace"
         val streamDescriptor =
             mockk<DestinationStream.Descriptor> {
-                every { namespace } returns null
+                every { namespace } returns streamNamespace
                 every { name } returns streamName
             }
         val tableName = generator.getTableName(streamDescriptor)
         assertEquals(
-            TypingDedupingUtil.concatenateRawTableName(internalNamespace, streamName)
+            TypingDedupingUtil.concatenateRawTableName(streamNamespace, streamName)
                 .toSnowflakeCompatibleName(),
             tableName.name
         )
