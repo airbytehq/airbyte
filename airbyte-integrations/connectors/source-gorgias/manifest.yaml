@@ -914,7 +914,8 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path: []
+            field_path:
+              - data
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -928,7 +929,7 @@ definitions:
           fields:
             - path:
                 - ticket_id
-              value: "{{ stream_partition.ticket_id}}"
+              value: "{{ stream_partition.ticket_id }}"
       primary_key:
         - ticket_id
       schema_loader:
