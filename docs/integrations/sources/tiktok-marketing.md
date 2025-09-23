@@ -147,6 +147,7 @@ The connector is restricted by [requests limitation](https://business-api.tiktok
 
 | Version   | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.8.3 | 2025-09-23 | [66584](https://github.com/airbytehq/airbyte/pull/66584) | Promoting release candidate 4.8.3-rc.1 to a main version. |
 | 4.8.3-rc.1| 2025-09-16 | [62058] | Add new video metrics in `ads_reports` streams |
 | 4.8.2 | 2025-09-15 | [66233](https://github.com/airbytehq/airbyte/pull/66233) | Promoting release candidate 4.8.2-rc.1 to a main version. |
 | 4.8.2-rc.1 | 2025-09-11 | [65527](https://github.com/airbytehq/airbyte/pull/65527) | Fix missing records for hourly streams: remove record filter|
