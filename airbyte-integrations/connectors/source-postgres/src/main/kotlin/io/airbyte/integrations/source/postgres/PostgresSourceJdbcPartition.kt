@@ -99,7 +99,7 @@ class PostgresSourceJdbcUnsplittableCursorIncrementalPartition(
     selectQueryGenerator: SelectQueryGenerator,
     streamState: PostgresSourceJdbcStreamState,
     val cursor: DataField,
-    val cursorLowerBound: JsonNode,
+    val cursorLowerBound: JsonNode?,
     val isLowerBoundIncluded: Boolean,
     val explicitCursorUpperBound: JsonNode?,
 ) :
@@ -134,10 +134,10 @@ class PostgresSourceJdbcUnsplittableCursorIncrementalPartition(
     val where: Where
         get() {
             val checkpointColumns: List<DataField> = listOf(cursor)
-            val lowerBound: List<JsonNode> = listOf(cursorLowerBound)
-            val upperBound: List<JsonNode> = listOf(cursorUpperBound)
+            val lowerBound: JsonNode? = cursorLowerBound
+            val upperBound: JsonNode = cursorUpperBound
             val zippedLowerBound: List<Pair<DataField, JsonNode>> =
-                lowerBound?.let { checkpointColumns.zip(it) } ?: listOf()
+                lowerBound?.let { checkpointColumns.zip(listOf(it)) } ?: listOf()
             val lowerBoundDisj: List<WhereClauseNode> =
                 zippedLowerBound.mapIndexed { idx: Int, (gtCol: DataField, gtValue: JsonNode) ->
                     val lastLeaf: WhereClauseLeafNode =
@@ -153,7 +153,7 @@ class PostgresSourceJdbcUnsplittableCursorIncrementalPartition(
                     )
                 }
             val zippedUpperBound: List<Pair<DataField, JsonNode>> =
-                upperBound?.let { checkpointColumns.zip(it) } ?: listOf()
+                upperBound?.let { checkpointColumns.zip(listOf(it)) } ?: listOf()
             val upperBoundDisj: List<WhereClauseNode> =
                 zippedUpperBound.mapIndexed { idx: Int, (leqCol: DataField, leqValue: JsonNode) ->
                     val lastLeaf: WhereClauseLeafNode =
@@ -179,8 +179,8 @@ sealed class PostgresSourceSplittablePartition(
 ) :
     PostgresSourceJdbcPartition(selectQueryGenerator, streamState),
     JdbcSplittablePartition<PostgresSourceJdbcStreamState> {
-    abstract val lowerBound: List<JsonNode>?
-    abstract val upperBound: List<JsonNode>?
+    abstract val lowerBound: JsonNode?
+    abstract val upperBound: JsonNode?
 
     override val nonResumableQuery: SelectQuery
         get() = selectQueryGenerator.generate(nonResumableQuerySpec.optimize())
@@ -215,7 +215,7 @@ sealed class PostgresSourceSplittablePartition(
     val where: Where
         get() {
             val zippedLowerBound: List<Pair<DataField, JsonNode>> =
-                lowerBound?.let { checkpointColumns.zip(it) } ?: listOf()
+                lowerBound?.let { checkpointColumns.zip(listOf(it)) } ?: listOf()
             val lowerBoundDisj: List<WhereClauseNode> =
                 zippedLowerBound.mapIndexed { idx: Int, (gtCol: DataField, gtValue: JsonNode) ->
                     val lastLeaf: WhereClauseLeafNode =
@@ -231,7 +231,7 @@ sealed class PostgresSourceSplittablePartition(
                     )
                 }
             val zippedUpperBound: List<Pair<DataField, JsonNode>> =
-                upperBound?.let { checkpointColumns.zip(it) } ?: listOf()
+                upperBound?.let { checkpointColumns.zip(listOf(it)) } ?: listOf()
             val upperBoundDisj: List<WhereClauseNode> =
                 zippedUpperBound.mapIndexed { idx: Int, (leqCol: DataField, leqValue: JsonNode) ->
                     val lastLeaf: WhereClauseLeafNode =
@@ -255,8 +255,8 @@ sealed class PostgresSourceSplittablePartition(
 class PostgresSourceJdbcSplittableSnapshotPartition(
     selectQueryGenerator: SelectQueryGenerator,
     streamState: PostgresSourceJdbcStreamState,
-    override val lowerBound: List<JsonNode>?,
-    override val upperBound: List<JsonNode>?,
+    override val lowerBound: JsonNode?,
+    override val upperBound: JsonNode?,
     val filenode: Filenode?
 ) : PostgresSourceSplittablePartition(selectQueryGenerator, streamState, listOf(ctidField)) {
     override val completeState: OpaqueStateValue
@@ -265,7 +265,7 @@ class PostgresSourceJdbcSplittableSnapshotPartition(
                 null -> PostgresSourceJdbcStreamStateValue.snapshotCompleted
                 else ->
                     PostgresSourceJdbcStreamStateValue.snapshotCheckpoint(
-                        Jsons.textNode(upperBound.toString()),
+                        upperBound,
                         filenode
                     )
             }
@@ -300,8 +300,8 @@ sealed class PostgresSourceCursorPartition(
 class PostgresSourceJdbcSplittableSnapshotWithCursorPartition(
     selectQueryGenerator: SelectQueryGenerator,
     streamState: PostgresSourceJdbcStreamState,
-    override val lowerBound: List<JsonNode>?,
-    override val upperBound: List<JsonNode>?,
+    override val lowerBound: JsonNode?,
+    override val upperBound: JsonNode?,
     cursor: DataField,
     cursorUpperBound: JsonNode?,
     val filenode: Filenode?
@@ -324,7 +324,7 @@ class PostgresSourceJdbcSplittableSnapshotWithCursorPartition(
                     )
                 else ->
                     PostgresSourceJdbcStreamStateValue.snapshotWithCursorCheckpoint(
-                        Jsons.textNode(upperBound.toString()),
+                        upperBound,
                         cursor,
                         cursorUpperBound,
                         filenode,
@@ -355,9 +355,9 @@ class PostgresSourceJdbcCursorIncrementalPartition(
         cursor,
         cursorUpperBound
     ) {
-    override val lowerBound: List<JsonNode> = listOf(cursorLowerBound)
-    override val upperBound: List<JsonNode>
-        get() = listOf(cursorUpperBound)
+    override val lowerBound: JsonNode = cursorLowerBound
+    override val upperBound: JsonNode
+        get() = cursorUpperBound
 
     override val nonResumableQuerySpec: SelectQuerySpec
         get() = SelectQuerySpec(SelectColumns(stream.fields), from, where)

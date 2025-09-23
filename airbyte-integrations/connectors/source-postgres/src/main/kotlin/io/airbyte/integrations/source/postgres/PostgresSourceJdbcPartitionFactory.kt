@@ -164,9 +164,7 @@ class PostgresSourceJdbcPartitionFactory(
                         selectQueryGenerator,
                         streamState,
                         lowerBound =
-                            listOf(
                                 Jsons.textNode(streamState.maybeCtid!!.toString()),
-                            ),
                         upperBound = null,
                         filenode,
                     )
@@ -191,7 +189,7 @@ class PostgresSourceJdbcPartitionFactory(
                 PostgresSourceJdbcSplittableSnapshotWithCursorPartition(
                     selectQueryGenerator,
                     streamState,
-                    lowerBound = listOf(Jsons.textNode(streamState.maybeCtid.toString())),
+                    lowerBound = Jsons.textNode(streamState.maybeCtid.toString()),
                     upperBound = null,
                     cursor,
                     cursorCheckpoint,
@@ -340,13 +338,13 @@ class PostgresSourceJdbcPartitionFactory(
         val inners: List<Ctid> = splitPointValues.map { Ctid.of(it.ctid!!) }
         val lbCtid: Ctid? =
             lowerBound?.let {
-                if (it.isNotEmpty()) {
+                if (it.isNull.not() && it.isEmpty.not()) {
                     Ctid.of(it[0].asText())
                 } else null
             }
         val ubCtid: Ctid? =
             upperBound?.let {
-                if (it.isNotEmpty()) {
+                if (it.isNull.not() && it.isEmpty.not()) {
                     Ctid.of(it[0].asText())
                 } else null
             }
@@ -356,8 +354,8 @@ class PostgresSourceJdbcPartitionFactory(
             PostgresSourceJdbcSplittableSnapshotPartition(
                 selectQueryGenerator,
                 streamState,
-                lowerBound?.let { listOf(Jsons.textNode(it.toString())) },
-                upperBound?.let { listOf(Jsons.textNode(it.toString())) },
+                lowerBound?.let { Jsons.textNode(it.toString()) },
+                upperBound?.let { Jsons.textNode(it.toString()) },
                 splitPointValues.first().filenode,
             )
         }
@@ -369,13 +367,13 @@ class PostgresSourceJdbcPartitionFactory(
         val inners: List<Ctid> = splitPointValues.map { Ctid.of(it.ctid!!) }
         val lbCtid: Ctid? =
             lowerBound?.let {
-                if (it.isNotEmpty()) {
+                if (it.isNull.not() && it.isEmpty.not()) {
                     Ctid.of(it[0].asText())
                 } else null
             }
         val ubCtid: Ctid? =
             upperBound?.let {
-                if (it.isNotEmpty()) {
+                if (it.isNull.not() && it.isEmpty.not()) {
                     Ctid.of(it[0].asText())
                 } else null
             }
@@ -385,8 +383,8 @@ class PostgresSourceJdbcPartitionFactory(
             PostgresSourceJdbcSplittableSnapshotWithCursorPartition(
                 selectQueryGenerator,
                 streamState,
-                lowerBound?.let { listOf(Jsons.textNode(it.toString())) },
-                upperBound?.let { listOf(Jsons.textNode(it.toString())) },
+                lowerBound?.let { Jsons.textNode(it.toString()) },
+                upperBound?.let { Jsons.textNode(it.toString()) },
                 cursor,
                 cursorUpperBound,
                 splitPointValues.first().filenode,
