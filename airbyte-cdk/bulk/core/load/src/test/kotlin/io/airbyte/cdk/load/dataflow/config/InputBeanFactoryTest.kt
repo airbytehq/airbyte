@@ -14,6 +14,8 @@ import io.airbyte.cdk.load.dataflow.pipeline.DataFlowStage
 import io.airbyte.cdk.load.dataflow.state.StateHistogramStore
 import io.airbyte.cdk.load.dataflow.state.StateKeyClient
 import io.airbyte.cdk.load.dataflow.state.StateStore
+import io.airbyte.cdk.load.dataflow.state.stats.CommittedStatsStore
+import io.airbyte.cdk.load.dataflow.state.stats.EmittedStatsStore
 import io.airbyte.cdk.load.file.ClientSocket
 import io.airbyte.cdk.load.message.DestinationMessageFactory
 import io.airbyte.cdk.load.message.ProtocolMessageDeserializer
@@ -35,6 +37,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 class InputBeanFactoryTest {
 
     @MockK private lateinit var deserializer: ProtocolMessageDeserializer
+
     @MockK private lateinit var destinationMessageFactory: DestinationMessageFactory
 
     @MockK private lateinit var stateStore: StateStore
@@ -52,6 +55,10 @@ class InputBeanFactoryTest {
     @MockK private lateinit var aggregateStoreFactory: AggregateStoreFactory
 
     @MockK private lateinit var stateHistogramStore: StateHistogramStore
+
+    @MockK private lateinit var emittedStatsStore: EmittedStatsStore
+
+    @MockK private lateinit var committedStatsStore: CommittedStatsStore
 
     private var memoryAndParallelismConfig = MemoryAndParallelismConfig()
 
@@ -202,7 +209,8 @@ class InputBeanFactoryTest {
                 messageFlows = messageFlows,
                 stateStore = stateStore,
                 stateKeyClient = stateKeyClient,
-                completionTracker = completionTracker
+                completionTracker = completionTracker,
+                statsStore = emittedStatsStore,
             )
 
         // Then
@@ -229,7 +237,8 @@ class InputBeanFactoryTest {
                 state = stateStage,
                 aggregateStoreFactory = aggregateStoreFactory,
                 stateHistogramStore = stateHistogramStore,
-                memoryAndParallelismConfig = memoryAndParallelismConfig
+                statsStore = committedStatsStore,
+                memoryAndParallelismConfig = memoryAndParallelismConfig,
             )
 
         // Then
@@ -263,7 +272,8 @@ class InputBeanFactoryTest {
                 state = stateStage,
                 aggregateStoreFactory = aggregateStoreFactory,
                 stateHistogramStore = stateHistogramStore,
-                memoryAndParallelismConfig = memoryAndParallelismConfig
+                statsStore = committedStatsStore,
+                memoryAndParallelismConfig = memoryAndParallelismConfig,
             )
 
         // Then
@@ -300,7 +310,8 @@ class InputBeanFactoryTest {
                 messageFlows = messageFlows,
                 stateStore = stateStore,
                 stateKeyClient = stateKeyClient,
-                completionTracker = completionTracker
+                completionTracker = completionTracker,
+                statsStore = emittedStatsStore,
             )
 
         val pipes =
@@ -311,7 +322,8 @@ class InputBeanFactoryTest {
                 state = stateStage,
                 aggregateStoreFactory = aggregateStoreFactory,
                 stateHistogramStore = stateHistogramStore,
-                memoryAndParallelismConfig = memoryAndParallelismConfig
+                statsStore = committedStatsStore,
+                memoryAndParallelismConfig = memoryAndParallelismConfig,
             )
 
         // Then
