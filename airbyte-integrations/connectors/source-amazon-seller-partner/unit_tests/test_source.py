@@ -7,10 +7,10 @@ import logging
 from datetime import datetime, timedelta
 
 import pytest
-from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 from freezegun import freeze_time
 
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, Status, SyncMode
+from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 
 from .conftest import get_source
 
