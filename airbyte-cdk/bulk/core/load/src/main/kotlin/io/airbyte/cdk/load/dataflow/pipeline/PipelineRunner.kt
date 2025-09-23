@@ -56,7 +56,8 @@ class PipelineRunner(
         reconciler.flushCompleteStates()
 
         if (store.hasStates()) {
-            val stateException = IllegalStateException("Sync completed, but unflushed states were detected.")
+            val stateException =
+                IllegalStateException("Sync completed, but unflushed states were detected.")
             log.info { "Destination Pipeline Completed — Exceptionally: $stateException" }
             throw stateException
         }

@@ -1,9 +1,15 @@
+## Version 0.1.40
+
+**Load CDK**
+
+* **Changed:** Fixes hang when one of many parallel pipelines fails. Organizes thread pools. 
+
 ## Version 0.1.39
 
 **Load CDK**
 
 * **Changed:** Minor fixes with stream completion logic + proto conversion
-* 
+
 ## Version 0.1.38
 
 **Load CDK**

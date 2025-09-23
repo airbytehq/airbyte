@@ -13,9 +13,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asCoroutineDispatcher
 
-/**
- * The dispatchers (think views of thread pools) and static scopes we use for dataflow.
- */
+/** The dispatchers (think views of thread pools) and static scopes we use for dataflow. */
 @Factory
 class DispatcherBeanFactory {
     @Named("pipelineRunnerDispatcher")
