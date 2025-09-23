@@ -33,16 +33,20 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
     private lateinit var snowflakeDirectLoadSqlGenerator: SnowflakeDirectLoadSqlGenerator
     private val uuidGenerator: UUIDGenerator = mockk()
     private val snowflakeConfiguration: SnowflakeConfiguration = mockk()
+    private lateinit var snowflakeSqlNameUtils: SnowflakeSqlNameUtils
 
     @BeforeEach
     fun setUp() {
         every { snowflakeConfiguration.cdcDeletionMode } returns CdcDeletionMode.HARD_DELETE
+        every { snowflakeConfiguration.database } returns "test-database"
         columnUtils = mockk()
+        snowflakeSqlNameUtils = SnowflakeSqlNameUtils(snowflakeConfiguration)
         snowflakeDirectLoadSqlGenerator =
             SnowflakeDirectLoadSqlGenerator(
                 columnUtils = columnUtils,
                 uuidGenerator = uuidGenerator,
                 snowflakeConfiguration = snowflakeConfiguration,
+                snowflakeSqlNameUtils = snowflakeSqlNameUtils,
             )
     }
 
@@ -51,7 +55,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         val tableName = TableName(namespace = "namespace", name = "name")
         val sql = snowflakeDirectLoadSqlGenerator.countTable(tableName)
         assertEquals(
-            "SELECT COUNT(*) AS \"total\" FROM ${tableName.toPrettyString(quote=QUOTE)}",
+            "SELECT COUNT(*) AS \"total\" FROM ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}",
             sql
         )
     }
@@ -60,7 +64,10 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
     fun testGenerateNamespaceStatement() {
         val namespace = "namespace"
         val sql = snowflakeDirectLoadSqlGenerator.createNamespace(namespace)
-        assertEquals("CREATE SCHEMA IF NOT EXISTS \"$namespace\"", sql)
+        assertEquals(
+            "CREATE SCHEMA IF NOT EXISTS ${snowflakeSqlNameUtils.fullyQualifiedNamespace(namespace)}",
+            sql
+        )
     }
 
     @Test
@@ -82,7 +89,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                 replace = true
             )
         assertEquals(
-            "CREATE OR REPLACE TABLE ${tableName.toPrettyString(quote=QUOTE)} (\n    $columnAndType\n)",
+            "CREATE OR REPLACE TABLE ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)} (\n    $columnAndType\n)",
             sql
         )
     }
@@ -106,7 +113,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                 replace = false
             )
         assertEquals(
-            "CREATE TABLE ${tableName.toPrettyString(quote=QUOTE)} (\n    $columnAndType\n)",
+            "CREATE TABLE ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)} (\n    $columnAndType\n)",
             sql
         )
     }
@@ -115,7 +122,10 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
     fun testGenerateShowColumns() {
         val tableName = TableName(namespace = "namespace", name = "name")
         val sql = snowflakeDirectLoadSqlGenerator.showColumns(tableName)
-        assertEquals("SHOW COLUMNS IN TABLE ${tableName.toPrettyString(quote=QUOTE)};", sql)
+        assertEquals(
+            "SHOW COLUMNS IN TABLE ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}",
+            sql
+        )
     }
 
     @Test
@@ -135,13 +145,13 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
 
         val expected =
             """
-            INSERT INTO ${destinationTableName.toPrettyString(quote = QUOTE)}
+            INSERT INTO ${snowflakeSqlNameUtils.fullyQualifiedName(destinationTableName)} 
             (
                 $columnNames
             )
             SELECT
                 $columnNames
-            FROM ${sourceTableName.toPrettyString(quote=QUOTE)}
+            FROM ${snowflakeSqlNameUtils.fullyQualifiedName(sourceTableName)}
             """.trimIndent()
         val sql =
             snowflakeDirectLoadSqlGenerator.copyTable(
@@ -173,7 +183,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
 
         val expected =
             """
-            MERGE INTO "namespace"."destination" AS target_table
+            MERGE INTO "test_database"."namespace"."destination" AS target_table
             USING (
                           WITH records AS (
               SELECT
@@ -181,7 +191,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
 "_airbyte_extracted_at",
 "_airbyte_meta",
 "_airbyte_generation_id"
-              FROM "namespace"."source"
+              FROM "test_database"."namespace"."source"
             ), numbered_rows AS (
               SELECT *, ROW_NUMBER() OVER (
                 PARTITION BY "primaryKey" ORDER BY "cursor" DESC NULLS LAST, "_airbyte_extracted_at" DESC
@@ -233,7 +243,10 @@ new_record."_airbyte_generation_id"
     fun testGenerateDropTable() {
         val tableName = TableName(namespace = "namespace", name = "name")
         val sql = snowflakeDirectLoadSqlGenerator.dropTable(tableName)
-        assertEquals("DROP TABLE IF EXISTS ${tableName.toPrettyString(QUOTE)}", sql)
+        assertEquals(
+            "DROP TABLE IF EXISTS ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}",
+            sql
+        )
     }
 
     @Test
@@ -241,7 +254,7 @@ new_record."_airbyte_generation_id"
         val tableName = TableName(namespace = "namespace", name = "name")
         val sql = snowflakeDirectLoadSqlGenerator.dropStage(tableName)
         assertEquals(
-            "DROP STAGE IF EXISTS \"${tableName.namespace}\".\"airbyte_stage_${tableName.name}\"",
+            "DROP STAGE IF EXISTS ${snowflakeSqlNameUtils.fullyQualifiedStageName(tableName)}",
             sql
         )
     }
@@ -251,7 +264,7 @@ new_record."_airbyte_generation_id"
         val tableName = TableName(namespace = "namespace", name = "name")
         val sql = snowflakeDirectLoadSqlGenerator.getGenerationId(tableName = tableName)
         assertEquals(
-            "SELECT \"$COLUMN_NAME_AB_GENERATION_ID\"\nFROM ${tableName.toPrettyString(QUOTE)} \nLIMIT 1",
+            "SELECT \"$COLUMN_NAME_AB_GENERATION_ID\"\nFROM ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)} \nLIMIT 1",
             sql
         )
     }
@@ -259,9 +272,10 @@ new_record."_airbyte_generation_id"
     @Test
     fun testGenerateCreateFileFormat() {
         val namespace = "test-namespace"
+        val fileFormatName = snowflakeSqlNameUtils.fullyQualifiedFormatName(namespace)
         val expected =
             """
-            CREATE OR REPLACE FILE FORMAT ${buildSnowflakeFormatName(namespace)}
+            CREATE OR REPLACE FILE FORMAT $fileFormatName
             TYPE = 'CSV'
             FIELD_DELIMITER = '${CSV_FORMAT.delimiterString}'
             RECORD_DELIMITER = '${CSV_FORMAT.recordSeparator}'
@@ -277,9 +291,11 @@ new_record."_airbyte_generation_id"
     @Test
     fun testGenerateCreateStage() {
         val tableName = TableName(namespace = "namespace", name = "name")
+        val stagingTableName = snowflakeSqlNameUtils.fullyQualifiedStageName(tableName)
+        val fileFormat = snowflakeSqlNameUtils.fullyQualifiedFormatName(tableName.namespace)
         val sql = snowflakeDirectLoadSqlGenerator.createSnowflakeStage(tableName)
         assertEquals(
-            "CREATE OR REPLACE STAGE ${buildSnowflakeStageName(tableName)}\n    FILE_FORMAT = ${buildSnowflakeFormatName(tableName.namespace)};",
+            "CREATE OR REPLACE STAGE $stagingTableName\n    FILE_FORMAT = $fileFormat;",
             sql
         )
     }
@@ -288,9 +304,10 @@ new_record."_airbyte_generation_id"
     fun testGeneratePutInStage() {
         val tableName = TableName(namespace = "namespace", name = "name")
         val tempFilePath = "/some/file/path.csv"
+        val stagingTableName = snowflakeSqlNameUtils.fullyQualifiedStageName(tableName)
         val sql = snowflakeDirectLoadSqlGenerator.putInStage(tableName, tempFilePath)
         assertEquals(
-            "PUT 'file://$tempFilePath' @${buildSnowflakeStageName(tableName)}\nAUTO_COMPRESS = TRUE\nOVERWRITE = TRUE",
+            "PUT 'file://$tempFilePath' @$stagingTableName\nAUTO_COMPRESS = TRUE\nOVERWRITE = TRUE",
             sql
         )
     }
@@ -298,9 +315,12 @@ new_record."_airbyte_generation_id"
     @Test
     fun testGenerateCopyFromStage() {
         val tableName = TableName(namespace = "namespace", name = "name")
+        val targetTableName = snowflakeSqlNameUtils.fullyQualifiedName(tableName)
+        val stagingTableName = snowflakeSqlNameUtils.fullyQualifiedStageName(tableName)
+        val fileFormat = snowflakeSqlNameUtils.fullyQualifiedFormatName(tableName.namespace)
         val sql = snowflakeDirectLoadSqlGenerator.copyFromStage(tableName)
         assertEquals(
-            "COPY INTO ${tableName.toPrettyString(quote=QUOTE)}\nFROM @${buildSnowflakeStageName(tableName)}\nFILE_FORMAT = ${buildSnowflakeFormatName(tableName.namespace)}\nON_ERROR = 'ABORT_STATEMENT'\nPURGE = TRUE;",
+            "COPY INTO $targetTableName\nFROM @$stagingTableName\nFILE_FORMAT = $fileFormat\nON_ERROR = 'ABORT_STATEMENT'\nPURGE = TRUE;",
             sql
         )
     }
@@ -381,6 +401,7 @@ new_record."_airbyte_generation_id"
                 columnUtils = columnUtils,
                 uuidGenerator = uuidGenerator,
                 snowflakeConfiguration = snowflakeConfiguration,
+                snowflakeSqlNameUtils = snowflakeSqlNameUtils,
             )
 
         val primaryKey = listOf(listOf("id"))
@@ -581,7 +602,7 @@ new_record."_airbyte_generation_id"
         val targetTableName = TableName(namespace = "namespace", name = "target")
         val sql = snowflakeDirectLoadSqlGenerator.swapTableWith(sourceTableName, targetTableName)
         assertEquals(
-            "ALTER TABLE ${sourceTableName.toPrettyString(quote = QUOTE)} SWAP WITH ${targetTableName.toPrettyString(quote = QUOTE)};",
+            "ALTER TABLE ${snowflakeSqlNameUtils.fullyQualifiedName(sourceTableName)} SWAP WITH ${snowflakeSqlNameUtils.fullyQualifiedName(targetTableName)}",
             sql
         )
     }
@@ -604,15 +625,15 @@ new_record."_airbyte_generation_id"
 
         assertEquals(
             setOf(
-                """ALTER TABLE "namespace"."name" ADD COLUMN "col1" TEXT;""",
-                """ALTER TABLE "namespace"."name" DROP COLUMN "col2";""",
-                """ALTER TABLE "namespace"."name" ADD COLUMN "col3_${uuid}" TEXT;""",
-                """UPDATE "namespace"."name" SET "col3_${uuid}" = CAST("col3" AS TEXT);""",
-                """ALTER TABLE "namespace"."name"
+                """ALTER TABLE "test_database"."namespace"."name" ADD COLUMN "col1" TEXT;""",
+                """ALTER TABLE "test_database"."namespace"."name" DROP COLUMN "col2";""",
+                """ALTER TABLE "test_database"."namespace"."name" ADD COLUMN "col3_${uuid}" TEXT;""",
+                """UPDATE "test_database"."namespace"."name" SET "col3_${uuid}" = CAST("col3" AS TEXT);""",
+                """ALTER TABLE "test_database"."namespace"."name"
                 RENAME COLUMN "col3" TO "col3_${uuid}_backup";""".trimIndent(),
-                """ALTER TABLE "namespace"."name"
+                """ALTER TABLE "test_database"."namespace"."name"
                 RENAME COLUMN "col3_${uuid}" TO "col3";""".trimIndent(),
-                """ALTER TABLE "namespace"."name" DROP COLUMN "col3_${uuid}_backup";"""
+                """ALTER TABLE "test_database"."namespace"."name" DROP COLUMN "col3_${uuid}_backup";"""
             ),
             sql
         )
