@@ -20,7 +20,7 @@
     },
     {
       "stream": {
-        "name": "channel_cards_a1",
+        "name": "channel_cards_a2",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"]
       },
@@ -56,7 +56,7 @@
     },
     {
       "stream": {
-        "name": "channel_end_screens_a1",
+        "name": "channel_end_screens_a2",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"]
       },
@@ -83,7 +83,7 @@
     },
     {
       "stream": {
-        "name": "channel_sharing_service_a1",
+        "name": "channel_sharing_service_a2",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"]
       },

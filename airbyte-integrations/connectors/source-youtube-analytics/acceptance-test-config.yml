@@ -19,10 +19,10 @@ tests:
       timeout_seconds: 1200
       empty_streams:
         - channel_annotations_a2
-        - channel_cards_a1
+        - channel_cards_a2
         - channel_demographics_a1
-        - channel_end_screens_a1
-        - channel_sharing_service_a1
+        - channel_end_screens_a2
+        - channel_sharing_service_a2
         - channel_province_a3
         - playlist_basic_a2
         - playlist_combined_a2
