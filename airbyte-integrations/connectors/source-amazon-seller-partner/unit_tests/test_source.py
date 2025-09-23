@@ -76,6 +76,7 @@ def connector_config_without_start_date():
     }
 
 
+@freeze_time("2017-02-25T00:00:00Z")
 def test_check_connection_with_orders_stop_iteration(requests_mock, connector_config_with_report_options):
     requests_mock.register_uri(
         "POST",
@@ -96,6 +97,7 @@ def test_check_connection_with_orders_stop_iteration(requests_mock, connector_co
     assert result.message is None
 
 
+@freeze_time("2017-02-25T00:00:00Z")
 def test_check_connection_with_orders(requests_mock, connector_config_with_report_options):
     requests_mock.register_uri(
         "POST",

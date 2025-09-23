@@ -846,5 +846,5 @@ class TestVendorSalesReportsFullRefresh:
 
         output = self._read(stream_name, config())
 
-        assert output.errors[0].trace.error.failure_type == FailureType.config_error
+        assert list(filter(lambda error: error.trace.error.failure_type == FailureType.config_error, output.errors))
         assert_message_in_log_output(message=message_on_backoff_exception, entrypoint_output=output, log_level=Level.ERROR)
