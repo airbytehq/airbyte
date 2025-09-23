@@ -153,7 +153,7 @@ class PostgresSourceJdbcUnsplittableCursorIncrementalPartition(
                     )
                 }
             val zippedUpperBound: List<Pair<DataField, JsonNode>> =
-                upperBound?.let { checkpointColumns.zip(listOf(it)) } ?: listOf()
+                upperBound.let { checkpointColumns.zip(listOf(it)) }
             val upperBoundDisj: List<WhereClauseNode> =
                 zippedUpperBound.mapIndexed { idx: Int, (leqCol: DataField, leqValue: JsonNode) ->
                     val lastLeaf: WhereClauseLeafNode =
