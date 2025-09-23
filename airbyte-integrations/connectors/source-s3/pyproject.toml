@@ -20,7 +20,7 @@ python = "^3.10,<3.12"
 pytz = "^2024.2"
 wcmatch = "^10.0"
 dill = "^0.3.4"
-transformers = "^4.38.2"
+transformers = "^4.53.0"
 urllib3 = "<2"
 airbyte-cdk = {extras = ["file-based"], version = "^7.0.4"}
 pendulum = "^3.0.0"
