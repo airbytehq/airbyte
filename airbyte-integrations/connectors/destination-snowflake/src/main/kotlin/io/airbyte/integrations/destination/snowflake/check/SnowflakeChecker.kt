@@ -65,6 +65,7 @@ class SnowflakeChecker(
             )
         runBlocking {
             try {
+                snowflakeAirbyteClient.useDatabase(snowflakeConfiguration.database)
                 snowflakeAirbyteClient.createNamespace(outputSchema)
                 snowflakeAirbyteClient.createTable(
                     stream = destinationStream,
