@@ -172,24 +172,27 @@ fun NativeRecordPayload.toProtobuf(
     valueBuilder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder
 ): AirbyteRecordMessageProtobuf.Builder {
     return recordMessageBuilder.apply {
-        // We use toSortedMap() to ensure that the order is consistent
-        // Since protobuf has no field name the contract with destination is that
-        // field are alphabetically ordered.
-        this@toProtobuf.toSortedMap().onEachIndexed { index, entry ->
-            @Suppress("UNCHECKED_CAST")
-            setData(
-                index,
-                entry.value.fieldValue?.let {
-                    (entry.value.jsonEncoder.toProtobufEncoder() as ProtoEncoder<Any>).encode(
-                        valueBuilder.clear(),
-                        when (entry.value.jsonEncoder) {
-                            // For arrays we use the value of its json string.
-                            is ArrayEncoder<*> -> entry.value.encode().toString()
-                            else -> entry.value.fieldValue!!
-                        }
-                    )
-                }
-            )
-        }
+        schema // TODO:check here
+            .sortedBy { it.id }
+            .forEachIndexed { index, field ->
+                // We use toSortedMap() to ensure that the order is consistent
+                // Since protobuf has no field name the contract with destination is that
+                // field are alphabetically ordered.
+                @Suppress("UNCHECKED_CAST")
+                setData(
+                    index,
+                    this@toProtobuf[field.id]?.fieldValue?.let {
+                        (this@toProtobuf[field.id]!!.jsonEncoder.toProtobufEncoder() as ProtoEncoder<Any>).encode(
+                            valueBuilder.clear(),
+                            when (this@toProtobuf[field.id]!!.jsonEncoder) {
+                                is ArrayEncoder<*> -> this@toProtobuf[field.id]!!.encode()
+                                    .toString()
+
+                                else -> this@toProtobuf[field.id]!!.fieldValue!!
+                            },
+                        )
+                    },
+                )
+            }
     }
 }
