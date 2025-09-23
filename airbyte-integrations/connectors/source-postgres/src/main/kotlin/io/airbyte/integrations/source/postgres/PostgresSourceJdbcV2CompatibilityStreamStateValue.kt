@@ -48,6 +48,9 @@ data class PostgresSourceJdbcV2CompatibilityStreamStateValue(
                     filenode = v2.filenode,
                     cursors =
                         v2.incrementalState?.let {
+                            if (it.isNull || it.isEmpty) {
+                                return@let mapOf()
+                            }
                             val incrementalState =
                                 Jsons.treeToValue(
                                     it,
