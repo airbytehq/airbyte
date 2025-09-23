@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 import pytest
 from freezegun import freeze_time
 
-from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
+from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, Status, SyncMode
 from airbyte_cdk.sources.streams import Stream
 
 from .conftest import get_source
@@ -91,7 +91,9 @@ def test_check_connection_with_orders_stop_iteration(requests_mock, connector_co
     )
     config = dict(connector_config_with_report_options)
     source = get_source(config, config_path=None)
-    assert source.check_connection(logger, source._config) == (True, None)
+    result = source.check(logger, source._config) == (True, None)
+    assert result.status == Status.SUCCEEDED
+    assert result.message == None
 
 
 def test_check_connection_with_orders(requests_mock, connector_config_with_report_options):
@@ -108,7 +110,9 @@ def test_check_connection_with_orders(requests_mock, connector_config_with_repor
         json={"payload": {"Orders": [{"LastUpdateDate": "2024-06-02T00:00:00Z"}]}},
     )
     source = get_source(connector_config_with_report_options)
-    assert source.check_connection(logger, source._config) == (True, None)
+    result = source.check(logger, source._config) == (True, None)
+    assert result.status == Status.SUCCEEDED
+    assert result.message == None
 
 
 # TODO: Renable this test once this type of validation is supported
