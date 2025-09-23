@@ -9,6 +9,9 @@ import TabItem from "@theme/TabItem";
 
 Airbyte is an open source data integration platform. It helps you consolidate data from hundreds of sources into your data warehouses, data lakes, and databases.
 
+**Testing:** {{product_name_sm_oss}} and {{product_name_cloud_pro}}
+
+
 Whether you're part of a large organization managing complex data pipelines or an individual analyst consolidating data, Airbyte works for you. Airbyte offers flexibility and scalability that's easy to tailor to your specific needs, from one-off jobs to enterprise solutions.
 
 ## Airbyte Products
