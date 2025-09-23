@@ -18,5 +18,5 @@ dependencies {
     implementation("io.github.oshai:kotlin-logging-jvm:5.1.0")
     implementation("jakarta.inject:jakarta.inject-api:2.0.1")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.16.2")
-    implementation("com.kjetland:mbknor-jackson-jsonSchema_2.13:1.0.39")
+    implementation("com.kjetland:mbknor-jackson-jsonschema_2.13:1.0.39")
 }
