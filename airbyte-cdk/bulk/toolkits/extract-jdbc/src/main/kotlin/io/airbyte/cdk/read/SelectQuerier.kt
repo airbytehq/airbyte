@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.data.JsonEncoder
 import io.airbyte.cdk.data.NullCodec
 import io.airbyte.cdk.discover.EmittedField
-import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.NonEmittedField
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.JdbcFieldType
@@ -43,7 +42,7 @@ interface SelectQuerier {
 
     interface ResultRow {
         val data: NativeRecordPayload
-        val changes: Map<Field, FieldValueChange>
+        val changes: Map<EmittedField, FieldValueChange>
         val nonEmittedData: NativeRecordPayload
     }
 }
@@ -60,7 +59,7 @@ class JdbcSelectQuerier(
 
     data class ResultRow(
         override val data: NativeRecordPayload = mutableMapOf(),
-        override var changes: MutableMap<Field, FieldValueChange> = mutableMapOf(),
+        override var changes: MutableMap<EmittedField, FieldValueChange> = mutableMapOf(),
         override var nonEmittedData: NativeRecordPayload = mutableMapOf(),
     ) : SelectQuerier.ResultRow
 
