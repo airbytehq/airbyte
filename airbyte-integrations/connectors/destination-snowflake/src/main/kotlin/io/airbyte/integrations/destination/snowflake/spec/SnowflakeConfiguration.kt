@@ -22,7 +22,6 @@ data class SnowflakeConfiguration(
     val internalTableDataset: String,
     val jdbcUrlParams: String?,
     val retentionPeriodDays: Int,
-    val useMergeForUpsert: Boolean
 ) : DestinationConfiguration()
 
 sealed interface AuthTypeConfiguration
@@ -78,8 +77,7 @@ class SnowflakeConfigurationFactory :
                     pojo.internalTableDataset!!
                 },
             jdbcUrlParams = pojo.jdbcUrlParams,
-            retentionPeriodDays = pojo.retentionPeriodDays ?: 1,
-            useMergeForUpsert = pojo.useMergeForUpsert ?: false,
+            retentionPeriodDays = pojo.retentionPeriodDays ?: 1
         )
     }
 }
