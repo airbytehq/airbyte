@@ -375,7 +375,7 @@ def test_stream_slice_dates(config, expected_start_base, expected_end_base, stre
         expected_end = expected_end_base
 
     # Generate and verify stream slices
-    slices = list(stream.stream_slices(sync_mode=SyncMode.full_refresh, stream_state={}))
+    slices = list(map(lambda partition: partition.to_slice(), stream.generate_partitions()))
     assert len(slices) > 0, f"No slices generated for stream '{stream_name}'"
     first_slice = slices[0]
     last_slice = slices[-1]
