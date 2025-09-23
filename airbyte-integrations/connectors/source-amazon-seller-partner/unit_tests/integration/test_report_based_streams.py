@@ -460,7 +460,7 @@ class TestFullRefresh:
 
         output = self._read(stream_name, config())
 
-        assert output.errors[0].trace.error.failure_type == FailureType.config_error
+        assert output.errors[-2].trace.error.failure_type == FailureType.config_error
         assert_message_in_log_output(message=warning_message, entrypoint_output=output, log_level=Level.ERROR)
 
 
