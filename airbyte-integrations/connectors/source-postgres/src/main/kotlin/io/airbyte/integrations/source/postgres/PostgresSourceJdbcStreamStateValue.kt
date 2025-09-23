@@ -43,13 +43,15 @@ data class PostgresSourceJdbcStreamStateValue(
         fun cursorIncrementalCheckpoint(
             cursor: DataField,
             cursorCheckpoint: JsonNode,
+            filenode: Filenode?,
         ): OpaqueStateValue =
             when (cursorCheckpoint.isNull) {
                 true -> Jsons.nullNode()
                 false ->
                     Jsons.valueToTree(
                         PostgresSourceJdbcStreamStateValue(
-                            cursors = mapOf(cursor.id to cursorCheckpoint)
+                            cursors = mapOf(cursor.id to cursorCheckpoint),
+                            filenode = filenode,
                         )
                     )
             }
