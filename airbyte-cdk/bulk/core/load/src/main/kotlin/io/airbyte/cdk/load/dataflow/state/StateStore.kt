@@ -36,7 +36,10 @@ class StateStore(
         if (states.isEmpty()) return null
 
         val key = states.firstKey()
-        if (key.id != stateSequence.get()) return null
+        if (key.id != stateSequence.get()) {
+            log.info { "Out of order state: ${key.id}, Expected: ${stateSequence.get()}" }
+            return null
+        }
         if (!histogramStore.isComplete(key)) return null
 
         stateSequence.incrementAndGet()
