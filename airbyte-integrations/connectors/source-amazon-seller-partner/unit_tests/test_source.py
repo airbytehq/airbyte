@@ -7,10 +7,10 @@ import logging
 from datetime import datetime, timedelta
 
 import pytest
+from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 from freezegun import freeze_time
 
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, Status, SyncMode
-from airbyte_cdk.sources.streams import Stream
 
 from .conftest import get_source
 
@@ -91,9 +91,9 @@ def test_check_connection_with_orders_stop_iteration(requests_mock, connector_co
     )
     config = dict(connector_config_with_report_options)
     source = get_source(config, config_path=None)
-    result = source.check(logger, source._config) == (True, None)
+    result = source.check(logger, source._config)
     assert result.status == Status.SUCCEEDED
-    assert result.message == None
+    assert result.message is None
 
 
 def test_check_connection_with_orders(requests_mock, connector_config_with_report_options):
@@ -110,9 +110,9 @@ def test_check_connection_with_orders(requests_mock, connector_config_with_repor
         json={"payload": {"Orders": [{"LastUpdateDate": "2024-06-02T00:00:00Z"}]}},
     )
     source = get_source(connector_config_with_report_options)
-    result = source.check(logger, source._config) == (True, None)
+    result = source.check(logger, source._config)
     assert result.status == Status.SUCCEEDED
-    assert result.message == None
+    assert result.message is None
 
 
 # TODO: Renable this test once this type of validation is supported
@@ -134,7 +134,7 @@ def test_check_connection_with_orders(requests_mock, connector_config_with_repor
 
 def test_streams(connector_config_without_start_date):
     for stream in get_source(connector_config_without_start_date).streams(connector_config_without_start_date):
-        assert isinstance(stream, Stream)
+        assert isinstance(stream, DefaultStream)
 
 
 def test_streams_count(connector_config_without_start_date, monkeypatch):
