@@ -445,6 +445,7 @@ WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configura
 
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                         |
 |:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.3.0   | 2025-09-26 | [63731](https://github.com/airbytehq/airbyte/pull/63731) | Migrate source mssql from old CDK to new CDK |
 | 4.2.6 | 2025-10-15 | [68091](https://github.com/airbytehq/airbyte/pull/68091) | Fix CDC table filtering to prevent unintended tables from being synced when using schema-level CDC |
 | 4.2.5 | 2025-08-13 | [64905](https://github.com/airbytehq/airbyte/pull/64905) | bumping up java cdk version for mssql |
 | 4.2.4 | 2025-07-03 | [62491](https://github.com/airbytehq/airbyte/pull/62491) | Improve Debezium performance by configuring the poll interval parameter. |
