@@ -13,7 +13,6 @@ const connectorList = require("./src/remark/connectorList");
 const specDecoration = require("./src/remark/specDecoration");
 const docMetaTags = require("./src/remark/docMetaTags");
 const addButtonToTitle = require("./src/remark/addButtonToTitle");
-const variableInterpolation = require("./src/remark/variableInterpolation");
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
@@ -22,6 +21,14 @@ const config = {
   },
   markdown: {
     mermaid: true,
+    preprocessor: ({filePath, fileContent}) => {
+      return fileContent
+        .replace(/\{\{product_name_sm_oss\}\}/g, 'Core')
+        .replace(/\{\{product_name_sm_enterprise\}\}/g, 'Self-Managed Enterprise')
+        .replace(/\{\{product_name_cloud_standard\}\}/g, 'Standard')
+        .replace(/\{\{product_name_cloud_pro\}\}/g, 'Pro')
+        .replace(/\{\{product_name_cloud_enterprise\}\}/g, 'Enterprise Flex');
+    },
   },
   themes: [
     "@docusaurus/theme-mermaid",
@@ -99,17 +106,7 @@ const config = {
           sidebarPath: require.resolve("./sidebar.js"),
           editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
           path: "../docs/home",
-          beforeDefaultRemarkPlugins: [
-            specDecoration, 
-            connectorList,
-            [variableInterpolation, { variables: {
-              product_name_sm_oss: "Core",
-              product_name_sm_enterprise: "Self-Managed Enterprise", 
-              product_name_cloud_standard: "Standard",
-              product_name_cloud_pro: "Pro",
-              product_name_cloud_enterprise: "Enterprise Flex",
-            }}],
-          ], // use before-default plugins so TOC rendering picks up inserted headings
+          beforeDefaultRemarkPlugins: [specDecoration, connectorList], // use before-default plugins so TOC rendering picks up inserted headings
           remarkPlugins: [
             docsHeaderDecoration,
             enterpriseDocsHeaderInformation,
@@ -149,13 +146,6 @@ const config = {
           productInformation,
           docMetaTags,
           addButtonToTitle,
-          [variableInterpolation, { variables: {
-            product_name_sm_oss: "Core",
-            product_name_sm_enterprise: "Self-Managed Enterprise",
-            product_name_cloud_standard: "Standard",
-            product_name_cloud_pro: "Pro",
-            product_name_cloud_enterprise: "Enterprise Flex",
-          }}],
         ],
       },
     ],
@@ -174,13 +164,6 @@ const config = {
           productInformation,
           docMetaTags,
           addButtonToTitle,
-          [variableInterpolation, { variables: {
-            product_name_sm_oss: "Core",
-            product_name_sm_enterprise: "Self-Managed Enterprise",
-            product_name_cloud_standard: "Standard",
-            product_name_cloud_pro: "Pro",
-            product_name_cloud_enterprise: "Enterprise Flex",
-          }}],
         ],
       },
     ],
@@ -199,13 +182,6 @@ const config = {
           productInformation,
           docMetaTags,
           addButtonToTitle,
-          [variableInterpolation, { variables: {
-            product_name_sm_oss: "Core",
-            product_name_sm_enterprise: "Self-Managed Enterprise",
-            product_name_cloud_standard: "Standard",
-            product_name_cloud_pro: "Pro",
-            product_name_cloud_enterprise: "Enterprise Flex",
-          }}],
         ],
       },
     ],
@@ -224,13 +200,6 @@ const config = {
           enterpriseDocsHeaderInformation,
           productInformation,
           docMetaTags,
-          [variableInterpolation, { variables: {
-            product_name_sm_oss: "Core",
-            product_name_sm_enterprise: "Self-Managed Enterprise",
-            product_name_cloud_standard: "Standard",
-            product_name_cloud_pro: "Pro",
-            product_name_cloud_enterprise: "Enterprise Flex",
-          }}],
         ],
       },
     ],
@@ -272,11 +241,6 @@ const config = {
     markpromptProjectKey:
       process.env.MARKPROMPT_PROJECT_KEY ||
       "sk_test_cbPFAzAxUvafRj6l1yjzrESu0bRpzQGK",
-    product_name_sm_oss: "Core",
-    product_name_sm_enterprise: "Self-Managed Enterprise",
-    product_name_cloud_standard: "Standard",
-    product_name_cloud_pro: "Pro",
-    product_name_cloud_enterprise: "Enterprise Flex",
   },
   clientModules: [
     require.resolve("./src/scripts/cloudStatus.js"),
