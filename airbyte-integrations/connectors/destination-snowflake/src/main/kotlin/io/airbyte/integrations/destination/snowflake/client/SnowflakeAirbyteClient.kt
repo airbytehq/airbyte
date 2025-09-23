@@ -55,10 +55,6 @@ class SnowflakeAirbyteClient(
             null
         }
 
-    suspend fun useDatabase(database: String) {
-        execute(sqlGenerator.useDatabase(database))
-    }
-
     override suspend fun createNamespace(namespace: String) {
         // Create the schema if it doesn't exist
         execute(sqlGenerator.createNamespace(namespace))
