@@ -114,7 +114,7 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
         """Airbyte will use this dataset for various internal tables. In legacy raw tables mode, the raw tables will be stored in this dataset. Defaults to "airbyte_internal".""",
     )
     // for backwards compatibility, the JSON property is still called raw_data_dataset.
-    @get:JsonProperty("raw_data_dataset")
+    @get:JsonProperty("raw_data_schema")
     @get:JsonSchemaInject(json = """{"group": "advanced", "order": 8}""")
     val internalTableDataset: String? = null
 
@@ -135,15 +135,6 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
     @get:JsonProperty("retention_period_days")
     @get:JsonSchemaInject(json = """{"group": "advanced", "order": 10}""")
     val retentionPeriodDays: Int? = 1
-
-    @get:JsonSchemaTitle("Use MERGE for De-duplication of final tables")
-    @get:JsonPropertyDescription(
-        """Use MERGE for de-duplication of final tables. This option no effect if Final tables are disabled or Sync mode is not DEDUPE""",
-    )
-    // for backwards compatibility, the JSON property is still called raw_data_dataset.
-    @get:JsonProperty("use_merge_for_upsert")
-    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 11}""")
-    val useMergeForUpsert: Boolean? = false
 }
 
 @JsonTypeInfo(
