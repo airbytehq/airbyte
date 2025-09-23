@@ -34,7 +34,7 @@ class DataFlowPipelineTest {
         val testScope = TestScope(this.testScheduler)
         val aggregationDispatcher = StandardTestDispatcher(testScope.testScheduler)
         val flushDispatcher = StandardTestDispatcher(testScope.testScheduler)
-        
+
         // Given
         val initialIO = mockk<DataFlowStageIO>()
         val input = flowOf(initialIO)
@@ -68,7 +68,7 @@ class DataFlowPipelineTest {
 
         // When
         pipeline.run()
-        
+
         // Advance the test scheduler to process all coroutines
         testScope.testScheduler.advanceUntilIdle()
 
