@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.snowflake.db
 
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingUtil
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.mockk.every
 import io.mockk.mockk
@@ -28,7 +29,11 @@ internal class SnowflakeFinalTableNameGeneratorTest {
                 every { name } returns streamName
             }
         val tableName = generator.getTableName(streamDescriptor)
-        assertEquals(streamName.toSnowflakeCompatibleName(), tableName.name)
+        assertEquals(
+            TypingDedupingUtil.concatenateRawTableName(internalNamespace, streamName)
+                .toSnowflakeCompatibleName(),
+            tableName.name
+        )
         assertEquals(internalNamespace.toSnowflakeCompatibleName(), tableName.namespace)
     }
 

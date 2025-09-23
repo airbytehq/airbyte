@@ -9,6 +9,7 @@ import io.airbyte.cdk.load.data.Transformations.Companion.toAlphanumericAndUnder
 import io.airbyte.cdk.load.orchestration.db.ColumnNameGenerator
 import io.airbyte.cdk.load.orchestration.db.FinalTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingUtil
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import jakarta.inject.Singleton
 import java.util.Locale
@@ -22,7 +23,16 @@ class SnowflakeFinalTableNameGenerator(private val config: SnowflakeConfiguratio
             namespace =
                 (config.internalTableSchema ?: (streamDescriptor.namespace ?: config.schema))
                     .toSnowflakeCompatibleName(),
-            name = streamDescriptor.name.toSnowflakeCompatibleName(),
+            name =
+                if (config.internalTableSchema.isNullOrBlank()) {
+                    streamDescriptor.name.toSnowflakeCompatibleName()
+                } else {
+                    TypingDedupingUtil.concatenateRawTableName(
+                            config.internalTableSchema,
+                            streamDescriptor.name
+                        )
+                        .toSnowflakeCompatibleName()
+                },
         )
 }
 
