@@ -28,8 +28,10 @@ import io.airbyte.cdk.load.message.ProtocolMessageDeserializer
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Value
+import io.micronaut.context.env.Environment
 import jakarta.inject.Named
 import jakarta.inject.Singleton
+import java.io.InputStream
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -56,21 +58,23 @@ class InputBeanFactory {
         }
 
     @Requires(property = "airbyte.destination.core.data-channel.medium", value = "SOCKET")
+    @Requires(notEnv = [Environment.TEST])
     @Named("inputStreams")
     @Singleton
     fun socketStreams(
         sockets: List<ClientSocket>,
-    ) = ConnectorInputStreams(sockets.map(ClientSocket::openInputStream))
+    ): List<InputStream> = sockets.map(ClientSocket::openInputStream)
 
     @Requires(property = "airbyte.destination.core.data-channel.medium", value = "STDIO")
+    @Requires(notEnv = [Environment.TEST])
     @Named("inputStreams")
     @Singleton
-    fun stdInStreams() = ConnectorInputStreams(listOf(System.`in`))
+    fun stdInStreams(): List<InputStream> = listOf(System.`in`)
 
     @Named("messageFlows")
     @Singleton
     fun messageFlows(
-        @Named("inputStreams") inputStreams: ConnectorInputStreams,
+        @Named("inputStreams") inputStreams: List<InputStream>,
         @Value("\${airbyte.destination.core.data-channel.format}")
         dataChannelFormat: DataChannelFormat,
         deserializer: ProtocolMessageDeserializer,
