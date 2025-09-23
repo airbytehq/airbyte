@@ -8,10 +8,6 @@ plugins {
 airbyteBulkConnector {
     core = 'load'
     toolkits = ['load-db']
-<<<<<<< HEAD
-=======
-    cdk = 'local'
->>>>>>> de43987e2bc (Revert "Revert clickhouse changes inadvertently merged in. (#66148)")
 }
 
 java {
