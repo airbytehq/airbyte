@@ -12,7 +12,7 @@ Faster sync speed is an initiative that drastically improves Airbyte's sync spee
 
 ### How much faster is Airbyte?
 
-As a general rule, sync speeds for supported connectors are between 4 and 10 times faster than they were historically, and maintain these levels even with more economical resource allocation. 
+As a general rule, sync speeds for supported connectors are between 4 and 10 times faster than they were historically, and maintain these levels even with more economical resource allocation.
 
 The exact performance gains you can expect depend on the connectors in use and, if you're self-managing Airbyte, your own infrastructure. Specifically, the CPU type for Kubernetes nodes offers an opportunity for significant performance gains and resource savings.
 
