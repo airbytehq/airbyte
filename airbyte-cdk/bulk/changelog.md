@@ -1,9 +1,13 @@
+## Version 0.1.40
+
+Add gradle task to bump CDK version + add changelog entry
+
 ## Version 0.1.39
 
 **Load CDK**
 
 * **Changed:** Minor fixes with stream completion logic + proto conversion
-* 
+
 ## Version 0.1.38
 
 **Load CDK**
