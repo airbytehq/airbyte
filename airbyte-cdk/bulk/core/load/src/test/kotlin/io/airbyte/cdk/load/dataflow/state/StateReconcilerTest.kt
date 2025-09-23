@@ -50,7 +50,7 @@ class StateReconcilerTest {
     fun setUp() {
         testScope = TestScope(StandardTestDispatcher())
         reconcilerScope = CoroutineScope(testScope.coroutineContext)
-        
+
         stateReconciler =
             StateReconciler(
                 stateStore,
@@ -146,7 +146,7 @@ class StateReconcilerTest {
         every { emittedStatsStore.getStats() } returns statsList
 
         every { consumer.accept(any<AirbyteMessage>()) } just Runs
-        
+
         // Create a new reconciler with the test scope for this test
         val localReconciler =
             StateReconciler(
@@ -156,7 +156,7 @@ class StateReconcilerTest {
                 this.backgroundScope,
                 interval.toJavaDuration(),
             )
-        
+
         // When
         localReconciler.run()
 
