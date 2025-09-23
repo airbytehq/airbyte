@@ -80,7 +80,7 @@ Using this feature requires additional configuration, when creating the source. 
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                   |
 | :------ | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------- |
-| 0.2.5 | 2025-09-17 | TBD | Upgrade ClickHouse JDBC driver from 0.3.2-patch10 to 0.9.0 |
+| 0.2.5 | 2025-09-17 | [66482](https://github.com/airbytehq/airbyte/pull/66482) | Upgrade ClickHouse JDBC driver from 0.3.2-patch10 to 0.9.0 |
 | 0.2.4 | 2025-07-10 | [62912](https://github.com/airbytehq/airbyte/pull/62912) | Convert to new gradle build flow |
 | 0.2.3 | 2024-12-18 | [49901](https://github.com/airbytehq/airbyte/pull/49901) | Use a base image: airbyte/java-connector-base:1.0.0 |
 | 0.2.2 | 2024-02-13 | [35235](https://github.com/airbytehq/airbyte/pull/35235) | Adopt CDK 0.20.4 |
