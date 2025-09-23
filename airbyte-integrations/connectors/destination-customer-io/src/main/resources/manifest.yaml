@@ -54,12 +54,12 @@ discover:
         type: Upsert
       schema:
         type: object
-        required:
-          - person_email
         additionalProperties: true
         properties:
           person_email:
             type: string
+      matching_keys:
+        - - person_email
     - type: StaticCatalogOperation
       object_name: person_event
       destination_import_mode:
