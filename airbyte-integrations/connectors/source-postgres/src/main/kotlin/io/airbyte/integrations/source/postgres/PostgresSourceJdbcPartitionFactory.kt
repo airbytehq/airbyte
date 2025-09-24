@@ -164,9 +164,7 @@ class PostgresSourceJdbcPartitionFactory(
                         selectQueryGenerator,
                         streamState,
                         lowerBound =
-                            listOf(
                                 Jsons.textNode(streamState.maybeCtid!!.toString()),
-                            ),
                         upperBound = null,
                         filenode,
                     )
@@ -180,6 +178,7 @@ class PostgresSourceJdbcPartitionFactory(
                         listOf(
                             FILENODE_NO_CHANGE,
                             NO_FILENODE,
+                            FILENODE_NEW_STREAM,
                         )
             ) {
                 handler.accept(ResetStream(stream.id))
@@ -190,7 +189,7 @@ class PostgresSourceJdbcPartitionFactory(
                 PostgresSourceJdbcSplittableSnapshotWithCursorPartition(
                     selectQueryGenerator,
                     streamState,
-                    lowerBound = listOf(Jsons.textNode(streamState.maybeCtid.toString())),
+                    lowerBound = Jsons.textNode(streamState.maybeCtid.toString()),
                     upperBound = null,
                     cursor,
                     cursorCheckpoint,
@@ -208,6 +207,7 @@ class PostgresSourceJdbcPartitionFactory(
                         cursorLowerBound = cursorCheckpoint,
                         isLowerBoundIncluded = true,
                         cursorUpperBound = streamState.cursorUpperBound,
+                        filenode
                     )
                 }
                     ?: PostgresSourceJdbcUnsplittableCursorIncrementalPartition(
@@ -243,7 +243,7 @@ class PostgresSourceJdbcPartitionFactory(
             log.info { "Querying filenode for stream ${streamState.stream.id}" }
             jdbcConnectionFactory.get().use { connection ->
                 val sql =
-                    "SELECT pg_relation_filenode('${streamState.stream.namespace}.${streamState.stream.name}')"
+                    """SELECT pg_relation_filenode('"${streamState.stream.namespace}"."${streamState.stream.name}"')"""
                 val stmt: PreparedStatement = connection.prepareStatement(sql)
                 val rs = stmt.executeQuery()
                 if (rs.next()) {
@@ -339,13 +339,13 @@ class PostgresSourceJdbcPartitionFactory(
         val inners: List<Ctid> = splitPointValues.map { Ctid.of(it.ctid!!) }
         val lbCtid: Ctid? =
             lowerBound?.let {
-                if (it.isNotEmpty()) {
+                if (it.isNull.not() && it.isEmpty.not()) {
                     Ctid.of(it[0].asText())
                 } else null
             }
         val ubCtid: Ctid? =
             upperBound?.let {
-                if (it.isNotEmpty()) {
+                if (it.isNull.not() && it.isEmpty.not()) {
                     Ctid.of(it[0].asText())
                 } else null
             }
@@ -355,8 +355,8 @@ class PostgresSourceJdbcPartitionFactory(
             PostgresSourceJdbcSplittableSnapshotPartition(
                 selectQueryGenerator,
                 streamState,
-                lowerBound?.let { listOf(Jsons.textNode(it.toString())) },
-                upperBound?.let { listOf(Jsons.textNode(it.toString())) },
+                lowerBound?.let { Jsons.textNode(it.toString()) },
+                upperBound?.let { Jsons.textNode(it.toString()) },
                 splitPointValues.first().filenode,
             )
         }
@@ -368,13 +368,13 @@ class PostgresSourceJdbcPartitionFactory(
         val inners: List<Ctid> = splitPointValues.map { Ctid.of(it.ctid!!) }
         val lbCtid: Ctid? =
             lowerBound?.let {
-                if (it.isNotEmpty()) {
+                if (it.isNull.not() && it.isEmpty.not()) {
                     Ctid.of(it[0].asText())
                 } else null
             }
         val ubCtid: Ctid? =
             upperBound?.let {
-                if (it.isNotEmpty()) {
+                if (it.isNull.not() && it.isEmpty.not()) {
                     Ctid.of(it[0].asText())
                 } else null
             }
@@ -384,8 +384,8 @@ class PostgresSourceJdbcPartitionFactory(
             PostgresSourceJdbcSplittableSnapshotWithCursorPartition(
                 selectQueryGenerator,
                 streamState,
-                lowerBound?.let { listOf(Jsons.textNode(it.toString())) },
-                upperBound?.let { listOf(Jsons.textNode(it.toString())) },
+                lowerBound?.let { Jsons.textNode(it.toString()) },
+                upperBound?.let { Jsons.textNode(it.toString()) },
                 cursor,
                 cursorUpperBound,
                 splitPointValues.first().filenode,

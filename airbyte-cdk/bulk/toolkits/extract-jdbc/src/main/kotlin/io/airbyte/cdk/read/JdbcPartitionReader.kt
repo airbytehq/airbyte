@@ -4,7 +4,7 @@ package io.airbyte.cdk.read
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.output.DataChannelMedium.SOCKET
 import io.airbyte.cdk.output.DataChannelMedium.STDIO
@@ -27,7 +27,7 @@ sealed class JdbcPartitionReader<P : JdbcPartition<*>>(
 ) : PartitionReader {
 
     lateinit var outputMessageRouter: OutputMessageRouter
-    lateinit var outputRoute: ((NativeRecordPayload, Map<Field, FieldValueChange>?) -> Unit)
+    lateinit var outputRoute: ((NativeRecordPayload, Map<EmittedField, FieldValueChange>?) -> Unit)
 
     protected var partitionId: String = generatePartitionId(4)
     val streamState: JdbcStreamState<*> = partition.streamState

@@ -11,6 +11,8 @@ import io.airbyte.cdk.data.JsonEncoder
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.jdbc.JdbcFieldType
 import io.airbyte.cdk.jdbc.JdbcGetter
+import io.airbyte.cdk.output.sockets.ConnectorJsonEncoder
+import io.airbyte.cdk.output.sockets.ProtoEncoder
 import java.sql.ResultSet
 
 // In Postgres, hstore is like Map<String, String>. We output it as stringified json.
@@ -35,9 +37,22 @@ object HstoreGetter : JdbcGetter<Map<String, String?>> {
     }
 }
 
-object HstoreEncoder : JsonEncoder<Map<String, String?>> {
+object HstoreEncoder : JsonEncoder<Map<String, String?>>, ConnectorJsonEncoder {
     override fun encode(decoded: Map<String, String?>): JsonNode {
         return TextNode(nullValuePreservingObjectMapper.writeValueAsString(decoded))
+    }
+
+    override fun toProtobufEncoder(): ProtoEncoder<*> {
+        return HstoreProtoEncoder()
+    }
+}
+
+class HstoreProtoEncoder : ProtoEncoder<Map<String, String?>> {
+    override fun encode(
+        builder: io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteValueProtobuf.Builder,
+        decoded: Map<String, String?>,
+    ): io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteValueProtobuf.Builder {
+        return builder.setString(nullValuePreservingObjectMapper.writeValueAsString(decoded))
     }
 }
 

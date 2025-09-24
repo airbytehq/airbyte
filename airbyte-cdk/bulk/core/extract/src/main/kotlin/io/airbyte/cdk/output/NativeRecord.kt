@@ -28,7 +28,7 @@ import io.airbyte.cdk.data.OffsetTimeCodec
 import io.airbyte.cdk.data.ShortCodec
 import io.airbyte.cdk.data.TextCodec
 import io.airbyte.cdk.data.UrlCodec
-import io.airbyte.cdk.discover.FieldOrMetaField
+import io.airbyte.cdk.discover.DataOrMetaField
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteRecordMessageProtobuf
@@ -40,6 +40,7 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.time.OffsetTime
+import java.util.Base64
 
 // A value of a field along with its encoder
 class FieldValueEncoder<R>(val fieldValue: R?, val jsonEncoder: JsonEncoder<in R>) {
@@ -59,8 +60,14 @@ fun NativeRecordPayload.toJson(parentNode: ObjectNode = Jsons.objectNode()): Obj
     return parentNode
 }
 
+interface ConnectorJsonEncoder {
+    fun toProtobufEncoder(): ProtoEncoder<*>
+}
+
+
 fun <T> JsonEncoder<T>.toProtobufEncoder(): ProtoEncoder<*> {
     return when (this) {
+        is ConnectorJsonEncoder -> toProtobufEncoder()
         is LongCodec, -> longProtoEncoder
         is IntCodec, -> intProtoEncoder
         is TextCodec, -> textProtoEncoder
@@ -136,7 +143,7 @@ val byteProtoEncoder =
     generateProtoEncoder<Byte> { builder, value -> builder.setInteger(value.toLong()) }
 val binaryProtoEncoder =
     generateProtoEncoder<ByteBuffer> { builder, decoded ->
-        builder.setString(java.util.Base64.getEncoder().encodeToString(decoded.array()))
+        builder.setString(Base64.getEncoder().encodeToString(decoded.array()))
     }
 val shortProtoEncoder =
     generateProtoEncoder<Short> { builder, value -> builder.setInteger(value.toLong()) }
@@ -167,13 +174,35 @@ val anyProtoEncoder = textProtoEncoder
 val arrayProtoEncoder = textProtoEncoder
 
 fun NativeRecordPayload.toProtobuf(
-    schema: Set<FieldOrMetaField>,
+    schema: Set<DataOrMetaField>,
     recordMessageBuilder: AirbyteRecordMessageProtobuf.Builder,
     valueBuilder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder
 ): AirbyteRecordMessageProtobuf.Builder {
     return recordMessageBuilder.apply {
-        // We use toSortedMap() to ensure that the order is consistent
-        // Since protobuf has no field name the contract with destination is that
+        schema // TODO:check here
+            .sortedBy { it.id }
+            .forEachIndexed { index, field ->
+                // We use toSortedMap() to ensure that the order is consistent
+                // Since protobuf has no field name the contract with destination is that
+                // field are alphabetically ordered.
+                @Suppress("UNCHECKED_CAST")
+                setData(
+                    index,
+                    this@toProtobuf[field.id]?.fieldValue?.let {
+                        (this@toProtobuf[field.id]!!.jsonEncoder.toProtobufEncoder() as ProtoEncoder<Any>).encode(
+                            valueBuilder.clear(),
+                            when (this@toProtobuf[field.id]!!.jsonEncoder) {
+                                is ArrayEncoder<*> -> this@toProtobuf[field.id]!!.encode()
+                                    .toString()
+
+                                else -> this@toProtobuf[field.id]!!.fieldValue!!
+                            },
+                        )
+                    },
+                )
+            }
+
+        /*// Since protobuf has no field name the contract with destination is that
         // field are alphabetically ordered.
         this@toProtobuf.toSortedMap().onEachIndexed { index, entry ->
             @Suppress("UNCHECKED_CAST")
@@ -190,6 +219,6 @@ fun NativeRecordPayload.toProtobuf(
                     )
                 }
             )
-        }
+        }*/
     }
 }
