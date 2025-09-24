@@ -101,7 +101,7 @@ class PostgresSourceJdbcPartitionFactory(
             )
     }
 
-    val TidRangeScanCapableDBServer: Boolean by
+    val tidRangeScanCapableDBServer: Boolean by
         lazy(mode = LazyThreadSafetyMode.SYNCHRONIZED) {
             isTidRangeScanCapableDBServer(JdbcConnectionFactory(config))
         }
@@ -118,7 +118,7 @@ class PostgresSourceJdbcPartitionFactory(
         }
 
         val filenode: Filenode? =
-            when (TidRangeScanCapableDBServer) {
+            when (tidRangeScanCapableDBServer) {
                 true -> getStreamFilenode(streamState)
                 false -> null
             }
