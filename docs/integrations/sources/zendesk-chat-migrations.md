@@ -1,3 +1,5 @@
+import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
+
 # Zendesk Chat Migration Guide
 
 ## Upgrading to 1.0.0
@@ -8,4 +10,4 @@ You can find your Zendesk subdomain by following instructions [here](https://sup
 
 ## Connector upgrade guide
 
-[Help with upgrades](/platform/managing-airbyte/connector-updates).
+<MigrationGuide />

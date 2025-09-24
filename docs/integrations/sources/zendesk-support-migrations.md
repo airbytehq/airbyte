@@ -1,3 +1,5 @@
+import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
+
 # Zendesk Support Migration Guide
 
 ## Upgrading to 4.0.0
@@ -6,34 +8,7 @@ The pagination strategy has been changed from `Offset` to `Cursor-Based`. It is 
 
 ### Connector upgrade guide
 
-[Help with upgrades](/platform/managing-airbyte/connector-updates).
-
-### Refresh affected schemas and data
-
-1. Select **Connections** in the main nav bar.
-    - Select the connection(s) affected by the update.
-2. Select the **Replication** tab.
-    - Select **Refresh source schema**.
-    - Select **OK**.
-
-:::note
-Any detected schema changes will be listed for your review.
-:::
-
-3. Select **Save changes** at the bottom of the page.
-    - Ensure the **Refresh affected streams** option is checked.
-
-:::note
-Depending on destination type you may not be prompted to refresh your data. See below.
-:::
-
-4. Select **Save connection**.
-
-:::note
-This will refresh the data in your destination and initiate a fresh sync.
-:::
-
-For more information on refreshes your data in Airbyte, see [this page](https://docs.airbyte.com/operator-guides/refreshes).
+<MigrationGuide />
 
 ## Upgrading to 3.0.0
 
@@ -44,38 +19,6 @@ For more information on refreshes your data in Airbyte, see [this page](https://
 | Stream Name        | Added Fields            |
 | -------------------|------------------------ |
 | `TicketMetrics`    | `generated_timestamp`   |
-
-## Connector upgrade guide
-
-[Help with upgrades](/platform/managing-airbyte/connector-updates).
-
-### Refresh affected schemas and data
-
-1. Select **Connections** in the main nav bar.
-    - Select the connection(s) affected by the update.
-2. Select the **Replication** tab.
-    - Select **Refresh source schema**.
-    - Select **OK**.
-
-:::note
-Any detected schema changes will be listed for your review.
-:::
-
-3. Select **Save changes** at the bottom of the page.
-    - Ensure the **Refresh affected streams** option is checked.
-
-:::note
-Depending on destination type you may not be prompted to refresh your data. See below.
-:::
-
-4. Select **Save connection**.
-
-:::note
-This will refresh the data in your destination and initiate a fresh sync.
-:::
-
-For more information on refreshes your data in Airbyte, see [this page](https://docs.airbyte.com/operator-guides/refreshes).
-
 
 ## Upgrading to 2.0.0
 

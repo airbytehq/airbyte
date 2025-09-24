@@ -1,3 +1,5 @@
+Review the following information to prepare for an execute your upgrade.
+
 ### Review the changelog
 
 Before updating a connector, review the changelog to understand the changes and their potential impact on your existing connections. Find the changelog for any connector by navigating to the bottom of the documentation for that connector. Major version releases also include a migration guide.
@@ -44,7 +46,7 @@ Update each instance of the connector separately. If you have multiple instances
 
 4. Follow the prompt to confirm you are ready to upgrade to the new version.
 
-### Clear data and refresh affected schemas
+### Clear data from affected streams
 
 After upgrading a connector with a breaking change, you must refresh affected schemas and clear your data.
 
@@ -60,6 +62,6 @@ After upgrading a connector with a breaking change, you must refresh affected sc
 
 6. Click **Save changes**
 
-7. [Clear the data in your destination](/platform/operator-guides/clear).
+7. [Clear the data](/platform/operator-guides/clear) for the streams affected by this upgrade.
 
 Once the clear is complete, you can begin syncing your data again as usual.
