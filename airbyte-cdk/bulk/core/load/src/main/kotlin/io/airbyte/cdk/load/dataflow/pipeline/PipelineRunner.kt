@@ -47,9 +47,9 @@ class PipelineRunner(
         log.info { "Disabling state reconciler..." }
         reconciler.disable()
 
-        if (terminalException != null) {
-            log.info { "Destination Pipeline Completed — Exceptionally: $terminalException" }
-            throw terminalException as Throwable
+        terminalException?.let {
+            log.error(terminalException) { "Destination Pipeline Completed — Exceptionally" }
+            throw it
         }
 
         log.info { "Flushing final states..." }
