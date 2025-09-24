@@ -311,5 +311,4 @@ Google Cloud Storage (GCS) supports following file formats:
 | 0.2.0   | 2023-06-26 | [27725](https://github.com/airbytehq/airbyte/pull/27725) | License Update: Elv2                                                                                                                                                   |
 | 0.1.0   | 2023-02-16 | [23186](https://github.com/airbytehq/airbyte/pull/23186) | New Source: GCS                                                                                                                                                        |
 
-
 </details>
