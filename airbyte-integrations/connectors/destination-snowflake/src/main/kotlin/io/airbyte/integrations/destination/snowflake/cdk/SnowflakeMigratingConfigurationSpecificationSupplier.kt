@@ -93,7 +93,8 @@ internal fun migrateRootLevelPassword(json: String): String {
 @Singleton
 @Replaces(ConfigurationSpecificationSupplier::class)
 class SnowflakeMigratingConfigurationSpecificationSupplier(
-    @param:Value("\${${CONNECTOR_CONFIG_PREFIX}.json}") private val jsonPropertyValue: String? = null,
+    @param:Value("\${${CONNECTOR_CONFIG_PREFIX}.json}")
+    private val jsonPropertyValue: String? = null,
 ) : Supplier<SnowflakeSpecification> {
     val specificationJavaClass: Class<SnowflakeSpecification> = SnowflakeSpecification::class.java
 

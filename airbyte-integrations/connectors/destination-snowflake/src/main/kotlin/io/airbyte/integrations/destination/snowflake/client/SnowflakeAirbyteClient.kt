@@ -196,11 +196,11 @@ class SnowflakeAirbyteClient(
         columnsInStream: Set<ColumnDefinition>
     ): Triple<Set<ColumnDefinition>, Set<ColumnDefinition>, Set<ColumnDefinition>> {
         val addedColumns =
-            columnsInStream.filter { it.name !in columnsInDb.map { col ->  col.name } }.toSet()
+            columnsInStream.filter { it.name !in columnsInDb.map { col -> col.name } }.toSet()
         val deletedColumns =
-            columnsInDb.filter { it.name !in columnsInStream.map { col ->  col.name  } }.toSet()
+            columnsInDb.filter { it.name !in columnsInStream.map { col -> col.name } }.toSet()
         val commonColumns =
-            columnsInStream.filter { it.name in columnsInDb.map { col ->  col.name  } }.toSet()
+            columnsInStream.filter { it.name in columnsInDb.map { col -> col.name } }.toSet()
         val modifiedColumns =
             commonColumns
                 .filter {
