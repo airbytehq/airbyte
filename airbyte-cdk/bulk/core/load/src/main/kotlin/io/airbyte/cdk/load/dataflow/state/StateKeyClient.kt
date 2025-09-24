@@ -55,8 +55,10 @@ class SelfDescribingStateKeyClient : StateKeyClient {
 class InferredStateKeyClient(val catalog: DestinationCatalog) : StateKeyClient {
     // sequence of all state messages
     private val globalCounter = AtomicLong(1)
+
     // sequence of state messages per stream
     private var streamCounters = ConcurrentHashMap<DestinationStream.Descriptor, AtomicLong>()
+
     // caches keys / strings for perf reasons
     private val keyCache = ConcurrentHashMap<DestinationStream.Descriptor, PartitionKey>()
 
@@ -100,6 +102,10 @@ class InferredStateKeyClient(val catalog: DestinationCatalog) : StateKeyClient {
     internal fun partitionKeyForDesc(desc: DestinationStream.Descriptor): PartitionKey {
         val counter = streamCounters.computeIfAbsent(desc) { AtomicLong(1) }
         val streamOrdinal = counter.get()
-        return PartitionKey("${desc.namespace}-${desc.name}-$streamOrdinal")
+        return if (desc.namespace == null) {
+            PartitionKey("${desc.name}-$streamOrdinal")
+        } else {
+            PartitionKey("${desc.namespace}-${desc.name}-$streamOrdinal")
+        }
     }
 }
