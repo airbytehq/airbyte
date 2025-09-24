@@ -11,6 +11,7 @@ import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteMessageProtobuf
 import java.io.InputStream
 import kotlin.NoSuchElementException
 
+/** Performs non-cooperative blocking IO. */
 class ProtobufDataChannelReader(
     private val factory: DestinationMessageFactory,
     private val bufferSize: Int = 16 * 1024,

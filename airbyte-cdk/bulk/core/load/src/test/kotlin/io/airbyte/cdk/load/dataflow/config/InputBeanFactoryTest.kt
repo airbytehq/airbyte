@@ -26,6 +26,7 @@ import io.mockk.mockk
 import io.mockk.unmockkAll
 import io.mockk.verify
 import java.io.ByteArrayInputStream
+import kotlinx.coroutines.CoroutineDispatcher
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -59,6 +60,10 @@ class InputBeanFactoryTest {
     @MockK private lateinit var emittedStatsStore: EmittedStatsStore
 
     @MockK private lateinit var committedStatsStore: CommittedStatsStore
+
+    @MockK private lateinit var aggregationDispatcher: CoroutineDispatcher
+
+    @MockK private lateinit var flushDispatcher: CoroutineDispatcher
 
     private var memoryAndParallelismConfig = MemoryAndParallelismConfig()
 
@@ -239,6 +244,8 @@ class InputBeanFactoryTest {
                 stateHistogramStore = stateHistogramStore,
                 statsStore = committedStatsStore,
                 memoryAndParallelismConfig = memoryAndParallelismConfig,
+                aggregationDispatcher = aggregationDispatcher,
+                flushDispatcher = flushDispatcher,
             )
 
         // Then
@@ -274,6 +281,8 @@ class InputBeanFactoryTest {
                 stateHistogramStore = stateHistogramStore,
                 statsStore = committedStatsStore,
                 memoryAndParallelismConfig = memoryAndParallelismConfig,
+                aggregationDispatcher = aggregationDispatcher,
+                flushDispatcher = flushDispatcher,
             )
 
         // Then
@@ -324,6 +333,8 @@ class InputBeanFactoryTest {
                 stateHistogramStore = stateHistogramStore,
                 statsStore = committedStatsStore,
                 memoryAndParallelismConfig = memoryAndParallelismConfig,
+                aggregationDispatcher = aggregationDispatcher,
+                flushDispatcher = flushDispatcher,
             )
 
         // Then
