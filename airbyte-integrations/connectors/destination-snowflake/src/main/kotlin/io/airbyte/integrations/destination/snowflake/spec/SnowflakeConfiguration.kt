@@ -78,11 +78,10 @@ class SnowflakeConfigurationFactory :
                 if (pojo.internalTableDataset.isNullOrBlank()) {
                     DbConstants.DEFAULT_RAW_TABLE_NAMESPACE
                 } else {
-                    @Suppress("UNNECESSARY_NOT_NULL_ASSERTION")
-                    pojo.internalTableDataset!!
+                    @Suppress("UNNECESSARY_NOT_NULL_ASSERTION") pojo.internalTableDataset!!
                 },
             jdbcUrlParams = pojo.jdbcUrlParams,
-            retentionPeriodDays = pojo.retentionPeriodDays  ?: 1
+            retentionPeriodDays = pojo.retentionPeriodDays ?: 1
         )
     }
 }
