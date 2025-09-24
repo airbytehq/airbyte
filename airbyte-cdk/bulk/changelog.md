@@ -1,6 +1,12 @@
-## Version 0.1.41
+## Version 0.1.42
 
 Datflow Load CDK: Fixes hang when one of many parallel pipelines fails. Organizes thread pools. 
+
+## Version 0.1.41
+
+**Extract CDK**
+
+* **Changed:** Prevent a devision by zero error when a table cannot be partitioned.
 
 ## Version 0.1.40
 
