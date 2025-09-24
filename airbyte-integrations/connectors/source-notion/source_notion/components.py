@@ -2,6 +2,7 @@
 import copy
 import logging
 from dataclasses import dataclass
+from datetime import timedelta
 from functools import partial
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
@@ -12,6 +13,7 @@ from airbyte_cdk.sources.declarative.retrievers.simple_retriever import FULL_REF
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 from airbyte_cdk.sources.streams.core import StreamData
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_format, ab_datetime_now
 
 
 # maximum block hierarchy recursive request depth
@@ -77,7 +79,8 @@ class NotionDataFeedFilter(RecordFilter):
         Filters a list of records, returning only those with a cursor_value greater than the current value in state.
         """
         current_state = stream_state.get("last_edited_time", {})
-        cursor_value = self._get_filter_date(self.config.get("start_date"), current_state)
+        default_start_date = ab_datetime_format(ab_datetime_now() - timedelta(days=730), "%Y-%m-%dT%H:%M:%S.%fZ")
+        cursor_value = self._get_filter_date(self.config.get("start_date", default_start_date), current_state)
         if cursor_value:
             return [record for record in records if record["last_edited_time"] >= cursor_value]
         return records
@@ -120,7 +123,7 @@ class BlocksRetriever(SimpleRetriever):
             logger.info("Reached max block depth limit. Exiting.")
             return
 
-        for stream_data in super().read_records(records_schema, stream_slice):
+        for sequence_number, stream_data in enumerate(super().read_records(records_schema, stream_slice)):
             if stream_data.data.get("has_children"):
                 self.current_block_depth += 1
                 child_stream_slice = StreamSlice(
@@ -128,5 +131,8 @@ class BlocksRetriever(SimpleRetriever):
                     cursor_slice=stream_slice.cursor_slice,
                 )
                 yield from self.read_records(records_schema, child_stream_slice)
+
+            if "parent" in stream_data:
+                stream_data["parent"]["sequence_number"] = sequence_number
 
             yield stream_data
