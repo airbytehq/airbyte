@@ -33,7 +33,6 @@ import io.airbyte.integrations.destination.clickhouse.fixtures.ClickhouseExpecte
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfigurationFactory
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseSpecificationOss
-import io.airbyte.integrations.destination.clickhouse.write.load.ClickhouseDataCleaner.clickhouseSpecification
 import io.airbyte.integrations.destination.clickhouse.write.load.ClientProvider.getClient
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.nio.file.Files
@@ -145,18 +144,7 @@ class ClickhouseDataDumper(
         spec: ConfigurationSpecification,
         stream: DestinationStream
     ): List<OutputRecord> {
-        val config =
-            ClickhouseConfigurationFactory()
-                .makeWithOverrides(
-                    spec as ClickhouseSpecificationOss,
-                    mapOf(
-                        "hostname" to "localhost",
-                        "port" to (ClickhouseContainerHelper.getPort()?.toString())!!,
-                        "protocol" to "http",
-                        "username" to ClickhouseContainerHelper.getUsername()!!,
-                        "password" to ClickhouseContainerHelper.getPassword()!!,
-                    )
-                )
+        val config = configProvider(spec)
         val client = getClient(config)
 
         val isDedup = stream.importType is Dedupe
