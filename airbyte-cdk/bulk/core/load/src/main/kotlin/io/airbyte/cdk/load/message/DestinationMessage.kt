@@ -618,7 +618,7 @@ data class StreamCheckpoint(
     )
 
     override val checkpoints: List<Checkpoint>
-        get() = listOf()
+        get() = emptyList()
 
     override fun updateStats(
         destinationStats: Stats?,
