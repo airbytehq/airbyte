@@ -70,7 +70,7 @@ public class LegacyInfiniteFeedSource extends BaseConnector implements Source {
         }
 
         i.incrementAndGet();
-        LOGGER.info("source emitting record {}:", i.get());
+//        LOGGER.info("source emitting record {}:", i.get());
         return new AirbyteMessage()
             .withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage()
