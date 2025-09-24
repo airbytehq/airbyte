@@ -842,11 +842,15 @@ class CustomGAQuerySchemaLoader(SchemaLoader):
         last_exception = None
 
         for attempt in range(max_tries):
+
+
+            headers = self._get_request_headers()
+
             try:
                 logger.debug(f"`GET` request for field metadata for {field}, url: {url}, attempt: {attempt + 1}/{max_tries}")
                 response = requests.get(
                     url=url,
-                    headers=self._get_request_headers(),
+                    headers=headers,
                 )
 
                 response.raise_for_status()
