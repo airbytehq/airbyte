@@ -44,6 +44,8 @@ class SnowflakeConfigurationFactory :
         val authTypeConfig =
             when (pojo.credentials) {
                 is KeyPairAuthSpecification -> {
+                    // Despite what Kotlin thinks, this cast is necessary
+                    @Suppress("USELESS_CAST")
                     val keyPairAuthSpec = pojo.credentials as KeyPairAuthSpecification
                     KeyPairAuthConfiguration(
                         keyPairAuthSpec.privateKey,
@@ -51,6 +53,8 @@ class SnowflakeConfigurationFactory :
                     )
                 }
                 is UsernamePasswordAuthSpecification -> {
+                    // Despite what Kotlin thinks, this cast is necessary
+                    @Suppress("USELESS_CAST")
                     val usernamePasswordAuthSpec =
                         pojo.credentials as UsernamePasswordAuthSpecification
                     UsernamePasswordAuthConfiguration(usernamePasswordAuthSpec.password)
