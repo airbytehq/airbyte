@@ -21,13 +21,38 @@ sealed interface AirbyteSchemaType {
 }
 
 data class ArrayAirbyteSchemaType(
-    val item: AirbyteSchemaType,
+    val item: AirbyteSchemaType? = null,
 ) : AirbyteSchemaType {
-    override fun asJsonSchemaType(): JsonSchemaType =
-        JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.ARRAY)
-            .withItems(item.asJsonSchemaType())
-            .build()
+    override fun asJsonSchemaType(): JsonSchemaType {
+        val builder = JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.ARRAY)
+        if (item != null) {
+            builder.withItems(item.asJsonSchemaType())
+        }
+        return builder.build()
+    }
 }
+
+//data class ObjectAirbyteSchemaType(
+//    val properties: LinkedHashMap<String, AirbyteSchemaType>? = null,
+//    val additionalProperties: Boolean = true,
+//    val required: List<String> = emptyList<String>()
+//) : AirbyteSchemaType {
+//    override fun asJsonSchemaType(): JsonSchemaType {
+//        val builder = JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.OBJECT)
+//        properties?.forEach { (name, fieldType) ->
+//            builder.withLegacyAirbyteTypeProperty(name)
+//        }
+//        return builder.build()
+//    }
+//}
+//
+//data class UnknownAirbyteSchemaType(
+//    val schema: JsonNode
+//) : AirbyteSchemaType {
+//    override fun asJsonSchemaType(): JsonSchemaType {
+//        return JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.OBJECT).build()
+//    }
+//}
 
 enum class LeafAirbyteSchemaType(
     private val jsonSchemaType: JsonSchemaType,
