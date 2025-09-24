@@ -511,11 +511,6 @@ internal class SnowflakeAirbyteClientTest {
         assertEquals("COL3", modified.first().name)
     }
 
-
-
-
-
-
     @Test
     fun testCreateNamespaceWithNetworkFailure() {
         val namespace = "test_namespace"
@@ -528,8 +523,7 @@ internal class SnowflakeAirbyteClientTest {
 
         every { dataSource.connection } returns connection
         every { connection.createStatement() } returns statement
-        every { statement.executeQuery(sql) } throws
-            SQLException("Network error", "08S01")
+        every { statement.executeQuery(sql) } throws SQLException("Network error", "08S01")
         every { statement.close() } just Runs
         every { connection.close() } just Runs
 

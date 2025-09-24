@@ -372,21 +372,23 @@ internal class SnowflakeValueCoercerTest {
         val zeroInt = IntegerValue(0.toBigInteger())
         val zeroFloat = NumberValue(0.0.toBigDecimal())
 
-        val intValue = EnrichedAirbyteValue(
-            abValue = zeroInt,
-            type = IntegerType,
-            name = "zero_int",
-            changes = mutableListOf(),
-            airbyteMetaField = null,
-        )
+        val intValue =
+            EnrichedAirbyteValue(
+                abValue = zeroInt,
+                type = IntegerType,
+                name = "zero_int",
+                changes = mutableListOf(),
+                airbyteMetaField = null,
+            )
 
-        val floatValue = EnrichedAirbyteValue(
-            abValue = zeroFloat,
-            type = NumberType,
-            name = "zero_float",
-            changes = mutableListOf(),
-            airbyteMetaField = null,
-        )
+        val floatValue =
+            EnrichedAirbyteValue(
+                abValue = zeroFloat,
+                type = NumberType,
+                name = "zero_float",
+                changes = mutableListOf(),
+                airbyteMetaField = null,
+            )
 
         assertEquals(intValue, coercer.validate(intValue))
         assertEquals(floatValue, coercer.validate(floatValue))
@@ -461,35 +463,47 @@ internal class SnowflakeValueCoercerTest {
     @Test
     fun testDeeplyNestedObject() {
         // Test deeply nested object structure
-        val deepObject = ObjectValue(
-            LinkedHashMap<String, AirbyteValue>().apply {
-                put("level1", ObjectValue(
-                    LinkedHashMap<String, AirbyteValue>().apply {
-                        put("level2", ObjectValue(
+        val deepObject =
+            ObjectValue(
+                LinkedHashMap<String, AirbyteValue>().apply {
+                    put(
+                        "level1",
+                        ObjectValue(
                             LinkedHashMap<String, AirbyteValue>().apply {
-                                put("level3", ObjectValue(
-                                    LinkedHashMap<String, AirbyteValue>().apply {
-                                        put("level4", StringValue("deep value"))
-                                    }
-                                ))
+                                put(
+                                    "level2",
+                                    ObjectValue(
+                                        LinkedHashMap<String, AirbyteValue>().apply {
+                                            put(
+                                                "level3",
+                                                ObjectValue(
+                                                    LinkedHashMap<String, AirbyteValue>().apply {
+                                                        put("level4", StringValue("deep value"))
+                                                    }
+                                                )
+                                            )
+                                        }
+                                    )
+                                )
                             }
-                        ))
-                    }
-                ))
-            }
-        )
+                        )
+                    )
+                }
+            )
 
-        val airbyteValue = EnrichedAirbyteValue(
-            abValue = deepObject,
-            type = ObjectType(
-                properties = LinkedHashMap(),
-                additionalProperties = true,
-                required = emptyList()
-            ),
-            name = "deep_object",
-            changes = mutableListOf(),
-            airbyteMetaField = null,
-        )
+        val airbyteValue =
+            EnrichedAirbyteValue(
+                abValue = deepObject,
+                type =
+                    ObjectType(
+                        properties = LinkedHashMap(),
+                        additionalProperties = true,
+                        required = emptyList()
+                    ),
+                name = "deep_object",
+                changes = mutableListOf(),
+                airbyteMetaField = null,
+            )
 
         val result = coercer.validate(airbyteValue)
         // Should pass as long as total size is within limits
@@ -499,17 +513,16 @@ internal class SnowflakeValueCoercerTest {
     @Test
     fun testLargeArrayOfNumbers() {
         // Test array with many elements
-        val largeArray = ArrayValue(
-            (1..1000).map { IntegerValue(it.toBigInteger()) }
-        )
+        val largeArray = ArrayValue((1..1000).map { IntegerValue(it.toBigInteger()) })
 
-        val airbyteValue = EnrichedAirbyteValue(
-            abValue = largeArray,
-            type = ArrayType(FieldType(IntegerType, false)),
-            name = "large_array",
-            changes = mutableListOf(),
-            airbyteMetaField = null,
-        )
+        val airbyteValue =
+            EnrichedAirbyteValue(
+                abValue = largeArray,
+                type = ArrayType(FieldType(IntegerType, false)),
+                name = "large_array",
+                changes = mutableListOf(),
+                airbyteMetaField = null,
+            )
 
         val result = coercer.validate(airbyteValue)
         // Should pass as long as total size is within limits

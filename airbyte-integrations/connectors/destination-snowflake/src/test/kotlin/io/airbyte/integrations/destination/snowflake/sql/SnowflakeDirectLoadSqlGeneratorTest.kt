@@ -641,10 +641,7 @@ new_record."_airbyte_generation_id"
         val tableName = "name"
         val sql = snowflakeDirectLoadSqlGenerator.describeTable(schemaName, tableName)
 
-        assertEquals(
-            """DESCRIBE TABLE "test_database"."namespace"."name"""",
-            sql
-        )
+        assertEquals("""DESCRIBE TABLE "test_database"."namespace"."name"""", sql)
     }
 
     @Test
@@ -691,12 +688,8 @@ new_record."_airbyte_generation_id"
 
         every { columnUtils.columnsAndTypes(any(), columnNameMapping) } returns emptyList()
 
-        val sql = snowflakeDirectLoadSqlGenerator.createTable(
-            stream,
-            tableName,
-            columnNameMapping,
-            false
-        )
+        val sql =
+            snowflakeDirectLoadSqlGenerator.createTable(stream, tableName, columnNameMapping, false)
 
         // The dangerous SQL characters should be sanitized to underscores
         assertEquals(
@@ -713,12 +706,8 @@ new_record."_airbyte_generation_id"
 
         every { columnUtils.columnsAndTypes(any(), columnNameMapping) } returns emptyList()
 
-        val sql = snowflakeDirectLoadSqlGenerator.createTable(
-            stream,
-            tableName,
-            columnNameMapping,
-            false
-        )
+        val sql =
+            snowflakeDirectLoadSqlGenerator.createTable(stream, tableName, columnNameMapping, false)
 
         // The dangerous SQL characters should be sanitized to underscores
         assertEquals(
@@ -729,7 +718,8 @@ new_record."_airbyte_generation_id"
 
     @Test
     fun testDropTableWithSQLInjectionAttempt() {
-        val tableName = TableName(namespace = "namespace", name = "table'; DELETE FROM users WHERE '1'='1")
+        val tableName =
+            TableName(namespace = "namespace", name = "table'; DELETE FROM users WHERE '1'='1")
         val sql = snowflakeDirectLoadSqlGenerator.dropTable(tableName)
 
         // The dangerous SQL characters should be sanitized to underscores
@@ -742,7 +732,8 @@ new_record."_airbyte_generation_id"
     @Test
     fun testRenameTableWithSQLInjectionAttempt() {
         val sourceTableName = TableName(namespace = "namespace", name = "table")
-        val targetTableName = TableName(namespace = "namespace", name = "new_table\"; DROP TABLE important; --")
+        val targetTableName =
+            TableName(namespace = "namespace", name = "new_table\"; DROP TABLE important; --")
         val sql = snowflakeDirectLoadSqlGenerator.renameTable(sourceTableName, targetTableName)
 
         // The dangerous SQL characters should be sanitized to underscores
@@ -754,7 +745,11 @@ new_record."_airbyte_generation_id"
 
     @Test
     fun testCountTableWithSQLInjectionAttempt() {
-        val tableName = TableName(namespace = "namespace", name = "table\" UNION SELECT * FROM sensitive_data --")
+        val tableName =
+            TableName(
+                namespace = "namespace",
+                name = "table\" UNION SELECT * FROM sensitive_data --"
+            )
         val sql = snowflakeDirectLoadSqlGenerator.countTable(tableName)
 
         // The dangerous SQL characters should be sanitized to underscores
@@ -773,18 +768,11 @@ new_record."_airbyte_generation_id"
 
         every { columnUtils.columnsAndTypes(any(), columnNameMapping) } returns emptyList()
 
-        val sql = snowflakeDirectLoadSqlGenerator.createTable(
-            stream,
-            tableName,
-            columnNameMapping,
-            false
-        )
+        val sql =
+            snowflakeDirectLoadSqlGenerator.createTable(stream, tableName, columnNameMapping, false)
 
         // Reserved keywords should be properly quoted
-        assertEquals(
-            "CREATE TABLE \"test_database\".\"SELECT\".\"WHERE\" (\n    \n)",
-            sql
-        )
+        assertEquals("CREATE TABLE \"test_database\".\"SELECT\".\"WHERE\" (\n    \n)", sql)
     }
 
     @Test
@@ -793,10 +781,7 @@ new_record."_airbyte_generation_id"
         val sql = snowflakeDirectLoadSqlGenerator.dropTable(tableName)
 
         // Reserved keywords should be properly quoted
-        assertEquals(
-            """DROP TABLE IF EXISTS "test_database"."GROUP"."ORDER"""",
-            sql
-        )
+        assertEquals("""DROP TABLE IF EXISTS "test_database"."GROUP"."ORDER"""", sql)
     }
 
     @Test
@@ -817,10 +802,7 @@ new_record."_airbyte_generation_id"
         val sql = snowflakeDirectLoadSqlGenerator.createNamespace("TABLE")
 
         // Reserved keyword should be properly quoted
-        assertEquals(
-            """CREATE SCHEMA IF NOT EXISTS "test_database"."TABLE"""",
-            sql
-        )
+        assertEquals("""CREATE SCHEMA IF NOT EXISTS "test_database"."TABLE"""", sql)
     }
 
     @Test
@@ -830,9 +812,6 @@ new_record."_airbyte_generation_id"
         val sql = snowflakeDirectLoadSqlGenerator.describeTable(schemaName, tableName)
 
         // Reserved keywords should be properly quoted
-        assertEquals(
-            """DESCRIBE TABLE "test_database"."DATABASE"."SCHEMA"""",
-            sql
-        )
+        assertEquals("""DESCRIBE TABLE "test_database"."DATABASE"."SCHEMA"""", sql)
     }
 }

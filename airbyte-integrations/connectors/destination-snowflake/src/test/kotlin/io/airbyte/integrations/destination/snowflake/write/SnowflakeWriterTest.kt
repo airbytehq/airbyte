@@ -212,8 +212,7 @@ internal class SnowflakeWriterTest {
             )
         val catalog = TableCatalog(mapOf(stream to tableInfo))
         val snowflakeClient = mockk<SnowflakeAirbyteClient>()
-        val stateGatherer =
-            mockk<DatabaseInitialStatusGatherer<DirectLoadInitialStatus>>()
+        val stateGatherer = mockk<DatabaseInitialStatusGatherer<DirectLoadInitialStatus>>()
         val writer =
             SnowflakeWriter(
                 names = catalog,
@@ -228,11 +227,7 @@ internal class SnowflakeWriterTest {
             snowflakeClient.createNamespace(tableName.namespace.toSnowflakeCompatibleName())
         } throws RuntimeException("Network connection failed")
 
-        assertThrows(RuntimeException::class.java) {
-            runBlocking {
-                writer.setup()
-            }
-        }
+        assertThrows(RuntimeException::class.java) { runBlocking { writer.setup() } }
     }
 
     @Test
@@ -247,8 +242,7 @@ internal class SnowflakeWriterTest {
             )
         val catalog = TableCatalog(mapOf(stream to tableInfo))
         val snowflakeClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
-        val stateGatherer =
-            mockk<DatabaseInitialStatusGatherer<DirectLoadInitialStatus>>()
+        val stateGatherer = mockk<DatabaseInitialStatusGatherer<DirectLoadInitialStatus>>()
         val writer =
             SnowflakeWriter(
                 names = catalog,
@@ -259,15 +253,10 @@ internal class SnowflakeWriterTest {
             )
 
         // Simulate failure while gathering initial status
-        coEvery {
-            stateGatherer.gatherInitialStatus(catalog)
-        } throws RuntimeException("Failed to query table status")
+        coEvery { stateGatherer.gatherInitialStatus(catalog) } throws
+            RuntimeException("Failed to query table status")
 
-        assertThrows(RuntimeException::class.java) {
-            runBlocking {
-                writer.setup()
-            }
-        }
+        assertThrows(RuntimeException::class.java) { runBlocking { writer.setup() } }
 
         // Verify namespace creation was still attempted
         coVerify(exactly = 1) {
@@ -279,14 +268,16 @@ internal class SnowflakeWriterTest {
     fun testCreateStreamLoaderWithMissingInitialStatus() {
         val tableName = TableName(namespace = "test-namespace", name = "test-name")
         val tableNames = TableNames(rawTableName = null, finalTableName = tableName)
-        val stream = mockk<DestinationStream> {
-            every { minimumGenerationId } returns 0L
-            every { generationId } returns 0L
-        }
-        val missingStream = mockk<DestinationStream> {
-            every { minimumGenerationId } returns 0L
-            every { generationId } returns 0L
-        }
+        val stream =
+            mockk<DestinationStream> {
+                every { minimumGenerationId } returns 0L
+                every { generationId } returns 0L
+            }
+        val missingStream =
+            mockk<DestinationStream> {
+                every { minimumGenerationId } returns 0L
+                every { generationId } returns 0L
+            }
         val tableInfo =
             TableNameInfo(
                 tableNames = tableNames,
@@ -384,8 +375,7 @@ internal class SnowflakeWriterTest {
             )
         val catalog = TableCatalog(mapOf(stream1 to tableInfo1, stream2 to tableInfo2))
         val snowflakeClient = mockk<SnowflakeAirbyteClient>()
-        val stateGatherer =
-            mockk<DatabaseInitialStatusGatherer<DirectLoadInitialStatus>>()
+        val stateGatherer = mockk<DatabaseInitialStatusGatherer<DirectLoadInitialStatus>>()
         val writer =
             SnowflakeWriter(
                 names = catalog,
@@ -396,18 +386,11 @@ internal class SnowflakeWriterTest {
             )
 
         // First namespace succeeds, second fails
-        coEvery {
-            snowflakeClient.createNamespace("namespace1")
-        } returns Unit
-        coEvery {
-            snowflakeClient.createNamespace("namespace2")
-        } throws RuntimeException("Connection timeout")
+        coEvery { snowflakeClient.createNamespace("namespace1") } returns Unit
+        coEvery { snowflakeClient.createNamespace("namespace2") } throws
+            RuntimeException("Connection timeout")
 
-        assertThrows(RuntimeException::class.java) {
-            runBlocking {
-                writer.setup()
-            }
-        }
+        assertThrows(RuntimeException::class.java) { runBlocking { writer.setup() } }
 
         // Verify both namespace creations were attempted
         coVerify(exactly = 1) { snowflakeClient.createNamespace("namespace1") }
