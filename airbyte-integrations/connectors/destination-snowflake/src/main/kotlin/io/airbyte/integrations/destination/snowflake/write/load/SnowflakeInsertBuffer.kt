@@ -34,7 +34,7 @@ class SnowflakeInsertBuffer(
 
     @VisibleForTesting internal var recordCount = 0
 
-    private var snowflakeRecordFormatter: SnowflakeRecordFormatter =
+    private val snowflakeRecordFormatter: SnowflakeRecordFormatter =
         when (snowflakeConfiguration.legacyRawTablesOnly) {
             true -> SnowflakeRawRecordFormatter(columns)
             else -> SnowflakeSchemaRecordFormatter(columns)
