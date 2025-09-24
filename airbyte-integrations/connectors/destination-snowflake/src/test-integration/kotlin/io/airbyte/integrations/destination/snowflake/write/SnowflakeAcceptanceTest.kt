@@ -50,6 +50,25 @@ class SnowflakeInsertAcceptanceTest :
     }
 }
 
+class SnowflakeInsertProtoAcceptanceTest :
+    SnowflakeAcceptanceTest(
+        configPath = CONFIG_PATH,
+        dataDumper =
+            SnowflakeDataDumper { spec ->
+                SnowflakeConfigurationFactory().make(spec as SnowflakeSpecification)
+            },
+        recordMapper = SnowflakeExpectedRecordMapper,
+        destinationCleaner = SnowflakeDataCleaner,
+        dataChannelFormat = DataChannelFormat.PROTOBUF,
+        dataChannelMedium = DataChannelMedium.SOCKET,
+        unknownTypesBehavior = UnknownTypesBehavior.NULL,
+    ) {
+    @Test
+    override fun testBasicWrite() {
+        super.testBasicWrite()
+    }
+}
+
 class SnowflakeRawInsertAcceptanceTest :
     SnowflakeAcceptanceTest(
         configPath = RAW_CONFIG_PATH,
@@ -81,6 +100,7 @@ abstract class SnowflakeAcceptanceTest(
     nullEqualsUnset: Boolean = true,
     coercesLegacyUnions: Boolean = false,
     destinationCleaner: DestinationCleaner,
+    unknownTypesBehavior: UnknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
 ) :
     BasicFunctionalityIntegrationTest(
         configContents = Files.readString(configPath),
@@ -105,7 +125,7 @@ abstract class SnowflakeAcceptanceTest(
                 numberCanBeLarge = true,
                 nestedFloatLosesPrecision = false,
             ),
-        unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
+        unknownTypesBehavior = unknownTypesBehavior,
         nullEqualsUnset = nullEqualsUnset,
         dedupChangeUsesDefault = false,
         testSpeedModeStatsEmission = true,
