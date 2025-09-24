@@ -26,7 +26,9 @@ class AggregateStage(
             outputFlow.emit(
                 DataFlowStageIO(
                     aggregate = next.value,
-                    partitionHistogram = next.partitionHistogram,
+                    partitionCountsHistogram = next.partitionCountsHistogram,
+                    partitionBytesHistogram = next.partitionBytesHistogram,
+                    mappedDesc = next.key,
                 )
             )
             next = store.removeNextComplete(rec.emittedAtMs)

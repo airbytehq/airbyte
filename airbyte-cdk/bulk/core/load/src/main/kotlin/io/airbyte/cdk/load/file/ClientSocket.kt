@@ -90,20 +90,6 @@ class ClientSocket(
         // will break tests. TODO: Anything else.
         log.info { "Socket file $socketPath connected for reading" }
 
-        val inputStream = Channels.newInputStream(openedSocket).buffered(bufferSizeBytes)
-
-        return SocketInputStream(openedSocket, inputStream)
-    }
-}
-
-class SocketInputStream(
-    private val socketChannel: SocketChannel,
-    private val inputStream: InputStream,
-) : InputStream() {
-    override fun read(): Int = inputStream.read()
-
-    override fun close() {
-        inputStream.close()
-        socketChannel.close()
+        return Channels.newInputStream(openedSocket).buffered(bufferSizeBytes)
     }
 }

@@ -84,8 +84,8 @@ class AggregateStoreTest {
     fun `acceptFor makes new entries per key`() {
         val newKey = DestinationStream.Descriptor(namespace = "test", name = "other-stream")
         val newAggregate = mockk<Aggregate>(relaxed = true)
-        every { aggregateFactory.create(newKey) } returns newAggregate
         every { aggregateFactory.create(testKey) } returns mockAggregate
+        every { aggregateFactory.create(newKey) } returns newAggregate
 
         val record1 = Fixtures.dto(partitionKey = "partition1", sizeBytes = 50, emittedAtMs = 1000L)
         val record2 = Fixtures.dto(partitionKey = "partition2", sizeBytes = 30, emittedAtMs = 2000L)
@@ -100,6 +100,8 @@ class AggregateStoreTest {
 
         val entries = aggregateStore.getAll()
         assertEquals(2, entries.size)
+        assertTrue(entries.any { it.key == testKey })
+        assertTrue(entries.any { it.key == newKey })
     }
 
     @Test
@@ -111,7 +113,8 @@ class AggregateStoreTest {
         val entry = aggregateStore.getOrCreate(testKey)
         assertEquals(1L, entry.recordCountTrigger.watermark())
         assertEquals(50L, entry.estimatedBytesTrigger.watermark())
-        assertEquals(1L, entry.partitionHistogram.get(PartitionKey("partition1")))
+        assertEquals(1L, entry.partitionCountsHistogram.get(PartitionKey("partition1")))
+        assertEquals(50L, entry.partitionBytesHistogram.get(PartitionKey("partition1")))
     }
 
     @Test
@@ -209,8 +212,10 @@ class AggregateStoreTest {
     fun `AggregateEntry isComplete should return true when record count trigger is complete`() {
         val entry =
             AggregateEntry(
+                key = Fixtures.key,
                 value = mockAggregate,
-                partitionHistogram = PartitionHistogram(),
+                partitionCountsHistogram = PartitionHistogram(),
+                partitionBytesHistogram = PartitionHistogram(),
                 stalenessTrigger = TimeTrigger(10000),
                 recordCountTrigger = SizeTrigger(10).apply { repeat(10) { increment(1) } },
                 estimatedBytesTrigger = SizeTrigger(1000)
@@ -223,8 +228,10 @@ class AggregateStoreTest {
     fun `AggregateEntry isComplete should return true when bytes trigger is complete`() {
         val entry =
             AggregateEntry(
+                key = Fixtures.key,
                 value = mockAggregate,
-                partitionHistogram = PartitionHistogram(),
+                partitionCountsHistogram = PartitionHistogram(),
+                partitionBytesHistogram = PartitionHistogram(),
                 stalenessTrigger = TimeTrigger(10000),
                 recordCountTrigger = SizeTrigger(100),
                 estimatedBytesTrigger = SizeTrigger(1000).apply { increment(1000) }
@@ -237,8 +244,10 @@ class AggregateStoreTest {
     fun `AggregateEntry isComplete should return false when neither trigger is complete`() {
         val entry =
             AggregateEntry(
+                key = Fixtures.key,
                 value = mockAggregate,
-                partitionHistogram = PartitionHistogram(),
+                partitionCountsHistogram = PartitionHistogram(),
+                partitionBytesHistogram = PartitionHistogram(),
                 stalenessTrigger = TimeTrigger(10000),
                 recordCountTrigger = SizeTrigger(100),
                 estimatedBytesTrigger = SizeTrigger(1000)
@@ -251,8 +260,10 @@ class AggregateStoreTest {
     fun `AggregateEntry isStale should delegate to time trigger`() {
         val entry =
             AggregateEntry(
+                key = Fixtures.key,
                 value = mockAggregate,
-                partitionHistogram = PartitionHistogram(),
+                partitionCountsHistogram = PartitionHistogram(),
+                partitionBytesHistogram = PartitionHistogram(),
                 stalenessTrigger = TimeTrigger(1000).apply { update(5000) },
                 recordCountTrigger = SizeTrigger(100),
                 estimatedBytesTrigger = SizeTrigger(1000)
@@ -292,6 +303,8 @@ class AggregateStoreTest {
     }
 
     object Fixtures {
+        val key = StoreKey("namespace", "name")
+
         fun dto(partitionKey: String, sizeBytes: Long, emittedAtMs: Long): RecordDTO =
             RecordDTO(
                 fields = mapOf(),
