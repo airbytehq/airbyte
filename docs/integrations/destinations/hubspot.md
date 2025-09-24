@@ -24,7 +24,7 @@ Data activation is in **early access**. Try it today with the HubSpot and Custom
 3. On the Set up the destination page, select HubSpot from the Destination tiles.
 4. Enter a name for the HubSpot connector.
 5. From the **Authentication** dropdown, OAuth authentication is available so click **Authenticate your HubSpot account** to sign in with HubSpot and authorize your account.
-   
+
    :::note HubSpot Authentication issues
    You may encounter an error during the authentication process in the popup window with the message `An invalid scope name was provided`. To resolve this, close the window and retry authentication.
    :::
@@ -80,6 +80,7 @@ Hubspot has **scopes** for each API call. Each stream is tied to a scope and wil
 
 | Version | Date       | Pull Request                                                    | Subject                                   |
 |:--------|:-----------|:----------------------------------------------------------------|:------------------------------------------|
+| 0.0.7   | 2025-09-24 | [66684](https://github.com/airbytehq/airbyte/pull/66684)        | Pin to CDK artifact                       |
 | 0.0.6   | 2025-09-09 | [65986](https://github.com/airbytehq/airbyte/pull/65986)        | Adding product object                     |
 | 0.0.5   | 2025-09-08 | [65157](https://github.com/airbytehq/airbyte/pull/65157)        | Update following breaking changes on spec |
 | 0.0.4   | 2025-08-01 | [64144](https://github.com/airbytehq/airbyte/pull/64144)        | OSS release                               |
