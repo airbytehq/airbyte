@@ -28,6 +28,7 @@ API Reference: https://docs.nexiopay.com/reference/api-reference
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.18 | 2025-09-23 | [66611](https://github.com/airbytehq/airbyte/pull/66611) | Update dependencies |
 | 0.0.17 | 2025-09-09 | [65749](https://github.com/airbytehq/airbyte/pull/65749) | Update dependencies |
 | 0.0.16 | 2025-08-23 | [65212](https://github.com/airbytehq/airbyte/pull/65212) | Update dependencies |
 | 0.0.15 | 2025-08-09 | [64690](https://github.com/airbytehq/airbyte/pull/64690) | Update dependencies |

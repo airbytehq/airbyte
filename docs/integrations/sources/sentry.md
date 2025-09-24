@@ -65,6 +65,7 @@ Please be aware: this also means that any change older than 90 days will not be 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.9.3 | 2025-09-23 | [66627](https://github.com/airbytehq/airbyte/pull/66627) | Update dependencies |
 | 0.9.2 | 2025-09-09 | [66114](https://github.com/airbytehq/airbyte/pull/66114) | Update dependencies |
 | 0.9.1 | 2025-08-24 | [65501](https://github.com/airbytehq/airbyte/pull/65501) | Update dependencies |
 | 0.9.0 | 2025-08-11 | [64879](https://github.com/airbytehq/airbyte/pull/64879) | Update events stream to use start and query params instead of filtering on source side |

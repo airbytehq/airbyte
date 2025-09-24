@@ -24,6 +24,7 @@ We can extract data from campaigns and contacts streams using this connector.
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.31 | 2025-09-23 | [66603](https://github.com/airbytehq/airbyte/pull/66603) | Update dependencies |
 | 0.0.30 | 2025-09-09 | [65737](https://github.com/airbytehq/airbyte/pull/65737) | Update dependencies |
 | 0.0.29 | 2025-08-24 | [65470](https://github.com/airbytehq/airbyte/pull/65470) | Update dependencies |
 | 0.0.28 | 2025-08-09 | [64872](https://github.com/airbytehq/airbyte/pull/64872) | Update dependencies |

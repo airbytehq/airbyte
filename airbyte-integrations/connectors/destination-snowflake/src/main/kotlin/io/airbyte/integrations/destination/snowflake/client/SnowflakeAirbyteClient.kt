@@ -135,6 +135,11 @@ class SnowflakeAirbyteClient(
         val (addedColumns, deletedColumns, modifiedColumns) =
             generateSchemaChanges(columnsInDb, columnsInStream)
 
+        /*
+         * If legacy raw tables are in use, there is nothing to ensure in schema, as raw mode
+         * uses a fixed schema that is not based on the catalog/incoming record.  Otherwise,
+         * ensure that the destination schema is in sync with any changes.
+         */
         if (
             snowflakeConfiguration.legacyRawTablesOnly != true &&
                 (addedColumns.isNotEmpty() ||
