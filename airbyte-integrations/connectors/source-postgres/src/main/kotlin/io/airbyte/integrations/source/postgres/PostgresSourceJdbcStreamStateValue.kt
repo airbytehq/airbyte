@@ -11,13 +11,13 @@ import io.airbyte.cdk.discover.DataField
 import io.airbyte.cdk.util.Jsons
 
 data class PostgresSourceJdbcStreamStateValue(
-    @JsonProperty("version") val version: Int = 2,
+    @JsonProperty("version") val version: Int = 3,
     @JsonProperty("state_type") val stateType: String = StateType.CURSOR_BASED.serialized,
     @JsonProperty("stream_name") val streamName: String = "",
     @JsonProperty("stream_namespace") val streamNamespace: String = "",
     @JsonProperty("ctid") val ctid: String? = null,
-    @JsonProperty("incremental_state") val incrementalState: JsonNode? = null,
     @JsonProperty("cursors") val cursors: Map<String, JsonNode> = mapOf(),
+    @JsonProperty("relation_filenode") val filenode: Filenode? = null,
 ) {
     companion object {
         val snapshotCompleted: OpaqueStateValue
@@ -28,10 +28,14 @@ data class PostgresSourceJdbcStreamStateValue(
                     )
                 )
 
-        fun snapshotCheckpoint(ctidCheckpoint: JsonNode): OpaqueStateValue =
+        fun snapshotCheckpoint(
+            ctidCheckpoint: JsonNode,
+            filenode: Filenode?,
+        ): OpaqueStateValue =
             Jsons.valueToTree(
                 PostgresSourceJdbcStreamStateValue(
                     ctid = ctidCheckpoint.asText(),
+                    filenode = filenode,
                     stateType = StateType.CTID_BASED.serialized,
                 )
             )
@@ -45,7 +49,7 @@ data class PostgresSourceJdbcStreamStateValue(
                 false ->
                     Jsons.valueToTree(
                         PostgresSourceJdbcStreamStateValue(
-                            cursors = mapOf(cursor.id to cursorCheckpoint)
+                            cursors = mapOf(cursor.id to cursorCheckpoint),
                         )
                     )
             }
@@ -54,11 +58,13 @@ data class PostgresSourceJdbcStreamStateValue(
             ctidCheckpoint: JsonNode,
             cursor: DataField,
             cursorCheckpoint: JsonNode,
+            filenode: Filenode?,
         ): OpaqueStateValue =
             Jsons.valueToTree(
                 PostgresSourceJdbcStreamStateValue(
                     ctid = ctidCheckpoint.asText(),
                     cursors = mapOf(cursor.id to cursorCheckpoint),
+                    filenode = filenode,
                     stateType = StateType.CTID_BASED.serialized,
                 )
             )

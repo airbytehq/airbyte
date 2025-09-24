@@ -206,7 +206,7 @@ class JdbcMetadataQuerier(
 
     override fun fields(
         streamID: StreamIdentifier,
-    ): List<Field> {
+    ): List<EmittedField> {
         val table: TableName = findTableName(streamID) ?: return listOf()
         return columnMetadata(table).map { EmittedField(it.label, fieldTypeMapper.toFieldType(it)) }
     }

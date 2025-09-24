@@ -10,7 +10,7 @@ import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.DataOrMetaField
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.output.CatalogValidationFailureHandler
 import io.airbyte.cdk.output.InvalidCursor
 import io.airbyte.cdk.output.InvalidPrimaryKey
@@ -55,14 +55,14 @@ class DefaultJdbcPartitionFactory(
         }
         val sv: DefaultJdbcStreamStateValue =
             Jsons.treeToValue(opaqueStateValue, DefaultJdbcStreamStateValue::class.java)
-        val pkMap: Map<Field, JsonNode> =
+        val pkMap: Map<EmittedField, JsonNode> =
             sv.pkMap(stream)
                 ?: run {
                     handler.accept(ResetStream(stream.id))
                     streamState.reset()
                     return coldStart(streamState)
                 }
-        val cursorPair: Pair<Field, JsonNode>? =
+        val cursorPair: Pair<EmittedField, JsonNode>? =
             if (sv.cursors.isEmpty()) {
                 null
             } else {
@@ -96,7 +96,7 @@ class DefaultJdbcPartitionFactory(
                 )
             }
         } else {
-            val (cursor: Field, cursorCheckpoint: JsonNode) = cursorPair
+            val (cursor: EmittedField, cursorCheckpoint: JsonNode) = cursorPair
             if (!isCursorBasedIncremental) {
                 handler.accept(ResetStream(stream.id))
                 streamState.reset()
@@ -129,11 +129,11 @@ class DefaultJdbcPartitionFactory(
         }
     }
 
-    private fun DefaultJdbcStreamStateValue.pkMap(stream: Stream): Map<Field, JsonNode>? {
+    private fun DefaultJdbcStreamStateValue.pkMap(stream: Stream): Map<EmittedField, JsonNode>? {
         if (primaryKey.isEmpty()) {
             return mapOf()
         }
-        val fields: List<Field> = stream.configuredPrimaryKey ?: listOf()
+        val fields: List<EmittedField> = stream.configuredPrimaryKey ?: listOf()
         if (primaryKey.keys != fields.map { it.id }.toSet()) {
             handler.accept(
                 InvalidPrimaryKey(stream.id, primaryKey.keys.toList()),
@@ -143,7 +143,9 @@ class DefaultJdbcPartitionFactory(
         return fields.associateWith { primaryKey[it.id]!! }
     }
 
-    private fun DefaultJdbcStreamStateValue.cursorPair(stream: Stream): Pair<Field, JsonNode>? {
+    private fun DefaultJdbcStreamStateValue.cursorPair(
+        stream: Stream
+    ): Pair<EmittedField, JsonNode>? {
         if (cursors.size > 1) {
             handler.accept(
                 InvalidCursor(stream.id, cursors.keys.toString()),
@@ -152,7 +154,7 @@ class DefaultJdbcPartitionFactory(
         }
         val cursorLabel: String = cursors.keys.first()
         val cursor: DataOrMetaField? = stream.schema.find { it.id == cursorLabel }
-        if (cursor !is Field) {
+        if (cursor !is EmittedField) {
             handler.accept(
                 InvalidCursor(stream.id, cursorLabel),
             )
@@ -169,7 +171,7 @@ class DefaultJdbcPartitionFactory(
 
     private fun coldStart(streamState: DefaultJdbcStreamState): DefaultJdbcPartition {
         val stream: Stream = streamState.stream
-        val pkChosenFromCatalog: List<Field> = stream.configuredPrimaryKey ?: listOf()
+        val pkChosenFromCatalog: List<EmittedField> = stream.configuredPrimaryKey ?: listOf()
         if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH || configuration.global) {
             if (pkChosenFromCatalog.isEmpty()) {
                 return DefaultJdbcUnsplittableSnapshotPartition(
@@ -185,8 +187,8 @@ class DefaultJdbcPartitionFactory(
                 upperBound = null,
             )
         }
-        val cursorChosenFromCatalog: Field =
-            stream.configuredCursor as? Field ?: throw ConfigErrorException("no cursor")
+        val cursorChosenFromCatalog: EmittedField =
+            stream.configuredCursor as? EmittedField ?: throw ConfigErrorException("no cursor")
         if (pkChosenFromCatalog.isEmpty()) {
             return DefaultJdbcUnsplittableSnapshotWithCursorPartition(
                 selectQueryGenerator,
