@@ -4,10 +4,10 @@
 
 import copy
 import time
+from datetime import date, timedelta
 from typing import Iterator
 
 import freezegun
-import pendulum
 import pytest
 from facebook_business.adobjects.ad import Ad
 from facebook_business.adobjects.adaccount import AdAccount
@@ -17,7 +17,10 @@ from facebook_business.adobjects.adsinsights import AdsInsights
 from facebook_business.adobjects.campaign import Campaign
 from facebook_business.api import FacebookAdsApiBatch, FacebookBadObjectError
 from source_facebook_marketing.api import MyFacebookAdsApi
-from source_facebook_marketing.streams.async_job import InsightAsyncJob, ParentAsyncJob, Status, update_in_batch
+from source_facebook_marketing.streams.async_job import DateInterval, InsightAsyncJob, ParentAsyncJob, Status, update_in_batch
+from source_facebook_marketing.utils import INSIGHTS_RETENTION_PERIOD_DAYS
+
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
 
 @pytest.fixture(name="adreport")
@@ -46,14 +49,14 @@ def job_fixture(api, account):
         "time_increment": 1,
         "action_attribution_windows": [],
     }
-    interval = pendulum.Period(pendulum.Date(2019, 1, 1), pendulum.Date(2019, 1, 1))
+    interval = DateInterval(date(2019, 1, 1), date(2019, 1, 1))
 
     return InsightAsyncJob(
         edge_object=account,
         api=api,
         interval=interval,
         params=params,
-        job_timeout=pendulum.duration(minutes=60),
+        job_timeout=timedelta(minutes=60),
     )
 
 
@@ -73,7 +76,7 @@ def grouped_jobs_fixture(mocker):
 
 @pytest.fixture(name="parent_job")
 def parent_job_fixture(api, grouped_jobs):
-    interval = pendulum.Period(pendulum.Date(2019, 1, 1), pendulum.Date(2019, 1, 1))
+    interval = DateInterval(date(2019, 1, 1), date(2019, 1, 1))
     return ParentAsyncJob(api=api, jobs=grouped_jobs, interval=interval)
 
 
@@ -233,7 +236,7 @@ class TestInsightAsyncJob:
         adreport.api_get.assert_called_once()
 
     def test_update_job_expired(self, started_job, adreport, mocker):
-        mocker.patch.object(started_job, "_job_timeout", new=pendulum.Duration())
+        mocker.patch.object(started_job, "_job_timeout", new=timedelta())
 
         started_job.update_job()
         assert started_job.failed
@@ -305,16 +308,16 @@ class TestInsightAsyncJob:
         assert failed_job.failed, "should return True if the job previously failed"
 
     def test_str(self, api, account):
-        interval = pendulum.Period(pendulum.Date(2010, 1, 1), pendulum.Date(2011, 1, 1))
+        interval = DateInterval(date(2010, 1, 1), date(2011, 1, 1))
         job = InsightAsyncJob(
             edge_object=account,
             api=api,
             params={"breakdowns": [10, 20]},
             interval=interval,
-            job_timeout=pendulum.duration(minutes=60),
+            job_timeout=timedelta(minutes=60),
         )
 
-        assert str(job) == f"InsightAsyncJob(id=<None>, {account}, time_range=<Period [2010-01-01 -> 2011-01-01]>, breakdowns=[10, 20])"
+        assert str(job) == f"InsightAsyncJob(id=<None>, {account}, time_range=DateInterval(2010-01-01 to 2011-01-01), breakdowns=[10, 20])"
 
     def test_get_result(self, job, adreport, api):
         job.start()
@@ -369,15 +372,15 @@ class TestInsightAsyncJob:
     @freezegun.freeze_time("2023-10-29")
     def test_split_job(self, mocker, api, edge_class, next_edge_class, id_field):
         """Test that split will correctly downsize edge_object"""
-        today = pendulum.today(tz=pendulum.tz.UTC).date()
-        start, end = today - pendulum.duration(days=365 * 3 + 20), today - pendulum.duration(days=365 * 3 + 10)
+        today = ab_datetime_now().date()
+        start, end = today - timedelta(days=365 * 3 + 20), today - timedelta(days=365 * 3 + 10)
         params = {"time_increment": 1, "breakdowns": []}
         job = InsightAsyncJob(
             api=api,
             edge_object=edge_class(1),
-            interval=pendulum.Period(start, end),
+            interval=DateInterval(start, end),
             params=params,
-            job_timeout=pendulum.duration(minutes=60),
+            job_timeout=timedelta(minutes=60),
         )
         mocker.patch.object(
             edge_class,
@@ -397,8 +400,8 @@ class TestInsightAsyncJob:
                     # with the one 37 months ago, that's why current date is frozen.
                     # For a different date the since date would be also different.
                     # See facebook_marketing.utils.validate_start_date for reference
-                    "since": (today - pendulum.duration(months=37) + pendulum.duration(days=1)).to_date_string(),
-                    "until": end.to_date_string(),
+                    "since": (today - timedelta(days=INSIGHTS_RETENTION_PERIOD_DAYS) + timedelta(days=1)).strftime("%Y-%m-%d"),
+                    "until": end.strftime("%Y-%m-%d"),
                 },
             }
         )
@@ -410,14 +413,14 @@ class TestInsightAsyncJob:
 
     def test_split_job_smallest(self, mocker, api):
         """Test that split will correctly downsize edge_object"""
-        interval = pendulum.Period(pendulum.Date(2010, 1, 1), pendulum.Date(2010, 1, 10))
+        interval = DateInterval(date(2010, 1, 1), date(2010, 1, 10))
         params = {"time_increment": 1, "breakdowns": []}
         job = InsightAsyncJob(
             api=api,
             edge_object=Ad(1),
             interval=interval,
             params=params,
-            job_timeout=pendulum.duration(minutes=60),
+            job_timeout=timedelta(minutes=60),
         )
 
         with pytest.raises(ValueError, match="The job is already splitted to the smallest size."):
