@@ -151,7 +151,9 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
         name = "Username and Password"
     )
 )
-sealed class CredentialsSpecification(@Suppress("PropertyName") @param:JsonProperty("auth_type") val auth_type: Type) {
+sealed class CredentialsSpecification(
+    @Suppress("PropertyName") @param:JsonProperty("auth_type") val auth_type: Type
+) {
     /** Enumeration of possible credential types. */
     enum class Type(@get:JsonValue val authTypeName: String) {
         PRIVATE_KEY("Key Pair Authentication"),
