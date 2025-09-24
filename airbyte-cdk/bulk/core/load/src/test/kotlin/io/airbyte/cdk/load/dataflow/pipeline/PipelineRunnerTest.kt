@@ -19,6 +19,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExecutorCoroutineDispatcher
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.runTest
@@ -33,6 +34,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 class PipelineRunnerTest {
 
     @MockK(relaxed = true) private lateinit var reconciler: StateReconciler
+    @MockK(relaxed = true) private lateinit var aggregateDispatcher: ExecutorCoroutineDispatcher
 
     @MockK(relaxed = true) private lateinit var store: StateStore
 
@@ -59,7 +61,8 @@ class PipelineRunnerTest {
                 store,
                 listOf(pipeline1, pipeline2, pipeline3),
                 inputStreams,
-                pipelineScope
+                pipelineScope,
+                aggregateDispatcher
             )
 
         coEvery { pipeline1.run() } coAnswers { delay(100) }
@@ -78,6 +81,7 @@ class PipelineRunnerTest {
         coVerify(exactly = 1) { reconciler.run() }
         coVerify(exactly = 1) { reconciler.disable() }
         coVerify(exactly = 1) { reconciler.flushCompleteStates() }
+        coVerify(exactly = 1) { aggregateDispatcher.close() }
     }
 
     @Test
@@ -87,7 +91,14 @@ class PipelineRunnerTest {
         coEvery { pipeline1.run() } throws exception
         val failingScope = Fixtures.testScope(this.coroutineContext)
         val failingRunner =
-            PipelineRunner(reconciler, store, listOf(pipeline1), inputStreams, failingScope)
+            PipelineRunner(
+                reconciler,
+                store,
+                listOf(pipeline1),
+                inputStreams,
+                failingScope,
+                aggregateDispatcher
+            )
 
         // When/Then
         val thrownException =
@@ -100,6 +111,7 @@ class PipelineRunnerTest {
 
         // Verify reconciler was still disabled
         coVerify(exactly = 1) { reconciler.disable() }
+        coVerify(exactly = 1) { aggregateDispatcher.close() }
         coVerify(exactly = 0) { reconciler.flushCompleteStates() }
     }
 
@@ -109,7 +121,14 @@ class PipelineRunnerTest {
         coEvery { pipeline1.run() } just Runs
         val singlePipelineScope = Fixtures.testScope(this.coroutineContext)
         val singlePipelineRunner =
-            PipelineRunner(reconciler, store, listOf(pipeline1), inputStreams, singlePipelineScope)
+            PipelineRunner(
+                reconciler,
+                store,
+                listOf(pipeline1),
+                inputStreams,
+                singlePipelineScope,
+                aggregateDispatcher
+            )
 
         // When
         singlePipelineRunner.run()
@@ -120,6 +139,7 @@ class PipelineRunnerTest {
             reconciler.run()
             pipeline1.run()
             reconciler.disable()
+            aggregateDispatcher.close()
             reconciler.flushCompleteStates()
         }
     }
@@ -128,13 +148,22 @@ class PipelineRunnerTest {
     fun `run should start reconciler without parameters`() = runTest {
         // Given
         val emptyScope = Fixtures.testScope(this.coroutineContext)
-        val emptyRunner = PipelineRunner(reconciler, store, emptyList(), inputStreams, emptyScope)
+        val emptyRunner =
+            PipelineRunner(
+                reconciler,
+                store,
+                emptyList(),
+                inputStreams,
+                emptyScope,
+                aggregateDispatcher
+            )
 
         // When
         emptyRunner.run()
 
         // Then
         coVerify(exactly = 1) { reconciler.run() }
+        coVerify(exactly = 1) { aggregateDispatcher.close() }
     }
 
     @Test
@@ -143,7 +172,14 @@ class PipelineRunnerTest {
         coEvery { pipeline1.run() } just Runs
         val singlePipelineScope = Fixtures.testScope(this.coroutineContext)
         val singlePipelineRunner =
-            PipelineRunner(reconciler, store, listOf(pipeline1), inputStreams, singlePipelineScope)
+            PipelineRunner(
+                reconciler,
+                store,
+                listOf(pipeline1),
+                inputStreams,
+                singlePipelineScope,
+                aggregateDispatcher
+            )
 
         // When
         singlePipelineRunner.run()
@@ -152,6 +188,7 @@ class PipelineRunnerTest {
         // Then
         coVerify(exactly = 1) { pipeline1.run() }
         coVerify(exactly = 1) { reconciler.run() }
+        coVerify(exactly = 1) { aggregateDispatcher.close() }
         coVerify(exactly = 1) { reconciler.disable() }
         coVerify(exactly = 1) { reconciler.flushCompleteStates() }
     }
@@ -163,7 +200,14 @@ class PipelineRunnerTest {
         coEvery { reconciler.disable() } throws RuntimeException("Failed to disable")
         val singlePipelineScope = Fixtures.testScope(this.coroutineContext)
         val singlePipelineRunner =
-            PipelineRunner(reconciler, store, listOf(pipeline1), inputStreams, singlePipelineScope)
+            PipelineRunner(
+                reconciler,
+                store,
+                listOf(pipeline1),
+                inputStreams,
+                singlePipelineScope,
+                aggregateDispatcher
+            )
 
         // When/Then
         val exception =
@@ -176,6 +220,7 @@ class PipelineRunnerTest {
 
         // Verify pipeline was executed before the failure
         coVerify(exactly = 1) { pipeline1.run() }
+        coVerify(exactly = 1) { aggregateDispatcher.close() }
         coVerify(exactly = 0) { reconciler.flushCompleteStates() }
     }
 
@@ -186,7 +231,14 @@ class PipelineRunnerTest {
         every { reconciler.flushCompleteStates() } throws RuntimeException("Failed to flush")
         val singlePipelineScope = Fixtures.testScope(this.coroutineContext)
         val singlePipelineRunner =
-            PipelineRunner(reconciler, store, listOf(pipeline1), inputStreams, singlePipelineScope)
+            PipelineRunner(
+                reconciler,
+                store,
+                listOf(pipeline1),
+                inputStreams,
+                singlePipelineScope,
+                aggregateDispatcher
+            )
 
         // When/Then
         val exception =
@@ -200,6 +252,7 @@ class PipelineRunnerTest {
         // Verify everything up to flush was executed
         coVerify(exactly = 1) { pipeline1.run() }
         coVerify(exactly = 1) { reconciler.disable() }
+        coVerify(exactly = 1) { aggregateDispatcher.close() }
         coVerify(exactly = 1) { reconciler.flushCompleteStates() }
     }
 
@@ -211,7 +264,14 @@ class PipelineRunnerTest {
 
         val failingScope = Fixtures.testScope(this.coroutineContext)
         val failingRunner =
-            PipelineRunner(reconciler, store, listOf(pipeline1), inputStreams, failingScope)
+            PipelineRunner(
+                reconciler,
+                store,
+                listOf(pipeline1),
+                inputStreams,
+                failingScope,
+                aggregateDispatcher
+            )
 
         // When
         assertThrows<RuntimeException> {
@@ -221,6 +281,7 @@ class PipelineRunnerTest {
 
         // Then - verify that closeAll was called due to exception handler
         verify(atLeast = 1) { inputStreams.closeAll() }
+        coVerify(exactly = 1) { aggregateDispatcher.close() }
     }
 
     @Test
@@ -234,7 +295,15 @@ class PipelineRunnerTest {
             }
 
         val largeScope = Fixtures.testScope(this.coroutineContext)
-        val largeRunner = PipelineRunner(reconciler, store, pipelines, inputStreams, largeScope)
+        val largeRunner =
+            PipelineRunner(
+                reconciler,
+                store,
+                pipelines,
+                inputStreams,
+                largeScope,
+                aggregateDispatcher
+            )
 
         // When
         largeRunner.run()
@@ -244,6 +313,7 @@ class PipelineRunnerTest {
         pipelines.forEach { pipeline -> coVerify(exactly = 1) { pipeline.run() } }
         coVerify(exactly = 1) { reconciler.run() }
         coVerify(exactly = 1) { reconciler.disable() }
+        coVerify(exactly = 1) { aggregateDispatcher.close() }
         coVerify(exactly = 1) { reconciler.flushCompleteStates() }
     }
 
@@ -279,7 +349,14 @@ class PipelineRunnerTest {
 
         val twoScope = Fixtures.testScope(this.coroutineContext)
         val twoRunner =
-            PipelineRunner(reconciler, store, listOf(pipeline1, pipeline2), inputStreams, twoScope)
+            PipelineRunner(
+                reconciler,
+                store,
+                listOf(pipeline1, pipeline2),
+                inputStreams,
+                twoScope,
+                aggregateDispatcher
+            )
 
         // When
         twoRunner.run()
@@ -303,7 +380,8 @@ class PipelineRunnerTest {
                     store,
                     listOf(pipeline1),
                     inputStreams,
-                    singlePipelineScope
+                    singlePipelineScope,
+                    aggregateDispatcher
                 )
 
             // When/Then
@@ -332,7 +410,14 @@ class PipelineRunnerTest {
 
         val singlePipelineScope = Fixtures.testScope(this.coroutineContext)
         val singlePipelineRunner =
-            PipelineRunner(reconciler, store, listOf(pipeline1), inputStreams, singlePipelineScope)
+            PipelineRunner(
+                reconciler,
+                store,
+                listOf(pipeline1),
+                inputStreams,
+                singlePipelineScope,
+                aggregateDispatcher
+            )
 
         // When - should complete without exception
         singlePipelineRunner.run()
