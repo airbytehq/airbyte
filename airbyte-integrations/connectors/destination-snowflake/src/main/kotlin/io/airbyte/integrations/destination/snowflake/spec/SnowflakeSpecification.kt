@@ -107,6 +107,7 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
     // for compatibility with existing actor configs, we keep the old property name.
     @get:JsonProperty("disable_type_dedupe")
     @get:JsonSchemaInject(json = """{"group": "advanced", "order": 7}""")
+    @Suppress("RedundantNullableReturnType")
     val legacyRawTablesOnly: Boolean? = false
 
     @get:JsonSchemaTitle("Airbyte Internal Table Dataset Name")
@@ -134,6 +135,7 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
     // for backwards compatibility, the JSON property is still called raw_data_dataset.
     @get:JsonProperty("retention_period_days")
     @get:JsonSchemaInject(json = """{"group": "advanced", "order": 10}""")
+    @Suppress("RedundantNullableReturnType")
     val retentionPeriodDays: Int? = 1
 }
 
@@ -149,7 +151,7 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
         name = "Username and Password"
     )
 )
-sealed class CredentialsSpecification(@JsonProperty("auth_type") val auth_type: Type) {
+sealed class CredentialsSpecification(@Suppress("PropertyName") @param:JsonProperty("auth_type") val auth_type: Type) {
     /** Enumeration of possible credential types. */
     enum class Type(@get:JsonValue val authTypeName: String) {
         PRIVATE_KEY("Key Pair Authentication"),
@@ -186,7 +188,7 @@ class UsernamePasswordAuthSpecification(
     val password: String = ""
 ) : CredentialsSpecification(Type.USERNAME_PASSWORD)
 
-enum class CdcDeletionMode(@get:JsonValue val cdcDeletionMode: String) {
+enum class CdcDeletionMode(@Suppress("unused") @get:JsonValue val cdcDeletionMode: String) {
     HARD_DELETE("Hard delete"),
     SOFT_DELETE("Soft delete"),
 }
