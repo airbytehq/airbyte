@@ -1,3 +1,9 @@
+## Version 0.1.41
+
+**Extract CDK**
+
+* **Changed:** Prevent a devision by zero error when a table cannot be partitioned.
+
 ## Version 0.1.40
 
 Add gradle task to bump CDK version + add changelog entry
