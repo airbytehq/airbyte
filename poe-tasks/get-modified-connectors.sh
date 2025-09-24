@@ -77,18 +77,41 @@ fi
 # 4) merge into one list
 all_changes=$(printf '%s\n%s\n%s\n%s' "$committed" "$staged" "$unstaged" "$untracked")
 
+# 4.5) Define helper function to return empty JSON when no connectors are found
+return_empty_json() {
+  if [ "$JSON" = true ]; then
+    # When the list is empty and JSON is requested, send one item as empty string.
+    # This allows the matrix to run once as a no-op, and be marked as complete for purposes
+    # of required checks.
+    echo '{"connector": [""]}'
+  fi
+  exit 0
+}
+
 # 5) drop ignored files
 filtered=$(printf '%s\n' "$all_changes" | grep -v -E "/${ignore_globs}")
+if [ -z "$filtered" ]; then
+  echo "⚠️ Warning: No files remaining after filtering. Returning empty connector list." >&2
+  return_empty_json
+fi
 
 # 6) keep only connector paths
 set +e # Ignore errors from grep if no matches are found
 connectors_paths=$(printf '%s\n' "$filtered" | grep -E '^airbyte-integrations/connectors/(source-[^/]+|destination-[^/]+)(/|$)')
+if [ -z "$connectors_paths" ]; then
+  echo "⚠️ Warning: No connector paths found. Returning empty connector list." >&2
+  return_empty_json
+fi
 set -e
 
 # 7) extract just the connector directory name
 dirs=$(printf '%s\n' "$connectors_paths" \
   | sed -E 's|airbyte-integrations/connectors/([^/]+).*|\1|' \
 )
+if [ -z "$dirs" ]; then
+  echo "⚠️ Warning: Failed to extract connector directories. Returning empty connector list." >&2
+  return_empty_json
+fi
 
 # 8) unique list of modified connectors
 connectors=()
@@ -116,12 +139,9 @@ print_list() {
   # If JSON is requested, convert the list to JSON format.
   # This is pre-formatted to send to a GitHub Actions Matrix
   # with 'connector' as the matrix key.
-  # JSON mode: emit {"connector": […]}
+  # E.g.: {"connector": […]}
   if [ $# -eq 0 ]; then
-    # If the list is empty, send one item as empty string.
-    # This allows the matrix to run once as a no-op, and be marked as complete for purposes
-    # of required checks.
-    echo '{"connector": [""]}'
+    return_empty_json
   else
     # If the list is not empty, convert it to JSON format.
     # This is pre-formatted to send to a GitHub Actions Matrix
