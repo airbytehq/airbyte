@@ -123,7 +123,6 @@ class InsightAsyncJobManager:
 
         # Ask each job to update itself. For plain jobs, this batches directly;
         # for parent jobs, their update_job implementation will update children.
-        print(f"Checking status of {len(self._running_jobs)} running jobs...")
         update_in_batch(api=self._api.api, jobs=self._running_jobs)
 
         new_running: List[AsyncJob] = []

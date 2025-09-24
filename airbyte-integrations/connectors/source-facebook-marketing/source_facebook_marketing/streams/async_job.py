@@ -128,9 +128,10 @@ class ParentAsyncJob(AsyncJob):
         def __iter__(self):
             return iter(self._data)
 
-    def __init__(self, jobs: List["AsyncJob"], primary_key: Optional[List[str]] = None, **kwargs):
+    def __init__(self, jobs: List["AsyncJob"], primary_key: Optional[List[str]] = None, object_breakdowns: Optional[Mapping[str, str]] = None, **kwargs):
         super().__init__(**kwargs)
         self._primary_key = primary_key or []
+        self._object_breakdowns = dict(object_breakdowns or {})
         self._jobs: List[AsyncJob] = list(jobs)
 
     def start(self, api_limit: "APILimit") -> None:
@@ -168,6 +169,20 @@ class ParentAsyncJob(AsyncJob):
                 new_children.append(job)
         self._jobs = new_children
 
+    def _inject_object_breakdown_ids(self, data: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        Use the stream-provided mapping (e.g. {'image_asset': 'image_asset_id'})
+        to inject the *_id fields when the row only has the object dict.
+        """
+        if not self._object_breakdowns:
+            return data
+        out = dict(data)
+        for obj_key, id_key in self._object_breakdowns.items():
+            val = out.get(obj_key)
+            if isinstance(val, dict) and "id" in val and id_key not in out:
+                out[id_key] = val["id"]
+        return out
+
     def get_result(self) -> Iterator[Any]:
         if not self._primary_key:
             for j in self._jobs:
@@ -175,10 +190,11 @@ class ParentAsyncJob(AsyncJob):
             return
 
         merged: dict[Tuple[Any, ...], dict] = {}
-        print("Merging results by primary key:", self._primary_key, "from", len(self._jobs), "children")
         for child in self._jobs:
             for row in child.get_result():
-                data = row.export_all_data() if hasattr(row, "export_all_data") else dict(row)
+                raw = row.export_all_data() if hasattr(row, "export_all_data") else dict(row)
+                data = self._inject_object_breakdown_ids(raw)
+
                 key = tuple(data.get(k) for k in self._primary_key)
                 if key not in merged:
                     merged[key] = dict(data)
@@ -187,7 +203,6 @@ class ParentAsyncJob(AsyncJob):
                         if k in self._primary_key:
                             continue
                         merged[key][k] = v
-        print(f"Merged {len(merged)} rows by primary key {merged.keys()}")
 
         for rec in merged.values():
             yield ParentAsyncJob._ExportableRow(rec)
@@ -208,6 +223,7 @@ class InsightAsyncJob(AsyncJob):
         params: Mapping[str, Any],
         job_timeout: Duration,
         primary_key: Optional[List[str]] = None,
+        object_breakdowns: Optional[Mapping[str, str]] = None,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -220,6 +236,7 @@ class InsightAsyncJob(AsyncJob):
         self._edge_object = edge_object
         self._job: Optional[AdReportRun] = None
         self._primary_key = primary_key or []
+        self._object_breakdowns = dict(object_breakdowns or {})
         self._start_time = None
         self._finish_time = None
         self._failed = False
@@ -307,7 +324,6 @@ class InsightAsyncJob(AsyncJob):
             logger.info(f"{self}: has status {job_status} after {self.elapsed_time.in_seconds()} seconds.")
             released = True
 
-        print("Job status checked:", self, job_status, percent, "failed:", self._failed, "released:", released)
         if released and self._api_limit:
             self._api_limit.release()
 
@@ -390,6 +406,7 @@ class InsightAsyncJob(AsyncJob):
                 interval=self._interval,
                 job_timeout=self._job_timeout,
                 primary_key=self._primary_key,
+                object_breakdowns=self._object_breakdowns,
             )
             for pk in ids
         ]
@@ -416,6 +433,7 @@ class InsightAsyncJob(AsyncJob):
             interval=self._interval,
             job_timeout=self._job_timeout,
             primary_key=self._primary_key,
+            object_breakdowns=self._object_breakdowns,
         )
         job_b = InsightAsyncJob(
             api=self._api,
@@ -424,9 +442,10 @@ class InsightAsyncJob(AsyncJob):
             interval=self._interval,
             job_timeout=self._job_timeout,
             primary_key=self._primary_key,
+            object_breakdowns=self._object_breakdowns,
         )
         logger.info("%s split by fields: common=%d, A=%d, B=%d", self, len(self._primary_key), len(part_a), len(part_b))
-        return ParentAsyncJob(jobs=[job_a, job_b], api=self._api, interval=self._interval, primary_key=self._primary_key)
+        return ParentAsyncJob(jobs=[job_a, job_b], api=self._api, interval=self._interval, primary_key=self._primary_key, object_breakdowns=self._object_breakdowns)
 
     # --------------------------- results -------------------------------------
     @backoff_policy
