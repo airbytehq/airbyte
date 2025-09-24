@@ -3,12 +3,28 @@
 #
 
 import logging
-from datetime import timedelta
+from datetime import date, timedelta
 
 from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_now
 
 
 logger = logging.getLogger("airbyte")
+
+
+class DateInterval:
+    """Simple date interval"""
+
+    def __init__(self, start: date, end: date):
+        self.start = start
+        self.end = end
+
+    def to_date_string(self, date_obj: date) -> str:
+        """Convert date to string format expected by Facebook API"""
+        return date_obj.strftime("%Y-%m-%d")
+
+    def __str__(self):
+        return f"DateInterval({self.start} to {self.end})"
+
 
 # Facebook store metrics maximum of 37 months old. Any time range that
 # older than 37 months from current date would result in 400 Bad request

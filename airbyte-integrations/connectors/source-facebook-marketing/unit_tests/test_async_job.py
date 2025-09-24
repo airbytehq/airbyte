@@ -17,8 +17,8 @@ from facebook_business.adobjects.adsinsights import AdsInsights
 from facebook_business.adobjects.campaign import Campaign
 from facebook_business.api import FacebookAdsApiBatch, FacebookBadObjectError
 from source_facebook_marketing.api import MyFacebookAdsApi
-from source_facebook_marketing.streams.async_job import DateInterval, InsightAsyncJob, ParentAsyncJob, Status, update_in_batch
-from source_facebook_marketing.utils import INSIGHTS_RETENTION_PERIOD_DAYS
+from source_facebook_marketing.streams.async_job import InsightAsyncJob, ParentAsyncJob, Status, update_in_batch
+from source_facebook_marketing.utils import INSIGHTS_RETENTION_PERIOD_DAYS, DateInterval
 
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 

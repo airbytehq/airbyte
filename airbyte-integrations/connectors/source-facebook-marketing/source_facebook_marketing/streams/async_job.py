@@ -21,25 +21,10 @@ from facebook_business.api import FacebookAdsApi, FacebookAdsApiBatch, FacebookB
 from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_now
 from source_facebook_marketing.streams.common import retry_pattern
 
-from ..utils import validate_start_date
+from ..utils import DateInterval, validate_start_date
 
 
 logger = logging.getLogger("airbyte")
-
-
-class DateInterval:
-    """Simple date interval"""
-
-    def __init__(self, start: date, end: date):
-        self.start = start
-        self.end = end
-
-    def to_date_string(self, date_obj: date) -> str:
-        """Convert date to string format expected by Facebook API"""
-        return date_obj.strftime("%Y-%m-%d")
-
-    def __str__(self):
-        return f"DateInterval({self.start} to {self.end})"
 
 
 # `FacebookBadObjectError` occurs in FB SDK when it fetches an inconsistent or corrupted data.

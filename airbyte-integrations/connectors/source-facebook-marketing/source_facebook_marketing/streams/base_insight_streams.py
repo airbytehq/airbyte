@@ -15,9 +15,10 @@ from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_now, ab_datetime_parse
-from source_facebook_marketing.streams.async_job import AsyncJob, DateInterval, InsightAsyncJob
+from source_facebook_marketing.streams.async_job import AsyncJob, InsightAsyncJob
 from source_facebook_marketing.streams.async_job_manager import InsightAsyncJobManager
 from source_facebook_marketing.streams.common import traced_exception
+from source_facebook_marketing.utils import DateInterval
 
 from .base_streams import FBMarketingIncrementalStream
 

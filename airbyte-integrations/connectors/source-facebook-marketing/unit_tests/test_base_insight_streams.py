@@ -8,7 +8,8 @@ import pytest
 from freezegun import freeze_time
 from source_facebook_marketing.spec import ValidBreakdowns
 from source_facebook_marketing.streams import AdsInsights
-from source_facebook_marketing.streams.async_job import AsyncJob, DateInterval, InsightAsyncJob
+from source_facebook_marketing.streams.async_job import AsyncJob, InsightAsyncJob
+from source_facebook_marketing.utils import DateInterval
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import package_name_from_class
@@ -25,7 +26,7 @@ def api_fixture(mocker):
 
 @pytest.fixture(name="old_start_date")
 def old_start_date_fixture() -> AirbyteDateTime:
-    return ab_datetime_now() - timedelta(days=(37 + 1) * 30)
+    return ab_datetime_now() - timedelta(days=(1123))
 
 
 @pytest.fixture(name="recent_start_date")
