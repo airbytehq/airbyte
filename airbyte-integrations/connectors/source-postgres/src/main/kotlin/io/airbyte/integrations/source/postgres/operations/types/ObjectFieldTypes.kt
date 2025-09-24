@@ -10,6 +10,8 @@ import io.airbyte.cdk.data.JsonEncoder
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.jdbc.JdbcFieldType
 import io.airbyte.cdk.jdbc.JdbcGetter
+import io.airbyte.cdk.output.sockets.ConnectorJsonEncoder
+import io.airbyte.cdk.output.sockets.ProtoEncoder
 import java.sql.ResultSet
 import kotlin.reflect.KClass
 import org.postgresql.geometric.PGbox
@@ -34,11 +36,23 @@ class ObjectGetter<T : PGobject>(val kClass: KClass<T>) : JdbcGetter<T> {
     }
 }
 
-class ObjectEncoder<T : PGobject>() : JsonEncoder<T> {
+class ObjectEncoder<T : PGobject>() : JsonEncoder<T>, ConnectorJsonEncoder {
     override fun encode(decoded: T): JsonNode {
         return TextNode(decoded.value)
     }
+
+    override fun toProtobufEncoder(): ProtoEncoder<*> {
+        return ObjectProtoEncoder()
+    }
 }
+
+class ObjectProtoEncoder<T : PGobject> : ProtoEncoder<T> {
+    override fun encode(
+        builder: io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteValueProtobuf.Builder,
+        decoded: T,
+    ): io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteValueProtobuf.Builder {
+        return builder.setString(decoded.value)
+    }
 
 // These need to be defined at compile time to avoid issues with type erasure
 object CircleFieldType : ObjectFieldType<PGcircle>(PGcircle::class)

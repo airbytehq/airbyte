@@ -8,9 +8,14 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.NullNode
 import io.airbyte.cdk.data.AirbyteSchemaType
 import io.airbyte.cdk.data.JsonEncoder
+import io.airbyte.cdk.data.NullCodec
 import io.airbyte.cdk.data.TextCodec
 import io.airbyte.cdk.jdbc.JdbcFieldType
 import io.airbyte.cdk.jdbc.JdbcGetter
+import io.airbyte.cdk.output.sockets.ConnectorJsonEncoder
+import io.airbyte.cdk.output.sockets.ProtoEncoder
+import io.airbyte.cdk.output.sockets.toProtobufEncoder
+import io.airbyte.protocol.protobuf.AirbyteRecordMessage
 import java.sql.ResultSet
 
 // A generic field type which preserves infinity, -infinity and NaN values from DB to JSON
@@ -26,14 +31,28 @@ class InfFieldType<T>(
     )
 
 class InfJdbcGetter<T>(private val base: JdbcGetter<T>) : JdbcGetter<InfWrapper<T>> {
-    override fun get(rs: ResultSet, colIdx: Int): InfWrapper<T>? {
+    override fun get(rs: ResultSet, colIdx: Int): InfWrapper<T> {
         return InfWrapper.make(rs, colIdx, base)
     }
 }
 
-class InfJsonEncoder<T>(private val base: JsonEncoder<T>) : JsonEncoder<InfWrapper<T>> {
+class InfJsonEncoder<T>(private val base: JsonEncoder<T>) : JsonEncoder<InfWrapper<T>>,
+    ConnectorJsonEncoder {
     override fun encode(decoded: InfWrapper<T>): JsonNode {
         return decoded.encode(base)
+    }
+
+    override fun toProtobufEncoder(): ProtoEncoder<*> {
+        return InfProtoEncoder(base)
+    }
+}
+
+class InfProtoEncoder<T>(private val base: JsonEncoder<T>) : ProtoEncoder<InfWrapper<T>> {
+    override fun encode(
+        builder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder,
+        decoded: InfWrapper<T>): AirbyteRecordMessage.AirbyteValueProtobuf.Builder {
+        @Suppress("UNCHECKED_CAST")
+        return decoded.protoEncode(builder,base.toProtobufEncoder() as ProtoEncoder<T>)
     }
 }
 
@@ -50,6 +69,19 @@ private constructor(
             return NullNode.instance
         }
         return TextCodec.encode(valueType.placeholder!!)
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    fun protoEncode(builder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder, baseEncoder: ProtoEncoder<T>): AirbyteRecordMessage.AirbyteValueProtobuf.Builder {
+        if (valueType == ValueType.NORMAL) {
+            return baseEncoder.encode(builder, normalValue!!)
+        }
+        if (valueType == ValueType.NULL) {
+
+            return (NullCodec.toProtobufEncoder() as ProtoEncoder<Any>).encode(builder, this) // value doesn't matter
+        }
+
+        return (TextCodec.toProtobufEncoder() as ProtoEncoder<String>).encode(builder, valueType.placeholder!!)
     }
 
     companion object {
