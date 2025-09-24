@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.dataflow.state
 
-import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.CheckpointMessage
@@ -52,7 +51,7 @@ class SelfDescribingStateKeyClient : StateKeyClient {
  */
 @Singleton
 @Requires(property = "airbyte.destination.core.data-channel.medium", value = "STDIO")
-class InferredStateKeyClient(val catalog: DestinationCatalog) : StateKeyClient {
+class InferredStateKeyClient(private val catalog: DestinationCatalog) : StateKeyClient {
     // sequence of all state messages
     private val globalCounter = AtomicLong(1)
 
@@ -87,19 +86,16 @@ class InferredStateKeyClient(val catalog: DestinationCatalog) : StateKeyClient {
         }
     }
 
-    @VisibleForTesting
-    internal fun getCachedKeyForDesc(desc: DestinationStream.Descriptor) =
+    private fun getCachedKeyForDesc(desc: DestinationStream.Descriptor) =
         keyCache.computeIfAbsent(desc, this::partitionKeyForDesc)
 
-    @VisibleForTesting
-    internal fun incrementForDesc(desc: DestinationStream.Descriptor) {
+    private fun incrementForDesc(desc: DestinationStream.Descriptor) {
         val counter = streamCounters.computeIfAbsent(desc) { AtomicLong(1) }
         counter.getAndIncrement()
         keyCache[desc] = partitionKeyForDesc(desc)
     }
 
-    @VisibleForTesting
-    internal fun partitionKeyForDesc(desc: DestinationStream.Descriptor): PartitionKey {
+    private fun partitionKeyForDesc(desc: DestinationStream.Descriptor): PartitionKey {
         val counter = streamCounters.computeIfAbsent(desc) { AtomicLong(1) }
         val streamOrdinal = counter.get()
         return if (desc.namespace == null) {
