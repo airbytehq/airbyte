@@ -23,10 +23,10 @@ import kotlin.time.Duration.Companion.minutes
  */
 data class MemoryAndParallelismConfig(
     val maxOpenAggregates: Int = 5,
-    val maxBufferedAggregates: Int = 3,
+    val maxBufferedAggregates: Int = 5,
     val stalenessDeadlinePerAgg: Duration = 5.minutes,
-    val maxRecordsPerAgg: Long = 100_000L,
-    val maxEstBytesPerAgg: Long = 50_000_000L,
+    val maxRecordsPerAgg: Long = 200_000L,
+    val maxEstBytesPerAgg: Long = 100_000_000L,
     val maxConcurrentLifecycleOperations: Int = 10,
 ) {
     init {
