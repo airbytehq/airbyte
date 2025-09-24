@@ -11,4 +11,6 @@ import java.io.InputStream
  * subject to Micronaut merging like beans into a single list leading to injecting unexpected extra
  * input streams.
  */
-class ConnectorInputStreams(private val values: List<InputStream>) : List<InputStream> by values
+class ConnectorInputStreams(private val values: List<InputStream>) : List<InputStream> by values {
+    fun closeAll() = values.forEach { it.close() }
+}

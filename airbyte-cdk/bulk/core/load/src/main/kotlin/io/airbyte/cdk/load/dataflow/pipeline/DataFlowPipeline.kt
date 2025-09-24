@@ -6,9 +6,7 @@ package io.airbyte.cdk.load.dataflow.pipeline
 
 import io.airbyte.cdk.load.dataflow.config.MemoryAndParallelismConfig
 import io.airbyte.cdk.load.dataflow.stages.AggregateStage
-import java.util.concurrent.Executors
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.flowOn
@@ -24,19 +22,19 @@ class DataFlowPipeline(
     private val state: DataFlowStage,
     private val completionHandler: PipelineCompletionHandler,
     private val memoryAndParallelismConfig: MemoryAndParallelismConfig,
+    private val aggregationDispatcher: CoroutineDispatcher,
+    private val flushDispatcher: CoroutineDispatcher,
 ) {
-    private val customDispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
-
     suspend fun run() {
         input
             .map(parse::apply)
             .transform { aggregate.apply(it, this) }
             .buffer(capacity = memoryAndParallelismConfig.maxBufferedAggregates)
-            .flowOn(customDispatcher)
+            .flowOn(aggregationDispatcher)
             .map(flush::apply)
             .map(state::apply)
             .onCompletion { completionHandler.apply(it) }
-            .flowOn(Dispatchers.IO)
+            .flowOn(flushDispatcher)
             .collect {}
     }
 }

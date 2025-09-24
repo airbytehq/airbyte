@@ -30,6 +30,7 @@ import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Named
 import jakarta.inject.Singleton
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -134,6 +135,8 @@ class InputBeanFactory {
         stateHistogramStore: StateHistogramStore,
         statsStore: CommittedStatsStore,
         memoryAndParallelismConfig: MemoryAndParallelismConfig,
+        @Named("aggregationDispatcher") aggregationDispatcher: CoroutineDispatcher,
+        @Named("flushDispatcher") flushDispatcher: CoroutineDispatcher,
     ): List<DataFlowPipeline> =
         inputFlows.map {
             val aggStore = aggregateStoreFactory.make()
@@ -153,6 +156,8 @@ class InputBeanFactory {
                 state = state,
                 completionHandler = completionHandler,
                 memoryAndParallelismConfig = memoryAndParallelismConfig,
+                aggregationDispatcher = aggregationDispatcher,
+                flushDispatcher = flushDispatcher,
             )
         }
 }

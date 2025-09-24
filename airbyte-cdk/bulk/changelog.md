@@ -1,3 +1,7 @@
+## Version 0.1.42
+
+Datflow Load CDK: Fixes hang when one of many parallel pipelines fails. Organizes thread pools. 
+
 ## Version 0.1.41
 
 **Extract CDK**
@@ -11,6 +15,8 @@ Add gradle task to bump CDK version + add changelog entry
 ## Version 0.1.39
 
 Minor fixes with stream completion logic + proto conversion in Load CDK.
+
+* **Changed:** Minor fixes with stream completion logic + proto conversion
 
 ## Version 0.1.38
 
