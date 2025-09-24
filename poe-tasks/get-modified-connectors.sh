@@ -77,25 +77,18 @@ fi
 # 4) merge into one list
 all_changes=$(printf '%s\n%s\n%s\n%s' "$committed" "$staged" "$unstaged" "$untracked")
 
-# 4.5) Define helper function to return empty JSON when no connectors are found
-return_empty_json() {
-  if [ "$JSON" = true ]; then
-    echo '{"connector": [""]}'
-  fi
-  exit 0
-}
 
 # 5) drop ignored files
 filtered=$(printf '%s\n' "$all_changes" | grep -v -E "/${ignore_globs}") || {
-  echo "⚠️ Warning: No files remaining after filtering. Returning empty connector list." >&2
-  return_empty_json
+  echo "⚠️ Warning: No files remaining after filtering." >&2
+  filtered=""
 }
 
 # 6) keep only connector paths
 set +e # Ignore errors from grep if no matches are found
 connectors_paths=$(printf '%s\n' "$filtered" | grep -E '^airbyte-integrations/connectors/(source-[^/]+|destination-[^/]+)(/|$)') || {
-  echo "⚠️ Warning: No connector paths found. Returning empty connector list." >&2
-  return_empty_json
+  echo "⚠️ Warning: No connector paths found." >&2
+  connectors_paths=""
 }
 set -e
 
@@ -103,8 +96,8 @@ set -e
 dirs=$(printf '%s\n' "$connectors_paths" \
   | sed -E 's|airbyte-integrations/connectors/([^/]+).*|\1|' \
 ) || {
-  echo "⚠️ Warning: Failed to extract connector directories. Returning empty connector list." >&2
-  return_empty_json
+  echo "⚠️ Warning: Failed to extract connector directories." >&2
+  dirs=""
 }
 
 # 8) unique list of modified connectors
