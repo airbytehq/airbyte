@@ -28,15 +28,17 @@ class DataFlowPipeline(
     private val customDispatcher = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
 
     suspend fun run() {
-        input
-            .map(parse::apply)
-            .transform { aggregate.apply(it, this) }
-            .buffer(capacity = memoryAndParallelismConfig.maxBufferedAggregates)
-            .flowOn(customDispatcher)
-            .map(flush::apply)
-            .map(state::apply)
-            .onCompletion { completionHandler.apply(it) }
-            .flowOn(Dispatchers.IO)
-            .collect {}
+        customDispatcher.use { dispatcher ->
+            input
+                .map(parse::apply)
+                .transform { aggregate.apply(it, this) }
+                .buffer(capacity = memoryAndParallelismConfig.maxBufferedAggregates)
+                .flowOn(dispatcher)
+                .map(flush::apply)
+                .map(state::apply)
+                .onCompletion { completionHandler.apply(it) }
+                .flowOn(Dispatchers.IO)
+                .collect {}
+        }
     }
 }
