@@ -53,6 +53,7 @@ class ObjectProtoEncoder<T : PGobject> : ProtoEncoder<T> {
     ): io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteValueProtobuf.Builder {
         return builder.setString(decoded.value)
     }
+}
 
 // These need to be defined at compile time to avoid issues with type erasure
 object CircleFieldType : ObjectFieldType<PGcircle>(PGcircle::class)
