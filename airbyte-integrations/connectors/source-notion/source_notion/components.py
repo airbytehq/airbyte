@@ -123,7 +123,7 @@ class BlocksRetriever(SimpleRetriever):
             logger.info("Reached max block depth limit. Exiting.")
             return
 
-        for stream_data in super().read_records(records_schema, stream_slice):
+        for sequence_number, stream_data in enumerate(super().read_records(records_schema, stream_slice)):
             if stream_data.data.get("has_children"):
                 self.current_block_depth += 1
                 child_stream_slice = StreamSlice(
@@ -131,5 +131,8 @@ class BlocksRetriever(SimpleRetriever):
                     cursor_slice=stream_slice.cursor_slice,
                 )
                 yield from self.read_records(records_schema, child_stream_slice)
+
+            if "parent" in stream_data:
+                stream_data["parent"]["sequence_number"] = sequence_number
 
             yield stream_data
