@@ -22,7 +22,7 @@ definitions:
           http_method: GET
           request_parameters:
             limit: >-
-              {{ config.v5_page_size if (not next_page_token.next_page_token or
+              {{ 1000 if (not next_page_token.next_page_token or
               'updatedAtAfter' in next_page_token.next_page_token) }}
             fields: >-
               id,name,isDeleted,folderId,cost,parentCampaignId,createdById,updatedById,createdAt,updatedAt,salesforceId
@@ -78,7 +78,7 @@ definitions:
               last_record.updatedAt if last_record.updatedAt is not none) }}
             stop_condition: >-
               {{ not response['values'] or response['values']|length <
-              config.v5_page_size }}
+              1000 }}
         decoder:
           type: JsonDecoder
       incremental_sync:
@@ -194,7 +194,7 @@ definitions:
           http_method: GET
           request_parameters:
             limit: >-
-              {{ config.v5_page_size if (not next_page_token.next_page_token or
+              {{ 1000 if (not next_page_token.next_page_token or
               'updatedAtAfter' in next_page_token.next_page_token) }}
             fields: >-
               id,listId,prospectId,optedOut,createdAt,updatedAt,createdById,updatedById
@@ -250,7 +250,7 @@ definitions:
               last_record.updatedAt if last_record.updatedAt is not none) }}
             stop_condition: >-
               {{ not response['values'] or response['values']|length <
-              config.v5_page_size }}
+              1000 }}
         decoder:
           type: JsonDecoder
       incremental_sync:
@@ -282,7 +282,7 @@ definitions:
           http_method: GET
           request_parameters:
             limit: >-
-              {{ config.v5_page_size if (not next_page_token.next_page_token or
+              {{ 1000 if (not next_page_token.next_page_token or
               'updatedAtAfter' in next_page_token.next_page_token) }}
             fields: >-
               id,name,title,description,isPublic,folderId,campaignId,isDeleted,isDynamic,createdAt,updatedAt,createdById,updatedById
@@ -338,7 +338,7 @@ definitions:
               if last_record.updatedAt is not none) }}
             stop_condition: >-
               {{ not response['values'] or response['values']|length <
-              config.v5_page_size }}
+              1000 }}
         decoder:
           type: JsonDecoder
       incremental_sync:
@@ -370,7 +370,7 @@ definitions:
           http_method: GET
           request_parameters:
             limit: >-
-              {{ config.v5_page_size if (not next_page_token.next_page_token or
+              {{ 1000 if (not next_page_token.next_page_token or
               'idGreaterThan' in next_page_token.next_page_token) }}
             fields: >-
               id,name,salesforceId,isDeleted,annualRevenue,billingAddressOne,billingAddressTwo,billingCity,billingCountry,billingState,billingZip,description,employees,fax,industry,number,ownership,phone,rating,shippingAddressOne,shippingAddressTwo,shippingCity,shippingCountry,shippingState,shippingZip,sic,site,tickerSymbol,type,website,createdAt,updatedAt,createdById,updatedById,assignedToId
@@ -419,7 +419,7 @@ definitions:
               {{ response['nextPageUrl'] if response['nextPageUrl'] is not none
               else 'v5/objects/prospect-accounts?idGreaterThan=' ~
               last_record.id }}
-            stop_condition: "{{ response['values']|length < config['v5_page_size'] }}"
+            stop_condition: "{{ response['values']|length < 1000 }}"
         decoder:
           type: JsonDecoder
       schema_loader:
@@ -439,7 +439,7 @@ definitions:
           http_method: GET
           request_parameters:
             limit: >-
-              {{ config.v5_page_size if (not next_page_token.next_page_token or
+              {{ 1000 if (not next_page_token.next_page_token or
               'updatedAtAfter' in next_page_token.next_page_token) }}
             fields: >-
               id,email,optedOut,isDeleted,isDoNotCall,isDoNotEmail,isEmailHardBounced,isReviewed,isStarred,doNotSell,prospectAccountId,campaignId,profileId,lifecycleStageId,userId,lastActivityAt,recentInteraction,firstName,lastName,salutation,jobTitle,emailBouncedAt,emailBouncedReason,source,sourceParameter,campaignParameter,mediumParameter,contentParameter,termParameter,firstActivityAt,firstAssignedAt,firstReferrerQuery,firstReferrerType,firstReferrerUrl,salesforceId,salesforceContactId,salesforceLeadId,salesforceAccountId,salesforceCampaignId,salesforceOwnerId,salesforceUrl,salesforceLastSync,assignedToId,convertedAt,convertedFromObjectName,convertedFromObjectType,grade,phone,fax,addressOne,addressTwo,city,state,zip,country,company,annualRevenue,website,industry,department,yearsInBusiness,employees,score,territory,comments,notes,createdAt,updatedAt,createdById,updatedById
@@ -495,7 +495,7 @@ definitions:
               last_record.updatedAt if last_record.updatedAt is not none) }}
             stop_condition: >-
               {{ not response['values'] or response['values']|length <
-              config.v5_page_size }}
+              1000 }}
         decoder:
           type: JsonDecoder
       incremental_sync:
@@ -527,7 +527,7 @@ definitions:
           http_method: GET
           request_parameters:
             limit: >-
-              {{ config.v5_page_size if (not next_page_token.next_page_token or
+              {{ 1000 if (not next_page_token.next_page_token or
               'updatedAtAfter' in next_page_token.next_page_token) }}
             fields: >-
               id,email,username,isDeleted,firstName,jobTitle,role,roleName,salesforceId,tagReplacementLanguage,createdAt,updatedAt,createdById,updatedById
@@ -583,7 +583,7 @@ definitions:
               if last_record.updatedAt is not none) }}
             stop_condition: >-
               {{ not response['values'] or response['values']|length <
-              config.v5_page_size }}
+              1000 }}
         decoder:
           type: JsonDecoder
       incremental_sync:
@@ -615,7 +615,7 @@ definitions:
           http_method: GET
           request_parameters:
             limit: >-
-              {{ config.v5_page_size if (not next_page_token.next_page_token or
+              {{ 1000 if (not next_page_token.next_page_token or
               'updatedAtAfter' in next_page_token.next_page_token) }}
             fields: >-
               id,visitId,prospectId,visitorId,emailId,type,typeName,details,campaignId,customRedirectId,emailTemplateId,fileId,formHandlerId,formId,landingPageId,listEmailId,multivariateTestVariationId,opportunityId,paidSearchAdId,siteSearchQueryId,visitorPageViewId,createdAt,updatedAt
@@ -668,7 +668,7 @@ definitions:
               last_record.updatedAt if last_record.updatedAt is not none) }}
             stop_condition: >-
               {{ not response['values'] or response['values']|length <
-              config.v5_page_size }}
+              1000 }}
         decoder:
           type: JsonDecoder
       incremental_sync:
@@ -700,7 +700,7 @@ definitions:
           http_method: GET
           request_parameters:
             limit: >-
-              {{ config.v5_page_size if (not next_page_token.next_page_token or
+              {{ 1000 if (not next_page_token.next_page_token or
               'updatedAtAfter' in next_page_token.next_page_token) }}
             fields: >-
               id,prospectId,pageViewCount,isIdentified,doNotSell,hostname,ipAddress,campaignId,sourceParameter,campaignParameter,mediumParameter,contentParameter,termParameter,createdAt,updatedAt
@@ -756,7 +756,7 @@ definitions:
               last_record.updatedAt if last_record.updatedAt is not none) }}
             stop_condition: >-
               {{ not response['values'] or response['values']|length <
-              config.v5_page_size }}
+              1000 }}
         decoder:
           type: JsonDecoder
       incremental_sync:
@@ -788,7 +788,7 @@ definitions:
           http_method: GET
           request_parameters:
             limit: >-
-              {{ config.v5_page_size if (not next_page_token.next_page_token or
+              {{ 1000 if (not next_page_token.next_page_token or
               'updatedAtAfter' in next_page_token.next_page_token) }}
             fields: >-
               id,visitorId,prospectId,visitorPageViewCount,firstVisitorPageViewAt,lastVisitorPageViewAt,durationInSeconds,sourceParameter,campaignParameter,mediumParameter,contentParameter,termParameter,createdAt,updatedAt
@@ -841,7 +841,7 @@ definitions:
               if last_record.updatedAt is not none) }}
             stop_condition: >-
               {{ not response['values'] or response['values']|length <
-              config.v5_page_size }}
+              1000 }}
         decoder:
           type: JsonDecoder
       incremental_sync:
@@ -877,7 +877,7 @@ definitions:
           http_method: GET
           request_parameters:
             limit: >-
-              {{ config.v5_page_size if (not next_page_token.next_page_token or
+              {{ 1000 if (not next_page_token.next_page_token or
               'idGreaterThan' in next_page_token.next_page_token) }}
             fields: >-
               id,name,parentFolderId,path,usePermissions,createdAt,updatedAt,createdById,updatedById
@@ -922,7 +922,7 @@ definitions:
             cursor_value: >-
               {{ response['nextPageUrl'] if response['nextPageUrl'] is not none
               else 'v5/objects/folders?idGreaterThan=' ~ last_record.id }}
-            stop_condition: "{{ response['values']|length < config['v5_page_size'] }}"
+            stop_condition: "{{ response['values']|length < 1000 }}"
         decoder:
           type: JsonDecoder
       schema_loader:
@@ -942,7 +942,7 @@ definitions:
           http_method: GET
           request_parameters:
             limit: >-
-              {{ config.v5_page_size if (not next_page_token.next_page_token or
+              {{ 1000 if (not next_page_token.next_page_token or
               'idGreaterThan' in next_page_token.next_page_token) }}
             fields: >-
               id,name,url,destinationUrl,vanityUrl,campaignId,salesforceId,isDeleted,folderId,trackerDomainId,trackerDomain.domain,vanityUrlPath,trackedUrl,bitlyIsPersonalized,bitlyShortUrl,gaSource,gaMedium,gaTerm,gaContent,gaCampaign,createdAt,updatedAt,createdById,updatedById
@@ -991,7 +991,7 @@ definitions:
               {{ response['nextPageUrl'] if response['nextPageUrl'] is not none
               else 'v5/objects/custom-redirects?idGreaterThan=' ~ last_record.id
               }}
-            stop_condition: "{{ response['values']|length < config['v5_page_size'] }}"
+            stop_condition: "{{ response['values']|length < 1000 }}"
         decoder:
           type: JsonDecoder
       schema_loader:
@@ -1011,7 +1011,7 @@ definitions:
           http_method: GET
           request_parameters:
             limit: >-
-              {{ config.v5_page_size if (not next_page_token.next_page_token or
+              {{ 1000 if (not next_page_token.next_page_token or
               'sentAtAfter' in next_page_token.next_page_token) }}
             fields: >-
               id,name,type,sentAt,subject,clientType,isOperational,campaignId,prospectId,folderId,listId,listEmailId,emailTemplateId,trackerDomainId,senderOptions.type,senderOptions.address,senderOptions.name,senderOptions.userId,senderOptions.prospectCustomFieldId,senderOptions.accountCustomFieldId,replyToOptions.type,replyToOptions.address,replyToOptions.userId,replyToOptions.prospectCustomFieldId,replyToOptions.accountCustomFieldId,createdById
@@ -1064,7 +1064,7 @@ definitions:
               last_record.sentAt is not none) }}
             stop_condition: >-
               {{ not response['values'] or response['values']|length <
-              config.v5_page_size }}
+              1000 }}
         decoder:
           type: JsonDecoder
       incremental_sync:
@@ -1096,7 +1096,7 @@ definitions:
           http_method: GET
           request_parameters:
             limit: >-
-              {{ config.v5_page_size if (not next_page_token.next_page_token or
+              {{ 1000 if (not next_page_token.next_page_token or
               'updatedAtAfter' in next_page_token.next_page_token) }}
             fields: >-
               id,status,isDeleted,salesforceId,description,businessHours,prospectsMultipleEntry,schedule,scheduleCreatedById,recipientListIds,suppressionListIds,createdAt,updatedAt,createdById,updatedById
@@ -1152,7 +1152,7 @@ definitions:
               last_record.updatedAt if last_record.updatedAt is not none) }}
             stop_condition: >-
               {{ not response['values'] or response['values']|length <
-              config.v5_page_size }}
+              1000 }}
         decoder:
           type: JsonDecoder
       incremental_sync:
@@ -1184,7 +1184,7 @@ definitions:
           http_method: GET
           request_parameters:
             limit: >-
-              {{ config.v5_page_size if (not next_page_token.next_page_token or
+              {{ 1000 if (not next_page_token.next_page_token or
               'idGreaterThan' in next_page_token.next_page_token) }}
             fields: >-
               id,name,folderId,campaignId,salesforceId,trackerDomainId,vanityUrl,vanityUrlPath,url,size,isTracked,bitlyIsPersonalized,bitlyShortUrl,createdAt,updatedAt,createdById,updatedById
@@ -1229,7 +1229,7 @@ definitions:
             cursor_value: >-
               {{ response['nextPageUrl'] if response['nextPageUrl'] is not none
               else 'v5/objects/files?idGreaterThan=' ~ last_record.id }}
-            stop_condition: "{{ response['values']|length < config['v5_page_size'] }}"
+            stop_condition: "{{ response['values']|length < 1000 }}"
         decoder:
           type: JsonDecoder
       schema_loader:
@@ -1249,7 +1249,7 @@ definitions:
           http_method: GET
           request_parameters:
             limit: >-
-              {{ config.v5_page_size if (not next_page_token.next_page_token or
+              {{ 1000 if (not next_page_token.next_page_token or
               'updatedAtAfter' in next_page_token.next_page_token) }}
             fields: >-
               id,folderId,folderRef,objectType,objectId,objectName,objectRef,createdAt,updatedAt,createdById,updatedById
@@ -1302,7 +1302,7 @@ definitions:
               last_record.updatedAt if last_record.updatedAt is not none) }}
             stop_condition: >-
               {{ not response['values'] or response['values']|length <
-              config.v5_page_size }}
+              1000 }}
         decoder:
           type: JsonDecoder
       incremental_sync:
@@ -1334,7 +1334,7 @@ definitions:
           http_method: GET
           request_parameters:
             limit: >-
-              {{ config.v5_page_size if (not next_page_token.next_page_token or
+              {{ 1000 if (not next_page_token.next_page_token or
               'idGreaterThan' in next_page_token.next_page_token) }}
             fields: >-
               id,name,campaignId,layoutTemplateId,folderId,trackerDomainId,salesforceId,isDeleted,isUseRedirectLocation,isAlwaysDisplay,isCookieless,isCaptchaEnabled,showNotProspect,embedCode,submitButtonText,beforeFormContent,afterFormContent,thankYouContent,thankYouCode,redirectLocation,fontSize,fontFamily,fontColor,labelAlignment,radioAlignment,checkboxAlignment,requiredCharacter,createdById,updatedById,createdAt,updatedAt
@@ -1382,7 +1382,7 @@ definitions:
             cursor_value: >-
               {{ response['nextPageUrl'] if response['nextPageUrl'] is not none
               else 'v5/objects/forms?idGreaterThan=' ~ last_record.id }}
-            stop_condition: "{{ response['values']|length < config['v5_page_size'] }}"
+            stop_condition: "{{ response['values']|length < 1000 }}"
         decoder:
           type: JsonDecoder
       schema_loader:
@@ -1402,7 +1402,7 @@ definitions:
           http_method: GET
           request_parameters:
             limit: >-
-              {{ config.v5_page_size if (not next_page_token.next_page_token or
+              {{ 1000 if (not next_page_token.next_page_token or
               'updatedAtAfter' in next_page_token.next_page_token) }}
             fields: >-
               id,formId,prospectApiFieldId,type,dataFormat,sortOrder,hasDependents,hasProgressives,hasValues,label,errorMessage,cssClasses,isRequired,isAlwaysDisplay,isMaintainInitialValue,isDoNotPrefill,createdById,updatedById,createdAt,updatedAt
@@ -1455,7 +1455,7 @@ definitions:
               last_record.updatedAt if last_record.updatedAt is not none) }}
             stop_condition: >-
               {{ not response['values'] or response['values']|length <
-              config.v5_page_size }}
+              1000 }}
         decoder:
           type: JsonDecoder
       incremental_sync:
@@ -1487,7 +1487,7 @@ definitions:
           http_method: GET
           request_parameters:
             limit: >-
-              {{ config.v5_page_size if (not next_page_token.next_page_token or
+              {{ 1000 if (not next_page_token.next_page_token or
               'idGreaterThan' in next_page_token.next_page_token) }}
             fields: >-
               id,name,folderId,campaignId,trackerDomainId,isDataForwarded,successLocation,errorLocation,isAlwaysEmail,isCookieless,salesforceId,embedCode,createdAt,createdById,isDeleted,updatedById
@@ -1535,7 +1535,7 @@ definitions:
             cursor_value: >-
               {{ response['nextPageUrl'] if response['nextPageUrl'] is not none
               else 'v5/objects/form-handlers?idGreaterThan=' ~ last_record.id }}
-            stop_condition: "{{ response['values']|length < config['v5_page_size'] }}"
+            stop_condition: "{{ response['values']|length < 1000 }}"
         decoder:
           type: JsonDecoder
       schema_loader:
@@ -1555,7 +1555,7 @@ definitions:
           http_method: GET
           request_parameters:
             limit: >-
-              {{ config.v5_page_size if (not next_page_token.next_page_token or
+              {{ 1000 if (not next_page_token.next_page_token or
               'idGreaterThan' in next_page_token.next_page_token) }}
             fields: >-
               id,name,formHandlerId,dataFormat,prospectApiFieldId,isMaintainInitialValue,errorMessage,isRequired,createdAt,createdById
@@ -1601,7 +1601,7 @@ definitions:
               {{ response['nextPageUrl'] if response['nextPageUrl'] is not none
               else 'v5/objects/form-handler-fields?idGreaterThan=' ~
               last_record.id }}
-            stop_condition: "{{ response['values']|length < config['v5_page_size'] }}"
+            stop_condition: "{{ response['values']|length < 1000 }}"
         decoder:
           type: JsonDecoder
       schema_loader:
@@ -1621,7 +1621,7 @@ definitions:
           http_method: GET
           request_parameters:
             limit: >-
-              {{ config.v5_page_size if (not next_page_token.next_page_token or
+              {{ 1000 if (not next_page_token.next_page_token or
               'updatedAtAfter' in next_page_token.next_page_token) }}
             fields: >-
               id,name,campaignId,salesforceId,isDeleted,layoutType,layoutTableBorder,isUseRedirectLocation,bitlyIsPersonalized,bitlyShortUrl,url,vanityUrl,folderId,formId,layoutTemplateId,title,description,isDoNotIndex,vanityUrlPath,redirectLocation,trackerDomainId,archiveDate,createdAt,updatedAt,createdById,updatedById
@@ -1677,7 +1677,7 @@ definitions:
               last_record.updatedAt if last_record.updatedAt is not none) }}
             stop_condition: >-
               {{ not response['values'] or response['values']|length <
-              config.v5_page_size }}
+              1000 }}
         decoder:
           type: JsonDecoder
       incremental_sync:
@@ -1709,7 +1709,7 @@ definitions:
           http_method: GET
           request_parameters:
             limit: >-
-              {{ config.v5_page_size if (not next_page_token.next_page_token or
+              {{ 1000 if (not next_page_token.next_page_token or
               'idGreaterThan' in next_page_token.next_page_token) }}
             fields: >-
               id,name,layoutContent,siteSearchContent,formContent,folderId,isDeleted,isIncludeDefaultCss,createdAt,updatedAt,createdById,updatedById
@@ -1758,7 +1758,7 @@ definitions:
               {{ response['nextPageUrl'] if response['nextPageUrl'] is not none
               else 'v5/objects/layout-templates?idGreaterThan=' ~ last_record.id
               }}
-            stop_condition: "{{ response['values']|length < config['v5_page_size'] }}"
+            stop_condition: "{{ response['values']|length < 1000 }}"
         decoder:
           type: JsonDecoder
       schema_loader:
@@ -1778,7 +1778,7 @@ definitions:
           http_method: GET
           request_parameters:
             limit: >-
-              {{ config.v5_page_size if (not next_page_token.next_page_token or
+              {{ 1000 if (not next_page_token.next_page_token or
               'updatedAtAfter' in next_page_token.next_page_token) }}
             fields: id,name,isDeleted,isLocked,position,matchType,createdAt,updatedAt
             deleted: >-
@@ -1833,7 +1833,7 @@ definitions:
               last_record.updatedAt if last_record.updatedAt is not none) }}
             stop_condition: >-
               {{ not response['values'] or response['values']|length <
-              config.v5_page_size }}
+              1000 }}
         decoder:
           type: JsonDecoder
       incremental_sync:
@@ -1865,7 +1865,7 @@ definitions:
           http_method: GET
           request_parameters:
             limit: >-
-              {{ config.v5_page_size if (not next_page_token.next_page_token or
+              {{ 1000 if (not next_page_token.next_page_token or
               'createdAtAfter' in next_page_token.next_page_token) }}
             fields: id,prospectId,previousStageId,nextStageId,secondsElapsed,createdAt
             orderBy: >-
@@ -1917,7 +1917,7 @@ definitions:
               last_record.createdAt if last_record.createdAt is not none) }}
             stop_condition: >-
               {{ not response['values'] or response['values']|length <
-              config.v5_page_size }}
+              1000 }}
         decoder:
           type: JsonDecoder
       incremental_sync:
@@ -1949,7 +1949,7 @@ definitions:
           http_method: GET
           request_parameters:
             limit: >-
-              {{ config.v5_page_size if (not next_page_token.next_page_token or
+              {{ 1000 if (not next_page_token.next_page_token or
               'updatedAtAfter' in next_page_token.next_page_token) }}
             fields: >-
               id,name,subject,isPaused,isSent,isDeleted,isOperational,sentAt,campaignId,clientType,senderOptions.type,senderOptions.address,senderOptions.name,senderOptions.userId,senderOptions.prospectCustomFieldId,senderOptions.accountCustomFieldId,replyToOptions.type,replyToOptions.address,replyToOptions.userId,replyToOptions.prospectCustomFieldId,replyToOptions.accountCustomFieldId,emailTemplateId,trackerDomainId,folderId,createdAt,updatedAt,createdById,updatedById
@@ -2005,7 +2005,7 @@ definitions:
               last_record.updatedAt if last_record.updatedAt is not none) }}
             stop_condition: >-
               {{ not response['values'] or response['values']|length <
-              config.v5_page_size }}
+              1000 }}
         decoder:
           type: JsonDecoder
       incremental_sync:
@@ -2037,7 +2037,7 @@ definitions:
           http_method: GET
           request_parameters:
             limit: >-
-              {{ config.v5_page_size if (not next_page_token.next_page_token or
+              {{ 1000 if (not next_page_token.next_page_token or
               'updatedAtAfter' in next_page_token.next_page_token) }}
             fields: >-
               id,closedAt,name,type,stage,status,probability,value,campaignId,salesforceId,createdAt,updatedAt,createdById,updatedById
@@ -2090,7 +2090,7 @@ definitions:
               last_record.updatedAt if last_record.updatedAt is not none) }}
             stop_condition: >-
               {{ not response['values'] or response['values']|length <
-              config.v5_page_size }}
+              1000 }}
         decoder:
           type: JsonDecoder
       incremental_sync:
@@ -2122,7 +2122,7 @@ definitions:
           http_method: GET
           request_parameters:
             limit: >-
-              {{ config.v5_page_size if (not next_page_token.next_page_token or
+              {{ 1000 if (not next_page_token.next_page_token or
               'updatedAtAfter' in next_page_token.next_page_token) }}
             fields: id,name,objectCount,createdById,updatedById,createdAt,updatedAt
             orderBy: >-
@@ -2174,7 +2174,7 @@ definitions:
               last_record.updatedAt is not none) }}
             stop_condition: >-
               {{ not response['values'] or response['values']|length <
-              config.v5_page_size }}
+              1000 }}
         decoder:
           type: JsonDecoder
       incremental_sync:
@@ -2206,7 +2206,7 @@ definitions:
           http_method: GET
           request_parameters:
             limit: >-
-              {{ config.v5_page_size if (not next_page_token.next_page_token or
+              {{ 1000 if (not next_page_token.next_page_token or
               'idGreaterThan' in next_page_token.next_page_token) }}
             fields: >-
               id,domain,isPrimary,isDeleted,defaultCampaignId,httpsStatus,sslStatus,sslStatusDetails,sslRequestedById,validationStatus,validatedAt,vanityUrlStatus,trackingCode,createdAt,updatedAt,createdById,updatedById
@@ -2255,7 +2255,7 @@ definitions:
               {{ response['nextPageUrl'] if response['nextPageUrl'] is not none
               else 'v5/objects/tracker-domains?idGreaterThan=' ~ last_record.id
               }}
-            stop_condition: "{{ response['values']|length < config['v5_page_size'] }}"
+            stop_condition: "{{ response['values']|length < 1000 }}"
         decoder:
           type: JsonDecoder
       schema_loader:
@@ -2275,7 +2275,7 @@ definitions:
           http_method: GET
           request_parameters:
             limit: >-
-              {{ config.v5_page_size if (not next_page_token.next_page_token or
+              {{ 1000 if (not next_page_token.next_page_token or
               'createdAtAfter' in next_page_token.next_page_token) }}
             fields: >-
               id,url,title,visitorId,campaignId,visitId,durationInSeconds,salesforceId,createdAt
@@ -2328,7 +2328,7 @@ definitions:
               last_record.createdAt if last_record.createdAt is not none) }}
             stop_condition: >-
               {{ not response['values'] or response['values']|length <
-              config.v5_page_size }}
+              1000 }}
         decoder:
           type: JsonDecoder
       incremental_sync:
@@ -2408,7 +2408,7 @@ definitions:
           http_method: GET
           request_parameters:
             limit: >-
-              {{ config.v5_page_size if (not next_page_token.next_page_token or
+              {{ 1000 if (not next_page_token.next_page_token or
               'updatedAtAfter' in next_page_token.next_page_token) }}
             fields: >-
               id,name,fieldId,type,salesforceId,isRequired,isRecordMultipleResponses,isUseValues,isAnalyticsSynced,createdAt,updatedAt,createdById,updatedById
@@ -2461,7 +2461,7 @@ definitions:
               last_record.updatedAt if last_record.updatedAt is not none) }}
             stop_condition: >-
               {{ not response['values'] or response['values']|length <
-              config.v5_page_size }}
+              1000 }}
         decoder:
           type: JsonDecoder
       incremental_sync:
@@ -2493,7 +2493,7 @@ definitions:
           http_method: GET
           request_parameters:
             limit: >-
-              {{ config.v5_page_size if (not next_page_token.next_page_token or
+              {{ 1000 if (not next_page_token.next_page_token or
               'updatedAtAfter' in next_page_token.next_page_token) }}
             fields: >-
               id,name,basedOnProspectApiFieldId,embedCode,embedUrl,basedOn,tagReplacementLanguage,folderId,trackerDomainId,createdAt,updatedAt,isDeleted,createdById,updatedById
@@ -2549,7 +2549,7 @@ definitions:
               last_record.updatedAt if last_record.updatedAt is not none) }}
             stop_condition: >-
               {{ not response['values'] or response['values']|length <
-              config.v5_page_size }}
+              1000 }}
         decoder:
           type: JsonDecoder
       incremental_sync:
@@ -2581,7 +2581,7 @@ definitions:
           http_method: GET
           request_parameters:
             limit: >-
-              {{ config.v5_page_size if (not next_page_token.next_page_token or
+              {{ 1000 if (not next_page_token.next_page_token or
               'idGreaterThan' in next_page_token.next_page_token) }}
             fields: id,dynamicContentId,comparison,operator,value1,value2,content
             orderBy: >-
@@ -2626,7 +2626,7 @@ definitions:
               {{ response['nextPageUrl'] if response['nextPageUrl'] is not none
               else 'v5/objects/dynamic-content-variations?idGreaterThan=' ~
               last_record.id }}
-            stop_condition: "{{ response['values']|length < config['v5_page_size'] }}"
+            stop_condition: "{{ response['values']|length < 1000 }}"
         decoder:
           type: JsonDecoder
       schema_loader:
