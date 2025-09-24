@@ -17,6 +17,8 @@ Here are some helpful tips and reminders for your convenience.
 Airbyte Maintainers (that's you!) can execute the following slash commands on your PR:
 
 - `/format-fix` - Fixes most formatting issues.
+-  `/update-connector-cdk-version connector=<CONNECTOR_NAME>` - Updates the specified connector to the latest CDK version. 
+Example: `/update-connector-cdk-version connector=destination-bigquery`
 - `/bump-version` - Bumps connector versions.
   - You can specify a custom changelog by passing `changelog`. Example: `/bump-version changelog="My cool update"`
   - Leaving the changelog arg blank will auto-populate the changelog from the PR title.
@@ -26,5 +28,6 @@ Airbyte Maintainers (that's you!) can execute the following slash commands on yo
 - `/poe source example lock` - Alias for `/poe connector source-example lock`.
 - `/poe source example use-cdk-branch my/branch` - Pin the `source-example` CDK reference to the branch name specified.
 - `/poe source example use-cdk-latest` - Update the `source-example` CDK dependency to the latest available version.
+- 
 
 [📝 _Edit this welcome message._](https://github.com/airbytehq/airbyte/blob/master/.github/pr-welcome-internal.md)

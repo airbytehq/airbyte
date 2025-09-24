@@ -1,4 +1,88 @@
+## Version 0.1.39
+
 **Load CDK**
+
+* **Changed:** Minor fixes with stream completion logic + proto conversion
+* 
+## Version 0.1.38
+
+**Load CDK**
+
+* **Changed:** Adds stats support for "speed" mode
+
+## Version 0.1.37
+
+* **Changed:** load-s3: S3Client forces path-style access, to enable minio compatibility
+
+## Version 0.1.36
+
+* **Changed:** use dedicated dispatcher for parse+aggregate stage for an individual pipeline + cache column name lookup
+
+## Version 0.1.35
+
+* **Changed:** Fix input stream wiring for dockerized acceptance tests
+
+## Version 0.1.34
+
+* **Changed:** Moved version declaration from build.gradle to version.properties
+
+## Version 0.1.33
+
+**Load CDK**
+
+* **Changed:** Low-code API destination support for dynamically defined discover objects and operations
+
+## Version 0.1.32
+
+**Load CDK**
+
+* **Changed:** Fix input stream wiring for non-dockerized acceptance tests
+
+## Version 0.1.31
+
+**Extract CDK**
+
+* **Changed:** Pass WhereNode to FromSample node so we can apply filters to the sample query.
+
+## Version 0.1.30
+
+**Load CDK**
+
+* **Changed:** Low-code API destination support for statically defined discover operations
+
+## Version 0.1.29
+
+**Load CDK**
+
+* Use correct field name for generation ID meta column.
+
+## Version 0.1.28
+
+**Extract CDK**
+
+* **Changed:** Protobuf encoding fixes to make various types compatible with load(destination) decoding.
+
+**Load CDK**
+
+## Version 0.1.27
+
+* **Changed:** Allow per-test properties for spec integration test
+
+## Version 0.1.26
+
+* **Changed:** Improve load-azure-blob-storage documentation.
+
+## Version 0.1.25
+
+* **Changed:** Adds proto support to dataflow. Misc transform package cleanup (developer-facing).
+
+## Version 0.1.24
+
+* **Changed:** Adds byte counts to emitted state stats.
+
+## Version 0.1.23
+
+* **Changed:** Dataflow CDK fails syncs if there are unflushed states at the end of a sync.
 
 ## Version 0.1.22
 
@@ -10,7 +94,7 @@
 
 ## Version 0.1.20
 
-* **Changed:** Fix hard failure edge case in stream initialization for in dataflow cdk lifecycle. 
+* **Changed:** Fix hard failure edge case in stream initialization for in dataflow cdk lifecycle.
 
 ## Version 0.1.18
 

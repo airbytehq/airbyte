@@ -7,8 +7,10 @@ package io.airbyte.cdk.load.dataflow.pipeline
 import io.airbyte.cdk.load.dataflow.aggregate.Aggregate
 import io.airbyte.cdk.load.dataflow.aggregate.AggregateEntry
 import io.airbyte.cdk.load.dataflow.aggregate.AggregateStore
+import io.airbyte.cdk.load.dataflow.aggregate.StoreKey
 import io.airbyte.cdk.load.dataflow.state.PartitionHistogram
 import io.airbyte.cdk.load.dataflow.state.StateHistogramStore
+import io.airbyte.cdk.load.dataflow.state.stats.CommittedStatsStore
 import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -32,6 +34,8 @@ class PipelineCompletionHandlerTest {
 
     @MockK private lateinit var stateHistogramStore: StateHistogramStore
 
+    @MockK private lateinit var statsStore: CommittedStatsStore
+
     private lateinit var pipelineCompletionHandler: PipelineCompletionHandler
 
     @BeforeEach
@@ -40,6 +44,7 @@ class PipelineCompletionHandlerTest {
             PipelineCompletionHandler(
                 aggStore = aggStore,
                 stateHistogramStore = stateHistogramStore,
+                statsStore = statsStore,
             )
     }
 
@@ -60,13 +65,17 @@ class PipelineCompletionHandlerTest {
         // Given
         val mockAggregate1 = mockk<Aggregate>()
         val mockAggregate2 = mockk<Aggregate>()
-        val mockHistogram1 = mockk<PartitionHistogram>()
-        val mockHistogram2 = mockk<PartitionHistogram>()
+        val mockCountsHistogram1 = mockk<PartitionHistogram>()
+        val mockCountsHistogram2 = mockk<PartitionHistogram>()
+        val mockBytesHistogram1 = mockk<PartitionHistogram>()
+        val mockBytesHistogram2 = mockk<PartitionHistogram>()
 
         val aggregateEntry1 =
             AggregateEntry(
+                key = Fixtures.key,
                 value = mockAggregate1,
-                partitionHistogram = mockHistogram1,
+                partitionCountsHistogram = mockCountsHistogram1,
+                partitionBytesHistogram = mockBytesHistogram1,
                 stalenessTrigger = mockk(),
                 recordCountTrigger = mockk(),
                 estimatedBytesTrigger = mockk()
@@ -74,8 +83,10 @@ class PipelineCompletionHandlerTest {
 
         val aggregateEntry2 =
             AggregateEntry(
+                key = Fixtures.key,
                 value = mockAggregate2,
-                partitionHistogram = mockHistogram2,
+                partitionCountsHistogram = mockCountsHistogram2,
+                partitionBytesHistogram = mockBytesHistogram2,
                 stalenessTrigger = mockk(),
                 recordCountTrigger = mockk(),
                 estimatedBytesTrigger = mockk()
@@ -85,6 +96,7 @@ class PipelineCompletionHandlerTest {
         coEvery { mockAggregate1.flush() } just Runs
         coEvery { mockAggregate2.flush() } just Runs
         every { stateHistogramStore.acceptFlushedCounts(any()) } returns mockk()
+        every { statsStore.acceptStats(any(), any(), any()) } returns mockk()
 
         // When
         pipelineCompletionHandler.apply(null)
@@ -92,8 +104,14 @@ class PipelineCompletionHandlerTest {
         // Then
         coVerify(exactly = 1) { mockAggregate1.flush() }
         coVerify(exactly = 1) { mockAggregate2.flush() }
-        verify(exactly = 1) { stateHistogramStore.acceptFlushedCounts(mockHistogram1) }
-        verify(exactly = 1) { stateHistogramStore.acceptFlushedCounts(mockHistogram2) }
+        verify(exactly = 1) { stateHistogramStore.acceptFlushedCounts(mockCountsHistogram1) }
+        verify(exactly = 1) { stateHistogramStore.acceptFlushedCounts(mockCountsHistogram2) }
+        verify(exactly = 1) {
+            statsStore.acceptStats(Fixtures.key, mockCountsHistogram1, mockBytesHistogram1)
+        }
+        verify(exactly = 1) {
+            statsStore.acceptStats(Fixtures.key, mockCountsHistogram2, mockBytesHistogram2)
+        }
     }
 
     @Test
@@ -107,19 +125,23 @@ class PipelineCompletionHandlerTest {
         // Then
         verify(exactly = 1) { aggStore.getAll() }
         verify(exactly = 0) { stateHistogramStore.acceptFlushedCounts(any()) }
+        verify(exactly = 0) { statsStore.acceptStats(any(), any(), any()) }
     }
 
     @Test
     fun `apply should handle aggregate flush failure`() = runTest {
         // Given
         val mockAggregate = mockk<Aggregate>()
-        val mockHistogram = mockk<PartitionHistogram>()
+        val mockCountsHistogram = mockk<PartitionHistogram>()
+        val mockBytesHistogram = mockk<PartitionHistogram>()
         val flushException = RuntimeException("Flush failed")
 
         val aggregateEntry =
             AggregateEntry(
+                key = Fixtures.key,
                 value = mockAggregate,
-                partitionHistogram = mockHistogram,
+                partitionCountsHistogram = mockCountsHistogram,
+                partitionBytesHistogram = mockBytesHistogram,
                 stalenessTrigger = mockk(),
                 recordCountTrigger = mockk(),
                 estimatedBytesTrigger = mockk()
@@ -134,5 +156,10 @@ class PipelineCompletionHandlerTest {
         coVerify(exactly = 1) { mockAggregate.flush() }
         // Note: acceptFlushedCounts should not be called if flush fails
         verify(exactly = 0) { stateHistogramStore.acceptFlushedCounts(any()) }
+        verify(exactly = 0) { statsStore.acceptStats(any(), any(), any()) }
+    }
+
+    object Fixtures {
+        val key = StoreKey("namespace", "name")
     }
 }
