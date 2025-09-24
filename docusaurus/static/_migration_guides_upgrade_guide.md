@@ -1,4 +1,4 @@
-Review the following information to prepare for an execute your upgrade.
+Review the following information to prepare for and execute your upgrade.
 
 ### Review the changelog
 
