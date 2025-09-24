@@ -261,7 +261,6 @@ class JdbcConcurrentPartitionsCreator<
             log.warn { "No split boundaries found, using single partition" }
             return listOf(JdbcNonResumablePartitionReader(partition))
         }
-        log.warn { "No split boundaries found, using single partition" }
         val partitions: List<JdbcPartition<*>> = partitionFactory.split(partition, splitBoundaries)
         log.info { "Table will be read by ${partitions.size} concurrent partition reader(s)." }
         return partitions.map { JdbcNonResumablePartitionReader(it) }
