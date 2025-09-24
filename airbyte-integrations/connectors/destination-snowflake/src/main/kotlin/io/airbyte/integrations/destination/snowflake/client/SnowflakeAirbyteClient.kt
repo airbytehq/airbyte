@@ -15,7 +15,6 @@ import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNat
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableSqlOperations
 import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
 import io.airbyte.integrations.destination.snowflake.sql.COUNT_TOTAL_ALIAS
-import io.airbyte.integrations.destination.snowflake.sql.QUOTE
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -50,7 +49,7 @@ class SnowflakeAirbyteClient(
             }
         } catch (e: SnowflakeSQLException) {
             log.debug(e) {
-                "Table ${tableName.toPrettyString(quote=QUOTE)} does not exist.  Returning a null count to signal a missing table."
+                "Table ${tableName.toPrettyString()} does not exist.  Returning a null count to signal a missing table."
             }
             null
         }
@@ -180,7 +179,7 @@ class SnowflakeAirbyteClient(
                 // uppercase.
                 // We should probably be using the mapping in columnNameMapping, but for
                 // now, this is a good enough approximation.
-                val mappedName = columnNameMapping.get(name) ?: name
+                val mappedName = columnNameMapping[name] ?: name
                 ColumnDefinition(
                     mappedName,
                     snowflakeColumnUtils.toDialectType(fieldType.type).takeWhile { char ->
@@ -197,11 +196,11 @@ class SnowflakeAirbyteClient(
         columnsInStream: Set<ColumnDefinition>
     ): Triple<Set<ColumnDefinition>, Set<ColumnDefinition>, Set<ColumnDefinition>> {
         val addedColumns =
-            columnsInStream.filter { it.name !in columnsInDb.map { it.name } }.toSet()
+            columnsInStream.filter { it.name !in columnsInDb.map { col ->  col.name } }.toSet()
         val deletedColumns =
-            columnsInDb.filter { it.name !in columnsInStream.map { it.name } }.toSet()
+            columnsInDb.filter { it.name !in columnsInStream.map { col ->  col.name  } }.toSet()
         val commonColumns =
-            columnsInStream.filter { it.name in columnsInDb.map { it.name } }.toSet()
+            columnsInStream.filter { it.name in columnsInDb.map { col ->  col.name  } }.toSet()
         val modifiedColumns =
             commonColumns
                 .filter {
@@ -230,15 +229,15 @@ class SnowflakeAirbyteClient(
             0L
         }
 
-    suspend fun createSnowflakeStage(tableName: TableName) {
+    fun createSnowflakeStage(tableName: TableName) {
         execute(sqlGenerator.createSnowflakeStage(tableName))
     }
 
-    suspend fun putInStage(tableName: TableName, tempFilePath: String) {
+    fun putInStage(tableName: TableName, tempFilePath: String) {
         execute(sqlGenerator.putInStage(tableName, tempFilePath))
     }
 
-    suspend fun copyFromStage(tableName: TableName) {
+    fun copyFromStage(tableName: TableName) {
         execute(sqlGenerator.copyFromStage(tableName))
     }
 
