@@ -10,18 +10,19 @@ class HttpRequester(
     private val client: HttpClient,
     private val method: RequestMethod,
     private val url: String,
+    private val headers: Map<String, String> = emptyMap()
 ) {
     private val interpolator = StringInterpolator()
 
-    fun send(interpolationContext: Map<String, Any> = emptyMap()): Response {
+    fun send(interpolationContext: Map<String, Any> = emptyMap(), body: ByteArray? = null): Response {
         return client.send(
             Request(
                 method = method,
-                url = interpolator.interpolate(url, interpolationContext)
+                url = interpolator.interpolate(url, interpolationContext),
+                headers = headers,
+                body = body,
                 // TODO eventually support the following
-                //        val headers: Map<String, String> = mapOf(),
                 //        val query: Map<String, List<String>> = mapOf(),
-                //        val body: ByteArray? = null,
                 )
         )
     }
