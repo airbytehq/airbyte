@@ -5,17 +5,21 @@ import itertools
 import json
 import logging
 import tempfile
+import urllib.parse
 from datetime import datetime, timedelta
 from io import IOBase, StringIO
-from typing import Iterable, List, Optional
+from typing import Iterable, List, Optional, Tuple
 
 import pytz
 import smart_open
+from airbyte_protocol_dataclasses.models import FailureType
 from google.cloud import storage
 from google.oauth2 import credentials, service_account
 
-from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles, FileBasedSourceError
+from airbyte_cdk.models import AirbyteRecordMessageFileReference
+from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles, FileBasedSourceError, FileSizeLimitError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
+from airbyte_cdk.sources.file_based.file_record_data import FileRecordData
 from source_gcs.config import Config
 from source_gcs.helpers import GCSRemoteFile
 from source_gcs.zip_helper import ZipHelper
@@ -35,6 +39,8 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
     Stream reader for Google Cloud Storage (GCS).
     """
 
+    FILE_SIZE_LIMIT = 1_500_000_000
+
     def __init__(self):
         super().__init__()
         self._gcs_client = None
@@ -49,6 +55,44 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
     def config(self, value: Config):
         assert isinstance(value, Config), "Config must be an instance of the expected Config class."
         self._config = value
+
+    def file_size(self, file: GCSRemoteFile) -> int:
+        return file.blob.size
+
+    def upload(
+        self, file: GCSRemoteFile, local_directory: str, logger: logging.Logger
+    ) -> Tuple[FileRecordData, AirbyteRecordMessageFileReference]:
+        file_size = self.file_size(file)
+
+        if file_size > self.FILE_SIZE_LIMIT:
+            message = "File size exceeds the 1 GB limit."
+            raise FileSizeLimitError(message=message, internal_message=message, failure_type=FailureType.config_error)
+
+        file_paths = self._get_file_transfer_paths(
+            source_file_relative_path=urllib.parse.unquote(file.blob.path), staging_directory=local_directory
+        )
+        local_file_path = file_paths[self.LOCAL_FILE_PATH]
+        file_relative_path = file_paths[self.FILE_RELATIVE_PATH]
+        file_name = file_paths[self.FILE_NAME]
+
+        file.blob.download_to_filename(local_file_path)
+
+        file_record_data = FileRecordData(
+            folder=file_paths[self.FILE_FOLDER],
+            file_name=file_name,
+            bytes=file_size,
+            id=file.blob.id,
+            mime_type=file.mime_type,
+            created_at=file.blob.time_created.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            updated_at=file.blob.updated.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            source_uri=file.uri,
+        )
+        file_reference = AirbyteRecordMessageFileReference(
+            staging_file_url=local_file_path,
+            source_file_relative_path=file_relative_path,
+            file_size_bytes=file_size,
+        )
+        return file_record_data, file_reference
 
     def _initialize_gcs_client(self):
         if self.config is None:
@@ -104,7 +148,7 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
                             uri = blob.generate_signed_url(expiration=timedelta(days=7), version="v4")
 
                         file_extension = ".".join(blob.name.split(".")[1:])
-                        remote_file = GCSRemoteFile(uri=uri, last_modified=last_modified, mime_type=file_extension)
+                        remote_file = GCSRemoteFile(uri=uri, last_modified=last_modified, mime_type=file_extension, blob=blob)
 
                         if file_extension == "zip":
                             yield from ZipHelper(blob, remote_file, self.tmp_dir).get_gcs_remote_files()
