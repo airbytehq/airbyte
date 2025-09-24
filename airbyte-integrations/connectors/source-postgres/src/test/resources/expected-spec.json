@@ -62,15 +62,11 @@
             "properties": {
               "tunnel_method": {
                 "type": "string",
-                "enum": [
-                  "NO_TUNNEL"
-                ],
+                "enum": ["NO_TUNNEL"],
                 "default": "NO_TUNNEL"
               }
             },
-            "required": [
-              "tunnel_method"
-            ]
+            "required": ["tunnel_method"]
           },
           {
             "title": "SSH Key Authentication",
@@ -80,9 +76,7 @@
             "properties": {
               "tunnel_method": {
                 "type": "string",
-                "enum": [
-                  "SSH_KEY_AUTH"
-                ],
+                "enum": ["SSH_KEY_AUTH"],
                 "default": "SSH_KEY_AUTH"
               },
               "tunnel_host": {
@@ -131,9 +125,7 @@
             "properties": {
               "tunnel_method": {
                 "type": "string",
-                "enum": [
-                  "SSH_PASSWORD_AUTH"
-                ],
+                "enum": ["SSH_PASSWORD_AUTH"],
                 "default": "SSH_PASSWORD_AUTH"
               },
               "tunnel_host": {
@@ -189,15 +181,11 @@
             "properties": {
               "cursor_method": {
                 "type": "string",
-                "enum": [
-                  "user_defined"
-                ],
+                "enum": ["user_defined"],
                 "default": "user_defined"
               }
             },
-            "required": [
-              "cursor_method"
-            ]
+            "required": ["cursor_method"]
           },
           {
             "title": "Read Changes using Change Data Capture (CDC)",
@@ -207,9 +195,7 @@
             "properties": {
               "cursor_method": {
                 "type": "string",
-                "enum": [
-                  "cdc"
-                ],
+                "enum": ["cdc"],
                 "default": "cdc"
               },
               "invalid_cdc_cursor_position_behavior": {
@@ -218,10 +204,7 @@
                 "description": "Determines whether Airbyte should fail or re-sync data in case of an stale/invalid cursor value in the mined logs. If 'Fail sync' is chosen, a user will have to manually reset the connection before being able to continue syncing data. If 'Re-sync data' is chosen, Airbyte will automatically trigger a refresh but could lead to higher cloud costs and data loss.",
                 "title": "Invalid CDC Position Behavior (Advanced)",
                 "order": 1,
-                "enum": [
-                  "Fail sync",
-                  "Re-sync data"
-                ],
+                "enum": ["Fail sync", "Re-sync data"],
                 "always_show": true
               },
               "initial_load_timeout_hours": {
@@ -245,9 +228,7 @@
                 "always_show": true
               }
             },
-            "required": [
-              "cursor_method"
-            ]
+            "required": ["cursor_method"]
           }
         ],
         "description": "Configures how data is extracted from the database.",
@@ -292,15 +273,11 @@
             "properties": {
               "mode": {
                 "type": "string",
-                "enum": [
-                  "disable"
-                ],
+                "enum": ["disable"],
                 "default": "disable"
               }
             },
-            "required": [
-              "mode"
-            ]
+            "required": ["mode"]
           },
           {
             "title": "allow",
@@ -310,15 +287,11 @@
             "properties": {
               "mode": {
                 "type": "string",
-                "enum": [
-                  "allow"
-                ],
+                "enum": ["allow"],
                 "default": "allow"
               }
             },
-            "required": [
-              "mode"
-            ]
+            "required": ["mode"]
           },
           {
             "title": "prefer",
@@ -328,15 +301,11 @@
             "properties": {
               "mode": {
                 "type": "string",
-                "enum": [
-                  "prefer"
-                ],
+                "enum": ["prefer"],
                 "default": "prefer"
               }
             },
-            "required": [
-              "mode"
-            ]
+            "required": ["mode"]
           },
           {
             "title": "require",
@@ -346,15 +315,11 @@
             "properties": {
               "mode": {
                 "type": "string",
-                "enum": [
-                  "require"
-                ],
+                "enum": ["require"],
                 "default": "require"
               }
             },
-            "required": [
-              "mode"
-            ]
+            "required": ["mode"]
           },
           {
             "title": "verify_ca",
@@ -364,9 +329,7 @@
             "properties": {
               "mode": {
                 "type": "string",
-                "enum": [
-                  "verify_ca"
-                ],
+                "enum": ["verify_ca"],
                 "default": "verify_ca"
               },
               "ca_certificate": {
@@ -398,10 +361,7 @@
                 "multiline": true
               }
             },
-            "required": [
-              "mode",
-              "ca_certificate"
-            ]
+            "required": ["mode", "ca_certificate"]
           },
           {
             "title": "verify_full",
@@ -411,9 +371,7 @@
             "properties": {
               "mode": {
                 "type": "string",
-                "enum": [
-                  "verify_full"
-                ],
+                "enum": ["verify_full"],
                 "default": "verify_full"
               },
               "ca_certificate": {
@@ -445,10 +403,7 @@
                 "multiline": true
               }
             },
-            "required": [
-              "mode",
-              "ca_certificate"
-            ]
+            "required": ["mode", "ca_certificate"]
           }
         ],
         "description": "The encryption method which is used when communicating with the database.",

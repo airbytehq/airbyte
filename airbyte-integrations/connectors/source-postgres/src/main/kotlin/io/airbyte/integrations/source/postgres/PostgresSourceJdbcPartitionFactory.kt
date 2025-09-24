@@ -163,8 +163,7 @@ class PostgresSourceJdbcPartitionFactory(
                     PostgresSourceJdbcSplittableSnapshotPartition(
                         selectQueryGenerator,
                         streamState,
-                        lowerBound =
-                                Jsons.textNode(streamState.maybeCtid!!.toString()),
+                        lowerBound = Jsons.textNode(streamState.maybeCtid!!.toString()),
                         upperBound = null,
                         filenode,
                     )

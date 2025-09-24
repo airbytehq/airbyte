@@ -64,7 +64,6 @@ interface ConnectorJsonEncoder {
     fun toProtobufEncoder(): ProtoEncoder<*>
 }
 
-
 fun <T> JsonEncoder<T>.toProtobufEncoder(): ProtoEncoder<*> {
     return when (this) {
         is ConnectorJsonEncoder -> toProtobufEncoder()
@@ -189,15 +188,16 @@ fun NativeRecordPayload.toProtobuf(
                 setData(
                     index,
                     this@toProtobuf[field.id]?.fieldValue?.let {
-                        (this@toProtobuf[field.id]!!.jsonEncoder.toProtobufEncoder() as ProtoEncoder<Any>).encode(
-                            valueBuilder.clear(),
-                            when (this@toProtobuf[field.id]!!.jsonEncoder) {
-                                is ArrayEncoder<*> -> this@toProtobuf[field.id]!!.encode()
-                                    .toString()
-
-                                else -> this@toProtobuf[field.id]!!.fieldValue!!
-                            },
-                        )
+                        (this@toProtobuf[field.id]!!.jsonEncoder.toProtobufEncoder()
+                                as ProtoEncoder<Any>)
+                            .encode(
+                                valueBuilder.clear(),
+                                when (this@toProtobuf[field.id]!!.jsonEncoder) {
+                                    is ArrayEncoder<*> ->
+                                        this@toProtobuf[field.id]!!.encode().toString()
+                                    else -> this@toProtobuf[field.id]!!.fieldValue!!
+                                },
+                            )
                     },
                 )
             }

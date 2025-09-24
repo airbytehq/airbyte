@@ -36,8 +36,8 @@ class InfJdbcGetter<T>(private val base: JdbcGetter<T>) : JdbcGetter<InfWrapper<
     }
 }
 
-class InfJsonEncoder<T>(private val base: JsonEncoder<T>) : JsonEncoder<InfWrapper<T>>,
-    ConnectorJsonEncoder {
+class InfJsonEncoder<T>(private val base: JsonEncoder<T>) :
+    JsonEncoder<InfWrapper<T>>, ConnectorJsonEncoder {
     override fun encode(decoded: InfWrapper<T>): JsonNode {
         return decoded.encode(base)
     }
@@ -50,9 +50,10 @@ class InfJsonEncoder<T>(private val base: JsonEncoder<T>) : JsonEncoder<InfWrapp
 class InfProtoEncoder<T>(private val base: JsonEncoder<T>) : ProtoEncoder<InfWrapper<T>> {
     override fun encode(
         builder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder,
-        decoded: InfWrapper<T>): AirbyteRecordMessage.AirbyteValueProtobuf.Builder {
+        decoded: InfWrapper<T>
+    ): AirbyteRecordMessage.AirbyteValueProtobuf.Builder {
         @Suppress("UNCHECKED_CAST")
-        return decoded.protoEncode(builder,base.toProtobufEncoder() as ProtoEncoder<T>)
+        return decoded.protoEncode(builder, base.toProtobufEncoder() as ProtoEncoder<T>)
     }
 }
 
@@ -72,16 +73,25 @@ private constructor(
     }
 
     @Suppress("UNCHECKED_CAST")
-    fun protoEncode(builder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder, baseEncoder: ProtoEncoder<T>): AirbyteRecordMessage.AirbyteValueProtobuf.Builder {
+    fun protoEncode(
+        builder: AirbyteRecordMessage.AirbyteValueProtobuf.Builder,
+        baseEncoder: ProtoEncoder<T>
+    ): AirbyteRecordMessage.AirbyteValueProtobuf.Builder {
         if (valueType == ValueType.NORMAL) {
             return baseEncoder.encode(builder, normalValue!!)
         }
         if (valueType == ValueType.NULL) {
 
-            return (NullCodec.toProtobufEncoder() as ProtoEncoder<Any>).encode(builder, this) // value doesn't matter
+            return (NullCodec.toProtobufEncoder() as ProtoEncoder<Any>).encode(
+                builder,
+                this
+            ) // value doesn't matter
         }
 
-        return (TextCodec.toProtobufEncoder() as ProtoEncoder<String>).encode(builder, valueType.placeholder!!)
+        return (TextCodec.toProtobufEncoder() as ProtoEncoder<String>).encode(
+            builder,
+            valueType.placeholder!!
+        )
     }
 
     companion object {

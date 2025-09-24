@@ -189,7 +189,7 @@ constructor(
         // Or 1 for legacy mode
         val maxConcurrency: Int =
             when (DataChannelMedium.valueOf(dataChannelMedium)) {
-                STDIO -> maxDBConnections?: 1
+                STDIO -> maxDBConnections ?: 1
                 SOCKET -> maxDBConnections ?: socketPaths.size
             }
         log.info { "Effective concurrency: $maxConcurrency" }
@@ -234,7 +234,8 @@ constructor(
         }
 
     private fun EncryptionSpecification.jdbcProperties(): Map<String, String> {
-//    private fun fromEncryptionSpec(encryptionSpec: EncryptionSpecification): Map<String, String> {
+        //    private fun fromEncryptionSpec(encryptionSpec: EncryptionSpecification): Map<String,
+        // String> {
         val extraJdbcProperties: MutableMap<String, String> = mutableMapOf()
         val sslData: SslData =
             when (this) {

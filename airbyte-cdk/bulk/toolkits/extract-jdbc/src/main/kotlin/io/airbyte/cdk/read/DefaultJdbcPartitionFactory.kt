@@ -143,7 +143,9 @@ class DefaultJdbcPartitionFactory(
         return fields.associateWith { primaryKey[it.id]!! }
     }
 
-    private fun DefaultJdbcStreamStateValue.cursorPair(stream: Stream): Pair<EmittedField, JsonNode>? {
+    private fun DefaultJdbcStreamStateValue.cursorPair(
+        stream: Stream
+    ): Pair<EmittedField, JsonNode>? {
         if (cursors.size > 1) {
             handler.accept(
                 InvalidCursor(stream.id, cursors.keys.toString()),

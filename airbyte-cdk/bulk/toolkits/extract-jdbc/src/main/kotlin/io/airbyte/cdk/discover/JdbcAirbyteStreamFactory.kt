@@ -54,7 +54,8 @@ interface JdbcAirbyteStreamFactory : AirbyteStreamFactory, MetaFieldDecorator {
         if (discoveredStream.primaryKeyColumnIDs.isEmpty()) {
             return false
         }
-        val allColumnsByID: Map<String, EmittedField> = discoveredStream.columns.associateBy { it.id }
+        val allColumnsByID: Map<String, EmittedField> =
+            discoveredStream.columns.associateBy { it.id }
         return discoveredStream.primaryKeyColumnIDs.all { idComponents: List<String> ->
             val id: String = idComponents.joinToString(separator = ".")
             val field: EmittedField? = allColumnsByID[id]
