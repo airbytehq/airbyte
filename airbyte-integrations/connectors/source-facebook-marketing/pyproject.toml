@@ -20,9 +20,6 @@ python = "^3.10,<3.12"
 airbyte-cdk = "^7"
 facebook-business = "^23.0.0"
 cached-property = "^2"
-# Pin Google Cloud dependencies to resolve conflicts with airbyte-cdk ^7
-google-cloud-secret-manager = ">=2.17.0,<3.0.0"
-google-api-core = ">=2.11.0,<3.0.0"
 
 [tool.poetry.scripts]
 source-facebook-marketing = "source_facebook_marketing.run:run"
