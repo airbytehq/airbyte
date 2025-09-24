@@ -78,17 +78,35 @@ fi
 all_changes=$(printf '%s\n%s\n%s\n%s' "$committed" "$staged" "$unstaged" "$untracked")
 
 # 5) drop ignored files
-filtered=$(printf '%s\n' "$all_changes" | grep -v -E "/${ignore_globs}")
+filtered=$(printf '%s\n' "$all_changes" | grep -v -E "/${ignore_globs}") || {
+  echo "⚠️ Warning: No files remaining after filtering. Returning empty connector list." >&2
+  if [ "$JSON" = true ]; then
+    echo '{"connector": [""]}'
+  fi
+  exit 0
+}
 
 # 6) keep only connector paths
 set +e # Ignore errors from grep if no matches are found
-connectors_paths=$(printf '%s\n' "$filtered" | grep -E '^airbyte-integrations/connectors/(source-[^/]+|destination-[^/]+)(/|$)')
+connectors_paths=$(printf '%s\n' "$filtered" | grep -E '^airbyte-integrations/connectors/(source-[^/]+|destination-[^/]+)(/|$)') || {
+  echo "⚠️ Warning: No connector paths found. Returning empty connector list." >&2
+  if [ "$JSON" = true ]; then
+    echo '{"connector": [""]}'
+  fi
+  exit 0
+}
 set -e
 
 # 7) extract just the connector directory name
 dirs=$(printf '%s\n' "$connectors_paths" \
   | sed -E 's|airbyte-integrations/connectors/([^/]+).*|\1|' \
-)
+) || {
+  echo "⚠️ Warning: Failed to extract connector directories. Returning empty connector list." >&2
+  if [ "$JSON" = true ]; then
+    echo '{"connector": [""]}'
+  fi
+  exit 0
+}
 
 # 8) unique list of modified connectors
 connectors=()
