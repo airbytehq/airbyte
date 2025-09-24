@@ -158,7 +158,7 @@ constructor(
             )
         }
 
-        val sslJdbcProperties: Map<String, String> = fromEncryptionSpec(pojo.getEncryptionValue()!!)
+        val sslJdbcProperties: Map<String, String> = pojo.getEncryptionValue()!!.jdbcProperties()
         jdbcProperties.putAll(sslJdbcProperties)
         log.info { "SSL mode: ${sslJdbcProperties["sslMode"]}" }
 
@@ -233,10 +233,11 @@ constructor(
             }
         }
 
-    private fun fromEncryptionSpec(encryptionSpec: EncryptionSpecification): Map<String, String> {
+    private fun EncryptionSpecification.jdbcProperties(): Map<String, String> {
+//    private fun fromEncryptionSpec(encryptionSpec: EncryptionSpecification): Map<String, String> {
         val extraJdbcProperties: MutableMap<String, String> = mutableMapOf()
         val sslData: SslData =
-            when (encryptionSpec) {
+            when (this) {
                 is EncryptionDisable -> SslData(DISABLE.value)
                 is EncryptionAllow -> SslData(ALLOW.value)
                 is EncryptionPrefer -> SslData(PREFER.value)
@@ -244,18 +245,18 @@ constructor(
                 is SslVerifyCertificate ->
                     SslData(
                         mode = VERIFY_CA.value,
-                        caCertificate = encryptionSpec.sslCertificate,
-                        clientCertificate = encryptionSpec.sslClientCertificate,
-                        clientKey = encryptionSpec.sslClientKey,
-                        keyStorePassword = encryptionSpec.sslClientPassword,
+                        caCertificate = sslCertificate,
+                        clientCertificate = sslClientCertificate,
+                        clientKey = sslClientKey,
+                        keyStorePassword = sslClientPassword,
                     )
                 is SslVerifyFull ->
                     SslData(
                         mode = VERIFY_FULL.value,
-                        caCertificate = encryptionSpec.sslCertificate,
-                        clientCertificate = encryptionSpec.sslClientCertificate,
-                        clientKey = encryptionSpec.sslClientKey,
-                        keyStorePassword = encryptionSpec.sslClientPassword,
+                        caCertificate = sslCertificate,
+                        clientCertificate = sslClientCertificate,
+                        clientKey = sslClientKey,
+                        keyStorePassword = sslClientPassword,
                     )
             }
         extraJdbcProperties[SSL_MODE] = sslData.mode
