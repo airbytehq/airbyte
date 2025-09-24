@@ -3282,6 +3282,11 @@ streams:
                   http_codes:
                     - 400
                   error_message_contains: "The start_cursor provided is invalid:"
+                - type: HttpResponseFilter
+                  action: IGNORE
+                  http_codes:
+                    - 404
+                  error_message_contains: "Make sure the relevant pages and databases are shared with your integration."
         request_body_json: {}
       record_selector:
         type: RecordSelector

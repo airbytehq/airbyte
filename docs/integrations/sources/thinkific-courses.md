@@ -24,6 +24,7 @@ This connector retrives basic data information from courses.
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.21 | 2025-09-23 | [66369](https://github.com/airbytehq/airbyte/pull/66369) | Update dependencies |
 | 0.0.20 | 2025-09-09 | [65712](https://github.com/airbytehq/airbyte/pull/65712) | Update dependencies |
 | 0.0.19 | 2025-08-24 | [65436](https://github.com/airbytehq/airbyte/pull/65436) | Update dependencies |
 | 0.0.18 | 2025-08-16 | [65007](https://github.com/airbytehq/airbyte/pull/65007) | Update dependencies |

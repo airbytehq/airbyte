@@ -11,10 +11,8 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.lang.IllegalStateException
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ExecutorCoroutineDispatcher
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
@@ -30,7 +28,6 @@ class PipelineRunner(
     private val pipelines: List<DataFlowPipeline>,
     private val inputStreams: ConnectorInputStreams,
     @Named("pipelineRunnerScope") private val pipelineScope: CoroutineScope,
-    @Named("aggregationDispatcher") private val aggregationDispatcher: CoroutineDispatcher,
 ) {
     private val log = KotlinLogging.logger {}
 
@@ -47,14 +44,8 @@ class PipelineRunner(
         log.info { "Individual pipelines complete..." }
 
         // shutdown the reconciler regardless of success or failure, so we don't hang
-        try {
-            log.info { "Disabling state reconciler..." }
-            reconciler.disable()
-        } finally {
-            if (aggregationDispatcher is ExecutorCoroutineDispatcher) {
-                aggregationDispatcher.close()
-            }
-        }
+        log.info { "Disabling state reconciler..." }
+        reconciler.disable()
 
         if (terminalException != null) {
             log.info { "Destination Pipeline Completed — Exceptionally: $terminalException" }
