@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode
 import io.airbyte.cdk.load.config.DataChannelFormat
 import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.message.Meta
-import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.OutputRecord
@@ -42,7 +41,6 @@ class SnowflakeInsertAcceptanceTest :
                 SnowflakeConfigurationFactory().make(spec as SnowflakeSpecification)
             },
         recordMapper = SnowflakeExpectedRecordMapper,
-        destinationCleaner = SnowflakeDataCleaner,
     ) {
     @Test
     override fun testBasicWrite() {
@@ -81,7 +79,6 @@ class SnowflakeRawInsertAcceptanceTest :
         dedupBehavior = null,
         nullEqualsUnset = false,
         coercesLegacyUnions = false,
-        destinationCleaner = SnowflakeRawDataCleaner,
     ) {
     @Test
     override fun testBasicWrite() {
@@ -99,14 +96,13 @@ abstract class SnowflakeAcceptanceTest(
     dedupBehavior: DedupBehavior? = DedupBehavior(DedupBehavior.CdcDeletionMode.HARD_DELETE),
     nullEqualsUnset: Boolean = true,
     coercesLegacyUnions: Boolean = false,
-    destinationCleaner: DestinationCleaner,
     unknownTypesBehavior: UnknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
 ) :
     BasicFunctionalityIntegrationTest(
         configContents = Files.readString(configPath),
         configSpecClass = SnowflakeSpecification::class.java,
         dataDumper = dataDumper,
-        destinationCleaner = destinationCleaner,
+        destinationCleaner = SnowflakeDataCleaner,
         isStreamSchemaRetroactive = isStreamSchemaRetroactive,
         dedupBehavior = dedupBehavior,
         stringifySchemalessObjects = true,
