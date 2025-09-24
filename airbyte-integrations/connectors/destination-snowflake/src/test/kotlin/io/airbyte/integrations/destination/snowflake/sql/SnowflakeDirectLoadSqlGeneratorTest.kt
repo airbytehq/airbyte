@@ -666,7 +666,7 @@ new_record."_airbyte_generation_id"
         val sql = snowflakeDirectLoadSqlGenerator.renameTable(sourceTableName, targetTableName)
 
         assertEquals(
-            """ALTER TABLE "test_database"."namespace"."table-with-dashes" RENAME TO "test_database"."namespace"."table_with_underscores"""",
+            "ALTER TABLE \"test_database\".\"namespace\".\"table_with_dashes\" RENAME TO \"test_database\".\"namespace\".\"table_with_underscores\"",
             sql
         )
     }
@@ -678,7 +678,7 @@ new_record."_airbyte_generation_id"
         val sql = snowflakeDirectLoadSqlGenerator.describeTable(schemaName, tableName)
 
         assertEquals(
-            """DESCRIBE TABLE "test_database"."namespace-with-dash"."table.with.dots"""",
+            "DESCRIBE TABLE \"test_database\".\"namespace_with_dash\".\"table_with_dots\"",
             sql
         )
     }
