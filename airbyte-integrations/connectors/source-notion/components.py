@@ -88,4 +88,5 @@ class BlocksRetriever(SimpleRetriever):
 
             if "parent" in stream_data:
                 stream_data["parent"]["sequence_number"] = sequence_number
+
             yield stream_data
