@@ -62,8 +62,6 @@ Currently, these are the source and destination connectors that support faster s
 ### Sources
 
 - [MySQL](sources/mysql)
-- [MSSQL](sources/mssql)
-- [Postgres](sources/postgres) (progressive rollout and not yet available to everyone)
 
 ### Destinations
 
