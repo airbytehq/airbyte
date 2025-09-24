@@ -80,6 +80,9 @@ all_changes=$(printf '%s\n%s\n%s\n%s' "$committed" "$staged" "$unstaged" "$untra
 # 4.5) Define helper function to return empty JSON when no connectors are found
 return_empty_json() {
   if [ "$JSON" = true ]; then
+    # When the list is empty and JSON is requested, send one item as empty string.
+    # This allows the matrix to run once as a no-op, and be marked as complete for purposes
+    # of required checks.
     echo '{"connector": [""]}'
   fi
   exit 0
@@ -136,9 +139,8 @@ print_list() {
   # If JSON is requested, convert the list to JSON format.
   # This is pre-formatted to send to a GitHub Actions Matrix
   # with 'connector' as the matrix key.
-  # JSON mode: emit {"connector": […]}
+  # E.g.: {"connector": […]}
   if [ $# -eq 0 ]; then
-    # If the list is empty, use the centralized empty JSON function
     return_empty_json
   else
     # If the list is not empty, convert it to JSON format.
