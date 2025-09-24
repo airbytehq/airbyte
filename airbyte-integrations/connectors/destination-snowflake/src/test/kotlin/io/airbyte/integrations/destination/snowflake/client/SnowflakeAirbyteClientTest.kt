@@ -510,4 +510,199 @@ internal class SnowflakeAirbyteClientTest {
         assertEquals(1, modified.size)
         assertEquals("COL3", modified.first().name)
     }
+
+    @Test
+    fun testExecuteWithAuthenticationFailure() {
+        val connection = mockk<Connection>()
+        val statement = mockk<Statement>()
+        val sql = "SELECT 1"
+
+        every { dataSource.connection } returns connection
+        every { connection.createStatement() } returns statement
+        every { statement.executeQuery(sql) } throws
+            SnowflakeSQLException("Authentication failed", "08001", 390100)
+        every { statement.close() } just Runs
+        every { connection.close() } just Runs
+
+        try {
+            client.execute(sql)
+            assert(false) { "Expected SnowflakeSQLException" }
+        } catch (e: SnowflakeSQLException) {
+            assertEquals("Authentication failed", e.message)
+            assertEquals(390100, e.errorCode)
+        }
+
+        verify(exactly = 1) { statement.close() }
+        verify(exactly = 1) { connection.close() }
+    }
+
+    @Test
+    fun testExecuteWithConnectionTimeout() {
+        val connection = mockk<Connection>()
+        val statement = mockk<Statement>()
+        val sql = "SELECT 1"
+
+        every { dataSource.connection } returns connection
+        every { connection.createStatement() } returns statement
+        every { statement.executeQuery(sql) } throws
+            SQLException("Connection timeout", "08001", 604)
+        every { statement.close() } just Runs
+        every { connection.close() } just Runs
+
+        try {
+            client.execute(sql)
+            assert(false) { "Expected SQLException" }
+        } catch (e: SQLException) {
+            assertEquals("Connection timeout", e.message)
+            assertEquals("08001", e.sqlState)
+        }
+
+        verify(exactly = 1) { statement.close() }
+        verify(exactly = 1) { connection.close() }
+    }
+
+    @Test
+    fun testExecuteWithConnectionPoolExhaustion() {
+        val sql = "SELECT 1"
+
+        every { dataSource.connection } throws
+            SQLException("Cannot get a connection, pool exhausted", "08004")
+
+        try {
+            client.execute(sql)
+            assert(false) { "Expected SQLException for pool exhaustion" }
+        } catch (e: SQLException) {
+            assertEquals("Cannot get a connection, pool exhausted", e.message)
+            assertEquals("08004", e.sqlState)
+        }
+
+        // No statement or connection to close since we couldn't get a connection
+        verify(exactly = 0) { dataSource.connection.close() }
+    }
+
+    @Test
+    fun testExecuteWithStatementExecutionFailure() {
+        val connection = mockk<Connection>()
+        val statement = mockk<Statement>()
+        val sql = "SELECT * FROM large_table"
+
+        every { dataSource.connection } returns connection
+        every { connection.createStatement() } returns statement
+        every { statement.executeQuery(sql) } throws
+            SQLException("Query execution was aborted", "57014")
+        every { statement.close() } just Runs
+        every { connection.close() } just Runs
+
+        try {
+            client.execute(sql)
+            assert(false) { "Expected SQLException" }
+        } catch (e: SQLException) {
+            assertEquals("Query execution was aborted", e.message)
+            assertEquals("57014", e.sqlState)
+        }
+
+        verify(exactly = 1) { statement.close() }
+        verify(exactly = 1) { connection.close() }
+    }
+
+    @Test
+    fun testDescribeTableWithConnectionError() {
+        val tableName = TableName("namespace", "table")
+        val connection = mockk<Connection>()
+        val statement = mockk<Statement>()
+
+        every { dataSource.connection } returns connection
+        every { connection.createStatement() } returns statement
+        every { sqlGenerator.describeTable("namespace", "table") } returns "DESCRIBE TABLE namespace.table"
+        every { statement.executeQuery("DESCRIBE TABLE namespace.table") } throws
+            SQLException("Connection lost", "08S01")
+        every { statement.close() } just Runs
+        every { connection.close() } just Runs
+
+        try {
+            client.describeTable(tableName)
+            assert(false) { "Expected SQLException" }
+        } catch (e: SQLException) {
+            assertEquals("Connection lost", e.message)
+            assertEquals("08S01", e.sqlState)
+        }
+
+        verify(exactly = 1) { statement.close() }
+        verify(exactly = 1) { connection.close() }
+    }
+
+    @Test
+    fun testCreateNamespaceWithNetworkFailure() {
+        val namespace = "test_namespace"
+        val sql = "CREATE SCHEMA IF NOT EXISTS test_namespace"
+
+        every { sqlGenerator.createNamespace(namespace) } returns sql
+
+        val connection = mockk<Connection>()
+        val statement = mockk<Statement>()
+
+        every { dataSource.connection } returns connection
+        every { connection.createStatement() } returns statement
+        every { statement.executeQuery(sql) } throws
+            SQLException("Network error", "08S01")
+        every { statement.close() } just Runs
+        every { connection.close() } just Runs
+
+        runBlocking {
+            try {
+                client.createNamespace(namespace)
+                assert(false) { "Expected SQLException" }
+            } catch (e: SQLException) {
+                assertEquals("Network error", e.message)
+                assertEquals("08S01", e.sqlState)
+            }
+        }
+    }
+
+    @Test
+    fun testCountTableWithClosedConnection() {
+        val tableName = TableName("namespace", "table")
+        val sql = "SELECT COUNT(*) FROM namespace.table"
+
+        every { sqlGenerator.countTable(tableName) } returns sql
+
+        val connection = mockk<Connection>()
+
+        every { dataSource.connection } returns connection
+        every { connection.isClosed } returns true
+        every { connection.close() } just Runs
+
+        runBlocking {
+            try {
+                client.countTable(tableName)
+                assert(false) { "Expected error for closed connection" }
+            } catch (e: Exception) {
+                // Expected - connection was closed
+            }
+        }
+    }
+
+    @Test
+    fun testExecuteWithTransientNetworkError() {
+        val connection = mockk<Connection>()
+        val statement = mockk<Statement>()
+        val sql = "INSERT INTO table VALUES (1)"
+
+        every { dataSource.connection } returns connection
+        every { connection.createStatement() } returns statement
+
+        // Simulate transient network error (typically retryable)
+        every { statement.executeQuery(sql) } throws
+            SnowflakeSQLException("Request reached its timeout", "HY000", 390114)
+        every { statement.close() } just Runs
+        every { connection.close() } just Runs
+
+        try {
+            client.execute(sql)
+            assert(false) { "Expected SnowflakeSQLException" }
+        } catch (e: SnowflakeSQLException) {
+            assertEquals(390114, e.errorCode) // NETWORK_ERROR
+            // In production, this would typically trigger a retry
+        }
+    }
 }
