@@ -24,18 +24,18 @@ class StateReconciler(
     private val stateStore: StateStore,
     private val emittedStatsStore: EmittedStatsStore,
     private val consumer: OutputConsumer,
-    @Named("stateReconciliationInterval")
-    reconciliationInterval: Duration?, // only java durations can be injected
+    @Named("stateReconcilerScope") private val scope: CoroutineScope,
+    @Named("stateReconcilerInterval") interval: Duration?, // only java durations can be injected
 ) {
     // allow overriding this for test purposes
-    private val reconciliationInterval = reconciliationInterval?.toKotlinDuration() ?: 30.seconds
+    private val interval = interval?.toKotlinDuration() ?: 30.seconds
     private lateinit var job: Job
 
-    fun run(scope: CoroutineScope) {
+    fun run() {
         job =
             scope.launch {
                 while (true) {
-                    delay(reconciliationInterval)
+                    delay(interval)
                     flushCompleteStates()
                     flushEmittedStats()
                 }
