@@ -1,0 +1,376 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "tasks"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "taskcategories"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "clients"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "clientgroups"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "properties"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "invoices"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "projects"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "servicequotes"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "defectquotes"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "suppliers"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "purchaseorders"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "routines"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "billingcards"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "purchaseorderbills"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "purchaseorderdockets"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "invoicelineitems"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "users"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "servicegroups"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "costcentres"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "purchaseorderlineitems"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "purchaseorderbilllineitems"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "accreditationtypes"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "accreditations"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "branches"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "creditnotes"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "creditnotelineitems"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "remarks"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "assettypes"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "assettypevariants"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "assets"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "products"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "rounds"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "tasksessions"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "updated": "2030-10-01"
+      },
+      "stream_descriptor": {
+        "name": "contractors"
+      }
+    }
+  }
+]

@@ -18,12 +18,18 @@ data:
     - suite: unitTests
     - suite: integrationTests
       testSecrets:
-        - name: SECRET_SOURCE_UPTICK_CLOUD_CREDS
+        - name: SECRET_SOURCE-UPTICK__CREDS
           fileName: config.json
           secretStore:
             type: GSM
             alias: airbyte-connector-testing-secret-store
     - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-UPTICK__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
   connectorSubtype: api
   connectorType: source
   definitionId: 54c75c42-df4a-4f3e-a5f3-d50cf80f1649
@@ -33,7 +39,7 @@ data:
   icon: icon.svg
   license: ELv2
   name: Uptick
-  releaseDate: 2025-09-17
+  releaseDate: 2025-06-10
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/uptick
