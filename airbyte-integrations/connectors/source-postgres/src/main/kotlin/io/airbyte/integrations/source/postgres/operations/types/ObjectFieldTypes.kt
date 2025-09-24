@@ -42,7 +42,7 @@ class ObjectEncoder<T : PGobject>() : JsonEncoder<T>, ConnectorJsonEncoder {
     }
 
     override fun toProtobufEncoder(): ProtoEncoder<*> {
-        return ObjectProtoEncoder()
+        return ObjectProtoEncoder<T>()
     }
 }
 
