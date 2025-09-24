@@ -2,6 +2,8 @@
 products: oss-community, oss-enterprise
 ---
 
+import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
+
 # Managing Connector Updates in Airbyte
 
 While maintaining an Airbyte instance, you'll need to manage connector updates. These are essential for improved functionality, reliability, and compatibility over time. Our team and community contributors are dedicated to maintaining up-to-date connectors. Reasons for updates can be broadly categorized into bug fixes, new features, and changes that impact the user experience or the functionality of the connector.
@@ -53,52 +55,4 @@ When new major versions are released, we recommended you update promptly to avoi
 
 ## Actions to Take in Response to Connector Updates
 
-### Review the changelog
-
-Before applying any update, carefully review the changelog to understand the changes and their potential impact on your existing connections. You can find the changelog for any connector by navigating to the bottom of the documentation for the connector and expanding the view. Major version releases will also include a migration guide.
-
-### Plan for Major Updates
-
-Major updates may require you to adjust connection settings or even make changes to your data pipelines. Be sure to allocate time and resources for this. Use the migration guide to ensure your transition process goes smoothly.
-
-:::info
-Airbyte provides tooling that guarantees safe connector version bumps and enforces automated version bumps for minor and patch updates.  You will always need to manually update for major version bumps.
-:::
-
-### Update the local connector image (self-managed only)
-
-Self-Managed users must manually update the connector image in their local registry before proceeding with the migration. To do so:
-
-1. In the navigation bar, click **Workspace settings** > **Sources**/**Destinations**.
-
-2. Find the connector you want to update in the list of connectors.
-
-    :::note
-    Airbyte lists two versions, the current in-use version and the latest version available.
-    :::
-
-3. Click **Change** to update your OSS version to the latest available version.
-
-### Pin a specific versions (self-managed only)
-
-If you're unable to upgrade to a new version of a connector, you can pin that connector to a specific version.
-
-1. In the navigation bar, click **Workspace settings** > **Sources**/**Destinations**.
-
-2. Edit the entry for the connector you want to pin.
-
-3. Set the **Default Version** to the version you want to use.
-
-### Update the connector version
-
-:::note
-You must update each instance of the connector separately. If you have multiple instances of a connector, updating one does not affect the others.
-:::
-
-1. In the navigation bar, click **Workspace settings** > **Sources**/**Destinations**.
-
-2. Select the instance of the connector you wish to upgrade.
-
-3. Select **Upgrade**.
-
-4. Follow the prompt to confirm you are ready to upgrade to the new version.
+<MigrationGuide />
