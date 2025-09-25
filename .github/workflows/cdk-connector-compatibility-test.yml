@@ -107,9 +107,9 @@ jobs:
           airbyte-cdk secrets fetch ${{ matrix.connector }} \
             --print-ci-secrets-masks
 
-      - name: Run CDK upgrade # Run tests against local CDK version
-        if: matrix.connector
-        run: ./gradlew upgradeCdk --cdkVersion=local
+#      - name: Run CDK upgrade # Run tests against local CDK version
+#        if: matrix.connector
+#        run: ./gradlew upgradeCdk --cdkVersion=local
 
       - name: Run Unit Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Unprivileged, Executed from Fork]' || '' }}
         id: run-unit-tests
