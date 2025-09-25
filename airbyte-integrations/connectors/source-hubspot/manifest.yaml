@@ -197,6 +197,9 @@ definitions:
         - properties
       types_mapping:
         - type: TypesMap
+          target_type: boolean
+          current_type: bool
+        - type: TypesMap
           target_type: date
           current_type: date
         - type: TypesMap
@@ -217,16 +220,6 @@ definitions:
         - type: TypesMap
           target_type: string
           current_type: phone_number
-        - type: TypesMap
-          target_type:
-            - number
-            - string
-          current_type: number
-        - type: TypesMap
-          target_type:
-            - boolean
-            - string
-          current_type: bool
 
   deals_archived_schema_loader:
     $ref: "#/definitions/base_dynamic_schema_loader"
