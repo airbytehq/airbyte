@@ -128,11 +128,11 @@ class S3DataLakeUtil(
                 S3FileIOProperties.ACCESS_KEY_ID to awsAccessKeyId,
                 S3FileIOProperties.SECRET_ACCESS_KEY to awsSecretAccessKey,
                 // this is the client ID + secret
-                OAuth2Properties.CREDENTIAL to "root:s3cr3t",
+                OAuth2Properties.CREDENTIAL to "<client_id>:<client_secret>",
                 // we should maybe figure out if we can use a reduced scope
-                OAuth2Properties.SCOPE to "PRINCIPAL_ROLE:ALL",
+                OAuth2Properties.SCOPE to "api://8ba0cae2-a76a-49fa-a1e0-27b78ddb10ad/.default",
                 OAuth2Properties.OAUTH2_SERVER_URI to
-                    "http://localhost:8181/api/catalog/v1/oauth/tokens",
+                    "https://login.microsoftonline.com/277f8a66-1e88-46c9-8c7b-23c442857904/oauth2/v2.0/token",
             )
 
         return restProperties + s3Properties
