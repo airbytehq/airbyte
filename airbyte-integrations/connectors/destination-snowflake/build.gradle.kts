@@ -41,12 +41,9 @@ val snowflakeJdbcThinVersion = "3.26.1"
 
 dependencies {
     implementation("net.snowflake:snowflake-jdbc-thin:$snowflakeJdbcThinVersion")
-    implementation("net.snowflake:snowflake-ingest-sdk:4.3.0")
     implementation("com.zaxxer:HikariCP:$hikariCpVersion")
     implementation("com.google.guava:guava:32.1.1-jre")
     implementation("org.apache.commons:commons-csv:1.14.1")
-
-    integrationTestImplementation("com.zaxxer:HikariCP:7.0.2")
 
     testImplementation("io.mockk:mockk:1.14.5")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
@@ -55,7 +52,7 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:$junitPlatformVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 
-    integrationTestImplementation("com.zaxxer:HikariCP:${hikariCpVersion}")
+    integrationTestImplementation("com.zaxxer:HikariCP:$hikariCpVersion")
     integrationTestImplementation("net.snowflake:snowflake-jdbc-thin:$snowflakeJdbcThinVersion")
     integrationTestImplementation(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies"))
 }
