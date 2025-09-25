@@ -1,0 +1,133 @@
+name: CDK Connector Compatibility Test
+
+on:
+  pull_request:
+    paths:
+      - 'airbyte-cdk/java/**/*'
+      - 'airbyte-cdk/bulk/**/*'
+  schedule:
+    - cron: '0 6 * * *'
+
+jobs:
+  generate-matrix:
+    name: CDK Connector Compatibility Test
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v4
+        with:
+          submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "zulu"
+          java-version: "21"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Run CDK upgrade # this will trigger changes on all connectors using bulk cdk
+        run: ./gradlew upgradeCdk --cdkVersion=local
+
+      - name: Generate Connector Matrix from Changes
+        id: generate-matrix
+        run: echo "connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --local-cdk)" | tee -a $GITHUB_OUTPUT
+
+    outputs:
+      connectors-matrix: ${{ steps.generate-matrix.outputs.connectors_matrix }}
+
+  connectors-test:
+    name: Test ${{ matrix.connector }} Connector ${{ ! matrix.connector && ' (no JVM-based connectors modified)' || ( needs.generate-matrix.outputs.creds-available == 'false' && ' [No Creds]' || '') }}
+    needs: [generate-matrix]
+    runs-on: linux-24.04-large
+    env:
+      GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
+      GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID || vars.GCP_PROJECT_ID }}
+      DD_TAGS: "connector.name:${{ matrix.connector }}"
+
+    strategy:
+      matrix: ${{ fromJson(needs.generate-matrix.outputs.jvm-connectors-matrix) }}
+      max-parallel: 5 # Limit number of parallel jobs
+      fail-fast: false # Don't stop on first failure
+    steps:
+      - name: Checkout Airbyte
+        if: matrix.connector
+        id: checkout
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
+          ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
+          submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
+          fetch-depth: 1
+
+      # Java deps
+      - uses: actions/setup-java@v4
+        if: matrix.connector
+        with:
+          distribution: zulu
+          java-version: 21
+          cache: gradle
+
+      # The default behaviour is read-only on PR branches and read/write on master.
+      # See https://github.com/gradle/actions/blob/main/docs/setup-gradle.md#using-the-cache-read-only.
+      - uses: gradle/actions/setup-gradle@v4
+        if: matrix.connector
+
+      # TODO: We can delete this step once Airbyte-CI is removed from Java integration tests.
+      - name: Set up Python (For Airbyte-CI)
+        if: matrix.connector
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          check-latest: true
+          update-environment: true
+
+      - name: Install the latest version of uv
+        if: matrix.connector
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install Poe
+        if: matrix.connector
+        run: |
+          # Install Poe so we can run the connector tasks:
+          uv tool install poethepoet
+
+      - name: Install connector dependencies
+        if: matrix.connector
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: poe install
+
+      - name: Fetch connector secrets
+        # This will be skipped if the repo or fork does not set GCP_PROJECT_ID, or if it is set to an empty value.
+        # Later integration tests will likely fail in this case, but we at least let them run.
+        if: matrix.connector && needs.generate-matrix.outputs.creds-available == 'true'
+        run: |
+          airbyte-cdk secrets fetch ${{ matrix.connector }} \
+            --print-ci-secrets-masks
+
+      - name: Run CDK upgrade # Run tests against local CDK version
+        if: matrix.connector
+        run: ./gradlew upgradeCdk --cdkVersion=local
+
+      - name: Run Unit Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Unprivileged, Executed from Fork]' || '' }}
+        id: run-unit-tests
+        if: matrix.connector
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: poe test-unit-tests
+
+      - name: Run Integration Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Unprivileged, Executed from Fork]' || '' }}
+        id: run-integration-tests
+        if: matrix.connector
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: poe test-integration-tests
+
+      - name: Format Failure on Master Slack Channel [MASTER]
+        if: github.event_name == 'schedule' && failure() && (steps.run-unit-tests.outcome == 'failure' || steps.run-integration-tests.outcome == 'failure')
+        uses: slackapi/slack-github-action@v2.1.1
+        with:
+          token: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+          method: chat.postMessage
+          payload: |
+            channel: C09H56MT8J2 # jose-alert-test channel
+            text: "${{ matrix.connector }} connector tests failed when using local CDK! <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|View Test Logs>"
