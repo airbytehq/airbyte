@@ -1,16 +1,11 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
-import copy
 import logging
 from dataclasses import dataclass
-from functools import partial
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
-from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
-from airbyte_cdk.sources.declarative.incremental import ConcurrentCursorFactory, ConcurrentPerPartitionCursor
-from airbyte_cdk.sources.declarative.partition_routers import SubstreamPartitionRouter
-from airbyte_cdk.sources.declarative.retrievers.simple_retriever import FULL_REFRESH_SYNC_COMPLETE_KEY, SimpleRetriever
+from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
-from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
+from airbyte_cdk.sources.declarative.types import StreamSlice
 from airbyte_cdk.sources.streams.core import StreamData
 
 
@@ -59,44 +54,6 @@ class NotionPropertiesTransformation(RecordTransformation):
 
 
 @dataclass
-class NotionDataFeedFilter(RecordFilter):
-    """
-    Custom filter to implement functioning incremental sync for Data Feed endpoints.
-    The Data Feed incremental logic doesn't seem to play nice with Notion's cursor-based pagination,
-    and if the current state is not far enough in the future, at least one page will be queried,
-    causing any records in that page to be read despite not passing the state threshold. Setting the
-    page_size to a lower value can help mitigate this issue, but it's not a perfect solution, and the more
-    granular the page size, the greater the traffic. By using this filter, we can ensure the value of state is respected,
-    while still using the max page_size in requests.
-    """
-
-    def filter_records(
-        self, records: List[Mapping[str, Any]], stream_state: StreamState, stream_slice: Optional[StreamSlice] = None, **kwargs
-    ) -> List[Mapping[str, Any]]:
-        """
-        Filters a list of records, returning only those with a cursor_value greater than the current value in state.
-        """
-        current_state = stream_state.get("last_edited_time", {})
-        cursor_value = self._get_filter_date(self.config.get("start_date"), current_state)
-        if cursor_value:
-            return [record for record in records if record["last_edited_time"] >= cursor_value]
-        return records
-
-    def _get_filter_date(self, start_date: str, state_value: list) -> str:
-        """
-        Calculates the filter date to pass in the request parameters by comparing the start_date with the value of state obtained from the stream_slice.
-        If only the start_date exists, use it by default.
-        """
-
-        start_date_timestamp = start_date or None
-        state_value_timestamp = state_value or None
-
-        if state_value_timestamp:
-            return max(filter(None, [start_date_timestamp, state_value_timestamp]), default=start_date_timestamp)
-        return start_date_timestamp
-
-
-@dataclass
 class BlocksRetriever(SimpleRetriever):
     """
     Docs: https://developers.notion.com/reference/get-block-children
@@ -120,7 +77,7 @@ class BlocksRetriever(SimpleRetriever):
             logger.info("Reached max block depth limit. Exiting.")
             return
 
-        for stream_data in super().read_records(records_schema, stream_slice):
+        for sequence_number, stream_data in enumerate(super().read_records(records_schema, stream_slice)):
             if stream_data.data.get("has_children"):
                 self.current_block_depth += 1
                 child_stream_slice = StreamSlice(
@@ -128,5 +85,8 @@ class BlocksRetriever(SimpleRetriever):
                     cursor_slice=stream_slice.cursor_slice,
                 )
                 yield from self.read_records(records_schema, child_stream_slice)
+
+            if "parent" in stream_data:
+                stream_data["parent"]["sequence_number"] = sequence_number
 
             yield stream_data
