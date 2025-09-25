@@ -269,11 +269,11 @@ definitions:
                     ["change_status.resource_status"],
                   ]
                 incremental_dependency: true
-        transformations:
-          - type: CustomTransformation
-            class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
-          - type: CustomTransformation
-            class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
+      transformations:
+        - type: CustomTransformation
+          class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
+        - type: CustomTransformation
+          class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: change_status.last_change_date_time
@@ -869,11 +869,11 @@ definitions:
             parent_key: "clientCustomer"
             partition_field: "customer_id"
             extra_fields: [["manager"]]
-      transformations:
-        - type: CustomTransformation
-          class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
-        - type: CustomTransformation
-          class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
+    transformations:
+      - type: CustomTransformation
+        class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
+      - type: CustomTransformation
+        class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: change_status.last_change_date_time
