@@ -13,7 +13,6 @@ import io.airbyte.integrations.destination.snowflake.sql.QUOTE
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import java.nio.file.Path
-import kotlin.io.path.bufferedWriter
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.pathString
 import org.apache.commons.csv.CSVFormat
@@ -22,12 +21,14 @@ import org.apache.commons.csv.CSVPrinter
 private val logger = KotlinLogging.logger {}
 
 internal val CSV_FORMAT = CSVFormat.DEFAULT
+internal const val DEFAULT_FLUSH_LIMIT = 1000
 
 class SnowflakeInsertBuffer(
     private val tableName: TableName,
     val columns: List<String>,
     private val snowflakeClient: SnowflakeAirbyteClient,
     val snowflakeConfiguration: SnowflakeConfiguration,
+    private val flushLimit: Int = DEFAULT_FLUSH_LIMIT,
 ) {
 
     @VisibleForTesting internal var csvFilePath: Path? = null
@@ -44,18 +45,18 @@ class SnowflakeInsertBuffer(
 
     fun accumulate(recordFields: Map<String, AirbyteValue>) {
         if (csvFilePath == null) {
-            csvFilePath = createCsvFile()
-            csvPrinter = CSVPrinter(csvFilePath!!.bufferedWriter(Charsets.UTF_8), CSV_FORMAT)
+            val csvFile = createCsvFile()
+            csvFilePath = csvFile.toPath()
+            csvPrinter = CSVPrinter(csvFile.bufferedWriter(Charsets.UTF_8), CSV_FORMAT)
         }
 
         writeToCsvFile(recordFields)
-
-        recordCount++
     }
 
     suspend fun flush() {
         csvFilePath?.let { filePath ->
             try {
+                csvPrinter?.flush()
                 logger.info { "Beginning insert into ${tableName.toPrettyString(quote = QUOTE)}" }
                 // Next, put the CSV file into the staging table
                 snowflakeClient.putInStage(tableName, filePath.pathString)
@@ -77,16 +78,19 @@ class SnowflakeInsertBuffer(
             ?: logger.warn { "CSV file path is not set: nothing to upload to staging." }
     }
 
-    private fun createCsvFile(): Path {
+    private fun createCsvFile(): File {
         val csvFile = File.createTempFile("snowflake", ".csv")
         csvFile.deleteOnExit()
-        return csvFile.toPath()
+        return csvFile
     }
 
     private fun writeToCsvFile(record: Map<String, AirbyteValue>) {
         csvPrinter?.let {
             it.printRecord(snowflakeRecordFormatter.format(record))
-            it.flush()
+            recordCount++
+            if ((recordCount % flushLimit) == 0) {
+                it.flush()
+            }
         }
     }
 }
