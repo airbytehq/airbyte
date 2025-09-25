@@ -46,7 +46,7 @@ jobs:
       DD_TAGS: "connector.name:${{ matrix.connector }}"
 
     strategy:
-      matrix: ${{ fromJson(needs.generate-matrix.outputs.jvm-connectors-matrix) }}
+      matrix: ${{ fromJson(needs.generate-matrix.outputs.connectors-matrix) }}
       max-parallel: 5 # Limit number of parallel jobs
       fail-fast: false # Don't stop on first failure
     steps:
