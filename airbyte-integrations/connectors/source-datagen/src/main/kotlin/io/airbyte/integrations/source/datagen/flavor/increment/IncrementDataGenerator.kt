@@ -10,6 +10,9 @@ import io.airbyte.cdk.data.TextCodec
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.output.sockets.FieldValueEncoder
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
+import io.airbyte.integrations.source.datagen.BooleanFieldType
+import io.airbyte.integrations.source.datagen.IntegerFieldType
+import io.airbyte.integrations.source.datagen.StringFieldType
 import io.airbyte.integrations.source.datagen.flavor.DataGenerator
 
 class IncrementDataGenerator(val requestedSchema: List<Field>) : DataGenerator {
