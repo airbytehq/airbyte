@@ -206,7 +206,7 @@ Again, see [here](/platform/understanding-airbyte/airbyte-metadata-fields) for m
 ## Data type map
 
 | Airbyte type                        | Snowflake type |
-| :---------------------------------- | :------------- |
+|:------------------------------------|:---------------|
 | STRING                              | TEXT           |
 | STRING (BASE64)                     | TEXT           |
 | STRING (BIG_NUMBER)                 | TEXT           |
