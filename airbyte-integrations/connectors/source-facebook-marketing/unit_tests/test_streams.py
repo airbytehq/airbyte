@@ -2,9 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import pendulum
+from datetime import timedelta
+
 import pytest
-from pendulum import duration
 from source_facebook_marketing import SourceFacebookMarketing
 from source_facebook_marketing.api import MyFacebookAdsApi
 from source_facebook_marketing.streams import (
@@ -19,6 +19,8 @@ from source_facebook_marketing.streams import (
 )
 from source_facebook_marketing.streams.base_streams import FBMarketingStream
 from source_facebook_marketing.streams.streams import fetch_thumbnail_data_url
+
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
 
 def test_filter_all_statuses(api, mocker, some_config):
@@ -81,7 +83,7 @@ def test_parse_call_rate_header():
         "x-business-use-case-usage": '{"test":[{"type":"ads_management","call_count":1,"total_cputime":1,'
         '"total_time":1,"estimated_time_to_regain_access":1}]}'
     }
-    assert MyFacebookAdsApi._parse_call_rate_header(headers) == (1, duration(minutes=1))
+    assert MyFacebookAdsApi._parse_call_rate_header(headers) == (1, timedelta(minutes=1))
 
 
 @pytest.mark.parametrize(
@@ -120,8 +122,8 @@ def test_ads_insights_breakdowns(class_name, breakdowns, action_breakdowns, some
     kwargs = {
         "api": None,
         "account_ids": some_config["account_ids"],
-        "start_date": pendulum.now(),
-        "end_date": pendulum.now(),
+        "start_date": ab_datetime_now(),
+        "end_date": ab_datetime_now(),
         "insights_lookback_window": 1,
     }
     stream = class_name(**kwargs)
@@ -133,8 +135,8 @@ def test_custom_ads_insights_breakdowns(some_config):
     kwargs = {
         "api": None,
         "account_ids": some_config["account_ids"],
-        "start_date": pendulum.now(),
-        "end_date": pendulum.now(),
+        "start_date": ab_datetime_now(),
+        "end_date": ab_datetime_now(),
         "insights_lookback_window": 1,
     }
     stream = AdsInsights(breakdowns=["mmm"], action_breakdowns=["action_destination"], **kwargs)

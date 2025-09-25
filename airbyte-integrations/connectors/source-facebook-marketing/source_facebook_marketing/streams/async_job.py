@@ -1,13 +1,13 @@
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
 import logging
 import time
 from abc import ABC, abstractmethod
+from datetime import date, datetime, timedelta
 from enum import Enum
 from typing import Any, Iterator, List, Mapping, Optional, Type, Union, Tuple
 
 import backoff
-import pendulum
 from facebook_business.adobjects.ad import Ad
 from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.adobjects.adreportrun import AdReportRun
@@ -15,10 +15,11 @@ from facebook_business.adobjects.adset import AdSet
 from facebook_business.adobjects.campaign import Campaign
 from facebook_business.adobjects.objectparser import ObjectParser
 from facebook_business.api import FacebookAdsApi, FacebookAdsApiBatch, FacebookBadObjectError, FacebookResponse
-from pendulum.duration import Duration
 
+from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_now
 from source_facebook_marketing.streams.common import retry_pattern
-from ..utils import validate_start_date
+
+from ..utils import DateInterval, validate_start_date
 
 logger = logging.getLogger("airbyte")
 
@@ -57,6 +58,8 @@ def update_in_batch(api: FacebookAdsApi, jobs: List["AsyncJob"]):
 
 # ------------------------------ status --------------------------------------
 class Status(str, Enum):
+    """Async job statuses"""
+
     COMPLETED = "Job Completed"
     FAILED = "Job Failed"
     SKIPPED = "Job Skipped"
@@ -74,7 +77,12 @@ class AsyncJob(ABC):
       - new_jobs (populated by leaf jobs after splitting)
     """
 
-    def __init__(self, api: FacebookAdsApi, interval: pendulum.Period):
+    def __init__(self, api: FacebookAdsApi, interval: DateInterval):
+        """Init generic async job
+
+        :param api: FB API instance (to create batch, etc)
+        :param interval: interval for which the job will fetch data
+        """
         self._api = api
         self._interval = interval
         self._attempt_number = 0
@@ -82,7 +90,8 @@ class AsyncJob(ABC):
         self.new_jobs: List["AsyncJob"] = []
 
     @property
-    def interval(self) -> pendulum.Period:
+    def interval(self) -> DateInterval:
+        """Job identifier, in most cases start of the interval"""
         return self._interval
 
     @abstractmethod
@@ -226,7 +235,7 @@ class InsightAsyncJob(AsyncJob):
         self,
         edge_object: Union[AdAccount, Campaign, AdSet, Ad],
         params: Mapping[str, Any],
-        job_timeout: Duration,
+        job_timeout: timedelta,
         primary_key: Optional[List[str]] = None,
         object_breakdowns: Optional[Mapping[str, str]] = None,
         **kwargs,
@@ -234,10 +243,11 @@ class InsightAsyncJob(AsyncJob):
         super().__init__(**kwargs)
         self._params = dict(params)
         self._params["time_range"] = {
-            "since": self._interval.start.to_date_string(),
-            "until": self._interval.end.to_date_string(),
+            "since": self._interval.to_date_string(self._interval.start),
+            "until": self._interval.to_date_string(self._interval.end),
         }
         self._job_timeout = job_timeout
+
         self._edge_object = edge_object
         self._job: Optional[AdReportRun] = None
         self._primary_key = primary_key or []
@@ -262,7 +272,7 @@ class InsightAsyncJob(AsyncJob):
             return  # Manager will try again later
 
         self._job = self._edge_object.get_insights(params=self._params, is_async=True)
-        self._start_time = pendulum.now()
+        self._start_time = ab_datetime_now()
         self._attempt_number += 1
         logger.info(f"{self}: created AdReportRun")
 
@@ -271,18 +281,26 @@ class InsightAsyncJob(AsyncJob):
         return self._start_time is not None
 
     @property
-    def elapsed_time(self) -> Optional[pendulum.duration]:
+    def elapsed_time(self) -> Optional[timedelta]:
+        """Elapsed time since the job start"""
         if not self._start_time:
             return None
-        end_time = self._finish_time or pendulum.now()
+
+        end_time = self._finish_time or ab_datetime_now()
         return end_time - self._start_time
 
     @property
     def completed(self) -> bool:
+        """Check job status and return True if it is completed, use failed/succeeded to check if it was successful
+
+        :return: True if completed, False - if task still running
+        :raises: JobException in case job failed to start, failed or timed out
+        """
         return self._finish_time is not None
 
     @property
     def failed(self) -> bool:
+        """Tell if the job previously failed"""
         return self._failed
 
     def update_job(self, batch: Optional[FacebookAdsApiBatch] = None):
@@ -292,6 +310,7 @@ class InsightAsyncJob(AsyncJob):
             job_status = self._job.get("async_status")
             percent = self._job.get("async_percent_completion")
             logger.info(f"{self}: is {percent} complete ({job_status})")
+            # No need to update job status if its already completed
             return
 
         self._job.api_get(
@@ -317,14 +336,14 @@ class InsightAsyncJob(AsyncJob):
 
         if self.elapsed_time and self.elapsed_time > self._job_timeout:
             logger.info(f"{self}: exceeded max allowed time {self._job_timeout}.")
-            self._finish_time = pendulum.now()
+            self._finish_time = ab_datetime_now()
             self._failed = True
             released = True
         elif job_status == Status.COMPLETED:
-            self._finish_time = pendulum.now()
+            self._finish_time = ab_datetime_now()  # TODO: is not actual running time, but interval between check_status calls
             released = True
         elif job_status in [Status.FAILED, Status.SKIPPED]:
-            self._finish_time = pendulum.now()
+            self._finish_time = ab_datetime_now()
             self._failed = True
             logger.info(f"{self}: has status {job_status} after {self.elapsed_time.in_seconds()} seconds.")
             released = True
@@ -455,11 +474,13 @@ class InsightAsyncJob(AsyncJob):
     # --------------------------- results -------------------------------------
     @backoff_policy
     def get_result(self) -> Any:
+        """Retrieve result of the finished job."""
         if not self._job or self.failed:
             raise RuntimeError(f"{self}: Incorrect usage of get_result - the job is not started or failed")
         return self._job.get_result(params={"limit": self.page_size})
 
     def __str__(self) -> str:
+        """String representation of the job wrapper."""
         job_id = self._job["report_run_id"] if self._job else "<None>"
         breakdowns = self._params.get("breakdowns", [])
         return f"InsightAsyncJob(id={job_id}, {self._edge_object}, time_range={self._interval}, breakdowns={breakdowns}, fields={self._params.get('fields', [])})"
