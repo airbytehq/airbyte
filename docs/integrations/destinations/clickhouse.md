@@ -94,7 +94,7 @@ You can also use a pre-existing user but we highly recommend creating a dedicate
 
 | Version    | Date       | Pull Request                                               | Subject                                                                        |
 |:-----------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------|
-| 2.1.3-rc.1 | 2025-09-25 | [tbd](https://github.com/airbytehq/airbyte/pull/tbd)       | Prepare for speed mode. Fix interleaved stream state handling.                 |
+| 2.1.3-rc.1 | 2025-09-25 | [66699](https://github.com/airbytehq/airbyte/pull/66699)   | Prepare for speed mode. Fix interleaved stream state handling.                 |
 | 2.1.2      | 2025-09-09 | [66143](https://github.com/airbytehq/airbyte/pull/66143)   | Improve schema propagation.                                                    |
 | 2.1.1      | 2025-09-09 | [66134](https://github.com/airbytehq/airbyte/pull/66134)   | Update the type we are setting for the number type to `Decimal(38, 9)`.        |
 | 2.1.0      | 2025-09-03 | [65929](https://github.com/airbytehq/airbyte/pull/65929)   | Promoting release candidate 2.1.0-rc.2 to a main version.                      |
