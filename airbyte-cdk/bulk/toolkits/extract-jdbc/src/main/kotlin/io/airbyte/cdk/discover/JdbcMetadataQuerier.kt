@@ -245,7 +245,7 @@ class JdbcMetadataQuerier(
         conn: Connection,
         sql: String,
     ): List<ColumnMetadata>? {
-        log.info { "Querying $sql for catalog discovery." }
+        log.info { "Querying $sql for catalog discovery..." }
         conn.createStatement().use { stmt: Statement ->
             try {
                 stmt.fetchSize = 1
@@ -277,6 +277,9 @@ class JdbcMetadataQuerier(
                     "Failed to query $sql: " +
                         "sqlState = '${e.sqlState ?: ""}', errorCode = ${e.errorCode}, ${e.message}"
                 }
+                return null
+            } catch (e: Exception) {
+                log.info(e) { "Column metadata query failed: ${e.message}" }
                 return null
             }
         }
