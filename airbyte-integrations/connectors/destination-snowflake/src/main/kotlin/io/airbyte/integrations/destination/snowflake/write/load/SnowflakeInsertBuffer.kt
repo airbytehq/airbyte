@@ -34,6 +34,8 @@ class SnowflakeInsertBuffer(
 
     @VisibleForTesting internal var recordCount = 0
 
+    private var csvPrinter: CSVPrinter? = null
+
     private val snowflakeRecordFormatter: SnowflakeRecordFormatter =
         when (snowflakeConfiguration.legacyRawTablesOnly) {
             true -> SnowflakeRawRecordFormatter(columns)
@@ -43,9 +45,14 @@ class SnowflakeInsertBuffer(
     fun accumulate(recordFields: Map<String, AirbyteValue>) {
         if (csvFilePath == null) {
             csvFilePath = createCsvFile()
+            csvPrinter =
+                CSVPrinter(
+                    FileOutputStream(csvFilePath!!.pathString, true).bufferedWriter(Charsets.UTF_8),
+                    CSV_FORMAT
+                )
         }
 
-        writeToCsvFile(csvFilePath, recordFields)
+        writeToCsvFile(recordFields)
 
         recordCount++
     }
@@ -65,6 +72,8 @@ class SnowflakeInsertBuffer(
                 logger.error(e) { "Unable to flush accumulated data." }
             } finally {
                 filePath.deleteIfExists()
+                csvPrinter?.close()
+                csvPrinter = null
                 csvFilePath = null
                 recordCount = 0
             }
@@ -78,16 +87,10 @@ class SnowflakeInsertBuffer(
         return csvFile.toPath()
     }
 
-    private fun writeToCsvFile(csvFilePath: Path?, record: Map<String, AirbyteValue>) {
-        csvFilePath?.let { filePath ->
-            FileOutputStream(filePath.pathString, true).bufferedWriter(Charsets.UTF_8).use { writer
-                ->
-                val printer = CSVPrinter(writer, CSV_FORMAT)
-                printer.use {
-                    val csvRecord = snowflakeRecordFormatter.format(record)
-                    printer.printRecord(csvRecord)
-                }
-            }
+    private fun writeToCsvFile(record: Map<String, AirbyteValue>) {
+        csvPrinter?.let {
+            it.printRecord(snowflakeRecordFormatter.format(record))
+            it.flush()
         }
     }
 }
