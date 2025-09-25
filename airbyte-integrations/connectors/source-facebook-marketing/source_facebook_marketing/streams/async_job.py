@@ -31,28 +31,29 @@ backoff_policy = retry_pattern(backoff.expo, FacebookBadObjectError, max_tries=1
 
 # ----------------------------- batching -------------------------------------
 def update_in_batch(api: FacebookAdsApi, jobs: List["AsyncJob"]):
-    """
-    Efficiently poll many jobs in a single FB batch.
-    Parent jobs add their children's calls into this batch.
+    """Update status of each job in the list in a batch, making it most efficient way to update status.
+
+    :param api:
+    :param jobs:
     """
     batch = api.new_batch()
     max_batch_size = 50
-
-    def flush():
-        nonlocal batch
-        while batch:
-            batch = batch.execute()  # failed calls are returned as a new batch
-        batch = api.new_batch()
-
     for job in jobs:
         if not job.started or job.completed:
             continue
+        # we check it here because job can be already finished
+        if len(batch) == max_batch_size:
+            while batch:
+                # If some of the calls from batch have failed, it returns  a new
+                # FacebookAdsApiBatch object with those calls
+                batch = batch.execute()
+            batch = api.new_batch()
         job.update_job(batch=batch)
-        if len(batch) >= max_batch_size:
-            flush()
 
-    if batch:
-        flush()
+    while batch:
+        # If some of the calls from batch have failed, it returns  a new
+        # FacebookAdsApiBatch object with those calls
+        batch = batch.execute()
 
 # ------------------------------ status --------------------------------------
 class Status(str, Enum):
@@ -256,7 +257,7 @@ class InsightAsyncJob(AsyncJob):
     def start(self, api_limit: "APILimit") -> None:
         self._api_limit = api_limit
         if self.started:
-            return
+            raise RuntimeError(f"{self}: Incorrect usage of start - the job already started, use restart instead")
         if not api_limit.try_consume():
             return  # Manager will try again later
 

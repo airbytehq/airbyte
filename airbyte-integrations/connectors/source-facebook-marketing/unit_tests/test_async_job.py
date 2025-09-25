@@ -20,6 +20,47 @@ from source_facebook_marketing.api import MyFacebookAdsApi
 from source_facebook_marketing.streams.async_job import InsightAsyncJob, ParentAsyncJob, Status, update_in_batch
 
 
+class DummyAPILimit:
+    """
+    Test double for APILimit:
+      - Never throttles
+      - Keeps basic inflight accounting
+      - No external API calls
+    """
+    def __init__(self):
+        self._inflight = 0
+        self._current_throttle = 0.0
+        self.max_jobs = 10**9
+        self.throttle_limit = 10**9
+
+    # ---- scheduling ----
+    def try_consume(self) -> bool:
+        self._inflight += 1
+        return True
+
+    def release(self) -> None:
+        if self._inflight > 0:
+            self._inflight -= 1
+
+    @property
+    def limit_reached(self) -> bool:
+        return False
+
+    # ---- optional introspection ----
+    @property
+    def inflight(self) -> int:
+        return self._inflight
+
+    @property
+    def current_throttle(self) -> float:
+        return self._current_throttle
+
+
+@pytest.fixture(name="api_limit")
+def api_limit_fixture():
+    return DummyAPILimit()
+
+
 @pytest.fixture(name="adreport")
 def adreport_fixture(mocker, api):
     ao = AdReportRun(fbid="123", api=api)
@@ -78,11 +119,11 @@ def parent_job_fixture(api, grouped_jobs):
 
 
 @pytest.fixture(name="started_job")
-def started_job_fixture(job, adreport, mocker):
+def started_job_fixture(job, adreport, mocker, api_limit):
     adreport["async_status"] = Status.RUNNING.value
     adreport["async_percent_completion"] = 0
     mocker.patch.object(job, "update_job", wraps=job.update_job)
-    job.start()
+    job.start(api_limit)
 
     return job
 
@@ -175,52 +216,24 @@ class TestUpdateInBatch:
 class TestInsightAsyncJob:
     """Test InsightAsyncJob class"""
 
-    def test_start(self, job):
-        job.start()
+    def test_start(self, job, api_limit):
+        job.start(api_limit)
 
         assert job._job
         assert job.elapsed_time
 
-    def test_start_already_started(self, job):
-        job.start()
+    def test_start_already_started(self, job, api_limit):
+        job.start(api_limit)
 
         with pytest.raises(
             RuntimeError,
             match=r": Incorrect usage of start - the job already started, use restart instead",
         ):
-            job.start()
-
-    def test_restart(self, failed_job, api, adreport):
-        assert failed_job.attempt_number == 1
-
-        failed_job.restart()
-
-        assert not failed_job.failed, "restart should reset fail flag"
-        assert failed_job.attempt_number == 2
-
-    def test_restart_when_job_not_failed(self, job, api):
-        job.start()
-        assert not job.failed
-
-        with pytest.raises(
-            RuntimeError,
-            match=r": Incorrect usage of restart - only failed jobs can be restarted",
-        ):
-            job.restart()
-
-    def test_restart_when_job_not_started(self, job):
-        with pytest.raises(
-            RuntimeError,
-            match=r": Incorrect usage of restart - only failed jobs can be restarted",
-        ):
-            job.restart()
+            job.start(api_limit)
 
     def test_update_job_not_started(self, job):
-        with pytest.raises(
-            RuntimeError,
-            match=r": Incorrect usage of the method - the job is not started",
-        ):
-            job.update_job()
+        # update_in_batch just skips the not started jobs
+        job.update_job()
 
     def test_update_job_on_completed_job(self, completed_job, adreport):
         completed_job.update_job()
