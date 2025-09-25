@@ -16,7 +16,7 @@ This guide is for administrators. It assumes you have:
 
 - Basic knowledge of Okta, OpenID Connect (OIDC), and Airbyte
 - The permissions to manage Okta in your organization
-- The permissions to manage Airbyte in your organization
+- Organization admin permissions for Airbyte
 
 The exact process differs between the Cloud or Self-Managed versions of Airbyte. Steps for both are below.
 

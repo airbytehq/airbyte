@@ -20,23 +20,23 @@ You configure notifications for each workspace separately. Once you do, Airbyte 
 | --------------------------------------- | -------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Failed syncs**                        | &#10003; | &#10003;     | A sync from any of your connections fails. If syncs runs frequently or if there are many syncs in the workspace, this event can be noisy.              |
 | **Successful syncs**                    | &#10003; | &#10003;     | A sync from any of your connections succeeds. If syncs runs frequently or if there are many syncs in the workspace, this event can be noisy.           |
-| **Connection updates**                  | &#10003; | &#10003;     | A connection is updated automatically. For example, a source schema is automatically updated.                                                          |
-| **Connection updates requiring action** | &#10003; | &#10003;     | A connection update requires you to take action. For example, a breaking change.                                                                       |
-| **Warning - repeated failures**         | &#10003; | &#10003;     | Airbyte is at risk of turning off a connection due to repeated failures. It has failed 20 times consecutively and his not been successful in the last 4 days. |
-| **Sync disabled - repeated failures**   | &#10003; | &#10003;     | Airbyte has turned off a connection due to repeated failures. It has failed 30 times consecutively and has not been successful in the last 7 days.     |
-| **Warning - upgrade required**          | &#10003; |              | A new connector version is available, but you need to manually upgrade.                                                                                |
-| **Sync Disabled - upgrade required**    | &#10003; |              | Airbyte turned off one or more connections automatically because you missed the deadline to upgrade the connector.                                     |
+| **Connection Updates**                  | &#10003; | &#10003;     | A connection is updated automatically. For example, a source schema is automatically updated.                                                          |
+| **Connection Updates Requiring Action** | &#10003; | &#10003;     | A connection update requires you to take action. For example, a breaking change.                                                                       |
+| **Warning - Repeated Failures**         | &#10003; | &#10003;     | Airbyte is at risk of turning off a connection due to repeated failures. It has failed 20 times consecutively and his not been successful in the last 4 days. |
+| **Sync Disabled - Repeated Failures**   | &#10003; | &#10003;     | Airbyte has turned off a connection due to repeated failures. It has failed 30 times consecutively and has not been successful in the last 7 days.     |
+| **Warning - Upgrade Required**          | &#10003; |              | A new connector version is available, but you need to manually upgrade.                                                                                |
+| **Sync Disabled - Upgrade Required**    | &#10003; |              | Airbyte turned off one or more connections automatically because you missed the deadline to upgrade the connector.                                     |
 
 ### Enabling schema update notifications
 
 If you want Airbyte to notify you of source schema changes, enable the following notifications.
 
-- `Automatic Connection Updates`
+- `Connection Updates`
 - `Connection Updates Requiring Action`.
 
 If these are off, even if you turned on schema update notifications in a connection's settings, Airbyte won't send notifications about schema changes.
 
-To edit this setting, click **Connections** and select the connection you want to receive notifications for. Click the **Settings** tab on the Connection page. In the **Advanced Settings**, toggle **Schema update notifications**.
+To edit this setting, click **Connections** and select the connection you want to receive notifications for. Click the **Settings** tab on the Connection page. In the **Advanced Settings**, toggle **Be notified when schema changes occur**.
 
 ## Set up email notifications (Cloud only)
 

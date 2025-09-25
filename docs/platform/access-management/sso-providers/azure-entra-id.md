@@ -8,7 +8,7 @@ import TabItem from "@theme/TabItem";
 
 # Set up single sign on using Entra ID
 
-This guide shows you how to set up Microsoft Entra ID (formerly Azure ActiveDirectory) and Airbyte so your users can log into Airbyte using your organization's identity provider (IdP) using OpenID Connect (OIDC). 
+This guide shows you how to set up Microsoft Entra ID (formerly Azure ActiveDirectory) and Airbyte so your users can log into Airbyte using your organization's identity provider (IdP) using OpenID Connect (OIDC).
 
 ## Overview
 
@@ -16,7 +16,7 @@ This guide is for administrators. It assumes you have:
 
 - Basic knowledge of Entra ID, OIDC, and Airbyte
 - The permissions to manage Entra ID in your organization
-- The permissions to manage Airbyte in your organization
+- Organization admin permissions for Airbyte
 
 The exact process differs between the Cloud or Self-Managed versions of Airbyte. Steps for both are below.
 

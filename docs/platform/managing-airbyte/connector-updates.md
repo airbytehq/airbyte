@@ -38,7 +38,7 @@ Each connector's changelog details its update history. You can find it in the [c
 
 ### Airbyte Open Source (OSS) and Self-Managed Enterprise (SME)
 
-Airbyte recommends using an updated version of Airbyte when updating connections.
+Airbyte recommends using the latest version of Airbyte when updating connections.
 
 **All Versions (Major, Minor, Patch):** These are opt-in via the settings page. You'll see a badge in the sidebar indicating available updates.
 

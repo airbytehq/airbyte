@@ -10,7 +10,7 @@ Access to the API in Self-Managed Enterprise deployments is controlled via appli
 
 ## Step 1: Create an Application
 
-1. In the navigation bar, click your user name > **Applications**.
+1. In the navigation bar, click your user name > **User settings** > **Applications**.
 
 2. Click **Create an application**.
 

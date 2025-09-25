@@ -14,7 +14,11 @@ Airbyte provides tooling that guarantees safe connector version bumps and enforc
 
 If you're unable to upgrade to the new version of a connector, you can pin that connector to a specific version.
 
-1. In the navigation bar, click **Workspace settings** > **Sources**/**Destinations**.
+1. In the navigation bar:
+
+    - If you're on the Self-Managed Enterprise plan, click **Organization settings** > **Sources**/**Destinations**.
+
+    - If you're on any other plan, click **Workspace settings** > **Sources**/**Destinations**.
 
 2. Edit the entry for the connector you want to pin.
 
@@ -24,7 +28,11 @@ If you're unable to upgrade to the new version of a connector, you can pin that 
 
 If you self-manage Airbyte, you must manually update the connector image in your local registry before proceeding with the migration. Follow the steps below.
 
-1. In the navigation bar, click **Workspace settings** > **Sources**/**Destinations**.
+1. In the navigation bar:
+
+    - If you're on the Self-Managed Enterprise plan, click **Organization settings** > **Sources**/**Destinations**.
+
+    - If you're on any other plan, click **Workspace settings** > **Sources**/**Destinations**.
 
 2. Find the connector you want to update in the list of connectors.
 
@@ -38,7 +46,11 @@ If you self-manage Airbyte, you must manually update the connector image in your
 
 Update each instance of the connector separately. If you have multiple instances of a connector, updating one doesn't affect the others.
 
-1. In the navigation bar, click **Workspace settings** > **Sources**/**Destinations**.
+1. In the navigation bar:
+
+    - If you're on the Self-Managed Enterprise plan, click **Organization settings** > **Sources**/**Destinations**.
+
+    - If you're on any other plan, click **Workspace settings** > **Sources**/**Destinations**.
 
 2. Select the instance of the connector you wish to upgrade.
 
