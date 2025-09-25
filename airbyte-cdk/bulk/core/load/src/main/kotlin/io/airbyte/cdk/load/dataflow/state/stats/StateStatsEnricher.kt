@@ -29,9 +29,12 @@ class StateStatsEnricher(
     }
 
     @VisibleForTesting
+    @Suppress("UNUSED_PARAMETER")
     fun enrichTopLevelDestinationStats(msg: CheckpointMessage, count: Long): CheckpointMessage {
+        // TODO: set this using the count above once we get to total rejected
+        // records.
         msg.updateStats(
-            destinationStats = CheckpointMessage.Stats(count),
+            destinationStats = msg.sourceStats,
         )
 
         return msg
