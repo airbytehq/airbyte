@@ -23,8 +23,8 @@ class StateStatsEnricher(
     fun enrich(msg: CheckpointMessage, key: StateKey): CheckpointMessage {
         return when (msg) {
             is StreamCheckpoint -> enrichStreamState(msg, key)
-            is GlobalSnapshotCheckpoint -> enrichGlobalState(msg, msg.checkpoints, key)
-            is GlobalCheckpoint -> enrichGlobalState(msg, msg.checkpoints, key)
+            is GlobalSnapshotCheckpoint,
+            is GlobalCheckpoint -> enrichGlobalState(msg, key)
         }
     }
 
@@ -68,11 +68,10 @@ class StateStatsEnricher(
     @VisibleForTesting
     fun enrichGlobalState(
         msg: CheckpointMessage,
-        checkpoints: List<CheckpointMessage.Checkpoint>,
         key: StateKey,
     ): CheckpointMessage {
         val (committed, cumulative) =
-            checkpoints
+            msg.checkpoints
                 .map {
                     val desc =
                         namespaceMapper.map(
