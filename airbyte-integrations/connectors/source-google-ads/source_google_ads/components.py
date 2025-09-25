@@ -6,6 +6,7 @@ import copy
 import json
 import logging
 import re
+import time
 from dataclasses import dataclass
 from itertools import groupby
 from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
@@ -14,23 +15,15 @@ import anyascii
 import requests
 
 from airbyte_cdk import AirbyteTracedException, FailureType, InterpolatedString
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
-from airbyte_cdk.sources.declarative.incremental import (
-    CursorFactory,
-    DatetimeBasedCursor,
-    GlobalSubstreamCursor,
-    PerPartitionWithGlobalCursor,
-)
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
-from airbyte_cdk.sources.declarative.partition_routers import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.schema import SchemaLoader
 from airbyte_cdk.sources.declarative.schema.inline_schema_loader import InlineSchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
+from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
@@ -226,10 +219,10 @@ class GoogleAdsPerPartitionStateMigration(StateMigration):
     """
 
     config: Config
-    customer_client_stream: DeclarativeStream
+    customer_client_stream: DefaultStream
     cursor_field: str = "segments.date"
 
-    def __init__(self, config: Config, customer_client_stream: DeclarativeStream, cursor_field: str = "segments.date"):
+    def __init__(self, config: Config, customer_client_stream: DefaultStream, cursor_field: str = "segments.date"):
         self._config = config
         self._parent_stream = customer_client_stream
         self._cursor_field = cursor_field
@@ -237,13 +230,10 @@ class GoogleAdsPerPartitionStateMigration(StateMigration):
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
         return stream_state and "state" not in stream_state
 
-    def _read_parent_stream(self) -> Iterable[Tuple[Mapping[str, Any], StreamSlice]]:
-        # iterate all slices of the customer_client stream
-        slices = self._parent_stream.stream_slices(sync_mode=SyncMode.full_refresh)
-
-        for slice in slices:
-            for record in self._parent_stream.read_records(stream_slice=slice, sync_mode=SyncMode.full_refresh):
-                yield record, slice
+    def _read_parent_stream(self) -> Iterable[Record]:
+        for partition in self._parent_stream.generate_partitions():
+            for record in partition.read():
+                yield record
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         if not self.should_migrate(stream_state):
@@ -262,8 +252,8 @@ class GoogleAdsPerPartitionStateMigration(StateMigration):
 
         partitions_state = []
 
-        for record, slice in self._read_parent_stream():
-            customer_id = record.get("id")
+        for record in self._read_parent_stream():
+            customer_id = record.data.get("id")
             if customer_id in customer_ids_in_state:
                 legacy_partition_state = stream_state[customer_id]
 
@@ -271,7 +261,7 @@ class GoogleAdsPerPartitionStateMigration(StateMigration):
                     {
                         "partition": {
                             "customer_id": record["clientCustomer"],
-                            "parent_slice": {"customer_id": slice.get("customer_id"), "parent_slice": {}},
+                            "parent_slice": {"customer_id": record.associated_slice.get("customer_id"), "parent_slice": {}},
                         },
                         "cursor": legacy_partition_state,
                     }
@@ -425,27 +415,8 @@ class ChangeStatusRetriever(SimpleRetriever):
     When the number of records exceeds this limit, we need to adjust the start date to the last record's cursor.
     """
 
-    partition_router: SubstreamPartitionRouter = None
-    transformations: List[RecordTransformation] = None
     QUERY_LIMIT = 10000
     cursor_field: str = "change_status.last_change_date_time"
-
-    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
-        super().__post_init__(parameters)
-        original_cursor: DatetimeBasedCursor = self.stream_slicer
-
-        cursor_for_factory = copy.deepcopy(original_cursor)
-        cursor_for_stream = copy.deepcopy(original_cursor)
-
-        self.stream_slicer = PerPartitionWithGlobalCursor(
-            cursor_factory=CursorFactory(lambda: copy.deepcopy(cursor_for_factory)),
-            partition_router=self.partition_router,
-            stream_cursor=cursor_for_stream,
-        )
-
-        self.cursor = self.stream_slicer
-
-        self.record_selector.transformations = self.transformations
 
     def _read_pages(
         self,
@@ -524,25 +495,7 @@ class CriterionRetriever(SimpleRetriever):
       3) Attaches the original ChangeStatus timestamp to each returned record.
     """
 
-    partition_router: SubstreamPartitionRouter = None
-    transformations: List[RecordTransformation] = None
     cursor_field: str = "change_status.last_change_date_time"
-
-    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
-        super().__post_init__(parameters)
-
-        original_cursor: DatetimeBasedCursor = self.stream_slicer
-
-        cursor_for_stream = copy.deepcopy(original_cursor)
-
-        self.stream_slicer = GlobalSubstreamCursor(
-            partition_router=self.partition_router,
-            stream_cursor=cursor_for_stream,
-        )
-
-        self.cursor = self.stream_slicer
-
-        self.record_selector.transformations = self.transformations
 
     def _read_pages(
         self,
@@ -882,26 +835,72 @@ class CustomGAQuerySchemaLoader(SchemaLoader):
 
     def _get_field_metadata(self, field: str) -> Dict[str, Any]:
         url = f"https://googleads.googleapis.com/v20/googleAdsFields/{field}"
-        logger.debug(f"`GET` request for field metadata for {field}, url: {url}")
-        response = requests.get(
-            url=url,
-            headers=self._get_request_headers(),
-        )
 
-        response.raise_for_status()
+        max_tries = 5
+        base_backoff_time = 5  # Start with 5 seconds for exponential backoff
 
-        response_json = response.json()
-        logger.debug(f"Metadata response for {field}: {response_json}")
-        error = response_json.get("error")
-        if error:
-            failure_type = FailureType.transient_error if error["code"] >= 500 else FailureType.config_error
+        last_exception = None
+
+        for attempt in range(max_tries):
+            headers = self._get_request_headers()
+
+            try:
+                logger.debug(f"`GET` request for field metadata for {field}, url: {url}, attempt: {attempt + 1}/{max_tries}")
+                response = requests.get(
+                    url=url,
+                    headers=headers,
+                )
+
+                response.raise_for_status()
+                response_json = response.json()
+                logger.debug(f"Metadata response for {field}: {response_json}")
+
+                error = response_json.get("error")
+                if error:
+                    failure_type = FailureType.transient_error if error["code"] >= 500 else FailureType.config_error
+                    raise AirbyteTracedException(
+                        failure_type=failure_type,
+                        internal_message=f"Failed to get field metadata for {field}, error: {error}",
+                        message=f"The provided field is invalid: Status: '{error.get('status')}', Message: '{error.get('message')}', Field: '{field}'",
+                    )
+
+                return response_json
+
+            except requests.HTTPError as e:
+                last_exception = e
+
+                if (
+                    last_exception.response.status_code >= 400
+                    and last_exception.response.status_code < 500
+                    and last_exception.response.status_code != 429
+                ) or attempt == max_tries - 1:
+                    break
+
+                # exponential backoff
+                backoff_time = base_backoff_time * (2**attempt)
+                logger.debug(
+                    f"Request failed on attempt {attempt + 1} with status code {last_exception.response.status_code}, retrying in {backoff_time} seconds"
+                )
+                time.sleep(backoff_time)
+
+        if last_exception.response.status_code == 429:
             raise AirbyteTracedException(
-                failure_type=failure_type,
-                internal_message=f"Failed to get field metadata for {field}, error: {error}",
-                message=f"The provided field is invalid: Status: '{error.get('status')}', Message: '{error.get('message')}', Field: '{field}'",
+                failure_type=FailureType.transient_error,
+                message="The maximum number of requests on the Google Ads API has been reached. See https://developers.google.com/google-ads/api/docs/access-levels#access_levels_2 for more information",
+                internal_message=str(last_exception),
             )
-
-        return response_json
+        elif last_exception.response.status_code >= 400 and last_exception.response.status_code < 500:
+            raise AirbyteTracedException(
+                failure_type=FailureType.config_error,
+                message="The provided field is invalid. Please refer to the Google Ads API documentation for the correct syntax: https://developers.google.com/google-ads/api/fields/v20/overview and test validate your query using the Google Ads Query Builder: https://developers.google.com/google-ads/api/fields/v20/query_validator",
+                internal_message=f"The provided field is invalid: Error: {str(last_exception)}",
+            )
+        else:
+            raise AirbyteTracedException(
+                failure_type=FailureType.transient_error,
+                message="The Google Ads API is temporarily unavailable.",
+                internal_message=f"The Google Ads API is temporarily unavailable: Error: {str(last_exception)}",
+            )
 
     def _get_list_of_fields(self) -> List[str]:
         """
