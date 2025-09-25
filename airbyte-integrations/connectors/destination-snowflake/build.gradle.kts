@@ -37,18 +37,13 @@ application {
 val hikariCpVersion = "7.0.2"
 val junitVersion = "5.13.4"
 val junitPlatformVersion = "1.13.4"
-val protobufVersion = "4.30.0"
 val snowflakeJdbcThinVersion = "3.26.1"
 
 dependencies {
     implementation("net.snowflake:snowflake-jdbc-thin:$snowflakeJdbcThinVersion")
-    implementation("net.snowflake:snowflake-ingest-sdk:4.3.0")
     implementation("com.zaxxer:HikariCP:$hikariCpVersion")
     implementation("com.google.guava:guava:32.1.1-jre")
     implementation("org.apache.commons:commons-csv:1.14.1")
-    implementation("com.google.protobuf:protobuf-kotlin:$protobufVersion")
-    implementation("com.google.protobuf:protobuf-java:$protobufVersion")
-    implementation("com.google.protobuf:protobuf-java-util:$protobufVersion")
 
     testImplementation("io.mockk:mockk:1.14.5")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
@@ -60,7 +55,4 @@ dependencies {
     integrationTestImplementation("com.zaxxer:HikariCP:$hikariCpVersion")
     integrationTestImplementation("net.snowflake:snowflake-jdbc-thin:$snowflakeJdbcThinVersion")
     integrationTestImplementation(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies"))
-    integrationTestImplementation("com.google.protobuf:protobuf-kotlin:$protobufVersion")
-    integrationTestImplementation("com.google.protobuf:protobuf-java:$protobufVersion")
-    integrationTestImplementation("com.google.protobuf:protobuf-java-util:$protobufVersion")
 }
