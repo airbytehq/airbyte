@@ -21,10 +21,9 @@ jobs:
   update-connector-documentation:
     name: Update connector documentation with AI
     runs-on: ubuntu-latest
-    # Only run for merged PRs from the same repo (not forks) and exclude bot authors
+    # Only run for merged PRs and exclude bot authors
     if: |
       github.event.pull_request.merged == true && 
-      github.event.pull_request.head.repo.full_name == github.repository &&
       !contains(fromJSON('["airbyteio", "octavia-bot", "octavia-bot-hoard", "github-actions[bot]", "dependabot[bot]"]'), github.event.pull_request.user.login) &&
       !endsWith(github.event.pull_request.user.login, '[bot]')
 
