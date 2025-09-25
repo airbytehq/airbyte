@@ -842,8 +842,6 @@ class CustomGAQuerySchemaLoader(SchemaLoader):
         last_exception = None
 
         for attempt in range(max_tries):
-
-
             headers = self._get_request_headers()
 
             try:
