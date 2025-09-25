@@ -16,7 +16,6 @@ jobs:
         with:
           submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
           fetch-depth: 0
-          ref: ${{ github.head_ref || github.ref_name }}
 
       - name: Setup Java
         uses: actions/setup-java@v4
