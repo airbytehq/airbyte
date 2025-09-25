@@ -43,6 +43,7 @@ internal class SnowflakeInsertBufferTest {
                 columns = columns,
                 snowflakeClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
+                flushLimit = 1,
             )
 
         buffer.accumulate(record)
@@ -64,6 +65,7 @@ internal class SnowflakeInsertBufferTest {
                 columns = columns,
                 snowflakeClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
+                flushLimit = 1,
             )
 
         every { snowflakeConfiguration.legacyRawTablesOnly } returns true
@@ -87,6 +89,7 @@ internal class SnowflakeInsertBufferTest {
                 columns = columns,
                 snowflakeClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
+                flushLimit = 1,
             )
 
         runBlocking {
@@ -111,6 +114,7 @@ internal class SnowflakeInsertBufferTest {
                 columns = columns,
                 snowflakeClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
+                flushLimit = 1,
             )
 
         every { snowflakeConfiguration.legacyRawTablesOnly } returns true
@@ -138,6 +142,7 @@ internal class SnowflakeInsertBufferTest {
                 columns = columns,
                 snowflakeClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
+                flushLimit = 1,
             )
 
         runBlocking {
@@ -166,6 +171,7 @@ internal class SnowflakeInsertBufferTest {
                 columns = columns,
                 snowflakeClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
+                flushLimit = 1,
             )
 
         every { snowflakeConfiguration.legacyRawTablesOnly } returns true
