@@ -70,32 +70,12 @@ class CustomerIoBeanFactory {
             override val numPartWorkers = 1
         }
 
-    /**
-     * Until we migrate everything to low-code, we still need to keep that for the write operation,
-     * but we expect this to be instantiated by the DeclarativeDestinationFactory.
-     */
-    @Singleton
-    fun httpClient(factory: DeclarativeDestinationFactory): HttpClient {
-        if (factory.config == null) {
-            throw IllegalArgumentException(
-                "Configuration was not provided and therefore HttpClient can't be instantiated"
-            )
-        }
-
-        val authenticator =
-            BasicAccessAuthenticator(
-                factory.config!!.get("credentials").get("siteId").asText(),
-                factory.config!!.get("credentials").get("apiKey").asText(),
-            )
-        val okhttpClient: OkHttpClient =
-            OkHttpClient.Builder().addInterceptor(authenticator).build()
-        return AirbyteOkHttpClient(okhttpClient, RetryPolicy.ofDefaults())
-    }
-
     @Singleton
     fun loadPipeline(
         catalog: DestinationCatalog,
+        factory: DeclarativeDestinationFactory,
         dlqPipelineFactory: DlqPipelineFactory,
-        httpClient: HttpClient,
-    ): LoadPipeline = dlqPipelineFactory.createPipeline(CustomerIoLoader(httpClient, catalog))
+    ): LoadPipeline = dlqPipelineFactory.createPipeline(factory.createStreamLoader(catalog))
+
+    @Singleton fun writer(factory: DeclarativeDestinationFactory) = factory.createWriter()
 }

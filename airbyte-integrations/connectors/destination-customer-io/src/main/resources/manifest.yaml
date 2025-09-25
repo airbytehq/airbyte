@@ -8,6 +8,73 @@ checker:
       type: BasicAccessAuthenticator
       username: '{{ config["credentials"]["siteId"] }}'
       password: '{{ config["credentials"]["apiKey"] }}'
+writers:
+  - type: BatchRequestWriter
+    objects:
+      - name: person_identify
+        operation:
+          type: Upsert
+    requester:
+      type: HttpRequester
+      url: https://track.customer.io/api/v2/batch
+      method: POST
+      headers:
+        Content-Type: application/json
+      authenticator:
+        type: BasicAccessAuthenticator
+        username: '{{ config["credentials"]["siteId"] }}'
+        password: '{{ config["credentials"]["apiKey"] }}'
+      body:
+        type: JsonBatchBody
+        size:
+          type: RequestMemoryBatchSize
+          amount: 32000
+        entries:
+          field:
+            - batch
+          content: |
+            {
+               "type": "person",
+               "identifiers": {
+                 "email": "{{ record["person_email"] }}"
+               },
+               "action": "identify"
+               {{ additional_properties.isEmpty() ? '' : ', "attributes":' + additional_properties }}
+            }
+  - type: BatchRequestWriter
+    objects:
+      - name: person_event
+        operation:
+          type: Insert
+    requester:
+      type: HttpRequester
+      url: https://track.customer.io/api/v2/batch
+      method: POST
+      headers:
+        Content-Type: application/json
+      authenticator:
+        type: BasicAccessAuthenticator
+        username: '{{ config["credentials"]["siteId"] }}'
+        password: '{{ config["credentials"]["apiKey"] }}'
+      body:
+        type: JsonBatchBody
+        size:
+          type: RequestMemoryBatchSize
+          amount: 32000
+        entries:
+          field:
+            - batch
+          content: |
+            {
+               "type": "person",
+               "identifiers": {
+                 "email": "{{ record["person_email"] }}"
+               },
+               "action": "event",
+               "name": "{{ record["event_name"] }}"
+               {{ additional_properties.isEmpty() ? '' : ', "attributes":' + additional_properties }}
+            }
+
 spec:
   connection_specification:
     "$schema": http://json-schema.org/draft-07/schema#

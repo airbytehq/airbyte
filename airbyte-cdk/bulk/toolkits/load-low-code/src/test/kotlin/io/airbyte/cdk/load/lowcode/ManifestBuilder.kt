@@ -14,6 +14,7 @@ import io.airbyte.cdk.load.model.discover.StaticCatalogOperation
 import io.airbyte.cdk.load.model.http.HttpMethod
 import io.airbyte.cdk.load.model.http.HttpRequester
 import io.airbyte.cdk.load.model.spec.Spec
+import io.airbyte.cdk.load.model.writer.Writer
 import io.airbyte.cdk.util.Jsons
 
 class ManifestBuilder {
@@ -40,6 +41,7 @@ class ManifestBuilder {
                     ),
                 )
         )
+    private var writers: MutableList<Writer> = mutableListOf()
 
     fun withChecker(checker: Checker): ManifestBuilder {
         this.checker = checker
@@ -56,7 +58,12 @@ class ManifestBuilder {
         return this
     }
 
+    fun withWriter(writer: Writer): ManifestBuilder {
+        writers.add(writer)
+        return this
+    }
+
     fun build(): String {
-        return Jsons.writeValueAsString(DeclarativeDestination(checker, spec, discovery))
+        return Jsons.writeValueAsString(DeclarativeDestination(checker, spec, discovery, writers))
     }
 }

@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import io.airbyte.cdk.load.model.checker.Checker
 import io.airbyte.cdk.load.model.discover.CatalogOperation
 import io.airbyte.cdk.load.model.spec.Spec
+import io.airbyte.cdk.load.model.writer.Writer
 
 /**
  * Root configuration for a declarative destination that uploads data according to its declarative
@@ -19,5 +20,6 @@ data class DeclarativeDestination(
     @JsonProperty(value = "discover")
     val discover: CatalogOperation? =
         null, // todo: remove ? = null once we support Dynamic discovery and thus it can be a
+    @JsonProperty(value = "writers") val writers: List<Writer>? = null
 // required component
 )

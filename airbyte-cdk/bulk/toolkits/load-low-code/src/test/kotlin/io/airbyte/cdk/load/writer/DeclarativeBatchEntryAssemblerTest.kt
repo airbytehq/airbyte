@@ -1,10 +1,9 @@
-package io.airbyte.integrations.destination.customerio.batch
+package io.airbyte.cdk.load.writer
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.DestinationRecordSource
 import io.airbyte.cdk.util.Jsons
-import io.airbyte.integrations.destination.customerio.io.airbyte.integrations.destination.customerio.batch.DeclarativeBatchEntryAssembler
 import io.mockk.every
 import io.mockk.mockk
 import java.util.UUID
@@ -18,13 +17,13 @@ class DeclarativeBatchEntryAssemblerTest {
   "identifiers": {
     "id": "{{ record["person_email"] }}"
   },
-  "action": "identify",
-  "attributes": {{ additional_properties }}
+  "action": "identify"
+  {{ additional_properties.isEmpty() ? '' : ', "attributes":' + additional_properties }}
 }
     """.trimIndent()
 
     @Test
-    internal fun `test given bracket accessor on record when extract record keys then return key`() {
+    internal fun `test given bracket accessor on record when assemble then return assembled json object`() {
         val assembler = DeclarativeBatchEntryAssembler(PERSON_EVENT_TEMPLATE)
         val batchEntry = assembler.assemble(
             aRecord(
@@ -38,7 +37,7 @@ class DeclarativeBatchEntryAssemblerTest {
                 )
             )
         )
-        assertEquals(batchEntry, Jsons.readTree("""
+        assertEquals(Jsons.readTree("""
 {
   "type": "person",
   "identifiers": {
@@ -50,7 +49,31 @@ class DeclarativeBatchEntryAssemblerTest {
     "attribute2": 1
   }
 }
-    """.trimIndent()))
+    """.trimIndent()), batchEntry)
+    }
+
+    @Test
+    internal fun `test given no additional properties when assemble then return do not print additional properties`() {
+        val assembler = DeclarativeBatchEntryAssembler(PERSON_EVENT_TEMPLATE)
+        val batchEntry = assembler.assemble(
+            aRecord(
+                Jsons.readTree("""
+            {
+              "person_email": "maxime@airbyte.io"
+            }
+        """.trimIndent()
+                )
+            )
+        )
+        assertEquals(Jsons.readTree("""
+{
+  "type": "person",
+  "identifiers": {
+    "id": "maxime@airbyte.io"
+  },
+  "action": "identify"
+}
+    """.trimIndent()), batchEntry)
     }
 
     fun aRecord(data: JsonNode = Jsons.objectNode()): DestinationRecordRaw {

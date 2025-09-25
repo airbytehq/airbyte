@@ -1,4 +1,4 @@
-package io.airbyte.integrations.destination.customerio.io.airbyte.integrations.destination.customerio.batch
+package io.airbyte.cdk.load.writer
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
@@ -21,7 +21,7 @@ class DeclarativeBatchEntryAssembler(private val template: String) {
             template,
             mapOf(
                 "record" to jsonRecord.toInterpolationContext(),
-                "additional_properties" to additionalProperties.toPrettyString(),
+                "additional_properties" to if (additionalProperties.size() != 0) additionalProperties.toPrettyString() else "",
             )
         )
         return Jsons.readTree(entryAsString)

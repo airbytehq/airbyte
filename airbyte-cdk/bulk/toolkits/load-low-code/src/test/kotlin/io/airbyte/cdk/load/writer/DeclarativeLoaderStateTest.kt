@@ -1,4 +1,4 @@
-package io.airbyte.integrations.destination.customerio.batch
+package io.airbyte.cdk.load.writer
 
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.load.http.HttpRequester
@@ -6,12 +6,6 @@ import io.airbyte.cdk.load.http.Response
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.DestinationRecordSource
 import io.airbyte.cdk.util.Jsons
-import io.airbyte.integrations.destination.customerio.io.airbyte.integrations.destination.customerio.batch.BatchSizeStrategy
-import io.airbyte.integrations.destination.customerio.io.airbyte.integrations.destination.customerio.batch.BatchSizeStrategyFactory
-import io.airbyte.integrations.destination.customerio.io.airbyte.integrations.destination.customerio.batch.DeclarativeBatchEntryAssembler
-import io.airbyte.integrations.destination.customerio.io.airbyte.integrations.destination.customerio.batch.DeclarativeLoaderState
-import io.airbyte.integrations.destination.customerio.io.airbyte.integrations.destination.customerio.batch.JsonResponseBodyBuilder
-import io.airbyte.integrations.destination.customerio.io.airbyte.integrations.destination.customerio.batch.ResponseBodyBuilder
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
@@ -27,7 +21,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 
-class JsonBatchBodyTest {
+class DeclarativeLoaderStateTest {
     lateinit var destinationRecordRaw: DestinationRecordRaw
     lateinit var httpRequester: HttpRequester
     lateinit var responseBodyBuilder: ResponseBodyBuilder

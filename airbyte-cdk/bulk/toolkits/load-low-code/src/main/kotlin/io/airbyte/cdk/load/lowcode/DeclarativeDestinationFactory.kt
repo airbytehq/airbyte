@@ -14,6 +14,7 @@ import io.airbyte.cdk.load.checker.CompositeDlqChecker
 import io.airbyte.cdk.load.checker.HttpRequestChecker
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
+import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.ImportType
 import io.airbyte.cdk.load.command.SoftDelete
 import io.airbyte.cdk.load.command.Update
@@ -42,12 +43,25 @@ import io.airbyte.cdk.load.model.discover.CatalogOperation as CatalogOperationMo
 import io.airbyte.cdk.load.model.discover.CompositeCatalogOperations as CompositeCatalogOperationsModel
 import io.airbyte.cdk.load.model.discover.StaticCatalogOperation as StaticCatalogOperationModel
 import io.airbyte.cdk.load.model.http.HttpMethod
+import io.airbyte.cdk.load.model.http.body.size.BatchSize as BatchSizeModel
 import io.airbyte.cdk.load.model.http.HttpRequester as HttpRequesterModel
 import io.airbyte.cdk.load.model.http.authenticator.Authenticator as AuthenticatorModel
 import io.airbyte.cdk.load.model.http.authenticator.BasicAccessAuthenticator as BasicAccessAuthenticatorModel
 import io.airbyte.cdk.load.model.http.authenticator.OAuthAuthenticator as OAuthAuthenticatorModel
+import io.airbyte.cdk.load.model.http.body.batch.JsonBatchBody
+import io.airbyte.cdk.load.model.http.body.size.RequestMemoryBatchSize as RequestMemoryBatchSizeModel
+import io.airbyte.cdk.load.model.writer.BatchRequestWriter
+import io.airbyte.cdk.load.model.writer.WritableObject
+import io.airbyte.cdk.load.model.writer.Writer
 import io.airbyte.cdk.load.spec.DeclarativeCdkConfiguration
 import io.airbyte.cdk.load.spec.DeclarativeSpecificationFactory
+import io.airbyte.cdk.load.writer.BatchSizeStrategyFactory
+import io.airbyte.cdk.load.writer.DeclarativeBatchEntryAssembler
+import io.airbyte.cdk.load.writer.DeclarativeLoader
+import io.airbyte.cdk.load.writer.DeclarativeLoaderStateFactory
+import io.airbyte.cdk.load.writer.DeclarativeWriter
+import io.airbyte.cdk.load.writer.RequestMemoryBatchSizeStrategyFactory
+import io.airbyte.cdk.load.writer.StreamIdentifier
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.cdk.util.ResourceUtils
 import okhttp3.Interceptor
@@ -110,6 +124,47 @@ class DeclarativeDestinationFactory(config: JsonNode?) {
         }
     }
 
+    fun createWriter(): DeclarativeWriter = DeclarativeWriter()
+
+    fun createStreamLoader(catalog: DestinationCatalog): DeclarativeLoader {
+        if (manifest.writers == null || manifest.writers.isEmpty()) {
+            throw IllegalArgumentException("Can't create loader because `writers` are not defined in the manifest")
+        }
+
+        val loaderStateFactoryByDestinationOperation: MutableMap<StreamIdentifier, DeclarativeLoaderStateFactory> = mutableMapOf()
+        for (writer: Writer in manifest.writers) {
+            when (writer) {
+                is BatchRequestWriter -> {
+                    val loaderStateFactory: DeclarativeLoaderStateFactory = createDeclarativeLoaderStateFactory(writer.requester)
+                    writer.objects.map { createStreamIdentifier(it) }.forEach { loaderStateFactoryByDestinationOperation[it] = loaderStateFactory }
+                }
+            }
+        }
+        return DeclarativeLoader(loaderStateFactoryByDestinationOperation, catalog)
+    }
+
+    private fun createStreamIdentifier(writableObject: WritableObject): StreamIdentifier {
+        return StreamIdentifier(writableObject.name, mapImportMode(writableObject.operation))
+    }
+
+    private fun createDeclarativeLoaderStateFactory(httpRequester: HttpRequesterModel) : DeclarativeLoaderStateFactory {
+        if (httpRequester.body == null) {
+            throw IllegalArgumentException("Can't create loader because HttpRequester body is null")
+        }
+
+        when (httpRequester.body) {
+            is JsonBatchBody -> {
+                return DeclarativeLoaderStateFactory(
+                    httpRequester.toRequester(),
+                    httpRequester.body.size.toFactory(),
+                    DeclarativeBatchEntryAssembler(httpRequester.body.entries.content),
+                    httpRequester.body.entries.field,
+                )
+            }
+            else -> throw IllegalArgumentException("Unknown type of body for HTTP request: ${httpRequester.body.javaClass.name}")
+        }
+    }
+
     private fun createAuthenticator(
         model: AuthenticatorModel,
     ): Interceptor =
@@ -169,6 +224,10 @@ class DeclarativeDestinationFactory(config: JsonNode?) {
             stringInterpolator.interpolate(this.refreshToken, interpolationContext),
         )
 
+    /**
+     * Note: This method does not support having a request body as the first occurrence of sending a
+     * request body we faced was for batch write which requires accumulating record.
+     */
     fun HttpRequesterModel.toRequester(): HttpRequester {
         val requester = this
         val okhttpClient: OkHttpClient =
@@ -183,8 +242,15 @@ class DeclarativeDestinationFactory(config: JsonNode?) {
             AirbyteOkHttpClient(okhttpClient, RetryPolicy.ofDefaults()),
             this.method.toRequestMethod(),
             this.url,
+            this.headers ?: emptyMap(),
         )
     }
+
+    fun BatchSizeModel.toFactory(): BatchSizeStrategyFactory =
+        when(this) {
+            is RequestMemoryBatchSizeModel -> RequestMemoryBatchSizeStrategyFactory(this.amount)
+            else -> throw IllegalArgumentException("Unknown type of batch size model {${this.javaClass.name}")
+        }
 
     fun HttpMethod.toRequestMethod(): RequestMethod =
         when (this) {

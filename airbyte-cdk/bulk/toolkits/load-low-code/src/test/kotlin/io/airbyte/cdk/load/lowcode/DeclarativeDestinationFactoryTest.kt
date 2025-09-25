@@ -39,12 +39,18 @@ import io.mockk.unmockkStatic
 import io.mockk.verify
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 
 val VALID_API_ID: String = "api_id"
 val VALID_API_TOKEN: String = "api_token"
 
 class DeclarativeDestinationFactoryTest {
+
+    @AfterEach
+    fun tearDown() {
+        unmockkStatic("io.airbyte.cdk.util.ResourceUtils")
+    }
 
     @Test
     internal fun `test when check then ensure check gets interpolated credentials`() {
@@ -100,18 +106,14 @@ class DeclarativeDestinationFactoryTest {
         val dlqChecker = mockk<DlqChecker>()
         every { dlqChecker.check(any()) } returns Unit
 
-        try {
-            DeclarativeDestinationFactory(config).createDestinationChecker(dlqChecker).check()
+        DeclarativeDestinationFactory(config).createDestinationChecker(dlqChecker).check()
 
-            verify {
-                constructedWith<BasicAccessAuthenticator>(
-                        EqMatcher(VALID_API_ID),
-                        EqMatcher(VALID_API_TOKEN)
-                    )
-                    .intercept(any())
-            }
-        } finally {
-            unmockkStatic("io.airbyte.cdk.util.ResourceUtils") // Clean up mocks
+        verify {
+            constructedWith<BasicAccessAuthenticator>(
+                    EqMatcher(VALID_API_ID),
+                    EqMatcher(VALID_API_TOKEN)
+                )
+                .intercept(any())
         }
     }
 
@@ -140,8 +142,6 @@ class DeclarativeDestinationFactoryTest {
         assertNotNull(spec.connectionSpecification.get("properties").get("account_id"))
         assertNotNull(spec.connectionSpecification.get("properties").get("object_storage_config"))
         assertEquals(advancedAuth, spec.advancedAuth)
-
-        unmockkStatic("io.airbyte.cdk.util.ResourceUtils")
     }
 
     @Test

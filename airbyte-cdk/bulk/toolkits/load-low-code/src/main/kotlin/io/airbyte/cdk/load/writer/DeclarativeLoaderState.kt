@@ -1,4 +1,4 @@
-package io.airbyte.integrations.destination.customerio.io.airbyte.integrations.destination.customerio.batch
+package io.airbyte.cdk.load.writer
 
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.JsonNode
@@ -78,6 +78,8 @@ interface BatchSizeStrategy{
     fun isFull(): Boolean
 }
 
+
+// TODO add unit tests
 class RequestMemoryBatchSizeStrategy(private val response: JsonNode, private val sizeInBytes: Int): BatchSizeStrategy {
     /**
      * We currently serialize the response as a byte array every time we want to evaluate the size.
@@ -88,6 +90,7 @@ class RequestMemoryBatchSizeStrategy(private val response: JsonNode, private val
         return response.serializeToString().toByteArray(Charsets.UTF_8).size > sizeInBytes
     }
 }
+
 
 class RecordNumberBatchSizeStrategy(response: JsonNode, private val numberOfRecords: Int, batchField: List<String>): BatchSizeStrategy {
     val batch: ArrayNode = response.extractArray(batchField)
