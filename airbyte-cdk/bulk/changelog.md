@@ -1,3 +1,7 @@
+## Version 0.1.44
+
+Dataflow Load CDK: Set dest stats equal to source stats.
+
 ## Version 0.1.43
 
 Dataflow Load CDK: Properly handle interleaved per stream states.
