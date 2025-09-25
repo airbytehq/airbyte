@@ -1,3 +1,7 @@
+## Version 0.1.45
+
+Add addtional AirbyteSchemaTypes.
+
 ## Version 0.1.44
 
 Dataflow Load CDK: Set dest stats equal to source stats.
