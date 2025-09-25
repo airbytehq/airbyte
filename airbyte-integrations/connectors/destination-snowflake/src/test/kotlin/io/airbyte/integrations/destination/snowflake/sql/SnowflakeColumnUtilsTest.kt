@@ -23,6 +23,8 @@ import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
+import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
+import io.mockk.every
 import io.mockk.mockk
 import kotlin.collections.LinkedHashMap
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -31,11 +33,67 @@ import org.junit.jupiter.api.Test
 
 internal class SnowflakeColumnUtilsTest {
 
+    private lateinit var snowflakeConfiguration: SnowflakeConfiguration
     private lateinit var snowflakeColumnUtils: SnowflakeColumnUtils
 
     @BeforeEach
     fun setup() {
-        snowflakeColumnUtils = SnowflakeColumnUtils()
+        snowflakeConfiguration = mockk(relaxed = true)
+        snowflakeColumnUtils = SnowflakeColumnUtils(snowflakeConfiguration)
+    }
+
+    @Test
+    fun testDefaultColumns() {
+        assertEquals(DEFAULT_COLUMNS, snowflakeColumnUtils.defaultColumns())
+    }
+
+    @Test
+    fun testDefaultRawColumns() {
+        every { snowflakeConfiguration.legacyRawTablesOnly } returns true
+
+        assertEquals(
+            DEFAULT_COLUMNS + listOf(RAW_DATA_COLUMN),
+            snowflakeColumnUtils.defaultColumns()
+        )
+    }
+
+    @Test
+    fun testGetColumnName() {
+        val columnNameMapping = ColumnNameMapping(mapOf("original" to "actual"))
+        val columnNames = snowflakeColumnUtils.getColumnNames(columnNameMapping)
+        val expectedColumnNames =
+            (DEFAULT_COLUMNS.map { it.columnName } + listOf("actual")).joinToString(",") {
+                "\"$it\""
+            }
+        assertEquals(expectedColumnNames, columnNames)
+    }
+
+    @Test
+    fun testGetRawColumnName() {
+        every { snowflakeConfiguration.legacyRawTablesOnly } returns true
+
+        val columnNameMapping = ColumnNameMapping(mapOf("original" to "actual"))
+        val columnNames = snowflakeColumnUtils.getColumnNames(columnNameMapping)
+        val expectedColumnNames =
+            (DEFAULT_COLUMNS.map { it.columnName } + listOf(RAW_DATA_COLUMN.columnName))
+                .joinToString(",") { "\"$it\"" }
+        assertEquals(expectedColumnNames, columnNames)
+    }
+
+    @Test
+    fun testGeneratingRawTableColumnsAndTypesNoColumnMapping() {
+        every { snowflakeConfiguration.legacyRawTablesOnly } returns true
+
+        val columns =
+            snowflakeColumnUtils.columnsAndTypes(
+                columns = emptyMap(),
+                columnNameMapping = ColumnNameMapping(emptyMap())
+            )
+        assertEquals(DEFAULT_COLUMNS.size + 1, columns.size)
+        assertEquals(
+            "${SnowflakeDataType.VARCHAR.typeName} $NOT_NULL",
+            columns.find { it.columnName == RAW_DATA_COLUMN.columnName }?.columnType
+        )
     }
 
     @Test
@@ -50,7 +108,10 @@ internal class SnowflakeColumnUtilsTest {
                 columnNameMapping = ColumnNameMapping(emptyMap())
             )
         assertEquals(DEFAULT_COLUMNS.size + 1, columns.size)
-        assertEquals("VARCHAR", columns.find { it.columnName == columnName }?.columnType)
+        assertEquals(
+            SnowflakeDataType.VARCHAR.typeName,
+            columns.find { it.columnName == columnName }?.columnType
+        )
     }
 
     @Test
@@ -67,7 +128,10 @@ internal class SnowflakeColumnUtilsTest {
                 columnNameMapping = columnNameMapping
             )
         assertEquals(DEFAULT_COLUMNS.size + 1, columns.size)
-        assertEquals("VARCHAR", columns.find { it.columnName == mappedColumnName }?.columnType)
+        assertEquals(
+            SnowflakeDataType.VARCHAR.typeName,
+            columns.find { it.columnName == mappedColumnName }?.columnType
+        )
     }
 
     @Test

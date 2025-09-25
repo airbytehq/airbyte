@@ -135,10 +135,14 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         val columns = mapOf(columnName to mappedColumnName)
         val columnNameMapping = ColumnNameMapping(columns)
         val columnNames =
-            DEFAULT_COLUMNS.map { it.columnName }.joinToString(",") { "\"$it\"" } +
-                "\"$mappedColumnName\""
+            (DEFAULT_COLUMNS.map { it.columnName } + "mappedColumnName").joinToString(",") {
+                "\"$it\""
+            }
         val sourceTableName = TableName(namespace = "namespace", name = "source")
         val destinationTableName = TableName(namespace = "namespace", name = "destination")
+
+        every { columnUtils.getColumnNames(columnNameMapping) } returns columnNames
+
         val expected =
             """
             INSERT INTO ${snowflakeSqlNameUtils.fullyQualifiedName(destinationTableName)} 
