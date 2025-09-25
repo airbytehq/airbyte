@@ -114,7 +114,6 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
     @get:JsonPropertyDescription(
         """Airbyte will use this dataset for various internal tables. In legacy raw tables mode, the raw tables will be stored in this dataset. Defaults to "airbyte_internal".""",
     )
-    // for backwards compatibility, the JSON property is still called raw_data_dataset.
     @get:JsonProperty("raw_data_schema")
     @get:JsonSchemaInject(json = """{"group": "advanced", "order": 8}""")
     val internalTableDataset: String? = null
@@ -123,7 +122,6 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
     @get:JsonPropertyDescription(
         """Enter the additional properties to pass to the JDBC URL string when connecting to the database (formatted as key=value pairs separated by the symbol &). Example: key1=value1&key2=value2&key3=value3""",
     )
-    // for backwards compatibility, the JSON property is still called raw_data_dataset.
     @get:JsonProperty("jdbc_url_params")
     @get:JsonSchemaInject(json = """{"group": "advanced", "order": 9}""")
     val jdbcUrlParams: String? = null
@@ -132,7 +130,6 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
     @get:JsonPropertyDescription(
         """The number of days of Snowflake Time Travel to enable on the tables. See <a href="https://docs.snowflake.com/en/user-guide/data-time-travel#data-retention-period">Snowflake's documentation</a> for more information. Setting a nonzero value will incur increased storage costs in your Snowflake instance.""",
     )
-    // for backwards compatibility, the JSON property is still called raw_data_dataset.
     @get:JsonProperty("retention_period_days")
     @get:JsonSchemaInject(json = """{"group": "advanced", "order": 10}""")
     @Suppress("RedundantNullableReturnType")
