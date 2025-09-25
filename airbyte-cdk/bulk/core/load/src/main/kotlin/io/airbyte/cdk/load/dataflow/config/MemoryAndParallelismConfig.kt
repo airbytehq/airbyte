@@ -25,8 +25,8 @@ data class MemoryAndParallelismConfig(
     val maxOpenAggregates: Int = 5,
     val maxBufferedAggregates: Int = 3,
     val stalenessDeadlinePerAgg: Duration = 5.minutes,
-    val maxRecordsPerAgg: Long = 100_000L,
-    val maxEstBytesPerAgg: Long = 50_000_000L,
+    val maxRecordsPerAgg: Long = 800_000L,
+    val maxEstBytesPerAgg: Long = 200_000_000L,
     val maxConcurrentLifecycleOperations: Int = 10,
 ) {
     init {
