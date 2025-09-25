@@ -15,12 +15,24 @@ const docMetaTags = require("./src/remark/docMetaTags");
 const addButtonToTitle = require("./src/remark/addButtonToTitle");
 const fs = require("fs");
 
-const { SPEC_CACHE_PATH, API_SIDEBAR_PATH } = require("./src/scripts/embedded-api/constants");
+const {
+  SPEC_CACHE_PATH,
+  API_SIDEBAR_PATH,
+} = require("./src/scripts/embedded-api/constants");
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   future: {
-    experimental_faster: true,
+    experimental_faster: {
+      swcJsLoader: true,
+      swcJsMinimizer: true,
+      swcHtmlMinimizer: true,
+      lightningCssMinimizer: true,
+      rspackBundler: true,
+      rspackPersistentCache: true,
+      ssgWorkerThreads: false,
+      mdxCrossCompilerCache: true,
+    },
   },
   markdown: {
     mermaid: true,
@@ -86,8 +98,8 @@ const config = {
       : []),
   ],
   i18n: {
-    defaultLocale: 'en',
-    locales: ['en'],
+    defaultLocale: "en",
+    locales: ["en"],
   },
   // The preset is the "main" docs instance, though in reality, most content does not live under this preset. See the plugins array below, which defines the behavior of each docs instance.
   presets: [
@@ -201,7 +213,7 @@ const config = {
     [
       "@docusaurus/plugin-content-docs",
       {
-        id: "embedded-api",
+        id: "embedded-api-docs",
         path: "api-docs/embedded-api",
         routeBasePath: "/embedded-api/",
         docItemComponent: "@theme/ApiItem",
@@ -212,7 +224,7 @@ const config = {
           // items from the generated file structure.
 
           try {
-            const specPath = SPEC_CACHE_PATH; 
+            const specPath = SPEC_CACHE_PATH;
 
             if (!fs.existsSync(specPath)) {
               console.warn(
@@ -277,9 +289,9 @@ const config = {
       "docusaurus-plugin-openapi-docs",
       {
         id: "embedded-api",
-        docsPluginId: "embedded-api",
+        docsPluginId: "embedded-api-docs",
         config: {
-          embedded: {
+          "embedded-api": {
             specPath: "src/data/embedded_api_spec.json",
             outputDir: "api-docs/embedded-api",
             sidebarOptions: {
@@ -287,6 +299,35 @@ const config = {
               categoryLinkSource: "tag",
               sidebarCollapsed: false,
               sidebarCollapsible: false,
+            },
+          },
+        },
+      },
+    ],
+
+    [
+      "@docusaurus/plugin-content-docs",
+      {
+        id: "airbyte-api-docs-content",
+        path: "api-docs/airbyte-api",
+        routeBasePath: "/airbyte-api",
+        docItemComponent: "@theme/ApiItem",
+        sidebarPath: require.resolve("./sidebar-airbyte_api.js"),
+      },
+    ],
+    [
+      "docusaurus-plugin-openapi-docs",
+      {
+        id: "airbyte-api",
+        docsPluginId: "airbyte-api-docs-content",
+        config: {
+          "airbyte-api": {
+            specPath: "src/data/airbyte-api/sources-minimal.json",
+            outputDir: "api-docs/airbyte-api",
+            sidebarOptions: {
+              groupPathsBy: "tag",
+              sidebarCollapsed: true,
+              sidebarCollapsible: true,
             },
           },
         },
@@ -305,25 +346,7 @@ const config = {
         },
       },
     ],
-    () => ({
-      name: "Yaml loader",
-      configureWebpack() {
-        return {
-          module: {
-            rules: [
-              {
-                test: /\.ya?ml$/,
-                use: "yaml-loader",
-              },
-              {
-                test: /\.html$/i,
-                loader: "html-loader",
-              },
-            ],
-          },
-        };
-      },
-    }),
+    require.resolve("./src/plugins/yamlLoader"),
   ],
   customFields: {
     requestErdApiUrl: process.env.REQUEST_ERD_API_URL,

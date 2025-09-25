@@ -1,0 +1,71 @@
+---
+id: get-source
+title: "Get Source"
+description: "Get details of a specific source"
+sidebar_label: "Get Source"
+hide_title: true
+hide_table_of_contents: true
+api: eJyNU02L2zAQ/StiDqUFNU561C2UZcmpS9OeQigTeRJrK1taaRxqjP97GdvZD5It9cX2fM97b3oIkRKyC82mBAMn4m1okyXQUFK2yUXxgYF7YlUSo/NZhaNClSNZd3RW5UsC4ymD2UFsD97ZX5M9g54NoGE7m/YaIiasiSlJSg8N1gQGppxNCRqcdI3IFWhI9NS6RCUYTi1pyLaiGsH0wF0c8zi55gTDsJfgHEOTKYv/y3Ipr7e7bFtrKedj69Xz+qDBhoapYYnHGL2zo6N4zJLUXzcNh0eyLPslKcNuaunKG4PpecMbjslwvYoGduzFNFMyyKOhJq7CTJY0F4gMFDPcRX/BcAANmdL5AnGbPBiomGM2RYHRLdClQ8e0sKEuzqsryteTW60fNuq8AsHWNccwzjpPdgmZiZVQ0CAtpxKrxXKxvCr8kMIpYV0jO4ved0qQT8GrS7mvPrSlVt+2W/VB3TVMKSaXSX1+02jQEEPmGkd6ZgWJTm9LuH8h+L/UPNHB9IeL6NE10m/EsJ8x38GLxM2zcvcaqpBZ3H1/wEw/kx8GMT+1lDowu72GMyaHB4Fw10PpsnyXYI7oM/1j7I/f50P4pN6bcDZi0wkR6Fv5Aw2/qXt9X8N+0FARlpTGGSb32lqK/Crx6g5EBM8CvL/7AcPwFy22dL8=
+sidebar_class_name: "get api-method"
+info_path: airbyte-api//airbyte-sources-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Get Source"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/sources/{sourceId}"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Get details of a specific source
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"name":"sourceId","in":"path","required":true,"schema":{"type":"string"}}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={undefined}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"Successful operation","content":{"application/json":{"schema":{"type":"object","properties":{"id":{"type":"string"},"name":{"type":"string"},"type":{"type":"string"}},"title":"Source"}}}}}}
+>
+  
+</StatusCodes>
+
+
+      

@@ -1,0 +1,152 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Airbyte Sources API",
+    "version": "1.0.0",
+    "description": "Programmatically control Airbyte Cloud, OSS & Enterprise - Sources API"
+  },
+  "tags": [
+    {
+      "name": "Sources",
+      "description": "Operations related to managing sources"
+    }
+  ],
+  "servers": [
+    {
+      "url": "https://api.airbyte.com/v1",
+      "description": "Airbyte API v1"
+    }
+  ],
+  "paths": {
+    "/sources": {
+      "get": {
+        "operationId": "listSources",
+        "summary": "List Sources",
+        "description": "List sources",
+        "tags": [
+                    "public_sources",
+                    "public",
+                    "Sources"
+                ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Source"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createSource",
+        "summary": "Create Source",
+        "description": "Create a new source",
+        "tags": [
+                    "public_sources",
+                    "public",
+                    "Sources"
+                ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSourceRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Source created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Source"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sources/{sourceId}": {
+      "get": {
+        "operationId": "getSource",
+        "summary": "Get Source",
+        "description": "Get details of a specific source",
+        "tags": [
+                    "public_sources",
+                    "public",
+                    "Sources"
+                ],
+        "parameters": [
+          {
+            "name": "sourceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Source"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Source": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateSourceRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "configuration": {
+            "type": "object"
+          }
+        }
+      }
+    }
+  }
+}

@@ -366,13 +366,11 @@ module.exports = {
                 type: "doc",
                 id: "move-data/elt-data-activation",
               },
-              items: [
-                "move-data/rejected-records"
-              ],
+              items: ["move-data/rejected-records"],
             },
-            "using-airbyte/sync-files-and-records"
+            "using-airbyte/sync-files-and-records",
           ],
-        },        
+        },
         buildAConnector,
         sectionHeader("Managing Airbyte"),
         deployAirbyte,
@@ -403,7 +401,7 @@ module.exports = {
           },
           items: [
             "enterprise-flex/getting-started",
-            "enterprise-flex/data-plane"
+            "enterprise-flex/data-plane",
           ],
         },
         {
@@ -523,8 +521,19 @@ module.exports = {
         },
         sectionHeader("Developer Guides"),
         {
-          type: "doc",
-          id: "api-documentation",
+          type: "category",
+          label: "Api Docs",
+          link: {
+            type: "doc",
+            id: "api-documentation",
+          },
+          items: [
+            {
+              type: "link",
+              label: "API Reference",
+              href: "/airbyte-api/airbyte-sources-api",
+            },
+          ],
         },
         {
           type: "doc",
