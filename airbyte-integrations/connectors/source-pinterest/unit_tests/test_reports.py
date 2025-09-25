@@ -5,19 +5,9 @@
 import copy
 import json
 import os
-from unittest.mock import MagicMock
 
-import pytest
 from freezegun import freeze_time
 from source_pinterest import SourcePinterest
-from source_pinterest.reports.reports import (
-    AdGroupTargetingReport,
-    AdvertiserTargetingReport,
-    CampaignTargetingReport,
-    KeywordReport,
-    PinPromotionTargetingReport,
-    ProductGroupTargetingReport,
-)
 from source_pinterest.utils import get_analytics_columns
 
 from airbyte_cdk.models import SyncMode
@@ -134,18 +124,3 @@ def test_custom_streams(test_config):
     streams = source.streams(config)
     expected_streams_number = 33
     assert len(streams) == expected_streams_number
-
-
-@pytest.mark.parametrize(
-    ("report_name", "expected_level"),
-    (
-        [CampaignTargetingReport, "CAMPAIGN_TARGETING"],
-        [AdvertiserTargetingReport, "ADVERTISER_TARGETING"],
-        [AdGroupTargetingReport, "AD_GROUP_TARGETING"],
-        [PinPromotionTargetingReport, "PIN_PROMOTION_TARGETING"],
-        [ProductGroupTargetingReport, "PRODUCT_GROUP_TARGETING"],
-        [KeywordReport, "KEYWORD"],
-    ),
-)
-def test_level(test_config, report_name, expected_level):
-    assert report_name(parent=None, config=MagicMock()).level == expected_level

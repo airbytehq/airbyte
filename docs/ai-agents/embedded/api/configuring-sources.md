@@ -16,20 +16,20 @@ When collecting credentials from your users, generate a scoped access token that
 This can be done by submitting a request to
 
 ```
-curl --location 'https://api.airbyte.ai/api/v1/embedded/widget_token' \
---header 'Content-Type: application/json'\
--H 'Authorization: Bearer <token>' \
---header 'Accept: application/json' \
---data '{
-  "externalUserId": "<external_user_id>", 
-  "organizationId": "<organization_id>",
-  "allowedOrigin": "https://api.airbyte.ai"
-}'
+curl --location 'https://api.airbyte.ai/api/v1/embedded/scoped-token' \
+  --header 'Content-Type: application/json' \
+  --header 'Authorization: Bearer <your_access_token>' \
+  --header 'X-Organization-Id: <your_organization_id>' \
+  --data '{
+    "workspace_name": "your_workspace_name",
+    "region_id": "optional_region_id"
+  }'
+
 ```
 
 Where:
-- externalUserId is a unique identifier within your organization
-- allowedOrigin is the origin where you're embedding the widget (used for CORS validation). It can be an arbitrary string if you're not using the Embedded Widget.
+- `workspace_name` is a unique identifier within your organization for each customer's tenant.
+- `region_id` is the origin where you're embedding the widget (used for CORS validation). It can be an arbitrary string if you're not using the Embedded Widget.
 
 The API will return a JSON object with a token string:
 ```
@@ -64,14 +64,20 @@ You'll need 3 pieces of information to create a source for your users:
 
 Here is an example request:
 ```
-curl 'https://api.airbyte.ai/api/v1/integrations/sources/' \
-  -H 'authorization: Bearer <token>' \
-  -H 'content-type: application/json' \
-  --data-raw '{
-  "workspace_id": "0967198e-ec7b-4c6b-b4d3-f71244cadbe9",
-  "source_template_id": "7bb1bee0-a40f-46a0-83fc-d70ade5dfeb2",
-  "source_config": {}
-}'
+curl --location 'https://api.airbyte.ai/api/v1/embedded/sources' \
+  --header 'Content-Type: application/json' \
+  --header 'Authorization: Bearer <scoped_token>' \
+  --header 'X-Organization-Id: <your_organization_id>' \
+  --data '{
+    "name": "your_source_name",
+    "workspace_id": "your_workspace_id",
+    "source_template_id": "your_source_template_id",
+    "source_config": {
+      // your source configuration fields here
+    },
+    "selected_connection_template_tags": ["optional_tag1", "optional_tag2"],
+    "selected_connection_template_tags_mode": "any" // or "all"
+  }'
 ```
 
 The connection configuration should include all required fields from the connector specification, except for the ones included as default values in your source template.
