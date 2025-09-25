@@ -16,15 +16,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 from airbyte_cdk.utils import AirbyteTracedException
 
-from .reports.reports import (
-    AdGroupTargetingReport,
-    AdvertiserTargetingReport,
-    CampaignTargetingReport,
-    CustomReport,
-    KeywordReport,
-    PinPromotionTargetingReport,
-    ProductGroupTargetingReport,
-)
+from .reports.reports import CustomReport
 from .streams import AdAccounts, AdAccountValidationStream, PinterestStream
 
 
@@ -101,16 +93,9 @@ class SourcePinterest(YamlDeclarativeSource):
 
         # Report streams involve async data fetch, which is currently not supported in low-code
         ad_accounts = AdAccounts(transformed_config)
-        report_streams = [
-            CampaignTargetingReport(ad_accounts, config=transformed_config),
-            AdvertiserTargetingReport(ad_accounts, config=transformed_config),
-            AdGroupTargetingReport(ad_accounts, config=transformed_config),
-            PinPromotionTargetingReport(ad_accounts, config=transformed_config),
-            ProductGroupTargetingReport(ad_accounts, config=transformed_config),
-            KeywordReport(ad_accounts, config=transformed_config),
-        ] + self.get_custom_report_streams(config=transformed_config, ad_accounts_stream=ad_accounts)
+        custom_report_streams = self.get_custom_report_streams(config=transformed_config, ad_accounts_stream=ad_accounts)
 
-        return declarative_streams + report_streams
+        return declarative_streams + custom_report_streams
 
     def get_custom_report_streams(self, config: Mapping[str, Any], ad_accounts_stream: AdAccounts) -> List[Stream]:
         """return custom report streams"""

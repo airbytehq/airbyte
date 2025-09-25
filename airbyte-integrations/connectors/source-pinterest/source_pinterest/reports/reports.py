@@ -192,42 +192,6 @@ class PinterestAnalyticsTargetingReportStream(PinterestAnalyticsReportStream):
         return self._construct_request_body(stream_slice["start_date"], stream_slice["end_date"], self.granularity, columns)
 
 
-class CampaignTargetingReport(PinterestAnalyticsTargetingReportStream):
-    @property
-    def level(self):
-        return "CAMPAIGN_TARGETING"
-
-
-class AdvertiserTargetingReport(PinterestAnalyticsTargetingReportStream):
-    @property
-    def level(self):
-        return "ADVERTISER_TARGETING"
-
-
-class AdGroupTargetingReport(PinterestAnalyticsTargetingReportStream):
-    @property
-    def level(self):
-        return "AD_GROUP_TARGETING"
-
-
-class PinPromotionTargetingReport(PinterestAnalyticsTargetingReportStream):
-    @property
-    def level(self):
-        return "PIN_PROMOTION_TARGETING"
-
-
-class ProductGroupTargetingReport(PinterestAnalyticsTargetingReportStream):
-    @property
-    def level(self):
-        return "PRODUCT_GROUP_TARGETING"
-
-
-class KeywordReport(PinterestAnalyticsTargetingReportStream):
-    @property
-    def level(self):
-        return "KEYWORD"
-
-
 class CustomReport(PinterestAnalyticsTargetingReportStream):
     def __init__(self, **kwargs):
         # as HttpStream.__init__ requires the name of the stream, we need to assign `self._custom_class_name` before calling the parent
