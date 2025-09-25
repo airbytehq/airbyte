@@ -2,63 +2,86 @@
 products: cloud, oss-enterprise
 ---
 
-# Manage your workspace
+# Manage workspaces
 
-A workspace in Airbyte allows you to collaborate with other users and manage connections together.
+You can create, manage, and delete workspaces, and control access to them.
 
-## Add users to your workspace
+## Create a new workspace
 
-1. To add a user to your workspace, go to the **Settings** via the side navigation in Airbyte. Navigate to **Workspace** > **General** and click **+ New member**.
+Organization admins and readers can create workspaces. Follow these steps to create a new workspace.
 
-2. On the **Add new member** dialog, enter the email address of the user you want to invite to your workspace. Click **Add new member**.
+1. Go to your Organization home page.
 
-:::info
-The user will have access to only the workspace you invited them to. They will be added with a role of `Workspace Admin`, which has the ability to add or delete other users and make changes to connections and connectors in the workspace.
-:::
+2. Click **New workspace**.
 
-## Remove users from your workspace​
+3. Enter a workspace name and select a [region](/platform/cloud/managing-airbyte-cloud/manage-data-residency).
 
-1. To remove a user from your workspace, to the **Settings** via the side navigation in Airbyte. Navigate to **Workspace** > **General**. In the workspace role column, click the down carat and select **Remove user**.
-
-2. Complete removal by clicking **Remove** in the confirmation modal.
-
-:::tip
-Organization admins cannot be removed from a workspace. Reach out to Airbyte Support if you need assistance removing an organization admin.
-:::
+4. Click **Create workspace**. Airbyte creates a new, empty workspace.
 
 ## Rename a workspace
 
-To rename a workspace, go to the **Settings** via the side navigation in Airbyte. Navigate to **Workspace** > **General**. In the **Workspace name** field, enter the new name for your workspace. Click **Save changes**.
+Workspace admins can rename workspaces. Follow these steps to rename a workspace.
+
+1. [Switch](#switch-workspaces) to the workspace you want to rename.
+
+2. Click **Workspace settings** > **General**.
+
+3. Under **Workspace name**, type the new name.
+
+4. Click **Save changes**. Airbyte renames your workspace.
 
 ## Delete a workspace
 
-To delete a workspace, go to the **Settings** via the side navigation in Airbyte. Navigate to **Workspace** > **General**. In the **Danger!** section, click **Delete your workspace**.
+Organizations admins and editors, and workspace admins, can delete a workspace. Follow these steps to delete a workspace.
 
-## Managing multiple workspaces
-
-You can have access to one or multiple workspaces with Airbyte Cloud, which gives you flexibility in managing user access and billing. Workspaces can also be linked through an organization, which allows you to collaborate with team members and share workspaces across your team.
-
-:::info
-Organizations are only available in Airbyte Cloud through Cloud Teams. [Get in touch](https://airbyte.com/company/talk-to-sales) with us if you would like to take advantage of organization features.
+:::danger
+Deleting a workspace deletes all its sources, destinations, and connections. This is irreversible. Think carefully before doing this.
 :::
 
-### Billing across multiple workspaces
+1. [Switch](#switch-workspaces) to the workspace you want to delete.
 
-Airbyte [credits](https://airbyte.com/pricing) are by default assigned per workspace and cannot be transferred between workspaces. [Get in touch](https://airbyte.com/company/talk-to-sales) with us if you would like to centralize billing across workspaces.
+2. Click **Workspace settings** > **General**.
 
-## Managing User Roles
+3. Click **Delete your workspace**.
 
-Airbyte offers multiple user roles to enable teams to securely access workspaces or organizations. All roles are available to Cloud Teams and Self-Managed Enterprise users. Cloud users only have admin roles.
+4. Type your workspace name to confirm you want to delete it.
 
-| Role                                                                                                                    | Cloud | Cloud Teams | Enterprise |
-| ----------------------------------------------------------------------------------------------------------------------- | ----- | ----------- | ---------- |
-| **Organization Admin:** Administer the whole organization, create workspaces in it, and manage organization permissions |   ✅    | ✅          | ✅         |
-| **Workspace Admin:** Administer the workspace, create workspace permissions                                             | ✅    |      ✅       |    ✅        |
-| **Workspace Reader:** View information within a workspace, cannot modify anything within a workspace                    |       | ✅          | ✅         |
+5. Click **Delete workspace**. Airbyte permanently deletes your workspace.
 
+## Add users to your workspace
 
-More information about specific roles can be found in our [Role-Based Access Control documentation](../access-management/rbac.md).
+Workspace admins can add any organization member to a workspace.
 
-## Switch between multiple workspaces
+1. [Switch](#switch-workspaces) to the workspace you want to add them to.
 
-To switch between workspaces, click the current workspace name under the Airbyte logo in the navigation bar. Search for the workspace or click the name of the workspace you want to switch to.
+2. Click **Workspace settings** > **Members**.
+
+3. Click **New member**.
+
+4. Start entering the person's name or email to find them in the list.
+
+5. Click their name to select them, then assign them an [RBAC](../access-management/rbac) role.
+
+6. Click **Add new member**.
+
+## Remove someone from your workspace​
+
+Workspace admins can remove someone from a workspace, but can't remove other workspace admins. Follow these steps to remove someone from your workspace.
+
+1. [Switch](#switch-workspaces) to the workspace you want to remove them from.
+
+2. Click **Workspace settings** > **Members**.
+
+3. Find the person you want to remove, click the role next to their name, and select **Remove user from workspace**.
+
+## Switch between workspaces {#switch-workspaces}
+
+If you have multiple workspaces in the same organization, you can switch between them. Any workspace reader, runner, editor, or admin can open a workspace.
+
+1. In the navigation bar, under **Workspace**, click the dropdown with your current workspace name.
+
+2. Find and click the name of the workspace you want to switch to. Airbyte switches to that workspace.
+
+## Managing roles
+
+See [Role based access control](../access-management/rbac) to learn more about the different roles available. If you're on the Cloud Standard plan, all users are admins.
