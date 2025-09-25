@@ -86,6 +86,29 @@ class SnowflakeRawInsertAcceptanceTest :
     }
 }
 
+class SnowflakeRawInsertProtoAcceptanceTest :
+    SnowflakeAcceptanceTest(
+        configPath = RAW_CONFIG_PATH,
+        dataDumper =
+            SnowflakeRawDataDumper { spec ->
+                SnowflakeConfigurationFactory().make(spec as SnowflakeSpecification)
+            },
+        recordMapper = SnowflakeExpectedRawRecordMapper,
+        isStreamSchemaRetroactive = false,
+        isStreamSchemaRetroactiveForUnknownTypeToString = false,
+        dedupBehavior = null,
+        nullEqualsUnset = false,
+        coercesLegacyUnions = false,
+        dataChannelFormat = DataChannelFormat.PROTOBUF,
+        dataChannelMedium = DataChannelMedium.SOCKET,
+        unknownTypesBehavior = UnknownTypesBehavior.NULL,
+    ) {
+    @Test
+    override fun testBasicWrite() {
+        super.testBasicWrite()
+    }
+}
+
 abstract class SnowflakeAcceptanceTest(
     configPath: Path,
     dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
