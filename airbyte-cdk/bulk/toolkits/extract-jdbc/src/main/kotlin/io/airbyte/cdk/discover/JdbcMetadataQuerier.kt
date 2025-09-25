@@ -278,6 +278,9 @@ class JdbcMetadataQuerier(
                         "sqlState = '${e.sqlState ?: ""}', errorCode = ${e.errorCode}, ${e.message}"
                 }
                 return null
+            } catch (e: Exception) {
+                log.info(e) { "Column metadata query failed: ${e.message}" }
+                return null
             }
         }
     }
