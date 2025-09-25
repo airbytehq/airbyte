@@ -1,6 +1,10 @@
+## Version 0.1.43
+
+Dataflow Load CDK: Properly handle interleaved per stream states.
+
 ## Version 0.1.42
 
-Datflow Load CDK: Fixes hang when one of many parallel pipelines fails. Organizes thread pools. 
+Dataflow Load CDK: Fixes hang when one of many parallel pipelines fails. Organizes thread pools.
 
 ## Version 0.1.41
 
