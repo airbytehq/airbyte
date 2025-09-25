@@ -245,7 +245,7 @@ class JdbcMetadataQuerier(
         conn: Connection,
         sql: String,
     ): List<ColumnMetadata>? {
-        log.info { "Querying $sql for catalog discovery." }
+        log.info { "Querying $sql for catalog discovery..." }
         conn.createStatement().use { stmt: Statement ->
             try {
                 stmt.fetchSize = 1
