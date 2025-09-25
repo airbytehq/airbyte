@@ -34,6 +34,7 @@ import org.apache.iceberg.aws.AwsProperties
 import org.apache.iceberg.aws.s3.S3FileIO
 import org.apache.iceberg.aws.s3.S3FileIOProperties
 import org.apache.iceberg.catalog.Catalog
+import org.apache.iceberg.rest.auth.OAuth2Properties
 import org.projectnessie.client.NessieConfigConstants
 
 private const val AWS_REGION = "aws.region"
@@ -126,6 +127,12 @@ class S3DataLakeUtil(
                 URI to catalogConfig.serverUri,
                 S3FileIOProperties.ACCESS_KEY_ID to awsAccessKeyId,
                 S3FileIOProperties.SECRET_ACCESS_KEY to awsSecretAccessKey,
+                // this is the client ID + secret
+                OAuth2Properties.CREDENTIAL to "<client_id>:<client_secret>",
+                // we should maybe figure out if we can use a reduced scope
+                OAuth2Properties.SCOPE to "api://8ba0cae2-a76a-49fa-a1e0-27b78ddb10ad/.default",
+                OAuth2Properties.OAUTH2_SERVER_URI to
+                    "https://login.microsoftonline.com/277f8a66-1e88-46c9-8c7b-23c442857904/oauth2/v2.0/token",
             )
 
         return restProperties + s3Properties
