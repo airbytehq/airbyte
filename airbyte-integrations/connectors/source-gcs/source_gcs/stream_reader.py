@@ -5,6 +5,7 @@ import itertools
 import json
 import logging
 import tempfile
+import time
 import urllib.parse
 from datetime import datetime, timedelta
 from io import IOBase, StringIO
@@ -75,7 +76,13 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
         file_relative_path = file_paths[self.FILE_RELATIVE_PATH]
         file_name = file_paths[self.FILE_NAME]
 
+        logger.info(
+            f"Starting to download the file {file.uri} with size: {file_size / (1024 * 1024):,.2f} MB ({file_size / (1024 * 1024 * 1024):.2f} GB)"
+        )
+        start_download_time = time.time()
         file.blob.download_to_filename(local_file_path)
+        write_duration = time.time() - start_download_time
+        logger.info(f"Finished downloading the file {file.uri} and saved to {local_file_path} in {write_duration:,.2f} seconds.")
 
         file_record_data = FileRecordData(
             folder=file_paths[self.FILE_FOLDER],
