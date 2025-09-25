@@ -510,4 +510,78 @@ internal class SnowflakeAirbyteClientTest {
         assertEquals(1, modified.size)
         assertEquals("COL3", modified.first().name)
     }
+
+    @Test
+    fun testCreateNamespaceWithNetworkFailure() {
+        val namespace = "test_namespace"
+        val sql = "CREATE SCHEMA IF NOT EXISTS test_namespace"
+
+        every { sqlGenerator.createNamespace(namespace) } returns sql
+
+        val connection = mockk<Connection>()
+        val statement = mockk<Statement>()
+
+        every { dataSource.connection } returns connection
+        every { connection.createStatement() } returns statement
+        every { statement.executeQuery(sql) } throws SQLException("Network error", "08S01")
+        every { statement.close() } just Runs
+        every { connection.close() } just Runs
+
+        runBlocking {
+            try {
+                client.createNamespace(namespace)
+                assert(false) { "Expected SQLException" }
+            } catch (e: SQLException) {
+                assertEquals("Network error", e.message)
+                assertEquals("08S01", e.sqlState)
+            }
+        }
+    }
+
+    @Test
+    fun testCountTableWithClosedConnection() {
+        val tableName = TableName("namespace", "table")
+        val sql = "SELECT COUNT(*) FROM namespace.table"
+
+        every { sqlGenerator.countTable(tableName) } returns sql
+
+        val connection = mockk<Connection>()
+
+        every { dataSource.connection } returns connection
+        every { connection.isClosed } returns true
+        every { connection.close() } just Runs
+
+        runBlocking {
+            try {
+                client.countTable(tableName)
+                assert(false) { "Expected error for closed connection" }
+            } catch (e: Exception) {
+                // Expected - connection was closed
+            }
+        }
+    }
+
+    @Test
+    fun testExecuteWithTransientNetworkError() {
+        val connection = mockk<Connection>()
+        val statement = mockk<Statement>()
+        val sql = "INSERT INTO table VALUES (1)"
+
+        every { dataSource.connection } returns connection
+        every { connection.createStatement() } returns statement
+
+        // Simulate transient network error (typically retryable)
+        every { statement.executeQuery(sql) } throws
+            SnowflakeSQLException("Request reached its timeout", "HY000", 390114)
+        every { statement.close() } just Runs
+        every { connection.close() } just Runs
+
+        try {
+            client.execute(sql)
+            assert(false) { "Expected SnowflakeSQLException" }
+        } catch (e: SnowflakeSQLException) {
+            assertEquals(390114, e.errorCode) // NETWORK_ERROR
+            // In production, this would typically trigger a retry
+        }
+    }
 }
