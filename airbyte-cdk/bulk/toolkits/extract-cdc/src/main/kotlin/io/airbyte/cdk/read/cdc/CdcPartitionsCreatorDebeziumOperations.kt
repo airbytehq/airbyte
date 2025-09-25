@@ -25,4 +25,6 @@ interface CdcPartitionsCreatorDebeziumOperations<T : Comparable<T>> {
 
     /** Generates Debezium properties for use with a [ValidDebeziumWarmStartState]. */
     fun generateWarmStartProperties(streams: List<Stream>): Map<String, String>
+
+    fun dummy()
 }
