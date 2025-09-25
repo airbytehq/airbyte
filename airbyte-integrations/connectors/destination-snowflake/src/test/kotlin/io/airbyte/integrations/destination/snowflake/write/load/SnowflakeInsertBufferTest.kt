@@ -5,16 +5,30 @@
 package io.airbyte.integrations.destination.snowflake.write.load
 
 import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.IntegerValue
+import io.airbyte.cdk.load.data.NullValue
+import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
+import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
 import kotlin.io.path.exists
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 internal class SnowflakeInsertBufferTest {
+
+    private lateinit var snowflakeConfiguration: SnowflakeConfiguration
+
+    @BeforeEach
+    fun setUp() {
+        snowflakeConfiguration = mockk(relaxed = true)
+    }
 
     @Test
     fun testAccumulate() {
@@ -22,13 +36,37 @@ internal class SnowflakeInsertBufferTest {
         val column = "columnName"
         val columns = listOf(column)
         val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
-        val record = mapOf(column to AirbyteValue.from("test-value"))
+        val record = createRecord(column)
         val buffer =
             SnowflakeInsertBuffer(
                 tableName = tableName,
                 columns = columns,
                 snowflakeClient = snowflakeAirbyteClient,
+                snowflakeConfiguration = snowflakeConfiguration,
             )
+
+        buffer.accumulate(record)
+
+        assertEquals(true, buffer.csvFilePath?.exists())
+        assertEquals(1, buffer.recordCount)
+    }
+
+    @Test
+    fun testAccumulateRaw() {
+        val tableName = mockk<TableName>()
+        val column = "columnName"
+        val columns = listOf(column)
+        val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
+        val record = createRecord(column)
+        val buffer =
+            SnowflakeInsertBuffer(
+                tableName = tableName,
+                columns = columns,
+                snowflakeClient = snowflakeAirbyteClient,
+                snowflakeConfiguration = snowflakeConfiguration,
+            )
+
+        every { snowflakeConfiguration.legacyRawTablesOnly } returns true
 
         buffer.accumulate(record)
 
@@ -42,13 +80,40 @@ internal class SnowflakeInsertBufferTest {
         val column = "columnName"
         val columns = listOf(column)
         val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
-        val record = mapOf(column to AirbyteValue.from("test-value"))
+        val record = createRecord(column)
         val buffer =
             SnowflakeInsertBuffer(
                 tableName = tableName,
                 columns = columns,
                 snowflakeClient = snowflakeAirbyteClient,
+                snowflakeConfiguration = snowflakeConfiguration,
             )
+
+        runBlocking {
+            buffer.accumulate(record)
+            buffer.flush()
+        }
+
+        coVerify(exactly = 1) { snowflakeAirbyteClient.putInStage(tableName, any()) }
+        coVerify(exactly = 1) { snowflakeAirbyteClient.copyFromStage(tableName) }
+    }
+
+    @Test
+    fun testFlushRaw() {
+        val tableName = mockk<TableName>()
+        val column = "columnName"
+        val columns = listOf(column)
+        val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
+        val record = createRecord(column)
+        val buffer =
+            SnowflakeInsertBuffer(
+                tableName = tableName,
+                columns = columns,
+                snowflakeClient = snowflakeAirbyteClient,
+                snowflakeConfiguration = snowflakeConfiguration,
+            )
+
+        every { snowflakeConfiguration.legacyRawTablesOnly } returns true
 
         runBlocking {
             buffer.accumulate(record)
@@ -66,12 +131,13 @@ internal class SnowflakeInsertBufferTest {
         val column2 = "columnName2"
         val columns = listOf(column1, column2)
         val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
-        val record = mapOf(column1 to AirbyteValue.from("test-value"))
+        val record = createRecord(column1)
         val buffer =
             SnowflakeInsertBuffer(
                 tableName = tableName,
                 columns = columns,
                 snowflakeClient = snowflakeAirbyteClient,
+                snowflakeConfiguration = snowflakeConfiguration,
             )
 
         runBlocking {
@@ -85,4 +151,44 @@ internal class SnowflakeInsertBufferTest {
             coVerify(exactly = 1) { snowflakeAirbyteClient.copyFromStage(tableName) }
         }
     }
+
+    @Test
+    fun testMissingFieldsRaw() {
+        val tableName = mockk<TableName>()
+        val column1 = "columnName1"
+        val column2 = "columnName2"
+        val columns = listOf(column1, column2)
+        val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
+        val record = createRecord(column1)
+        val buffer =
+            SnowflakeInsertBuffer(
+                tableName = tableName,
+                columns = columns,
+                snowflakeClient = snowflakeAirbyteClient,
+                snowflakeConfiguration = snowflakeConfiguration,
+            )
+
+        every { snowflakeConfiguration.legacyRawTablesOnly } returns true
+
+        runBlocking {
+            buffer.accumulate(record)
+            assertEquals(
+                "test-value${CSV_FORMAT.delimiterString}${CSV_FORMAT.recordSeparator}",
+                buffer.csvFilePath?.toFile()?.readText()
+            )
+            buffer.flush()
+            coVerify(exactly = 1) { snowflakeAirbyteClient.putInStage(tableName, any()) }
+            coVerify(exactly = 1) { snowflakeAirbyteClient.copyFromStage(tableName) }
+        }
+    }
+
+    private fun createRecord(columnName: String) =
+        mapOf(
+            columnName to AirbyteValue.from("test-value"),
+            Meta.COLUMN_NAME_AB_EXTRACTED_AT to IntegerValue(System.currentTimeMillis()),
+            Meta.COLUMN_NAME_AB_RAW_ID to StringValue("raw-id"),
+            Meta.COLUMN_NAME_AB_GENERATION_ID to IntegerValue(1223),
+            Meta.COLUMN_NAME_AB_META to StringValue("{\"changes\":[],\"syncId\":43}"),
+            "${columnName}Null" to NullValue
+        )
 }

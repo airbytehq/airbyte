@@ -78,7 +78,8 @@ class SnowflakeChecker(
                     SnowflakeInsertBuffer(
                         tableName = qualifiedTableName,
                         columns = columns,
-                        snowflakeClient = snowflakeAirbyteClient
+                        snowflakeClient = snowflakeAirbyteClient,
+                        snowflakeConfiguration = snowflakeConfiguration,
                     )
 
                 snowflakeInsertBuffer.accumulate(data)

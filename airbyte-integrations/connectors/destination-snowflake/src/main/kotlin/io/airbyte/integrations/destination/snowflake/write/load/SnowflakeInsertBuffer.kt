@@ -6,9 +6,9 @@ package io.airbyte.integrations.destination.snowflake.write.load
 
 import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.load.data.AirbyteValue
-import io.airbyte.cdk.load.data.csv.toCsvValue
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
+import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.QUOTE
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
@@ -25,13 +25,20 @@ internal val CSV_FORMAT = CSVFormat.DEFAULT
 
 class SnowflakeInsertBuffer(
     private val tableName: TableName,
-    private val columns: List<String>,
-    private val snowflakeClient: SnowflakeAirbyteClient
+    val columns: List<String>,
+    private val snowflakeClient: SnowflakeAirbyteClient,
+    val snowflakeConfiguration: SnowflakeConfiguration,
 ) {
 
     @VisibleForTesting internal var csvFilePath: Path? = null
 
     @VisibleForTesting internal var recordCount = 0
+
+    private val snowflakeRecordFormatter: SnowflakeRecordFormatter =
+        when (snowflakeConfiguration.legacyRawTablesOnly) {
+            true -> SnowflakeRawRecordFormatter(columns)
+            else -> SnowflakeSchemaRecordFormatter(columns)
+        }
 
     fun accumulate(recordFields: Map<String, AirbyteValue>) {
         if (csvFilePath == null) {
@@ -77,11 +84,7 @@ class SnowflakeInsertBuffer(
                 ->
                 val printer = CSVPrinter(writer, CSV_FORMAT)
                 printer.use {
-                    val csvRecord =
-                        columns.map { columnName ->
-                            if (record.containsKey(columnName)) record[columnName].toCsvValue()
-                            else ""
-                        }
+                    val csvRecord = snowflakeRecordFormatter.format(record)
                     printer.printRecord(csvRecord)
                 }
             }

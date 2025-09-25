@@ -14,6 +14,7 @@ import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNativeOperations
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableSqlOperations
 import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
+import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.COUNT_TOTAL_ALIAS
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlGenerator
@@ -33,6 +34,7 @@ class SnowflakeAirbyteClient(
     private val dataSource: DataSource,
     private val sqlGenerator: SnowflakeDirectLoadSqlGenerator,
     private val snowflakeColumnUtils: SnowflakeColumnUtils,
+    private val snowflakeConfiguration: SnowflakeConfiguration,
 ) : AirbyteClient, DirectLoadTableSqlOperations, DirectLoadTableNativeOperations {
 
     override suspend fun countTable(tableName: TableName): Long? =
@@ -133,8 +135,16 @@ class SnowflakeAirbyteClient(
         val (addedColumns, deletedColumns, modifiedColumns) =
             generateSchemaChanges(columnsInDb, columnsInStream)
 
+        /*
+         * If legacy raw tables are in use, there is nothing to ensure in schema, as raw mode
+         * uses a fixed schema that is not based on the catalog/incoming record.  Otherwise,
+         * ensure that the destination schema is in sync with any changes.
+         */
         if (
-            addedColumns.isNotEmpty() || deletedColumns.isNotEmpty() || modifiedColumns.isNotEmpty()
+            snowflakeConfiguration.legacyRawTablesOnly != true &&
+                (addedColumns.isNotEmpty() ||
+                    deletedColumns.isNotEmpty() ||
+                    modifiedColumns.isNotEmpty())
         ) {
             log.info { "Summary of the table alterations:" }
             log.info { "Added columns: $addedColumns" }

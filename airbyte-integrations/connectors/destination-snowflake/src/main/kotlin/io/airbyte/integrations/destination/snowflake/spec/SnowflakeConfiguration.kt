@@ -19,7 +19,7 @@ data class SnowflakeConfiguration(
     val authType: AuthTypeConfiguration,
     val cdcDeletionMode: CdcDeletionMode,
     val legacyRawTablesOnly: Boolean?,
-    val internalTableDataset: String,
+    val internalTableSchema: String?,
     val jdbcUrlParams: String?,
     val retentionPeriodDays: Int,
 ) : DestinationConfiguration()
@@ -74,11 +74,15 @@ class SnowflakeConfigurationFactory :
             authType = authTypeConfig,
             cdcDeletionMode = pojo.cdcDeletionMode ?: CdcDeletionMode.HARD_DELETE,
             legacyRawTablesOnly = pojo.legacyRawTablesOnly ?: false,
-            internalTableDataset =
-                if (pojo.internalTableDataset.isNullOrBlank()) {
-                    DbConstants.DEFAULT_RAW_TABLE_NAMESPACE
+            internalTableSchema =
+                if (pojo.legacyRawTablesOnly == true) {
+                    if (pojo.internalTableSchema.isNullOrBlank()) {
+                        DbConstants.DEFAULT_RAW_TABLE_NAMESPACE
+                    } else {
+                        pojo.internalTableSchema
+                    }
                 } else {
-                    @Suppress("UNNECESSARY_NOT_NULL_ASSERTION") pojo.internalTableDataset!!
+                    null
                 },
             jdbcUrlParams = pojo.jdbcUrlParams,
             retentionPeriodDays = pojo.retentionPeriodDays ?: 1
