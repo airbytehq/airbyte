@@ -638,4 +638,184 @@ new_record."_airbyte_generation_id"
             sql
         )
     }
+
+    @Test
+    fun testDescribeTable() {
+        val schemaName = "namespace"
+        val tableName = "name"
+        val sql = snowflakeDirectLoadSqlGenerator.describeTable(schemaName, tableName)
+
+        assertEquals("""DESCRIBE TABLE "test_database"."namespace"."name"""", sql)
+    }
+
+    @Test
+    fun testRenameTable() {
+        val sourceTableName = TableName(namespace = "namespace", name = "old_name")
+        val targetTableName = TableName(namespace = "namespace", name = "new_name")
+        val sql = snowflakeDirectLoadSqlGenerator.renameTable(sourceTableName, targetTableName)
+
+        assertEquals(
+            """ALTER TABLE "test_database"."namespace"."old_name" RENAME TO "test_database"."namespace"."new_name"""",
+            sql
+        )
+    }
+
+    @Test
+    fun testRenameTableWithSpecialCharacters() {
+        val sourceTableName = TableName(namespace = "namespace", name = "table-with-dashes")
+        val targetTableName = TableName(namespace = "namespace", name = "table_with_underscores")
+        val sql = snowflakeDirectLoadSqlGenerator.renameTable(sourceTableName, targetTableName)
+
+        assertEquals(
+            "ALTER TABLE \"test_database\".\"namespace\".\"table_with_dashes\" RENAME TO \"test_database\".\"namespace\".\"table_with_underscores\"",
+            sql
+        )
+    }
+
+    @Test
+    fun testDescribeTableWithSpecialCharacters() {
+        val schemaName = "namespace-with-dash"
+        val tableName = "table.with.dots"
+        val sql = snowflakeDirectLoadSqlGenerator.describeTable(schemaName, tableName)
+
+        assertEquals(
+            "DESCRIBE TABLE \"test_database\".\"namespace_with_dash\".\"table_with_dots\"",
+            sql
+        )
+    }
+
+    @Test
+    fun testCreateTableWithSQLInjectionAttemptInTableName() {
+        val tableName = TableName(namespace = "namespace", name = "table\"; DROP TABLE users; --")
+        val stream = mockk<DestinationStream>(relaxed = true)
+        val columnNameMapping = mockk<ColumnNameMapping>(relaxed = true)
+
+        every { columnUtils.columnsAndTypes(any(), columnNameMapping) } returns emptyList()
+
+        val sql =
+            snowflakeDirectLoadSqlGenerator.createTable(stream, tableName, columnNameMapping, false)
+
+        // The dangerous SQL characters should be sanitized to underscores
+        assertEquals(
+            "CREATE TABLE \"test_database\".\"namespace\".\"table___DROP_TABLE_users____\" (\n    \n)",
+            sql
+        )
+    }
+
+    @Test
+    fun testCreateTableWithSQLInjectionAttemptInNamespace() {
+        val tableName = TableName(namespace = "namespace\"; DROP SCHEMA test; --", name = "table")
+        val stream = mockk<DestinationStream>(relaxed = true)
+        val columnNameMapping = mockk<ColumnNameMapping>(relaxed = true)
+
+        every { columnUtils.columnsAndTypes(any(), columnNameMapping) } returns emptyList()
+
+        val sql =
+            snowflakeDirectLoadSqlGenerator.createTable(stream, tableName, columnNameMapping, false)
+
+        // The dangerous SQL characters should be sanitized to underscores
+        assertEquals(
+            "CREATE TABLE \"test_database\".\"namespace___DROP_SCHEMA_test____\".\"table\" (\n    \n)",
+            sql
+        )
+    }
+
+    @Test
+    fun testDropTableWithSQLInjectionAttempt() {
+        val tableName =
+            TableName(namespace = "namespace", name = "table'; DELETE FROM users WHERE '1'='1")
+        val sql = snowflakeDirectLoadSqlGenerator.dropTable(tableName)
+
+        // The dangerous SQL characters should be sanitized to underscores
+        assertEquals(
+            """DROP TABLE IF EXISTS "test_database"."namespace"."table___DELETE_FROM_users_WHERE__1___1"""",
+            sql
+        )
+    }
+
+    @Test
+    fun testRenameTableWithSQLInjectionAttempt() {
+        val sourceTableName = TableName(namespace = "namespace", name = "table")
+        val targetTableName =
+            TableName(namespace = "namespace", name = "new_table\"; DROP TABLE important; --")
+        val sql = snowflakeDirectLoadSqlGenerator.renameTable(sourceTableName, targetTableName)
+
+        // The dangerous SQL characters should be sanitized to underscores
+        assertEquals(
+            """ALTER TABLE "test_database"."namespace"."table" RENAME TO "test_database"."namespace"."new_table___DROP_TABLE_important____"""",
+            sql
+        )
+    }
+
+    @Test
+    fun testCountTableWithSQLInjectionAttempt() {
+        val tableName =
+            TableName(
+                namespace = "namespace",
+                name = "table\" UNION SELECT * FROM sensitive_data --"
+            )
+        val sql = snowflakeDirectLoadSqlGenerator.countTable(tableName)
+
+        // The dangerous SQL characters should be sanitized to underscores
+        assertEquals(
+            """SELECT COUNT(*) AS "total" FROM "test_database"."namespace"."table__UNION_SELECT___FROM_sensitive_data___"""",
+            sql
+        )
+    }
+
+    @Test
+    fun testCreateTableWithReservedKeywordsAsNames() {
+        // Test with Snowflake reserved keywords as table/namespace names
+        val tableName = TableName(namespace = "SELECT", name = "WHERE")
+        val stream = mockk<DestinationStream>(relaxed = true)
+        val columnNameMapping = mockk<ColumnNameMapping>(relaxed = true)
+
+        every { columnUtils.columnsAndTypes(any(), columnNameMapping) } returns emptyList()
+
+        val sql =
+            snowflakeDirectLoadSqlGenerator.createTable(stream, tableName, columnNameMapping, false)
+
+        // Reserved keywords should be properly quoted
+        assertEquals("CREATE TABLE \"test_database\".\"SELECT\".\"WHERE\" (\n    \n)", sql)
+    }
+
+    @Test
+    fun testDropTableWithReservedKeywords() {
+        val tableName = TableName(namespace = "GROUP", name = "ORDER")
+        val sql = snowflakeDirectLoadSqlGenerator.dropTable(tableName)
+
+        // Reserved keywords should be properly quoted
+        assertEquals("""DROP TABLE IF EXISTS "test_database"."GROUP"."ORDER"""", sql)
+    }
+
+    @Test
+    fun testRenameTableWithReservedKeywords() {
+        val sourceTableName = TableName(namespace = "FROM", name = "JOIN")
+        val targetTableName = TableName(namespace = "FROM", name = "UNION")
+        val sql = snowflakeDirectLoadSqlGenerator.renameTable(sourceTableName, targetTableName)
+
+        // Reserved keywords should be properly quoted
+        assertEquals(
+            """ALTER TABLE "test_database"."FROM"."JOIN" RENAME TO "test_database"."FROM"."UNION"""",
+            sql
+        )
+    }
+
+    @Test
+    fun testCreateNamespaceWithReservedKeyword() {
+        val sql = snowflakeDirectLoadSqlGenerator.createNamespace("TABLE")
+
+        // Reserved keyword should be properly quoted
+        assertEquals("""CREATE SCHEMA IF NOT EXISTS "test_database"."TABLE"""", sql)
+    }
+
+    @Test
+    fun testDescribeTableWithReservedKeywords() {
+        val schemaName = "DATABASE"
+        val tableName = "SCHEMA"
+        val sql = snowflakeDirectLoadSqlGenerator.describeTable(schemaName, tableName)
+
+        // Reserved keywords should be properly quoted
+        assertEquals("""DESCRIBE TABLE "test_database"."DATABASE"."SCHEMA"""", sql)
+    }
 }
