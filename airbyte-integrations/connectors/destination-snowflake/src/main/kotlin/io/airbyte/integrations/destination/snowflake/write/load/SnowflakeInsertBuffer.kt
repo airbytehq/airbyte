@@ -13,7 +13,6 @@ import io.airbyte.integrations.destination.snowflake.sql.QUOTE
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import java.nio.file.Path
-import kotlin.io.path.bufferedWriter
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.pathString
 import org.apache.commons.csv.CSVFormat
@@ -44,13 +43,12 @@ class SnowflakeInsertBuffer(
 
     fun accumulate(recordFields: Map<String, AirbyteValue>) {
         if (csvFilePath == null) {
-            csvFilePath = createCsvFile()
-            csvPrinter = CSVPrinter(csvFilePath!!.bufferedWriter(Charsets.UTF_8), CSV_FORMAT)
+            val csvFile = createCsvFile()
+            csvFilePath = csvFile.toPath()
+            csvPrinter = CSVPrinter(csvFile.bufferedWriter(Charsets.UTF_8), CSV_FORMAT)
         }
 
         writeToCsvFile(recordFields)
-
-        recordCount++
     }
 
     suspend fun flush() {
@@ -77,16 +75,17 @@ class SnowflakeInsertBuffer(
             ?: logger.warn { "CSV file path is not set: nothing to upload to staging." }
     }
 
-    private fun createCsvFile(): Path {
+    private fun createCsvFile(): File {
         val csvFile = File.createTempFile("snowflake", ".csv")
         csvFile.deleteOnExit()
-        return csvFile.toPath()
+        return csvFile
     }
 
     private fun writeToCsvFile(record: Map<String, AirbyteValue>) {
         csvPrinter?.let {
             it.printRecord(snowflakeRecordFormatter.format(record))
             it.flush()
+            recordCount++
         }
     }
 }
