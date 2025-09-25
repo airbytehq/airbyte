@@ -5386,9 +5386,7 @@ definitions:
                 response_filters:
                   - type: HttpResponseFilter
                     action: IGNORE
-                    predicate: >-
-                      {{ response.status == 404 and response.detail == 'Page not
-                      found.' }}
+                    predicate: "{{ response.status == 404 }}"
                     http_codes: []
                     error_message: >-
                       Track's 404 for a nonexistent resource endpoint. It is no
@@ -6087,9 +6085,7 @@ definitions:
                 response_filters:
                   - type: HttpResponseFilter
                     action: IGNORE
-                    predicate: >-
-                      {{ response.status == 404 and response.detail == 'Page not
-                      found.' }}
+                    predicate: "{{ response.status == 404 }}"
                     http_codes: []
                     error_message: >-
                       Track's 404 for a nonexistent resource endpoint. It is no
@@ -7176,7 +7172,7 @@ metadata:
       responsesAreSuccessful: true
     units_daily_pricing_v2:
       hasRecords: true
-      streamHash: 79d09203515bfbb281c2ba894dd4a7723573eb44
+      streamHash: d584c48f1d4a48c80dd0085b1d13d53e63ad5f9d
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -7232,7 +7228,7 @@ metadata:
       responsesAreSuccessful: true
     units_types_daily_pricing_v2:
       hasRecords: true
-      streamHash: edd069f303f6c75b3e0c1fa5e60a6f927d57b6ad
+      streamHash: eab310455ea1a73bb821124d04f27fcbddb71e1f
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
