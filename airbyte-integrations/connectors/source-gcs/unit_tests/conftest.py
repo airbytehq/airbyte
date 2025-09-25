@@ -3,7 +3,7 @@
 import logging
 from datetime import datetime, timedelta
 from pathlib import Path
-from unittest.mock import Mock
+from unittest.mock import MagicMock, Mock
 
 import pytest
 from source_gcs import Cursor, SourceGCSStreamReader
@@ -23,7 +23,8 @@ def _file_uri() -> str:
 
 @pytest.fixture
 def remote_file():
-    return GCSRemoteFile(uri=_file_uri(), last_modified=datetime.now(), mime_type="csv")
+    blob = MagicMock(size=100, id="test/file/id", time_created=datetime.now() - timedelta(hours=1), updated=datetime.now())
+    return GCSRemoteFile(uri=_file_uri(), last_modified=datetime.now(), mime_type="csv", blob=blob)
 
 
 @pytest.fixture
