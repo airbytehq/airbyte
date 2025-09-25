@@ -19,21 +19,25 @@ class IncrementDataGenerator(val requestedSchema: List<Field>) : DataGenerator {
         val recordData: NativeRecordPayload = mutableMapOf()
 
         for (field in requestedSchema) {
-            val value = when (field.type) {
-                is BooleanFieldType -> FieldValueEncoder(
-                    incrementedID % 2 == 1L,
-                    (field.type as BooleanFieldType).jsonEncoder as BooleanCodec
-                )
-                is StringFieldType -> FieldValueEncoder(
-                    "string$incrementedID",
-                    (field.type as StringFieldType).jsonEncoder as TextCodec
-                )
-                is IntegerFieldType -> FieldValueEncoder(
-                    incrementedID,
-                    (field.type as IntegerFieldType).jsonEncoder as LongCodec
-                )
-                else -> throw RuntimeException("Unsupported type: ${field.type}")
-            }
+            val value =
+                when (field.type) {
+                    is BooleanFieldType ->
+                        FieldValueEncoder(
+                            incrementedID % 2 == 1L,
+                            (field.type as BooleanFieldType).jsonEncoder as BooleanCodec
+                        )
+                    is StringFieldType ->
+                        FieldValueEncoder(
+                            "string$incrementedID",
+                            (field.type as StringFieldType).jsonEncoder as TextCodec
+                        )
+                    is IntegerFieldType ->
+                        FieldValueEncoder(
+                            incrementedID,
+                            (field.type as IntegerFieldType).jsonEncoder as LongCodec
+                        )
+                    else -> throw RuntimeException("Unsupported type: ${field.type}")
+                }
             recordData[field.id] = value
         }
         return recordData
