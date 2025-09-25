@@ -13,7 +13,7 @@ from facebook_business.adobjects.user import User
 from facebook_business.exceptions import FacebookRequestError
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime
+from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_parse
 from source_facebook_marketing.spec import ValidAdSetStatuses, ValidAdStatuses, ValidCampaignStatuses
 
 from .base_insight_streams import AdsInsights
@@ -152,7 +152,7 @@ class Activities(FBMarketingIncrementalStream):
         """Additional filters associated with state if any set"""
         state_value = stream_state.get(self.cursor_field)
         if stream_state:
-            since = AirbyteDateTime.from_datetime(state_value)
+            since = ab_datetime_parse(state_value) if isinstance(state_value, str) else AirbyteDateTime.from_datetime(state_value)
         elif self._start_date:
             since = self._start_date
         else:
