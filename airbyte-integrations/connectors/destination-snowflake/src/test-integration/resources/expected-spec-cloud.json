@@ -128,7 +128,7 @@
         "group" : "advanced",
         "order" : 7
       },
-      "raw_data_dataset" : {
+      "raw_data_schema" : {
         "type" : "string",
         "description" : "Airbyte will use this dataset for various internal tables. In legacy raw tables mode, the raw tables will be stored in this dataset. Defaults to \"airbyte_internal\".",
         "title" : "Airbyte Internal Table Dataset Name",
@@ -148,13 +148,6 @@
         "title" : "Data Retention Period (days)",
         "group" : "advanced",
         "order" : 10
-      },
-      "use_merge_for_upsert" : {
-        "type" : "boolean",
-        "description" : "Use MERGE for de-duplication of final tables. This option no effect if Final tables are disabled or Sync mode is not DEDUPE",
-        "title" : "Use MERGE for De-duplication of final tables",
-        "group" : "advanced",
-        "order" : 11
       }
     },
     "required" : [ "host", "role", "warehouse", "database", "schema", "username" ],
