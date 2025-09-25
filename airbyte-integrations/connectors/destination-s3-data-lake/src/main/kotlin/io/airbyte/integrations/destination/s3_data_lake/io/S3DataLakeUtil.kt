@@ -34,6 +34,7 @@ import org.apache.iceberg.aws.AwsProperties
 import org.apache.iceberg.aws.s3.S3FileIO
 import org.apache.iceberg.aws.s3.S3FileIOProperties
 import org.apache.iceberg.catalog.Catalog
+import org.apache.iceberg.rest.auth.OAuth2Properties
 import org.projectnessie.client.NessieConfigConstants
 
 private const val AWS_REGION = "aws.region"
@@ -127,9 +128,11 @@ class S3DataLakeUtil(
                 S3FileIOProperties.ACCESS_KEY_ID to awsAccessKeyId,
                 S3FileIOProperties.SECRET_ACCESS_KEY to awsSecretAccessKey,
                 // this is the client ID + secret
-                "credential" to "root:s3cr3t",
+                OAuth2Properties.CREDENTIAL to "root:s3cr3t",
                 // we should maybe figure out if we can use a reduced scope
-                "scope" to "PRINCIPAL_ROLE:ALL",
+                OAuth2Properties.SCOPE to "PRINCIPAL_ROLE:ALL",
+                OAuth2Properties.OAUTH2_SERVER_URI to
+                    "http://localhost:8181/api/catalog/v1/oauth/tokens",
             )
 
         return restProperties + s3Properties
