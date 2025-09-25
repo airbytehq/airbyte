@@ -22,7 +22,11 @@ from ..utils import validate_start_date
 
 logger = logging.getLogger("airbyte")
 
-# Backoff for SDK parse hiccups
+# `FacebookBadObjectError` occurs in FB SDK when it fetches an inconsistent or corrupted data.
+# It still has http status 200 but the object can not be constructed from what was fetched from API.
+# Also, it does not happen while making a call to the API, but later - when parsing the result,
+# that's why a retry is added to `get_results()` instead of extending the existing retry of `api.call()` with `FacebookBadObjectError`.
+
 backoff_policy = retry_pattern(backoff.expo, FacebookBadObjectError, max_tries=10, factor=5)
 
 # ----------------------------- batching -------------------------------------
@@ -329,20 +333,20 @@ class InsightAsyncJob(AsyncJob):
 
         # Retry/split policy without explicit restart():
         #  - 1st failure → reset state so start() can be called again
-        #  - 2nd+ failure → produce replacement jobs via split_job()
+        #  - 2nd+ failure → produce replacement jobs via _split_job()
         if self._failed:
             if self._attempt_number == 1:
                 self._job = None
                 self._failed = False
                 self._start_time = None
             elif self._attempt_number >= 2:
-                self.new_jobs = self.split_job()
+                self.new_jobs = self._split_job()
             self._finish_time = None
 
         return self.completed
 
     # --------------------------- splitting -----------------------------------
-    def split_job(self) -> List["AsyncJob"]:
+    def _split_job(self) -> List["AsyncJob"]:
         if isinstance(self._edge_object, AdAccount):
             return self._split_by_edge_class(Campaign)
         elif isinstance(self._edge_object, Campaign):

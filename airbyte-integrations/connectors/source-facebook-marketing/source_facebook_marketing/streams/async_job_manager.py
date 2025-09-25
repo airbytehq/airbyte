@@ -130,8 +130,8 @@ class InsightAsyncJobManager:
             if job.completed:
                 completed_jobs.append(job)
             else:
-                # If the job emitted new work (e.g., split), accept it.
-                # Convention: jobs set `new_jobs` (list[AsyncJob]) and then clear it.
+                # If the job emitted new work (e.g., via split), take its `new_jobs` instead of keeping the parent.
+                # This effectively "clears" the old job from the running set: we replace it with its children.
                 new_jobs = job.new_jobs
                 if new_jobs:
                     new_running.extend(new_jobs)
@@ -160,7 +160,7 @@ class InsightAsyncJobManager:
         # Phase 1 — let existing running jobs opportunistically start internal work.
         for job in self._running_jobs:
             if not job.started:
-                # Simple job: starts itself.
+                # Simple job: (re)starts itself if capacity allows — including retries after failure.
                 # Parent job: typically starts some children and remains 'not fully started' until all children started.
                 job.start(self._api_limit)
             if self._api_limit.limit_reached:
