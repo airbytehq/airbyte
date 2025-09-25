@@ -95,11 +95,11 @@ class TestDisplayReportStreams:
         )
         output = self._read(config, "sponsored_brands_v3_report_stream", SyncMode.incremental)
         start_date = ab_datetime_now()
-        
+
         # Check that at least one state message was emitted (with date as cursor field)
         assert output.most_recent_state is not None
         assert output.most_recent_state.stream_state.states[0]["cursor"].get("date") is not None
-        
+
         assert len(output.records) == 1
 
     def test_given_file_when_read_display_report_then_return_records(
