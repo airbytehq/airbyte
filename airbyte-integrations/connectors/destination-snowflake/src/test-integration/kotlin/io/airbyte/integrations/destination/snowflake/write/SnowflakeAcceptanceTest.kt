@@ -59,6 +59,7 @@ class SnowflakeInsertProtoAcceptanceTest :
         dataChannelFormat = DataChannelFormat.PROTOBUF,
         dataChannelMedium = DataChannelMedium.SOCKET,
         unknownTypesBehavior = UnknownTypesBehavior.NULL,
+        isStreamSchemaRetroactiveForUnknownTypeToString = false,
     ) {
     @Test
     override fun testBasicWrite() {
@@ -92,6 +93,7 @@ abstract class SnowflakeAcceptanceTest(
     dataDumper: DestinationDataDumper,
     recordMapper: ExpectedRecordMapper,
     isStreamSchemaRetroactive: Boolean = true,
+    isStreamSchemaRetroactiveForUnknownTypeToString: Boolean = true,
     dedupBehavior: DedupBehavior? = DedupBehavior(DedupBehavior.CdcDeletionMode.HARD_DELETE),
     nullEqualsUnset: Boolean = true,
     coercesLegacyUnions: Boolean = false,
@@ -103,6 +105,8 @@ abstract class SnowflakeAcceptanceTest(
         dataDumper = dataDumper,
         destinationCleaner = SnowflakeDataCleaner,
         isStreamSchemaRetroactive = isStreamSchemaRetroactive,
+        isStreamSchemaRetroactiveForUnknownTypeToString =
+            isStreamSchemaRetroactiveForUnknownTypeToString,
         dedupBehavior = dedupBehavior,
         stringifySchemalessObjects = true,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
