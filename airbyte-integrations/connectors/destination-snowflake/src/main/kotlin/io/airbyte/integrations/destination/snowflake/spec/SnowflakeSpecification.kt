@@ -116,7 +116,7 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
     )
     @get:JsonProperty("raw_data_schema")
     @get:JsonSchemaInject(json = """{"group": "advanced", "order": 8}""")
-    val internalTableDataset: String? = null
+    val internalTableSchema: String? = null
 
     @get:JsonSchemaTitle("JDBC URL Params")
     @get:JsonPropertyDescription(
