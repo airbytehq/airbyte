@@ -131,4 +131,4 @@ jobs:
           method: chat.postMessage
           payload: |
             channel: C09H56MT8J2 # jose-alert-test channel
-            text: "${{ matrix.connector }} connector tests failed when using local CDK! <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|View Test Logs>"
+            text: "`${{ matrix.connector }}` connector tests failed when using local CDK! <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|View Test Logs>"
