@@ -21,6 +21,7 @@ abstract class DevNullDirectLoader(
     abstract fun acceptInner(record: DestinationRecordRaw)
 
     override suspend fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
+        Thread.sleep(100000000000)
         acceptInner(record)
         return if (++recordCount % config.ackRatePerRecord == 0L) {
             DirectLoader.Complete
