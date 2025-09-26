@@ -38,12 +38,12 @@ jobs:
         run: |
           echo "🔍 Fetching files changed in commit ${{ github.sha }}..."
           FILES=$(git diff HEAD~1 HEAD --name-only | jq -R -s -c 'split("\n")[:-1]')
-          
+
           if [ -z "$FILES" ] || [ "$FILES" = "[]" ]; then
             echo "❌ Error: No files changed in this push."
             exit 1
           fi
-          
+
           echo "✅ Successfully fetched changed files list"
           echo "files=$FILES" >> $GITHUB_OUTPUT
 
