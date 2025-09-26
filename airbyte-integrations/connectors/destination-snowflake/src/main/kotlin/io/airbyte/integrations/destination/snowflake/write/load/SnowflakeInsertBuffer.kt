@@ -94,7 +94,7 @@ class SnowflakeInsertBuffer(
 
     private fun writeToCsvFile(record: Map<String, AirbyteValue>) {
         csvWriter?.let {
-            it.writeRecord(snowflakeRecordFormatter.format(record).map { it.toString() })
+            it.writeRecord(snowflakeRecordFormatter.format(record).map { col -> col.toString() })
             recordCount++
             if ((recordCount % flushLimit) == 0) {
                 it.flush()
