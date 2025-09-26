@@ -123,7 +123,7 @@ jobs:
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-integration-tests
 
-      - name: Format Failure on Master Slack Channel [MASTER]
+      - name: Slack Notification on Failure
         if: github.event_name == 'pull_request' && failure() && (steps.run-unit-tests.outcome == 'failure' || steps.run-integration-tests.outcome == 'failure')
         uses: slackapi/slack-github-action@v2.1.1
         with:
@@ -131,4 +131,4 @@ jobs:
           method: chat.postMessage
           payload: |
             channel: C09H56MT8J2 # jose-alert-test channel
-            text: "${{ matrix.connector }} connector tests failed when using local CDK! <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|View Test Logs>"
+            text: "${{ matrix.connector }} connector tests failed when using local CDK! <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}/job/$${{github.job}}|View Test Logs>"
