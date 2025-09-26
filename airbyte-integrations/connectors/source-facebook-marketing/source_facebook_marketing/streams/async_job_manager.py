@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Iterator, List, Optional
 
 from .async_job import AsyncJob, update_in_batch  # ParentAsyncJob not needed here
 
+
 if TYPE_CHECKING:  # pragma: no cover
     from source_facebook_marketing.api import API
 
@@ -83,15 +84,14 @@ class InsightAsyncJobManager:
 
     JOB_STATUS_UPDATE_SLEEP_SECONDS = 30
 
-    def __init__(self, api: "API", jobs: Iterator[AsyncJob], account_id: str, *,
-                 throttle_limit: float = 90.0, max_jobs_in_queue: int = 100):
+    def __init__(
+        self, api: "API", jobs: Iterator[AsyncJob], account_id: str, *, throttle_limit: float = 90.0, max_jobs_in_queue: int = 100
+    ):
         self._api = api
         self._account_id = account_id
         self._jobs = iter(jobs)
         self._running_jobs: List[AsyncJob] = []
-        self._api_limit = APILimit(self._api, self._account_id,
-                                   throttle_limit=throttle_limit,
-                                   max_jobs=max_jobs_in_queue)
+        self._api_limit = APILimit(self._api, self._account_id, throttle_limit=throttle_limit, max_jobs=max_jobs_in_queue)
 
     # --- Public consumption API ---
 

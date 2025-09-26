@@ -29,6 +29,7 @@ class DummyAPILimit:
       - Keeps basic inflight accounting
       - No external API calls
     """
+
     def __init__(self):
         self._inflight = 0
         self._current_throttle = 0.0
@@ -58,7 +59,6 @@ class DummyAPILimit:
         return self._current_throttle
 
 
-
 class DummyRun:
     """
     Minimal AdReportRun stand-in:
@@ -66,6 +66,7 @@ class DummyRun:
       - second api_get() call: COMPLETED
       - get_result(): returns fake rows with the requested id field
     """
+
     def __init__(self, id_field: str):
         self._id_field = id_field
         self._calls = 0
@@ -143,15 +144,7 @@ def job_fixture(api, account):
 @pytest.fixture(name="grouped_jobs")
 def grouped_jobs_fixture(mocker):
     return [
-        mocker.Mock(
-            spec=InsightAsyncJob,
-            attempt_number=1,
-            failed=False,
-            completed=False,
-            started=False,
-            elapsed_time=None,
-            new_jobs=[]
-        )
+        mocker.Mock(spec=InsightAsyncJob, attempt_number=1, failed=False, completed=False, started=False, elapsed_time=None, new_jobs=[])
         for _ in range(10)
     ]
 
@@ -378,7 +371,10 @@ class TestInsightAsyncJob:
             job_timeout=timedelta(minutes=60),
         )
 
-        assert str(job) == f"InsightAsyncJob(id=<None>, {account}, time_range=DateInterval(2010-01-01 to 2011-01-01), breakdowns=[10, 20], fields=[])"
+        assert (
+            str(job)
+            == f"InsightAsyncJob(id=<None>, {account}, time_range=DateInterval(2010-01-01 to 2011-01-01), breakdowns=[10, 20], fields=[])"
+        )
 
     def test_get_result(self, job, adreport, api, api_limit):
         job.start(api_limit)
@@ -458,9 +454,7 @@ class TestInsightAsyncJob:
 
         # ----- Assert the params passed to get_insights --------------------------
         expected_since = validate_start_date(
-            AirbyteDateTime.from_datetime(
-                datetime.combine(job._interval.start - timedelta(days=29), datetime.min.time())
-            )
+            AirbyteDateTime.from_datetime(datetime.combine(job._interval.start - timedelta(days=29), datetime.min.time()))
         ).strftime("%Y-%m-%d")
 
         expected_params = {
@@ -564,6 +558,7 @@ class TestInsightAsyncJob:
 
         with pytest.raises(ValueError, match="Cannot split by fields: not enough non-PK fields"):
             job._split_job()
+
 
 class TestParentAsyncJob:
     def test_start(self, parent_job, grouped_jobs, api_limit):
@@ -689,13 +684,9 @@ class TestParentAsyncJob:
         c2 = mocker.Mock(spec=InsightAsyncJob)
 
         # c1: no explicit *_id, but has the object with an "id"
-        c1.get_result.return_value = [
-            {"image_asset": {"id": "img-123"}, "metric": 1}
-        ]
+        c1.get_result.return_value = [{"image_asset": {"id": "img-123"}, "metric": 1}]
         # c2: explicit *_id for same asset, adds more fields
-        c2.get_result.return_value = [
-            {"image_asset_id": "img-123", "metric2": 2}
-        ]
+        c2.get_result.return_value = [{"image_asset_id": "img-123", "metric2": 2}]
 
         parent = ParentAsyncJob(
             api=api,

@@ -5,7 +5,7 @@ import time
 from abc import ABC, abstractmethod
 from datetime import date, datetime, timedelta
 from enum import Enum
-from typing import Any, Iterator, List, Mapping, Optional, Type, Union, Tuple
+from typing import Any, Iterator, List, Mapping, Optional, Tuple, Type, Union
 
 import backoff
 from facebook_business.adobjects.ad import Ad
@@ -21,6 +21,7 @@ from source_facebook_marketing.streams.common import retry_pattern
 
 from ..utils import DateInterval, validate_start_date
 
+
 logger = logging.getLogger("airbyte")
 
 # `FacebookBadObjectError` occurs in FB SDK when it fetches an inconsistent or corrupted data.
@@ -29,6 +30,7 @@ logger = logging.getLogger("airbyte")
 # that's why a retry is added to `get_results()` instead of extending the existing retry of `api.call()` with `FacebookBadObjectError`.
 
 backoff_policy = retry_pattern(backoff.expo, FacebookBadObjectError, max_tries=10, factor=5)
+
 
 # ----------------------------- batching -------------------------------------
 def update_in_batch(api: FacebookAdsApi, jobs: List["AsyncJob"]):
@@ -56,6 +58,7 @@ def update_in_batch(api: FacebookAdsApi, jobs: List["AsyncJob"]):
         # FacebookAdsApiBatch object with those calls
         batch = batch.execute()
 
+
 # ------------------------------ status --------------------------------------
 class Status(str, Enum):
     """Async job statuses"""
@@ -66,6 +69,7 @@ class Status(str, Enum):
     STARTED = "Job Started"
     RUNNING = "Job Running"
     NOT_STARTED = "Job Not Started"
+
 
 # ------------------------------- base ---------------------------------------
 class AsyncJob(ABC):
@@ -128,6 +132,7 @@ class AsyncJob(ABC):
     def get_result(self) -> Iterator[Any]:
         """Retrieve result of the finished job."""
 
+
 # ----------------------------- parent job -----------------------------------
 class ParentAsyncJob(AsyncJob):
     """Owns children; started when all children started; completed when all children complete."""
@@ -135,14 +140,23 @@ class ParentAsyncJob(AsyncJob):
     class _ExportableRow:
         def __init__(self, data: Mapping[str, Any]):
             self._data = dict(data)
+
         def export_all_data(self) -> Mapping[str, Any]:
             return self._data
+
         def __getitem__(self, k):
             return self._data[k]
+
         def __iter__(self):
             return iter(self._data)
 
-    def __init__(self, jobs: List["AsyncJob"], primary_key: Optional[List[str]] = None, object_breakdowns: Optional[Mapping[str, str]] = None, **kwargs):
+    def __init__(
+        self,
+        jobs: List["AsyncJob"],
+        primary_key: Optional[List[str]] = None,
+        object_breakdowns: Optional[Mapping[str, str]] = None,
+        **kwargs,
+    ):
         super().__init__(**kwargs)
         self._primary_key = primary_key or []
         self._object_breakdowns = dict(object_breakdowns or {})
@@ -226,9 +240,11 @@ class ParentAsyncJob(AsyncJob):
         more = max(0, len(self._jobs) - 1)
         return f"ParentAsyncJob({head} ... {more} jobs more)"
 
+
 # ------------------------------ leaf job ------------------------------------
 class InsightAsyncJob(AsyncJob):
     """Wraps FB AdReportRun with retry/split logic driven in _check_status()."""
+
     page_size = 100
 
     def __init__(
@@ -455,8 +471,10 @@ class InsightAsyncJob(AsyncJob):
         mid = len(split_candidates) // 2
         part_a, part_b = split_candidates[:mid], split_candidates[mid:]
 
-        params_a = dict(self._params); params_a["fields"] = self._primary_key + part_a
-        params_b = dict(self._params); params_b["fields"] = self._primary_key + part_b
+        params_a = dict(self._params)
+        params_a["fields"] = self._primary_key + part_a
+        params_b = dict(self._params)
+        params_b["fields"] = self._primary_key + part_b
 
         job_a = InsightAsyncJob(
             api=self._api,
@@ -477,7 +495,13 @@ class InsightAsyncJob(AsyncJob):
             object_breakdowns=self._object_breakdowns,
         )
         logger.info("%s split by fields: common=%d, A=%d, B=%d", self, len(self._primary_key), len(part_a), len(part_b))
-        return ParentAsyncJob(jobs=[job_a, job_b], api=self._api, interval=self._interval, primary_key=self._primary_key, object_breakdowns=self._object_breakdowns)
+        return ParentAsyncJob(
+            jobs=[job_a, job_b],
+            api=self._api,
+            interval=self._interval,
+            primary_key=self._primary_key,
+            object_breakdowns=self._object_breakdowns,
+        )
 
     # --------------------------- results -------------------------------------
     @backoff_policy
