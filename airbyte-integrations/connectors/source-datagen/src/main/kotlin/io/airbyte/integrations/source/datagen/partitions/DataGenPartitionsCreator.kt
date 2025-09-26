@@ -1,15 +1,7 @@
-/*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
- */
-
-package io.airbyte.integrations.source.datagen.partitionops
+package io.airbyte.integrations.source.datagen.partitions
 
 import io.airbyte.cdk.read.PartitionReader
 import io.airbyte.cdk.read.PartitionsCreator
-import io.airbyte.cdk.read.PartitionsCreator.TryAcquireResourcesStatus
-import io.airbyte.integrations.source.datagen.partitionobjs.DataGenSharedState
-import io.airbyte.integrations.source.datagen.partitionobjs.DataGenSourcePartition
-import io.airbyte.integrations.source.datagen.partitionobjs.DataGenStreamState
 import java.util.concurrent.atomic.AtomicReference
 
 class DataGenPartitionsCreator(
@@ -23,12 +15,12 @@ class DataGenPartitionsCreator(
     private val acquiredResources = AtomicReference<AcquiredResources?>()
     fun interface AcquiredResources : AutoCloseable
 
-    override fun tryAcquireResources(): TryAcquireResourcesStatus {
+    override fun tryAcquireResources(): PartitionsCreator.TryAcquireResourcesStatus {
         val acquiredResources: AcquiredResources =
             sharedState.tryAcquireResourcesForCreator()
-                ?: return TryAcquireResourcesStatus.RETRY_LATER
+                ?: return PartitionsCreator.TryAcquireResourcesStatus.RETRY_LATER
         this.acquiredResources.set(acquiredResources)
-        return TryAcquireResourcesStatus.READY_TO_RUN
+        return PartitionsCreator.TryAcquireResourcesStatus.READY_TO_RUN
     }
 
     override suspend fun run(): List<PartitionReader> {

@@ -15,34 +15,27 @@ import io.airbyte.integrations.source.datagen.IntegerFieldType
 import io.airbyte.integrations.source.datagen.StringFieldType
 import io.airbyte.integrations.source.datagen.flavor.DataGenerator
 
-class IncrementDataGenerator(val requestedSchema: List<Field>) : DataGenerator {
+class IncrementDataGenerator() : DataGenerator {
 
     override fun generateData(currentID: Long, modulo: Int, offset: Int): NativeRecordPayload {
         val incrementedID = (currentID * modulo + offset)
         val recordData: NativeRecordPayload = mutableMapOf()
 
-        for (field in requestedSchema) {
-            val value =
-                when (field.type) {
-                    is BooleanFieldType ->
-                        FieldValueEncoder(
-                            incrementedID % 2 == 1L,
-                            (field.type as BooleanFieldType).jsonEncoder as BooleanCodec
-                        )
-                    is StringFieldType ->
-                        FieldValueEncoder(
-                            "string$incrementedID",
-                            (field.type as StringFieldType).jsonEncoder as TextCodec
-                        )
-                    is IntegerFieldType ->
-                        FieldValueEncoder(
-                            incrementedID,
-                            (field.type as IntegerFieldType).jsonEncoder as LongCodec
-                        )
-                    else -> throw RuntimeException("Unsupported type: ${field.type}")
-                }
-            recordData[field.id] = value
-        }
+        recordData["id"] = FieldValueEncoder(
+            incrementedID,
+            IntegerFieldType.jsonEncoder as LongCodec
+        )
+
+        recordData["boolean"] = FieldValueEncoder(
+            incrementedID % 2 == 1L,
+            BooleanFieldType.jsonEncoder as BooleanCodec
+        )
+
+        recordData["string"] = FieldValueEncoder(
+            "string$incrementedID",
+            StringFieldType.jsonEncoder as TextCodec
+        )
+
         return recordData
     }
 }

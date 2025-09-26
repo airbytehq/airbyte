@@ -70,6 +70,8 @@ constructor(
             throw ConfigErrorException("Concurrency setting should be positive")
         }
 
+        val flavor: Flavor = IncrementFlavor
+
         val maxConcurrency: Int =
             when (DataChannelMedium.valueOf(dataChannelMedium)) {
                 STDIO -> pojo.concurrency ?: 1
@@ -79,12 +81,7 @@ constructor(
             }
         log.info { "Effective concurrency: $maxConcurrency" }
 
-        // unnecessary rn cuz incremental is default, template for future flavor additions
-        //        if (pojo.getFlavor() is Incremental) {
-        //            log.info { "Using Incremental Flavor" }
-        //            return DataGenSourceConfiguration(maxConcurrency = maxConcurrency, flavor =
-        // IncrementFlavor, runDuration = runDuration)
-        //        }
+        // TODO: use factory method to select and instantiate flavor
 
         return DataGenSourceConfiguration(
             maxConcurrency = maxConcurrency,

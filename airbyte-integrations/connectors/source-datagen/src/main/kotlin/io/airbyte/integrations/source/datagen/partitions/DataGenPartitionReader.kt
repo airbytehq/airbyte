@@ -1,23 +1,15 @@
-/*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
- */
+package io.airbyte.integrations.source.datagen.partitions
 
-package io.airbyte.integrations.source.datagen.partitionops
-
+import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
-import io.airbyte.cdk.output.DataChannelMedium.*
+import io.airbyte.cdk.output.DataChannelMedium
 import io.airbyte.cdk.output.OutputMessageRouter
 import io.airbyte.cdk.read.PartitionReadCheckpoint
 import io.airbyte.cdk.read.PartitionReader
 import io.airbyte.cdk.read.Resource
 import io.airbyte.cdk.read.ResourceType
-import io.airbyte.cdk.read.ResourceType.RESOURCE_DB_CONNECTION
-import io.airbyte.cdk.read.ResourceType.RESOURCE_OUTPUT_SOCKET
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.generatePartitionId
-import io.airbyte.integrations.source.datagen.partitionobjs.DataGenSharedState
-import io.airbyte.integrations.source.datagen.partitionobjs.DataGenSourcePartition
-import io.airbyte.integrations.source.datagen.partitionobjs.DataGenStreamState
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
@@ -43,8 +35,11 @@ class DataGenPartitionReader(val partition: DataGenSourcePartition) : PartitionR
     override fun tryAcquireResources(): PartitionReader.TryAcquireResourcesStatus {
         val resourceType =
             when (streamState.streamFeedBootstrap.dataChannelMedium) {
-                STDIO -> listOf(RESOURCE_DB_CONNECTION)
-                SOCKET -> listOf(RESOURCE_DB_CONNECTION, RESOURCE_OUTPUT_SOCKET)
+                DataChannelMedium.STDIO -> listOf(ResourceType.RESOURCE_DB_CONNECTION)
+                DataChannelMedium.SOCKET -> listOf(
+                    ResourceType.RESOURCE_DB_CONNECTION,
+                    ResourceType.RESOURCE_OUTPUT_SOCKET
+                )
             }
 
         val resources: Map<ResourceType, AcquiredResource> =
@@ -91,19 +86,21 @@ class DataGenPartitionReader(val partition: DataGenSourcePartition) : PartitionR
         return
     }
 
+
+    // Only checkpoints to indicate completion. Restore from state not currently supported.
     override fun checkpoint(): PartitionReadCheckpoint {
         val opaqueStateValue =
             if (runComplete.get()) {
                 DataGenStreamState.completeState
             } else {
-                com.fasterxml.jackson.databind.node.JsonNodeFactory.instance.objectNode()
+                JsonNodeFactory.instance.objectNode()
             }
         return PartitionReadCheckpoint(
             opaqueStateValue,
             numRecords.get(),
             when (streamState.streamFeedBootstrap.dataChannelMedium) {
-                SOCKET -> partitionId
-                STDIO -> null
+                DataChannelMedium.SOCKET -> partitionId
+                DataChannelMedium.STDIO -> null
             }
         )
     }

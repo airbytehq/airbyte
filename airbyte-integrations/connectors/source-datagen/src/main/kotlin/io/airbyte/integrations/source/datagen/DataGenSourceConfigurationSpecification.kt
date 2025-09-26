@@ -38,9 +38,9 @@ class DataGenSourceConfigurationSpecification : ConfigurationSpecification() {
     fun getFlavor(): FlavorSpec = flavorJson ?: flavorInternal
 
     @JsonProperty("concurrency")
-    @JsonSchemaTitle("Max Concurrent Queries to Database")
+    @JsonSchemaTitle("Max Concurrency")
     @JsonSchemaDescription(
-        "Maximum number of concurrent queries to the database. Leave empty to let Airbyte optimize performance."
+        "Maximum number of concurrent partitions running at once. Leave empty to let Airbyte optimize performance."
     )
     var concurrency: Int? = null
 

@@ -13,7 +13,7 @@ import jakarta.inject.Singleton
 
 private val log = KotlinLogging.logger {}
 
-class DataGenSourceMetadataQuerier() : MetadataQuerier {
+class DataGenSourceMetadataQuerier(val configuration: DataGenSourceConfiguration) : MetadataQuerier {
 
     companion object {
         val incrementFlavor = IncrementFlavor
@@ -27,8 +27,8 @@ class DataGenSourceMetadataQuerier() : MetadataQuerier {
     }
 
     override fun fields(streamID: StreamIdentifier): List<Field> {
-        val flavor = flavors[streamID.namespace]
-        return flavor?.fields?.get(streamID.name) ?: emptyList()
+        val flavor = configuration.flavor
+        return flavor.fields.get(streamID.name) ?: emptyList()
     }
 
     override fun streamNamespaces(): List<String> {
@@ -57,7 +57,7 @@ class DataGenSourceMetadataQuerier() : MetadataQuerier {
     class Factory() : MetadataQuerier.Factory<DataGenSourceConfiguration> {
         /** The [SourceConfiguration] is deliberately not injected in order to support tests. */
         override fun session(config: DataGenSourceConfiguration): MetadataQuerier {
-            return DataGenSourceMetadataQuerier()
+            return DataGenSourceMetadataQuerier(config)
         }
     }
 }

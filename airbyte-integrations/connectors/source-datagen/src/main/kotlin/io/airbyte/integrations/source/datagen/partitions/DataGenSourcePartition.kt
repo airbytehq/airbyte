@@ -2,10 +2,10 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.datagen.partitionobjs
+package io.airbyte.integrations.source.datagen.partitions
 
 class DataGenSourcePartition(
     val streamState: DataGenStreamState,
-    val modulo: Int = 1,
-    val offset: Int = 0
+    val modulo: Int,
+    val offset: Int
 )

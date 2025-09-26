@@ -15,7 +15,7 @@ import jakarta.inject.Singleton
 import java.time.OffsetDateTime
 
 @Singleton
-class NoOpMetaFieldDecorator(
+class DataGenMetaFieldDecorator(
     override val globalCursor: FieldOrMetaField?,
     override val globalMetaFields: Set<MetaField>
 ) : MetaFieldDecorator {

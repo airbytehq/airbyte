@@ -2,13 +2,10 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.datagen.partitionops
+package io.airbyte.integrations.source.datagen.partitions
 
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.read.StreamFeedBootstrap
-import io.airbyte.integrations.source.datagen.partitionobjs.DataGenSharedState
-import io.airbyte.integrations.source.datagen.partitionobjs.DataGenSourcePartition
-import io.airbyte.integrations.source.datagen.partitionobjs.DataGenStreamState
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
