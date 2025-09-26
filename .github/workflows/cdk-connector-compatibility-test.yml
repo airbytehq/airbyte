@@ -2,11 +2,8 @@ name: CDK Connector Compatibility Test
 
 on:
   pull_request:
-    paths:
-      - 'airbyte-cdk/java/**/*'
-      - 'airbyte-cdk/bulk/**/*'
   schedule:
-    - cron: '0 6 * * *'
+    - cron: '0 12 * * *'
 
 jobs:
   generate-matrix:
@@ -27,8 +24,10 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.14"
 
-      - name: Run CDK upgrade # this will trigger changes on all connectors using bulk cdk
+      - name: Trigger changes on all connectors using bulk cdk # this is just an easy way to get a list of all bulk cdk connectors
         run: ./gradlew upgradeCdk --cdkVersion=local
 
       - name: Generate Connector Matrix from Changes
@@ -37,10 +36,9 @@ jobs:
 
     outputs:
       connectors-matrix: ${{ steps.generate-matrix.outputs.connectors_matrix }}
-      creds-available: ${{ (secrets.GCP_PROJECT_ID == '') && (vars.GCP_PROJECT_ID == '') && 'false' || 'true' }}
 
   connectors-test:
-    name: Test ${{ matrix.connector }} Connector ${{ ! matrix.connector && ' (no JVM-based connectors modified)' || ( needs.generate-matrix.outputs.creds-available == 'false' && ' [No Creds]' || '') }}
+    name: Test ${{ matrix.connector }} Connector
     needs: [generate-matrix]
     runs-on: linux-24.04-large
     env:
@@ -58,10 +56,7 @@ jobs:
         id: checkout
         uses: actions/checkout@v4
         with:
-          repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
-          ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
           submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
-          fetch-depth: 1
 
       # Java deps
       - uses: actions/setup-java@v4
@@ -105,7 +100,7 @@ jobs:
       - name: Fetch connector secrets
         # This will be skipped if the repo or fork does not set GCP_PROJECT_ID, or if it is set to an empty value.
         # Later integration tests will likely fail in this case, but we at least let them run.
-        if: matrix.connector && needs.generate-matrix.outputs.creds-available == 'true'
+        if: matrix.connector && ( (secrets.GCP_PROJECT_ID != '') || (vars.GCP_PROJECT_ID != ''))
         run: |
           airbyte-cdk secrets fetch ${{ matrix.connector }}
 
@@ -113,24 +108,24 @@ jobs:
         if: matrix.connector
         run: ./gradlew upgradeCdk --cdkVersion=local
 
-      - name: Run Unit Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Unprivileged, Executed from Fork]' || '' }}
+      - name: Run Unit Tests
         id: run-unit-tests
         if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-unit-tests
 
-      - name: Run Integration Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Unprivileged, Executed from Fork]' || '' }}
+      - name: Run Integration Tests
         id: run-integration-tests
         if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-integration-tests
 
       - name: Slack Notification on Failure
-        if: github.event_name == 'pull_request' && failure() && (steps.run-unit-tests.outcome == 'failure' || steps.run-integration-tests.outcome == 'failure')
+        if: github.event_name == 'schedule' && failure() && (steps.run-unit-tests.outcome == 'failure' || steps.run-integration-tests.outcome == 'failure')
         uses: slackapi/slack-github-action@v2.1.1
         with:
           token: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
           method: chat.postMessage
           payload: |
-            channel: C09H56MT8J2 # jose-alert-test channel
+            channel: C09H56MT8J2 # jose-alert-test channel. The use of this channel is meant to be temporary while we evaluate the usefulness of these notifications.
             text: "`${{ matrix.connector }}` connector tests failed when using local CDK! <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|View Test Logs>"
