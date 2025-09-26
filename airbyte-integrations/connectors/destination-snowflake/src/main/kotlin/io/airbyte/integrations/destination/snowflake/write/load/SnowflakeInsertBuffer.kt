@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.snowflake.write.load
 import com.google.common.annotations.VisibleForTesting
 import de.siegmar.fastcsv.writer.CsvWriter
 import de.siegmar.fastcsv.writer.LineDelimiter
+import de.siegmar.fastcsv.writer.QuoteStrategies
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
@@ -44,6 +45,7 @@ class SnowflakeInsertBuffer(
             .fieldSeparator(CSV_FIELD_SEPARATOR)
             .quoteCharacter(CSV_QUOTE_CHARACTER)
             .lineDelimiter(CSV_LINE_DELIMITER)
+            .quoteStrategy(QuoteStrategies.REQUIRED)
 
     private val snowflakeRecordFormatter: SnowflakeRecordFormatter =
         when (snowflakeConfiguration.legacyRawTablesOnly) {
