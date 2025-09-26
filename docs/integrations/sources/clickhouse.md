@@ -80,7 +80,7 @@ Using this feature requires additional configuration, when creating the source. 
 
 | Version | Date       | Pull Request                                                | Subject                                                                                                   |
 |:--------|:-----------|:------------------------------------------------------------|:----------------------------------------------------------------------------------------------------------|
-| 0.2.7   | 2025-09-26 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD)        | Upgrade ClickHouse JDBC driver to 0.6.3 with custom array handling implementation.                      |
+| 0.2.7   | 2025-09-26 | [66718](https://github.com/airbytehq/airbyte/pull/66718)        | Upgrade ClickHouse JDBC driver to 0.6.3 with custom array handling implementation.                      |
 | 0.2.6   | 2025-09-25 | [66482](https://github.com/airbytehq/airbyte/pull/66714)    | Revert JDBC driver upgrade                                                                                |
 | 0.2.5   | 2025-09-17 | [66482](https://github.com/airbytehq/airbyte/pull/66482)    | Upgrade ClickHouse JDBC driver from 0.3.2-patch10 to 0.9.0                                                |
 | 0.2.4   | 2025-07-10 | [62912](https://github.com/airbytehq/airbyte/pull/62912)    | Convert to new gradle build flow                                                                          |
@@ -111,7 +111,7 @@ Using this feature requires additional configuration, when creating the source. 
 
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                   |
 | :------ | :--------- | :---------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------- |
-| 0.2.7   | 2025-09-26 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD)        | Upgrade ClickHouse JDBC driver to 0.6.3 with custom array handling implementation.                                                      |
+| 0.2.7   | 2025-09-26 | [66718](https://github.com/airbytehq/airbyte/pull/66718)        | Upgrade ClickHouse JDBC driver to 0.6.3 with custom array handling implementation.                                                      |
 | 0.2.6   | 2025-09-25 | [66482](https://github.com/airbytehq/airbyte/pull/66714)    | Revert JDBC driver upgrade                                                                                |
 | 0.2.5 | 2025-09-17 | [66482](https://github.com/airbytehq/airbyte/pull/66482) | Upgrade ClickHouse JDBC driver from 0.3.2-patch10 to 0.9.0 |
 | 0.2.4 | 2025-07-10 | [62913](https://github.com/airbytehq/airbyte/pull/62913) | Convert to new gradle build flow |
