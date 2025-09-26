@@ -275,7 +275,7 @@ definitions:
                 failure_type: transient_error
                 error_message: >-
                   Scroll already exists for this workspace. Please ensure you do not have multiple syncs running at the same time.
-                  Intercom API does not allow for you to run the Comapnies or Comany Parts streams in parallel.
+                  Intercom API does not allow for you to run the Companies or Company Parts streams in parallel.
         paginator:
           $parameters:
             url_base: "https://api.intercom.io/"
