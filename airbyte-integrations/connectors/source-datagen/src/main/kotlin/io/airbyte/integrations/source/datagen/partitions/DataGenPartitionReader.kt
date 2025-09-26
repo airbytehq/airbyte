@@ -70,7 +70,11 @@ class DataGenPartitionReader(val partition: DataGenSourcePartition) : PartitionR
 
         val configuration = sharedState.configuration
         val sourceDataGenerator = configuration.flavor.dataGenerator
-        val recordCountPerPartition = configuration.maxRecords / partition.modulo
+        val baseCount = configuration.maxRecords / partition.modulo
+        val remainder = configuration.maxRecords % partition.modulo
+
+        val recordCountPerPartition =
+            baseCount + if (partition.offset < remainder) 1 else 0
 
         for (i in 0L until recordCountPerPartition) {
             val record = sourceDataGenerator.generateData(i, partition.modulo, partition.offset)
@@ -85,7 +89,6 @@ class DataGenPartitionReader(val partition: DataGenSourcePartition) : PartitionR
 
         return
     }
-
 
     // Only checkpoints to indicate completion. Restore from state not currently supported.
     override fun checkpoint(): PartitionReadCheckpoint {

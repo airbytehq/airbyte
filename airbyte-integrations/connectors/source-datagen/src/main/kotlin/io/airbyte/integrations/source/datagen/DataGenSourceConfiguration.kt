@@ -70,8 +70,6 @@ constructor(
             throw ConfigErrorException("Concurrency setting should be positive")
         }
 
-        val flavor: Flavor = IncrementFlavor
-
         val maxConcurrency: Int =
             when (DataChannelMedium.valueOf(dataChannelMedium)) {
                 STDIO -> pojo.concurrency ?: 1

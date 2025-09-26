@@ -351,22 +351,3 @@ data class ArrayDecoder<T>(
         return encoded.elements().asSequence().map { elementDecoder.decode(it) }.toList()
     }
 }
-
-data class ObjectEncoder(val propertyEncoders: LinkedHashMap<String, JsonEncoder<*>>? = null) : JsonEncoder<Map<String, Any?>> {
-    override fun encode(decoded: Map<String, Any?>): JsonNode =
-        Jsons.objectNode().apply{
-            if (propertyEncoders != null) {
-                propertyEncoders.forEach { (k, v) ->
-                    @Suppress("UNCHECKED_CAST")
-                    set<JsonNode>(k, (v as JsonEncoder<Any?>).encode(decoded[k]))
-                }
-            } else {
-                decoded.forEach { (k, v) ->
-                    when (v) {
-                        null -> set(k, nullNode())
-                        else -> set<JsonNode>(k, AnyEncoder.encode(v))
-                    }
-                }
-            }
-        }
-}

@@ -7,18 +7,10 @@ import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.MetadataQuerier
 import io.airbyte.integrations.source.datagen.flavor.increment.IncrementFlavor
 import io.airbyte.protocol.models.v0.StreamDescriptor
-import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
 
-private val log = KotlinLogging.logger {}
-
 class DataGenSourceMetadataQuerier(val configuration: DataGenSourceConfiguration) : MetadataQuerier {
-
-    companion object {
-        val incrementFlavor = IncrementFlavor
-        val flavors = mapOf(incrementFlavor.namespace to incrementFlavor)
-    }
 
     override fun extraChecks() {}
 
@@ -28,16 +20,15 @@ class DataGenSourceMetadataQuerier(val configuration: DataGenSourceConfiguration
 
     override fun fields(streamID: StreamIdentifier): List<Field> {
         val flavor = configuration.flavor
-        return flavor.fields.get(streamID.name) ?: emptyList()
+        return flavor.fields[streamID.name] ?: emptyList()
     }
 
     override fun streamNamespaces(): List<String> {
-        return flavors.keys.toList()
+        return listOf(configuration.flavor.namespace)
     }
 
     override fun streamNames(streamNamespace: String?): List<StreamIdentifier> {
-        val flavor = streamNamespace?.let { flavors[it] } ?: return emptyList()
-        return flavor.tableNames
+        return configuration.flavor.tableNames
             .map { tableName ->
                 StreamDescriptor().withName(tableName).withNamespace(streamNamespace)
             }
@@ -47,8 +38,7 @@ class DataGenSourceMetadataQuerier(val configuration: DataGenSourceConfiguration
     override fun primaryKey(
         streamID: StreamIdentifier,
     ): List<List<String>> {
-        val flavor = flavors[streamID.namespace]
-        return listOf(flavor?.primaryKey ?: emptyList())
+        return listOf(configuration.flavor.primaryKey)
     }
 
     /** DataGen implementation of [MetadataQuerier.Factory]. */
