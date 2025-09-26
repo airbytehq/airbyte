@@ -7,11 +7,11 @@ For information about how to use this connector within Airbyte, see [User Docume
 
 ## Local development
 
-#### Building via Gradle
+### Building via Gradle
 
 From the Airbyte repository root, run:
 
-```
+```bash
 ./gradlew :airbyte-integrations:connectors:source-datagen:build
 ```
 
