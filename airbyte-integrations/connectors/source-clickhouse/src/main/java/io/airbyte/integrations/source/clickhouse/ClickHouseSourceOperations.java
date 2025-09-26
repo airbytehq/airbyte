@@ -15,18 +15,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Custom source operations for ClickHouse that handles array types properly
- * without relying on the deprecated getResultSet() method.
- * 
- * This class addresses compatibility issues with ClickHouse JDBC driver v0.6.3
- * where the getResultSet() method for Array objects is no longer implemented.
- * 
- * Key features:
- * - Uses Array.getArray() for direct array data access
- * - Provides fallback to string representation for error cases
- * - Maintains compatibility with Airbyte CDK expectations
- * - Supports all ClickHouse array types (Array(String), Array(Int32), etc.)
- * 
+ * Custom source operations for ClickHouse that handles array types properly without relying on the
+ * deprecated getResultSet() method.
+ *
+ * This class addresses compatibility issues with ClickHouse JDBC driver v0.6.3 where the
+ * getResultSet() method for Array objects is no longer implemented.
+ *
+ * Key features: - Uses Array.getArray() for direct array data access - Provides fallback to string
+ * representation for error cases - Maintains compatibility with Airbyte CDK expectations - Supports
+ * all ClickHouse array types (Array(String), Array(Int32), etc.)
+ *
  * @since 0.2.8
  */
 public class ClickHouseSourceOperations extends JdbcSourceOperations {
@@ -35,11 +33,11 @@ public class ClickHouseSourceOperations extends JdbcSourceOperations {
 
   /**
    * Overrides the default array handling to work with ClickHouse JDBC driver v0.6.3+
-   * 
-   * The default implementation uses Array.getResultSet() which is not implemented
-   * in the newer ClickHouse JDBC driver. This method uses Array.getArray() instead
-   * which directly returns the array data as a Java array or primitive array.
-   * 
+   *
+   * The default implementation uses Array.getResultSet() which is not implemented in the newer
+   * ClickHouse JDBC driver. This method uses Array.getArray() instead which directly returns the
+   * array data as a Java array or primitive array.
+   *
    * @param node The ObjectNode to add the array data to
    * @param columnName The name of the column being processed
    * @param resultSet The JDBC ResultSet containing the data
