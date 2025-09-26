@@ -204,9 +204,7 @@ class SnowflakeBeanFactory {
     ) = CheckOperationV2(destinationChecker, outputConsumer)
 
     @Singleton
-    fun getMemoryAndParallelismConfig(
-        snowflakeConfig: SnowflakeConfiguration
-    ): MemoryAndParallelismConfig {
+    fun getMemoryAndParallelismConfig(): MemoryAndParallelismConfig {
         return MemoryAndParallelismConfig()
     }
 }
