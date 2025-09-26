@@ -32,27 +32,27 @@ data class ArrayAirbyteSchemaType(
     }
 }
 
-// data class ObjectAirbyteSchemaType(
-//    val properties: LinkedHashMap<String, AirbyteSchemaType>? = null,
-//    val additionalProperties: Boolean = true,
-//    val required: List<String> = emptyList<String>()
-// ) : AirbyteSchemaType {
-//    override fun asJsonSchemaType(): JsonSchemaType {
-//        val builder = JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.OBJECT)
-//        properties?.forEach { (name, fieldType) ->
-//            builder.withLegacyAirbyteTypeProperty(name)
-//        }
-//        return builder.build()
-//    }
-// }
-//
-// data class UnknownAirbyteSchemaType(
-//    val schema: JsonNode
-// ) : AirbyteSchemaType {
-//    override fun asJsonSchemaType(): JsonSchemaType {
-//        return JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.OBJECT).build()
-//    }
-// }
+ data class ObjectAirbyteSchemaType(
+    val properties: LinkedHashMap<String, AirbyteSchemaType>? = null,
+    val additionalProperties: Boolean = true,
+    val required: List<String> = emptyList<String>()
+ ) : AirbyteSchemaType {
+    override fun asJsonSchemaType(): JsonSchemaType {
+        val builder = JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.OBJECT)
+        properties?.forEach { (name, fieldType) ->
+            builder.withLegacyAirbyteTypeProperty(name)
+        }
+        return builder.build()
+    }
+ }
+
+ data class UnknownAirbyteSchemaType(
+    val schema: JsonNode
+ ) : AirbyteSchemaType {
+    override fun asJsonSchemaType(): JsonSchemaType {
+        return JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.OBJECT).build()
+    }
+ }
 
 enum class LeafAirbyteSchemaType(
     private val jsonSchemaType: JsonSchemaType,

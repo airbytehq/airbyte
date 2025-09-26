@@ -351,3 +351,5 @@ data class ArrayDecoder<T>(
         return encoded.elements().asSequence().map { elementDecoder.decode(it) }.toList()
     }
 }
+
+data class ObjectEncoder<T>()
