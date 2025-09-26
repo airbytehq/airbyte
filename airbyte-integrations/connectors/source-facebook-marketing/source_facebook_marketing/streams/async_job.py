@@ -345,7 +345,7 @@ class InsightAsyncJob(AsyncJob):
         elif job_status in [Status.FAILED, Status.SKIPPED]:
             self._finish_time = ab_datetime_now()
             self._failed = True
-            logger.info(f"{self}: has status {job_status} after {self.elapsed_time.in_seconds()} seconds.")
+            logger.info(f"{self}: has status {job_status} after {self.elapsed_time.total_seconds()} seconds.")
             released = True
 
         if released and self._api_limit:
@@ -388,41 +388,11 @@ class InsightAsyncJob(AsyncJob):
         else:
             raise RuntimeError("Unsupported edge_class")
 
-        since = validate_start_date(self._interval.start - pendulum.duration(days=29))
-        params = {
-            "fields": [pk_name],
-            "level": level,
-            "time_range": {"since": since.to_date_string(), "until": self._interval.end.to_date_string()},
-        }
+        ids = self._collect_child_ids(pk_name=pk_name, level=level)
+        if not ids:
+            raise ValueError(f"No child IDs at level={level}")
 
-        try:
-            id_job: AdReportRun = self._edge_object.get_insights(params=params, is_async=True)
-        except Exception as e:
-            raise ValueError(f"Failed to start ID-collection at level={level}: {e}") from e
-
-        start_ts = pendulum.now()
-        while True:
-            id_job = id_job.api_get()
-            status = id_job.get("async_status")
-            percent = id_job.get("async_percent_completion")
-            logger.info(f"[Split:{level}] status={status}, {percent}%")
-            if status == Status.COMPLETED:
-                break
-            if status in (Status.FAILED, Status.SKIPPED):
-                raise ValueError(f"ID-collection failed for level={level}: {status}")
-            if (pendulum.now() - start_ts) > self._job_timeout:
-                raise ValueError(f"ID-collection timed out for level={level}")
-            time.sleep(30)
-
-        try:
-            result_cursor = id_job.get_result(params={"limit": self.page_size})
-        except FacebookBadObjectError as e:
-            raise ValueError(f"Failed to fetch ID-collection results for level={level}: {e}") from e
-
-        ids = {row[pk_name] for row in result_cursor if pk_name in row}
-        logger.info(f"[Split:{level}] collected {len(ids)} {pk_name}(s)")
-
-        jobs: List[AsyncJob] = [
+        return [
             InsightAsyncJob(
                 api=self._api,
                 edge_object=edge_class(pk),
@@ -434,9 +404,47 @@ class InsightAsyncJob(AsyncJob):
             )
             for pk in ids
         ]
-        if not jobs:
-            raise ValueError(f"No child IDs at level={level}")
-        return jobs
+
+    def _collect_child_ids(self, pk_name: str, level: str) -> List[str]:
+        """
+        Start a tiny async insights job to collect child IDs, poll until terminal,
+        then return the list of IDs. Separated for unit testing.
+        """
+        since = AirbyteDateTime.from_datetime(datetime.combine(self._interval.start - timedelta(days=28 + 1), datetime.min.time()))
+        since = validate_start_date(since)
+        params = {
+            "fields": [pk_name],
+            "level": level,
+            "time_range": {"since": since.strftime("%Y-%m-%d"), "until": self._interval.end.strftime("%Y-%m-%d")},
+        }
+
+        try:
+            id_job: AdReportRun = self._edge_object.get_insights(params=params, is_async=True)
+        except Exception as e:
+            raise ValueError(f"Failed to start ID-collection at level={level}: {e}") from e
+
+        start_ts = ab_datetime_now()
+        while True:
+            id_job = id_job.api_get()
+            status = id_job.get("async_status")
+            percent = id_job.get("async_percent_completion")
+            logger.info(f"[Split:{level}] status={status}, {percent}%")
+            if status == Status.COMPLETED:
+                break
+            if status in (Status.FAILED, Status.SKIPPED):
+                raise ValueError(f"ID-collection failed for level={level}: {status}")
+            if (ab_datetime_now() - start_ts) > self._job_timeout:
+                raise ValueError(f"ID-collection timed out for level={level}")
+            time.sleep(30)
+
+        try:
+            result_cursor = id_job.get_result(params={"limit": self.page_size})
+        except FacebookBadObjectError as e:
+            raise ValueError(f"Failed to fetch ID-collection results for level={level}: {e}") from e
+
+        ids = {row[pk_name] for row in result_cursor if pk_name in row}
+        logger.info(f"[Split:{level}] collected {len(ids)} {pk_name}(s)")
+        return list(ids)
 
     def _split_by_fields_parent(self) -> ParentAsyncJob:
         all_fields: List[str] = list(self._params.get("fields", []))

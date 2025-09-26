@@ -6,6 +6,7 @@ import json
 from datetime import datetime
 from unittest.mock import MagicMock
 
+import freezegun
 import pytest
 from facebook_business import FacebookAdsApi, FacebookSession
 from facebook_business.exceptions import FacebookRequestError
@@ -469,6 +470,7 @@ class TestRealErrors:
             assert error.failure_type == failure_type
             assert (friendly_msg) in error.message
 
+    @freezegun.freeze_time("2011-12-31")
     @pytest.mark.parametrize("name, friendly_msg, config_error_response", CONFIG_ERRORS)
     def test_config_error_insights_account_info_read(self, requests_mock, name, friendly_msg, config_error_response):
         """Error raised during actual nodes read"""
@@ -492,6 +494,7 @@ class TestRealErrors:
             assert error.failure_type == FailureType.config_error
             assert friendly_msg in error.message
 
+    @freezegun.freeze_time("2011-12-31")
     @pytest.mark.parametrize("name, friendly_msg, config_error_response", [CONFIG_ERRORS[0]])
     def test_config_error_insights_during_actual_nodes_read(self, requests_mock, name, friendly_msg, config_error_response):
         """Error raised during actual nodes read"""
@@ -517,6 +520,7 @@ class TestRealErrors:
             assert error.failure_type == FailureType.config_error
             assert friendly_msg in error.message
 
+    @freezegun.freeze_time("2011-12-31")
     def test_retry_for_cannot_include_error(self, requests_mock):
         """Error raised randomly for insights stream. Oncall: https://github.com/airbytehq/oncall/issues/4868"""
 
