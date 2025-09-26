@@ -92,7 +92,7 @@ class PostgresSourceSelectQueryGenerator : SelectQueryGenerator {
                     } else {
                         " TABLESAMPLE SYSTEM(GREATEST(${sampleRatePercentage.toPlainString()}, 0.001))"
                     }
-                val whereSample= " ${where?.sql()}"
+                val whereSample = where?.let { " ${it.sql()}" } ?: ""
 
                 val innerFrom: String = From(name, namespace).sql(columns) + sample + whereSample
                 val inner =
