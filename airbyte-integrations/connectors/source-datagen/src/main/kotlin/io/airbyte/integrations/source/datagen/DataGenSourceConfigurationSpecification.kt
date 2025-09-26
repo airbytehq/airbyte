@@ -40,7 +40,7 @@ class DataGenSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonProperty("concurrency")
     @JsonSchemaTitle("Max Concurrency")
     @JsonSchemaDescription(
-        "Maximum number of concurrent partitions running at once. Leave empty to let Airbyte optimize performance."
+        "Maximum number of concurrent data generators. Leave empty to let Airbyte optimize performance."
     )
     var concurrency: Int? = null
 

@@ -38,7 +38,7 @@ class DataGenSourceMetadataQuerier(val configuration: DataGenSourceConfiguration
     override fun primaryKey(
         streamID: StreamIdentifier,
     ): List<List<String>> {
-        return listOf(configuration.flavor.primaryKey)
+        return configuration.flavor.primaryKey[streamID.name]?: listOf()
     }
 
     /** DataGen implementation of [MetadataQuerier.Factory]. */

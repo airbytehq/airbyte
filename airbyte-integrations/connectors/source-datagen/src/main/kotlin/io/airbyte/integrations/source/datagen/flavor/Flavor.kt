@@ -10,6 +10,6 @@ interface Flavor {
     val namespace: String
     val tableNames: Set<String>
     val fields: Map<String, List<Field>>
-    val primaryKey: List<String>
+    val primaryKey: Map<String, List<List<String>>>
     val dataGenerator: DataGenerator
 }
