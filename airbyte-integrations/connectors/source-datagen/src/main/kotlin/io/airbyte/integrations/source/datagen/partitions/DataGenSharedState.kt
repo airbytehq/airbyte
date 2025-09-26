@@ -9,8 +9,6 @@ import io.airbyte.cdk.read.Resource
 import io.airbyte.cdk.read.ResourceAcquirer
 import io.airbyte.cdk.read.ResourceType
 import io.airbyte.integrations.source.datagen.DataGenSourceConfiguration
-import io.airbyte.integrations.source.datagen.partitions.DataGenPartitionReader
-import io.airbyte.integrations.source.datagen.partitions.DataGenPartitionsCreator
 import jakarta.inject.Singleton
 
 @Singleton

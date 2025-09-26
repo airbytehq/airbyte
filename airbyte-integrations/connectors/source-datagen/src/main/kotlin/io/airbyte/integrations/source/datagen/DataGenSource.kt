@@ -3,8 +3,6 @@ package io.airbyte.integrations.source.datagen
 
 import io.airbyte.cdk.AirbyteSourceRunner
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.io.File
-import kotlin.collections.forEachIndexed
 
 private val log = KotlinLogging.logger {}
 

@@ -17,20 +17,14 @@ class IncrementDataGenerator() : DataGenerator {
         val incrementedID = (currentID * modulo + offset)
         val recordData: NativeRecordPayload = mutableMapOf()
 
-        recordData["id"] = FieldValueEncoder(
-            incrementedID,
-            IntegerFieldType.jsonEncoder as LongCodec
-        )
+        recordData["id"] =
+            FieldValueEncoder(incrementedID, IntegerFieldType.jsonEncoder as LongCodec)
 
-        recordData["boolean"] = FieldValueEncoder(
-            incrementedID % 2 == 1L,
-            BooleanFieldType.jsonEncoder as BooleanCodec
-        )
+        recordData["boolean"] =
+            FieldValueEncoder(incrementedID % 2 == 1L, BooleanFieldType.jsonEncoder as BooleanCodec)
 
-        recordData["string"] = FieldValueEncoder(
-            "string$incrementedID",
-            StringFieldType.jsonEncoder as TextCodec
-        )
+        recordData["string"] =
+            FieldValueEncoder("string$incrementedID", StringFieldType.jsonEncoder as TextCodec)
 
         return recordData
     }

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.datagen.partitions
 
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
@@ -36,10 +40,8 @@ class DataGenPartitionReader(val partition: DataGenSourcePartition) : PartitionR
         val resourceType =
             when (streamState.streamFeedBootstrap.dataChannelMedium) {
                 DataChannelMedium.STDIO -> listOf(ResourceType.RESOURCE_DB_CONNECTION)
-                DataChannelMedium.SOCKET -> listOf(
-                    ResourceType.RESOURCE_DB_CONNECTION,
-                    ResourceType.RESOURCE_OUTPUT_SOCKET
-                )
+                DataChannelMedium.SOCKET ->
+                    listOf(ResourceType.RESOURCE_DB_CONNECTION, ResourceType.RESOURCE_OUTPUT_SOCKET)
             }
 
         val resources: Map<ResourceType, AcquiredResource> =
@@ -73,8 +75,7 @@ class DataGenPartitionReader(val partition: DataGenSourcePartition) : PartitionR
         val baseCount = configuration.maxRecords / partition.modulo
         val remainder = configuration.maxRecords % partition.modulo
 
-        val recordCountPerPartition =
-            baseCount + if (partition.offset < remainder) 1 else 0
+        val recordCountPerPartition = baseCount + if (partition.offset < remainder) 1 else 0
 
         for (i in 0L until recordCountPerPartition) {
             val record = sourceDataGenerator.generateData(i, partition.modulo, partition.offset)

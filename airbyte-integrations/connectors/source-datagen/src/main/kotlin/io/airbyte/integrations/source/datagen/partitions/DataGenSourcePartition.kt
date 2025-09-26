@@ -4,8 +4,4 @@
 
 package io.airbyte.integrations.source.datagen.partitions
 
-class DataGenSourcePartition(
-    val streamState: DataGenStreamState,
-    val modulo: Int,
-    val offset: Int
-)
+class DataGenSourcePartition(val streamState: DataGenStreamState, val modulo: Int, val offset: Int)
