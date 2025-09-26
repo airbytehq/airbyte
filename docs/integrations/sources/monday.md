@@ -15,7 +15,9 @@ You can get the API token for Monday by going to Profile picture (bottom left co
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Monday connector and select **Monday** from the Source type dropdown.
-4. Fill in your API Key or authenticate using OAuth and then click **Set up source**.
+4. Fill in your API Key or authenticate using OAuth.
+5. (Optional) Select your Monday.com account plan (Enterprise, Pro, or Other) to optimize API usage.
+6. Click **Set up source**.
 
 ### Connect using `OAuth 2.0` option
 
@@ -70,6 +72,17 @@ Important Notes:
 
 The Monday connector should not run into Monday API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
+## Account Plan Configuration
+
+The connector now supports specifying your Monday.com account plan type, which optimizes API usage based on your subscription tier:
+
+- **Enterprise**: 750 requests per minute, 250 concurrent requests
+- **Pro**: 500 requests per minute, 100 concurrent requests
+- **Other Plans**: 250 requests per minute, 40 concurrent requests
+
+Setting your account plan correctly helps the connector respect Monday.com's rate limits and optimize performance during syncs.
+
+
 ## Changelog
 
 <details>
@@ -77,6 +90,7 @@ The Monday connector should not run into Monday API limitations under normal usa
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.4.7 | 2025-09-30 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Add API Budget with Plan options |
 | 2.4.6 | 2025-09-09 | [65884](https://github.com/airbytehq/airbyte/pull/65884) | Update dependencies |
 | 2.4.5 | 2025-08-23 | [64705](https://github.com/airbytehq/airbyte/pull/64705) | Update dependencies |
 | 2.4.4 | 2025-08-11 | [64878](https://github.com/airbytehq/airbyte/pull/64878) | Pass query in json body of request instead of query params. |
