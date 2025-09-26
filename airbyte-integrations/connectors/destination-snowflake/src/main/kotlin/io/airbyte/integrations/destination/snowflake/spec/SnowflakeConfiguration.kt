@@ -24,12 +24,6 @@ data class SnowflakeConfiguration(
     val internalTableSchema: String?,
     val jdbcUrlParams: String?,
     val retentionPeriodDays: Int,
-    val maxOpenAggregates: Int,
-    val maxBufferedAggregates: Int,
-    val stalenessDeadlinePerAgg: Duration,
-    val maxRecordsPerAgg: Long,
-    val maxEstBytesPerAgg: Long,
-    val maxConcurrentLifecycleOperations: Int,
 ) : DestinationConfiguration()
 
 sealed interface AuthTypeConfiguration
@@ -93,13 +87,7 @@ class SnowflakeConfigurationFactory :
                     null
                 },
             jdbcUrlParams = pojo.jdbcUrlParams,
-            retentionPeriodDays = pojo.retentionPeriodDays ?: 1,
-            maxOpenAggregates = pojo.maxOpenAggregates ?: 5,
-            maxBufferedAggregates = pojo.maxBufferedAggregates ?: 3,
-            stalenessDeadlinePerAgg = pojo.stalenessDeadlinePerAgg?.minutes ?: 5.minutes,
-            maxRecordsPerAgg = pojo.maxRecordsPerAgg ?: 100_000L,
-            maxEstBytesPerAgg = pojo.maxEstBytesPerAgg ?: 50_000_000L,
-            maxConcurrentLifecycleOperations = pojo.maxConcurrentLifecycleOperations ?: 10,
+            retentionPeriodDays = pojo.retentionPeriodDays ?: 1
         )
     }
 }

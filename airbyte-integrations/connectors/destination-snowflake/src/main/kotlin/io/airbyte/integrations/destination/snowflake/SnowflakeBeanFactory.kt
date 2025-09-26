@@ -207,13 +207,6 @@ class SnowflakeBeanFactory {
     fun getMemoryAndParallelismConfig(
         snowflakeConfig: SnowflakeConfiguration
     ): MemoryAndParallelismConfig {
-        return MemoryAndParallelismConfig(
-            maxOpenAggregates = snowflakeConfig.maxOpenAggregates,
-            maxBufferedAggregates = snowflakeConfig.maxBufferedAggregates,
-            stalenessDeadlinePerAgg = snowflakeConfig.stalenessDeadlinePerAgg,
-            maxRecordsPerAgg = snowflakeConfig.maxRecordsPerAgg,
-            maxEstBytesPerAgg = snowflakeConfig.maxEstBytesPerAgg,
-            maxConcurrentLifecycleOperations = snowflakeConfig.maxConcurrentLifecycleOperations
-        )
+        return MemoryAndParallelismConfig()
     }
 }

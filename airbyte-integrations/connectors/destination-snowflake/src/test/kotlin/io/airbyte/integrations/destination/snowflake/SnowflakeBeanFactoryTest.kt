@@ -56,12 +56,6 @@ internal class SnowflakeBeanFactoryTest {
                 internalTableSchema = "snowflake",
                 jdbcUrlParams = jdbcUrlParams,
                 retentionPeriodDays = 1,
-                maxOpenAggregates = 5,
-                maxBufferedAggregates = 3,
-                stalenessDeadlinePerAgg = 5.minutes,
-                maxRecordsPerAgg = 100_000L,
-                maxEstBytesPerAgg = 50_000_000L,
-                maxConcurrentLifecycleOperations = 10,
             )
         val factory = SnowflakeBeanFactory()
         val dataSource =
@@ -185,12 +179,6 @@ internal class SnowflakeBeanFactoryTest {
                 internalTableSchema = "snowflake",
                 jdbcUrlParams = jdbcUrlParams,
                 retentionPeriodDays = 1,
-                maxOpenAggregates = 5,
-                maxBufferedAggregates = 3,
-                stalenessDeadlinePerAgg = 5.minutes,
-                maxRecordsPerAgg = 100_000L,
-                maxEstBytesPerAgg = 50_000_000L,
-                maxConcurrentLifecycleOperations = 10,
             )
         val factory = SnowflakeBeanFactory()
         val dataSource =
