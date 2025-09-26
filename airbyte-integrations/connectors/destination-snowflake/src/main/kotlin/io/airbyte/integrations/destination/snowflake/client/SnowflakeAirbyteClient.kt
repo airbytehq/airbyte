@@ -40,13 +40,16 @@ class SnowflakeAirbyteClient(
     override suspend fun countTable(tableName: TableName): Long? =
         try {
             dataSource.connection.use { connection ->
-                val resultSet =
-                    connection.createStatement().executeQuery(sqlGenerator.countTable(tableName))
+                val statement = connection.createStatement()
+                statement.use {
+                    val resultSet =
+                        it.executeQuery(sqlGenerator.countTable(tableName))
 
-                if (resultSet.next()) {
-                    resultSet.getLong(COUNT_TOTAL_ALIAS)
-                } else {
-                    0L
+                    if (resultSet.next()) {
+                        resultSet.getLong(COUNT_TOTAL_ALIAS)
+                    } else {
+                        0L
+                    }
                 }
             }
         } catch (e: SnowflakeSQLException) {
@@ -160,21 +163,25 @@ class SnowflakeAirbyteClient(
         val sql =
             sqlGenerator.describeTable(schemaName = tableName.namespace, tableName = tableName.name)
         dataSource.connection.use { connection ->
-            val rs: ResultSet = connection.createStatement().executeQuery(sql)
-            val columnsInDb: MutableSet<ColumnDefinition> = mutableSetOf()
+            val statement = connection.createStatement()
+            return statement.use {
+                val rs: ResultSet = it.executeQuery(sql)
+                val columnsInDb: MutableSet<ColumnDefinition> = mutableSetOf()
 
-            while (rs.next()) {
-                val columnName = rs.getString("name")
-                // Filter out airbyte columns
-                if (COLUMN_NAMES.contains(columnName)) {
-                    continue
+                while (rs.next()) {
+                    val columnName = rs.getString("name")
+                    // Filter out airbyte columns
+                    if (COLUMN_NAMES.contains(columnName)) {
+                        continue
+                    }
+                    val dataType = rs.getString("type").takeWhile { char -> char != '(' }
+
+                    val isNullable = rs.getString("null?") == "Y"
+                    columnsInDb.add(ColumnDefinition(columnName, dataType, isNullable))
                 }
-                val dataType = rs.getString("type").takeWhile { char -> char != '(' }
 
-                val isNullable = rs.getString("null?") == "Y"
-                columnsInDb.add(ColumnDefinition(columnName, dataType, isNullable))
+                columnsInDb
             }
-            return columnsInDb
         }
     }
 
@@ -225,12 +232,15 @@ class SnowflakeAirbyteClient(
         try {
             val sql = sqlGenerator.getGenerationId(tableName)
             dataSource.connection.use { connection ->
-                val resultSet = connection.createStatement().executeQuery(sql)
-                if (resultSet.next()) {
-                    resultSet.getLong(COLUMN_NAME_AB_GENERATION_ID)
-                } else {
-                    log.warn { "No generation ID found for table $tableName, returning 0" }
-                    0L
+                val statement = connection.createStatement()
+                statement.use {
+                    val resultSet = connection.createStatement().executeQuery(sql)
+                    if (resultSet.next()) {
+                        resultSet.getLong(COLUMN_NAME_AB_GENERATION_ID)
+                    } else {
+                        log.warn { "No generation ID found for table $tableName, returning 0" }
+                        0L
+                    }
                 }
             }
         } catch (e: Exception) {
@@ -253,15 +263,19 @@ class SnowflakeAirbyteClient(
 
     fun describeTable(tableName: TableName): List<String> =
         dataSource.connection.use { connection ->
-            val resultSet =
-                connection.createStatement().executeQuery(sqlGenerator.showColumns(tableName))
-            val columns = mutableListOf<String>()
-            while (resultSet.next()) {
-                columns.add(resultSet.getString(DESCRIBE_TABLE_COLUMN_NAME_FIELD))
+            val statement = connection.createStatement()
+            return statement.use {
+                val resultSet =
+                    it.executeQuery(sqlGenerator.showColumns(tableName))
+                val columns = mutableListOf<String>()
+                while (resultSet.next()) {
+                    columns.add(resultSet.getString(DESCRIBE_TABLE_COLUMN_NAME_FIELD))
+                }
+                 columns
             }
-            return columns
+
         }
 
     internal fun execute(query: String) =
-        dataSource.connection.use { connection -> connection.createStatement().executeQuery(query) }
+        dataSource.connection.use { connection -> connection.createStatement().use { it.executeQuery(query) } }
 }
