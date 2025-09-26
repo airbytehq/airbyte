@@ -7,6 +7,8 @@ import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.cdk.load.write.dlq.DlqLoader
+import io.airbyte.cdk.load.writer.batch.JsonResponseBodyBuilder
+import io.airbyte.cdk.load.writer.batch.size.BatchSizeStrategyFactory
 import io.airbyte.cdk.load.writer.rejected.RejectedRecordsBuilder
 import io.github.oshai.kotlinlogging.KotlinLogging
 
@@ -37,6 +39,7 @@ class StreamIdentifier(private val destinationObjectName: String, private val op
         return "StreamIdentifier(destinationObjectName='$destinationObjectName', operation=$operation)"
     }
 }
+
 
 // FIXME this constructor is very focused on batch stuff and therefore there will probably be a need for an interface
 class DeclarativeLoaderStateFactory(private val httpRequester: HttpRequester, private val batchSizeTypeStrategyFactory: BatchSizeStrategyFactory, private val entryAssembler: DeclarativeBatchEntryAssembler, private val batchField: List<String>, private val rejectedRecordsBuilder: RejectedRecordsBuilder) {

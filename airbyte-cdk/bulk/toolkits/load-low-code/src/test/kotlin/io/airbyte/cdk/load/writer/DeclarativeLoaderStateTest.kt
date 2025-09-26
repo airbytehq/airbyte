@@ -5,6 +5,11 @@ import io.airbyte.cdk.load.http.HttpRequester
 import io.airbyte.cdk.load.http.Response
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.DestinationRecordSource
+import io.airbyte.cdk.load.writer.batch.JsonResponseBodyBuilder
+import io.airbyte.cdk.load.writer.batch.ResponseBodyBuilder
+import io.airbyte.cdk.load.writer.batch.size.BatchSizeStrategy
+import io.airbyte.cdk.load.writer.batch.size.BatchSizeStrategyFactory
+import io.airbyte.cdk.load.writer.rejected.RejectedRecordsBuilder
 import io.airbyte.cdk.util.Jsons
 import io.mockk.Runs
 import io.mockk.every
@@ -15,7 +20,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.util.UUID
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -25,11 +29,8 @@ class DeclarativeLoaderStateTest {
     lateinit var destinationRecordRaw: DestinationRecordRaw
     lateinit var httpRequester: HttpRequester
     lateinit var responseBodyBuilder: ResponseBodyBuilder
+    lateinit var rejectedRecordsBuilder: RejectedRecordsBuilder
     lateinit var loaderState: DeclarativeLoaderState
-
-    companion object {
-        val A_BODY = byteArrayOf(1, 2, 3)
-    }
 
     @BeforeEach
     fun setUp() {
@@ -37,14 +38,19 @@ class DeclarativeLoaderStateTest {
 
         httpRequester = mockk()
         responseBodyBuilder = mockk()
-        loaderState = DeclarativeLoaderState(httpRequester, responseBodyBuilder)
+        rejectedRecordsBuilder = mockk()
+        loaderState = DeclarativeLoaderState(httpRequester, responseBodyBuilder, rejectedRecordsBuilder)
     }
 
     @Test
-    internal fun `test when accumulate then pass record to response body builder`() {
+    internal fun `test when accumulate then pass record to response body and rejected records builder`() {
         every { responseBodyBuilder.accumulate(any()) } just Runs
+        every { rejectedRecordsBuilder.accumulate(any()) } just Runs
+
         loaderState.accumulate(destinationRecordRaw)
+
         verify { responseBodyBuilder.accumulate(destinationRecordRaw) }
+        verify { rejectedRecordsBuilder.accumulate(destinationRecordRaw) }
     }
 
     @Test
@@ -72,34 +78,30 @@ class DeclarativeLoaderStateTest {
     }
 
     @Test
-    internal fun `test given status code is 200 when flush then return null`() {
+    internal fun `test when flush then return rejected records builder result`() {
+        val rejectedRecords = listOf(mockk<DestinationRecordRaw>())
+        val body = aBody()
+        every { rejectedRecordsBuilder.getRejectedRecords(any())} returns rejectedRecords
+        every { httpRequester.send(body=aBody()) } returns aResponse()
         every { responseBodyBuilder.isEmpty() } returns false
-        every { responseBodyBuilder.build() } returns A_BODY
-        every { httpRequester.send(body=A_BODY) } returns aResponse(200)
+        every { responseBodyBuilder.build() } returns body
 
         val result = loaderState.flush()
 
-        verify(exactly = 1) { httpRequester.send(body=A_BODY) }
-        assertNull(result)
+        verify(exactly = 1) { httpRequester.send(body=body) }
+        assertEquals(rejectedRecords, result)
     }
 
-    @Test
-    internal fun `test given status code is not 200 when flush then raise`() {
-        every { responseBodyBuilder.isEmpty() } returns false
-        every { responseBodyBuilder.build() } returns A_BODY
-        every { httpRequester.send(body=A_BODY) } returns aResponse(500)
-
-        assertFailsWith<IllegalStateException> { loaderState.flush() }
-    }
-
-    private fun aResponse(statusCode: Int): Response {
+    private fun aResponse(): Response {
         val response = mockk<Response>()
-        every { response.statusCode } returns statusCode
+        every { response.statusCode } returns 1
         every { response.body } returns null
+        every { response.headers } returns emptyMap()
         every { response.close() } just Runs
         return response
     }
 
+    fun aBody(): ByteArray = byteArrayOf(1, 2, 3)
 }
 
 
@@ -122,7 +124,11 @@ class NoLimitSizeStrategyFactory: BatchSizeStrategyFactory {
 class JsonResponseBodyBuilderTest {
     @Test
     internal fun `test given interpolation for string when build then return string`() {
-        val responseBuilder = JsonResponseBodyBuilder(anySizeStrategyFactory(), DeclarativeBatchEntryAssembler("""{"entry_key": "{{ record["record_key"] }}" }"""), listOf("batch"))
+        val responseBuilder = JsonResponseBodyBuilder(
+            anySizeStrategyFactory(),
+            DeclarativeBatchEntryAssembler("""{"entry_key": "{{ record["record_key"] }}" }"""),
+            listOf("batch")
+        )
         responseBuilder.accumulate(aRecord(Jsons.readTree("""{"record_key": "record_key_value"}""")))
 
         val response = responseBuilder.build()

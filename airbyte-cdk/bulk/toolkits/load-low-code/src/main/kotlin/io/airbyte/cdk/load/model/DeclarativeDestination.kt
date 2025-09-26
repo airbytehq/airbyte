@@ -21,5 +21,4 @@ data class DeclarativeDestination(
     val discover: CatalogOperation? =
         null, // todo: remove ? = null once we support Dynamic discovery and thus it can be a
     @JsonProperty(value = "writers") val writers: List<Writer>? = null
-// required component
 )

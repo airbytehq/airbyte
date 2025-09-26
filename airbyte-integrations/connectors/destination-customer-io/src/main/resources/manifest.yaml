@@ -37,7 +37,7 @@ writers:
         type: JsonBatchBody
         size:
           type: RequestMemoryBatchSize
-          amount: 32000
+          amount: 30000
         entries:
           field:
             - batch
@@ -78,7 +78,7 @@ writers:
         type: JsonBatchBody
         size:
           type: RequestMemoryBatchSize
-          amount: 32000
+          amount: 30000
         entries:
           field:
             - batch

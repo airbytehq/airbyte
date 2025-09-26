@@ -1,5 +1,6 @@
 package io.airbyte.cdk.load.writer
 
+import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.DestinationRecordSource
@@ -8,6 +9,7 @@ import io.mockk.every
 import io.mockk.mockk
 import java.util.UUID
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import org.junit.jupiter.api.Test
 
 class DeclarativeBatchEntryAssemblerTest {
@@ -74,6 +76,12 @@ class DeclarativeBatchEntryAssemblerTest {
   "action": "identify"
 }
     """.trimIndent()), batchEntry)
+    }
+
+    @Test
+    internal fun `test given interpolated value is not json when assemble then raise`() {
+        val assembler = DeclarativeBatchEntryAssembler("{this is not json")
+        assertFailsWith<JsonParseException> { assembler.assemble(aRecord()) }
     }
 
     fun aRecord(data: JsonNode = Jsons.objectNode()): DestinationRecordRaw {

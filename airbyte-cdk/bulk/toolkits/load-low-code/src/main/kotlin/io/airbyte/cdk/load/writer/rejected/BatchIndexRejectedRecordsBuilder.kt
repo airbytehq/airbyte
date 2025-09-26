@@ -25,7 +25,7 @@ class BatchIndexRejectedRecordsBuilder(
         if (conditionInterpolator.interpolate(condition, mapOf("response" to context))) {
             return response.body.extractArray(rejectionField).map { rejection ->
                 rawRecords[rejection.extract(indexField).asInt()].toDlqRecord(
-                    fieldsToReport.associate { field -> generateRejectedRecordKey(field) to rejection.extract(field) }
+                    fieldsToReport.associate { field -> generateRejectedRecordKey(field) to try { rejection.extract(field).toPrettyString() } catch (e: Exception) { "" }}
                 )
             }
         }

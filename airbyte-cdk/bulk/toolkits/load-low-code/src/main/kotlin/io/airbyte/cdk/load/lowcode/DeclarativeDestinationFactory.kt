@@ -57,13 +57,13 @@ import io.airbyte.cdk.load.model.writer.rejected.RejectedRecords as RejectedReco
 import io.airbyte.cdk.load.model.writer.rejected.BatchIndexRejectedRecords as BatchIndexRejectedRecordsModel
 import io.airbyte.cdk.load.spec.DeclarativeCdkConfiguration
 import io.airbyte.cdk.load.spec.DeclarativeSpecificationFactory
-import io.airbyte.cdk.load.writer.BatchSizeStrategyFactory
 import io.airbyte.cdk.load.writer.DeclarativeBatchEntryAssembler
 import io.airbyte.cdk.load.writer.DeclarativeLoader
 import io.airbyte.cdk.load.writer.DeclarativeLoaderStateFactory
 import io.airbyte.cdk.load.writer.DeclarativeWriter
-import io.airbyte.cdk.load.writer.RequestMemoryBatchSizeStrategyFactory
 import io.airbyte.cdk.load.writer.StreamIdentifier
+import io.airbyte.cdk.load.writer.batch.size.BatchSizeStrategyFactory
+import io.airbyte.cdk.load.writer.batch.size.memory.RequestMemoryBatchSizeStrategyFactory
 import io.airbyte.cdk.load.writer.rejected.BatchIndexRejectedRecordsBuilder
 import io.airbyte.cdk.load.writer.rejected.RejectedRecordsBuilder
 import io.airbyte.cdk.util.Jsons
@@ -268,7 +268,6 @@ class DeclarativeDestinationFactory(config: JsonNode?) {
     fun BatchSizeModel.toFactory(): BatchSizeStrategyFactory =
         when(this) {
             is RequestMemoryBatchSizeModel -> RequestMemoryBatchSizeStrategyFactory(this.amount)
-            else -> throw IllegalArgumentException("Unknown type of batch size model {${this.javaClass.name}")
         }
 
     fun HttpMethod.toRequestMethod(): RequestMethod =
