@@ -100,7 +100,7 @@ jobs:
       - name: Fetch connector secrets
         # This will be skipped if the repo or fork does not set GCP_PROJECT_ID, or if it is set to an empty value.
         # Later integration tests will likely fail in this case, but we at least let them run.
-        if: matrix.connector && ( (secrets.GCP_PROJECT_ID != '') || (vars.GCP_PROJECT_ID != ''))
+        if: matrix.connector && (vars.GCP_PROJECT_ID != '')
         run: |
           airbyte-cdk secrets fetch ${{ matrix.connector }}
 
