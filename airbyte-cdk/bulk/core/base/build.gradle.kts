@@ -5,6 +5,7 @@ plugins {
     id("de.undercouch.download") version ("5.6.0")
     id("com.google.protobuf") version("0.9.4")
     id("io.netifi.flatbuffers") version("1.0.7")
+    
 }
 
 kotlin {
