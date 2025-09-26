@@ -6,6 +6,7 @@ import io.airbyte.cdk.AirbyteSourceRunner
 object MySqlSource {
     @JvmStatic
     fun main(args: Array<String>) {
+        // no-op change
         AirbyteSourceRunner.run(*args)
     }
 }
