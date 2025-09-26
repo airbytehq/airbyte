@@ -210,7 +210,7 @@ sealed class PostgresSourceSplittablePartition(
                 SelectColumns((listOf(ctidField) + stream.fields).distinct()),
                 FromSample(stream.name, stream.namespace, sampleRateInvPow2, sampleSize),
                 where,
-                OrderBy(listOf(ctidField)), // TODO: check here
+                OrderBy(listOf(ctidField)),
             )
         return selectQueryGenerator.generate(querySpec.optimize())
     }
@@ -348,7 +348,6 @@ class PostgresSourceJdbcCursorIncrementalPartition(
     val cursorLowerBound: JsonNode,
     override val isLowerBoundIncluded: Boolean,
     cursorUpperBound: JsonNode?,
-    filenode: Filenode?,
 ) :
     PostgresSourceCursorPartition(
         selectQueryGenerator,
@@ -356,7 +355,7 @@ class PostgresSourceJdbcCursorIncrementalPartition(
         listOf(cursor),
         cursor,
         cursorUpperBound,
-        filenode
+        null // Incremental partitions do not track filenode
     ) {
     override val lowerBound: JsonNode = cursorLowerBound
     override val upperBound: JsonNode
@@ -375,6 +374,19 @@ class PostgresSourceJdbcCursorIncrementalPartition(
                 Limit(limit)
             )
         return selectQueryGenerator.generate(querySpec.optimize())
+    }
+
+    override fun samplingQuery(sampleRateInvPow2: Int): SelectQuery {
+        val sampleSize: Int = streamState.sharedState.maxSampleSize
+        val querySpec =
+            SelectQuerySpec(
+                SelectColumns((stream.fields).distinct()),
+                FromSample(stream.name, stream.namespace, sampleRateInvPow2, sampleSize, where),
+//                where,
+                orderBy =  OrderBy(cursor),
+            )
+        return selectQueryGenerator.generate(querySpec.optimize())
+
     }
 
     override val completeState: OpaqueStateValue

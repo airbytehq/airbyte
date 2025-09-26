@@ -92,7 +92,9 @@ class PostgresSourceSelectQueryGenerator : SelectQueryGenerator {
                     } else {
                         " TABLESAMPLE SYSTEM(GREATEST(${sampleRatePercentage.toPlainString()}, 0.001))"
                     }
-                val innerFrom: String = From(name, namespace).sql(columns) + sample
+                val whereSample: String = " ${where?.sql()}" ?: ""
+
+                val innerFrom: String = From(name, namespace).sql(columns) + sample + whereSample
                 val inner =
                     "SELECT ${columns.joinToString(", ") { it.sql() }} $innerFrom ORDER BY RANDOM()"
                 "FROM (SELECT ${columns.joinToString(", ") { it.sql() }} FROM ($inner) AS ts LIMIT $sampleSize) AS l"
@@ -142,7 +144,7 @@ class PostgresSourceSelectQueryGenerator : SelectQueryGenerator {
             is OrderBy -> "ORDER BY " + columns.joinToString(", ") { it.sql() }
         }
 
-    fun SelectQuerySpec.bindings(): List<SelectQuery.Binding> = where.bindings() + limit.bindings()
+    fun SelectQuerySpec.bindings(): List<SelectQuery.Binding> = from.bindings() + where.bindings() + limit.bindings()
 
     fun WhereNode.bindings(): List<SelectQuery.Binding> =
         when (this) {
@@ -166,4 +168,12 @@ class PostgresSourceSelectQueryGenerator : SelectQueryGenerator {
             Limit(0) -> listOf()
             is Limit -> listOf(SelectQuery.Binding(Jsons.numberNode(n), LongFieldType))
         }
+
+    fun FromNode.bindings(): List<SelectQuery.Binding> =
+        when (this) {
+            is NoFrom,
+            is From -> listOf()
+            is FromSample -> this.where?.let { it.bindings() } ?: listOf()
+        }
+
 }

@@ -206,7 +206,6 @@ class PostgresSourceJdbcPartitionFactory(
                         cursorLowerBound = cursorCheckpoint,
                         isLowerBoundIncluded = true,
                         cursorUpperBound = streamState.cursorUpperBound,
-                        filenode
                     )
                 }
                     ?: PostgresSourceJdbcUnsplittableCursorIncrementalPartition(
@@ -328,6 +327,7 @@ class PostgresSourceJdbcPartitionFactory(
                 unsplitPartition.split(splitPartitionBoundaries)
             is PostgresSourceJdbcSplittableSnapshotWithCursorPartition ->
                 unsplitPartition.split(splitPartitionBoundaries)
+            // TODO: implement split for cursor incremental partition
             else -> listOf(unsplitPartition)
         }
     }

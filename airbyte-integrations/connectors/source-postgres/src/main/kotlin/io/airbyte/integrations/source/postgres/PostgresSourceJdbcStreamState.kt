@@ -58,7 +58,7 @@ class PostgresSourceJdbcStreamState(val base: DefaultJdbcStreamState) :
             when (partition) {
                 is PostgresSourceJdbcSplittableSnapshotPartition -> partition.filenode
                 is PostgresSourceJdbcSplittableSnapshotWithCursorPartition -> partition.filenode
-                else -> null
+                else -> return
             }
         val currentFilenode: Filenode? =
             PostgresSourceJdbcPartitionFactory.getStreamFilenode(

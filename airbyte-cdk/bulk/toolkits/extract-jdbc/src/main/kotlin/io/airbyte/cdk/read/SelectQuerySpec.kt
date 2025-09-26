@@ -64,6 +64,12 @@ data class FromSample(
     val sampleRateInv: Long
         get() = 1L shl sampleRateInvPow2
 }
+fun FromNode.optimize(): FromNode =
+    when (this) {
+        NoFrom -> this
+        is From -> this
+        is FromSample -> where?.let { this.copy(where = where.optimize()) } ?: this
+    }
 
 sealed interface WhereNode
 
@@ -136,7 +142,7 @@ data class Limit(
 data object NoLimit : LimitNode
 
 fun SelectQuerySpec.optimize(): SelectQuerySpec =
-    SelectQuerySpec(select.optimize(), from, where.optimize(), orderBy.optimize(), limit)
+    SelectQuerySpec(select.optimize(), from.optimize(), where.optimize(), orderBy.optimize(), limit)
 
 fun SelectNode.optimize(): SelectNode =
     when (this) {
