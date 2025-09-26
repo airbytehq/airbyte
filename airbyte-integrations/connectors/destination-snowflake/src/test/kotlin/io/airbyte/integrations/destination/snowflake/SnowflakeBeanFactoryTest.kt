@@ -13,7 +13,6 @@ import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.spec.UsernamePasswordAuthConfiguration
 import java.io.File
 import java.util.logging.Level
-import kotlin.time.Duration.Companion.minutes
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 import net.snowflake.client.jdbc.SnowflakeDriver
@@ -56,12 +55,6 @@ internal class SnowflakeBeanFactoryTest {
                 internalTableSchema = "snowflake",
                 jdbcUrlParams = jdbcUrlParams,
                 retentionPeriodDays = 1,
-                maxOpenAggregates = 5,
-                maxBufferedAggregates = 3,
-                stalenessDeadlinePerAgg = 5.minutes,
-                maxRecordsPerAgg = 100_000L,
-                maxEstBytesPerAgg = 50_000_000L,
-                maxConcurrentLifecycleOperations = 10,
             )
         val factory = SnowflakeBeanFactory()
         val dataSource =
@@ -185,12 +178,6 @@ internal class SnowflakeBeanFactoryTest {
                 internalTableSchema = "snowflake",
                 jdbcUrlParams = jdbcUrlParams,
                 retentionPeriodDays = 1,
-                maxOpenAggregates = 5,
-                maxBufferedAggregates = 3,
-                stalenessDeadlinePerAgg = 5.minutes,
-                maxRecordsPerAgg = 100_000L,
-                maxEstBytesPerAgg = 50_000_000L,
-                maxConcurrentLifecycleOperations = 10,
             )
         val factory = SnowflakeBeanFactory()
         val dataSource =
