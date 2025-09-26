@@ -16,6 +16,15 @@ import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.api.extension.InvocationInterceptor
 import org.junit.jupiter.api.extension.ReflectiveInvocationContext
 
+/**
+ * Wraps all JUnit test methods in [assertTimeoutPreemptively], to kill tests that try to run for
+ * longer than their timeout.
+ *
+ * Configured in
+ * `airbyte-cdk/bulk/core/base/src/testFixtures/resources/META-INF/services/org.junit.jupiter.api.extension.Extension`.
+ * Any module with this file on its test/integrationTest classpath will respect the
+ * `JunitMethodExecutionTimeout` system property.
+ */
 class JunitTimeoutInvocationInterceptor : InvocationInterceptor {
     @Throws(Throwable::class)
     override fun interceptTestMethod(
