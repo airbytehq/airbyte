@@ -42,8 +42,7 @@ class SnowflakeAirbyteClient(
             dataSource.connection.use { connection ->
                 val statement = connection.createStatement()
                 statement.use {
-                    val resultSet =
-                        it.executeQuery(sqlGenerator.countTable(tableName))
+                    val resultSet = it.executeQuery(sqlGenerator.countTable(tableName))
 
                     if (resultSet.next()) {
                         resultSet.getLong(COUNT_TOTAL_ALIAS)
@@ -265,17 +264,17 @@ class SnowflakeAirbyteClient(
         dataSource.connection.use { connection ->
             val statement = connection.createStatement()
             return statement.use {
-                val resultSet =
-                    it.executeQuery(sqlGenerator.showColumns(tableName))
+                val resultSet = it.executeQuery(sqlGenerator.showColumns(tableName))
                 val columns = mutableListOf<String>()
                 while (resultSet.next()) {
                     columns.add(resultSet.getString(DESCRIBE_TABLE_COLUMN_NAME_FIELD))
                 }
-                 columns
+                columns
             }
-
         }
 
     internal fun execute(query: String) =
-        dataSource.connection.use { connection -> connection.createStatement().use { it.executeQuery(query) } }
+        dataSource.connection.use { connection ->
+            connection.createStatement().use { it.executeQuery(query) }
+        }
 }
