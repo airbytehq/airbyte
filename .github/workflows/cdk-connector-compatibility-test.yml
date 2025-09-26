@@ -8,7 +8,7 @@ on:
 
 jobs:
   generate-matrix:
-    name: CDK Connector Compatibility Test
+    name: Generate Connector Matrix
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout Airbyte
@@ -124,7 +124,7 @@ jobs:
         run: poe test-integration-tests
 
       - name: Format Failure on Master Slack Channel [MASTER]
-        if: github.event_name == 'schedule' && failure() && (steps.run-unit-tests.outcome == 'failure' || steps.run-integration-tests.outcome == 'failure')
+        if: github.event_name == 'pull_request' && failure() && (steps.run-unit-tests.outcome == 'failure' || steps.run-integration-tests.outcome == 'failure')
         uses: slackapi/slack-github-action@v2.1.1
         with:
           token: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
