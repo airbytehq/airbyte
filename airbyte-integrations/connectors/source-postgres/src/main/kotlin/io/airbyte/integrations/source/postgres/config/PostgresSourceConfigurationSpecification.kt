@@ -387,7 +387,8 @@ sealed interface IncrementalConfigurationSpecification
         "#user-defined-cursor\">cursor column</a> chosen when configuring a connection " +
         "(e.g. created_at, updated_at).",
 )
-data object StandardReplicationMethodConfigurationSpecification : IncrementalConfigurationSpecification
+data object StandardReplicationMethodConfigurationSpecification :
+    IncrementalConfigurationSpecification
 
 @JsonSchemaTitle("Read Changes using Change Data Capture (CDC)")
 @JsonSchemaDescription(
