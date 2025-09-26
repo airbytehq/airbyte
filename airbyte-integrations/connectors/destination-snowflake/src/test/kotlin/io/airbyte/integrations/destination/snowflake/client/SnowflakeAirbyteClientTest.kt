@@ -65,10 +65,11 @@ internal class SnowflakeAirbyteClientTest {
                 every { next() } returns true andThen false
                 every { getLong(COUNT_TOTAL_ALIAS) } returns 1L
             }
-        val statement = mockk<Statement> {
-            every { executeQuery(any()) } returns resultSet
-            every { close() } just Runs
-        }
+        val statement =
+            mockk<Statement> {
+                every { executeQuery(any()) } returns resultSet
+                every { close() } just Runs
+            }
         val mockConnection =
             mockk<Connection> {
                 every { close() } just Runs
@@ -108,10 +109,11 @@ internal class SnowflakeAirbyteClientTest {
     fun testCountTableNoResults() {
         val tableName = TableName(namespace = "namespace", name = "name")
         val resultSet = mockk<ResultSet> { every { next() } returns false }
-        val statement = mockk<Statement> {
-            every { executeQuery(any()) } returns resultSet
-            every { close() } just Runs
-        }
+        val statement =
+            mockk<Statement> {
+                every { executeQuery(any()) } returns resultSet
+                every { close() } just Runs
+            }
         val mockConnection =
             mockk<Connection> {
                 every { close() } just Runs
@@ -131,10 +133,11 @@ internal class SnowflakeAirbyteClientTest {
     fun testCreateNamespace() {
         val namespace = "namespace"
         val resultSet = mockk<ResultSet>(relaxed = true)
-        val statement = mockk<Statement> {
-            every { executeQuery(any()) } returns resultSet
-            every { close() } just Runs
-        }
+        val statement =
+            mockk<Statement> {
+                every { executeQuery(any()) } returns resultSet
+                every { close() } just Runs
+            }
         val mockConnection =
             mockk<Connection> {
                 every { close() } just Runs
@@ -157,10 +160,11 @@ internal class SnowflakeAirbyteClientTest {
         val stream = mockk<DestinationStream>()
         val tableName = TableName(namespace = "namespace", name = "name")
         val resultSet = mockk<ResultSet>(relaxed = true)
-        val statement = mockk<Statement> {
-            every { executeQuery(any()) } returns resultSet
-            every { close() } just Runs
-        }
+        val statement =
+            mockk<Statement> {
+                every { executeQuery(any()) } returns resultSet
+                every { close() } just Runs
+            }
         val mockConnection =
             mockk<Connection> {
                 every { close() } just Runs
@@ -190,10 +194,11 @@ internal class SnowflakeAirbyteClientTest {
         val sourceTableName = TableName(namespace = "namespace", name = "source")
         val destinationTableName = TableName(namespace = "namespace", name = "destination")
         val resultSet = mockk<ResultSet>(relaxed = true)
-        val statement = mockk<Statement> {
-            every { executeQuery(any()) } returns resultSet
-            every { close() } just Runs
-        }
+        val statement =
+            mockk<Statement> {
+                every { executeQuery(any()) } returns resultSet
+                every { close() } just Runs
+            }
         val mockConnection =
             mockk<Connection> {
                 every { close() } just Runs
@@ -222,10 +227,11 @@ internal class SnowflakeAirbyteClientTest {
         val destinationTableName = TableName(namespace = "namespace", name = "destination")
         val stream = mockk<DestinationStream>()
         val resultSet = mockk<ResultSet>(relaxed = true)
-        val statement = mockk<Statement> {
-            every { executeQuery(any()) } returns resultSet
-            every { close() } just Runs
-        }
+        val statement =
+            mockk<Statement> {
+                every { executeQuery(any()) } returns resultSet
+                every { close() } just Runs
+            }
         val mockConnection =
             mockk<Connection> {
                 every { close() } just Runs
@@ -257,10 +263,11 @@ internal class SnowflakeAirbyteClientTest {
     fun testDropTable() {
         val tableName = TableName(namespace = "namespace", name = "name")
         val resultSet = mockk<ResultSet>(relaxed = true)
-        val statement = mockk<Statement> {
-            every { executeQuery(any()) } returns resultSet
-            every { close() } just Runs
-        }
+        val statement =
+            mockk<Statement> {
+                every { executeQuery(any()) } returns resultSet
+                every { close() } just Runs
+            }
         val mockConnection =
             mockk<Connection> {
                 every { close() } just Runs
@@ -286,10 +293,11 @@ internal class SnowflakeAirbyteClientTest {
                 every { next() } returns true
                 every { getLong(COLUMN_NAME_AB_GENERATION_ID) } returns generationId
             }
-        val statement = mockk<Statement> {
-            every { executeQuery(any()) } returns resultSet
-            every { close() } just Runs
-        }
+        val statement =
+            mockk<Statement> {
+                every { executeQuery(any()) } returns resultSet
+                every { close() } just Runs
+            }
         val mockConnection =
             mockk<Connection> {
                 every { close() } just Runs
@@ -352,10 +360,11 @@ internal class SnowflakeAirbyteClientTest {
     fun testCreateStaging() {
         val tableName = TableName(namespace = "namespace", name = "name")
         val resultSet = mockk<ResultSet>(relaxed = true)
-        val statement = mockk<Statement> {
-            every { executeQuery(any()) } returns resultSet
-            every { close() } just Runs
-        }
+        val statement =
+            mockk<Statement> {
+                every { executeQuery(any()) } returns resultSet
+                every { close() } just Runs
+            }
         val mockConnection =
             mockk<Connection> {
                 every { close() } just Runs
@@ -376,10 +385,11 @@ internal class SnowflakeAirbyteClientTest {
         val tableName = TableName(namespace = "namespace", name = "name")
         val tempFilePath = "/some/file/path.csv"
         val resultSet = mockk<ResultSet>(relaxed = true)
-        val statement = mockk<Statement> {
-            every { executeQuery(any()) } returns resultSet
-            every { close() } just Runs
-        }
+        val statement =
+            mockk<Statement> {
+                every { executeQuery(any()) } returns resultSet
+                every { close() } just Runs
+            }
         val mockConnection =
             mockk<Connection> {
                 every { close() } just Runs
@@ -399,10 +409,11 @@ internal class SnowflakeAirbyteClientTest {
     fun testCopyFromStaging() {
         val tableName = TableName(namespace = "namespace", name = "name")
         val resultSet = mockk<ResultSet>(relaxed = true)
-        val statement = mockk<Statement> {
-            every { executeQuery(any()) } returns resultSet
-            every { close() } just Runs
-        }
+        val statement =
+            mockk<Statement> {
+                every { executeQuery(any()) } returns resultSet
+                every { close() } just Runs
+            }
         val mockConnection =
             mockk<Connection> {
                 every { close() } just Runs
@@ -430,10 +441,11 @@ internal class SnowflakeAirbyteClientTest {
                     column1 andThen
                     column2
             }
-        val statement = mockk<Statement> {
-            every { executeQuery(any()) } returns resultSet
-            every { close() } just Runs
-        }
+        val statement =
+            mockk<Statement> {
+                every { executeQuery(any()) } returns resultSet
+                every { close() } just Runs
+            }
         val mockConnection =
             mockk<Connection> {
                 every { close() } just Runs
@@ -465,10 +477,11 @@ internal class SnowflakeAirbyteClientTest {
             "NUMBER(38,0)"
         every { resultSet.getString("null?") } returns "Y" andThen "N" andThen "N"
 
-        val statement = mockk<Statement> {
-            every { executeQuery(any()) } returns resultSet
-            every { close() } just Runs
-        }
+        val statement =
+            mockk<Statement> {
+                every { executeQuery(any()) } returns resultSet
+                every { close() } just Runs
+            }
 
         val connection = mockk<Connection>()
         every { connection.createStatement() } returns statement
