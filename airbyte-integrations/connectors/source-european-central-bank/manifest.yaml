@@ -1,0 +1,250 @@
+version: 6.48.15
+
+type: DeclarativeSource
+
+description: >-
+  European Central Bank (ECB) publishes financial data, including daily euro
+  exchange rates every business day.
+
+check:
+  type: CheckStream
+  stream_names:
+    - euro_exchange_rates
+
+definitions:
+  streams:
+    euro_exchange_rates:
+      type: DeclarativeStream
+      name: euro_exchange_rates
+      retriever:
+        type: SimpleRetriever
+        decoder:
+          type: ZipfileDecoder
+          decoder:
+            type: CsvDecoder
+            encoding: utf-8
+            delimiter: ","
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /stats/eurofxref/eurofxref-hist.zip
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      primary_key:
+        - date
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/euro_exchange_rates"
+      transformations:
+        - type: RemoveFields
+          field_pointers:
+            - - ""
+        - type: KeysToLower
+  base_requester:
+    type: HttpRequester
+    url_base: https://www.ecb.europa.eu
+
+streams:
+  - $ref: "#/definitions/streams/euro_exchange_rates"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required: []
+    properties: {}
+    additionalProperties: true
+
+metadata:
+  assist: {}
+  testedStreams:
+    euro_exchange_rates:
+      hasRecords: true
+      streamHash: ac532ac70b89fecbb5ee1ebc68c3b5c176dc1b5e
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    euro_exchange_rates: false
+
+schemas:
+  euro_exchange_rates:
+    type: object
+    $schema: http://json-schema.org/schema#
+    required:
+      - date
+    properties:
+      aud:
+        type:
+          - number
+          - null
+      bgn:
+        type:
+          - number
+          - null
+      brl:
+        type:
+          - number
+          - null
+      cad:
+        type:
+          - number
+          - null
+      chf:
+        type:
+          - number
+          - null
+      cny:
+        type:
+          - number
+          - null
+      cyp:
+        type:
+          - number
+          - null
+      czk:
+        type:
+          - number
+          - null
+      dkk:
+        type:
+          - number
+          - null
+      eek:
+        type:
+          - number
+          - null
+      gbp:
+        type:
+          - number
+          - null
+      hkd:
+        type:
+          - number
+          - null
+      hrk:
+        type:
+          - number
+          - null
+      huf:
+        type:
+          - number
+          - null
+      idr:
+        type:
+          - number
+          - null
+      ils:
+        type:
+          - number
+          - null
+      inr:
+        type:
+          - number
+          - null
+      isk:
+        type:
+          - number
+          - null
+      jpy:
+        type:
+          - number
+          - null
+      krw:
+        type:
+          - number
+          - null
+      ltl:
+        type:
+          - number
+          - null
+      lvl:
+        type:
+          - number
+          - null
+      mtl:
+        type:
+          - number
+          - null
+      mxn:
+        type:
+          - number
+          - null
+      myr:
+        type:
+          - number
+          - null
+      nok:
+        type:
+          - number
+          - null
+      nzd:
+        type:
+          - number
+          - null
+      php:
+        type:
+          - number
+          - null
+      pln:
+        type:
+          - number
+          - null
+      rol:
+        type:
+          - number
+          - null
+      ron:
+        type:
+          - number
+          - null
+      rub:
+        type:
+          - number
+          - null
+      sek:
+        type:
+          - number
+          - null
+      sgd:
+        type:
+          - number
+          - null
+      sit:
+        type:
+          - number
+          - null
+      skk:
+        type:
+          - number
+          - null
+      thb:
+        type:
+          - number
+          - null
+      trl:
+        type:
+          - number
+          - null
+      try:
+        type:
+          - number
+          - null
+      usd:
+        type:
+          - number
+          - null
+      zar:
+        type:
+          - number
+          - null
+      date:
+        type:
+          - string
+        format: date
