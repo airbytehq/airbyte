@@ -382,11 +382,10 @@ class PostgresSourceJdbcCursorIncrementalPartition(
             SelectQuerySpec(
                 SelectColumns((stream.fields).distinct()),
                 FromSample(stream.name, stream.namespace, sampleRateInvPow2, sampleSize, where),
-//                where,
-                orderBy =  OrderBy(cursor),
+                //                where,
+                orderBy = OrderBy(cursor),
             )
         return selectQueryGenerator.generate(querySpec.optimize())
-
     }
 
     override val completeState: OpaqueStateValue

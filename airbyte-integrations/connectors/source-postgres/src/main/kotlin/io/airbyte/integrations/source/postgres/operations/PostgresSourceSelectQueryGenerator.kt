@@ -144,7 +144,8 @@ class PostgresSourceSelectQueryGenerator : SelectQueryGenerator {
             is OrderBy -> "ORDER BY " + columns.joinToString(", ") { it.sql() }
         }
 
-    fun SelectQuerySpec.bindings(): List<SelectQuery.Binding> = from.bindings() + where.bindings() + limit.bindings()
+    fun SelectQuerySpec.bindings(): List<SelectQuery.Binding> =
+        from.bindings() + where.bindings() + limit.bindings()
 
     fun WhereNode.bindings(): List<SelectQuery.Binding> =
         when (this) {
@@ -175,5 +176,4 @@ class PostgresSourceSelectQueryGenerator : SelectQueryGenerator {
             is From -> listOf()
             is FromSample -> this.where?.let { it.bindings() } ?: listOf()
         }
-
 }

@@ -41,11 +41,14 @@ abstract class JdbcPartitionsCreator<
         override suspend fun run() {}
 
         override fun checkpoint(): PartitionReadCheckpoint =
-            PartitionReadCheckpoint(partition.completeState, 0,
+            PartitionReadCheckpoint(
+                partition.completeState,
+                0,
                 when (streamState.streamFeedBootstrap.dataChannelMedium) {
                     SOCKET -> generatePartitionId(4)
                     STDIO -> null
-                })
+                }
+            )
 
         override fun releaseResources() {}
     }

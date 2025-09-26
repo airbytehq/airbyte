@@ -64,6 +64,7 @@ data class FromSample(
     val sampleRateInv: Long
         get() = 1L shl sampleRateInvPow2
 }
+
 fun FromNode.optimize(): FromNode =
     when (this) {
         NoFrom -> this
