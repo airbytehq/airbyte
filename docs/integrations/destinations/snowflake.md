@@ -151,17 +151,17 @@ username/password or key pair authentication:
 
 ### Login and Password
 
-| Field                                                                                                 | Description                                                                                                                                                                                                                          |
-|-------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [Host](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html)                        | The host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com). Example: `accountname.us-east-2.aws.snowflakecomputing.com`                                    |
-| [Role](https://docs.snowflake.com/en/user-guide/security-access-control-overview.html#roles)          | The role you created in Step 1 for Airbyte to access Snowflake. Example: `AIRBYTE_ROLE`                                                                                                                                              |
-| [Warehouse](https://docs.snowflake.com/en/user-guide/warehouses-overview.html#overview-of-warehouses) | The warehouse you created in Step 1 for Airbyte to sync data into. Example: `AIRBYTE_WAREHOUSE`                                                                                                                                      |
-| [Database](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl)   | The database you created in Step 1 for Airbyte to sync data into. Example: `AIRBYTE_DATABASE`                                                                                                                                        |
-| [Schema](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl)     | The default schema used as the target schema for all statements issued from the connection that do not explicitly specify a schema name.                                                                                             |
-| Username                                                                                              | The username you created in Step 1 to allow Airbyte to access the database. Example: `AIRBYTE_USER`                                                                                                                                  |
-| Password                                                                                              | The password associated with the username.                                                                                                                                                                                           |
-| [JDBC URL Params](https://docs.snowflake.com/en/user-guide/jdbc-parameters.html) (Optional)           | Additional properties to pass to the JDBC URL string when connecting to the database formatted as `key=value` pairs separated by the symbol `&`. Example: `key1=value1&key2=value2&key3=value3`                                      |
-| Disable Final Tables (Optional)                                                                       | Disables writing final Typed tables See [output schema](#output-schema). WARNING! The data format in \_airbyte_data is likely stable but there are no guarantees that other metadata columns will remain the same in future versions |
+| Field                                                                                                  | Description                                                                                                                                                                                                                           |
+|:-------------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [Host](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html)                         | The host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com). Example: `accountname.us-east-2.aws.snowflakecomputing.com`                                     |
+| [Role](https://docs.snowflake.com/en/user-guide/security-access-control-overview.html#roles)           | The role you created in Step 1 for Airbyte to access Snowflake. Example: `AIRBYTE_ROLE`                                                                                                                                               |
+| [Warehouse](https://docs.snowflake.com/en/user-guide/warehouses-overview.html#overview-of-warehouses)  | The warehouse you created in Step 1 for Airbyte to sync data into. Example: `AIRBYTE_WAREHOUSE`                                                                                                                                       |
+| [Database](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl)    | The database you created in Step 1 for Airbyte to sync data into. Example: `AIRBYTE_DATABASE`                                                                                                                                         |
+| [Schema](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl)      | The default schema used as the target schema for all statements issued from the connection that do not explicitly specify a schema name.                                                                                              |
+| Username                                                                                               | The username you created in Step 1 to allow Airbyte to access the database. Example: `AIRBYTE_USER`                                                                                                                                   |
+| Password                                                                                               | The password associated with the username.                                                                                                                                                                                            |
+| [JDBC URL Params](https://docs.snowflake.com/en/user-guide/jdbc-parameters.html) (Optional)            | Additional properties to pass to the JDBC URL string when connecting to the database formatted as `key=value` pairs separated by the symbol `&`. Example: `key1=value1&key2=value2&key3=value3`                                       |
+| Disable Final Tables (Optional)                                                                        | Disables writing final Typed tables See [output schema](#output-schema). WARNING! The data format in \_airbyte_data is likely stable but there are no guarantees that other metadata columns will remain the same in future versions  |
 
 ### Key pair authentication
 
@@ -169,13 +169,10 @@ username/password or key pair authentication:
 
 ## Output schema
 
-Airbyte outputs each stream into its own raw table in `airbyte_internal` schema by default (can be
-overriden by user) and a final table with Typed columns. Contents in raw table are _NOT_
-deduplicated.
+Airbyte outputs each stream into its own final table with Typed columns.
 
-**Note:** By default, Airbyte creates permanent tables. If you prefer transient tables, create a
-dedicated transient database for Airbyte. For more information, refer
-to[Working with Temporary and Transient Tables](https://docs.snowflake.com/en/user-guide/tables-temp-transient.html)
+Optionally (by toggling `Legacy raw tables`), Airbyte can output each stream into its own raw table in `airbyte_internal` schema by default (can be
+overriden by user). Contents in raw table are _NOT_ deduplicated. A final will _NOT_ be generated if that setting is enabled.
 
 ### Raw Table schema
 
@@ -207,20 +204,20 @@ Again, see [here](/platform/understanding-airbyte/airbyte-metadata-fields) for m
 
 | Airbyte type                        | Snowflake type |
 |:------------------------------------|:---------------|
-| STRING                              | TEXT           |
-| STRING (BASE64)                     | TEXT           |
-| STRING (BIG_NUMBER)                 | TEXT           |
-| STRING (BIG_INTEGER)                | TEXT           |
+| STRING                              | VARCHAR        |
+| STRING (BASE64)                     | VARCHAR        |
+| STRING (BIG_NUMBER)                 | VARCHAR        |
+| STRING (BIG_INTEGER)                | VARCHAR        |
 | NUMBER                              | FLOAT          |
-| INTEGER                             | NUMBER         |
+| INTEGER                             | NUMBER(38,0)   |
 | BOOLEAN                             | BOOLEAN        |
 | STRING (TIMESTAMP_WITH_TIMEZONE)    | TIMESTAMP_TZ   |
 | STRING (TIMESTAMP_WITHOUT_TIMEZONE) | TIMESTAMP_NTZ  |
-| STRING (TIME_WITH_TIMEZONE)         | TEXT           |
+| STRING (TIME_WITH_TIMEZONE)         | VARCHAR        |
 | STRING (TIME_WITHOUT_TIMEZONE)      | TIME           |
 | DATE                                | DATE           |
-| OBJECT                              | OBJECT         |
-| ARRAY                               | ARRAY          |
+| OBJECT                              | VARIANT        |
+| ARRAY                               | VARIANT        |
 
 ## Supported sync modes
 
