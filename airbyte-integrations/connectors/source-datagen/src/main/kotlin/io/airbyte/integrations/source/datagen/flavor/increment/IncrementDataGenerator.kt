@@ -16,7 +16,7 @@ class IncrementDataGenerator() : DataGenerator {
         val recordData: NativeRecordPayload = mutableMapOf()
 
         recordData["id"] =
-            FieldValueEncoder(incrementedID,IntegerFieldType.jsonEncoder as LongCodec)
+            FieldValueEncoder(incrementedID, IntegerFieldType.jsonEncoder as LongCodec)
 
         return recordData
     }
