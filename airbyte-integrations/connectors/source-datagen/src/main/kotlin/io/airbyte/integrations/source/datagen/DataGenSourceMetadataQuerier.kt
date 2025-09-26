@@ -20,7 +20,7 @@ class DataGenSourceMetadataQuerier(val configuration: DataGenSourceConfiguration
 
     override fun fields(streamID: StreamIdentifier): List<Field> {
         val flavor = configuration.flavor
-        return flavor.fields[streamID.name]?: emptyList()
+        return flavor.fields[streamID.name] ?: emptyList()
     }
 
     override fun streamNamespaces(): List<String> {
@@ -38,7 +38,7 @@ class DataGenSourceMetadataQuerier(val configuration: DataGenSourceConfiguration
     override fun primaryKey(
         streamID: StreamIdentifier,
     ): List<List<String>> {
-        return configuration.flavor.primaryKey[streamID.name]?: listOf()
+        return configuration.flavor.primaryKey[streamID.name] ?: listOf()
     }
 
     /** DataGen implementation of [MetadataQuerier.Factory]. */
