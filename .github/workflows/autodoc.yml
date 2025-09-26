@@ -1,19 +1,18 @@
 # Autodoc Workflow
 #
 # This workflow automatically triggers documentation updates for community-supported connectors
-# when pull requests are merged to master. It uses Devin AI to review connector changes and
+# when changes are pushed to master. It uses Devin AI to review connector changes and
 # update the corresponding user documentation to ensure it stays current with code changes.
 #
 # Workflow triggers:
-# - Only on merged PRs to master branch
-# - Excludes bot-authored PRs to prevent automation loops
+# - Only on pushes to master branch
+# - Excludes bot-authored pushes to prevent automation loops
 # - Only processes community-supported connectors
 
 name: Autodoc
 
 on:
-  pull_request:
-    types: [closed]
+  push:
     branches:
       - master
 
@@ -21,35 +20,30 @@ jobs:
   update-connector-documentation:
     name: Update connector documentation with AI
     runs-on: ubuntu-latest
-    # Only run for merged PRs and exclude bot authors
+    # Only run for human authors, exclude bot accounts
     if: |
-      github.event.pull_request.merged == true && 
-      !contains(fromJSON('["airbyteio", "octavia-bot", "octavia-bot-hoard", "github-actions[bot]", "dependabot[bot]"]'), github.event.pull_request.user.login) &&
-      !endsWith(github.event.pull_request.user.login, '[bot]')
+      !contains(fromJSON('["airbyteio", "octavia-bot", "octavia-bot-hoard", "github-actions[bot]", "dependabot[bot]"]'), github.actor) &&
+      !endsWith(github.actor, '[bot]')
 
     steps:
-      # Step 1: Get the merged PR code
-      - name: Checkout merged PR code
+      # Step 1: Get the pushed code
+      - name: Checkout pushed code
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
         with:
           fetch-depth: 0 # Full history needed for comprehensive analysis
 
-      # Step 2: Analyze what files were changed in this PR
-      - name: Fetch list of changed files from PR
-        id: pr-files
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Step 2: Analyze what files were changed in this push
+      - name: Get files changed in this push
+        id: push-files
         run: |
-          echo "🔍 Fetching files changed in PR #${{ github.event.pull_request.number }}..."
-          FILES=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files" | \
-            jq -r '[.[].filename] | @json')
-
-          if [ -z "$FILES" ]; then
-            echo "❌ Error: Failed to fetch or parse PR files."
+          echo "🔍 Fetching files changed in commit ${{ github.sha }}..."
+          FILES=$(git diff HEAD~1 HEAD --name-only | jq -R -s -c 'split("\n")[:-1]')
+          
+          if [ -z "$FILES" ] || [ "$FILES" = "[]" ]; then
+            echo "❌ Error: No files changed in this push."
             exit 1
           fi
-
+          
           echo "✅ Successfully fetched changed files list"
           echo "files=$FILES" >> $GITHUB_OUTPUT
 
@@ -61,17 +55,17 @@ jobs:
           sudo chmod +x /usr/local/bin/yq
           echo "✅ yq v4.47.2 installed successfully"
 
-      # Step 4: Determine if this PR affects a community-supported connector
+      # Step 4: Determine if this push affects a community-supported connector
       - name: Determine if connector is community-supported
         id: check-support-level
         run: |
-          echo "🔍 Checking if PR contains community-supported connector changes..."
+          echo "🔍 Checking if push contains community-supported connector changes..."
 
           # Look for connector metadata files in the standard location
           METADATA_FILE=$(find . -path "*/airbyte-integrations/connectors/*/metadata.yaml" | head -n 1)
 
           if [ -z "$METADATA_FILE" ]; then
-            echo "ℹ️  No connector metadata.yaml file found - this PR doesn't affect connectors"
+            echo "ℹ️  No connector metadata.yaml file found - this push doesn't affect connectors"
             echo "metadata_file=false" >> $GITHUB_OUTPUT
             echo "community_support=false" >> $GITHUB_OUTPUT
             exit 0
@@ -106,7 +100,7 @@ jobs:
       - name: Start AI documentation update session
         if: steps.check-support-level.outputs.metadata_file == 'true' && steps.check-support-level.outputs.community_support == 'true'
         env:
-          PROMPT_TEXT: "The pull request to review is ${{ github.event.pull_request.number }}"
+          PROMPT_TEXT: "The commit to review is ${{ github.sha }}. This commit was pushed to master and may contain connector changes that need documentation updates."
         uses: aaronsteers/devin-action@0d74d6d9ff1b16ada5966dc31af53a9d155759f4 # Pinned to specific commit for security
         with:
           devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
