@@ -55,7 +55,6 @@ ignore_patterns=(
 )
 # join with | into a grouped regex
 ignore_globs="($(IFS='|'; echo "${ignore_patterns[*]}"))$"
-
 # 3) collect all file changes
 if $PREV_COMMIT; then
   # Compare only the last commit; diff-tree is faster and more precise.
@@ -73,7 +72,6 @@ else
   unstaged=$(git diff --name-only)
   untracked=$(git ls-files --others --exclude-standard)
 fi
-
 # 4) merge into one list
 all_changes=$(printf '%s\n%s\n%s\n%s' "$committed" "$staged" "$unstaged" "$untracked")
 
