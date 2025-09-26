@@ -376,6 +376,20 @@ const sidebar: SidebarsConfig = {
     },
     {
       type: "category",
+      label: "Agents - Discovery",
+      collapsible: false,
+      collapsed: false,
+      items: [
+        {
+          type: "doc",
+          id: "create-agents-discovery",
+          label: "Create Discovery Agents",
+          className: "api-method post",
+        },
+      ],
+    },
+    {
+      type: "category",
       label: "Destinations Definitions",
       collapsible: false,
       collapsed: false,
@@ -403,13 +417,13 @@ const sidebar: SidebarsConfig = {
         {
           type: "doc",
           id: "get-integrations-definitions-sources-id",
-          label: "Get Source Definition",
+          label: "Source Definition Get",
           className: "api-method get",
         },
         {
           type: "doc",
           id: "create-integrations-definitions-sources-source-definition-id-catalog",
-          label: "Create Source Definition Catalog",
+          label: "Source Definition Catalog Create",
           className: "api-method post",
         },
         {

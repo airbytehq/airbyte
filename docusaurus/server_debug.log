@@ -1,0 +1,1519 @@
+
+> docu@0.0.0 prestart /Users/letiescanciano/Airbyte/airbyte/docusaurus
+> pnpm run prepare-sidebar && pnpm run prepare-embedded-api && pnpm run gen-airbyte-api-docs
+
+
+> docu@0.0.0 prepare-sidebar /Users/letiescanciano/Airbyte/airbyte/docusaurus
+> node src/scripts/prepare-sidebar-data.js
+
+Fetching connector registry data...
+Connector registry data processed and saved to /Users/letiescanciano/Airbyte/airbyte/docusaurus/src/data/connector_registry_slim.json
+
+> docu@0.0.0 prepare-embedded-api /Users/letiescanciano/Airbyte/airbyte/docusaurus
+> pnpm run gen-embedded-api-docs && node src/scripts/embedded-api/prepare-embedded-api-spec.js && pnpm prettier --write src/data/embedded_api_spec.json
+
+
+> docu@0.0.0 gen-embedded-api-docs /Users/letiescanciano/Airbyte/airbyte/docusaurus
+> pnpm run docusaurus clean-api-docs embedded-api --plugin-id embedded-api && pnpm run docusaurus gen-api-docs embedded-api --plugin-id embedded-api
+
+
+> docu@0.0.0 docusaurus /Users/letiescanciano/Airbyte/airbyte/docusaurus
+> docusaurus "clean-api-docs" "embedded-api" "--plugin-id" "embedded-api"
+
+
+ ------------------------------------------------------------------------------                                                                                                          Update available 3.8.1 → 3.9.0                                                                                                                 To upgrade Docusaurus packages with the latest version, run the                                       following command:                                        `npm i @docusaurus/core@latest @docusaurus/cssnano-preset@latest                @docusaurus/faster@latest @docusaurus/module-type-aliases@latest               @docusaurus/plugin-debug@latest @docusaurus/plugin-sitemap@latest               @docusaurus/preset-classic@latest @docusaurus/theme-classic@latest               @docusaurus/theme-common@latest @docusaurus/theme-mermaid@latest               @docusaurus/theme-search-algolia@latest @docusaurus/types@latest`                                                                                         ------------------------------------------------------------------------------ 
+
+Fetching connector registry...
+(node:28451) ExperimentalWarning: CommonJS module /Users/letiescanciano/Airbyte/airbyte/docusaurus/src/remark/docsHeaderDecoration.js is loading ES Module /Users/letiescanciano/Airbyte/airbyte/docusaurus/node_modules/.pnpm/unist-util-visit@5.0.0/node_modules/unist-util-visit/index.js using require().
+Support for loading ES Module in require() is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+plugins [
+  [
+    '@docusaurus/plugin-content-docs',
+    {
+      id: 'platform',
+      path: '../docs/platform',
+      routeBasePath: '/platform',
+      sidebarPath: './sidebar-platform.js',
+      editUrl: [Function: editUrl],
+      remarkPlugins: [Array]
+    }
+  ],
+  [
+    '@docusaurus/plugin-content-docs',
+    {
+      id: 'ai-agents',
+      path: '../docs/ai-agents',
+      routeBasePath: '/ai-agents',
+      sidebarPath: './sidebar-ai-agents.js',
+      editUrl: 'https://github.com/airbytehq/airbyte/blob/master/docs',
+      remarkPlugins: [Array]
+    }
+  ],
+  [
+    '@docusaurus/plugin-content-docs',
+    {
+      id: 'release_notes',
+      path: '../docs/release_notes',
+      routeBasePath: '/release_notes',
+      sidebarPath: './sidebar-release_notes.js',
+      editUrl: 'https://github.com/airbytehq/airbyte/blob/master/docs',
+      remarkPlugins: [Array]
+    }
+  ],
+  [
+    '@docusaurus/plugin-content-docs',
+    {
+      id: 'connectors',
+      path: '../docs/integrations',
+      routeBasePath: '/integrations',
+      sidebarPath: './sidebar-connectors.js',
+      editUrl: 'https://github.com/airbytehq/airbyte/blob/master/docs',
+      beforeDefaultRemarkPlugins: [Array],
+      remarkPlugins: [Array]
+    }
+  ],
+  [
+    '@docusaurus/plugin-content-docs',
+    {
+      id: 'embedded-api-docs',
+      path: 'api-docs/embedded-api',
+      routeBasePath: '/embedded-api/',
+      docItemComponent: '@theme/ApiItem',
+      sidebarItemsGenerator: [AsyncFunction: sidebarItemsGenerator]
+    }
+  ],
+  [
+    'docusaurus-plugin-openapi-docs',
+    {
+      id: 'embedded-api',
+      docsPluginId: 'embedded-api-docs',
+      config: [Object]
+    }
+  ],
+  [
+    '@docusaurus/plugin-content-docs',
+    {
+      id: 'airbyte-api-docs-content',
+      path: 'api-docs/airbyte-api',
+      routeBasePath: '/airbyte-api',
+      docItemComponent: '@theme/ApiItem',
+      sidebarItemsGenerator: [AsyncFunction: sidebarItemsGenerator]
+    }
+  ],
+  [
+    'docusaurus-plugin-openapi-docs',
+    {
+      id: 'airbyte-api',
+      docsPluginId: 'airbyte-api-docs-content',
+      config: [Object]
+    }
+  ],
+  '/Users/letiescanciano/Airbyte/airbyte/docusaurus/src/plugins/enterpriseConnectors.js',
+  [
+    '@signalwire/docusaurus-plugin-llms-txt',
+    {
+      siteTitle: 'docs.airbyte.com llms.txt',
+      siteDescription: 'Airbyte is an open source platform designed for building and managing data pipelines, offering extensive connector options to facilitate data movement from various sources to destinations efficiently and effectively.',
+      depth: 4,
+      content: [Object]
+    }
+  ],
+  '/Users/letiescanciano/Airbyte/airbyte/docusaurus/src/plugins/yamlLoader.js'
+]
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/create-embedded-sources-check.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/create-embedded-scoped-token.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/create-agents-demo-agent.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/create-embedded-sources.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/create-agents-discovery.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/create-integrations-sources-check.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/create-integrations-definitions-sources-source-definition-id-catalog.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/create-embedded-widget-token.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/create-integrations-sources.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/create-integrations-templates-connections-id-tags.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/create-integrations-templates-connections.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/create-integrations-templates-sources.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/create-integrations-templates-tags.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/create-integrations-templates-sources-id-tags.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/create-internal-account-applications-token.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/create-internal-account-applications.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/create-internal-oauth-mcp-code.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/create-internal-oauth-mcp-registration.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/create-internal-oauth-mcp-token.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/create-internal-oauth-sources-get-embedded-consent-url.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/create-internal-account-organizations-id-onboarding-progress.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/create-sonar-apis-source-id-request.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/create-internal-oauth-sources-complete.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/create-tools-sources.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/create-tools-destinations.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/create-internal-oauth-sources-revoke.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/delete-integrations-definitions-sources-source-definition-id-catalog.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/delete-integrations-templates-connections-id-tags-tag-name.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/delete-embedded-sources-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/delete-integrations-templates-connections-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/delete-integrations-templates-sources-id-tags-tag-name.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/delete-integrations-sources-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/delete-integrations-templates-sources-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/delete-integrations-templates-tags-name.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/deprecated-get-sonar-apis.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/deprecated-get-embedded-organizations-current-scoped.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/deprecated-list-embedded-source-templates.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/deprecated-get-embedded-scoped-token-info.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/get-embedded-scoped-token-info.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/get-embedded-sources-check-id-status.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/get-agents-demo-agent.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/get-embedded-sources-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/get-integrations-definitions-destinations-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/get-integrations-definitions-sources-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/get-embedded-source-templates-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/get-integrations-sources-check-id-status.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/get-integrations-definitions-sources-source-definition-id-catalog.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/get-integrations-destinations-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/get-integrations-sources-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/get-integrations-templates-sources-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/get-integrations-sources-id-discover.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/get-internal-integrations-definitions-destinations-wrapped-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/get-integrations-templates-connections-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/get-sonar-files-source-id-drives-drive-id-get-path-path.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/get-internal-health-check.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/get-sonar-files-source-id-drives.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/list-embedded-source-templates.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/get-sonar-files-source-id-get-path-path.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/list-integrations-definitions-destinations.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/get-sonar-files-sources.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/list-integrations-destinations.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/list-integrations-sources.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/list-integrations-templates-sources-global.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/list-embedded-sources.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/list-integrations-templates-connections.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/list-integrations-templates-tags.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/list-integrations-templates-sources.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/list-internal-account-organizations.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/list-sonar-files-source-id-list-path-path.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/list-internal-integrations-definitions-destinations-wrapped.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/list-sonar-files-source-id-drives-drive-id-list-path-path.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/list-tools-workspaces.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/update-embedded-sources-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/update-integrations-sources-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/update-integrations-templates-sources-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/update-tools-destinations-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/update-integrations-templates-tags-name.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/update-integrations-templates-connections-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/update-tools-sources-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/sonar-ap-is.tag.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/sonar.info.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/embedded.tag.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/sources.tag.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/template-sources.tag.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/sonar-files.tag.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/template-connections.tag.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/embedded-api/sidebar.ts"
+fetched 634 connectors from registry
+
+> docu@0.0.0 docusaurus /Users/letiescanciano/Airbyte/airbyte/docusaurus
+> docusaurus "gen-api-docs" "embedded-api" "--plugin-id" "embedded-api"
+
+
+ ------------------------------------------------------------------------------                                                                                                          Update available 3.8.1 → 3.9.0                                                                                                                 To upgrade Docusaurus packages with the latest version, run the                                       following command:                                        `npm i @docusaurus/core@latest @docusaurus/cssnano-preset@latest                @docusaurus/faster@latest @docusaurus/module-type-aliases@latest               @docusaurus/plugin-debug@latest @docusaurus/plugin-sitemap@latest               @docusaurus/preset-classic@latest @docusaurus/theme-classic@latest               @docusaurus/theme-common@latest @docusaurus/theme-mermaid@latest               @docusaurus/theme-search-algolia@latest @docusaurus/types@latest`                                                                                         ------------------------------------------------------------------------------ 
+
+Fetching connector registry...
+(node:28536) ExperimentalWarning: CommonJS module /Users/letiescanciano/Airbyte/airbyte/docusaurus/src/remark/docsHeaderDecoration.js is loading ES Module /Users/letiescanciano/Airbyte/airbyte/docusaurus/node_modules/.pnpm/unist-util-visit@5.0.0/node_modules/unist-util-visit/index.js using require().
+Support for loading ES Module in require() is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+gen-api-docs::plugin-id embedded-api
+plugins [
+  [
+    '@docusaurus/plugin-content-docs',
+    {
+      id: 'platform',
+      path: '../docs/platform',
+      routeBasePath: '/platform',
+      sidebarPath: './sidebar-platform.js',
+      editUrl: [Function: editUrl],
+      remarkPlugins: [Array]
+    }
+  ],
+  [
+    '@docusaurus/plugin-content-docs',
+    {
+      id: 'ai-agents',
+      path: '../docs/ai-agents',
+      routeBasePath: '/ai-agents',
+      sidebarPath: './sidebar-ai-agents.js',
+      editUrl: 'https://github.com/airbytehq/airbyte/blob/master/docs',
+      remarkPlugins: [Array]
+    }
+  ],
+  [
+    '@docusaurus/plugin-content-docs',
+    {
+      id: 'release_notes',
+      path: '../docs/release_notes',
+      routeBasePath: '/release_notes',
+      sidebarPath: './sidebar-release_notes.js',
+      editUrl: 'https://github.com/airbytehq/airbyte/blob/master/docs',
+      remarkPlugins: [Array]
+    }
+  ],
+  [
+    '@docusaurus/plugin-content-docs',
+    {
+      id: 'connectors',
+      path: '../docs/integrations',
+      routeBasePath: '/integrations',
+      sidebarPath: './sidebar-connectors.js',
+      editUrl: 'https://github.com/airbytehq/airbyte/blob/master/docs',
+      beforeDefaultRemarkPlugins: [Array],
+      remarkPlugins: [Array]
+    }
+  ],
+  [
+    '@docusaurus/plugin-content-docs',
+    {
+      id: 'embedded-api-docs',
+      path: 'api-docs/embedded-api',
+      routeBasePath: '/embedded-api/',
+      docItemComponent: '@theme/ApiItem',
+      sidebarItemsGenerator: [AsyncFunction: sidebarItemsGenerator]
+    }
+  ],
+  [
+    'docusaurus-plugin-openapi-docs',
+    {
+      id: 'embedded-api',
+      docsPluginId: 'embedded-api-docs',
+      config: [Object]
+    }
+  ],
+  [
+    '@docusaurus/plugin-content-docs',
+    {
+      id: 'airbyte-api-docs-content',
+      path: 'api-docs/airbyte-api',
+      routeBasePath: '/airbyte-api',
+      docItemComponent: '@theme/ApiItem',
+      sidebarItemsGenerator: [AsyncFunction: sidebarItemsGenerator]
+    }
+  ],
+  [
+    'docusaurus-plugin-openapi-docs',
+    {
+      id: 'airbyte-api',
+      docsPluginId: 'airbyte-api-docs-content',
+      config: [Object]
+    }
+  ],
+  '/Users/letiescanciano/Airbyte/airbyte/docusaurus/src/plugins/enterpriseConnectors.js',
+  [
+    '@signalwire/docusaurus-plugin-llms-txt',
+    {
+      siteTitle: 'docs.airbyte.com llms.txt',
+      siteDescription: 'Airbyte is an open source platform designed for building and managing data pipelines, offering extensive connector options to facilitate data movement from various sources to destinations efficiently and effectively.',
+      depth: 4,
+      content: [Object]
+    }
+  ],
+  '/Users/letiescanciano/Airbyte/airbyte/docusaurus/src/plugins/yamlLoader.js'
+]
+gen-api-docs::pluginConfig {
+  id: 'embedded-api',
+  docsPluginId: 'embedded-api-docs',
+  config: {
+    'embedded-api': {
+      specPath: 'src/data/embedded_api_spec.json',
+      outputDir: 'api-docs/embedded-api',
+      sidebarOptions: [Object]
+    }
+  }
+}
+gen-api-docs::pluginConfig embedded-api
+generateSidebarSlice docPath api-docs/embedded-api
+outputDir api-docs/embedded-api
+docPath api-docs/embedded-api
+outputDir.split(docPath) [ '', '' ]
+outputDir.split(docPath)[1] 
+basePath 
+Successfully created "api-docs/embedded-api/sidebar.ts"
+Successfully created "api-docs/embedded-api/sonar.info.mdx"
+Successfully created "api-docs/embedded-api/get-agents-demo-agent.api.mdx"
+Successfully created "api-docs/embedded-api/create-agents-demo-agent.api.mdx"
+Successfully created "api-docs/embedded-api/create-agents-discovery.api.mdx"
+Successfully created "api-docs/embedded-api/deprecated-get-embedded-organizations-current-scoped.api.mdx"
+Successfully created "api-docs/embedded-api/create-embedded-scoped-token.api.mdx"
+Successfully created "api-docs/embedded-api/deprecated-get-embedded-scoped-token-info.api.mdx"
+Successfully created "api-docs/embedded-api/get-embedded-scoped-token-info.api.mdx"
+Successfully created "api-docs/embedded-api/deprecated-list-embedded-source-templates.api.mdx"
+Successfully created "api-docs/embedded-api/list-embedded-source-templates.api.mdx"
+Successfully created "api-docs/embedded-api/get-embedded-source-templates-id.api.mdx"
+Successfully created "api-docs/embedded-api/create-embedded-sources.api.mdx"
+Successfully created "api-docs/embedded-api/list-embedded-sources.api.mdx"
+Successfully created "api-docs/embedded-api/create-embedded-sources-check.api.mdx"
+Successfully created "api-docs/embedded-api/get-embedded-sources-check-id-status.api.mdx"
+Successfully created "api-docs/embedded-api/get-embedded-sources-id.api.mdx"
+Successfully created "api-docs/embedded-api/update-embedded-sources-id.api.mdx"
+Successfully created "api-docs/embedded-api/delete-embedded-sources-id.api.mdx"
+Successfully created "api-docs/embedded-api/create-embedded-widget-token.api.mdx"
+Successfully created "api-docs/embedded-api/list-integrations-definitions-destinations.api.mdx"
+Successfully created "api-docs/embedded-api/get-integrations-definitions-destinations-id.api.mdx"
+Successfully created "api-docs/embedded-api/get-integrations-definitions-sources-id.api.mdx"
+Successfully created "api-docs/embedded-api/create-integrations-definitions-sources-source-definition-id-catalog.api.mdx"
+Successfully created "api-docs/embedded-api/delete-integrations-definitions-sources-source-definition-id-catalog.api.mdx"
+Successfully created "api-docs/embedded-api/get-integrations-definitions-sources-source-definition-id-catalog.api.mdx"
+Successfully created "api-docs/embedded-api/list-integrations-destinations.api.mdx"
+Successfully created "api-docs/embedded-api/get-integrations-destinations-id.api.mdx"
+Successfully created "api-docs/embedded-api/create-integrations-sources.api.mdx"
+Successfully created "api-docs/embedded-api/list-integrations-sources.api.mdx"
+Successfully created "api-docs/embedded-api/create-integrations-sources-check.api.mdx"
+Successfully created "api-docs/embedded-api/get-integrations-sources-check-id-status.api.mdx"
+Successfully created "api-docs/embedded-api/get-integrations-sources-id.api.mdx"
+Successfully created "api-docs/embedded-api/update-integrations-sources-id.api.mdx"
+Successfully created "api-docs/embedded-api/delete-integrations-sources-id.api.mdx"
+Successfully created "api-docs/embedded-api/get-integrations-sources-id-discover.api.mdx"
+Successfully created "api-docs/embedded-api/list-integrations-templates-connections.api.mdx"
+Successfully created "api-docs/embedded-api/create-integrations-templates-connections.api.mdx"
+Successfully created "api-docs/embedded-api/get-integrations-templates-connections-id.api.mdx"
+Successfully created "api-docs/embedded-api/delete-integrations-templates-connections-id.api.mdx"
+Successfully created "api-docs/embedded-api/update-integrations-templates-connections-id.api.mdx"
+Successfully created "api-docs/embedded-api/create-integrations-templates-connections-id-tags.api.mdx"
+Successfully created "api-docs/embedded-api/delete-integrations-templates-connections-id-tags-tag-name.api.mdx"
+Successfully created "api-docs/embedded-api/create-integrations-templates-sources.api.mdx"
+Successfully created "api-docs/embedded-api/list-integrations-templates-sources.api.mdx"
+Successfully created "api-docs/embedded-api/list-integrations-templates-sources-global.api.mdx"
+Successfully created "api-docs/embedded-api/update-integrations-templates-sources-id.api.mdx"
+Successfully created "api-docs/embedded-api/get-integrations-templates-sources-id.api.mdx"
+Successfully created "api-docs/embedded-api/delete-integrations-templates-sources-id.api.mdx"
+Successfully created "api-docs/embedded-api/create-integrations-templates-sources-id-tags.api.mdx"
+Successfully created "api-docs/embedded-api/delete-integrations-templates-sources-id-tags-tag-name.api.mdx"
+Successfully created "api-docs/embedded-api/create-integrations-templates-tags.api.mdx"
+Successfully created "api-docs/embedded-api/list-integrations-templates-tags.api.mdx"
+Successfully created "api-docs/embedded-api/update-integrations-templates-tags-name.api.mdx"
+Successfully created "api-docs/embedded-api/delete-integrations-templates-tags-name.api.mdx"
+Successfully created "api-docs/embedded-api/create-internal-account-applications.api.mdx"
+Successfully created "api-docs/embedded-api/create-internal-account-applications-token.api.mdx"
+Successfully created "api-docs/embedded-api/list-internal-account-organizations.api.mdx"
+Successfully created "api-docs/embedded-api/create-internal-account-organizations-id-onboarding-progress.api.mdx"
+Successfully created "api-docs/embedded-api/get-internal-health-check.api.mdx"
+Successfully created "api-docs/embedded-api/list-internal-integrations-definitions-destinations-wrapped.api.mdx"
+Successfully created "api-docs/embedded-api/get-internal-integrations-definitions-destinations-wrapped-id.api.mdx"
+Successfully created "api-docs/embedded-api/create-internal-oauth-mcp-code.api.mdx"
+Successfully created "api-docs/embedded-api/create-internal-oauth-mcp-registration.api.mdx"
+Successfully created "api-docs/embedded-api/create-internal-oauth-mcp-token.api.mdx"
+Successfully created "api-docs/embedded-api/create-internal-oauth-sources-complete.api.mdx"
+Successfully created "api-docs/embedded-api/create-internal-oauth-sources-get-embedded-consent-url.api.mdx"
+Successfully created "api-docs/embedded-api/create-internal-oauth-sources-revoke.api.mdx"
+Successfully created "api-docs/embedded-api/deprecated-get-sonar-apis.api.mdx"
+Successfully created "api-docs/embedded-api/create-sonar-apis-source-id-request.api.mdx"
+Successfully created "api-docs/embedded-api/get-sonar-files-sources.api.mdx"
+Successfully created "api-docs/embedded-api/get-sonar-files-source-id-drives.api.mdx"
+Successfully created "api-docs/embedded-api/get-sonar-files-source-id-drives-drive-id-get-path-path.api.mdx"
+Successfully created "api-docs/embedded-api/list-sonar-files-source-id-drives-drive-id-list-path-path.api.mdx"
+Successfully created "api-docs/embedded-api/get-sonar-files-source-id-get-path-path.api.mdx"
+Successfully created "api-docs/embedded-api/list-sonar-files-source-id-list-path-path.api.mdx"
+Successfully created "api-docs/embedded-api/create-tools-destinations.api.mdx"
+Successfully created "api-docs/embedded-api/update-tools-destinations-id.api.mdx"
+Successfully created "api-docs/embedded-api/create-tools-sources.api.mdx"
+Successfully created "api-docs/embedded-api/update-tools-sources-id.api.mdx"
+Successfully created "api-docs/embedded-api/list-tools-workspaces.api.mdx"
+Successfully created "api-docs/embedded-api/embedded.tag.mdx"
+Successfully created "api-docs/embedded-api/sonar-ap-is.tag.mdx"
+Successfully created "api-docs/embedded-api/sonar-files.tag.mdx"
+Successfully created "api-docs/embedded-api/sources.tag.mdx"
+Successfully created "api-docs/embedded-api/template-connections.tag.mdx"
+Successfully created "api-docs/embedded-api/template-sources.tag.mdx"
+fetched 634 connectors from registry
+📁 Found previous spec version: 0.9.0
+🔄 Attempting to fetch latest embedded API spec...
+Fetching embedded API spec...
+🔍 Validating OpenAPI spec with @seriousme/openapi-schema-validator...
+✅ OpenAPI spec validation passed!
+📋 OpenAPI version: 3.1
+⚠️  Operations reference undefined tags (will be uncategorized): Agents, Agents - Discovery, Destinations Definitions, Sources Definitions, Destinations, Template Tags, Applications, Organizations, Health, Internal Destinations Definitions, OAuth, OAuth - Sources, Tool Wrappers - Destinations, Tool Wrappers - Sources, Tool Wrappers - Workspaces
+✅ Documentation-specific validations passed
+🏷️  Tags: 6 defined, all have operations (will appear in docs)
+🏷️  Additional tags: 15 used by operations but not formally defined
+📊 Spec stats: 61 paths, 6 tags, 79 operations
+✅ Embedded API spec processed and saved to /Users/letiescanciano/Airbyte/airbyte/docusaurus/src/data/embedded_api_spec.json
+src/data/embedded_api_spec.json 163ms
+
+> docu@0.0.0 gen-airbyte-api-docs /Users/letiescanciano/Airbyte/airbyte/docusaurus
+> pnpm run docusaurus clean-api-docs airbyte-api --plugin-id airbyte-api && pnpm run docusaurus gen-api-docs airbyte-api --plugin-id airbyte-api
+
+
+> docu@0.0.0 docusaurus /Users/letiescanciano/Airbyte/airbyte/docusaurus
+> docusaurus "clean-api-docs" "airbyte-api" "--plugin-id" "airbyte-api"
+
+
+ ------------------------------------------------------------------------------                                                                                                          Update available 3.8.1 → 3.9.0                                                                                                                 To upgrade Docusaurus packages with the latest version, run the                                       following command:                                        `npm i @docusaurus/core@latest @docusaurus/cssnano-preset@latest                @docusaurus/faster@latest @docusaurus/module-type-aliases@latest               @docusaurus/plugin-debug@latest @docusaurus/plugin-sitemap@latest               @docusaurus/preset-classic@latest @docusaurus/theme-classic@latest               @docusaurus/theme-common@latest @docusaurus/theme-mermaid@latest               @docusaurus/theme-search-algolia@latest @docusaurus/types@latest`                                                                                         ------------------------------------------------------------------------------ 
+
+Fetching connector registry...
+(node:28676) ExperimentalWarning: CommonJS module /Users/letiescanciano/Airbyte/airbyte/docusaurus/src/remark/docsHeaderDecoration.js is loading ES Module /Users/letiescanciano/Airbyte/airbyte/docusaurus/node_modules/.pnpm/unist-util-visit@5.0.0/node_modules/unist-util-visit/index.js using require().
+Support for loading ES Module in require() is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+plugins [
+  [
+    '@docusaurus/plugin-content-docs',
+    {
+      id: 'platform',
+      path: '../docs/platform',
+      routeBasePath: '/platform',
+      sidebarPath: './sidebar-platform.js',
+      editUrl: [Function: editUrl],
+      remarkPlugins: [Array]
+    }
+  ],
+  [
+    '@docusaurus/plugin-content-docs',
+    {
+      id: 'ai-agents',
+      path: '../docs/ai-agents',
+      routeBasePath: '/ai-agents',
+      sidebarPath: './sidebar-ai-agents.js',
+      editUrl: 'https://github.com/airbytehq/airbyte/blob/master/docs',
+      remarkPlugins: [Array]
+    }
+  ],
+  [
+    '@docusaurus/plugin-content-docs',
+    {
+      id: 'release_notes',
+      path: '../docs/release_notes',
+      routeBasePath: '/release_notes',
+      sidebarPath: './sidebar-release_notes.js',
+      editUrl: 'https://github.com/airbytehq/airbyte/blob/master/docs',
+      remarkPlugins: [Array]
+    }
+  ],
+  [
+    '@docusaurus/plugin-content-docs',
+    {
+      id: 'connectors',
+      path: '../docs/integrations',
+      routeBasePath: '/integrations',
+      sidebarPath: './sidebar-connectors.js',
+      editUrl: 'https://github.com/airbytehq/airbyte/blob/master/docs',
+      beforeDefaultRemarkPlugins: [Array],
+      remarkPlugins: [Array]
+    }
+  ],
+  [
+    '@docusaurus/plugin-content-docs',
+    {
+      id: 'embedded-api-docs',
+      path: 'api-docs/embedded-api',
+      routeBasePath: '/embedded-api/',
+      docItemComponent: '@theme/ApiItem',
+      sidebarItemsGenerator: [AsyncFunction: sidebarItemsGenerator]
+    }
+  ],
+  [
+    'docusaurus-plugin-openapi-docs',
+    {
+      id: 'embedded-api',
+      docsPluginId: 'embedded-api-docs',
+      config: [Object]
+    }
+  ],
+  [
+    '@docusaurus/plugin-content-docs',
+    {
+      id: 'airbyte-api-docs-content',
+      path: 'api-docs/airbyte-api',
+      routeBasePath: '/airbyte-api',
+      docItemComponent: '@theme/ApiItem',
+      sidebarItemsGenerator: [AsyncFunction: sidebarItemsGenerator]
+    }
+  ],
+  [
+    'docusaurus-plugin-openapi-docs',
+    {
+      id: 'airbyte-api',
+      docsPluginId: 'airbyte-api-docs-content',
+      config: [Object]
+    }
+  ],
+  '/Users/letiescanciano/Airbyte/airbyte/docusaurus/src/plugins/enterpriseConnectors.js',
+  [
+    '@signalwire/docusaurus-plugin-llms-txt',
+    {
+      siteTitle: 'docs.airbyte.com llms.txt',
+      siteDescription: 'Airbyte is an open source platform designed for building and managing data pipelines, offering extensive connector options to facilitate data movement from various sources to destinations efficiently and effectively.',
+      depth: 4,
+      content: [Object]
+    }
+  ],
+  '/Users/letiescanciano/Airbyte/airbyte/docusaurus/src/plugins/yamlLoader.js'
+]
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/accept-user-invitation.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/apply-schema-change-for-connection.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/application-token-request.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/assist-v-1-process.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/apply-schema-change-for-source.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/assist-v-1-warm.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/auto-disable-connection.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/backfill-connection-events.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/backfill-usage.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/cancel-command.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/cancel-job.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/cancel-subscription.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/cancel-user-invitation.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/check-connection-to-destination-for-update.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/check-connection-to-destination.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/check-connection-to-source-for-update.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/check-connection-to-source.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/check-contribution.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/check-entitlement.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/check-operation.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/check-permissions-across-multiple-workspaces.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/check-permissions.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/clear-connection-stream.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/clear-connection.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/complete-connector-builder-project-oauth.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/complete-destination-o-auth.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/complete-source-o-auth.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/create-application.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/create-connection.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/create-connector-builder-project.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/create-custom-destination-definition.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/create-custom-source-definition.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/create-dataplane.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/create-dataplane-group.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/create-declarative-source-definition-manifest.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/create-destination.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/create-forked-connector-builder-project.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/create-job.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/create-new-attempt-number.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/create-or-update-organization-o-auth-credentials.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/create-operation.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/create-or-update-state-safe.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/create-or-update-workspace-o-auth-credentials.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/create-or-update-state.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/create-or-update-secrets-persistence-config.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/create-or-update.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/create-orchestration.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/create-organization.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/create-partial-user-config.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/create-permission.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/create-secret-storage.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/create-scoped-configuration.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/create-source.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/create-sso-config.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/create-stream-status.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/create-tag.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/create-user-invitation.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/create-workspace-if-not-exist.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/create-workspace.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/decline-user-invitation.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/delete-application.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/delete-connection.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/delete-dataplane-group.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/delete-connector-builder-project.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/delete-dataplane.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/delete-destination-definition.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/delete-destination.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/delete-operation.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/delete-orchestration.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/delete-organization.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/delete-scoped-configuration.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/delete-permission.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/delete-partial-user-config.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/delete-secret-storage.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/delete-source-definition.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/delete-source.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/delete-sso-config.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/delete-stream-reset-records-for-job.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/delete-tag.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/delete-user-from-workspace.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/delete-user.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/delete-workspace.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/did-previous-job-succeed.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/discover-catalog-for-destination.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/discover-schema-for-source.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/disable-delinquent-workspaces.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/do-connector-rollout.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/end-grace-period.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/evaluate-outlier.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/execute-source-check-connection.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/execute-source-discover-schema.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/execute-destination-check-connection.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/explain-job.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/fail-attempt.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/fail-non-terminal-jobs.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/finalize-connector-rollout.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/finalize-job.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/full-resolve-manifest-builder-project.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/generate-contribution.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/generate-diagnostic-report.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/generate-embedded-scoped-token.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-actor-definition-version-default.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-actor-definition-version-for-destination-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-actor-definition-version-for-source-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-attempt-combined-stats.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-attempt-for-job.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-available-dbt-jobs-for-workspace.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-catalog-for-connection.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-check-command-output.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-command-status.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-command.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-config-template.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-connection-context.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-connection-data-history.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-connection-event.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-connection-for-job.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-connection-last-job-per-stream.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-connection-sync-progress.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-connection-statuses.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-connection-stream-history.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-connection-uptime-history.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-connection.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-connector-builder-capabilities.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-connector-builder-project-id-for-definition-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-connector-builder-project-o-auth-consent.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-connector-builder-project.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-connector-rollout-actor-sync-info.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-connector-documentation.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-connector-rollout-by-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-connector-rollouts-list-all.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-connector-rollouts-list-by-actor-definition-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-customer-portal-link.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-dataplane-token.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-declarative-manifest-base-image.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-destination-definition-for-scope.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-destination-definition-for-workspace.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-destination-definition-specification.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-destination-definition.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-destination-o-auth-consent.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-destination.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-documentation.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-embedded-source-o-auth-consent.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-embedded-widget.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-entitlements.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-connector-rollouts-list.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-instance-configuration.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-job-debug-info.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-job-info-light.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-job-info-without-logs.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-job-info.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-deployment-metadata.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-discover-command-output.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-job-input.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-job.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-last-replication-job-with-cancel.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-most-recent-source-actor-catalog.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-last-replication-job.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-health-check.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-open-api-spec.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-operation.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-or-create-user-by-auth-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-orchestration.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-organization-payment-config.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-org-info.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-organization-info.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-organization-trial-status.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-organization-usage.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-payment-information.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-partial-user-config.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-organization.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-scoped-configuration-by-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-permission.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-replicate-command-output.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-scoped-configuration-context.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-scoped-configurations-list.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-secret-storage.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-secrets-persistence-config.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-service-account-token.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-source-definition-for-scope.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-source-definition-for-workspace.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-source-definition-specification.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-source-definition.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-source.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-sso-config.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-source-o-auth-consent.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-specification-for-destination-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-specification-for-source-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-state-type.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-state.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-stream-properties.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-stream-statuses-by-run-state.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-stream-statuses.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-subscription-info.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-user-by-auth-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-user-by-email.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-user-invitation.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-user.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-webapp-config.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-webhook-config.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-workspace-by-connection-id-with-tombstone.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-workspace-by-connection-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-workspace-by-slug.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-workspace-usage.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get-workspace.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/get.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/grant-destination-definition.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/grant-source-definition.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/handle-webhook.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/heartbeat-dataplane.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/initiate-o-auth.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/initialize-dataplane.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/job-failure.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/license-info.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/job-success-with-attempt-number.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-all-connections-for-workspace.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-applications.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-access-info-by-workspace-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-config-templates.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-connection-events-for-job.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-connection-events-minimal.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-connection-events.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-connections-by-actor-definition.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-connections-for-workspace.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-connections-for-workspaces-paginated.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-connections.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-connector-definitions.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-connector-builder-projects.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-dataplane-groups.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-dataplanes.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-declarative-manifests.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-destination-definitions-for-workspace.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-destination-definitions.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-destinations-for-workspace.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-destinations-for-workspaces-paginated.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-destinations.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-embedded-organizations-by-user.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-enterprise-destination-stubs-for-workspace.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-enterprise-source-stubs-for-workspace.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-enterprise-source-stubs.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-instance-admin-users.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-jobs-for-workspaces.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-jobs-for.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-latest-destination-definitions.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-jobs.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-latest-source-definitions.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-operations-for-connection.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-orchestrations-for-workspace.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-organization-summaries.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-organizations-by-user.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-partial-user-configs.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-past-invoices.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-pending-invitations.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-permissions-by-user.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-private-destination-definitions.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-private-source-definitions.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-secret-storage.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-source-definitions-for-workspace.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-source-definitions.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-sources-for-workspace-paginated.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-sources-for-workspace.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-sources.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-tags.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-users-in-organization.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-workspaces-by-user.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-workspaces-in-organization.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/list-workspaces-paginated.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/manual-do-connector-rollout.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/manual-finalize-connector-rollout.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/manual-pause-connector-rollout.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/manual-start-connector-rollout.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/oauth-callback.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/migrate-secret-storage.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/partial-update-source.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/partial-update-destination.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/patch-connection.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/patch-destination.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/patch-source.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/persist-job-cancellation.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/postprocess-discovered-catalog-for-connection.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-cancel-job.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-create-application.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-create-config-template.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-create-connection.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-create-connection-template.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-create-dataplane.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-create-declarative-source-definition.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-create-destination.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-create-destination-definition.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-create-permission.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-create-job.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-create-region.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-create-source-definition.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-create-source.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-create-tag.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-create-workspace.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-delete-application.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-delete-connection.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-delete-dataplane.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-delete-destination-definition.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-delete-destination.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-delete-source-definition.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-delete-region.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-delete-source.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-delete-workspace.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-get-access-token.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-get-application.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-delete-declarative-source-definition.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-delete-permission.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-get-config-template.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-get-connection.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-delete-tag.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-get-dataplane.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-get-declarative-source-definition.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-get-destination-definition.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-get-destination.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-get-health-check.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-get-permission.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-get-region.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-get-source-definition.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-get-source.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-get-tag.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-get-workspace.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-list-applications.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-list-config-template.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-list-dataplanes.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-list-declarative-source-definitions.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-list-destination-definitions.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-list-organizations-for-user.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-list-permissions-by-user-id.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-list-regions.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-list-source-definitions.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-list-tags.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-update-config-template.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-list-users-within-an-organization.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-list-workspaces.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-update-declarative-source-definition.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-update-dataplane.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-update-destination-definition.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-update-permission.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-update-region.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-update-source-definition.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-update-workspace.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/publish-connector-builder-project.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/public-update-tag.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/put-destination.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/put-source.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/read-connector-builder-project-stream.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/refresh-connection-stream.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/report-job-start.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/reset-connection-stream.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/resolve-actor-definition-version-by-tag.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/reset-connection.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/resolve-manifest-builder-project.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/revoke-destination-definition.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/revoke-source-definition.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/revoke-source-o-auth-tokens.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/run-orchestration.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/run-check-command.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/run-discover-command.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/run-replicate-command.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/save-stats.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/save-stream-metadata.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/save-sync-config.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/search-destinations.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/search-sources.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/search-connections.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/set-instancewide-destination-oauth-params.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/set-instancewide-source-oauth-params.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/setup-instance-configuration.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/signal.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/start-connector-rollout.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/sync-connection.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/try-notification-webhook-config.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/unschedule-cancel-subscription.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/update-connection.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/try-notification-config.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/update-connector-builder-project-testing-values.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/update-connection-with-reason.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/update-connector-builder-project.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/update-dataplane-group.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/update-declarative-manifest-version.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/update-destination-definition.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/update-connector-rollout-state.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/update-destination.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/update-dataplane.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/update-operation.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/update-orchestration.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/update-organization-payment-config.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/update-organization.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/update-partial-user-config.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/update-scoped-configuration.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/update-source-definition.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/update-permission.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/update-source.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/update-sso-credentials.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/update-stream-status.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/update-tag.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/update-user.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/update-workspace-feedback.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/update-workspace-name.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/update-workspace-organization.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/update-workspace.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/upgrade-destination-version.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/upgrade-source-version.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/web-backend-check-updates.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/web-backend-create-connection.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/web-backend-describe-cron-expression.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/web-backend-get-connection-status-counts.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/web-backend-get-connection.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/web-backend-get-workspace-state.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/web-backend-list-connections-for-workspace.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/web-backend-update-connection.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/web-backend-validate-mappers.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/write-destination-discover-catalog-result.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/write-workload-output.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/write-discover-catalog-result.api.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/airbyte-configuration-api.info.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/airbyte-sources-api.info.mdx"
+Cleanup succeeded for "/Users/letiescanciano/Airbyte/airbyte/docusaurus/api-docs/airbyte-api/sidebar.ts"
+fetched 634 connectors from registry
+
+> docu@0.0.0 docusaurus /Users/letiescanciano/Airbyte/airbyte/docusaurus
+> docusaurus "gen-api-docs" "airbyte-api" "--plugin-id" "airbyte-api"
+
+
+ ------------------------------------------------------------------------------                                                                                                          Update available 3.8.1 → 3.9.0                                                                                                                 To upgrade Docusaurus packages with the latest version, run the                                       following command:                                        `npm i @docusaurus/core@latest @docusaurus/cssnano-preset@latest                @docusaurus/faster@latest @docusaurus/module-type-aliases@latest               @docusaurus/plugin-debug@latest @docusaurus/plugin-sitemap@latest               @docusaurus/preset-classic@latest @docusaurus/theme-classic@latest               @docusaurus/theme-common@latest @docusaurus/theme-mermaid@latest               @docusaurus/theme-search-algolia@latest @docusaurus/types@latest`                                                                                         ------------------------------------------------------------------------------ 
+
+Fetching connector registry...
+(node:28761) ExperimentalWarning: CommonJS module /Users/letiescanciano/Airbyte/airbyte/docusaurus/src/remark/docsHeaderDecoration.js is loading ES Module /Users/letiescanciano/Airbyte/airbyte/docusaurus/node_modules/.pnpm/unist-util-visit@5.0.0/node_modules/unist-util-visit/index.js using require().
+Support for loading ES Module in require() is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+gen-api-docs::plugin-id airbyte-api
+plugins [
+  [
+    '@docusaurus/plugin-content-docs',
+    {
+      id: 'platform',
+      path: '../docs/platform',
+      routeBasePath: '/platform',
+      sidebarPath: './sidebar-platform.js',
+      editUrl: [Function: editUrl],
+      remarkPlugins: [Array]
+    }
+  ],
+  [
+    '@docusaurus/plugin-content-docs',
+    {
+      id: 'ai-agents',
+      path: '../docs/ai-agents',
+      routeBasePath: '/ai-agents',
+      sidebarPath: './sidebar-ai-agents.js',
+      editUrl: 'https://github.com/airbytehq/airbyte/blob/master/docs',
+      remarkPlugins: [Array]
+    }
+  ],
+  [
+    '@docusaurus/plugin-content-docs',
+    {
+      id: 'release_notes',
+      path: '../docs/release_notes',
+      routeBasePath: '/release_notes',
+      sidebarPath: './sidebar-release_notes.js',
+      editUrl: 'https://github.com/airbytehq/airbyte/blob/master/docs',
+      remarkPlugins: [Array]
+    }
+  ],
+  [
+    '@docusaurus/plugin-content-docs',
+    {
+      id: 'connectors',
+      path: '../docs/integrations',
+      routeBasePath: '/integrations',
+      sidebarPath: './sidebar-connectors.js',
+      editUrl: 'https://github.com/airbytehq/airbyte/blob/master/docs',
+      beforeDefaultRemarkPlugins: [Array],
+      remarkPlugins: [Array]
+    }
+  ],
+  [
+    '@docusaurus/plugin-content-docs',
+    {
+      id: 'embedded-api-docs',
+      path: 'api-docs/embedded-api',
+      routeBasePath: '/embedded-api/',
+      docItemComponent: '@theme/ApiItem',
+      sidebarItemsGenerator: [AsyncFunction: sidebarItemsGenerator]
+    }
+  ],
+  [
+    'docusaurus-plugin-openapi-docs',
+    {
+      id: 'embedded-api',
+      docsPluginId: 'embedded-api-docs',
+      config: [Object]
+    }
+  ],
+  [
+    '@docusaurus/plugin-content-docs',
+    {
+      id: 'airbyte-api-docs-content',
+      path: 'api-docs/airbyte-api',
+      routeBasePath: '/airbyte-api',
+      docItemComponent: '@theme/ApiItem',
+      sidebarItemsGenerator: [AsyncFunction: sidebarItemsGenerator]
+    }
+  ],
+  [
+    'docusaurus-plugin-openapi-docs',
+    {
+      id: 'airbyte-api',
+      docsPluginId: 'airbyte-api-docs-content',
+      config: [Object]
+    }
+  ],
+  '/Users/letiescanciano/Airbyte/airbyte/docusaurus/src/plugins/enterpriseConnectors.js',
+  [
+    '@signalwire/docusaurus-plugin-llms-txt',
+    {
+      siteTitle: 'docs.airbyte.com llms.txt',
+      siteDescription: 'Airbyte is an open source platform designed for building and managing data pipelines, offering extensive connector options to facilitate data movement from various sources to destinations efficiently and effectively.',
+      depth: 4,
+      content: [Object]
+    }
+  ],
+  '/Users/letiescanciano/Airbyte/airbyte/docusaurus/src/plugins/yamlLoader.js'
+]
+gen-api-docs::pluginConfig {
+  id: 'airbyte-api',
+  docsPluginId: 'airbyte-api-docs-content',
+  config: {
+    'airbyte-api': {
+      specPath: 'src/data/airbyte-api',
+      outputDir: 'api-docs/airbyte-api',
+      sidebarOptions: [Object]
+    }
+  }
+}
+gen-api-docs::pluginConfig airbyte-api
+generateSidebarSlice docPath api-docs/airbyte-api
+outputDir api-docs/airbyte-api
+docPath api-docs/airbyte-api
+outputDir.split(docPath) [ '', '' ]
+outputDir.split(docPath)[1] 
+basePath 
+Successfully created "api-docs/airbyte-api/sidebar.ts"
+Successfully created "api-docs/airbyte-api/airbyte-configuration-api.info.mdx"
+Successfully created "api-docs/airbyte-api/create-workspace.api.mdx"
+Successfully created "api-docs/airbyte-api/create-workspace-if-not-exist.api.mdx"
+Successfully created "api-docs/airbyte-api/delete-workspace.api.mdx"
+Successfully created "api-docs/airbyte-api/list-workspaces-paginated.api.mdx"
+Successfully created "api-docs/airbyte-api/list-workspaces-in-organization.api.mdx"
+Successfully created "api-docs/airbyte-api/list-workspaces-by-user.api.mdx"
+Successfully created "api-docs/airbyte-api/get-available-dbt-jobs-for-workspace.api.mdx"
+Successfully created "api-docs/airbyte-api/get-workspace.api.mdx"
+Successfully created "api-docs/airbyte-api/get-workspace-by-slug.api.mdx"
+Successfully created "api-docs/airbyte-api/get-workspace-by-connection-id.api.mdx"
+Successfully created "api-docs/airbyte-api/get-workspace-by-connection-id-with-tombstone.api.mdx"
+Successfully created "api-docs/airbyte-api/get-organization-info.api.mdx"
+Successfully created "api-docs/airbyte-api/update-workspace.api.mdx"
+Successfully created "api-docs/airbyte-api/update-workspace-name.api.mdx"
+Successfully created "api-docs/airbyte-api/update-workspace-organization.api.mdx"
+Successfully created "api-docs/airbyte-api/get-workspace-usage.api.mdx"
+Successfully created "api-docs/airbyte-api/update-workspace-feedback.api.mdx"
+Successfully created "api-docs/airbyte-api/try-notification-config.api.mdx"
+Successfully created "api-docs/airbyte-api/try-notification-webhook-config.api.mdx"
+Successfully created "api-docs/airbyte-api/update-source-definition.api.mdx"
+Successfully created "api-docs/airbyte-api/list-source-definitions.api.mdx"
+Successfully created "api-docs/airbyte-api/list-latest-source-definitions.api.mdx"
+Successfully created "api-docs/airbyte-api/get-source-definition.api.mdx"
+Successfully created "api-docs/airbyte-api/delete-source-definition.api.mdx"
+Successfully created "api-docs/airbyte-api/list-private-source-definitions.api.mdx"
+Successfully created "api-docs/airbyte-api/list-source-definitions-for-workspace.api.mdx"
+Successfully created "api-docs/airbyte-api/list-enterprise-source-stubs.api.mdx"
+Successfully created "api-docs/airbyte-api/list-enterprise-source-stubs-for-workspace.api.mdx"
+Successfully created "api-docs/airbyte-api/create-custom-source-definition.api.mdx"
+Successfully created "api-docs/airbyte-api/get-source-definition-for-workspace.api.mdx"
+Successfully created "api-docs/airbyte-api/get-source-definition-for-scope.api.mdx"
+Successfully created "api-docs/airbyte-api/grant-source-definition.api.mdx"
+Successfully created "api-docs/airbyte-api/revoke-source-definition.api.mdx"
+Successfully created "api-docs/airbyte-api/get-actor-definition-version-for-source-id.api.mdx"
+Successfully created "api-docs/airbyte-api/get-source-definition-specification.api.mdx"
+Successfully created "api-docs/airbyte-api/get-specification-for-source-id.api.mdx"
+Successfully created "api-docs/airbyte-api/resolve-actor-definition-version-by-tag.api.mdx"
+Successfully created "api-docs/airbyte-api/get-actor-definition-version-default.api.mdx"
+Successfully created "api-docs/airbyte-api/create-declarative-source-definition-manifest.api.mdx"
+Successfully created "api-docs/airbyte-api/update-declarative-manifest-version.api.mdx"
+Successfully created "api-docs/airbyte-api/list-declarative-manifests.api.mdx"
+Successfully created "api-docs/airbyte-api/create-connector-builder-project.api.mdx"
+Successfully created "api-docs/airbyte-api/publish-connector-builder-project.api.mdx"
+Successfully created "api-docs/airbyte-api/get-declarative-manifest-base-image.api.mdx"
+Successfully created "api-docs/airbyte-api/update-connector-builder-project.api.mdx"
+Successfully created "api-docs/airbyte-api/delete-connector-builder-project.api.mdx"
+Successfully created "api-docs/airbyte-api/list-connector-builder-projects.api.mdx"
+Successfully created "api-docs/airbyte-api/get-connector-builder-project.api.mdx"
+Successfully created "api-docs/airbyte-api/get-connector-builder-project-id-for-definition-id.api.mdx"
+Successfully created "api-docs/airbyte-api/update-connector-builder-project-testing-values.api.mdx"
+Successfully created "api-docs/airbyte-api/read-connector-builder-project-stream.api.mdx"
+Successfully created "api-docs/airbyte-api/full-resolve-manifest-builder-project.api.mdx"
+Successfully created "api-docs/airbyte-api/resolve-manifest-builder-project.api.mdx"
+Successfully created "api-docs/airbyte-api/get-connector-builder-capabilities.api.mdx"
+Successfully created "api-docs/airbyte-api/create-forked-connector-builder-project.api.mdx"
+Successfully created "api-docs/airbyte-api/check-contribution.api.mdx"
+Successfully created "api-docs/airbyte-api/generate-contribution.api.mdx"
+Successfully created "api-docs/airbyte-api/assist-v-1-process.api.mdx"
+Successfully created "api-docs/airbyte-api/assist-v-1-warm.api.mdx"
+Successfully created "api-docs/airbyte-api/get-connector-documentation.api.mdx"
+Successfully created "api-docs/airbyte-api/create-source.api.mdx"
+Successfully created "api-docs/airbyte-api/update-source.api.mdx"
+Successfully created "api-docs/airbyte-api/partial-update-source.api.mdx"
+Successfully created "api-docs/airbyte-api/upgrade-source-version.api.mdx"
+Successfully created "api-docs/airbyte-api/list-sources-for-workspace.api.mdx"
+Successfully created "api-docs/airbyte-api/list-sources-for-workspace-paginated.api.mdx"
+Successfully created "api-docs/airbyte-api/get-source.api.mdx"
+Successfully created "api-docs/airbyte-api/get-most-recent-source-actor-catalog.api.mdx"
+Successfully created "api-docs/airbyte-api/search-sources.api.mdx"
+Successfully created "api-docs/airbyte-api/delete-source.api.mdx"
+Successfully created "api-docs/airbyte-api/check-connection-to-source.api.mdx"
+Successfully created "api-docs/airbyte-api/check-connection-to-source-for-update.api.mdx"
+Successfully created "api-docs/airbyte-api/discover-schema-for-source.api.mdx"
+Successfully created "api-docs/airbyte-api/apply-schema-change-for-source.api.mdx"
+Successfully created "api-docs/airbyte-api/write-discover-catalog-result.api.mdx"
+Successfully created "api-docs/airbyte-api/write-destination-discover-catalog-result.api.mdx"
+Successfully created "api-docs/airbyte-api/update-destination-definition.api.mdx"
+Successfully created "api-docs/airbyte-api/list-destination-definitions.api.mdx"
+Successfully created "api-docs/airbyte-api/list-latest-destination-definitions.api.mdx"
+Successfully created "api-docs/airbyte-api/get-destination-definition.api.mdx"
+Successfully created "api-docs/airbyte-api/delete-destination-definition.api.mdx"
+Successfully created "api-docs/airbyte-api/list-private-destination-definitions.api.mdx"
+Successfully created "api-docs/airbyte-api/list-destination-definitions-for-workspace.api.mdx"
+Successfully created "api-docs/airbyte-api/list-enterprise-destination-stubs-for-workspace.api.mdx"
+Successfully created "api-docs/airbyte-api/create-custom-destination-definition.api.mdx"
+Successfully created "api-docs/airbyte-api/get-destination-definition-for-workspace.api.mdx"
+Successfully created "api-docs/airbyte-api/get-destination-definition-for-scope.api.mdx"
+Successfully created "api-docs/airbyte-api/grant-destination-definition.api.mdx"
+Successfully created "api-docs/airbyte-api/revoke-destination-definition.api.mdx"
+Successfully created "api-docs/airbyte-api/get-actor-definition-version-for-destination-id.api.mdx"
+Successfully created "api-docs/airbyte-api/get-destination-definition-specification.api.mdx"
+Successfully created "api-docs/airbyte-api/get-specification-for-destination-id.api.mdx"
+Successfully created "api-docs/airbyte-api/create-destination.api.mdx"
+Successfully created "api-docs/airbyte-api/update-destination.api.mdx"
+Successfully created "api-docs/airbyte-api/partial-update-destination.api.mdx"
+Successfully created "api-docs/airbyte-api/upgrade-destination-version.api.mdx"
+Successfully created "api-docs/airbyte-api/list-destinations-for-workspace.api.mdx"
+Successfully created "api-docs/airbyte-api/list-destinations-for-workspaces-paginated.api.mdx"
+Successfully created "api-docs/airbyte-api/get-destination.api.mdx"
+Successfully created "api-docs/airbyte-api/discover-catalog-for-destination.api.mdx"
+Successfully created "api-docs/airbyte-api/get-catalog-for-connection.api.mdx"
+Successfully created "api-docs/airbyte-api/search-destinations.api.mdx"
+Successfully created "api-docs/airbyte-api/check-connection-to-destination.api.mdx"
+Successfully created "api-docs/airbyte-api/check-connection-to-destination-for-update.api.mdx"
+Successfully created "api-docs/airbyte-api/delete-destination.api.mdx"
+Successfully created "api-docs/airbyte-api/create-connection.api.mdx"
+Successfully created "api-docs/airbyte-api/update-connection.api.mdx"
+Successfully created "api-docs/airbyte-api/update-connection-with-reason.api.mdx"
+Successfully created "api-docs/airbyte-api/list-connections-for-workspace.api.mdx"
+Successfully created "api-docs/airbyte-api/list-connections-for-workspaces-paginated.api.mdx"
+Successfully created "api-docs/airbyte-api/list-all-connections-for-workspace.api.mdx"
+Successfully created "api-docs/airbyte-api/get-connection-statuses.api.mdx"
+Successfully created "api-docs/airbyte-api/get-connection-sync-progress.api.mdx"
+Successfully created "api-docs/airbyte-api/get-connection-uptime-history.api.mdx"
+Successfully created "api-docs/airbyte-api/get-connection-data-history.api.mdx"
+Successfully created "api-docs/airbyte-api/get-connection-stream-history.api.mdx"
+Successfully created "api-docs/airbyte-api/get-connection-event.api.mdx"
+Successfully created "api-docs/airbyte-api/list-connection-events.api.mdx"
+Successfully created "api-docs/airbyte-api/list-connection-events-minimal.api.mdx"
+Successfully created "api-docs/airbyte-api/backfill-connection-events.api.mdx"
+Successfully created "api-docs/airbyte-api/list-connection-events-for-job.api.mdx"
+Successfully created "api-docs/airbyte-api/get-connection-last-job-per-stream.api.mdx"
+Successfully created "api-docs/airbyte-api/get-connection.api.mdx"
+Successfully created "api-docs/airbyte-api/get-connection-for-job.api.mdx"
+Successfully created "api-docs/airbyte-api/list-connections-by-actor-definition.api.mdx"
+Successfully created "api-docs/airbyte-api/apply-schema-change-for-connection.api.mdx"
+Successfully created "api-docs/airbyte-api/postprocess-discovered-catalog-for-connection.api.mdx"
+Successfully created "api-docs/airbyte-api/get-connection-context.api.mdx"
+Successfully created "api-docs/airbyte-api/get-state.api.mdx"
+Successfully created "api-docs/airbyte-api/create-or-update-state.api.mdx"
+Successfully created "api-docs/airbyte-api/create-or-update-state-safe.api.mdx"
+Successfully created "api-docs/airbyte-api/search-connections.api.mdx"
+Successfully created "api-docs/airbyte-api/delete-connection.api.mdx"
+Successfully created "api-docs/airbyte-api/sync-connection.api.mdx"
+Successfully created "api-docs/airbyte-api/reset-connection.api.mdx"
+Successfully created "api-docs/airbyte-api/clear-connection.api.mdx"
+Successfully created "api-docs/airbyte-api/auto-disable-connection.api.mdx"
+Successfully created "api-docs/airbyte-api/clear-connection-stream.api.mdx"
+Successfully created "api-docs/airbyte-api/reset-connection-stream.api.mdx"
+Successfully created "api-docs/airbyte-api/refresh-connection-stream.api.mdx"
+Successfully created "api-docs/airbyte-api/check-operation.api.mdx"
+Successfully created "api-docs/airbyte-api/create-operation.api.mdx"
+Successfully created "api-docs/airbyte-api/update-operation.api.mdx"
+Successfully created "api-docs/airbyte-api/list-operations-for-connection.api.mdx"
+Successfully created "api-docs/airbyte-api/get-operation.api.mdx"
+Successfully created "api-docs/airbyte-api/delete-operation.api.mdx"
+Successfully created "api-docs/airbyte-api/execute-source-check-connection.api.mdx"
+Successfully created "api-docs/airbyte-api/execute-source-discover-schema.api.mdx"
+Successfully created "api-docs/airbyte-api/execute-destination-check-connection.api.mdx"
+Successfully created "api-docs/airbyte-api/set-instancewide-source-oauth-params.api.mdx"
+Successfully created "api-docs/airbyte-api/get-source-o-auth-consent.api.mdx"
+Successfully created "api-docs/airbyte-api/get-embedded-source-o-auth-consent.api.mdx"
+Successfully created "api-docs/airbyte-api/get-connector-builder-project-o-auth-consent.api.mdx"
+Successfully created "api-docs/airbyte-api/complete-source-o-auth.api.mdx"
+Successfully created "api-docs/airbyte-api/complete-connector-builder-project-oauth.api.mdx"
+Successfully created "api-docs/airbyte-api/revoke-source-o-auth-tokens.api.mdx"
+Successfully created "api-docs/airbyte-api/get-destination-o-auth-consent.api.mdx"
+Successfully created "api-docs/airbyte-api/complete-destination-o-auth.api.mdx"
+Successfully created "api-docs/airbyte-api/set-instancewide-destination-oauth-params.api.mdx"
+Successfully created "api-docs/airbyte-api/web-backend-check-updates.api.mdx"
+Successfully created "api-docs/airbyte-api/web-backend-validate-mappers.api.mdx"
+Successfully created "api-docs/airbyte-api/web-backend-list-connections-for-workspace.api.mdx"
+Successfully created "api-docs/airbyte-api/web-backend-get-connection-status-counts.api.mdx"
+Successfully created "api-docs/airbyte-api/web-backend-get-connection.api.mdx"
+Successfully created "api-docs/airbyte-api/web-backend-create-connection.api.mdx"
+Successfully created "api-docs/airbyte-api/web-backend-update-connection.api.mdx"
+Successfully created "api-docs/airbyte-api/web-backend-describe-cron-expression.api.mdx"
+Successfully created "api-docs/airbyte-api/get-state-type.api.mdx"
+Successfully created "api-docs/airbyte-api/web-backend-get-workspace-state.api.mdx"
+Successfully created "api-docs/airbyte-api/get-webapp-config.api.mdx"
+Successfully created "api-docs/airbyte-api/create-job.api.mdx"
+Successfully created "api-docs/airbyte-api/job-success-with-attempt-number.api.mdx"
+Successfully created "api-docs/airbyte-api/list-jobs-for.api.mdx"
+Successfully created "api-docs/airbyte-api/list-jobs-for-workspaces.api.mdx"
+Successfully created "api-docs/airbyte-api/get-job-info.api.mdx"
+Successfully created "api-docs/airbyte-api/get-last-replication-job.api.mdx"
+Successfully created "api-docs/airbyte-api/get-last-replication-job-with-cancel.api.mdx"
+Successfully created "api-docs/airbyte-api/get-job-info-without-logs.api.mdx"
+Successfully created "api-docs/airbyte-api/get-job-info-light.api.mdx"
+Successfully created "api-docs/airbyte-api/cancel-job.api.mdx"
+Successfully created "api-docs/airbyte-api/get-job-debug-info.api.mdx"
+Successfully created "api-docs/airbyte-api/get-job-input.api.mdx"
+Successfully created "api-docs/airbyte-api/fail-non-terminal-jobs.api.mdx"
+Successfully created "api-docs/airbyte-api/report-job-start.api.mdx"
+Successfully created "api-docs/airbyte-api/get-webhook-config.api.mdx"
+Successfully created "api-docs/airbyte-api/job-failure.api.mdx"
+Successfully created "api-docs/airbyte-api/delete-stream-reset-records-for-job.api.mdx"
+Successfully created "api-docs/airbyte-api/explain-job.api.mdx"
+Successfully created "api-docs/airbyte-api/evaluate-outlier.api.mdx"
+Successfully created "api-docs/airbyte-api/finalize-job.api.mdx"
+Successfully created "api-docs/airbyte-api/get-user.api.mdx"
+Successfully created "api-docs/airbyte-api/get-user-by-auth-id.api.mdx"
+Successfully created "api-docs/airbyte-api/get-user-by-email.api.mdx"
+Successfully created "api-docs/airbyte-api/get-or-create-user-by-auth-id.api.mdx"
+Successfully created "api-docs/airbyte-api/update-user.api.mdx"
+Successfully created "api-docs/airbyte-api/delete-user.api.mdx"
+Successfully created "api-docs/airbyte-api/list-access-info-by-workspace-id.api.mdx"
+Successfully created "api-docs/airbyte-api/list-users-in-organization.api.mdx"
+Successfully created "api-docs/airbyte-api/list-instance-admin-users.api.mdx"
+Successfully created "api-docs/airbyte-api/create-permission.api.mdx"
+Successfully created "api-docs/airbyte-api/get-permission.api.mdx"
+Successfully created "api-docs/airbyte-api/check-permissions.api.mdx"
+Successfully created "api-docs/airbyte-api/check-permissions-across-multiple-workspaces.api.mdx"
+Successfully created "api-docs/airbyte-api/update-permission.api.mdx"
+Successfully created "api-docs/airbyte-api/get-secrets-persistence-config.api.mdx"
+Successfully created "api-docs/airbyte-api/create-or-update-secrets-persistence-config.api.mdx"
+Successfully created "api-docs/airbyte-api/create-secret-storage.api.mdx"
+Successfully created "api-docs/airbyte-api/list-secret-storage.api.mdx"
+Successfully created "api-docs/airbyte-api/delete-secret-storage.api.mdx"
+Successfully created "api-docs/airbyte-api/get-secret-storage.api.mdx"
+Successfully created "api-docs/airbyte-api/migrate-secret-storage.api.mdx"
+Successfully created "api-docs/airbyte-api/delete-permission.api.mdx"
+Successfully created "api-docs/airbyte-api/delete-user-from-workspace.api.mdx"
+Successfully created "api-docs/airbyte-api/list-permissions-by-user.api.mdx"
+Successfully created "api-docs/airbyte-api/get-health-check.api.mdx"
+Successfully created "api-docs/airbyte-api/get-open-api-spec.api.mdx"
+Successfully created "api-docs/airbyte-api/create-new-attempt-number.api.mdx"
+Successfully created "api-docs/airbyte-api/save-stream-metadata.api.mdx"
+Successfully created "api-docs/airbyte-api/save-stats.api.mdx"
+Successfully created "api-docs/airbyte-api/save-sync-config.api.mdx"
+Successfully created "api-docs/airbyte-api/fail-attempt.api.mdx"
+Successfully created "api-docs/airbyte-api/get-attempt-combined-stats.api.mdx"
+Successfully created "api-docs/airbyte-api/get-attempt-for-job.api.mdx"
+Successfully created "api-docs/airbyte-api/get-stream-statuses.api.mdx"
+Successfully created "api-docs/airbyte-api/get-stream-statuses-by-run-state.api.mdx"
+Successfully created "api-docs/airbyte-api/create-stream-status.api.mdx"
+Successfully created "api-docs/airbyte-api/update-stream-status.api.mdx"
+Successfully created "api-docs/airbyte-api/get-instance-configuration.api.mdx"
+Successfully created "api-docs/airbyte-api/setup-instance-configuration.api.mdx"
+Successfully created "api-docs/airbyte-api/license-info.api.mdx"
+Successfully created "api-docs/airbyte-api/create-or-update.api.mdx"
+Successfully created "api-docs/airbyte-api/get.api.mdx"
+Successfully created "api-docs/airbyte-api/did-previous-job-succeed.api.mdx"
+Successfully created "api-docs/airbyte-api/persist-job-cancellation.api.mdx"
+Successfully created "api-docs/airbyte-api/get-customer-portal-link.api.mdx"
+Successfully created "api-docs/airbyte-api/backfill-usage.api.mdx"
+Successfully created "api-docs/airbyte-api/handle-webhook.api.mdx"
+Successfully created "api-docs/airbyte-api/list-past-invoices.api.mdx"
+Successfully created "api-docs/airbyte-api/get-payment-information.api.mdx"
+Successfully created "api-docs/airbyte-api/get-subscription-info.api.mdx"
+Successfully created "api-docs/airbyte-api/get-organization-trial-status.api.mdx"
+Successfully created "api-docs/airbyte-api/cancel-subscription.api.mdx"
+Successfully created "api-docs/airbyte-api/unschedule-cancel-subscription.api.mdx"
+Successfully created "api-docs/airbyte-api/disable-delinquent-workspaces.api.mdx"
+Successfully created "api-docs/airbyte-api/get-organization-payment-config.api.mdx"
+Successfully created "api-docs/airbyte-api/update-organization-payment-config.api.mdx"
+Successfully created "api-docs/airbyte-api/end-grace-period.api.mdx"
+Successfully created "api-docs/airbyte-api/get-organization.api.mdx"
+Successfully created "api-docs/airbyte-api/create-organization.api.mdx"
+Successfully created "api-docs/airbyte-api/update-organization.api.mdx"
+Successfully created "api-docs/airbyte-api/delete-organization.api.mdx"
+Successfully created "api-docs/airbyte-api/list-organizations-by-user.api.mdx"
+Successfully created "api-docs/airbyte-api/get-organization-usage.api.mdx"
+Successfully created "api-docs/airbyte-api/list-organization-summaries.api.mdx"
+Successfully created "api-docs/airbyte-api/get-org-info.api.mdx"
+Successfully created "api-docs/airbyte-api/get-deployment-metadata.api.mdx"
+Successfully created "api-docs/airbyte-api/list-applications.api.mdx"
+Successfully created "api-docs/airbyte-api/delete-application.api.mdx"
+Successfully created "api-docs/airbyte-api/create-application.api.mdx"
+Successfully created "api-docs/airbyte-api/application-token-request.api.mdx"
+Successfully created "api-docs/airbyte-api/get-scoped-configurations-list.api.mdx"
+Successfully created "api-docs/airbyte-api/get-scoped-configuration-context.api.mdx"
+Successfully created "api-docs/airbyte-api/create-scoped-configuration.api.mdx"
+Successfully created "api-docs/airbyte-api/get-scoped-configuration-by-id.api.mdx"
+Successfully created "api-docs/airbyte-api/update-scoped-configuration.api.mdx"
+Successfully created "api-docs/airbyte-api/delete-scoped-configuration.api.mdx"
+Successfully created "api-docs/airbyte-api/get-connector-rollouts-list.api.mdx"
+Successfully created "api-docs/airbyte-api/get-connector-rollouts-list-by-actor-definition-id.api.mdx"
+Successfully created "api-docs/airbyte-api/get-connector-rollouts-list-all.api.mdx"
+Successfully created "api-docs/airbyte-api/get-connector-rollout-by-id.api.mdx"
+Successfully created "api-docs/airbyte-api/get-connector-rollout-actor-sync-info.api.mdx"
+Successfully created "api-docs/airbyte-api/start-connector-rollout.api.mdx"
+Successfully created "api-docs/airbyte-api/do-connector-rollout.api.mdx"
+Successfully created "api-docs/airbyte-api/update-connector-rollout-state.api.mdx"
+Successfully created "api-docs/airbyte-api/finalize-connector-rollout.api.mdx"
+Successfully created "api-docs/airbyte-api/manual-start-connector-rollout.api.mdx"
+Successfully created "api-docs/airbyte-api/manual-do-connector-rollout.api.mdx"
+Successfully created "api-docs/airbyte-api/manual-finalize-connector-rollout.api.mdx"
+Successfully created "api-docs/airbyte-api/manual-pause-connector-rollout.api.mdx"
+Successfully created "api-docs/airbyte-api/check-entitlement.api.mdx"
+Successfully created "api-docs/airbyte-api/get-entitlements.api.mdx"
+Successfully created "api-docs/airbyte-api/create-user-invitation.api.mdx"
+Successfully created "api-docs/airbyte-api/get-user-invitation.api.mdx"
+Successfully created "api-docs/airbyte-api/list-pending-invitations.api.mdx"
+Successfully created "api-docs/airbyte-api/accept-user-invitation.api.mdx"
+Successfully created "api-docs/airbyte-api/decline-user-invitation.api.mdx"
+Successfully created "api-docs/airbyte-api/cancel-user-invitation.api.mdx"
+Successfully created "api-docs/airbyte-api/list-tags.api.mdx"
+Successfully created "api-docs/airbyte-api/update-tag.api.mdx"
+Successfully created "api-docs/airbyte-api/delete-tag.api.mdx"
+Successfully created "api-docs/airbyte-api/create-tag.api.mdx"
+Successfully created "api-docs/airbyte-api/generate-diagnostic-report.api.mdx"
+Successfully created "api-docs/airbyte-api/signal.api.mdx"
+Successfully created "api-docs/airbyte-api/run-check-command.api.mdx"
+Successfully created "api-docs/airbyte-api/run-discover-command.api.mdx"
+Successfully created "api-docs/airbyte-api/run-replicate-command.api.mdx"
+Successfully created "api-docs/airbyte-api/get-check-command-output.api.mdx"
+Successfully created "api-docs/airbyte-api/get-discover-command-output.api.mdx"
+Successfully created "api-docs/airbyte-api/get-replicate-command-output.api.mdx"
+Successfully created "api-docs/airbyte-api/get-command-status.api.mdx"
+Successfully created "api-docs/airbyte-api/get-command.api.mdx"
+Successfully created "api-docs/airbyte-api/cancel-command.api.mdx"
+Successfully created "api-docs/airbyte-api/write-workload-output.api.mdx"
+Successfully created "api-docs/airbyte-api/create-dataplane-group.api.mdx"
+Successfully created "api-docs/airbyte-api/update-dataplane-group.api.mdx"
+Successfully created "api-docs/airbyte-api/delete-dataplane-group.api.mdx"
+Successfully created "api-docs/airbyte-api/list-dataplane-groups.api.mdx"
+Successfully created "api-docs/airbyte-api/create-dataplane.api.mdx"
+Successfully created "api-docs/airbyte-api/update-dataplane.api.mdx"
+Successfully created "api-docs/airbyte-api/delete-dataplane.api.mdx"
+Successfully created "api-docs/airbyte-api/list-dataplanes.api.mdx"
+Successfully created "api-docs/airbyte-api/get-dataplane-token.api.mdx"
+Successfully created "api-docs/airbyte-api/heartbeat-dataplane.api.mdx"
+Successfully created "api-docs/airbyte-api/initialize-dataplane.api.mdx"
+Successfully created "api-docs/airbyte-api/list-config-templates.api.mdx"
+Successfully created "api-docs/airbyte-api/get-config-template.api.mdx"
+Successfully created "api-docs/airbyte-api/get-partial-user-config.api.mdx"
+Successfully created "api-docs/airbyte-api/create-partial-user-config.api.mdx"
+Successfully created "api-docs/airbyte-api/list-partial-user-configs.api.mdx"
+Successfully created "api-docs/airbyte-api/update-partial-user-config.api.mdx"
+Successfully created "api-docs/airbyte-api/delete-partial-user-config.api.mdx"
+Successfully created "api-docs/airbyte-api/get-sso-config.api.mdx"
+Successfully created "api-docs/airbyte-api/create-sso-config.api.mdx"
+Successfully created "api-docs/airbyte-api/delete-sso-config.api.mdx"
+Successfully created "api-docs/airbyte-api/update-sso-credentials.api.mdx"
+Successfully created "api-docs/airbyte-api/get-documentation.api.mdx"
+Successfully created "api-docs/airbyte-api/public-get-health-check.api.mdx"
+Successfully created "api-docs/airbyte-api/public-list-config-template.api.mdx"
+Successfully created "api-docs/airbyte-api/public-create-config-template.api.mdx"
+Successfully created "api-docs/airbyte-api/public-create-connection-template.api.mdx"
+Successfully created "api-docs/airbyte-api/public-update-config-template.api.mdx"
+Successfully created "api-docs/airbyte-api/public-get-config-template.api.mdx"
+Successfully created "api-docs/airbyte-api/public-list-applications.api.mdx"
+Successfully created "api-docs/airbyte-api/public-create-application.api.mdx"
+Successfully created "api-docs/airbyte-api/public-get-application.api.mdx"
+Successfully created "api-docs/airbyte-api/public-delete-application.api.mdx"
+Successfully created "api-docs/airbyte-api/public-get-access-token.api.mdx"
+Successfully created "api-docs/airbyte-api/list-jobs.api.mdx"
+Successfully created "api-docs/airbyte-api/public-create-job.api.mdx"
+Successfully created "api-docs/airbyte-api/get-job.api.mdx"
+Successfully created "api-docs/airbyte-api/public-cancel-job.api.mdx"
+Successfully created "api-docs/airbyte-api/public-list-regions.api.mdx"
+Successfully created "api-docs/airbyte-api/public-create-region.api.mdx"
+Successfully created "api-docs/airbyte-api/public-get-region.api.mdx"
+Successfully created "api-docs/airbyte-api/public-update-region.api.mdx"
+Successfully created "api-docs/airbyte-api/public-delete-region.api.mdx"
+Successfully created "api-docs/airbyte-api/public-list-dataplanes.api.mdx"
+Successfully created "api-docs/airbyte-api/public-create-dataplane.api.mdx"
+Successfully created "api-docs/airbyte-api/public-get-dataplane.api.mdx"
+Successfully created "api-docs/airbyte-api/public-update-dataplane.api.mdx"
+Successfully created "api-docs/airbyte-api/public-delete-dataplane.api.mdx"
+Successfully created "api-docs/airbyte-api/list-connector-definitions.api.mdx"
+Successfully created "api-docs/airbyte-api/public-list-declarative-source-definitions.api.mdx"
+Successfully created "api-docs/airbyte-api/public-create-declarative-source-definition.api.mdx"
+Successfully created "api-docs/airbyte-api/public-get-declarative-source-definition.api.mdx"
+Successfully created "api-docs/airbyte-api/public-update-declarative-source-definition.api.mdx"
+Successfully created "api-docs/airbyte-api/public-delete-declarative-source-definition.api.mdx"
+Successfully created "api-docs/airbyte-api/public-list-source-definitions.api.mdx"
+Successfully created "api-docs/airbyte-api/public-create-source-definition.api.mdx"
+Successfully created "api-docs/airbyte-api/public-get-source-definition.api.mdx"
+Successfully created "api-docs/airbyte-api/public-update-source-definition.api.mdx"
+Successfully created "api-docs/airbyte-api/public-delete-source-definition.api.mdx"
+Successfully created "api-docs/airbyte-api/public-list-destination-definitions.api.mdx"
+Successfully created "api-docs/airbyte-api/public-create-destination-definition.api.mdx"
+Successfully created "api-docs/airbyte-api/public-get-destination-definition.api.mdx"
+Successfully created "api-docs/airbyte-api/public-update-destination-definition.api.mdx"
+Successfully created "api-docs/airbyte-api/public-delete-destination-definition.api.mdx"
+Successfully created "api-docs/airbyte-api/list-sources.api.mdx"
+Successfully created "api-docs/airbyte-api/public-create-source.api.mdx"
+Successfully created "api-docs/airbyte-api/public-get-source.api.mdx"
+Successfully created "api-docs/airbyte-api/patch-source.api.mdx"
+Successfully created "api-docs/airbyte-api/put-source.api.mdx"
+Successfully created "api-docs/airbyte-api/public-delete-source.api.mdx"
+Successfully created "api-docs/airbyte-api/list-destinations.api.mdx"
+Successfully created "api-docs/airbyte-api/public-create-destination.api.mdx"
+Successfully created "api-docs/airbyte-api/public-get-destination.api.mdx"
+Successfully created "api-docs/airbyte-api/public-delete-destination.api.mdx"
+Successfully created "api-docs/airbyte-api/patch-destination.api.mdx"
+Successfully created "api-docs/airbyte-api/put-destination.api.mdx"
+Successfully created "api-docs/airbyte-api/oauth-callback.api.mdx"
+Successfully created "api-docs/airbyte-api/initiate-o-auth.api.mdx"
+Successfully created "api-docs/airbyte-api/public-create-connection.api.mdx"
+Successfully created "api-docs/airbyte-api/list-connections.api.mdx"
+Successfully created "api-docs/airbyte-api/public-get-connection.api.mdx"
+Successfully created "api-docs/airbyte-api/patch-connection.api.mdx"
+Successfully created "api-docs/airbyte-api/public-delete-connection.api.mdx"
+Successfully created "api-docs/airbyte-api/get-stream-properties.api.mdx"
+Successfully created "api-docs/airbyte-api/public-list-workspaces.api.mdx"
+Successfully created "api-docs/airbyte-api/public-create-workspace.api.mdx"
+Successfully created "api-docs/airbyte-api/public-get-workspace.api.mdx"
+Successfully created "api-docs/airbyte-api/public-update-workspace.api.mdx"
+Successfully created "api-docs/airbyte-api/public-delete-workspace.api.mdx"
+Successfully created "api-docs/airbyte-api/create-or-update-workspace-o-auth-credentials.api.mdx"
+Successfully created "api-docs/airbyte-api/public-get-permission.api.mdx"
+Successfully created "api-docs/airbyte-api/public-update-permission.api.mdx"
+Successfully created "api-docs/airbyte-api/public-delete-permission.api.mdx"
+Successfully created "api-docs/airbyte-api/public-list-permissions-by-user-id.api.mdx"
+Successfully created "api-docs/airbyte-api/public-create-permission.api.mdx"
+Successfully created "api-docs/airbyte-api/public-list-organizations-for-user.api.mdx"
+Successfully created "api-docs/airbyte-api/create-or-update-organization-o-auth-credentials.api.mdx"
+Successfully created "api-docs/airbyte-api/public-list-users-within-an-organization.api.mdx"
+Successfully created "api-docs/airbyte-api/public-list-tags.api.mdx"
+Successfully created "api-docs/airbyte-api/public-create-tag.api.mdx"
+Successfully created "api-docs/airbyte-api/public-get-tag.api.mdx"
+Successfully created "api-docs/airbyte-api/public-delete-tag.api.mdx"
+Successfully created "api-docs/airbyte-api/public-update-tag.api.mdx"
+Successfully created "api-docs/airbyte-api/get-embedded-widget.api.mdx"
+Successfully created "api-docs/airbyte-api/generate-embedded-scoped-token.api.mdx"
+Successfully created "api-docs/airbyte-api/list-embedded-organizations-by-user.api.mdx"
+Successfully created "api-docs/airbyte-api/get-service-account-token.api.mdx"
+Successfully created "api-docs/airbyte-api/get-orchestration.api.mdx"
+Successfully created "api-docs/airbyte-api/list-orchestrations-for-workspace.api.mdx"
+Successfully created "api-docs/airbyte-api/create-orchestration.api.mdx"
+Successfully created "api-docs/airbyte-api/delete-orchestration.api.mdx"
+Successfully created "api-docs/airbyte-api/update-orchestration.api.mdx"
+Successfully created "api-docs/airbyte-api/run-orchestration.api.mdx"
+Successfully created "api-docs/airbyte-api/airbyte-sources-api.info.mdx"
+fetched 634 connectors from registry
+
+> docu@0.0.0 start /Users/letiescanciano/Airbyte/airbyte/docusaurus
+> node src/scripts/fetchSchema.js && docusaurus start --port 3005 "--host" "0.0.0.0" "--port" "3000"
+
+Schema file downloaded successfully
+
+ ------------------------------------------------------------------------------                                                                                                          Update available 3.8.1 → 3.9.0                                                                                                                 To upgrade Docusaurus packages with the latest version, run the                                       following command:                                        `npm i @docusaurus/core@latest @docusaurus/cssnano-preset@latest                @docusaurus/faster@latest @docusaurus/module-type-aliases@latest               @docusaurus/plugin-debug@latest @docusaurus/plugin-sitemap@latest               @docusaurus/preset-classic@latest @docusaurus/theme-classic@latest               @docusaurus/theme-common@latest @docusaurus/theme-mermaid@latest               @docusaurus/theme-search-algolia@latest @docusaurus/types@latest`                                                                                         ------------------------------------------------------------------------------ 
+
+[INFO] Starting the development server...
+[ERROR] Something is already running on port 3000.

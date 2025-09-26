@@ -308,11 +308,11 @@ const config = {
     [
       "@docusaurus/plugin-content-docs",
       {
-        id: "airbyte-api-docs-content",
-        path: "api-docs/airbyte-api",
-        routeBasePath: "/airbyte-api",
-        docItemComponent: "@theme/ApiItem",
-        sidebarPath: require.resolve("./sidebar-airbyte_api.js"),
+        id: 'airbyte-api-docs-content',
+        path: 'api-docs/airbyte-api',
+        routeBasePath: '/airbyte-api',
+        docItemComponent: '@theme/ApiItem',
+        sidebarPath: './api-docs/airbyte-api/sidebar.js',
       },
     ],
     [
@@ -322,7 +322,7 @@ const config = {
         docsPluginId: "airbyte-api-docs-content",
         config: {
           "airbyte-api": {
-            specPath: "src/data/airbyte-api/sources-minimal.json",
+            specPath: "src/data/airbyte-api",
             outputDir: "api-docs/airbyte-api",
             sidebarOptions: {
               groupPathsBy: "tag",
@@ -420,6 +420,11 @@ const config = {
             docsPluginId: "ai-agents",
             sidebarId: "ai-agents",
             label: "AI Agents",
+          },
+          {
+            href: "/airbyte-api/airbyte-configuration-api",
+            position: "left",
+            label: "API Reference",
           },
           {
             href: "https://support.airbyte.com/",

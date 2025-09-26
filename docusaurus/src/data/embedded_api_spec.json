@@ -193,6 +193,84 @@
         }
       }
     },
+    "/api/v1/agents/discovery": {
+      "post": {
+        "tags": ["Agents - Discovery"],
+        "summary": "Create Discovery Agents",
+        "operationId": "create_agents_discovery",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Select the working organization. Necessary since users can belong to multiple organizations.",
+              "title": "X-Organization-Id"
+            },
+            "description": "Select the working organization. Necessary since users can belong to multiple organizations."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiscoveryAgentCreateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/embedded/organizations/current-scoped": {
       "get": {
         "tags": ["Embedded"],
@@ -1724,7 +1802,7 @@
     "/api/v1/integrations/definitions/sources/{id}": {
       "get": {
         "tags": ["Sources Definitions"],
-        "summary": "Get Source Definition",
+        "summary": "Source Definition Get",
         "description": "**Requires an Access Token as the bearer token.**\n\nGet a source connector specification.",
         "operationId": "get_integrations_definitions_sources_id",
         "security": [
@@ -1813,7 +1891,7 @@
     "/api/v1/integrations/definitions/sources/{source_definition_id}/catalog": {
       "post": {
         "tags": ["Sources Definitions"],
-        "summary": "Create Source Definition Catalog",
+        "summary": "Source Definition Catalog Create",
         "description": "**Requires an Instance Admin Token as the bearer token.**\n\nCreate a catalog for a source connector specification.",
         "operationId": "create_integrations_definitions_sources_source_definition_id_catalog",
         "security": [
@@ -7486,6 +7564,9 @@
                 "type": "string"
               },
               {
+                "$ref": "#/components/schemas/MessageContent"
+              },
+              {
                 "$ref": "#/components/schemas/ToolCallEvent"
               },
               {
@@ -8877,6 +8958,37 @@
         ],
         "title": "DetailedSourceTemplate"
       },
+      "DiscoveryAgentCreateResponse": {
+        "properties": {
+          "jobs_created": {
+            "items": {
+              "$ref": "#/components/schemas/DiscoveryAgentJobCreated"
+            },
+            "type": "array",
+            "title": "Jobs Created"
+          }
+        },
+        "type": "object",
+        "required": ["jobs_created"],
+        "title": "DiscoveryAgentCreateResponse"
+      },
+      "DiscoveryAgentJobCreated": {
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Job Id"
+          },
+          "source_definition_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Source Definition Id"
+          }
+        },
+        "type": "object",
+        "required": ["job_id", "source_definition_id"],
+        "title": "DiscoveryAgentJobCreated"
+      },
       "FieldTag": {
         "properties": {
           "field_name": {
@@ -9128,6 +9240,18 @@
         "type": "string",
         "enum": ["GET", "POST", "PUT", "DELETE"],
         "title": "HttpMethod"
+      },
+      "MessageContent": {
+        "properties": {
+          "content": {
+            "type": "string",
+            "title": "Content"
+          }
+        },
+        "type": "object",
+        "required": ["content"],
+        "title": "MessageContent",
+        "description": "Content of a chat message."
       },
       "NonBreakingChangesPreference": {
         "type": "string",

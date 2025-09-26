@@ -522,7 +522,7 @@ module.exports = {
         sectionHeader("Developer Guides"),
         {
           type: "category",
-          label: "Api Docs",
+          label: "API Docs",
           link: {
             type: "doc",
             id: "api-documentation",
@@ -530,8 +530,13 @@ module.exports = {
           items: [
             {
               type: "link",
-              label: "API Reference",
+              label: "Sources",
               href: "/airbyte-api/airbyte-sources-api",
+            },
+            {
+              type: "link",
+              label: "Config API",
+              href: "/airbyte-api/airbyte-configuration-api"
             },
           ],
         },
