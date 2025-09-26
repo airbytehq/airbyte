@@ -23,11 +23,20 @@ on:
       comment-id:
         type: string
         required: false
-        description: "The ID of the comment triggering the workflow. Unused as of now."
+        description: "The ID of the comment triggering the workflow."
       pr:
         type: string
         required: false
         description: "The pull request number, if applicable. Unused as of now."
+      slash_command:
+        type: string
+        required: false
+        description: "The slash command that triggered the workflow."
+      debug:
+        type: boolean
+        required: false
+        default: false
+        description: "Enable SSH access via Tailscale for debugging."
     outputs:
       result:
         description: "The result of the checks, e.g. 'success' if successful."
@@ -48,6 +57,33 @@ jobs:
     name: Generate Connector Matrix
     runs-on: ubuntu-24.04
     steps:
+      - name: Get run URL
+        id: run-url
+        run: |
+          echo "url=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
+
+      - name: Add comment to PR with build link (from slash command)
+        if: inputs.pr != '' && inputs.comment-id != ''
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ inputs.comment-id }}
+          issue-number: ${{ inputs.pr }}
+          body: |
+            > 🚀 Connector CI build started... [Check build progress][1]
+
+            [1]: ${{ steps.run-url.outputs.url }}
+
+      - name: Add comment to PR with build link (direct PR trigger)
+        if: github.event_name == 'pull_request' && github.event.pull_request.number != ''
+        id: pr-comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            > 🚀 Connector CI build started... [Check build progress][1]
+
+            [1]: ${{ steps.run-url.outputs.url }}
+
       - name: Checkout Current Branch
         id: checkout
         uses: actions/checkout@v4
@@ -117,6 +153,7 @@ jobs:
       jvm-connectors-matrix: ${{ steps.generate-matrix.outputs.jvm_connectors_matrix }}
       non-jvm-connectors-matrix: ${{ steps.generate-matrix.outputs.non_jvm_connectors_matrix }}
       jvm-runner-type: ${{ steps.set-jvm-runner-type.outputs.jvm-runner-type }}
+      pr-comment-id: ${{ steps.pr-comment.outputs.comment-id }}
       # The commit SHA of the current branch, used to report test results:
       commit-sha: ${{ steps.checkout.outputs.commit }}
       creds-available: ${{ (secrets.GCP_PROJECT_ID == '') && (vars.GCP_PROJECT_ID == '') && 'false' || 'true' }}
@@ -202,6 +239,33 @@ jobs:
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-integration-tests
 
+      - name: Install Tailscale
+        if: inputs.debug
+        shell: bash
+        run: |
+          curl -fsSL https://tailscale.com/install.sh | sh
+
+      - name: Join Tailnet
+        if: inputs.debug
+        shell: bash
+        run: |
+          sudo tailscale up \
+            --authkey=${{ secrets.TAILSCALE_AUTHKEY }} \
+            --hostname=ci-runner-${{ github.run_id }} \
+            --ssh \
+            --advertise-tags=tag:ci \
+            --accept-routes=false \
+            --reset
+
+      - name: Sleep for SSH Debugging (Debug Command)
+        if: inputs.debug
+        shell: bash
+        run: |
+          echo "Debug mode enabled. SSH access enabled via Tailscale."
+          echo "ssh command: ci-runner-${{ github.run_id }}"
+          echo "Sleeping for 3 hours for debugging access..."
+          sleep 7200
+
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         # Skip if cancelled, if no connector is specified, or if running from a fork.
@@ -212,6 +276,36 @@ jobs:
           large_files: true
           files: |
             airbyte-integrations/connectors/${{ matrix.connector }}/build/test-results/**/*.xml
+
+  jvm-connectors-test-summary:
+    name: JVM Connector Test Summary Check
+    needs: [jvm-connectors-test-matrix, generate-matrix]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Report Test Summary
+        run: echo "✅ All JVM connector tests completed successfully (or nothing to test)."
+
+      - name: Update PR comment with JVM test status (from slash command)
+        if: inputs.pr != '' && inputs.comment-id != '' && always()
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ inputs.comment-id }}
+          issue-number: ${{ inputs.pr }}
+          body: |
+            > ✅ JVM connector tests completed. [View results][1]
+
+            [1]: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+      - name: Update PR comment with JVM test status (direct PR trigger)
+        if: github.event_name == 'pull_request' && github.event.pull_request.number != '' && always()
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ needs.generate-matrix.outputs.pr-comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            > ✅ JVM connector tests completed. [View results][1]
+
+            [1]: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
   non-jvm-connectors-test:
     needs: [generate-matrix]
@@ -317,6 +411,35 @@ jobs:
           files: |
             airbyte-integrations/connectors/${{ matrix.connector }}/build/test-results/**/*.xml
 
+  non-jvm-connectors-test-summary:
+    name: Non-JVM Connector Test Summary Check
+    needs: [non-jvm-connectors-test-matrix, generate-matrix]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Report Test Summary
+        run: echo "✅ All non-JVM connector tests completed successfully (or nothing to test)."
+
+      - name: Update PR comment with non-JVM test status (from slash command)
+        if: inputs.pr != '' && inputs.comment-id != '' && always()
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ inputs.comment-id }}
+          issue-number: ${{ inputs.pr }}
+          body: |
+            > ✅ Non-JVM connector tests completed. [View results][1]
+
+            [1]: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+      - name: Update PR comment with non-JVM test status (direct PR trigger)
+        if: github.event_name == 'pull_request' && github.event.pull_request.number != '' && always()
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ needs.generate-matrix.outputs.pr-comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            > ✅ Non-JVM connector tests completed. [View results][1]
+
+            [1]: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
   # Lint and format checks
 
   connectors-lint:
