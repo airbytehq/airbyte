@@ -8,6 +8,8 @@ import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
 import io.airbyte.cdk.load.write.db.DbConstants
 import jakarta.inject.Singleton
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 
 data class SnowflakeConfiguration(
     val host: String,
@@ -22,6 +24,12 @@ data class SnowflakeConfiguration(
     val internalTableSchema: String,
     val jdbcUrlParams: String?,
     val retentionPeriodDays: Int,
+    val maxOpenAggregates: Int,
+    val maxBufferedAggregates: Int,
+    val stalenessDeadlinePerAgg: Duration,
+    val maxRecordsPerAgg: Long,
+    val maxEstBytesPerAgg: Long,
+    val maxConcurrentLifecycleOperations: Int,
 ) : DestinationConfiguration()
 
 sealed interface AuthTypeConfiguration
@@ -81,7 +89,13 @@ class SnowflakeConfigurationFactory :
                     pojo.internalTableSchema!!
                 },
             jdbcUrlParams = pojo.jdbcUrlParams,
-            retentionPeriodDays = pojo.retentionPeriodDays ?: 1
+            retentionPeriodDays = pojo.retentionPeriodDays ?: 1,
+            maxOpenAggregates = pojo.maxOpenAggregates ?: 5,
+            maxBufferedAggregates = pojo.maxBufferedAggregates ?: 3,
+            stalenessDeadlinePerAgg = pojo.stalenessDeadlinePerAgg?.minutes ?: 5.minutes,
+            maxRecordsPerAgg = pojo.maxRecordsPerAgg ?: 100_000L,
+            maxEstBytesPerAgg = pojo.maxEstBytesPerAgg ?: 50_000_000L,
+            maxConcurrentLifecycleOperations = pojo.maxConcurrentLifecycleOperations ?: 10,
         )
     }
 }

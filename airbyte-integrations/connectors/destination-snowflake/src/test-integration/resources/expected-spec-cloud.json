@@ -148,6 +148,42 @@
         "title" : "Data Retention Period (days)",
         "group" : "advanced",
         "order" : 10
+      },
+      "maxOpenAggregates" : {
+        "type" : "integer",
+        "title" : "maxOpenAggregates",
+        "group" : "perf",
+        "order" : 11
+      },
+      "maxBufferedAggregates" : {
+        "type" : "integer",
+        "title" : "maxBufferedAggregates",
+        "group" : "perf",
+        "order" : 12
+      },
+      "stalenessDeadlinePerAgg" : {
+        "type" : "integer",
+        "title" : "stalenessDeadlinePerAgg",
+        "group" : "perf",
+        "order" : 13
+      },
+      "maxRecordsPerAgg" : {
+        "type" : "integer",
+        "title" : "maxRecordsPerAgg",
+        "group" : "perf",
+        "order" : 14
+      },
+      "maxEstBytesPerAgg" : {
+        "type" : "integer",
+        "title" : "maxEstBytesPerAgg",
+        "group" : "perf",
+        "order" : 15
+      },
+      "maxConcurrentLifecycleOperations" : {
+        "type" : "integer",
+        "title" : "maxConcurrentLifecycleOperations",
+        "group" : "perf",
+        "order" : 16
       }
     },
     "required" : [ "host", "role", "warehouse", "database", "schema", "username" ],
@@ -160,6 +196,9 @@
     }, {
       "id" : "advanced",
       "title" : "Advanced"
+    }, {
+      "id" : "perf",
+      "title" : "Performance"
     } ]
   },
   "supportsIncremental" : true,
