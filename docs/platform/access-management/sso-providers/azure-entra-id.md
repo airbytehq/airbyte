@@ -8,7 +8,7 @@ import TabItem from "@theme/TabItem";
 
 # Set up single sign on using Entra ID
 
-This guide shows you how to set up Microsoft Entra ID (formerly Azure ActiveDirectory) and Airbyte so your users can log into Airbyte using your organization's identity provider (IdP) using OpenID Connect (OIDC). 
+This guide shows you how to set up Microsoft Entra ID (formerly Azure ActiveDirectory) and Airbyte so your users can log into Airbyte using your organization's identity provider (IdP) using OpenID Connect (OIDC).
 
 ## Overview
 
@@ -16,7 +16,7 @@ This guide is for administrators. It assumes you have:
 
 - Basic knowledge of Entra ID, OIDC, and Airbyte
 - The permissions to manage Entra ID in your organization
-- The permissions to manage Airbyte in your organization
+- Organization admin permissions for Airbyte
 
 The exact process differs between the Cloud or Self-Managed versions of Airbyte. Steps for both are below.
 
@@ -62,15 +62,13 @@ Create client credentials so Airbyte can talk to your application.
 
 #### Configure SSO in Airbyte
 
-:::info
-Currently, this portion of the setup can only be done by an Airbyte employee. Contact Support to proceed.
-:::
+1. In Airbyte, click **Organization settings** > **General**.
 
-1. In Airbyte, click **Settings**.
+    :::info
+    Currently, this portion of the setup requires an Airbyte employee. Contact Support to proceed.
+    :::
 
-2. Under **Organization**, click **General**.
-
-3. Click **Set up SSO**, then input the following information.
+2. Click **Set up SSO**, then input the following information.
 
     - **Email domain**: The full email domain of users who sign in to Entra ID. For example, `airbyte.io`.
 
@@ -92,9 +90,9 @@ Currently, this portion of the setup can only be done by an Airbyte employee. Co
 
       - It's often your organization name or domain. For example, `airbyte`.
 
-4. Click **Save changes**.
+3. Click **Save changes**.
 
-5. Test SSO to make sure people can access Airbyte. **Stay logged in so you don't lock yourself out** and ask a colleague to complete the following steps.
+4. Test SSO to make sure people can access Airbyte. **Stay logged in so you don't lock yourself out** and ask a colleague to complete the following steps.
 
     1. Sign out of Airbyte.
 
@@ -120,7 +118,7 @@ You will need to create a new Entra ID application for Airbyte. Log into the [Az
 
 From the overview page of Entra ID, press **Add** > **App registration** on the top of the screen. The name you select is your app integration name. Once chosen, **choose who can use the application, typically set to "Accounts in this organization directory only" for specific access,** and configure a **Redirect URI** of type **Web** with the following value:
 
-```
+```text
 <your-airbyte-domain>/auth/realms/airbyte/broker/<app-integration-name>/endpoint
 ```
 

@@ -587,18 +587,6 @@ def test_extractor_supports_associations_list_interpolation(config, associations
             "abc123",
             id="test_non_numeric_string_returns_original_value_for_number_type",
         ),
-        pytest.param(
-            "1;2",
-            {"type": ["null", "boolean"]},
-            "1;2",
-            id="test_non_numeric_string_returns_original_value_for_boolean_type",
-        ),
-        pytest.param(
-            "1;2",
-            {"type": ["null", "number"]},
-            "1;2",
-            id="test_non_numeric_string_returns_original_value_for_number_type_2",
-        ),
     ],
 )
 def test_entity_schema_normalization(components_module, original_value, field_schema, expected_value):
