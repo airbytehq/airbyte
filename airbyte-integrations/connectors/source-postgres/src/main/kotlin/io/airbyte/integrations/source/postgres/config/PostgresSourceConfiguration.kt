@@ -213,8 +213,8 @@ constructor(
         incrementalSpec: IncrementalConfigurationSpecification
     ): IncrementalConfiguration =
         when (incrementalSpec) {
-            UserDefinedCursorConfigurationSpecification -> UserDefinedCursorIncrementalConfiguration
-            is CdcCursorConfigurationSpecification -> {
+            StandardReplicationMethodConfigurationSpecification -> UserDefinedCursorIncrementalConfiguration
+            is CdcReplicationMethodConfigurationSpecification -> {
                 val initialLoadTimeout: Duration =
                     Duration.ofHours(incrementalSpec.initialLoadTimeoutHours!!.toLong())
                 val invalidCdcCursorPositionBehavior: InvalidCdcCursorPositionBehavior =

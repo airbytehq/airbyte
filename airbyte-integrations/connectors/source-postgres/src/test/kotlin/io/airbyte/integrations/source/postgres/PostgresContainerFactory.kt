@@ -6,7 +6,7 @@ package io.airbyte.integrations.source.postgres
 
 import io.airbyte.cdk.testcontainers.TestContainerFactory
 import io.airbyte.integrations.source.postgres.config.PostgresSourceConfigurationSpecification
-import io.airbyte.integrations.source.postgres.config.UserDefinedCursorConfigurationSpecification
+import io.airbyte.integrations.source.postgres.config.StandardReplicationMethodConfigurationSpecification
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
 import java.io.UncheckedIOException
@@ -139,7 +139,7 @@ object PostgresContainerFactory {
             checkpointTargetIntervalSeconds = 60
             max_db_connections = 1
             setIncrementalConfigurationSpecificationValue(
-                UserDefinedCursorConfigurationSpecification
+                StandardReplicationMethodConfigurationSpecification
             )
         }
 }

@@ -52,7 +52,7 @@ import jakarta.inject.Singleton
             "jdbc_url_params",
             "encryption",
             "tunnel_method",
-            "cursor",
+            "replication_method",
         ],
 )
 @Singleton
@@ -96,6 +96,7 @@ class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
         "Interpret password as a client secret for a Microsoft Entra service principal"
     )
     @JsonSchemaInject(json = """{"order":6,"always_show":true}""")
+    @JsonSchemaDefault("false")
     var servicePrincipalAuth: Boolean = false
 
     // TODO: hide when not service principal auth
@@ -174,24 +175,24 @@ class PostgresSourceConfigurationSpecification : ConfigurationSpecification() {
         tunnelMethodJson ?: tunnelMethod.asSshTunnelMethod()
 
     @JsonIgnore
-    @ConfigurationBuilder(configurationPrefix = "cursor")
-    val cursor = MicronautPropertiesFriendlyCursorConfigurationSpecification()
+    @ConfigurationBuilder(configurationPrefix = "replication_method")
+    val replication_method = MicronautPropertiesFriendlyCursorConfigurationSpecification()
 
-    @JsonIgnore var cursorJson: IncrementalConfigurationSpecification? = null
+    @JsonIgnore var replicationMethodJson: IncrementalConfigurationSpecification? = null
 
-    @JsonSetter("cursor")
+    @JsonSetter("replication_method")
     fun setIncrementalConfigurationSpecificationValue(
         value: IncrementalConfigurationSpecification
     ) {
-        cursorJson = value
+        replicationMethodJson = value
     }
 
-    @JsonGetter("cursor")
+    @JsonGetter("replication_method")
     @JsonSchemaTitle("Update Method")
     @JsonPropertyDescription("Configures how data is extracted from the database.")
     @JsonSchemaInject(json = """{"order":12,"display_type":"radio"}""")
     fun getIncrementalConfigurationSpecificationValue(): IncrementalConfigurationSpecification =
-        cursorJson ?: cursor.asIncrementalConfigurationSpecification()
+        replicationMethodJson ?: replication_method.asIncrementalConfigurationSpecification()
 
     @JsonProperty("checkpoint_target_interval_seconds")
     @JsonSchemaTitle("Checkpoint Target Time Interval")
@@ -367,13 +368,13 @@ class MicronautPropertiesFriendlyEncryptionSpecification {
         }
 }
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "cursor_method")
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "method")
 @JsonSubTypes(
     JsonSubTypes.Type(
-        value = UserDefinedCursorConfigurationSpecification::class,
-        name = "user_defined"
+        value = StandardReplicationMethodConfigurationSpecification::class,
+        name = "Standard"
     ),
-    JsonSubTypes.Type(value = CdcCursorConfigurationSpecification::class, name = "cdc"),
+    JsonSubTypes.Type(value = CdcReplicationMethodConfigurationSpecification::class, name = "CDC"),
 )
 @JsonSchemaTitle("Update Method")
 @JsonSchemaDescription("Configures how data is extracted from the database.")
@@ -386,7 +387,7 @@ sealed interface IncrementalConfigurationSpecification
         "#user-defined-cursor\">cursor column</a> chosen when configuring a connection " +
         "(e.g. created_at, updated_at).",
 )
-data object UserDefinedCursorConfigurationSpecification : IncrementalConfigurationSpecification
+data object StandardReplicationMethodConfigurationSpecification : IncrementalConfigurationSpecification
 
 @JsonSchemaTitle("Read Changes using Change Data Capture (CDC)")
 @JsonSchemaDescription(
@@ -395,7 +396,7 @@ data object UserDefinedCursorConfigurationSpecification : IncrementalConfigurati
         "\"https://docs.airbyte.com/integrations/connectors/source-postgres#getting-started\"" +
         "> change data capture feature</a>. This must be enabled on your database.",
 )
-class CdcCursorConfigurationSpecification : IncrementalConfigurationSpecification {
+class CdcReplicationMethodConfigurationSpecification : IncrementalConfigurationSpecification {
 
     @JsonProperty("invalid_cdc_cursor_position_behavior")
     @JsonSchemaTitle("Invalid CDC Position Behavior (Advanced)")
@@ -436,9 +437,9 @@ class MicronautPropertiesFriendlyCursorConfigurationSpecification {
 
     fun asIncrementalConfigurationSpecification(): IncrementalConfigurationSpecification =
         when (cursorMethod) {
-            "user_defined" -> UserDefinedCursorConfigurationSpecification
+            "user_defined" -> StandardReplicationMethodConfigurationSpecification
             "cdc" ->
-                CdcCursorConfigurationSpecification().also {
+                CdcReplicationMethodConfigurationSpecification().also {
                     it.invalidCdcCursorPositionBehavior = invalidCdcCursorPositionBehavior
                     it.initialLoadTimeoutHours = initialLoadTimeoutHours
                     it.debeziumShutdownTimeoutSeconds = debeziumShutdownTimeoutSeconds
