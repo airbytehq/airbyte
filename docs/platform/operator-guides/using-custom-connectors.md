@@ -99,7 +99,7 @@ At this step, you should have:
 
 You can pull your connector image from your private registry to validate the previous steps. On your Airbyte instance: run `docker pull <image-name>:<tag>` if you are using our `docker-compose` deployment, or start a pod that is using the connector image.
 
-1. Click on `Settings` in the left-hand sidebar. Navigate to `Sources` or `Destinations` depending on your connector. Click on `Add a new Docker connector`.
+1. Click **Workspace settings** > **Sources**/**Destinations** depending on your connector. Click **New connector** > **Add a new Docker connector**.
 
 2. Name your custom connector in `Connector display name`. This is just the display name used for your workspace.
 

@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.dataflow.state
 
+import io.airbyte.cdk.load.dataflow.state.stats.EmittedStatsStore
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.protocol.models.v0.AirbyteMessage
@@ -16,7 +17,11 @@ import io.mockk.mockk
 import io.mockk.verify
 import io.mockk.verifyOrder
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.toJavaDuration
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
@@ -31,11 +36,29 @@ class StateReconcilerTest {
 
     @MockK private lateinit var consumer: OutputConsumer
 
+    @MockK private lateinit var emittedStatsStore: EmittedStatsStore
+
+    private val interval = 30.seconds
+
+    private lateinit var testScope: TestScope
+
+    private lateinit var reconcilerScope: CoroutineScope
+
     private lateinit var stateReconciler: StateReconciler
 
     @BeforeEach
     fun setUp() {
-        stateReconciler = StateReconciler(stateStore, consumer, null)
+        testScope = TestScope(StandardTestDispatcher())
+        reconcilerScope = CoroutineScope(testScope.coroutineContext)
+
+        stateReconciler =
+            StateReconciler(
+                stateStore,
+                emittedStatsStore,
+                consumer,
+                reconcilerScope,
+                interval.toJavaDuration(),
+            )
     }
 
     @Test
@@ -80,56 +103,115 @@ class StateReconcilerTest {
     }
 
     @Test
-    fun `publish should convert checkpoint message to protocol message and send to consumer`() {
+    fun `publish should send the protocol message to the ouput consumer`() {
         // Given
-        val checkpointMessage = mockk<CheckpointMessage>()
         val protocolMessage = mockk<AirbyteMessage>()
 
-        every { checkpointMessage.asProtocolMessage() } returns protocolMessage
         every { consumer.accept(protocolMessage) } just Runs
 
         // When
-        stateReconciler.publish(checkpointMessage)
+        stateReconciler.publish(protocolMessage)
 
         // Then
-        verify { checkpointMessage.asProtocolMessage() }
         verify { consumer.accept(protocolMessage) }
     }
 
     @Test
-    fun `run should continue flushing states at regular intervals`() = runTest {
+    fun `run should flush at the defined interval`() = runTest {
         // Given
-        every { stateStore.getNextComplete() } returns null
+        val checkpointMessage1 = mockk<CheckpointMessage>()
+        val checkpointMessage2 = mockk<CheckpointMessage>()
+        val stateMessage1 = mockk<AirbyteMessage>()
+        val stateMessage2 = mockk<AirbyteMessage>()
+        every { checkpointMessage1.asProtocolMessage() } returns stateMessage1
+        every { checkpointMessage2.asProtocolMessage() } returns stateMessage2
+
+        every { stateStore.getNextComplete() } returnsMany
+            listOf(
+                // first flush
+                checkpointMessage1,
+                checkpointMessage2,
+                null,
+                // second flush
+                checkpointMessage2,
+                null,
+                // third flush
+                checkpointMessage1,
+                null,
+            )
+
+        val statsMessage1 = mockk<AirbyteMessage>()
+        val statsMessage2 = mockk<AirbyteMessage>()
+        val statsList = listOf(statsMessage1, statsMessage2)
+        every { emittedStatsStore.getStats() } returns statsList
+
+        every { consumer.accept(any<AirbyteMessage>()) } just Runs
+
+        // Create a new reconciler with the test scope for this test
+        val localReconciler =
+            StateReconciler(
+                stateStore,
+                emittedStatsStore,
+                consumer,
+                this.backgroundScope,
+                interval.toJavaDuration(),
+            )
 
         // When
-        stateReconciler.run(this.backgroundScope)
+        localReconciler.run()
 
         // Advance time to trigger multiple flushes
-        advanceTimeBy(30.seconds) // First flush
-        advanceTimeBy(30.seconds) // Second flush
-        advanceTimeBy(30.seconds) // Third flush
-        advanceTimeBy(1.seconds) // Padding to let the last flush run
-
+        advanceTimeBy(interval) // First flush
+        advanceTimeBy(1.seconds) // Padding
         // Then
-        verify(atLeast = 3) { stateStore.getNextComplete() }
+        verify(exactly = 1) { consumer.accept(stateMessage1) }
+        verify(exactly = 1) { consumer.accept(stateMessage2) }
+        verify(exactly = 1) { consumer.accept(statsMessage1) }
+        verify(exactly = 1) { consumer.accept(statsMessage2) }
+
+        advanceTimeBy(interval) // Second flush
+        advanceTimeBy(1.seconds) // Padding
+        // Then
+        verify(exactly = 2) { consumer.accept(stateMessage2) }
+        verify(exactly = 2) { consumer.accept(statsMessage1) }
+        verify(exactly = 2) { consumer.accept(statsMessage2) }
+
+        advanceTimeBy(30.seconds) // Third flush
+        advanceTimeBy(1.seconds) // Padding
+        // Then
+        verify(exactly = 2) { consumer.accept(stateMessage1) }
+        verify(exactly = 3) { consumer.accept(statsMessage1) }
+        verify(exactly = 3) { consumer.accept(statsMessage2) }
     }
 
     @Test
     fun `disable should cancel the job and no more flushes should occur`() = runTest {
         // Given
         every { stateStore.getNextComplete() } returns null
+        every { emittedStatsStore.getStats() } returns null
+
+        // Create a new reconciler with the test scope for this test
+        val localReconciler =
+            StateReconciler(
+                stateStore,
+                emittedStatsStore,
+                consumer,
+                this.backgroundScope,
+                interval.toJavaDuration(),
+            )
 
         // Start the reconciler
-        stateReconciler.run(this.backgroundScope)
+        localReconciler.run()
 
         // When
-        stateReconciler.disable()
+        localReconciler.disable()
 
         // Then
         advanceTimeBy(60.seconds)
 
         // Should have had initial flushes but then stopped after disable
         verify(exactly = 0) { stateStore.getNextComplete() }
+        verify(exactly = 0) { emittedStatsStore.getStats() }
     }
 
     @Test
@@ -161,40 +243,36 @@ class StateReconcilerTest {
     }
 
     @Test
-    fun `publish should handle exception from consumer gracefully`() {
+    fun `flushEmittedStats should publish all stats from emittedStatsStore`() {
         // Given
-        val checkpointMessage = mockk<CheckpointMessage>()
-        val protocolMessage = mockk<AirbyteMessage>()
+        val statsMessage1 = mockk<AirbyteMessage>()
+        val statsMessage2 = mockk<AirbyteMessage>()
+        val statsMessage3 = mockk<AirbyteMessage>()
+        val statsList = listOf(statsMessage1, statsMessage2, statsMessage3)
 
-        every { checkpointMessage.asProtocolMessage() } returns protocolMessage
-        every { consumer.accept(protocolMessage) } throws RuntimeException("Consumer error")
+        every { emittedStatsStore.getStats() } returns statsList
+        every { consumer.accept(any<AirbyteMessage>()) } just Runs
 
-        // When & Then
-        try {
-            stateReconciler.publish(checkpointMessage)
-        } catch (e: RuntimeException) {
-            // Expected - let the exception propagate
-            assert(e.message == "Consumer error")
-        }
+        // When
+        stateReconciler.flushEmittedStats()
 
-        verify { checkpointMessage.asProtocolMessage() }
-        verify { consumer.accept(protocolMessage) }
+        // Then
+        verify(exactly = 1) { emittedStatsStore.getStats() }
+        verify { consumer.accept(statsMessage1) }
+        verify { consumer.accept(statsMessage2) }
+        verify { consumer.accept(statsMessage3) }
     }
 
     @Test
-    fun `flushCompleteStates should handle exception from state store gracefully`() {
+    fun `flushEmittedStats should handle null stats from store`() {
         // Given
-        every { stateStore.getNextComplete() } throws RuntimeException("StateStore error")
+        every { emittedStatsStore.getStats() } returns null
 
-        // When & Then
-        try {
-            stateReconciler.flushCompleteStates()
-        } catch (e: RuntimeException) {
-            // Expected - let the exception propagate
-            assert(e.message == "StateStore error")
-        }
+        // When
+        stateReconciler.flushEmittedStats()
 
-        verify { stateStore.getNextComplete() }
+        // Then
+        verify(exactly = 1) { emittedStatsStore.getStats() }
         verify(exactly = 0) { consumer.accept(any<AirbyteMessage>()) }
     }
 }
