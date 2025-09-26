@@ -94,7 +94,6 @@ The Intercom connector should not run into Intercom API limitations under normal
 <details>
   <summary>Expand to review</summary>
 
-
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                          |
 |:-----------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|
 | 0.13.7 | 2025-09-25 | [66665](https://github.com/airbytehq/airbyte/pull/66665) | Fix Typo on Error Message|
