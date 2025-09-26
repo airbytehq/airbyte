@@ -34,7 +34,7 @@ class DataGenSourcePartitionFactory(val sharedState: DataGenSharedState) {
             return null
         }
 
-        return DataGenSourcePartition(streamState(streamFeedBootstrap))
+        return DataGenSourcePartition(streamState(streamFeedBootstrap), 1, 0)
     }
 
     fun split(unsplitPartition: DataGenSourcePartition): List<DataGenSourcePartition> {
