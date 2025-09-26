@@ -33,9 +33,7 @@ data:
       enableProgressiveRollout: false
   suggestedStreams:
     streams:
-      - conversations
       - contacts
-      - conversation_parts
       - teams
       - companies
   supportLevel: certified
