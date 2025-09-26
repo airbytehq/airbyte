@@ -105,12 +105,11 @@ jobs:
         # Later integration tests will likely fail in this case, but we at least let them run.
         if: matrix.connector && needs.generate-matrix.outputs.creds-available == 'true'
         run: |
-          airbyte-cdk secrets fetch ${{ matrix.connector }} \
-            --print-ci-secrets-masks
+          airbyte-cdk secrets fetch ${{ matrix.connector }}
 
-#      - name: Run CDK upgrade # Run tests against local CDK version
-#        if: matrix.connector
-#        run: ./gradlew upgradeCdk --cdkVersion=local
+      - name: Run CDK upgrade # Run tests against local CDK version
+        if: matrix.connector
+        run: ./gradlew upgradeCdk --cdkVersion=local
 
       - name: Run Unit Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Unprivileged, Executed from Fork]' || '' }}
         id: run-unit-tests
