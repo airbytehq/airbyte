@@ -139,37 +139,37 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
 
     @get:JsonSchemaTitle("maxOpenAggregates")
     @get:JsonProperty("maxOpenAggregates")
-    @get:JsonSchemaInject(json = """{"group": "perf", "order": 11}""")
+    @get:JsonSchemaInject(json = """{"group": "perf", "order": 11, "airbyte_hidden" : true}""")
     @Suppress("RedundantNullableReturnType")
     val maxOpenAggregates: Int? = 5
 
     @get:JsonSchemaTitle("maxBufferedAggregates")
     @get:JsonProperty("maxBufferedAggregates")
-    @get:JsonSchemaInject(json = """{"group": "perf", "order": 12}""")
+    @get:JsonSchemaInject(json = """{"group": "perf", "order": 12, "airbyte_hidden" : true}""")
     @Suppress("RedundantNullableReturnType")
     val maxBufferedAggregates: Int? = 3
 
     @get:JsonSchemaTitle("stalenessDeadlinePerAgg")
     @get:JsonProperty("stalenessDeadlinePerAgg")
-    @get:JsonSchemaInject(json = """{"group": "perf", "order": 13}""")
+    @get:JsonSchemaInject(json = """{"group": "perf", "order": 13, "airbyte_hidden" : true}""")
     @Suppress("RedundantNullableReturnType")
     val stalenessDeadlinePerAgg: Int? = 5
 
     @get:JsonSchemaTitle("maxRecordsPerAgg")
     @get:JsonProperty("maxRecordsPerAgg")
-    @get:JsonSchemaInject(json = """{"group": "perf", "order": 14}""")
+    @get:JsonSchemaInject(json = """{"group": "perf", "order": 14, "airbyte_hidden" : true}""")
     @Suppress("RedundantNullableReturnType")
     val maxRecordsPerAgg: Long? = 100_000L
 
     @get:JsonSchemaTitle("maxEstBytesPerAgg")
     @get:JsonProperty("maxEstBytesPerAgg")
-    @get:JsonSchemaInject(json = """{"group": "perf", "order": 15}""")
+    @get:JsonSchemaInject(json = """{"group": "perf", "order": 15, "airbyte_hidden" : true}""")
     @Suppress("RedundantNullableReturnType")
     val maxEstBytesPerAgg: Long? = 50_000_000L
 
     @get:JsonSchemaTitle("maxConcurrentLifecycleOperations")
     @get:JsonProperty("maxConcurrentLifecycleOperations")
-    @get:JsonSchemaInject(json = """{"group": "perf", "order": 16}""")
+    @get:JsonSchemaInject(json = """{"group": "perf", "order": 16, "airbyte_hidden" : true}""")
     @Suppress("RedundantNullableReturnType")
     val maxConcurrentLifecycleOperations: Int? = 10
 }
