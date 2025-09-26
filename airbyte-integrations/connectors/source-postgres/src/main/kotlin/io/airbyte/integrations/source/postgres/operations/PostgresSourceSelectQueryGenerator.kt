@@ -95,7 +95,7 @@ class PostgresSourceSelectQueryGenerator : SelectQueryGenerator {
                 val innerFrom: String = From(name, namespace).sql(columns) + sample
                 val inner =
                     "SELECT ${columns.joinToString(", ") { it.sql() }} $innerFrom ORDER BY RANDOM()"
-                "FROM (SELECT ${columns.joinToString(", ") { it.sql() }} FROM ($inner) LIMIT $sampleSize)"
+                "FROM (SELECT ${columns.joinToString(", ") { it.sql() }} FROM ($inner) AS ts LIMIT $sampleSize) AS l"
             }
         }
 

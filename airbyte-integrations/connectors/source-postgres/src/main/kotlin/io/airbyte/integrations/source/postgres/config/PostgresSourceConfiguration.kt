@@ -160,7 +160,7 @@ constructor(
 
         val sslJdbcProperties: Map<String, String> = pojo.getEncryptionValue()!!.jdbcProperties()
         jdbcProperties.putAll(sslJdbcProperties)
-        log.info { "SSL mode: ${sslJdbcProperties["sslMode"]}" }
+        log.info { "SSL mode: ${sslJdbcProperties["sslmode"]}" }
 
         // Configure cursor.
         val incremental: IncrementalConfiguration =
