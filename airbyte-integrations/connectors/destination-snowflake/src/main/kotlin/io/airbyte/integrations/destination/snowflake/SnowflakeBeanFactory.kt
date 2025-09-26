@@ -204,7 +204,16 @@ class SnowflakeBeanFactory {
     ) = CheckOperationV2(destinationChecker, outputConsumer)
 
     @Singleton
-    fun getMemoryAndParallelismConfig(): MemoryAndParallelismConfig {
-        return MemoryAndParallelismConfig()
+    fun getMemoryAndParallelismConfig(
+        snowflakeConfig: SnowflakeConfiguration
+    ): MemoryAndParallelismConfig {
+        return MemoryAndParallelismConfig(
+            maxOpenAggregates = snowflakeConfig.maxOpenAggregates,
+            maxBufferedAggregates = snowflakeConfig.maxBufferedAggregates,
+            stalenessDeadlinePerAgg = snowflakeConfig.stalenessDeadlinePerAgg,
+            maxRecordsPerAgg = snowflakeConfig.maxRecordsPerAgg,
+            maxEstBytesPerAgg = snowflakeConfig.maxEstBytesPerAgg,
+            maxConcurrentLifecycleOperations = snowflakeConfig.maxConcurrentLifecycleOperations
+        )
     }
 }
