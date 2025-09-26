@@ -8,8 +8,6 @@ import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
 import io.airbyte.cdk.load.write.db.DbConstants
 import jakarta.inject.Singleton
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.minutes
 
 data class SnowflakeConfiguration(
     val host: String,
