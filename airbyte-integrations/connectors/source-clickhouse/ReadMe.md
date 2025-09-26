@@ -27,10 +27,3 @@ This connector includes a custom `ClickHouseSourceOperations` class that extends
 For ssl test custom image is used. To push it run this command under the tools\integration-tests-ssl dir:
 _docker build -t your_user/clickhouse-with-ssl:dev -f Clickhouse.Dockerfile ._
 
-## Recent Changes
-
-### Version 0.2.8
-- **JDBC Driver Upgrade**: Updated from 0.3.2-patch11 to 0.6.3
-- **Array Handling Fix**: Implemented custom array processing to resolve compatibility issues
-- **Performance Improvements**: Direct array access instead of ResultSet processing
-- **Error Handling**: Enhanced error handling with fallback mechanisms
