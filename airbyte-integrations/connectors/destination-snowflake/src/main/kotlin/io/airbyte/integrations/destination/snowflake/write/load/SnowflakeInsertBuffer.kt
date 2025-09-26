@@ -5,6 +5,8 @@
 package io.airbyte.integrations.destination.snowflake.write.load
 
 import com.google.common.annotations.VisibleForTesting
+import de.siegmar.fastcsv.writer.CsvWriter
+import de.siegmar.fastcsv.writer.LineDelimiter
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
@@ -15,12 +17,12 @@ import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.pathString
-import org.apache.commons.csv.CSVFormat
-import org.apache.commons.csv.CSVPrinter
 
 private val logger = KotlinLogging.logger {}
 
-internal val CSV_FORMAT = CSVFormat.DEFAULT
+internal const val CSV_FIELD_SEPARATOR = ','
+internal const val CSV_QUOTE_CHARACTER = '"'
+internal val CSV_LINE_DELIMITER = LineDelimiter.LF
 internal const val DEFAULT_FLUSH_LIMIT = 1000
 
 class SnowflakeInsertBuffer(
@@ -35,7 +37,13 @@ class SnowflakeInsertBuffer(
 
     @VisibleForTesting internal var recordCount = 0
 
-    private var csvPrinter: CSVPrinter? = null
+    private var csvWriter: CsvWriter? = null
+
+    private val csvWriterBuilder =
+        CsvWriter.builder()
+            .fieldSeparator(CSV_FIELD_SEPARATOR)
+            .quoteCharacter(CSV_QUOTE_CHARACTER)
+            .lineDelimiter(CSV_LINE_DELIMITER)
 
     private val snowflakeRecordFormatter: SnowflakeRecordFormatter =
         when (snowflakeConfiguration.legacyRawTablesOnly) {
@@ -47,7 +55,7 @@ class SnowflakeInsertBuffer(
         if (csvFilePath == null) {
             val csvFile = createCsvFile()
             csvFilePath = csvFile.toPath()
-            csvPrinter = CSVPrinter(csvFile.bufferedWriter(Charsets.UTF_8), CSV_FORMAT)
+            csvWriter = csvWriterBuilder.build(csvFilePath)
         }
 
         writeToCsvFile(recordFields)
@@ -56,7 +64,7 @@ class SnowflakeInsertBuffer(
     suspend fun flush() {
         csvFilePath?.let { filePath ->
             try {
-                csvPrinter?.flush()
+                csvWriter?.flush()
                 logger.info { "Beginning insert into ${tableName.toPrettyString(quote = QUOTE)}" }
                 // Next, put the CSV file into the staging table
                 snowflakeClient.putInStage(tableName, filePath.pathString)
@@ -69,8 +77,8 @@ class SnowflakeInsertBuffer(
                 logger.error(e) { "Unable to flush accumulated data." }
             } finally {
                 filePath.deleteIfExists()
-                csvPrinter?.close()
-                csvPrinter = null
+                csvWriter?.close()
+                csvWriter = null
                 csvFilePath = null
                 recordCount = 0
             }
@@ -85,8 +93,8 @@ class SnowflakeInsertBuffer(
     }
 
     private fun writeToCsvFile(record: Map<String, AirbyteValue>) {
-        csvPrinter?.let {
-            it.printRecord(snowflakeRecordFormatter.format(record))
+        csvWriter?.let {
+            it.writeRecord(snowflakeRecordFormatter.format(record).map { it.toString() })
             recordCount++
             if ((recordCount % flushLimit) == 0) {
                 it.flush()

@@ -148,7 +148,7 @@ internal class SnowflakeInsertBufferTest {
         runBlocking {
             buffer.accumulate(record)
             assertEquals(
-                "test-value${CSV_FORMAT.delimiterString}${CSV_FORMAT.recordSeparator}",
+                "test-value$CSV_FIELD_SEPARATOR$CSV_LINE_DELIMITER",
                 buffer.csvFilePath?.toFile()?.readText()
             )
             buffer.flush()
@@ -179,7 +179,7 @@ internal class SnowflakeInsertBufferTest {
         runBlocking {
             buffer.accumulate(record)
             assertEquals(
-                "test-value${CSV_FORMAT.delimiterString}${CSV_FORMAT.recordSeparator}",
+                "test-value$CSV_FIELD_SEPARATOR$CSV_LINE_DELIMITER",
                 buffer.csvFilePath?.toFile()?.readText()
             )
             buffer.flush()
