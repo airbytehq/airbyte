@@ -8,7 +8,7 @@ import io.airbyte.cdk.util.Jsons
 import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 
-class StringInterpolationTest {
+class StringInterpolatorTest {
 
     @Test
     internal fun `test given string without interpolation when eval then return same string`() {

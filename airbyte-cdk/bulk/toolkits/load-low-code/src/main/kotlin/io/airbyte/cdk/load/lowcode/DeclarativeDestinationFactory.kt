@@ -53,6 +53,8 @@ import io.airbyte.cdk.load.model.http.body.size.RequestMemoryBatchSize as Reques
 import io.airbyte.cdk.load.model.writer.BatchRequestWriter
 import io.airbyte.cdk.load.model.writer.WritableObject
 import io.airbyte.cdk.load.model.writer.Writer
+import io.airbyte.cdk.load.model.writer.rejected.RejectedRecords as RejectedRecordsModel
+import io.airbyte.cdk.load.model.writer.rejected.BatchIndexRejectedRecords as BatchIndexRejectedRecordsModel
 import io.airbyte.cdk.load.spec.DeclarativeCdkConfiguration
 import io.airbyte.cdk.load.spec.DeclarativeSpecificationFactory
 import io.airbyte.cdk.load.writer.BatchSizeStrategyFactory
@@ -62,6 +64,8 @@ import io.airbyte.cdk.load.writer.DeclarativeLoaderStateFactory
 import io.airbyte.cdk.load.writer.DeclarativeWriter
 import io.airbyte.cdk.load.writer.RequestMemoryBatchSizeStrategyFactory
 import io.airbyte.cdk.load.writer.StreamIdentifier
+import io.airbyte.cdk.load.writer.rejected.BatchIndexRejectedRecordsBuilder
+import io.airbyte.cdk.load.writer.rejected.RejectedRecordsBuilder
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.cdk.util.ResourceUtils
 import okhttp3.Interceptor
@@ -135,7 +139,7 @@ class DeclarativeDestinationFactory(config: JsonNode?) {
         for (writer: Writer in manifest.writers) {
             when (writer) {
                 is BatchRequestWriter -> {
-                    val loaderStateFactory: DeclarativeLoaderStateFactory = createDeclarativeLoaderStateFactory(writer.requester)
+                    val loaderStateFactory: DeclarativeLoaderStateFactory = createDeclarativeLoaderStateFactory(writer.requester, writer.rejectedRecords)
                     writer.objects.map { createStreamIdentifier(it) }.forEach { loaderStateFactoryByDestinationOperation[it] = loaderStateFactory }
                 }
             }
@@ -147,7 +151,7 @@ class DeclarativeDestinationFactory(config: JsonNode?) {
         return StreamIdentifier(writableObject.name, mapImportMode(writableObject.operation))
     }
 
-    private fun createDeclarativeLoaderStateFactory(httpRequester: HttpRequesterModel) : DeclarativeLoaderStateFactory {
+    private fun createDeclarativeLoaderStateFactory(httpRequester: HttpRequesterModel, rejectedRecords: RejectedRecordsModel) : DeclarativeLoaderStateFactory {
         if (httpRequester.body == null) {
             throw IllegalArgumentException("Can't create loader because HttpRequester body is null")
         }
@@ -159,9 +163,24 @@ class DeclarativeDestinationFactory(config: JsonNode?) {
                     httpRequester.body.size.toFactory(),
                     DeclarativeBatchEntryAssembler(httpRequester.body.entries.content),
                     httpRequester.body.entries.field,
+                    createRejectedRecordsBuilder(rejectedRecords),
                 )
             }
             else -> throw IllegalArgumentException("Unknown type of body for HTTP request: ${httpRequester.body.javaClass.name}")
+        }
+    }
+
+    private fun createRejectedRecordsBuilder(rejectedRecords: RejectedRecordsModel): RejectedRecordsBuilder {
+        when (rejectedRecords) {
+            is BatchIndexRejectedRecordsModel -> {
+                return BatchIndexRejectedRecordsBuilder(
+                    rejectedRecords.condition,
+                    rejectedRecords.rejectionsField,
+                    rejectedRecords.indexField,
+                    rejectedRecords.fieldsToReport,
+                )
+            }
+            else -> throw IllegalArgumentException("Unknown type of rejectedRecords builder ${rejectedRecords.javaClass.name}")
         }
     }
 

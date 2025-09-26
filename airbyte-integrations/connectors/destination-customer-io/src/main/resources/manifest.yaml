@@ -14,6 +14,15 @@ writers:
       - name: person_identify
         operation:
           type: Upsert
+    rejected_records:
+      type: BatchIndexRejectedRecords
+      condition: "{{ response.status_code == 207 }}"
+      rejections_field: ["errors"]
+      index_field: ["batch_index"]
+      fields_to_report:
+        - - reason
+        - - field
+        - - message
     requester:
       type: HttpRequester
       url: https://track.customer.io/api/v2/batch
@@ -46,6 +55,15 @@ writers:
       - name: person_event
         operation:
           type: Insert
+    rejected_records:
+      type: BatchIndexRejectedRecords
+      condition: "{{ response.status_code == 207 }}"
+      rejections_field: ["errors"]
+      index_field: ["batch_index"]
+      fields_to_report:
+        - - reason
+        - - field
+        - - message
     requester:
       type: HttpRequester
       url: https://track.customer.io/api/v2/batch

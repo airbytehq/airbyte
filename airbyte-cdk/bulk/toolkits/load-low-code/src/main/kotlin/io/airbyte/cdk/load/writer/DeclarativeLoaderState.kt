@@ -4,11 +4,15 @@ import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.load.discoverer.operation.extractArray
 import io.airbyte.cdk.load.http.HttpRequester
+import io.airbyte.cdk.load.http.InterpolableResponse
 import io.airbyte.cdk.load.http.Response
+import io.airbyte.cdk.load.http.decoder.JsonDecoder
 import io.airbyte.cdk.load.http.getBodyOrEmpty
+import io.airbyte.cdk.load.interpolation.toInterpolationContext
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.util.serializeToJsonBytes
 import io.airbyte.cdk.load.util.serializeToString
+import io.airbyte.cdk.load.writer.rejected.RejectedRecordsBuilder
 import io.airbyte.cdk.util.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
 
@@ -61,7 +65,7 @@ class JsonResponseBodyBuilder(batchSizeTypeStrategyFactory: BatchSizeStrategyFac
     }
 
     override fun isEmpty(): Boolean {
-        return batch.size() > 0
+        return batch.size() <= 0
     }
 
     override fun isFull(): Boolean {
@@ -105,11 +109,17 @@ interface RejectedRecordStrategy
 class BatchIndexRejectedRecordStrategy: RejectedRecordStrategy
 
 
-class DeclarativeLoaderState(private val httpRequester: HttpRequester, private val responseBodyBuilder: ResponseBodyBuilder) : AutoCloseable {
+class DeclarativeLoaderState(
+    private val httpRequester: HttpRequester,
+    private val responseBodyBuilder: ResponseBodyBuilder,
+    private val rejectedRecordsBuilder: RejectedRecordsBuilder,
+    private val responseDecoder: JsonDecoder = JsonDecoder()
+) : AutoCloseable {
 
     // TODO notify RejectedRecordStrategy of a new record
     fun accumulate(record: DestinationRecordRaw) {
         responseBodyBuilder.accumulate(record)
+        rejectedRecordsBuilder.accumulate(record)
     }
 
     fun isFull(): Boolean = responseBodyBuilder.isFull()
@@ -123,16 +133,17 @@ class DeclarativeLoaderState(private val httpRequester: HttpRequester, private v
         val response: Response = httpRequester.send(body = responseBodyBuilder.build())
 
         response.use {
-            return when (response.statusCode) {
-                200 -> null
-                // TODO rejected records 207 ->
-                else ->
-                    throw IllegalStateException(
-                        "Invalid response with status code ${response.statusCode} while starting ingestion: ${response.getBodyOrEmpty().reader(Charsets.UTF_8).readText()}"
-                    )
-            }
+            return rejectedRecordsBuilder.getRejectedRecords(toInterpolableResponse(response))
         }
     }
 
     override fun close() {}
+
+    private fun toInterpolableResponse(response: Response): InterpolableResponse {
+        return InterpolableResponse(
+            response.statusCode,
+            response.headers,
+            responseDecoder.decode(response.getBodyOrEmpty()),
+        )
+    }
 }
