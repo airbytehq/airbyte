@@ -55,10 +55,7 @@ data class PostgresSourceJdbcV2CompatibilityStreamStateValue(
                                     }
                                 mapOf(
                                     v2.cursorField!!.first() to
-                                        stateValueToJsonNode(
-                                            cursorField,
-                                            v2.cursorValue!!.asText()
-                                        )
+                                        stateValueToJsonNode(cursorField, v2.cursorValue!!.asText())
                                 )
                             }
                             V2StateType.ctid.serialized ->
@@ -69,13 +66,15 @@ data class PostgresSourceJdbcV2CompatibilityStreamStateValue(
                                     val incrementalState =
                                         Jsons.treeToValue(
                                             it,
-                                            PostgresSourceJdbcV2CompatibilityStreamStateValue::class.java
+                                            PostgresSourceJdbcV2CompatibilityStreamStateValue::class
+                                                .java
                                         )
                                     when (incrementalState.stateType) {
                                         V2StateType.cursor_based.serialized -> {
                                             val cursorField: DataOrMetaField =
                                                 stream.fields.first { field ->
-                                                    field.id == incrementalState.cursorField!!.first()
+                                                    field.id ==
+                                                        incrementalState.cursorField!!.first()
                                                 }
                                             mapOf(
                                                 incrementalState.cursorField!!.first() to
@@ -87,7 +86,8 @@ data class PostgresSourceJdbcV2CompatibilityStreamStateValue(
                                         }
                                         else -> mapOf()
                                     }
-                                } ?: mapOf()
+                                }
+                                    ?: mapOf()
                             else -> mapOf() // TODO: xmin not supported yet
                         }
                 )
