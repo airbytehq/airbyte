@@ -3,10 +3,10 @@ name: CDK Connector Compatibility Test
 on:
   pull_request:
     paths:
-      - 'airbyte-cdk/java/**/*'
-      - 'airbyte-cdk/bulk/**/*'
+      - "airbyte-cdk/java/**/*"
+      - "airbyte-cdk/bulk/**/*"
   schedule:
-    - cron: '0 12 * * *'
+    - cron: "0 12 * * *"
 
 jobs:
   generate-matrix:
