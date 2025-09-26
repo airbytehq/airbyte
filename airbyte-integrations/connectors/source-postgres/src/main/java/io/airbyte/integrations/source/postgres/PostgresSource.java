@@ -745,6 +745,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   }
 
   public static void main(final String[] args) throws Exception {
+    // no-op change
     final Source source = PostgresSource.sshWrappedSource(new PostgresSource());
     final PostgresSourceExceptionHandler exceptionHandler = new PostgresSourceExceptionHandler();
     LOGGER.info("starting source: {}", PostgresSource.class);
