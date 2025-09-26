@@ -113,7 +113,7 @@ class PostgresSourceJdbcPartitionFactory(
 
         // An empty table stream state will be marked as a nullNode. This prevents repeated attempt
         // to read it
-        if (opaqueStateValue?.isNull == true) { // TODO: check empty table
+        if (opaqueStateValue?.isNull == true) {
             return null
         }
 

@@ -47,33 +47,49 @@ data class PostgresSourceJdbcV2CompatibilityStreamStateValue(
                     ctid = v2.ctid,
                     filenode = v2.filenode,
                     cursors =
-                        v2.incrementalState?.let {
-                            if (it.isNull || it.isEmpty) {
-                                return@let mapOf()
-                            }
-                            val incrementalState =
-                                Jsons.treeToValue(
-                                    it,
-                                    PostgresSourceJdbcV2CompatibilityStreamStateValue::class.java
+                        when (v2.stateType) {
+                            V2StateType.cursor_based.serialized -> {
+                                val cursorField: DataOrMetaField =
+                                    stream.fields.first { field ->
+                                        field.id == v2.cursorField!!.first()
+                                    }
+                                mapOf(
+                                    v2.cursorField!!.first() to
+                                        stateValueToJsonNode(
+                                            cursorField,
+                                            v2.cursorValue!!.asText()
+                                        )
                                 )
-                            when (incrementalState.stateType) {
-                                V2StateType.cursor_based.serialized -> {
-                                    val cursorField: DataOrMetaField =
-                                        stream.fields.first { field ->
-                                            field.id == incrementalState.cursorField!!.first()
-                                        }
-                                    mapOf(
-                                        incrementalState.cursorField!!.first() to
-                                            stateValueToJsonNode(
-                                                cursorField,
-                                                incrementalState.cursorValue!!.asText()
-                                            )
-                                    )
-                                }
-                                else -> mapOf()
                             }
+                            V2StateType.ctid.serialized ->
+                                v2.incrementalState?.let {
+                                    if (it.isNull || it.isEmpty) {
+                                        return@let mapOf()
+                                    }
+                                    val incrementalState =
+                                        Jsons.treeToValue(
+                                            it,
+                                            PostgresSourceJdbcV2CompatibilityStreamStateValue::class.java
+                                        )
+                                    when (incrementalState.stateType) {
+                                        V2StateType.cursor_based.serialized -> {
+                                            val cursorField: DataOrMetaField =
+                                                stream.fields.first { field ->
+                                                    field.id == incrementalState.cursorField!!.first()
+                                                }
+                                            mapOf(
+                                                incrementalState.cursorField!!.first() to
+                                                    stateValueToJsonNode(
+                                                        cursorField,
+                                                        incrementalState.cursorValue!!.asText()
+                                                    )
+                                            )
+                                        }
+                                        else -> mapOf()
+                                    }
+                                } ?: mapOf()
+                            else -> mapOf() // TODO: xmin not supported yet
                         }
-                            ?: mapOf()
                 )
 
             return v3
