@@ -50,7 +50,7 @@ The Docs team maintains a list of [good first issues](https://github.com/airbyte
 
 To make minor changes like fixing typos or editing a single file, you can edit the file directly in your browser.
 
-1. Click **Edit this page** at the bottom of any page on [docs.airbyte.com](https://docs.airbyte.com/). GitHub will take you to the editor.
+1. Click **Edit this page** at the bottom of any page on [docs.airbyte.com](https://docs.airbyte.com/). GitHub takes you to the editor.
 2. Edit the file directly on GitHub and open a Pull Request ([help](https://docs.github.com/en/repositories/working-with-files/managing-files/editing-files)).
 
 ## Edit files on your local machine
@@ -117,7 +117,7 @@ To see changes as you make them in a development build:
    pnpm start
    ```
 
-2. Navigate to [http://localhost:3005/](http://localhost:3005/). Whenever you make and save changes, you will see them reflected in the server. To stop the running server, press <kbd>Ctrl</kbd>+<kbd>C</kbd> in the terminal.
+2. Navigate to [http://localhost:3005/](http://localhost:3005/). Whenever you make and save changes, you see them reflected in the server. To stop the running server, press <kbd>Ctrl</kbd>+<kbd>C</kbd> in the terminal.
 
 To create an optimized production build that doesn't update automatically:
 
@@ -218,7 +218,7 @@ Certain Airbyte products reserve some platform features. To avoid confusion and 
 
 To enable badges, include `products` in the Markdown metadata. The following values are possible, and you can combine them as needed.
 
-**Badge display:** all 5 badges always appear in order: Core, Standard, Pro, Enterprise Flex, Self-Managed Enterprise. Available badges appear highlighted, unavailable badges appear grayed out.
+**Badge display:** all 5 badges always appear in order - Core, Standard, Pro, Enterprise Flex, Self-Managed Enterprise. Available badges appear highlighted, unavailable badges appear grayed out.
 
 **Metadata keys:**
 
@@ -356,7 +356,7 @@ The repository imports those libraries from an external source. Don't modify the
 
 #### Install Vale
 
-The easiest way to install Vale is with a package manager. This ensures Vale is available in your PATH and allows you to keep up to date with new releases. For more options, see Vale's documentation at https://vale.sh/docs/install.
+The easiest way to install Vale is with a package manager. This ensures Vale is available in your PATH and allows you to keep up to date with new releases. For more options, see the Vale documentation at https://vale.sh/docs/install.
 
 1. Install Vale.
 
@@ -491,7 +491,7 @@ If you're not finished but want to collaborate with others, create a draft pull 
 :::
 
 :::note
-Before Airbyte accepts your contribution, you need to sign the Contributor License Agreement (CLA). By signing a Contributor License Agreement (CLA), Airbyte can ensure that the community is free and confident in its ability to use your contributions. GitHub prompts you to sign the CLA when you open your first pull request.
+Before Airbyte accepts your contribution, you need to sign the Contributor License Agreement. By signing a Contributor License Agreement, Airbyte can ensure that the community is free and confident in its ability to use your contributions. GitHub prompts you to sign the Contributor License Agreement when you open your first pull request.
 :::
 
 ## Deploy the documentation site
@@ -535,7 +535,7 @@ When you release a new major version of Airbyte like 2.0 or 2.1, generate a docu
 
 ### Create a new minor version
 
-Typically, you don't generate a docs version for patch releases (2.1.1). The only exception is if there is an actual substantive change in that patch and it needs separate documentation. If you actually need to do this, the process is the same as a major version, described in the preceding section.
+Typically, you don't generate a docs version for patch releases like 2.1.1. The only exception is if there is an actual substantive change in that patch and it needs separate documentation. If you actually need to do this, the process is the same as a major version, described in the preceding section.
 
 ### Delete a version
 
