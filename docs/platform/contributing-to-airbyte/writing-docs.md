@@ -191,7 +191,7 @@ Since the docs site uses Docusaurus, it inherits all of Docusaurus' capabilities
 Use tabs to display mutually exclusive concepts in a concise way. See [Tabs](https://docusaurus.io/docs/markdown-features/tabs).
 
 :::note
-The documentation maintains a separate `Tabs` implementation to support rendering tabs in Airbyte's in-app documentation. Airbyte's in-app renderer creates some additional rules that aren't necessarily true in other Docusaurus implementations:
+Airbyte maintains a separate `Tabs` implementation to support rendering tabs in Airbyte's in-app documentation. Airbyte's in-app renderer creates some additional rules that aren't necessarily true in other Docusaurus implementations:
 
 - Always use empty lines to separate different Markup elements like tags, paragraphs, and lists
 - Don't indent `TabItem` tags and their content according to normal HTML conventions. Different Markdown rendering tools handle indented tags inconsistently.
@@ -204,7 +204,7 @@ Code blocks represent sample code and command line input and output with easy-to
 
 Not all languages have syntax highlighting enabled. If syntax highlighting doesn't work for your language, add it to `docusaurus/docusaurus.config.js`'s `module.exports.themeConfig.prism.additionalLanguages` property. Then, restart your local server to test the new language.
 
-### Admonitions
+### Admonitions (notes, warnings, tips, etc.)
 
 Docusaurus has custom markup to create a note, warning, tip, danger, or info block. See [Admonitions](https://docusaurus.io/docs/markdown-features/admonitions).
 
