@@ -16,7 +16,8 @@ import io.airbyte.cdk.load.util.UUIDGenerator
 import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
 import io.airbyte.integrations.destination.snowflake.spec.CdcDeletionMode
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
-import io.airbyte.integrations.destination.snowflake.write.load.CSV_FORMAT
+import io.airbyte.integrations.destination.snowflake.write.load.CSV_FIELD_SEPARATOR
+import io.airbyte.integrations.destination.snowflake.write.load.CSV_LINE_DELIMITER
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 
@@ -307,8 +308,9 @@ class SnowflakeDirectLoadSqlGenerator(
         return """
             CREATE OR REPLACE FILE FORMAT $formatName
             TYPE = 'CSV'
-            FIELD_DELIMITER = '${CSV_FORMAT.delimiterString}'
-            RECORD_DELIMITER = '${CSV_FORMAT.recordSeparator}'
+            COMPRESSION = NONE
+            FIELD_DELIMITER = '$CSV_FIELD_SEPARATOR'
+            RECORD_DELIMITER = '$CSV_LINE_DELIMITER'
             FIELD_OPTIONALLY_ENCLOSED_BY = '"'
             TRIM_SPACE = TRUE
             ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE
@@ -331,7 +333,8 @@ class SnowflakeDirectLoadSqlGenerator(
         val stageName = snowflakeSqlNameUtils.fullyQualifiedStageName(tableName)
         return """
             PUT 'file://$tempFilePath' @$stageName
-            AUTO_COMPRESS = TRUE
+            AUTO_COMPRESS = FALSE
+            SOURCE_COMPRESSION = NONE
             OVERWRITE = TRUE
         """
             .trimIndent()
