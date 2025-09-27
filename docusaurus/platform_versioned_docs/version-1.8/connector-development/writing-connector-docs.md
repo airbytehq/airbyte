@@ -87,7 +87,7 @@ Only Cloud builds of the Airbyte UI will render this content.
 
 ### Testing your content
 
-To test in-app content in [a local Airbyte build](https://docs.airbyte.com/contributing-to-airbyte/developing-locally/#develop-on-airbyte-webapp), check out the `airbyte` git repository to the same branch and directory as the airbyte platform repository. Development builds fetch connector documentation from your local filesystem, so you can edit their content and view the rendered output in Airbyte.
+To test in-app content in [a local Airbyte build](https://docs.airbyte.com/contributing-to-airbyte/developing-locally/#develop-on-airbyte-server), check out the `airbyte` git repository to the same branch and directory as the airbyte platform repository. Development builds fetch connector documentation from your local filesystem, so you can edit their content and view the rendered output in Airbyte.
 
 To test https://docs.airbyte.com content, [build Docusaurus locally](../contributing-to-airbyte/writing-docs.md#set-up-your-environment).
 

@@ -15,7 +15,7 @@ To access the Airbyte UI, you will need to manually attach an ingress configurat
 The following is a simplified definition of an ingress resource you could use for your Airbyte instance:
 
 :::tip
-Set appropriate backend timeout values for the Airbyte webapp ingress. Timeout values that are too short can lead to 504 errors in the webapp when creating new sources or destinations.
+Set appropriate backend timeout values for the Airbyte UI ingress. Timeout values that are too short can lead to 504 errors in the UI when creating new sources or destinations.
 :::
 
 <Tabs>
