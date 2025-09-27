@@ -7,15 +7,18 @@ package io.airbyte.integrations.source.postgres.operations.types
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.NullNode
 import io.airbyte.cdk.data.AirbyteSchemaType
+import io.airbyte.cdk.data.JsonDecoder
 import io.airbyte.cdk.data.JsonEncoder
 import io.airbyte.cdk.data.NullCodec
 import io.airbyte.cdk.data.TextCodec
-import io.airbyte.cdk.jdbc.JdbcFieldType
 import io.airbyte.cdk.jdbc.JdbcGetter
+import io.airbyte.cdk.jdbc.JdbcSetter
+import io.airbyte.cdk.jdbc.LosslessJdbcFieldType
 import io.airbyte.cdk.output.sockets.ConnectorJsonEncoder
 import io.airbyte.cdk.output.sockets.ProtoEncoder
 import io.airbyte.cdk.output.sockets.toProtobufEncoder
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage
+import java.sql.PreparedStatement
 import java.sql.ResultSet
 
 // A generic field type which preserves infinity, -infinity and NaN values from DB to JSON
@@ -23,16 +26,26 @@ class InfFieldType<T>(
     airbyteSchemaType: AirbyteSchemaType,
     baseJdbcGetter: JdbcGetter<T>,
     baseJsonEncoder: JsonEncoder<T>,
+    baseJsonDecoder: JsonDecoder<T>,
+    baseJdbcSetter: JdbcSetter<in T>,
 ) :
-    JdbcFieldType<InfWrapper<T>>(
+    LosslessJdbcFieldType<InfWrapper<T>, InfWrapper<T>>(
         airbyteSchemaType,
         InfJdbcGetter(baseJdbcGetter),
         InfJsonEncoder(baseJsonEncoder),
+        InfJsonDecoder(baseJsonDecoder),
+        InfJdbcSetter(baseJdbcSetter),
     )
 
 class InfJdbcGetter<T>(private val base: JdbcGetter<T>) : JdbcGetter<InfWrapper<T>> {
     override fun get(rs: ResultSet, colIdx: Int): InfWrapper<T> {
         return InfWrapper.make(rs, colIdx, base)
+    }
+}
+
+class InfJdbcSetter<T>(private val base: JdbcSetter<in T>) : JdbcSetter<InfWrapper<T>> {
+    override fun set(stmt: PreparedStatement, paramIdx: Int, value: InfWrapper<T>) {
+        value.set(stmt, paramIdx, base)
     }
 }
 
@@ -45,6 +58,10 @@ class InfJsonEncoder<T>(private val base: JsonEncoder<T>) :
     override fun toProtobufEncoder(): ProtoEncoder<*> {
         return InfProtoEncoder(base)
     }
+}
+
+class InfJsonDecoder<T>(private val base: JsonDecoder<T>) : JsonDecoder<InfWrapper<T>> {
+    override fun decode(encoded: JsonNode): InfWrapper<T> = InfWrapper.make(encoded, base)
 }
 
 class InfProtoEncoder<T>(private val base: JsonEncoder<T>) : ProtoEncoder<InfWrapper<T>> {
@@ -70,6 +87,14 @@ private constructor(
             return NullNode.instance
         }
         return TextCodec.encode(valueType.placeholder!!)
+    }
+
+    fun set(stmt: PreparedStatement, paramIdx: Int, base: JdbcSetter<in T>) {
+        if (valueType == ValueType.NORMAL) {
+            base.set(stmt, paramIdx, normalValue!!)
+        } else {
+            stmt.setString(paramIdx, this.valueType.placeholder!!)
+        }
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -106,6 +131,26 @@ private constructor(
             } else {
                 InfWrapper(ValueType.NORMAL, baseGetter.get(rs, colIdx))
             }
+        }
+
+        fun <T> make(encoded: JsonNode, base: JsonDecoder<T>): InfWrapper<T> {
+            if (encoded.isNull) {
+                return InfWrapper(ValueType.NULL)
+            }
+            if (encoded.isTextual) {
+                val str = encoded.asText()
+                return if (str == "Infinity") {
+                    InfWrapper(InfWrapper.ValueType.INF)
+                } else if (str == "-Infinity") {
+                    InfWrapper(InfWrapper.ValueType.MINUS_INF)
+                } else if (str == "NaN") {
+                    InfWrapper(InfWrapper.ValueType.NAN)
+                } else {
+                    InfWrapper(InfWrapper.ValueType.NORMAL, base.decode(encoded))
+                }
+            }
+            @Suppress("UNCHECKED_CAST")
+            return InfWrapper(InfWrapper.ValueType.NORMAL, base.decode(encoded) as T)
         }
     }
 

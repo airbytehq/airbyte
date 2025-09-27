@@ -10,6 +10,7 @@ import io.airbyte.cdk.data.OffsetDateTimeCodec
 import io.airbyte.cdk.discover.FieldType
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
 import io.airbyte.cdk.discover.SystemType
+import io.airbyte.cdk.jdbc.AnyAccessor
 import io.airbyte.cdk.jdbc.ArrayFieldType
 import io.airbyte.cdk.jdbc.BigDecimalAccessor
 import io.airbyte.cdk.jdbc.BinaryStreamFieldType
@@ -75,12 +76,16 @@ class PostgresSourceFieldTypeMapper : JdbcMetadataQuerier.FieldTypeMapper {
                         LeafAirbyteSchemaType.INTEGER,
                         BigDecimalAccessor,
                         BigDecimalIntegerCodec,
+                        BigDecimalIntegerCodec,
+                        BigDecimalAccessor
                     )
                 else
                     InfFieldType(
                         LeafAirbyteSchemaType.NUMBER,
                         BigDecimalAccessor,
                         BigDecimalCodec,
+                        BigDecimalCodec,
+                        BigDecimalAccessor
                     )
             }
 
@@ -91,6 +96,8 @@ class PostgresSourceFieldTypeMapper : JdbcMetadataQuerier.FieldTypeMapper {
                     LeafAirbyteSchemaType.DATE,
                     DateAccessor,
                     LocalDateCodec,
+                    LocalDateCodec,
+                    DateAccessor
                 )
             JDBCType.TIMESTAMP ->
                 // JDBC driver reports timestamptz as TIMESTAMP instead of TIMESTAMP_WITH_TIMEZONE
@@ -100,12 +107,16 @@ class PostgresSourceFieldTypeMapper : JdbcMetadataQuerier.FieldTypeMapper {
                         LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE,
                         ObjectGetter(OffsetDateTime::class.java),
                         OffsetDateTimeCodec,
+                        OffsetDateTimeCodec,
+                        AnyAccessor,
                     )
                 else
                     InfFieldType(
                         LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE,
                         TimestampAccessor,
                         LocalDateTimeCodec,
+                        LocalDateTimeCodec,
+                        TimestampAccessor
                     )
             JDBCType.TIME -> LocalTimeFieldType
             JDBCType.CHAR,
