@@ -198,7 +198,8 @@ fun NativeRecordPayload.toProtobuf(
                                     else -> this@toProtobuf[field.id]!!.fieldValue!!
                                 },
                             )
-                    },
+                    }
+                        ?: nullProtoEncoder.encode(valueBuilder.clear(), null),
                 )
             }
     }
