@@ -11,6 +11,7 @@ import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.data.LocalDateTimeCodec
 import io.airbyte.cdk.data.OffsetDateTimeCodec
 import io.airbyte.cdk.discover.DataOrMetaField
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.util.Jsons
 import java.time.LocalDateTime
@@ -49,19 +50,12 @@ data class PostgresSourceJdbcV2CompatibilityStreamStateValue(
                     cursors =
                         when (v2.stateType) {
                             V2StateType.cursor_based.serialized -> {
-                                val cursorField: DataOrMetaField =
-                                    stream.fields.first { field ->
-                                        field.id == v2.cursorField!!.first()
-                                    }
-                                mapOf(
-                                    v2.cursorField!!.first() to
-                                        stateValueToJsonNode(cursorField, v2.cursorValue!!.asText())
-                                )
+                                buildCursorMap(stream, v2.cursorField, v2.cursorValue)
                             }
                             V2StateType.ctid.serialized ->
                                 v2.incrementalState?.let {
                                     if (it.isNull || it.isEmpty) {
-                                        return@let mapOf()
+                                        return@let emptyMap()
                                     }
                                     val incrementalState =
                                         Jsons.treeToValue(
@@ -71,18 +65,7 @@ data class PostgresSourceJdbcV2CompatibilityStreamStateValue(
                                         )
                                     when (incrementalState.stateType) {
                                         V2StateType.cursor_based.serialized -> {
-                                            val cursorField: DataOrMetaField =
-                                                stream.fields.first { field ->
-                                                    field.id ==
-                                                        incrementalState.cursorField!!.first()
-                                                }
-                                            mapOf(
-                                                incrementalState.cursorField!!.first() to
-                                                    stateValueToJsonNode(
-                                                        cursorField,
-                                                        incrementalState.cursorValue!!.asText()
-                                                    )
-                                            )
+                                            buildCursorMap(stream, incrementalState.cursorField, incrementalState.cursorValue)
                                         }
                                         else -> mapOf()
                                     }
@@ -93,6 +76,22 @@ data class PostgresSourceJdbcV2CompatibilityStreamStateValue(
                 )
 
             return v3
+        }
+
+        private fun buildCursorMap(
+            stream: Stream,
+            cursorFieldNames: List<String>?,
+            cursorValue: JsonNode?
+        ): Map<String, JsonNode> {
+            val cursorField: EmittedField? = stream.fields.firstOrNull {
+                it.id == cursorFieldNames?.firstOrNull()
+            }
+            val cursorValueText: String? = cursorValue?.takeUnless { it.isNull }?.asText().takeUnless { it.isNullOrBlank() }
+            return if (cursorField != null && cursorValueText != null) {
+                mapOf(cursorField.id to stateValueToJsonNode(cursorField, cursorValueText))
+            } else {
+                emptyMap()
+            }
         }
     }
 }
