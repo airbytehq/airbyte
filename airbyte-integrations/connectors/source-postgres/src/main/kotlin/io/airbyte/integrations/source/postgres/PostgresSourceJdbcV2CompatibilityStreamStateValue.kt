@@ -65,13 +65,17 @@ data class PostgresSourceJdbcV2CompatibilityStreamStateValue(
                                         )
                                     when (incrementalState.stateType) {
                                         V2StateType.cursor_based.serialized -> {
-                                            buildCursorMap(stream, incrementalState.cursorField, incrementalState.cursorValue)
+                                            buildCursorMap(
+                                                stream,
+                                                incrementalState.cursorField,
+                                                incrementalState.cursorValue
+                                            )
                                         }
-                                        else -> mapOf()
+                                        else -> emptyMap()
                                     }
                                 }
-                                    ?: mapOf()
-                            else -> mapOf() // TODO: xmin not supported yet
+                                    ?: emptyMap()
+                            else -> emptyMap() // TODO: xmin not supported yet
                         }
                 )
 
@@ -83,10 +87,10 @@ data class PostgresSourceJdbcV2CompatibilityStreamStateValue(
             cursorFieldNames: List<String>?,
             cursorValue: JsonNode?
         ): Map<String, JsonNode> {
-            val cursorField: EmittedField? = stream.fields.firstOrNull {
-                it.id == cursorFieldNames?.firstOrNull()
-            }
-            val cursorValueText: String? = cursorValue?.takeUnless { it.isNull }?.asText().takeUnless { it.isNullOrBlank() }
+            val cursorField: EmittedField? =
+                stream.fields.firstOrNull { it.id == cursorFieldNames?.firstOrNull() }
+            val cursorValueText: String? =
+                cursorValue?.takeUnless { it.isNull }?.asText().takeUnless { it.isNullOrBlank() }
             return if (cursorField != null && cursorValueText != null) {
                 mapOf(cursorField.id to stateValueToJsonNode(cursorField, cursorValueText))
             } else {
