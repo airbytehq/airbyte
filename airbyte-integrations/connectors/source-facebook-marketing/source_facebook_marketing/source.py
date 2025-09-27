@@ -3,10 +3,10 @@
 #
 
 import logging
+from datetime import timedelta
 from typing import Any, List, Mapping, Optional, Tuple, Type
 
 import facebook_business
-import pendulum
 
 from airbyte_cdk.models import (
     AdvancedAuth,
@@ -19,6 +19,7 @@ from airbyte_cdk.models import (
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_now, ab_datetime_parse
 from source_facebook_marketing.api import API
 from source_facebook_marketing.spec import ConnectorConfig, ValidAdStatuses
 from source_facebook_marketing.streams import (
@@ -80,10 +81,10 @@ class SourceFacebookMarketing(AbstractSource):
         config.default_ads_insights_action_breakdowns = default_ads_insights_action_breakdowns
 
         if config.start_date:
-            config.start_date = pendulum.instance(config.start_date)
+            config.start_date = AirbyteDateTime.from_datetime(config.start_date)
 
         if config.end_date:
-            config.end_date = pendulum.instance(config.end_date)
+            config.end_date = AirbyteDateTime.from_datetime(config.end_date)
 
         config.account_ids = list(config.account_ids)
 
@@ -99,7 +100,7 @@ class SourceFacebookMarketing(AbstractSource):
         try:
             config = self._validate_and_transform(config)
 
-            if config.end_date > pendulum.now():
+            if config.end_date > ab_datetime_now():
                 return False, "Date range can not be in the future."
             if config.start_date and config.end_date < config.start_date:
                 return False, "End date must be equal or after start date."
@@ -147,7 +148,7 @@ class SourceFacebookMarketing(AbstractSource):
             api = API(access_token=config.access_token, page_size=config.page_size)
 
         # if start_date not specified then set default start_date for report streams to 2 years ago
-        report_start_date = config.start_date or pendulum.now().add(years=-2)
+        report_start_date = config.start_date or (ab_datetime_now() - timedelta(days=365 * 2))
 
         insights_args = dict(
             api=api,
@@ -325,7 +326,7 @@ class SourceFacebookMarketing(AbstractSource):
                 action_breakdowns=list(set(insight.action_breakdowns)),
                 action_breakdowns_allow_empty=config.action_breakdowns_allow_empty,
                 time_increment=insight.time_increment,
-                start_date=insight.start_date or config.start_date or pendulum.now().add(years=-2),
+                start_date=insight.start_date or config.start_date or (ab_datetime_now() - timedelta(days=365 * 2)),
                 end_date=insight.end_date or config.end_date,
                 insights_lookback_window=insight.insights_lookback_window or config.insights_lookback_window,
                 insights_job_timeout=insight.insights_job_timeout or config.insights_job_timeout,
