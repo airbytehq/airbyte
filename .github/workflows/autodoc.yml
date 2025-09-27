@@ -40,8 +40,8 @@ jobs:
           FILES=$(git diff HEAD~1 HEAD --name-only | jq -R -s -c 'split("\n")[:-1]')
 
           if [ -z "$FILES" ] || [ "$FILES" = "[]" ]; then
-            echo "❌ Error: No files changed in this push."
-            exit 1
+            echo "ℹ️  No files changed in this push - skipping documentation update."
+            exit 0
           fi
 
           echo "✅ Successfully fetched changed files list"
