@@ -18,7 +18,7 @@ title: Architecture Overview
 ---
 %%{init: {"flowchart": {"defaultRenderer": "elk"}} }%%
 flowchart LR
-    W[fa:fa-display WebApp/UI]
+    W[fa:fa-display UI]
     S[fa:fa-server Config API Server]
     D[(fa:fa-table Config & Jobs)]
     L[(fa:fa-server Launcher)]
