@@ -413,6 +413,15 @@ spec:
         default: 4
         examples: [1, 2, 3]
         description: The number of worker threads to use for the sync.
+      account_plan:
+        type: string
+        title: Monday.com Account Plan
+        description: "Your Monday.com account plan. This is used to set the appropriate API rate limits (750 for Enterprise, 500 for Pro, 250 for all other plans requests/minute)."
+        default: "Other"
+        enum:
+          - "Enterprise"
+          - "Pro"
+          - "Other"
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key: ["credentials", "auth_type"]
@@ -460,11 +469,37 @@ check:
   stream_names:
     - "users"
 
-# The smallest limit for 1 minute is 250 queries, so set the default number of workers to 4. https://developer.monday.com/api-reference/docs/rate-limits#minute-limit
+# Use account plan to determine the rate limit and concurrency limits
+# https://developer.monday.com/api-reference/docs/rate-limits#minute-limit
 concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: "{{ config.get('num_workers', 4) }}"
-  max_concurrency: 40 # Monday concurrency limit for lowest tier is 40. https://developer.monday.com/api-reference/docs/rate-limits#concurrency-limit
+  # Monday concurrency limit is set based on account plan
+  # Enterprise: 250 concurrent requests
+  # Pro: 100 concurrent requests
+  # Other plans: 40 concurrent requests
+  max_concurrency: "{{ 250 if config.get('account_plan', 'Other') == 'Enterprise' else 100 if config.get('account_plan', 'Other') == 'Pro' else 40 }}"
+
+# Define API budget based on the account plan
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      # Monday.com API has different rate limits based on account plan
+      # https://developer.monday.com/api-reference/docs/rate-limits#minute-limit
+      # Enterprise: 750 requests per minute
+      # Pro: 500 requests per minute 
+      # Other: 250 requests per minute
+      #
+      # NOTE: The official docs contain an error showing incorrectly reversed limits:
+      # Enterprise: 1000, Pro: 2,500, Other: 5,000 (This makes no sense since enterprise should have the highest limit)
+      # Kappa.AI (Monday's AI docs assistant) confirmed these are incorrect,
+      # and the values listed above are the correct ones
+      rates:
+        - limit: "{{ 750 if config.get('account_plan', 'Other') == 'Enterprise' else 500 if config.get('account_plan', 'Other') == 'Pro' else 250 }}"
+          interval: "PT1M"  # 1 minute window
+      matchers:
+        - url_base: "https://api.monday.com"  # Match all requests to Monday.com API
 
 schemas:
   activity_logs:
