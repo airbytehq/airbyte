@@ -36,8 +36,8 @@ jobs:
       - name: Get files changed in this push
         id: push-files
         run: |
-          echo "🔍 Fetching files changed in commit ${{ github.sha }}..."
-          FILES=$(git diff HEAD~1 HEAD --name-only | jq -R -s -c 'split("\n")[:-1]')
+          echo "🔍 Fetching files changed in push from ${{ github.event.before }} to ${{ github.sha }}..."
+          FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | jq -R -s -c 'split("\n")[:-1]')
 
           if [ -z "$FILES" ] || [ "$FILES" = "[]" ]; then
             echo "ℹ️  No files changed in this push - skipping documentation update."
