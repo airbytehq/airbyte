@@ -1,5 +1,13 @@
 {
   "properties": {
+    "ad_extension_domain": {
+      "description": "",
+      "type": ["null", "string"]
+    },
+    "ad_extension_url": {
+      "description": "",
+      "type": ["null", "string"]
+    },
     "ad_format_asset": {
       "description": "The format of the ad asset used in the campaign.",
       "type": ["null", "string"]
@@ -24,6 +32,10 @@
       "description": "The ID of the main content or message of the ad.",
       "type": ["null", "string"]
     },
+    "breakdown_ad_objective": {
+      "type": ["null", "string"],
+      "description": ""
+    },
     "breakdown_reporting_ad_id": {
       "type": ["null", "string"],
       "description": "The ID of the ad for breakdown reporting."
@@ -44,12 +56,24 @@
       "type": ["null", "string"],
       "description": "Coarse conversion value for the ad."
     },
+    "comscore_market": {
+      "type": ["null", "string"],
+      "description": ""
+    },
+    "comscore_market_code": {
+      "type": ["null", "string"],
+      "description": ""
+    },
     "conversion_destination": {
       "type": ["null", "string"],
       "description": "The destination of the conversion."
     },
     "country": {
       "description": "The country where the ad is being displayed.",
+      "type": ["null", "string"]
+    },
+    "creative_relaxation_asset_type": {
+      "description": "",
       "type": ["null", "string"]
     },
     "description_asset": {
@@ -76,8 +100,16 @@
       "type": ["null", "string"],
       "description": "The fidelity type of the ad."
     },
+    "flexible_format_asset_type": {
+      "type": ["null", "string"],
+      "description": ""
+    },
     "frequency_value": {
       "description": "The number of times an ad was shown to a unique user.",
+      "type": ["null", "string"]
+    },
+    "gen_ai_asset_type": {
+      "description": "",
       "type": ["null", "string"]
     },
     "gender": {
@@ -112,6 +144,14 @@
     "impression_device": {
       "description": "The device type (e.g., smartphone, tablet) that generated the ad impression.",
       "type": ["null", "string"]
+    },
+    "impression_view_time_advertiser_hour_v2": {
+      "type": ["null", "string"],
+      "description": ""
+    },
+    "is_auto_advance": {
+      "type": ["null", "boolean"],
+      "description": ""
     },
     "is_conversion_id_modeled": {
       "type": ["null", "boolean"],

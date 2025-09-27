@@ -12,7 +12,7 @@ class BoardsRequestBuilder(MondayBaseRequestBuilder):
         return cls().with_authenticator(authenticator).with_board_ids(board_ids)
 
     @property
-    def query_params(self):
+    def request_body(self):
         params = super().query_params or {}
         if self._board_ids:
             board_ids = ", ".join(list(map(str, self._board_ids)))
@@ -21,7 +21,7 @@ class BoardsRequestBuilder(MondayBaseRequestBuilder):
             board_ids_str = ""
 
         params["query"] = (
-            "query{boards(limit:10%s){id,name,board_kind,type,columns{archived,description,id,settings_str,title,type,width},communication,description,groups{archived,color,deleted,id,position,title},owners{id},creator{id},permissions,state,subscribers{id},tags{id},top_group{id},updated_at,updates{id},views{id,name,settings_str,type,view_specific_data_str},workspace{id,name,kind,description}}}"
+            "{boards(limit:10%s){id,name,board_kind,type,columns{archived,description,id,settings_str,title,type,width},communication,description,groups{archived,color,deleted,id,position,title},owners{id},creator{id},permissions,state,subscribers{id},tags{id},top_group{id},updated_at,updates{id},views{id,name,settings_str,type,view_specific_data_str},workspace{id,name,kind,description}}}"
             % board_ids_str
         )
         return params

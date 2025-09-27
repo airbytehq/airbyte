@@ -260,7 +260,6 @@ Follow these instructions to add the Airbyte helm repository:
     ```yaml title="values.yaml"
     global:
       auth:
-        enabled: false # Set to false if you're using SSO
       
         # -- Admin user configuration
         instanceAdmin:
@@ -290,7 +289,6 @@ Follow these instructions to add the Airbyte helm repository:
     ```yaml title="values.yaml"
     global:
       auth:
-        enabled: false # Set to false if you're using SSO
       
         # -- Admin user configuration
         instanceAdmin:
@@ -306,6 +304,7 @@ Follow these instructions to add the Airbyte helm repository:
             genericOidc:
               clientId: ""
               audience: ""
+              extraScopes: ""
               issuer: ""
               endpoints:
                 authorizationServerEndpoint: ""
@@ -796,6 +795,14 @@ spec:
         paths:
           - backend:
               service:
+                # format is ${RELEASE_NAME}-airbyte-keycloak-svc 
+                name: airbyte-enterprise-airbyte-keycloak-svc 
+                port: 
+                  number: 8180 
+            path: /auth
+            pathType: Prefix
+          - backend:
+              service:
                 # format is ${RELEASE_NAME}-airbyte-connector-builder-server-svc
                 name: airbyte-enterprise-airbyte-connector-builder-server-svc
                 port:
@@ -841,6 +848,13 @@ spec:
     - host: airbyte.example.com # replace with your host
       http:
         paths:
+          - backend:
+              service:
+                name: airbyte-enterprise-airbyte-keycloak-svc
+                port:
+                  number: 8180
+            path: /auth
+            pathType: Prefix
           - backend:
               service:
                 name: airbyte-enterprise-airbyte-connector-builder-server-svc

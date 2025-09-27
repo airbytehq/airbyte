@@ -527,11 +527,18 @@ class ShopifyBulkManager:
         step = self._job_size if self._job_size else self._job_size_min
         return slice_start.add(days=step)
 
-    def _adjust_slice_end(self, slice_end: datetime, checkpointed_cursor: Optional[str] = None) -> datetime:
+    def _adjust_slice_end(
+        self, slice_end: datetime, checkpointed_cursor: Optional[str] = None, filter_checkpointed_cursor: Optional[str] = None
+    ) -> datetime:
         """
-        Choose between the existing `slice_end` value or `checkpointed_cursor` value, if provided.
+        Choose between the existing `slice_end` value or `checkpointed_cursor` value or `filter_checkpointed_cursor` value, if provided.
 
         Optionally: raises the `transient` error if the checkpoint collision occurs.
+
+        Note: filter_checkpointed_cursor is only used when cursor field is ID for streams like Customer Address etc.
+        This method should return a datetime from last checkpointed value to adjust slice end, when cursor value is ID (int type)
+        method gets end datetime from filter_checkpointed_cursor, which is value from filter field from last record.
+        See https://github.com/airbytehq/oncall/issues/9052 for more details.
         """
 
         if checkpointed_cursor:
@@ -541,15 +548,24 @@ class ShopifyBulkManager:
                 )
             # set the checkpointed cursor value
             self._set_last_checkpoint_cursor_value(checkpointed_cursor)
-            return pdm.parse(checkpointed_cursor)
+            if isinstance(checkpointed_cursor, str):
+                return pdm.parse(checkpointed_cursor)
+            if isinstance(checkpointed_cursor, int):
+                return pdm.parse(filter_checkpointed_cursor)
 
         return slice_end
 
-    def get_adjusted_job_end(self, slice_start: datetime, slice_end: datetime, checkpointed_cursor: Optional[str] = None) -> datetime:
+    def get_adjusted_job_end(
+        self,
+        slice_start: datetime,
+        slice_end: datetime,
+        checkpointed_cursor: Optional[str] = None,
+        filter_checkpointed_cursor: Optional[str] = None,
+    ) -> datetime:
         if self._job_adjust_slice_from_checkpoint:
             # set the checkpointing to default, before the next slice is emitted, to avoid inf.loop
             self._reset_checkpointing()
-            return self._adjust_slice_end(slice_end, checkpointed_cursor)
+            return self._adjust_slice_end(slice_end, checkpointed_cursor, filter_checkpointed_cursor)
 
         if self._is_long_running_job:
             self._job_size_reduce_next()
