@@ -77,6 +77,7 @@ The Monday connector should not run into Monday API limitations under normal usa
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.4.7 | 2025-09-16 | [66336](https://github.com/airbytehq/airbyte/pull/66336) | Update dependencies |
 | 2.4.6 | 2025-09-09 | [65884](https://github.com/airbytehq/airbyte/pull/65884) | Update dependencies |
 | 2.4.5 | 2025-08-23 | [64705](https://github.com/airbytehq/airbyte/pull/64705) | Update dependencies |
 | 2.4.4 | 2025-08-11 | [64878](https://github.com/airbytehq/airbyte/pull/64878) | Pass query in json body of request instead of query params. |
