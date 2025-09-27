@@ -149,8 +149,7 @@ private constructor(
                     InfWrapper(InfWrapper.ValueType.NORMAL, base.decode(encoded))
                 }
             }
-            @Suppress("UNCHECKED_CAST")
-            return InfWrapper(InfWrapper.ValueType.NORMAL, base.decode(encoded) as T)
+            return InfWrapper(InfWrapper.ValueType.NORMAL, base.decode(encoded))
         }
     }
 
