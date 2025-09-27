@@ -4,6 +4,7 @@
 
 
 import json
+from typing import Any
 
 from google.cloud import storage
 from google.oauth2 import credentials, service_account
@@ -50,4 +51,5 @@ class GCSRemoteFile(RemoteFile):
     displayed_uri is being used by Cursor to identify files with temporal local path in their uri attribute.
     """
 
+    blob: Any
     displayed_uri: str = None

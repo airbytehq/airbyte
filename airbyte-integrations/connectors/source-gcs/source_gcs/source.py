@@ -7,7 +7,12 @@ from typing import Any, Mapping, Optional
 
 from airbyte_cdk import emit_configuration_as_airbyte_control_message
 from airbyte_cdk.models import AdvancedAuth, AuthFlowType, ConnectorSpecification, OAuthConfigSpecification
+from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
+from airbyte_cdk.sources.file_based.config.validate_config_transfer_modes import (
+    preserve_directory_structure,
+    use_file_transfer,
+)
 from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
 from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream
 from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor
@@ -67,7 +72,10 @@ class SourceGCS(FileBasedSource):
         )
 
     def _make_default_stream(
-        self, stream_config: FileBasedStreamConfig, cursor: Optional[AbstractFileBasedCursor]
+        self,
+        stream_config: FileBasedStreamConfig,
+        cursor: Optional[AbstractFileBasedCursor],
+        parsed_config: AbstractFileBasedSpec,
     ) -> AbstractFileBasedStream:
         return GCSStream(
             config=stream_config,
@@ -79,4 +87,6 @@ class SourceGCS(FileBasedSource):
             validation_policy=self._validate_and_get_validation_policy(stream_config),
             errors_collector=self.errors_collector,
             cursor=cursor,
+            use_file_transfer=use_file_transfer(parsed_config),
+            preserve_directory_structure=preserve_directory_structure(parsed_config),
         )
