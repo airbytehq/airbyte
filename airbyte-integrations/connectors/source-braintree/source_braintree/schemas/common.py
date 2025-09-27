@@ -2,12 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from decimal import Decimal
 from typing import Any, Dict, Optional, Type
 
-import pydantic
-from pydantic import BaseModel
-from pydantic.typing import resolve_annotations
+import pydantic.v1 as pydantic
+from pydantic.v1 import BaseModel
+from pydantic.v1.typing import resolve_annotations
 
 from airbyte_cdk.sources.utils.schema_helpers import expand_refs
 
@@ -71,12 +70,12 @@ class CatalogModel(BaseModel, metaclass=AllOptional):
 
 
 class AddOn(CatalogModel):
-    amount: Decimal
-    current_billing_cycle: Optional[Decimal]
+    amount: float
+    current_billing_cycle: Optional[float]
     description: str
     id: str
     kind: str
     name: str
     never_expires: bool
-    number_of_billing_cycles: Optional[Decimal]
-    quantity: Optional[Decimal]
+    number_of_billing_cycles: Optional[float]
+    quantity: Optional[float]
