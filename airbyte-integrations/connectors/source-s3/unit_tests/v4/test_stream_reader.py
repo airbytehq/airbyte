@@ -302,8 +302,10 @@ def test_cannot_set_wrong_config_type():
 
 
 @mock_sts
-@patch("source_s3.v4.stream_reader.boto3.client")
-def test_get_iam_s3_client(boto3_client_mock):
+@patch("source_s3.v4.stream_reader.boto3.setup_default_session")
+def test_get_iam_s3_client(boto3_session_mock):
+    boto3_client_mock = MagicMock()
+    boto3_session_mock.return_value.client = boto3_client_mock
     # Mock the STS client assume_role method
     boto3_client_mock.return_value.assume_role.return_value = {
         "Credentials": {
