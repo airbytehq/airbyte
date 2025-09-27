@@ -4,7 +4,7 @@ The Google Sheets Destination is configured to push data to a single Google Shee
 
 :::warning
 
-Google Sheets imposes rate limits and hard limits on the amount of data it can receive, which results in sync failure. Only use Google Sheets as a destination for small, non-production use cases, as it is not designed for handling large-scale data operations.
+Google Sheets imposes rate limits and hard limits on the amount of data it can receive, which can result in a sync failure. Only use Google Sheets as a destination for small, non-production use cases, as it is not designed for handling large-scale data operations.
 
 Read more about the [limitations](#limitations) of using Google Sheets below.
 
@@ -36,15 +36,22 @@ To create a Google account, visit [Google](https://support.google.com/accounts/a
 2. Select `Sign in with Google`.
 3. Log in and Authorize to the Google account and click `Set up source`.
 4. Copy the Google Sheet link to **Spreadsheet Link**
+
+You can alternatively follow the below OAuth instructions if you'd prefer to use your own credentials by clicking on "Set up manually" in the UI, or by using the [Terraform](/platform/terraform-documentation) provider.
+
 <!-- /env:cloud -->
 
 <!-- env:oss -->
 
 **For Airbyte Open Source:**
 
-Authentication to Google Sheets is available using OAuth or GCP Service Account token.
+Authentication to Google Sheets is available using either OAuth or a GCP Service Account token.
 
 **Using OAuth**
+
+When using OAuth, you can either provide a Client ID and secret via the UI and use the interactive prompt, or by configuring manually via "Set up manually" and providing a Client ID, Client secret, and a refresh token.
+
+To generate a refresh token:
 
 1. Create a new [Google Cloud project](https://console.cloud.google.com/projectcreate).
 2. Enable the [Google Sheets API](https://console.cloud.google.com/apis/library/sheets.googleapis.com).
