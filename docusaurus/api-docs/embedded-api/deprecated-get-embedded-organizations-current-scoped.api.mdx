@@ -1,0 +1,75 @@
+---
+id: deprecated-get-embedded-organizations-current-scoped
+title: "Get Scoped Token Info"
+description: "Get the organization and workspace id for a scoped token."
+sidebar_label: "Get Scoped Token Info"
+hide_title: true
+hide_table_of_contents: true
+api: eJztWNtuGzcQ/ZUBH5oWWEm+xLd9c4okFdA2Qe2gBWxDHpGzu0y45IbkylGF/fdiuJIsWTaQppcnP9leD+dyeDicw4WIWAaRX4nX9ZSUIiVuMqEoSK+bqJ0VuXhLEWJF4HyJVv+J/BnQKrhz/lNoUBJoBYXzgBCka0hBdJ/IDkUmXEM+LRgrkQtFjSeJkdSkpDihZcjJpucwka33ZOOk9yWyjWUij76lTASSrddxLvKrhfjp8vL9K0JPXuRXN91NJhr0WFMkH5KBxZpELr4MNuMMNLvWXGBFqMiLTHj63GrPYQo0gePIimoU+ULEecM+QvTaliIThfM1RpGLttV9jpuQXZAh2aPGIGlbbqE3hF9JUgjo5xC0lQRtIB9AooUpGWdLiA7q1kTdmG3gA6MadTSczR+Dd5sVjZXo/tdMGGtPoXE2UGCUDvb2+MeDFFrJIYrWwG9LY5EJ6WwkG9kcm8ZomZyOPgZes9hAvvFMoqj7CJsZTLT6mq1ZobWJFfRYrRn8N139vmY+++my1UI3/UgybjHpaiflB2Fv7t1eJMZf8uEZ28K9pbgGrOs4zMvH8H2FCjgehfjtuNZMgpLSMjt/V6SDsw1Hl62/2NaYtPurzH9ZLu8yQd47n3zqSHXYDVVoMupbA71Ji7vs3054Ip36Zmev2QP8yB4eI8PK7LzRyVLc26D3OBcPPIXUTwpsTUwd7Stc7vDkcJcnb5yfaqXIPrPkmSWJJQcHuyz5YBvv0pUwNQRkI1+zz4R5JkyXiaPHrp+xjeQtGgjkZ+Qh1f3MmGfGJMrUFCvHs39JbN5grEQuRtjo0Wx/tFIAo63BcrRUAIO1Auip1U/zrTc8s8fY5KORcRJN5dLks03Lc+2n80hw4Sx6OH8/TkCthMMFs69nwaZ8WCPL7sVy/ue/p70BV6Rt4ZLlamjjAGzb1jX6+X3oF4HDgqfoNc0ogMKI4HiwrtAU4AqYu9aDbEN0NU/dLKoKIhVAR56707+x5CYs0/heGHeXFMB2rdf2sqIUjA8dahvgELiSwEHIqsZpG0N+bQdw+xD725wtBjz3DwqUrBDYU3QgnUniQXpSnAOaMNxyEbj02xx6lef8fSheXlCUVV904V29jtJ/Cq71kgJ8j40O8B0or2cUfoA7HSuWK9pzMYUuW0/q6RS0jVT2EjPc5oDG9Fr10YxqtFjS2u9SxlzbazuOoAN4kq6uyaokYSE0JHUxTw4LZ4y7Y3B6tQjapmBpi5gtqxGcUb69vZ1jba7tjkDLtyTUiwAsLNKClMOdNgbIhtYTxAp73eZ1WcVt9a0D67Sl6F6WvIrPmUkM1KeWANcBEGrecM+EeELOXdtxYiQ4a+ZQ4YzA2W2jjImZkly2BYYpJeosZeBiRf5OB0oJSc4sGReozfCa504+xT1n94Znwz2RiS8D48p0oO4PdshHI6nssPFODe9oGnSkQaENhaF09eh474j29qfy4Kg4of0zPD2gk5cnp6ej48PDIzw8U3gqz46neHJ0dLA33T86nvzsSjcMszId4MaFWGO6hJYvA/zC0WsvSOILWH09PGWL+xvtHz2JLDtMpC9x1BjUlrtwqn2xbI9XAhvNYO2LTKyOKT+mbG4X37DbbfImE6kT5ldisZhioA/edB1//twSN6arm0zM0Gue7FI/z1ZPH9xXlU4j3/3jx5PV/9evG48B9InmTzzhzNC0bJ8uxt7sXEpq4sb/dgYQvgvWV9Pb15ciE9gy9usbYNnxs9UvGxcx2vmG78Wit0jM6TqxyjVtuOhuuq77C9nMwKE=
+sidebar_class_name: "get api-method"
+info_path: embedded-api///sonar
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Get Scoped Token Info"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/api/v1/embedded/organizations/current-scoped"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+:::caution deprecated
+
+This endpoint has been deprecated and may be replaced or removed in future versions of the API.
+
+:::
+
+Get the organization and workspace id for a scoped token.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"name":"x-organization-id","in":"header","required":false,"schema":{"type":"string","format":"uuid","description":"Select the working organization. Necessary since users can belong to multiple organizations.","title":"X-Organization-Id"},"description":"Select the working organization. Necessary since users can belong to multiple organizations."}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={undefined}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"properties":{"organization_id":{"type":"string","format":"uuid","title":"Organization Id"},"workspace_id":{"type":"string","format":"uuid","title":"Workspace Id"}},"type":"object","required":["organization_id","workspace_id"],"title":"ScopedTokenInfoGetResponse"}}}},"400":{"description":"Bad request","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"403":{"description":"Forbidden","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"422":{"description":"Unprocessable entity","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"500":{"description":"Internal server error","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}}}}
+>
+  
+</StatusCodes>
+
+
+      
