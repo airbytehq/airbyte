@@ -6,6 +6,9 @@ package io.airbyte.integrations.destination.s3_data_lake
 
 import io.airbyte.cdk.load.check.DestinationChecker
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.command.iceberg.parquet.GlueCatalogConfiguration
+import io.airbyte.cdk.load.command.iceberg.parquet.NessieCatalogConfiguration
+import io.airbyte.cdk.load.command.iceberg.parquet.RestCatalogConfiguration
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.TableIdGenerator
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableCleaner
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
@@ -29,7 +32,15 @@ class S3DataLakeChecker(
         val catalogProperties = s3DataLakeUtil.toCatalogProperties(config)
         val catalog = icebergUtil.createCatalog(DEFAULT_CATALOG_NAME, catalogProperties)
 
-        val testTableIdentifier = DestinationStream.Descriptor(TEST_NAMESPACE, TEST_TABLE)
+        val defaultNamespace =
+            config.icebergCatalogConfiguration.catalogConfiguration.let {
+                when (it) {
+                    is GlueCatalogConfiguration -> it.databaseName
+                    is NessieCatalogConfiguration -> it.namespace
+                    is RestCatalogConfiguration -> it.namespace
+                }
+            }
+        val testTableIdentifier = DestinationStream.Descriptor(defaultNamespace, TEST_TABLE)
 
         val testTableSchema =
             Schema(

@@ -21,7 +21,6 @@ Extract data from Uptick - The new standard in fire inspection software.
 | clients | id | DefaultPaginator | ✅ |  ✅  |
 | clientgroups | id | DefaultPaginator | ✅ |  ✅  |
 | properties | id | DefaultPaginator | ✅ |  ✅  |
-| taskprofitability | id | NoPagination | ✅ |  ❌ |
 | invoices | id | DefaultPaginator | ✅ |  ✅  |
 | projects | id | DefaultPaginator | ✅ |  ✅  |
 | servicequotes | id | DefaultPaginator | ✅ |  ✅  |
@@ -30,11 +29,27 @@ Extract data from Uptick - The new standard in fire inspection software.
 | purchaseorders | id | DefaultPaginator | ✅ |  ✅  |
 | assets | id | DefaultPaginator | ✅ |  ✅  |
 | routines | id | DefaultPaginator | ✅ |  ✅  |
-| billingcard | id | DefaultPaginator | ✅ |  ✅  |
+| billingcards | id | DefaultPaginator | ✅ |  ✅  |
 | purchaseorderbills | id | DefaultPaginator | ✅ |  ✅  |
 | purchaseorderdockets | id | DefaultPaginator | ✅ |  ✅  |
 | invoicelineitems | id | DefaultPaginator | ✅ |  ✅  |
-| users | id  | DefaultPaginator | ✅ |  ✅  |
+| users | id | DefaultPaginator | ✅ |  ✅  |
+| servicegroups | id | DefaultPaginator | ✅ |  ✅  |
+| costcentres | id | DefaultPaginator | ✅ |  ✅  |
+| purchaseorderlineitems | id | DefaultPaginator | ✅ |  ✅  |
+| purchaseorderbilllineitems | id | DefaultPaginator | ✅ |  ✅  |
+| accreditationtypes | id | DefaultPaginator | ✅ |  ✅  |
+| accreditations | id | DefaultPaginator | ✅ |  ✅  |
+| branches | id | DefaultPaginator | ✅ |  ✅  |
+| creditnotes | id | DefaultPaginator | ✅ |  ✅  |
+| creditnotelineitems | id | DefaultPaginator | ✅ |  ✅  |
+| remarks | id | DefaultPaginator | ✅ |  ✅  |
+| assettypes | id | DefaultPaginator | ✅ |  ✅  |
+| assettypevariants | id | DefaultPaginator | ✅ |  ✅  |
+| products | id | DefaultPaginator | ✅ |  ✅  |
+| rounds | id | DefaultPaginator | ✅ |  ✅  |
+| tasksessions | id | DefaultPaginator | ✅ |  ✅  |
+| contractors | id | DefaultPaginator | ✅ |  ✅  |
 
 ## Changelog
 
@@ -43,6 +58,8 @@ Extract data from Uptick - The new standard in fire inspection software.
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.3.0 | 2025-09-17 | [66410](https://github.com/airbytehq/airbyte/pull/66410) | Add more streams |
+| 0.2.4 | 2025-09-23 | [66598](https://github.com/airbytehq/airbyte/pull/66598) | Update dependencies |
 | 0.2.3 | 2025-09-09 | [65733](https://github.com/airbytehq/airbyte/pull/65733) | Update dependencies |
 | 0.2.2 | 2025-08-26 | [65534](https://github.com/airbytehq/airbyte/pull/65534) | Add extra_fields to property stream |
 | 0.2.1 | 2025-08-24 | [65445](https://github.com/airbytehq/airbyte/pull/65445) | Update dependencies |
