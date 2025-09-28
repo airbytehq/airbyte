@@ -1,5 +1,5 @@
 ---
-products: all
+products: oss-enterprise, cloud-teams
 ---
 
 # Rejected records
@@ -66,16 +66,6 @@ Sync summary: {
   }
 }
 ```
-
-### When Airbyte can't display rejected record statistics
-
-Airbyte can only display rejected records statistics and a link to your storage bucket if the source connector sends state messages back to Airbyte correctly.
-
-- [Airbyte connectors](/integrations/connector-support-levels) implement this correctly for all sync modes.
-
-- [Marketplace connectors](/integrations/connector-support-levels) may or may not implement this correctly. Generally, only incremental sync modes are reliable in this way.
-
-Regardless of whether the connector reports statistics back to Airbyte, rejected records are still populated in your storage bucket if you set this up in the destination connector.
 
 ## Fixing rejected records so Airbyte can sync them
 

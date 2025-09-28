@@ -10,7 +10,7 @@ import ContainerProviders from '@site/static/_docker_image_registries.md';
 
 Once you [have a license key](https://airbyte.com/company/talk-to-sales), you can deploy [Self-Managed Enterprise](./README.md) using the following instructions.
 
-Airbyte Self-Managed Enterprise must be deployed using Kubernetes. This is to enable Airbyte's best performance and scale. The core Airbyte components (`server`, `webapp`, `workload-launcher`) run as deployments. The `workload-launcher` is responsible for managing connector-related pods (`check`, `discover`, `read`, `write`, `orchestrator`).
+Airbyte Self-Managed Enterprise must be deployed using Kubernetes. This is to enable Airbyte's best performance and scale. The core Airbyte components (`server`, `workload-launcher`) run as deployments. The `workload-launcher` is responsible for managing connector-related pods (`check`, `discover`, `read`, `write`, `orchestrator`).
 
 :::note
 Airbyte has begun rolling out a new Helm chart called Helm chart V2. The instructions on this page describe both V1 and V2 requirements. Airbyte recommends using Helm chart V2 from the start. The new chart will become mandatory in the future and you can avoid having to upgrade later.
@@ -260,7 +260,6 @@ Follow these instructions to add the Airbyte helm repository:
     ```yaml title="values.yaml"
     global:
       auth:
-        enabled: false # Set to false if you're using SSO
       
         # -- Admin user configuration
         instanceAdmin:
@@ -290,7 +289,6 @@ Follow these instructions to add the Airbyte helm repository:
     ```yaml title="values.yaml"
     global:
       auth:
-        enabled: false # Set to false if you're using SSO
       
         # -- Admin user configuration
         instanceAdmin:
@@ -306,6 +304,7 @@ Follow these instructions to add the Airbyte helm repository:
             genericOidc:
               clientId: ""
               audience: ""
+              extraScopes: ""
               issuer: ""
               endpoints:
                 authorizationServerEndpoint: ""
@@ -796,6 +795,14 @@ spec:
         paths:
           - backend:
               service:
+                # format is ${RELEASE_NAME}-airbyte-keycloak-svc 
+                name: airbyte-enterprise-airbyte-keycloak-svc 
+                port: 
+                  number: 8180 
+            path: /auth
+            pathType: Prefix
+          - backend:
+              service:
                 # format is ${RELEASE_NAME}-airbyte-connector-builder-server-svc
                 name: airbyte-enterprise-airbyte-connector-builder-server-svc
                 port:
@@ -843,6 +850,13 @@ spec:
         paths:
           - backend:
               service:
+                name: airbyte-enterprise-airbyte-keycloak-svc
+                port:
+                  number: 8180
+            path: /auth
+            pathType: Prefix
+          - backend:
+              service:
                 name: airbyte-enterprise-airbyte-connector-builder-server-svc
                 port:
                   number: 80
@@ -863,7 +877,7 @@ The ALB controller will use a `ServiceAccount` that requires the [following IAM 
 </Tabs>
 </details>
 
-Once this is complete, ensure that the value of the `webapp-url` field in your `values.yaml` is configured to match the ingress URL.
+Once this is complete, ensure that the value of the `airbyteUrl` field in your `values.yaml` is configured to match the ingress URL.
 
 You may configure ingress using a load balancer or an API Gateway. We do not currently support most service meshes (such as Istio). If you are having networking issues after fully deploying Airbyte, please verify that firewalls or lacking permissions are not interfering with pod-pod communication. Please also verify that deployed pods have the right permissions to make requests to your external database.
 
@@ -957,7 +971,7 @@ After specifying your own configuration, run the following command:
 
 ### Configure a custom image registry
 
-You can optionally configure Airbyte to pull Docker images from a custom image registry rather than [Airbyte's public Docker repository](https://hub.docker.com/u/airbyte). In this case, Airbyte pulls both platform images (e.g. `server`, `webapp`, `workload-launcher`, etc.) and connector images (e.g. Postgres Source, S3 Destination, etc.) from the configured registry.
+You can optionally configure Airbyte to pull Docker images from a custom image registry rather than [Airbyte's public Docker repository](https://hub.docker.com/u/airbyte). In this case, Airbyte pulls both platform images (e.g. `server`, `workload-launcher`, etc.) and connector images (e.g. Postgres Source, S3 Destination, etc.) from the configured registry.
 
 Implementing Airbyte this way has several advantages.
 
@@ -1007,19 +1021,18 @@ abctl images manifest
 You should see something like this:
 
 ```bash
-airbyte/bootloader:1.3.1
-airbyte/connector-builder-server:1.3.1
-airbyte/connector-sidecar:1.3.1
-airbyte/container-orchestrator:1.3.1
-airbyte/cron:1.3.1
-airbyte/db:1.3.1
+airbyte/bootloader:1.8.0
+airbyte/connector-builder-server:1.8.0
+airbyte/connector-sidecar:1.8.0
+airbyte/container-orchestrator:1.8.0
+airbyte/cron:1.8.0
+airbyte/db:1.8.0
 airbyte/mc:latest
-airbyte/server:1.3.1
-airbyte/webapp:1.3.1
-airbyte/worker:1.3.1
-airbyte/workload-api-server:1.3.1
-airbyte/workload-init-container:1.3.1
-airbyte/workload-launcher:1.3.1
+airbyte/server:1.8.0
+airbyte/worker:1.8.0
+airbyte/workload-api-server:1.8.0
+airbyte/workload-init-container:1.8.0
+airbyte/workload-launcher:1.8.0
 bitnami/kubectl:1.28.9
 busybox:1.35
 busybox:latest

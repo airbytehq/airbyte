@@ -10,13 +10,13 @@ from urllib.parse import urljoin
 
 import backoff
 import requests
+from source_pinterest.streams import PinterestAnalyticsStream
+from source_pinterest.utils import get_analytics_columns
 
 import airbyte_cdk.sources.utils.casing as casing
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
-from source_pinterest.streams import PinterestAnalyticsStream
-from source_pinterest.utils import get_analytics_columns
 
 from .errors import ReportGenerationFailure, ReportGenerationInProgress, ReportStatusError, RetryableException
 from .models import ReportInfo, ReportStatus, ReportStatusDetails
@@ -190,78 +190,6 @@ class PinterestAnalyticsTargetingReportStream(PinterestAnalyticsReportStream):
                 columns.remove(odd_value)
         columns = ",".join(columns)
         return self._construct_request_body(stream_slice["start_date"], stream_slice["end_date"], self.granularity, columns)
-
-
-class CampaignAnalyticsReport(PinterestAnalyticsReportStream):
-    @property
-    def level(self):
-        return "CAMPAIGN"
-
-
-class CampaignTargetingReport(PinterestAnalyticsTargetingReportStream):
-    @property
-    def level(self):
-        return "CAMPAIGN_TARGETING"
-
-
-class AdvertiserReport(PinterestAnalyticsReportStream):
-    @property
-    def level(self):
-        return "ADVERTISER"
-
-
-class AdvertiserTargetingReport(PinterestAnalyticsTargetingReportStream):
-    @property
-    def level(self):
-        return "ADVERTISER_TARGETING"
-
-
-class AdGroupReport(PinterestAnalyticsReportStream):
-    @property
-    def level(self):
-        return "AD_GROUP"
-
-
-class AdGroupTargetingReport(PinterestAnalyticsTargetingReportStream):
-    @property
-    def level(self):
-        return "AD_GROUP_TARGETING"
-
-
-class PinPromotionReport(PinterestAnalyticsReportStream):
-    @property
-    def level(self):
-        return "PIN_PROMOTION"
-
-
-class PinPromotionTargetingReport(PinterestAnalyticsTargetingReportStream):
-    @property
-    def level(self):
-        return "PIN_PROMOTION_TARGETING"
-
-
-class ProductGroupReport(PinterestAnalyticsReportStream):
-    @property
-    def level(self):
-        return "PRODUCT_GROUP"
-
-
-class ProductGroupTargetingReport(PinterestAnalyticsTargetingReportStream):
-    @property
-    def level(self):
-        return "PRODUCT_GROUP_TARGETING"
-
-
-class ProductItemReport(PinterestAnalyticsReportStream):
-    @property
-    def level(self):
-        return "PRODUCT_ITEM"
-
-
-class KeywordReport(PinterestAnalyticsTargetingReportStream):
-    @property
-    def level(self):
-        return "KEYWORD"
 
 
 class CustomReport(PinterestAnalyticsTargetingReportStream):

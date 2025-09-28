@@ -37,6 +37,7 @@ jobs:
           commands: |
             approve-regression-tests
             bump-bulk-cdk-and-release-connectors
+            bump-bulk-cdk-version
             bump-cdk-version-and-merge
             bump-version
             build-connector-images
@@ -47,6 +48,7 @@ jobs:
             run-cat-tests
             run-connector-tests
             test-performance
+            update-connector-cdk-version
 
           # Notes regarding static-args:
           # - Slash commands can be invoked from both issues and comments.

@@ -1,5 +1,3 @@
-import Diff from "./assets/record-processing-schema-diff.png";
-
 # Record processing
 
 Connectors built with the connector builder always make HTTP requests, receive the responses and emit records. Besides making the right requests, it's important to properly hand over the records to the system:
@@ -808,11 +806,7 @@ More strict is always better, but the detected schema is a good default to rely 
 
 If `Automatically import detected schema` is disabled, and the declared schema deviates from the detected schema, the "Detected schema" tab in the testing panel highlights the differences. It's important to note that differences are not necessarily a problem that needs to be fixed - in some cases the currently loaded set of records in the testing panel doesn't feature all possible cases so the detected schema is too strict. However, if the declared schema is incompatible with the detected schema based on the test records, it's very likely there will be errors when running syncs.
 
-<img
-  src={Diff}
-  width="600"
-  alt="Detected schema with highlighted differences"
-/>
+![Detected schema with highlighted differences](./assets/record-processing-schema-diff.png)
 
 In the case of the example above, there are two differences between detected and declared schema. The first difference for the `name` field is not problematic:
 
