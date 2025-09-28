@@ -438,6 +438,167 @@ definitions:
               - WEB_SESSIONS_2
             level: "{{ parameters['level'] }}"
 
+  custom_reports_dynamic_template:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/basic_async_retriever"
+      creation_requester:
+        $ref: "#/definitions/basic_async_retriever/creation_requester"
+        request_body:
+          type: RequestBodyJsonObject
+          value:
+            # filled by components_resolver below
+            start_date: "{{ stream_interval['start_time'] }}"
+            end_date: "{{ stream_interval['end_time'] }}"
+            level: "{{ components_values['level'] }}"
+            granularity: "{{ components_values['granularity'] }}"
+            click_window_days: "{{ components_values['click_window_days'] }}"
+            engagement_window_days: "{{ components_values['engagement_window_days'] }}"
+            view_window_days: "{{ components_values['view_window_days'] }}"
+            conversion_report_time: "{{ components_values['conversion_report_time'] }}"
+            attribution_types: "{{ components_values['attribution_types'] }}"
+            columns: "{{ components_values['columns'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema: "#/definitions/reports_schema"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "DATE"
+      datetime_format: "%Y-%m-%d"
+      # start_datetime is set by components_resolver per report (2/31/913-day windows)
+      start_datetime: "template_value"
+      cursor_granularity: "P1D"
+      step: "template_value"
+
+  custom_reports_dynamic_stream:
+    type: DynamicDeclarativeStream
+    stream_template:
+      $ref: "#/definitions/custom_reports_dynamic_template"
+    components_resolver:
+      type: ConfigComponentsResolver
+      stream_config:
+        - type: StreamConfig
+          configs_pointer:
+            - custom_reports
+      components_mapping:
+        # Name
+        - type: ComponentMappingDefinition
+          field_path: [ name ]
+          value: "{{ camel_case_to_snake_case('custom_' + components_values['name']) }}"
+          create_or_update: true
+        # Required request body params
+        - type: ComponentMappingDefinition
+          field_path:
+            [ retriever, creation_requester, request_body, value, level ]
+          value: "{{ components_values['level'] }}"
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            [ retriever, creation_requester, request_body, value, granularity ]
+          value: "{{ components_values['granularity'] }}"
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            [
+              retriever,
+              creation_requester,
+              request_body,
+              value,
+              click_window_days,
+            ]
+          value: "{{ components_values['click_window_days'] or 30 }}"
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            [
+              retriever,
+              creation_requester,
+              request_body,
+              value,
+              engagement_window_days,
+            ]
+          value: "{{ components_values['engagement_window_days'] or 30 }}"
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            [
+              retriever,
+              creation_requester,
+              request_body,
+              value,
+              view_window_days,
+            ]
+          value: "{{ components_values['view_window_days'] or 30 }}"
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            [
+              retriever,
+              creation_requester,
+              request_body,
+              value,
+              conversion_report_time,
+            ]
+          value: "{{ components_values['conversion_report_time'] }}"
+          condition: "{{ components_values.get('conversion_report_time') is not none }}"
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            [
+              retriever,
+              creation_requester,
+              request_body,
+              value,
+              attribution_types,
+            ]
+          value: "{{ components_values['attribution_types'] or ['INDIVIDUAL', 'HOUSEHOLD'] }}"
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            [ retriever, creation_requester, request_body, value, columns ]
+          value: "{{ components_values['columns'] }}"
+          create_or_update: true
+
+        # Windowing rules — set start_datetime and step based on granularity/level
+        # Tw: HOUR → max 2 days
+        - type: ComponentMappingDefinition
+          field_path: [ incremental_sync, start_datetime ]
+          value: "{{ components_values['start_date'] if components_values['start_date'] and components_values['start_date'] > day_delta(-2, format='%Y-%m-%d') else day_delta(-2, format='%Y-%m-%d') }}"
+          condition: "{{ components_values['granularity'] == 'HOUR' }}"
+          value_type: string
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path: [ incremental_sync, step ]
+          value: "P2D"
+          condition: "{{ components_values['granularity'] == 'HOUR' }}"
+          create_or_update: true
+
+        # PRODUCT_ITEM → 31 days
+        - type: ComponentMappingDefinition
+          field_path: [ incremental_sync, start_datetime ]
+          value: "{{ components_values['start_date'] if components_values['start_date'] and components_values['start_date'] > day_delta(-91, format='%Y-%m-%d') else day_delta(-91, format='%Y-%m-%d') }}"
+          condition: "{{ components_values['level'] == 'PRODUCT_ITEM' and components_values['granularity'] != 'HOUR' }}"
+          value_type: string
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path: [ incremental_sync, step ]
+          value: "P31D"
+          condition: "{{ components_values['level'] == 'PRODUCT_ITEM' and components_values['granularity'] != 'HOUR' }}"
+          create_or_update: true
+
+        # Default → 913 days (your analytics report rule)
+        - type: ComponentMappingDefinition
+          field_path: [ incremental_sync, start_datetime ]
+          value: "{{ components_values.get('start_date') if components_values.get('start_date') and components_values.get('start_date') > day_delta(-913, format='%Y-%m-%d') else day_delta(-913, format='%Y-%m-%d') }}"
+          condition: "{{ components_values['granularity'] != 'HOUR' and components_values['level'] != 'PRODUCT_ITEM' }}"
+          value_type: string
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path: [ incremental_sync, step ]
+          value: "P185D"
+          condition: "{{ components_values['granularity'] != 'HOUR' and components_values['level'] != 'PRODUCT_ITEM' }}"
+          create_or_update: true
+
   advertiser_report_stream:
     $ref: "#/definitions/analytics_report_base_stream"
     name: "advertiser_report"
