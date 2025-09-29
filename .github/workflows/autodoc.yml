@@ -63,7 +63,7 @@ jobs:
 
           # Parse the changed files from Step 2
           CHANGED_FILES='${{ steps.push-files.outputs.files }}'
-          
+
           # Filter for connector metadata.yaml files in the changed files
           METADATA_FILE=$(echo "$CHANGED_FILES" | jq -r '.[] | select(test("airbyte-integrations/connectors/.*/metadata\\.yaml$"))' | head -n 1)
 
