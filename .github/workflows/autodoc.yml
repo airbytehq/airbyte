@@ -61,11 +61,14 @@ jobs:
         run: |
           echo "🔍 Checking if push contains community-supported connector changes..."
 
-          # Look for connector metadata files in the standard location
-          METADATA_FILE=$(find . -path "*/airbyte-integrations/connectors/*/metadata.yaml" | head -n 1)
+          # Parse the changed files from Step 2
+          CHANGED_FILES='${{ steps.push-files.outputs.files }}'
+
+          # Filter for connector metadata.yaml files in the changed files
+          METADATA_FILE=$(echo "$CHANGED_FILES" | yq -p json -r '.[] | select(test("airbyte-integrations/connectors/.*/metadata\\.yaml$"))' | head -n 1)
 
           if [ -z "$METADATA_FILE" ]; then
-            echo "ℹ️  No connector metadata.yaml file found - this push doesn't affect connectors"
+            echo "ℹ️  No connector metadata.yaml file found in changed files - this push doesn't affect connectors"
             echo "metadata_file=false" >> $GITHUB_OUTPUT
             echo "community_support=false" >> $GITHUB_OUTPUT
             exit 0
