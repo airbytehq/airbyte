@@ -866,10 +866,18 @@ dynamic_streams:
           value: >
             {% set pivots = components_values.get("pivots") %}
             {% set cohort = components_values.get("cohortSpec") %}
+            {% set dimension_filter = components_values.get("dimensionFilter") %}
+            {% set metric_filter = components_values.get("metricFilter") %}
               dimensions: []
               metrics: []
               returnPropertyQuota: True
               keepEmptyRows: {{ config.get("keep_empty_rows", False) }}
+              {% if dimension_filter %}
+              dimensionFilter: {{ dimension_filter }}
+              {% endif %}
+              {% if metric_filter %}
+              metricFilter: {{ metric_filter }}
+              {% endif %}
               {% if pivots %}
               pivots: {{ pivots }}
               {% else %}
