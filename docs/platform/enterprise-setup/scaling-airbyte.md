@@ -92,7 +92,7 @@ worker:
 
 ## Multiple Node Groups
 
-To reduce the blast radius of an underprovisioned Airbyte deployment, place 'static' workloads (`webapp`, `server`, etc.) on one Kubernetes node group, while placing job-related workloads (connector pods) on a different Kubernetes node group. This ensures that UI or API availability is unlikely to be impacted by the number of concurrent syncs.
+To reduce the blast radius of an underprovisioned Airbyte deployment, place 'static' workloads (`server`, etc.) on one Kubernetes node group, while placing job-related workloads (connector pods) on a different Kubernetes node group. This ensures that UI or API availability is unlikely to be impacted by the number of concurrent syncs.
 
 <details>
 <summary>Configure Airbyte Self-Managed Enterprise to run in two node groups</summary>
@@ -118,10 +118,6 @@ keycloak-setup:
     type: static
 
 temporal:
-  nodeSelector:
-    type: static
-
-webapp:
   nodeSelector:
     type: static
 
@@ -189,10 +185,6 @@ keycloakSetup:
     type: static
 
 temporal:
-  nodeSelector:
-    type: static
-
-webapp:
   nodeSelector:
     type: static
 

@@ -36,7 +36,7 @@ def test_query_shopping_performance_view_stream(customers, config, requests_mock
                             "clientCustomer": "customers/123",
                             "manager": False,
                             "status": "ENABLED",
-                            "id": "123",
+                            "id": "1234567890",  # WARNING: this value needs to match the value in the config
                         }
                     }
                 ]
@@ -348,9 +348,6 @@ def test_custom_query_stream_with_different_queries(query, expected_incremental_
     # - 1 segments.date with SELECT...FROM pattern, OR
     # - 2 segments.date with SELECT...FROM AND ORDER BY...LIMIT patterns
     if expected_incremental_sync:
-        assert hasattr(stream, "stream_cursor_field"), f"Stream should have stream_cursor_field for query: {query}"
-        assert stream.stream_cursor_field == "segments.date", f"Stream cursor field should be 'segments.date' for query: {query}"
+        assert stream.cursor_field == "segments.date", f"Stream cursor field should be 'segments.date' for query: {query}"
     else:
-        # For non-incremental streams, check that segments.date is not used as cursor field
-        if hasattr(stream, "stream_cursor_field") and stream.stream_cursor_field is not None:
-            assert stream.stream_cursor_field != "segments.date", f"Stream should not have segments.date as cursor field for query: {query}"
+        assert stream.cursor_field != "segments.date", f"Stream should not have segments.date as cursor field for query: {query}"
