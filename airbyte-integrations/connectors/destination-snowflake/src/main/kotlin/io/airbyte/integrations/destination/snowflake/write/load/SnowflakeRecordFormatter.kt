@@ -10,14 +10,9 @@ import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.csv.toCsvValue
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.util.Jsons
+import io.airbyte.integrations.destination.snowflake.sql.DEFAULT_COLUMNS
 
-internal val RAW_META_COLUMNS =
-    listOf(
-        Meta.COLUMN_NAME_AB_EXTRACTED_AT,
-        Meta.COLUMN_NAME_AB_META,
-        Meta.COLUMN_NAME_AB_RAW_ID,
-        Meta.COLUMN_NAME_AB_GENERATION_ID
-    )
+internal val RAW_META_COLUMNS = DEFAULT_COLUMNS.map { column -> column.columnName }
 
 interface SnowflakeRecordFormatter {
     fun format(record: Map<String, AirbyteValue>): List<Any>
@@ -46,7 +41,13 @@ class SnowflakeRawRecordFormatter(
         columns
             .filter { RAW_META_COLUMNS.contains(it) }
             .forEach { column ->
-                when (column) {
+                /*
+                 * Meta columns are forced to uppercase for backwards compatibility with previous
+                 * versions of the destination.  Therefore, convert the column to lowercase so
+                 * that it can match the constants, which use the lowercase version of the meta
+                 * column names.
+                 */
+                when (column.lowercase()) {
                     Meta.COLUMN_NAME_AB_EXTRACTED_AT,
                     Meta.COLUMN_NAME_AB_META,
                     Meta.COLUMN_NAME_AB_RAW_ID,

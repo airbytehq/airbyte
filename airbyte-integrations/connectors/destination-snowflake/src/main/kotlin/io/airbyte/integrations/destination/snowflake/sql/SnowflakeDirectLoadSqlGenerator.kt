@@ -178,11 +178,11 @@ class SnowflakeDirectLoadSqlGenerator(
         ) {
             // Execute CDC deletions if there's already a record
             cdcDeleteClause =
-                "WHEN MATCHED AND new_record.\"_ab_cdc_deleted_at\" IS NOT NULL AND $cursorComparison THEN DELETE"
+                "WHEN MATCHED AND new_record.\"${CDC_DELETED_AT_COLUMN.uppercase()}\" IS NOT NULL AND $cursorComparison THEN DELETE"
             // And skip insertion entirely if there's no matching record.
             // (This is possible if a single T+D batch contains both an insertion and deletion for
             // the same PK)
-            cdcSkipInsertClause = "AND new_record.\"_ab_cdc_deleted_at\" IS NULL"
+            cdcSkipInsertClause = "AND new_record.\"${CDC_DELETED_AT_COLUMN.uppercase()}\" IS NULL"
         } else {
             cdcDeleteClause = ""
             cdcSkipInsertClause = ""

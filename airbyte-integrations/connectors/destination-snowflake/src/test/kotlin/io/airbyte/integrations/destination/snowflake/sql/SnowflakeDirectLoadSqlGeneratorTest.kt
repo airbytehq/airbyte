@@ -389,11 +389,15 @@ new_record."_AIRBYTE_GENERATION_ID"
             )
 
         // Should include the DELETE clause and skip insert clause
-        assert(sql.contains("WHEN MATCHED AND new_record.\"_ab_cdc_deleted_at\" IS NOT NULL"))
+        assert(
+            sql.contains(
+                "WHEN MATCHED AND new_record.\"${CDC_DELETED_AT_COLUMN.uppercase()}\" IS NOT NULL"
+            )
+        )
         assert(sql.contains("THEN DELETE"))
         assert(
             sql.contains(
-                "WHEN NOT MATCHED AND new_record.\"_ab_cdc_deleted_at\" IS NULL THEN INSERT"
+                "WHEN NOT MATCHED AND new_record.\"${CDC_DELETED_AT_COLUMN.uppercase()}\" IS NULL THEN INSERT"
             )
         )
     }
