@@ -1,3 +1,5 @@
+name: Connectors CDK Version Check
+
 on:
   pull_request:
     types: [opened, synchronize, reopened]
