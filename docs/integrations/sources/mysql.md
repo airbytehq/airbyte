@@ -188,10 +188,9 @@ If left empty, Airbyte automatically optimizes the number based on your setup.
 - However, a large number of connections can overwhelm the server, especially if the source is being used in multiple syncs.
 
 ### Best practices:
-- Start with default (empty) to let Airbyte optimize. 
-- If your database is large: we recommend increasing this value (i.e., start with 3 and increment).
-- If you are using the source in more than one sync: we recommend keeping this value small.
-- Check connection limits: Ensure your MySQL `max_connections` setting can accommodate this.
+- **Leave unset for optimal performance**: Unless you have specific connection constraints, leave this field empty to let Airbyte automatically manage connections for best performance.
+- **Multiple syncs**: If you're using this source in multiple syncs simultaneously, consider setting a lower value to avoid hitting server limits.
+- **Check your database limits**: Verify your MySQL `max_connections` setting can accommodate the total connections across all syncs. You can check this with: `SHOW VARIABLES LIKE 'max_connections';`
 
 </details>
 
