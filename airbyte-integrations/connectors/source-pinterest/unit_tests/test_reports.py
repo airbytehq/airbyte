@@ -8,11 +8,10 @@ import os
 
 from freezegun import freeze_time
 from source_pinterest import SourcePinterest
-from source_pinterest.utils import get_analytics_columns
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.state_builder import StateBuilder
-from unit_tests.conftest import read_from_stream
+from unit_tests.conftest import get_analytics_columns, read_from_stream
 
 
 os.environ["REQUEST_CACHE_PATH"] = "/tmp"
@@ -24,8 +23,6 @@ def test_read_records(requests_mock, test_config, analytics_report_stream, date_
     report_request_url = "https://api.pinterest.com/v5/ad_accounts/123/reports"
 
     final_report_status = {"report_status": "FINISHED", "url": report_download_url}
-
-    initial_response = {"report_status": "IN_PROGRESS", "token": "token", "message": ""}
 
     final_response = {"campaign_id": [{"metric": 1}]}
 
