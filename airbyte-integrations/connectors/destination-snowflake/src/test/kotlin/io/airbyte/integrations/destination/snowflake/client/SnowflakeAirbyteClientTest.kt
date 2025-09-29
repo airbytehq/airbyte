@@ -596,14 +596,16 @@ internal class SnowflakeAirbyteClientTest {
         val sql = "CREATE SCHEMA test_namespace"
 
         every { sqlGenerator.createNamespace(namespace) } returns sql
-        every { sqlGenerator.checkSchemaExists(namespace) } returns "SELECT COUNT(*) > 0 AS schema_exists FROM INFORMATION_SCHEMA.SCHEMATA"
+        every { sqlGenerator.checkSchemaExists(namespace) } returns
+            "SELECT COUNT(*) > 0 AS schema_exists FROM INFORMATION_SCHEMA.SCHEMATA"
 
         // Mock for schema check - should fail and throw exception
-        val schemaCheckResultSet = mockk<ResultSet> {
-            every { next() } returns true
-            every { getBoolean("schema_exists") } returns false
-            every { close() } just Runs
-        }
+        val schemaCheckResultSet =
+            mockk<ResultSet> {
+                every { next() } returns true
+                every { getBoolean("schema_exists") } returns false
+                every { close() } just Runs
+            }
 
         val connection = mockk<Connection>()
         val statement = mockk<Statement>()
@@ -611,7 +613,9 @@ internal class SnowflakeAirbyteClientTest {
         every { dataSource.connection } returns connection
         every { connection.createStatement() } returns statement
         // First call returns schema check result, second call throws for CREATE SCHEMA
-        every { statement.executeQuery(any()) } returns schemaCheckResultSet andThenThrows SQLException("Network error", "08S01")
+        every { statement.executeQuery(any()) } returns
+            schemaCheckResultSet andThenThrows
+            SQLException("Network error", "08S01")
         every { statement.close() } just Runs
         every { connection.close() } just Runs
 
