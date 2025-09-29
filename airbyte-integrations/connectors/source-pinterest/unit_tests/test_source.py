@@ -4,9 +4,8 @@
 
 from unittest.mock import MagicMock
 
-from unit_tests.conftest import get_source
-
 from airbyte_cdk.models import Status
+from unit_tests.conftest import get_source
 
 
 def test_check_connection(requests_mock, test_config):

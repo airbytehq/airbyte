@@ -10,7 +10,7 @@ from freezegun import freeze_time
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.state_builder import StateBuilder
-from unit_tests.conftest import get_analytics_columns, read_from_stream, get_source
+from unit_tests.conftest import get_analytics_columns, get_source, read_from_stream
 
 
 os.environ["REQUEST_CACHE_PATH"] = "/tmp"
