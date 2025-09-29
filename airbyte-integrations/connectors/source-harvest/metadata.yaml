@@ -76,8 +76,8 @@ data:
     - suite: smokeTests
       scenarios:
         - name: default
-          config_secret_file: secrets/config_oauth.json
+          config_file: secrets/config_oauth.json
         - name: invalid_config
-          config_secret_file: integration_tests/invalid_config.json
+          config_file: integration_tests/invalid_config.json
           expect_failure: true
 metadataSpecVersion: "1.0"
