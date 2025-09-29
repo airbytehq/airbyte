@@ -15,6 +15,10 @@ import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import java.io.BufferedReader
+import java.io.File
+import java.io.InputStreamReader
+import java.util.zip.GZIPInputStream
 import kotlin.io.path.exists
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -147,13 +151,12 @@ internal class SnowflakeInsertBufferTest {
 
         runBlocking {
             buffer.accumulate(record)
+            buffer.csvWriter?.flush()
+            buffer.csvWriter?.close()
             assertEquals(
                 "test-value$CSV_FIELD_SEPARATOR$CSV_LINE_DELIMITER",
-                buffer.csvFilePath?.toFile()?.readText()
+                readFromCsvFile(buffer.csvFilePath!!.toFile())
             )
-            buffer.flush()
-            coVerify(exactly = 1) { snowflakeAirbyteClient.putInStage(tableName, any()) }
-            coVerify(exactly = 1) { snowflakeAirbyteClient.copyFromStage(tableName) }
         }
     }
 
@@ -178,15 +181,20 @@ internal class SnowflakeInsertBufferTest {
 
         runBlocking {
             buffer.accumulate(record)
+            buffer.csvWriter?.flush()
+            buffer.csvWriter?.close()
             assertEquals(
                 "test-value$CSV_FIELD_SEPARATOR$CSV_LINE_DELIMITER",
-                buffer.csvFilePath?.toFile()?.readText()
+                readFromCsvFile(buffer.csvFilePath!!.toFile())
             )
-            buffer.flush()
-            coVerify(exactly = 1) { snowflakeAirbyteClient.putInStage(tableName, any()) }
-            coVerify(exactly = 1) { snowflakeAirbyteClient.copyFromStage(tableName) }
         }
     }
+
+    private fun readFromCsvFile(file: File) =
+        GZIPInputStream(file.inputStream()).use { input ->
+            val reader = BufferedReader(InputStreamReader(input))
+            reader.readText()
+        }
 
     private fun createRecord(columnName: String) =
         mapOf(

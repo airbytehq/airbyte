@@ -278,7 +278,7 @@ new_record."_airbyte_generation_id"
             """
             CREATE OR REPLACE FILE FORMAT $fileFormatName
             TYPE = 'CSV'
-            COMPRESSION = NONE
+            COMPRESSION = GZIP
             FIELD_DELIMITER = '$CSV_FIELD_SEPARATOR'
             RECORD_DELIMITER = '$CSV_LINE_DELIMITER'
             FIELD_OPTIONALLY_ENCLOSED_BY = '"'
@@ -308,10 +308,14 @@ new_record."_airbyte_generation_id"
         val tempFilePath = "/some/file/path.csv"
         val stagingTableName = snowflakeSqlNameUtils.fullyQualifiedStageName(tableName)
         val sql = snowflakeDirectLoadSqlGenerator.putInStage(tableName, tempFilePath)
-        assertEquals(
-            "PUT 'file://$tempFilePath' @$stagingTableName\nAUTO_COMPRESS = FALSE\nSOURCE_COMPRESSION = NONE\nOVERWRITE = TRUE",
-            sql
-        )
+        val expectedSql =
+            """
+            PUT 'file://$tempFilePath' @$stagingTableName
+            AUTO_COMPRESS = FALSE
+            SOURCE_COMPRESSION = GZIP
+            OVERWRITE = TRUE
+        """.trimIndent()
+        assertEquals(expectedSql, sql)
     }
 
     @Test

@@ -16,6 +16,7 @@ import io.airbyte.integrations.destination.snowflake.sql.QUOTE
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import java.nio.file.Path
+import java.util.zip.GZIPOutputStream
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.pathString
 
@@ -38,7 +39,7 @@ class SnowflakeInsertBuffer(
 
     @VisibleForTesting internal var recordCount = 0
 
-    private var csvWriter: CsvWriter? = null
+    @VisibleForTesting internal var csvWriter: CsvWriter? = null
 
     private val csvWriterBuilder =
         CsvWriter.builder()
@@ -57,7 +58,7 @@ class SnowflakeInsertBuffer(
         if (csvFilePath == null) {
             val csvFile = createCsvFile()
             csvFilePath = csvFile.toPath()
-            csvWriter = csvWriterBuilder.build(csvFilePath)
+            csvWriter = csvWriterBuilder.build(GZIPOutputStream(csvFile.outputStream()))
         }
 
         writeToCsvFile(recordFields)
@@ -66,7 +67,10 @@ class SnowflakeInsertBuffer(
     suspend fun flush() {
         csvFilePath?.let { filePath ->
             try {
+                // Flush and close the CSV write to ensure that any pending writes are written
+                // to the file AND that any proper end of file markers are written by the close
                 csvWriter?.flush()
+                csvWriter?.close()
                 logger.info { "Beginning insert into ${tableName.toPrettyString(quote = QUOTE)}" }
                 // Next, put the CSV file into the staging table
                 snowflakeClient.putInStage(tableName, filePath.pathString)
@@ -79,7 +83,6 @@ class SnowflakeInsertBuffer(
                 logger.error(e) { "Unable to flush accumulated data." }
             } finally {
                 filePath.deleteIfExists()
-                csvWriter?.close()
                 csvWriter = null
                 csvFilePath = null
                 recordCount = 0
@@ -89,7 +92,7 @@ class SnowflakeInsertBuffer(
     }
 
     private fun createCsvFile(): File {
-        val csvFile = File.createTempFile("snowflake", ".csv")
+        val csvFile = File.createTempFile("snowflake", ".csv.gz")
         csvFile.deleteOnExit()
         return csvFile
     }
