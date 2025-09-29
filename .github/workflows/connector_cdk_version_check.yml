@@ -1,0 +1,26 @@
+name: Connectors CDK Version Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - "airbyte-integrations/connectors/*/gradle.properties"
+
+jobs:
+  connectors-cdk-version-check:
+    name: Connectors CDK Version Check
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check no connectors set CDK version to 'local'
+        run: |
+          # connectors that set cdk version to 'local' (should be none)
+          connectors="$(gw getCdkVersion | awk '/local/ {print prev} {prev=$0}' | cut -d: -f4)"
+          
+          if [[ -z "$output" ]]; then
+            echo "No connectors are setting CDK version to 'local'."
+            exit 0
+          else
+            echo "::error title=Invalid CDK version usage::One or more connectors set CDK version to 'local' (should be none). See the list below."
+            printf '%s\n' "$output"
+            exit 1
+          fi
