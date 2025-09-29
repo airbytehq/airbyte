@@ -81,3 +81,8 @@ data:
         - name: invalid_config
           config_file: integration_tests/invalid_config.json
           expect_failure: true
+        - name: with_configured_catalog
+          config_file: secrets/config_oauth.json
+          configured_catalog_file: integration_tests/configured_catalog.json
+          only_streams:
+            - accounts
