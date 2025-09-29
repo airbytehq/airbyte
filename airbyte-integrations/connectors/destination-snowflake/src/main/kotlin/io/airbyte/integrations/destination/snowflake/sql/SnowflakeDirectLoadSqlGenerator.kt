@@ -50,10 +50,9 @@ class SnowflakeDirectLoadSqlGenerator(
         val schemaName = namespace.toSnowflakeCompatibleName()
         val databaseName = snowflakeConfiguration.database.toSnowflakeCompatibleName()
         return """
-            SELECT COUNT(*) > 0 AS schema_exists
-            FROM INFORMATION_SCHEMA.SCHEMATA
+            SELECT COUNT(*) > 0 AS SCHEMA_EXISTS
+            FROM "$databaseName".INFORMATION_SCHEMA.SCHEMATA
             WHERE SCHEMA_NAME = '$schemaName'
-              AND CATALOG_NAME = '$databaseName'
         """
             .trimIndent()
             .andLog()

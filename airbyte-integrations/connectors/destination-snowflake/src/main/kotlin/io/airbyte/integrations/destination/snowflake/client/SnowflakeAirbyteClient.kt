@@ -65,7 +65,7 @@ class SnowflakeAirbyteClient(
                     val resultSet = it.executeQuery(sqlGenerator.checkSchemaExists(namespace))
                     resultSet.use { rs ->
                         if (rs.next()) {
-                            rs.getBoolean("schema_exists")
+                            rs.getBoolean("SCHEMA_EXISTS")
                         } else {
                             false
                         }

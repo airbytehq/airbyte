@@ -129,7 +129,7 @@ internal class SnowflakeAirbyteClientTest {
         val schemaCheckResultSet =
             mockk<ResultSet> {
                 every { next() } returns true
-                every { getBoolean("schema_exists") } returns false
+                every { getBoolean("SCHEMA_EXISTS") } returns false
                 every { close() } just Runs
             }
 
@@ -154,7 +154,7 @@ internal class SnowflakeAirbyteClientTest {
 
         every { dataSource.connection } returns mockConnection
         every { sqlGenerator.checkSchemaExists(namespace) } returns
-            "SELECT COUNT(*) > 0 AS schema_exists FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = 'namespace'"
+            "SELECT COUNT(*) > 0 AS SCHEMA_EXISTS FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = 'namespace'"
 
         runBlocking {
             client.createNamespace(namespace)
@@ -173,7 +173,7 @@ internal class SnowflakeAirbyteClientTest {
         val schemaCheckResultSet =
             mockk<ResultSet> {
                 every { next() } returns true
-                every { getBoolean("schema_exists") } returns true
+                every { getBoolean("SCHEMA_EXISTS") } returns true
                 every { close() } just Runs
             }
 
@@ -198,7 +198,7 @@ internal class SnowflakeAirbyteClientTest {
 
         every { dataSource.connection } returns mockConnection
         every { sqlGenerator.checkSchemaExists(namespace) } returns
-            "SELECT COUNT(*) > 0 AS schema_exists FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = 'namespace'"
+            "SELECT COUNT(*) > 0 AS SCHEMA_EXISTS FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = 'namespace'"
 
         runBlocking {
             client.createNamespace(namespace)
@@ -597,13 +597,13 @@ internal class SnowflakeAirbyteClientTest {
 
         every { sqlGenerator.createNamespace(namespace) } returns sql
         every { sqlGenerator.checkSchemaExists(namespace) } returns
-            "SELECT COUNT(*) > 0 AS schema_exists FROM INFORMATION_SCHEMA.SCHEMATA"
+            "SELECT COUNT(*) > 0 AS SCHEMA_EXISTS FROM INFORMATION_SCHEMA.SCHEMATA"
 
         // Mock for schema check - should fail and throw exception
         val schemaCheckResultSet =
             mockk<ResultSet> {
                 every { next() } returns true
-                every { getBoolean("schema_exists") } returns false
+                every { getBoolean("SCHEMA_EXISTS") } returns false
                 every { close() } just Runs
             }
 
