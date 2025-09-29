@@ -65,7 +65,7 @@ jobs:
           CHANGED_FILES='${{ steps.push-files.outputs.files }}'
 
           # Filter for connector metadata.yaml files in the changed files
-          METADATA_FILE=$(echo "$CHANGED_FILES" | jq -r '.[] | select(test("airbyte-integrations/connectors/.*/metadata\\.yaml$"))' | head -n 1)
+          METADATA_FILE=$(echo "$CHANGED_FILES" | yq -p json '.[] | select(test("airbyte-integrations/connectors/.*/metadata\\.yaml$"))' | head -n 1)
 
           if [ -z "$METADATA_FILE" ]; then
             echo "ℹ️  No connector metadata.yaml file found in changed files - this push doesn't affect connectors"
