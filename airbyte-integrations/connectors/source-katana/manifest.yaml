@@ -978,6 +978,23 @@ definitions:
     authenticator:
       type: BearerAuthenticator
       api_token: "{{ config[\"api_key\"] }}"
+    error_handler:
+      type: DefaultErrorHandler
+      max_retries: 3
+      response_filters:
+        - type: HttpResponseFilter
+          action: RETRY
+          http_codes:
+            - 429
+          error_message: Rate limit exceeded
+      backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: Retry-After
+        - type: WaitUntilTimeFromHeader
+          header: X-Ratelimit-Reset
+        - type: ExponentialBackoffStrategy
+          factor: 2
+          max_retries: 3
 
 streams:
   - $ref: "#/definitions/streams/customers"
@@ -1326,35 +1343,26 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
-      data:
+      description:
         type:
-          - array
+          - string
           - "null"
-        items:
-          type:
-            - object
-            - "null"
-          properties:
-            description:
-              type:
-                - string
-                - "null"
-            amount:
-              type:
-                - string
-                - "null"
-            id:
-              type:
-                - number
-                - "null"
-            sales_order_id:
-              type:
-                - number
-                - "null"
-            tax_rate_id:
-              type:
-                - number
-                - "null"
+      amount:
+        type:
+          - string
+          - "null"
+      id:
+        type:
+          - number
+          - "null"
+      sales_order_id:
+        type:
+          - number
+          - "null"
+      tax_rate_id:
+        type:
+          - number
+          - "null"
   costs:
     type: object
     $schema: http://json-schema.org/schema#
