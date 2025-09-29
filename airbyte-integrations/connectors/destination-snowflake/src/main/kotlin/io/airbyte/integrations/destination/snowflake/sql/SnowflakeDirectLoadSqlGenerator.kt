@@ -6,7 +6,6 @@ package io.airbyte.integrations.destination.snowflake.sql
 
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAMES
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.orchestration.db.CDC_DELETED_AT_COLUMN
@@ -150,20 +149,22 @@ class SnowflakeDirectLoadSqlGenerator(
                 """
                 (
                   target_table.$cursor < new_record.$cursor
-                  OR (target_table.$cursor = new_record.$cursor AND target_table."$COLUMN_NAME_AB_EXTRACTED_AT" < new_record."$COLUMN_NAME_AB_EXTRACTED_AT")
-                  OR (target_table.$cursor IS NULL AND new_record.$cursor IS NULL AND target_table."$COLUMN_NAME_AB_EXTRACTED_AT" < new_record."$COLUMN_NAME_AB_EXTRACTED_AT")
+                  OR (target_table.$cursor = new_record.$cursor AND target_table."${COLUMN_NAME_AB_EXTRACTED_AT.uppercase()}" < new_record."${COLUMN_NAME_AB_EXTRACTED_AT.uppercase()}")
+                  OR (target_table.$cursor IS NULL AND new_record.$cursor IS NULL AND target_table."${COLUMN_NAME_AB_EXTRACTED_AT.uppercase()}" < new_record."${COLUMN_NAME_AB_EXTRACTED_AT.uppercase()}")
                   OR (target_table.$cursor IS NULL AND new_record.$cursor IS $NOT_NULL)
                 )
             """.trimIndent()
         } else {
             // No cursor - use extraction timestamp only
             cursorComparison =
-                """target_table."$COLUMN_NAME_AB_EXTRACTED_AT" < new_record."$COLUMN_NAME_AB_EXTRACTED_AT""""
+                """target_table."${COLUMN_NAME_AB_EXTRACTED_AT.uppercase()}" < new_record."${COLUMN_NAME_AB_EXTRACTED_AT.uppercase()}""""
         }
 
         // Build column assignments for UPDATE
         val columnAssignments: String =
-            (stream.schema.asColumns().keys + COLUMN_NAMES).joinToString(",\n") { fieldName ->
+            (stream.schema.asColumns().keys + DEFAULT_COLUMNS.map { it.columnName }).joinToString(
+                ",\n"
+            ) { fieldName ->
                 val column = columnNameMapping[fieldName] ?: fieldName
                 "\"$column\" = new_record.\"$column\""
             }
@@ -235,7 +236,9 @@ class SnowflakeDirectLoadSqlGenerator(
         columnNameMapping: ColumnNameMapping
     ): String {
         val columnList: String =
-            (stream.schema.asColumns().keys + COLUMN_NAMES).joinToString(",\n") { fieldName ->
+            (stream.schema.asColumns().keys + DEFAULT_COLUMNS.map { it.columnName }).joinToString(
+                ",\n"
+            ) { fieldName ->
                 val columnName = columnNameMapping[fieldName] ?: fieldName
                 "\"$columnName\""
             }
@@ -271,7 +274,7 @@ class SnowflakeDirectLoadSqlGenerator(
               FROM ${snowflakeSqlNameUtils.fullyQualifiedName(sourceTableName)}
             ), numbered_rows AS (
               SELECT *, ROW_NUMBER() OVER (
-                PARTITION BY $pkList ORDER BY $cursorOrderClause "$COLUMN_NAME_AB_EXTRACTED_AT" DESC
+                PARTITION BY $pkList ORDER BY $cursorOrderClause "${COLUMN_NAME_AB_EXTRACTED_AT.uppercase()}" DESC
               ) AS row_number
               FROM records
             )
@@ -295,8 +298,8 @@ class SnowflakeDirectLoadSqlGenerator(
         tableName: TableName,
     ): String {
         return """
-            SELECT "$COLUMN_NAME_AB_GENERATION_ID"
-            FROM ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)} 
+            SELECT "${COLUMN_NAME_AB_GENERATION_ID.uppercase()}"
+            FROM ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}
             LIMIT 1
         """
             .trimIndent()
