@@ -104,9 +104,7 @@ class InsightAsyncJobManager:
     # --- Public consumption API ---
 
     def completed_jobs(self) -> Iterator[AsyncJob]:
-        # Keep going while there are running jobs OR more jobs upstream
         while self._running_jobs or self._has_more_jobs():
-            # Always try to backfill capacity before polling statuses
             self._start_jobs()
 
             completed = self._check_jobs_status()
