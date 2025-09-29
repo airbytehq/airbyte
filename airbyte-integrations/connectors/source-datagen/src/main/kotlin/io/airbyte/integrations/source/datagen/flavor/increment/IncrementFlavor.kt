@@ -24,7 +24,7 @@ data object IncrementFlavor : Flavor {
                     Field("id", IntegerFieldType),
                 )
         )
-    override val primaryKey = mapOf(incrementTableName to listOf(listOf(("id"))))
+    override val primaryKeys = mapOf(incrementTableName to listOf(listOf(("id"))))
 
     override val dataGenerator = IncrementDataGenerator()
 }
