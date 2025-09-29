@@ -13,7 +13,7 @@ definitions:
 
   requester:
     type: CustomRequester
-    class_name: "source_declarative_manifest.components.MondayGraphqlRequester"
+    class_name: "components.MondayGraphqlRequester"
     http_method: POST
     schema_loader:
       type: InlineSchemaLoader
@@ -133,13 +133,13 @@ definitions:
   double_paginator:
     $ref: "#/definitions/default_paginator"
     pagination_strategy:
-      class_name: "source_declarative_manifest.components.ItemPaginationStrategy"
+      class_name: "components.ItemPaginationStrategy"
       type: "CustomPaginationStrategy"
 
   cursor_paginator:
     $ref: "#/definitions/default_paginator"
     pagination_strategy:
-      class_name: "source_declarative_manifest.components.ItemCursorPaginationStrategy"
+      class_name: "components.ItemCursorPaginationStrategy"
       type: "CustomPaginationStrategy"
 
   activity_logs_stream:
@@ -153,7 +153,7 @@ definitions:
       record_selector:
         $ref: "#/definitions/selector"
         extractor:
-          class_name: "source_declarative_manifest.components.MondayActivityExtractor"
+          class_name: "components.MondayActivityExtractor"
       paginator:
         $ref: "#/definitions/double_paginator"
     $parameters:
@@ -178,7 +178,7 @@ definitions:
         partition_field: "ids"
 
   incremental_extractor:
-    class_name: "source_declarative_manifest.components.MondayIncrementalItemsExtractor"
+    class_name: "components.MondayIncrementalItemsExtractor"
 
   # Boards Stream: Split into full refresh and incremental, then combine with StateDelegatingStream
   boards_stream:
@@ -201,7 +201,7 @@ definitions:
               - updated_at_int
             value: "{{ timestamp(record.get('updated_at')) | int if record.get('updated_at') else 1 }}" # updated_at_int is cursor field so in cannot be None
       - type: CustomTransformation
-        class_name: source_declarative_manifest.components.MondayTransformation
+        class_name: components.MondayTransformation
 
     incremental_sync:
       type: DatetimeBasedCursor
@@ -264,7 +264,7 @@ definitions:
         deduplicate: true
     state_migrations:
       - type: CustomStateMigration
-        class_name: source_declarative_manifest.components.MondayStateMigration
+        class_name: components.MondayStateMigration
 
   items_stream:
     type: StateDelegatingStream
@@ -326,7 +326,7 @@ definitions:
         deduplicate: true
     state_migrations:
       - type: CustomStateMigration
-        class_name: source_declarative_manifest.components.MondayStateMigration
+        class_name: components.MondayStateMigration
 streams:
   - "#/definitions/items_stream"
   - "#/definitions/boards_stream"
@@ -478,7 +478,7 @@ concurrency_level:
   # Enterprise: 250 concurrent requests
   # Pro: 100 concurrent requests
   # Other plans: 40 concurrent requests
-  max_concurrency: "{{ 250 if config.get('account_plan', 'Other') == 'Enterprise' else 100 if config.get('account_plan', 'Other') == 'Pro' else 40 }}"
+  max_concurrency: 250  # Using highest value as default, will be limited at runtime
 
 # Define API budget based on the account plan
 api_budget:
@@ -496,7 +496,7 @@ api_budget:
       # Kappa.AI (Monday's AI docs assistant) confirmed these are incorrect,
       # and the values listed above are the correct ones
       rates:
-        - limit: "{{ 750 if config.get('account_plan', 'Other') == 'Enterprise' else 500 if config.get('account_plan', 'Other') == 'Pro' else 250 }}"
+        - limit: 750  # Using highest value as default, will be limited at runtime
           interval: "PT1M"  # 1 minute window
       matchers:
         - url_base: "https://api.monday.com"  # Match all requests to Monday.com API
