@@ -330,7 +330,7 @@ new_record."_airbyte_generation_id"
             COPY INTO $targetTableName
             FROM @$stagingTableName
             FILE_FORMAT = $fileFormat
-            ON_ERROR = 'ABORT_STATEMENT`
+            ON_ERROR = 'ABORT_STATEMENT'
             PURGE = TRUE
         """.trimIndent()
         assertEquals(expectedSql, sql)
