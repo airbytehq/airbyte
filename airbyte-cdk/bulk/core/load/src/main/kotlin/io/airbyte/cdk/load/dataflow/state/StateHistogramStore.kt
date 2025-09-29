@@ -13,15 +13,9 @@ class StateHistogramStore {
     private val flushed: PartitionHistogram = PartitionHistogram(ConcurrentHashMap())
     // Counts of expected messages by state id
     private val expected: StateHistogram = StateHistogram(ConcurrentHashMap())
-    // Counts of flushed bytes by partition id
-    private val bytes: PartitionHistogram = PartitionHistogram(ConcurrentHashMap())
 
     fun acceptFlushedCounts(value: PartitionHistogram): PartitionHistogram {
         return flushed.merge(value)
-    }
-
-    fun acceptFlushedBytes(value: PartitionHistogram): PartitionHistogram {
-        return bytes.merge(value)
     }
 
     fun acceptExpectedCounts(key: StateKey, count: Long): StateHistogram {
@@ -38,16 +32,8 @@ class StateHistogramStore {
         return expectedCount == flushedCount
     }
 
-    fun remove(key: StateKey): StateHistogramStats {
-        val bytes =
-            key.partitionKeys.sumOf {
-                flushed.remove(it)
-                bytes.remove(it) ?: 0
-            }
-        val count = expected.remove(key) ?: 0
-
-        return StateHistogramStats(count, bytes)
+    fun remove(key: StateKey): Long? {
+        key.partitionKeys.forEach { flushed.remove(it) }
+        return expected.remove(key)
     }
 }
-
-data class StateHistogramStats(val count: Long, val bytes: Long)
