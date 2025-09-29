@@ -10,7 +10,13 @@ Access to the API in Self-Managed Enterprise deployments is controlled via appli
 
 ## Step 1: Create an Application
 
-While logged into the Airbyte UI, go to the `settings/applications` page, then create an application to get a pair of `client_id` and `client_secret` credentials. This can be exchanged anytime to get an access token to make requests to the API. These credentials do not expire, but may be deleted at any time.
+1. In the navigation bar, click your user name > **User settings** > **Applications**.
+
+2. Click **Create an application**.
+
+3. Give you application a descriptive name.
+
+4. Copy your `client_id` and `client_secret` credentials. You can exchange them anytime to get an access token to make requests to the API. These credentials don't expire, but you can delete them at any time.
 
 ![Create an Application](./assets/enterprise-applications-creation.png)
 
