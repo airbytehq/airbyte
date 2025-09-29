@@ -6,14 +6,35 @@ dockerRepository: airbyte/destination-hubspot
 
 This page guides you through the process of setting up the [HubSpot](https://www.hubspot.com/) destination connector. This connector supports [data activation](/platform/next/move-data/elt-data-activation) for operational workflows.
 
-:::info
-Data activation is in **early access**. Try it today with the HubSpot and Customer.io destinations in Airbyte Cloud or Self-Managed version 1.8 and later. If you'd like to be an early adopter, chat with the team, and share feedback, [fill out this form](https://form.typeform.com/to/STc7a0jx).
-:::
-
 ## Prerequisites
 
-- HubSpot Account
-- A version of the Airbyte platform version to be at least 1.8 or cloud
+- A HubSpot account
+- Airbyte version 1.8 or later, or Airbyte Cloud
+
+### S3 prerequisites for rejected records
+
+If you're using an S3 bucket to store rejected records, you also need the following.
+
+1. Allow connections from Airbyte to your AWS S3/Minio S3 cluster (if they exist in separate VPCs).
+2. [Enforce encryption of data in transit](https://docs.aws.amazon.com/AmazonS3/latest/userguide/security-best-practices.html#transit).
+3. An S3 bucket with credentials, a Role ARN, or an instance profile with read/write permissions configured for the host (EC2, EKS).
+
+    - These fields are always required:
+
+      - **S3 Bucket Name**
+      - **S3 Bucket Region**
+      - **Prefix Path in the Bucket**
+
+    - If you are using STS Assume Role, you must provide:
+
+      - **Role ARN**
+
+    - If you are using AWS credentials, you must provide:
+
+      - **Access Key ID**
+      - **Secret Access Key**
+
+    - If you are using an Instance Profile, you may omit the Access Key ID, Secret Access Key, and Role ARN.
 
 ## Setup guide
 
