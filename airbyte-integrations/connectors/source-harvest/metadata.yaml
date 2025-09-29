@@ -1,3 +1,4 @@
+metadataSpecVersion: "1.0"
 data:
   ab_internal:
     ql: 200
@@ -80,4 +81,3 @@ data:
         - name: invalid_config
           config_file: integration_tests/invalid_config.json
           expect_failure: true
-metadataSpecVersion: "1.0"
