@@ -90,7 +90,7 @@ Setting your account plan correctly helps the connector respect Monday.com's rat
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.4.7 | 2025-09-30 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Add API Budget with Plan options |
+| 2.4.7 | 2025-09-30 | [66724](https://github.com/airbytehq/airbyte/pull/66724) | Add API Budget with Plan options |
 | 2.4.6 | 2025-09-09 | [65884](https://github.com/airbytehq/airbyte/pull/65884) | Update dependencies |
 | 2.4.5 | 2025-08-23 | [64705](https://github.com/airbytehq/airbyte/pull/64705) | Update dependencies |
 | 2.4.4 | 2025-08-11 | [64878](https://github.com/airbytehq/airbyte/pull/64878) | Pass query in json body of request instead of query params. |
