@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.snowflake.sql
 
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAMES
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.orchestration.db.CDC_DELETED_AT_COLUMN
@@ -214,7 +215,9 @@ class SnowflakeDirectLoadSqlGenerator(
             WHEN MATCHED AND $cursorComparison THEN UPDATE SET
               $columnAssignments
             WHEN NOT MATCHED THEN INSERT (
-              $columnList
+              ${COLUMN_NAMES.map { "\"${it.uppercase()}\"" }.joinToString(
+                    ",\n"
+                ) { it }}
             ) VALUES (
               $newRecordColumnList
             )
@@ -236,7 +239,7 @@ class SnowflakeDirectLoadSqlGenerator(
         val columnList: String =
             columnUtils.columnsAndTypes(stream.schema.asColumns(), columnNameMapping).joinToString(
                 ",\n"
-            ) { "\"${it.columnName}\"" }
+            ) { it.columnName }
 
         val importType = stream.importType as Dedupe
 
