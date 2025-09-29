@@ -140,6 +140,169 @@ class TestInsightAsyncManager:
         assert next(it) == parent
         assert next(manager.completed_jobs(), None) is None
 
+    def test_stale_throttle_is_refreshed_before_phase2_scheduling(self, api, mocker, time_mock, update_job_mock, some_config):
+        """
+        When APILimit has a stale high throttle value, the manager should still be
+        able to start work because job.start() calls APILimit.try_consume(), which
+        refreshes throttle internally. If the actual backend throttle is low, the
+        job should start and be yielded as completed.
+        """
+        # Single job in iterator (already terminal so the manager will yield it once started)
+        job = mocker.Mock(spec=InsightAsyncJob, started=False, completed=True, new_jobs=[])
+
+        # start() should attempt to consume capacity, which triggers refresh_throttle()
+        def start_side_effect(limit):
+            assert limit.try_consume() is True
+            job.started = True
+
+        job.start.side_effect = start_side_effect
+
+        manager = InsightAsyncJobManager(api=api, jobs=[job], account_id=some_config["account_ids"][0])
+
+        # Simulate stale/high cached throttle that would block if not refreshed
+        manager._api_limit._current_throttle = 95.0  # > default throttle_limit=90
+
+        # Backend actually reports low throttle on refresh
+        api.api.ads_insights_throttle = MyFacebookAdsApi.Throttle(0.0, 0.0)
+
+        # No-op polling
+        update_job_mock.side_effect = lambda *args, **kwargs: None
+
+        out = list(manager.completed_jobs())
+
+        # Job should have been started after refresh and yielded as completed
+        job.start.assert_called_once()
+        assert out == [job]
+
+        # We pinged account during APILimit.try_consume() -> refresh_throttle()
+        api.get_account.assert_called_with(account_id=some_config["account_ids"][0])
+        api.get_account.return_value.get_insights.assert_called()
+
+    def test_jobs_left_in_iterator_are_scheduled_in_waves_with_capacity_cap(self, api, mocker, time_mock, update_job_mock, some_config):
+        """
+        With max_jobs_in_queue=2, manager should schedule 2 at a time in waves.
+        Do not rely on strict intra-wave ordering; just verify wave sizes and membership.
+        """
+        jobs = [mocker.Mock(spec=InsightAsyncJob, started=False, completed=False, new_jobs=[]) for _ in range(5)]
+
+        manager = InsightAsyncJobManager(
+            api=api,
+            jobs=jobs,
+            account_id=some_config["account_ids"][0],
+            max_jobs_in_queue=2,
+        )
+
+        # Mock job.start(): consume capacity and mark started only if allowed
+        for j in jobs:
+
+            def _mk_side_effect(job=j):
+                def _start(limit):
+                    # emulate APILimit.try_consume behavior
+                    _ = limit.try_consume()  # returns True/False
+                    if not job.started and not limit.capacity_reached and not limit.limit_reached:
+                        job.started = True
+
+                return _start
+
+            j.start.side_effect = _mk_side_effect()
+
+        # update_in_batch: complete all *currently running* jobs and release capacity
+        def complete_current_running(*_args, **_kwargs):
+            for rj in list(manager._running_jobs):
+                rj.completed = True
+                manager._api_limit.release()
+
+        update_job_mock.side_effect = complete_current_running
+
+        # Wave 1
+        it = manager.completed_jobs()
+        wave1 = [next(it), next(it)]
+        assert set(wave1) == set(jobs[:2])
+
+        # Wave 2
+        wave2 = [next(it), next(it)]
+        assert set(wave2) == set(jobs[2:4])
+
+        # Wave 3 (remaining single job)
+        wave3 = [next(it)]
+        assert wave3 == [jobs[4]]
+
+        # No extra sleeps (every poll produced completions)
+        time_mock.sleep.assert_not_called()
+
+    def test_start_existing_running_jobs_before_pulling_new(self, api, mocker, update_job_mock, some_config):
+        """
+        Manager must prioritize starting jobs already in the running set before pulling new ones.
+        With capacity=1 and a pending (not-started) running job, no new jobs should be pulled.
+        """
+        # One pending job already in the running set
+        pending = mocker.Mock(spec=InsightAsyncJob, started=False, completed=False, new_jobs=[])
+        # Two more jobs available upstream
+        more_jobs = [mocker.Mock(spec=InsightAsyncJob, started=False, completed=False, new_jobs=[]) for _ in range(2)]
+
+        manager = InsightAsyncJobManager(
+            api=api,
+            jobs=iter(more_jobs),
+            account_id=some_config["account_ids"][0],
+            max_jobs_in_queue=1,  # capacity cap = 1
+        )
+        manager._running_jobs = [pending]
+
+        # Make pending.start succeed in consuming capacity and mark as started
+        def start_ok(limit):
+            assert limit.try_consume() is True
+            pending.started = True
+
+        pending.start.side_effect = start_ok
+
+        # update will not change anything for this test
+        update_job_mock.side_effect = lambda *args, **kwargs: None
+
+        # Call the scheduler
+        manager._start_jobs()
+
+        # Capacity is 1, pending job took it, so no new jobs should be appended
+        assert manager._running_jobs == [pending]
+        assert pending.start.call_count == 1
+        # Upstream jobs were not touched yet
+        assert all(j.start.call_count == 0 for j in more_jobs)
+
+    def test_no_throttle_refresh_when_capacity_capped(self, api, mocker, update_job_mock, some_config):
+        """
+        If concurrency capacity is already reached, manager should NOT refresh throttle
+        while attempting to (re)start jobs.
+        """
+        # Prepare API mocks
+        acct = mocker.Mock()
+        api.get_account.return_value = acct
+
+        # Two running jobs, both "started" already; inflight will be set to capacity=1
+        running_job = mocker.Mock(spec=InsightAsyncJob, started=False, completed=False, new_jobs=[])
+        manager = InsightAsyncJobManager(
+            api=api,
+            jobs=[],
+            account_id=some_config["account_ids"][0],
+            max_jobs_in_queue=1,
+        )
+        manager._running_jobs = [running_job]
+
+        # Simulate capacity already fully used
+        manager._api_limit._inflight = 1  # at capacity
+
+        # When job tries to start, APILimit.try_consume should early-return False WITHOUT pinging
+        def start_blocked(limit):
+            assert limit.capacity_reached is True
+            assert limit.try_consume() is False  # early return path, no refresh
+
+        running_job.start.side_effect = start_blocked
+
+        update_job_mock.side_effect = lambda *args, **kwargs: None
+
+        manager._start_jobs()
+
+        # Since capacity was reached, there must be NO throttle ping
+        api.get_account.assert_not_called()
+
 
 class TestAPILimit:
     def test_refresh_throttle_uses_max_and_pings_account(self, mocker, api):
@@ -218,3 +381,20 @@ class TestAPILimit:
         limit._inflight = 0
         limit._current_throttle = 80.0
         assert limit.limit_reached is True
+
+    def test_try_consume_does_not_refresh_when_capacity_reached(self, mocker, api):
+        """
+        When inflight >= max_jobs, try_consume must short-circuit (no throttle ping).
+        """
+        acct = mocker.Mock()
+        api.get_account.return_value = acct
+
+        limit = APILimit(api=api, account_id="act_x", throttle_limit=90.0, max_jobs=1)
+        # Simulate capacity reached
+        limit._inflight = 1
+
+        ok = limit.try_consume()
+        assert ok is False
+
+        # No throttle refresh should have been attempted
+        api.get_account.assert_not_called()

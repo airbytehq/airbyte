@@ -44,6 +44,10 @@ class APILimit:
     def limit_reached(self) -> bool:
         return self._inflight >= self.max_jobs or self._current_throttle >= self.throttle_limit
 
+    @property
+    def capacity_reached(self) -> bool:
+        return self._inflight >= self.max_jobs
+
     # --- Capacity accounting ---
 
     def release(self) -> None:
@@ -56,6 +60,9 @@ class APILimit:
         Reserve capacity for one new job if both throttle and concurrency allow it.
         Jobs should call this right before actually starting the AdReportRun.
         """
+        # No point in checking throttle if we are already at max concurrency.
+        if self.capacity_reached:
+            return False
         self.refresh_throttle()
         if self.limit_reached:
             return False
@@ -91,26 +98,23 @@ class InsightAsyncJobManager:
         self._account_id = account_id
         self._jobs = iter(jobs)
         self._running_jobs: List[AsyncJob] = []
+        self._prefetched_job: Optional[AsyncJob] = None  # look-ahead buffer
         self._api_limit = APILimit(self._api, self._account_id, throttle_limit=throttle_limit, max_jobs=max_jobs_in_queue)
 
     # --- Public consumption API ---
 
     def completed_jobs(self) -> Iterator[AsyncJob]:
-        if not self._running_jobs:
+        # Keep going while there are running jobs OR more jobs upstream
+        while self._running_jobs or self._has_more_jobs():
+            # Always try to backfill capacity before polling statuses
             self._start_jobs()
 
-        while self._running_jobs:
             completed = self._check_jobs_status()
-
-            while not completed:
+            if completed:
+                yield from completed
+            else:
                 logger.info(f"No jobs ready to be consumed, wait for {self.JOB_STATUS_UPDATE_SLEEP_SECONDS} seconds")
                 time.sleep(self.JOB_STATUS_UPDATE_SLEEP_SECONDS)
-                completed = self._check_jobs_status()
-                self._start_jobs()
-
-            # Yield jobs that reached a terminal state.
-            for j in completed:
-                yield j
 
     # --- Internals ---
 
@@ -163,12 +167,16 @@ class InsightAsyncJobManager:
                 # Simple job: (re)starts itself if capacity allows — including retries after failure.
                 # Parent job: typically starts some children and remains 'not fully started' until all children started.
                 job.start(self._api_limit)
-            if self._api_limit.limit_reached:
-                break
+                if self._api_limit.limit_reached:
+                    return
+
+        if self._api_limit.capacity_reached:
+            # No point in trying to start new jobs if we are at max concurrency.
+            return
 
         # Phase 2 — schedule new jobs while there is capacity.
-        while not self._api_limit.limit_reached:
-            next_job: Optional[AsyncJob] = next(self._jobs, None)
+        while True:
+            next_job = self._pull_next_job()
             if not next_job:
                 break
 
@@ -176,3 +184,18 @@ class InsightAsyncJobManager:
             # Regardless of whether it could start immediately, keep it in the running set.
             # It will attempt to start again in Phase 1 on subsequent cycles.
             self._running_jobs.append(next_job)
+
+            if self._api_limit.limit_reached:
+                break
+
+    def _pull_next_job(self) -> Optional[AsyncJob]:
+        if self._prefetched_job is not None:
+            pulled_job, self._prefetched_job = self._prefetched_job, None
+            return pulled_job
+        return next(self._jobs, None)
+
+    def _has_more_jobs(self) -> bool:
+        if self._prefetched_job is not None:
+            return True
+        self._prefetched_job = next(self._jobs, None)
+        return self._prefetched_job is not None
