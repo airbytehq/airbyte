@@ -4,10 +4,16 @@
 
 package io.airbyte.cdk.load.dataflow.state
 
+import io.airbyte.cdk.load.command.DestinationCatalog
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.DestinationRecordRaw
+import io.airbyte.cdk.load.message.GlobalCheckpoint
+import io.airbyte.cdk.load.message.GlobalSnapshotCheckpoint
+import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
 
 interface StateKeyClient {
@@ -38,22 +44,64 @@ class SelfDescribingStateKeyClient : StateKeyClient {
 }
 
 /**
- * Calculates state / partition keys based off a global counter. States are Partitions are 1 to 1.
+ * Calculates state / partition keys based off per stream counters. For per-stream state, partitions
+ * are 1:1 with state messages. For global states, each state has a partition for each stream.
  *
  * Only for use for single threaded input streams.
  */
 @Singleton
 @Requires(property = "airbyte.destination.core.data-channel.medium", value = "STDIO")
-class InferredStateKeyClient : StateKeyClient {
-    private val internalCounter = AtomicLong(1)
+class InferredStateKeyClient(private val catalog: DestinationCatalog) : StateKeyClient {
+    // sequence of all state messages
+    private val globalCounter = AtomicLong(1)
 
-    override fun getPartitionKey(msg: DestinationRecordRaw): PartitionKey {
-        return PartitionKey(internalCounter.get().toString())
-    }
+    // sequence of state messages per stream
+    private var streamCounters = ConcurrentHashMap<DestinationStream.Descriptor, AtomicLong>()
+
+    // caches keys / strings for perf reasons
+    private val keyCache = ConcurrentHashMap<DestinationStream.Descriptor, PartitionKey>()
+
+    override fun getPartitionKey(msg: DestinationRecordRaw): PartitionKey =
+        getCachedKeyForDesc(msg.stream.unmappedDescriptor)
 
     override fun getStateKey(msg: CheckpointMessage): StateKey {
-        val ordinal = internalCounter.getAndIncrement()
-        val partitions = listOf(PartitionKey(ordinal.toString()))
-        return StateKey(ordinal, partitions)
+        val ordinal = globalCounter.getAndIncrement()
+
+        when (msg) {
+            is StreamCheckpoint -> {
+                val partitions = listOf(getCachedKeyForDesc(msg.checkpoint.unmappedDescriptor))
+                incrementForDesc(msg.checkpoint.unmappedDescriptor)
+                return StateKey(ordinal, partitions)
+            }
+            is GlobalCheckpoint,
+            is GlobalSnapshotCheckpoint -> {
+                val partitions =
+                    catalog.streams.map {
+                        val key = getCachedKeyForDesc(it.unmappedDescriptor)
+                        incrementForDesc(it.unmappedDescriptor)
+                        key
+                    }
+                return StateKey(ordinal, partitions)
+            }
+        }
+    }
+
+    private fun getCachedKeyForDesc(desc: DestinationStream.Descriptor) =
+        keyCache.computeIfAbsent(desc, this::partitionKeyForDesc)
+
+    private fun incrementForDesc(desc: DestinationStream.Descriptor) {
+        val counter = streamCounters.computeIfAbsent(desc) { AtomicLong(1) }
+        counter.getAndIncrement()
+        keyCache[desc] = partitionKeyForDesc(desc)
+    }
+
+    private fun partitionKeyForDesc(desc: DestinationStream.Descriptor): PartitionKey {
+        val counter = streamCounters.computeIfAbsent(desc) { AtomicLong(1) }
+        val streamOrdinal = counter.get()
+        return if (desc.namespace == null) {
+            PartitionKey("${desc.name}-$streamOrdinal")
+        } else {
+            PartitionKey("${desc.namespace}-${desc.name}-$streamOrdinal")
+        }
     }
 }

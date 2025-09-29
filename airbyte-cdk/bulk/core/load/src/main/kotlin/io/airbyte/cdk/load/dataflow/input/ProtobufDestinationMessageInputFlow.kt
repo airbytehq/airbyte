@@ -13,6 +13,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.withContext
 
+/**
+ * Performs non-cooperative blocking IO. Does not respond directly to coroutine
+ * CancellationExceptions.
+ */
 class ProtobufDestinationMessageInputFlow(
     private val inputStream: InputStream,
     private val reader: ProtobufDataChannelReader,

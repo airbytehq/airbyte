@@ -486,6 +486,8 @@ sealed interface CheckpointMessage : DestinationMessage {
         val state: JsonNode?,
         val additionalProperties: LinkedHashMap<String, Any> = LinkedHashMap()
     ) {
+        val unmappedDescriptor = DestinationStream.Descriptor(unmappedNamespace, unmappedName)
+
         fun asProtocolObject(): AirbyteStreamState =
             AirbyteStreamState()
                 .withStreamDescriptor(
@@ -502,6 +504,16 @@ sealed interface CheckpointMessage : DestinationMessage {
                         }
                     }
                 }
+
+        fun updateStats(committedRecords: Long, bytes: Long, rejectedRecords: Long = 0) {
+            additionalProperties.apply {
+                put(COMMITTED_RECORDS_COUNT, committedRecords)
+                put(COMMITTED_BYTES_COUNT, bytes)
+                if (rejectedRecords > 0) {
+                    put(REJECTED_RECORDS_COUNT, rejectedRecords)
+                }
+            }
+        }
     }
 
     val checkpointKey: CheckpointKey?
@@ -511,6 +523,7 @@ sealed interface CheckpointMessage : DestinationMessage {
         get() = checkpointKey?.checkpointIndex?.value
     val checkpointPartitionIds: List<String>
         get() = checkpointIdRaw?.let { listOf(it) } ?: listOf()
+    val checkpoints: List<Checkpoint>
 
     val sourceStats: Stats?
     val destinationStats: Stats?
@@ -604,6 +617,9 @@ data class StreamCheckpoint(
         totalBytes = totalBytes
     )
 
+    override val checkpoints: List<Checkpoint>
+        get() = emptyList()
+
     override fun updateStats(
         destinationStats: Stats?,
         totalRecords: Long?,
@@ -631,7 +647,7 @@ data class GlobalCheckpoint(
     val state: JsonNode?,
     override val sourceStats: Stats?,
     override var destinationStats: Stats? = null,
-    val checkpoints: List<Checkpoint> = emptyList(),
+    override val checkpoints: List<Checkpoint> = emptyList(),
     override val additionalProperties: Map<String, Any>,
     val originalTypeField: AirbyteStateMessage.AirbyteStateType? =
         AirbyteStateMessage.AirbyteStateType.GLOBAL,
@@ -683,7 +699,7 @@ data class GlobalSnapshotCheckpoint(
     val state: JsonNode?,
     override val sourceStats: Stats?,
     override var destinationStats: Stats? = null,
-    val checkpoints: List<Checkpoint> = emptyList(),
+    override val checkpoints: List<Checkpoint> = emptyList(),
     override val additionalProperties: Map<String, Any>,
     val originalTypeField: AirbyteStateMessage.AirbyteStateType? =
         AirbyteStateMessage.AirbyteStateType.GLOBAL,

@@ -115,30 +115,29 @@ The above connector image is tagged with `dev`. You can change this to use anoth
 
 :::
 
-- In your browser, visit [http://localhost:8000/](http://localhost:8000/)
-- Log in
-- Go to `Settings` (gear icon in lower left corner)
-- Go to `Sources` or `Destinations` (depending on which connector you are testing)
-- Update the version number to use your docker image tag (default is `dev`)
+- In your browser, visit [http://localhost:8000/](http://localhost:8000/).
+- Log in.
+- Click **Workspace settings** > **Sources**/**Destinations**.
+- Click the edit button <svg fill="none" data-icon="pencil" role="img" viewBox="0 0 24 24" class="inline-svg"><path fill="currentColor" d="M22 7.24a1 1 0 0 0-.29-.71l-4.24-4.24a1 1 0 0 0-.71-.29 1 1 0 0 0-.71.29l-2.83 2.83L2.29 16.05a1 1 0 0 0-.29.71V21a1 1 0 0 0 1 1h4.24a1 1 0 0 0 .76-.29l10.87-10.93L21.71 8q.138-.146.22-.33.015-.12 0-.24a.7.7 0 0 0 0-.14zM6.83 20H4v-2.83l9.93-9.93 2.83 2.83zM18.17 8.66l-2.83-2.83 1.42-1.41 2.82 2.82z"></path></svg>.
+- Update the version number to use your docker image tag. The default is `dev`.
 - Click `Change` to save the changes
 
-Now when you run a sync with that connector, it will use your local docker image
-
+Now when you run a sync with that connector, it will use your local docker image.
 
 ### Connector Specification Caching
 
-The Airbyte Server caches connector specifications for performance reasons. If you update the specification of a
-connector, you will need to clear this cache so the new changes are registered. To do this:
+The Airbyte Server caches connector specifications for performance reasons. If you update the specification of a connector, you need to clear this cache so the new changes are registered. To do this:
 
-- In your browser, visit [http://localhost:8000/](http://localhost:8000/)
-- Log in
-- Go to `Settings` (gear icon in lower left corner)
-- Go to `Sources` or `Destinations` (depending on which connector you are testing)
-- Leave the version set to `dev`
-- Click `Change` to save the changes, which will refresh the dev connectors spec
+- In your browser, visit [http://localhost:8000/](http://localhost:8000/).
+- Log in.
+- Click **Workspace settings** > **Sources**/**Destinations**.
+- Click the edit button <svg fill="none" data-icon="pencil" role="img" viewBox="0 0 24 24" class="inline-svg"><path fill="currentColor" d="M22 7.24a1 1 0 0 0-.29-.71l-4.24-4.24a1 1 0 0 0-.71-.29 1 1 0 0 0-.71.29l-2.83 2.83L2.29 16.05a1 1 0 0 0-.29.71V21a1 1 0 0 0 1 1h4.24a1 1 0 0 0 .76-.29l10.87-10.93L21.71 8q.138-.146.22-.33.015-.12 0-.24a.7.7 0 0 0 0-.14zM6.83 20H4v-2.83l9.93-9.93 2.83 2.83zM18.17 8.66l-2.83-2.83 1.42-1.41 2.82 2.82z"></path></svg>.
+- Leave the version set to `dev`.
+- Click `Change` to save the changes, which refreshes the dev connector's spec.
 
 ## Platform Contributions
-1. [Fork](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo) the [ `airbyte-platform`](https://github.com/airbytehq/airbyte-platform) repository.
+
+1. [Fork](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo) the [`airbyte-platform`](https://github.com/airbytehq/airbyte-platform) repository.
 2. Clone the fork on your workstation:
 
 ```bash

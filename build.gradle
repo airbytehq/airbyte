@@ -194,6 +194,9 @@ allprojects {
         } else {
             junitMethodExecutionTimeout = '1 m'
         }
+
+        systemProperty 'junit.jupiter.execution.timeout.default', junitMethodExecutionTimeout
+        // This is used by the "old" cdk (i.e. airbyte-cdk/java)
         systemProperty 'JunitMethodExecutionTimeout', junitMethodExecutionTimeout
     }
 

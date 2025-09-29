@@ -10,6 +10,6 @@ import jakarta.inject.Singleton
 
 /*
  * Default implementation of the ColumnNameMapper. If your destination needs destination-specific
- * column name mapping, create your own ValueCoercer implementation in your destination.
+ * column name mapping, create your own ColumnNameMapper implementation in your destination.
  */
 @Singleton @Secondary class NoOpColumnNameMapper : ColumnNameMapper

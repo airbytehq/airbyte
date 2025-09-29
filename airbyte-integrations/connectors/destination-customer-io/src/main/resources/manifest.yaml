@@ -45,3 +45,37 @@ spec:
           - apiKey
     required:
       - credentials
+discover:
+  type: CompositeCatalogOperations
+  operations:
+    - type: StaticCatalogOperation
+      object_name: person_identify
+      destination_import_mode:
+        type: Upsert
+      schema:
+        type: object
+        additionalProperties: true
+        properties:
+          person_email:
+            type: string
+      matching_keys:
+        - - person_email
+    - type: StaticCatalogOperation
+      object_name: person_event
+      destination_import_mode:
+        type: Insert
+      schema:
+        type: object
+        required:
+          - person_email
+          - event_name
+        additionalProperties: true
+        properties:
+          person_email:
+            type: string
+          event_name:
+            type: string
+          event_id:
+            type: string
+          timestamp:
+            type: integer

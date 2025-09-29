@@ -18,6 +18,8 @@ import io.airbyte.cdk.load.dataflow.stages.AggregateStage
 import io.airbyte.cdk.load.dataflow.state.StateHistogramStore
 import io.airbyte.cdk.load.dataflow.state.StateKeyClient
 import io.airbyte.cdk.load.dataflow.state.StateStore
+import io.airbyte.cdk.load.dataflow.state.stats.CommittedStatsStore
+import io.airbyte.cdk.load.dataflow.state.stats.EmittedStatsStore
 import io.airbyte.cdk.load.file.ClientSocket
 import io.airbyte.cdk.load.file.ProtobufDataChannelReader
 import io.airbyte.cdk.load.message.DestinationMessage
@@ -28,6 +30,7 @@ import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Named
 import jakarta.inject.Singleton
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -100,6 +103,7 @@ class InputBeanFactory {
         stateStore: StateStore,
         stateKeyClient: StateKeyClient,
         completionTracker: StreamCompletionTracker,
+        statsStore: EmittedStatsStore,
     ): List<DataFlowPipelineInputFlow> =
         messageFlows.map {
             DataFlowPipelineInputFlow(
@@ -107,6 +111,7 @@ class InputBeanFactory {
                 stateStore = stateStore,
                 stateKeyClient = stateKeyClient,
                 completionTracker = completionTracker,
+                statsStore = statsStore,
             )
         }
 
@@ -128,12 +133,20 @@ class InputBeanFactory {
         @Named("state") state: DataFlowStage,
         aggregateStoreFactory: AggregateStoreFactory,
         stateHistogramStore: StateHistogramStore,
+        statsStore: CommittedStatsStore,
         memoryAndParallelismConfig: MemoryAndParallelismConfig,
+        @Named("aggregationDispatcher") aggregationDispatcher: CoroutineDispatcher,
+        @Named("flushDispatcher") flushDispatcher: CoroutineDispatcher,
     ): List<DataFlowPipeline> =
         inputFlows.map {
             val aggStore = aggregateStoreFactory.make()
             val aggregate = AggregateStage(aggStore)
-            val completionHandler = PipelineCompletionHandler(aggStore, stateHistogramStore)
+            val completionHandler =
+                PipelineCompletionHandler(
+                    aggStore,
+                    stateHistogramStore,
+                    statsStore,
+                )
 
             DataFlowPipeline(
                 input = it,
@@ -143,6 +156,8 @@ class InputBeanFactory {
                 state = state,
                 completionHandler = completionHandler,
                 memoryAndParallelismConfig = memoryAndParallelismConfig,
+                aggregationDispatcher = aggregationDispatcher,
+                flushDispatcher = flushDispatcher,
             )
         }
 }

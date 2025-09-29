@@ -6,6 +6,7 @@ package io.airbyte.cdk.load.dataflow.transform.medium
 
 import com.fasterxml.jackson.core.io.BigDecimalParser
 import com.fasterxml.jackson.core.io.BigIntegerParser
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.AirbyteValueProxy.FieldAccessor
 import io.airbyte.cdk.load.data.ArrayType
@@ -37,6 +38,7 @@ import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.data.json.toAirbyteValue
 import io.airbyte.cdk.load.dataflow.transform.ColumnNameMapper
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
+import io.airbyte.cdk.load.dataflow.transform.defaults.NoOpColumnNameMapper
 import io.airbyte.cdk.load.message.DestinationRecordProtobufSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.Meta
@@ -48,6 +50,7 @@ import java.math.BigDecimal
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
+import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Singleton
 
 /**
@@ -60,13 +63,33 @@ class ProtobufConverter(
     private val coercer: ValueCoercer,
 ) {
 
+    private val isNoOpMapper = columnNameMapper is NoOpColumnNameMapper
+
+    private val perStreamMappedNames =
+        ConcurrentHashMap<DestinationStream.Descriptor, Array<String>>()
+
+    private fun mappedNamesFor(
+        stream: DestinationStream,
+        fieldAccessors: Array<FieldAccessor>
+    ): Array<String> {
+        val key = stream.mappedDescriptor
+        return perStreamMappedNames.computeIfAbsent(key) {
+            val maxIndex = fieldAccessors.maxOfOrNull { it.index } ?: -1
+            val arr = Array(maxIndex + 1) { "" }
+            fieldAccessors.forEach { fa ->
+                val mapped = columnNameMapper.getMappedColumnName(stream, fa.name) ?: fa.name
+                arr[fa.index] = mapped
+            }
+            arr
+        }
+    }
+
     /**
      * Converts protobuf data to a complete map of AirbyteValue including metadata fields. This
      * method handles both data fields and metadata fields in one operation.
      *
      * @param msg The destination record raw containing stream information
      * @param source The protobuf source containing data and metadata
-     * @param columnMapper Optional function to map field names to destination column names
      * @return Map of column names to AirbyteValue including all metadata fields
      */
     fun convert(
@@ -101,9 +124,12 @@ class ProtobufConverter(
             allParsingFailures.addAll(validatedValue.changes)
 
             if (validatedValue.abValue !is NullValue || validatedValue.type !is UnknownType) {
-                // Apply column mapping if provided, otherwise use original field name
                 val columnName =
-                    columnNameMapper.getMappedColumnName(stream, accessor.name) ?: accessor.name
+                    if (isNoOpMapper) accessor.name
+                    else
+                        mappedNamesFor(stream, fieldAccessors).getOrElse(accessor.index) {
+                            accessor.name
+                        }
                 result[columnName] = validatedValue.abValue
             }
         }
@@ -209,7 +235,7 @@ class ProtobufConverter(
                 } else if (protobufValue.hasNumber()) {
                     protobufValue.number.toBigDecimal()
                 } else {
-                    BigDecimal.ZERO
+                    null
                 }
             }
             is DateType -> protobufValue.date
