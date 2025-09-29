@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.orchestration.db.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
@@ -188,45 +189,36 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
             USING (
                           WITH records AS (
               SELECT
-                "_airbyte_raw_id",
-"_airbyte_extracted_at",
-"_airbyte_meta",
-"_airbyte_generation_id"
+                ${DEFAULT_COLUMNS.joinToString(",\n") { "\"${it.columnName}\"" }}
               FROM "test_database"."namespace"."source"
             ), numbered_rows AS (
               SELECT *, ROW_NUMBER() OVER (
-                PARTITION BY "primaryKey" ORDER BY "cursor" DESC NULLS LAST, "_airbyte_extracted_at" DESC
+                PARTITION BY "primaryKey" ORDER BY "cursor" DESC NULLS LAST, "_AIRBYTE_EXTRACTED_AT" DESC
               ) AS row_number
               FROM records
             )
-            SELECT "_airbyte_raw_id",
-"_airbyte_extracted_at",
-"_airbyte_meta",
-"_airbyte_generation_id"
+            SELECT ${DEFAULT_COLUMNS.joinToString(",\n") { "\"${it.columnName}\"" }}
             FROM numbered_rows
             WHERE row_number = 1
             ) AS new_record
             ON (target_table."primaryKey" = new_record."primaryKey" OR (target_table."primaryKey" IS NULL AND new_record."primaryKey" IS NULL))
             WHEN MATCHED AND (
   target_table."cursor" < new_record."cursor"
-  OR (target_table."cursor" = new_record."cursor" AND target_table."_airbyte_extracted_at" < new_record."_airbyte_extracted_at")
-  OR (target_table."cursor" IS NULL AND new_record."cursor" IS NULL AND target_table."_airbyte_extracted_at" < new_record."_airbyte_extracted_at")
+  OR (target_table."cursor" = new_record."cursor" AND target_table."_AIRBYTE_EXTRACTED_AT" < new_record."_AIRBYTE_EXTRACTED_AT")
+  OR (target_table."cursor" IS NULL AND new_record."cursor" IS NULL AND target_table."_AIRBYTE_EXTRACTED_AT" < new_record."_AIRBYTE_EXTRACTED_AT")
   OR (target_table."cursor" IS NULL AND new_record."cursor" IS NOT NULL)
 ) THEN UPDATE SET
-              "_airbyte_raw_id" = new_record."_airbyte_raw_id",
-"_airbyte_extracted_at" = new_record."_airbyte_extracted_at",
-"_airbyte_meta" = new_record."_airbyte_meta",
-"_airbyte_generation_id" = new_record."_airbyte_generation_id"
+              "_AIRBYTE_RAW_ID" = new_record."_AIRBYTE_RAW_ID",
+"_AIRBYTE_EXTRACTED_AT" = new_record."_AIRBYTE_EXTRACTED_AT",
+"_AIRBYTE_META" = new_record."_AIRBYTE_META",
+"_AIRBYTE_GENERATION_ID" = new_record."_AIRBYTE_GENERATION_ID"
             WHEN NOT MATCHED THEN INSERT (
-              "_airbyte_raw_id",
-"_airbyte_extracted_at",
-"_airbyte_meta",
-"_airbyte_generation_id"
+              ${DEFAULT_COLUMNS.joinToString(",\n") { "\"${it.columnName}\"" }}
             ) VALUES (
-              new_record."_airbyte_raw_id",
-new_record."_airbyte_extracted_at",
-new_record."_airbyte_meta",
-new_record."_airbyte_generation_id"
+              new_record."_AIRBYTE_RAW_ID",
+new_record."_AIRBYTE_EXTRACTED_AT",
+new_record."_AIRBYTE_META",
+new_record."_AIRBYTE_GENERATION_ID"
             )
         """.trimIndent()
 
@@ -264,10 +256,13 @@ new_record."_airbyte_generation_id"
     fun testGenerateGenerationIdQuery() {
         val tableName = TableName(namespace = "namespace", name = "name")
         val sql = snowflakeDirectLoadSqlGenerator.getGenerationId(tableName = tableName)
-        assertEquals(
-            "SELECT \"$COLUMN_NAME_AB_GENERATION_ID\"\nFROM ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)} \nLIMIT 1",
-            sql
-        )
+        val expectedSql =
+            """
+            SELECT "${COLUMN_NAME_AB_GENERATION_ID.uppercase()}"
+            FROM ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}
+            LIMIT 1
+        """.trimIndent()
+        assertEquals(expectedSql, sql)
     }
 
     @Test
@@ -571,7 +566,7 @@ new_record."_airbyte_generation_id"
         // Should use only _airbyte_extracted_at for comparison when no cursor
         assert(
             sql.contains(
-                "target_table.\"_airbyte_extracted_at\" < new_record.\"_airbyte_extracted_at\""
+                "target_table.\"${COLUMN_NAME_AB_EXTRACTED_AT.uppercase()}\" < new_record.\"${COLUMN_NAME_AB_EXTRACTED_AT.uppercase()}\""
             )
         )
         assert(!sql.contains("target_table.\"cursor\"")) // No cursor field reference
