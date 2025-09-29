@@ -1,138 +1,138 @@
+## Version 0.1.44
+
+Dataflow Load CDK: Set dest stats equal to source stats.
+
+## Version 0.1.43
+
+Dataflow Load CDK: Properly handle interleaved per stream states.
+
+## Version 0.1.42
+
+Dataflow Load CDK: Fixes hang when one of many parallel pipelines fails. Organizes thread pools.
+
+## Version 0.1.41
+
+**Extract CDK**
+
+* **Changed:** Prevent a devision by zero error when a table cannot be partitioned.
+
+## Version 0.1.40
+
+Add gradle task to bump CDK version + add changelog entry
+
+## Version 0.1.39
+
+Minor fixes with stream completion logic + proto conversion in Load CDK.
+
+* **Changed:** Minor fixes with stream completion logic + proto conversion
+
 ## Version 0.1.38
 
-**Load CDK**
-
-* **Changed:** Adds stats support for "speed" mode
+Adds stats support for "speed" mode to the Load CDK
 
 ## Version 0.1.37
 
-* **Changed:** load-s3: S3Client forces path-style access, to enable minio compatibility
+load-s3: S3Client forces path-style access, to enable minio compatibility
 
 ## Version 0.1.36
 
-* **Changed:** use dedicated dispatcher for parse+aggregate stage for an individual pipeline + cache column name lookup
+Use dedicated dispatcher for parse+aggregate stage for an individual pipeline + cache column name lookup
 
 ## Version 0.1.35
 
-* **Changed:** Fix input stream wiring for dockerized acceptance tests
+Fix input stream wiring for dockerized acceptance tests
 
 ## Version 0.1.34
 
-* **Changed:** Moved version declaration from build.gradle to version.properties
+Moved version declaration from build.gradle to version.properties
 
 ## Version 0.1.33
 
-**Load CDK**
-
-* **Changed:** Low-code API destination support for dynamically defined discover objects and operations
+Load CDK: Low-code API destination support for dynamically defined discover objects and operations
 
 ## Version 0.1.32
 
-**Load CDK**
-
-* **Changed:** Fix input stream wiring for non-dockerized acceptance tests
+Fix input stream wiring for non-dockerized acceptance tests in Load CDK.
 
 ## Version 0.1.31
 
-**Extract CDK**
-
-* **Changed:** Pass WhereNode to FromSample node so we can apply filters to the sample query.
+Extract CDK: Pass WhereNode to FromSample node so we can apply filters to the sample query.
 
 ## Version 0.1.30
 
-**Load CDK**
-
-* **Changed:** Low-code API destination support for statically defined discover operations
+Add Low-code API destination support for statically defined discover operations 
 
 ## Version 0.1.29
 
-**Load CDK**
-
-* Use correct field name for generation ID meta column.
+Load CDK: Use correct field name for generation ID meta column.
 
 ## Version 0.1.28
 
-**Extract CDK**
-
-* **Changed:** Protobuf encoding fixes to make various types compatible with load(destination) decoding.
-
-**Load CDK**
+Extract CDK: Protobuf encoding fixes to make various types compatible with load(destination) decoding.
 
 ## Version 0.1.27
 
-* **Changed:** Allow per-test properties for spec integration test
+Allow per-test properties for spec integration test
 
 ## Version 0.1.26
 
-* **Changed:** Improve load-azure-blob-storage documentation.
+Improve load-azure-blob-storage documentation.
 
 ## Version 0.1.25
 
-* **Changed:** Adds proto support to dataflow. Misc transform package cleanup (developer-facing).
+Adds proto support to dataflow. Misc transform package cleanup (developer-facing).
 
 ## Version 0.1.24
 
-* **Changed:** Adds byte counts to emitted state stats.
+Adds byte counts to emitted state stats.
 
 ## Version 0.1.23
 
-* **Changed:** Dataflow CDK fails syncs if there are unflushed states at the end of a sync.
+Dataflow CDK fails syncs if there are unflushed states at the end of a sync.
 
 ## Version 0.1.22
 
-* **Changed:** Add EntraID support to azure-blob-storage.
+Add EntraID support to azure-blob-storage.
 
 ## Version 0.1.21
 
-* **Changed:** Adds basic socket support.
+Adds basic socket support.
 
 ## Version 0.1.20
 
-* **Changed:** Fix hard failure edge case in stream initialization for in dataflow cdk lifecycle.
+Fix hard failure edge case in stream initialization for in dataflow cdk lifecycle.
 
 ## Version 0.1.18
 
-* **Changed:** Update load dataflow package accounts for stream completes and dest stats.
+Update load dataflow package accounts for stream completes and dest stats.
 
 ## Version 0.1.17
 
-* **Changed:** Run aggregate and flush steps on different dispatchers (default and IO respectively).
+Run aggregate and flush steps on different dispatchers (default and IO respectively).
 
 ## Version 0.1.16
 
-**Load CDK**
-
-* **Changed:** Ensure sequential state emission. Remove flushed state/partition keys.
+Load CDK: Ensure sequential state emission. Remove flushed state/partition keys.
 
 ## Version 0.1.15
 
-**Extract CDK**
-
-* **Changed:** Extract CDK logs DB version during Check for all JDBC databases.
+Extract CDK logs DB version during Check for all JDBC databases.
 
 ## Version 0.1.14
 
-**Load CDK**
-
-* **Changed:** Add agent.
+Add agent to Load CDK
 
 ## Version 0.1.13
 
-**Load CDK**
-
-* **Changed:** Make the resources being used by the dataflow CDK configurable.
+Load CDK: Make the resources being used by the dataflow CDK configurable.
 
 ## Version 0.1.12
 
-**Load CDK**
-
-* **Changed:** Add teardown to the dataflow pipeline.
+Load CDK: Add teardown to the dataflow pipeline.
 
 ## Version 0.1.11
 
-**Load CDK**
-
-* **Changed:** Add finalization to the dataflow pipeline.
+Add finalization to the dataflow pipeline in Load CDK
 
 ## Version 0.1.10
 
@@ -144,13 +144,11 @@ Update the log4j to allow us to dynamically set the log level via an env variabl
 
 ## Version 0.1.6
 
-**Load CDK**
-
-* **Changed:** Add the dataflow pipeline. It is a more comprehensive way to write the ingestion pipeline steps. The new pipeline isn't ready to be use in this version.
+Load CDK: Add the dataflow pipeline. It is a more comprehensive way to write the ingestion pipeline steps. The new pipeline isn't ready to be use in this version.
 
 ## Version 0.1.4
 
-* **Changed:** Extract CDK fixes for CDC in socket mode - state, partitioning and full refresh streams.
+Extract CDK fixes for CDC in socket mode - state, partitioning and full refresh streams.
 
 ## Version 0.1.3
 
@@ -160,5 +158,4 @@ Update the log4j to allow us to dynamically set the log level via an env variabl
 
 ## Version 0.1.0
 
-* **Changed:** Adopted Semantic Versioning (SemVer) for the CDK to provide more meaningful version numbers.
-* **Action Required:** The CDK version must now be set manually in the `build.gradle` file.
+Adopted Semantic Versioning (SemVer) for the CDK to provide more meaningful version numbers, requiring the CDK version to be set manually in the build.gradle file.
