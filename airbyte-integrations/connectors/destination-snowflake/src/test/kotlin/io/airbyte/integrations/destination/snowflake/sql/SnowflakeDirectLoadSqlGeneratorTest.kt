@@ -325,10 +325,15 @@ new_record."_airbyte_generation_id"
         val stagingTableName = snowflakeSqlNameUtils.fullyQualifiedStageName(tableName)
         val fileFormat = snowflakeSqlNameUtils.fullyQualifiedFormatName(tableName.namespace)
         val sql = snowflakeDirectLoadSqlGenerator.copyFromStage(tableName)
-        assertEquals(
-            "COPY INTO $targetTableName\nFROM @$stagingTableName\nFILE_FORMAT = $fileFormat\nON_ERROR = 'ABORT_STATEMENT'\nPURGE = TRUE;",
-            sql
-        )
+        val expectedSql =
+            """
+            COPY INTO $targetTableName
+            FROM @$stagingTableName
+            FILE_FORMAT = $fileFormat
+            ON_ERROR = 'ABORT_STATEMENT`
+            PURGE = TRUE
+        """.trimIndent()
+        assertEquals(expectedSql, sql)
     }
 
     @Test

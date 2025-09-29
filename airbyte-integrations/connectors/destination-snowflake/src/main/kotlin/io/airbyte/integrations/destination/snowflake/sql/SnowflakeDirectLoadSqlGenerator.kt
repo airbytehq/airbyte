@@ -350,7 +350,7 @@ class SnowflakeDirectLoadSqlGenerator(
             FROM @$stageName
             FILE_FORMAT = $formatName
             ON_ERROR = 'ABORT_STATEMENT'
-            PURGE = TRUE;
+            PURGE = TRUE
         """
             .trimIndent()
             .andLog()
