@@ -124,8 +124,21 @@ internal class SnowflakeAirbyteClientTest {
     @Test
     fun testCreateNamespace() {
         val namespace = "namespace"
-        val resultSet = mockk<ResultSet>(relaxed = true)
-        val statement = mockk<Statement> { every { executeQuery(any()) } returns resultSet }
+
+        // Mock for schema check - schema doesn't exist
+        val schemaCheckResultSet = mockk<ResultSet> {
+            every { next() } returns true
+            every { getBoolean("schema_exists") } returns false
+        }
+
+        // Mock for other operations
+        val createResultSet = mockk<ResultSet>(relaxed = true)
+
+        val statement = mockk<Statement> {
+            every { executeQuery(match { it.contains("INFORMATION_SCHEMA.SCHEMATA") }) } returns schemaCheckResultSet
+            every { executeQuery(not(match { it.contains("INFORMATION_SCHEMA.SCHEMATA") })) } returns createResultSet
+        }
+
         val mockConnection =
             mockk<Connection> {
                 every { close() } just Runs
@@ -133,12 +146,50 @@ internal class SnowflakeAirbyteClientTest {
             }
 
         every { dataSource.connection } returns mockConnection
+        every { sqlGenerator.checkSchemaExists(namespace) } returns "SELECT COUNT(*) > 0 AS schema_exists FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = 'namespace'"
 
         runBlocking {
             client.createNamespace(namespace)
+            verify(exactly = 1) { sqlGenerator.checkSchemaExists(namespace) }
             verify(exactly = 1) { sqlGenerator.createNamespace(namespace) }
             verify(exactly = 1) { sqlGenerator.createFileFormat(namespace) }
-            verify(exactly = 2) { mockConnection.close() }
+            verify(exactly = 3) { mockConnection.close() }
+        }
+    }
+
+    @Test
+    fun testCreateNamespaceWhenAlreadyExists() {
+        val namespace = "namespace"
+
+        // Mock for schema check - schema already exists
+        val schemaCheckResultSet = mockk<ResultSet> {
+            every { next() } returns true
+            every { getBoolean("schema_exists") } returns true
+        }
+
+        // Mock for file format creation
+        val createResultSet = mockk<ResultSet>(relaxed = true)
+
+        val statement = mockk<Statement> {
+            every { executeQuery(match { it.contains("INFORMATION_SCHEMA.SCHEMATA") }) } returns schemaCheckResultSet
+            every { executeQuery(not(match { it.contains("INFORMATION_SCHEMA.SCHEMATA") })) } returns createResultSet
+        }
+
+        val mockConnection =
+            mockk<Connection> {
+                every { close() } just Runs
+                every { createStatement() } returns statement
+            }
+
+        every { dataSource.connection } returns mockConnection
+        every { sqlGenerator.checkSchemaExists(namespace) } returns "SELECT COUNT(*) > 0 AS schema_exists FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = 'namespace'"
+
+        runBlocking {
+            client.createNamespace(namespace)
+            verify(exactly = 1) { sqlGenerator.checkSchemaExists(namespace) }
+            verify(exactly = 0) { sqlGenerator.createNamespace(namespace) }  // Should NOT create schema
+            verify(exactly = 1) { sqlGenerator.createFileFormat(namespace) }
+            verify(exactly = 2) { mockConnection.close() }  // Only 2 closes: check + format
         }
     }
 
@@ -524,7 +575,7 @@ internal class SnowflakeAirbyteClientTest {
     @Test
     fun testCreateNamespaceWithNetworkFailure() {
         val namespace = "test_namespace"
-        val sql = "CREATE SCHEMA IF NOT EXISTS test_namespace"
+        val sql = "CREATE SCHEMA test_namespace"
 
         every { sqlGenerator.createNamespace(namespace) } returns sql
 

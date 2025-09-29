@@ -57,8 +57,22 @@ class SnowflakeAirbyteClient(
         }
 
     override suspend fun createNamespace(namespace: String) {
-        // Create the schema if it doesn't exist
-        execute(sqlGenerator.createNamespace(namespace))
+        // Check if the schema exists first
+        val schemaExistsResult = dataSource.connection.use { connection ->
+            val resultSet = connection.createStatement()
+                .executeQuery(sqlGenerator.checkSchemaExists(namespace))
+            if (resultSet.next()) {
+                resultSet.getBoolean("schema_exists")
+            } else {
+                false
+            }
+        }
+
+        if (!schemaExistsResult) {
+            // Create the schema only if it doesn't exist
+            execute(sqlGenerator.createNamespace(namespace))
+        }
+
         // Create the CSV file format in the schema if it does not exist
         execute(sqlGenerator.createFileFormat(namespace))
     }
