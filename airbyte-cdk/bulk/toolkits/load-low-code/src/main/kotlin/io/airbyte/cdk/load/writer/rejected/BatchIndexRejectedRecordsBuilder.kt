@@ -11,8 +11,8 @@ class BatchIndexRejectedRecordsBuilder(
     private val condition: String,
     private val rejectionField: List<String>,
     private val indexField: List<String>,
-    private val fieldsToReport: List<List<String>>) : RejectedRecordsBuilder
-{
+    private val fieldsToReport: List<List<String>>
+) : RejectedRecordsBuilder {
     private val rawRecords = mutableListOf<DestinationRecordRaw>()
     private val conditionInterpolator = BooleanInterpolator()
 
@@ -25,7 +25,14 @@ class BatchIndexRejectedRecordsBuilder(
         if (conditionInterpolator.interpolate(condition, mapOf("response" to context))) {
             return response.body.extractArray(rejectionField).map { rejection ->
                 rawRecords[rejection.extract(indexField).asInt()].toDlqRecord(
-                    fieldsToReport.associate { field -> generateRejectedRecordKey(field) to try { rejection.extract(field).toPrettyString() } catch (e: Exception) { "" }}
+                    fieldsToReport.associate { field ->
+                        generateRejectedRecordKey(field) to
+                            try {
+                                rejection.extract(field).toPrettyString()
+                            } catch (e: Exception) {
+                                ""
+                            }
+                    }
                 )
             }
         }

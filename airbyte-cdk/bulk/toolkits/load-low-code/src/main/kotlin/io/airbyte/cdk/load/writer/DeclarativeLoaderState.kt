@@ -12,7 +12,6 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
-
 class DeclarativeLoaderState(
     private val httpRequester: HttpRequester,
     private val responseBodyBuilder: ResponseBodyBuilder,

@@ -43,18 +43,18 @@ import io.airbyte.cdk.load.model.discover.CatalogOperation as CatalogOperationMo
 import io.airbyte.cdk.load.model.discover.CompositeCatalogOperations as CompositeCatalogOperationsModel
 import io.airbyte.cdk.load.model.discover.StaticCatalogOperation as StaticCatalogOperationModel
 import io.airbyte.cdk.load.model.http.HttpMethod
-import io.airbyte.cdk.load.model.http.body.size.BatchSize as BatchSizeModel
 import io.airbyte.cdk.load.model.http.HttpRequester as HttpRequesterModel
 import io.airbyte.cdk.load.model.http.authenticator.Authenticator as AuthenticatorModel
 import io.airbyte.cdk.load.model.http.authenticator.BasicAccessAuthenticator as BasicAccessAuthenticatorModel
 import io.airbyte.cdk.load.model.http.authenticator.OAuthAuthenticator as OAuthAuthenticatorModel
 import io.airbyte.cdk.load.model.http.body.batch.JsonBatchBody
+import io.airbyte.cdk.load.model.http.body.size.BatchSize as BatchSizeModel
 import io.airbyte.cdk.load.model.http.body.size.RequestMemoryBatchSize as RequestMemoryBatchSizeModel
 import io.airbyte.cdk.load.model.writer.BatchRequestWriter
 import io.airbyte.cdk.load.model.writer.WritableObject
 import io.airbyte.cdk.load.model.writer.Writer
-import io.airbyte.cdk.load.model.writer.rejected.RejectedRecords as RejectedRecordsModel
 import io.airbyte.cdk.load.model.writer.rejected.BatchIndexRejectedRecords as BatchIndexRejectedRecordsModel
+import io.airbyte.cdk.load.model.writer.rejected.RejectedRecords as RejectedRecordsModel
 import io.airbyte.cdk.load.spec.DeclarativeCdkConfiguration
 import io.airbyte.cdk.load.spec.DeclarativeSpecificationFactory
 import io.airbyte.cdk.load.writer.DeclarativeBatchEntryAssembler
@@ -132,15 +132,27 @@ class DeclarativeDestinationFactory(config: JsonNode?) {
 
     fun createStreamLoader(catalog: DestinationCatalog): DeclarativeLoader {
         if (manifest.writers == null || manifest.writers.isEmpty()) {
-            throw IllegalArgumentException("Can't create loader because `writers` are not defined in the manifest")
+            throw IllegalArgumentException(
+                "Can't create loader because `writers` are not defined in the manifest"
+            )
         }
 
-        val loaderStateFactoryByDestinationOperation: MutableMap<StreamIdentifier, DeclarativeLoaderStateFactory> = mutableMapOf()
+        val loaderStateFactoryByDestinationOperation:
+            MutableMap<StreamIdentifier, DeclarativeLoaderStateFactory> =
+            mutableMapOf()
         for (writer: Writer in manifest.writers) {
             when (writer) {
                 is BatchRequestWriter -> {
-                    val loaderStateFactory: DeclarativeLoaderStateFactory = createDeclarativeLoaderStateFactory(writer.requester, writer.rejectedRecords)
-                    writer.objects.map { createStreamIdentifier(it) }.forEach { loaderStateFactoryByDestinationOperation[it] = loaderStateFactory }
+                    val loaderStateFactory: DeclarativeLoaderStateFactory =
+                        createDeclarativeLoaderStateFactory(
+                            writer.requester,
+                            writer.rejectedRecords
+                        )
+                    writer.objects
+                        .map { createStreamIdentifier(it) }
+                        .forEach {
+                            loaderStateFactoryByDestinationOperation[it] = loaderStateFactory
+                        }
                 }
             }
         }
@@ -151,7 +163,10 @@ class DeclarativeDestinationFactory(config: JsonNode?) {
         return StreamIdentifier(writableObject.name, mapImportMode(writableObject.operation))
     }
 
-    private fun createDeclarativeLoaderStateFactory(httpRequester: HttpRequesterModel, rejectedRecords: RejectedRecordsModel) : DeclarativeLoaderStateFactory {
+    private fun createDeclarativeLoaderStateFactory(
+        httpRequester: HttpRequesterModel,
+        rejectedRecords: RejectedRecordsModel
+    ): DeclarativeLoaderStateFactory {
         if (httpRequester.body == null) {
             throw IllegalArgumentException("Can't create loader because HttpRequester body is null")
         }
@@ -166,11 +181,16 @@ class DeclarativeDestinationFactory(config: JsonNode?) {
                     createRejectedRecordsBuilder(rejectedRecords),
                 )
             }
-            else -> throw IllegalArgumentException("Unknown type of body for HTTP request: ${httpRequester.body.javaClass.name}")
+            else ->
+                throw IllegalArgumentException(
+                    "Unknown type of body for HTTP request: ${httpRequester.body.javaClass.name}"
+                )
         }
     }
 
-    private fun createRejectedRecordsBuilder(rejectedRecords: RejectedRecordsModel): RejectedRecordsBuilder {
+    private fun createRejectedRecordsBuilder(
+        rejectedRecords: RejectedRecordsModel
+    ): RejectedRecordsBuilder {
         when (rejectedRecords) {
             is BatchIndexRejectedRecordsModel -> {
                 return BatchIndexRejectedRecordsBuilder(
@@ -180,7 +200,10 @@ class DeclarativeDestinationFactory(config: JsonNode?) {
                     rejectedRecords.fieldsToReport,
                 )
             }
-            else -> throw IllegalArgumentException("Unknown type of rejectedRecords builder ${rejectedRecords.javaClass.name}")
+            else ->
+                throw IllegalArgumentException(
+                    "Unknown type of rejectedRecords builder ${rejectedRecords.javaClass.name}"
+                )
         }
     }
 
@@ -266,8 +289,8 @@ class DeclarativeDestinationFactory(config: JsonNode?) {
     }
 
     fun BatchSizeModel.toFactory(): BatchSizeStrategyFactory =
-        when(this) {
-            is RequestMemoryBatchSizeModel -> RequestMemoryBatchSizeStrategyFactory(this.amount)
+        when (this) {
+            is RequestMemoryBatchSizeModel -> RequestMemoryBatchSizeStrategyFactory(this.limit)
         }
 
     fun HttpMethod.toRequestMethod(): RequestMethod =

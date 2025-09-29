@@ -13,7 +13,8 @@ import kotlin.test.assertFailsWith
 import org.junit.jupiter.api.Test
 
 class DeclarativeBatchEntryAssemblerTest {
-    val PERSON_EVENT_TEMPLATE = """
+    val PERSON_EVENT_TEMPLATE =
+        """
 {
   "type": "person",
   "identifiers": {
@@ -27,19 +28,23 @@ class DeclarativeBatchEntryAssemblerTest {
     @Test
     internal fun `test given bracket accessor on record when assemble then return assembled json object`() {
         val assembler = DeclarativeBatchEntryAssembler(PERSON_EVENT_TEMPLATE)
-        val batchEntry = assembler.assemble(
-            aRecord(
-                Jsons.readTree("""
+        val batchEntry =
+            assembler.assemble(
+                aRecord(
+                    Jsons.readTree(
+                        """
             {
               "person_email": "maxime@airbyte.io",
               "attribute1": "x",
               "attribute2": 1
             }
         """.trimIndent()
+                    )
                 )
             )
-        )
-        assertEquals(Jsons.readTree("""
+        assertEquals(
+            Jsons.readTree(
+                """
 {
   "type": "person",
   "identifiers": {
@@ -51,23 +56,30 @@ class DeclarativeBatchEntryAssemblerTest {
     "attribute2": 1
   }
 }
-    """.trimIndent()), batchEntry)
+    """.trimIndent()
+            ),
+            batchEntry
+        )
     }
 
     @Test
     internal fun `test given no additional properties when assemble then return do not print additional properties`() {
         val assembler = DeclarativeBatchEntryAssembler(PERSON_EVENT_TEMPLATE)
-        val batchEntry = assembler.assemble(
-            aRecord(
-                Jsons.readTree("""
+        val batchEntry =
+            assembler.assemble(
+                aRecord(
+                    Jsons.readTree(
+                        """
             {
               "person_email": "maxime@airbyte.io"
             }
         """.trimIndent()
+                    )
                 )
             )
-        )
-        assertEquals(Jsons.readTree("""
+        assertEquals(
+            Jsons.readTree(
+                """
 {
   "type": "person",
   "identifiers": {
@@ -75,7 +87,10 @@ class DeclarativeBatchEntryAssemblerTest {
   },
   "action": "identify"
 }
-    """.trimIndent()), batchEntry)
+    """.trimIndent()
+            ),
+            batchEntry
+        )
     }
 
     @Test

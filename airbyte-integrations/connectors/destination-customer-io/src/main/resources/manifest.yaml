@@ -37,7 +37,8 @@ writers:
         type: JsonBatchBody
         size:
           type: RequestMemoryBatchSize
-          amount: 30000
+          # the limit is 500kb with 32kb per entry so here is 500kb - 32 kb
+          limit: 468000
         entries:
           field:
             - batch
@@ -78,7 +79,8 @@ writers:
         type: JsonBatchBody
         size:
           type: RequestMemoryBatchSize
-          amount: 30000
+          # the limit is 500kb with 32kb per entry so here is 500kb - 32 kb
+          limit: 468000
         entries:
           field:
             - batch

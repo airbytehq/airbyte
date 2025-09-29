@@ -4,14 +4,10 @@
 
 package io.airbyte.integrations.destination.customerio
 
-import dev.failsafe.RetryPolicy
 import io.airbyte.cdk.Operation
 import io.airbyte.cdk.load.check.CheckOperationV2
 import io.airbyte.cdk.load.check.dlq.DlqChecker
 import io.airbyte.cdk.load.command.DestinationCatalog
-import io.airbyte.cdk.load.http.HttpClient
-import io.airbyte.cdk.load.http.authentication.BasicAccessAuthenticator
-import io.airbyte.cdk.load.http.okhttp.AirbyteOkHttpClient
 import io.airbyte.cdk.load.lowcode.DeclarativeDestinationFactory
 import io.airbyte.cdk.load.pipeline.LoadPipeline
 import io.airbyte.cdk.load.spec.DeclarativeCdkConfiguration
@@ -25,7 +21,6 @@ import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
-import okhttp3.OkHttpClient
 
 @MicronautFactory
 class CustomerIoBeanFactory {

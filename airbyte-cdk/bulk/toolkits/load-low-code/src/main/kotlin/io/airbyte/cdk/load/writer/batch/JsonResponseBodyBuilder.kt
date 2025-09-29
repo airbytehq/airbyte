@@ -9,10 +9,12 @@ import io.airbyte.cdk.load.writer.batch.size.BatchSizeStrategy
 import io.airbyte.cdk.load.writer.batch.size.BatchSizeStrategyFactory
 import io.airbyte.cdk.util.Jsons
 
-
 // TODO add tests
-class JsonResponseBodyBuilder(batchSizeTypeStrategyFactory: BatchSizeStrategyFactory, private val entryAssembler: DeclarativeBatchEntryAssembler, batchField: List<String>):
-    ResponseBodyBuilder {
+class JsonResponseBodyBuilder(
+    batchSizeTypeStrategyFactory: BatchSizeStrategyFactory,
+    private val entryAssembler: DeclarativeBatchEntryAssembler,
+    batchField: List<String>
+) : ResponseBodyBuilder {
     // Eventually add the ability to provide a template for the body too
     val requestBody: JsonNode
     val batch: ArrayNode
@@ -24,8 +26,8 @@ class JsonResponseBodyBuilder(batchSizeTypeStrategyFactory: BatchSizeStrategyFac
             batch = requestBody
         } else {
             requestBody = Jsons.objectNode()
-            val lastNode = batchField.dropLast(1)
-                .fold(requestBody) { accumulator, element ->
+            val lastNode =
+                batchField.dropLast(1).fold(requestBody) { accumulator, element ->
                     accumulator.putObject(element)
                 }
             batch = lastNode.putArray(batchField.last())
@@ -49,5 +51,4 @@ class JsonResponseBodyBuilder(batchSizeTypeStrategyFactory: BatchSizeStrategyFac
     override fun build(): ByteArray {
         return requestBody.serializeToJsonBytes()
     }
-
 }

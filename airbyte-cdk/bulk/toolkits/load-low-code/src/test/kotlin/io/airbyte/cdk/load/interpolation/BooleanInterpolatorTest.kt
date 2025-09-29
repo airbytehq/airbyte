@@ -29,5 +29,4 @@ class BooleanInterpolatorTest {
         val string = "toto"
         assertFalse { BooleanInterpolator().interpolate(string, emptyMap()) }
     }
-
 }

@@ -12,11 +12,12 @@ import io.airbyte.cdk.load.writer.batch.size.BatchSizeStrategyFactory
 import io.airbyte.cdk.load.writer.rejected.RejectedRecordsBuilder
 import io.github.oshai.kotlinlogging.KotlinLogging
 
-
 private val logger = KotlinLogging.logger {}
 
-
-class StreamIdentifier(private val destinationObjectName: String, private val operation: ImportType) {
+class StreamIdentifier(
+    private val destinationObjectName: String,
+    private val operation: ImportType
+) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -40,23 +41,34 @@ class StreamIdentifier(private val destinationObjectName: String, private val op
     }
 }
 
-
-// FIXME this constructor is very focused on batch stuff and therefore there will probably be a need for an interface
-class DeclarativeLoaderStateFactory(private val httpRequester: HttpRequester, private val batchSizeTypeStrategyFactory: BatchSizeStrategyFactory, private val entryAssembler: DeclarativeBatchEntryAssembler, private val batchField: List<String>, private val rejectedRecordsBuilder: RejectedRecordsBuilder) {
+// FIXME this constructor is very focused on batch stuff and therefore there will probably be a need
+// for an interface
+class DeclarativeLoaderStateFactory(
+    private val httpRequester: HttpRequester,
+    private val batchSizeTypeStrategyFactory: BatchSizeStrategyFactory,
+    private val entryAssembler: DeclarativeBatchEntryAssembler,
+    private val batchField: List<String>,
+    private val rejectedRecordsBuilder: RejectedRecordsBuilder
+) {
     fun create(): DeclarativeLoaderState {
-        return DeclarativeLoaderState(httpRequester, JsonResponseBodyBuilder(batchSizeTypeStrategyFactory, entryAssembler, batchField), rejectedRecordsBuilder)
+        return DeclarativeLoaderState(
+            httpRequester,
+            JsonResponseBodyBuilder(batchSizeTypeStrategyFactory, entryAssembler, batchField),
+            rejectedRecordsBuilder
+        )
     }
 }
 
-
 class DeclarativeLoader(
-    private val loaderStateFactoryByDestinationOperation: Map<StreamIdentifier, DeclarativeLoaderStateFactory>,
+    private val loaderStateFactoryByDestinationOperation:
+        Map<StreamIdentifier, DeclarativeLoaderStateFactory>,
     private val catalog: DestinationCatalog
 ) : DlqLoader<DeclarativeLoaderState> {
     override fun start(key: StreamKey, part: Int): DeclarativeLoaderState {
         logger.info { "DeclarativeLoader.start for ${key.serializeToString()} with part $part" }
         val streamIdentifier = extractStreamIdentifier(key)
-        return loaderStateFactoryByDestinationOperation[streamIdentifier]?.create() ?: throw IllegalStateException("Could not find loader for stream $streamIdentifier")
+        return loaderStateFactoryByDestinationOperation[streamIdentifier]?.create()
+            ?: throw IllegalStateException("Could not find loader for stream $streamIdentifier")
     }
 
     private fun extractStreamIdentifier(key: StreamKey): StreamIdentifier {
@@ -66,11 +78,14 @@ class DeclarativeLoader(
                     "Could not find stream ${key.stream} as part of the catalog.",
                 ))
 
-        val streamIdentifier = StreamIdentifier(
-            stream.destinationObjectName
-                ?: throw IllegalStateException("Stream ${key.stream} does not have a destinationObjectName."),
-            stream.importType,
-        )
+        val streamIdentifier =
+            StreamIdentifier(
+                stream.destinationObjectName
+                    ?: throw IllegalStateException(
+                        "Stream ${key.stream} does not have a destinationObjectName."
+                    ),
+                stream.importType,
+            )
         return streamIdentifier
     }
 
@@ -91,5 +106,4 @@ class DeclarativeLoader(
         DlqLoader.Complete(state.flush())
 
     override fun close() {}
-
 }

@@ -14,7 +14,10 @@ class HttpRequester(
 ) {
     private val interpolator = StringInterpolator()
 
-    fun send(interpolationContext: Map<String, Any> = emptyMap(), body: ByteArray? = null): Response {
+    fun send(
+        interpolationContext: Map<String, Any> = emptyMap(),
+        body: ByteArray? = null
+    ): Response {
         return client.send(
             Request(
                 method = method,

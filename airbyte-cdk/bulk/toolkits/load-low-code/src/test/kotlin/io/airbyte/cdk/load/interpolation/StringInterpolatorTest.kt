@@ -173,5 +173,4 @@ class StringInterpolatorTest {
         val extractedKeys = StringInterpolator().extractAccessedRecordKeys(template)
         assertEquals(emptySet(), extractedKeys)
     }
-
 }

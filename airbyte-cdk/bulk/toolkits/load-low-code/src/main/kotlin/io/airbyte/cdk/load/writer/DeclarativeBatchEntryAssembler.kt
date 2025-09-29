@@ -14,17 +14,23 @@ class DeclarativeBatchEntryAssembler(private val template: String) {
 
     fun assemble(record: DestinationRecordRaw): JsonNode {
         val jsonRecord: ObjectNode = record.asJsonRecord() as ObjectNode
-        val additionalProperties = Jsons.objectNode().apply {
-            jsonRecord.properties().filter { entry -> entry.key !in expectedRecordFields }.forEach { entry -> this.replace(entry.key, entry.value) }
-        }
-        val entryAsString = interpolator.interpolate(
-            template,
-            mapOf(
-                "record" to jsonRecord.toInterpolationContext(),
-                "additional_properties" to if (additionalProperties.size() != 0) additionalProperties.toPrettyString() else "",
+        val additionalProperties =
+            Jsons.objectNode().apply {
+                jsonRecord
+                    .properties()
+                    .filter { entry -> entry.key !in expectedRecordFields }
+                    .forEach { entry -> this.replace(entry.key, entry.value) }
+            }
+        val entryAsString =
+            interpolator.interpolate(
+                template,
+                mapOf(
+                    "record" to jsonRecord.toInterpolationContext(),
+                    "additional_properties" to
+                        if (additionalProperties.size() != 0) additionalProperties.toPrettyString()
+                        else "",
+                )
             )
-        )
         return Jsons.readTree(entryAsString)
     }
-
 }

@@ -16,14 +16,13 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
-
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class DeclarativeLoaderStateTest {
     lateinit var destinationRecordRaw: DestinationRecordRaw
@@ -39,7 +38,8 @@ class DeclarativeLoaderStateTest {
         httpRequester = mockk()
         responseBodyBuilder = mockk()
         rejectedRecordsBuilder = mockk()
-        loaderState = DeclarativeLoaderState(httpRequester, responseBodyBuilder, rejectedRecordsBuilder)
+        loaderState =
+            DeclarativeLoaderState(httpRequester, responseBodyBuilder, rejectedRecordsBuilder)
     }
 
     @Test
@@ -81,14 +81,14 @@ class DeclarativeLoaderStateTest {
     internal fun `test when flush then return rejected records builder result`() {
         val rejectedRecords = listOf(mockk<DestinationRecordRaw>())
         val body = aBody()
-        every { rejectedRecordsBuilder.getRejectedRecords(any())} returns rejectedRecords
-        every { httpRequester.send(body=aBody()) } returns aResponse()
+        every { rejectedRecordsBuilder.getRejectedRecords(any()) } returns rejectedRecords
+        every { httpRequester.send(body = aBody()) } returns aResponse()
         every { responseBodyBuilder.isEmpty() } returns false
         every { responseBodyBuilder.build() } returns body
 
         val result = loaderState.flush()
 
-        verify(exactly = 1) { httpRequester.send(body=body) }
+        verify(exactly = 1) { httpRequester.send(body = body) }
         assertEquals(rejectedRecords, result)
     }
 
@@ -104,42 +104,48 @@ class DeclarativeLoaderStateTest {
     fun aBody(): ByteArray = byteArrayOf(1, 2, 3)
 }
 
-
-class NoLimitBatchSizeStrategy: BatchSizeStrategy {
+class NoLimitBatchSizeStrategy : BatchSizeStrategy {
     override fun isFull(): Boolean {
         return false
     }
 }
 
-class NoLimitSizeStrategyFactory: BatchSizeStrategyFactory {
-    override fun create(
-        requestBody: JsonNode,
-        batchField: List<String>
-    ): BatchSizeStrategy {
+class NoLimitSizeStrategyFactory : BatchSizeStrategyFactory {
+    override fun create(requestBody: JsonNode, batchField: List<String>): BatchSizeStrategy {
         return NoLimitBatchSizeStrategy()
     }
 }
 
-
 class JsonResponseBodyBuilderTest {
     @Test
     internal fun `test given interpolation for string when build then return string`() {
-        val responseBuilder = JsonResponseBodyBuilder(
-            anySizeStrategyFactory(),
-            DeclarativeBatchEntryAssembler("""{"entry_key": "{{ record["record_key"] }}" }"""),
-            listOf("batch")
+        val responseBuilder =
+            JsonResponseBodyBuilder(
+                anySizeStrategyFactory(),
+                DeclarativeBatchEntryAssembler("""{"entry_key": "{{ record["record_key"] }}" }"""),
+                listOf("batch")
+            )
+        responseBuilder.accumulate(
+            aRecord(Jsons.readTree("""{"record_key": "record_key_value"}"""))
         )
-        responseBuilder.accumulate(aRecord(Jsons.readTree("""{"record_key": "record_key_value"}""")))
 
         val response = responseBuilder.build()
 
         val jsonResponse = Jsons.readTree(response)
-        assertEquals(Jsons.readTree("""{"batch": [{"entry_key":"record_key_value"}]}"""), jsonResponse)
+        assertEquals(
+            Jsons.readTree("""{"batch": [{"entry_key":"record_key_value"}]}"""),
+            jsonResponse
+        )
     }
 
     @Test
     internal fun `test given interpolation for integer when build then return integer`() {
-        val responseBuilder = JsonResponseBodyBuilder(anySizeStrategyFactory(), DeclarativeBatchEntryAssembler("""{"entry_key": {{ record["record_key"] }} }"""), listOf("batch"))
+        val responseBuilder =
+            JsonResponseBodyBuilder(
+                anySizeStrategyFactory(),
+                DeclarativeBatchEntryAssembler("""{"entry_key": {{ record["record_key"] }} }"""),
+                listOf("batch")
+            )
         responseBuilder.accumulate(aRecord(Jsons.readTree("""{"record_key": "2"}""")))
 
         val response = responseBuilder.build()
@@ -150,7 +156,12 @@ class JsonResponseBodyBuilderTest {
 
     @Test
     internal fun `test given batch on root level when build then return array`() {
-        val responseBuilder = JsonResponseBodyBuilder(anySizeStrategyFactory(), anyRecordEntryAssembler(), emptyList())
+        val responseBuilder =
+            JsonResponseBodyBuilder(
+                anySizeStrategyFactory(),
+                anyRecordEntryAssembler(),
+                emptyList()
+            )
         responseBuilder.accumulate(aRecord())
 
         val response = responseBuilder.build()
@@ -162,7 +173,12 @@ class JsonResponseBodyBuilderTest {
 
     @Test
     internal fun `test given batch on nested level when build then return object with nested fields`() {
-        val responseBuilder = JsonResponseBodyBuilder(anySizeStrategyFactory(), anyRecordEntryAssembler(), listOf("parent", "child"))
+        val responseBuilder =
+            JsonResponseBodyBuilder(
+                anySizeStrategyFactory(),
+                anyRecordEntryAssembler(),
+                listOf("parent", "child")
+            )
         responseBuilder.accumulate(aRecord())
 
         val response = responseBuilder.build()

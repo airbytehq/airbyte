@@ -77,7 +77,6 @@ private class MapGetOperatorELResolver : ELResolver() {
     private fun isBaseValid(base: Any?): Boolean = base != null && base is Map<*, *>
 }
 
-
 class StringInterpolator {
 
     private val interpolator =
@@ -101,10 +100,11 @@ class StringInterpolator {
         private const val bracketAccessorRegex = """record\s*\[\s*["']([^"']+)["']\s*\]"""
         private const val getMethodAccessorRegex = """record\.get\s*\(\s*["']([^"']+)["']\s*\)"""
 
-        val recordAccessorRegexes = listOf(
-            Regex(bracketAccessorRegex),
-            Regex(getMethodAccessorRegex),
-        )
+        val recordAccessorRegexes =
+            listOf(
+                Regex(bracketAccessorRegex),
+                Regex(getMethodAccessorRegex),
+            )
     }
 
     /** Possible improvement: validate if all variables have been resolved and if not, throw. */
@@ -113,13 +113,22 @@ class StringInterpolator {
     }
 
     fun extractAccessedRecordKeys(string: String): Set<String> {
-        return interpolator.newInterpreter().parse(string).children.filter { it is ExpressionNode }.flatMapTo(HashSet()) { extractKeysFromExpression((it.master as ExpressionToken).expr) }
+        return interpolator
+            .newInterpreter()
+            .parse(string)
+            .children
+            .filter { it is ExpressionNode }
+            .flatMapTo(HashSet()) { extractKeysFromExpression((it.master as ExpressionToken).expr) }
     }
 
     private fun extractKeysFromExpression(expression: String): Set<String> {
-        return recordAccessorRegexes.flatMapTo(HashSet()) { regex -> regex.findAll(expression).filter { match -> match.groupValues.size > 1 }.map { match -> match.groupValues[1] } }
+        return recordAccessorRegexes.flatMapTo(HashSet()) { regex ->
+            regex
+                .findAll(expression)
+                .filter { match -> match.groupValues.size > 1 }
+                .map { match -> match.groupValues[1] }
+        }
     }
-
 }
 
 fun JsonNode.toInterpolationContext(): Any = Jsons.convertValue(this, jacksonTypeRef<Any>())
