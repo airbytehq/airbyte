@@ -74,13 +74,15 @@ The Monday connector should not run into Monday API limitations under normal usa
 
 ## Account Plan Configuration
 
-The connector now supports specifying your Monday.com account plan type, which optimizes API usage based on your subscription tier:
+The connector now supports specifying your Monday.com account plan type, which optimizes API rate limits based on your subscription tier:
 
-- **Enterprise**: 750 requests per minute, 250 concurrent requests
-- **Pro**: 500 requests per minute, 100 concurrent requests
-- **Other Plans**: 250 requests per minute, 40 concurrent requests
+- **Enterprise**: 750 requests per minute
+- **Pro**: 500 requests per minute
+- **Other Plans**: 250 requests per minute
 
 Setting your account plan correctly helps the connector respect Monday.com's rate limits and optimize performance during syncs.
+
+**Concurrency Configuration**: The number of concurrent requests can be controlled using the `num_workers` configuration parameter (default: 4). The maximum allowed concurrency is 250, allowing higher-tier users to scale up performance as needed.
 
 
 ## Changelog

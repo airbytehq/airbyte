@@ -1,5 +1,3 @@
-import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
-
 # Monday Migration Guide
 
 ## Upgrading to 2.0.0
