@@ -73,16 +73,11 @@ data:
         - name: harvest_config_dev_null
           id: 833888cc-1bc4-4126-970a-47edff5e0f00
     - suite: unitTests
-    - suite: acceptanceTests
-      testSecrets:
-        - name: SECRET_SOURCE_HARVEST_CREDS_OAUTH
-          fileName: config_oauth.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_SOURCE_HARVEST_CREDS
-          fileName: config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
+    - suite: smokeTests
+      scenarios:
+        - name: default
+          config_secret_file: secrets/config_oauth.json
+        - name: invalid_config
+          config_secret_file: integration_tests/invalid_config.json
+          expect_failure: true
 metadataSpecVersion: "1.0"
