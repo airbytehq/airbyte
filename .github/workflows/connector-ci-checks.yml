@@ -500,7 +500,7 @@ jobs:
       - name: Create Check Status
         if: >
           always() && !cancelled() &&
-          steps.get-app-token.outcome == 'success'
+          steps.get-app-token.conclusion == 'success'
         uses: LouisBrunner/checks-action@v2.0.0
         with:
           name: "Connector CI Checks Summary" # << Name of the 'Required' check
