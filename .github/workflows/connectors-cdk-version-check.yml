@@ -32,7 +32,6 @@ jobs:
           set -euo pipefail
           # connectors that set cdk version to 'local' (should be none)
           connectors="$(./gradlew getCdkVersion | awk '/local/ {print prev} {prev=$0}' | cut -d: -f4)"
-          
           if [[ -z "$connectors" ]]; then
             echo "No connectors are setting CDK version to 'local'."
             exit 0
