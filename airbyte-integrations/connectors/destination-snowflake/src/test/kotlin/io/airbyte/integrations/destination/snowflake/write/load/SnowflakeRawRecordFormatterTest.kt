@@ -11,9 +11,39 @@ import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.csv.toCsvValue
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.integrations.destination.snowflake.sql.DEFAULT_COLUMNS
+import java.util.AbstractMap
 import kotlin.collections.plus
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+
+private val AIRBYTE_COLUMN_NAMES = DEFAULT_COLUMNS.map { it.columnName }.toSet()
+
+internal fun createRecord(columnName: String, columnValue: String) =
+    mapOf(
+        columnName to AirbyteValue.from(columnValue),
+        Meta.COLUMN_NAME_AB_EXTRACTED_AT to IntegerValue(System.currentTimeMillis()),
+        Meta.COLUMN_NAME_AB_RAW_ID to StringValue("raw-id"),
+        Meta.COLUMN_NAME_AB_GENERATION_ID to IntegerValue(1223),
+        Meta.COLUMN_NAME_AB_META to StringValue("{\"changes\":[],\"syncId\":43}"),
+        "${columnName}Null" to NullValue
+    )
+
+internal fun createExpected(
+    record: Map<String, AirbyteValue>,
+    columns: List<String>,
+    filterMissing: Boolean = true
+) =
+    record.entries
+        .map { entry ->
+            if (AIRBYTE_COLUMN_NAMES.contains(entry.key.uppercase()))
+                AbstractMap.SimpleEntry(entry.key.uppercase(), entry.value)
+            else entry
+        }
+        .sortedBy { entry ->
+            if (columns.indexOf(entry.key) > -1) columns.indexOf(entry.key) else Int.MAX_VALUE
+        }
+        .filter { (k, _) -> if (filterMissing) columns.contains(k) else true }
+        .map { it.value.toCsvValue() }
 
 internal class SnowflakeRawRecordFormatterTest {
 
@@ -29,23 +59,4 @@ internal class SnowflakeRawRecordFormatterTest {
             createExpected(record, columns) + listOf("{\"$columnName\":\"$columnValue\"}")
         assertEquals(expectedValue, formattedValue)
     }
-
-    private fun createRecord(columnName: String, columnValue: String) =
-        mapOf(
-            columnName to AirbyteValue.from(columnValue),
-            Meta.COLUMN_NAME_AB_EXTRACTED_AT.uppercase() to
-                IntegerValue(System.currentTimeMillis()),
-            Meta.COLUMN_NAME_AB_RAW_ID.uppercase() to StringValue("raw-id"),
-            Meta.COLUMN_NAME_AB_GENERATION_ID.uppercase() to IntegerValue(1223),
-            Meta.COLUMN_NAME_AB_META.uppercase() to StringValue("{\"changes\":[],\"syncId\":43}"),
-            "${columnName}Null" to NullValue
-        )
-
-    private fun createExpected(record: Map<String, AirbyteValue>, columns: List<String>) =
-        record.entries
-            .sortedBy { entry ->
-                if (columns.indexOf(entry.key) > -1) columns.indexOf(entry.key) else Int.MAX_VALUE
-            }
-            .filter { (k, _) -> columns.contains(k) }
-            .map { it.value.toCsvValue() }
 }

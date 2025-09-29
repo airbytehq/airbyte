@@ -71,7 +71,7 @@ class SnowflakeDataDumper(
                     for (i in 1..resultSet.metaData.columnCount) {
                         val columnName = resultSet.metaData.getColumnName(i)
                         val columnType = resultSet.metaData.getColumnTypeName(i)
-                        if (!Meta.COLUMN_NAMES.contains(columnName)) {
+                        if (!Meta.COLUMN_NAMES.contains(columnName.lowercase())) {
                             val value = resultSet.getObject(i)
                             dataMap[columnName] =
                                 value?.let {
@@ -89,17 +89,20 @@ class SnowflakeDataDumper(
                     }
                     val outputRecord =
                         OutputRecord(
-                            rawId = resultSet.getString(Meta.COLUMN_NAME_AB_RAW_ID),
+                            rawId = resultSet.getString(Meta.COLUMN_NAME_AB_RAW_ID.uppercase()),
                             extractedAt =
                                 resultSet
-                                    .getTimestamp(Meta.COLUMN_NAME_AB_EXTRACTED_AT)
+                                    .getTimestamp(Meta.COLUMN_NAME_AB_EXTRACTED_AT.uppercase())
                                     .toInstant()
                                     .toEpochMilli(),
                             loadedAt = null,
-                            generationId = resultSet.getLong(Meta.COLUMN_NAME_AB_GENERATION_ID),
+                            generationId =
+                                resultSet.getLong(Meta.COLUMN_NAME_AB_GENERATION_ID.uppercase()),
                             data = ObjectValue(dataMap),
                             airbyteMeta =
-                                stringToMeta(resultSet.getString(Meta.COLUMN_NAME_AB_META)),
+                                stringToMeta(
+                                    resultSet.getString(Meta.COLUMN_NAME_AB_META.uppercase())
+                                ),
                         )
                     output.add(outputRecord)
                 }

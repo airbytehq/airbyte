@@ -27,6 +27,7 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
+import io.airbyte.cdk.load.orchestration.db.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
@@ -34,6 +35,7 @@ import jakarta.inject.Singleton
 import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.joinToString
+import kotlin.collections.map
 import kotlin.collections.plus
 
 internal const val NOT_NULL = "NOT NULL"
@@ -78,7 +80,7 @@ class SnowflakeColumnUtils(
 
     fun getColumnNames(columnNameMapping: ColumnNameMapping): String =
         if (snowflakeConfiguration.legacyRawTablesOnly == true) {
-            defaultColumns().map { it.columnName }.joinToString(",") { "\"$it\"" }
+            defaultColumns().joinToString(",") { "\"${it.columnName}\"" }
         } else {
             (defaultColumns().map { it.columnName } +
                     columnNameMapping.map { (_, actualName) -> actualName })
@@ -96,9 +98,17 @@ class SnowflakeColumnUtils(
                 columns.map { (fieldName, type) ->
                     val columnName = columnNameMapping[fieldName] ?: fieldName
                     val typeName = toDialectType(type.type)
-                    ColumnAndType(columnName = columnName, columnType = typeName)
+                    ColumnAndType(
+                        columnName = formatColumnName("\"$columnName\""),
+                        columnType = typeName
+                    )
                 }
         }
+
+    fun formatColumnName(columnName: String) =
+        columnName
+            .replace(CDC_DELETED_AT_COLUMN, CDC_DELETED_AT_COLUMN.uppercase())
+            .replace("\"\"", "\"")
 
     fun toDialectType(type: AirbyteType): String =
         when (type) {

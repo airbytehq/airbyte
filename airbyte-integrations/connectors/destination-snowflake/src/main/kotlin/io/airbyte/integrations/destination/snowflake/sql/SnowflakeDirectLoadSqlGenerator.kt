@@ -122,19 +122,17 @@ class SnowflakeDirectLoadSqlGenerator(
             columnUtils
                 .columnsAndTypes(
                     columns = stream.schema.asColumns(),
-                    columnNameMapping = columnNameMapping
+                    columnNameMapping = columnNameMapping,
                 )
-                .map { it.columnName }
-                .joinToString(",\n") { "\"$it\"" }
+                .joinToString(",\n")
 
         val newRecordColumnList: String =
             columnUtils
                 .columnsAndTypes(
                     columns = stream.schema.asColumns(),
-                    columnNameMapping = columnNameMapping
+                    columnNameMapping = columnNameMapping,
                 )
-                .map { it.columnName }
-                .joinToString(",\n") { "new_record.\"$it\"" }
+                .joinToString(",\n") { "new_record.${it.columnName}" }
 
         // Get deduped records from source
         val selectSourceRecords = selectDedupedRecords(stream, sourceTableName, columnNameMapping)
@@ -236,12 +234,9 @@ class SnowflakeDirectLoadSqlGenerator(
         columnNameMapping: ColumnNameMapping
     ): String {
         val columnList: String =
-            (stream.schema.asColumns().keys + DEFAULT_COLUMNS.map { it.columnName }).joinToString(
+            columnUtils.columnsAndTypes(stream.schema.asColumns(), columnNameMapping).joinToString(
                 ",\n"
-            ) { fieldName ->
-                val columnName = columnNameMapping[fieldName] ?: fieldName
-                "\"$columnName\""
-            }
+            ) { "\"${it.columnName}\"" }
 
         val importType = stream.importType as Dedupe
 

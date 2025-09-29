@@ -22,9 +22,17 @@ class SnowflakeSchemaRecordFormatter(
     private val columns: List<String>,
 ) : SnowflakeRecordFormatter {
     override fun format(record: Map<String, AirbyteValue>): List<Any> =
-        columns.map { columnName ->
-            if (record.containsKey(columnName)) record[columnName].toCsvValue() else ""
-        }
+        columns
+            /*
+             * Meta columns are forced to uppercase for backwards compatibility with previous
+             * versions of the destination.  Therefore, convert the column to lowercase so
+             * that it can match the constants, which use the lowercase version of the meta
+             * column names.
+             */
+            .map { columnName -> columnName.lowercase() }
+            .map { columnName ->
+                if (record.containsKey(columnName)) record[columnName].toCsvValue() else ""
+            }
 }
 
 class SnowflakeRawRecordFormatter(
@@ -40,14 +48,15 @@ class SnowflakeRawRecordFormatter(
         // one from the record to avoid duplicates in the "data" field
         columns
             .filter { RAW_META_COLUMNS.contains(it) }
+            /*
+             * Meta columns are forced to uppercase for backwards compatibility with previous
+             * versions of the destination.  Therefore, convert the column to lowercase so
+             * that it can match the constants, which use the lowercase version of the meta
+             * column names.
+             */
+            .map { column -> column.lowercase() }
             .forEach { column ->
-                /*
-                 * Meta columns are forced to uppercase for backwards compatibility with previous
-                 * versions of the destination.  Therefore, convert the column to lowercase so
-                 * that it can match the constants, which use the lowercase version of the meta
-                 * column names.
-                 */
-                when (column.lowercase()) {
+                when (column) {
                     Meta.COLUMN_NAME_AB_EXTRACTED_AT,
                     Meta.COLUMN_NAME_AB_META,
                     Meta.COLUMN_NAME_AB_RAW_ID,

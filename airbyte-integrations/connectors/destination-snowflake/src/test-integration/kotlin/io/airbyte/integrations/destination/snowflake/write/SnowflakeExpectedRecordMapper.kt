@@ -19,8 +19,6 @@ import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleNam
 import io.airbyte.integrations.destination.snowflake.write.transform.isValid
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
-import kotlin.collections.component1
-import kotlin.collections.component2
 
 object SnowflakeExpectedRecordMapper : ExpectedRecordMapper {
 

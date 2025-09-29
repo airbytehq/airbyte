@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.snowflake.client
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.client.AirbyteClient
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAMES
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
@@ -16,6 +15,7 @@ import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableSql
 import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.COUNT_TOTAL_ALIAS
+import io.airbyte.integrations.destination.snowflake.sql.DEFAULT_COLUMNS
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -26,6 +26,7 @@ import net.snowflake.client.jdbc.SnowflakeSQLException
 
 internal const val DESCRIBE_TABLE_COLUMN_NAME_FIELD = "column_name"
 
+private val AIRBYTE_COLUMN_NAMES = DEFAULT_COLUMNS.map { it.columnName }.toSet()
 private val log = KotlinLogging.logger {}
 
 @Singleton
@@ -170,7 +171,7 @@ class SnowflakeAirbyteClient(
                 while (rs.next()) {
                     val columnName = rs.getString("name")
                     // Filter out airbyte columns
-                    if (COLUMN_NAMES.contains(columnName)) {
+                    if (AIRBYTE_COLUMN_NAMES.contains(columnName)) {
                         continue
                     }
                     val dataType = rs.getString("type").takeWhile { char -> char != '(' }
@@ -235,7 +236,7 @@ class SnowflakeAirbyteClient(
                 statement.use {
                     val resultSet = connection.createStatement().executeQuery(sql)
                     if (resultSet.next()) {
-                        resultSet.getLong(COLUMN_NAME_AB_GENERATION_ID)
+                        resultSet.getLong(COLUMN_NAME_AB_GENERATION_ID.uppercase())
                     } else {
                         log.warn { "No generation ID found for table $tableName, returning 0" }
                         0L
@@ -275,6 +276,11 @@ class SnowflakeAirbyteClient(
 
     internal fun execute(query: String) =
         dataSource.connection.use { connection ->
-            connection.createStatement().use { it.executeQuery(query) }
+            try {
+                connection.createStatement().use { it.executeQuery(query) }
+            } catch (e: Exception) {
+                println(query)
+                throw e
+            }
         }
 }

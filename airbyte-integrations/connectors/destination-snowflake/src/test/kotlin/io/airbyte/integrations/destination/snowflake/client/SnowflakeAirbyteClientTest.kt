@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.config.NamespaceDefinitionType
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
@@ -291,7 +292,7 @@ internal class SnowflakeAirbyteClientTest {
         val resultSet =
             mockk<ResultSet> {
                 every { next() } returns true
-                every { getLong(COLUMN_NAME_AB_GENERATION_ID) } returns generationId
+                every { getLong(COLUMN_NAME_AB_GENERATION_ID.uppercase()) } returns generationId
             }
         val statement =
             mockk<Statement> {
@@ -469,12 +470,9 @@ internal class SnowflakeAirbyteClientTest {
         every { resultSet.next() } returns true andThen true andThen true andThen false
         every { resultSet.getString("name") } returns
             "COL1" andThen
-            "_AIRBYTE_RAW_ID" andThen
+            COLUMN_NAME_AB_RAW_ID.uppercase() andThen
             "COL2"
-        every { resultSet.getString("type") } returns
-            "VARCHAR(255)" andThen
-            "TEXT" andThen
-            "NUMBER(38,0)"
+        every { resultSet.getString("type") } returns "VARCHAR(255)" andThen "NUMBER(38,0)"
         every { resultSet.getString("null?") } returns "Y" andThen "N" andThen "N"
 
         val statement =
@@ -494,7 +492,6 @@ internal class SnowflakeAirbyteClientTest {
         val expectedColumns =
             setOf(
                 ColumnDefinition("COL1", "VARCHAR", true),
-                ColumnDefinition("_AIRBYTE_RAW_ID", "TEXT", false),
                 ColumnDefinition("COL2", "NUMBER", false)
             )
 
