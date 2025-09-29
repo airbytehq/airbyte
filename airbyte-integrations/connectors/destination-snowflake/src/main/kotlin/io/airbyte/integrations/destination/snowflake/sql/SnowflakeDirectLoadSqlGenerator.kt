@@ -54,7 +54,9 @@ class SnowflakeDirectLoadSqlGenerator(
             FROM INFORMATION_SCHEMA.SCHEMATA
             WHERE SCHEMA_NAME = '$schemaName'
               AND CATALOG_NAME = '$databaseName'
-        """.trimIndent().andLog()
+        """
+            .trimIndent()
+            .andLog()
     }
 
     fun createNamespace(namespace: String): String {
