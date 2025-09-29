@@ -74,6 +74,14 @@ jobs:
             exit 0
           fi
 
+          # Verify the metadata file actually exists
+          if [ ! -f "$METADATA_FILE" ]; then
+            echo "⚠️  Metadata file does not exist: $METADATA_FILE"
+            echo "metadata_file=false" >> $GITHUB_OUTPUT
+            echo "community_support=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
           # Parse the support level from the metadata
           SUPPORT_LEVEL=$(yq '.data.supportLevel' "$METADATA_FILE")
           echo "📋 Found metadata file: $METADATA_FILE"
