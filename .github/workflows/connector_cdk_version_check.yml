@@ -38,6 +38,6 @@ jobs:
             exit 0
           else
             echo "::error title=Invalid CDK version usage::One or more connectors set CDK version to 'local' (should be none). See the list below."
-            printf '%s\n' "connectors"
+            printf '%s\n' "$connectors"
             exit 1
           fi
