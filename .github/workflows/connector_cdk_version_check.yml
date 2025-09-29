@@ -11,6 +11,23 @@ jobs:
     name: Connectors CDK Version Check
     runs-on: ubuntu-24.04
     steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 #v5.0.0
+        with:
+          submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
+          fetch-depth: 0
+
+      - name: Setup Java
+        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 #v5.0.0
+        with:
+          distribution: "zulu"
+          java-version: "21"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@748248ddd2a24f49513d8f472f81c3a07d4d50e1 #v4.4.4
+        with:
+          gradle-version: "8.14"
+
       - name: Check no connectors set CDK version to 'local'
         run: |
           # connectors that set cdk version to 'local' (should be none)
