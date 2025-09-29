@@ -49,7 +49,7 @@ definitions:
     type: DefaultErrorHandler
     backoff_strategies:
       - type: CustomBackoffStrategy
-        class_name: source_pinterest.components.components.PinterestAnalyticsBackoffStrategy
+        class_name: source_declarative_manifest.components.PinterestAnalyticsBackoffStrategy
     response_filters:
       - type: HttpResponseFilter
         action: RETRY
@@ -772,7 +772,7 @@ definitions:
         type: RecordSelector
         extractor:
           type: CustomRecordExtractor
-          class_name: source_pinterest.components.components.AdAccountRecordExtractor
+          class_name: source_declarative_manifest.components.AdAccountRecordExtractor
     $parameters:
       path: "{{ 'ad_accounts/' + config['account_id'] if config.get('account_id') else 'ad_accounts' }}"
 
