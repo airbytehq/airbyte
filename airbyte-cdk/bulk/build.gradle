@@ -232,5 +232,3 @@ class BumpBulkCdkVersionTask extends DefaultTask {
 tasks.register('bumpVersion', BumpBulkCdkVersionTask) {
     it.versionFile = versionFile
 }
-
-// force ci run
