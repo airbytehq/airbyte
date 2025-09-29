@@ -87,10 +87,10 @@ object SnowflakeDataCleaner : DestinationCleaner {
                 """.trimIndent()
         val stages = statement.executeQuery(stagesSql)
         while (stages.next()) {
-            val databaseName = tables.getString("database_name")
-            val schemaName = tables.getString("schema_name")
-            val stageName = tables.getString("name")
-            val createdOn = tables.getTimestamp("created_on").toInstant()
+            val databaseName = stages.getString("database_name")
+            val schemaName = stages.getString("schema_name")
+            val stageName = stages.getString("name")
+            val createdOn = stages.getTimestamp("created_on").toInstant()
             // Clear all raw staging tables in the database older than 24 hours
             if (createdOn.isBefore(Instant.now().minus(RETENTION_PERIOD))) {
                 val fullyQualifiedTable = "\"$databaseName\".\"$schemaName\".\"$stageName\""

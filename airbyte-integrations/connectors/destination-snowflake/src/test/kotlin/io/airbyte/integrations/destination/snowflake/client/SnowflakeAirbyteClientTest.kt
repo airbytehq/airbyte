@@ -130,6 +130,7 @@ internal class SnowflakeAirbyteClientTest {
             mockk<ResultSet> {
                 every { next() } returns true
                 every { getBoolean("schema_exists") } returns false
+                every { close() } just Runs
             }
 
         // Mock for other operations
@@ -142,6 +143,7 @@ internal class SnowflakeAirbyteClientTest {
                 every {
                     executeQuery(not(match { it.contains("INFORMATION_SCHEMA.SCHEMATA") }))
                 } returns createResultSet
+                every { close() } just Runs
             }
 
         val mockConnection =
@@ -172,6 +174,7 @@ internal class SnowflakeAirbyteClientTest {
             mockk<ResultSet> {
                 every { next() } returns true
                 every { getBoolean("schema_exists") } returns true
+                every { close() } just Runs
             }
 
         // Mock for file format creation
@@ -184,6 +187,7 @@ internal class SnowflakeAirbyteClientTest {
                 every {
                     executeQuery(not(match { it.contains("INFORMATION_SCHEMA.SCHEMATA") }))
                 } returns createResultSet
+                every { close() } just Runs
             }
 
         val mockConnection =
@@ -592,13 +596,22 @@ internal class SnowflakeAirbyteClientTest {
         val sql = "CREATE SCHEMA test_namespace"
 
         every { sqlGenerator.createNamespace(namespace) } returns sql
+        every { sqlGenerator.checkSchemaExists(namespace) } returns "SELECT COUNT(*) > 0 AS schema_exists FROM INFORMATION_SCHEMA.SCHEMATA"
+
+        // Mock for schema check - should fail and throw exception
+        val schemaCheckResultSet = mockk<ResultSet> {
+            every { next() } returns true
+            every { getBoolean("schema_exists") } returns false
+            every { close() } just Runs
+        }
 
         val connection = mockk<Connection>()
         val statement = mockk<Statement>()
 
         every { dataSource.connection } returns connection
         every { connection.createStatement() } returns statement
-        every { statement.executeQuery(sql) } throws SQLException("Network error", "08S01")
+        // First call returns schema check result, second call throws for CREATE SCHEMA
+        every { statement.executeQuery(any()) } returns schemaCheckResultSet andThenThrows SQLException("Network error", "08S01")
         every { statement.close() } just Runs
         every { connection.close() } just Runs
 
