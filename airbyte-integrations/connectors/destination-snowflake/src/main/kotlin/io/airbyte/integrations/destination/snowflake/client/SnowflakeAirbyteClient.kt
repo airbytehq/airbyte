@@ -60,14 +60,14 @@ class SnowflakeAirbyteClient(
         // Check if the schema exists first
         val schemaExistsResult =
             dataSource.connection.use { connection ->
-                val resultSet =
-                    connection
-                        .createStatement()
-                        .executeQuery(sqlGenerator.checkSchemaExists(namespace))
-                if (resultSet.next()) {
-                    resultSet.getBoolean("schema_exists")
-                } else {
-                    false
+                val statement = connection.createStatement()
+                statement.use {
+                    val resultSet = it.executeQuery(sqlGenerator.checkSchemaExists(namespace))
+                    if (resultSet.next()) {
+                        resultSet.getBoolean("schema_exists")
+                    } else {
+                        false
+                    }
                 }
             }
 
