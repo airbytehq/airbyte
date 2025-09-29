@@ -1,4 +1,4 @@
-name: JVM Connector PR Structure
+name: PR cannot modify both bulk CDK and connectors
 
 on:
   pull_request:
