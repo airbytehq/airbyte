@@ -41,19 +41,19 @@ internal const val NOT_NULL = "NOT NULL"
 internal val DEFAULT_COLUMNS =
     listOf(
         ColumnAndType(
-            columnName = COLUMN_NAME_AB_RAW_ID,
+            columnName = COLUMN_NAME_AB_RAW_ID.uppercase(),
             columnType = "${SnowflakeDataType.VARCHAR.typeName} $NOT_NULL"
         ),
         ColumnAndType(
-            columnName = COLUMN_NAME_AB_EXTRACTED_AT,
+            columnName = COLUMN_NAME_AB_EXTRACTED_AT.uppercase(),
             columnType = "${SnowflakeDataType.TIMESTAMP_TZ.typeName} $NOT_NULL"
         ),
         ColumnAndType(
-            columnName = COLUMN_NAME_AB_META,
+            columnName = COLUMN_NAME_AB_META.uppercase(),
             columnType = "${SnowflakeDataType.VARIANT.typeName} $NOT_NULL"
         ),
         ColumnAndType(
-            columnName = COLUMN_NAME_AB_GENERATION_ID,
+            columnName = COLUMN_NAME_AB_GENERATION_ID.uppercase(),
             columnType = SnowflakeDataType.NUMBER.typeName
         ),
     )
