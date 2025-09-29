@@ -31,7 +31,7 @@ jobs:
       - name: Check no connectors set CDK version to 'local'
         run: |
           # connectors that set cdk version to 'local' (should be none)
-          connectors="$(gw getCdkVersion | awk '/local/ {print prev} {prev=$0}' | cut -d: -f4)"
+          connectors="$(./gradlew getCdkVersion | awk '/local/ {print prev} {prev=$0}' | cut -d: -f4)"
           
           if [[ -z "$output" ]]; then
             echo "No connectors are setting CDK version to 'local'."
