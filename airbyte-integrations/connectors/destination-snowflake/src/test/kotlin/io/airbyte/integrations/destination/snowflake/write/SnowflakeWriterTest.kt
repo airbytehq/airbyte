@@ -347,11 +347,12 @@ internal class SnowflakeWriterTest {
                 tempTableNameGenerator = mockk()
             )
 
-        // Should handle empty namespace gracefully by converting to default name
+        // Should handle empty namespace gracefully by generating a DEFAULT_NAME with UUID
         runBlocking {
             writer.setup()
-            // Verify it attempted to create namespace with a generated default name
-            coVerify { snowflakeClient.createNamespace(match { it.startsWith("default_name_") }) }
+            // Verify it attempted to create namespace with empty string transformed to
+            // DEFAULT_NAME_{UUID}
+            coVerify { snowflakeClient.createNamespace(match { it.startsWith("DEFAULT_NAME_") }) }
         }
     }
 
@@ -385,15 +386,16 @@ internal class SnowflakeWriterTest {
                 tempTableNameGenerator = mockk()
             )
 
-        // First namespace succeeds, second fails
-        coEvery { snowflakeClient.createNamespace("namespace1") } returns Unit
-        coEvery { snowflakeClient.createNamespace("namespace2") } throws
+        // First namespace succeeds, second fails (namespaces are uppercased by
+        // toSnowflakeCompatibleName)
+        coEvery { snowflakeClient.createNamespace("NAMESPACE1") } returns Unit
+        coEvery { snowflakeClient.createNamespace("NAMESPACE2") } throws
             RuntimeException("Connection timeout")
 
         assertThrows(RuntimeException::class.java) { runBlocking { writer.setup() } }
 
         // Verify both namespace creations were attempted
-        coVerify(exactly = 1) { snowflakeClient.createNamespace("namespace1") }
-        coVerify(exactly = 1) { snowflakeClient.createNamespace("namespace2") }
+        coVerify(exactly = 1) { snowflakeClient.createNamespace("NAMESPACE1") }
+        coVerify(exactly = 1) { snowflakeClient.createNamespace("NAMESPACE2") }
     }
 }
