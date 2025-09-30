@@ -230,6 +230,7 @@ Google Search Console only retains data for websites from the last 16 months. An
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.10.11 | 2025-09-30 | [65384](https://github.com/airbytehq/airbyte/pull/65384) | Update dependencies |
 | 1.10.10 | 2025-09-10 | [66010](https://github.com/airbytehq/airbyte/pull/66010) | Update to CDK v7 |
 | 1.10.9 | 2025-08-09 | [64584](https://github.com/airbytehq/airbyte/pull/64584) | Update dependencies |
 | 1.10.8 | 2025-08-02 | [64187](https://github.com/airbytehq/airbyte/pull/64187) | Update dependencies |
