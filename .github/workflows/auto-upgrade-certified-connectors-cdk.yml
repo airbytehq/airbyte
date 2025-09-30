@@ -87,6 +87,10 @@ jobs:
             echo "Changes detected for ${{ matrix.connector }}"
           fi
 
+      # TODO bump version in metadata.yaml
+
+      # TODO add connector changelog entry
+
       - name: Create Pull Request
         if: steps.check-changes.outputs.has_changes == 'true'
         uses: peter-evans/create-pull-request@v6
