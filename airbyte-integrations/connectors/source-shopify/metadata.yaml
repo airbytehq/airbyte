@@ -11,7 +11,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 9da77001-af33-4bcd-be46-6252bf9342b9
-  dockerImageTag: 3.0.9
+  dockerImageTag: 3.0.10
   dockerRepository: airbyte/source-shopify
   documentationUrl: https://docs.airbyte.com/integrations/sources/shopify
   erdUrl: https://dbdocs.io/airbyteio/source-shopify?view=relationships
@@ -31,6 +31,8 @@ data:
       enabled: true
   releaseStage: generally_available
   releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: false
     breakingChanges:
       1.0.0:
         message: "This upgrade brings changes to certain streams after migration to Shopify API version `2023-07`, more details in this PR: https://github.com/airbytehq/airbyte/pull/29361."

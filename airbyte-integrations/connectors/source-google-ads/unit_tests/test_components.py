@@ -147,7 +147,7 @@ class TestCustomGAQuerySchemaLoader:
             config=config_for_custom_query_tests,
             requester=mock_requester,
             query=config_for_custom_query_tests["custom_queries_array"][0]["query"],
-            cursor_field=config_for_custom_query_tests["custom_queries_array"][0]["cursor_field"],
+            cursor_field="segments.date",
         )
         expected_schema = {
             "$schema": "http://json-schema.org/draft-07/schema#",
@@ -228,13 +228,13 @@ class TestCustomGAQueryHttpRequester:
     def test_given_valid_query_with_cursor_field_returns_expected_request_body(self, config_for_custom_query_tests, requests_mock):
         config = config_for_custom_query_tests
         config["custom_queries_array"][0]["query"] = (
-            "SELECT campaign_budget.name, campaign.name, metrics.interaction_event_types FROM campaign_budget"
+            "SELECT campaign_budget.name, campaign.name, metrics.interaction_event_types, segments.date FROM campaign_budget ORDER BY segments.date ASC"
         )
         requester = CustomGAQueryHttpRequester(
             name="test_custom_ga_query_http_requester",
             parameters={
                 "query": config["custom_queries_array"][0]["query"],
-                "cursor_field": config["custom_queries_array"][0]["cursor_field"],
+                "cursor_field": "segments.date",
             },
             config=config,
         )

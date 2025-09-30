@@ -335,17 +335,20 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 6.0.0       | 2025-08-28 | [65100](https://github.com/airbytehq/airbyte/pull/65100) | Migrate Marketing Emails stream from deprecated v1 API to v3 API. Breaking change requires stream reset. This change also enables incremental syncs for `marketing_emails` stream. |
-| 5.8.20      | 2025-08-25 | [65513](https://github.com/airbytehq/airbyte/pull/65513) | Add missing datetime format                                                                                                                                                                                                   |
-| 5.8.19      | 2025-08-23 | [65327](https://github.com/airbytehq/airbyte/pull/65327) | Update dependencies                                                                                                                                                                                                          |
-| 5.8.18      | 2025-08-09 | [64603](https://github.com/airbytehq/airbyte/pull/64603) | Update dependencies |
-| 5.8.17      | 2025-08-02 | [64197](https://github.com/airbytehq/airbyte/pull/64197) | Update dependencies |
-| 5.8.16      | 2025-07-26 | [63898](https://github.com/airbytehq/airbyte/pull/63898) | Update dependencies |
-| 5.8.15      | 2025-07-21 | [63341](https://github.com/airbytehq/airbyte/pull/63341) | Bump memory on Discover to 1GB |
-| 5.8.14      | 2025-07-19 | [63499](https://github.com/airbytehq/airbyte/pull/63499) | Update dependencies |
-| 5.8.13      | 2025-07-12 | [63115](https://github.com/airbytehq/airbyte/pull/63115) | Update dependencies |
-| 5.8.12      | 2025-07-08 | [62866](https://github.com/airbytehq/airbyte/pull/62866) | Handle non-numeric values in fields with declared numeric type |
-| 5.8.11      | 2025-07-07 | [62838](https://github.com/airbytehq/airbyte/pull/62838) | Promoting release candidate 5.8.11-rc.1 to a main version. |
+| 6.0.3 | 2025-09-25 | [66700](https://github.com/airbytehq/airbyte/pull/66700) | Revert to 6.0.1 |
+| 6.0.2 | 2025-09-12 | [65947](https://github.com/airbytehq/airbyte/pull/65947) | Set fallback target type to 'string' for numbers and booleans |
+| 6.0.1 | 2025-09-09 | [66100](https://github.com/airbytehq/airbyte/pull/66100) | Update dependencies |
+| 6.0.0 | 2025-08-28 | [65100](https://github.com/airbytehq/airbyte/pull/65100) | Migrate Marketing Emails stream from deprecated v1 API to v3 API. Breaking change requires stream reset. This change also enables incremental syncs for `marketing_emails` stream. |
+| 5.8.20 | 2025-08-25 | [65513](https://github.com/airbytehq/airbyte/pull/65513) | Add missing datetime format |
+| 5.8.19 | 2025-08-23 | [65327](https://github.com/airbytehq/airbyte/pull/65327) | Update dependencies |
+| 5.8.18 | 2025-08-09 | [64603](https://github.com/airbytehq/airbyte/pull/64603) | Update dependencies |
+| 5.8.17 | 2025-08-02 | [64197](https://github.com/airbytehq/airbyte/pull/64197) | Update dependencies |
+| 5.8.16 | 2025-07-26 | [63898](https://github.com/airbytehq/airbyte/pull/63898) | Update dependencies |
+| 5.8.15 | 2025-07-21 | [63341](https://github.com/airbytehq/airbyte/pull/63341) | Bump memory on Discover to 1GB |
+| 5.8.14 | 2025-07-19 | [63499](https://github.com/airbytehq/airbyte/pull/63499) | Update dependencies |
+| 5.8.13 | 2025-07-12 | [63115](https://github.com/airbytehq/airbyte/pull/63115) | Update dependencies |
+| 5.8.12 | 2025-07-08 | [62866](https://github.com/airbytehq/airbyte/pull/62866) | Handle non-numeric values in fields with declared numeric type |
+| 5.8.11 | 2025-07-07 | [62838](https://github.com/airbytehq/airbyte/pull/62838) | Promoting release candidate 5.8.11-rc.1 to a main version. |
 | 5.8.11-rc.1 | 2025-07-02 | [62481](https://github.com/airbytehq/airbyte/pull/62481) | For CRMSearch streams, fix retry behavior for the underlying associations HttpRequester to retry 401 errors |
 | 5.8.10      | 2025-06-28 | [62179](https://github.com/airbytehq/airbyte/pull/62179) | Update dependencies |
 | 5.8.9       | 2025-06-21 | [61842](https://github.com/airbytehq/airbyte/pull/61842) | Update dependencies |
