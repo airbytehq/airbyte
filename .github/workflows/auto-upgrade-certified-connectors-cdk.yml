@@ -22,8 +22,14 @@ jobs:
           connectors=()
           for dir in airbyte-integrations/connectors/*; do
             metadata_file="${dir}/metadata.yaml"
-            if test -f "$metadata_file"; then
-              if grep -q "supportLevel: certified" "$metadata_file"; then
+            build_gradle="${dir}/build.gradle"
+            build_gradle_kts="${dir}/build.gradle.kts"
+
+            # If metadata.yaml exists and says we're certified
+            if test -f "$metadata_file" && grep -q "supportLevel: certified" "$metadata_file"; then
+              # If we have a gradle buildscript using the bulk connector plugin
+              if (test -f "$build_gradle" && grep -q "airbyte-bulk-connector" "$build_gradle") || \
+                  (test -f "$build_gradle_kts" && grep -q "airbyte-bulk-connector" "$build_gradle_kts"); then
                 connector_name=$(basename "$dir")
                 connectors+=("$connector_name")
               fi
@@ -33,7 +39,7 @@ jobs:
           # Convert to JSON array
           json_array=$(printf '%s\n' "${connectors[@]}" | jq -R . | jq -s .)
           echo "connectors=$json_array" >> $GITHUB_OUTPUT
-          echo "Found ${#connectors[@]} certified connectors"
+          echo "Found ${#connectors[@]} certified bulk CDK connectors"
 
   upgrade-connector-cdk:
     name: Upgrade CDK for ${{ matrix.connector }}
