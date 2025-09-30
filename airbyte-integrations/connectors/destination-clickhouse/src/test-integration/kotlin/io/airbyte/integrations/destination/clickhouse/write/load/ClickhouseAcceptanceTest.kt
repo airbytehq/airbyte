@@ -48,7 +48,6 @@ class ClickhouseDirectLoadWriterWithJson :
         SchematizedNestedValueBehavior.PASS_THROUGH,
         false,
     ) {
-
     /**
      * The way clickhouse handle json makes this test unfit JSON keeps a schema of the JSONs
      * inserted. If a previous row has a JSON with a column A, It is expected that the subsequent

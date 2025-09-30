@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.dataflow.stages
 import io.airbyte.cdk.load.dataflow.pipeline.DataFlowStage
 import io.airbyte.cdk.load.dataflow.pipeline.DataFlowStageIO
 import io.airbyte.cdk.load.dataflow.state.StateHistogramStore
+import io.airbyte.cdk.load.dataflow.state.stats.CommittedStatsStore
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Named
 import jakarta.inject.Singleton
@@ -15,6 +16,7 @@ import jakarta.inject.Singleton
 @Singleton
 class StateStage(
     private val stateHistogramStore: StateHistogramStore,
+    private val statsStore: CommittedStatsStore,
 ) : DataFlowStage {
     private val log = KotlinLogging.logger {}
 
@@ -23,7 +25,7 @@ class StateStage(
         val byteUpdates = input.partitionBytesHistogram!!
 
         stateHistogramStore.acceptFlushedCounts(countUpdates)
-        stateHistogramStore.acceptFlushedBytes(byteUpdates)
+        statsStore.acceptStats(input.mappedDesc!!, countUpdates, byteUpdates)
 
         return input
     }
