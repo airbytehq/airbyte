@@ -72,7 +72,7 @@ object SnowflakeExpectedRecordMapper : ExpectedRecordMapper {
         // This excludes any "_ab" prefixed metadata columns or any columns that are already
         // null in the input data for the test.
         mappedData.values.entries.filter {
-                !it.key.startsWith("_ab") &&
+                !it.key.lowercase().startsWith("_ab") &&
                     it.value is NullValue &&
                     originalData.values[it.key] != NullValue
             }
