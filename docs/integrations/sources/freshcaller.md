@@ -46,6 +46,7 @@ Please read [How to find your API key](https://support.freshdesk.com/en/support/
 
 | Version | Date       | Pull Request                                             | Subject                                           |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------ |
+| 0.5.1 | 2025-09-30 | [65016](https://github.com/airbytehq/airbyte/pull/65016) | Update dependencies |
 | 0.5.0 | 2025-09-12 | [66216](https://github.com/airbytehq/airbyte/pull/66216) | Migrate cdk to version 7 for source-freshcaller |
 | 0.4.25 | 2025-02-01 | [52843](https://github.com/airbytehq/airbyte/pull/52843) | Update dependencies |
 | 0.4.24 | 2025-01-25 | [52310](https://github.com/airbytehq/airbyte/pull/52310) | Update dependencies |
