@@ -339,9 +339,9 @@ class SnowflakeDirectLoadSqlGenerator(
     }
 
     fun putInStage(tableName: TableName, tempFilePath: String): String {
-        val stageName = snowflakeSqlNameUtils.fullyQualifiedStageName(tableName)
+        val stageName = snowflakeSqlNameUtils.fullyQualifiedStageName(tableName, true)
         return """
-            PUT 'file://$tempFilePath' @$stageName
+            PUT 'file://$tempFilePath' '@$stageName'
             AUTO_COMPRESS = FALSE
             SOURCE_COMPRESSION = GZIP
             OVERWRITE = TRUE
@@ -351,12 +351,12 @@ class SnowflakeDirectLoadSqlGenerator(
     }
 
     fun copyFromStage(tableName: TableName): String {
-        val stageName = snowflakeSqlNameUtils.fullyQualifiedStageName(tableName)
+        val stageName = snowflakeSqlNameUtils.fullyQualifiedStageName(tableName, true)
         val formatName = snowflakeSqlNameUtils.fullyQualifiedFormatName(tableName.namespace)
 
         return """
             COPY INTO ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}
-            FROM @$stageName
+            FROM '@$stageName'
             FILE_FORMAT = $formatName
             ON_ERROR = 'ABORT_STATEMENT'
             PURGE = TRUE

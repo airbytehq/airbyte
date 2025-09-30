@@ -16,6 +16,7 @@ import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.commons.json.Jsons.deserializeExact
 import io.airbyte.integrations.destination.snowflake.SnowflakeBeanFactory
 import io.airbyte.integrations.destination.snowflake.db.SnowflakeFinalTableNameGenerator
+import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeSqlNameUtils
 import java.math.BigDecimal
@@ -50,8 +51,8 @@ class SnowflakeDataDumper(
                     """
                     SELECT COUNT(*) AS TABLE_COUNT
                     FROM information_schema.tables
-                    WHERE table_schema = '${tableName.namespace}'
-                    AND table_name = '${tableName.name}'
+                    WHERE table_schema = '${sqlUtils.escape(tableName.namespace.toSnowflakeCompatibleName())}'
+                    AND table_name = '${sqlUtils.escape(tableName.name.toSnowflakeCompatibleName()) }'
                 """.trimIndent()
 
                 val existsResultSet = statement.executeQuery(tableExistsQuery)

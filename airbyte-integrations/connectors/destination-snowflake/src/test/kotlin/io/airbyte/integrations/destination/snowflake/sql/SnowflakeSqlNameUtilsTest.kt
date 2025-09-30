@@ -68,6 +68,26 @@ internal class SnowflakeSqlNameUtilsTest {
     }
 
     @Test
+    fun testFullyQualifiedStageNameWithEscape() {
+        val databaseName = "test-database"
+        val namespace = "test-namespace"
+        val name = "test=\"\"\'name"
+        val tableName = TableName(namespace = namespace, name = name)
+        every { snowflakeConfiguration.database } returns databaseName
+
+        val expectedName =
+            snowflakeSqlNameUtils.combineParts(
+                listOf(
+                    databaseName,
+                    namespace,
+                    "$STAGE_NAME_PREFIX${snowflakeSqlNameUtils.escape(name)}"
+                )
+            )
+        val fullyQualifiedName = snowflakeSqlNameUtils.fullyQualifiedStageName(tableName, true)
+        assertEquals(expectedName, fullyQualifiedName)
+    }
+
+    @Test
     fun testFullyQualifiedFormatName() {
         val databaseName = "test-database"
         val namespace = "test-namespace"
