@@ -92,10 +92,11 @@ jobs:
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "chore: upgrade CDK for ${{ matrix.connector }}"
-          branch: "auto-upgrade-cdk/${{ matrix.connector }}"
+          commit-message: "chore: upgrade bulk CDK for ${{ matrix.connector }}"
+          branch: "auto-upgrade-jvm-bulk-cdk/${{ matrix.connector }}"
           delete-branch: true
           title: "chore: upgrade CDK for ${{ matrix.connector }}"
+          # TODO edit this (and ideally include a link to the workflow itself)
           body: |
             ## Summary
             - Automatically upgraded CDK version for `${{ matrix.connector }}`
