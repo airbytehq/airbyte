@@ -67,7 +67,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         val namespace = "namespace"
         val sql = snowflakeDirectLoadSqlGenerator.createNamespace(namespace)
         assertEquals(
-            "CREATE SCHEMA IF NOT EXISTS ${snowflakeSqlNameUtils.fullyQualifiedNamespace(namespace)}",
+            "CREATE SCHEMA ${snowflakeSqlNameUtils.fullyQualifiedNamespace(namespace)}",
             sql
         )
     }
@@ -816,7 +816,7 @@ new_record."_AIRBYTE_GENERATION_ID"
         val sql = snowflakeDirectLoadSqlGenerator.createNamespace("TABLE")
 
         // Reserved keyword should be properly quoted
-        assertEquals("""CREATE SCHEMA IF NOT EXISTS "test_database"."TABLE"""", sql)
+        assertEquals("""CREATE SCHEMA "test_database"."TABLE"""", sql)
     }
 
     @Test

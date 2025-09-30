@@ -14,6 +14,7 @@ import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.util.UUIDGenerator
 import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
+import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.CdcDeletionMode
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.write.load.CSV_FIELD_SEPARATOR
@@ -46,8 +47,20 @@ class SnowflakeDirectLoadSqlGenerator(
         return "SELECT COUNT(*) AS \"$COUNT_TOTAL_ALIAS\" FROM ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}".andLog()
     }
 
+    fun checkSchemaExists(namespace: String): String {
+        val schemaName = namespace.toSnowflakeCompatibleName()
+        val databaseName = snowflakeConfiguration.database.toSnowflakeCompatibleName()
+        return """
+            SELECT COUNT(*) > 0 AS SCHEMA_EXISTS
+            FROM "$databaseName".INFORMATION_SCHEMA.SCHEMATA
+            WHERE SCHEMA_NAME = '$schemaName'
+        """
+            .trimIndent()
+            .andLog()
+    }
+
     fun createNamespace(namespace: String): String {
-        return "CREATE SCHEMA IF NOT EXISTS ${snowflakeSqlNameUtils.fullyQualifiedNamespace(namespace)}".andLog()
+        return "CREATE SCHEMA ${snowflakeSqlNameUtils.fullyQualifiedNamespace(namespace)}".andLog()
     }
 
     fun createTable(
