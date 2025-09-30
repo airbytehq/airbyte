@@ -87,6 +87,20 @@ class SnowflakeColumnUtils(
                 .joinToString(",") { "\"$it\"" }
         }
 
+    fun getFormattedColumnNames(
+        columns: Map<String, FieldType>,
+        columnNameMapping: ColumnNameMapping
+    ): List<String> =
+        if (snowflakeConfiguration.legacyRawTablesOnly == true) {
+            defaultColumns().map { "\"${it.columnName.toSnowflakeCompatibleName()}\"" }
+        } else {
+            defaultColumns().map { "\"${it.columnName.toSnowflakeCompatibleName()}\"" } +
+                columns.map { (fieldName, _) ->
+                    val columnName = columnNameMapping[fieldName] ?: fieldName
+                    formatColumnName("\"${columnName.toSnowflakeCompatibleName()}\"")
+                }
+        }
+
     fun columnsAndTypes(
         columns: Map<String, FieldType>,
         columnNameMapping: ColumnNameMapping
@@ -98,16 +112,15 @@ class SnowflakeColumnUtils(
                 columns.map { (fieldName, type) ->
                     val columnName = columnNameMapping[fieldName] ?: fieldName
                     val typeName = toDialectType(type.type)
-                    ColumnAndType(
-                        columnName = formatColumnName("\"$columnName\""),
-                        columnType = typeName
-                    )
+                    ColumnAndType(columnName = formatColumnName(columnName), columnType = typeName)
                 }
         }
 
     fun formatColumnName(columnName: String) =
         columnName
+            // For backwards compatibility with previous version of Snowflake destination
             .replace(CDC_DELETED_AT_COLUMN, CDC_DELETED_AT_COLUMN.uppercase())
+            // Avoid double escape quoting
             .replace("\"\"", "\"")
 
     fun toDialectType(type: AirbyteType): String =

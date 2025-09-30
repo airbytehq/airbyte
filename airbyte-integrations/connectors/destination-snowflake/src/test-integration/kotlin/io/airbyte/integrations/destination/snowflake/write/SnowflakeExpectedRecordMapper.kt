@@ -13,6 +13,7 @@ import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimeWithTimezoneValue
 import io.airbyte.cdk.load.data.json.toJson
 import io.airbyte.cdk.load.message.Meta
+import io.airbyte.cdk.load.orchestration.db.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
@@ -29,6 +30,14 @@ object SnowflakeExpectedRecordMapper : ExpectedRecordMapper {
                     .mapValuesTo(linkedMapOf()) { (_, value) -> mapAirbyteValue(value) }
                     .mapKeysTo(linkedMapOf()) { it.key.toSnowflakeCompatibleName() }
             )
+
+        // If the Airbyte CDC deleted at column is unset, it will not appear in the dumped record
+        if (
+            mappedData.values.contains(CDC_DELETED_AT_COLUMN) &&
+                mappedData.values[CDC_DELETED_AT_COLUMN] == NullValue
+        ) {
+            mappedData.values.remove(CDC_DELETED_AT_COLUMN)
+        }
 
         val mappedAirbyteMetadata =
             mapAirbyteMetadata(

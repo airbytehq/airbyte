@@ -180,11 +180,11 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         val columnNameMapping = ColumnNameMapping(emptyMap())
         val sourceTableName = TableName(namespace = "namespace", name = "source")
         val destinationTableName = TableName(namespace = "namespace", name = "destination")
+        val expectedColumns = DEFAULT_COLUMNS.map { "\"${it.columnName}\"" }
 
-        every { columnUtils.columnsAndTypes(any(), columnNameMapping) } returns
-            DEFAULT_COLUMNS.map {
-                ColumnAndType(columnName = "\"${it.columnName}\"", columnType = it.columnType)
-            }
+        every { columnUtils.getFormattedColumnNames(any(), columnNameMapping) } returns
+            expectedColumns
+        every { columnUtils.formatColumnName(any()) } answers { firstArg<String>() }
 
         val expected =
             """
@@ -192,7 +192,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
             USING (
                           WITH records AS (
               SELECT
-                ${DEFAULT_COLUMNS.joinToString(",\n") { "\"${it.columnName}\"" }}
+                ${expectedColumns.joinToString(",\n")}
               FROM "test_database"."namespace"."source"
             ), numbered_rows AS (
               SELECT *, ROW_NUMBER() OVER (
@@ -200,7 +200,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
               ) AS row_number
               FROM records
             )
-            SELECT ${DEFAULT_COLUMNS.joinToString(",\n") { "\"${it.columnName}\"" }}
+            SELECT ${expectedColumns.joinToString(",\n")}
             FROM numbered_rows
             WHERE row_number = 1
             ) AS new_record
@@ -216,7 +216,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
 "_AIRBYTE_META" = new_record."_AIRBYTE_META",
 "_AIRBYTE_GENERATION_ID" = new_record."_AIRBYTE_GENERATION_ID"
             WHEN NOT MATCHED THEN INSERT (
-              ${DEFAULT_COLUMNS.joinToString(",\n") { "\"${it.columnName}\"" }}
+              ${expectedColumns.joinToString(",\n")}
             ) VALUES (
               new_record."_AIRBYTE_RAW_ID",
 new_record."_AIRBYTE_EXTRACTED_AT",
@@ -375,13 +375,14 @@ new_record."_AIRBYTE_GENERATION_ID"
         val sourceTableName = TableName(namespace = "test_ns", name = "source")
         val targetTableName = TableName(namespace = "test_ns", name = "target")
 
-        every { columnUtils.columnsAndTypes(any(), columnNameMapping) } returns
+        every { columnUtils.getFormattedColumnNames(any(), columnNameMapping) } returns
             listOf(
-                ColumnAndType("id", "VARCHAR"),
-                ColumnAndType("name", "VARCHAR"),
-                ColumnAndType("updated_at", "TIMESTAMP_TZ"),
-                ColumnAndType("_ab_cdc_deleted_at", "TIMESTAMP_TZ")
-            ) + DEFAULT_COLUMNS
+                "\"id\"",
+                "\"name\"",
+                "\"updated_at\"",
+                "\"${CDC_DELETED_AT_COLUMN.uppercase()}\"",
+            ) + DEFAULT_COLUMNS.map { "\"${it.columnName}\"" }
+        every { columnUtils.formatColumnName(any()) } answers { firstArg<String>() }
 
         val sql =
             snowflakeDirectLoadSqlGenerator.upsertTable(
@@ -455,13 +456,14 @@ new_record."_AIRBYTE_GENERATION_ID"
         val sourceTableName = TableName(namespace = "test_ns", name = "source")
         val targetTableName = TableName(namespace = "test_ns", name = "target")
 
-        every { columnUtils.columnsAndTypes(any(), columnNameMapping) } returns
+        every { columnUtils.getFormattedColumnNames(any(), columnNameMapping) } returns
             listOf(
-                ColumnAndType("id", "VARCHAR"),
-                ColumnAndType("name", "VARCHAR"),
-                ColumnAndType("updated_at", "TIMESTAMP_TZ"),
-                ColumnAndType("_ab_cdc_deleted_at", "TIMESTAMP_TZ")
-            ) + DEFAULT_COLUMNS
+                "\"id\"",
+                "\"name\"",
+                "\"updated_at\"",
+                "\"${CDC_DELETED_AT_COLUMN.uppercase()}\"",
+            ) + DEFAULT_COLUMNS.map { "\"${it.columnName}\"" }
+        every { columnUtils.formatColumnName(any()) } answers { firstArg<String>() }
 
         val sql =
             softDeleteGenerator.upsertTable(
@@ -509,12 +511,13 @@ new_record."_AIRBYTE_GENERATION_ID"
         val sourceTableName = TableName(namespace = "test_ns", name = "source")
         val targetTableName = TableName(namespace = "test_ns", name = "target")
 
-        every { columnUtils.columnsAndTypes(any(), columnNameMapping) } returns
+        every { columnUtils.getFormattedColumnNames(any(), columnNameMapping) } returns
             listOf(
-                ColumnAndType("id", "VARCHAR"),
-                ColumnAndType("name", "VARCHAR"),
-                ColumnAndType("updated_at", "TIMESTAMP_TZ")
-            ) + DEFAULT_COLUMNS
+                "\"id\"",
+                "\"name\"",
+                "\"updated_at\"",
+            ) + DEFAULT_COLUMNS.map { "\"${it.columnName}\"" }
+        every { columnUtils.formatColumnName(any()) } answers { firstArg<String>() }
 
         val sql =
             snowflakeDirectLoadSqlGenerator.upsertTable(
@@ -558,9 +561,13 @@ new_record."_AIRBYTE_GENERATION_ID"
         val sourceTableName = TableName(namespace = "test_ns", name = "source")
         val targetTableName = TableName(namespace = "test_ns", name = "target")
 
-        every { columnUtils.columnsAndTypes(any(), columnNameMapping) } returns
-            listOf(ColumnAndType("id", "VARCHAR"), ColumnAndType("name", "VARCHAR")) +
-                DEFAULT_COLUMNS
+        every { columnUtils.getFormattedColumnNames(any(), columnNameMapping) } returns
+            listOf(
+                "\"id\"",
+                "\"name\"",
+                "\"${CDC_DELETED_AT_COLUMN.uppercase()}\"",
+            ) + DEFAULT_COLUMNS.map { "\"${it.columnName}\"" }
+        every { columnUtils.formatColumnName(any()) } answers { firstArg<String>() }
 
         val sql =
             snowflakeDirectLoadSqlGenerator.upsertTable(
@@ -707,12 +714,15 @@ new_record."_AIRBYTE_GENERATION_ID"
 
         val sql =
             snowflakeDirectLoadSqlGenerator.createTable(stream, tableName, columnNameMapping, false)
+        val expectedSql =
+            """
+            CREATE TABLE "test_database"."namespace"."table___DROP_TABLE_users____" (
+                
+            )
+        """.trimIndent()
 
         // The dangerous SQL characters should be sanitized to underscores
-        assertEquals(
-            "CREATE TABLE \"test_database\".\"namespace\".\"table___DROP_TABLE_users____\" (\n    \n)",
-            sql
-        )
+        assertEquals(expectedSql, sql)
     }
 
     @Test
@@ -725,12 +735,15 @@ new_record."_AIRBYTE_GENERATION_ID"
 
         val sql =
             snowflakeDirectLoadSqlGenerator.createTable(stream, tableName, columnNameMapping, false)
+        val expectedSql =
+            """
+            CREATE TABLE "test_database"."namespace___DROP_SCHEMA_test____"."table" (
+                
+            )
+        """.trimIndent()
 
         // The dangerous SQL characters should be sanitized to underscores
-        assertEquals(
-            "CREATE TABLE \"test_database\".\"namespace___DROP_SCHEMA_test____\".\"table\" (\n    \n)",
-            sql
-        )
+        assertEquals(expectedSql, sql)
     }
 
     @Test

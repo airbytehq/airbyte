@@ -22,6 +22,7 @@ import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
+import io.airbyte.cdk.load.orchestration.db.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.mockk.every
@@ -78,6 +79,56 @@ internal class SnowflakeColumnUtilsTest {
             (DEFAULT_COLUMNS.map { it.columnName } + listOf(RAW_DATA_COLUMN.columnName))
                 .joinToString(",") { "\"$it\"" }
         assertEquals(expectedColumnNames, columnNames)
+    }
+
+    @Test
+    fun testGetRawFormattedColumnNames() {
+        every { snowflakeConfiguration.legacyRawTablesOnly } returns true
+        val columnNameMapping = ColumnNameMapping(mapOf("original" to "actual"))
+        val schemaColumns =
+            mapOf(
+                "column_one" to FieldType(StringType, true),
+                "column_two" to FieldType(IntegerType, true),
+                "original" to FieldType(StringType, true),
+                CDC_DELETED_AT_COLUMN to FieldType(TimestampTypeWithTimezone, true)
+            )
+        val expectedColumnNames =
+            listOf(
+                "\"${RAW_DATA_COLUMN.columnName}\"",
+            ) + DEFAULT_COLUMNS.map { "\"${it.columnName}\"" }
+        val columnNames =
+            snowflakeColumnUtils.getFormattedColumnNames(
+                columns = schemaColumns,
+                columnNameMapping = columnNameMapping
+            )
+        assertEquals(expectedColumnNames.size, columnNames.size)
+        assertEquals(expectedColumnNames.sorted(), columnNames.sorted())
+    }
+
+    @Test
+    fun testGetFormattedColumnNames() {
+        val columnNameMapping = ColumnNameMapping(mapOf("original" to "actual"))
+        val schemaColumns =
+            mapOf(
+                "column_one" to FieldType(StringType, true),
+                "column_two" to FieldType(IntegerType, true),
+                "original" to FieldType(StringType, true),
+                CDC_DELETED_AT_COLUMN to FieldType(TimestampTypeWithTimezone, true)
+            )
+        val expectedColumnNames =
+            listOf(
+                "\"actual\"",
+                "\"column_one\"",
+                "\"column_two\"",
+                "\"${CDC_DELETED_AT_COLUMN.uppercase()}\"",
+            ) + DEFAULT_COLUMNS.map { "\"${it.columnName}\"" }
+        val columnNames =
+            snowflakeColumnUtils.getFormattedColumnNames(
+                columns = schemaColumns,
+                columnNameMapping = columnNameMapping
+            )
+        assertEquals(expectedColumnNames.size, columnNames.size)
+        assertEquals(expectedColumnNames.sorted(), columnNames.sorted())
     }
 
     @Test

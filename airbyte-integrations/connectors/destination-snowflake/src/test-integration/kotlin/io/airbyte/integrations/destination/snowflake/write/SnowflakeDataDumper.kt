@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.message.Meta
+import io.airbyte.cdk.load.orchestration.db.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.commons.json.Jsons.deserializeExact
@@ -19,6 +20,8 @@ import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeSqlNameUtils
 import java.math.BigDecimal
 import net.snowflake.client.jdbc.SnowflakeTimestampWithTimezone
+
+private val AIRBYTE_META_COLUMNS = Meta.COLUMN_NAMES + setOf(CDC_DELETED_AT_COLUMN)
 
 class SnowflakeDataDumper(
     private val configProvider: (ConfigurationSpecification) -> SnowflakeConfiguration
@@ -71,7 +74,7 @@ class SnowflakeDataDumper(
                     for (i in 1..resultSet.metaData.columnCount) {
                         val columnName = resultSet.metaData.getColumnName(i)
                         val columnType = resultSet.metaData.getColumnTypeName(i)
-                        if (!Meta.COLUMN_NAMES.contains(columnName.lowercase())) {
+                        if (!AIRBYTE_META_COLUMNS.contains(columnName.lowercase())) {
                             val value = resultSet.getObject(i)
                             dataMap[columnName] =
                                 value?.let {

@@ -8,6 +8,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.client.AirbyteClient
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
+import io.airbyte.cdk.load.orchestration.db.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNativeOperations
@@ -26,7 +27,8 @@ import net.snowflake.client.jdbc.SnowflakeSQLException
 
 internal const val DESCRIBE_TABLE_COLUMN_NAME_FIELD = "column_name"
 
-private val AIRBYTE_COLUMN_NAMES = DEFAULT_COLUMNS.map { it.columnName }.toSet()
+private val AIRBYTE_COLUMN_NAMES =
+    DEFAULT_COLUMNS.map { it.columnName }.toSet() + setOf(CDC_DELETED_AT_COLUMN.uppercase())
 private val log = KotlinLogging.logger {}
 
 @Singleton
@@ -295,11 +297,6 @@ class SnowflakeAirbyteClient(
 
     internal fun execute(query: String) =
         dataSource.connection.use { connection ->
-            try {
-                connection.createStatement().use { it.executeQuery(query) }
-            } catch (e: Exception) {
-                println(query)
-                throw e
-            }
+            connection.createStatement().use { it.executeQuery(query) }
         }
 }

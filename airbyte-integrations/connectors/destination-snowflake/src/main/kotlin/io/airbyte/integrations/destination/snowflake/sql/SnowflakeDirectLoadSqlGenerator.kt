@@ -134,19 +134,15 @@ class SnowflakeDirectLoadSqlGenerator(
         // Build column lists for INSERT and UPDATE
         val columnList: String =
             columnUtils
-                .columnsAndTypes(
-                    columns = stream.schema.asColumns(),
-                    columnNameMapping = columnNameMapping,
+                .getFormattedColumnNames(stream.schema.asColumns(), columnNameMapping)
+                .joinToString(
+                    ",\n",
                 )
-                .joinToString(",\n")
 
         val newRecordColumnList: String =
             columnUtils
-                .columnsAndTypes(
-                    columns = stream.schema.asColumns(),
-                    columnNameMapping = columnNameMapping,
-                )
-                .joinToString(",\n") { "new_record.${it.columnName}" }
+                .getFormattedColumnNames(stream.schema.asColumns(), columnNameMapping)
+                .joinToString(",\n") { "new_record.$it" }
 
         // Get deduped records from source
         val selectSourceRecords = selectDedupedRecords(stream, sourceTableName, columnNameMapping)
@@ -177,8 +173,9 @@ class SnowflakeDirectLoadSqlGenerator(
             (stream.schema.asColumns().keys + DEFAULT_COLUMNS.map { it.columnName }).joinToString(
                 ",\n"
             ) { fieldName ->
-                val column = columnNameMapping[fieldName] ?: fieldName
-                "\"$column\" = new_record.\"$column\""
+                val column =
+                    columnUtils.formatColumnName("\"${columnNameMapping[fieldName] ?: fieldName}\"")
+                "$column = new_record.$column"
             }
 
         // Handle CDC deletions based on mode
@@ -250,10 +247,11 @@ class SnowflakeDirectLoadSqlGenerator(
         columnNameMapping: ColumnNameMapping
     ): String {
         val columnList: String =
-            columnUtils.columnsAndTypes(stream.schema.asColumns(), columnNameMapping).joinToString(
-                ",\n"
-            ) { it.columnName }
-
+            columnUtils
+                .getFormattedColumnNames(stream.schema.asColumns(), columnNameMapping)
+                .joinToString(
+                    ",\n",
+                )
         val importType = stream.importType as Dedupe
 
         // Build the primary key list for partitioning
