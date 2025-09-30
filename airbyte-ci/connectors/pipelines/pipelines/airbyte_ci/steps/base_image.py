@@ -51,6 +51,24 @@ class UpdateBaseImageMetadata(StepModifyingFiles):
         else:
             raise NotImplementedError(f"Registry for language {language} is not implemented yet.")
 
+    def _extract_major_version_from_base_image(self, base_image: str) -> Optional[int]:
+        """Extract the major version from a base image string.
+
+        Args:
+            base_image: Base image string (e.g., "docker.io/airbyte/source-declarative-manifest:6.60.16@sha256...")
+
+        Returns:
+            Major version as an integer, or None if parsing fails
+        """
+        try:
+            # Parse version between ':' and '@' (or end of string if no digest)
+            version_part = base_image.split(":")[-1].split("@")[0]
+            current_version = semver.VersionInfo.parse(version_part)
+            return current_version.major
+        except (ValueError, IndexError) as e:
+            self.context.logger.warning(f"Could not parse base image version from '{base_image}': {e}")
+            return None
+
     def _parse_latest_stable_tag(self, tags: List[str], max_major_version: Optional[int] = None) -> Optional[str]:
         """Parse tags to find latest stable (non-prerelease) version.
 
@@ -92,17 +110,9 @@ class UpdateBaseImageMetadata(StepModifyingFiles):
             max_major_version = None
             current_base_image = self.context.connector.metadata.get("connectorBuildOptions", {}).get("baseImage")
             if current_base_image:
-                # Extract version from base image string (e.g., "docker.io/airbyte/source-declarative-manifest:6.60.16@sha256...")
-                try:
-                    # Parse version between ':' and '@' (or end of string if no digest)
-                    version_part = current_base_image.split(":")[-1].split("@")[0]
-                    current_version = semver.VersionInfo.parse(version_part)
-                    max_major_version = current_version.major
-                    self.context.logger.info(
-                        f"Current base image version: {version_part}, constraining to major version {max_major_version}"
-                    )
-                except (ValueError, IndexError) as e:
-                    self.context.logger.warning(f"Could not parse current base image version from '{current_base_image}': {e}")
+                max_major_version = self._extract_major_version_from_base_image(current_base_image)
+                if max_major_version is not None:
+                    self.context.logger.info(f"Constraining updates to major version {max_major_version}")
             else:
                 self.context.logger.warning(
                     "No baseImage found in metadata.yaml connectorBuildOptions, proceeding without major version constraint"
