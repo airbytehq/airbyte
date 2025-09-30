@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.snowflake.db
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.data.Transformations.Companion.toAlphanumericAndUnderscore
 import io.airbyte.cdk.load.orchestration.db.ColumnNameGenerator
 import io.airbyte.cdk.load.orchestration.db.FinalTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.TableName
@@ -47,26 +46,40 @@ class SnowflakeColumnNameGenerator : ColumnNameGenerator {
 }
 
 /**
+ * Escapes double-quotes in a JSON identifier by doubling them. This shit is legacy -- I don't know
+ * why this would be necessary but no harm in keeping it so I am keeping it.
+ *
+ * @return The escaped identifier.
+ */
+fun escapeJsonIdentifier(identifier: String): String {
+    // Note that we don't need to escape backslashes here!
+    // The only special character in an identifier is the double-quote, which needs to be
+    // doubled.
+    return identifier.replace("\"", "\"\"")
+}
+
+/**
  * Transforms a string to be compatible with Snowflake table and column names.
  *
  * @return The transformed string suitable for Snowflake identifiers.
  */
 fun String.toSnowflakeCompatibleName(): String {
-    // 1. Replace any character that is not a letter,
-    //    a digit (0-9), or an underscore (_) with a single underscore.
-    var transformed = toAlphanumericAndUnderscore(this)
+    var identifier = this
 
-    // 2. Ensure the identifier does not start with a digit.
-    //    If it starts with a digit, prepend an underscore.
-    if (transformed.isNotEmpty() && transformed[0].isDigit()) {
-        transformed = "_$transformed"
+    // Handle empty strings
+    if (identifier.isEmpty()) {
+        return "DEFAULT_NAME_${UUID.randomUUID()}".replace("-", "_")
     }
 
-    // 3.Do not allow empty strings.
-    if (transformed.isEmpty()) {
-        return "default_name_${UUID.randomUUID()}" // A fallback name if the input results in an
-        // empty string
+    // Snowflake scripting language does something weird when the `${` bigram shows up in the
+    // script so replace these with something else.
+    // For completeness, if we trigger this, also replace closing curly braces with underscores.
+    if (identifier.contains("\${")) {
+        identifier = identifier.replace("$", "_").replace("{", "_").replace("}", "_")
     }
 
-    return transformed
+    // Escape double quotes
+    identifier = escapeJsonIdentifier(identifier)
+
+    return identifier.uppercase()
 }
