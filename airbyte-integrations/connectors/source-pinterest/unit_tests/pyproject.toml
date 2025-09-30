@@ -1,0 +1,20 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+[tool.poetry]
+name = "source-pinterest"
+version = "0.0.0"
+description = "Unit tests for source-pinterest"
+authors = ["Airbyte <contact@airbyte.io>"]
+[tool.poetry.dependencies]
+python = "^3.10,<3.13"
+airbyte-cdk = "^7"
+requests-mock = "^1.11.0"
+pytest-mock = "^3.6.1"
+responses = "^0.13.3"
+freezegun = "^1.4.0"
+pytest = "^8.0.0"
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore:This class is experimental*"
+]

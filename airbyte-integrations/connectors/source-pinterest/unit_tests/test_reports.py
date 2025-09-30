@@ -7,11 +7,10 @@ import json
 import os
 
 from freezegun import freeze_time
-from source_pinterest import SourcePinterest
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.state_builder import StateBuilder
-from unit_tests.conftest import get_analytics_columns, read_from_stream
+from unit_tests.conftest import get_analytics_columns, get_source, read_from_stream
 
 
 os.environ["REQUEST_CACHE_PATH"] = "/tmp"
@@ -95,7 +94,7 @@ def test_read_records(requests_mock, test_config, analytics_report_stream, date_
 
 
 def test_streams(test_config):
-    source = SourcePinterest(None, test_config, None)
+    source = get_source(test_config)
     streams = source.streams(test_config)
     expected_streams_number = 32
     assert len(streams) == expected_streams_number
@@ -117,7 +116,7 @@ def test_custom_streams(test_config):
             "start_date": "2023-01-08",
         }
     ]
-    source = SourcePinterest(None, config, None)
+    source = get_source(config)
     streams = source.streams(config)
     expected_streams_number = 33
     assert len(streams) == expected_streams_number
