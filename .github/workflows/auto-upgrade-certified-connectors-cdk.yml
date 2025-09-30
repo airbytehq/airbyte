@@ -39,8 +39,8 @@ jobs:
           # Nonobvious `printf | jq | jq` thing here:
           # Print each element of the array on a separate line
           # -> jq converts each line to a JSON string (i.e. wrap in double quotes)
-          # -> jq reads those lines and wraps them into a JSON array
-          json_array=$(printf '%s\n' "${connectors[@]}" | jq --raw-input . | jq --slurp .)
+          # -> jq reads those lines and wraps them into a JSON array (compact-output is needed for compatibility with github's output format)
+          json_array=$(printf '%s\n' "${connectors[@]}" | jq --raw-input . | jq --compact-output --slurp .)
           echo "connectors=$json_array" >> $GITHUB_OUTPUT
           echo "Found ${#connectors[@]} certified bulk CDK connectors"
 
