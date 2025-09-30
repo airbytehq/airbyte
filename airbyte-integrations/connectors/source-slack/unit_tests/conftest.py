@@ -10,8 +10,10 @@ from typing import MutableMapping
 
 import pytest
 
+from airbyte_cdk.sources.declarative.retrievers import Retriever
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
-from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
+from airbyte_cdk.test.catalog_builder import CatalogBuilder, ConfiguredAirbyteStreamBuilder
 from airbyte_cdk.test.state_builder import StateBuilder
 
 
@@ -30,15 +32,15 @@ _YAML_FILE_PATH = _SOURCE_FOLDER_PATH / "manifest.yaml"
 sys.path.append(str(_SOURCE_FOLDER_PATH))  # to allow loading custom components
 
 
-def get_source(config, state=None) -> YamlDeclarativeSource:
-    catalog = CatalogBuilder().build()
+def get_source(config, stream_name=None, state=None) -> YamlDeclarativeSource:
+    catalog = CatalogBuilder().with_stream(ConfiguredAirbyteStreamBuilder().with_name(stream_name)).build() if stream_name else None
     state = StateBuilder().build() if not state else state
     return YamlDeclarativeSource(path_to_yaml=str(_YAML_FILE_PATH), catalog=catalog, config=config, state=state)
 
 
 def get_stream_by_name(stream_name, config, state=None):
     state = StateBuilder().build() if not state else state
-    streams = get_source(config, state).streams(config=config)
+    streams = get_source(config, stream_name, state).streams(config=config)
     for stream in streams:
         if stream.name == stream_name:
             return stream
@@ -158,3 +160,7 @@ def joined_channel():
         "purpose": {"value": "For widget discussion", "creator": "", "last_set": 0},
         "previous_names": [],
     }
+
+
+def get_retriever(stream: DefaultStream) -> Retriever:
+    return stream._stream_partition_generator._partition_factory._retriever
