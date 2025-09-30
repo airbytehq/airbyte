@@ -146,6 +146,7 @@ for more information.
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.2.7 | 2025-09-30 | [66800](https://github.com/airbytehq/airbyte/pull/66800) | Update dependencies |
 | 4.2.6 | 2025-09-09 | [66045](https://github.com/airbytehq/airbyte/pull/66045) | Update dependencies |
 | 4.2.5 | 2025-08-25 | [65119](https://github.com/airbytehq/airbyte/pull/65119) | Migrate to API v23 |
 | 4.2.4 | 2025-08-23 | [65316](https://github.com/airbytehq/airbyte/pull/65316) | Update dependencies |
