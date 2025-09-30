@@ -1,5 +1,6 @@
 name: Auto Upgrade CDK for Certified Connectors
 on:
+  push:
   # schedule:
   # TODO run every 3 weeks
   #   # Run daily at 2 AM UTC
