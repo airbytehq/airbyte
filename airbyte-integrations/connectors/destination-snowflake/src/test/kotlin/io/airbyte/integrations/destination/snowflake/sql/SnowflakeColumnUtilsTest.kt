@@ -94,7 +94,7 @@ internal class SnowflakeColumnUtilsTest {
             )
         val expectedColumnNames =
             listOf(
-                "\"${RAW_DATA_COLUMN.columnName}\"",
+                "\"${RAW_DATA_COLUMN.columnName.uppercase()}\"",
             ) + DEFAULT_COLUMNS.map { "\"${it.columnName}\"" }
         val columnNames =
             snowflakeColumnUtils.getFormattedColumnNames(
@@ -117,9 +117,9 @@ internal class SnowflakeColumnUtilsTest {
             )
         val expectedColumnNames =
             listOf(
-                "\"actual\"",
-                "\"column_one\"",
-                "\"column_two\"",
+                "\"ACTUAL\"",
+                "\"COLUMN_ONE\"",
+                "\"COLUMN_TWO\"",
                 "\"${CDC_DELETED_AT_COLUMN.uppercase()}\"",
             ) + DEFAULT_COLUMNS.map { "\"${it.columnName}\"" }
         val columnNames =

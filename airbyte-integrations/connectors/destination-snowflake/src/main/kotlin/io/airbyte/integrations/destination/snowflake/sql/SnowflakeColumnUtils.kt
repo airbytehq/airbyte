@@ -112,7 +112,10 @@ class SnowflakeColumnUtils(
                 columns.map { (fieldName, type) ->
                     val columnName = columnNameMapping[fieldName] ?: fieldName
                     val typeName = toDialectType(type.type)
-                    ColumnAndType(columnName = formatColumnName(columnName), columnType = typeName)
+                    ColumnAndType(
+                        columnName = formatColumnName(columnName),
+                        columnType = typeName,
+                    )
                 }
         }
 

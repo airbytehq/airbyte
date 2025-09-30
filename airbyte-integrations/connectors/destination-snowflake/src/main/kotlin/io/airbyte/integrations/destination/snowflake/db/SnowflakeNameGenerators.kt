@@ -11,7 +11,6 @@ import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingUtil
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import jakarta.inject.Singleton
-import java.util.Locale
 import java.util.UUID
 
 @Singleton
@@ -39,8 +38,8 @@ class SnowflakeFinalTableNameGenerator(private val config: SnowflakeConfiguratio
 class SnowflakeColumnNameGenerator : ColumnNameGenerator {
     override fun getColumnName(column: String): ColumnNameGenerator.ColumnName {
         return ColumnNameGenerator.ColumnName(
-            column.toSnowflakeCompatibleName(),
-            column.lowercase(Locale.getDefault()).toSnowflakeCompatibleName(),
+            column.toSnowflakeCompatibleName().uppercase(),
+            column.toSnowflakeCompatibleName().uppercase(),
         )
     }
 }

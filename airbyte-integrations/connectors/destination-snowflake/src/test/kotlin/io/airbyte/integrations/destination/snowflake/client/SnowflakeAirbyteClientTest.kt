@@ -17,6 +17,7 @@ import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.COUNT_TOTAL_ALIAS
+import io.airbyte.integrations.destination.snowflake.sql.ColumnAndType
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlGenerator
 import io.mockk.Runs
@@ -587,22 +588,22 @@ internal class SnowflakeAirbyteClientTest {
 
         val col1FieldType = mockk<FieldType>()
         every { col1FieldType.type } returns mockk()
-        every { col1FieldType.nullable } returns true
 
         val col2FieldType = mockk<FieldType>()
         every { col2FieldType.type } returns mockk()
-        every { col2FieldType.nullable } returns false
 
         every { schema.asColumns() } returns
             linkedMapOf("col1" to col1FieldType, "col2" to col2FieldType)
         every { snowflakeColumnUtils.toDialectType(col1FieldType.type) } returns "VARCHAR(255)"
         every { snowflakeColumnUtils.toDialectType(col2FieldType.type) } returns "NUMBER(38,0)"
+        every { snowflakeColumnUtils.columnsAndTypes(any(), any()) } returns
+            listOf(ColumnAndType("COL1_MAPPED", "VARCHAR"), ColumnAndType("COL2_MAPPED", "NUMBER"))
 
         val result = client.getColumnsFromStream(stream, columnNameMapping)
 
         val expectedColumns =
             setOf(
-                ColumnDefinition("COL1_MAPPED", "VARCHAR", true),
+                ColumnDefinition("COL1_MAPPED", "VARCHAR", false),
                 ColumnDefinition("COL2_MAPPED", "NUMBER", false)
             )
 

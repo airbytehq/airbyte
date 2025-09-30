@@ -14,7 +14,7 @@ internal class SnowflakeColumnNameGeneratorTest {
         val column = "test-column"
         val generator = SnowflakeColumnNameGenerator()
         val columnName = generator.getColumnName(column)
-        assertEquals(column.toSnowflakeCompatibleName(), columnName.displayName)
-        assertEquals(column.toSnowflakeCompatibleName(), columnName.canonicalName)
+        assertEquals(column.toSnowflakeCompatibleName().uppercase(), columnName.displayName)
+        assertEquals(column.toSnowflakeCompatibleName().uppercase(), columnName.canonicalName)
     }
 }

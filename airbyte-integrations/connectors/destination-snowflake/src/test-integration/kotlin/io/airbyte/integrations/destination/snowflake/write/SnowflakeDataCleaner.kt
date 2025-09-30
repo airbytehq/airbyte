@@ -65,7 +65,7 @@ object SnowflakeDataCleaner : DestinationCleaner {
         val tableSql =
             """SHOW TABLES
                     IN SCHEMA "${config.internalTableSchema?.toSnowflakeCompatibleName()}" 
-                    STARTS WITH 'test'
+                    STARTS WITH 'TEST'
                 """.trimIndent()
         val tables = statement.executeQuery(tableSql)
         while (tables.next()) {
@@ -83,7 +83,7 @@ object SnowflakeDataCleaner : DestinationCleaner {
         val stagesSql =
             """SHOW STAGES
                     IN SCHEMA "${config.internalTableSchema?.toSnowflakeCompatibleName()}" 
-                    STARTS WITH '${STAGE_NAME_PREFIX}test'
+                    STARTS WITH '${STAGE_NAME_PREFIX}TEST'
                 """.trimIndent()
         val stages = statement.executeQuery(stagesSql)
         while (stages.next()) {

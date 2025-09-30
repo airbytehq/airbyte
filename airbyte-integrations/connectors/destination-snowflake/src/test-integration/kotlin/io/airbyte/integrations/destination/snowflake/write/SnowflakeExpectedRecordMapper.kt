@@ -13,7 +13,6 @@ import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimeWithTimezoneValue
 import io.airbyte.cdk.load.data.json.toJson
 import io.airbyte.cdk.load.message.Meta
-import io.airbyte.cdk.load.orchestration.db.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
@@ -30,14 +29,6 @@ object SnowflakeExpectedRecordMapper : ExpectedRecordMapper {
                     .mapValuesTo(linkedMapOf()) { (_, value) -> mapAirbyteValue(value) }
                     .mapKeysTo(linkedMapOf()) { it.key.toSnowflakeCompatibleName() }
             )
-
-        // If the Airbyte CDC deleted at column is unset, it will not appear in the dumped record
-        if (
-            mappedData.values.contains(CDC_DELETED_AT_COLUMN) &&
-                mappedData.values[CDC_DELETED_AT_COLUMN] == NullValue
-        ) {
-            mappedData.values.remove(CDC_DELETED_AT_COLUMN)
-        }
 
         val mappedAirbyteMetadata =
             mapAirbyteMetadata(
@@ -66,20 +57,28 @@ object SnowflakeExpectedRecordMapper : ExpectedRecordMapper {
         mappedData: ObjectValue,
         airbyteMetadata: OutputRecord.Meta?
     ): OutputRecord.Meta? {
+        // Convert all fields to uppercase to match what comes out of the database
+        val originalDataValues =
+            originalData.values.entries.associate { it.key.uppercase() to it.value }
+
         val nullValues =
         // Find all values that the test has converted to a NullValue because the actual
         // value will fail the validation performed by the SnowflakeValueCoercer at runtime.
-        // This excludes any "_ab" prefixed metadata columns or any columns that are already
+        // This excludes any "_AB" prefixed metadata columns or any columns that are already
         // null in the input data for the test.
-        mappedData.values.entries.filter {
-                !it.key.lowercase().startsWith("_ab") &&
-                    it.value is NullValue &&
-                    originalData.values[it.key] != NullValue
-            }
+        mappedData.values.entries
+                // convert back to schema representation
+                .filter {
+                    !it.key.startsWith("_AB") &&
+                        it.value is NullValue &&
+                        originalDataValues[it.key] != NullValue
+                }
+
         return if (nullValues.isNotEmpty()) {
             // Create a Set of existing change field names for O(1) lookup performance
             val existingChangeFields =
-                airbyteMetadata?.changes?.map { it.field }?.toSet() ?: emptySet()
+                airbyteMetadata?.changes?.map(metaChangeMapper)?.map { it.field }?.toSet()
+                    ?: emptySet()
 
             val changes =
                 nullValues
@@ -96,10 +95,21 @@ object SnowflakeExpectedRecordMapper : ExpectedRecordMapper {
                                     .DESTINATION_FIELD_SIZE_LIMITATION
                         )
                     }
-            airbyteMetadata?.copy(changes = changes + airbyteMetadata.changes)
+            val existingChanges: List<Meta.Change> =
+                airbyteMetadata?.changes?.map(metaChangeMapper) ?: emptyList()
+
+            airbyteMetadata?.copy(changes = changes + existingChanges)
                 ?: OutputRecord.Meta(changes = changes, syncId = null)
         } else {
-            airbyteMetadata
+            airbyteMetadata?.copy(changes = airbyteMetadata.changes.map(metaChangeMapper))
         }
+    }
+
+    private val metaChangeMapper: (Meta.Change) -> Meta.Change = { change ->
+        Meta.Change(
+            field = change.field.uppercase(),
+            reason = change.reason,
+            change = change.change
+        )
     }
 }

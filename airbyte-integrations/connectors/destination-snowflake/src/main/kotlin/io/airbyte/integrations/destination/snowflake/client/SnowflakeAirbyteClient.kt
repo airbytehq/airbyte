@@ -8,7 +8,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.client.AirbyteClient
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
-import io.airbyte.cdk.load.orchestration.db.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNativeOperations
@@ -27,8 +26,7 @@ import net.snowflake.client.jdbc.SnowflakeSQLException
 
 internal const val DESCRIBE_TABLE_COLUMN_NAME_FIELD = "column_name"
 
-private val AIRBYTE_COLUMN_NAMES =
-    DEFAULT_COLUMNS.map { it.columnName }.toSet() + setOf(CDC_DELETED_AT_COLUMN.uppercase())
+private val AIRBYTE_COLUMN_NAMES = DEFAULT_COLUMNS.map { it.columnName }.toSet()
 private val log = KotlinLogging.logger {}
 
 @Singleton
@@ -191,6 +189,7 @@ class SnowflakeAirbyteClient(
 
                 while (rs.next()) {
                     val columnName = rs.getString("name")
+
                     // Filter out airbyte columns
                     if (AIRBYTE_COLUMN_NAMES.contains(columnName)) {
                         continue
@@ -209,25 +208,19 @@ class SnowflakeAirbyteClient(
     internal fun getColumnsFromStream(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping
-    ): Set<ColumnDefinition> {
-        return stream.schema
-            .asColumns()
-            .map { (name, fieldType) ->
-                // Snowflake is case-insensitive by default and stores identifiers in
-                // uppercase.
-                // We should probably be using the mapping in columnNameMapping, but for
-                // now, this is a good enough approximation.
-                val mappedName = columnNameMapping[name] ?: name
+    ) =
+        snowflakeColumnUtils
+            .columnsAndTypes(stream.schema.asColumns(), columnNameMapping)
+            .filter { column -> column.columnName !in AIRBYTE_COLUMN_NAMES }
+            .map { column ->
                 ColumnDefinition(
-                    mappedName,
-                    snowflakeColumnUtils.toDialectType(fieldType.type).takeWhile { char ->
-                        char != '('
-                    },
-                    fieldType.nullable
+                    name = column.columnName,
+                    type = column.columnType,
+                    // Not used to ensure schema
+                    isPrimaryKey = false,
                 )
             }
             .toSet()
-    }
 
     internal fun generateSchemaChanges(
         columnsInDb: Set<ColumnDefinition>,
