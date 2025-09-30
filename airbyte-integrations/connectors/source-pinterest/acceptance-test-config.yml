@@ -56,6 +56,40 @@ acceptance_tests:
           path: "integration_tests/expected_records.jsonl"
           exact_order: no
         fail_on_extra_columns: false
+      - config_path: secrets/config_account_id.json
+        empty_streams:
+          - name: conversion_tags
+            bypass_reason: Not possible to add data
+          - name: customer_lists
+            bypass_reason: Not possible to add data
+          - name: catalogs
+            bypass_reason: Not possible to add data
+          - name: catalogs_feeds
+            bypass_reason: Not possible to add data
+          - name: catalogs_product_groups
+            bypass_reason: Not possible to add data
+          - name: product_group_report
+            bypass_reason: Not possible to add data
+          - name: product_group_targeting_report
+            bypass_reason: Not possible to add data
+          - name: product_item_report
+            bypass_reason: Not possible to add data
+          - name: keyword_report
+            bypass_reason: Not possible to add data
+          # Remove when https://github.com/airbytehq/airbyte-internal-issues/issues/6438 completed
+          - name: ad_group_analytics
+            bypass_reason: Data needs to be added to account
+          - name: campaign_analytics
+            bypass_reason: Data needs to be added to account
+          - name: ad_analytics
+            bypass_reason: Data needs to be added to account
+          - name: ad_account_analytics
+            bypass_reason: Data needs to be added to account
+        timeout_seconds: 1200
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+          exact_order: no
+        fail_on_extra_columns: false
   incremental:
     tests:
       - config_path: secrets/config_oauth.json
