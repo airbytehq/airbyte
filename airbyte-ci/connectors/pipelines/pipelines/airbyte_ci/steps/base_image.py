@@ -103,6 +103,10 @@ class UpdateBaseImageMetadata(StepModifyingFiles):
                     )
                 except (ValueError, IndexError) as e:
                     self.context.logger.warning(f"Could not parse current base image version from '{current_base_image}': {e}")
+            else:
+                self.context.logger.warning(
+                    "No baseImage found in metadata.yaml connectorBuildOptions, proceeding without major version constraint"
+                )
 
             latest_tag = self._parse_latest_stable_tag(tags, max_major_version=max_major_version)
             if latest_tag:
