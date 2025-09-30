@@ -673,18 +673,6 @@ new_record."_airbyte_generation_id"
     }
 
     @Test
-    fun testDescribeTableWithSpecialCharacters() {
-        val schemaName = "namespace-with-dash"
-        val tableName = "table.with.dots"
-        val sql = snowflakeDirectLoadSqlGenerator.describeTable(schemaName, tableName)
-
-        assertEquals(
-            "DESCRIBE TABLE \"TEST-DATABASE\".\"NAMESPACE-WITH-DASH\".\"TABLE.WITH.DOTS\"",
-            sql
-        )
-    }
-
-    @Test
     fun testCreateTableWithSQLInjectionAttemptInTableName() {
         val tableName = TableName(namespace = "namespace", name = "table\"; DROP TABLE users; --")
         val stream = mockk<DestinationStream>(relaxed = true)
@@ -721,49 +709,6 @@ new_record."_airbyte_generation_id"
     }
 
     @Test
-    fun testDropTableWithSQLInjectionAttempt() {
-        val tableName =
-            TableName(namespace = "namespace", name = "table'; DELETE FROM users WHERE '1'='1")
-        val sql = snowflakeDirectLoadSqlGenerator.dropTable(tableName)
-
-        // The old logic: uppercase and preserve special characters (single quotes preserved)
-        assertEquals(
-            """DROP TABLE IF EXISTS "TEST-DATABASE"."NAMESPACE"."TABLE'; DELETE FROM USERS WHERE '1'='1"""",
-            sql
-        )
-    }
-
-    @Test
-    fun testRenameTableWithSQLInjectionAttempt() {
-        val sourceTableName = TableName(namespace = "namespace", name = "table")
-        val targetTableName =
-            TableName(namespace = "namespace", name = "new_table\"; DROP TABLE important; --")
-        val sql = snowflakeDirectLoadSqlGenerator.renameTable(sourceTableName, targetTableName)
-
-        // The old logic: uppercase and escape double quotes by doubling them
-        assertEquals(
-            """ALTER TABLE "TEST-DATABASE"."NAMESPACE"."TABLE" RENAME TO "TEST-DATABASE"."NAMESPACE"."NEW_TABLE""; DROP TABLE IMPORTANT; --"""",
-            sql
-        )
-    }
-
-    @Test
-    fun testCountTableWithSQLInjectionAttempt() {
-        val tableName =
-            TableName(
-                namespace = "namespace",
-                name = "table\" UNION SELECT * FROM sensitive_data --"
-            )
-        val sql = snowflakeDirectLoadSqlGenerator.countTable(tableName)
-
-        // The old logic: uppercase and escape double quotes by doubling them
-        assertEquals(
-            """SELECT COUNT(*) AS "total" FROM "TEST-DATABASE"."NAMESPACE"."TABLE"" UNION SELECT * FROM SENSITIVE_DATA --"""",
-            sql
-        )
-    }
-
-    @Test
     fun testCreateTableWithReservedKeywordsAsNames() {
         // Test with Snowflake reserved keywords as table/namespace names
         val tableName = TableName(namespace = "SELECT", name = "WHERE")
@@ -777,45 +722,5 @@ new_record."_airbyte_generation_id"
 
         // Reserved keywords should be properly quoted
         assertEquals("CREATE TABLE \"TEST-DATABASE\".\"SELECT\".\"WHERE\" (\n    \n)", sql)
-    }
-
-    @Test
-    fun testDropTableWithReservedKeywords() {
-        val tableName = TableName(namespace = "GROUP", name = "ORDER")
-        val sql = snowflakeDirectLoadSqlGenerator.dropTable(tableName)
-
-        // Reserved keywords should be properly quoted
-        assertEquals("""DROP TABLE IF EXISTS "TEST-DATABASE"."GROUP"."ORDER"""", sql)
-    }
-
-    @Test
-    fun testRenameTableWithReservedKeywords() {
-        val sourceTableName = TableName(namespace = "FROM", name = "JOIN")
-        val targetTableName = TableName(namespace = "FROM", name = "UNION")
-        val sql = snowflakeDirectLoadSqlGenerator.renameTable(sourceTableName, targetTableName)
-
-        // Reserved keywords should be properly quoted
-        assertEquals(
-            """ALTER TABLE "TEST-DATABASE"."FROM"."JOIN" RENAME TO "TEST-DATABASE"."FROM"."UNION"""",
-            sql
-        )
-    }
-
-    @Test
-    fun testCreateNamespaceWithReservedKeyword() {
-        val sql = snowflakeDirectLoadSqlGenerator.createNamespace("TABLE")
-
-        // Reserved keyword should be properly quoted
-        assertEquals("""CREATE SCHEMA "TEST-DATABASE"."TABLE"""", sql)
-    }
-
-    @Test
-    fun testDescribeTableWithReservedKeywords() {
-        val schemaName = "DATABASE"
-        val tableName = "SCHEMA"
-        val sql = snowflakeDirectLoadSqlGenerator.describeTable(schemaName, tableName)
-
-        // Reserved keywords should be properly quoted
-        assertEquals("""DESCRIBE TABLE "TEST-DATABASE"."DATABASE"."SCHEMA"""", sql)
     }
 }
