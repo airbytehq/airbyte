@@ -5,7 +5,6 @@
 package io.airbyte.integrations.source.postgres
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.node.NullNode
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.DataField
 import io.airbyte.cdk.discover.NonEmittedField
