@@ -704,7 +704,7 @@ new_record."_AIRBYTE_GENERATION_ID"
             snowflakeDirectLoadSqlGenerator.createTable(stream, tableName, columnNameMapping, false)
         val expectedSql =
             """
-            CREATE TABLE "TEST-DATABASE"."NAMESPACE"."TABLE""; DROP TABLE USERS; --\" (
+            CREATE TABLE "TEST-DATABASE"."NAMESPACE"."TABLE""; DROP TABLE USERS; --" (
                 
             )
         """.trimIndent()
@@ -725,7 +725,7 @@ new_record."_AIRBYTE_GENERATION_ID"
             snowflakeDirectLoadSqlGenerator.createTable(stream, tableName, columnNameMapping, false)
         val expectedSql =
             """
-            CREATE TABLE "TEST-DATABASE"."NAMESPACE"; DROP SCHEMA TEST; --"."TABLE" (
+            CREATE TABLE "TEST-DATABASE"."NAMESPACE""; DROP SCHEMA TEST; --"."TABLE" (
                 
             )
         """.trimIndent()
