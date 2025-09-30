@@ -10,7 +10,6 @@ from typing import Dict, List, Optional, Union
 from unittest import TestCase
 
 import freezegun
-import pendulum
 from source_facebook_marketing.streams.async_job import Status
 
 from airbyte_cdk.models import AirbyteStateMessage, AirbyteStreamStateSerializer, StreamDescriptor, SyncMode
@@ -25,6 +24,7 @@ from airbyte_cdk.test.mock_http.response_builder import (
     create_response_builder,
     find_template,
 )
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 
 from .config import ACCESS_TOKEN, ACCOUNT_ID, DATE_FORMAT, END_DATE, NOW, START_DATE, ConfigBuilder
 from .pagination import NEXT_PAGE_TOKEN, FacebookMarketingPaginationStrategy
@@ -262,7 +262,7 @@ class TestFullRefresh(TestCase):
         client_side_account_id = "123123123"
         server_side_account_id = "321321321"
 
-        start_date = pendulum.parse(START_DATE)
+        start_date = ab_datetime_parse(START_DATE)
         end_date = start_date + timedelta(hours=23)
 
         http_mocker.get(
@@ -358,7 +358,7 @@ class TestFullRefresh(TestCase):
 
     @HttpMocker()
     def test_given_multiple_days_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
-        start_date = NOW.subtract(days=1)
+        start_date = NOW - timedelta(days=1)
         end_date = NOW
         report_run_id_1 = "1571860060019500"
         report_run_id_2 = "4571860060019599"
@@ -455,8 +455,8 @@ class TestIncremental(TestCase):
     @HttpMocker()
     def test_when_read_then_state_message_produced_and_state_match_start_interval(self, http_mocker: HttpMocker) -> None:
         account_id = "123123123"
-        start_date = NOW.set(hour=0, minute=0, second=0)
-        end_date = NOW.set(hour=23, minute=59, second=59)
+        start_date = NOW.replace(hour=0, minute=0, second=0)
+        end_date = NOW.replace(hour=23, minute=59, second=59)
 
         http_mocker.get(get_account_request().with_account_id(account_id).build(), get_account_response(account_id=account_id))
         http_mocker.get(
@@ -486,8 +486,8 @@ class TestIncremental(TestCase):
     ) -> None:
         account_id_1 = "123123123"
         account_id_2 = "321321321"
-        start_date = NOW.set(hour=0, minute=0, second=0)
-        end_date = NOW.set(hour=23, minute=59, second=59)
+        start_date = NOW.replace(hour=0, minute=0, second=0)
+        end_date = NOW.replace(hour=23, minute=59, second=59)
         report_run_id_1 = "1571860060019500"
         report_run_id_2 = "4571860060019599"
         job_id_1 = "1049937379601600"

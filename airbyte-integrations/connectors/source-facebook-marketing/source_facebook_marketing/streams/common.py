@@ -6,10 +6,10 @@ import http.client
 import logging
 import re
 import sys
+from datetime import timedelta
 from typing import Any
 
 import backoff
-import pendulum
 from facebook_business.exceptions import FacebookRequestError
 
 from airbyte_cdk.models import FailureType
@@ -36,7 +36,7 @@ FACEBOOK_TEMPORARY_OAUTH_ERROR_CODE = 2
 FACEBOOK_BATCH_ERROR_CODE = 960
 FACEBOOK_UNKNOWN_ERROR_CODE = 99
 FACEBOOK_CONNECTION_RESET_ERROR_CODE = 104
-DEFAULT_SLEEP_INTERVAL = pendulum.duration(minutes=1)
+DEFAULT_SLEEP_INTERVAL = timedelta(minutes=1)
 
 logger = logging.getLogger("airbyte")
 
