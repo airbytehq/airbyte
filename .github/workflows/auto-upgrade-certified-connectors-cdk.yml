@@ -50,7 +50,9 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       matrix:
-        connector: ${{ fromJson(needs.list-certified-connectors.outputs.connectors) }}
+        # TODO undo this
+        # connector: ${{ fromJson(needs.list-certified-connectors.outputs.connectors) }}
+        connector: [destination-dev-null]
       fail-fast: false
       max-parallel: 5
     steps:
@@ -111,3 +113,5 @@ jobs:
             auto-cdk-upgrade
           assignees: ""
           reviewers: ""
+          # TODO remove this
+          draft: true
