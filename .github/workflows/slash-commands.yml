@@ -4,6 +4,8 @@ on:
     types: [created]
 jobs:
   slashCommandDispatch:
+    name: Dispatch
+    if: startsWith(github.event.comment.body, '/')
     runs-on: ubuntu-24.04
     steps:
       - name: Get PR repo and ref
@@ -14,11 +16,20 @@ jobs:
           echo ref="$(echo $pr_info | jq -r '.head.ref')" >> $GITHUB_OUTPUT
           echo repo="$(echo $pr_info | jq -r '.head.repo.full_name')" >> $GITHUB_OUTPUT
 
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@v2
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
       - name: Slash Command Dispatch (Workflow)
         id: scd
         uses: peter-evans/slash-command-dispatch@v3
         with:
-          token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
+          token: ${{ steps.get-app-token.outputs.token }}
           permission: write
           dispatch-type: workflow
           issue-type: both
@@ -26,6 +37,7 @@ jobs:
           commands: |
             approve-regression-tests
             bump-bulk-cdk-and-release-connectors
+            bump-bulk-cdk-version
             bump-cdk-version-and-merge
             bump-version
             build-connector-images
@@ -36,6 +48,7 @@ jobs:
             run-cat-tests
             run-connector-tests
             test-performance
+            update-connector-cdk-version
 
           # Notes regarding static-args:
           # - Slash commands can be invoked from both issues and comments.

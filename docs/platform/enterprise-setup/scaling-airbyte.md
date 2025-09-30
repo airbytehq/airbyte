@@ -2,6 +2,9 @@
 products: oss-enterprise
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # Scaling Airbyte After Installation
 
 Once you've completed the initial installation of Airbyte Self-Managed Enterprise, the next crucial step is scaling your setup as needed to ensure optimal performance and reliability as your data integration needs grow. This guide will walk you through best practices and strategies for scaling Airbyte in an enterprise environment.
@@ -20,12 +23,12 @@ Some connectors are memory and CPU intensive, while others are not. Using an inf
 * Requested Memory %
 * Memory Usage %
 
-If your nodes are under high CPU or Memory usage, we recommend scaling up your Airbyte deployment to a larger number of nodes, or reducing the maximum resource usage by any given connector pod. If high _requested_ CPU or memory usage is blocking new pods from being scheduled, while _used_ CPU or memory is low, you may modify connector pod provisioning defaults in your `values.yml` file:
+If your nodes are under high CPU or Memory usage, we recommend scaling up your Airbyte deployment to a larger number of nodes, or reducing the maximum resource usage by any given connector pod. If high _requested_ CPU or memory usage is blocking new pods from being scheduled, while _used_ CPU or memory is low, you may modify connector pod provisioning defaults in your `values.yaml` file:
 
-```yaml
+```yaml title="values.yaml"
 global:
   edition: "enterprise"
-  ...
+  # ...
   jobs:
     resources:
       limits:
@@ -42,30 +45,62 @@ If your Airbyte deployment is under-provisioned, you may notice occasional 'stuc
 
 To help rightsize Airbyte deployments and reduce the likelihood of stuck syncs, there are configurable limits to the number of syncs that can be run at once:
 
-```yaml
+<Tabs groupId="helm-chart-version">
+<TabItem value='helm-1' label='Helm chart V1' default>
+
+```yaml title="values.yaml"
 worker:
-  extraEnvs: ## We recommend setting both environment variables with a single, shared value.
+  extraEnv: ## We recommend setting both environment variables with a single, shared value.
     - name: MAX_SYNC_WORKERS
       value: ## e.g. 5
     - name: MAX_CHECK_WORKERS
       value: ## e.g. 5
 ```
 
+</TabItem>
+<TabItem value='helm-2' label='Helm chart V2' default>
+
+```yaml title="values.yaml"
+worker:
+  maxSyncWorkers: ## e.g. 5
+  maxCheckWorkers: ## e.g. 5
+```
+
+</TabItem>
+</Tabs>
+
 If you intend to run many syncs at the same time, you may also want to increase the number of worker replicas that run in your Airbyte instance:
 
-```yaml
+<Tabs groupId="helm-chart-version">
+<TabItem value='helm-1' label='Helm chart V1' default>
+
+```yaml title="values.yaml"
 worker:
   replicaCount: ## e.g. 2
 ```
 
+</TabItem>
+<TabItem value='helm-2' label='Helm chart V2' default>
+
+```yaml title="values.yaml"
+worker:
+  replicaCount: ## e.g. 2
+```
+
+</TabItem>
+</Tabs>
+
 ## Multiple Node Groups
 
-To reduce the blast radius of an underprovisioned Airbyte deployment, we recommend placing 'static' workloads (`webapp`, `server`, etc.) on one Kubernetes node group, while placing job-related workloads (connector pods) on a different Kubernetes node group. This ensures that UI or API availability is unlikely to be impacted by the number of concurrent syncs.
+To reduce the blast radius of an underprovisioned Airbyte deployment, place 'static' workloads (`server`, etc.) on one Kubernetes node group, while placing job-related workloads (connector pods) on a different Kubernetes node group. This ensures that UI or API availability is unlikely to be impacted by the number of concurrent syncs.
 
 <details>
 <summary>Configure Airbyte Self-Managed Enterprise to run in two node groups</summary>
 
-```yaml
+<Tabs groupId="helm-chart-version">
+<TabItem value='helm-1' label='Helm chart V1' default>
+
+```yaml title="values.yaml"
 airbyte-bootloader:
   nodeSelector:
     type: static
@@ -86,10 +121,6 @@ temporal:
   nodeSelector:
     type: static
 
-webapp:
-  nodeSelector:
-    type: static
-
 worker:
   nodeSelector:
     type: jobs
@@ -98,7 +129,7 @@ workload-launcher:
   nodeSelector:
     type: static
   ## Pods spun up by the workload launcher will run in the 'jobs' node group.
-  extraEnvs:
+  extraEnv:
     - name: JOB_KUBE_NODE_SELECTORS
       value: type=jobs
     - name: SPEC_JOB_KUBE_NODE_SELECTORS
@@ -117,6 +148,62 @@ workload-api-server:
     type: jobs
 ```
 
+</TabItem>
+<TabItem value='helm-2' label='Helm chart V2' default>
+
+```yaml title="values.yaml"
+global:
+  jobs:
+    kube:
+      nodeSelector:
+        type: jobs
+      scheduling:
+        check:
+          nodeSelectors:
+            type: jobs
+        discover:
+          nodeSelectors:
+            type: jobs
+        spec:
+          nodeSelectors:
+            type: jobs
+            
+airbyteBootloader:
+  nodeSelector:
+    type: static
+
+server:
+  nodeSelector:
+    type: static
+
+keycloak:
+  nodeSelector:
+    type: static
+
+keycloakSetup:
+  nodeSelector:
+    type: static
+
+temporal:
+  nodeSelector:
+    type: static
+
+workloadLauncher:
+  nodeSelector:
+    type: static
+
+worker:
+  nodeSelector:
+    type: jobs
+  
+workloadApiServer:
+  nodeSelector:
+    type: jobs
+```
+
+</TabItem>
+</Tabs>
+
 </details>
 
 ## High Availability
@@ -125,7 +212,10 @@ You may wish to implement high availability (HA) to minimize downtime and ensure
 
 We particularly recommend having multiple instances of `worker` and `server` pods:
 
-```yaml
+<Tabs groupId="helm-chart-version">
+<TabItem value='helm-1' label='Helm chart V1' default>
+
+```yaml title="values.yaml"
 worker:
   replicaCount: 2
 
@@ -133,12 +223,28 @@ server:
   replicaCount: 2
 ```
 
+</TabItem>
+<TabItem value='helm-2' label='Helm chart V2' default>
+
+```yaml title="values.yaml"
+worker:
+  replicaCount: 2
+
+server:
+  replicaCount: 2
+```
+
+</TabItem>
+</Tabs>
+
 Furthermore, you may want to implement a primary-replica setup for the database (e.g., PostgreSQL) used by Airbyte. The primary database handles write operations, while replicas handle read operations, ensuring data availability even if the primary fails.
 
 ## Disaster Recovery (DR) Regions
 
 For business-critical applications of Airbyte, you may want to configure a Disaster Recovery (DR) cluster for Airbyte. We do not support assisting customers with DR deployments at this time. However, we offer a few high level suggestions:
+
 1. We strongly recommend configuring an external database, external log storage and external connector secret management.
+
 2. We strongly recommend that your DR cluster is also an instance of Self-Managed Enterprise, kept at the same version as your prod instance.
 
 ## DEBUG Logs
@@ -149,11 +255,28 @@ We recommend turning off `DEBUG` logs for any non-testing use of Self-Managed Ai
 
 While configuring a database source connector with hundreds to thousands of tables, each with many columns, the one-time `discover` mechanism - by which we discover the topology of your source - may run for a long time and exceed Airbyte's timeout duration. Should this be the case, you may increase Airbyte's timeout limit as follows:
 
-```yaml
+<Tabs groupId="helm-chart-version">
+<TabItem value='helm-1' label='Helm chart V1' default>
+
+```yaml title="values.yaml"
 server:
-  extraEnvs:
+  extraEnv:
     - name: HTTP_IDLE_TIMEOUT
       value: 20m
     - name: READ_TIMEOUT
       value: 30m
 ```
+
+</TabItem>
+<TabItem value='helm-2' label='Helm chart V2' default>
+
+```yaml title="values.yaml"
+server:
+  httpIdleTimeout: 20m
+  extraEnv:
+    - name: READ_TIMEOUT
+      value: 30m
+```
+
+</TabItem>
+</Tabs>

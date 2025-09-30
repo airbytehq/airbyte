@@ -31,6 +31,16 @@ API Documentation: https://docs.clarifai.com/api-guide/api-overview/helpful-api-
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.36 | 2025-09-09 | [65827](https://github.com/airbytehq/airbyte/pull/65827) | Update dependencies |
+| 0.0.35 | 2025-08-23 | [65270](https://github.com/airbytehq/airbyte/pull/65270) | Update dependencies |
+| 0.0.34 | 2025-08-09 | [64670](https://github.com/airbytehq/airbyte/pull/64670) | Update dependencies |
+| 0.0.33 | 2025-08-02 | [64371](https://github.com/airbytehq/airbyte/pull/64371) | Update dependencies |
+| 0.0.32 | 2025-07-26 | [63996](https://github.com/airbytehq/airbyte/pull/63996) | Update dependencies |
+| 0.0.31 | 2025-07-19 | [63571](https://github.com/airbytehq/airbyte/pull/63571) | Update dependencies |
+| 0.0.30 | 2025-07-12 | [62968](https://github.com/airbytehq/airbyte/pull/62968) | Update dependencies |
+| 0.0.29 | 2025-07-05 | [62772](https://github.com/airbytehq/airbyte/pull/62772) | Update dependencies |
+| 0.0.28 | 2025-06-28 | [62367](https://github.com/airbytehq/airbyte/pull/62367) | Update dependencies |
+| 0.0.27 | 2025-06-21 | [61970](https://github.com/airbytehq/airbyte/pull/61970) | Update dependencies |
 | 0.0.26 | 2025-06-14 | [61206](https://github.com/airbytehq/airbyte/pull/61206) | Update dependencies |
 | 0.0.25 | 2025-05-24 | [60419](https://github.com/airbytehq/airbyte/pull/60419) | Update dependencies |
 | 0.0.24 | 2025-05-10 | [60046](https://github.com/airbytehq/airbyte/pull/60046) | Update dependencies |

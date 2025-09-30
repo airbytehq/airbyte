@@ -83,6 +83,18 @@ The Iterable source connector supports the following [sync modes](https://docs.a
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.6.49 | 2025-09-30 | [66798](https://github.com/airbytehq/airbyte/pull/66798) | Update dependencies |
+| 0.6.48 | 2025-09-09 | [66107](https://github.com/airbytehq/airbyte/pull/66107) | Update dependencies |
+| 0.6.47 | 2025-08-23 | [65380](https://github.com/airbytehq/airbyte/pull/65380) | Update dependencies |
+| 0.6.46 | 2025-08-16 | [64970](https://github.com/airbytehq/airbyte/pull/64970) | Update dependencies |
+| 0.6.45 | 2025-08-09 | [64604](https://github.com/airbytehq/airbyte/pull/64604) | Update dependencies |
+| 0.6.44 | 2025-08-02 | [64284](https://github.com/airbytehq/airbyte/pull/64284) | Update dependencies |
+| 0.6.43 | 2025-07-26 | [63868](https://github.com/airbytehq/airbyte/pull/63868) | Update dependencies |
+| 0.6.42 | 2025-07-19 | [63451](https://github.com/airbytehq/airbyte/pull/63451) | Update dependencies |
+| 0.6.41 | 2025-07-12 | [63141](https://github.com/airbytehq/airbyte/pull/63141) | Update dependencies |
+| 0.6.40 | 2025-07-05 | [62665](https://github.com/airbytehq/airbyte/pull/62665) | Update dependencies |
+| 0.6.39 | 2025-06-28 | [62174](https://github.com/airbytehq/airbyte/pull/62174) | Update dependencies |
+| 0.6.38 | 2025-06-21 | [61814](https://github.com/airbytehq/airbyte/pull/61814) | Update dependencies |
 | 0.6.37 | 2025-06-14 | [61119](https://github.com/airbytehq/airbyte/pull/61119) | Update dependencies |
 | 0.6.36 | 2025-05-24 | [58772](https://github.com/airbytehq/airbyte/pull/58772) | Update dependencies |
 | 0.6.35 | 2025-05-22 | [60854](https://github.com/airbytehq/airbyte/pull/60854) | Update dependencies and expected records |

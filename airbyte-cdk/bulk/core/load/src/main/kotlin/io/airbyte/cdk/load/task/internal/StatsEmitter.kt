@@ -53,8 +53,30 @@ class StatsEmitter(
 
                 val recordsRead = manager.readCount()
                 val bytesRead = manager.byteCount()
-
-                // TODO: Think about namespace mapping
+                /**
+                 * Speed Mode Record Statistics Reporting
+                 *
+                 * In speed mode, records flow directly from source to destination, bypassing the
+                 * platform's normal record tracking mechanisms. This creates a visibility gap where
+                 * the platform cannot monitor data transfer progress or volume.
+                 *
+                 * Problem:
+                 * - Platform has no knowledge of records/bytes processed per stream
+                 * - No existing protocol message exists for destination-to-platform statistics
+                 * reporting
+                 * - Progress tracking and monitoring capabilities are lost
+                 *
+                 * Solution: We repurpose AirbyteRecordMessage as a communication channel for
+                 * statistics reporting:
+                 * - Destination sends synthetic record messages containing only metadata
+                 * - Platform recognizes these as statistics (not actual records) since destinations
+                 * never normally emit record messages
+                 * - Metadata contains stream-level progress information (record count, byte count)
+                 * - Enables real-time progress monitoring and platform visibility
+                 *
+                 * Note: This is a temporary solution until a dedicated statistics protocol message
+                 * is implemented.
+                 */
                 val statsMessage =
                     AirbyteMessage()
                         .withType(AirbyteMessage.Type.RECORD)

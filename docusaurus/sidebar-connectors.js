@@ -412,6 +412,7 @@ function buildConnectorSidebar() {
         id: "custom-connectors",
       },
       "locating-files-local-destination",
+      "speed-improvements",
     ],
   };
 }

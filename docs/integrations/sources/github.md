@@ -225,6 +225,20 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                             |
 |:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.8.42 | 2025-09-30 | [66166](https://github.com/airbytehq/airbyte/pull/66166) | Update dependencies |
+| 1.8.41 | 2025-09-09 | [66065](https://github.com/airbytehq/airbyte/pull/66065) | Update dependencies |
+| 1.8.40 | 2025-08-23 | [65375](https://github.com/airbytehq/airbyte/pull/65375) | Update dependencies |
+| 1.8.39 | 2025-08-16 | [64982](https://github.com/airbytehq/airbyte/pull/64982) | Update dependencies |
+| 1.8.38 | 2025-08-09 | [64580](https://github.com/airbytehq/airbyte/pull/64580) | Update dependencies |
+| 1.8.37 | 2025-08-02 | [64231](https://github.com/airbytehq/airbyte/pull/64231) | Update dependencies |
+| 1.8.36 | 2025-07-26 | [63810](https://github.com/airbytehq/airbyte/pull/63810) | Update dependencies |
+| 1.8.35 | 2025-07-19 | [63520](https://github.com/airbytehq/airbyte/pull/63520) | Update dependencies |
+| 1.8.34 | 2025-07-12 | [63158](https://github.com/airbytehq/airbyte/pull/63158) | Update dependencies |
+| 1.8.33 | 2025-07-05 | [62666](https://github.com/airbytehq/airbyte/pull/62666) | Update dependencies |
+| 1.8.32 | 2025-06-28 | [62166](https://github.com/airbytehq/airbyte/pull/62166) | Update dependencies |
+| 1.8.31 | 2025-06-25 | [62054](https://github.com/airbytehq/airbyte/pull/62054) | Fix problem with `contributor_activity` stream when author is not present/none |
+| 1.8.30 | 2025-06-23 | [61742](https://github.com/airbytehq/airbyte/pull/61742) | Handle conflict when empty repositories, we will ignore |
+| 1.8.29 | 2025-06-21 | [61857](https://github.com/airbytehq/airbyte/pull/61857) | Update dependencies |
 | 1.8.28 | 2025-06-15 | [61603](https://github.com/airbytehq/airbyte/pull/61603) | Update dependencies |
 | 1.8.27 | 2025-06-07 | [54931](https://github.com/airbytehq/airbyte/pull/54931) | Update dependencies |
 | 1.8.26 | 2025-02-22 | [54404](https://github.com/airbytehq/airbyte/pull/54404) | Update dependencies |

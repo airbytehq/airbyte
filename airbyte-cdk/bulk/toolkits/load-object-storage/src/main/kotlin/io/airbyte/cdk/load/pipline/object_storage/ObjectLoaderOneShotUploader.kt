@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.pipline.object_storage
 
+import io.airbyte.cdk.load.file.object_storage.ByteArrayPool
 import io.airbyte.cdk.load.file.object_storage.RemoteObject
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.StreamKey
@@ -21,12 +22,10 @@ import java.io.OutputStream
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.supervisorScope
-import kotlinx.coroutines.sync.Semaphore
-import kotlinx.coroutines.sync.withPermit
 
 /**
  * Wraps the PartFormatter, PartLoader, and UploadCompleter in a single BatchAccumulator.
@@ -45,8 +44,7 @@ class ObjectLoaderOneShotUploader<O : OutputStream, T : RemoteObject<*>>(
     private val partFormatter: ObjectLoaderPartFormatter<O>,
     private val partLoader: ObjectLoaderPartLoader<T>,
     private val uploadCompleter: ObjectLoaderUploadCompleter<T>,
-    /** Limits the *total* concurrent part-uploads across the whole JVM */
-    @Named("sharedUploadPermits") private val sharedUploadPermits: Semaphore,
+    @Named("uploadParallelismForSocket") private val uploadParallelism: Int,
 ) :
     BatchAccumulator<
         ObjectLoaderOneShotUploader.State<O, T>,
@@ -56,6 +54,8 @@ class ObjectLoaderOneShotUploader<O : OutputStream, T : RemoteObject<*>>(
     > {
 
     private val log = KotlinLogging.logger {}
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val uploadDispatcher = Dispatchers.IO.limitedParallelism(uploadParallelism)
 
     data class State<O : OutputStream, T : RemoteObject<*>>(
         val formatterState: ObjectLoaderPartFormatter.State<O>,
@@ -71,7 +71,7 @@ class ObjectLoaderOneShotUploader<O : OutputStream, T : RemoteObject<*>>(
     }
 
     override suspend fun start(key: StreamKey, part: Int): State<O, T> {
-        val fmt = partFormatter.start(key, part)
+        val fmt = partFormatter.startLockFree(key)
         val objKey = ObjectKey(stream = key.stream, objectKey = fmt.partFactory.key)
         return State(
             formatterState = fmt,
@@ -88,9 +88,7 @@ class ObjectLoaderOneShotUploader<O : OutputStream, T : RemoteObject<*>>(
         return when (val fmtResult = partFormatter.accept(input, state.formatterState)) {
             is NoOutput -> NoOutput(state.copy(formatterState = fmtResult.nextState))
             is IntermediateOutput -> {
-                state.uploads += coroutineScope {
-                    launchUpload(fmtResult.output, state.partLoaderState)
-                }
+                state.uploads += launchUpload(fmtResult.output, state.partLoaderState)
                 NoOutput(state.copy(formatterState = fmtResult.nextState))
             }
             is FinalOutput -> uploadFinalAndFinish(fmtResult.output, state)
@@ -98,44 +96,39 @@ class ObjectLoaderOneShotUploader<O : OutputStream, T : RemoteObject<*>>(
     }
 
     override suspend fun finish(
-        state: State<O, T>,
+        state: State<O, T>
     ): FinalOutput<State<O, T>, ObjectLoaderUploadCompleter.UploadResult<T>> =
-        uploadFinalAndFinish(
-            partFormatter.finish(state.formatterState).output,
-            state,
-        )
+        uploadFinalAndFinish(partFormatter.finish(state.formatterState).output, state)
 
-    private fun CoroutineScope.launchUpload(
+    private fun launchUpload(
         part: ObjectLoaderPartFormatter.FormattedPart,
         loaderState: ObjectLoaderPartLoader.State<T>,
     ): Deferred<ObjectLoaderPartLoader.PartResult<T>> =
-        async(Dispatchers.IO) {
-            sharedUploadPermits.withPermit {
-                // Upload happens on the IO dispatcher, bounded by the semaphore.
-                when (val result = partLoader.accept(part, loaderState)) {
-                    is IntermediateOutput -> result.output
-                    else -> error("PartLoader should only produce IntermediateOutput")
+        CoroutineScope(uploadDispatcher).async {
+            try {
+                when (val res = partLoader.acceptWithExperimentalCoroutinesApi(part, loaderState)) {
+                    is IntermediateOutput -> res.output
+                    else -> error("PartLoader should emit IntermediateOutput only")
                 }
+            } finally {
+                part.part.bytes?.let { ByteArrayPool.recycle(it) }
             }
         }
 
     private suspend fun uploadFinalAndFinish(
         finalPart: ObjectLoaderPartFormatter.FormattedPart,
-        state: State<O, T>,
-    ): FinalOutput<State<O, T>, ObjectLoaderUploadCompleter.UploadResult<T>> = supervisorScope {
+        state: State<O, T>
+    ): FinalOutput<State<O, T>, ObjectLoaderUploadCompleter.UploadResult<T>> = coroutineScope {
         state.uploads += launchUpload(finalPart, state.partLoaderState)
 
-        log.info { "Waiting for ${state.uploads.size} part-uploads…" }
-        val uploadedParts = state.uploads.awaitAll()
-
-        uploadedParts.forEach { part ->
+        log.info { "Awaiting ${state.uploads.size} part uploads…" }
+        state.uploads.awaitAll().forEach { part ->
             when (val res = uploadCompleter.accept(part, state.completerState)) {
-                is NoOutput -> Unit // not done yet
-                is FinalOutput -> return@supervisorScope FinalOutput(res.output)
-                else -> error("Completer must emit NoOutput or FinalOutput")
+                is NoOutput -> Unit
+                is FinalOutput -> return@coroutineScope FinalOutput(res.output)
+                else -> error("Unexpected output from completer")
             }
         }
-
-        error("Completer never returned its FinalOutput – logic bug?")
+        error("Completer never produced FinalOutput – logic bug?")
     }
 }

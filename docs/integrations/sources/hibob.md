@@ -80,6 +80,15 @@ Link to HiBob API documentation [here](https://apidocs.hibob.com/docs/).
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| 0.2.32 | 2025-09-30 | [66400](https://github.com/airbytehq/airbyte/pull/66400) | Update dependencies |
+| 0.2.31 | 2025-09-09 | [66072](https://github.com/airbytehq/airbyte/pull/66072) | Update dependencies |
+| 0.2.30 | 2025-08-23 | [65377](https://github.com/airbytehq/airbyte/pull/65377) | Update dependencies |
+| 0.2.29 | 2025-08-09 | [64624](https://github.com/airbytehq/airbyte/pull/64624) | Update dependencies |
+| 0.2.28 | 2025-08-02 | [64219](https://github.com/airbytehq/airbyte/pull/64219) | Update dependencies |
+| 0.2.27 | 2025-07-26 | [63816](https://github.com/airbytehq/airbyte/pull/63816) | Update dependencies |
+| 0.2.26 | 2025-07-19 | [63526](https://github.com/airbytehq/airbyte/pull/63526) | Update dependencies |
+| 0.2.25 | 2025-07-12 | [60699](https://github.com/airbytehq/airbyte/pull/60699) | Update dependencies |
+| 0.2.24 | 2025-06-10 | [61501](https://github.com/airbytehq/airbyte/pull/61501) | Add employees stream |
 | 0.2.23 | 2025-05-10 | [59801](https://github.com/airbytehq/airbyte/pull/59801) | Update dependencies |
 | 0.2.22 | 2025-05-03 | [58784](https://github.com/airbytehq/airbyte/pull/58784) | Update dependencies |
 | 0.2.21 | 2025-04-19 | [58206](https://github.com/airbytehq/airbyte/pull/58206) | Update dependencies |

@@ -19,6 +19,7 @@ class ProtoToJsonFormatter(
 
     private val fastWriter =
         ProtoToJsonWriter(stream.airbyteValueProxyFieldAccessors, rootLevelFlattening)
+    private val unknownColumnChanges = stream.unknownColumnChanges
 
     private val generator =
         Jsons.disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
@@ -29,7 +30,11 @@ class ProtoToJsonFormatter(
         when (val source = record.rawData) {
             is DestinationRecordProtobufSource -> {
                 generator.writeStartObject()
-                fastWriter.writeMeta(generator, record) // _airbyte_* fields
+                fastWriter.writeMeta(
+                    generator,
+                    record,
+                    record.rawData.sourceMeta.changes + unknownColumnChanges
+                ) // _airbyte_* fields
                 fastWriter.writePayload(generator, source) // actual data
                 generator.writeEndObject()
                 generator.writeRaw('\n')

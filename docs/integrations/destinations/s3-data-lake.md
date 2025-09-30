@@ -267,7 +267,24 @@ Iceberg supports [Git-like semantics](https://iceberg.apache.org/docs/latest/bra
 
 - In each sync, each microbatch creates a new snapshot.
 
-- During truncate syncs, the connector writes the refreshed data to the `airbyte_staging` branch and fast-forwards the `main` branch at the end of the sync. Since most query engines target the `main` branch,  people can query your data until the end of a truncate sync, at which point it's atomically swapped to the new version.
+- During truncate syncs, the connector writes the refreshed data to the `airbyte_staging` branch and replaces the `main` branch with the `airbyte_staging` at the end of the sync. Since most query engines target the `main` branch,  people can query your data until the end of a truncate sync, at which point it's atomically swapped to the new version.
+
+### Branch replacement
+
+At the end of stream sync, we replace the current `main` branch with the `airbyte_staging` branch we were working on. We intentionally avoid fast-forwarding to better handle potential compaction issues.
+**Important Warning**: Any changes made to the `main` branch outside of Airbyte's operations after a sync begins will be lost during this process.
+
+## Compaction
+
+:::caution
+**Do not run compaction during a truncate refresh sync to prevent data loss.**
+During a truncate refresh sync, the system deletes all files that don't belong to the latest generation. This includes:
+
+- Files without generation IDs (compacted files)
+- Files from previous generations
+
+If compaction runs simultaneously with the sync, it will delete files from the current generation, causing data loss. The system identifies generations by parsing file names for generation IDs.
+:::
 
 ## Considerations and limitations
 
@@ -307,6 +324,13 @@ Now, you can identify the latest version of the 'Alice' record by querying wheth
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------|
+| 0.3.36  | 2025-09-25 | [66711](https://github.com/airbytehq/airbyte/pull/66711)   | CHECK operation uses configured default dataset instead of `airbyte_test_namespace`                                             |
+| 0.3.35  | 2025-07-23 | [63746](https://github.com/airbytehq/airbyte/pull/63746)   | Remove unnecessary properties from table                                                                                        |
+| 0.3.34  | 2025-07-11 | [62952](https://github.com/airbytehq/airbyte/pull/62952)   | Update CDK version                                                                                                              |
+| 0.3.33  | 2025-07-09 | [62888](https://github.com/airbytehq/airbyte/pull/62888)   | Update CDK version to handle compaction issue when deleting files in a truncate refresh scenario                                |
+| 0.3.32  | 2025-07-08 | [62852](https://github.com/airbytehq/airbyte/pull/62852)   | Fix metadata (revert accidental archiving)                                                                                      |
+| 0.3.31  | 2025-07-07 | [62835](https://github.com/airbytehq/airbyte/pull/62835)   | Pin to latest CDK version 0.522                                                                                                 |
+| 0.3.30  | 2025-06-26 | [62105](https://github.com/airbytehq/airbyte/pull/62105)   | ReplaceBranch to staging from main instead of fast forwarding                                                                   |
 | 0.3.29  | 2025-06-13 | [61588](https://github.com/airbytehq/airbyte/pull/61588)   | ~~Publish version to account for possible duplicate publishing in pipeline. Noop change.~~ WARNING: THIS HAS A BUG. DO NOT USE. |
 | 0.3.28  | 2025-05-07 | [59710](https://github.com/airbytehq/airbyte/pull/59710)   | CDK backpressure bugfix                                                                                                         |
 | 0.3.27  | 2025-04-21 | [58146](https://github.com/airbytehq/airbyte/pull/58146)   | Upgrade to latest CDK                                                                                                           |

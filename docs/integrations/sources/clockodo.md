@@ -40,6 +40,16 @@ The Airbyte connector for Clockodo enables seamless data integration between Clo
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.34 | 2025-09-09 | [65790](https://github.com/airbytehq/airbyte/pull/65790) | Update dependencies |
+| 0.0.33 | 2025-08-23 | [65247](https://github.com/airbytehq/airbyte/pull/65247) | Update dependencies |
+| 0.0.32 | 2025-08-09 | [64737](https://github.com/airbytehq/airbyte/pull/64737) | Update dependencies |
+| 0.0.31 | 2025-08-02 | [64351](https://github.com/airbytehq/airbyte/pull/64351) | Update dependencies |
+| 0.0.30 | 2025-07-26 | [64037](https://github.com/airbytehq/airbyte/pull/64037) | Update dependencies |
+| 0.0.29 | 2025-07-19 | [63566](https://github.com/airbytehq/airbyte/pull/63566) | Update dependencies |
+| 0.0.28 | 2025-07-12 | [63016](https://github.com/airbytehq/airbyte/pull/63016) | Update dependencies |
+| 0.0.27 | 2025-07-05 | [62756](https://github.com/airbytehq/airbyte/pull/62756) | Update dependencies |
+| 0.0.26 | 2025-06-28 | [62361](https://github.com/airbytehq/airbyte/pull/62361) | Update dependencies |
+| 0.0.25 | 2025-06-21 | [61956](https://github.com/airbytehq/airbyte/pull/61956) | Update dependencies |
 | 0.0.24 | 2025-06-14 | [61253](https://github.com/airbytehq/airbyte/pull/61253) | Update dependencies |
 | 0.0.23 | 2025-05-24 | [60379](https://github.com/airbytehq/airbyte/pull/60379) | Update dependencies |
 | 0.0.22 | 2025-05-10 | [60036](https://github.com/airbytehq/airbyte/pull/60036) | Update dependencies |

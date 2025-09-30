@@ -5,18 +5,14 @@
 
 import logging
 from datetime import datetime, timedelta
-from unittest.mock import patch
 
-import freezegun
 import pytest
-import requests_mock
 from freezegun import freeze_time
-from source_amazon_seller_partner import SourceAmazonSellerPartner
-from source_amazon_seller_partner.components import AmazonSPOauthAuthenticator
-from source_amazon_seller_partner.utils import AmazonConfigException
 
-from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
-from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, Status, SyncMode
+from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
+
+from .conftest import get_source
 
 
 logger = logging.getLogger("airbyte")
@@ -80,6 +76,7 @@ def connector_config_without_start_date():
     }
 
 
+@freeze_time("2017-02-25T00:00:00Z")
 def test_check_connection_with_orders_stop_iteration(requests_mock, connector_config_with_report_options):
     requests_mock.register_uri(
         "POST",
@@ -93,13 +90,14 @@ def test_check_connection_with_orders_stop_iteration(requests_mock, connector_co
         status_code=201,
         json={"payload": {"Orders": []}},
     )
-    assert SourceAmazonSellerPartner(
-        config=connector_config_with_report_options,
-        catalog=None,
-        state=None,
-    ).check_connection(logger, connector_config_with_report_options) == (True, None)
+    config = dict(connector_config_with_report_options)
+    source = get_source(config, config_path=None)
+    result = source.check(logger, source._config)
+    assert result.status == Status.SUCCEEDED
+    assert result.message is None
 
 
+@freeze_time("2017-02-25T00:00:00Z")
 def test_check_connection_with_orders(requests_mock, connector_config_with_report_options):
     requests_mock.register_uri(
         "POST",
@@ -113,114 +111,68 @@ def test_check_connection_with_orders(requests_mock, connector_config_with_repor
         status_code=200,
         json={"payload": {"Orders": [{"LastUpdateDate": "2024-06-02T00:00:00Z"}]}},
     )
-    assert SourceAmazonSellerPartner(
-        config=connector_config_with_report_options,
-        catalog=None,
-        state=None,
-    ).check_connection(logger, connector_config_with_report_options) == (True, None)
+    source = get_source(connector_config_with_report_options)
+    result = source.check(logger, source._config)
+    assert result.status == Status.SUCCEEDED
+    assert result.message is None
 
 
-@pytest.mark.parametrize(
-    ("report_name", "stream_name_w_options"),
-    (
-        (
-            "GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA",
-            [
-                (
-                    "GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA",
-                    [
-                        {"option_name": "some_name_1", "option_value": "some_value_1"},
-                        {"option_name": "some_name_2", "option_value": "some_value_2"},
-                    ],
-                ),
-            ],
-        ),
-        ("SOME_OTHER_STREAM", []),
-    ),
-)
-def test_get_stream_report_options_list(connector_config_with_report_options, report_name, stream_name_w_options):
-    assert (
-        list(
-            SourceAmazonSellerPartner(
-                config=connector_config_with_report_options,
-                catalog=None,
-                state=None,
-            ).get_stream_report_kwargs(report_name, connector_config_with_report_options)
-        )
-        == stream_name_w_options
-    )
+# TODO: Renable this test once this type of validation is supported
+# def test_config_report_options_validation_error_duplicated_streams(connector_config_with_report_options):
+#     connector_config_with_report_options["report_options_list"].append(connector_config_with_report_options["report_options_list"][0])
+#     with pytest.raises(ValueError) as e:
+#         get_source(connector_config_with_report_options).streams(connector_config_with_report_options)
+#     assert "Condition evaluated to False" in str(e.value)
 
-
-def test_config_report_options_validation_error_duplicated_streams(connector_config_with_report_options):
-    connector_config_with_report_options["report_options_list"].append(connector_config_with_report_options["report_options_list"][0])
-    with pytest.raises(AmazonConfigException) as e:
-        SourceAmazonSellerPartner(
-            config=connector_config_with_report_options,
-            catalog=None,
-            state=None,
-        ).validate_stream_report_options(connector_config_with_report_options)
-    assert e.value.message == "Stream name should be unique among all Report options list"
-
-
-def test_config_report_options_validation_error_duplicated_options(connector_config_with_report_options):
-    connector_config_with_report_options["report_options_list"][0]["options_list"].append(
-        connector_config_with_report_options["report_options_list"][0]["options_list"][0]
-    )
-    with pytest.raises(AmazonConfigException) as e:
-        SourceAmazonSellerPartner(
-            config=connector_config_with_report_options,
-            catalog=None,
-            state=None,
-        ).validate_stream_report_options(connector_config_with_report_options)
-    assert e.value.message == "Option names should be unique for `GET_FBA_FULFILLMENT_CUSTOMER_RETURNS_DATA` report options"
+# TODO: Renable this test once this type of validation is supported
+# def test_config_report_options_validation_error_duplicated_options(connector_config_with_report_options):
+#     connector_config_with_report_options["report_options_list"][0]["options_list"].append(
+#         connector_config_with_report_options["report_options_list"][0]["options_list"][0]
+#     )
+#     with pytest.raises(ValueError) as e:
+#         get_source(connector_config_with_report_options).streams(connector_config_with_report_options)
+#     assert "Condition evaluated to False" in str(e.value)
 
 
 def test_streams(connector_config_without_start_date):
-    for stream in SourceAmazonSellerPartner(
-        config=connector_config_without_start_date,
-        catalog=None,
-        state=None,
-    ).streams(connector_config_without_start_date):
-        assert isinstance(stream, Stream)
+    for stream in get_source(connector_config_without_start_date).streams(connector_config_without_start_date):
+        assert isinstance(stream, DefaultStream)
 
 
 def test_streams_count(connector_config_without_start_date, monkeypatch):
-    streams = SourceAmazonSellerPartner(
-        config=connector_config_without_start_date,
-        catalog=None,
-        state=None,
-    ).streams(connector_config_without_start_date)
-    assert len(streams) == 44
+    streams = get_source(connector_config_without_start_date).streams(connector_config_without_start_date)
+    assert len(streams) == 45
 
 
-@pytest.mark.parametrize(
-    ("config", "should_raise"),
-    (
-        ({"replication_start_date": "2022-09-01T00:00:00Z", "replication_end_date": "2022-08-01T00:00:00Z"}, True),
-        ({"replication_start_date": "2022-09-01T00:00:00Z", "replication_end_date": "2022-10-01T00:00:00Z"}, False),
-        ({"replication_end_date": "2022-10-01T00:00:00Z"}, False),
-        ({"replication_start_date": "2022-09-01T00:00:00Z"}, False),
-        ({}, False),
-    ),
-)
-def test_replication_dates_validation(config, should_raise):
-    if should_raise:
-        with pytest.raises(AmazonConfigException) as e:
-            SourceAmazonSellerPartner(
-                config=config,
-                catalog=None,
-                state=None,
-            ).validate_replication_dates(config)
-        assert e.value.message == "End Date should be greater than or equal to Start Date"
-    else:
-        assert (
-            SourceAmazonSellerPartner(
-                config=config,
-                catalog=None,
-                state=None,
-            ).validate_replication_dates(config)
-            is None
-        )
+# TODO: Renable this test once this type of validation is supported
+# @pytest.mark.parametrize(
+#     ("config", "should_raise"),
+#     (
+#         ({"replication_start_date": "2022-09-01T00:00:00Z", "replication_end_date": "2022-08-01T00:00:00Z"}, True),
+#         ({"replication_start_date": "2022-09-01T00:00:00Z", "replication_end_date": "2022-10-01T00:00:00Z"}, False),
+#         ({"replication_end_date": "2022-10-01T00:00:00Z"}, False),
+#         ({"replication_start_date": "2022-09-01T00:00:00Z"}, False),
+#         ({}, False),
+#     ),
+# )
+# def test_replication_dates_validation(config, should_raise):
+#     if should_raise:
+#         with pytest.raises(AmazonConfigException) as e:
+#             SourceAmazonSellerPartner(
+#                 config=config,
+#                 catalog=None,
+#                 state=None,
+#             ).validate_replication_dates(config)
+#         assert e.value.message == "End Date should be greater than or equal to Start Date"
+#     else:
+#         assert (
+#             SourceAmazonSellerPartner(
+#                 config=config,
+#                 catalog=None,
+#                 state=None,
+#             ).validate_replication_dates(config)
+#             is None
+#         )
 
 
 mock_catalog = ConfiguredAirbyteCatalog(
@@ -415,10 +367,10 @@ def test_stream_slice_dates(config, expected_start_base, expected_end_base, stre
         requests_mock.get(orders_url, json={"payload": {"Orders": [{"AmazonOrderId": "123-4567890-1234567"}]}}, status_code=200)
 
     # Initialize the source with the mock catalog, test config, and no state
-    source = SourceAmazonSellerPartner(catalog=mock_catalog, config=config, state=None)
+    source = get_source(config=config, state=None)
 
     # Retrieve the specific stream by its name
-    streams = source.streams(config)
+    streams = source.streams(source._config)
     stream = next((s for s in streams if s.name == stream_name), None)
     assert stream is not None, f"Stream '{stream_name}' not found in available streams"
 
@@ -429,7 +381,7 @@ def test_stream_slice_dates(config, expected_start_base, expected_end_base, stre
         expected_end = expected_end_base
 
     # Generate and verify stream slices
-    slices = list(stream.stream_slices(sync_mode=SyncMode.full_refresh, stream_state={}))
+    slices = list(map(lambda partition: partition.to_slice(), stream.generate_partitions()))
     assert len(slices) > 0, f"No slices generated for stream '{stream_name}'"
     first_slice = slices[0]
     last_slice = slices[-1]

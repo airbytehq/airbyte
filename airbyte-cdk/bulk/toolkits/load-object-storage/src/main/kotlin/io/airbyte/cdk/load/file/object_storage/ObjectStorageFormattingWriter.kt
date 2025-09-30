@@ -12,6 +12,7 @@ import io.airbyte.cdk.load.command.object_storage.ObjectStorageCompressionConfig
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageFormatConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ParquetFormatConfiguration
 import io.airbyte.cdk.load.config.DataChannelFormat
+import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.avro.toAvroRecord
 import io.airbyte.cdk.load.data.avro.toAvroSchema
@@ -33,12 +34,24 @@ import jakarta.inject.Singleton
 import java.io.ByteArrayOutputStream
 import java.io.Closeable
 import java.io.OutputStream
+import java.util.concurrent.ConcurrentLinkedDeque
 import java.util.concurrent.atomic.AtomicLong
 import org.apache.avro.Schema
 
 interface ObjectStorageFormattingWriter : Closeable {
     fun accept(record: DestinationRecordRaw)
     fun flush()
+}
+
+abstract class ManagedByteArrayOutputStream(initialCapacity: Int) :
+    ByteArrayOutputStream(initialCapacity) {
+    abstract fun extractBytes(): ByteArray
+    abstract fun resetBuffer()
+}
+
+class StandardByteArrayOutputStream : ManagedByteArrayOutputStream(32) {
+    override fun extractBytes(): ByteArray = toByteArray()
+    override fun resetBuffer() = reset()
 }
 
 interface ObjectStorageFormattingWriterFactory {
@@ -74,30 +87,61 @@ class DefaultObjectStorageFormattingWriterFactory(
                     )
                 }
             is AvroFormatConfiguration ->
-                AvroFormattingWriter(
-                    stream = stream,
-                    outputStream = outputStream,
-                    formatConfig =
-                        formatConfigProvider.objectStorageFormatConfiguration
-                            as AvroFormatConfiguration,
-                    rootLevelFlattening = flatten,
-                )
+                if (dataChannelFormat == DataChannelFormat.PROTOBUF) {
+                    ProtoToAvroFormatter(
+                        stream = stream,
+                        outputStream = outputStream,
+                        formatConfig =
+                            formatConfigProvider.objectStorageFormatConfiguration
+                                as AvroFormatConfiguration,
+                        rootLevelFlattening = flatten,
+                    )
+                } else {
+                    AvroFormattingWriter(
+                        stream = stream,
+                        outputStream = outputStream,
+                        formatConfig =
+                            formatConfigProvider.objectStorageFormatConfiguration
+                                as AvroFormatConfiguration,
+                        rootLevelFlattening = flatten,
+                    )
+                }
             is ParquetFormatConfiguration ->
-                ParquetFormattingWriter(
-                    stream = stream,
-                    outputStream = outputStream,
-                    formatConfig =
-                        formatConfigProvider.objectStorageFormatConfiguration
-                            as ParquetFormatConfiguration,
-                    rootLevelFlattening = flatten,
-                )
+                if (dataChannelFormat == DataChannelFormat.PROTOBUF) {
+                    ProtoToParquetFormatter(
+                        stream = stream,
+                        outputStream = outputStream,
+                        formatConfig =
+                            formatConfigProvider.objectStorageFormatConfiguration
+                                as ParquetFormatConfiguration,
+                        rootLevelFlattening = flatten,
+                    )
+                } else {
+                    ParquetFormattingWriter(
+                        stream = stream,
+                        outputStream = outputStream,
+                        formatConfig =
+                            formatConfigProvider.objectStorageFormatConfiguration
+                                as ParquetFormatConfiguration,
+                        rootLevelFlattening = flatten,
+                    )
+                }
             is CSVFormatConfiguration ->
-                CSVFormattingWriter(
-                    stream = stream,
-                    outputStream = outputStream,
-                    rootLevelFlattening = flatten,
-                    extractedAtAsTimestampWithTimezone = false,
-                )
+                if (dataChannelFormat == DataChannelFormat.PROTOBUF) {
+                    ProtoToCsvFormatter(
+                        stream = stream,
+                        outputStream = outputStream,
+                        rootLevelFlattening = flatten,
+                        extractedAtAsTimestampWithTimezone = false,
+                    )
+                } else {
+                    CSVFormattingWriter(
+                        stream = stream,
+                        outputStream = outputStream,
+                        rootLevelFlattening = flatten,
+                        extractedAtAsTimestampWithTimezone = false,
+                    )
+                }
         }
     }
 }
@@ -252,20 +296,27 @@ class ParquetFormattingWriter(
 class BufferedFormattingWriterFactory<T : OutputStream>(
     private val writerFactory: ObjectStorageFormattingWriterFactory,
     private val compressionConfigurationProvider: ObjectStorageCompressionConfigurationProvider<T>,
+    @Named("dataChannelMedium") private val dataChannelMedium: DataChannelMedium,
 ) {
     fun create(stream: DestinationStream): BufferedFormattingWriter<T> {
-        val outputStream = ByteArrayOutputStream()
+        val underlying: ManagedByteArrayOutputStream =
+            if (dataChannelMedium == DataChannelMedium.SOCKET) {
+                PooledByteArrayOutputStream()
+            } else {
+                StandardByteArrayOutputStream()
+            }
+
         val processor =
             compressionConfigurationProvider.objectStorageCompressionConfiguration.compressor
-        val wrappingBuffer = processor.wrapper.invoke(outputStream)
-        val writer = writerFactory.create(stream, wrappingBuffer)
-        return BufferedFormattingWriter(writer, outputStream, processor, wrappingBuffer)
+        val wrapping = processor.wrapper.invoke(underlying)
+        val writer = writerFactory.create(stream, wrapping)
+        return BufferedFormattingWriter(writer, underlying, processor, wrapping)
     }
 }
 
 class BufferedFormattingWriter<T : OutputStream>(
     private val writer: ObjectStorageFormattingWriter,
-    private val buffer: ByteArrayOutputStream,
+    private val buffer: ManagedByteArrayOutputStream,
     private val streamProcessor: StreamProcessor<T>,
     private val wrappingBuffer: T
 ) : ObjectStorageFormattingWriter {
@@ -291,8 +342,8 @@ class BufferedFormattingWriter<T : OutputStream>(
             return null
         }
 
-        val bytes = buffer.toByteArray()
-        buffer.reset()
+        val bytes = buffer.extractBytes()
+        buffer.resetBuffer()
         return bytes
     }
 
@@ -301,7 +352,7 @@ class BufferedFormattingWriter<T : OutputStream>(
         writer.close()
         streamProcessor.partFinisher.invoke(wrappingBuffer)
         return if (bufferSize > 0) {
-            buffer.toByteArray()
+            buffer.extractBytes()
         } else {
             null
         }
@@ -314,5 +365,45 @@ class BufferedFormattingWriter<T : OutputStream>(
 
     override fun close() {
         writer.close()
+    }
+}
+/**
+ * Re-uses large byte arrays to cut GC pressure when we generate many S3 parts. Keep at most 512 MiB
+ * of slabs in the pool.
+ */
+object ByteArrayPool {
+    private const val MAX_POOL_BYTES = 512 * 1024 * 1024
+    private val q = ConcurrentLinkedDeque<ByteArray>()
+
+    fun borrow(minCapacity: Int): ByteArray {
+        while (true) {
+            val buf = q.pollFirst() ?: return ByteArray(minCapacity)
+            if (buf.size >= minCapacity) return buf
+            // slab too small, drop it and try again
+        }
+    }
+
+    fun recycle(buf: ByteArray) {
+        val current = q.sumOf { it.size }.toLong()
+        if (current + buf.size <= MAX_POOL_BYTES) q.addFirst(buf)
+    }
+}
+
+class PooledByteArrayOutputStream(private val minCapacity: Int = 32 * 1024) :
+    ManagedByteArrayOutputStream(0) {
+    /** Borrow a new array exactly sized to `count`, copy data, return it. */
+    init {
+        buf = ByteArrayPool.borrow(minCapacity)
+    }
+
+    override fun extractBytes(): ByteArray =
+        ByteArray(count).also { System.arraycopy(buf, 0, it, 0, count) }
+
+    /** Reset *and* recycle the previous backing buffer. */
+    override fun resetBuffer() {
+        val old = buf
+        buf = ByteArrayPool.borrow(minCapacity)
+        reset()
+        ByteArrayPool.recycle(old)
     }
 }

@@ -8,7 +8,7 @@ data:
   dockerImageTag: 0.1.48
   dockerRepository: airbyte/source-firebase-realtime-database
   githubIssueLabel: source-firebase-realtime-database
-  license: MIT
+  license: ELv2
   name: Firebase Realtime Database
   remoteRegistries:
     pypi:

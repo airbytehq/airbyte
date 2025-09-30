@@ -39,6 +39,19 @@ Create an application and note down the Account Id and the API key, you will nee
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.3.17 | 2025-09-09 | [65767](https://github.com/airbytehq/airbyte/pull/65767) | Update dependencies |
+| 0.3.16 | 2025-08-22 | [PR_NUMBER] | Add RequiredBy field and enhance datetime support |
+| 0.3.15 | 2025-08-23 | [65248](https://github.com/airbytehq/airbyte/pull/65248) | Update dependencies |
+| 0.3.14 | 2025-08-14 | [64942](https://github.com/airbytehq/airbyte/pull/64942) | Fix docker image entrypoint for platform syncs |
+| 0.3.13 | 2025-08-08 | [64118](https://github.com/airbytehq/airbyte/pull/64118) | Fix product_availability primary key to support multi-location inventory tracking by using composite key [ID, Location] instead of just [ID] |
+| 0.3.12 | 2025-08-09 | [64712](https://github.com/airbytehq/airbyte/pull/64712) | Update dependencies |
+| 0.3.11 | 2025-08-02 | [64396](https://github.com/airbytehq/airbyte/pull/64396) | Update dependencies |
+| 0.3.10 | 2025-07-26 | [64046](https://github.com/airbytehq/airbyte/pull/64046) | Update dependencies |
+| 0.3.9 | 2025-07-19 | [63536](https://github.com/airbytehq/airbyte/pull/63536) | Update dependencies |
+| 0.3.8 | 2025-07-12 | [62997](https://github.com/airbytehq/airbyte/pull/62997) | Update dependencies |
+| 0.3.7 | 2025-07-05 | [62760](https://github.com/airbytehq/airbyte/pull/62760) | Update dependencies |
+| 0.3.6 | 2025-06-28 | [62305](https://github.com/airbytehq/airbyte/pull/62305) | Update dependencies |
+| 0.3.5 | 2025-06-22 | [61988](https://github.com/airbytehq/airbyte/pull/61988) | Update dependencies |
 | 0.3.4 | 2025-06-14 | [61252](https://github.com/airbytehq/airbyte/pull/61252) | Update dependencies |
 | 0.3.3 | 2025-05-24 | [60378](https://github.com/airbytehq/airbyte/pull/60378) | Update dependencies |
 | 0.3.2 | 2025-05-10 | [59985](https://github.com/airbytehq/airbyte/pull/59985) | Update dependencies |

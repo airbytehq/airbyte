@@ -62,6 +62,16 @@ Visit `https://dev.frontapp.com/docs/create-and-revoke-api-tokens` for getting y
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.28 | 2025-09-30 | [66776](https://github.com/airbytehq/airbyte/pull/66776) | Update dependencies |
+| 0.0.27 | 2025-09-24 | [65759](https://github.com/airbytehq/airbyte/pull/65759) | Update dependencies |
+| 0.0.26 | 2025-08-23 | [65245](https://github.com/airbytehq/airbyte/pull/65245) | Update dependencies |
+| 0.0.25 | 2025-08-09 | [64779](https://github.com/airbytehq/airbyte/pull/64779) | Update dependencies |
+| 0.0.24 | 2025-07-26 | [64049](https://github.com/airbytehq/airbyte/pull/64049) | Update dependencies |
+| 0.0.23 | 2025-07-19 | [63572](https://github.com/airbytehq/airbyte/pull/63572) | Update dependencies |
+| 0.0.22 | 2025-07-12 | [62961](https://github.com/airbytehq/airbyte/pull/62961) | Update dependencies |
+| 0.0.21 | 2025-07-05 | [62780](https://github.com/airbytehq/airbyte/pull/62780) | Update dependencies |
+| 0.0.20 | 2025-06-28 | [62366](https://github.com/airbytehq/airbyte/pull/62366) | Update dependencies |
+| 0.0.19 | 2025-06-21 | [61963](https://github.com/airbytehq/airbyte/pull/61963) | Update dependencies |
 | 0.0.18 | 2025-06-14 | [61281](https://github.com/airbytehq/airbyte/pull/61281) | Update dependencies |
 | 0.0.17 | 2025-05-24 | [60416](https://github.com/airbytehq/airbyte/pull/60416) | Update dependencies |
 | 0.0.16 | 2025-05-10 | [59920](https://github.com/airbytehq/airbyte/pull/59920) | Update dependencies |

@@ -94,9 +94,17 @@ The Intercom connector should not run into Intercom API limitations under normal
 <details>
   <summary>Expand to review</summary>
 
-
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                          |
 |:-----------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|
+| 0.13.8 | 2025-09-30 | [66789](https://github.com/airbytehq/airbyte/pull/66789) | Update dependencies |
+| 0.13.7 | 2025-09-25 | [66665](https://github.com/airbytehq/airbyte/pull/66665) | Fix Typo on Error Message |
+| 0.13.6 | 2025-09-09 | [66056](https://github.com/airbytehq/airbyte/pull/66056) | Update dependencies |
+| 0.13.5 | 2025-08-23 | [65374](https://github.com/airbytehq/airbyte/pull/65374) | Update dependencies |
+| 0.13.4 | 2025-08-09 | [63523](https://github.com/airbytehq/airbyte/pull/63523) | Update dependencies |
+| 0.13.3 | 2025-07-12 | [63155](https://github.com/airbytehq/airbyte/pull/63155) | Update dependencies |
+| 0.13.2 | 2025-07-05 | [62592](https://github.com/airbytehq/airbyte/pull/62592) | Update dependencies |
+| 0.13.1 | 2025-06-28 | [54308](https://github.com/airbytehq/airbyte/pull/54308) | Update dependencies |
+| 0.13.0 | 2025-06-25 | [62069](https://github.com/airbytehq/airbyte/pull/62069) | Promoting release candidate 0.13.0-rc.5 to a main version. |
 | 0.13.0-rc.5 | 2025-06-11| [61506](https://github.com/airbytehq/airbyte/pull/61506) |  Add better error handling for companies stream, update SDM, & add advanced_auth |
 | 0.13.0-rc.4 | 2025-05-15| [60235](https://github.com/airbytehq/airbyte/pull/60235) |  Add required custom paginator for 'companies' stream & Fix 500s on `Tickets` stream. |
 | 0.13.0-rc.3 | 2025-05-09| [55829](https://github.com/airbytehq/airbyte/pull/55829) |  Fix pagination for `conversations`, `tickets`, `companies` & `contacts` and cleanup manifest|

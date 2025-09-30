@@ -5,7 +5,7 @@ test_strictness_level: high
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_google_analytics_data_api/spec.json"
+      - spec_path: "manifest.yaml"
         backward_compatibility_tests_config:
           # changed the structure of `custom_reports` -> `cohortSpec`
           disable_for_version: 2.1.0

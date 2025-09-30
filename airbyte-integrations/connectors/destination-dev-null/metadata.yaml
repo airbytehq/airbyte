@@ -8,20 +8,20 @@ data:
   connectorIPCOptions:
     dataChannel:
       version: "0.0.1"
-      supportedSerialization: ["JSONL"]
-      supportedTransport: ["STDIO"]
+      supportedSerialization: ["JSONL", "PROTOBUF"]
+      supportedTransport: ["STDIO", "SOCKET"]
   connectorSubtype: file
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: integrationTests
   connectorType: destination
   definitionId: a7bcc9d8-13b3-4e49-b80d-d020b90045e3
-  dockerImageTag: 0.7.27
+  dockerImageTag: 0.8.4
   dockerRepository: airbyte/destination-dev-null
   documentationUrl: https://docs.airbyte.com/integrations/destinations/dev-null
   githubIssueLabel: destination-dev-null
   icon: airbyte.svg
-  license: MIT
+  license: ELv2
   name: End-to-End Testing (/dev/null)
   registryOverrides:
     cloud:

@@ -100,6 +100,18 @@ GET https://api.yotpo.com/v1/apps/{app_key}/reviews?utoken={access_token}
 
 | Version | Date       | Pull Request                                            | Subject        |
 | :------ | :--------- | :------------------------------------------------------ | :------------- |
+| 0.2.13 | 2025-09-30 | [66843](https://github.com/airbytehq/airbyte/pull/66843) | Update dependencies |
+| 0.2.12 | 2025-09-24 | [66469](https://github.com/airbytehq/airbyte/pull/66469) | Update dependencies |
+| 0.2.11 | 2025-09-09 | [65710](https://github.com/airbytehq/airbyte/pull/65710) | Update dependencies |
+| 0.2.10 | 2025-08-23 | [65429](https://github.com/airbytehq/airbyte/pull/65429) | Update dependencies |
+| 0.2.9 | 2025-08-09 | [64819](https://github.com/airbytehq/airbyte/pull/64819) | Update dependencies |
+| 0.2.8 | 2025-08-02 | [64357](https://github.com/airbytehq/airbyte/pull/64357) | Update dependencies |
+| 0.2.7 | 2025-07-26 | [64066](https://github.com/airbytehq/airbyte/pull/64066) | Update dependencies |
+| 0.2.6 | 2025-07-19 | [63622](https://github.com/airbytehq/airbyte/pull/63622) | Update dependencies |
+| 0.2.5 | 2025-07-12 | [63210](https://github.com/airbytehq/airbyte/pull/63210) | Update dependencies |
+| 0.2.4 | 2025-07-05 | [62684](https://github.com/airbytehq/airbyte/pull/62684) | Update dependencies |
+| 0.2.3 | 2025-06-28 | [62250](https://github.com/airbytehq/airbyte/pull/62250) | Update dependencies |
+| 0.2.2 | 2025-06-21 | [61748](https://github.com/airbytehq/airbyte/pull/61748) | Update dependencies |
 | 0.2.1 | 2025-06-15 | [47597](https://github.com/airbytehq/airbyte/pull/47597) | Update dependencies |
 | 0.2.0 | 2024-08-26 | [44780](https://github.com/airbytehq/airbyte/pull/44780) | Refactor connector to manifest-only format |
 | 0.1.14 | 2024-08-24 | [44661](https://github.com/airbytehq/airbyte/pull/44661) | Update dependencies |

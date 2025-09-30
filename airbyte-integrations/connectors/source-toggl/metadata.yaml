@@ -15,7 +15,7 @@ data:
   dockerRepository: airbyte/source-toggl
   githubIssueLabel: source-toggl
   icon: toggl.svg
-  license: MIT
+  license: ELv2
   name: Toggl
   releaseDate: 2022-10-28
   releaseStage: alpha

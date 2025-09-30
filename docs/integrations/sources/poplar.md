@@ -24,6 +24,17 @@ Documentation: https://developers.heypoplar.com/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.19 | 2025-09-23 | [66422](https://github.com/airbytehq/airbyte/pull/66422) | Update dependencies |
+| 0.0.18 | 2025-09-09 | [65794](https://github.com/airbytehq/airbyte/pull/65794) | Update dependencies |
+| 0.0.17 | 2025-08-23 | [65229](https://github.com/airbytehq/airbyte/pull/65229) | Update dependencies |
+| 0.0.16 | 2025-08-09 | [64762](https://github.com/airbytehq/airbyte/pull/64762) | Update dependencies |
+| 0.0.15 | 2025-08-02 | [64201](https://github.com/airbytehq/airbyte/pull/64201) | Update dependencies |
+| 0.0.14 | 2025-07-26 | [63921](https://github.com/airbytehq/airbyte/pull/63921) | Update dependencies |
+| 0.0.13 | 2025-07-19 | [63406](https://github.com/airbytehq/airbyte/pull/63406) | Update dependencies |
+| 0.0.12 | 2025-07-12 | [63233](https://github.com/airbytehq/airbyte/pull/63233) | Update dependencies |
+| 0.0.11 | 2025-07-05 | [62593](https://github.com/airbytehq/airbyte/pull/62593) | Update dependencies |
+| 0.0.10 | 2025-06-28 | [62400](https://github.com/airbytehq/airbyte/pull/62400) | Update dependencies |
+| 0.0.9 | 2025-06-21 | [61899](https://github.com/airbytehq/airbyte/pull/61899) | Update dependencies |
 | 0.0.8 | 2025-06-14 | [60546](https://github.com/airbytehq/airbyte/pull/60546) | Update dependencies |
 | 0.0.7 | 2025-05-10 | [60110](https://github.com/airbytehq/airbyte/pull/60110) | Update dependencies |
 | 0.0.6 | 2025-05-04 | [59522](https://github.com/airbytehq/airbyte/pull/59522) | Update dependencies |

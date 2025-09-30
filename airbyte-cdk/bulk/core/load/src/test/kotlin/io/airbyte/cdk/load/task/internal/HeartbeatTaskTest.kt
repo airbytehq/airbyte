@@ -22,7 +22,7 @@ class HeartbeatTaskTest {
     fun `heartbeat task updates every configured interval`() = runTest {
         val config = mockk<DestinationConfiguration>()
         val recordQueue = mockk<PartitionedQueue<PipelineInputEvent>>()
-        val checkpointManager = mockk<CheckpointManager<*>>()
+        val checkpointManager = mockk<CheckpointManager>()
         val task = HeartbeatTask(config, recordQueue, checkpointManager)
         every { config.heartbeatIntervalSeconds } returns 5
         coEvery { recordQueue.broadcast(any()) } returns Unit

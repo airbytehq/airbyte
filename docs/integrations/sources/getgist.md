@@ -27,6 +27,16 @@ An Airbyte connector for [Gist](https://getgist.com/) would enable data syncing 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.34 | 2025-09-30 | [66296](https://github.com/airbytehq/airbyte/pull/66296) | Update dependencies |
+| 0.0.33 | 2025-09-09 | [66077](https://github.com/airbytehq/airbyte/pull/66077) | Update dependencies |
+| 0.0.32 | 2025-08-23 | [65354](https://github.com/airbytehq/airbyte/pull/65354) | Update dependencies |
+| 0.0.31 | 2025-08-09 | [64576](https://github.com/airbytehq/airbyte/pull/64576) | Update dependencies |
+| 0.0.30 | 2025-08-02 | [64277](https://github.com/airbytehq/airbyte/pull/64277) | Update dependencies |
+| 0.0.29 | 2025-07-19 | [63467](https://github.com/airbytehq/airbyte/pull/63467) | Update dependencies |
+| 0.0.28 | 2025-07-12 | [63110](https://github.com/airbytehq/airbyte/pull/63110) | Update dependencies |
+| 0.0.27 | 2025-07-05 | [62783](https://github.com/airbytehq/airbyte/pull/62783) | Update dependencies |
+| 0.0.26 | 2025-06-28 | [62418](https://github.com/airbytehq/airbyte/pull/62418) | Update dependencies |
+| 0.0.25 | 2025-06-21 | [61971](https://github.com/airbytehq/airbyte/pull/61971) | Update dependencies |
 | 0.0.24 | 2025-06-14 | [61255](https://github.com/airbytehq/airbyte/pull/61255) | Update dependencies |
 | 0.0.23 | 2025-05-24 | [60385](https://github.com/airbytehq/airbyte/pull/60385) | Update dependencies |
 | 0.0.22 | 2025-05-10 | [59924](https://github.com/airbytehq/airbyte/pull/59924) | Update dependencies |

@@ -11,7 +11,7 @@ on:
           - airbytehq/airbyte
 jobs:
   publish-bulk-cdk:
-    uses: ./.github/workflows/publish-bulk-cdk.yml
+    uses: ./.github/workflows/java-bulk-cdk-publish.yml
     secrets: inherit
   bump-cdk-version:
     runs-on: ubuntu-24.04
@@ -63,9 +63,8 @@ jobs:
       matrix:
         connector_name: ${{ fromJson(needs.bump-cdk-version.outputs.modified_connectors_json) }}
     with:
-      connectors-options: "--name=${{ matrix.connector_name }}"
-      publish-options: --main-release
-      airbyte_ci_binary_url: "https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci"
+      connectors: "--name=${{ matrix.connector_name }}"
+      release-type: main-release
     secrets: inherit
 
   update-changelog-and-merge:

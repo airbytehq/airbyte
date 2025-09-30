@@ -21,7 +21,7 @@ data:
   dockerRepository: airbyte/source-pingdom
   githubIssueLabel: source-pingdom
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Pingdom
   releaseDate: 2024-12-03
   releaseStage: alpha

@@ -5,7 +5,7 @@ data:
   dockerImageTag: 0.1.4
   dockerRepository: airbyte/destination-rockset
   githubIssueLabel: destination-rockset
-  license: MIT
+  license: ELv2
   name: Rockset
   registryOverrides:
     cloud:

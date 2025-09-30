@@ -65,6 +65,15 @@ The Chartmogul connector should not run into Chartmogul API limitations under no
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                          |
 |:--------|:-----------| :------------------------------------------------------- |:---------------------------------------------------------------------------------------------------------------------------------|
+| 1.1.31 | 2025-08-23 | [65264](https://github.com/airbytehq/airbyte/pull/65264) | Update dependencies |
+| 1.1.30 | 2025-08-09 | [64673](https://github.com/airbytehq/airbyte/pull/64673) | Update dependencies |
+| 1.1.29 | 2025-08-02 | [64401](https://github.com/airbytehq/airbyte/pull/64401) | Update dependencies |
+| 1.1.28 | 2025-07-26 | [64017](https://github.com/airbytehq/airbyte/pull/64017) | Update dependencies |
+| 1.1.27 | 2025-07-19 | [63601](https://github.com/airbytehq/airbyte/pull/63601) | Update dependencies |
+| 1.1.26 | 2025-07-12 | [62959](https://github.com/airbytehq/airbyte/pull/62959) | Update dependencies |
+| 1.1.25 | 2025-07-05 | [62758](https://github.com/airbytehq/airbyte/pull/62758) | Update dependencies |
+| 1.1.24 | 2025-06-28 | [62433](https://github.com/airbytehq/airbyte/pull/62433) | Update dependencies |
+| 1.1.23 | 2025-06-21 | [61967](https://github.com/airbytehq/airbyte/pull/61967) | Update dependencies |
 | 1.1.22 | 2025-06-14 | [61279](https://github.com/airbytehq/airbyte/pull/61279) | Update dependencies |
 | 1.1.21 | 2025-05-24 | [60353](https://github.com/airbytehq/airbyte/pull/60353) | Update dependencies |
 | 1.1.20 | 2025-05-10 | [60032](https://github.com/airbytehq/airbyte/pull/60032) | Update dependencies |

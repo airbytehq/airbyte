@@ -53,6 +53,16 @@ Airbyte connector for UserVoice.com allows users to efficiently extract data fro
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.35 | 2025-09-09 | [65739](https://github.com/airbytehq/airbyte/pull/65739) | Update dependencies |
+| 0.0.34 | 2025-08-23 | [65398](https://github.com/airbytehq/airbyte/pull/65398) | Update dependencies |
+| 0.0.33 | 2025-08-09 | [64844](https://github.com/airbytehq/airbyte/pull/64844) | Update dependencies |
+| 0.0.32 | 2025-08-02 | [64312](https://github.com/airbytehq/airbyte/pull/64312) | Update dependencies |
+| 0.0.31 | 2025-07-26 | [64051](https://github.com/airbytehq/airbyte/pull/64051) | Update dependencies |
+| 0.0.30 | 2025-07-20 | [63670](https://github.com/airbytehq/airbyte/pull/63670) | Update dependencies |
+| 0.0.29 | 2025-07-12 | [63194](https://github.com/airbytehq/airbyte/pull/63194) | Update dependencies |
+| 0.0.28 | 2025-07-05 | [62753](https://github.com/airbytehq/airbyte/pull/62753) | Update dependencies |
+| 0.0.27 | 2025-06-28 | [62202](https://github.com/airbytehq/airbyte/pull/62202) | Update dependencies |
+| 0.0.26 | 2025-06-21 | [61772](https://github.com/airbytehq/airbyte/pull/61772) | Update dependencies |
 | 0.0.25 | 2025-06-15 | [61179](https://github.com/airbytehq/airbyte/pull/61179) | Update dependencies |
 | 0.0.24 | 2025-05-24 | [60766](https://github.com/airbytehq/airbyte/pull/60766) | Update dependencies |
 | 0.0.23 | 2025-05-10 | [60017](https://github.com/airbytehq/airbyte/pull/60017) | Update dependencies |

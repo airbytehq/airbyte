@@ -47,6 +47,16 @@ Valid Spotify Ad Account ID
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.11 | 2025-09-30 | [66896](https://github.com/airbytehq/airbyte/pull/66896) | Update dependencies |
+| 0.0.10 | 2025-09-23 | [66270](https://github.com/airbytehq/airbyte/pull/66270) | Update dependencies |
+| 0.0.9 | 2025-09-09 | [66128](https://github.com/airbytehq/airbyte/pull/66128) | Update dependencies |
+| 0.0.8 | 2025-08-24 | [65466](https://github.com/airbytehq/airbyte/pull/65466) | Update dependencies |
+| 0.0.7 | 2025-08-09 | [64817](https://github.com/airbytehq/airbyte/pull/64817) | Update dependencies |
+| 0.0.6 | 2025-08-02 | [64468](https://github.com/airbytehq/airbyte/pull/64468) | Update dependencies |
+| 0.0.5 | 2025-07-12 | [63080](https://github.com/airbytehq/airbyte/pull/63080) | Update dependencies |
+| 0.0.4 | 2025-07-05 | [62741](https://github.com/airbytehq/airbyte/pull/62741) | Update dependencies |
+| 0.0.3 | 2025-06-28 | [62277](https://github.com/airbytehq/airbyte/pull/62277) | Update dependencies |
+| 0.0.2 | 2025-06-21 | [61807](https://github.com/airbytehq/airbyte/pull/61807) | Update dependencies |
 | 0.0.1 | 2025-06-16 | | Initial release by [@Magistah](https://github.com/Magistah) via Connector Builder |
 
 </details>

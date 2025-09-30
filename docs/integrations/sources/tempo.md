@@ -49,6 +49,15 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 | Version | Date       | Pull Request                                             | Subject                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------- |
+| 0.4.33 | 2025-09-30 | [66879](https://github.com/airbytehq/airbyte/pull/66879) | Update dependencies |
+| 0.4.32 | 2025-09-23 | [66366](https://github.com/airbytehq/airbyte/pull/66366) | Update dependencies |
+| 0.4.31 | 2025-09-09 | [65709](https://github.com/airbytehq/airbyte/pull/65709) | Update dependencies |
+| 0.4.30 | 2025-08-24 | [65494](https://github.com/airbytehq/airbyte/pull/65494) | Update dependencies |
+| 0.4.29 | 2025-08-09 | [64801](https://github.com/airbytehq/airbyte/pull/64801) | Update dependencies |
+| 0.4.28 | 2025-08-02 | [64417](https://github.com/airbytehq/airbyte/pull/64417) | Update dependencies |
+| 0.4.27 | 2025-07-26 | [63997](https://github.com/airbytehq/airbyte/pull/63997) | Update dependencies |
+| 0.4.26 | 2025-06-28 | [62206](https://github.com/airbytehq/airbyte/pull/62206) | Update dependencies |
+| 0.4.25 | 2025-06-21 | [61809](https://github.com/airbytehq/airbyte/pull/61809) | Update dependencies |
 | 0.4.24 | 2025-06-14 | [60566](https://github.com/airbytehq/airbyte/pull/60566) | Update dependencies |
 | 0.4.23 | 2025-05-11 | [60209](https://github.com/airbytehq/airbyte/pull/60209) | Update dependencies |
 | 0.4.22 | 2025-05-04 | [59636](https://github.com/airbytehq/airbyte/pull/59636) | Update dependencies |

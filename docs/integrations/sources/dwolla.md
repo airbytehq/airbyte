@@ -27,6 +27,16 @@ API Reference: https://developers.dwolla.com/docs
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.19 | 2025-09-30 | [65801](https://github.com/airbytehq/airbyte/pull/65801) | Update dependencies |
+| 0.0.18 | 2025-08-23 | [65237](https://github.com/airbytehq/airbyte/pull/65237) | Update dependencies |
+| 0.0.17 | 2025-08-09 | [64726](https://github.com/airbytehq/airbyte/pull/64726) | Update dependencies |
+| 0.0.16 | 2025-08-02 | [64376](https://github.com/airbytehq/airbyte/pull/64376) | Update dependencies |
+| 0.0.15 | 2025-07-26 | [64033](https://github.com/airbytehq/airbyte/pull/64033) | Update dependencies |
+| 0.0.14 | 2025-07-19 | [63583](https://github.com/airbytehq/airbyte/pull/63583) | Update dependencies |
+| 0.0.13 | 2025-07-12 | [62966](https://github.com/airbytehq/airbyte/pull/62966) | Update dependencies |
+| 0.0.12 | 2025-07-05 | [62777](https://github.com/airbytehq/airbyte/pull/62777) | Update dependencies |
+| 0.0.11 | 2025-06-28 | [62331](https://github.com/airbytehq/airbyte/pull/62331) | Update dependencies |
+| 0.0.10 | 2025-06-21 | [61968](https://github.com/airbytehq/airbyte/pull/61968) | Update dependencies |
 | 0.0.9 | 2025-06-14 | [61221](https://github.com/airbytehq/airbyte/pull/61221) | Update dependencies |
 | 0.0.8 | 2025-05-24 | [60423](https://github.com/airbytehq/airbyte/pull/60423) | Update dependencies |
 | 0.0.7 | 2025-05-10 | [60041](https://github.com/airbytehq/airbyte/pull/60041) | Update dependencies |

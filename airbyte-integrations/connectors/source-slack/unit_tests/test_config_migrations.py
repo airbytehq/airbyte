@@ -4,8 +4,9 @@ import json
 import os
 from typing import Any, Mapping
 
-from source_slack import SourceSlack
-from source_slack.config_migrations import MigrateLegacyConfig
+from airbyte_cdk.test.entrypoint_wrapper import _run_command
+from airbyte_cdk.test.state_builder import StateBuilder
+from unit_tests.conftest import get_source, get_stream_by_name
 
 
 CMD = "check"
@@ -16,33 +17,31 @@ SOURCE_INPUT_ARGS_LEGACY = [CMD, "--config", TEST_CONFIG_LEGACY_PATH]
 SOURCE_INPUT_ARGS_ACTUAL = [CMD, "--config", TEST_CONFIG_ACTUAL_PATH]
 
 
-def revert_config():
-    with open(TEST_CONFIG_LEGACY_PATH, "r") as test_config:
-        config = json.load(test_config)
-        config.pop("credentials")
-        config.update({"api_token": "api-token"})
-        with open(TEST_CONFIG_LEGACY_PATH, "w") as updated_config:
-            config = json.dumps(config)
-            updated_config.write(config)
-
-
 def load_config(config_path: str = TEST_CONFIG_LEGACY_PATH) -> Mapping[str, Any]:
     with open(config_path, "r") as config:
         return json.load(config)
 
 
-def test_config_migration():
-    migration = MigrateLegacyConfig()
-    migration.migrate(SOURCE_INPUT_ARGS_LEGACY, SourceSlack())
-    test_migrated_config = load_config()
-    assert test_migrated_config["credentials"]["api_token"] == "api-token"
-    assert test_migrated_config["credentials"]["option_title"] == "API Token Credentials"
-    revert_config()
+def test_config_migration(requests_mock):
+    requests_mock.get(
+        "https://slack.com/api/users.list?limit=1000",
+        json={"users": [{"id": 1}]},
+        status_code=200,
+    )
+
+    state = StateBuilder().build()
+    source = get_source(config=load_config(), state=state)
+    output = _run_command(source=source, args=SOURCE_INPUT_ARGS_LEGACY)
+    assert len([log for log in output.logs if log.log.message == "Check succeeded"]) == 1
 
 
-def test_config_not_migrated():
-    config_before_migration = load_config(TEST_CONFIG_ACTUAL_PATH)
-    migration = MigrateLegacyConfig()
-    migration.migrate(SOURCE_INPUT_ARGS_ACTUAL, SourceSlack())
-    test_migrated_config = load_config(TEST_CONFIG_ACTUAL_PATH)
-    assert config_before_migration == test_migrated_config
+def test_config_not_migrated(requests_mock):
+    requests_mock.get(
+        "https://slack.com/api/users.list?limit=1000",
+        json={"users": [{"id": 1}]},
+        status_code=200,
+    )
+    state = StateBuilder().build()
+    source = get_source(config=load_config(TEST_CONFIG_ACTUAL_PATH), state=state)
+    output = _run_command(source=source, args=SOURCE_INPUT_ARGS_LEGACY)
+    assert len([log for log in output.logs if log.log.message == "Check succeeded"]) == 1

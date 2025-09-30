@@ -16,7 +16,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/dockerhub
   githubIssueLabel: source-dockerhub
   icon: dockerhub.svg
-  license: MIT
+  license: ELv2
   name: Dockerhub
   registryOverrides:
     cloud:

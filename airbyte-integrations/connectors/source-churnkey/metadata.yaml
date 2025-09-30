@@ -13,15 +13,15 @@ data:
       enabled: false
       packageName: airbyte-source-churnkey
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.56.0@sha256:6947070c0d1f8bb025d48ca952421b7c83795ca98f0395fe08ad29b7f3df8a33
+    baseImage: docker.io/airbyte/source-declarative-manifest:6.60.16@sha256:b8126848437ec5a6cff05fb4796fd775450b83e57925674d856a1838a390a28c
   connectorSubtype: api
   connectorType: source
   definitionId: 0f1a0659-0239-48a7-bf34-072a5bf2713a
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.10
   dockerRepository: airbyte/source-churnkey
   githubIssueLabel: source-churnkey
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: churnkey
   releaseDate: 2025-06-18
   releaseStage: alpha

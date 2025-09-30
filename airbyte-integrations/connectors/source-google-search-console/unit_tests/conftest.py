@@ -1,16 +1,14 @@
-#
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
-#
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
+pytest_plugins = ["airbyte_cdk.test.utils.manifest_only_fixtures"]
 
 import sys
 from copy import deepcopy
 from pathlib import Path
 
 from pytest import fixture
-from source_google_search_console import SourceGoogleSearchConsole
 
-from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from airbyte_cdk import YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.state_builder import StateBuilder
 
@@ -29,16 +27,15 @@ _YAML_FILE_PATH = _SOURCE_FOLDER_PATH / "manifest.yaml"
 sys.path.append(str(_SOURCE_FOLDER_PATH))  # to allow loading custom components
 
 
-def get_source(config, state=None) -> YamlDeclarativeSource:
+def get_source(config, state=None, config_path=None) -> YamlDeclarativeSource:
     catalog = CatalogBuilder().build()
     state = StateBuilder().build() if not state else state
-    return YamlDeclarativeSource(path_to_yaml=str(_YAML_FILE_PATH), catalog=catalog, config=config, state=state)
+    return YamlDeclarativeSource(path_to_yaml=str(_YAML_FILE_PATH), catalog=catalog, config=config, state=state, config_path=config_path)
 
 
 def find_stream(stream_name, config, state=None):
     state = StateBuilder().build() if not state else state
-    # streams = get_source(config, state).streams(config=config) use this method when converting to manifest-only
-    streams = SourceGoogleSearchConsole(catalog=None, config=config, state=state).streams(config=config)
+    streams = get_source(config, state).streams(config=config)
     for stream in streams:
         if stream.name == stream_name:
             return stream
@@ -75,42 +72,6 @@ def config_service_account_fixture(requests_mock):
         },
         "custom_reports": '[{"name": "custom_dimensions", "dimensions": ["date", "country", "device"]}]',
         "custom_reports_array": [{"name": "custom_dimensions", "dimensions": ["date", "country", "device"]}],
-    }
-
-
-@fixture(name="forbidden_error_message_json")
-def forbidden_error_message_json():
-    return {
-        "error": {
-            "code": 403,
-            "message": "User does not have sufficient permission for site 'https://test-site-test.com/'. See also: https://support.google.com/webmasters/answer/9999999.",
-            "errors": [
-                {
-                    "message": "User does not have sufficient permission for site 'https://test-site-test.com/'. See also: https://support.google.com/webmasters/answer/9999999.",
-                    "domain": "global",
-                    "reason": "forbidden",
-                }
-            ],
-        }
-    }
-
-
-@fixture(name="bad_aggregation_type")
-def bad_aggregation_type():
-    return {
-        "error": {
-            "code": 400,
-            "message": "'BY_PROPERTY' is not a valid aggregation type in the context of the request.",
-            "errors": [
-                {
-                    "message": "'BY_PROPERTY' is not a valid aggregation type in the context of the request.",
-                    "domain": "global",
-                    "reason": "invalidParameter",
-                    "location": "aggregation_type",
-                    "locationType": "parameter",
-                }
-            ],
-        }
     }
 
 

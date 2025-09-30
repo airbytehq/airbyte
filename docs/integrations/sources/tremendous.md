@@ -29,6 +29,17 @@ Tremendous connector  enables seamless integration with Tremendous API. This con
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.36 | 2025-09-30 | [66829](https://github.com/airbytehq/airbyte/pull/66829) | Update dependencies |
+| 0.0.35 | 2025-09-23 | [66606](https://github.com/airbytehq/airbyte/pull/66606) | Update dependencies |
+| 0.0.34 | 2025-09-09 | [65730](https://github.com/airbytehq/airbyte/pull/65730) | Update dependencies |
+| 0.0.33 | 2025-08-24 | [65442](https://github.com/airbytehq/airbyte/pull/65442) | Update dependencies |
+| 0.0.32 | 2025-08-09 | [64854](https://github.com/airbytehq/airbyte/pull/64854) | Update dependencies |
+| 0.0.31 | 2025-08-02 | [64328](https://github.com/airbytehq/airbyte/pull/64328) | Update dependencies |
+| 0.0.30 | 2025-07-26 | [64061](https://github.com/airbytehq/airbyte/pull/64061) | Update dependencies |
+| 0.0.29 | 2025-07-20 | [63687](https://github.com/airbytehq/airbyte/pull/63687) | Update dependencies |
+| 0.0.28 | 2025-07-12 | [63203](https://github.com/airbytehq/airbyte/pull/63203) | Update dependencies |
+| 0.0.27 | 2025-07-05 | [62707](https://github.com/airbytehq/airbyte/pull/62707) | Update dependencies |
+| 0.0.26 | 2025-06-28 | [62260](https://github.com/airbytehq/airbyte/pull/62260) | Update dependencies |
 | 0.0.25 | 2025-06-14 | [61465](https://github.com/airbytehq/airbyte/pull/61465) | Update dependencies |
 | 0.0.24 | 2025-05-24 | [60491](https://github.com/airbytehq/airbyte/pull/60491) | Update dependencies |
 | 0.0.23 | 2025-05-10 | [60073](https://github.com/airbytehq/airbyte/pull/60073) | Update dependencies |
