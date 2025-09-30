@@ -29,6 +29,7 @@ Tremendous connector  enables seamless integration with Tremendous API. This con
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.35 | 2025-09-23 | [66606](https://github.com/airbytehq/airbyte/pull/66606) | Update dependencies |
 | 0.0.34 | 2025-09-09 | [65730](https://github.com/airbytehq/airbyte/pull/65730) | Update dependencies |
 | 0.0.33 | 2025-08-24 | [65442](https://github.com/airbytehq/airbyte/pull/65442) | Update dependencies |
 | 0.0.32 | 2025-08-09 | [64854](https://github.com/airbytehq/airbyte/pull/64854) | Update dependencies |

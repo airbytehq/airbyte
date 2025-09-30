@@ -30,6 +30,7 @@ Refer `https://support.kissmetrics.io/reference/authorization` for more details.
 
 | Version | Date | Pull Request | Subject |
 |---------| ------------ | --- | ---------------- |
+| 0.0.36 | 2025-09-24 | [66644](https://github.com/airbytehq/airbyte/pull/66644) | Update dependencies |
 | 0.0.35 | 2025-09-09 | [66047](https://github.com/airbytehq/airbyte/pull/66047) | Update dependencies |
 | 0.0.34 | 2025-09-05 | [65966](https://github.com/airbytehq/airbyte/pull/65966) | Update to CDK v7.0.0 |
 | 0.0.33 | 2025-08-23 | [65336](https://github.com/airbytehq/airbyte/pull/65336) | Update dependencies |

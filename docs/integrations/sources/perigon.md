@@ -27,6 +27,7 @@ API Reference: https://docs.perigon.io/reference/all-news
 
 | Version | Date              | Pull Request | Subject        |
 |---------|-------------------|--------------|----------------|
+| 0.0.17 | 2025-09-23 | [66414](https://github.com/airbytehq/airbyte/pull/66414) | Update dependencies |
 | 0.0.16 | 2025-09-09 | [65881](https://github.com/airbytehq/airbyte/pull/65881) | Update dependencies |
 | 0.0.15 | 2025-09-05 | [65966](https://github.com/airbytehq/airbyte/pull/65966) | Update to CDK v7.0.0 |
 | 0.0.14 | 2025-08-23 | [65190](https://github.com/airbytehq/airbyte/pull/65190) | Update dependencies |

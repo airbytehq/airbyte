@@ -8,7 +8,9 @@ Use mappings to hash, encrypt, and rename fields, and filter rows. You set up ma
 
 ![Screenshot of mappings feature showing several streams with mappings applied](images/mappings.png)
 
-## More about mapping in Airbyte 
+If you're doing [data activation](../move-data/elt-data-activation), a similar mapping concept applies when you map fields from a source to a destination. [Learn more](../move-data/add-connection).
+
+## More about mapping in Airbyte
 
 It’s often the case that you want to move data from a source to a destination in a non-literal way, obscuring sensitive information and improving the consistency and usability of that data in its destination. Mapping allows you to match a field from your source to your destination and sync data in a way that is still accurate, but also more meaningful and appropriate for your needs.
 

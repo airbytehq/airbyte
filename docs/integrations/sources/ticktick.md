@@ -22,6 +22,7 @@ Source for the ticktick openapi endpoint at https://developer.ticktick.com/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.7 | 2025-09-23 | [66370](https://github.com/airbytehq/airbyte/pull/66370) | Update dependencies |
 | 0.0.6 | 2025-09-09 | [65718](https://github.com/airbytehq/airbyte/pull/65718) | Update dependencies |
 | 0.0.5 | 2025-09-03 | [64942](https://github.com/airbytehq/airbyte/pull/64947) | Add oauth2 method. Ignore archived projects on stream `projects`. Added API budget to proactively not hit rate limits. |
 | 0.0.4 | 2025-08-24 | [65458](https://github.com/airbytehq/airbyte/pull/65458) | Update dependencies |
