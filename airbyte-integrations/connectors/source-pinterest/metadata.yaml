@@ -73,11 +73,6 @@ data:
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:
-        - name: SECRET_SOURCE-PINTEREST__CREDS
-          fileName: config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
         - name: SECRET_SOURCE-PINTEREST__OAUTH_CREDS
           fileName: config_oauth.json
           secretStore:
