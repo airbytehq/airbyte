@@ -33,7 +33,7 @@ object SnowflakeExpectedRecordMapper : ExpectedRecordMapper {
         val mappedAirbyteMetadata =
             mapAirbyteMetadata(
                 originalData = expectedRecord.data,
-                mappedData = mappedData,
+                mappedData = mappedData.values,
                 airbyteMetadata = expectedRecord.airbyteMeta
             )
         return expectedRecord.copy(data = mappedData, airbyteMeta = mappedAirbyteMetadata)
@@ -54,7 +54,7 @@ object SnowflakeExpectedRecordMapper : ExpectedRecordMapper {
 
     internal fun mapAirbyteMetadata(
         originalData: ObjectValue,
-        mappedData: ObjectValue,
+        mappedData: LinkedHashMap<String, AirbyteValue>,
         airbyteMetadata: OutputRecord.Meta?
     ): OutputRecord.Meta? {
         // Convert all fields to uppercase to match what comes out of the database
@@ -66,7 +66,7 @@ object SnowflakeExpectedRecordMapper : ExpectedRecordMapper {
         // value will fail the validation performed by the SnowflakeValueCoercer at runtime.
         // This excludes any "_AB" prefixed metadata columns or any columns that are already
         // null in the input data for the test.
-        mappedData.values.entries
+        mappedData.entries
                 // convert back to schema representation
                 .filter {
                     !it.key.startsWith("_AB") &&

@@ -28,7 +28,10 @@ object SnowflakeExpectedRawRecordMapper : ExpectedRecordMapper {
         val mappedMetadata =
             mapAirbyteMetadata(
                 originalData = expectedRecord.data,
-                mappedData = mappedData,
+                mappedData =
+                    mappedData.values.entries.associateTo(linkedMapOf()) {
+                        it.key.uppercase() to it.value
+                    },
                 airbyteMetadata = expectedRecord.airbyteMeta
             )
         // Null values are filtered from raw records, so remove them from the expected records.
