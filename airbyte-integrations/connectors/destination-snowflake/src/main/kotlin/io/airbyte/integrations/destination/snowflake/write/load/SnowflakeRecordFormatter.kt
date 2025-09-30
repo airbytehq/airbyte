@@ -29,7 +29,9 @@ class SnowflakeSchemaRecordFormatter(
              * that it can match the constants, which use the lowercase version of the meta
              * column names.
              */
-            .map { columnName -> columnName.lowercase() }
+            .map { columnName ->
+                if (RAW_META_COLUMNS.contains(columnName)) columnName.lowercase() else columnName
+            }
             .map { columnName ->
                 if (record.containsKey(columnName)) record[columnName].toCsvValue() else ""
             }

@@ -98,7 +98,7 @@ internal class SnowflakeColumnUtilsTest {
 
     @Test
     fun testGeneratingColumnsAndTypesNoColumnMapping() {
-        val columnName = "test-column"
+        val columnName = "\"test-column\""
         val fieldType = FieldType(StringType, false)
         val declaredColumns = mapOf(columnName to fieldType)
 
@@ -117,7 +117,7 @@ internal class SnowflakeColumnUtilsTest {
     @Test
     fun testGeneratingColumnsAndTypesWithColumnMapping() {
         val columnName = "test-column"
-        val mappedColumnName = "mapped-column-name"
+        val mappedColumnName = "\"mapped-column-name\""
         val fieldType = FieldType(StringType, false)
         val declaredColumns = mapOf(columnName to fieldType)
         val columnNameMapping = ColumnNameMapping(mapOf(columnName to mappedColumnName))

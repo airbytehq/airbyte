@@ -181,7 +181,10 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         val sourceTableName = TableName(namespace = "namespace", name = "source")
         val destinationTableName = TableName(namespace = "namespace", name = "destination")
 
-        every { columnUtils.columnsAndTypes(any(), columnNameMapping) } returns DEFAULT_COLUMNS
+        every { columnUtils.columnsAndTypes(any(), columnNameMapping) } returns
+            DEFAULT_COLUMNS.map {
+                ColumnAndType(columnName = "\"${it.columnName}\"", columnType = it.columnType)
+            }
 
         val expected =
             """

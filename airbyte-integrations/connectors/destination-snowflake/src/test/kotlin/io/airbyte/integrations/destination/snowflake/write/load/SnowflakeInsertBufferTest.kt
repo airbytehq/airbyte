@@ -36,7 +36,7 @@ internal class SnowflakeInsertBufferTest {
 
     @Test
     fun testAccumulate() {
-        val tableName = mockk<TableName>()
+        val tableName = mockk<TableName>(relaxed = true)
         val column = "columnName"
         val columns = listOf(column)
         val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
@@ -58,7 +58,7 @@ internal class SnowflakeInsertBufferTest {
 
     @Test
     fun testAccumulateRaw() {
-        val tableName = mockk<TableName>()
+        val tableName = mockk<TableName>(relaxed = true)
         val column = "columnName"
         val columns = listOf(column)
         val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
@@ -82,7 +82,7 @@ internal class SnowflakeInsertBufferTest {
 
     @Test
     fun testFlush() {
-        val tableName = mockk<TableName>()
+        val tableName = mockk<TableName>(relaxed = true)
         val column = "columnName"
         val columns = listOf(column)
         val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
@@ -107,7 +107,7 @@ internal class SnowflakeInsertBufferTest {
 
     @Test
     fun testFlushRaw() {
-        val tableName = mockk<TableName>()
+        val tableName = mockk<TableName>(relaxed = true)
         val column = "columnName"
         val columns = listOf(column)
         val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
@@ -134,7 +134,7 @@ internal class SnowflakeInsertBufferTest {
 
     @Test
     fun testMissingFields() {
-        val tableName = mockk<TableName>()
+        val tableName = mockk<TableName>(relaxed = true)
         val column1 = "columnName1"
         val column2 = "columnName2"
         val columns = listOf(column1, column2)
@@ -162,7 +162,7 @@ internal class SnowflakeInsertBufferTest {
 
     @Test
     fun testMissingFieldsRaw() {
-        val tableName = mockk<TableName>()
+        val tableName = mockk<TableName>(relaxed = true)
         val column1 = "columnName1"
         val column2 = "columnName2"
         val columns = listOf(column1, column2)
