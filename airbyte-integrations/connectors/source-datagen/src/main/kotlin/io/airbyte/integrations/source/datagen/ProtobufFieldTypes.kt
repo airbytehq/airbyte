@@ -68,7 +68,7 @@ data object StringFieldType : FieldType {
 
  data object ArrayWithoutSchemaFieldType : FieldType {
      override val airbyteSchemaType: AirbyteSchemaType = ArrayAirbyteSchemaType()
-     override val jsonEncoder: JsonEncoder<*> = ArrayEncoder(AnyEncoder)
+     override val jsonEncoder: JsonEncoder<*> = ArrayEncoder(AnyEncoder) // TODO: double check this
  }
 
  //  TODO: left off here
@@ -98,11 +98,10 @@ data object StringFieldType : FieldType {
 
  data class ObjectWithEmptySchemaFieldType(
      val propertiesEmpty: LinkedHashMap<String, AirbyteSchemaType> = LinkedHashMap(),
-     val additionalProperties: Boolean,
-     val required: List<String>
+     val additionalProperties: Boolean = true,
  ) : FieldType {
-     override val airbyteSchemaType: AirbyteSchemaType = ObjectAirbyteSchemaType(propertiesEmpty, additionalProperties, required)
-     override val jsonEncoder: JsonEncoder<*> = ObjectEncoder(LinkedHashMap<String, JsonEncoder<*>>())
+     override val airbyteSchemaType: AirbyteSchemaType = ObjectAirbyteSchemaType(propertiesEmpty, additionalProperties)
+     override val jsonEncoder: JsonEncoder<*> = ObjectEncoder(LinkedHashMap())
  }
 
  data object ObjectWithoutSchemaFieldType : FieldType {

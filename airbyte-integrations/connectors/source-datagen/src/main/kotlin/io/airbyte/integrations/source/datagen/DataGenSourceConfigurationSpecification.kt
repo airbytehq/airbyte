@@ -32,7 +32,7 @@ class DataGenSourceConfigurationSpecification : ConfigurationSpecification() {
     }
 
     @JsonGetter("flavor")
-    @JsonSchemaTitle("Data Generation Flavors")
+    @JsonSchemaTitle("Data Generation Type")
     @JsonSchemaDescription("Different patterns for generating data")
     @JsonSchemaInject(json = """{"default":"incremental","display_type":"radio"}""")
     fun getFlavor(): FlavorSpec = flavorJson ?: flavorInternal

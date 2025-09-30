@@ -35,11 +35,11 @@ data class ArrayAirbyteSchemaType(
  data class ObjectAirbyteSchemaType(
     val properties: LinkedHashMap<String, AirbyteSchemaType>? = null,
     val additionalProperties: Boolean = true,
-    val required: List<String> = emptyList<String>()
+    val required: List<String> = emptyList()
  ) : AirbyteSchemaType {
     override fun asJsonSchemaType(): JsonSchemaType {
         val builder = JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.OBJECT)
-        properties?.forEach { (name, fieldType) ->
+        properties?.forEach { (name, _) ->
             builder.withLegacyAirbyteTypeProperty(name)
         }
         return builder.build()

@@ -1,6 +1,6 @@
 ## Version 0.1.45
 
-Add addtional AirbyteSchemaTypes.
+Add additional AirbyteSchemaTypes.
 
 ## Version 0.1.44
 
