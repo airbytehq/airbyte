@@ -14,7 +14,7 @@ jobs:
       connectors: ${{ steps.list-connectors.outputs.connectors }}
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
 
       - name: List certified connectors
         id: list-connectors
@@ -57,7 +57,7 @@ jobs:
       max-parallel: 5
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -65,13 +65,13 @@ jobs:
         run: sudo snap install yq
 
       - name: Setup Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4
         with:
           distribution: "zulu"
           java-version: "21"
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@80e941e61874822d2a89974089c4915748e8f4b7 # v4
 
       - name: Run upgradeCdk for ${{ matrix.connector }}
         id: upgrade-cdk
@@ -116,7 +116,7 @@ jobs:
 
       - name: Create Pull Request
         if: steps.check-changes.outputs.has_changes == 'true'
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@c5a7806660adbe173f04e3e038b0ccdcd758773c # v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "chore: upgrade bulk CDK for ${{ matrix.connector }}"
