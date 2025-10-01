@@ -61,6 +61,9 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Install yq
+        run: sudo snap install yq
+
       - name: Setup Java
         uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4
         with:
@@ -86,6 +89,30 @@ jobs:
             echo "has_changes=true" >> $GITHUB_OUTPUT
             echo "Changes detected for ${{ matrix.connector }}"
           fi
+
+      - name: Bump connector version
+        if: steps.check-changes.outputs.has_changes == 'true'
+        run: |
+          metadata_file="airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml"
+
+          # Extract current version
+          current_version=$(yq '.data.dockerImageTag' "$metadata_file")
+          echo "Current version: $current_version"
+
+          # Parse version components
+          IFS='.' read -r major minor patch <<< "$current_version"
+
+          # Increment patch version
+          new_patch=$((patch + 1))
+          new_version="${major}.${minor}.${new_patch}"
+          echo "New version: $new_version"
+
+          # Update metadata.yaml
+          yq -i ".data.dockerImageTag = \"${new_version}\"" "$metadata_file"
+
+          echo "Updated dockerImageTag from $current_version to $new_version"
+
+      # TODO add connector changelog entry
 
       - name: Create Pull Request
         id: create-pr
