@@ -185,8 +185,8 @@ jobs:
           branch_name="${{ steps.create-pr.outputs.pull-request-branch }}"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch --depth=1 origin "$branch_name"
           git checkout "$branch_name"
-          git pull
           git add "$docs_file"
           git commit -m "update changelog for ${{ matrix.connector }}"
           git push origin "$branch_name"
