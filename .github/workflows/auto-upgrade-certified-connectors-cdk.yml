@@ -55,8 +55,6 @@ jobs:
         connector: [destination-dev-null]
       fail-fast: false
       max-parallel: 5
-    outputs:
-      pr-number: ${{ steps.create-pr.outputs.pull-request-number }}
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
@@ -111,21 +109,15 @@ jobs:
           # TODO remove this
           draft: true
 
-  # This is the easiest way to generate the connector changelog.
-  # It also bumps the version number in metadata.yaml
-  # We can't do this until after submitting the PR, because we need the PR number for the changelog.
-  trigger-bump-version:
-    uses: ./.github/workflows/bump-version-command.yml
-    name: Trigger bump-version for ${{ matrix.connector }}
-    needs: upgrade-connector-cdk
-    if: needs.upgrade-connector-cdk.outputs.pr-number != ''
-    strategy:
-      matrix:
-        # TODO undo this
-        # connector: ${{ fromJson(needs.list-certified-connectors.outputs.connectors) }}
-        connector: [destination-dev-null]
-      fail-fast: false
-    with:
-      pr: ${{ needs.upgrade-connector-cdk.outputs.pr-number }}
-      type: patch
-      changelog: "Upgrade Bulk CDK for ${{ matrix.connector }}"
+      # This is the easiest way to generate the connector changelog.
+      # It also bumps the version number in metadata.yaml
+      # We can't do this until after submitting the PR, because we need the PR number for the changelog.
+      - name: Trigger bump-version workflow
+        if: steps.create-pr.outputs.pull-request-number != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh workflow run bump-version-command.yml \
+            -f pr=${{ steps.create-pr.outputs.pull-request-number }} \
+            -f type=patch \
+            -f changelog="Upgrade Bulk CDK for ${{ matrix.connector }}"
