@@ -113,24 +113,6 @@ on database identifier($airbyte_database)
 to role identifier($airbyte_role);
 
 commit;
-
-begin;
-
-USE DATABASE identifier($airbyte_database);
-
--- create schema for Airbyte data
-CREATE SCHEMA IF NOT EXISTS identifier($airbyte_schema);
-
-commit;
-
-begin;
-
--- grant Airbyte schema access
-grant OWNERSHIP
-on schema identifier($airbyte_schema)
-to role identifier($airbyte_role);
-
-commit;
 ```
 
 3. Run the script using the [Worksheet page](https://docs.snowflake.com/en/user-guide/ui-worksheet.html) or [Snowsight](https://docs.snowflake.com/en/user-guide/ui-snowsight-gs.html).
@@ -196,10 +178,10 @@ could be subject to change in future versions.
 ### Final Table schema
 
 The final table contains these fields, in addition to the columns declared in your stream schema:
-- `airbyte_raw_id`
-- `_airbyte_generation_id`
-- `airbyte_extracted_at`
-- `_airbyte_meta`
+- `_AIRBYTE_RAW_ID`
+- `_AIRBYTE_GENERATION_ID`
+- `_AIRBYTE_EXCTRACTED_AT`
+- `_AIRBYTE_META`
 
 Again, see [here](/platform/understanding-airbyte/airbyte-metadata-fields) for more information about these fields.
 
@@ -254,11 +236,6 @@ result in the connection trying to write to a `PUBLIC` schema.
 A quick fix could be to edit your connection's 'Replication' settings from `Mirror source structure`
 to `Destination Default`. Otherwise, make sure to grant the role the required permissions in the
 desired namespace.
-
-### Running SHOW and DESCRIBE queries on Warehouses
-
-It is known that the Snowflake Destination currently runs SHOW and DESCRIBE queries on a warehouse.
-This is unnecessary, and leads to additional costs. Airbyte is currently in the process of fixing this.
 
 ## Changelog
 
