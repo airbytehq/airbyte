@@ -57,8 +57,8 @@ class SnowflakeRawInsertAcceptanceTest :
         coercesLegacyUnions = false,
     ) {
     @Test
-    override fun testBasicWrite() {
-        super.testBasicWrite()
+    override fun testFunkyCharacters() {
+        super.testFunkyCharacters()
     }
 }
 

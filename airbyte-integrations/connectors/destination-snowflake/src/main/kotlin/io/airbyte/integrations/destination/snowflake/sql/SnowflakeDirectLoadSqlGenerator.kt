@@ -326,7 +326,7 @@ class SnowflakeDirectLoadSqlGenerator(
         tableName: TableName,
     ): String {
         return """
-            SELECT "${COLUMN_NAME_AB_GENERATION_ID.toSnowflakeCompatibleName()}"
+            SELECT "${columnUtils.getGenerationIdColumnName()}"
             FROM ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}
             LIMIT 1
         """

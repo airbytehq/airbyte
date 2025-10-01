@@ -48,8 +48,8 @@ class SnowflakeColumnNameGenerator(private val config: SnowflakeConfiguration) :
             )
         } else {
             ColumnNameGenerator.ColumnName(
-                column,
-                column,
+                escapeJsonIdentifier(column),
+                escapeJsonIdentifier(column),
             )
         }
     }

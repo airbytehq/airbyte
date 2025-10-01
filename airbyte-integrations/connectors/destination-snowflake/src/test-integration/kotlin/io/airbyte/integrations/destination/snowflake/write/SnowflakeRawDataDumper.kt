@@ -47,15 +47,15 @@ class SnowflakeRawDataDumper(
                 while (resultSet.next()) {
                     val outputRecord =
                         OutputRecord(
-                            rawId = resultSet.getString(Meta.COLUMN_NAME_AB_RAW_ID.uppercase()),
+                            rawId = resultSet.getString(Meta.COLUMN_NAME_AB_RAW_ID),
                             extractedAt =
                                 resultSet
-                                    .getTimestamp(Meta.COLUMN_NAME_AB_EXTRACTED_AT.uppercase())
+                                    .getTimestamp(Meta.COLUMN_NAME_AB_EXTRACTED_AT)
                                     .toInstant()
                                     .toEpochMilli(),
                             loadedAt = null,
                             generationId =
-                                resultSet.getLong(Meta.COLUMN_NAME_AB_GENERATION_ID.uppercase()),
+                                resultSet.getLong(Meta.COLUMN_NAME_AB_GENERATION_ID),
                             data =
                                 StringValue(resultSet.getString(Meta.COLUMN_NAME_DATA))
                                     .value
@@ -63,7 +63,7 @@ class SnowflakeRawDataDumper(
                                     .toAirbyteValue(),
                             airbyteMeta =
                                 stringToMeta(
-                                    resultSet.getString(Meta.COLUMN_NAME_AB_META.uppercase())
+                                    resultSet.getString(Meta.COLUMN_NAME_AB_META)
                                 ),
                         )
                     output.add(outputRecord)
