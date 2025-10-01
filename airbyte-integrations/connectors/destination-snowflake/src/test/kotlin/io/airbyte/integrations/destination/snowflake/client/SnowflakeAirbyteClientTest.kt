@@ -569,7 +569,7 @@ internal class SnowflakeAirbyteClientTest {
 
         val expectedColumns =
             setOf(
-                ColumnDefinition("COL1", "VARCHAR", true),
+                ColumnDefinition("COL1", "VARCHAR", false),
                 ColumnDefinition("COL2", "NUMBER", false)
             )
 
@@ -610,6 +610,10 @@ internal class SnowflakeAirbyteClientTest {
         every { snowflakeColumnUtils.toDialectType(col2FieldType.type) } returns "NUMBER(38,0)"
         every { snowflakeColumnUtils.columnsAndTypes(any(), any()) } returns
             listOf(ColumnAndType("COL1_MAPPED", "VARCHAR"), ColumnAndType("COL2_MAPPED", "NUMBER"))
+        every { snowflakeColumnUtils.formatColumnName(any(), false) } answers
+            {
+                firstArg<String>().toSnowflakeCompatibleName()
+            }
 
         val result = client.getColumnsFromStream(stream, columnNameMapping)
 
@@ -626,14 +630,14 @@ internal class SnowflakeAirbyteClientTest {
     fun `generateSchemaChanges should correctly identify changes`() {
         val columnsInDb =
             setOf(
-                ColumnDefinition("COL1", "VARCHAR", true),
+                ColumnDefinition("COL1", "VARCHAR", false),
                 ColumnDefinition("COL2", "NUMBER", false),
-                ColumnDefinition("COL3", "BOOLEAN", true)
+                ColumnDefinition("COL3", "BOOLEAN", false)
             )
         val columnsInStream =
             setOf(
-                ColumnDefinition("COL1", "VARCHAR", true), // Unchanged
-                ColumnDefinition("COL3", "TEXT", true), // Modified
+                ColumnDefinition("COL1", "VARCHAR", false), // Unchanged
+                ColumnDefinition("COL3", "TEXT", false), // Modified
                 ColumnDefinition("COL4", "DATE", false) // Added
             )
 
