@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.csv.toCsvValue
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.util.Jsons
+import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 
 interface SnowflakeRecordFormatter {
@@ -35,7 +36,12 @@ class SnowflakeSchemaRecordFormatter(
             .map { columnName ->
                 if (airbyteColumnNames.contains(columnName)) {
                     record[columnName.lowercase()].toCsvValue()
-                } else if (record.containsKey(columnName)) record[columnName].toCsvValue() else ""
+                }
+                // This is bad and we should feel bad. Ideally we would not call toSnowflakeCompatibleName
+                // in there. A better scenario here is to do something like:
+                // columnNameMapping.filter { (_, v) -> v == columnName }.keys.first()
+                // but ¯\_(ツ)_/¯
+                else if (record.containsKey(columnName.toSnowflakeCompatibleName())) record[columnName.toSnowflakeCompatibleName()].toCsvValue() else ""
             }
 }
 
