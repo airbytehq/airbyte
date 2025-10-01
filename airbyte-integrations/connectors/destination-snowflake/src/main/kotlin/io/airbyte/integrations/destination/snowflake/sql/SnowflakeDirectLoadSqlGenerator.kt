@@ -46,20 +46,8 @@ class SnowflakeDirectLoadSqlGenerator(
         return "SELECT COUNT(*) AS ${COUNT_TOTAL_ALIAS.quote()} FROM ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}".andLog()
     }
 
-    fun checkSchemaExists(namespace: String): String {
-        val schemaName = namespace
-        val databaseName = snowflakeConfiguration.database.toSnowflakeCompatibleName()
-        return """
-            SELECT COUNT(*) > 0 AS SCHEMA_EXISTS
-            FROM "$databaseName".INFORMATION_SCHEMA.SCHEMATA
-            WHERE SCHEMA_NAME = '$schemaName'
-        """
-            .trimIndent()
-            .andLog()
-    }
-
     fun createNamespace(namespace: String): String {
-        return "CREATE SCHEMA ${snowflakeSqlNameUtils.fullyQualifiedNamespace(namespace)}".andLog()
+        return "CREATE SCHEMA IF NOT EXISTS ${snowflakeSqlNameUtils.fullyQualifiedNamespace(namespace)}".andLog()
     }
 
     fun createTable(
