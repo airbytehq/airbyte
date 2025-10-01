@@ -29,8 +29,6 @@ For optimal deduplication in Incremental - Append + Deduped sync mode, use a cur
 
 If you use a different cursor column type (such as String), the connector will fall back to using the `_airbyte_extracted_at` timestamp for deduplication ordering. This fallback may not accurately reflect your source data's natural ordering, and you'll see a warning in the sync logs.
 
-
-
 ### Output Schema
 
 Each stream will be output into its own table in ClickHouse in either the configured default database (`default`) or a database corresponding to the specified namespace on the stream.
