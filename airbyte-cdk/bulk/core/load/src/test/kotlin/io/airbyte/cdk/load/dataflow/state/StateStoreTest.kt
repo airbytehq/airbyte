@@ -4,7 +4,9 @@
 
 package io.airbyte.cdk.load.dataflow.state
 
+import io.airbyte.cdk.load.dataflow.state.stats.StateStatsEnricher
 import io.airbyte.cdk.load.message.CheckpointMessage
+import io.airbyte.cdk.load.message.StreamCheckpoint
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
@@ -12,6 +14,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -25,12 +28,15 @@ class StateStoreTest {
 
     @MockK private lateinit var histogramStore: StateHistogramStore
 
+    @MockK private lateinit var stateStatsEnricher: StateStatsEnricher
+
     private lateinit var stateStore: StateStore
 
     @BeforeEach
     fun setUp() {
-        stateStore = StateStore(keyClient, histogramStore)
-        every { histogramStore.remove(any()) } returns 1L
+        stateStore = StateStore(keyClient, histogramStore, stateStatsEnricher)
+        every { histogramStore.remove(any()) } returns 1
+        every { stateStatsEnricher.enrich(any(), any()) } answers { firstArg() }
     }
 
     @Test
@@ -152,6 +158,8 @@ class StateStoreTest {
         // Verify state was removed
         val secondResult = stateStore.getNextComplete()
         assertNull(secondResult)
+        // Verify histogram stats were removed
+        verify { histogramStore.remove(stateKey) }
     }
 
     @Test
@@ -187,6 +195,35 @@ class StateStoreTest {
         assertEquals(checkpointMessage2, stateStore.getNextComplete()) // sequence 2
         assertEquals(checkpointMessage3, stateStore.getNextComplete()) // sequence 3
         assertNull(stateStore.getNextComplete()) // no more states
+    }
+
+    @Test
+    fun `getNextComplete should use the StateStatsEnricher to enrich the state`() {
+        // Given
+        val sourceStats = CheckpointMessage.Stats(recordCount = 150L)
+        val checkpointMessage =
+            StreamCheckpoint(
+                checkpoint = mockk(),
+                sourceStats = sourceStats,
+                serializedSizeBytes = 1L,
+            )
+        val stateKey = StateKey(1L, listOf(PartitionKey("partition-1")))
+        val recordCount = 150L
+
+        every { keyClient.getStateKey(checkpointMessage) } returns stateKey
+        every { histogramStore.acceptExpectedCounts(stateKey, recordCount) } returns mockk()
+        every { histogramStore.isComplete(stateKey) } returns true
+        every { histogramStore.remove(stateKey) } returns recordCount
+
+        stateStore.accept(checkpointMessage)
+
+        // When
+        val result = stateStore.getNextComplete()
+
+        // Then
+        assertNotNull(result)
+
+        verify { stateStatsEnricher.enrich(checkpointMessage, stateKey) }
     }
 
     @Test

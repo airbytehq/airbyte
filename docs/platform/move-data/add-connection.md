@@ -59,10 +59,6 @@ Follow these steps to create a connection to a database, warehouse, lake, or sim
 
 ## Create a data activation connection
 
-:::info
-Data activation is in **early access**. Try it today with the HubSpot and Customer.io destinations in Airbyte Cloud or Self-Managed version 1.8 and later. If you'd like to be an early adopter, chat with the team, and share feedback, [fill out this form](https://form.typeform.com/to/STc7a0jx).
-:::
-
 Follow these steps to create a connection to a data activation destination.
 
 ### Step 1: Choose your connectors

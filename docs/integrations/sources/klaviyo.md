@@ -95,6 +95,8 @@ contain the `predictive_analytics` field and workflows depending on this field w
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.16.2 | 2025-09-30 | [66643](https://github.com/airbytehq/airbyte/pull/66643) | Update dependencies |
+| 2.16.1 | 2025-09-09 | [66070](https://github.com/airbytehq/airbyte/pull/66070) | Update dependencies |
 | 2.15.0 | 2025-09-04 | [65935](https://github.com/airbytehq/airbyte/pull/65935)    | Fix profile subscriptions
 | 2.14.22 | 2025-08-25 | [65509](https://github.com/airbytehq/airbyte/pull/65509)       | Fix custom migrations to reference DeclarativeStream Pydantic model instead of runtime component                                                                       |\
 | 2.14.21 | 2025-08-23 | [65317](https://github.com/airbytehq/airbyte/pull/65317)   | Update dependencies                                                                                                                                                    |
