@@ -123,8 +123,8 @@ class SnowflakeDirectLoadSqlGenerator(
                 importType.primaryKey.joinToString(" AND ") { fieldPath ->
                     val fieldName = fieldPath.first()
                     val columnName = sqlEscapeSingleQuote(columnNameMapping[fieldName] ?: fieldName)
-                    val targetTableColumnName = "target_table.$columnName".singleQuote()
-                    val newRecordColumnName = "new_record_column.$columnName".singleQuote()
+                    val targetTableColumnName = "target_table.${columnName.quote()}"
+                    val newRecordColumnName = "new_record.${columnName.quote()}"
                     """($targetTableColumnName = $newRecordColumnName OR ($targetTableColumnName IS NULL AND $newRecordColumnName IS NULL))"""
                 }
             } else {
@@ -165,8 +165,8 @@ class SnowflakeDirectLoadSqlGenerator(
         if (importType.cursor.isNotEmpty()) {
             val cursorFieldName = importType.cursor.first()
             val cursor = (columnNameMapping[cursorFieldName] ?: cursorFieldName)
-            val targetTableCursor = sqlEscapeSingleQuote("target_table.$cursor").singleQuote()
-            val newRecordCursor = sqlEscapeSingleQuote("new_record.$cursor").singleQuote()
+            val targetTableCursor = sqlEscapeSingleQuote("target_table.${cursor.quote()}")
+            val newRecordCursor = sqlEscapeSingleQuote("new_record.${cursor.quote()}")
             cursorComparison =
                 """
                 (
@@ -282,7 +282,7 @@ class SnowflakeDirectLoadSqlGenerator(
             if (importType.primaryKey.isNotEmpty()) {
                 importType.primaryKey.joinToString(",") { fieldPath ->
                     sqlEscapeSingleQuote(columnNameMapping[fieldPath.first()] ?: fieldPath.first())
-                        .singleQuote()
+                        .quote()
                 }
             } else {
                 // Should not happen as we check this earlier, but handle it defensively
@@ -297,7 +297,7 @@ class SnowflakeDirectLoadSqlGenerator(
                             columnNameMapping[importType.cursor.first()]
                                 ?: importType.cursor.first()
                         )
-                        .singleQuote()
+                        .quote()
                 "$columnName DESC NULLS LAST,"
             } else {
                 ""
