@@ -38,12 +38,19 @@ class SnowflakeFinalTableNameGenerator(private val config: SnowflakeConfiguratio
 }
 
 @Singleton
-class SnowflakeColumnNameGenerator : ColumnNameGenerator {
+class SnowflakeColumnNameGenerator(private val config: SnowflakeConfiguration) : ColumnNameGenerator {
     override fun getColumnName(column: String): ColumnNameGenerator.ColumnName {
-        return ColumnNameGenerator.ColumnName(
-            column.toSnowflakeCompatibleName(),
-            column.toSnowflakeCompatibleName(),
-        )
+        return if (!config.legacyRawTablesOnly) {
+            ColumnNameGenerator.ColumnName(
+                column.toSnowflakeCompatibleName(),
+                column.toSnowflakeCompatibleName(),
+            )
+        } else {
+            ColumnNameGenerator.ColumnName(
+                column,
+                column,
+            )
+        }
     }
 }
 
