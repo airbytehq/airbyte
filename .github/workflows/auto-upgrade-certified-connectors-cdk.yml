@@ -112,8 +112,6 @@ jobs:
 
           echo "Updated dockerImageTag from $current_version to $new_version"
 
-      # TODO add connector changelog entry
-
       - name: Create Pull Request
         id: create-pr
         if: steps.check-changes.outputs.has_changes == 'true'
@@ -133,5 +131,43 @@ jobs:
             auto-cdk-upgrade
           assignees: ""
           reviewers: ""
-          # TODO remove this
           draft: true
+
+      - name: Update connector changelog
+        if: steps.check-changes.outputs.has_changes == 'true'
+        run: |
+          metadata_file="airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml"
+          new_version=$(yq '.data.dockerImageTag' "$metadata_file")
+
+          # Convert connector name to docs path
+          # e.g. destination-dev-null -> docs/integrations/destinations/dev-null.md
+          # e.g. source-postgres -> docs/integrations/sources/postgres.md
+          connector_type=$(echo "${{ matrix.connector }}" | cut -d'-' -f1)
+          connector_name=$(echo "${{ matrix.connector }}" | cut -d'-' -f2-)
+          docs_file="docs/integrations/${connector_type}s/${connector_name}.md"
+
+          if [ ! -f "$docs_file" ]; then
+            echo "Warning: Docs file not found at $docs_file"
+            exit 0
+          fi
+
+          # Get today's date in YYYY-MM-DD format
+          today=$(date +%Y-%m-%d)
+
+          # Get PR number from the workflow run (this will be populated after PR creation, so we'll use a placeholder)
+          pr_number="TBD"
+
+          # Create the new changelog entry
+          new_entry="| ${new_version}       | ${today} | [${pr_number}](https://github.com/airbytehq/airbyte/pull/${pr_number}) | Upgrade to latest Bulk CDK version.                                                          |"
+
+          # Find the changelog table and insert the new entry after the header row
+          # The changelog table starts with "| Version" and we want to insert after the separator line
+          awk -v entry="$new_entry" '
+            /^\| Version/ { print; header=1; next }
+            header && /^\|:-/ { print; print entry; header=0; next }
+            { print }
+          ' "$docs_file" > "${docs_file}.tmp" && mv "${docs_file}.tmp" "$docs_file"
+
+          echo "Added changelog entry to $docs_file"
+
+      # TODO switch PR to non-draft mode
