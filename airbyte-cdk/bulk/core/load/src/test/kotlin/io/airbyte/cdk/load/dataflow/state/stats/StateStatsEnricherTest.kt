@@ -38,8 +38,8 @@ class StateStatsEnricherTest {
 
     @Test
     fun `#enrich with StreamCheckpoint`() {
-        val unmappedNamespace = "namespace"
-        val unmappedName = "name"
+        val unmappedNamespace = Fixtures.NAMESPACE1
+        val unmappedName = Fixtures.NAME1
         val mappedDescriptor = DestinationStream.Descriptor(unmappedNamespace, unmappedName)
         val checkpoint =
             CheckpointMessage.Checkpoint(
@@ -53,7 +53,7 @@ class StateStatsEnricherTest {
                 sourceStats = CheckpointMessage.Stats(recordCount = 100),
                 serializedSizeBytes = 1024
             )
-        val stateKey = StateKey(id = 1L, partitionKeys = listOf(PartitionKey("partition1")))
+        val stateKey = StateKey(id = 1L, partitionKeys = listOf(PartitionKey(Fixtures.PARTITION1)))
         val commitStatsResult =
             CommitStatsResult(
                 committedStats = EmissionStats(count = 50, bytes = 500),
@@ -78,14 +78,14 @@ class StateStatsEnricherTest {
     fun `#enrich with GlobalCheckpoint`() {
         val checkpoint1 =
             CheckpointMessage.Checkpoint(
-                unmappedNamespace = "namespace1",
-                unmappedName = "name1",
+                unmappedNamespace = Fixtures.NAMESPACE1,
+                unmappedName = Fixtures.NAME1,
                 state = null
             )
         val checkpoint2 =
             CheckpointMessage.Checkpoint(
-                unmappedNamespace = "namespace2",
-                unmappedName = "name2",
+                unmappedNamespace = Fixtures.NAMESPACE2,
+                unmappedName = Fixtures.NAME2,
                 state = null
             )
         val globalCheckpoint =
@@ -99,11 +99,12 @@ class StateStatsEnricherTest {
         val stateKey =
             StateKey(
                 id = 2L,
-                partitionKeys = listOf(PartitionKey("partition1"), PartitionKey("partition2"))
+                partitionKeys =
+                    listOf(PartitionKey(Fixtures.PARTITION1), PartitionKey(Fixtures.PARTITION2))
             )
 
-        val mappedDescriptor1 = DestinationStream.Descriptor("namespace1", "name1")
-        val mappedDescriptor2 = DestinationStream.Descriptor("namespace2", "name2")
+        val mappedDescriptor1 = DestinationStream.Descriptor(Fixtures.NAMESPACE1, Fixtures.NAME1)
+        val mappedDescriptor2 = DestinationStream.Descriptor(Fixtures.NAMESPACE2, Fixtures.NAME2)
 
         val commitStatsResult1 =
             CommitStatsResult(
@@ -116,8 +117,8 @@ class StateStatsEnricherTest {
                 cumulativeStats = EmissionStats(count = 200, bytes = 2000)
             )
 
-        every { namespaceMapper.map("namespace1", "name1") } returns mappedDescriptor1
-        every { namespaceMapper.map("namespace2", "name2") } returns mappedDescriptor2
+        every { namespaceMapper.map(Fixtures.NAMESPACE1, Fixtures.NAME1) } returns mappedDescriptor1
+        every { namespaceMapper.map(Fixtures.NAMESPACE2, Fixtures.NAME2) } returns mappedDescriptor2
         every { statsStore.commitStats(mappedDescriptor1, stateKey) } returns commitStatsResult1
         every { statsStore.commitStats(mappedDescriptor2, stateKey) } returns commitStatsResult2
 
@@ -127,8 +128,8 @@ class StateStatsEnricherTest {
         assertEquals(300L, globalCheckpoint.totalRecords)
         assertEquals(3000L, globalCheckpoint.totalBytes)
 
-        verify { namespaceMapper.map("namespace1", "name1") }
-        verify { namespaceMapper.map("namespace2", "name2") }
+        verify { namespaceMapper.map(Fixtures.NAMESPACE1, Fixtures.NAME1) }
+        verify { namespaceMapper.map(Fixtures.NAMESPACE2, Fixtures.NAME2) }
         verify { statsStore.commitStats(mappedDescriptor1, stateKey) }
         verify { statsStore.commitStats(mappedDescriptor2, stateKey) }
     }
@@ -137,8 +138,8 @@ class StateStatsEnricherTest {
     fun `#enrich with GlobalSnapshotCheckpoint`() {
         val checkpoint =
             CheckpointMessage.Checkpoint(
-                unmappedNamespace = "namespace",
-                unmappedName = "name",
+                unmappedNamespace = Fixtures.NAMESPACE1,
+                unmappedName = Fixtures.NAME1,
                 state = null
             )
         val globalSnapshotCheckpoint =
@@ -150,16 +151,16 @@ class StateStatsEnricherTest {
                 serializedSizeBytes = 3072,
                 streamCheckpoints = emptyMap()
             )
-        val stateKey = StateKey(id = 3L, partitionKeys = listOf(PartitionKey("partition3")))
+        val stateKey = StateKey(id = 3L, partitionKeys = listOf(PartitionKey(Fixtures.PARTITION3)))
 
-        val mappedDescriptor = DestinationStream.Descriptor("namespace", "name")
+        val mappedDescriptor = DestinationStream.Descriptor(Fixtures.NAMESPACE1, Fixtures.NAME1)
         val commitStatsResult =
             CommitStatsResult(
                 committedStats = EmissionStats(count = 150, bytes = 1500),
                 cumulativeStats = EmissionStats(count = 450, bytes = 4500)
             )
 
-        every { namespaceMapper.map("namespace", "name") } returns mappedDescriptor
+        every { namespaceMapper.map(Fixtures.NAMESPACE1, Fixtures.NAME1) } returns mappedDescriptor
         every { statsStore.commitStats(mappedDescriptor, stateKey) } returns commitStatsResult
 
         val result = stateStatsEnricher.enrich(globalSnapshotCheckpoint, stateKey)
@@ -168,7 +169,7 @@ class StateStatsEnricherTest {
         assertEquals(450L, globalSnapshotCheckpoint.totalRecords)
         assertEquals(4500L, globalSnapshotCheckpoint.totalBytes)
 
-        verify { namespaceMapper.map("namespace", "name") }
+        verify { namespaceMapper.map(Fixtures.NAMESPACE1, Fixtures.NAME1) }
         verify { statsStore.commitStats(mappedDescriptor, stateKey) }
     }
 
@@ -197,8 +198,8 @@ class StateStatsEnricherTest {
 
     @Test
     fun `#enrichStreamState directly`() {
-        val unmappedNamespace = "test-namespace"
-        val unmappedName = "test-stream"
+        val unmappedNamespace = Fixtures.NAMESPACE1
+        val unmappedName = Fixtures.NAME1
         val mappedDescriptor = DestinationStream.Descriptor(unmappedNamespace, unmappedName)
         val checkpoint =
             CheckpointMessage.Checkpoint(
@@ -206,11 +207,12 @@ class StateStatsEnricherTest {
                 unmappedName = unmappedName,
                 state = null
             )
+        val stats = CheckpointMessage.Stats(recordCount = 75)
         val streamCheckpoint = mockk<StreamCheckpoint>(relaxed = true)
         every { streamCheckpoint.checkpoint } returns checkpoint
-        every { streamCheckpoint.sourceStats } returns CheckpointMessage.Stats(recordCount = 75)
+        every { streamCheckpoint.sourceStats } returns stats
 
-        val stateKey = StateKey(id = 4L, partitionKeys = listOf(PartitionKey("partition4")))
+        val stateKey = StateKey(id = 4L, partitionKeys = listOf(PartitionKey(Fixtures.PARTITION4)))
         val commitStatsResult =
             CommitStatsResult(
                 committedStats = EmissionStats(count = 25, bytes = 250),
@@ -223,13 +225,8 @@ class StateStatsEnricherTest {
         val result = stateStatsEnricher.enrichStreamState(streamCheckpoint, stateKey)
 
         assertEquals(streamCheckpoint, result)
-        verify {
-            streamCheckpoint.updateStats(
-                destinationStats = any(),
-                totalRecords = 75,
-                totalBytes = 750
-            )
-        }
+        verify { streamCheckpoint.updateStats(totalRecords = 75, totalBytes = 750) }
+        verify { streamCheckpoint.updateStats(destinationStats = stats) }
         verify { namespaceMapper.map(unmappedNamespace, unmappedName) }
         verify { statsStore.commitStats(mappedDescriptor, stateKey) }
     }
@@ -239,13 +236,13 @@ class StateStatsEnricherTest {
         val checkpoint1 =
             mockk<CheckpointMessage.Checkpoint>(relaxed = true) {
                 every { unmappedNamespace } returns null
-                every { unmappedName } returns "stream1"
+                every { unmappedName } returns Fixtures.NAME1
             }
 
         val checkpoint2 =
             mockk<CheckpointMessage.Checkpoint>(relaxed = true) {
-                every { unmappedNamespace } returns "ns2"
-                every { unmappedName } returns "stream2"
+                every { unmappedNamespace } returns Fixtures.NAMESPACE2
+                every { unmappedName } returns Fixtures.NAME2
             }
 
         val stats = CheckpointMessage.Stats(recordCount = 500)
@@ -256,10 +253,17 @@ class StateStatsEnricherTest {
             }
 
         val stateKey =
-            StateKey(id = 5L, partitionKeys = listOf(PartitionKey("p1"), PartitionKey("p2")))
+            StateKey(
+                id = 5L,
+                partitionKeys =
+                    listOf(
+                        PartitionKey(Fixtures.PARTITION1),
+                        PartitionKey(Fixtures.PARTITION2),
+                    )
+            )
 
-        val mappedDescriptor1 = DestinationStream.Descriptor(null, "stream1")
-        val mappedDescriptor2 = DestinationStream.Descriptor("ns2", "stream2")
+        val mappedDescriptor1 = DestinationStream.Descriptor(null, Fixtures.NAME1)
+        val mappedDescriptor2 = DestinationStream.Descriptor(Fixtures.NAMESPACE2, Fixtures.NAME2)
 
         val commitStatsResult1 =
             CommitStatsResult(
@@ -272,8 +276,8 @@ class StateStatsEnricherTest {
                 cumulativeStats = EmissionStats(count = 600, bytes = 6000)
             )
 
-        every { namespaceMapper.map(null, "stream1") } returns mappedDescriptor1
-        every { namespaceMapper.map("ns2", "stream2") } returns mappedDescriptor2
+        every { namespaceMapper.map(null, Fixtures.NAME1) } returns mappedDescriptor1
+        every { namespaceMapper.map(Fixtures.NAMESPACE2, Fixtures.NAME2) } returns mappedDescriptor2
         every { statsStore.commitStats(mappedDescriptor1, stateKey) } returns commitStatsResult1
         every { statsStore.commitStats(mappedDescriptor2, stateKey) } returns commitStatsResult2
 
@@ -284,25 +288,36 @@ class StateStatsEnricherTest {
         verify { globalCheckpoint.updateStats(destinationStats = stats) }
         verify { checkpoint1.updateStats(300, 3000) }
         verify { checkpoint2.updateStats(600, 6000) }
-        verify { namespaceMapper.map(null, "stream1") }
-        verify { namespaceMapper.map("ns2", "stream2") }
+        verify { namespaceMapper.map(null, Fixtures.NAME1) }
+        verify { namespaceMapper.map(Fixtures.NAMESPACE2, Fixtures.NAME2) }
         verify { statsStore.commitStats(mappedDescriptor1, stateKey) }
         verify { statsStore.commitStats(mappedDescriptor2, stateKey) }
     }
 
     @Test
     fun `#enrichGlobalState with empty checkpoints list`() {
+        val stats = CheckpointMessage.Stats(recordCount = 0)
         val globalCheckpoint = mockk<CheckpointMessage>(relaxed = true)
         every { globalCheckpoint.checkpoints } returns emptyList()
-        every { globalCheckpoint.sourceStats } returns CheckpointMessage.Stats(recordCount = 0)
+        every { globalCheckpoint.sourceStats } returns stats
 
         val stateKey = StateKey(id = 6L, partitionKeys = emptyList())
 
         val result = stateStatsEnricher.enrichGlobalState(globalCheckpoint, stateKey)
 
         assertEquals(globalCheckpoint, result)
-        verify {
-            globalCheckpoint.updateStats(destinationStats = any(), totalRecords = 0, totalBytes = 0)
-        }
+        verify { globalCheckpoint.updateStats(totalRecords = 0, totalBytes = 0) }
+        verify { globalCheckpoint.updateStats(destinationStats = stats) }
+    }
+
+    object Fixtures {
+        const val NAMESPACE1 = "namespace1"
+        const val NAMESPACE2 = "namespace2"
+        const val NAME1 = "name1"
+        const val NAME2 = "name2"
+        const val PARTITION1 = "partition1"
+        const val PARTITION2 = "partition2"
+        const val PARTITION3 = "partition3"
+        const val PARTITION4 = "partition4"
     }
 }
