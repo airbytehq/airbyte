@@ -6,6 +6,7 @@ import copy
 import json
 import logging
 import re
+import time
 from dataclasses import dataclass
 from itertools import groupby
 from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
@@ -14,23 +15,15 @@ import anyascii
 import requests
 
 from airbyte_cdk import AirbyteTracedException, FailureType, InterpolatedString
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
-from airbyte_cdk.sources.declarative.incremental import (
-    CursorFactory,
-    DatetimeBasedCursor,
-    GlobalSubstreamCursor,
-    PerPartitionWithGlobalCursor,
-)
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
-from airbyte_cdk.sources.declarative.partition_routers import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.sources.declarative.schema import SchemaLoader
 from airbyte_cdk.sources.declarative.schema.inline_schema_loader import InlineSchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
+from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
@@ -226,10 +219,10 @@ class GoogleAdsPerPartitionStateMigration(StateMigration):
     """
 
     config: Config
-    customer_client_stream: DeclarativeStream
+    customer_client_stream: DefaultStream
     cursor_field: str = "segments.date"
 
-    def __init__(self, config: Config, customer_client_stream: DeclarativeStream, cursor_field: str = "segments.date"):
+    def __init__(self, config: Config, customer_client_stream: DefaultStream, cursor_field: str = "segments.date"):
         self._config = config
         self._parent_stream = customer_client_stream
         self._cursor_field = cursor_field
@@ -237,13 +230,10 @@ class GoogleAdsPerPartitionStateMigration(StateMigration):
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
         return stream_state and "state" not in stream_state
 
-    def _read_parent_stream(self) -> Iterable[Tuple[Mapping[str, Any], StreamSlice]]:
-        # iterate all slices of the customer_client stream
-        slices = self._parent_stream.stream_slices(sync_mode=SyncMode.full_refresh)
-
-        for slice in slices:
-            for record in self._parent_stream.read_records(stream_slice=slice, sync_mode=SyncMode.full_refresh):
-                yield record, slice
+    def _read_parent_stream(self) -> Iterable[Record]:
+        for partition in self._parent_stream.generate_partitions():
+            for record in partition.read():
+                yield record
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         if not self.should_migrate(stream_state):
@@ -262,8 +252,8 @@ class GoogleAdsPerPartitionStateMigration(StateMigration):
 
         partitions_state = []
 
-        for record, slice in self._read_parent_stream():
-            customer_id = record.get("id")
+        for record in self._read_parent_stream():
+            customer_id = record.data.get("id")
             if customer_id in customer_ids_in_state:
                 legacy_partition_state = stream_state[customer_id]
 
@@ -271,7 +261,7 @@ class GoogleAdsPerPartitionStateMigration(StateMigration):
                     {
                         "partition": {
                             "customer_id": record["clientCustomer"],
-                            "parent_slice": {"customer_id": slice.get("customer_id"), "parent_slice": {}},
+                            "parent_slice": {"customer_id": record.associated_slice.get("customer_id"), "parent_slice": {}},
                         },
                         "cursor": legacy_partition_state,
                     }
@@ -425,27 +415,8 @@ class ChangeStatusRetriever(SimpleRetriever):
     When the number of records exceeds this limit, we need to adjust the start date to the last record's cursor.
     """
 
-    partition_router: SubstreamPartitionRouter = None
-    transformations: List[RecordTransformation] = None
     QUERY_LIMIT = 10000
     cursor_field: str = "change_status.last_change_date_time"
-
-    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
-        super().__post_init__(parameters)
-        original_cursor: DatetimeBasedCursor = self.stream_slicer
-
-        cursor_for_factory = copy.deepcopy(original_cursor)
-        cursor_for_stream = copy.deepcopy(original_cursor)
-
-        self.stream_slicer = PerPartitionWithGlobalCursor(
-            cursor_factory=CursorFactory(lambda: copy.deepcopy(cursor_for_factory)),
-            partition_router=self.partition_router,
-            stream_cursor=cursor_for_stream,
-        )
-
-        self.cursor = self.stream_slicer
-
-        self.record_selector.transformations = self.transformations
 
     def _read_pages(
         self,
@@ -524,25 +495,7 @@ class CriterionRetriever(SimpleRetriever):
       3) Attaches the original ChangeStatus timestamp to each returned record.
     """
 
-    partition_router: SubstreamPartitionRouter = None
-    transformations: List[RecordTransformation] = None
     cursor_field: str = "change_status.last_change_date_time"
-
-    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
-        super().__post_init__(parameters)
-
-        original_cursor: DatetimeBasedCursor = self.stream_slicer
-
-        cursor_for_stream = copy.deepcopy(original_cursor)
-
-        self.stream_slicer = GlobalSubstreamCursor(
-            partition_router=self.partition_router,
-            stream_cursor=cursor_for_stream,
-        )
-
-        self.cursor = self.stream_slicer
-
-        self.record_selector.transformations = self.transformations
 
     def _read_pages(
         self,
@@ -673,198 +626,6 @@ class GoogleAdsCriterionParentStateMigration(StateMigration):
         return {"parent_state": stream_state}
 
 
-class CustomGAQueryHttpRequester(HttpRequester):
-    """
-    Custom HTTP requester for custom query streams.
-    """
-
-    parameters: Mapping[str, Any]
-
-    def __post_init__(self, parameters: Mapping[str, Any]):
-        super().__post_init__(parameters=parameters)
-        self.query = parameters.get("query")
-        self._cursor_field = (
-            InterpolatedString.create(parameters.get("cursor_field", ""), parameters={}) if parameters.get("cursor_field") else None
-        )
-
-    def get_request_body_json(
-        self,
-        *,
-        stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> MutableMapping[str, Any]:
-        query = self._build_query(stream_slice)
-        return {"query": query}
-
-    def get_request_headers(
-        self,
-        *,
-        stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Mapping[str, Any]:
-        return {
-            "developer-token": self.config["credentials"]["developer_token"],
-            "login-customer-id": stream_slice["parent_slice"]["customer_id"],
-        }
-
-    def _build_query(self, stream_slice: StreamSlice) -> str:
-        fields = self._get_list_of_fields()
-        resource_name = self._get_resource_name()
-
-        cursor_field = self._cursor_field.eval(self.config) if self._cursor_field else None
-
-        if cursor_field:
-            fields.append(cursor_field)
-
-        if "start_time" in stream_slice and "end_time" in stream_slice and cursor_field:
-            query = f"SELECT {', '.join(fields)} FROM {resource_name} WHERE {cursor_field} BETWEEN '{stream_slice['start_time']}' AND '{stream_slice['end_time']}' ORDER BY {cursor_field} ASC"
-        else:
-            query = f"SELECT {', '.join(fields)} FROM {resource_name}"
-
-        self._validate_query(query)
-
-        return query
-
-    def _get_list_of_fields(self) -> List[str]:
-        """
-        Extract field names from the `SELECT` clause of the query.
-        e.g. Parses a query "SELECT field1, field2, field3 FROM table" and returns ["field1", "field2", "field3"].
-        """
-        query_upper = self.query.upper()
-        select_index = query_upper.find("SELECT")
-        from_index = query_upper.find("FROM")
-
-        fields_portion = self.query[select_index + 6 : from_index].strip()
-
-        fields = [field.strip() for field in fields_portion.split(",")]
-
-        return fields
-
-    def _get_resource_name(self) -> str:
-        """
-        Extract the resource name from the `FROM` clause of the query.
-        e.g. Parses a query "SELECT field1, field2, field3 FROM table" and returns "table".
-        """
-        query_upper = self.query.upper()
-        from_index = query_upper.find("FROM")
-        return self.query[from_index + 4 :].strip()
-
-    def _validate_query(self, query: str):
-        try:
-            GAQL.parse(query)
-        except ValueError:
-            raise ValueError("GAQL query validation failed.")
-
-
-@dataclass()
-class CustomGAQuerySchemaLoader(SchemaLoader):
-    """
-    Custom schema loader for custom query streams. Parses the user-provided query to extract the fields and then queries the Google Ads API for each field to retreive field metadata.
-    """
-
-    requester: HttpRequester
-    config: Config
-
-    query: str = ""
-    cursor_field: Union[str, InterpolatedString] = ""
-
-    def __post_init__(self):
-        self._cursor_field = InterpolatedString.create(self.cursor_field, parameters={}) if self.cursor_field else None
-        self._validate_query(self.query)
-
-    def get_json_schema(self) -> Dict[str, Any]:
-        local_json_schema = {
-            "$schema": "http://json-schema.org/draft-07/schema#",
-            "type": "object",
-            "properties": {},
-            "additionalProperties": True,
-        }
-
-        for field in self._get_list_of_fields():
-            field_metadata_response_json = self._get_field_metadata(field)
-            field_value = self._build_field_value(field, field_metadata_response_json)
-            local_json_schema["properties"][field] = field_value
-
-        return local_json_schema
-
-    def _build_field_value(self, field: str, response_json: Dict[str, Any]) -> Any:
-        field_value = {"type": [GOOGLE_ADS_DATATYPE_MAPPING.get(response_json["dataType"], response_json["dataType"]), "null"]}
-
-        if response_json["dataType"] == "DATE" and field in DATE_TYPES:
-            field_value["format"] = "date"
-
-        if response_json["dataType"] == "ENUM":
-            field_value["enum"] = [value for value in response_json["enumValues"]]
-
-        if response_json["isRepeated"]:
-            field_value = {"type": ["null", "array"], "items": field_value}
-
-        return field_value
-
-    def _get_field_metadata(self, field: str) -> Dict[str, Any]:
-        url = f"https://googleads.googleapis.com/v20/googleAdsFields/{field}"
-        logger.debug(f"`GET` request for field metadata for {field}, url: {url}")
-        response = requests.get(
-            url=url,
-            headers=self._get_request_headers(),
-        )
-
-        response.raise_for_status()
-
-        response_json = response.json()
-        logger.debug(f"Metadata response for {field}: {response_json}")
-        error = response_json.get("error")
-        if error:
-            failure_type = FailureType.transient_error if error["code"] >= 500 else FailureType.config_error
-            raise AirbyteTracedException(
-                failure_type=failure_type,
-                internal_message=f"Failed to get field metadata for {field}, error: {error}",
-                message=f"The provided field is invalid: Status: '{error.get('status')}', Message: '{error.get('message')}', Field: '{field}'",
-            )
-
-        return response_json
-
-    def _get_list_of_fields(self) -> List[str]:
-        """
-        Extract field names from the `SELECT` clause of the query.
-        e.g. Parses a query "SELECT field1, field2, field3 FROM table" and returns ["field1", "field2", "field3"].
-        """
-        query_upper = self.query.upper()
-        select_index = query_upper.find("SELECT")
-        from_index = query_upper.find("FROM")
-
-        fields_portion = self.query[select_index + 6 : from_index].strip()
-
-        fields = [field.strip() for field in fields_portion.split(",")]
-
-        cursor_field = self._cursor_field.eval(self.config) if self._cursor_field else None
-        if cursor_field:
-            fields.append(cursor_field)
-
-        return fields
-
-    def _get_request_headers(self) -> Mapping[str, Any]:
-        headers = {}
-        auth_headers = self.requester.authenticator.get_auth_header()
-        if auth_headers:
-            headers.update(auth_headers)
-
-        headers["developer-token"] = self.config["credentials"]["developer_token"]
-        return headers
-
-    def _validate_query(self, query: str):
-        try:
-            GAQL.parse(query)
-        except ValueError:
-            raise AirbyteTracedException(
-                failure_type=FailureType.config_error,
-                internal_message=f"The provided query is invalid: {query}. Please refer to the Google Ads API documentation for the correct syntax: https://developers.google.com/google-ads/api/fields/v20/overview and test validate your query using the Google Ads Query Builder: https://developers.google.com/google-ads/api/fields/v20/query_validator",
-                message=f"The provided query is invalid: {query}. Please refer to the Google Ads API documentation for the correct syntax: https://developers.google.com/google-ads/api/fields/v20/overview and test validate your query using the Google Ads Query Builder: https://developers.google.com/google-ads/api/fields/v20/query_validator",
-            )
-
-
 @dataclass(repr=False, eq=False, frozen=True)
 class GAQL:
     """
@@ -951,3 +712,230 @@ class GAQL:
         fields = list(self.fields)
         fields.append(value)
         return self.__class__(tuple(fields), self.resource_name, self.where, self.order_by, self.limit, self.parameters)
+
+
+class CustomGAQueryHttpRequester(HttpRequester):
+    """
+    Custom HTTP requester for custom query streams.
+    """
+
+    parameters: Mapping[str, Any]
+
+    def __post_init__(self, parameters: Mapping[str, Any]):
+        super().__post_init__(parameters=parameters)
+        self.query = GAQL.parse(parameters.get("query"))
+
+    @staticmethod
+    def is_metrics_in_custom_query(query: GAQL) -> bool:
+        for field in query.fields:
+            if field.split(".")[0] == "metrics":
+                return True
+        return False
+
+    @staticmethod
+    def is_custom_query_incremental(query: GAQL) -> bool:
+        time_segment_in_select, time_segment_in_where = ["segments.date" in clause for clause in [query.fields, query.where]]
+        return time_segment_in_select and not time_segment_in_where
+
+    @staticmethod
+    def _insert_segments_date_expr(query: GAQL, start_date: str, end_date: str) -> GAQL:
+        if "segments.date" not in query.fields:
+            query = query.append_field("segments.date")
+        condition = f"segments.date BETWEEN '{start_date}' AND '{end_date}'"
+        if query.where:
+            return query.set_where(query.where + " AND " + condition)
+        return query.set_where(condition)
+
+    def get_request_body_json(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> MutableMapping[str, Any]:
+        query = self._build_query(stream_slice)
+        return {"query": query}
+
+    def get_request_headers(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
+        return {
+            "developer-token": self.config["credentials"]["developer_token"],
+            "login-customer-id": stream_slice["parent_slice"]["customer_id"],
+        }
+
+    def _build_query(self, stream_slice: StreamSlice) -> str:
+        is_incremental = self.is_custom_query_incremental(self.query)
+
+        if is_incremental:
+            start_date = stream_slice["start_time"]
+            end_date = stream_slice["end_time"]
+            return str(self._insert_segments_date_expr(self.query, start_date, end_date))
+        else:
+            return str(self.query)
+
+    def _get_resource_name(self) -> str:
+        """
+        Extract the resource name from the `FROM` clause of the query.
+        e.g. Parses a query "SELECT field1, field2, field3 FROM table" and returns "table".
+        """
+        query_upper = self.query.upper()
+        from_index = query_upper.find("FROM")
+        return self.query[from_index + 4 :].strip()
+
+
+@dataclass()
+class CustomGAQuerySchemaLoader(SchemaLoader):
+    """
+    Custom schema loader for custom query streams. Parses the user-provided query to extract the fields and then queries the Google Ads API for each field to retreive field metadata.
+    """
+
+    requester: HttpRequester
+    config: Config
+
+    query: str = ""
+    cursor_field: Union[str, InterpolatedString] = ""
+
+    def __post_init__(self):
+        self._cursor_field = InterpolatedString.create(self.cursor_field, parameters={}) if self.cursor_field else None
+        self._validate_query(self.query)
+
+    def get_json_schema(self) -> Dict[str, Any]:
+        local_json_schema = {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {},
+            "additionalProperties": True,
+        }
+
+        for field in self._get_list_of_fields():
+            field_metadata_response_json = self._get_field_metadata(field)
+            field_value = self._build_field_value(field, field_metadata_response_json)
+            local_json_schema["properties"][field] = field_value
+
+        return local_json_schema
+
+    def _build_field_value(self, field: str, response_json: Dict[str, Any]) -> Any:
+        field_value = {"type": [GOOGLE_ADS_DATATYPE_MAPPING.get(response_json["dataType"], response_json["dataType"]), "null"]}
+
+        if response_json["dataType"] == "DATE" and field in DATE_TYPES:
+            field_value["format"] = "date"
+
+        if response_json["dataType"] == "ENUM":
+            field_value["enum"] = [value for value in response_json["enumValues"]]
+
+        if response_json["isRepeated"]:
+            field_value = {"type": ["null", "array"], "items": field_value}
+
+        return field_value
+
+    def _get_field_metadata(self, field: str) -> Dict[str, Any]:
+        url = f"https://googleads.googleapis.com/v20/googleAdsFields/{field}"
+
+        max_tries = 5
+        base_backoff_time = 5  # Start with 5 seconds for exponential backoff
+
+        last_exception = None
+
+        for attempt in range(max_tries):
+            headers = self._get_request_headers()
+
+            try:
+                logger.debug(f"`GET` request for field metadata for {field}, url: {url}, attempt: {attempt + 1}/{max_tries}")
+                response = requests.get(
+                    url=url,
+                    headers=headers,
+                )
+
+                response.raise_for_status()
+                response_json = response.json()
+                logger.debug(f"Metadata response for {field}: {response_json}")
+
+                error = response_json.get("error")
+                if error:
+                    failure_type = FailureType.transient_error if error["code"] >= 500 else FailureType.config_error
+                    raise AirbyteTracedException(
+                        failure_type=failure_type,
+                        internal_message=f"Failed to get field metadata for {field}, error: {error}",
+                        message=f"The provided field is invalid: Status: '{error.get('status')}', Message: '{error.get('message')}', Field: '{field}'",
+                    )
+
+                return response_json
+
+            except requests.HTTPError as e:
+                last_exception = e
+
+                if (
+                    last_exception.response.status_code >= 400
+                    and last_exception.response.status_code < 500
+                    and last_exception.response.status_code != 429
+                ) or attempt == max_tries - 1:
+                    break
+
+                # exponential backoff
+                backoff_time = base_backoff_time * (2**attempt)
+                logger.debug(
+                    f"Request failed on attempt {attempt + 1} with status code {last_exception.response.status_code}, retrying in {backoff_time} seconds"
+                )
+                time.sleep(backoff_time)
+
+        if last_exception.response.status_code == 429:
+            raise AirbyteTracedException(
+                failure_type=FailureType.transient_error,
+                message="The maximum number of requests on the Google Ads API has been reached. See https://developers.google.com/google-ads/api/docs/access-levels#access_levels_2 for more information",
+                internal_message=str(last_exception),
+            )
+        elif last_exception.response.status_code >= 400 and last_exception.response.status_code < 500:
+            raise AirbyteTracedException(
+                failure_type=FailureType.config_error,
+                message="The provided field is invalid. Please refer to the Google Ads API documentation for the correct syntax: https://developers.google.com/google-ads/api/fields/v20/overview and test validate your query using the Google Ads Query Builder: https://developers.google.com/google-ads/api/fields/v20/query_validator",
+                internal_message=f"The provided field is invalid: Error: {str(last_exception)}",
+            )
+        else:
+            raise AirbyteTracedException(
+                failure_type=FailureType.transient_error,
+                message="The Google Ads API is temporarily unavailable.",
+                internal_message=f"The Google Ads API is temporarily unavailable: Error: {str(last_exception)}",
+            )
+
+    def _get_list_of_fields(self) -> List[str]:
+        """
+        Extract field names from the `SELECT` clause of the query.
+        e.g. Parses a query "SELECT field1, field2, field3 FROM table" and returns ["field1", "field2", "field3"].
+        """
+        query_upper = self.query.upper()
+        select_index = query_upper.find("SELECT")
+        from_index = query_upper.find("FROM")
+
+        fields_portion = self.query[select_index + 6 : from_index].strip()
+
+        fields = [field.strip() for field in fields_portion.split(",")]
+
+        cursor_field = self._cursor_field.eval(self.config) if self._cursor_field else None
+        if cursor_field:
+            fields.append(cursor_field)
+
+        return fields
+
+    def _get_request_headers(self) -> Mapping[str, Any]:
+        headers = {}
+        auth_headers = self.requester.authenticator.get_auth_header()
+        if auth_headers:
+            headers.update(auth_headers)
+
+        headers["developer-token"] = self.config["credentials"]["developer_token"]
+        return headers
+
+    def _validate_query(self, query: str):
+        try:
+            GAQL.parse(query)
+        except ValueError:
+            raise AirbyteTracedException(
+                failure_type=FailureType.config_error,
+                internal_message=f"The provided query is invalid: {query}. Please refer to the Google Ads API documentation for the correct syntax: https://developers.google.com/google-ads/api/fields/v20/overview and test validate your query using the Google Ads Query Builder: https://developers.google.com/google-ads/api/fields/v20/query_validator",
+                message=f"The provided query is invalid: {query}. Please refer to the Google Ads API documentation for the correct syntax: https://developers.google.com/google-ads/api/fields/v20/overview and test validate your query using the Google Ads Query Builder: https://developers.google.com/google-ads/api/fields/v20/query_validator",
+            )
