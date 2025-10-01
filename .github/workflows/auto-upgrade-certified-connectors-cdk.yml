@@ -108,16 +108,3 @@ jobs:
           reviewers: ""
           # TODO remove this
           draft: true
-
-      # This is the easiest way to generate the connector changelog.
-      # It also bumps the version number in metadata.yaml
-      # We can't do this until after submitting the PR, because we need the PR number for the changelog.
-      - name: Trigger bump-version workflow
-        if: steps.create-pr.outputs.pull-request-number != ''
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh workflow run bump-version-command.yml \
-            -f pr=${{ steps.create-pr.outputs.pull-request-number }} \
-            -f type=patch \
-            -f changelog="Upgrade Bulk CDK for ${{ matrix.connector }}"
