@@ -80,8 +80,8 @@ data object StringFieldType : FieldType {
 
  data class ObjectFieldType(
      val properties: LinkedHashMap<String, FieldType>,
-     val additionalProperties: Boolean, // should this be here
-     val required: List<String> // should this be here
+     val additionalProperties: Boolean = true, // should this be here
+     val required: List<String> = emptyList()// should this be here
  ) : FieldType {
      val schemaMap: LinkedHashMap<String, AirbyteSchemaType> =
          LinkedHashMap(properties.mapValues { (_, fieldType) ->

@@ -46,6 +46,16 @@ data class ArrayAirbyteSchemaType(
     }
  }
 
+data class UnionAirbyteSchemaType(
+    val options: Set<AirbyteSchemaType>,
+    val isLegacyUnion: Boolean,
+) : AirbyteSchemaType {
+    override fun asJsonSchemaType(): JsonSchemaType {
+        val builder = JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.ARRAY)
+        return builder.build()
+    }
+}
+
  data class UnknownAirbyteSchemaType(
     val schema: JsonNode
  ) : AirbyteSchemaType {
