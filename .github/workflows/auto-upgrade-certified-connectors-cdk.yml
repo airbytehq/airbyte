@@ -161,11 +161,22 @@ jobs:
           # The changelog table starts with a header row (`| Version | Date | Pull Request | Subject |`),
           # followed by a separator line.
           # We want to insert the new entry after the separator line.
+          # The awk script is doing exactly that:
+          # When it sees a line matching the changelog header row, awk prints that line and sets the `header` flag.
+          # If the `header` flag is set and awk sees the separator line, awk prints the separator followed by the new changelog entry.
+          # Otherwise, awk just prints the line unchanged.
           awk -v entry="$new_entry" '
             /^\| Version *\| Date *\| Pull Request *\| Subject *\|$/ { print; header=1; next }
             header && /^\|:?-+\|:?-+\|:?-+\|:?-+\|$/ { print; print entry; header=0; next }
             { print }
-          ' "$docs_file" > "${docs_file}.tmp" && mv "${docs_file}.tmp" "$docs_file"
+          ' "$docs_file" > "${docs_file}.tmp"
+
+          if cmp -s "$docs_file" "${docs_file}.tmp"; then
+            echo "Error: awk command made no edits to $docs_file. Changelog table may not exist or has unexpected format." >&2
+            exit 1
+          fi
+
+          mv "${docs_file}.tmp" "$docs_file"
 
           echo "Added changelog entry to $docs_file"
 
