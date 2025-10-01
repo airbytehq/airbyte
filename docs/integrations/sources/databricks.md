@@ -21,6 +21,7 @@ You'll need the following information to configure the Databricks source:
 Additional information about Databricks connection parameters can be found in the [Databricks documentation](https://docs.databricks.com/aws/en/integrations/jdbc/).
 
 ### Authentication
+Currently only supports personal access token authentication
 
 #### Login and Password
 
@@ -40,6 +41,6 @@ Additional information about Databricks connection parameters can be found in th
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------|                                                                       |
-| 0.0.1   | 2025-09-30 | [4699](https://github.com/airbytehq/airbyte/pull/4699)   | Initial commit                                                                                                               |
+| 0.0.1   | 2025-09-30 | [66975](https://github.com/airbytehq/airbyte/pull/66975)   | Initial commit                                                                                                               |
 
 </details>
