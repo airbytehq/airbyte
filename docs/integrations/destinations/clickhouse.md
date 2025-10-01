@@ -25,6 +25,7 @@ For optimal deduplication in Incremental - Append + Deduped sync mode, use a cur
 
 
 For optimal deduplication in Incremental - Append + Deduped sync mode, use a cursor column with one of these types:
+
 - Date
 - Timestamp (DateTime64)
 
