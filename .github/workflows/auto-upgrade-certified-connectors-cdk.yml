@@ -148,8 +148,8 @@ jobs:
           docs_file="docs/integrations/${connector_type}s/${connector_name}.md"
 
           if ! test -f "$docs_file"; then
-            echo "Warning: Docs file not found at $docs_file"
-            exit 0
+            echo "Docs file not found at $docs_file. This connector is probably doing something weird." >&2
+            exit 1
           fi
 
           # Get today's date in YYYY-MM-DD format
