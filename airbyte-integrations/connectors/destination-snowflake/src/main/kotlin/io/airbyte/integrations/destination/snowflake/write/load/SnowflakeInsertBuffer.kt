@@ -83,6 +83,7 @@ class SnowflakeInsertBuffer(
                 }
             } catch (e: Exception) {
                 logger.error(e) { "Unable to flush accumulated data." }
+                throw e
             } finally {
                 filePath.deleteIfExists()
                 csvWriter = null
