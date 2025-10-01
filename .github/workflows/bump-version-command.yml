@@ -1,6 +1,25 @@
 name: Bump versions for connectors in a PR
 
 on:
+  workflow_call:
+    inputs:
+      pr:
+        description: "Pull request number. This PR will be referenced in the changelog line."
+        type: number
+        required: false
+
+      type:
+        description: "The type of bump to perform. One of 'major', 'minor', or 'patch'."
+        type: string
+        required: false
+        default: "patch"
+
+      changelog:
+        description: "Optional. The comment to add to the changelog. If not provided, the PR title will be used."
+        type: string
+        required: false
+        # If not provided, we'll use the PR title as the changelog
+        default: ""
   workflow_dispatch:
     inputs:
       pr:
