@@ -65,12 +65,12 @@ class StateStatsEnricherTest {
 
         val result = stateStatsEnricher.enrich(streamCheckpoint, stateKey)
 
-        assertEquals(streamCheckpoint, result)
-        assertEquals(150L, streamCheckpoint.totalRecords)
-        assertEquals(1500L, streamCheckpoint.totalBytes)
-        assertEquals(100L, streamCheckpoint.sourceStats?.recordCount)
+        assertEquals(150L, result.totalRecords)
+        assertEquals(1500L, result.totalBytes)
+        assertEquals(100L, result.sourceStats?.recordCount)
 
         verify { namespaceMapper.map(unmappedNamespace, unmappedName) }
+        // it's very important we commit the stats for subsequent calls
         verify { statsStore.commitStats(mappedDescriptor, stateKey) }
     }
 
@@ -124,12 +124,12 @@ class StateStatsEnricherTest {
 
         val result = stateStatsEnricher.enrich(globalCheckpoint, stateKey)
 
-        assertEquals(globalCheckpoint, result)
-        assertEquals(300L, globalCheckpoint.totalRecords)
-        assertEquals(3000L, globalCheckpoint.totalBytes)
+        assertEquals(300L, result.totalRecords)
+        assertEquals(3000L, result.totalBytes)
 
         verify { namespaceMapper.map(Fixtures.NAMESPACE1, Fixtures.NAME1) }
         verify { namespaceMapper.map(Fixtures.NAMESPACE2, Fixtures.NAME2) }
+        // it's very important we commit the stats for subsequent calls
         verify { statsStore.commitStats(mappedDescriptor1, stateKey) }
         verify { statsStore.commitStats(mappedDescriptor2, stateKey) }
     }
@@ -165,9 +165,8 @@ class StateStatsEnricherTest {
 
         val result = stateStatsEnricher.enrich(globalSnapshotCheckpoint, stateKey)
 
-        assertEquals(globalSnapshotCheckpoint, result)
-        assertEquals(450L, globalSnapshotCheckpoint.totalRecords)
-        assertEquals(4500L, globalSnapshotCheckpoint.totalBytes)
+        assertEquals(450L, result.totalRecords)
+        assertEquals(4500L, result.totalBytes)
 
         verify { namespaceMapper.map(Fixtures.NAMESPACE1, Fixtures.NAME1) }
         verify { statsStore.commitStats(mappedDescriptor, stateKey) }
@@ -224,9 +223,8 @@ class StateStatsEnricherTest {
 
         val result = stateStatsEnricher.enrichStreamState(streamCheckpoint, stateKey)
 
-        assertEquals(streamCheckpoint, result)
-        verify { streamCheckpoint.updateStats(totalRecords = 75, totalBytes = 750) }
-        verify { streamCheckpoint.updateStats(destinationStats = stats) }
+        verify { result.updateStats(totalRecords = 75, totalBytes = 750) }
+        verify { result.updateStats(destinationStats = stats) }
         verify { namespaceMapper.map(unmappedNamespace, unmappedName) }
         verify { statsStore.commitStats(mappedDescriptor, stateKey) }
     }
@@ -283,9 +281,8 @@ class StateStatsEnricherTest {
 
         val result = stateStatsEnricher.enrichGlobalState(globalCheckpoint, stateKey)
 
-        assertEquals(globalCheckpoint, result)
-        verify { globalCheckpoint.updateStats(totalRecords = 900, totalBytes = 9000) }
-        verify { globalCheckpoint.updateStats(destinationStats = stats) }
+        verify { result.updateStats(totalRecords = 900, totalBytes = 9000) }
+        verify { result.updateStats(destinationStats = stats) }
         verify { checkpoint1.updateStats(300, 3000) }
         verify { checkpoint2.updateStats(600, 6000) }
         verify { namespaceMapper.map(null, Fixtures.NAME1) }
