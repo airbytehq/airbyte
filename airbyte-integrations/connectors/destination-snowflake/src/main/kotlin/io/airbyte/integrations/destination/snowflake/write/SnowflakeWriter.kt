@@ -35,6 +35,7 @@ class SnowflakeWriter(
     override suspend fun setup() {
         names.values
             .map { (tableNames, _) -> tableNames.finalTableName!!.namespace }
+            .toSet()
             .forEach { snowflakeClient.createNamespace(it) }
 
         initialStatuses = stateGatherer.gatherInitialStatus(names)

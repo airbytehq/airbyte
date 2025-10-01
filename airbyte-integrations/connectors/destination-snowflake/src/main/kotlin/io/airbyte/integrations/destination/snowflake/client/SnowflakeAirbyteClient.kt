@@ -65,9 +65,23 @@ class SnowflakeAirbyteClient(
         // Check if the schema exists first
         val schemaExistsResult =
             dataSource.connection.use { connection ->
-                val statement = connection.createStatement()
+                val databaseName = snowflakeConfiguration.database.toSnowflakeCompatibleName()
+                val statement =
+                    connection.prepareStatement(
+                        """
+                        SELECT COUNT(*) > 0 AS SCHEMA_EXISTS
+                        FROM "$databaseName".INFORMATION_SCHEMA.SCHEMATA
+                        WHERE SCHEMA_NAME = ?
+                    """
+                    )
+
+                // When querying information_schema, snowflake needs the "true" schema name,
+                // so we unscape it here.
+                val unescapedNamespace = namespace.replace("\"\"", "\"")
+                statement.setString(1, unescapedNamespace)
+
                 statement.use {
-                    val resultSet = it.executeQuery(sqlGenerator.checkSchemaExists(namespace))
+                    val resultSet = it.executeQuery()
                     resultSet.use { rs ->
                         if (rs.next()) {
                             rs.getBoolean("SCHEMA_EXISTS")
