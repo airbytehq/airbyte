@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.csv.toCsvValue
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.util.Jsons
+import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.sql.DEFAULT_COLUMNS
 
 internal val RAW_META_COLUMNS = DEFAULT_COLUMNS.map { column -> column.columnName }
@@ -30,10 +31,11 @@ class SnowflakeSchemaRecordFormatter(
              * column names.
              */
             .map { columnName ->
-                if (RAW_META_COLUMNS.contains(columnName)) columnName.lowercase() else columnName
-            }
-            .map { columnName ->
-                if (record.containsKey(columnName)) record[columnName].toCsvValue() else ""
+                if (RAW_META_COLUMNS.contains(columnName)) {
+                    record[columnName.lowercase()].toCsvValue()
+                } else if (record.containsKey(columnName.toSnowflakeCompatibleName()))
+                    record[columnName.toSnowflakeCompatibleName()].toCsvValue()
+                else ""
             }
 }
 

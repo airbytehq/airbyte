@@ -57,7 +57,7 @@ class SnowflakeRawDataDumper(
                             generationId =
                                 resultSet.getLong(Meta.COLUMN_NAME_AB_GENERATION_ID.uppercase()),
                             data =
-                                StringValue(resultSet.getString(Meta.COLUMN_NAME_DATA.uppercase()))
+                                StringValue(resultSet.getString(Meta.COLUMN_NAME_DATA))
                                     .value
                                     .deserializeToNode()
                                     .toAirbyteValue(),

@@ -29,7 +29,6 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.cdk.load.orchestration.db.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
-import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import jakarta.inject.Singleton
 import kotlin.collections.component1
@@ -92,12 +91,12 @@ class SnowflakeColumnUtils(
         columnNameMapping: ColumnNameMapping
     ): List<String> =
         if (snowflakeConfiguration.legacyRawTablesOnly == true) {
-            defaultColumns().map { "\"${it.columnName.toSnowflakeCompatibleName()}\"" }
+            defaultColumns().map { "\"${it.columnName}\"" }
         } else {
-            defaultColumns().map { "\"${it.columnName.toSnowflakeCompatibleName()}\"" } +
+            defaultColumns().map { "\"${it.columnName}\"" } +
                 columns.map { (fieldName, _) ->
                     val columnName = columnNameMapping[fieldName] ?: fieldName
-                    formatColumnName("\"${columnName.toSnowflakeCompatibleName()}\"")
+                    formatColumnName("\"${columnName}\"")
                 }
         }
 
@@ -123,8 +122,6 @@ class SnowflakeColumnUtils(
         columnName
             // For backwards compatibility with previous version of Snowflake destination
             .replace(CDC_DELETED_AT_COLUMN, CDC_DELETED_AT_COLUMN.uppercase())
-            // Avoid double escape quoting
-            .replace("\"\"", "\"")
 
     fun toDialectType(type: AirbyteType): String =
         when (type) {
@@ -149,6 +146,6 @@ class SnowflakeColumnUtils(
 
 data class ColumnAndType(val columnName: String, val columnType: String) {
     override fun toString(): String {
-        return "\"${columnName.toSnowflakeCompatibleName()}\" $columnType"
+        return "\"${columnName}\" $columnType"
     }
 }

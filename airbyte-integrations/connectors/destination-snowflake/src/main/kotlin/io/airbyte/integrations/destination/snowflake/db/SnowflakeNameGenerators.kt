@@ -26,9 +26,9 @@ class SnowflakeFinalTableNameGenerator(private val config: SnowflakeConfiguratio
                     streamDescriptor.name.toSnowflakeCompatibleName()
                 } else {
                     TypingDedupingUtil.concatenateRawTableName(
-                            streamDescriptor.namespace ?: config.schema,
-                            streamDescriptor.name.toSnowflakeCompatibleName()
-                        )
+                        streamDescriptor.namespace ?: config.schema,
+                        streamDescriptor.name.toSnowflakeCompatibleName()
+                    )
                 },
         )
 }

@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.snowflake.sql
 
 import io.airbyte.cdk.load.orchestration.db.TableName
-import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import jakarta.inject.Singleton
 
@@ -26,11 +25,12 @@ class SnowflakeSqlNameUtils(
         combineParts(listOf(getDatabaseName(), namespace))
 
     fun fullyQualifiedStageName(tableName: TableName, escape: Boolean = false): String {
-        val currentTableName = if (escape) {
-            tableName.name
-        } else {
-            tableName.name
-        }
+        val currentTableName =
+            if (escape) {
+                tableName.name
+            } else {
+                tableName.name
+            }
         return combineParts(
             parts =
                 listOf(
