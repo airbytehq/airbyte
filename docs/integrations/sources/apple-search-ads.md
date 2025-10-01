@@ -71,7 +71,8 @@ However, at this moment and as indicated in the stream names, the connector only
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------|
-| 1.0.0 | 2025-09-21 | [66557](https://github.com/airbytehq/airbyte/pull/66557) | Parent partitioned daily streams now use a global cursor state                       |
+| 1.0.0 | 2025-10-15 | [66557](https://github.com/airbytehq/airbyte/pull/66557) | Parent partitioned daily streams now use a global cursor state                       |
+| 0.8.8 | 2025-09-30 | [66272](https://github.com/airbytehq/airbyte/pull/66272) | Update dependencies                                                                  |
 | 0.8.7 | 2025-09-12 | [66197](https://github.com/airbytehq/airbyte/pull/66197) | Update to CDK v7                                                                     |
 | 0.8.6 | 2025-08-23 | [65312](https://github.com/airbytehq/airbyte/pull/65312) | Update dependencies                                                                  |
 | 0.8.5 | 2025-08-09 | [64663](https://github.com/airbytehq/airbyte/pull/64663) | Update dependencies                                                                  |
