@@ -54,17 +54,14 @@ class SnowflakeRawDataDumper(
                                     .toInstant()
                                     .toEpochMilli(),
                             loadedAt = null,
-                            generationId =
-                                resultSet.getLong(Meta.COLUMN_NAME_AB_GENERATION_ID),
+                            generationId = resultSet.getLong(Meta.COLUMN_NAME_AB_GENERATION_ID),
                             data =
                                 StringValue(resultSet.getString(Meta.COLUMN_NAME_DATA))
                                     .value
                                     .deserializeToNode()
                                     .toAirbyteValue(),
                             airbyteMeta =
-                                stringToMeta(
-                                    resultSet.getString(Meta.COLUMN_NAME_AB_META)
-                                ),
+                                stringToMeta(resultSet.getString(Meta.COLUMN_NAME_AB_META)),
                         )
                     output.add(outputRecord)
                 }

@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.snowflake.client
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.client.AirbyteClient
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNativeOperations
@@ -306,10 +305,7 @@ class SnowflakeAirbyteClient(
                 val resultSet = it.executeQuery(sqlGenerator.showColumns(tableName))
                 val columns = mutableListOf<String>()
                 while (resultSet.next()) {
-                    columns.add(
-                        resultSet
-                            .getString(DESCRIBE_TABLE_COLUMN_NAME_FIELD)
-                    )
+                    columns.add(resultSet.getString(DESCRIBE_TABLE_COLUMN_NAME_FIELD))
                 }
                 columns
             }
