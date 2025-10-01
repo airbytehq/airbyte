@@ -345,6 +345,7 @@ new_record."_AIRBYTE_GENERATION_ID"
             FROM '@$stagingTableName'
             FILE_FORMAT = $fileFormat
             ON_ERROR = 'ABORT_STATEMENT'
+            PURGE = TRUE
         """.trimIndent()
         assertEquals(expectedSql, sql)
     }
