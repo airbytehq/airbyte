@@ -2,8 +2,10 @@ name: CDK Connector Compatibility Test
 
 on:
   pull_request:
+    paths:
+      - "airbyte-cdk/bulk/**/*"
   schedule:
-    - cron: '0 12 * * *'
+    - cron: "0 12 * * *"
 
 jobs:
   generate-matrix:
@@ -72,15 +74,6 @@ jobs:
         if: matrix.connector
         with:
           gradle-version: "8.14"
-
-      # TODO: We can delete this step once Airbyte-CI is removed from Java integration tests.
-      - name: Set up Python (For Airbyte-CI)
-        if: matrix.connector
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-          check-latest: true
-          update-environment: true
 
       - name: Install the latest version of uv
         if: matrix.connector
