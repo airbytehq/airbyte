@@ -23,7 +23,7 @@ class SnowflakeSqlNameUtils(
         combineParts(listOf(getDatabaseName(), tableName.namespace, tableName.name))
 
     fun fullyQualifiedNamespace(namespace: String) =
-        combineParts(listOf(getDatabaseName(), namespace.toSnowflakeCompatibleName()))
+        combineParts(listOf(getDatabaseName(), namespace))
 
     fun fullyQualifiedStageName(tableName: TableName, escape: Boolean = false): String {
         val currentTableName =
