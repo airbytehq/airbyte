@@ -27,10 +27,6 @@ For optimal deduplication in Incremental - Append + Deduped sync mode, use a cur
 
 If you use a different cursor column type (such as String), the connector will fall back to using the `_airbyte_extracted_at` timestamp for deduplication ordering. This fallback may not accurately reflect your source data's natural ordering, and you'll see a warning in the sync logs.
 
-:::note Technical details
-The connector uses ClickHouse's `ReplacingMergeTree` engine for deduplication, with your cursor column as the version parameter when supported types are used.
-:::
-
 
 
 ### Output Schema
