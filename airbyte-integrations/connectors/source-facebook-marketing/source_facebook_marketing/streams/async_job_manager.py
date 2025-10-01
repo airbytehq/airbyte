@@ -1,14 +1,10 @@
-#
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
-#
 
 import logging
 import time
-from typing import TYPE_CHECKING, Iterator, List
+from typing import TYPE_CHECKING, Iterator, List, Optional
 
-from source_facebook_marketing.streams.common import JobException
-
-from .async_job import AsyncJob, ParentAsyncJob, update_in_batch
+from .async_job import AsyncJob, update_in_batch  # ParentAsyncJob not needed here
 
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -17,139 +13,187 @@ if TYPE_CHECKING:  # pragma: no cover
 logger = logging.getLogger("airbyte")
 
 
+class APILimit:
+    """
+    Centralizes throttle/concurrency. Jobs call try_consume() before starting,
+    and must call release() exactly once when they finish (success/skip/fail/timeout).
+    """
+
+    def __init__(self, api, account_id: str, *, throttle_limit: float = 90.0, max_jobs: int = 100):
+        self._api = api
+        self._account_id = account_id
+        self.throttle_limit = throttle_limit
+        self.max_jobs = max_jobs
+
+        self._current_throttle: float = 0.0
+        self._inflight: int = 0
+
+    # --- Throttle ---
+
+    def refresh_throttle(self) -> None:
+        """
+        Ping the account to refresh the `x-fb-ads-insights-throttle` header and cache the value.
+        NOTE: This is inexpensive (empty insights call) and safe to perform before scheduling.
+        """
+        self._api.get_account(account_id=self._account_id).get_insights()
+        t = self._api.api.ads_insights_throttle
+        # Use the stricter of the two numbers.
+        self._current_throttle = max(getattr(t, "per_account", 0.0), getattr(t, "per_application", 0.0))
+
+    @property
+    def limit_reached(self) -> bool:
+        return self._inflight >= self.max_jobs or self._current_throttle >= self.throttle_limit
+
+    @property
+    def capacity_reached(self) -> bool:
+        return self._inflight >= self.max_jobs
+
+    # --- Capacity accounting ---
+
+    def release(self) -> None:
+        """Called by jobs when the remote run reaches a terminal state (completed/failed/skipped/timeout)."""
+        if self._inflight > 0:
+            self._inflight -= 1
+
+    def try_consume(self) -> bool:
+        """
+        Reserve capacity for one new job if both throttle and concurrency allow it.
+        Jobs should call this right before actually starting the AdReportRun.
+        """
+        # No point in checking throttle if we are already at max concurrency.
+        if self.capacity_reached:
+            return False
+        self.refresh_throttle()
+        if self.limit_reached:
+            return False
+        self._inflight += 1
+        return True
+
+    # --- Introspection (optional logging) ---
+
+    @property
+    def inflight(self) -> int:
+        return self._inflight
+
+    @property
+    def current_throttle(self) -> float:
+        return self._current_throttle
+
+
 class InsightAsyncJobManager:
     """
-    Class for managing Ads Insights async jobs. Before running next job it
-    checks current insight throttle value and if it greater than THROTTLE_LIMIT variable, no new jobs added.
-    To consume completed jobs use completed_job generator, jobs will be returned in the order they finished.
+    Minimal, state-agnostic manager:
+      - asks jobs to start when capacity allows (jobs decide if they can start)
+      - polls jobs in batch for status updates
+      - yields completed jobs
+      - accepts 'new_jobs' emitted by jobs (e.g., after split) and puts them into the running set
     """
 
-    # When current insights throttle hit this value no new jobs added.
-    THROTTLE_LIMIT = 70
-    MAX_NUMBER_OF_ATTEMPTS = 20
-    # Time to wait before checking job status update again.
     JOB_STATUS_UPDATE_SLEEP_SECONDS = 30
-    # Maximum of concurrent jobs that could be scheduled. Since throttling
-    # limit is not reliable indicator of async workload capability we still have to use this parameter.
-    MAX_JOBS_IN_QUEUE = 100
 
-    def __init__(self, api: "API", jobs: Iterator[AsyncJob], account_id: str):
-        """Init
-
-        :param api:
-        :param jobs:
-        """
+    def __init__(
+        self, api: "API", jobs: Iterator[AsyncJob], account_id: str, *, throttle_limit: float = 90.0, max_jobs_in_queue: int = 100
+    ):
         self._api = api
         self._account_id = account_id
         self._jobs = iter(jobs)
-        self._running_jobs = []
+        self._running_jobs: List[AsyncJob] = []
+        self._prefetched_job: Optional[AsyncJob] = None  # look-ahead buffer
+        self._api_limit = APILimit(self._api, self._account_id, throttle_limit=throttle_limit, max_jobs=max_jobs_in_queue)
 
-    def _start_jobs(self):
-        """Enqueue new jobs."""
-
-        self._update_api_throttle_limit()
-        self._wait_throttle_limit_down()
-        prev_jobs_count = len(self._running_jobs)
-        while self._get_current_throttle_value() < self.THROTTLE_LIMIT and len(self._running_jobs) < self.MAX_JOBS_IN_QUEUE:
-            job = next(self._jobs, None)
-            if not job:
-                self._empty = True
-                break
-            job.start()
-            self._running_jobs.append(job)
-
-        logger.info(
-            f"Added: {len(self._running_jobs) - prev_jobs_count} jobs. "
-            f"Current throttle limit is {self._api.api.ads_insights_throttle}, "
-            f"{len(self._running_jobs)}/{self.MAX_JOBS_IN_QUEUE} job(s) in queue"
-        )
+    # --- Public consumption API ---
 
     def completed_jobs(self) -> Iterator[AsyncJob]:
-        """Wait until job is ready and return it. If job
-            failed try to restart it for FAILED_JOBS_RESTART_COUNT times. After job
-            is completed new jobs added according to current throttling limit.
-
-        :yield: completed jobs
-        """
-        if not self._running_jobs:
+        while self._running_jobs or self._has_more_jobs():
             self._start_jobs()
 
-        while self._running_jobs:
-            completed_jobs = self._check_jobs_status_and_restart()
-            while not completed_jobs:
+            completed = self._check_jobs_status()
+            if completed:
+                yield from completed
+            else:
                 logger.info(f"No jobs ready to be consumed, wait for {self.JOB_STATUS_UPDATE_SLEEP_SECONDS} seconds")
                 time.sleep(self.JOB_STATUS_UPDATE_SLEEP_SECONDS)
-                completed_jobs = self._check_jobs_status_and_restart()
-            yield from completed_jobs
-            self._start_jobs()
 
-    def _check_jobs_status_and_restart(self) -> List[AsyncJob]:
-        """Checks jobs status in advance and restart if some failed.
+    # --- Internals ---
 
-        :return: list of completed jobs
+    def _check_jobs_status(self) -> List[AsyncJob]:
         """
-        completed_jobs = []
-        running_jobs = []
-        failed_num = 0
+        Batch-poll all running jobs. Collect completed ones. If a job produced
+        additional work (via job.new_jobs), put those into the running set.
+        """
+        completed_jobs: List[AsyncJob] = []
 
+        # Ask each job to update itself. For plain jobs, this batches directly;
+        # for parent jobs, their update_job implementation will update children.
         update_in_batch(api=self._api.api, jobs=self._running_jobs)
-        self._wait_throttle_limit_down()
+
+        new_running: List[AsyncJob] = []
         for job in self._running_jobs:
-            if job.failed:
-                if isinstance(job, ParentAsyncJob):
-                    # if this job is a ParentAsyncJob, it holds X number of jobs
-                    # we want to check that none of these nested jobs have exceeded MAX_NUMBER_OF_ATTEMPTS
-                    for nested_job in job._jobs:
-                        if nested_job.attempt_number >= self.MAX_NUMBER_OF_ATTEMPTS:
-                            raise JobException(f"{nested_job}: failed more than {self.MAX_NUMBER_OF_ATTEMPTS} times. Terminating...")
-                if job.attempt_number >= self.MAX_NUMBER_OF_ATTEMPTS:
-                    raise JobException(f"{job}: failed more than {self.MAX_NUMBER_OF_ATTEMPTS} times. Terminating...")
-                elif job.attempt_number == 2:
-                    logger.info(
-                        "%s: failed second time, trying to split job into smaller jobs.",
-                        job,
-                    )
-                    smaller_jobs = job.split_job()
-                    grouped_jobs = ParentAsyncJob(api=self._api.api, jobs=smaller_jobs, interval=job.interval)
-                    running_jobs.append(grouped_jobs)
-                    grouped_jobs.start()
-                else:
-                    logger.info("%s: failed, restarting", job)
-                    job.restart()
-                    running_jobs.append(job)
-                failed_num += 1
-            elif job.completed:
+            if job.completed:
                 completed_jobs.append(job)
             else:
-                running_jobs.append(job)
+                # If the job emitted new work (e.g., via split), take its `new_jobs` instead of keeping the parent.
+                # This effectively "clears" the old job from the running set: we replace it with its children.
+                new_jobs = job.new_jobs
+                if new_jobs:
+                    new_running.extend(new_jobs)
+                else:
+                    # Keep the job in running set if it hasn't finished.
+                    new_running.append(job)
 
-        self._running_jobs = running_jobs
-        logger.info(f"Completed jobs: {len(completed_jobs)}, Failed jobs: {failed_num}, Running jobs: {len(self._running_jobs)}")
+        self._running_jobs = new_running
 
+        logger.info(
+            "Manager status: completed=%d, running=%d, inflight=%d, throttle=%.2f",
+            len(completed_jobs),
+            len(self._running_jobs),
+            self._api_limit.inflight,
+            self._api_limit.current_throttle,
+        )
         return completed_jobs
 
-    def _wait_throttle_limit_down(self):
-        while self._get_current_throttle_value() > self.THROTTLE_LIMIT:
-            logger.info(f"Current throttle is {self._api.api.ads_insights_throttle}, wait {self.JOB_STATUS_UPDATE_SLEEP_SECONDS} seconds")
-            time.sleep(self.JOB_STATUS_UPDATE_SLEEP_SECONDS)
-            self._update_api_throttle_limit()
+    def _start_jobs(self) -> None:
+        """
+        Phase 1: give already-running jobs a chance to start more internal work
+                 (useful for ParentAsyncJob that staggers children).
+        Phase 2: pull fresh jobs from the upstream iterator while capacity allows.
+        NOTE: jobs themselves decide whether they can start by consulting APILimit.
+        """
+        # Phase 1 — let existing running jobs opportunistically start internal work.
+        for job in self._running_jobs:
+            if not job.started:
+                # Simple job: (re)starts itself if capacity allows — including retries after failure.
+                # Parent job: typically starts some children and remains 'not fully started' until all children started.
+                job.start(self._api_limit)
+                if self._api_limit.limit_reached:
+                    return
 
-    def _get_current_throttle_value(self) -> float:
-        """
-        Get current ads insights throttle value based on app id and account id.
-        It evaluated as minimum of those numbers cause when account id throttle
-        hit 100 it cools down very slowly (i.e. it still says 100 despite no jobs
-        running and it capable serve new requests). Because of this behaviour
-        facebook throttle limit is not reliable metric to estimate async workload.
-        """
-        throttle = self._api.api.ads_insights_throttle
+        if self._api_limit.capacity_reached:
+            # No point in trying to start new jobs if we are at max concurrency.
+            return
 
-        return min(throttle.per_account, throttle.per_application)
+        # Phase 2 — schedule new jobs while there is capacity.
+        while True:
+            next_job = self._pull_next_job()
+            if not next_job:
+                break
 
-    def _update_api_throttle_limit(self):
-        """
-        Sends <ACCOUNT_ID>/insights GET request with no parameters, so it would
-        respond with empty list of data so api use "x-fb-ads-insights-throttle"
-        header to update current insights throttle limit.
-        """
-        self._api.get_account(account_id=self._account_id).get_insights()
+            next_job.start(self._api_limit)
+            # Regardless of whether it could start immediately, keep it in the running set.
+            # It will attempt to start again in Phase 1 on subsequent cycles.
+            self._running_jobs.append(next_job)
+
+            if self._api_limit.limit_reached:
+                break
+
+    def _pull_next_job(self) -> Optional[AsyncJob]:
+        if self._prefetched_job is not None:
+            pulled_job, self._prefetched_job = self._prefetched_job, None
+            return pulled_job
+        return next(self._jobs, None)
+
+    def _has_more_jobs(self) -> bool:
+        if self._prefetched_job is not None:
+            return True
+        self._prefetched_job = next(self._jobs, None)
+        return self._prefetched_job is not None

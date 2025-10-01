@@ -41,6 +41,7 @@
 
 | Version | Date              | Pull Request | Subject        |
 |---------|-------------------|--------------|----------------|
+| 0.0.37 | 2025-09-30 | [66959](https://github.com/airbytehq/airbyte/pull/66959) | Update dependencies |
 | 0.0.36 | 2025-09-23 | [66418](https://github.com/airbytehq/airbyte/pull/66418) | Update dependencies |
 | 0.0.35 | 2025-09-09 | [65875](https://github.com/airbytehq/airbyte/pull/65875) | Update dependencies |
 | 0.0.34 | 2025-09-05 | [65966](https://github.com/airbytehq/airbyte/pull/65966) | Update to CDK v7.0.0 |
