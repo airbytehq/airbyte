@@ -1,0 +1,31 @@
+name: Submodule Valid Commit Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - "airbyte-submodule"
+
+jobs:
+  submodule-valid-commit-check:
+    name: Check Submodule Pinned Commit is on Master
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 #v5.0.0
+        with:
+          submodules: true
+
+      - name: Check if pinned commit is on master
+        run: |
+          set -euo pipefail
+          git -C airbyte-submodule fetch origin
+          pinned_commit="$(git -C airbyte-submodule rev-parse HEAD)"
+          echo "Submodule pinned commit: $pinned_commit"
+          echo "Checking if pinned commit is on master..."
+          if git -C airbyte-submodule merge-base --is-ancestor "$pinned_commit" origin/master; then
+            echo "The pinned commit is reachable from master."
+            exit 0
+          fi
+          echo "The pinned commit is NOT on master. Please update the submodule to point to a commit on the master branch before merging."
+          exit 1
