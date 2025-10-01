@@ -182,11 +182,14 @@ jobs:
           echo "Added changelog entry to $docs_file"
 
           # Commit and push the changelog changes
+          branch_name="${{ steps.create-pr.outputs.pull-request-branch }}"
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout "$branch_name"
+          git pull
           git add "$docs_file"
-          git commit -m "docs: update changelog for ${{ matrix.connector }}"
-          git push origin "auto-upgrade-jvm-bulk-cdk/${{ matrix.connector }}"
+          git commit -m "update changelog for ${{ matrix.connector }}"
+          git push origin "$branch_name"
 
           # Mark the PR as ready for review
           # TODO uncomment this
