@@ -19,13 +19,23 @@ All sync modes are supported.
 | Incremental - Append + Deduped | Yes                  | Leverages `ReplacingMergeTree` |
 | Namespaces                     | Yes                  |                                |
 
+### Deduplication
+
+For optimal deduplication in Incremental - Append + Deduped sync mode, use a cursor column with one of these types:
+
+- Integer types (Int64, etc.)
+- Date
+- Timestamp (DateTime64)
+
+If you use a different cursor column type (such as String), the connector will fall back to using the `_airbyte_extracted_at` timestamp for deduplication ordering. This fallback may not accurately reflect your source data's natural ordering, and you'll see a warning in the sync logs.
+
 ### Output Schema
 
 Each stream will be output into its own table in ClickHouse in either the configured default database (`default`) or a database corresponding to the specified namespace on the stream.
 
 Airbyte types will be converted to ClickHouse types as follows:
 
-- Decimal types are NUMBER128(9) — 9 digit precision
+- Decimal types are Decimal(38, 9) — 38 digit precision with 9 decimal places
 - Timestamp are DateTime64(3) — millisecond precision
 - Object types are JSON **if JSON is enabled in the actor config**; otherwise they are converted to String
 - Integers are Int64
