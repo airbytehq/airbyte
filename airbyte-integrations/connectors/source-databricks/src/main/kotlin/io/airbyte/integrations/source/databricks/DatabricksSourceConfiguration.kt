@@ -130,12 +130,4 @@ class DatabricksSourceConfigurationFactory :
             checkPrivileges = pojo.checkPrivileges ?: true,
         )
     }
-
-    private fun createPrivateKeyFile(fileValue: String) {
-        try {
-            java.io.File(PRIVATE_KEY_FILE_NAME).writeText(fileValue, StandardCharsets.UTF_8)
-        } catch (e: Exception) {
-            throw RuntimeException("Failed to create file for private key", e)
-        }
-    }
 }
