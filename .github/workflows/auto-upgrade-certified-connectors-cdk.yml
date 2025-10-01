@@ -163,7 +163,7 @@ jobs:
           # We want to insert the new entry after the separator line.
           awk -v entry="$new_entry" '
             /^\| Version *\| Date *\| Pull Request *\| Subject *\|$/ { print; header=1; next }
-            header && /^\|:-/ { print; print entry; header=0; next }
+            header && /^\|:?-+\|:?-+\|:?-+\|:?-+\|$/ { print; print entry; header=0; next }
             { print }
           ' "$docs_file" > "${docs_file}.tmp" && mv "${docs_file}.tmp" "$docs_file"
 
