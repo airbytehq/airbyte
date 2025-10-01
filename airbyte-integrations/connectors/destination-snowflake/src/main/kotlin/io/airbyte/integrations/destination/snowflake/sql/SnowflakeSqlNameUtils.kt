@@ -17,7 +17,7 @@ internal const val QUOTE: String = "\""
 class SnowflakeSqlNameUtils(
     private val snowflakeConfiguration: SnowflakeConfiguration,
 ) {
-    fun escape(part: String) = part.replace("'", "\\'").replace("\"", "\\\"")
+    fun escape(part: String) = part.replace("\\", "\\\\").replace("'", "\\'").replace("\"", "\\\"")
 
     fun fullyQualifiedName(tableName: TableName): String =
         combineParts(listOf(getDatabaseName(), tableName.namespace, tableName.name))
@@ -25,16 +25,22 @@ class SnowflakeSqlNameUtils(
     fun fullyQualifiedNamespace(namespace: String) =
         combineParts(listOf(getDatabaseName(), namespace))
 
-    fun fullyQualifiedStageName(tableName: TableName, escape: Boolean = false): String =
-        combineParts(
+    fun fullyQualifiedStageName(tableName: TableName, escape: Boolean = false): String {
+        val currentTableName = if (escape) {
+            tableName.name
+        } else {
+            tableName.name
+        }
+        return combineParts(
             parts =
                 listOf(
                     getDatabaseName(),
                     tableName.namespace,
-                    "$STAGE_NAME_PREFIX${tableName.name}"
+                    "$STAGE_NAME_PREFIX$currentTableName"
                 ),
             escape = escape,
         )
+    }
 
     fun fullyQualifiedFormatName(namespace: String): String =
         combineParts(listOf(getDatabaseName(), namespace, STAGE_FORMAT_NAME))
@@ -42,7 +48,7 @@ class SnowflakeSqlNameUtils(
     fun combineParts(parts: List<String>, escape: Boolean = false): String =
         parts
             .map {
-                val compatible = it.toSnowflakeCompatibleName()
+                val compatible = it
                 if (escape) escape(compatible) else compatible
             }
             .joinToString(separator = ".") {

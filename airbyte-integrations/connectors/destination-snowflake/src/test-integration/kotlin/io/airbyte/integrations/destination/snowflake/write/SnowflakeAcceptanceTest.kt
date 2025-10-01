@@ -46,6 +46,11 @@ class SnowflakeInsertAcceptanceTest :
     override fun testBasicWrite() {
         super.testBasicWrite()
     }
+
+    @Test
+    override fun testFunkyCharactersDedup() {
+        super.testFunkyCharactersDedup()
+    }
 }
 
 class SnowflakeRawInsertAcceptanceTest :

@@ -51,8 +51,8 @@ class SnowflakeDataDumper(
                     """
                     SELECT COUNT(*) AS TABLE_COUNT
                     FROM information_schema.tables
-                    WHERE table_schema = '${sqlUtils.escape(tableName.namespace.toSnowflakeCompatibleName())}'
-                    AND table_name = '${sqlUtils.escape(tableName.name.toSnowflakeCompatibleName()) }'
+                    WHERE table_schema = '${sqlUtils.escape(tableName.namespace.replace("\"\"", "\""))}'
+                    AND table_name = '${sqlUtils.escape(tableName.name.replace("\"\"", "\""))}'
                 """.trimIndent()
 
                 val existsResultSet = statement.executeQuery(tableExistsQuery)
