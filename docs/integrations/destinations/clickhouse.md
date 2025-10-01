@@ -22,6 +22,7 @@ All sync modes are supported.
 ### Deduplication
 
 For optimal deduplication in Incremental - Append + Deduped sync mode, use a cursor column with one of these types:
+
 - Integer types (Int64, etc.)
 - Date
 - Timestamp (DateTime64)
