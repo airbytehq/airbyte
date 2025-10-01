@@ -121,10 +121,10 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "chore: upgrade bulk CDK for ${{ matrix.connector }}"
-          branch: "auto-upgrade-jvm-bulk-cdk/${{ matrix.connector }}"
+          branch: "auto-upgrade-jvm-bulk-cdk/${{ matrix.connector }}_${{ steps.bump-version.outputs.new_version }}"
           delete-branch: true
           # TODO remove the TEST text
-          title: "[TEST] chore: upgrade Bulk CDK for ${{ matrix.connector }}"
+          title: "[TEST] chore: upgrade ${{ matrix.connector }} to bulk CDK ${{ steps.bump-version.outputs.new_version }}"
           body: |
             Upgrade Bulk CDK version for `${{ matrix.connector }}`
 
