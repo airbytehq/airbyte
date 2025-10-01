@@ -17,7 +17,7 @@ jobs:
             cdk-version:
               - "airbyte-integrations/connectors/*/gradle.properties"
     outputs:
-      changed: ${{ steps.detect-changes.outputs.cdk-version }}
+      changed: ${{ steps.connector-cdk-version-changes.outputs.cdk-version }}
 
   connectors-cdk-version-check:
     name: Connectors CDK Version Check
