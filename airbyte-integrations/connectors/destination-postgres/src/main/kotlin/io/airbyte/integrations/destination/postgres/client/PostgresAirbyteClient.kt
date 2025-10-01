@@ -6,21 +6,47 @@ package io.airbyte.integrations.destination.postgres.client
 
 import io.airbyte.cdk.load.client.AirbyteClient
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNativeOperations
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableSqlOperations
+import io.airbyte.integrations.destination.postgres.sql.PostgresDirectLoadSqlGenerator
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
+import javax.sql.DataSource
+
+private val log = KotlinLogging.logger {}
+
+internal const val COUNT_TOTAL_ALIAS = "total"
 
 @Singleton
-class PostgresAirbyteClient : AirbyteClient, DirectLoadTableSqlOperations, DirectLoadTableNativeOperations {
+class PostgresAirbyteClient(
+    private val dataSource: DataSource,
+    private val sqlGenerator: PostgresDirectLoadSqlGenerator,
+) : AirbyteClient, DirectLoadTableSqlOperations, DirectLoadTableNativeOperations {
 
-    override suspend fun countTable(tableName: TableName): Long? {
-        throw NotImplementedError("PostgresAirbyteClient.countTable not yet implemented")
-    }
+    override suspend fun countTable(tableName: TableName): Long? =
+        try {
+            dataSource.connection.use { connection ->
+                val resultSet =
+                    connection.createStatement().executeQuery(sqlGenerator.countTable(tableName))
+
+                if (resultSet.next()) {
+                    resultSet.getLong(COUNT_TOTAL_ALIAS)
+                } else {
+                    0L
+                }
+            }
+        } catch (e: Exception) {
+            log.debug(e) {
+                "Table ${tableName.namespace}.${tableName.name} does not exist. Returning a null count to signal a missing table."
+            }
+            null
+        }
 
     override suspend fun createNamespace(namespace: String) {
-        throw NotImplementedError("PostgresAirbyteClient.createNamespace not yet implemented")
+        execute(sqlGenerator.createNamespace(namespace))
     }
 
     override suspend fun createTable(
@@ -29,14 +55,14 @@ class PostgresAirbyteClient : AirbyteClient, DirectLoadTableSqlOperations, Direc
         columnNameMapping: ColumnNameMapping,
         replace: Boolean
     ) {
-        throw NotImplementedError("PostgresAirbyteClient.createTable not yet implemented")
+        execute(sqlGenerator.createTable(stream, tableName, columnNameMapping, replace))
     }
 
     override suspend fun overwriteTable(
         sourceTableName: TableName,
         targetTableName: TableName
     ) {
-        throw NotImplementedError("PostgresAirbyteClient.overwriteTable not yet implemented")
+        execute(sqlGenerator.overwriteTable(sourceTableName, targetTableName))
     }
 
     override suspend fun copyTable(
@@ -44,7 +70,7 @@ class PostgresAirbyteClient : AirbyteClient, DirectLoadTableSqlOperations, Direc
         sourceTableName: TableName,
         targetTableName: TableName
     ) {
-        throw NotImplementedError("PostgresAirbyteClient.copyTable not yet implemented")
+        execute(sqlGenerator.copyTable(columnNameMapping, sourceTableName, targetTableName))
     }
 
     override suspend fun upsertTable(
@@ -53,22 +79,36 @@ class PostgresAirbyteClient : AirbyteClient, DirectLoadTableSqlOperations, Direc
         sourceTableName: TableName,
         targetTableName: TableName
     ) {
-        throw NotImplementedError("PostgresAirbyteClient.upsertTable not yet implemented")
+        execute(sqlGenerator.upsertTable(stream, columnNameMapping, sourceTableName, targetTableName))
     }
 
     override suspend fun dropTable(tableName: TableName) {
-        throw NotImplementedError("PostgresAirbyteClient.dropTable not yet implemented")
+        execute(sqlGenerator.dropTable(tableName))
     }
 
     override suspend fun ensureSchemaMatches(
         stream: DestinationStream,
         tableName: TableName,
         columnNameMapping: ColumnNameMapping
-    ) {
-        throw NotImplementedError("PostgresAirbyteClient.ensureSchemaMatches not yet implemented")
-    }
+    ) = TODO("PostgresAirbyteClient.ensureSchemaMatches not yet implemented")
 
-    override suspend fun getGenerationId(tableName: TableName): Long {
-        throw NotImplementedError("PostgresAirbyteClient.getGenerationId not yet implemented")
-    }
+    override suspend fun getGenerationId(tableName: TableName): Long =
+        try {
+            val sql = sqlGenerator.getGenerationId(tableName)
+            dataSource.connection.use { connection ->
+                val resultSet = connection.createStatement().executeQuery(sql)
+                if (resultSet.next()) {
+                    resultSet.getLong(COLUMN_NAME_AB_GENERATION_ID)
+                } else {
+                    log.warn { "No generation ID found for table $tableName, returning 0" }
+                    0L
+                }
+            }
+        } catch (e: Exception) {
+            log.error(e) { "Failed to retrieve the generation ID for table $tableName" }
+            0L
+        }
+
+    internal fun execute(query: String) =
+        dataSource.connection.use { connection -> connection.createStatement().executeQuery(query) }
 }
