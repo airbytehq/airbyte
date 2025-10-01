@@ -122,7 +122,7 @@ class SnowflakeDirectLoadSqlGenerator(
             if (importType.primaryKey.isNotEmpty()) {
                 importType.primaryKey.joinToString(" AND ") { fieldPath ->
                     val fieldName = fieldPath.first()
-                    val columnName = sqlEscapeSingleQuote(columnNameMapping[fieldName] ?: fieldName)
+                    val columnName = columnNameMapping[fieldName] ?: fieldName
                     val targetTableColumnName = "target_table.${columnName.quote()}"
                     val newRecordColumnName = "new_record.${columnName.quote()}"
                     """($targetTableColumnName = $newRecordColumnName OR ($targetTableColumnName IS NULL AND $newRecordColumnName IS NULL))"""
@@ -139,7 +139,6 @@ class SnowflakeDirectLoadSqlGenerator(
                     columns = stream.schema.asColumns(),
                     columnNameMapping = columnNameMapping,
                     quote = false,
-                    escape = false
                 )
                 .joinToString(
                     ",\n",
@@ -153,7 +152,6 @@ class SnowflakeDirectLoadSqlGenerator(
                     columns = stream.schema.asColumns(),
                     columnNameMapping = columnNameMapping,
                     quote = false,
-                    escape = false
                 )
                 .joinToString(",\n") { "new_record.${it.quote()}" }
 
@@ -165,8 +163,8 @@ class SnowflakeDirectLoadSqlGenerator(
         if (importType.cursor.isNotEmpty()) {
             val cursorFieldName = importType.cursor.first()
             val cursor = (columnNameMapping[cursorFieldName] ?: cursorFieldName)
-            val targetTableCursor = sqlEscapeSingleQuote("target_table.${cursor.quote()}")
-            val newRecordCursor = sqlEscapeSingleQuote("new_record.${cursor.quote()}")
+            val targetTableCursor = "target_table.${cursor.quote()}"
+            val newRecordCursor = "new_record.${cursor.quote()}"
             cursorComparison =
                 """
                 (
@@ -189,7 +187,6 @@ class SnowflakeDirectLoadSqlGenerator(
                     columns = stream.schema.asColumns(),
                     columnNameMapping = columnNameMapping,
                     quote = false,
-                    escape = false
                 )
                 .joinToString(",\n") { column ->
                     "${column.quote()} = new_record.${column.quote()}"
@@ -268,7 +265,6 @@ class SnowflakeDirectLoadSqlGenerator(
                     columns = stream.schema.asColumns(),
                     columnNameMapping = columnNameMapping,
                     quote = false,
-                    escape = false
                 )
                 .joinToString(
                     ",\n",
@@ -281,8 +277,7 @@ class SnowflakeDirectLoadSqlGenerator(
         val pkList =
             if (importType.primaryKey.isNotEmpty()) {
                 importType.primaryKey.joinToString(",") { fieldPath ->
-                    sqlEscapeSingleQuote(columnNameMapping[fieldPath.first()] ?: fieldPath.first())
-                        .quote()
+                    (columnNameMapping[fieldPath.first()] ?: fieldPath.first()).quote()
                 }
             } else {
                 // Should not happen as we check this earlier, but handle it defensively
@@ -293,10 +288,7 @@ class SnowflakeDirectLoadSqlGenerator(
         val cursorOrderClause =
             if (importType.cursor.isNotEmpty()) {
                 val columnName =
-                    sqlEscapeSingleQuote(
-                            columnNameMapping[importType.cursor.first()]
-                                ?: importType.cursor.first()
-                        )
+                    (columnNameMapping[importType.cursor.first()] ?: importType.cursor.first())
                         .quote()
                 "$columnName DESC NULLS LAST,"
             } else {

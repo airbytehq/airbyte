@@ -78,7 +78,7 @@ class SnowflakeDataDumper(
                         val columnType = resultSet.metaData.getColumnTypeName(i)
                         if (!AIRBYTE_META_COLUMNS.contains(columnName.lowercase())) {
                             val value = resultSet.getObject(i)
-                            dataMap[columnName] =
+                            dataMap[columnName.toSnowflakeCompatibleName()] =
                                 value?.let {
                                     AirbyteValue.from(
                                         convertValue(

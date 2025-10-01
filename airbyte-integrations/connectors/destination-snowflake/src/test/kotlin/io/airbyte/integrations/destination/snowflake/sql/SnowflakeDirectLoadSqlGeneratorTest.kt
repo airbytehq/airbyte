@@ -579,7 +579,7 @@ new_record."_AIRBYTE_GENERATION_ID"
         val sourceTableName = TableName(namespace = "test_ns", name = "source")
         val targetTableName = TableName(namespace = "test_ns", name = "target")
 
-        every { columnUtils.getFormattedColumnNames(any(), columnNameMapping) } returns
+        every { columnUtils.getFormattedColumnNames(any(), columnNameMapping, any()) } returns
             listOf(
                     "id",
                     "name",

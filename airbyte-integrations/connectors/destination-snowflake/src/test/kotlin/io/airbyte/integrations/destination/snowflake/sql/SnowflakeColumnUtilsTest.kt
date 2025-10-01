@@ -97,9 +97,8 @@ internal class SnowflakeColumnUtilsTest {
         val columnNameMapping = ColumnNameMapping(mapOf("original" to "actual"))
         val columnNames = snowflakeColumnUtils.getColumnNames(columnNameMapping)
         val expectedColumnNames =
-            (DEFAULT_COLUMNS.map { it.columnName } + listOf("actual")).joinToString(",") {
-                it.toSnowflakeCompatibleName().quote()
-            }
+            (DEFAULT_COLUMNS.map { it.columnName.toSnowflakeCompatibleName() } + listOf("actual"))
+                .joinToString(",") { it.quote() }
         assertEquals(expectedColumnNames, columnNames)
     }
 
@@ -157,7 +156,7 @@ internal class SnowflakeColumnUtilsTest {
                     "column_two",
                     CDC_DELETED_AT_COLUMN,
                 )
-                .map { it.toSnowflakeCompatibleName().quote() } +
+                .map { it.quote() } +
                 DEFAULT_COLUMNS.map { it.columnName.toSnowflakeCompatibleName().quote() }
         val columnNames =
             snowflakeColumnUtils.getFormattedColumnNames(
@@ -180,13 +179,11 @@ internal class SnowflakeColumnUtilsTest {
             )
         val expectedColumnNames =
             listOf(
-                    "actual",
-                    "column_one",
-                    "column_two",
-                    CDC_DELETED_AT_COLUMN,
-                )
-                .map { it.toSnowflakeCompatibleName() } +
-                DEFAULT_COLUMNS.map { it.columnName.toSnowflakeCompatibleName() }
+                "actual",
+                "column_one",
+                "column_two",
+                CDC_DELETED_AT_COLUMN,
+            ) + DEFAULT_COLUMNS.map { it.columnName.toSnowflakeCompatibleName() }
         val columnNames =
             snowflakeColumnUtils.getFormattedColumnNames(
                 columns = schemaColumns,
@@ -227,7 +224,7 @@ internal class SnowflakeColumnUtilsTest {
         assertEquals(DEFAULT_COLUMNS.size + 1, columns.size)
         assertEquals(
             SnowflakeDataType.VARCHAR.typeName,
-            columns.find { it.columnName == columnName.toSnowflakeCompatibleName() }?.columnType
+            columns.find { it.columnName == columnName }?.columnType
         )
     }
 
@@ -247,9 +244,7 @@ internal class SnowflakeColumnUtilsTest {
         assertEquals(DEFAULT_COLUMNS.size + 1, columns.size)
         assertEquals(
             SnowflakeDataType.VARCHAR.typeName,
-            columns
-                .find { it.columnName == mappedColumnName.toSnowflakeCompatibleName() }
-                ?.columnType
+            columns.find { it.columnName == mappedColumnName }?.columnType
         )
     }
 
@@ -341,27 +336,18 @@ internal class SnowflakeColumnUtilsTest {
     @CsvSource(
         value =
             [
-                "$COLUMN_NAME_DATA, true, false, \"$COLUMN_NAME_DATA\"",
-                "some-other_Column, true, false, \"SOME-OTHER_COLUMN\"",
-                "$COLUMN_NAME_DATA, false, false, $COLUMN_NAME_DATA",
-                "some-other_Column, false, false, SOME-OTHER_COLUMN",
-                "$COLUMN_NAME_DATA, false, true, $COLUMN_NAME_DATA",
-                "some-other_Column, false, true, SOME-OTHER_COLUMN",
-                "$COLUMN_NAME_DATA, true, true, \"$COLUMN_NAME_DATA\"",
-                "some-other_Column, true, true, \"SOME-OTHER_COLUMN\"",
-                "some-other\"\'_Column, false, true, SOME-OTHER\\\"\\\"\\\'_COLUMN",
-                "some-other\"\'_Column, true, true, \"SOME-OTHER\\\"\\\"\\\'_COLUMN\"",
+                "$COLUMN_NAME_DATA, true, \"$COLUMN_NAME_DATA\"",
+                "some-other_Column, true, \"SOME-OTHER_COLUMN\"",
+                "$COLUMN_NAME_DATA, false, $COLUMN_NAME_DATA",
+                "some-other_Column, false, SOME-OTHER_COLUMN",
+                "$COLUMN_NAME_DATA, true, \"$COLUMN_NAME_DATA\"",
+                "some-other_Column, true, \"SOME-OTHER_COLUMN\"",
             ]
     )
-    fun testFormatColumnName(
-        columnName: String,
-        quote: Boolean,
-        escape: Boolean,
-        expectedFormattedName: String
-    ) {
+    fun testFormatColumnName(columnName: String, quote: Boolean, expectedFormattedName: String) {
         assertEquals(
             expectedFormattedName,
-            snowflakeColumnUtils.formatColumnName(columnName, quote, escape)
+            snowflakeColumnUtils.formatColumnName(columnName, quote)
         )
     }
 }

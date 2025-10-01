@@ -93,7 +93,7 @@ class SnowflakeColumnUtils(
             getFormattedDefaultColumnNames(true).joinToString(",")
         } else {
             (getFormattedDefaultColumnNames(true) +
-                    columnNameMapping.map { (_, actualName) -> formatColumnName(actualName) })
+                    columnNameMapping.map { (_, actualName) -> actualName.quote() })
                 .joinToString(",")
         }
 
@@ -104,7 +104,6 @@ class SnowflakeColumnUtils(
         columns: Map<String, FieldType>,
         columnNameMapping: ColumnNameMapping,
         quote: Boolean = true,
-        escape: Boolean = false,
     ): List<String> =
         if (snowflakeConfiguration.legacyRawTablesOnly == true) {
             getFormattedDefaultColumnNames(quote)
@@ -112,7 +111,7 @@ class SnowflakeColumnUtils(
             getFormattedDefaultColumnNames(quote) +
                 columns.map { (fieldName, _) ->
                     val columnName = columnNameMapping[fieldName] ?: fieldName
-                    formatColumnName(columnName, quote, escape)
+                    if (quote) columnName.quote() else columnName
                 }
         }
 
@@ -128,7 +127,7 @@ class SnowflakeColumnUtils(
                     val columnName = columnNameMapping[fieldName] ?: fieldName
                     val typeName = toDialectType(type.type)
                     ColumnAndType(
-                        columnName = formatColumnName(columnName, false),
+                        columnName = columnName,
                         columnType = typeName,
                     )
                 }
@@ -137,12 +136,10 @@ class SnowflakeColumnUtils(
     fun formatColumnName(
         columnName: String,
         quote: Boolean = true,
-        escape: Boolean = false
     ): String {
-        var formattedColumnName =
+        val formattedColumnName =
             if (columnName == COLUMN_NAME_DATA) columnName
             else snowflakeColumnNameGenerator.getColumnName(columnName).displayName
-        formattedColumnName = if (escape) sqlEscape(formattedColumnName) else formattedColumnName
         return if (quote) formattedColumnName.quote() else formattedColumnName
     }
 
@@ -178,9 +175,3 @@ data class ColumnAndType(val columnName: String, val columnType: String) {
  * string\"").
  */
 fun String.quote() = "$QUOTE$this$QUOTE"
-
-/**
- * Surrounds the string instance with single quotation marks (e.g. "some string" -> "'some
- * string'").
- */
-fun String.singleQuote() = "$SINGLE_QUOTE$this$SINGLE_QUOTE"

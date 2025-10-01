@@ -252,6 +252,11 @@ class SnowflakeAirbyteClient(
                 statement.use {
                     val resultSet = connection.createStatement().executeQuery(sql)
                     if (resultSet.next()) {
+                        /*
+                         * When we retrieve the column names from the database, they are in unescaped
+                         * format.  In order to make sure these strings will match any column names
+                         * that we have formatted in-memory, re-apply the escaping.
+                         */
                         resultSet.getLong(COLUMN_NAME_AB_GENERATION_ID.toSnowflakeCompatibleName())
                     } else {
                         log.warn { "No generation ID found for table $tableName, returning 0" }
@@ -284,7 +289,11 @@ class SnowflakeAirbyteClient(
                 val resultSet = it.executeQuery(sqlGenerator.showColumns(tableName))
                 val columns = mutableListOf<String>()
                 while (resultSet.next()) {
-                    columns.add(resultSet.getString(DESCRIBE_TABLE_COLUMN_NAME_FIELD))
+                    columns.add(
+                        resultSet
+                            .getString(DESCRIBE_TABLE_COLUMN_NAME_FIELD)
+                            .toSnowflakeCompatibleName()
+                    )
                 }
                 columns
             }

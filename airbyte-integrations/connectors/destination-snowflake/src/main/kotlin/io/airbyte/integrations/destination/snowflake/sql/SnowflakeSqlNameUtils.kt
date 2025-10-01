@@ -12,11 +12,8 @@ import jakarta.inject.Singleton
 const val STAGE_NAME_PREFIX = "airbyte_stage_"
 internal const val STAGE_FORMAT_NAME: String = "airbyte_csv_format"
 internal const val QUOTE: String = "\""
-internal const val SINGLE_QUOTE: String = "'"
 
-fun sqlEscapeSingleQuote(part: String) = part.replace("'", "\\'")
-
-fun sqlEscape(part: String) = sqlEscapeSingleQuote(part.replace("\\", "\\\\").replace("\"", "\\\""))
+fun sqlEscape(part: String) = part.replace("\\", "\\\\").replace("'", "\\'").replace("\"", "\\\"")
 
 @Singleton
 class SnowflakeSqlNameUtils(

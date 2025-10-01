@@ -529,12 +529,13 @@ internal class SnowflakeAirbyteClientTest {
                 every { close() } just Runs
                 every { createStatement() } returns statement
             }
+        val expectedColumns = listOf(column1, column2).map { it.toSnowflakeCompatibleName() }
 
         every { dataSource.connection } returns mockConnection
 
         runBlocking {
             val columns = client.describeTable(tableName)
-            assertEquals(listOf(column1, column2), columns)
+            assertEquals(expectedColumns, columns)
             verify(exactly = 1) { sqlGenerator.showColumns(tableName) }
             verify(exactly = 1) { mockConnection.close() }
         }
