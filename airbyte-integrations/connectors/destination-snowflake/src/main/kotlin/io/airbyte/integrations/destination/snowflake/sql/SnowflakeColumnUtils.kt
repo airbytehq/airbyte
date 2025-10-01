@@ -30,6 +30,7 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_DATA
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.integrations.destination.snowflake.db.SnowflakeColumnNameGenerator
+import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import jakarta.inject.Singleton
 import kotlin.collections.component1
@@ -87,6 +88,14 @@ class SnowflakeColumnUtils(
                 columnType = it.columnType,
             )
         }
+
+    fun getGenerationIdColumnName(): String {
+        return if (snowflakeConfiguration.legacyRawTablesOnly) {
+            COLUMN_NAME_AB_GENERATION_ID
+        } else {
+            COLUMN_NAME_AB_GENERATION_ID.toSnowflakeCompatibleName()
+        }
+    }
 
     fun getColumnNames(columnNameMapping: ColumnNameMapping): String =
         if (snowflakeConfiguration.legacyRawTablesOnly == true) {

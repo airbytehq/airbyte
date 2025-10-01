@@ -260,7 +260,7 @@ class SnowflakeAirbyteClient(
                          * format.  In order to make sure these strings will match any column names
                          * that we have formatted in-memory, re-apply the escaping.
                          */
-                        resultSet.getLong(COLUMN_NAME_AB_GENERATION_ID.toSnowflakeCompatibleName())
+                        resultSet.getLong(snowflakeColumnUtils.getGenerationIdColumnName())
                     } else {
                         log.warn { "No generation ID found for table $tableName, returning 0" }
                         0L
@@ -295,7 +295,6 @@ class SnowflakeAirbyteClient(
                     columns.add(
                         resultSet
                             .getString(DESCRIBE_TABLE_COLUMN_NAME_FIELD)
-                            .toSnowflakeCompatibleName()
                     )
                 }
                 columns
