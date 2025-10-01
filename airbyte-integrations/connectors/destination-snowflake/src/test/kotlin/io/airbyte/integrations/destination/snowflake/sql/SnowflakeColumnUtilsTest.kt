@@ -94,7 +94,7 @@ internal class SnowflakeColumnUtilsTest {
             )
         val expectedColumnNames =
             listOf(
-                "\"${RAW_DATA_COLUMN.columnName.uppercase()}\"",
+                "\"${RAW_DATA_COLUMN.columnName}\"",
             ) + DEFAULT_COLUMNS.map { "\"${it.columnName}\"" }
         val columnNames =
             snowflakeColumnUtils.getFormattedColumnNames(
@@ -161,7 +161,7 @@ internal class SnowflakeColumnUtilsTest {
         assertEquals(DEFAULT_COLUMNS.size + 1, columns.size)
         assertEquals(
             SnowflakeDataType.VARCHAR.typeName,
-            columns.find { it.columnName == columnName }?.columnType
+            columns.find { it.columnName == columnName.uppercase() }?.columnType
         )
     }
 
@@ -181,7 +181,7 @@ internal class SnowflakeColumnUtilsTest {
         assertEquals(DEFAULT_COLUMNS.size + 1, columns.size)
         assertEquals(
             SnowflakeDataType.VARCHAR.typeName,
-            columns.find { it.columnName == mappedColumnName }?.columnType
+            columns.find { it.columnName == mappedColumnName.uppercase() }?.columnType
         )
     }
 

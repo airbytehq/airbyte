@@ -25,7 +25,9 @@ import io.mockk.every
 import io.mockk.mockk
 import java.util.UUID
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -528,9 +530,9 @@ new_record."_AIRBYTE_GENERATION_ID"
             )
 
         // Should NOT include any CDC-related clauses
-        assert(!sql.contains("_ab_cdc_deleted_at"))
-        assert(!sql.contains("THEN DELETE"))
-        assert(sql.contains("WHEN NOT MATCHED THEN INSERT"))
+        assertFalse(sql.contains("_ab_cdc_deleted_at"))
+        assertFalse(sql.contains("THEN DELETE"))
+        assertTrue(sql.contains("WHEN NOT MATCHED THEN INSERT"))
     }
 
     @Test

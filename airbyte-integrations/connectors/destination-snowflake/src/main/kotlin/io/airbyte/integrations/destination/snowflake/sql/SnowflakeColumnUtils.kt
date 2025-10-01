@@ -122,6 +122,7 @@ class SnowflakeColumnUtils(
         columnName
             // For backwards compatibility with previous version of Snowflake destination
             .replace(CDC_DELETED_AT_COLUMN, CDC_DELETED_AT_COLUMN.uppercase())
+            .uppercase()
 
     fun toDialectType(type: AirbyteType): String =
         when (type) {
