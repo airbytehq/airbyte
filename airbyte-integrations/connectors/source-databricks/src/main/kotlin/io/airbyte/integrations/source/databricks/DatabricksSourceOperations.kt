@@ -124,11 +124,11 @@ class DatabricksSourceOperations() :
     fun SelectNode.sql(): String =
         "SELECT " +
             when (this) {
-                is SelectColumns -> columns.joinToString(", ") { it.sql().replace('"', '`') }
-                is SelectColumnMaxValue -> "MAX(${column.sql().replace('"', '`')})"
+                is SelectColumns -> columns.joinToString(", ") { it.sql()}
+                is SelectColumnMaxValue -> "MAX(${column.sql()})"
             }
 
-    fun Field.sql(): String = "\"$id\""
+    fun Field.sql(): String = "`$id`"
 
     fun FromNode.sql(): String =
         when (this) {
