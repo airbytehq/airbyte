@@ -17,11 +17,13 @@ import io.airbyte.cdk.jdbc.BigIntegerFieldType
 import io.airbyte.cdk.jdbc.BooleanFieldType
 import io.airbyte.cdk.jdbc.ByteFieldType
 import io.airbyte.cdk.jdbc.BytesFieldType
-import io.airbyte.cdk.jdbc.DoubleFieldType
 import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.jdbc.JdbcFieldType
+import io.airbyte.cdk.jdbc.FloatFieldType
+import io.airbyte.cdk.jdbc.DoubleFieldType
 import io.airbyte.cdk.jdbc.LocalDateFieldType
 import io.airbyte.cdk.jdbc.LocalDateTimeFieldType
+import io.airbyte.cdk.jdbc.OffsetDateTimeFieldType
 import io.airbyte.cdk.jdbc.LocalTimeFieldType
 import io.airbyte.cdk.jdbc.LongFieldType
 import io.airbyte.cdk.jdbc.LosslessJdbcFieldType
@@ -84,19 +86,19 @@ class DatabricksSourceOperations() :
 
     private fun leafType(typeName: String?): JdbcFieldType<*> {
         return when (typeName?.uppercase()) {
-            "STRING",
+            "STRING", -> StringFieldType
             "BOOLEAN", -> BooleanFieldType
-            "DECIMAL",
-            "INT",
+            "DECIMAL", -> BigDecimalFieldType
+            "INT", -> LongFieldType
             "BIGINT", -> BigIntegerFieldType
-            "SMALLINT",
+            "SMALLINT", -> IntFieldType
             "TINYINT" -> ShortFieldType
-            "FLOAT",
-            "DOUBLE",
+            "FLOAT", -> FloatFieldType
+            "DOUBLE", -> DoubleFieldType
             "DATE", -> LocalDateFieldType
-            "TIMESTAMP",
-            "TIMESTAMP_NTZ",
-            "BINARY",
+            "TIMESTAMP", -> OffsetDateTimeFieldType
+            "TIMESTAMP_NTZ", -> LocalDateTimeFieldType
+            "BINARY", -> BytesFieldType
             "VARIANT",
             "OBJECT",
             "GEOGRAPHY",
