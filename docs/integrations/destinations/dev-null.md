@@ -49,6 +49,7 @@ The OSS and Cloud variants have the same version number starting from version `0
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| 0.8.5 | 2025-10-01 | [66990](https://github.com/airbytehq/airbyte/pull/66990) | Upgrade to latest Bulk CDK version. |
 | 0.8.4       | 2025-09-24 | [66684](https://github.com/airbytehq/airbyte/pull/66684) | Pin to CDK artifact.                                                                         |
 | 0.8.3       | 2025-08-12 | [65999](https://github.com/airbytehq/airbyte/pull/65999) | Testing publishing flow.                                                                     |
 | 0.8.2       | 2025-08-12 | [64897](https://github.com/airbytehq/airbyte/pull/64897) | Testing publishing flow.                                                                     |
