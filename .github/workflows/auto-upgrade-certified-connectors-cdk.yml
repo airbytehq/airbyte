@@ -118,7 +118,6 @@ jobs:
     uses: ./.github/workflows/bump-version-command.yml
     name: Trigger bump-version for ${{ matrix.connector }}
     needs: upgrade-connector-cdk
-    if: needs.upgrade-connector-cdk.result == 'success'
     strategy:
       matrix:
         connector: [destination-dev-null]
