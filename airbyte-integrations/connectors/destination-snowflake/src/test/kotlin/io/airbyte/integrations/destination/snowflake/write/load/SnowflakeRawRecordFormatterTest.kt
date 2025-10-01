@@ -10,13 +10,19 @@ import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.csv.toCsvValue
 import io.airbyte.cdk.load.message.Meta
+import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.sql.DEFAULT_COLUMNS
+import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
+import io.mockk.every
+import io.mockk.mockk
 import java.util.AbstractMap
 import kotlin.collections.plus
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-private val AIRBYTE_COLUMN_NAMES = DEFAULT_COLUMNS.map { it.columnName }.toSet()
+private val AIRBYTE_COLUMN_NAMES =
+    DEFAULT_COLUMNS.map { it.columnName.toSnowflakeCompatibleName() }.toSet()
 
 internal fun createRecord(columnName: String, columnValue: String) =
     mapOf(
@@ -35,8 +41,8 @@ internal fun createExpected(
 ) =
     record.entries
         .map { entry ->
-            if (AIRBYTE_COLUMN_NAMES.contains(entry.key.uppercase()))
-                AbstractMap.SimpleEntry(entry.key.uppercase(), entry.value)
+            if (AIRBYTE_COLUMN_NAMES.contains(entry.key.toSnowflakeCompatibleName()))
+                AbstractMap.SimpleEntry(entry.key.toSnowflakeCompatibleName(), entry.value)
             else entry
         }
         .sortedBy { entry ->
@@ -47,13 +53,29 @@ internal fun createExpected(
 
 internal class SnowflakeRawRecordFormatterTest {
 
+    private lateinit var snowflakeColumnUtils: SnowflakeColumnUtils
+
+    @BeforeEach
+    fun setup() {
+        snowflakeColumnUtils = mockk {
+            every { formatColumnName(any(), any()) } answers
+                {
+                    firstArg<String>().toSnowflakeCompatibleName()
+                }
+            every { getFormattedDefaultColumnNames(any()) } returns
+                DEFAULT_COLUMNS.map { it.columnName.toSnowflakeCompatibleName() }
+        }
+    }
+
     @Test
     fun testFormatting() {
         val columnName = "test-column-name"
         val columnValue = "test-column-value"
-        val columns = DEFAULT_COLUMNS.map { it.columnName } + listOf(Meta.COLUMN_NAME_DATA)
+        val columns =
+            DEFAULT_COLUMNS.map { it.columnName.toSnowflakeCompatibleName() } +
+                listOf(Meta.COLUMN_NAME_DATA)
         val record = createRecord(columnName, columnValue)
-        val formatter = SnowflakeRawRecordFormatter(columns)
+        val formatter = SnowflakeRawRecordFormatter(columns, snowflakeColumnUtils)
         val formattedValue = formatter.format(record)
         val expectedValue =
             createExpected(record, columns) + listOf("{\"$columnName\":\"$columnValue\"}")

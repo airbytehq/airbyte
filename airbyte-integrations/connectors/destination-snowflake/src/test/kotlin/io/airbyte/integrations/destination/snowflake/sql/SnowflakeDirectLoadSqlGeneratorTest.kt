@@ -12,11 +12,13 @@ import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_DATA
 import io.airbyte.cdk.load.orchestration.db.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.util.UUIDGenerator
 import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
+import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.CdcDeletionMode
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.write.load.CSV_FIELD_SEPARATOR
@@ -43,7 +45,14 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
     fun setUp() {
         every { snowflakeConfiguration.cdcDeletionMode } returns CdcDeletionMode.HARD_DELETE
         every { snowflakeConfiguration.database } returns "test-database"
-        columnUtils = mockk()
+        columnUtils = mockk {
+            every { formatColumnName(any()) } answers
+                {
+                    val columnName = firstArg<String>()
+                    if (columnName == COLUMN_NAME_DATA) columnName
+                    else columnName.toSnowflakeCompatibleName()
+                }
+        }
         snowflakeSqlNameUtils = SnowflakeSqlNameUtils(snowflakeConfiguration)
         snowflakeDirectLoadSqlGenerator =
             SnowflakeDirectLoadSqlGenerator(
@@ -59,7 +68,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         val tableName = TableName(namespace = "namespace", name = "name")
         val sql = snowflakeDirectLoadSqlGenerator.countTable(tableName)
         assertEquals(
-            "SELECT COUNT(*) AS \"total\" FROM ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}",
+            "SELECT COUNT(*) AS ${QUOTE}total${QUOTE} FROM ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}",
             sql
         )
     }
@@ -140,7 +149,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         val columnNameMapping = ColumnNameMapping(columns)
         val columnNames =
             (DEFAULT_COLUMNS.map { it.columnName } + "mappedColumnName").joinToString(",") {
-                "\"$it\""
+                it.toSnowflakeCompatibleName().quote()
             }
         val sourceTableName = TableName(namespace = "namespace", name = "source")
         val destinationTableName = TableName(namespace = "namespace", name = "destination")
@@ -182,23 +191,24 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         val columnNameMapping = ColumnNameMapping(emptyMap())
         val sourceTableName = TableName(namespace = "namespace", name = "source")
         val destinationTableName = TableName(namespace = "namespace", name = "destination")
-        val expectedColumns = DEFAULT_COLUMNS.map { "\"${it.columnName}\"" }
+        val expectedColumns = DEFAULT_COLUMNS.map { it.columnName.toSnowflakeCompatibleName() }
 
         every { columnUtils.getFormattedColumnNames(any(), columnNameMapping) } returns
+            expectedColumns.map { it.quote() }
+        every { columnUtils.getFormattedColumnNames(any(), columnNameMapping, false) } returns
             expectedColumns
-        every { columnUtils.formatColumnName(any()) } answers { firstArg<String>() }
 
         val expectedDestinationTable =
-            "\"${snowflakeConfiguration.database}\".\"${destinationTableName.namespace}\".\"${destinationTableName.name}\"".uppercase()
+            "${snowflakeConfiguration.database.toSnowflakeCompatibleName().quote()}.${destinationTableName.namespace.quote()}.${destinationTableName.name.quote()}"
         val expectedSourceTable =
-            "\"${snowflakeConfiguration.database}\".\"${sourceTableName.namespace}\".\"${sourceTableName.name}\"".uppercase()
+            "${snowflakeConfiguration.database.toSnowflakeCompatibleName().quote()}.${sourceTableName.namespace.quote()}.${sourceTableName.name.quote()}"
         val expected =
             """
             MERGE INTO $expectedDestinationTable AS target_table
             USING (
                           WITH records AS (
               SELECT
-                ${expectedColumns.joinToString(",\n")}
+                ${expectedColumns.joinToString(",\n") { it.quote() } }
               FROM $expectedSourceTable
             ), numbered_rows AS (
               SELECT *, ROW_NUMBER() OVER (
@@ -206,7 +216,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
               ) AS row_number
               FROM records
             )
-            SELECT ${expectedColumns.joinToString(",\n")}
+            SELECT ${expectedColumns.joinToString(",\n") { it.quote() } }
             FROM numbered_rows
             WHERE row_number = 1
             ) AS new_record
@@ -222,7 +232,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
 "_AIRBYTE_META" = new_record."_AIRBYTE_META",
 "_AIRBYTE_GENERATION_ID" = new_record."_AIRBYTE_GENERATION_ID"
             WHEN NOT MATCHED THEN INSERT (
-              ${expectedColumns.joinToString(",\n")}
+              ${expectedColumns.joinToString(",\n") { it.quote() } }
             ) VALUES (
               new_record."_AIRBYTE_RAW_ID",
 new_record."_AIRBYTE_EXTRACTED_AT",
@@ -267,7 +277,7 @@ new_record."_AIRBYTE_GENERATION_ID"
         val sql = snowflakeDirectLoadSqlGenerator.getGenerationId(tableName = tableName)
         val expectedSql =
             """
-            SELECT "${COLUMN_NAME_AB_GENERATION_ID.uppercase()}"
+            SELECT "${COLUMN_NAME_AB_GENERATION_ID.toSnowflakeCompatibleName()}"
             FROM ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}
             LIMIT 1
         """.trimIndent()
@@ -380,14 +390,15 @@ new_record."_AIRBYTE_GENERATION_ID"
         val sourceTableName = TableName(namespace = "test_ns", name = "source")
         val targetTableName = TableName(namespace = "test_ns", name = "target")
 
-        every { columnUtils.getFormattedColumnNames(any(), columnNameMapping) } returns
+        every { columnUtils.getFormattedColumnNames(any(), columnNameMapping, any()) } returns
             listOf(
-                "\"id\"",
-                "\"name\"",
-                "\"updated_at\"",
-                "\"${CDC_DELETED_AT_COLUMN.uppercase()}\"",
-            ) + DEFAULT_COLUMNS.map { "\"${it.columnName}\"" }
-        every { columnUtils.formatColumnName(any()) } answers { firstArg<String>() }
+                    "id",
+                    "name",
+                    "updated_at",
+                    CDC_DELETED_AT_COLUMN,
+                )
+                .map { it.toSnowflakeCompatibleName().quote() } +
+                DEFAULT_COLUMNS.map { it.columnName.toSnowflakeCompatibleName().quote() }
 
         val sql =
             snowflakeDirectLoadSqlGenerator.upsertTable(
@@ -400,13 +411,13 @@ new_record."_AIRBYTE_GENERATION_ID"
         // Should include the DELETE clause and skip insert clause
         assert(
             sql.contains(
-                "WHEN MATCHED AND new_record.\"${CDC_DELETED_AT_COLUMN.uppercase()}\" IS NOT NULL"
+                "WHEN MATCHED AND new_record.${CDC_DELETED_AT_COLUMN.toSnowflakeCompatibleName().quote()} IS NOT NULL"
             )
         )
         assert(sql.contains("THEN DELETE"))
         assert(
             sql.contains(
-                "WHEN NOT MATCHED AND new_record.\"${CDC_DELETED_AT_COLUMN.uppercase()}\" IS NULL THEN INSERT"
+                "WHEN NOT MATCHED AND new_record.${CDC_DELETED_AT_COLUMN.toSnowflakeCompatibleName().quote()} IS NULL THEN INSERT"
             )
         )
     }
@@ -461,13 +472,14 @@ new_record."_AIRBYTE_GENERATION_ID"
         val sourceTableName = TableName(namespace = "test_ns", name = "source")
         val targetTableName = TableName(namespace = "test_ns", name = "target")
 
-        every { columnUtils.getFormattedColumnNames(any(), columnNameMapping) } returns
+        every { columnUtils.getFormattedColumnNames(any(), columnNameMapping, any()) } returns
             listOf(
-                "\"id\"",
-                "\"name\"",
-                "\"updated_at\"",
-                "\"${CDC_DELETED_AT_COLUMN.uppercase()}\"",
-            ) + DEFAULT_COLUMNS.map { "\"${it.columnName}\"" }
+                    "id",
+                    "name",
+                    "updated_at",
+                    CDC_DELETED_AT_COLUMN.toSnowflakeCompatibleName(),
+                )
+                .map { it.quote() } + DEFAULT_COLUMNS.map { it.columnName.quote() }
         every { columnUtils.formatColumnName(any()) } answers { firstArg<String>() }
 
         val sql =
@@ -481,7 +493,7 @@ new_record."_AIRBYTE_GENERATION_ID"
         // Should NOT include DELETE clause in soft delete mode
         assert(!sql.contains("THEN DELETE"))
         assert(sql.contains("WHEN NOT MATCHED THEN INSERT"))
-        assert(!sql.contains("AND new_record.\"_ab_cdc_deleted_at\" IS NULL"))
+        assert(!sql.contains("AND new_record.${CDC_DELETED_AT_COLUMN.quote()} IS NULL"))
     }
 
     @Test
@@ -516,12 +528,13 @@ new_record."_AIRBYTE_GENERATION_ID"
         val sourceTableName = TableName(namespace = "test_ns", name = "source")
         val targetTableName = TableName(namespace = "test_ns", name = "target")
 
-        every { columnUtils.getFormattedColumnNames(any(), columnNameMapping) } returns
+        every { columnUtils.getFormattedColumnNames(any(), columnNameMapping, any()) } returns
             listOf(
-                "\"id\"",
-                "\"name\"",
-                "\"updated_at\"",
-            ) + DEFAULT_COLUMNS.map { "\"${it.columnName}\"" }
+                    "id",
+                    "name",
+                    "updated_at",
+                )
+                .map { it.quote() } + DEFAULT_COLUMNS.map { it.columnName.quote() }
         every { columnUtils.formatColumnName(any()) } answers { firstArg<String>() }
 
         val sql =
@@ -568,10 +581,11 @@ new_record."_AIRBYTE_GENERATION_ID"
 
         every { columnUtils.getFormattedColumnNames(any(), columnNameMapping) } returns
             listOf(
-                "\"id\"",
-                "\"name\"",
-                "\"${CDC_DELETED_AT_COLUMN.uppercase()}\"",
-            ) + DEFAULT_COLUMNS.map { "\"${it.columnName}\"" }
+                    "id",
+                    "name",
+                    CDC_DELETED_AT_COLUMN.toSnowflakeCompatibleName(),
+                )
+                .map { it.quote() } + DEFAULT_COLUMNS.map { it.columnName.quote() }
         every { columnUtils.formatColumnName(any()) } answers { firstArg<String>() }
 
         val sql =
@@ -585,10 +599,10 @@ new_record."_AIRBYTE_GENERATION_ID"
         // Should use only _airbyte_extracted_at for comparison when no cursor
         assert(
             sql.contains(
-                "target_table.\"${COLUMN_NAME_AB_EXTRACTED_AT.uppercase()}\" < new_record.\"${COLUMN_NAME_AB_EXTRACTED_AT.uppercase()}\""
+                "target_table.${COLUMN_NAME_AB_EXTRACTED_AT.toSnowflakeCompatibleName().quote()} < new_record.${COLUMN_NAME_AB_EXTRACTED_AT.toSnowflakeCompatibleName().quote()}"
             )
         )
-        assert(!sql.contains("target_table.\"cursor\"")) // No cursor field reference
+        assert(!sql.contains("target_table.${QUOTE}cursor${QUOTE}")) // No cursor field reference
     }
 
     @Test
@@ -647,18 +661,20 @@ new_record."_AIRBYTE_GENERATION_ID"
                 deletedColumns,
                 modifiedColumns
             )
+        val expectedTableName =
+            "${snowflakeConfiguration.database.toSnowflakeCompatibleName().quote()}.${tableName.namespace.quote()}.${tableName.name.quote()}"
 
         assertEquals(
             setOf(
-                """ALTER TABLE "TEST-DATABASE"."NAMESPACE"."NAME" ADD COLUMN "COL1" TEXT;""",
-                """ALTER TABLE "TEST-DATABASE"."NAMESPACE"."NAME" DROP COLUMN "COL2";""",
-                """ALTER TABLE "TEST-DATABASE"."NAMESPACE"."NAME" ADD COLUMN "COL3_${uuid}" TEXT;""",
-                """UPDATE "TEST-DATABASE"."NAMESPACE"."NAME" SET "COL3_${uuid}" = CAST("COL3" AS TEXT);""",
-                """ALTER TABLE "TEST-DATABASE"."NAMESPACE"."NAME"
+                """ALTER TABLE $expectedTableName ADD COLUMN "COL1" TEXT;""",
+                """ALTER TABLE $expectedTableName DROP COLUMN "COL2";""",
+                """ALTER TABLE $expectedTableName ADD COLUMN "COL3_${uuid}" TEXT;""",
+                """UPDATE $expectedTableName SET "COL3_${uuid}" = CAST("COL3" AS TEXT);""",
+                """ALTER TABLE $expectedTableName
                 RENAME COLUMN "COL3" TO "COL3_${uuid}_backup";""".trimIndent(),
-                """ALTER TABLE "TEST-DATABASE"."NAMESPACE"."NAME"
+                """ALTER TABLE $expectedTableName
                 RENAME COLUMN "COL3_${uuid}" TO "COL3";""".trimIndent(),
-                """ALTER TABLE "TEST-DATABASE"."NAMESPACE"."NAME" DROP COLUMN "COL3_${uuid}_backup";"""
+                """ALTER TABLE $expectedTableName DROP COLUMN "COL3_${uuid}_backup";"""
             ),
             sql
         )
@@ -669,8 +685,10 @@ new_record."_AIRBYTE_GENERATION_ID"
         val schemaName = "namespace"
         val tableName = "name"
         val sql = snowflakeDirectLoadSqlGenerator.describeTable(schemaName, tableName)
+        val expectedTableName =
+            "${snowflakeConfiguration.database.toSnowflakeCompatibleName().quote()}.${schemaName.quote()}.${tableName.quote()}"
 
-        assertEquals("""DESCRIBE TABLE "TEST-DATABASE"."NAMESPACE"."NAME"""", sql)
+        assertEquals("""DESCRIBE TABLE $expectedTableName""", sql)
     }
 
     @Test
@@ -678,11 +696,16 @@ new_record."_AIRBYTE_GENERATION_ID"
         val sourceTableName = TableName(namespace = "namespace", name = "old_name")
         val targetTableName = TableName(namespace = "namespace", name = "new_name")
         val sql = snowflakeDirectLoadSqlGenerator.renameTable(sourceTableName, targetTableName)
+        val expectedSourceTableName =
+            "${snowflakeConfiguration.database.toSnowflakeCompatibleName().quote()}.${sourceTableName.namespace.quote()}.${sourceTableName.name.quote()}"
+        val expectedTargetTableName =
+            "${snowflakeConfiguration.database.toSnowflakeCompatibleName().quote()}.${targetTableName.namespace.quote()}.${targetTableName.name.quote()}"
+        val expectedSql =
+            """
+            ALTER TABLE $expectedSourceTableName RENAME TO $expectedTargetTableName
+        """.trimIndent()
 
-        assertEquals(
-            """ALTER TABLE "TEST-DATABASE"."NAMESPACE"."OLD_NAME" RENAME TO "TEST-DATABASE"."NAMESPACE"."NEW_NAME"""",
-            sql
-        )
+        assertEquals(expectedSql, sql)
     }
 
     @Test
@@ -690,16 +713,22 @@ new_record."_AIRBYTE_GENERATION_ID"
         val sourceTableName = TableName(namespace = "namespace", name = "table-with-dashes")
         val targetTableName = TableName(namespace = "namespace", name = "table_with_underscores")
         val sql = snowflakeDirectLoadSqlGenerator.renameTable(sourceTableName, targetTableName)
+        val expectedSourceTableName =
+            "${snowflakeConfiguration.database.toSnowflakeCompatibleName().quote()}.${sourceTableName.namespace.quote()}.${sourceTableName.name.quote()}"
+        val expectedTargetTableName =
+            "${snowflakeConfiguration.database.toSnowflakeCompatibleName().quote()}.${targetTableName.namespace.quote()}.${targetTableName.name.quote()}"
+        val expectedSql =
+            """
+            ALTER TABLE $expectedSourceTableName RENAME TO $expectedTargetTableName
+        """.trimIndent()
 
-        assertEquals(
-            "ALTER TABLE \"TEST-DATABASE\".\"NAMESPACE\".\"TABLE-WITH-DASHES\" RENAME TO \"TEST-DATABASE\".\"NAMESPACE\".\"TABLE_WITH_UNDERSCORES\"",
-            sql
-        )
+        assertEquals(expectedSql, sql)
     }
 
     @Test
     fun testCreateTableWithSQLInjectionAttemptInTableName() {
-        val tableName = TableName(namespace = "namespace", name = "table\"; DROP TABLE users; --")
+        val tableName =
+            TableName(namespace = "namespace", name = "table$QUOTE; DROP TABLE users; --")
         val stream = mockk<DestinationStream>(relaxed = true)
         val columnNameMapping = mockk<ColumnNameMapping>(relaxed = true)
 
@@ -708,7 +737,7 @@ new_record."_AIRBYTE_GENERATION_ID"
         val sql =
             snowflakeDirectLoadSqlGenerator.createTable(stream, tableName, columnNameMapping, false)
         val expectedTableName =
-            "\"${snowflakeConfiguration.database}\".\"${tableName.namespace}\".\"${tableName.name}\"".uppercase()
+            "${snowflakeConfiguration.database.toSnowflakeCompatibleName().quote()}.${tableName.namespace.quote()}.${tableName.name.quote()}"
         val expectedSql =
             """
             CREATE TABLE $expectedTableName (
@@ -722,7 +751,8 @@ new_record."_AIRBYTE_GENERATION_ID"
 
     @Test
     fun testCreateTableWithSQLInjectionAttemptInNamespace() {
-        val tableName = TableName(namespace = "namespace\"; DROP SCHEMA test; --", name = "table")
+        val tableName =
+            TableName(namespace = "namespace$QUOTE; DROP SCHEMA test; --", name = "table")
         val stream = mockk<DestinationStream>(relaxed = true)
         val columnNameMapping = mockk<ColumnNameMapping>(relaxed = true)
 
@@ -731,7 +761,7 @@ new_record."_AIRBYTE_GENERATION_ID"
         val sql =
             snowflakeDirectLoadSqlGenerator.createTable(stream, tableName, columnNameMapping, false)
         val expectedTableName =
-            "\"${snowflakeConfiguration.database}\".\"${tableName.namespace}\".\"${tableName.name}\"".uppercase()
+            "${snowflakeConfiguration.database.toSnowflakeCompatibleName().quote()}.${tableName.namespace.quote()}.${tableName.name.quote()}"
         val expectedSql =
             """
             CREATE TABLE $expectedTableName (
@@ -754,8 +784,10 @@ new_record."_AIRBYTE_GENERATION_ID"
 
         val sql =
             snowflakeDirectLoadSqlGenerator.createTable(stream, tableName, columnNameMapping, false)
+        val expectedTableName =
+            "${snowflakeConfiguration.database.toSnowflakeCompatibleName().quote()}.${tableName.namespace.quote()}.${tableName.name.quote()}"
 
         // Reserved keywords should be properly quoted
-        assertEquals("CREATE TABLE \"TEST-DATABASE\".\"SELECT\".\"WHERE\" (\n    \n)", sql)
+        assertEquals("CREATE TABLE $expectedTableName (\n    \n)", sql)
     }
 }

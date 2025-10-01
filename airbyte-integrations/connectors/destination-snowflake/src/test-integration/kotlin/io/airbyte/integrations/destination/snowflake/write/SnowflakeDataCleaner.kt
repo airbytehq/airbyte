@@ -11,6 +11,7 @@ import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleNam
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfigurationFactory
 import io.airbyte.integrations.destination.snowflake.sql.STAGE_NAME_PREFIX
+import io.airbyte.integrations.destination.snowflake.sql.quote
 import java.nio.file.Files
 import java.sql.Connection
 import java.time.Instant
@@ -45,7 +46,7 @@ object SnowflakeDataCleaner : DestinationCleaner {
         val statement = connection.createStatement()
         val schemas =
             statement.executeQuery(
-                "SHOW SCHEMAS IN DATABASE \"${config.database.toSnowflakeCompatibleName()}\""
+                "SHOW SCHEMAS IN DATABASE ${config.database.toSnowflakeCompatibleName().quote()}"
             )
         while (schemas.next()) {
             val schemaName = schemas.getString("name")
@@ -55,7 +56,7 @@ object SnowflakeDataCleaner : DestinationCleaner {
                 schemaName.startsWith(prefix = "test", ignoreCase = true) &&
                     createdOn.toInstant().isBefore(Instant.now().minus(RETENTION_PERIOD))
             ) {
-                statement.execute("DROP SCHEMA IF EXISTS \"$schemaName\" CASCADE")
+                statement.execute("DROP SCHEMA IF EXISTS ${schemaName.quote()} CASCADE")
             }
         }
     }
@@ -64,7 +65,7 @@ object SnowflakeDataCleaner : DestinationCleaner {
         val statement = connection.createStatement()
         val tableSql =
             """SHOW TABLES
-                    IN SCHEMA "${config.internalTableSchema?.toSnowflakeCompatibleName()}" 
+                    IN SCHEMA ${config.internalTableSchema?.toSnowflakeCompatibleName()?.quote()}
                     STARTS WITH 'TEST'
                 """.trimIndent()
         val tables = statement.executeQuery(tableSql)
@@ -75,14 +76,15 @@ object SnowflakeDataCleaner : DestinationCleaner {
             val createdOn = tables.getTimestamp("created_on").toInstant()
             // Clear all raw test tables in the database older than 24 hours
             if (createdOn.isBefore(Instant.now().minus(RETENTION_PERIOD))) {
-                val fullyQualifiedTable = "\"$databaseName\".\"$schemaName\".\"$tableName\""
+                val fullyQualifiedTable =
+                    "${databaseName.quote()}.${schemaName.quote()}.${tableName.quote()}"
                 statement.execute("DROP TABLE IF EXISTS $fullyQualifiedTable CASCADE")
             }
         }
 
         val stagesSql =
             """SHOW STAGES
-                    IN SCHEMA "${config.internalTableSchema?.toSnowflakeCompatibleName()}" 
+                    IN SCHEMA ${config.internalTableSchema?.toSnowflakeCompatibleName()?.quote()} 
                     STARTS WITH '${STAGE_NAME_PREFIX}TEST'
                 """.trimIndent()
         val stages = statement.executeQuery(stagesSql)
@@ -93,7 +95,8 @@ object SnowflakeDataCleaner : DestinationCleaner {
             val createdOn = stages.getTimestamp("created_on").toInstant()
             // Clear all raw staging tables in the database older than 24 hours
             if (createdOn.isBefore(Instant.now().minus(RETENTION_PERIOD))) {
-                val fullyQualifiedTable = "\"$databaseName\".\"$schemaName\".\"$stageName\""
+                val fullyQualifiedTable =
+                    "${databaseName.quote()}.${schemaName.quote()}.${stageName.quote()}"
                 statement.execute("DROP TABLE IF EXISTS $fullyQualifiedTable CASCADE")
             }
         }

@@ -32,7 +32,7 @@ internal class SnowflakeFinalTableNameGeneratorTest {
         val tableName = generator.getTableName(streamDescriptor)
         val expectedTableName =
             TypingDedupingUtil.concatenateRawTableName(
-                streamNamespace,
+                streamNamespace.toSnowflakeCompatibleName(),
                 streamName.toSnowflakeCompatibleName()
             )
         assertEquals(expectedTableName, tableName.name)

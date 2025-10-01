@@ -13,6 +13,7 @@ import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.QUOTE
+import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
 import java.nio.file.Path
@@ -32,6 +33,7 @@ class SnowflakeInsertBuffer(
     val columns: List<String>,
     private val snowflakeClient: SnowflakeAirbyteClient,
     val snowflakeConfiguration: SnowflakeConfiguration,
+    private val snowflakeColumnUtils: SnowflakeColumnUtils,
     private val flushLimit: Int = DEFAULT_FLUSH_LIMIT,
 ) {
 
@@ -50,8 +52,8 @@ class SnowflakeInsertBuffer(
 
     private val snowflakeRecordFormatter: SnowflakeRecordFormatter =
         when (snowflakeConfiguration.legacyRawTablesOnly) {
-            true -> SnowflakeRawRecordFormatter(columns)
-            else -> SnowflakeSchemaRecordFormatter(columns)
+            true -> SnowflakeRawRecordFormatter(columns, snowflakeColumnUtils)
+            else -> SnowflakeSchemaRecordFormatter(columns, snowflakeColumnUtils)
         }
 
     fun accumulate(recordFields: Map<String, AirbyteValue>) {

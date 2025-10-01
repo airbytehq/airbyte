@@ -13,9 +13,9 @@ import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNativeOperations
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableSqlOperations
 import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
+import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.COUNT_TOTAL_ALIAS
-import io.airbyte.integrations.destination.snowflake.sql.DEFAULT_COLUMNS
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -26,7 +26,6 @@ import net.snowflake.client.jdbc.SnowflakeSQLException
 
 internal const val DESCRIBE_TABLE_COLUMN_NAME_FIELD = "column_name"
 
-private val AIRBYTE_COLUMN_NAMES = DEFAULT_COLUMNS.map { it.columnName }.toSet()
 private val log = KotlinLogging.logger {}
 
 @Singleton
@@ -37,6 +36,9 @@ class SnowflakeAirbyteClient(
     private val snowflakeColumnUtils: SnowflakeColumnUtils,
     private val snowflakeConfiguration: SnowflakeConfiguration,
 ) : AirbyteClient, DirectLoadTableSqlOperations, DirectLoadTableNativeOperations {
+
+    private val airbyteColumnNames =
+        snowflakeColumnUtils.getFormattedDefaultColumnNames(false).toSet()
 
     override suspend fun countTable(tableName: TableName): Long? =
         try {
@@ -191,7 +193,7 @@ class SnowflakeAirbyteClient(
                     val columnName = rs.getString("name")
 
                     // Filter out airbyte columns
-                    if (AIRBYTE_COLUMN_NAMES.contains(columnName)) {
+                    if (airbyteColumnNames.contains(columnName)) {
                         continue
                     }
                     val dataType = rs.getString("type").takeWhile { char -> char != '(' }
@@ -211,7 +213,7 @@ class SnowflakeAirbyteClient(
     ) =
         snowflakeColumnUtils
             .columnsAndTypes(stream.schema.asColumns(), columnNameMapping)
-            .filter { column -> column.columnName !in AIRBYTE_COLUMN_NAMES }
+            .filter { column -> column.columnName !in airbyteColumnNames }
             .map { column ->
                 ColumnDefinition(
                     name = column.columnName,
@@ -250,7 +252,7 @@ class SnowflakeAirbyteClient(
                 statement.use {
                     val resultSet = connection.createStatement().executeQuery(sql)
                     if (resultSet.next()) {
-                        resultSet.getLong(COLUMN_NAME_AB_GENERATION_ID.uppercase())
+                        resultSet.getLong(COLUMN_NAME_AB_GENERATION_ID.toSnowflakeCompatibleName())
                     } else {
                         log.warn { "No generation ID found for table $tableName, returning 0" }
                         0L

@@ -43,7 +43,7 @@ class SnowflakeDirectLoadSqlGenerator(
     }
 
     fun countTable(tableName: TableName): String {
-        return "SELECT COUNT(*) AS \"$COUNT_TOTAL_ALIAS\" FROM ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}".andLog()
+        return "SELECT COUNT(*) AS ${COUNT_TOTAL_ALIAS.quote()} FROM ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}".andLog()
     }
 
     fun checkSchemaExists(namespace: String): String {
@@ -122,8 +122,10 @@ class SnowflakeDirectLoadSqlGenerator(
             if (importType.primaryKey.isNotEmpty()) {
                 importType.primaryKey.joinToString(" AND ") { fieldPath ->
                     val fieldName = fieldPath.first()
-                    val columnName = columnNameMapping[fieldName] ?: fieldName
-                    """(target_table."$columnName" = new_record."$columnName" OR (target_table."$columnName" IS NULL AND new_record."$columnName" IS NULL))"""
+                    val columnName = sqlEscapeSingleQuote(columnNameMapping[fieldName] ?: fieldName)
+                    val targetTableColumnName = "target_table.$columnName".singleQuote()
+                    val newRecordColumnName = "new_record_column.$columnName".singleQuote()
+                    """($targetTableColumnName = $newRecordColumnName OR ($targetTableColumnName IS NULL AND $newRecordColumnName IS NULL))"""
                 }
             } else {
                 // If no primary key, we can't perform a meaningful upsert
@@ -133,15 +135,27 @@ class SnowflakeDirectLoadSqlGenerator(
         // Build column lists for INSERT and UPDATE
         val columnList: String =
             columnUtils
-                .getFormattedColumnNames(stream.schema.asColumns(), columnNameMapping)
+                .getFormattedColumnNames(
+                    columns = stream.schema.asColumns(),
+                    columnNameMapping = columnNameMapping,
+                    quote = false,
+                    escape = false
+                )
                 .joinToString(
                     ",\n",
-                )
+                ) {
+                    it.quote()
+                }
 
         val newRecordColumnList: String =
             columnUtils
-                .getFormattedColumnNames(stream.schema.asColumns(), columnNameMapping)
-                .joinToString(",\n") { "new_record.$it" }
+                .getFormattedColumnNames(
+                    columns = stream.schema.asColumns(),
+                    columnNameMapping = columnNameMapping,
+                    quote = false,
+                    escape = false
+                )
+                .joinToString(",\n") { "new_record.${it.quote()}" }
 
         // Get deduped records from source
         val selectSourceRecords = selectDedupedRecords(stream, sourceTableName, columnNameMapping)
@@ -150,32 +164,36 @@ class SnowflakeDirectLoadSqlGenerator(
         val cursorComparison: String
         if (importType.cursor.isNotEmpty()) {
             val cursorFieldName = importType.cursor.first()
-            val cursorColumnName = columnNameMapping[cursorFieldName] ?: cursorFieldName
-            val cursor = "\"$cursorColumnName\""
+            val cursor = (columnNameMapping[cursorFieldName] ?: cursorFieldName)
+            val targetTableCursor = sqlEscapeSingleQuote("target_table.$cursor").singleQuote()
+            val newRecordCursor = sqlEscapeSingleQuote("new_record.$cursor").singleQuote()
             cursorComparison =
                 """
                 (
-                  target_table.$cursor < new_record.$cursor
-                  OR (target_table.$cursor = new_record.$cursor AND target_table."${COLUMN_NAME_AB_EXTRACTED_AT.uppercase()}" < new_record."${COLUMN_NAME_AB_EXTRACTED_AT.uppercase()}")
-                  OR (target_table.$cursor IS NULL AND new_record.$cursor IS NULL AND target_table."${COLUMN_NAME_AB_EXTRACTED_AT.uppercase()}" < new_record."${COLUMN_NAME_AB_EXTRACTED_AT.uppercase()}")
-                  OR (target_table.$cursor IS NULL AND new_record.$cursor IS $NOT_NULL)
+                  $targetTableCursor < $newRecordCursor
+                  OR ($targetTableCursor = $newRecordCursor AND target_table."${COLUMN_NAME_AB_EXTRACTED_AT.toSnowflakeCompatibleName()}" < new_record."${COLUMN_NAME_AB_EXTRACTED_AT.toSnowflakeCompatibleName()}")
+                  OR ($targetTableCursor IS NULL AND $newRecordCursor IS NULL AND target_table."${COLUMN_NAME_AB_EXTRACTED_AT.toSnowflakeCompatibleName()}" < new_record."${COLUMN_NAME_AB_EXTRACTED_AT.toSnowflakeCompatibleName()}")
+                  OR ($targetTableCursor IS NULL AND $newRecordCursor IS $NOT_NULL)
                 )
             """.trimIndent()
         } else {
             // No cursor - use extraction timestamp only
             cursorComparison =
-                """target_table."${COLUMN_NAME_AB_EXTRACTED_AT.uppercase()}" < new_record."${COLUMN_NAME_AB_EXTRACTED_AT.uppercase()}""""
+                """target_table."${COLUMN_NAME_AB_EXTRACTED_AT.toSnowflakeCompatibleName()}" < new_record."${COLUMN_NAME_AB_EXTRACTED_AT.toSnowflakeCompatibleName()}""""
         }
 
         // Build column assignments for UPDATE
         val columnAssignments: String =
-            (stream.schema.asColumns().keys + DEFAULT_COLUMNS.map { it.columnName }).joinToString(
-                ",\n"
-            ) { fieldName ->
-                val column =
-                    columnUtils.formatColumnName("\"${columnNameMapping[fieldName] ?: fieldName}\"")
-                "$column = new_record.$column"
-            }
+            columnUtils
+                .getFormattedColumnNames(
+                    columns = stream.schema.asColumns(),
+                    columnNameMapping = columnNameMapping,
+                    quote = false,
+                    escape = false
+                )
+                .joinToString(",\n") { column ->
+                    "${column.quote()} = new_record.${column.quote()}"
+                }
 
         // Handle CDC deletions based on mode
         val cdcDeleteClause: String
@@ -186,11 +204,12 @@ class SnowflakeDirectLoadSqlGenerator(
         ) {
             // Execute CDC deletions if there's already a record
             cdcDeleteClause =
-                "WHEN MATCHED AND new_record.\"${CDC_DELETED_AT_COLUMN.uppercase()}\" IS NOT NULL AND $cursorComparison THEN DELETE"
+                "WHEN MATCHED AND new_record.\"${CDC_DELETED_AT_COLUMN.toSnowflakeCompatibleName()}\" IS NOT NULL AND $cursorComparison THEN DELETE"
             // And skip insertion entirely if there's no matching record.
             // (This is possible if a single T+D batch contains both an insertion and deletion for
             // the same PK)
-            cdcSkipInsertClause = "AND new_record.\"${CDC_DELETED_AT_COLUMN.uppercase()}\" IS NULL"
+            cdcSkipInsertClause =
+                "AND new_record.\"${CDC_DELETED_AT_COLUMN.toSnowflakeCompatibleName()}\" IS NULL"
         } else {
             cdcDeleteClause = ""
             cdcSkipInsertClause = ""
@@ -245,18 +264,25 @@ class SnowflakeDirectLoadSqlGenerator(
     ): String {
         val columnList: String =
             columnUtils
-                .getFormattedColumnNames(stream.schema.asColumns(), columnNameMapping)
+                .getFormattedColumnNames(
+                    columns = stream.schema.asColumns(),
+                    columnNameMapping = columnNameMapping,
+                    quote = false,
+                    escape = false
+                )
                 .joinToString(
                     ",\n",
-                )
+                ) {
+                    it.quote()
+                }
         val importType = stream.importType as Dedupe
 
         // Build the primary key list for partitioning
         val pkList =
             if (importType.primaryKey.isNotEmpty()) {
                 importType.primaryKey.joinToString(",") { fieldPath ->
-                    val columnName = columnNameMapping[fieldPath.first()] ?: fieldPath.first()
-                    "\"$columnName\""
+                    sqlEscapeSingleQuote(columnNameMapping[fieldPath.first()] ?: fieldPath.first())
+                        .singleQuote()
                 }
             } else {
                 // Should not happen as we check this earlier, but handle it defensively
@@ -267,8 +293,12 @@ class SnowflakeDirectLoadSqlGenerator(
         val cursorOrderClause =
             if (importType.cursor.isNotEmpty()) {
                 val columnName =
-                    columnNameMapping[importType.cursor.first()] ?: importType.cursor.first()
-                "\"$columnName\" DESC NULLS LAST,"
+                    sqlEscapeSingleQuote(
+                            columnNameMapping[importType.cursor.first()]
+                                ?: importType.cursor.first()
+                        )
+                        .singleQuote()
+                "$columnName DESC NULLS LAST,"
             } else {
                 ""
             }
@@ -280,7 +310,7 @@ class SnowflakeDirectLoadSqlGenerator(
               FROM ${snowflakeSqlNameUtils.fullyQualifiedName(sourceTableName)}
             ), numbered_rows AS (
               SELECT *, ROW_NUMBER() OVER (
-                PARTITION BY $pkList ORDER BY $cursorOrderClause "${COLUMN_NAME_AB_EXTRACTED_AT.uppercase()}" DESC
+                PARTITION BY $pkList ORDER BY $cursorOrderClause "${COLUMN_NAME_AB_EXTRACTED_AT.toSnowflakeCompatibleName()}" DESC
               ) AS row_number
               FROM records
             )
@@ -304,7 +334,7 @@ class SnowflakeDirectLoadSqlGenerator(
         tableName: TableName,
     ): String {
         return """
-            SELECT "${COLUMN_NAME_AB_GENERATION_ID.uppercase()}"
+            SELECT "${COLUMN_NAME_AB_GENERATION_ID.toSnowflakeCompatibleName()}"
             FROM ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}
             LIMIT 1
         """
@@ -398,19 +428,19 @@ class SnowflakeDirectLoadSqlGenerator(
         val prettyTableName = snowflakeSqlNameUtils.fullyQualifiedName(tableName)
         addedColumns.forEach {
             clauses.add(
-                "ALTER TABLE $prettyTableName ADD COLUMN \"${it.name}\" ${it.type};".andLog()
+                "ALTER TABLE $prettyTableName ADD COLUMN ${it.name.quote()} ${it.type};".andLog()
             )
         }
         deletedColumns.forEach {
-            clauses.add("ALTER TABLE $prettyTableName DROP COLUMN \"${it.name}\";".andLog())
+            clauses.add("ALTER TABLE $prettyTableName DROP COLUMN ${it.name.quote()};".andLog())
         }
         modifiedColumns.forEach {
             val tempColumn = "${it.name}_${uuidGenerator.v4()}"
             clauses.add(
-                "ALTER TABLE $prettyTableName ADD COLUMN \"$tempColumn\" ${it.type};".andLog()
+                "ALTER TABLE $prettyTableName ADD COLUMN ${tempColumn.quote()} ${it.type};".andLog()
             )
             clauses.add(
-                "UPDATE $prettyTableName SET \"$tempColumn\" = CAST(\"${it.name}\" AS ${it.type});".andLog()
+                "UPDATE $prettyTableName SET ${tempColumn.quote()} = CAST(${it.name.quote()} AS ${it.type});".andLog()
             )
             val backupColumn = "${tempColumn}_backup"
             clauses.add(
@@ -423,7 +453,9 @@ class SnowflakeDirectLoadSqlGenerator(
                 RENAME COLUMN "$tempColumn" TO "${it.name}";
             """.trimIndent()
             )
-            clauses.add("ALTER TABLE $prettyTableName DROP COLUMN \"$backupColumn\";".andLog())
+            clauses.add(
+                "ALTER TABLE $prettyTableName DROP COLUMN ${backupColumn.quote()};".andLog()
+            )
         }
         return clauses
     }

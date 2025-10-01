@@ -10,9 +10,7 @@ import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.csv.toCsvValue
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.util.Jsons
-import io.airbyte.integrations.destination.snowflake.sql.DEFAULT_COLUMNS
-
-internal val RAW_META_COLUMNS = DEFAULT_COLUMNS.map { column -> column.columnName }
+import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 
 interface SnowflakeRecordFormatter {
     fun format(record: Map<String, AirbyteValue>): List<Any>
@@ -20,7 +18,12 @@ interface SnowflakeRecordFormatter {
 
 class SnowflakeSchemaRecordFormatter(
     private val columns: List<String>,
+    val snowflakeColumnUtils: SnowflakeColumnUtils,
 ) : SnowflakeRecordFormatter {
+
+    private val airbyteColumnNames =
+        snowflakeColumnUtils.getFormattedDefaultColumnNames(false).toSet()
+
     override fun format(record: Map<String, AirbyteValue>): List<Any> =
         columns
             /*
@@ -30,7 +33,7 @@ class SnowflakeSchemaRecordFormatter(
              * column names.
              */
             .map { columnName ->
-                if (RAW_META_COLUMNS.contains(columnName)) {
+                if (airbyteColumnNames.contains(columnName)) {
                     record[columnName.lowercase()].toCsvValue()
                 } else if (record.containsKey(columnName)) record[columnName].toCsvValue() else ""
             }
@@ -38,7 +41,11 @@ class SnowflakeSchemaRecordFormatter(
 
 class SnowflakeRawRecordFormatter(
     private val columns: List<String>,
+    val snowflakeColumnUtils: SnowflakeColumnUtils,
 ) : SnowflakeRecordFormatter {
+
+    private val airbyteColumnNames =
+        snowflakeColumnUtils.getFormattedDefaultColumnNames(false).toSet()
 
     override fun format(record: Map<String, AirbyteValue>): List<Any> =
         toOutputRecord(record.toMutableMap())
@@ -48,7 +55,7 @@ class SnowflakeRawRecordFormatter(
         // Copy the Airbyte metadata columns to the raw output, removing each
         // one from the record to avoid duplicates in the "data" field
         columns
-            .filter { RAW_META_COLUMNS.contains(it) }
+            .filter { airbyteColumnNames.contains(it) }
             /*
              * Meta columns are forced to uppercase for backwards compatibility with previous
              * versions of the destination.  Therefore, convert the column to lowercase so

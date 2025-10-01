@@ -15,9 +15,11 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
+import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.COUNT_TOTAL_ALIAS
 import io.airbyte.integrations.destination.snowflake.sql.ColumnAndType
+import io.airbyte.integrations.destination.snowflake.sql.DEFAULT_COLUMNS
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlGenerator
 import io.mockk.Runs
@@ -48,7 +50,15 @@ internal class SnowflakeAirbyteClientTest {
     fun setup() {
         dataSource = mockk()
         sqlGenerator = mockk(relaxed = true)
-        snowflakeColumnUtils = mockk(relaxed = true)
+        snowflakeColumnUtils =
+            mockk(relaxed = true) {
+                every { formatColumnName(any()) } answers
+                    {
+                        firstArg<String>().toSnowflakeCompatibleName()
+                    }
+                every { getFormattedDefaultColumnNames(any()) } returns
+                    DEFAULT_COLUMNS.map { it.columnName.toSnowflakeCompatibleName() }
+            }
         snowflakeConfiguration = mockk(relaxed = true)
         client =
             SnowflakeAirbyteClient(
@@ -358,7 +368,8 @@ internal class SnowflakeAirbyteClientTest {
         val resultSet =
             mockk<ResultSet> {
                 every { next() } returns true
-                every { getLong(COLUMN_NAME_AB_GENERATION_ID.uppercase()) } returns generationId
+                every { getLong(COLUMN_NAME_AB_GENERATION_ID.toSnowflakeCompatibleName()) } returns
+                    generationId
             }
         val statement =
             mockk<Statement> {
@@ -536,7 +547,7 @@ internal class SnowflakeAirbyteClientTest {
         every { resultSet.next() } returns true andThen true andThen true andThen false
         every { resultSet.getString("name") } returns
             "COL1" andThen
-            COLUMN_NAME_AB_RAW_ID.uppercase() andThen
+            COLUMN_NAME_AB_RAW_ID.toSnowflakeCompatibleName() andThen
             "COL2"
         every { resultSet.getString("type") } returns "VARCHAR(255)" andThen "NUMBER(38,0)"
         every { resultSet.getString("null?") } returns "Y" andThen "N" andThen "N"

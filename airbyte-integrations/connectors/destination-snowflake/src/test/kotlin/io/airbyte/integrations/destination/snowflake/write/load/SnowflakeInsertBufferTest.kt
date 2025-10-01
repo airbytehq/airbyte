@@ -12,6 +12,7 @@ import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
+import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
@@ -28,10 +29,12 @@ import org.junit.jupiter.api.Test
 internal class SnowflakeInsertBufferTest {
 
     private lateinit var snowflakeConfiguration: SnowflakeConfiguration
+    private lateinit var snowflakeColumnUtils: SnowflakeColumnUtils
 
     @BeforeEach
     fun setUp() {
         snowflakeConfiguration = mockk(relaxed = true)
+        snowflakeColumnUtils = mockk(relaxed = true)
     }
 
     @Test
@@ -48,6 +51,7 @@ internal class SnowflakeInsertBufferTest {
                 snowflakeClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
                 flushLimit = 1,
+                snowflakeColumnUtils = snowflakeColumnUtils,
             )
 
         buffer.accumulate(record)
@@ -70,6 +74,7 @@ internal class SnowflakeInsertBufferTest {
                 snowflakeClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
                 flushLimit = 1,
+                snowflakeColumnUtils = snowflakeColumnUtils,
             )
 
         every { snowflakeConfiguration.legacyRawTablesOnly } returns true
@@ -94,6 +99,7 @@ internal class SnowflakeInsertBufferTest {
                 snowflakeClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
                 flushLimit = 1,
+                snowflakeColumnUtils = snowflakeColumnUtils,
             )
 
         runBlocking {
@@ -119,6 +125,7 @@ internal class SnowflakeInsertBufferTest {
                 snowflakeClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
                 flushLimit = 1,
+                snowflakeColumnUtils = snowflakeColumnUtils,
             )
 
         every { snowflakeConfiguration.legacyRawTablesOnly } returns true
@@ -147,6 +154,7 @@ internal class SnowflakeInsertBufferTest {
                 snowflakeClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
                 flushLimit = 1,
+                snowflakeColumnUtils = snowflakeColumnUtils,
             )
 
         runBlocking {
@@ -175,6 +183,7 @@ internal class SnowflakeInsertBufferTest {
                 snowflakeClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
                 flushLimit = 1,
+                snowflakeColumnUtils = snowflakeColumnUtils,
             )
 
         every { snowflakeConfiguration.legacyRawTablesOnly } returns true

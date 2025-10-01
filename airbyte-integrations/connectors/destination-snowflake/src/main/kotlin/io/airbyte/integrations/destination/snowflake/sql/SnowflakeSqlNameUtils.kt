@@ -5,24 +5,28 @@
 package io.airbyte.integrations.destination.snowflake.sql
 
 import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import jakarta.inject.Singleton
 
 const val STAGE_NAME_PREFIX = "airbyte_stage_"
 internal const val STAGE_FORMAT_NAME: String = "airbyte_csv_format"
 internal const val QUOTE: String = "\""
+internal const val SINGLE_QUOTE: String = "'"
+
+fun sqlEscapeSingleQuote(part: String) = part.replace("'", "\\'")
+
+fun sqlEscape(part: String) = sqlEscapeSingleQuote(part.replace("\\", "\\\\").replace("\"", "\\\""))
 
 @Singleton
 class SnowflakeSqlNameUtils(
     private val snowflakeConfiguration: SnowflakeConfiguration,
 ) {
-    fun escape(part: String) = part.replace("\\", "\\\\").replace("'", "\\'").replace("\"", "\\\"")
-
     fun fullyQualifiedName(tableName: TableName): String =
         combineParts(listOf(getDatabaseName(), tableName.namespace, tableName.name))
 
     fun fullyQualifiedNamespace(namespace: String) =
-        combineParts(listOf(getDatabaseName(), namespace))
+        combineParts(listOf(getDatabaseName(), namespace.toSnowflakeCompatibleName()))
 
     fun fullyQualifiedStageName(tableName: TableName, escape: Boolean = false): String {
         val currentTableName =
@@ -47,15 +51,14 @@ class SnowflakeSqlNameUtils(
 
     fun combineParts(parts: List<String>, escape: Boolean = false): String =
         parts
-            .map { if (escape) escape(it) else it }
+            .map { if (escape) sqlEscape(it) else it }
             .joinToString(separator = ".") {
                 if (!it.startsWith(QUOTE)) {
-                        "$QUOTE$it$QUOTE"
-                    } else {
-                        it
-                    }
-                    .uppercase()
+                    "$QUOTE$it$QUOTE"
+                } else {
+                    it
+                }
             }
 
-    private fun getDatabaseName() = snowflakeConfiguration.database
+    private fun getDatabaseName() = snowflakeConfiguration.database.toSnowflakeCompatibleName()
 }

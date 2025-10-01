@@ -19,6 +19,7 @@ import io.airbyte.integrations.destination.snowflake.db.SnowflakeFinalTableNameG
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeSqlNameUtils
+import io.airbyte.integrations.destination.snowflake.sql.sqlEscape
 import java.math.BigDecimal
 import net.snowflake.client.jdbc.SnowflakeTimestampWithTimezone
 
@@ -51,8 +52,8 @@ class SnowflakeDataDumper(
                     """
                     SELECT COUNT(*) AS TABLE_COUNT
                     FROM information_schema.tables
-                    WHERE table_schema = '${sqlUtils.escape(tableName.namespace.replace("\"\"", "\""))}'
-                    AND table_name = '${sqlUtils.escape(tableName.name.replace("\"\"", "\""))}'
+                    WHERE table_schema = '${sqlEscape(tableName.namespace.replace("\"\"", "\""))}'
+                    AND table_name = '${sqlEscape(tableName.name.replace("\"\"", "\""))}'
                 """.trimIndent()
 
                 val existsResultSet = statement.executeQuery(tableExistsQuery)
@@ -77,7 +78,7 @@ class SnowflakeDataDumper(
                         val columnType = resultSet.metaData.getColumnTypeName(i)
                         if (!AIRBYTE_META_COLUMNS.contains(columnName.lowercase())) {
                             val value = resultSet.getObject(i)
-                            dataMap[columnName.uppercase().toSnowflakeCompatibleName()] =
+                            dataMap[columnName] =
                                 value?.let {
                                     AirbyteValue.from(
                                         convertValue(
@@ -93,7 +94,10 @@ class SnowflakeDataDumper(
                     }
                     val outputRecord =
                         OutputRecord(
-                            rawId = resultSet.getString(Meta.COLUMN_NAME_AB_RAW_ID.uppercase()),
+                            rawId =
+                                resultSet.getString(
+                                    Meta.COLUMN_NAME_AB_RAW_ID.toSnowflakeCompatibleName()
+                                ),
                             extractedAt =
                                 resultSet
                                     .getTimestamp(Meta.COLUMN_NAME_AB_EXTRACTED_AT.uppercase())

@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.snowflake.sql
 
+import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.ArrayType
 import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
@@ -22,13 +23,13 @@ import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
-import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
-import io.airbyte.cdk.load.orchestration.db.CDC_DELETED_AT_COLUMN
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_DATA
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
+import io.airbyte.integrations.destination.snowflake.db.SnowflakeColumnNameGenerator
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import jakarta.inject.Singleton
 import kotlin.collections.component1
@@ -42,61 +43,76 @@ internal const val NOT_NULL = "NOT NULL"
 internal val DEFAULT_COLUMNS =
     listOf(
         ColumnAndType(
-            columnName = COLUMN_NAME_AB_RAW_ID.uppercase(),
+            columnName = COLUMN_NAME_AB_RAW_ID,
             columnType = "${SnowflakeDataType.VARCHAR.typeName} $NOT_NULL"
         ),
         ColumnAndType(
-            columnName = COLUMN_NAME_AB_EXTRACTED_AT.uppercase(),
+            columnName = COLUMN_NAME_AB_EXTRACTED_AT,
             columnType = "${SnowflakeDataType.TIMESTAMP_TZ.typeName} $NOT_NULL"
         ),
         ColumnAndType(
-            columnName = COLUMN_NAME_AB_META.uppercase(),
+            columnName = COLUMN_NAME_AB_META,
             columnType = "${SnowflakeDataType.VARIANT.typeName} $NOT_NULL"
         ),
         ColumnAndType(
-            columnName = COLUMN_NAME_AB_GENERATION_ID.uppercase(),
+            columnName = COLUMN_NAME_AB_GENERATION_ID,
             columnType = SnowflakeDataType.NUMBER.typeName
         ),
     )
 
 internal val RAW_DATA_COLUMN =
     ColumnAndType(
-        columnName = Meta.COLUMN_NAME_DATA,
+        columnName = COLUMN_NAME_DATA,
         columnType = "${SnowflakeDataType.VARCHAR.typeName} $NOT_NULL"
     )
 
 @Singleton
 class SnowflakeColumnUtils(
     private val snowflakeConfiguration: SnowflakeConfiguration,
+    private val snowflakeColumnNameGenerator: SnowflakeColumnNameGenerator,
 ) {
 
-    fun defaultColumns(): List<ColumnAndType> =
+    @VisibleForTesting
+    internal fun defaultColumns(): List<ColumnAndType> =
         if (snowflakeConfiguration.legacyRawTablesOnly == true) {
             DEFAULT_COLUMNS + listOf(RAW_DATA_COLUMN)
         } else {
             DEFAULT_COLUMNS
         }
 
+    internal fun formattedDefaultColumns(): List<ColumnAndType> =
+        defaultColumns().map {
+            ColumnAndType(
+                columnName = formatColumnName(it.columnName, false),
+                columnType = it.columnType,
+            )
+        }
+
     fun getColumnNames(columnNameMapping: ColumnNameMapping): String =
         if (snowflakeConfiguration.legacyRawTablesOnly == true) {
-            defaultColumns().joinToString(",") { "\"${it.columnName}\"" }
+            getFormattedDefaultColumnNames(true).joinToString(",")
         } else {
-            (defaultColumns().map { it.columnName } +
-                    columnNameMapping.map { (_, actualName) -> actualName })
-                .joinToString(",") { "\"$it\"" }
+            (getFormattedDefaultColumnNames(true) +
+                    columnNameMapping.map { (_, actualName) -> formatColumnName(actualName) })
+                .joinToString(",")
         }
+
+    fun getFormattedDefaultColumnNames(quote: Boolean = false): List<String> =
+        defaultColumns().map { formatColumnName(it.columnName, quote) }
 
     fun getFormattedColumnNames(
         columns: Map<String, FieldType>,
-        columnNameMapping: ColumnNameMapping
+        columnNameMapping: ColumnNameMapping,
+        quote: Boolean = true,
+        escape: Boolean = false,
     ): List<String> =
         if (snowflakeConfiguration.legacyRawTablesOnly == true) {
-            defaultColumns().map { "\"${it.columnName}\"" }
+            getFormattedDefaultColumnNames(quote)
         } else {
-            defaultColumns().map { "\"${it.columnName}\"" } +
+            getFormattedDefaultColumnNames(quote) +
                 columns.map { (fieldName, _) ->
                     val columnName = columnNameMapping[fieldName] ?: fieldName
-                    formatColumnName("\"${columnName}\"")
+                    formatColumnName(columnName, quote, escape)
                 }
         }
 
@@ -105,24 +121,30 @@ class SnowflakeColumnUtils(
         columnNameMapping: ColumnNameMapping
     ): List<ColumnAndType> =
         if (snowflakeConfiguration.legacyRawTablesOnly == true) {
-            defaultColumns()
+            formattedDefaultColumns()
         } else {
-            defaultColumns() +
+            formattedDefaultColumns() +
                 columns.map { (fieldName, type) ->
                     val columnName = columnNameMapping[fieldName] ?: fieldName
                     val typeName = toDialectType(type.type)
                     ColumnAndType(
-                        columnName = formatColumnName(columnName),
+                        columnName = formatColumnName(columnName, false),
                         columnType = typeName,
                     )
                 }
         }
 
-    fun formatColumnName(columnName: String) =
-        columnName
-            // For backwards compatibility with previous version of Snowflake destination
-            .replace(CDC_DELETED_AT_COLUMN, CDC_DELETED_AT_COLUMN.uppercase())
-            .uppercase()
+    fun formatColumnName(
+        columnName: String,
+        quote: Boolean = true,
+        escape: Boolean = false
+    ): String {
+        var formattedColumnName =
+            if (columnName == COLUMN_NAME_DATA) columnName
+            else snowflakeColumnNameGenerator.getColumnName(columnName).displayName
+        formattedColumnName = if (escape) sqlEscape(formattedColumnName) else formattedColumnName
+        return if (quote) formattedColumnName.quote() else formattedColumnName
+    }
 
     fun toDialectType(type: AirbyteType): String =
         when (type) {
@@ -147,6 +169,18 @@ class SnowflakeColumnUtils(
 
 data class ColumnAndType(val columnName: String, val columnType: String) {
     override fun toString(): String {
-        return "\"${columnName}\" $columnType"
+        return "${columnName.quote()} $columnType"
     }
 }
+
+/**
+ * Surrounds the string instance with double quotation marks (e.g. "some string" -> "\"some
+ * string\"").
+ */
+fun String.quote() = "$QUOTE$this$QUOTE"
+
+/**
+ * Surrounds the string instance with single quotation marks (e.g. "some string" -> "'some
+ * string'").
+ */
+fun String.singleQuote() = "$SINGLE_QUOTE$this$SINGLE_QUOTE"
