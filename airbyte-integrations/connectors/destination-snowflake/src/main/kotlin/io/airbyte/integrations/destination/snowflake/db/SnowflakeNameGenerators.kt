@@ -17,21 +17,24 @@ import java.util.UUID
 @Singleton
 class SnowflakeFinalTableNameGenerator(private val config: SnowflakeConfiguration) :
     FinalTableNameGenerator {
-    override fun getTableName(streamDescriptor: DestinationStream.Descriptor) =
-        TableName(
-            namespace =
-                (config.internalTableSchema ?: (streamDescriptor.namespace ?: config.schema))
-                    .toSnowflakeCompatibleName(),
-            name =
-                if (config.internalTableSchema.isNullOrBlank()) {
-                    streamDescriptor.name.toSnowflakeCompatibleName()
-                } else {
+    override fun getTableName(streamDescriptor: DestinationStream.Descriptor): TableName {
+        val namespace = streamDescriptor.namespace ?: config.schema
+        return if (!config.legacyRawTablesOnly) {
+            TableName(
+                namespace = namespace.toSnowflakeCompatibleName(),
+                name = streamDescriptor.name.toSnowflakeCompatibleName(),
+            )
+        } else {
+            TableName(
+                namespace = config.internalTableSchema,
+                name =
                     TypingDedupingUtil.concatenateRawTableName(
-                        (streamDescriptor.namespace ?: config.schema).toSnowflakeCompatibleName(),
-                        streamDescriptor.name.toSnowflakeCompatibleName()
-                    )
-                },
-        )
+                        namespace = namespace,
+                        name = streamDescriptor.name,
+                    ),
+            )
+        }
+    }
 }
 
 @Singleton
