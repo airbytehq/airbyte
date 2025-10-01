@@ -20,16 +20,16 @@ All sync modes are supported.
 | Namespaces                     | Yes                  |                                |
 ### Deduplication
 
-When using Incremental - Append + Deduped sync mode, the connector creates tables using ClickHouse's `ReplacingMergeTree` engine to handle deduplication.
-
-The connector uses your configured cursor column as the version parameter for `ReplacingMergeTree` when the cursor is one of these types:
+For optimal deduplication in Incremental - Append + Deduped sync mode, use a cursor column with one of these types:
 - Integer types (Int64, etc.)
 - Date
 - Timestamp (DateTime64)
 
-If your cursor column is a different type (such as String), the connector automatically falls back to using the `_airbyte_extracted_at` timestamp for deduplication ordering. You may see a warning in the sync logs when this fallback occurs.
+If you use a different cursor column type (such as String), the connector will fall back to using the `_airbyte_extracted_at` timestamp for deduplication ordering. This fallback may not accurately reflect your source data's natural ordering, and you'll see a warning in the sync logs.
 
-For optimal deduplication based on your source data's natural ordering, use a cursor column with one of the supported types listed above.
+:::note Technical details
+The connector uses ClickHouse's `ReplacingMergeTree` engine for deduplication, with your cursor column as the version parameter when supported types are used.
+:::
 
 
 
