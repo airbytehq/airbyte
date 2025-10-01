@@ -37,11 +37,14 @@ class SnowflakeSchemaRecordFormatter(
                 if (airbyteColumnNames.contains(columnName)) {
                     record[columnName.lowercase()].toCsvValue()
                 }
-                // This is bad and we should feel bad. Ideally we would not call toSnowflakeCompatibleName
+                // This is bad and we should feel bad. Ideally we would not call
+                // toSnowflakeCompatibleName
                 // in there. A better scenario here is to do something like:
                 // columnNameMapping.filter { (_, v) -> v == columnName }.keys.first()
                 // but ¯\_(ツ)_/¯
-                else if (record.containsKey(columnName.toSnowflakeCompatibleName())) record[columnName.toSnowflakeCompatibleName()].toCsvValue() else ""
+                else if (record.containsKey(columnName.toSnowflakeCompatibleName()))
+                    record[columnName.toSnowflakeCompatibleName()].toCsvValue()
+                else ""
             }
 }
 
