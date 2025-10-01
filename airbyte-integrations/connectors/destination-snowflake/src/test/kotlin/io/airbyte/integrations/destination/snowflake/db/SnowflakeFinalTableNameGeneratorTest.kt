@@ -30,11 +30,12 @@ internal class SnowflakeFinalTableNameGeneratorTest {
                 every { name } returns streamName
             }
         val tableName = generator.getTableName(streamDescriptor)
-        assertEquals(
-            TypingDedupingUtil.concatenateRawTableName(streamNamespace, streamName)
-                .toSnowflakeCompatibleName(),
-            tableName.name
-        )
+        val expectedTableName =
+            TypingDedupingUtil.concatenateRawTableName(
+                streamNamespace.toSnowflakeCompatibleName(),
+                streamName.toSnowflakeCompatibleName()
+            )
+        assertEquals(expectedTableName, tableName.name)
         assertEquals(internalNamespace.toSnowflakeCompatibleName(), tableName.namespace)
     }
 

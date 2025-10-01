@@ -7,6 +7,8 @@ package io.airbyte.integrations.destination.snowflake.check
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
+import io.airbyte.integrations.destination.snowflake.sql.DEFAULT_COLUMNS
+import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -28,11 +30,17 @@ internal class SnowflakeCheckerTest {
             every { schema } returns testSchema
             every { legacyRawTablesOnly } returns isLegacyRawTablesOnly
         }
+        val snowflakeColumnUtils =
+            mockk<SnowflakeColumnUtils>(relaxUnitFun = true) {
+                every { getFormattedDefaultColumnNames(any()) } returns
+                    DEFAULT_COLUMNS.map { it.columnName.toSnowflakeCompatibleName() }
+            }
 
         val checker =
             SnowflakeChecker(
                 snowflakeAirbyteClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
+                snowflakeColumnUtils = snowflakeColumnUtils,
             )
         checker.check()
 
@@ -54,11 +62,17 @@ internal class SnowflakeCheckerTest {
             every { schema } returns testSchema
             every { legacyRawTablesOnly } returns isLegacyRawTablesOnly
         }
+        val snowflakeColumnUtils =
+            mockk<SnowflakeColumnUtils>(relaxUnitFun = true) {
+                every { getFormattedDefaultColumnNames(any()) } returns
+                    DEFAULT_COLUMNS.map { it.columnName.toSnowflakeCompatibleName() }
+            }
 
         val checker =
             SnowflakeChecker(
                 snowflakeAirbyteClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
+                snowflakeColumnUtils = snowflakeColumnUtils,
             )
 
         assertThrows<IllegalArgumentException> { checker.check() }

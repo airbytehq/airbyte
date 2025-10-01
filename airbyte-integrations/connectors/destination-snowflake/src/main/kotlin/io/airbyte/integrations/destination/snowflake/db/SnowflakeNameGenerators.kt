@@ -10,8 +10,8 @@ import io.airbyte.cdk.load.orchestration.db.FinalTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingUtil
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
+import io.airbyte.integrations.destination.snowflake.sql.QUOTE
 import jakarta.inject.Singleton
-import java.util.Locale
 import java.util.UUID
 
 @Singleton
@@ -27,10 +27,9 @@ class SnowflakeFinalTableNameGenerator(private val config: SnowflakeConfiguratio
                     streamDescriptor.name.toSnowflakeCompatibleName()
                 } else {
                     TypingDedupingUtil.concatenateRawTableName(
-                            streamDescriptor.namespace ?: config.schema,
-                            streamDescriptor.name
-                        )
-                        .toSnowflakeCompatibleName()
+                        (streamDescriptor.namespace ?: config.schema).toSnowflakeCompatibleName(),
+                        streamDescriptor.name.toSnowflakeCompatibleName()
+                    )
                 },
         )
 }
@@ -40,7 +39,7 @@ class SnowflakeColumnNameGenerator : ColumnNameGenerator {
     override fun getColumnName(column: String): ColumnNameGenerator.ColumnName {
         return ColumnNameGenerator.ColumnName(
             column.toSnowflakeCompatibleName(),
-            column.lowercase(Locale.getDefault()).toSnowflakeCompatibleName(),
+            column.toSnowflakeCompatibleName(),
         )
     }
 }
@@ -55,7 +54,7 @@ fun escapeJsonIdentifier(identifier: String): String {
     // Note that we don't need to escape backslashes here!
     // The only special character in an identifier is the double-quote, which needs to be
     // doubled.
-    return identifier.replace("\"", "\"\"")
+    return identifier.replace(QUOTE, "$QUOTE$QUOTE")
 }
 
 /**

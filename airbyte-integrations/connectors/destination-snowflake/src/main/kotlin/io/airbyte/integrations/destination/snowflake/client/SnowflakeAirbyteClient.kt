@@ -7,13 +7,13 @@ package io.airbyte.integrations.destination.snowflake.client
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.client.AirbyteClient
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAMES
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNativeOperations
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableSqlOperations
 import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
+import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.COUNT_TOTAL_ALIAS
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
@@ -37,16 +37,21 @@ class SnowflakeAirbyteClient(
     private val snowflakeConfiguration: SnowflakeConfiguration,
 ) : AirbyteClient, DirectLoadTableSqlOperations, DirectLoadTableNativeOperations {
 
+    private val airbyteColumnNames =
+        snowflakeColumnUtils.getFormattedDefaultColumnNames(false).toSet()
+
     override suspend fun countTable(tableName: TableName): Long? =
         try {
             dataSource.connection.use { connection ->
-                val resultSet =
-                    connection.createStatement().executeQuery(sqlGenerator.countTable(tableName))
+                val statement = connection.createStatement()
+                statement.use {
+                    val resultSet = it.executeQuery(sqlGenerator.countTable(tableName))
 
-                if (resultSet.next()) {
-                    resultSet.getLong(COUNT_TOTAL_ALIAS)
-                } else {
-                    0L
+                    if (resultSet.next()) {
+                        resultSet.getLong(COUNT_TOTAL_ALIAS)
+                    } else {
+                        0L
+                    }
                 }
             }
         } catch (e: SnowflakeSQLException) {
@@ -179,46 +184,48 @@ class SnowflakeAirbyteClient(
         val sql =
             sqlGenerator.describeTable(schemaName = tableName.namespace, tableName = tableName.name)
         dataSource.connection.use { connection ->
-            val rs: ResultSet = connection.createStatement().executeQuery(sql)
-            val columnsInDb: MutableSet<ColumnDefinition> = mutableSetOf()
+            val statement = connection.createStatement()
+            return statement.use {
+                val rs: ResultSet = it.executeQuery(sql)
+                val columnsInDb: MutableSet<ColumnDefinition> = mutableSetOf()
 
-            while (rs.next()) {
-                val columnName = rs.getString("name")
-                // Filter out airbyte columns
-                if (COLUMN_NAMES.contains(columnName)) {
-                    continue
+                while (rs.next()) {
+                    val columnName = rs.getString("name")
+
+                    // Filter out airbyte columns
+                    if (airbyteColumnNames.contains(columnName)) {
+                        continue
+                    }
+                    val dataType = rs.getString("type").takeWhile { char -> char != '(' }
+
+                    columnsInDb.add(ColumnDefinition(columnName, dataType, false))
                 }
-                val dataType = rs.getString("type").takeWhile { char -> char != '(' }
 
-                val isNullable = rs.getString("null?") == "Y"
-                columnsInDb.add(ColumnDefinition(columnName, dataType, isNullable))
+                columnsInDb
             }
-            return columnsInDb
         }
     }
 
     internal fun getColumnsFromStream(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping
-    ): Set<ColumnDefinition> {
-        return stream.schema
-            .asColumns()
-            .map { (name, fieldType) ->
-                // Snowflake is case-insensitive by default and stores identifiers in
-                // uppercase.
-                // We should probably be using the mapping in columnNameMapping, but for
-                // now, this is a good enough approximation.
-                val mappedName = columnNameMapping[name] ?: name
+    ) =
+        snowflakeColumnUtils
+            .columnsAndTypes(stream.schema.asColumns(), columnNameMapping)
+            .filter { column -> column.columnName !in airbyteColumnNames }
+            .map { column ->
                 ColumnDefinition(
-                    mappedName,
-                    snowflakeColumnUtils.toDialectType(fieldType.type).takeWhile { char ->
-                        char != '('
-                    },
-                    fieldType.nullable
+                    name = snowflakeColumnUtils.formatColumnName(column.columnName, false),
+                    type =
+                        column.columnType.takeWhile { char ->
+                            // This is to remove any precision parts of the dialect type
+                            char != '('
+                        },
+                    // Not used to ensure schema
+                    isPrimaryKey = false,
                 )
             }
             .toSet()
-    }
 
     internal fun generateSchemaChanges(
         columnsInDb: Set<ColumnDefinition>,
@@ -244,12 +251,20 @@ class SnowflakeAirbyteClient(
         try {
             val sql = sqlGenerator.getGenerationId(tableName)
             dataSource.connection.use { connection ->
-                val resultSet = connection.createStatement().executeQuery(sql)
-                if (resultSet.next()) {
-                    resultSet.getLong(COLUMN_NAME_AB_GENERATION_ID)
-                } else {
-                    log.warn { "No generation ID found for table $tableName, returning 0" }
-                    0L
+                val statement = connection.createStatement()
+                statement.use {
+                    val resultSet = connection.createStatement().executeQuery(sql)
+                    if (resultSet.next()) {
+                        /*
+                         * When we retrieve the column names from the database, they are in unescaped
+                         * format.  In order to make sure these strings will match any column names
+                         * that we have formatted in-memory, re-apply the escaping.
+                         */
+                        resultSet.getLong(COLUMN_NAME_AB_GENERATION_ID.toSnowflakeCompatibleName())
+                    } else {
+                        log.warn { "No generation ID found for table $tableName, returning 0" }
+                        0L
+                    }
                 }
             }
         } catch (e: Exception) {
@@ -272,15 +287,23 @@ class SnowflakeAirbyteClient(
 
     fun describeTable(tableName: TableName): List<String> =
         dataSource.connection.use { connection ->
-            val resultSet =
-                connection.createStatement().executeQuery(sqlGenerator.showColumns(tableName))
-            val columns = mutableListOf<String>()
-            while (resultSet.next()) {
-                columns.add(resultSet.getString(DESCRIBE_TABLE_COLUMN_NAME_FIELD))
+            val statement = connection.createStatement()
+            return statement.use {
+                val resultSet = it.executeQuery(sqlGenerator.showColumns(tableName))
+                val columns = mutableListOf<String>()
+                while (resultSet.next()) {
+                    columns.add(
+                        resultSet
+                            .getString(DESCRIBE_TABLE_COLUMN_NAME_FIELD)
+                            .toSnowflakeCompatibleName()
+                    )
+                }
+                columns
             }
-            return columns
         }
 
     internal fun execute(query: String) =
-        dataSource.connection.use { connection -> connection.createStatement().executeQuery(query) }
+        dataSource.connection.use { connection ->
+            connection.createStatement().use { it.executeQuery(query) }
+        }
 }
