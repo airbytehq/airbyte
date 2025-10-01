@@ -78,7 +78,7 @@ class SnowflakeConfigurationFactory :
                 if (pojo.internalTableSchema.isNullOrBlank()) {
                     DbConstants.DEFAULT_RAW_TABLE_NAMESPACE
                 } else {
-                    pojo.internalTableSchema
+                    pojo.internalTableSchema!!
                 },
             jdbcUrlParams = pojo.jdbcUrlParams,
             retentionPeriodDays = pojo.retentionPeriodDays ?: 1
