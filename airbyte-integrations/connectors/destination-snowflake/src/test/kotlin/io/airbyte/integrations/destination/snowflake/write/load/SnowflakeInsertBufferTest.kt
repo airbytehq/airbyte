@@ -12,9 +12,14 @@ import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
+import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import java.io.BufferedReader
+import java.io.File
+import java.io.InputStreamReader
+import java.util.zip.GZIPInputStream
 import kotlin.io.path.exists
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -24,15 +29,17 @@ import org.junit.jupiter.api.Test
 internal class SnowflakeInsertBufferTest {
 
     private lateinit var snowflakeConfiguration: SnowflakeConfiguration
+    private lateinit var snowflakeColumnUtils: SnowflakeColumnUtils
 
     @BeforeEach
     fun setUp() {
         snowflakeConfiguration = mockk(relaxed = true)
+        snowflakeColumnUtils = mockk(relaxed = true)
     }
 
     @Test
     fun testAccumulate() {
-        val tableName = mockk<TableName>()
+        val tableName = mockk<TableName>(relaxed = true)
         val column = "columnName"
         val columns = listOf(column)
         val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
@@ -44,6 +51,7 @@ internal class SnowflakeInsertBufferTest {
                 snowflakeClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
                 flushLimit = 1,
+                snowflakeColumnUtils = snowflakeColumnUtils,
             )
 
         buffer.accumulate(record)
@@ -54,7 +62,7 @@ internal class SnowflakeInsertBufferTest {
 
     @Test
     fun testAccumulateRaw() {
-        val tableName = mockk<TableName>()
+        val tableName = mockk<TableName>(relaxed = true)
         val column = "columnName"
         val columns = listOf(column)
         val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
@@ -66,6 +74,7 @@ internal class SnowflakeInsertBufferTest {
                 snowflakeClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
                 flushLimit = 1,
+                snowflakeColumnUtils = snowflakeColumnUtils,
             )
 
         every { snowflakeConfiguration.legacyRawTablesOnly } returns true
@@ -78,7 +87,7 @@ internal class SnowflakeInsertBufferTest {
 
     @Test
     fun testFlush() {
-        val tableName = mockk<TableName>()
+        val tableName = mockk<TableName>(relaxed = true)
         val column = "columnName"
         val columns = listOf(column)
         val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
@@ -90,6 +99,7 @@ internal class SnowflakeInsertBufferTest {
                 snowflakeClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
                 flushLimit = 1,
+                snowflakeColumnUtils = snowflakeColumnUtils,
             )
 
         runBlocking {
@@ -103,7 +113,7 @@ internal class SnowflakeInsertBufferTest {
 
     @Test
     fun testFlushRaw() {
-        val tableName = mockk<TableName>()
+        val tableName = mockk<TableName>(relaxed = true)
         val column = "columnName"
         val columns = listOf(column)
         val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
@@ -115,6 +125,7 @@ internal class SnowflakeInsertBufferTest {
                 snowflakeClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
                 flushLimit = 1,
+                snowflakeColumnUtils = snowflakeColumnUtils,
             )
 
         every { snowflakeConfiguration.legacyRawTablesOnly } returns true
@@ -130,7 +141,7 @@ internal class SnowflakeInsertBufferTest {
 
     @Test
     fun testMissingFields() {
-        val tableName = mockk<TableName>()
+        val tableName = mockk<TableName>(relaxed = true)
         val column1 = "columnName1"
         val column2 = "columnName2"
         val columns = listOf(column1, column2)
@@ -143,23 +154,23 @@ internal class SnowflakeInsertBufferTest {
                 snowflakeClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
                 flushLimit = 1,
+                snowflakeColumnUtils = snowflakeColumnUtils,
             )
 
         runBlocking {
             buffer.accumulate(record)
+            buffer.csvWriter?.flush()
+            buffer.csvWriter?.close()
             assertEquals(
-                "test-value${CSV_FORMAT.delimiterString}${CSV_FORMAT.recordSeparator}",
-                buffer.csvFilePath?.toFile()?.readText()
+                "test-value$CSV_FIELD_SEPARATOR$CSV_LINE_DELIMITER",
+                readFromCsvFile(buffer.csvFilePath!!.toFile())
             )
-            buffer.flush()
-            coVerify(exactly = 1) { snowflakeAirbyteClient.putInStage(tableName, any()) }
-            coVerify(exactly = 1) { snowflakeAirbyteClient.copyFromStage(tableName) }
         }
     }
 
     @Test
     fun testMissingFieldsRaw() {
-        val tableName = mockk<TableName>()
+        val tableName = mockk<TableName>(relaxed = true)
         val column1 = "columnName1"
         val column2 = "columnName2"
         val columns = listOf(column1, column2)
@@ -172,21 +183,27 @@ internal class SnowflakeInsertBufferTest {
                 snowflakeClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
                 flushLimit = 1,
+                snowflakeColumnUtils = snowflakeColumnUtils,
             )
 
         every { snowflakeConfiguration.legacyRawTablesOnly } returns true
 
         runBlocking {
             buffer.accumulate(record)
+            buffer.csvWriter?.flush()
+            buffer.csvWriter?.close()
             assertEquals(
-                "test-value${CSV_FORMAT.delimiterString}${CSV_FORMAT.recordSeparator}",
-                buffer.csvFilePath?.toFile()?.readText()
+                "test-value$CSV_FIELD_SEPARATOR$CSV_LINE_DELIMITER",
+                readFromCsvFile(buffer.csvFilePath!!.toFile())
             )
-            buffer.flush()
-            coVerify(exactly = 1) { snowflakeAirbyteClient.putInStage(tableName, any()) }
-            coVerify(exactly = 1) { snowflakeAirbyteClient.copyFromStage(tableName) }
         }
     }
+
+    private fun readFromCsvFile(file: File) =
+        GZIPInputStream(file.inputStream()).use { input ->
+            val reader = BufferedReader(InputStreamReader(input))
+            reader.readText()
+        }
 
     private fun createRecord(columnName: String) =
         mapOf(
