@@ -47,16 +47,14 @@ class SnowflakeSqlNameUtils(
 
     fun combineParts(parts: List<String>, escape: Boolean = false): String =
         parts
-            .map {
-                val compatible = it
-                if (escape) escape(compatible) else compatible
-            }
+            .map { if (escape) escape(it) else it }
             .joinToString(separator = ".") {
                 if (!it.startsWith(QUOTE)) {
-                    "$QUOTE$it$QUOTE"
-                } else {
-                    it
-                }
+                        "$QUOTE$it$QUOTE"
+                    } else {
+                        it
+                    }
+                    .uppercase()
             }
 
     private fun getDatabaseName() = snowflakeConfiguration.database

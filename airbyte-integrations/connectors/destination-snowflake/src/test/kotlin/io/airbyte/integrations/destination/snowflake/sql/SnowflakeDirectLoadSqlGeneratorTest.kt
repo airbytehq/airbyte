@@ -188,14 +188,18 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
             expectedColumns
         every { columnUtils.formatColumnName(any()) } answers { firstArg<String>() }
 
+        val expectedDestinationTable =
+            "\"${snowflakeConfiguration.database}\".\"${destinationTableName.namespace}\".\"${destinationTableName.name}\"".uppercase()
+        val expectedSourceTable =
+            "\"${snowflakeConfiguration.database}\".\"${sourceTableName.namespace}\".\"${sourceTableName.name}\"".uppercase()
         val expected =
             """
-            MERGE INTO "TEST-DATABASE"."NAMESPACE"."DESTINATION" AS target_table
+            MERGE INTO $expectedDestinationTable AS target_table
             USING (
                           WITH records AS (
               SELECT
                 ${expectedColumns.joinToString(",\n")}
-              FROM "TEST-DATABASE"."NAMESPACE"."SOURCE"
+              FROM $expectedSourceTable
             ), numbered_rows AS (
               SELECT *, ROW_NUMBER() OVER (
                 PARTITION BY "primaryKey" ORDER BY "cursor" DESC NULLS LAST, "_AIRBYTE_EXTRACTED_AT" DESC
@@ -310,7 +314,7 @@ new_record."_AIRBYTE_GENERATION_ID"
         val sql = snowflakeDirectLoadSqlGenerator.putInStage(tableName, tempFilePath)
         val expectedSql =
             """
-            PUT 'file://$tempFilePath' @$stagingTableName
+            PUT 'file://$tempFilePath' '@$stagingTableName'
             AUTO_COMPRESS = FALSE
             SOURCE_COMPRESSION = GZIP
             OVERWRITE = TRUE
@@ -328,10 +332,9 @@ new_record."_AIRBYTE_GENERATION_ID"
         val expectedSql =
             """
             COPY INTO $targetTableName
-            FROM @$stagingTableName
+            FROM '@$stagingTableName'
             FILE_FORMAT = $fileFormat
             ON_ERROR = 'ABORT_STATEMENT'
-            PURGE = TRUE
         """.trimIndent()
         assertEquals(expectedSql, sql)
     }
@@ -704,9 +707,11 @@ new_record."_AIRBYTE_GENERATION_ID"
 
         val sql =
             snowflakeDirectLoadSqlGenerator.createTable(stream, tableName, columnNameMapping, false)
+        val expectedTableName =
+            "\"${snowflakeConfiguration.database}\".\"${tableName.namespace}\".\"${tableName.name}\"".uppercase()
         val expectedSql =
             """
-            CREATE TABLE "TEST-DATABASE"."NAMESPACE"."TABLE""; DROP TABLE USERS; --" (
+            CREATE TABLE $expectedTableName (
                 
             )
         """.trimIndent()
@@ -725,9 +730,11 @@ new_record."_AIRBYTE_GENERATION_ID"
 
         val sql =
             snowflakeDirectLoadSqlGenerator.createTable(stream, tableName, columnNameMapping, false)
+        val expectedTableName =
+            "\"${snowflakeConfiguration.database}\".\"${tableName.namespace}\".\"${tableName.name}\"".uppercase()
         val expectedSql =
             """
-            CREATE TABLE "TEST-DATABASE"."NAMESPACE""; DROP SCHEMA TEST; --"."TABLE" (
+            CREATE TABLE $expectedTableName (
                 
             )
         """.trimIndent()
