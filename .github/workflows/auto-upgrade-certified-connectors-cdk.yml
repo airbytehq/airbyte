@@ -91,6 +91,7 @@ jobs:
           fi
 
       - name: Bump connector version
+        id: bump-version
         if: steps.check-changes.outputs.has_changes == 'true'
         run: |
           metadata_file="airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml"
@@ -111,6 +112,7 @@ jobs:
           yq -i ".data.dockerImageTag = \"${new_version}\"" "$metadata_file"
 
           echo "Updated dockerImageTag from $current_version to $new_version"
+          echo "new_version=$new_version" >> $GITHUB_OUTPUT
 
       - name: Create Pull Request
         id: create-pr
@@ -136,8 +138,7 @@ jobs:
       - name: Update connector changelog
         if: steps.check-changes.outputs.has_changes == 'true'
         run: |
-          metadata_file="airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml"
-          new_version=$(yq '.data.dockerImageTag' "$metadata_file")
+          new_version="${{ steps.bump-version.outputs.new_version }}"
 
           # Convert connector name to docs path
           # e.g. destination-dev-null -> docs/integrations/destinations/dev-null.md
