@@ -29,8 +29,8 @@ class SnowflakeFinalTableNameGenerator(private val config: SnowflakeConfiguratio
                 namespace = config.internalTableSchema,
                 name =
                     TypingDedupingUtil.concatenateRawTableName(
-                        namespace = namespace,
-                        name = streamDescriptor.name,
+                        namespace = escapeJsonIdentifier(namespace),
+                        name = escapeJsonIdentifier(streamDescriptor.name),
                     ),
             )
         }
@@ -48,8 +48,8 @@ class SnowflakeColumnNameGenerator(private val config: SnowflakeConfiguration) :
             )
         } else {
             ColumnNameGenerator.ColumnName(
-                escapeJsonIdentifier(column),
-                escapeJsonIdentifier(column),
+                column,
+                column,
             )
         }
     }
