@@ -147,7 +147,7 @@ jobs:
           connector_name=$(echo "${{ matrix.connector }}" | cut -d'-' -f2-)
           docs_file="docs/integrations/${connector_type}s/${connector_name}.md"
 
-          if [ ! -f "$docs_file" ]; then
+          if ! test -f "$docs_file"; then
             echo "Warning: Docs file not found at $docs_file"
             exit 0
           fi
