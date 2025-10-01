@@ -118,8 +118,11 @@ jobs:
     uses: ./.github/workflows/bump-version-command.yml
     name: Trigger bump-version for ${{ matrix.connector }}
     needs: upgrade-connector-cdk
+    if: needs.upgrade-connector-cdk.outputs.pr-number != ''
     strategy:
       matrix:
+        # TODO undo this
+        # connector: ${{ fromJson(needs.list-certified-connectors.outputs.connectors) }}
         connector: [destination-dev-null]
       fail-fast: false
     with:
