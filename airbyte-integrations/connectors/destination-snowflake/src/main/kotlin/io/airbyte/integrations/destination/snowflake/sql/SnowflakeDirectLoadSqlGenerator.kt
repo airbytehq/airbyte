@@ -47,7 +47,7 @@ class SnowflakeDirectLoadSqlGenerator(
     }
 
     fun checkSchemaExists(namespace: String): String {
-        val schemaName = namespace.toSnowflakeCompatibleName()
+        val schemaName = namespace
         val databaseName = snowflakeConfiguration.database.toSnowflakeCompatibleName()
         return """
             SELECT COUNT(*) > 0 AS SCHEMA_EXISTS
