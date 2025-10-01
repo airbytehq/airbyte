@@ -18,6 +18,7 @@ All sync modes are supported.
 | Incremental - Append Sync      | Yes                  |                                |
 | Incremental - Append + Deduped | Yes                  | Leverages `ReplacingMergeTree` |
 | Namespaces                     | Yes                  |                                |
+
 ### Deduplication
 
 For optimal deduplication in Incremental - Append + Deduped sync mode, use a cursor column with one of these types:
