@@ -198,8 +198,7 @@ class SnowflakeAirbyteClient(
                     }
                     val dataType = rs.getString("type").takeWhile { char -> char != '(' }
 
-                    val isNullable = rs.getString("null?") == "Y"
-                    columnsInDb.add(ColumnDefinition(columnName, dataType, isNullable))
+                    columnsInDb.add(ColumnDefinition(columnName, dataType, false))
                 }
 
                 columnsInDb
@@ -216,8 +215,12 @@ class SnowflakeAirbyteClient(
             .filter { column -> column.columnName !in airbyteColumnNames }
             .map { column ->
                 ColumnDefinition(
-                    name = column.columnName,
-                    type = column.columnType,
+                    name = snowflakeColumnUtils.formatColumnName(column.columnName, false),
+                    type =
+                        column.columnType.takeWhile { char ->
+                            // This is to remove any precision parts of the dialect type
+                            char != '('
+                        },
                     // Not used to ensure schema
                     isPrimaryKey = false,
                 )
