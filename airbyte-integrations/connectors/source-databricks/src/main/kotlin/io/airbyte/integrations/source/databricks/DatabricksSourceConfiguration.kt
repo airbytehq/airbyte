@@ -105,7 +105,7 @@ class DatabricksSourceConfigurationFactory :
         // Load Databricks JDBC driver
         Class.forName("com.databricks.client.jdbc.Driver")
 
-        val jdbcUrlFmt = "jdbc:databricks://%s"
+        val jdbcUrlFmt = "jdbc:databricks://%s:%d"
 
         val checkpointTargetInterval: Duration =
             Duration.ofSeconds(pojo.checkpointTargetIntervalSeconds?.toLong() ?: 0)
