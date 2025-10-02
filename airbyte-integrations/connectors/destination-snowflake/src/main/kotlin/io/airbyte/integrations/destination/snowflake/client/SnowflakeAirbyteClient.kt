@@ -173,7 +173,7 @@ class SnowflakeAirbyteClient(
          * uses a fixed schema that is not based on the catalog/incoming record.  Otherwise,
          * ensure that the destination schema is in sync with any changes.
          */
-        if (!snowflakeConfiguration.legacyRawTablesOnly) {
+        if (snowflakeConfiguration.legacyRawTablesOnly) {
             return
         }
         val columnsInDb = getColumnsFromDb(tableName)
