@@ -1,0 +1,57 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/motherduck",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "MotherDuckSpecification",
+    "type": "object",
+    "required": ["motherduck_api_key"],
+    "additionalProperties": true,
+    "properties": {
+      "motherduck_api_key": {
+        "title": "MotherDuck Access Token",
+        "description": "Enter your MotherDuck access token. You can find your token at https://app.motherduck.com/ under Settings > Access Tokens.",
+        "type": "string",
+        "group": "connection",
+        "order": 0,
+        "airbyte_secret": true
+      },
+      "destination_path": {
+        "title": "Database Path",
+        "description": "The path to your MotherDuck database. Use 'md:' to connect to the default database, 'md:<database_name>' for a specific MotherDuck database, or a file path for a local DuckDB file.",
+        "type": "string",
+        "group": "connection",
+        "order": 1,
+        "examples": ["md:", "md:my_database", "/local/path/to/file.duckdb"]
+      },
+      "schema": {
+        "title": "Default Schema",
+        "description": "Enter the name of the default schema. Defaults to 'main' if not specified.",
+        "type": "string",
+        "group": "connection",
+        "order": 2,
+        "examples": ["main", "airbyte_schema"]
+      },
+      "raw_data_schema": {
+        "title": "Airbyte Internal Table Schema Name",
+        "description": "Airbyte will use this schema for various internal tables. Defaults to \"airbyte_internal\".",
+        "type": "string",
+        "group": "advanced",
+        "order": 3
+      }
+    }
+  },
+  "supportsIncremental": true,
+  "supportsNormalization": false,
+  "supportsDBT": true,
+  "supported_destination_sync_modes": ["overwrite", "append", "append_dedup"],
+  "groups": [
+    {
+      "id": "connection",
+      "title": "Connection"
+    },
+    {
+      "id": "advanced",
+      "title": "Advanced"
+    }
+  ]
+}

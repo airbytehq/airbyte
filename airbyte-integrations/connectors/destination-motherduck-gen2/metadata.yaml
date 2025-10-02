@@ -1,0 +1,45 @@
+data:
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: 042ee9b5-eb98-4e99-a4e5-3f0d573bee67
+  dockerImageTag: 0.0.1
+  dockerRepository: airbyte/destination-motherduck-gen2
+  githubIssueLabel: destination-motherduck-gen2
+  icon: duckdb.svg
+  license: ELv2
+  name: MotherDuck Gen2
+  registryOverrides:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  releaseStage: alpha
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: "Initial release of MotherDuck Gen2 connector using Kotlin Bulk CDK."
+        upgradeDeadline: "2025-12-31"
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/motherduck
+  tags:
+    - language:kotlin
+    - cdk:bulk-load
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/java-connector-base:2.1.4@sha256:3726b9ec1f96c35b0f5c386b4e83c5f1e8c66e5a3cec1df3d28e0196aa2db69c
+  connectorTestSuitesOptions:
+    - suite: unitTests
+    - suite: integrationTests
+      testSecrets:
+        - name: SECRET_DESTINATION_MOTHERDUCK_GEN2__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_DESTINATION_MOTHERDUCK_GEN2__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"
