@@ -12,11 +12,11 @@ from typing import Iterable, List, Optional
 
 import pytz
 import smart_open
-from airbyte_cdk.sources.file_based.file_based_file_transfer_reader import AbstractFileBasedFileTransferReader
 from google.cloud import storage
 from google.oauth2 import credentials, service_account
 
 from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles, FileBasedSourceError
+from airbyte_cdk.sources.file_based.file_based_file_transfer_reader import AbstractFileBasedFileTransferReader
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from source_gcs.config import Config
 from source_gcs.helpers import GCSRemoteFile
@@ -31,8 +31,8 @@ ERROR_MESSAGE_ACCESS = (
     "Check whether key {uri} exists in `{bucket}` bucket and/or has proper ACL permissions"
 )
 
-class GCSFileTransferReader(AbstractFileBasedFileTransferReader):
 
+class GCSFileTransferReader(AbstractFileBasedFileTransferReader):
     @property
     def file_id(self) -> str:
         return self.remote_file.blob.id
@@ -61,6 +61,7 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
     """
     Stream reader for Google Cloud Storage (GCS).
     """
+
     file_transfer_reader_class = GCSFileTransferReader
 
     def __init__(self):
