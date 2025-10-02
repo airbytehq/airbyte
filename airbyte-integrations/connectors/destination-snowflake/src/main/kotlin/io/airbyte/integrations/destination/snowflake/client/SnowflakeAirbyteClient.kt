@@ -168,21 +168,23 @@ class SnowflakeAirbyteClient(
         columnNameMapping: ColumnNameMapping
     ) {
         execute(sqlGenerator.createSnowflakeStage(tableName))
-        val columnsInDb = getColumnsFromDb(tableName)
-        val columnsInStream = getColumnsFromStream(stream, columnNameMapping)
-        val (addedColumns, deletedColumns, modifiedColumns) =
-            generateSchemaChanges(columnsInDb, columnsInStream)
-
         /*
          * If legacy raw tables are in use, there is nothing to ensure in schema, as raw mode
          * uses a fixed schema that is not based on the catalog/incoming record.  Otherwise,
          * ensure that the destination schema is in sync with any changes.
          */
+        if (!snowflakeConfiguration.legacyRawTablesOnly) {
+            return
+        }
+        val columnsInDb = getColumnsFromDb(tableName)
+        val columnsInStream = getColumnsFromStream(stream, columnNameMapping)
+        val (addedColumns, deletedColumns, modifiedColumns) =
+            generateSchemaChanges(columnsInDb, columnsInStream)
+
         if (
-            snowflakeConfiguration.legacyRawTablesOnly != true &&
-                (addedColumns.isNotEmpty() ||
-                    deletedColumns.isNotEmpty() ||
-                    modifiedColumns.isNotEmpty())
+            addedColumns.isNotEmpty() ||
+                deletedColumns.isNotEmpty() ||
+                modifiedColumns.isNotEmpty()
         ) {
             log.info { "Summary of the table alterations:" }
             log.info { "Added columns: $addedColumns" }
