@@ -6,6 +6,7 @@ on:
       - "airbyte-cdk/bulk/**/*"
   schedule:
     - cron: "0 12 * * *"
+  workflow_dispatch:
 
 jobs:
   generate-matrix:
