@@ -85,6 +85,34 @@ No bean of type [io.airbyte.cdk.load.orchestration.db.FinalTableNameGenerator] e
 - [ ] Address any test failures (expected for skeleton connector with placeholder SQL generator)
 - [ ] Continue implementing SQL generator if tests reveal specific issues
 
+### ✅ Phase 5: DatabaseInitialStatusGatherer Implementation (Completed)
+
+**Issue:** After fixing FinalTableNameGenerator, integration tests revealed another missing dependency:
+```
+No bean of type [io.airbyte.cdk.load.orchestration.db.DatabaseInitialStatusGatherer<DirectLoadInitialStatus>] exists
+```
+
+**Root Cause:** The `MotherDuckWriter` requires a `DatabaseInitialStatusGatherer<DirectLoadInitialStatus>` bean to gather the initial status of tables (whether they exist, are empty, etc.) before starting the write operation. This bean was not configured in the dependency injection context.
+
+**Solution:** Created `MotherDuckDirectLoadDatabaseInitialStatusGatherer.kt` following the pattern from Snowflake and Clickhouse connectors:
+- Extends `BaseDirectLoadInitialStatusGatherer` from the CDK which provides all implementation logic
+- Marked with `@Singleton` for automatic dependency injection (no bean factory changes needed)
+- Takes `AirbyteClient` and `TempTableNameGenerator` as constructor parameters
+- Base class handles all logic for gathering initial table status by:
+  - Querying each table to check if it exists and is empty
+  - Querying the corresponding temp table
+  - Returning `DirectLoadInitialStatus` with both table statuses
+
+**Files Created:**
+- `MotherDuckDirectLoadDatabaseInitialStatusGatherer.kt` - Status gatherer implementation
+
+**Verification:**
+- ✅ Code compiles successfully
+- ✅ Integration tests **successfully initialize** without dependency injection errors
+- ✅ Tests start running actual test logic (MotherDuckAcceptanceTest, MotherDuckSpecTest both STARTED)
+- Note: Tests not run to completion as they may fail on test logic (expected for skeleton connector with placeholder SQL generator)
+- [ ] CI status (pending)
+
 ## Technical Notes
 
 **DuckDB Connection Strings:**
