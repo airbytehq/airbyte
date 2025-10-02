@@ -115,7 +115,7 @@ jobs:
         run: poe test-integration-tests
 
       - name: Slack Notification on Failure
-        if: github.event_name == 'schedule' && failure() && (steps.run-unit-tests.outcome == 'failure' || steps.run-integration-tests.outcome == 'failure')
+        if: failure() && (steps.run-unit-tests.outcome == 'failure' || steps.run-integration-tests.outcome == 'failure')
         uses: slackapi/slack-github-action@v2.1.1
         with:
           token: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
