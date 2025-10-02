@@ -21,7 +21,7 @@ application {
 }
 
 dependencies {
-    implementation 'com.databricks:databricks-jdbc:2.6.36'
+    implementation 'com.databricks:databricks-jdbc:1.0.10-oss'
     implementation 'org.apache.commons:commons-lang3:3.17.0'
 
     testImplementation platform('org.junit:junit-bom:5.10.0')
