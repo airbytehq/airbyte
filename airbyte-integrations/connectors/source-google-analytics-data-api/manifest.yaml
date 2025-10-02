@@ -179,9 +179,10 @@ definitions:
     error_handler:
       type: DefaultErrorHandler
       max_retries: 10
+      max_time: 5400
       backoff_strategies:
-        - type: ConstantBackoffStrategy
-          backoff_time_in_seconds: 30
+        - type: ExponentialBackoffStrategy
+          factor: 9
       response_filters:
         - predicate: ""
           action: FAIL
