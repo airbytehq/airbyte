@@ -42,6 +42,8 @@ class SnowflakeSchemaRecordFormatter(
                 // in there. A better scenario here is to do something like:
                 // columnNameMapping.filter { (_, v) -> v == columnName }.keys.first()
                 // but ¯\_(ツ)_/¯
+                else if (record.containsKey(columnName))
+                    record[columnName].toCsvValue()
                 else if (record.containsKey(columnName.toSnowflakeCompatibleName()))
                     record[columnName.toSnowflakeCompatibleName()].toCsvValue()
                 else ""
