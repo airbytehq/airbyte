@@ -4,8 +4,6 @@
 
 package io.airbyte.cdk.load.dataflow.transform.medium
 
-import com.fasterxml.jackson.core.io.BigDecimalParser
-import com.fasterxml.jackson.core.io.BigIntegerParser
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.AirbyteValueProxy.FieldAccessor
@@ -43,12 +41,16 @@ import io.airbyte.cdk.load.message.DestinationRecordProtobufSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.util.Jsons
-import io.airbyte.cdk.load.util.serializeToString
+import io.airbyte.cdk.protocol.ProtobufTypeBasedDecoder
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteValueProtobuf
 import java.math.BigDecimal
+import java.math.BigInteger
 import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalTime
 import java.time.OffsetDateTime
+import java.time.OffsetTime
 import java.time.ZoneOffset
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Singleton
@@ -64,6 +66,7 @@ class ProtobufConverter(
 ) {
 
     private val isNoOpMapper = columnNameMapper is NoOpColumnNameMapper
+    private val decoder = ProtobufTypeBasedDecoder()
 
     private val perStreamMappedNames =
         ConcurrentHashMap<DestinationStream.Descriptor, Array<String>>()
@@ -219,41 +222,24 @@ class ProtobufConverter(
         protobufValue: AirbyteValueProtobuf,
         accessor: FieldAccessor
     ): Any? {
+        // Use the centralized decoder for all scalar and temporal types
+        val decodedValue = decoder.decode(protobufValue)
+
+        // For complex types (arrays, objects, unions), handle separately
         return when (accessor.type) {
-            is BooleanType -> protobufValue.boolean
-            is StringType -> protobufValue.string
-            is IntegerType -> {
-                if (protobufValue.hasBigInteger()) {
-                    BigIntegerParser.parseWithFastParser(protobufValue.bigInteger)
-                } else {
-                    protobufValue.integer.toBigInteger()
-                }
-            }
-            is NumberType -> {
-                if (protobufValue.hasBigDecimal()) {
-                    BigDecimalParser.parseWithFastParser(protobufValue.bigDecimal)
-                } else if (protobufValue.hasNumber()) {
-                    protobufValue.number.toBigDecimal()
-                } else {
-                    null
-                }
-            }
-            is DateType -> protobufValue.date
-            is TimestampTypeWithTimezone -> protobufValue.timestampWithTimezone
-            is TimestampTypeWithoutTimezone -> protobufValue.timestampWithoutTimezone
-            is TimeTypeWithTimezone -> protobufValue.timeWithTimezone
-            is TimeTypeWithoutTimezone -> protobufValue.timeWithoutTimezone
             is UnionType,
             is ArrayType,
             is ObjectType -> {
-                val jsonNode = Jsons.readTree(protobufValue.json.toByteArray())
-                jsonNode.toAirbyteValue()
+                if (decodedValue is String) {
+                    // If decoder returned a JSON string, parse it
+                    val jsonNode = Jsons.readTree(decodedValue.toByteArray())
+                    jsonNode.toAirbyteValue()
+                } else {
+                    decodedValue
+                }
             }
             is UnknownType -> null
-            else -> {
-                val jsonNode = Jsons.readTree(protobufValue.json.toByteArray())
-                jsonNode.serializeToString()
-            }
+            else -> decodedValue
         }
     }
 
@@ -288,14 +274,33 @@ class ProtobufConverter(
         return when (targetClass) {
             BooleanValue::class.java -> BooleanValue(rawValue as Boolean)
             StringValue::class.java -> StringValue(rawValue.toString())
-            IntegerValue::class.java -> IntegerValue(rawValue as java.math.BigInteger)
+            IntegerValue::class.java -> IntegerValue(rawValue as BigInteger)
             NumberValue::class.java -> NumberValue(rawValue as BigDecimal)
-            DateValue::class.java -> DateValue(rawValue as String)
-            TimestampWithTimezoneValue::class.java -> TimestampWithTimezoneValue(rawValue as String)
-            TimestampWithoutTimezoneValue::class.java ->
-                TimestampWithoutTimezoneValue(rawValue as String)
-            TimeWithTimezoneValue::class.java -> TimeWithTimezoneValue(rawValue as String)
-            TimeWithoutTimezoneValue::class.java -> TimeWithoutTimezoneValue(rawValue as String)
+            DateValue::class.java -> when (rawValue) {
+                is LocalDate -> DateValue(rawValue)
+                is String -> DateValue(rawValue)
+                else -> DateValue(rawValue.toString())
+            }
+            TimestampWithTimezoneValue::class.java -> when (rawValue) {
+                is OffsetDateTime -> TimestampWithTimezoneValue(rawValue)
+                is String -> TimestampWithTimezoneValue(rawValue)
+                else -> TimestampWithTimezoneValue(rawValue.toString())
+            }
+            TimestampWithoutTimezoneValue::class.java -> when (rawValue) {
+                is java.time.LocalDateTime -> TimestampWithoutTimezoneValue(rawValue)
+                is String -> TimestampWithoutTimezoneValue(rawValue)
+                else -> TimestampWithoutTimezoneValue(rawValue.toString())
+            }
+            TimeWithTimezoneValue::class.java -> when (rawValue) {
+                is OffsetTime -> TimeWithTimezoneValue(rawValue)
+                is String -> TimeWithTimezoneValue(rawValue)
+                else -> TimeWithTimezoneValue(rawValue.toString())
+            }
+            TimeWithoutTimezoneValue::class.java -> when (rawValue) {
+                is LocalTime -> TimeWithoutTimezoneValue(rawValue)
+                is String -> TimeWithoutTimezoneValue(rawValue)
+                else -> TimeWithoutTimezoneValue(rawValue.toString())
+            }
             NullValue::class.java -> NullValue
             AirbyteValue::class.java ->
                 rawValue as AirbyteValue // Already an AirbyteValue (JSON types)

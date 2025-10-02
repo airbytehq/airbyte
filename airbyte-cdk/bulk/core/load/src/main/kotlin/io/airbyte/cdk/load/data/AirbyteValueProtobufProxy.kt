@@ -4,14 +4,17 @@
 
 package io.airbyte.cdk.load.data
 
-import com.fasterxml.jackson.core.io.BigDecimalParser
-import com.fasterxml.jackson.core.io.BigIntegerParser
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.load.data.AirbyteValueProxy.FieldAccessor
 import io.airbyte.cdk.load.util.Jsons
+import io.airbyte.cdk.protocol.ProtobufTypeBasedDecoder
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteValueProtobuf
 import java.math.BigDecimal
 import java.math.BigInteger
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.OffsetTime
 
 /**
  * Protobuf is sent as an ordered list of AirbyteValues. Coherent access depends on the source and
@@ -20,51 +23,49 @@ import java.math.BigInteger
  * the same schema. Eventually this order needs to be set by the source with a header message.
  */
 class AirbyteValueProtobufProxy(private val data: List<AirbyteValueProtobuf>) : AirbyteValueProxy {
+    private val decoder = ProtobufTypeBasedDecoder()
+
     private inline fun <T> getNullable(field: FieldAccessor, getter: (FieldAccessor) -> T): T? {
         return if (data.isEmpty() || data.size < field.index || data[field.index].isNull) null
         else getter(field)
     }
 
     override fun getBoolean(field: FieldAccessor): Boolean? =
-        getNullable(field) { data[it.index].boolean }
+        getNullable(field) { decoder.decode(data[it.index]) as? Boolean }
 
     override fun getString(field: FieldAccessor): String? =
-        getNullable(field) { data[it.index].string }
+        getNullable(field) { decoder.decode(data[it.index]) as? String }
 
     override fun getInteger(field: FieldAccessor): BigInteger? =
-        getNullable(field) {
-            if (data[it.index].hasBigInteger()) {
-                BigIntegerParser.parseWithFastParser(data[it.index].bigInteger)
-            } else {
-                data[it.index].integer.toBigInteger()
-            }
-        }
+        getNullable(field) { decoder.decode(data[it.index]) as? BigInteger }
 
     override fun getNumber(field: FieldAccessor): BigDecimal? =
-        getNullable(field) {
-            if (data[it.index].hasBigDecimal()) {
-                BigDecimalParser.parseWithFastParser(data[it.index].bigDecimal)
-            } else if (data[it.index].hasNumber()) {
-                data[it.index].number.toBigDecimal()
-            } else {
-                null
-            }
-        }
+        getNullable(field) { decoder.decode(data[it.index]) as? BigDecimal }
 
     override fun getDate(field: FieldAccessor): String? =
-        getNullable(field) { data[field.index].date }
+        getNullable(field) {
+            (decoder.decode(data[it.index]) as? LocalDate)?.toString()
+        }
 
     override fun getTimeWithTimezone(field: FieldAccessor): String? =
-        getNullable(field) { data[field.index].timeWithTimezone }
+        getNullable(field) {
+            (decoder.decode(data[it.index]) as? OffsetTime)?.toString()
+        }
 
     override fun getTimeWithoutTimezone(field: FieldAccessor): String? =
-        getNullable(field) { data[field.index].timeWithoutTimezone }
+        getNullable(field) {
+            (decoder.decode(data[it.index]) as? java.time.LocalTime)?.toString()
+        }
 
     override fun getTimestampWithTimezone(field: FieldAccessor): String? =
-        getNullable(field) { data[field.index].timestampWithTimezone }
+        getNullable(field) {
+            (decoder.decode(data[it.index]) as? OffsetDateTime)?.toString()
+        }
 
     override fun getTimestampWithoutTimezone(field: FieldAccessor): String? =
-        getNullable(field) { data[field.index].timestampWithoutTimezone }
+        getNullable(field) {
+            (decoder.decode(data[it.index]) as? LocalDateTime)?.toString()
+        }
 
     override fun getJsonBytes(field: FieldAccessor): ByteArray? =
         getNullable(field) { data[field.index].json.toByteArray() }
