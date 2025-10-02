@@ -1,8 +1,16 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.motherduck.write
 
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteType
+import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.NullValue
+import io.airbyte.cdk.load.data.ObjectValue
+import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
@@ -22,7 +30,13 @@ internal val CONFIG_PATH: Path = Paths.get("secrets/config.json")
 
 class MotherDuckAcceptanceTest :
     BasicFunctionalityIntegrationTest(
-        configContents = "{}",
+        configContents = """
+            {
+                "motherduck_api_key": "",
+                "destination_path": ":memory:",
+                "schema": "main"
+            }
+        """.trimIndent(),
         configSpecClass = MotherDuckSpecification::class.java,
         dataDumper = MotherDuckDataDumper { spec ->
             MotherDuckConfigurationFactory().make(spec as MotherDuckSpecification)
@@ -52,7 +66,55 @@ class MotherDuckDataDumper(
         spec: ConfigurationSpecification,
         stream: DestinationStream
     ): List<OutputRecord> {
-        return emptyList()
+        val config = configProvider(spec)
+        val dataSource = MotherDuckTestUtils.createDuckDBDataSource(config)
+        val output = mutableListOf<OutputRecord>()
+
+        dataSource.use { ds ->
+            ds.connection.use { connection ->
+                val statement = connection.createStatement()
+                val tableName = "${config.schema}.${stream.mappedDescriptor.name}"
+
+                val tableExistsQuery = """
+                    SELECT COUNT(*) as count
+                    FROM information_schema.tables
+                    WHERE table_schema = '${config.schema}'
+                    AND table_name = '${stream.mappedDescriptor.name}'
+                """.trimIndent()
+
+                val existsResultSet = statement.executeQuery(tableExistsQuery)
+                existsResultSet.next()
+                val tableExists = existsResultSet.getInt("count") > 0
+                existsResultSet.close()
+
+                if (!tableExists) {
+                    return output
+                }
+
+                val resultSet = statement.executeQuery("SELECT * FROM $tableName")
+
+                while (resultSet.next()) {
+                    val dataMap = linkedMapOf<String, AirbyteValue>()
+                    for (i in 1..resultSet.metaData.columnCount) {
+                        val columnName = resultSet.metaData.getColumnName(i)
+                        if (!Meta.COLUMN_NAMES.contains(columnName)) {
+                            val value = resultSet.getObject(i)
+                            dataMap[columnName] = value?.let { AirbyteValue.from(it) } ?: NullValue
+                        }
+                    }
+                    val outputRecord = OutputRecord(
+                        rawId = resultSet.getString(Meta.COLUMN_NAME_AB_RAW_ID),
+                        extractedAt = resultSet.getTimestamp(Meta.COLUMN_NAME_AB_EXTRACTED_AT).toInstant().toEpochMilli(),
+                        loadedAt = null,
+                        generationId = resultSet.getLong(Meta.COLUMN_NAME_AB_GENERATION_ID),
+                        data = ObjectValue(dataMap),
+                        airbyteMeta = null
+                    )
+                    output.add(outputRecord)
+                }
+            }
+        }
+        return output
     }
 
     override fun dumpFile(
