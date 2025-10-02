@@ -262,16 +262,6 @@ new_record."_AIRBYTE_GENERATION_ID"
     }
 
     @Test
-    fun testGenerateDropStage() {
-        val tableName = TableName(namespace = "namespace", name = "name")
-        val sql = snowflakeDirectLoadSqlGenerator.dropStage(tableName)
-        assertEquals(
-            "DROP STAGE IF EXISTS ${snowflakeSqlNameUtils.fullyQualifiedStageName(tableName)}",
-            sql
-        )
-    }
-
-    @Test
     fun testGenerateGenerationIdQuery() {
         val tableName = TableName(namespace = "namespace", name = "name")
         val sql = snowflakeDirectLoadSqlGenerator.getGenerationId(tableName = tableName)
@@ -338,7 +328,7 @@ new_record."_AIRBYTE_GENERATION_ID"
         val targetTableName = snowflakeSqlNameUtils.fullyQualifiedName(tableName)
         val stagingTableName = snowflakeSqlNameUtils.fullyQualifiedStageName(tableName)
         val fileFormat = snowflakeSqlNameUtils.fullyQualifiedFormatName(tableName.namespace)
-        val sql = snowflakeDirectLoadSqlGenerator.copyFromStage(tableName)
+        val sql = snowflakeDirectLoadSqlGenerator.copyFromStage(tableName, "test.csv.gz")
         val expectedSql =
             """
             COPY INTO $targetTableName
