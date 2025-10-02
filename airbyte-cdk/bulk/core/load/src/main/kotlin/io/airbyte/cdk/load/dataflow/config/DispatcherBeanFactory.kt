@@ -11,6 +11,7 @@ import java.util.concurrent.Executors
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.asCoroutineDispatcher
 
 /** The dispatchers (think views of thread pools) and static scopes we use for dataflow. */
@@ -41,4 +42,18 @@ class DispatcherBeanFactory {
     fun stateDispatcher(
         @Named("stateReconcilerDispatcher") dispatcher: CoroutineDispatcher,
     ) = CoroutineScope(dispatcher)
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Named("streamInitDispatcher")
+    @Singleton
+    fun streamInitDispatcher(
+        memConfig: MemoryAndParallelismConfig,
+    ) = Dispatchers.Default.limitedParallelism(memConfig.maxConcurrentLifecycleOperations)
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Named("streamFinalizeDispatcher")
+    @Singleton
+    fun streamFinalizeDispatcher(
+        memConfig: MemoryAndParallelismConfig,
+    ) = Dispatchers.Default.limitedParallelism(memConfig.maxConcurrentLifecycleOperations)
 }
