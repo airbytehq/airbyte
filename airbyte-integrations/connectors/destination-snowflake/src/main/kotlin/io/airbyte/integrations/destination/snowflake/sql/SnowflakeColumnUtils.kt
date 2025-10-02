@@ -75,7 +75,7 @@ class SnowflakeColumnUtils(
 
     @VisibleForTesting
     internal fun defaultColumns(): List<ColumnAndType> =
-        if (snowflakeConfiguration.legacyRawTablesOnly == true) {
+        if (snowflakeConfiguration.legacyRawTablesOnly) {
             DEFAULT_COLUMNS + listOf(RAW_DATA_COLUMN)
         } else {
             DEFAULT_COLUMNS
