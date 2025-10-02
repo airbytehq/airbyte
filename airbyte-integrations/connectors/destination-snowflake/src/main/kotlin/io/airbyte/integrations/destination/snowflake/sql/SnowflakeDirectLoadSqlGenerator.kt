@@ -337,7 +337,7 @@ class SnowflakeDirectLoadSqlGenerator(
         val stageName = snowflakeSqlNameUtils.fullyQualifiedStageName(tableName)
         val formatName = snowflakeSqlNameUtils.fullyQualifiedFormatName(tableName.namespace)
         return """
-            CREATE STAGE IF NOT EXISTS $stageName 
+            CREATE STAGE IF NOT EXISTS $stageName
                 FILE_FORMAT = $formatName;
         """
             .trimIndent()
@@ -365,6 +365,7 @@ class SnowflakeDirectLoadSqlGenerator(
             FROM '@$stageName'
             FILE_FORMAT = $formatName
             ON_ERROR = 'ABORT_STATEMENT'
+            PURGE = TRUE
             files = ('$filename')
         """
             .trimIndent()

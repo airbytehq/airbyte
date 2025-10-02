@@ -78,7 +78,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         val namespace = "namespace"
         val sql = snowflakeDirectLoadSqlGenerator.createNamespace(namespace)
         assertEquals(
-            "CREATE SCHEMA ${snowflakeSqlNameUtils.fullyQualifiedNamespace(namespace)}",
+            "CREATE SCHEMA IF NOT EXISTS ${snowflakeSqlNameUtils.fullyQualifiedNamespace(namespace)}",
             sql
         )
     }
@@ -301,7 +301,7 @@ new_record."_AIRBYTE_GENERATION_ID"
         val fileFormat = snowflakeSqlNameUtils.fullyQualifiedFormatName(tableName.namespace)
         val sql = snowflakeDirectLoadSqlGenerator.createSnowflakeStage(tableName)
         assertEquals(
-            "CREATE OR REPLACE STAGE $stagingTableName\n    FILE_FORMAT = $fileFormat;",
+            "CREATE STAGE IF NOT EXISTS $stagingTableName\n    FILE_FORMAT = $fileFormat;",
             sql
         )
     }
@@ -336,6 +336,7 @@ new_record."_AIRBYTE_GENERATION_ID"
             FILE_FORMAT = $fileFormat
             ON_ERROR = 'ABORT_STATEMENT'
             PURGE = TRUE
+            files = ('test.csv.gz')
         """.trimIndent()
         assertEquals(expectedSql, sql)
     }
