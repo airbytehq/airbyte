@@ -77,7 +77,7 @@ class SnowflakeInsertBuffer(
                 // Next, put the CSV file into the staging table
                 snowflakeClient.putInStage(tableName, filePath.pathString)
                 // Finally, copy the data from the staging table to the final table
-                snowflakeClient.copyFromStage(tableName)
+                snowflakeClient.copyFromStage(tableName, filePath.fileName.toString())
                 logger.info {
                     "Finished insert of $recordCount row(s) into ${tableName.toPrettyString(quote = QUOTE)}"
                 }
