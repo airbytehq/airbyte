@@ -53,7 +53,8 @@ internal class SnowflakeWriterTest {
                 stateGatherer = stateGatherer,
                 streamStateStore = mockk(),
                 snowflakeClient = snowflakeClient,
-                tempTableNameGenerator = mockk()
+                tempTableNameGenerator = mockk(),
+                snowflakeConfiguration = mockk(),
             )
 
         runBlocking { writer.setup() }
@@ -98,7 +99,8 @@ internal class SnowflakeWriterTest {
                 stateGatherer = stateGatherer,
                 streamStateStore = mockk(),
                 snowflakeClient = snowflakeClient,
-                tempTableNameGenerator = tempTableNameGenerator
+                tempTableNameGenerator = tempTableNameGenerator,
+                snowflakeConfiguration = mockk(),
             )
 
         runBlocking {
@@ -144,7 +146,8 @@ internal class SnowflakeWriterTest {
                 stateGatherer = stateGatherer,
                 streamStateStore = mockk(),
                 snowflakeClient = snowflakeClient,
-                tempTableNameGenerator = tempTableNameGenerator
+                tempTableNameGenerator = tempTableNameGenerator,
+                snowflakeConfiguration = mockk(),
             )
 
         runBlocking {
@@ -189,7 +192,8 @@ internal class SnowflakeWriterTest {
                 stateGatherer = stateGatherer,
                 streamStateStore = mockk(),
                 snowflakeClient = snowflakeClient,
-                tempTableNameGenerator = tempTableNameGenerator
+                tempTableNameGenerator = tempTableNameGenerator,
+                snowflakeConfiguration = mockk(),
             )
 
         runBlocking {
@@ -217,7 +221,8 @@ internal class SnowflakeWriterTest {
                 stateGatherer = stateGatherer,
                 streamStateStore = mockk(),
                 snowflakeClient = snowflakeClient,
-                tempTableNameGenerator = mockk()
+                tempTableNameGenerator = mockk(),
+                snowflakeConfiguration = mockk(),
             )
 
         // Simulate network failure during namespace creation
@@ -247,7 +252,8 @@ internal class SnowflakeWriterTest {
                 stateGatherer = stateGatherer,
                 streamStateStore = mockk(),
                 snowflakeClient = snowflakeClient,
-                tempTableNameGenerator = mockk()
+                tempTableNameGenerator = mockk(),
+                snowflakeConfiguration = mockk(),
             )
 
         // Simulate failure while gathering initial status
@@ -298,7 +304,8 @@ internal class SnowflakeWriterTest {
                 stateGatherer = stateGatherer,
                 streamStateStore = mockk(),
                 snowflakeClient = snowflakeClient,
-                tempTableNameGenerator = mockk()
+                tempTableNameGenerator = mockk(),
+                snowflakeConfiguration = mockk(),
             )
 
         runBlocking {
@@ -345,7 +352,8 @@ internal class SnowflakeWriterTest {
                 stateGatherer = stateGatherer,
                 streamStateStore = mockk(),
                 snowflakeClient = snowflakeClient,
-                tempTableNameGenerator = mockk()
+                tempTableNameGenerator = mockk(),
+                snowflakeConfiguration = mockk(),
             )
 
         // First namespace succeeds, second fails (namespaces are uppercased by
