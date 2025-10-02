@@ -362,7 +362,6 @@ internal class SnowflakeAirbyteClientTest {
         runBlocking {
             client.dropTable(tableName)
             verify(exactly = 1) { sqlGenerator.dropTable(tableName) }
-            verify(exactly = 1) { sqlGenerator.dropStage(tableName) }
             verify(exactly = 2) { mockConnection.close() }
         }
     }
@@ -511,8 +510,8 @@ internal class SnowflakeAirbyteClientTest {
         every { dataSource.connection } returns mockConnection
 
         runBlocking {
-            client.copyFromStage(tableName)
-            verify(exactly = 1) { sqlGenerator.copyFromStage(tableName) }
+            client.copyFromStage(tableName, "test.csv.gz")
+            verify(exactly = 1) { sqlGenerator.copyFromStage(tableName, "test.csv.gz") }
             verify(exactly = 1) { mockConnection.close() }
         }
     }
