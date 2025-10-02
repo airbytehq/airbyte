@@ -122,11 +122,11 @@ private constructor(
     companion object {
         fun <T> make(rs: ResultSet, colIdx: Int, baseGetter: JdbcGetter<T>): InfWrapper<T> {
             val str = rs.getString(colIdx) ?: return InfWrapper(ValueType.NULL)
-            return if (str.lowercase() == "infinity") {
+            return if (str.equals(ValueType.INF.placeholder, ignoreCase = true)) {
                 InfWrapper(ValueType.INF)
-            } else if (str.lowercase() == "-infinity") {
+            } else if (str.equals(ValueType.MINUS_INF.placeholder, ignoreCase = true)) {
                 InfWrapper(ValueType.MINUS_INF)
-            } else if (str.lowercase() == "nan") {
+            } else if (str.equals(ValueType.NAN.placeholder, ignoreCase = true)) {
                 InfWrapper(ValueType.NAN)
             } else {
                 InfWrapper(ValueType.NORMAL, baseGetter.get(rs, colIdx))
@@ -139,17 +139,17 @@ private constructor(
             }
             if (encoded.isTextual) {
                 val str = encoded.asText()
-                return if (str == "Infinity") {
-                    InfWrapper(InfWrapper.ValueType.INF)
-                } else if (str == "-Infinity") {
-                    InfWrapper(InfWrapper.ValueType.MINUS_INF)
-                } else if (str == "NaN") {
-                    InfWrapper(InfWrapper.ValueType.NAN)
+                return if (str.equals(ValueType.INF.placeholder, ignoreCase = true)) {
+                    InfWrapper(ValueType.INF)
+                } else if (str.equals(ValueType.MINUS_INF.placeholder, ignoreCase = true)) {
+                    InfWrapper(ValueType.MINUS_INF)
+                } else if (str.equals(ValueType.NAN.placeholder, ignoreCase = true)) {
+                    InfWrapper(ValueType.NAN)
                 } else {
-                    InfWrapper(InfWrapper.ValueType.NORMAL, base.decode(encoded))
+                    InfWrapper(ValueType.NORMAL, base.decode(encoded))
                 }
             }
-            return InfWrapper(InfWrapper.ValueType.NORMAL, base.decode(encoded))
+            return InfWrapper(ValueType.NORMAL, base.decode(encoded))
         }
     }
 

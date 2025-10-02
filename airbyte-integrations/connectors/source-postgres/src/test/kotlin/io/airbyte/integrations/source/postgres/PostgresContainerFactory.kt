@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.postgres
 
 import io.airbyte.cdk.testcontainers.TestContainerFactory
+import io.airbyte.integrations.source.postgres.config.EncryptionDisable
 import io.airbyte.integrations.source.postgres.config.PostgresSourceConfigurationSpecification
 import io.airbyte.integrations.source.postgres.config.StandardReplicationMethodConfigurationSpecification
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -134,6 +135,7 @@ object PostgresContainerFactory {
             username = postgresContainer.username
             password = postgresContainer.password
             jdbcUrlParams = ""
+            encryptionJson = EncryptionDisable
             database = "test"
             this.schemas = schemas
             checkpointTargetIntervalSeconds = 60
