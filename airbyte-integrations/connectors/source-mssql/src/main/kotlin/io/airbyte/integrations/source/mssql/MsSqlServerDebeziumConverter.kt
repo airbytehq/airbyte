@@ -80,9 +80,15 @@ class MsSqlServerDebeziumConverter : CustomConverter<SchemaBuilder, RelationalCo
             MSSQL_IMAGE_TYPE -> {
                 registration.register(SchemaBuilder.string().optional(), this::convertBinary)
             }
-            MSSQL_GEOMETRY_TYPE,
+            MSSQL_GEOMETRY_TYPE -> {
+                registration.register(SchemaBuilder.string().optional()) { value ->
+                    convertSpatial(value, isGeography = false)
+                }
+            }
             MSSQL_GEOGRAPHY_TYPE -> {
-                registration.register(SchemaBuilder.string().optional(), this::convertSpatial)
+                registration.register(SchemaBuilder.string().optional()) { value ->
+                    convertSpatial(value, isGeography = true)
+                }
             }
             MSSQL_UNIQUEIDENTIFIER_TYPE -> {
                 registration.register(
@@ -130,15 +136,16 @@ class MsSqlServerDebeziumConverter : CustomConverter<SchemaBuilder, RelationalCo
         if (value == null) return null
 
         return try {
+            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS")
             when (value) {
-                is LocalDateTime -> value.atZone(ZoneOffset.UTC).toInstant().toString()
+                is LocalDateTime -> value.format(formatter)
                 is String -> {
                     // Try to parse as LocalDateTime first
                     val dateTime = LocalDateTime.parse(value.replace(" ", "T"))
-                    dateTime.atZone(ZoneOffset.UTC).toInstant().toString()
+                    dateTime.format(formatter)
                 }
-                is java.sql.Timestamp -> value.toInstant().toString()
-                is Instant -> value.toString()
+                is java.sql.Timestamp -> value.toLocalDateTime().format(formatter)
+                is Instant -> LocalDateTime.ofInstant(value, ZoneOffset.UTC).format(formatter)
                 else -> value.toString()
             }
         } catch (e: DateTimeParseException) {
@@ -151,13 +158,14 @@ class MsSqlServerDebeziumConverter : CustomConverter<SchemaBuilder, RelationalCo
         if (value == null) return null
 
         return try {
+            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX")
             when (value) {
-                is DateTimeOffset -> value.offsetDateTime.toString()
-                is OffsetDateTime -> value.toString()
+                is DateTimeOffset -> value.offsetDateTime.format(formatter)
+                is OffsetDateTime -> value.format(formatter)
                 is String -> {
                     // Try to parse as OffsetDateTime
                     val offsetDateTime = OffsetDateTime.parse(value)
-                    offsetDateTime.toString()
+                    offsetDateTime.format(formatter)
                 }
                 else -> value.toString()
             }
@@ -171,14 +179,33 @@ class MsSqlServerDebeziumConverter : CustomConverter<SchemaBuilder, RelationalCo
         if (value == null) return null
 
         return try {
+            val formatter = DateTimeFormatter.ofPattern("HH:mm:ss.SSSSSS")
             when (value) {
-                is LocalTime -> value.toString()
+                is LocalTime -> value.format(formatter)
                 is String -> {
-                    val time = LocalTime.parse(value)
-                    time.toString()
+                    // Handle SQL Server TIME values that come as datetime strings
+                    if (value.contains(" ")) {
+                        // Extract time part from "1900-01-01 13:00:01.0" format
+                        val timePart = value.substringAfter(" ")
+                        val time = LocalTime.parse(timePart)
+                        time.format(formatter)
+                    } else {
+                        val time = LocalTime.parse(value)
+                        time.format(formatter)
+                    }
                 }
-                is java.sql.Time -> value.toLocalTime().toString()
-                else -> value.toString()
+                is java.sql.Time -> value.toLocalTime().format(formatter)
+                else -> {
+                    // Handle other cases where TIME might come as datetime string
+                    val stringValue = value.toString()
+                    if (stringValue.contains(" ")) {
+                        val timePart = stringValue.substringAfter(" ")
+                        val time = LocalTime.parse(timePart)
+                        time.format(formatter)
+                    } else {
+                        stringValue
+                    }
+                }
             }
         } catch (e: Exception) {
             logger.warn("Failed to parse time value: {}", value, e)
@@ -206,38 +233,38 @@ class MsSqlServerDebeziumConverter : CustomConverter<SchemaBuilder, RelationalCo
     private fun convertBinary(value: Any?): Any? {
         if (value == null) return null
 
-        return try {
-            when (value) {
-                is ByteArray -> Base64.getEncoder().encodeToString(value)
-                is String -> value // Already encoded
-                else -> {
-                    logger.warn("Unexpected binary type: {}", value.javaClass.name)
-                    value.toString()
-                }
+        return when (value) {
+            is ByteArray -> Base64.getEncoder().encodeToString(value)
+            is String -> value // Already base64 encoded
+            else -> {
+                logger.warn("Unexpected binary type: {}", value.javaClass.name)
+                value.toString()
             }
-        } catch (e: Exception) {
-            logger.warn("Failed to convert binary value: {}", value, e)
-            value.toString()
         }
     }
 
-    private fun convertSpatial(value: Any?): Any? {
+    private fun convertSpatial(value: Any?, isGeography: Boolean): Any? {
         if (value == null) return null
 
         return try {
             when (value) {
-                is String -> value
-                is ByteArray -> {
-                    // Try to convert spatial binary to WKT format
-                    try {
-                        // This is a simplified conversion - in production you might want
-                        // to use a proper spatial library like JTS
-                        Base64.getEncoder().encodeToString(value)
-                    } catch (e: Exception) {
-                        logger.warn("Failed to convert spatial binary to WKT: {}", e.message)
-                        Base64.getEncoder().encodeToString(value)
+                is String -> {
+                    // If already a string (WKT format), check if it's base64
+                    if (value.matches(Regex("^[A-Za-z0-9+/]+=*$"))) {
+                        // It's base64, decode and convert
+                        try {
+                            val bytes = Base64.getDecoder().decode(value)
+                            convertSpatialBytes(bytes, isGeography)
+                        } catch (e: Exception) {
+                            logger.warn("Failed to decode base64 spatial value: {}", e.message)
+                            value
+                        }
+                    } else {
+                        // Already WKT format
+                        value
                     }
                 }
+                is ByteArray -> convertSpatialBytes(value, isGeography)
                 else -> value.toString()
             }
         } catch (e: Exception) {
@@ -246,17 +273,34 @@ class MsSqlServerDebeziumConverter : CustomConverter<SchemaBuilder, RelationalCo
         }
     }
 
+    private fun convertSpatialBytes(bytes: ByteArray, isGeography: Boolean): String {
+        return try {
+            if (isGeography) {
+                // Deserialize as Geography
+                com.microsoft.sqlserver.jdbc.Geography.deserialize(bytes).toString()
+            } else {
+                // Deserialize as Geometry
+                com.microsoft.sqlserver.jdbc.Geometry.deserialize(bytes).toString()
+            }
+        } catch (e: Exception) {
+            logger.warn(
+                "Failed to deserialize spatial binary as ${if (isGeography) "Geography" else "Geometry"}: {}",
+                e.message
+            )
+            // Fallback to base64 if deserialization fails
+            Base64.getEncoder().encodeToString(bytes)
+        }
+    }
+
     private fun convertUniqueIdentifier(value: Any?): Any? {
         if (value == null) return null
 
         return try {
             when (value) {
-                is UUID -> value.toString()
                 is String -> {
-                    // Validate UUID format
-                    UUID.fromString(value).toString()
+                    UUID.fromString(value).toString().uppercase()
                 }
-                else -> value.toString()
+                else -> value.toString().uppercase()
             }
         } catch (e: Exception) {
             logger.warn("Failed to convert UUID value: {}", value, e)

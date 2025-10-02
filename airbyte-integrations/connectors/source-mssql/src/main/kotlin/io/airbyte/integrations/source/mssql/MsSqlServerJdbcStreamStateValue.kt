@@ -8,7 +8,6 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.Field
-import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.util.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
 
@@ -25,10 +24,10 @@ data class MsSqlServerJdbcStreamStateValue(
     @JsonProperty("incremental_state") val incrementalState: JsonNode? = null,
 ) {
     companion object {
-        /** Current state version used by the v2 MSSQL connector */
+        /** Current state version used by the new CDK MSSQL connector */
         const val CURRENT_VERSION = 3
 
-        /** Legacy state version used by the old MSSQL connector */
+        /** Legacy state version used by the old CDK MSSQL connector */
         const val LEGACY_VERSION = 2
 
         /**
@@ -75,7 +74,6 @@ data class MsSqlServerJdbcStreamStateValue(
             primaryKey: List<Field>,
             primaryKeyCheckpoint: List<JsonNode>,
             cursor: Field,
-            stream: Stream
         ): OpaqueStateValue {
             val primaryKeyField = primaryKey.first()
             return Jsons.valueToTree(
