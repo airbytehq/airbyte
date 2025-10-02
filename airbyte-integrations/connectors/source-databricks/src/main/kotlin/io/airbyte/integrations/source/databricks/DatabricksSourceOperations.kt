@@ -137,17 +137,7 @@ class DatabricksSourceOperations() :
             NoFrom -> ""
             is From ->
                 if (this.namespace == null) "FROM `$name`" else "FROM $namespace.`$name`"
-            is FromSample -> {
-                val sample: String =
-                    if (sampleRateInv == 1L) {
-                        ""
-                    } else {
-                        " SAMPLE (${sampleRatePercentage.toPlainString()})"
-                    }
-                val innerFrom: String = From(name, namespace).sql() + sample
-                val inner = "SELECT * $innerFrom ${where?.sql() ?: ""} ORDER BY RANDOM()"
-                "FROM (SELECT * FROM ($inner) LIMIT $sampleSize)"
-            }
+            is FromSample -> From(name, namespace).sql()
         }
 
     fun WhereNode.sql(): String =
