@@ -45,6 +45,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
     fun setUp() {
         every { snowflakeConfiguration.cdcDeletionMode } returns CdcDeletionMode.HARD_DELETE
         every { snowflakeConfiguration.database } returns "test-database"
+        every { snowflakeConfiguration.legacyRawTablesOnly } returns false
         columnUtils = mockk {
             every { formatColumnName(any()) } answers
                 {
@@ -52,6 +53,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                     if (columnName == COLUMN_NAME_DATA) columnName
                     else columnName.toSnowflakeCompatibleName()
                 }
+            every { getGenerationIdColumnName() } returns COLUMN_NAME_AB_GENERATION_ID.toSnowflakeCompatibleName()
         }
         snowflakeSqlNameUtils = SnowflakeSqlNameUtils(snowflakeConfiguration)
         snowflakeDirectLoadSqlGenerator =
