@@ -22,7 +22,7 @@ data:
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/destinations/motherduck
   tags:
-    - language:kotlin
+    - language:java
     - cdk:bulk-load
   connectorBuildOptions:
     baseImage: docker.io/airbyte/java-connector-base:2.1.4@sha256:3726b9ec1f96c35b0f5c386b4e83c5f1e8c66e5a3cec1df3d28e0196aa2db69c
