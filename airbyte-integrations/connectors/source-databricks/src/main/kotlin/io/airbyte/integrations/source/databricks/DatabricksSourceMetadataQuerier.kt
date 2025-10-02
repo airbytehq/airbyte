@@ -209,19 +209,19 @@ class DatabricksSourceMetadataQuerier(
     }
 
     override fun streamNamespaces(): List<String> =
-        memoizedTableNames.mapNotNull { it.schema }.distinct()
+        memoizedTableNames.mapNotNull { "${it.catalog}.${it.schema}" }.distinct()
 
     override fun streamNames(streamNamespace: String?): List<StreamIdentifier> {
         return memoizedTableNames
-            .filter { it.schema == streamNamespace }
-            .map { StreamDescriptor().withName(it.name).withNamespace(it.schema) }
+            .filter { "${it.catalog}.${it.schema}" == streamNamespace }
+            .map { StreamDescriptor().withName(it.name).withNamespace("${it.catalog}.${it.schema}") }
             .map(StreamIdentifier::from)
     }
 
     fun findTableName(
         streamID: StreamIdentifier,
     ): TableName? =
-        memoizedTableNames.find { it.name == streamID.name && it.schema == streamID.namespace }
+        memoizedTableNames.find { it.name == streamID.name && "${it.catalog}.${it.schema}" == streamID.namespace }
 
     val memoizedTableNames: List<TableName> by lazy {
         try {
