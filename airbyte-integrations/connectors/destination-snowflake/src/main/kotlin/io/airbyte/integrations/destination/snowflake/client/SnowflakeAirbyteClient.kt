@@ -76,7 +76,7 @@ class SnowflakeAirbyteClient(
                     )
 
                 // When querying information_schema, snowflake needs the "true" schema name,
-                // so we unscape it here.
+                // so we unescape it here.
                 val unescapedNamespace = namespace.replace("\"\"", "\"")
                 statement.setString(1, unescapedNamespace)
 
@@ -263,11 +263,10 @@ class SnowflakeAirbyteClient(
 
     override suspend fun getGenerationId(tableName: TableName): Long =
         try {
-            val sql = sqlGenerator.getGenerationId(tableName)
             dataSource.connection.use { connection ->
                 val statement = connection.createStatement()
                 statement.use {
-                    val resultSet = connection.createStatement().executeQuery(sql)
+                    val resultSet = it.executeQuery(sqlGenerator.getGenerationId(tableName))
                     if (resultSet.next()) {
                         /*
                          * When we retrieve the column names from the database, they are in unescaped
@@ -276,13 +275,17 @@ class SnowflakeAirbyteClient(
                          */
                         resultSet.getLong(snowflakeColumnUtils.getGenerationIdColumnName())
                     } else {
-                        log.warn { "No generation ID found for table $tableName, returning 0" }
+                        log.warn {
+                            "No generation ID found for table ${tableName.toPrettyString()}, returning 0"
+                        }
                         0L
                     }
                 }
             }
         } catch (e: Exception) {
-            log.error(e) { "Failed to retrieve the generation ID for table $tableName" }
+            log.error(e) {
+                "Failed to retrieve the generation ID for table ${tableName.toPrettyString()}"
+            }
             // Return 0 if we can't get the generation ID (similar to ClickHouse approach)
             0L
         }
