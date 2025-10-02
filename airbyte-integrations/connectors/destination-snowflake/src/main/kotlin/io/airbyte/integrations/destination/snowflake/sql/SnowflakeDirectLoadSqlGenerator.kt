@@ -328,7 +328,9 @@ class SnowflakeDirectLoadSqlGenerator(
             TRIM_SPACE = TRUE
             ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE
             REPLACE_INVALID_CHARACTERS = TRUE
-        """.trimIndent()
+        """
+            .trimIndent()
+            .andLog()
     }
 
     fun createSnowflakeStage(tableName: TableName): String {
