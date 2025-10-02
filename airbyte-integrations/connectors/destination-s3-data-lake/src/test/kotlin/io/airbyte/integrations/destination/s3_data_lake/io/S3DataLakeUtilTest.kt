@@ -526,24 +526,28 @@ internal class S3DataLakeUtilTest {
         secretAccessKey: String? = "secret-access-key"
     ): S3DataLakeConfiguration {
         return S3DataLakeConfiguration(
-            awsAccessKeyConfiguration = AWSAccessKeyConfiguration(
-                accessKeyId = accessKeyId,
-                secretAccessKey = secretAccessKey,
-            ),
-            s3BucketConfiguration = S3BucketConfiguration(
-                s3BucketName = "test",
-                s3BucketRegion = S3BucketRegion.`us-east-1`.region,
-                s3Endpoint = null,
-            ),
-            icebergCatalogConfiguration = IcebergCatalogConfiguration(
-                warehouseLocation = "s3://test/",
-                mainBranchName = "main",
-                catalogConfiguration = GlueCatalogConfiguration(
-                    glueId = "123456789012",
-                    awsArnRoleConfiguration = AWSArnRoleConfiguration(roleArn = roleArn),
-                    databaseName = "test_db"
-                )
-            ),
+            awsAccessKeyConfiguration =
+                AWSAccessKeyConfiguration(
+                    accessKeyId = accessKeyId,
+                    secretAccessKey = secretAccessKey,
+                ),
+            s3BucketConfiguration =
+                S3BucketConfiguration(
+                    s3BucketName = "test",
+                    s3BucketRegion = S3BucketRegion.`us-east-1`.region,
+                    s3Endpoint = null,
+                ),
+            icebergCatalogConfiguration =
+                IcebergCatalogConfiguration(
+                    warehouseLocation = "s3://test/",
+                    mainBranchName = "main",
+                    catalogConfiguration =
+                        GlueCatalogConfiguration(
+                            glueId = "123456789012",
+                            awsArnRoleConfiguration = AWSArnRoleConfiguration(roleArn = roleArn),
+                            databaseName = "test_db"
+                        )
+                ),
             numProcessRecordsWorkers = 1,
         )
     }
@@ -563,10 +567,7 @@ internal class S3DataLakeUtilTest {
             "aws-creds-static-creds",
             catalogProperties["client.credentials-provider.aws-creds-mode"]
         )
-        assertEquals(
-            "access-key",
-            catalogProperties["client.credentials-provider.access-key-id"]
-        )
+        assertEquals("access-key", catalogProperties["client.credentials-provider.access-key-id"])
         assertEquals(
             "secret-access-key",
             catalogProperties["client.credentials-provider.secret-access-key"]
