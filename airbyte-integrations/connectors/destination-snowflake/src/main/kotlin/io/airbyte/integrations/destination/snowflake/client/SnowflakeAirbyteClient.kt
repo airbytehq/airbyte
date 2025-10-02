@@ -204,7 +204,7 @@ class SnowflakeAirbyteClient(
                 val columnsInDb: MutableSet<ColumnDefinition> = mutableSetOf()
 
                 while (rs.next()) {
-                    val columnName = rs.getString("name")
+                    val columnName = rs.getString("name").toSnowflakeCompatibleName()
 
                     // Filter out airbyte columns
                     if (airbyteColumnNames.contains(columnName)) {
@@ -229,7 +229,7 @@ class SnowflakeAirbyteClient(
             .filter { column -> column.columnName !in airbyteColumnNames }
             .map { column ->
                 ColumnDefinition(
-                    name = snowflakeColumnUtils.formatColumnName(column.columnName, false),
+                    name = column.columnName,
                     type =
                         column.columnType.takeWhile { char ->
                             // This is to remove any precision parts of the dialect type
