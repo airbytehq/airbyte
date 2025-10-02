@@ -20,7 +20,7 @@ import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
-import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
+import io.airbyte.integrations.destination.snowflake.db.escapeJsonIdentifier
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import jakarta.inject.Singleton
 
@@ -42,7 +42,7 @@ class SnowflakeWriter(
             .forEach { snowflakeClient.createNamespace(it) }
 
         snowflakeClient.createNamespace(
-            snowflakeConfiguration.internalTableSchema.toSnowflakeCompatibleName()
+            escapeJsonIdentifier(snowflakeConfiguration.internalTableSchema)
         )
 
         initialStatuses = stateGatherer.gatherInitialStatus(names)
