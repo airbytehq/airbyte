@@ -25,8 +25,8 @@ internal const val COUNT_TOTAL_ALIAS = "total"
 private val log = KotlinLogging.logger {}
 
 /**
- * This extension is here to avoid writing `.also { log.info { it }}` for every returned string
- * we want to log
+ * This extension is here to avoid writing `.also { log.info { it }}` for every returned string we
+ * want to log
  */
 fun String.andLog(): String {
     log.info { this.trim() }
@@ -304,10 +304,6 @@ class SnowflakeDirectLoadSqlGenerator(
         return "DROP TABLE IF EXISTS ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}".andLog()
     }
 
-    fun dropStage(tableName: TableName): String {
-        return "DROP STAGE IF EXISTS ${snowflakeSqlNameUtils.fullyQualifiedStageName(tableName)}".andLog()
-    }
-
     fun getGenerationId(
         tableName: TableName,
     ): String {
@@ -339,7 +335,7 @@ class SnowflakeDirectLoadSqlGenerator(
         val stageName = snowflakeSqlNameUtils.fullyQualifiedStageName(tableName)
         val formatName = snowflakeSqlNameUtils.fullyQualifiedFormatName(tableName.namespace)
         return """
-            CREATE OR REPLACE STAGE $stageName
+            CREATE STAGE IF NOT EXISTS $stageName 
                 FILE_FORMAT = $formatName;
         """
             .trimIndent()
@@ -358,7 +354,7 @@ class SnowflakeDirectLoadSqlGenerator(
             .andLog()
     }
 
-    fun copyFromStage(tableName: TableName): String {
+    fun copyFromStage(tableName: TableName, filename: String): String {
         val stageName = snowflakeSqlNameUtils.fullyQualifiedStageName(tableName, true)
         val formatName = snowflakeSqlNameUtils.fullyQualifiedFormatName(tableName.namespace)
 
@@ -367,7 +363,7 @@ class SnowflakeDirectLoadSqlGenerator(
             FROM '@$stageName'
             FILE_FORMAT = $formatName
             ON_ERROR = 'ABORT_STATEMENT'
-            PURGE = TRUE
+            files = ('$filename')
         """
             .trimIndent()
             .andLog()

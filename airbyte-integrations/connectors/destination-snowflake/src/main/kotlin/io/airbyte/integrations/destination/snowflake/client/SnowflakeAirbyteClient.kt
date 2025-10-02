@@ -159,7 +159,6 @@ class SnowflakeAirbyteClient(
     }
 
     override suspend fun dropTable(tableName: TableName) {
-        execute(sqlGenerator.dropStage(tableName))
         execute(sqlGenerator.dropTable(tableName))
     }
 
@@ -168,6 +167,7 @@ class SnowflakeAirbyteClient(
         tableName: TableName,
         columnNameMapping: ColumnNameMapping
     ) {
+        execute(sqlGenerator.createSnowflakeStage(tableName))
         val columnsInDb = getColumnsFromDb(tableName)
         val columnsInStream = getColumnsFromStream(stream, columnNameMapping)
         val (addedColumns, deletedColumns, modifiedColumns) =
@@ -295,8 +295,8 @@ class SnowflakeAirbyteClient(
         execute(sqlGenerator.putInStage(tableName, tempFilePath))
     }
 
-    fun copyFromStage(tableName: TableName) {
-        execute(sqlGenerator.copyFromStage(tableName))
+    fun copyFromStage(tableName: TableName, filename: String) {
+        execute(sqlGenerator.copyFromStage(tableName, filename))
     }
 
     fun describeTable(tableName: TableName): List<String> =
