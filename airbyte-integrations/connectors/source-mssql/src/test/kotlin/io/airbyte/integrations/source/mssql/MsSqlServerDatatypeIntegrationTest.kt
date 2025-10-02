@@ -94,44 +94,19 @@ object MsSqlServerDatatypeTestOperations :
             activateCdcWithInitialLsn(connection)
 
             for ((_, case) in testCases) {
-                // Check if table already exists before trying to create it
-                val tableExistsQuery = "SELECT OBJECT_ID('dbo.${case.id}', 'U') AS table_exists"
-                val tableExists =
-                    connection.createStatement().use { stmt ->
-                        stmt.executeQuery(tableExistsQuery).use { rs ->
-                            rs.next() && rs.getObject("table_exists") != null
-                        }
-                    }
-
-                if (!tableExists) {
-                    for (ddl in case.ddl) {
-                        log.info { "test case ${case.id}: executing $ddl" }
-                        connection.createStatement().use { stmt -> stmt.execute(ddl) }
-                    }
-                } else {
-                    log.info { "test case ${case.id}: table already exists, skipping creation" }
+                for (ddl in case.ddl) {
+                    log.info { "test case ${case.id}: executing $ddl" }
+                    connection.createStatement().use { stmt -> stmt.execute(ddl) }
                 }
 
                 // Enable CDC for tables that support it (CDC-compatible data types)
                 if (case.isGlobal) {
                     try {
-                        // Check if CDC is already enabled for this table
-                        val cdcEnabledQuery =
-                            "SELECT 1 FROM cdc.change_tables WHERE source_object_id = OBJECT_ID('dbo.${case.id}')"
-                        val cdcEnabled =
-                            connection.createStatement().use { stmt ->
-                                stmt.executeQuery(cdcEnabledQuery).use { rs -> rs.next() }
-                            }
-
-                        if (!cdcEnabled) {
-                            val enableCdcSql =
-                                "EXEC sys.sp_cdc_enable_table @source_schema = 'dbo', @source_name = '${case.id}', @role_name = NULL"
-                            log.info { "test case ${case.id}: enabling CDC with $enableCdcSql" }
-                            connection.createStatement().use { stmt -> stmt.execute(enableCdcSql) }
-                            log.info { "test case ${case.id}: successfully enabled CDC on table" }
-                        } else {
-                            log.info { "test case ${case.id}: CDC already enabled on table" }
-                        }
+                        val enableCdcSql =
+                            "EXEC sys.sp_cdc_enable_table @source_schema = 'dbo', @source_name = '${case.id}', @role_name = 'CDC'"
+                        log.info { "test case ${case.id}: enabling CDC with $enableCdcSql" }
+                        connection.createStatement().use { stmt -> stmt.execute(enableCdcSql) }
+                        log.info { "test case ${case.id}: successfully enabled CDC on table" }
                     } catch (e: Exception) {
                         log.warn { "test case ${case.id}: failed to enable CDC: ${e.message}" }
                     }
@@ -148,6 +123,21 @@ object MsSqlServerDatatypeTestOperations :
                     log.info { "test case ${case.id}: executing $dml" }
                     connection.createStatement().use { stmt -> stmt.execute(dml) }
                 }
+            }
+        }
+
+        // Open a NEW connection to force CDC scan after commit
+        JdbcConnectionFactory(config).get().use { connection: Connection ->
+            try {
+                connection.createStatement().use { stmt ->
+                    // Manually run the CDC scan to capture all pending changes
+                    stmt.execute("EXEC sys.sp_cdc_scan")
+                    log.info {
+                        "Executed sp_cdc_scan in new connection to capture committed changes"
+                    }
+                }
+            } catch (e: Exception) {
+                log.error { "Failed to force CDC scan after data population: ${e.message}" }
             }
         }
     }
@@ -529,7 +519,7 @@ object MsSqlServerDatatypeTestOperations :
                     LeafAirbyteSchemaType.STRING,
                 ),
                 MsSqlServerDatatypeTestCase(
-                    "VARCHAR(MAX) COLLATE Latin1_General_100_CI_AI_SC_UTF8",
+                    "NVARCHAR(MAX)",
                     varcharValues,
                     LeafAirbyteSchemaType.STRING,
                 ),
@@ -601,11 +591,11 @@ data class MsSqlServerDatatypeTestCase(
     val sqlType: String,
     val sqlToAirbyte: Map<String, String>,
     override val expectedAirbyteSchemaType: AirbyteSchemaType,
-    override val isGlobal: Boolean = true, // Enable CDC testing for most data types
+    override val isGlobal: Boolean = true,
 ) : DatatypeTestCase {
 
     override val isStream: Boolean
-        get() = false
+        get() = true
 
     private val typeName: String
         get() =
