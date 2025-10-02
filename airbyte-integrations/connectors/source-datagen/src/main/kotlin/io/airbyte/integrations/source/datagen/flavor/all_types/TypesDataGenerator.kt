@@ -87,7 +87,6 @@ class TypesDataGenerator() : DataGenerator {
         recordData["object without schema"] = FieldValueEncoder(linkedMapOf("id" to incrementedID, "name" to "Bob$incrementedID"),
             ObjectWithoutSchemaFieldType.jsonEncoder as ObjectEncoder)
 
-
         return recordData
     }
 }
