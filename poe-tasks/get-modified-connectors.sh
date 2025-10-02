@@ -77,12 +77,10 @@ fi
 # 4) merge into one list
 all_changes=$(printf '%s\n%s\n%s\n%s' "$committed" "$staged" "$unstaged" "$untracked")
 
-# 4.5) Define helper function to return empty JSON when no connectors are found
+# 4.5) Define helper function to return empty string when no connectors are found
 return_empty_json() {
-  if [ "$JSON" = true ]; then
-    # When the list is empty and JSON is requested, return an empty array.
-    echo '{"connector": []}'
-  fi
+  # When the list is empty, return nothing (empty string).
+  # The workflow will check for empty strings and skip matrix jobs accordingly.
   exit 0
 }
 
