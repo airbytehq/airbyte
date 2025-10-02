@@ -362,7 +362,7 @@ internal class SnowflakeAirbyteClientTest {
         runBlocking {
             client.dropTable(tableName)
             verify(exactly = 1) { sqlGenerator.dropTable(tableName) }
-            verify(exactly = 2) { mockConnection.close() }
+            verify(exactly = 1) { mockConnection.close() }
         }
     }
 
