@@ -479,9 +479,9 @@ jobs:
           # When no connectors are modified, all matrix jobs are skipped via their if conditions. (important-comment)
           # GitHub Actions reports such skipped jobs as "failure" to dependent jobs, so we check (important-comment)
           # if matrices are empty first to handle this case explicitly. (important-comment)
-          if [[ '${{ needs.generate-matrix.outputs.jvm-connectors-matrix }}' == '{"connector":[]}' &&
-                '${{ needs.generate-matrix.outputs.non-jvm-connectors-matrix }}' == '{"connector":[]}' &&
-                '${{ needs.generate-matrix.outputs.connectors-matrix }}' == '{"connector":[]}' ]]; then
+          if [[ '${{ needs.generate-matrix.outputs.jvm-connectors-matrix }}' == '{"connector": []}' &&
+                '${{ needs.generate-matrix.outputs.non-jvm-connectors-matrix }}' == '{"connector": []}' &&
+                '${{ needs.generate-matrix.outputs.connectors-matrix }}' == '{"connector": []}' ]]; then
             echo "No connectors modified, all checks passed"
             echo "result=success" | tee -a $GITHUB_OUTPUT
           elif [[ "${{ needs.jvm-connectors-test.result }}" =~ ^(success|skipped)$ &&
