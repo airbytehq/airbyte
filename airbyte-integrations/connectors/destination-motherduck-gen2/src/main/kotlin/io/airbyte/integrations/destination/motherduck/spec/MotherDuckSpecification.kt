@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.motherduck.spec
 
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -28,7 +32,8 @@ open class MotherDuckSpecification : ConfigurationSpecification() {
     )
     @get:JsonProperty("destination_path")
     @get:JsonSchemaInject(
-        json = """{"group": "connection", "order": 1, "examples": ["md:", "md:my_database", "/local/path/to/file.duckdb"]}"""
+        json =
+            """{"group": "connection", "order": 1, "examples": ["md:", "md:my_database", "/local/path/to/file.duckdb"]}"""
     )
     val destinationPath: String = "md:"
 

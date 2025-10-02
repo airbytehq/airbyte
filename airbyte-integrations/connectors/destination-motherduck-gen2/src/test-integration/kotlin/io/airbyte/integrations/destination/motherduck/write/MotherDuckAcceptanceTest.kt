@@ -30,7 +30,8 @@ internal val CONFIG_PATH: Path = Paths.get("secrets/config.json")
 
 class MotherDuckAcceptanceTest :
     BasicFunctionalityIntegrationTest(
-        configContents = """
+        configContents =
+            """
             {
                 "motherduck_api_key": "",
                 "destination_path": ":memory:",
@@ -38,9 +39,10 @@ class MotherDuckAcceptanceTest :
             }
         """.trimIndent(),
         configSpecClass = MotherDuckSpecification::class.java,
-        dataDumper = MotherDuckDataDumper { spec ->
-            MotherDuckConfigurationFactory().make(spec as MotherDuckSpecification)
-        },
+        dataDumper =
+            MotherDuckDataDumper { spec ->
+                MotherDuckConfigurationFactory().make(spec as MotherDuckSpecification)
+            },
         destinationCleaner = MotherDuckDataCleaner,
         isStreamSchemaRetroactive = true,
         dedupBehavior = DedupBehavior(DedupBehavior.CdcDeletionMode.HARD_DELETE),
