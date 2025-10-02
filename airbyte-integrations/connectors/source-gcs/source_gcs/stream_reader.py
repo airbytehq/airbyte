@@ -5,22 +5,19 @@ import itertools
 import json
 import logging
 import tempfile
-import time
 import urllib.parse
 from datetime import datetime, timedelta
 from io import IOBase, StringIO
-from typing import Iterable, List, Optional, Tuple
+from typing import Iterable, List, Optional
 
 import pytz
 import smart_open
-from airbyte_protocol_dataclasses.models import FailureType
+from airbyte_cdk.sources.file_based.file_based_file_transfer_reader import AbstractFileBasedFileTransferReader
 from google.cloud import storage
 from google.oauth2 import credentials, service_account
 
-from airbyte_cdk.models import AirbyteRecordMessageFileReference
-from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles, FileBasedSourceError, FileSizeLimitError
+from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles, FileBasedSourceError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
-from airbyte_cdk.sources.file_based.file_record_data import FileRecordData
 from source_gcs.config import Config
 from source_gcs.helpers import GCSRemoteFile
 from source_gcs.zip_helper import ZipHelper
@@ -34,13 +31,37 @@ ERROR_MESSAGE_ACCESS = (
     "Check whether key {uri} exists in `{bucket}` bucket and/or has proper ACL permissions"
 )
 
+class GCSFileTransferReader(AbstractFileBasedFileTransferReader):
+
+    @property
+    def file_id(self) -> str:
+        return self.remote_file.blob.id
+
+    @property
+    def file_created_at(self) -> str:
+        return self.remote_file.blob.time_created.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+
+    @property
+    def file_updated_at(self) -> str:
+        return self.remote_file.blob.updated.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+
+    @property
+    def file_size(self) -> int:
+        return self.remote_file.blob.size
+
+    def download_to_local_directory(self, local_file_path: str) -> None:
+        self.remote_file.blob.download_to_filename(local_file_path)
+
+    @property
+    def source_file_relative_path(self) -> str:
+        return urllib.parse.unquote(self.remote_file.blob.path)
+
 
 class SourceGCSStreamReader(AbstractFileBasedStreamReader):
     """
     Stream reader for Google Cloud Storage (GCS).
     """
-
-    FILE_SIZE_LIMIT = 1_500_000_000
+    file_transfer_reader_class = GCSFileTransferReader
 
     def __init__(self):
         super().__init__()
@@ -56,50 +77,6 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
     def config(self, value: Config):
         assert isinstance(value, Config), "Config must be an instance of the expected Config class."
         self._config = value
-
-    def file_size(self, file: GCSRemoteFile) -> int:
-        return file.blob.size
-
-    def upload(
-        self, file: GCSRemoteFile, local_directory: str, logger: logging.Logger
-    ) -> Tuple[FileRecordData, AirbyteRecordMessageFileReference]:
-        file_size = self.file_size(file)
-
-        if file_size > self.FILE_SIZE_LIMIT:
-            message = "File size exceeds the 1 GB limit."
-            raise FileSizeLimitError(message=message, internal_message=message, failure_type=FailureType.config_error)
-
-        file_paths = self._get_file_transfer_paths(
-            source_file_relative_path=urllib.parse.unquote(file.blob.path), staging_directory=local_directory
-        )
-        local_file_path = file_paths[self.LOCAL_FILE_PATH]
-        file_relative_path = file_paths[self.FILE_RELATIVE_PATH]
-        file_name = file_paths[self.FILE_NAME]
-
-        logger.info(
-            f"Starting to download the file {file.uri} with size: {file_size / (1024 * 1024):,.2f} MB ({file_size / (1024 * 1024 * 1024):.2f} GB)"
-        )
-        start_download_time = time.time()
-        file.blob.download_to_filename(local_file_path)
-        write_duration = time.time() - start_download_time
-        logger.info(f"Finished downloading the file {file.uri} and saved to {local_file_path} in {write_duration:,.2f} seconds.")
-
-        file_record_data = FileRecordData(
-            folder=file_paths[self.FILE_FOLDER],
-            file_name=file_name,
-            bytes=file_size,
-            id=file.blob.id,
-            mime_type=file.mime_type,
-            created_at=file.blob.time_created.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-            updated_at=file.blob.updated.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
-            source_uri=file.uri,
-        )
-        file_reference = AirbyteRecordMessageFileReference(
-            staging_file_url=local_file_path,
-            source_file_relative_path=file_relative_path,
-            file_size_bytes=file_size,
-        )
-        return file_record_data, file_reference
 
     def _initialize_gcs_client(self):
         if self.config is None:
