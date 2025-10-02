@@ -75,7 +75,8 @@ class MotherDuckDataDumper(
                 val statement = connection.createStatement()
                 val tableName = "${config.schema}.${stream.mappedDescriptor.name}"
 
-                val tableExistsQuery = """
+                val tableExistsQuery =
+                    """
                     SELECT COUNT(*) as count
                     FROM information_schema.tables
                     WHERE table_schema = '${config.schema}'
@@ -102,14 +103,19 @@ class MotherDuckDataDumper(
                             dataMap[columnName] = value?.let { AirbyteValue.from(it) } ?: NullValue
                         }
                     }
-                    val outputRecord = OutputRecord(
-                        rawId = resultSet.getString(Meta.COLUMN_NAME_AB_RAW_ID),
-                        extractedAt = resultSet.getTimestamp(Meta.COLUMN_NAME_AB_EXTRACTED_AT).toInstant().toEpochMilli(),
-                        loadedAt = null,
-                        generationId = resultSet.getLong(Meta.COLUMN_NAME_AB_GENERATION_ID),
-                        data = ObjectValue(dataMap),
-                        airbyteMeta = null
-                    )
+                    val outputRecord =
+                        OutputRecord(
+                            rawId = resultSet.getString(Meta.COLUMN_NAME_AB_RAW_ID),
+                            extractedAt =
+                                resultSet
+                                    .getTimestamp(Meta.COLUMN_NAME_AB_EXTRACTED_AT)
+                                    .toInstant()
+                                    .toEpochMilli(),
+                            loadedAt = null,
+                            generationId = resultSet.getLong(Meta.COLUMN_NAME_AB_GENERATION_ID),
+                            data = ObjectValue(dataMap),
+                            airbyteMeta = null
+                        )
                     output.add(outputRecord)
                 }
             }
@@ -126,10 +132,10 @@ class MotherDuckDataDumper(
 }
 
 object MotherDuckDataCleaner : DestinationCleaner {
-    override fun cleanup() {
-    }
+    override fun cleanup() {}
 }
 
 object MotherDuckExpectedRecordMapper : ExpectedRecordMapper {
-    override fun mapRecord(expectedRecord: OutputRecord, schema: AirbyteType): OutputRecord = expectedRecord
+    override fun mapRecord(expectedRecord: OutputRecord, schema: AirbyteType): OutputRecord =
+        expectedRecord
 }

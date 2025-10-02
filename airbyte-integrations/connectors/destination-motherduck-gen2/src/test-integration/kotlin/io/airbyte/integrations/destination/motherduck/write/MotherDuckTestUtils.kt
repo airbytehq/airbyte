@@ -11,15 +11,16 @@ import io.airbyte.integrations.destination.motherduck.spec.MotherDuckConfigurati
 object MotherDuckTestUtils {
     fun createDuckDBDataSource(config: MotherDuckConfiguration): HikariDataSource {
         val jdbcUrl = "jdbc:duckdb:${config.destinationPath}"
-        val hikariConfig = HikariConfig().apply {
-            driverClassName = "org.duckdb.DuckDBDriver"
-            this.jdbcUrl = jdbcUrl
-            maximumPoolSize = 5
-            minimumIdle = 0
-            idleTimeout = 60000L
-            connectionTimeout = 10000L
-            initializationFailTimeout = -1
-        }
+        val hikariConfig =
+            HikariConfig().apply {
+                driverClassName = "org.duckdb.DuckDBDriver"
+                this.jdbcUrl = jdbcUrl
+                maximumPoolSize = 5
+                minimumIdle = 0
+                idleTimeout = 60000L
+                connectionTimeout = 10000L
+                initializationFailTimeout = -1
+            }
         return HikariDataSource(hikariConfig)
     }
 }
