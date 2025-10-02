@@ -64,7 +64,7 @@ class MotherDuckBeansFactory {
         val jdbcUrl = buildString {
             append("jdbc:duckdb:")
             append(motherDuckConfiguration.destinationPath)
-            
+
             if (motherDuckConfiguration.destinationPath.startsWith("md:")) {
                 append("?motherduck_token=")
                 append(motherDuckConfiguration.motherduckApiKey)
@@ -82,9 +82,9 @@ class MotherDuckBeansFactory {
                 maxLifetime = 610000L
                 driverClassName = "org.duckdb.DuckDBDriver"
                 this.jdbcUrl = jdbcUrl
-                
+
                 addDataSourceProperty("access_mode", "READ_WRITE")
-                
+
                 schema = motherDuckConfiguration.schema
             }
 
