@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.motherduck.client
 
 import io.airbyte.cdk.load.client.AirbyteClient
@@ -19,7 +23,8 @@ class MotherDuckAirbyteClient(
     override suspend fun countTable(tableName: TableName): Long? {
         return try {
             dataSource.connection.use { connection ->
-                val resultSet = connection.createStatement().executeQuery(sqlGenerator.countTable(tableName))
+                val resultSet =
+                    connection.createStatement().executeQuery(sqlGenerator.countTable(tableName))
                 if (resultSet.next()) {
                     resultSet.getLong(1)
                 } else {
@@ -66,7 +71,9 @@ class MotherDuckAirbyteClient(
         sourceTableName: TableName,
         targetTableName: TableName
     ) {
-        execute(sqlGenerator.upsertTable(stream, columnNameMapping, sourceTableName, targetTableName))
+        execute(
+            sqlGenerator.upsertTable(stream, columnNameMapping, sourceTableName, targetTableName)
+        )
     }
 
     override suspend fun dropTable(tableName: TableName) {
@@ -77,8 +84,7 @@ class MotherDuckAirbyteClient(
         stream: DestinationStream,
         tableName: TableName,
         columnNameMapping: ColumnNameMapping
-    ) {
-    }
+    ) {}
 
     override suspend fun getGenerationId(tableName: TableName): Long {
         return try {

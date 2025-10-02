@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.motherduck.spec
 
 import io.airbyte.cdk.load.command.DestinationConfiguration
@@ -22,7 +26,8 @@ class MotherDuckConfigurationFactory :
             motherduckApiKey = pojo.motherduckApiKey,
             destinationPath = pojo.destinationPath,
             schema = pojo.schema,
-            internalTableSchema = pojo.internalTableSchema ?: DbConstants.DEFAULT_RAW_TABLE_NAMESPACE
+            internalTableSchema = pojo.internalTableSchema
+                    ?: DbConstants.DEFAULT_RAW_TABLE_NAMESPACE
         )
     }
 }

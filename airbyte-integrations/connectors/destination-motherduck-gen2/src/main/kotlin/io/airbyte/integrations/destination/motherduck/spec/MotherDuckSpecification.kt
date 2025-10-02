@@ -6,7 +6,6 @@ package io.airbyte.integrations.destination.motherduck.spec
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
-import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 import io.airbyte.cdk.command.ConfigurationSpecification
@@ -21,9 +20,7 @@ open class MotherDuckSpecification : ConfigurationSpecification() {
         "Enter your MotherDuck access token. You can find your token at https://app.motherduck.com/ under Settings > Access Tokens."
     )
     @get:JsonProperty("motherduck_api_key")
-    @get:JsonSchemaInject(
-        json = """{"group": "connection", "order": 0, "airbyte_secret": true}"""
-    )
+    @get:JsonSchemaInject(json = """{"group": "connection", "order": 0, "airbyte_secret": true}""")
     val motherduckApiKey: String = ""
 
     @get:JsonSchemaTitle("Database Path")
