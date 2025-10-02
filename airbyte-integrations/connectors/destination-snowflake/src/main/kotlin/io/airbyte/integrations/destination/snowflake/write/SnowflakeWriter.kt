@@ -20,6 +20,8 @@ import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
+import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
+import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import jakarta.inject.Singleton
 
 @Singleton
@@ -29,6 +31,7 @@ class SnowflakeWriter(
     private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
     private val snowflakeClient: SnowflakeAirbyteClient,
     private val tempTableNameGenerator: TempTableNameGenerator,
+    private val snowflakeConfiguration: SnowflakeConfiguration,
 ) : DestinationWriter {
     private lateinit var initialStatuses: Map<DestinationStream, DirectLoadInitialStatus>
 
@@ -37,6 +40,10 @@ class SnowflakeWriter(
             .map { (tableNames, _) -> tableNames.finalTableName!!.namespace }
             .toSet()
             .forEach { snowflakeClient.createNamespace(it) }
+
+        snowflakeClient.createNamespace(
+            snowflakeConfiguration.internalTableSchema.toSnowflakeCompatibleName()
+        )
 
         initialStatuses = stateGatherer.gatherInitialStatus(names)
     }
