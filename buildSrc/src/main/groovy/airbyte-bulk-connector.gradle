@@ -254,6 +254,13 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
             project.tasks.named('build').configure {
                 dependsOn project.tasks.integrationTestJava
             }
+
+            project.configurations {
+                integrationTestImplementation.extendsFrom implementation
+                integrationTestImplementation.extendsFrom testImplementation
+                integrationTestRuntimeOnly.extendsFrom runtimeOnly
+                integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
+            }
         }
 
         project.tasks.matching {

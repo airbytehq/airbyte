@@ -123,12 +123,13 @@ curl --request POST \
   "organizationId": "00000000-0000-0000-0000-000000000000"
 }'
 ```
+
 Include the following parameters in your request.
 
 | Body parameter   | Required? | Description                                                                                                                              |
 | ---------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `name`           | Required  | The name of your region in Airbyte. We reccomend as best practice that you include the cloud provider  (if applicable), and actual region in the name. |
-| `organizationId` | Required  | Your Airbyte organization ID. To find this in the UI, navigate to `Settings` > `General`.                                             |
+| `name`           | Required  | The name of your region in Airbyte. We recommend as best practice that you include the cloud provider  (if applicable), and actual region in the name. |
+| `organizationId` | Required  | Your Airbyte organization ID. To find this in the UI, navigate to **Organizaton settings** > **General**.                                             |
 | `enabled`        | Optional  | Defaults to true. Set this to `false` if you don't want this region enabled.                                                             |
 
 For additional request examples, see [the API reference](https://reference.airbyte.com/reference/regions#/).
@@ -326,13 +327,11 @@ You can only associate each workspace with one region.
 
 Follow these steps to associate your region to your current workspace using Airbyte's user interface.
 
-1. In the navigation panel, click **Settings**.
+1. In the navigation panel, click **Workspace settings** > **General**.
 
-2. Under **Workspace**, click **General**.
+2. Under **Region**, select your region.
 
-3. Under **Region**, select your region.
-
-4. Click **Save changes**. Now, run any sync. You will see the workloads spin up in the new data plane you've configured.
+3. Click **Save changes**. Now, run any sync. You will see the workloads spin up in the new data plane you've configured.
 
   </TabItem>
   <TabItem value="workspace-association-api" label="API">
@@ -429,7 +428,6 @@ For additional request examples, see [the API reference](https://reference.airby
   </TabItem>
 </Tabs>
 
-
 ## Check which region your workspaces use
 
 <Tabs>
@@ -437,11 +435,7 @@ For additional request examples, see [the API reference](https://reference.airby
 
 You can see a list of your workspaces and the region associated to each from Airbyte's organization settings.
 
-1. In Airbyte's user interface, click **Settings**.
-
-2. Under **Organization**, click **General**.
-
-Airbyte displays your workspaces and each workspace region under **Regions**.
+1. In Airbyte's user interface, click **Workspace settings** > **General**. Airbyte displays your workspaces and each workspace region under **Regions**.
 
 ![Multiple regions displayed in Airbyte's General Organization settings](img/multiple-regions-in-airbyte.png)
 
