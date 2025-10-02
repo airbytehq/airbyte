@@ -20,6 +20,7 @@ import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.COUNT_TOTAL_ALIAS
 import io.airbyte.integrations.destination.snowflake.sql.ColumnAndType
 import io.airbyte.integrations.destination.snowflake.sql.DEFAULT_COLUMNS
+import io.airbyte.integrations.destination.snowflake.sql.QUOTE
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlGenerator
 import io.mockk.Runs
@@ -28,6 +29,7 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
 import java.sql.Connection
+import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.SQLException
 import java.sql.Statement
@@ -59,7 +61,8 @@ internal class SnowflakeAirbyteClientTest {
                 every { getFormattedDefaultColumnNames(any()) } returns
                     DEFAULT_COLUMNS.map { it.columnName.toSnowflakeCompatibleName() }
             }
-        snowflakeConfiguration = mockk(relaxed = true)
+        snowflakeConfiguration =
+            mockk(relaxed = true) { every { database } returns "test_database" }
         client =
             SnowflakeAirbyteClient(
                 dataSource,
@@ -156,13 +159,15 @@ internal class SnowflakeAirbyteClientTest {
         // Mock for other operations
         val createResultSet = mockk<ResultSet>(relaxed = true)
 
+        val preparedStatement =
+            mockk<PreparedStatement>(relaxed = true) {
+                every { executeQuery() } returns schemaCheckResultSet
+                every { close() } just Runs
+            }
+
         val statement =
             mockk<Statement> {
-                every { executeQuery(match { it.contains("INFORMATION_SCHEMA.SCHEMATA") }) } returns
-                    schemaCheckResultSet
-                every {
-                    executeQuery(not(match { it.contains("INFORMATION_SCHEMA.SCHEMATA") }))
-                } returns createResultSet
+                every { executeQuery(any()) } returns createResultSet
                 every { close() } just Runs
             }
 
@@ -170,17 +175,16 @@ internal class SnowflakeAirbyteClientTest {
             mockk<Connection> {
                 every { close() } just Runs
                 every { createStatement() } returns statement
+                every { prepareStatement(any()) } returns preparedStatement
             }
 
         every { dataSource.connection } returns mockConnection
-        every { sqlGenerator.checkSchemaExists(namespace) } returns
-            "SELECT COUNT(*) > 0 AS SCHEMA_EXISTS FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = 'namespace'"
-
         runBlocking {
             client.createNamespace(namespace)
-            verify(exactly = 1) { sqlGenerator.checkSchemaExists(namespace) }
             verify(exactly = 1) { sqlGenerator.createNamespace(namespace) }
             verify(exactly = 1) { sqlGenerator.createFileFormat(namespace) }
+            verify(exactly = 1) { preparedStatement.close() }
+            verify(exactly = 2) { statement.close() }
             verify(exactly = 3) { mockConnection.close() }
         }
     }
@@ -200,13 +204,15 @@ internal class SnowflakeAirbyteClientTest {
         // Mock for file format creation
         val createResultSet = mockk<ResultSet>(relaxed = true)
 
+        val preparedStatement =
+            mockk<PreparedStatement>(relaxed = true) {
+                every { executeQuery() } returns schemaCheckResultSet
+                every { close() } just Runs
+            }
+
         val statement =
             mockk<Statement> {
-                every { executeQuery(match { it.contains("INFORMATION_SCHEMA.SCHEMATA") }) } returns
-                    schemaCheckResultSet
-                every {
-                    executeQuery(not(match { it.contains("INFORMATION_SCHEMA.SCHEMATA") }))
-                } returns createResultSet
+                every { executeQuery(any()) } returns createResultSet
                 every { close() } just Runs
             }
 
@@ -214,19 +220,19 @@ internal class SnowflakeAirbyteClientTest {
             mockk<Connection> {
                 every { close() } just Runs
                 every { createStatement() } returns statement
+                every { prepareStatement(any()) } returns preparedStatement
             }
 
         every { dataSource.connection } returns mockConnection
-        every { sqlGenerator.checkSchemaExists(namespace) } returns
-            "SELECT COUNT(*) > 0 AS SCHEMA_EXISTS FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = 'namespace'"
 
         runBlocking {
             client.createNamespace(namespace)
-            verify(exactly = 1) { sqlGenerator.checkSchemaExists(namespace) }
             verify(exactly = 0) {
                 sqlGenerator.createNamespace(namespace)
             } // Should NOT create schema
             verify(exactly = 1) { sqlGenerator.createFileFormat(namespace) }
+            verify(exactly = 1) { preparedStatement.close() }
+            verify(exactly = 1) { statement.close() }
             verify(exactly = 2) { mockConnection.close() } // Only 2 closes: check + format
         }
     }
@@ -365,11 +371,11 @@ internal class SnowflakeAirbyteClientTest {
     fun testGetGenerationId() {
         val generationId = 2L
         val tableName = TableName(namespace = "namespace", name = "name")
+        val generationIdColumnName = COLUMN_NAME_AB_GENERATION_ID.toSnowflakeCompatibleName()
         val resultSet =
             mockk<ResultSet> {
                 every { next() } returns true
-                every { getLong(COLUMN_NAME_AB_GENERATION_ID.toSnowflakeCompatibleName()) } returns
-                    generationId
+                every { getLong(generationIdColumnName) } returns generationId
             }
         val statement =
             mockk<Statement> {
@@ -383,11 +389,15 @@ internal class SnowflakeAirbyteClientTest {
             }
 
         every { dataSource.connection } returns mockConnection
+        every { snowflakeColumnUtils.getGenerationIdColumnName() } returns generationIdColumnName
+        every { sqlGenerator.getGenerationId(tableName) } returns
+            "SELECT $generationIdColumnName FROM ${tableName.toPrettyString(QUOTE)}"
 
         runBlocking {
             val result = client.getGenerationId(tableName)
             assertEquals(generationId, result)
             verify(exactly = 1) { sqlGenerator.getGenerationId(tableName) }
+            verify(exactly = 1) { statement.close() }
             verify(exactly = 1) { mockConnection.close() }
         }
     }
@@ -529,7 +539,7 @@ internal class SnowflakeAirbyteClientTest {
                 every { close() } just Runs
                 every { createStatement() } returns statement
             }
-        val expectedColumns = listOf(column1, column2).map { it.toSnowflakeCompatibleName() }
+        val expectedColumns = listOf(column1, column2)
 
         every { dataSource.connection } returns mockConnection
 
@@ -657,8 +667,6 @@ internal class SnowflakeAirbyteClientTest {
         val sql = "CREATE SCHEMA test_namespace"
 
         every { sqlGenerator.createNamespace(namespace) } returns sql
-        every { sqlGenerator.checkSchemaExists(namespace) } returns
-            "SELECT COUNT(*) > 0 AS SCHEMA_EXISTS FROM INFORMATION_SCHEMA.SCHEMATA"
 
         // Mock for schema check - should fail and throw exception
         val schemaCheckResultSet =
@@ -668,17 +676,26 @@ internal class SnowflakeAirbyteClientTest {
                 every { close() } just Runs
             }
 
-        val connection = mockk<Connection>()
-        val statement = mockk<Statement>()
+        val preparedStatement =
+            mockk<PreparedStatement>(relaxed = true) {
+                every { executeQuery() } returns schemaCheckResultSet
+                every { close() } just Runs
+            }
+
+        val statement =
+            mockk<Statement> {
+                every { executeQuery(any()) } throws SQLException("Network error", "08S01")
+                every { close() } just Runs
+            }
+
+        val connection =
+            mockk<Connection> {
+                every { createStatement() } returns statement
+                every { prepareStatement(any()) } returns preparedStatement
+                every { close() } just Runs
+            }
 
         every { dataSource.connection } returns connection
-        every { connection.createStatement() } returns statement
-        // First call returns schema check result, second call throws for CREATE SCHEMA
-        every { statement.executeQuery(any()) } returns
-            schemaCheckResultSet andThenThrows
-            SQLException("Network error", "08S01")
-        every { statement.close() } just Runs
-        every { connection.close() } just Runs
 
         runBlocking {
             try {
@@ -688,6 +705,9 @@ internal class SnowflakeAirbyteClientTest {
                 assertEquals("Network error", e.message)
                 assertEquals("08S01", e.sqlState)
             }
+            verify(exactly = 1) { preparedStatement.close() }
+            verify(exactly = 1) { statement.close() }
+            verify(exactly = 2) { connection.close() }
         }
     }
 
