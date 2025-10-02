@@ -17,6 +17,7 @@ import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.COUNT_TOTAL_ALIAS
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlGenerator
+import io.airbyte.integrations.destination.snowflake.sql.andLog
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.sql.ResultSet
@@ -71,7 +72,7 @@ class SnowflakeAirbyteClient(
                         SELECT COUNT(*) > 0 AS SCHEMA_EXISTS
                         FROM "$databaseName".INFORMATION_SCHEMA.SCHEMATA
                         WHERE SCHEMA_NAME = ?
-                    """
+                    """.andLog()
                     )
 
                 // When querying information_schema, snowflake needs the "true" schema name,

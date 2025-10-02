@@ -24,6 +24,15 @@ internal const val COUNT_TOTAL_ALIAS = "total"
 
 private val log = KotlinLogging.logger {}
 
+/**
+ * This extension is here to avoid writing `.also { log.info { it }}` for every returned string
+ * we want to log
+ */
+fun String.andLog(): String {
+    log.info { this.trim() }
+    return this
+}
+
 @Singleton
 class SnowflakeDirectLoadSqlGenerator(
     private val columnUtils: SnowflakeColumnUtils,
@@ -31,16 +40,6 @@ class SnowflakeDirectLoadSqlGenerator(
     private val snowflakeConfiguration: SnowflakeConfiguration,
     private val snowflakeSqlNameUtils: SnowflakeSqlNameUtils,
 ) {
-
-    /**
-     * This extension is here to avoid writing `.also { log.info { it }}` for every returned string
-     * we want to log
-     */
-    private fun String.andLog(): String {
-        log.info { this.trim() }
-        return this
-    }
-
     fun countTable(tableName: TableName): String {
         return "SELECT COUNT(*) AS ${COUNT_TOTAL_ALIAS.quote()} FROM ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}".andLog()
     }
