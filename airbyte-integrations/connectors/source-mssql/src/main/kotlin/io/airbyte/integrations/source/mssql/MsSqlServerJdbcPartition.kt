@@ -393,7 +393,6 @@ class MsSqlServerJdbcSnapshotWithCursorPartition(
             primaryKey = checkpointColumns,
             primaryKeyCheckpoint = checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
             cursor,
-            stream,
         )
 }
 
@@ -445,7 +444,6 @@ class MsSqlServerJdbcSplittableSnapshotWithCursorPartition(
                         primaryKey = checkpointColumns,
                         primaryKeyCheckpoint = upperBound,
                         cursor,
-                        stream,
                     )
             }
         }
@@ -455,7 +453,6 @@ class MsSqlServerJdbcSplittableSnapshotWithCursorPartition(
             primaryKey = checkpointColumns,
             primaryKeyCheckpoint = checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
             cursor,
-            stream,
         )
 }
 

@@ -6,6 +6,11 @@ package io.airbyte.integrations.source.mssql
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import io.airbyte.cdk.data.BigDecimalCodec
+import io.airbyte.cdk.data.BinaryCodec
+import io.airbyte.cdk.data.DoubleCodec
+import io.airbyte.cdk.data.FloatCodec
+import io.airbyte.cdk.data.IntCodec
 import io.airbyte.cdk.data.JsonCodec
 import io.airbyte.cdk.data.JsonEncoder
 import io.airbyte.cdk.data.LongCodec
@@ -89,12 +94,46 @@ class MsSqlServerDebeziumOperations(private val configuration: MsSqlServerSource
                 else -> {
                     // Use the field's jsonEncoder if available, otherwise fall back to TextCodec
                     val codec: JsonCodec<*> = field.type.jsonEncoder as? JsonCodec<*> ?: TextCodec
+
+                    // Handle numeric and binary values from Debezium (can come as JSON strings or
+                    // numbers)
+                    val decodedValue =
+                        when {
+                            // BigDecimal: handle both string and number
+                            fieldValue.isTextual && codec is BigDecimalCodec ->
+                                java.math.BigDecimal(fieldValue.asText())
+                            fieldValue.isNumber && codec is BigDecimalCodec ->
+                                fieldValue.decimalValue()
+
+                            // Int: handle both string and number
+                            fieldValue.isTextual && codec is IntCodec -> fieldValue.asText().toInt()
+                            fieldValue.isNumber && codec is IntCodec -> fieldValue.intValue()
+
+                            // Long: handle both string and number
+                            fieldValue.isTextual && codec is LongCodec ->
+                                fieldValue.asText().toLong()
+                            fieldValue.isNumber && codec is LongCodec -> fieldValue.longValue()
+
+                            // Float: handle both string and number
+                            fieldValue.isTextual && codec is FloatCodec ->
+                                fieldValue.asText().toFloat()
+                            fieldValue.isNumber && codec is FloatCodec -> fieldValue.floatValue()
+
+                            // Double: handle both string and number
+                            fieldValue.isTextual && codec is DoubleCodec ->
+                                fieldValue.asText().toDouble()
+                            fieldValue.isNumber && codec is DoubleCodec -> fieldValue.doubleValue()
+
+                            // Binary: handle base64 string
+                            fieldValue.isTextual && codec is BinaryCodec ->
+                                java.nio.ByteBuffer.wrap(
+                                    java.util.Base64.getDecoder().decode(fieldValue.asText())
+                                )
+                            else -> codec.decode(fieldValue)
+                        }
+
                     @Suppress("UNCHECKED_CAST")
-                    resultRow[field.id] =
-                        FieldValueEncoder(
-                            codec.decode(fieldValue),
-                            codec as JsonCodec<Any>,
-                        )
+                    resultRow[field.id] = FieldValueEncoder(decodedValue, codec as JsonCodec<Any>)
                 }
             }
         }
@@ -459,8 +498,7 @@ class MsSqlServerDebeziumOperations(private val configuration: MsSqlServerSource
             // Enable heartbeat timeout for MSSQL to detect idle database states
             .with(
                 "airbyte.first.record.wait.seconds",
-                (configuration.incrementalReplicationConfiguration as CdcIncrementalConfiguration)
-                    .initialWaitingSeconds
+                configuration.incrementalReplicationConfiguration.initialWaitingSeconds
                     .toSeconds()
                     .toString()
             )
