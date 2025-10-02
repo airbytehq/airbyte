@@ -54,7 +54,7 @@ internal class SnowflakeWriterTest {
                 streamStateStore = mockk(),
                 snowflakeClient = snowflakeClient,
                 tempTableNameGenerator = mockk(),
-                snowflakeConfiguration = mockk(),
+                snowflakeConfiguration = mockk(relaxed = true),
             )
 
         runBlocking { writer.setup() }
@@ -100,7 +100,7 @@ internal class SnowflakeWriterTest {
                 streamStateStore = mockk(),
                 snowflakeClient = snowflakeClient,
                 tempTableNameGenerator = tempTableNameGenerator,
-                snowflakeConfiguration = mockk(),
+                snowflakeConfiguration = mockk(relaxed = true),
             )
 
         runBlocking {
@@ -147,7 +147,7 @@ internal class SnowflakeWriterTest {
                 streamStateStore = mockk(),
                 snowflakeClient = snowflakeClient,
                 tempTableNameGenerator = tempTableNameGenerator,
-                snowflakeConfiguration = mockk(),
+                snowflakeConfiguration = mockk(relaxed = true),
             )
 
         runBlocking {
@@ -193,7 +193,7 @@ internal class SnowflakeWriterTest {
                 streamStateStore = mockk(),
                 snowflakeClient = snowflakeClient,
                 tempTableNameGenerator = tempTableNameGenerator,
-                snowflakeConfiguration = mockk(),
+                snowflakeConfiguration = mockk(relaxed = true),
             )
 
         runBlocking {
@@ -305,7 +305,7 @@ internal class SnowflakeWriterTest {
                 streamStateStore = mockk(),
                 snowflakeClient = snowflakeClient,
                 tempTableNameGenerator = mockk(),
-                snowflakeConfiguration = mockk(),
+                snowflakeConfiguration = mockk(relaxed = true),
             )
 
         runBlocking {
