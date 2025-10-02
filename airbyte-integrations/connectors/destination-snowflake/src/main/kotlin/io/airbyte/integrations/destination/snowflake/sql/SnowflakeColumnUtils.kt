@@ -64,7 +64,7 @@ internal val DEFAULT_COLUMNS =
 internal val RAW_DATA_COLUMN =
     ColumnAndType(
         columnName = COLUMN_NAME_DATA,
-        columnType = "${SnowflakeDataType.VARCHAR.typeName} $NOT_NULL"
+        columnType = "${SnowflakeDataType.VARIANT.typeName} $NOT_NULL"
     )
 
 @Singleton
