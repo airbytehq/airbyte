@@ -53,7 +53,8 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                     if (columnName == COLUMN_NAME_DATA) columnName
                     else columnName.toSnowflakeCompatibleName()
                 }
-            every { getGenerationIdColumnName() } returns COLUMN_NAME_AB_GENERATION_ID.toSnowflakeCompatibleName()
+            every { getGenerationIdColumnName() } returns
+                COLUMN_NAME_AB_GENERATION_ID.toSnowflakeCompatibleName()
         }
         snowflakeSqlNameUtils = SnowflakeSqlNameUtils(snowflakeConfiguration)
         snowflakeDirectLoadSqlGenerator =

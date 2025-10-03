@@ -53,10 +53,6 @@ internal val DEFAULT_COLUMNS =
             columnType = "${SnowflakeDataType.TIMESTAMP_TZ.typeName} $NOT_NULL"
         ),
         ColumnAndType(
-            columnName = COLUMN_NAME_AB_LOADED_AT,
-            columnType = "${SnowflakeDataType.TIMESTAMP_TZ.typeName} $NOT_NULL"
-        ),
-        ColumnAndType(
             columnName = COLUMN_NAME_AB_META,
             columnType = "${SnowflakeDataType.VARIANT.typeName} $NOT_NULL"
         ),
@@ -72,6 +68,15 @@ internal val RAW_DATA_COLUMN =
         columnType = "${SnowflakeDataType.VARIANT.typeName} $NOT_NULL"
     )
 
+internal val RAW_COLUMNS =
+    listOf(
+        ColumnAndType(
+            columnName = COLUMN_NAME_AB_LOADED_AT,
+            columnType = SnowflakeDataType.TIMESTAMP_TZ.typeName
+        ),
+        RAW_DATA_COLUMN
+    )
+
 @Singleton
 class SnowflakeColumnUtils(
     private val snowflakeConfiguration: SnowflakeConfiguration,
@@ -81,7 +86,7 @@ class SnowflakeColumnUtils(
     @VisibleForTesting
     internal fun defaultColumns(): List<ColumnAndType> =
         if (snowflakeConfiguration.legacyRawTablesOnly) {
-            DEFAULT_COLUMNS + listOf(RAW_DATA_COLUMN)
+            DEFAULT_COLUMNS + RAW_COLUMNS
         } else {
             DEFAULT_COLUMNS
         }
@@ -103,7 +108,7 @@ class SnowflakeColumnUtils(
     }
 
     fun getColumnNames(columnNameMapping: ColumnNameMapping): String =
-        if (snowflakeConfiguration.legacyRawTablesOnly == true) {
+        if (snowflakeConfiguration.legacyRawTablesOnly) {
             getFormattedDefaultColumnNames(true).joinToString(",")
         } else {
             (getFormattedDefaultColumnNames(true) +

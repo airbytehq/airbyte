@@ -146,15 +146,12 @@ internal class SnowflakeInsertBufferTest {
     @Test
     fun testMissingFields() {
         val tableName = mockk<TableName>(relaxed = true)
-        val column1 = "columnName1"
-        val column2 = "columnName2"
-        val columns = listOf(column1, column2)
         val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
-        val record = createRecord(column1)
+        val record = createRecord("COLUMN1")
         val buffer =
             SnowflakeInsertBuffer(
                 tableName = tableName,
-                columns = columns,
+                columns = listOf("COLUMN1", "COLUMN2"),
                 snowflakeClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
                 flushLimit = 1,
@@ -175,15 +172,12 @@ internal class SnowflakeInsertBufferTest {
     @Test
     fun testMissingFieldsRaw() {
         val tableName = mockk<TableName>(relaxed = true)
-        val column1 = "columnName1"
-        val column2 = "columnName2"
-        val columns = listOf(column1, column2)
         val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
-        val record = createRecord(column1)
+        val record = createRecord("COLUMN1")
         val buffer =
             SnowflakeInsertBuffer(
                 tableName = tableName,
-                columns = columns,
+                columns = listOf("COLUMN1", "COLUMN2"),
                 snowflakeClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
                 flushLimit = 1,

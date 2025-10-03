@@ -182,9 +182,7 @@ class SnowflakeAirbyteClient(
             generateSchemaChanges(columnsInDb, columnsInStream)
 
         if (
-            addedColumns.isNotEmpty() ||
-                deletedColumns.isNotEmpty() ||
-                modifiedColumns.isNotEmpty()
+            addedColumns.isNotEmpty() || deletedColumns.isNotEmpty() || modifiedColumns.isNotEmpty()
         ) {
             log.info { "Summary of the table alterations:" }
             log.info { "Added columns: $addedColumns" }
