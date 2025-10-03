@@ -39,6 +39,3 @@ tasks.withType(Test).configureEach {
     )
 }
 
-task wrapper(type: Wrapper){
-   gradleVersion = '8.14.3'
-}
