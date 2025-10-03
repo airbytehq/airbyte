@@ -193,6 +193,11 @@ Enter the URI of your REST catalog. You may also need to enter the default names
 
     Dropping Glue tables from the console [may not immediately delete them](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/glue/client/batch_delete_table.html). Either wait for AWS to finish their background processing, or use the AWS API to drop all table versions.
 
+5. If you are using [AWS Lake Formation](https://docs.aws.amazon.com/lake-formation/), you must grant some permissions via Lake Formation:
+   1. You must grant `Data location_access` on the S3 path.
+   2. If you intend to have the connector create the database(s) on your behalf, you must also grant `Create database` on the catalog.
+   3. (Advanced option) If you want to create the database(s) manually, and have the connector write into only those specific database(s), then you must grant `Create table, Describe` on the database(s).
+
 #### Nessie
 
 To authenticate with Nessie, do two things.
@@ -242,6 +247,15 @@ You have the following options to manage schema evolution.
     - Manually edit your table schema in Iceberg directly.
     - [Refresh](../../platform/operator-guides/refreshes) your connection in Airbyte.
     - [Clear](../../platform/operator-guides/clear) your connection in Airbyte.
+
+### Naming
+
+Like most Airbyte destination connectors, the S3 Data Lake connector may modify identifiers (stream name/namespace, column names) for compatibility with the destination.
+
+In particular, when using AWS Glue, the connector will:
+
+- Lowercase all stream [table names and namespaces](https://docs.aws.amazon.com/glue/latest/webapi/API_Table.html)
+- Change any non-alphanumeric character in a table name/namespace to an [underscore](https://docs.aws.amazon.com/glue/latest/dg/define-database.html) for compatibility with Athena
 
 ## Deduplication
 
