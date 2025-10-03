@@ -187,6 +187,7 @@ The final table contains these fields, in addition to the columns declared in yo
 - `_AIRBYTE_RAW_ID`
 - `_AIRBYTE_GENERATION_ID`
 - `_AIRBYTE_EXCTRACTED_AT`
+- `_AIRBYTE_LOADED_AT`
 - `_AIRBYTE_META`
 
 Again, see [here](/platform/understanding-airbyte/airbyte-metadata-fields) for more information about these fields.
