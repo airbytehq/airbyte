@@ -19,7 +19,8 @@ jobs:
       - name: List certified connectors
         id: list-connectors
         run: |
-          connectors=()
+          # dev-null isn't certified, but we should probably keep it on the latest CDK anyway
+          connectors=(destination-dev-null)
           for dir in airbyte-integrations/connectors/*; do
             metadata_file="${dir}/metadata.yaml"
             build_gradle="${dir}/build.gradle"
