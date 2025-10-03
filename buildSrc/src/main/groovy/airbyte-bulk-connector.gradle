@@ -303,10 +303,6 @@ class AirbyteBulkConnectorPlugin implements Plugin<Project> {
             doLast {
                 println extension.cdk
             }
-
-            // force this task to always run
-            outputs.upToDateWhen { false }
-            outputs.cacheIf { false }
         }
 
         project.tasks.register('upgradeCdk', BumpConnectorCdkVersion)
