@@ -50,9 +50,7 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       matrix:
-        # TODO undo this
-        # connector: ${{ fromJson(needs.list-certified-connectors.outputs.connectors) }}
-        connector: [destination-dev-null]
+        connector: ${{ fromJson(needs.list-certified-connectors.outputs.connectors) }}
       fail-fast: false
       max-parallel: 5
     steps:
