@@ -139,7 +139,7 @@ jobs:
         with:
           token: ${{ steps.app-token.outputs.token }}
           commit-message: "chore: upgrade bulk CDK for ${{ matrix.connector }}"
-          branch: "auto-upgrade-jvm-bulk-cdk/${{ matrix.connector }}_${{ steps.upgrade-cdk.outputs.new_cdk_version }}"
+          branch: "auto-upgrade-jvm-bulk-cdk/${{ steps.upgrade-cdk.outputs.new_cdk_version }}/${{ matrix.connector }}"
           delete-branch: true
           # TODO remove the TEST text
           title: "[TEST] chore: upgrade ${{ matrix.connector }} to bulk CDK ${{ steps.upgrade-cdk.outputs.new_cdk_version }}"
