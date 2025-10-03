@@ -93,7 +93,7 @@ jobs:
         run: |
           ./gradlew :airbyte-integrations:connectors:${{ matrix.connector }}:upgradeCdk
           # --quiet disables all of gradle's normal logging, so we only get the CDK version number
-          new_cdk_version=$(./gradlew :airbyte-integrations:connectors:destination-dev-null:getCdkVersion --quiet --rerun-tasks --no-build-cache)
+          new_cdk_version=$(./gradlew :airbyte-integrations:connectors:${{ matrix.connector }}:getCdkVersion --quiet --rerun-tasks --no-build-cache)
           echo "new_cdk_version=$new_cdk_version" >> $GITHUB_OUTPUT
 
       - name: Check for changes
