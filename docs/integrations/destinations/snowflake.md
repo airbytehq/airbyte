@@ -178,6 +178,7 @@ could be subject to change in future versions.
 ### Final Table schema
 
 The final table contains these fields, in addition to the columns declared in your stream schema:
+
 - `_AIRBYTE_RAW_ID`
 - `_AIRBYTE_GENERATION_ID`
 - `_AIRBYTE_EXCTRACTED_AT`
