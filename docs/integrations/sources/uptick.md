@@ -1,5 +1,5 @@
 # Uptick
-Extract data from Uptick - The new standard in fire inspection software.
+Extract data from Uptick, a field service management software platform.
 
 ## Configuration
 
