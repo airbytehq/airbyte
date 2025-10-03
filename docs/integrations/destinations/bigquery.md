@@ -210,6 +210,7 @@ tutorials:
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                                           |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.8 | 2025-10-03 | [67050](https://github.com/airbytehq/airbyte/pull/67050) | Upgrade to Bulk CDK 0.1.42. |
 | 3.0.7 | 2025-09-02 | [65905](https://github.com/airbytehq/airbyte/pull/65905) | Promoting release candidate 3.0.7-rc.1 to a main version. |
 | 3.0.7-rc.1  | 2025-08-27 | [65114](https://github.com/airbytehq/airbyte/pull/65114)   | Implement SOCKET+PROTO mode support.                                                                                                                                              |
 | 3.0.6       | 2025-07-21 | [63700](https://github.com/airbytehq/airbyte/pull/63700)   | Improve error reporting for Billing errors.                                                                                                                                       |
