@@ -21,8 +21,6 @@ data:
       enabled: true
   releaseStage: generally_available
   releases:
-    rolloutConfiguration:
-      enableProgressiveRollout: true
     breakingChanges:
       2.0.0:
         message: Remove GCS/S3 loading method support.
