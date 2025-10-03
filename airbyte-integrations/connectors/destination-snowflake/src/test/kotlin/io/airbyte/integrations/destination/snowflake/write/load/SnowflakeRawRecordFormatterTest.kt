@@ -12,6 +12,7 @@ import io.airbyte.cdk.load.data.csv.toCsvValue
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.sql.DEFAULT_COLUMNS
+import io.airbyte.integrations.destination.snowflake.sql.RAW_COLUMNS
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 import io.mockk.every
 import io.mockk.mockk
@@ -64,7 +65,7 @@ internal class SnowflakeRawRecordFormatterTest {
         snowflakeColumnUtils = mockk {
             every { formatColumnName(any(), any()) } answers { firstArg<String>() }
             every { getFormattedDefaultColumnNames(any()) } returns
-                DEFAULT_COLUMNS.map { it.columnName }
+                DEFAULT_COLUMNS.map { it.columnName } + RAW_COLUMNS.map { it.columnName }
         }
     }
 
@@ -72,7 +73,7 @@ internal class SnowflakeRawRecordFormatterTest {
     fun testFormatting() {
         val columnName = "test-column-name"
         val columnValue = "test-column-value"
-        val columns = DEFAULT_COLUMNS.map { it.columnName } + listOf(Meta.COLUMN_NAME_DATA)
+        val columns = DEFAULT_COLUMNS.map { it.columnName } + RAW_COLUMNS.map { it.columnName }
         val record = createRecord(columnName, columnValue)
         val formatter = SnowflakeRawRecordFormatter(columns, snowflakeColumnUtils)
         val formattedValue = formatter.format(record)

@@ -65,17 +65,8 @@ class SnowflakeRawRecordFormatter(
         // Copy the Airbyte metadata columns to the raw output, removing each
         // one from the record to avoid duplicates in the "data" field
         columns
-            .filter { airbyteColumnNames.contains(it) }
-            .forEach { column ->
-                when (column) {
-                    Meta.COLUMN_NAME_AB_EXTRACTED_AT,
-                    Meta.COLUMN_NAME_AB_LOADED_AT,
-                    Meta.COLUMN_NAME_AB_META,
-                    Meta.COLUMN_NAME_AB_RAW_ID,
-                    Meta.COLUMN_NAME_AB_GENERATION_ID ->
-                        safeAddToOutput(column, record, outputRecord)
-                }
-            }
+            .filter { airbyteColumnNames.contains(it) && it != Meta.COLUMN_NAME_DATA }
+            .forEach { column -> safeAddToOutput(column, record, outputRecord) }
         // Do not output null values in the JSON raw output
         val filteredRecord = record.filter { (_, v) -> v !is NullValue }
         // Convert all the remaining columns in the record to a JSON document stored in the "data"
@@ -99,6 +90,7 @@ class SnowflakeRawRecordFormatter(
         insert(columns.indexOf(key), extractedValue?.toCsvValue() ?: "", output)
     }
 
-    private fun insert(index: Int, value: Any, list: MutableList<Any>) =
+    private fun insert(index: Int, value: Any, list: MutableList<Any>) {
         if (index < list.size) list.add(index, value) else list.add(value)
+    }
 }
