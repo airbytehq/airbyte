@@ -7,8 +7,9 @@ from abc import ABC, abstractmethod
 from datetime import timedelta, timezone
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib import parse
-from dateutil.parser import parse as date_parse
+
 import requests
+from dateutil.parser import parse as date_parse
 
 from airbyte_cdk import BackoffStrategy, StreamSlice
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, FailureType, Level, SyncMode
