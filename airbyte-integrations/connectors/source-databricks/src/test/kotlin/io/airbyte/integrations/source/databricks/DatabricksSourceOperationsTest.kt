@@ -294,7 +294,7 @@ class DatabricksSourceOperationsTest {
     fun testFieldTypeMapping() {
         // Test that field type mapping works correctly for Databricks types
         val operations = DatabricksSourceOperations()
-        
+
         // Test that operations instance is created successfully
         assertEquals(DatabricksSourceOperations::class.java, operations.javaClass)
     }

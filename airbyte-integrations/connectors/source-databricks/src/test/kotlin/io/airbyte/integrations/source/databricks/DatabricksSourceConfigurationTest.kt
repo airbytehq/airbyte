@@ -23,10 +23,7 @@ class DatabricksSourceConfigurationTest {
                 http_path = "/sql/1.0/warehouses/test_warehouse"
                 database = "test_database"
                 schema = "test_schema"
-                credentials =
-                    PersonalAccessTokenCredentialsSpecification(
-                        token = "test_token_123"
-                    )
+                credentials = PersonalAccessTokenCredentialsSpecification(token = "test_token_123")
                 concurrency = 4
                 checkpointTargetIntervalSeconds = 300
             }
@@ -60,10 +57,7 @@ class DatabricksSourceConfigurationTest {
                 http_path = "/sql/1.0/warehouses/test_warehouse"
                 database = "test_database"
                 schema = null
-                credentials =
-                    PersonalAccessTokenCredentialsSpecification(
-                        token = "test_token_123"
-                    )
+                credentials = PersonalAccessTokenCredentialsSpecification(token = "test_token_123")
                 concurrency = 2
                 checkpointTargetIntervalSeconds = 600
             }
@@ -87,10 +81,7 @@ class DatabricksSourceConfigurationTest {
                 database = "test_database"
                 schema = "test_schema"
                 jdbcUrlParams = "application=airbyte&networkTimeout=60000&queryTimeout=300"
-                credentials =
-                    PersonalAccessTokenCredentialsSpecification(
-                        token = "test_token_123"
-                    )
+                credentials = PersonalAccessTokenCredentialsSpecification(token = "test_token_123")
                 concurrency = 1
                 checkpointTargetIntervalSeconds = 120
             }
@@ -117,10 +108,7 @@ class DatabricksSourceConfigurationTest {
                 database = "test_database"
                 schema = "test_schema"
                 jdbcUrlParams = "application=airbyte%20connector&description=test%20connection"
-                credentials =
-                    PersonalAccessTokenCredentialsSpecification(
-                        token = "test_token_123"
-                    )
+                credentials = PersonalAccessTokenCredentialsSpecification(token = "test_token_123")
                 concurrency = 1
                 checkpointTargetIntervalSeconds = 120
             }
@@ -142,10 +130,7 @@ class DatabricksSourceConfigurationTest {
                 database = "test_database"
                 schema = "test_schema"
                 concurrency = 0 // Invalid value
-                credentials =
-                    PersonalAccessTokenCredentialsSpecification(
-                        token = "test_token_123"
-                    )
+                credentials = PersonalAccessTokenCredentialsSpecification(token = "test_token_123")
                 checkpointTargetIntervalSeconds = 300
             }
 
@@ -165,10 +150,7 @@ class DatabricksSourceConfigurationTest {
                 schema = "test_schema"
                 concurrency = 4
                 checkpointTargetIntervalSeconds = 0 // Invalid value
-                credentials =
-                    PersonalAccessTokenCredentialsSpecification(
-                        token = "test_token_123"
-                    )
+                credentials = PersonalAccessTokenCredentialsSpecification(token = "test_token_123")
             }
 
         assertThrows(ConfigErrorException::class.java) {
@@ -187,10 +169,7 @@ class DatabricksSourceConfigurationTest {
                 schema = "test_schema"
                 concurrency = 4
                 checkpointTargetIntervalSeconds = -1 // Invalid value
-                credentials =
-                    PersonalAccessTokenCredentialsSpecification(
-                        token = "test_token_123"
-                    )
+                credentials = PersonalAccessTokenCredentialsSpecification(token = "test_token_123")
             }
 
         assertThrows(ConfigErrorException::class.java) {
@@ -226,10 +205,7 @@ class DatabricksSourceConfigurationTest {
                 http_path = "/sql/1.0/warehouses/test_warehouse"
                 database = "test_database"
                 schema = "test_schema"
-                credentials =
-                    PersonalAccessTokenCredentialsSpecification(
-                        token = "test_token_123"
-                    )
+                credentials = PersonalAccessTokenCredentialsSpecification(token = "test_token_123")
                 concurrency = 4
                 checkpointTargetIntervalSeconds = 300
                 // Don't set checkPrivileges to test default
@@ -251,10 +227,7 @@ class DatabricksSourceConfigurationTest {
                 http_path = "/sql/1.0/warehouses/test_warehouse"
                 database = "test_database"
                 schema = "test_schema"
-                credentials =
-                    PersonalAccessTokenCredentialsSpecification(
-                        token = "test_token_123"
-                    )
+                credentials = PersonalAccessTokenCredentialsSpecification(token = "test_token_123")
                 concurrency = 4
                 checkpointTargetIntervalSeconds = 300
             }
@@ -274,10 +247,7 @@ class DatabricksSourceConfigurationTest {
                 http_path = "/sql/1.0/warehouses/test_warehouse"
                 database = "test_database"
                 schema = "test_schema"
-                credentials =
-                    PersonalAccessTokenCredentialsSpecification(
-                        token = "test_token_123"
-                    )
+                credentials = PersonalAccessTokenCredentialsSpecification(token = "test_token_123")
                 concurrency = 4
                 checkpointTargetIntervalSeconds = 300
             }
@@ -299,10 +269,7 @@ class DatabricksSourceConfigurationTest {
                 database = "test_database"
                 schema = "test_schema"
                 jdbcUrlParams = "invalid_param&another=value&malformed"
-                credentials =
-                    PersonalAccessTokenCredentialsSpecification(
-                        token = "test_token_123"
-                    )
+                credentials = PersonalAccessTokenCredentialsSpecification(token = "test_token_123")
                 concurrency = 4
                 checkpointTargetIntervalSeconds = 300
             }
