@@ -104,6 +104,7 @@ You can also use a pre-existing user but we highly recommend creating a dedicate
 
 | Version    | Date       | Pull Request                                               | Subject                                                                        |
 |:-----------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 2.1.5 | 2025-10-03 | [67040](https://github.com/airbytehq/airbyte/pull/67040) | Upgrade to Bulk CDK 0.1.42. |
 | 2.1.4      | 2025-09-29 | [66743](https://github.com/airbytehq/airbyte/pull/66743) | Activate speed mode.                                                           |
 | 2.1.3      | 2025-09-29 | [66743](https://github.com/airbytehq/airbyte/pull/66743) | Promoting release candidate 2.1.3-rc.1 to a main version.                      |
 | 2.1.3-rc.1 | 2025-09-25 | [66699](https://github.com/airbytehq/airbyte/pull/66699)   | Prepare for speed mode. Fix interleaved stream state handling.                 |
