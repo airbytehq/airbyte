@@ -45,6 +45,7 @@ Download all your data from FreeAgent, a friendly and easy to use cloud based ac
 | Projects | url | DefaultPaginator | ✅ |  ✅  |
 | Tasks | url | DefaultPaginator | ✅ |  ✅  |
 | Timeslips | url | DefaultPaginator | ✅ |  ✅  |
+| Project Notes | | DefaultPaginator | ✅ |  ❌  |
 
 ## Changelog
 
@@ -53,6 +54,7 @@ Download all your data from FreeAgent, a friendly and easy to use cloud based ac
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.1.0 | 2025-10-03 | [67023](https://github.com/airbytehq/airbyte/pull/67023) | Added Project Notes stream and reworked Payslips stream to use payroll periods as parent instead of accounting periods. Non-breaking change |
 | 0.0.35 | 2025-09-30 | [66763](https://github.com/airbytehq/airbyte/pull/66763) | Update dependencies |
 | 0.0.34 | 2025-09-24 | [65887](https://github.com/airbytehq/airbyte/pull/65887) | Update dependencies |
 | 0.0.33 | 2025-08-23 | [65265](https://github.com/airbytehq/airbyte/pull/65265) | Update dependencies |
