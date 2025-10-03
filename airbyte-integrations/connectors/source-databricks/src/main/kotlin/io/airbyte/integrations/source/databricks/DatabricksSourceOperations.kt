@@ -12,27 +12,21 @@ import io.airbyte.cdk.discover.JdbcAirbyteStreamFactory
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
 import io.airbyte.cdk.discover.MetaField
 import io.airbyte.cdk.discover.SystemType
-import io.airbyte.cdk.data.LeafAirbyteSchemaType
-import io.airbyte.cdk.data.OffsetDateTimeCodec
 import io.airbyte.cdk.jdbc.BigDecimalFieldType
 import io.airbyte.cdk.jdbc.BigIntegerFieldType
 import io.airbyte.cdk.jdbc.BooleanFieldType
-import io.airbyte.cdk.jdbc.ByteFieldType
 import io.airbyte.cdk.jdbc.BytesFieldType
+import io.airbyte.cdk.jdbc.DoubleFieldType
+import io.airbyte.cdk.jdbc.FloatFieldType
 import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.jdbc.JdbcFieldType
-import io.airbyte.cdk.jdbc.FloatFieldType
-import io.airbyte.cdk.jdbc.DoubleFieldType
 import io.airbyte.cdk.jdbc.LocalDateFieldType
 import io.airbyte.cdk.jdbc.LocalDateTimeFieldType
-import io.airbyte.cdk.jdbc.LocalTimeFieldType
 import io.airbyte.cdk.jdbc.LongFieldType
 import io.airbyte.cdk.jdbc.LosslessJdbcFieldType
 import io.airbyte.cdk.jdbc.PokemonFieldType
 import io.airbyte.cdk.jdbc.ShortFieldType
 import io.airbyte.cdk.jdbc.StringFieldType
-import java.sql.ResultSet
-import java.sql.PreparedStatement
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.read.And
 import io.airbyte.cdk.read.Equal
@@ -129,7 +123,7 @@ class DatabricksSourceOperations() :
     fun SelectNode.sql(): String =
         "SELECT " +
             when (this) {
-                is SelectColumns -> columns.joinToString(", ") { it.sql()}
+                is SelectColumns -> columns.joinToString(", ") { it.sql() }
                 is SelectColumnMaxValue -> "MAX(${column.sql()})"
             }
 
@@ -138,8 +132,7 @@ class DatabricksSourceOperations() :
     fun FromNode.sql(): String =
         when (this) {
             NoFrom -> ""
-            is From ->
-                if (this.namespace == null) "FROM `$name`" else "FROM $namespace.`$name`"
+            is From -> if (this.namespace == null) "FROM `$name`" else "FROM $namespace.`$name`"
             is FromSample -> {
                 val sample: String =
                     if (sampleRateInv == 1L) {
@@ -176,7 +169,8 @@ class DatabricksSourceOperations() :
             is OrderBy -> "ORDER BY " + columns.joinToString(", ") { it.sql() }
         }
 
-    fun SelectQuerySpec.bindings(): List<SelectQuery.Binding> = from.bindings() + where.bindings() + limit.bindings()
+    fun SelectQuerySpec.bindings(): List<SelectQuery.Binding> =
+        from.bindings() + where.bindings() + limit.bindings()
 
     fun FromNode.bindings(): List<SelectQuery.Binding> =
         when (this) {

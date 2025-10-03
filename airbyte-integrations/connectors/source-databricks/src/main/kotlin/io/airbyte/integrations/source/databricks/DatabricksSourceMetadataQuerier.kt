@@ -37,8 +37,8 @@ import kotlin.use
 /**
  * Databricks implementation of [MetadataQuerier].
  *
- * This class combines the connection management from DatabricksJdbcMetadataQuerier
- * with the full metadata discovery logic, eliminating the need for delegation.
+ * This class combines the connection management from DatabricksJdbcMetadataQuerier with the full
+ * metadata discovery logic, eliminating the need for delegation.
  *
  * Databricks uses a standard three-level namespace: catalog.schema.table where catalog is the
  * database name, schema is the schema name.
@@ -52,7 +52,7 @@ class DatabricksSourceMetadataQuerier(
     val connectionFactory: DatabricksSourceConnectionFactory,
 ) : MetadataQuerier {
     private val log = KotlinLogging.logger {}
-    
+
     val conn: Connection by lazy { connectionFactory.get() }
 
     fun TableName.namespace(): String? =
@@ -221,14 +221,18 @@ class DatabricksSourceMetadataQuerier(
     override fun streamNames(streamNamespace: String?): List<StreamIdentifier> {
         return memoizedTableNames
             .filter { "${it.catalog}.${it.schema}" == streamNamespace }
-            .map { StreamDescriptor().withName(it.name).withNamespace("${it.catalog}.${it.schema}") }
+            .map {
+                StreamDescriptor().withName(it.name).withNamespace("${it.catalog}.${it.schema}")
+            }
             .map(StreamIdentifier::from)
     }
 
     fun findTableName(
         streamID: StreamIdentifier,
     ): TableName? =
-        memoizedTableNames.find { it.name == streamID.name && "${it.catalog}.${it.schema}" == streamID.namespace }
+        memoizedTableNames.find {
+            it.name == streamID.name && "${it.catalog}.${it.schema}" == streamID.namespace
+        }
 
     val memoizedTableNames: List<TableName> by lazy {
         try {
@@ -236,11 +240,10 @@ class DatabricksSourceMetadataQuerier(
             val dbmd: DatabaseMetaData = conn.metaData
 
             log.info { "Querying table names for Databricks source." }
-            for (namespace in
-                config.namespaces + config.namespaces.map { it.uppercase() }) {
+            for (namespace in config.namespaces + config.namespaces.map { it.uppercase() }) {
                 // Query all schemas in the current database
-                dbmd.getTables(namespace, config.schema, null, arrayOf("TABLE", "VIEW")).use { rs: ResultSet
-                    ->
+                dbmd.getTables(namespace, config.schema, null, arrayOf("TABLE", "VIEW")).use {
+                    rs: ResultSet ->
                     while (rs.next()) {
                         val tableName =
                             TableName(

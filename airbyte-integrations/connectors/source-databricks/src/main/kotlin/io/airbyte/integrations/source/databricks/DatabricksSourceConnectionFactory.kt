@@ -1,10 +1,14 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.databricks
 
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.github.oshai.kotlinlogging.KotlinLogging
-import jakarta.inject.Singleton
 import io.micronaut.context.annotation.Primary
+import jakarta.inject.Singleton
 import java.sql.Connection
 import java.util.function.Supplier
 
@@ -21,7 +25,7 @@ private val log = KotlinLogging.logger {}
 class DatabricksSourceConnectionFactory(
     val config: JdbcSourceConfiguration,
 ) : Supplier<Connection> {
-    
+
     val delegate = JdbcConnectionFactory(config)
 
     override fun get(): Connection {

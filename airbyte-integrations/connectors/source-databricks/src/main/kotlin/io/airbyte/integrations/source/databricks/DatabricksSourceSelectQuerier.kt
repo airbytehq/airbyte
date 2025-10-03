@@ -1,24 +1,24 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
 
 package io.airbyte.integrations.source.databricks
 
-import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.data.JsonEncoder
 import io.airbyte.cdk.data.NullCodec
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.jdbc.JdbcFieldType
 import io.airbyte.cdk.output.sockets.FieldValueEncoder
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
+import io.airbyte.cdk.read.FieldValueChange
+import io.airbyte.cdk.read.SelectQuerier
+import io.airbyte.cdk.read.SelectQuery
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.micronaut.context.annotation.DefaultImplementation
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
-import io.airbyte.cdk.read.SelectQuerier
-import io.airbyte.cdk.read.SelectQuery
-import io.airbyte.cdk.read.FieldValueChange
-
 
 @Singleton
 @Primary

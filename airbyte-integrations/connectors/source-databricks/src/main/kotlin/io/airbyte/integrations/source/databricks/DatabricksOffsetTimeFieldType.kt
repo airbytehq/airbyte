@@ -7,8 +7,6 @@ package io.airbyte.integrations.source.databricks
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.data.OffsetDateTimeCodec
 import io.airbyte.cdk.jdbc.LosslessJdbcFieldType
-import java.sql.PreparedStatement
-import java.sql.ResultSet
 import java.time.OffsetDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
@@ -16,8 +14,8 @@ import java.time.format.DateTimeParseException
 /**
  * Custom field type for Databricks TIMESTAMP types.
  *
- * Databricks returns timestamp values as strings, so we need to parse them
- * into OffsetDateTime objects for proper handling.
+ * Databricks returns timestamp values as strings, so we need to parse them into OffsetDateTime
+ * objects for proper handling.
  */
 data object DatabricksOffsetDateTimeFieldType :
     LosslessJdbcFieldType<OffsetDateTime, OffsetDateTime>(
