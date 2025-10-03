@@ -15,8 +15,6 @@ import io.airbyte.cdk.discover.SystemType
 import io.airbyte.cdk.discover.TableName
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants.NamespaceKind
-import io.airbyte.cdk.jdbc.JdbcConnectionFactory
-import io.airbyte.cdk.jdbc.NullFieldType
 import io.airbyte.cdk.read.From
 import io.airbyte.cdk.read.Limit
 import io.airbyte.cdk.read.SelectColumns
@@ -39,20 +37,29 @@ import kotlin.use
 /**
  * Databricks implementation of [MetadataQuerier].
  *
+ * This class combines the connection management from DatabricksJdbcMetadataQuerier
+ * with the full metadata discovery logic, eliminating the need for delegation.
+ *
  * Databricks uses a standard three-level namespace: catalog.schema.table where catalog is the
  * database name, schema is the schema name.
  */
 class DatabricksSourceMetadataQuerier(
-    val base: JdbcMetadataQuerier,
-    val schema: String? = null,
-) : MetadataQuerier by base {
+    val constants: DefaultJdbcConstants,
+    val config: DatabricksSourceConfiguration,
+    val selectQueryGenerator: SelectQueryGenerator,
+    val fieldTypeMapper: JdbcMetadataQuerier.FieldTypeMapper,
+    val checkQueries: JdbcCheckQueries,
+    val connectionFactory: DatabricksSourceConnectionFactory,
+) : MetadataQuerier {
     private val log = KotlinLogging.logger {}
+    
+    val conn: Connection by lazy { connectionFactory.get() }
 
     fun TableName.namespace(): String? =
-        when (base.constants.namespaceKind) {
-            NamespaceKind.CATALOG_AND_SCHEMA -> "`$catalog`.`$schema`"
+        when (constants.namespaceKind) {
+            NamespaceKind.CATALOG_AND_SCHEMA -> "`$catalog`.`${config.schema}`"
             NamespaceKind.CATALOG -> "`$catalog`"
-            NamespaceKind.SCHEMA -> "`$schema`"
+            NamespaceKind.SCHEMA -> "`${config.schema}`"
         }
 
     val memoizedColumnMetadata: Map<TableName, List<ColumnMetadata>> by lazy {
@@ -61,7 +68,7 @@ class DatabricksSourceMetadataQuerier(
         val results = mutableListOf<Pair<TableName, ColumnMetadata>>()
         log.info { "Querying column names for catalog discovery." }
         try {
-            val dbmd: DatabaseMetaData = base.conn.metaData
+            val dbmd: DatabaseMetaData = conn.metaData
             memoizedTableNames
                 .filter { it.namespace() != null }
                 .map { it.catalog to it.schema }
@@ -125,16 +132,16 @@ class DatabricksSourceMetadataQuerier(
         streamID: StreamIdentifier,
     ): List<Field> {
         val table: TableName = findTableName(streamID) ?: return listOf()
-        return columnMetadata(table).map { Field(it.label, base.fieldTypeMapper.toFieldType(it)) }
+        return columnMetadata(table).map { Field(it.label, fieldTypeMapper.toFieldType(it)) }
     }
 
     fun columnMetadata(table: TableName): List<ColumnMetadata> {
         val columnMetadata: List<ColumnMetadata> = memoizedColumnMetadata[table] ?: listOf()
-        if (columnMetadata.isEmpty() || !base.config.checkPrivileges) {
+        if (columnMetadata.isEmpty() || !config.checkPrivileges) {
             return columnMetadata
         }
         val resultsFromSelectMany: List<ColumnMetadata>? =
-            queryColumnMetadata(base.conn, selectLimit0(table, columnMetadata.map { it.name }))
+            queryColumnMetadata(conn, selectLimit0(table, columnMetadata.map { it.name }))
         if (resultsFromSelectMany != null) {
             return resultsFromSelectMany
         }
@@ -142,7 +149,7 @@ class DatabricksSourceMetadataQuerier(
             "Not all columns of $table might be accessible, trying each column individually."
         }
         return columnMetadata.flatMap {
-            queryColumnMetadata(base.conn, selectLimit0(table, listOf(it.name))) ?: listOf()
+            queryColumnMetadata(conn, selectLimit0(table, listOf(it.name))) ?: listOf()
         }
     }
 
@@ -155,11 +162,11 @@ class DatabricksSourceMetadataQuerier(
     ): String {
         val querySpec =
             SelectQuerySpec(
-                SelectColumns(columnIDs.map { Field(it, NullFieldType) }),
+                SelectColumns(columnIDs.map { Field(it, io.airbyte.cdk.jdbc.NullFieldType) }),
                 From(table.name, table.namespace()),
                 limit = Limit(0),
             )
-        return base.selectQueryGenerator.generate(querySpec.optimize()).sql
+        return selectQueryGenerator.generate(querySpec.optimize()).sql
     }
 
     private fun queryColumnMetadata(
@@ -226,13 +233,13 @@ class DatabricksSourceMetadataQuerier(
     val memoizedTableNames: List<TableName> by lazy {
         try {
             val allTables = mutableSetOf<TableName>()
-            val dbmd: DatabaseMetaData = base.conn.metaData
+            val dbmd: DatabaseMetaData = conn.metaData
 
             log.info { "Querying table names for Databricks source." }
             for (namespace in
-                base.config.namespaces + base.config.namespaces.map { it.uppercase() }) {
+                config.namespaces + config.namespaces.map { it.uppercase() }) {
                 // Query all schemas in the current database
-                dbmd.getTables(namespace, schema, null, arrayOf("TABLE", "VIEW")).use { rs: ResultSet
+                dbmd.getTables(namespace, config.schema, null, arrayOf("TABLE", "VIEW")).use { rs: ResultSet
                     ->
                     while (rs.next()) {
                         val tableName =
@@ -262,7 +269,7 @@ class DatabricksSourceMetadataQuerier(
         val results = mutableMapOf<TableName, MutableList<PrimaryKeyRow>>()
         log.info { "Querying primary keys for catalog discovery." }
         try {
-            val dbmd: DatabaseMetaData = base.conn.metaData
+            val dbmd: DatabaseMetaData = conn.metaData
 
             memoizedTableNames.forEach { table ->
                 dbmd.getPrimaryKeys(table.catalog, table.schema, table.name).use { rs: ResultSet ->
@@ -301,6 +308,18 @@ class DatabricksSourceMetadataQuerier(
         return memoizedPrimaryKeys[table] ?: listOf()
     }
 
+    override fun extraChecks() {
+        // No extra checks needed for Databricks
+    }
+
+    override fun close() {
+        try {
+            conn.close()
+        } catch (e: SQLException) {
+            log.warn(e) { "Error closing connection" }
+        }
+    }
+
     companion object {
 
         /** Databricks implementation of [MetadataQuerier.Factory]. */
@@ -311,25 +330,23 @@ class DatabricksSourceMetadataQuerier(
             val selectQueryGenerator: SelectQueryGenerator,
             val fieldTypeMapper: JdbcMetadataQuerier.FieldTypeMapper,
             val checkQueries: JdbcCheckQueries,
+            val connectionFactory: DatabricksSourceConnectionFactory,
         ) : MetadataQuerier.Factory<DatabricksSourceConfiguration> {
             private val log = KotlinLogging.logger {}
 
             override fun session(config: DatabricksSourceConfiguration): MetadataQuerier {
                 log.info { "Databricks source metadata session." }
-                val jdbcConnectionFactory = JdbcConnectionFactory(config)
-                val base =
-                    JdbcMetadataQuerier(
-                        constants,
-                        config,
-                        selectQueryGenerator,
-                        fieldTypeMapper,
-                        checkQueries,
-                        jdbcConnectionFactory,
-                    )
-                return DatabricksSourceMetadataQuerier(base, config.schema)
+                return DatabricksSourceMetadataQuerier(
+                    constants,
+                    config,
+                    selectQueryGenerator,
+                    fieldTypeMapper,
+                    checkQueries,
+                    connectionFactory
+                )
             }
         }
 
-        val EXCLUDED_NAMESPACES = setOf("INFORMATION_SCHEMA", "SNOWFLAKE_SAMPLE_DATA", "UTIL_DB")
+        val EXCLUDED_NAMESPACES = setOf("INFORMATION_SCHEMA", "UTIL_DB")
     }
 }

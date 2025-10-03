@@ -12,6 +12,8 @@ import io.airbyte.cdk.discover.JdbcAirbyteStreamFactory
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
 import io.airbyte.cdk.discover.MetaField
 import io.airbyte.cdk.discover.SystemType
+import io.airbyte.cdk.data.LeafAirbyteSchemaType
+import io.airbyte.cdk.data.OffsetDateTimeCodec
 import io.airbyte.cdk.jdbc.BigDecimalFieldType
 import io.airbyte.cdk.jdbc.BigIntegerFieldType
 import io.airbyte.cdk.jdbc.BooleanFieldType
@@ -23,13 +25,14 @@ import io.airbyte.cdk.jdbc.FloatFieldType
 import io.airbyte.cdk.jdbc.DoubleFieldType
 import io.airbyte.cdk.jdbc.LocalDateFieldType
 import io.airbyte.cdk.jdbc.LocalDateTimeFieldType
-import io.airbyte.cdk.jdbc.OffsetDateTimeFieldType
 import io.airbyte.cdk.jdbc.LocalTimeFieldType
 import io.airbyte.cdk.jdbc.LongFieldType
 import io.airbyte.cdk.jdbc.LosslessJdbcFieldType
 import io.airbyte.cdk.jdbc.PokemonFieldType
 import io.airbyte.cdk.jdbc.ShortFieldType
 import io.airbyte.cdk.jdbc.StringFieldType
+import java.sql.ResultSet
+import java.sql.PreparedStatement
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.read.And
 import io.airbyte.cdk.read.Equal
@@ -96,7 +99,7 @@ class DatabricksSourceOperations() :
             "FLOAT", -> FloatFieldType
             "DOUBLE", -> DoubleFieldType
             "DATE", -> LocalDateFieldType
-            "TIMESTAMP", -> OffsetDateTimeFieldType
+            "TIMESTAMP", -> DatabricksOffsetDateTimeFieldType
             "TIMESTAMP_NTZ", -> LocalDateTimeFieldType
             "BINARY", -> BytesFieldType
             "VARIANT",
@@ -137,7 +140,17 @@ class DatabricksSourceOperations() :
             NoFrom -> ""
             is From ->
                 if (this.namespace == null) "FROM `$name`" else "FROM $namespace.`$name`"
-            is FromSample -> From(name, namespace).sql()
+            is FromSample -> {
+                val sample: String =
+                    if (sampleRateInv == 1L) {
+                        ""
+                    } else {
+                        " TABLESAMPLE (${sampleRatePercentage.toPlainString()} PERCENT)"
+                    }
+                val innerFrom: String = From(name, namespace).sql() + sample
+                val inner = "SELECT * $innerFrom ${where?.sql() ?: ""} ORDER BY RANDOM()"
+                "FROM (SELECT * FROM ($inner) LIMIT $sampleSize)"
+            }
         }
 
     fun WhereNode.sql(): String =
