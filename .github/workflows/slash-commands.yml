@@ -33,7 +33,7 @@ jobs:
                 "dispatch_type": "workflow",
                 "static_args": [
                   "pr=${{ github.event.issue.number }}",
-                  "comment-id=${{ github.event.comment.id }}",
+                  "comment-id=${{ github.event.comment.id }}"
                 ]
               },
               {
@@ -43,7 +43,7 @@ jobs:
                 "dispatch_type": "workflow",
                 "static_args": [
                   "pr=${{ github.event.issue.number }}",
-                  "comment-id=${{ github.event.comment.id }}",
+                  "comment-id=${{ github.event.comment.id }}"
                 ]
               },
               {
@@ -53,7 +53,7 @@ jobs:
                 "dispatch_type": "workflow",
                 "static_args": [
                   "pr=${{ github.event.issue.number }}",
-                  "comment-id=${{ github.event.comment.id }}",
+                  "comment-id=${{ github.event.comment.id }}"
                 ]
               },
               {
