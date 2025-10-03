@@ -161,7 +161,7 @@ This source can sync data for the [Shopify REST API](https://shopify.dev/api/adm
 - [Order Refunds](https://shopify.dev/api/admin-rest/2024-04/resources/refund#top)
 - [Order Risks (GraphQL)](https://shopify.dev/api/admin-rest/2024-04/resources/order-risk#top)
 - [Pages](https://shopify.dev/api/admin-rest/2024-04/resources/page#top)
-- [Price Rules](https://shopify.dev/api/admin-rest/2024-04/resources/pricerule#top)
+- [Price Rules](https://shopify.dev/docs/api/admin-rest/2025-01/resources/pricerule#top)
 - [Products (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/queries/products)
 - [Product Images (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/Image)
 - [Product Variants (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/queries/productVariant)
@@ -246,8 +246,9 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 <details>
   <summary>Expand to review</summary>
 
-| Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
-|:-----------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
+|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.11 | 2025-10-01 | [61552](https://github.com/airbytehq/airbyte/pull/61552) | products stream not returning variants|
 | 3.0.10 | 2025-09-30 | [66904](https://github.com/airbytehq/airbyte/pull/66904) | Update dependencies |
 | 3.0.9 | 2025-09-16 | [66291](https://github.com/airbytehq/airbyte/pull/66291) | Promoting release candidate 3.0.9-rc.1 to a main version. |
 | 3.0.9-rc.1 | 2025-09-09 | [65987](https://github.com/airbytehq/airbyte/pull/65987) | Use filter field value to adjust slice for streams with ID cursor field.                                                                                                                                                                                                                                                                                                                  |
