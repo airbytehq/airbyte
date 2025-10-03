@@ -1,4 +1,5 @@
 # Uptick
+
 Extract data from Uptick, a field service management software platform.
 
 ## Configuration
