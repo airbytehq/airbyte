@@ -57,7 +57,9 @@ object SnowflakeDataCleaner : DestinationCleaner {
                 schemaName.startsWith(prefix = "test", ignoreCase = true) &&
                     createdOn.toInstant().isBefore(Instant.now().minus(RETENTION_PERIOD))
             ) {
-                statement.execute("DROP SCHEMA IF EXISTS \"${escapeJsonIdentifier(schemaName)}\" CASCADE")
+                statement.execute(
+                    "DROP SCHEMA IF EXISTS \"${escapeJsonIdentifier(schemaName)}\" CASCADE"
+                )
             }
         }
     }

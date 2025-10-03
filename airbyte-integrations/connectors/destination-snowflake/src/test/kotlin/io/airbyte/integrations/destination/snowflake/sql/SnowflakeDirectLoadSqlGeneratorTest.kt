@@ -53,7 +53,8 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                     if (columnName == COLUMN_NAME_DATA) columnName
                     else columnName.toSnowflakeCompatibleName()
                 }
-            every { getGenerationIdColumnName() } returns COLUMN_NAME_AB_GENERATION_ID.toSnowflakeCompatibleName()
+            every { getGenerationIdColumnName() } returns
+                COLUMN_NAME_AB_GENERATION_ID.toSnowflakeCompatibleName()
         }
         snowflakeSqlNameUtils = SnowflakeSqlNameUtils(snowflakeConfiguration)
         snowflakeDirectLoadSqlGenerator =
@@ -231,6 +232,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
 ) THEN UPDATE SET
               "_AIRBYTE_RAW_ID" = new_record."_AIRBYTE_RAW_ID",
 "_AIRBYTE_EXTRACTED_AT" = new_record."_AIRBYTE_EXTRACTED_AT",
+"_AIRBYTE_LOADED_AT" = new_record."_AIRBYTE_LOADED_AT",
 "_AIRBYTE_META" = new_record."_AIRBYTE_META",
 "_AIRBYTE_GENERATION_ID" = new_record."_AIRBYTE_GENERATION_ID"
             WHEN NOT MATCHED THEN INSERT (
@@ -238,6 +240,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
             ) VALUES (
               new_record."_AIRBYTE_RAW_ID",
 new_record."_AIRBYTE_EXTRACTED_AT",
+new_record."_AIRBYTE_LOADED_AT",
 new_record."_AIRBYTE_META",
 new_record."_AIRBYTE_GENERATION_ID"
             )

@@ -42,8 +42,7 @@ class SnowflakeSchemaRecordFormatter(
                 // in there. A better scenario here is to do something like:
                 // columnNameMapping.filter { (_, v) -> v == columnName }.keys.first()
                 // but ¯\_(ツ)_/¯
-                else if (record.containsKey(columnName))
-                    record[columnName].toCsvValue()
+                else if (record.containsKey(columnName)) record[columnName].toCsvValue()
                 else if (record.containsKey(columnName.toSnowflakeCompatibleName()))
                     record[columnName.toSnowflakeCompatibleName()].toCsvValue()
                 else ""
@@ -67,16 +66,10 @@ class SnowflakeRawRecordFormatter(
         // one from the record to avoid duplicates in the "data" field
         columns
             .filter { airbyteColumnNames.contains(it) }
-            /*
-             * Meta columns are forced to uppercase for backwards compatibility with previous
-             * versions of the destination.  Therefore, convert the column to lowercase so
-             * that it can match the constants, which use the lowercase version of the meta
-             * column names.
-             */
-            .map { column -> column.lowercase() }
             .forEach { column ->
                 when (column) {
                     Meta.COLUMN_NAME_AB_EXTRACTED_AT,
+                    Meta.COLUMN_NAME_AB_LOADED_AT,
                     Meta.COLUMN_NAME_AB_META,
                     Meta.COLUMN_NAME_AB_RAW_ID,
                     Meta.COLUMN_NAME_AB_GENERATION_ID ->
@@ -86,8 +79,13 @@ class SnowflakeRawRecordFormatter(
         // Do not output null values in the JSON raw output
         val filteredRecord = record.filter { (_, v) -> v !is NullValue }
         // Convert all the remaining columns in the record to a JSON document stored in the "data"
-        // column
-        outputRecord.add(StringValue(Jsons.writeValueAsString(filteredRecord)).toCsvValue())
+        // column.  Add it in the same position as the _airbyte_data column in the column list to
+        // ensure it is inserted into the proper column in the table.
+        insert(
+            columns.indexOf(Meta.COLUMN_NAME_DATA),
+            StringValue(Jsons.writeValueAsString(filteredRecord)).toCsvValue(),
+            outputRecord
+        )
         return outputRecord
     }
 
@@ -97,6 +95,10 @@ class SnowflakeRawRecordFormatter(
         output: MutableList<Any>
     ) {
         val extractedValue = record.remove(key)
-        output.add(extractedValue?.toCsvValue() ?: "")
+        // Ensure that the data is inserted into the list at the same position as the column
+        insert(columns.indexOf(key), extractedValue?.toCsvValue() ?: "", output)
     }
+
+    private fun insert(index: Int, value: Any, list: MutableList<Any>) =
+        if (index < list.size) list.add(index, value) else list.add(value)
 }

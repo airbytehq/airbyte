@@ -23,7 +23,6 @@ import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClie
 import io.airbyte.integrations.destination.snowflake.db.escapeJsonIdentifier
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import jakarta.inject.Singleton
-import org.jetbrains.kotlin.scripting.compiler.plugin.configureScriptDefinitions
 
 @Singleton
 class SnowflakeWriter(
@@ -58,7 +57,7 @@ class SnowflakeWriter(
         return when (stream.minimumGenerationId) {
             0L ->
                 when (stream.importType) {
-                    is Dedupe->
+                    is Dedupe ->
                         if (!snowflakeConfiguration.legacyRawTablesOnly) {
                             DirectLoadTableDedupStreamLoader(
                                 stream,
