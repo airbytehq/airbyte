@@ -1,3 +1,7 @@
+## Version 0.1.46
+
+Noop: Move stream lifecyle dispatchers to bean factory.
+
 ## Version 0.1.45
 
 Noop release. 0.1.44 suspected to have a bad publish.
