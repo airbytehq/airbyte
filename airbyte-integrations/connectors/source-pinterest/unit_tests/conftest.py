@@ -2,15 +2,36 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import sys
+from pathlib import Path
 from typing import Any, Mapping
 from unittest.mock import MagicMock
 
 from pytest import fixture
-from source_pinterest.source import SourcePinterest
 
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
+from airbyte_cdk.test.state_builder import StateBuilder
+
+
+def _get_manifest_path() -> Path:
+    source_declarative_manifest_path = Path("/airbyte/integration_code/source_declarative_manifest")
+    if source_declarative_manifest_path.exists():
+        return source_declarative_manifest_path
+    return Path(__file__).parent.parent
+
+
+_SOURCE_FOLDER_PATH = _get_manifest_path()
+_YAML_FILE_PATH = _SOURCE_FOLDER_PATH / "manifest.yaml"
+sys.path.append(str(_SOURCE_FOLDER_PATH))  # to allow loading custom components
+
+
+def get_source(config, state=None) -> YamlDeclarativeSource:
+    catalog = CatalogBuilder().build()
+    state = StateBuilder().build() if not state else state
+    return YamlDeclarativeSource(path_to_yaml=str(_YAML_FILE_PATH), catalog=catalog, config=config, state=state)
 
 
 @fixture
@@ -108,7 +129,7 @@ def mock_auth(requests_mock) -> None:
 
 
 def get_stream_by_name(stream_name: str, config: Mapping[str, Any]) -> Stream:
-    source = SourcePinterest(None, config, None)
+    source = get_source(config)
     matches_by_name = [stream_config for stream_config in source.streams(config) if stream_config.name == stream_name]
     if not matches_by_name:
         raise ValueError("Please provide a valid stream name.")
@@ -117,7 +138,7 @@ def get_stream_by_name(stream_name: str, config: Mapping[str, Any]) -> Stream:
 
 def read_from_stream(cfg, stream: str, sync_mode, state=None, expecting_exception: bool = False) -> EntrypointOutput:
     catalog = CatalogBuilder().with_stream(stream, sync_mode).build()
-    return read(SourcePinterest(None, cfg, state), cfg, catalog, state, expecting_exception)
+    return read(get_source(cfg, state), cfg, catalog, state, expecting_exception)
 
 
 def get_analytics_columns() -> str:
