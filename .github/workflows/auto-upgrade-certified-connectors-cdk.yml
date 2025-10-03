@@ -127,7 +127,7 @@ jobs:
           echo "New version: $new_version"
 
           # Update metadata.yaml
-          yq -i ".data.dockerImageTag = \"${new_version}\"" "$metadata_file"
+          yq --inplace --prettyPrint ".data.dockerImageTag = \"${new_version}\"" "$metadata_file"
 
           echo "Updated dockerImageTag from $current_version to $new_version"
           echo "new_version=$new_version" >> $GITHUB_OUTPUT
