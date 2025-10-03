@@ -86,6 +86,15 @@ class SnowflakeRawRecordFormatter(
     }
 
     private fun insert(index: Int, value: Any, list: MutableList<Any>) {
-        if (index < list.size) list.add(index, value) else list.add(value)
+        /*
+         * Attempt to insert the value into the proper order in the list.  If the index
+         * is already present in the list, use the add(index, element) method to insert it
+         * into the proper order and push everything to the right.  If the index is at the
+         * end of the list, just use add(element) to insert it at the end.  If the index
+         * is further beyond the end of the list, throw an exception as that should not occur.
+         */
+        if (index < list.size) list.add(index, value)
+        else if (index == list.size || index == list.size + 1) list.add(value)
+        else throw IndexOutOfBoundsException()
     }
 }
