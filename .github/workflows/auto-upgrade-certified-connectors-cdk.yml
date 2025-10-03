@@ -77,7 +77,9 @@ jobs:
         id: upgrade-cdk
         run: |
           ./gradlew :airbyte-integrations:connectors:${{ matrix.connector }}:upgradeCdk
-          # TODO this needs to output the new CDK version
+          # --quiet disables all of gradle's normal logging, so we only get the CDK version number
+          new_cdk_version=$(./gradlew :airbyte-integrations:connectors:destination-dev-null:getCdkVersion --quiet)
+          echo "new_cdk_version=$new_cdk_version" >> $GITHUB_OUTPUT
 
       - name: Check for changes
         id: check-changes
@@ -122,10 +124,10 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: "chore: upgrade bulk CDK for ${{ matrix.connector }}"
-          branch: "auto-upgrade-jvm-bulk-cdk/${{ matrix.connector }}_${{ steps.bump-version.outputs.new_version }}"
+          branch: "auto-upgrade-jvm-bulk-cdk/${{ matrix.connector }}_${{ steps.upgrade-cdk.outputs.new_cdk_version }}"
           delete-branch: true
           # TODO remove the TEST text
-          title: "[TEST] chore: upgrade ${{ matrix.connector }} to bulk CDK ${{ steps.bump-version.outputs.new_version }}"
+          title: "[TEST] chore: upgrade ${{ matrix.connector }} to bulk CDK ${{ steps.upgrade-cdk.outputs.new_cdk_version }}"
           body: |
             Upgrade Bulk CDK version for `${{ matrix.connector }}`
 
@@ -157,7 +159,7 @@ jobs:
           # YYYY-MM-DD format
           today=$(date +%Y-%m-%d)
 
-          new_entry="| ${new_version} | ${today} | [${pr_number}](https://github.com/airbytehq/airbyte/pull/${pr_number}) | Upgrade to Bulk CDK ${{ steps.bump-version.outputs.new_version }}. |"
+          new_entry="| ${new_version} | ${today} | [${pr_number}](https://github.com/airbytehq/airbyte/pull/${pr_number}) | Upgrade to Bulk CDK ${{ steps.upgrade-cdk.outputs.new_cdk_version }}. |"
 
           # Find the changelog table and insert the new entry after the header row
           # The changelog table starts with a header row (`| Version | Date | Pull Request | Subject |`),
