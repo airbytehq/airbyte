@@ -2,7 +2,7 @@ data:
   connectorSubtype: file
   connectorType: destination
   definitionId: 4816b78f-1489-44c1-9060-4b19d5fa9362
-  dockerImageTag: 1.9.2
+  dockerImageTag: 1.9.3
   dockerRepository: airbyte/destination-s3
   githubIssueLabel: destination-s3
   icon: s3.svg
@@ -26,6 +26,7 @@ data:
       1.0.0:
         message: >
           **This release includes breaking changes, including major revisions to the schema of stored data. Do not upgrade without reviewing the migration guide.**
+
         upgradeDeadline: "2024-10-08"
     rolloutConfiguration:
       enableProgressiveRollout: false
