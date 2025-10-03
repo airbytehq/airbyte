@@ -232,7 +232,6 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
 ) THEN UPDATE SET
               "_AIRBYTE_RAW_ID" = new_record."_AIRBYTE_RAW_ID",
 "_AIRBYTE_EXTRACTED_AT" = new_record."_AIRBYTE_EXTRACTED_AT",
-"_AIRBYTE_LOADED_AT" = new_record."_AIRBYTE_LOADED_AT",
 "_AIRBYTE_META" = new_record."_AIRBYTE_META",
 "_AIRBYTE_GENERATION_ID" = new_record."_AIRBYTE_GENERATION_ID"
             WHEN NOT MATCHED THEN INSERT (
@@ -240,7 +239,6 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
             ) VALUES (
               new_record."_AIRBYTE_RAW_ID",
 new_record."_AIRBYTE_EXTRACTED_AT",
-new_record."_AIRBYTE_LOADED_AT",
 new_record."_AIRBYTE_META",
 new_record."_AIRBYTE_GENERATION_ID"
             )
@@ -290,7 +288,6 @@ new_record."_AIRBYTE_GENERATION_ID"
             COMPRESSION = GZIP
             FIELD_DELIMITER = '$CSV_FIELD_SEPARATOR'
             RECORD_DELIMITER = '$CSV_LINE_DELIMITER'
-            PARSE_HEADER = TRUE
             FIELD_OPTIONALLY_ENCLOSED_BY = '"'
             TRIM_SPACE = TRUE
             ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE

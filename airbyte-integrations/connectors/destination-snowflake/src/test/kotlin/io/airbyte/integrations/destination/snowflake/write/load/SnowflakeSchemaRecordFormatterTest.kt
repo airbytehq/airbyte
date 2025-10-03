@@ -13,6 +13,8 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
+private val AIRBYTE_COLUMNS = DEFAULT_COLUMNS.map { it.columnName.toSnowflakeCompatibleName() }
+
 internal class SnowflakeSchemaRecordFormatterTest {
 
     private lateinit var snowflakeColumnUtils: SnowflakeColumnUtils
@@ -24,8 +26,7 @@ internal class SnowflakeSchemaRecordFormatterTest {
                 {
                     firstArg<String>().toSnowflakeCompatibleName()
                 }
-            every { getFormattedDefaultColumnNames(any()) } returns
-                DEFAULT_COLUMNS.map { it.columnName.toSnowflakeCompatibleName() }
+            every { getFormattedDefaultColumnNames(any()) } returns AIRBYTE_COLUMNS
         }
     }
 
@@ -33,12 +34,11 @@ internal class SnowflakeSchemaRecordFormatterTest {
     fun testFormatting() {
         val columnName = "test-column-name"
         val columnValue = "test-column-value"
-        val columns =
-            DEFAULT_COLUMNS.map { it.columnName.toSnowflakeCompatibleName() } + listOf(columnName)
+        val columns = AIRBYTE_COLUMNS + listOf(columnName.toSnowflakeCompatibleName())
         val record = createRecord(columnName, columnValue)
         val formatter = SnowflakeSchemaRecordFormatter(columns, snowflakeColumnUtils)
         val formattedValue = formatter.format(record)
-        val expectedValue = createExpected(record, columns)
+        val expectedValue = createExpected(record, columns, AIRBYTE_COLUMNS)
         assertEquals(expectedValue, formattedValue)
     }
 
@@ -46,13 +46,21 @@ internal class SnowflakeSchemaRecordFormatterTest {
     fun testFormattingMissingColumn() {
         val columnName = "test-column-name"
         val columnValue = "test-column-value"
-        val columns =
-            DEFAULT_COLUMNS.map { it.columnName.toSnowflakeCompatibleName() } + listOf(columnName)
+        val columns = AIRBYTE_COLUMNS + listOf(columnName.toSnowflakeCompatibleName())
         val record = createRecord(columnName, columnValue)
         val formatter =
-            SnowflakeSchemaRecordFormatter(columns + listOf("missing-column"), snowflakeColumnUtils)
+            SnowflakeSchemaRecordFormatter(
+                columns + listOf("missing-column".toSnowflakeCompatibleName()),
+                snowflakeColumnUtils
+            )
         val formattedValue = formatter.format(record)
-        val expectedValue = createExpected(record, columns, false)
+        val expectedValue =
+            createExpected(
+                record = record,
+                columns = columns,
+                airbyteColumns = AIRBYTE_COLUMNS,
+                filterMissing = false
+            )
         assertEquals(expectedValue, formattedValue)
     }
 }

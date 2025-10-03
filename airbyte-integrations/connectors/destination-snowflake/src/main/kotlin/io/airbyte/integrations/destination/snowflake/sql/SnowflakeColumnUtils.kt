@@ -108,7 +108,7 @@ class SnowflakeColumnUtils(
     }
 
     fun getColumnNames(columnNameMapping: ColumnNameMapping): String =
-        if (snowflakeConfiguration.legacyRawTablesOnly == true) {
+        if (snowflakeConfiguration.legacyRawTablesOnly) {
             getFormattedDefaultColumnNames(true).joinToString(",")
         } else {
             (getFormattedDefaultColumnNames(true) +

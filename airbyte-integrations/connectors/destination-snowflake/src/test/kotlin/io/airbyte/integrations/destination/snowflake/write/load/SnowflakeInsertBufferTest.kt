@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
+import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 import io.mockk.coVerify
@@ -148,7 +149,7 @@ internal class SnowflakeInsertBufferTest {
         val tableName = mockk<TableName>(relaxed = true)
         val column1 = "columnName1"
         val column2 = "columnName2"
-        val columns = listOf(column1, column2)
+        val columns = listOf(column1, column2).map { it.toSnowflakeCompatibleName() }
         val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
         val record = createRecord(column1)
         val buffer =
@@ -177,7 +178,7 @@ internal class SnowflakeInsertBufferTest {
         val tableName = mockk<TableName>(relaxed = true)
         val column1 = "columnName1"
         val column2 = "columnName2"
-        val columns = listOf(column1, column2)
+        val columns = listOf(column1, column2).map { it.toSnowflakeCompatibleName() }
         val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
         val record = createRecord(column1)
         val buffer =

@@ -26,27 +26,22 @@ class SnowflakeSchemaRecordFormatter(
         snowflakeColumnUtils.getFormattedDefaultColumnNames(false).toSet()
 
     override fun format(record: Map<String, AirbyteValue>): List<Any> =
-        columns
+        columns.map { columnName ->
             /*
              * Meta columns are forced to uppercase for backwards compatibility with previous
              * versions of the destination.  Therefore, convert the column to lowercase so
              * that it can match the constants, which use the lowercase version of the meta
              * column names.
              */
-            .map { columnName ->
-                if (airbyteColumnNames.contains(columnName)) {
-                    record[columnName.lowercase()].toCsvValue()
-                }
-                // This is bad and we should feel bad. Ideally we would not call
-                // toSnowflakeCompatibleName
-                // in there. A better scenario here is to do something like:
-                // columnNameMapping.filter { (_, v) -> v == columnName }.keys.first()
-                // but ¯\_(ツ)_/¯
-                else if (record.containsKey(columnName)) record[columnName].toCsvValue()
-                else if (record.containsKey(columnName.toSnowflakeCompatibleName()))
-                    record[columnName.toSnowflakeCompatibleName()].toCsvValue()
-                else ""
+            if (airbyteColumnNames.contains(columnName)) {
+                record[columnName.lowercase()].toCsvValue()
+            } else {
+                record.keys
+                    .find { it.toSnowflakeCompatibleName() == columnName }
+                    ?.let { record[it].toCsvValue() }
+                    ?: ""
             }
+        }
 }
 
 class SnowflakeRawRecordFormatter(

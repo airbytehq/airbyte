@@ -23,29 +23,35 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 private val AIRBYTE_COLUMN_NAMES =
-    DEFAULT_COLUMNS.map { it.columnName.toSnowflakeCompatibleName() }.toSet()
+    DEFAULT_COLUMNS.map { it.columnName } + RAW_COLUMNS.map { it.columnName }
 
-internal fun createRecord(columnName: String, columnValue: String) =
-    mapOf(
-        columnName to AirbyteValue.from(columnValue),
-        Meta.COLUMN_NAME_AB_EXTRACTED_AT to IntegerValue(System.currentTimeMillis()),
-        Meta.COLUMN_NAME_AB_LOADED_AT to IntegerValue(System.currentTimeMillis()),
-        Meta.COLUMN_NAME_AB_RAW_ID to StringValue("raw-id"),
-        Meta.COLUMN_NAME_AB_GENERATION_ID to IntegerValue(1223),
-        Meta.COLUMN_NAME_AB_META to StringValue("{\"changes\":[],\"syncId\":43}"),
-        "${columnName}Null" to NullValue
-    )
+internal fun createRecord(columnName: String, columnValue: String, rawFormat: Boolean = false) =
+    buildMap {
+        put(columnName, AirbyteValue.from(columnValue))
+        put(Meta.COLUMN_NAME_AB_EXTRACTED_AT, IntegerValue(System.currentTimeMillis()))
+        if (rawFormat) {
+            put(Meta.COLUMN_NAME_AB_LOADED_AT, IntegerValue(System.currentTimeMillis()))
+        }
+        put(Meta.COLUMN_NAME_AB_RAW_ID, StringValue("raw-id"))
+        put(Meta.COLUMN_NAME_AB_GENERATION_ID, IntegerValue(1223))
+        put(Meta.COLUMN_NAME_AB_META, StringValue("{\"changes\":[],\"syncId\":43}"))
+        put("${columnName}Null", NullValue)
+    }
 
 internal fun createExpected(
     record: Map<String, AirbyteValue>,
     columns: List<String>,
+    airbyteColumns: List<String>,
     filterMissing: Boolean = true,
     formatColumnName: Boolean = true,
 ) =
     record.entries
+        .associate {
+            val key = if (formatColumnName) formatColumnName(it.key) else it.key
+            key to it.value
+        }
         .map { entry ->
-            val key = if (formatColumnName) formatColumnName(entry.key) else entry.key
-            if (AIRBYTE_COLUMN_NAMES.contains(key)) AbstractMap.SimpleEntry(key, entry.value)
+            if (airbyteColumns.contains(entry.key)) AbstractMap.SimpleEntry(entry.key, entry.value)
             else entry
         }
         .sortedBy { entry ->
@@ -64,8 +70,7 @@ internal class SnowflakeRawRecordFormatterTest {
     fun setup() {
         snowflakeColumnUtils = mockk {
             every { formatColumnName(any(), any()) } answers { firstArg<String>() }
-            every { getFormattedDefaultColumnNames(any()) } returns
-                DEFAULT_COLUMNS.map { it.columnName } + RAW_COLUMNS.map { it.columnName }
+            every { getFormattedDefaultColumnNames(any()) } returns AIRBYTE_COLUMN_NAMES
         }
     }
 
@@ -73,13 +78,18 @@ internal class SnowflakeRawRecordFormatterTest {
     fun testFormatting() {
         val columnName = "test-column-name"
         val columnValue = "test-column-value"
-        val columns = DEFAULT_COLUMNS.map { it.columnName } + RAW_COLUMNS.map { it.columnName }
-        val record = createRecord(columnName, columnValue)
+        val columns = AIRBYTE_COLUMN_NAMES
+        val record =
+            createRecord(columnName = columnName, columnValue = columnValue, rawFormat = true)
         val formatter = SnowflakeRawRecordFormatter(columns, snowflakeColumnUtils)
         val formattedValue = formatter.format(record)
         val expectedValue =
-            createExpected(record = record, columns = columns, formatColumnName = false) +
-                listOf("{\"$columnName\":\"$columnValue\"}")
+            createExpected(
+                record = record,
+                columns = columns,
+                airbyteColumns = AIRBYTE_COLUMN_NAMES,
+                formatColumnName = false
+            ) + listOf("{\"$columnName\":\"$columnValue\"}")
         assertEquals(expectedValue, formattedValue)
     }
 
@@ -96,11 +106,17 @@ internal class SnowflakeRawRecordFormatterTest {
                 Meta.COLUMN_NAME_AB_RAW_ID,
                 Meta.COLUMN_NAME_AB_GENERATION_ID
             )
-        val record = createRecord(columnName, columnValue)
+        val record =
+            createRecord(columnName = columnName, columnValue = columnValue, rawFormat = true)
         val formatter = SnowflakeRawRecordFormatter(columns, snowflakeColumnUtils)
         val formattedValue = formatter.format(record)
         val expectedValue =
-            createExpected(record = record, columns = columns, formatColumnName = false)
+            createExpected(
+                    record = record,
+                    columns = columns,
+                    airbyteColumns = AIRBYTE_COLUMN_NAMES,
+                    formatColumnName = false
+                )
                 .toMutableList()
         expectedValue.add(
             columns.indexOf(Meta.COLUMN_NAME_DATA),
