@@ -91,7 +91,7 @@ To fill out the required information:
 
 <!-- env:cloud -->
 
-#### Step 4: (Airbyte Cloud Only) Allow inbound traffic from Airbyte IPs.
+#### Step 4: (Airbyte Cloud Only) Allow inbound traffic from Airbyte IPs
 
 If you are on Airbyte Cloud, you will always need to modify your database configuration to allow inbound traffic from Airbyte IPs. You can find a list of all IPs that need to be allowlisted in
 our [Airbyte Security docs](../../platform/operating-airbyte/ip-allowlist).
