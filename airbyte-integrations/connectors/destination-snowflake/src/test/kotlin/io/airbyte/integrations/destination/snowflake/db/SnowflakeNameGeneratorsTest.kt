@@ -5,8 +5,6 @@
 package io.airbyte.integrations.destination.snowflake.db
 
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 
@@ -25,11 +23,5 @@ internal class SnowflakeNameGeneratorsTest {
     )
     fun testToSnowflakeCompatibleName(name: String, expected: String) {
         assertEquals(expected, name.toSnowflakeCompatibleName())
-    }
-
-    @Test
-    fun testEmptyNameToSnowflakeCompatibleName() {
-        val name = "".toSnowflakeCompatibleName()
-        assertTrue(name.startsWith("DEFAULT_NAME_"))
     }
 }

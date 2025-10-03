@@ -28,6 +28,8 @@ internal const val CSV_QUOTE_CHARACTER = '"'
 internal val CSV_LINE_DELIMITER = LineDelimiter.LF
 internal const val DEFAULT_FLUSH_LIMIT = 1000
 
+private const val CSV_WRITER_BUFFER_SIZE = 1024 * 1024 // 1 MB
+
 class SnowflakeInsertBuffer(
     private val tableName: TableName,
     val columns: List<String>,
@@ -45,6 +47,7 @@ class SnowflakeInsertBuffer(
 
     private val csvWriterBuilder =
         CsvWriter.builder()
+            .bufferSize(CSV_WRITER_BUFFER_SIZE)
             .fieldSeparator(CSV_FIELD_SEPARATOR)
             .quoteCharacter(CSV_QUOTE_CHARACTER)
             .lineDelimiter(CSV_LINE_DELIMITER)
@@ -77,12 +80,13 @@ class SnowflakeInsertBuffer(
                 // Next, put the CSV file into the staging table
                 snowflakeClient.putInStage(tableName, filePath.pathString)
                 // Finally, copy the data from the staging table to the final table
-                snowflakeClient.copyFromStage(tableName)
+                snowflakeClient.copyFromStage(tableName, filePath.fileName.toString())
                 logger.info {
                     "Finished insert of $recordCount row(s) into ${tableName.toPrettyString(quote = QUOTE)}"
                 }
             } catch (e: Exception) {
                 logger.error(e) { "Unable to flush accumulated data." }
+                throw e
             } finally {
                 filePath.deleteIfExists()
                 csvWriter = null

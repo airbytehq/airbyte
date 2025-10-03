@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.snowflake.write
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.integrations.destination.snowflake.SnowflakeBeanFactory
 import io.airbyte.integrations.destination.snowflake.cdk.SnowflakeMigratingConfigurationSpecificationSupplier
+import io.airbyte.integrations.destination.snowflake.db.escapeJsonIdentifier
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfigurationFactory
@@ -56,7 +57,9 @@ object SnowflakeDataCleaner : DestinationCleaner {
                 schemaName.startsWith(prefix = "test", ignoreCase = true) &&
                     createdOn.toInstant().isBefore(Instant.now().minus(RETENTION_PERIOD))
             ) {
-                statement.execute("DROP SCHEMA IF EXISTS ${schemaName.quote()} CASCADE")
+                statement.execute(
+                    "DROP SCHEMA IF EXISTS \"${escapeJsonIdentifier(schemaName)}\" CASCADE"
+                )
             }
         }
     }

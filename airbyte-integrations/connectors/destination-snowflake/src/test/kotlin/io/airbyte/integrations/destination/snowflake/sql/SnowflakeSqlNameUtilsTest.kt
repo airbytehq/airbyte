@@ -51,12 +51,8 @@ internal class SnowflakeSqlNameUtilsTest {
         val namespace = "test-namespace"
         every { snowflakeConfiguration.database } returns databaseName
 
-        val expectedNamespace =
-            snowflakeSqlNameUtils.combineParts(
-                listOf(databaseName, namespace).map { it.toSnowflakeCompatibleName() }
-            )
         val fullyQualifiedNamespace = snowflakeSqlNameUtils.fullyQualifiedNamespace(namespace)
-        assertEquals(expectedNamespace, fullyQualifiedNamespace)
+        assertEquals("\"TEST-DATABASE\".\"test-namespace\"", fullyQualifiedNamespace)
     }
 
     @Test

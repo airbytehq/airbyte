@@ -41,7 +41,12 @@ class SnowflakeInsertAcceptanceTest :
                 SnowflakeConfigurationFactory().make(spec as SnowflakeSpecification)
             },
         recordMapper = SnowflakeExpectedRecordMapper,
-    )
+    ) {
+    @Test
+    override fun testFunkyCharactersDedup() {
+        super.testFunkyCharactersDedup()
+    }
+}
 
 class SnowflakeRawInsertAcceptanceTest :
     SnowflakeAcceptanceTest(
@@ -57,8 +62,8 @@ class SnowflakeRawInsertAcceptanceTest :
         coercesLegacyUnions = false,
     ) {
     @Test
-    override fun testBasicWrite() {
-        super.testBasicWrite()
+    override fun testFunkyCharacters() {
+        super.testFunkyCharacters()
     }
 }
 

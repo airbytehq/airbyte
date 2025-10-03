@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.snowflake.sql
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
-import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.orchestration.db.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
@@ -25,6 +24,15 @@ internal const val COUNT_TOTAL_ALIAS = "total"
 
 private val log = KotlinLogging.logger {}
 
+/**
+ * This extension is here to avoid writing `.also { log.info { it }}` for every returned string we
+ * want to log
+ */
+fun String.andLog(): String {
+    log.info { this.trim() }
+    return this
+}
+
 @Singleton
 class SnowflakeDirectLoadSqlGenerator(
     private val columnUtils: SnowflakeColumnUtils,
@@ -32,34 +40,12 @@ class SnowflakeDirectLoadSqlGenerator(
     private val snowflakeConfiguration: SnowflakeConfiguration,
     private val snowflakeSqlNameUtils: SnowflakeSqlNameUtils,
 ) {
-
-    /**
-     * This extension is here to avoid writing `.also { log.info { it }}` for every returned string
-     * we want to log
-     */
-    private fun String.andLog(): String {
-        log.info { this.trim() }
-        return this
-    }
-
     fun countTable(tableName: TableName): String {
         return "SELECT COUNT(*) AS ${COUNT_TOTAL_ALIAS.quote()} FROM ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}".andLog()
     }
 
-    fun checkSchemaExists(namespace: String): String {
-        val schemaName = namespace.toSnowflakeCompatibleName()
-        val databaseName = snowflakeConfiguration.database.toSnowflakeCompatibleName()
-        return """
-            SELECT COUNT(*) > 0 AS SCHEMA_EXISTS
-            FROM "$databaseName".INFORMATION_SCHEMA.SCHEMATA
-            WHERE SCHEMA_NAME = '$schemaName'
-        """
-            .trimIndent()
-            .andLog()
-    }
-
     fun createNamespace(namespace: String): String {
-        return "CREATE SCHEMA ${snowflakeSqlNameUtils.fullyQualifiedNamespace(namespace)}".andLog()
+        return "CREATE SCHEMA IF NOT EXISTS ${snowflakeSqlNameUtils.fullyQualifiedNamespace(namespace)}".andLog()
     }
 
     fun createTable(
@@ -318,15 +304,11 @@ class SnowflakeDirectLoadSqlGenerator(
         return "DROP TABLE IF EXISTS ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}".andLog()
     }
 
-    fun dropStage(tableName: TableName): String {
-        return "DROP STAGE IF EXISTS ${snowflakeSqlNameUtils.fullyQualifiedStageName(tableName)}".andLog()
-    }
-
     fun getGenerationId(
         tableName: TableName,
     ): String {
         return """
-            SELECT "${COLUMN_NAME_AB_GENERATION_ID.toSnowflakeCompatibleName()}"
+            SELECT "${columnUtils.getGenerationIdColumnName()}"
             FROM ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}
             LIMIT 1
         """
@@ -346,14 +328,16 @@ class SnowflakeDirectLoadSqlGenerator(
             TRIM_SPACE = TRUE
             ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE
             REPLACE_INVALID_CHARACTERS = TRUE
-        """.trimIndent()
+        """
+            .trimIndent()
+            .andLog()
     }
 
     fun createSnowflakeStage(tableName: TableName): String {
         val stageName = snowflakeSqlNameUtils.fullyQualifiedStageName(tableName)
         val formatName = snowflakeSqlNameUtils.fullyQualifiedFormatName(tableName.namespace)
         return """
-            CREATE OR REPLACE STAGE $stageName
+            CREATE STAGE IF NOT EXISTS $stageName
                 FILE_FORMAT = $formatName;
         """
             .trimIndent()
@@ -372,7 +356,7 @@ class SnowflakeDirectLoadSqlGenerator(
             .andLog()
     }
 
-    fun copyFromStage(tableName: TableName): String {
+    fun copyFromStage(tableName: TableName, filename: String): String {
         val stageName = snowflakeSqlNameUtils.fullyQualifiedStageName(tableName, true)
         val formatName = snowflakeSqlNameUtils.fullyQualifiedFormatName(tableName.namespace)
 
@@ -382,6 +366,7 @@ class SnowflakeDirectLoadSqlGenerator(
             FILE_FORMAT = $formatName
             ON_ERROR = 'ABORT_STATEMENT'
             PURGE = TRUE
+            files = ('$filename')
         """
             .trimIndent()
             .andLog()

@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.csv.toCsvValue
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.util.Jsons
+import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 
 interface SnowflakeRecordFormatter {
@@ -25,18 +26,22 @@ class SnowflakeSchemaRecordFormatter(
         snowflakeColumnUtils.getFormattedDefaultColumnNames(false).toSet()
 
     override fun format(record: Map<String, AirbyteValue>): List<Any> =
-        columns
+        columns.map { columnName ->
             /*
              * Meta columns are forced to uppercase for backwards compatibility with previous
              * versions of the destination.  Therefore, convert the column to lowercase so
              * that it can match the constants, which use the lowercase version of the meta
              * column names.
              */
-            .map { columnName ->
-                if (airbyteColumnNames.contains(columnName)) {
-                    record[columnName.lowercase()].toCsvValue()
-                } else if (record.containsKey(columnName)) record[columnName].toCsvValue() else ""
+            if (airbyteColumnNames.contains(columnName)) {
+                record[columnName.lowercase()].toCsvValue()
+            } else {
+                record.keys
+                    .find { it == columnName.toSnowflakeCompatibleName() }
+                    ?.let { record[it].toCsvValue() }
+                    ?: ""
             }
+        }
 }
 
 class SnowflakeRawRecordFormatter(
@@ -55,28 +60,18 @@ class SnowflakeRawRecordFormatter(
         // Copy the Airbyte metadata columns to the raw output, removing each
         // one from the record to avoid duplicates in the "data" field
         columns
-            .filter { airbyteColumnNames.contains(it) }
-            /*
-             * Meta columns are forced to uppercase for backwards compatibility with previous
-             * versions of the destination.  Therefore, convert the column to lowercase so
-             * that it can match the constants, which use the lowercase version of the meta
-             * column names.
-             */
-            .map { column -> column.lowercase() }
-            .forEach { column ->
-                when (column) {
-                    Meta.COLUMN_NAME_AB_EXTRACTED_AT,
-                    Meta.COLUMN_NAME_AB_META,
-                    Meta.COLUMN_NAME_AB_RAW_ID,
-                    Meta.COLUMN_NAME_AB_GENERATION_ID ->
-                        safeAddToOutput(column, record, outputRecord)
-                }
-            }
+            .filter { airbyteColumnNames.contains(it) && it != Meta.COLUMN_NAME_DATA }
+            .forEach { column -> safeAddToOutput(column, record, outputRecord) }
         // Do not output null values in the JSON raw output
         val filteredRecord = record.filter { (_, v) -> v !is NullValue }
         // Convert all the remaining columns in the record to a JSON document stored in the "data"
-        // column
-        outputRecord.add(StringValue(Jsons.writeValueAsString(filteredRecord)).toCsvValue())
+        // column.  Add it in the same position as the _airbyte_data column in the column list to
+        // ensure it is inserted into the proper column in the table.
+        insert(
+            columns.indexOf(Meta.COLUMN_NAME_DATA),
+            StringValue(Jsons.writeValueAsString(filteredRecord)).toCsvValue(),
+            outputRecord
+        )
         return outputRecord
     }
 
@@ -86,6 +81,20 @@ class SnowflakeRawRecordFormatter(
         output: MutableList<Any>
     ) {
         val extractedValue = record.remove(key)
-        output.add(extractedValue?.toCsvValue() ?: "")
+        // Ensure that the data is inserted into the list at the same position as the column
+        insert(columns.indexOf(key), extractedValue?.toCsvValue() ?: "", output)
+    }
+
+    private fun insert(index: Int, value: Any, list: MutableList<Any>) {
+        /*
+         * Attempt to insert the value into the proper order in the list.  If the index
+         * is already present in the list, use the add(index, element) method to insert it
+         * into the proper order and push everything to the right.  If the index is at the
+         * end of the list, just use add(element) to insert it at the end.  If the index
+         * is further beyond the end of the list, throw an exception as that should not occur.
+         */
+        if (index < list.size) list.add(index, value)
+        else if (index == list.size || index == list.size + 1) list.add(value)
+        else throw IndexOutOfBoundsException()
     }
 }

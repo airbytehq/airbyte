@@ -51,9 +51,15 @@ internal class SnowflakeColumnUtilsTest {
             mockk(relaxed = true) {
                 every { getColumnName(any()) } answers
                     {
+                        val displayName =
+                            if (snowflakeConfiguration.legacyRawTablesOnly) firstArg<String>()
+                            else firstArg<String>().toSnowflakeCompatibleName()
+                        val canonicalName =
+                            if (snowflakeConfiguration.legacyRawTablesOnly) firstArg<String>()
+                            else firstArg<String>().toSnowflakeCompatibleName()
                         ColumnNameGenerator.ColumnName(
-                            displayName = firstArg<String>().toSnowflakeCompatibleName(),
-                            canonicalName = firstArg<String>().toSnowflakeCompatibleName(),
+                            displayName = displayName,
+                            canonicalName = canonicalName,
                         )
                     }
             }
@@ -71,7 +77,7 @@ internal class SnowflakeColumnUtilsTest {
     fun testDefaultRawColumns() {
         every { snowflakeConfiguration.legacyRawTablesOnly } returns true
 
-        val expectedDefaultColumns = DEFAULT_COLUMNS + listOf(RAW_DATA_COLUMN)
+        val expectedDefaultColumns = DEFAULT_COLUMNS + RAW_COLUMNS
 
         assertEquals(expectedDefaultColumns, snowflakeColumnUtils.defaultColumns())
     }
@@ -109,8 +115,7 @@ internal class SnowflakeColumnUtilsTest {
         val columnNameMapping = ColumnNameMapping(mapOf("original" to "actual"))
         val columnNames = snowflakeColumnUtils.getColumnNames(columnNameMapping)
         val expectedColumnNames =
-            (DEFAULT_COLUMNS.map { it.columnName.toSnowflakeCompatibleName() } +
-                    listOf(RAW_DATA_COLUMN.columnName))
+            (DEFAULT_COLUMNS.map { it.columnName } + RAW_COLUMNS.map { it.columnName })
                 .joinToString(",") { it.quote() }
         assertEquals(expectedColumnNames, columnNames)
     }
@@ -127,9 +132,9 @@ internal class SnowflakeColumnUtilsTest {
                 CDC_DELETED_AT_COLUMN to FieldType(TimestampTypeWithTimezone, true)
             )
         val expectedColumnNames =
-            listOf(
-                RAW_DATA_COLUMN.columnName.quote(),
-            ) + DEFAULT_COLUMNS.map { it.columnName.toSnowflakeCompatibleName().quote() }
+            DEFAULT_COLUMNS.map { it.columnName.quote() } +
+                RAW_COLUMNS.map { it.columnName.quote() }
+
         val columnNames =
             snowflakeColumnUtils.getFormattedColumnNames(
                 columns = schemaColumns,
@@ -203,9 +208,9 @@ internal class SnowflakeColumnUtilsTest {
                 columns = emptyMap(),
                 columnNameMapping = ColumnNameMapping(emptyMap())
             )
-        assertEquals(DEFAULT_COLUMNS.size + 1, columns.size)
+        assertEquals(DEFAULT_COLUMNS.size + RAW_COLUMNS.size, columns.size)
         assertEquals(
-            "${SnowflakeDataType.VARCHAR.typeName} $NOT_NULL",
+            "${SnowflakeDataType.VARIANT.typeName} $NOT_NULL",
             columns.find { it.columnName == RAW_DATA_COLUMN.columnName }?.columnType
         )
     }

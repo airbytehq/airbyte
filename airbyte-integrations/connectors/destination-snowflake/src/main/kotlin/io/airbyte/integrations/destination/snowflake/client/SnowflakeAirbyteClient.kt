@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.snowflake.client
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.client.AirbyteClient
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNativeOperations
@@ -18,6 +17,7 @@ import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.COUNT_TOTAL_ALIAS
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlGenerator
+import io.airbyte.integrations.destination.snowflake.sql.andLog
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.sql.ResultSet
@@ -65,9 +65,23 @@ class SnowflakeAirbyteClient(
         // Check if the schema exists first
         val schemaExistsResult =
             dataSource.connection.use { connection ->
-                val statement = connection.createStatement()
+                val databaseName = snowflakeConfiguration.database.toSnowflakeCompatibleName()
+                val statement =
+                    connection.prepareStatement(
+                        """
+                        SELECT COUNT(*) > 0 AS SCHEMA_EXISTS
+                        FROM "$databaseName".INFORMATION_SCHEMA.SCHEMATA
+                        WHERE SCHEMA_NAME = ?
+                    """.andLog()
+                    )
+
+                // When querying information_schema, snowflake needs the "true" schema name,
+                // so we unescape it here.
+                val unescapedNamespace = namespace.replace("\"\"", "\"")
+                statement.setString(1, unescapedNamespace)
+
                 statement.use {
-                    val resultSet = it.executeQuery(sqlGenerator.checkSchemaExists(namespace))
+                    val resultSet = it.executeQuery()
                     resultSet.use { rs ->
                         if (rs.next()) {
                             rs.getBoolean("SCHEMA_EXISTS")
@@ -145,7 +159,6 @@ class SnowflakeAirbyteClient(
     }
 
     override suspend fun dropTable(tableName: TableName) {
-        execute(sqlGenerator.dropStage(tableName))
         execute(sqlGenerator.dropTable(tableName))
     }
 
@@ -154,21 +167,22 @@ class SnowflakeAirbyteClient(
         tableName: TableName,
         columnNameMapping: ColumnNameMapping
     ) {
-        val columnsInDb = getColumnsFromDb(tableName)
-        val columnsInStream = getColumnsFromStream(stream, columnNameMapping)
-        val (addedColumns, deletedColumns, modifiedColumns) =
-            generateSchemaChanges(columnsInDb, columnsInStream)
-
+        execute(sqlGenerator.createSnowflakeStage(tableName))
         /*
          * If legacy raw tables are in use, there is nothing to ensure in schema, as raw mode
          * uses a fixed schema that is not based on the catalog/incoming record.  Otherwise,
          * ensure that the destination schema is in sync with any changes.
          */
+        if (snowflakeConfiguration.legacyRawTablesOnly) {
+            return
+        }
+        val columnsInDb = getColumnsFromDb(tableName)
+        val columnsInStream = getColumnsFromStream(stream, columnNameMapping)
+        val (addedColumns, deletedColumns, modifiedColumns) =
+            generateSchemaChanges(columnsInDb, columnsInStream)
+
         if (
-            snowflakeConfiguration.legacyRawTablesOnly != true &&
-                (addedColumns.isNotEmpty() ||
-                    deletedColumns.isNotEmpty() ||
-                    modifiedColumns.isNotEmpty())
+            addedColumns.isNotEmpty() || deletedColumns.isNotEmpty() || modifiedColumns.isNotEmpty()
         ) {
             log.info { "Summary of the table alterations:" }
             log.info { "Added columns: $addedColumns" }
@@ -190,7 +204,7 @@ class SnowflakeAirbyteClient(
                 val columnsInDb: MutableSet<ColumnDefinition> = mutableSetOf()
 
                 while (rs.next()) {
-                    val columnName = rs.getString("name")
+                    val columnName = rs.getString("name").toSnowflakeCompatibleName()
 
                     // Filter out airbyte columns
                     if (airbyteColumnNames.contains(columnName)) {
@@ -215,7 +229,7 @@ class SnowflakeAirbyteClient(
             .filter { column -> column.columnName !in airbyteColumnNames }
             .map { column ->
                 ColumnDefinition(
-                    name = snowflakeColumnUtils.formatColumnName(column.columnName, false),
+                    name = column.columnName,
                     type =
                         column.columnType.takeWhile { char ->
                             // This is to remove any precision parts of the dialect type
@@ -249,26 +263,29 @@ class SnowflakeAirbyteClient(
 
     override suspend fun getGenerationId(tableName: TableName): Long =
         try {
-            val sql = sqlGenerator.getGenerationId(tableName)
             dataSource.connection.use { connection ->
                 val statement = connection.createStatement()
                 statement.use {
-                    val resultSet = connection.createStatement().executeQuery(sql)
+                    val resultSet = it.executeQuery(sqlGenerator.getGenerationId(tableName))
                     if (resultSet.next()) {
                         /*
                          * When we retrieve the column names from the database, they are in unescaped
                          * format.  In order to make sure these strings will match any column names
                          * that we have formatted in-memory, re-apply the escaping.
                          */
-                        resultSet.getLong(COLUMN_NAME_AB_GENERATION_ID.toSnowflakeCompatibleName())
+                        resultSet.getLong(snowflakeColumnUtils.getGenerationIdColumnName())
                     } else {
-                        log.warn { "No generation ID found for table $tableName, returning 0" }
+                        log.warn {
+                            "No generation ID found for table ${tableName.toPrettyString()}, returning 0"
+                        }
                         0L
                     }
                 }
             }
         } catch (e: Exception) {
-            log.error(e) { "Failed to retrieve the generation ID for table $tableName" }
+            log.error(e) {
+                "Failed to retrieve the generation ID for table ${tableName.toPrettyString()}"
+            }
             // Return 0 if we can't get the generation ID (similar to ClickHouse approach)
             0L
         }
@@ -281,8 +298,8 @@ class SnowflakeAirbyteClient(
         execute(sqlGenerator.putInStage(tableName, tempFilePath))
     }
 
-    fun copyFromStage(tableName: TableName) {
-        execute(sqlGenerator.copyFromStage(tableName))
+    fun copyFromStage(tableName: TableName, filename: String) {
+        execute(sqlGenerator.copyFromStage(tableName, filename))
     }
 
     fun describeTable(tableName: TableName): List<String> =
@@ -292,11 +309,7 @@ class SnowflakeAirbyteClient(
                 val resultSet = it.executeQuery(sqlGenerator.showColumns(tableName))
                 val columns = mutableListOf<String>()
                 while (resultSet.next()) {
-                    columns.add(
-                        resultSet
-                            .getString(DESCRIBE_TABLE_COLUMN_NAME_FIELD)
-                            .toSnowflakeCompatibleName()
-                    )
+                    columns.add(resultSet.getString(DESCRIBE_TABLE_COLUMN_NAME_FIELD))
                 }
                 columns
             }

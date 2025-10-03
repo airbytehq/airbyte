@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.snowflake.db
 
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.orchestration.db.ColumnNameGenerator
 import io.airbyte.cdk.load.orchestration.db.FinalTableNameGenerator
@@ -12,35 +13,45 @@ import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupin
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.QUOTE
 import jakarta.inject.Singleton
-import java.util.UUID
 
 @Singleton
 class SnowflakeFinalTableNameGenerator(private val config: SnowflakeConfiguration) :
     FinalTableNameGenerator {
-    override fun getTableName(streamDescriptor: DestinationStream.Descriptor) =
-        TableName(
-            namespace =
-                (config.internalTableSchema ?: (streamDescriptor.namespace ?: config.schema))
-                    .toSnowflakeCompatibleName(),
-            name =
-                if (config.internalTableSchema.isNullOrBlank()) {
-                    streamDescriptor.name.toSnowflakeCompatibleName()
-                } else {
+    override fun getTableName(streamDescriptor: DestinationStream.Descriptor): TableName {
+        val namespace = streamDescriptor.namespace ?: config.schema
+        return if (!config.legacyRawTablesOnly) {
+            TableName(
+                namespace = namespace.toSnowflakeCompatibleName(),
+                name = streamDescriptor.name.toSnowflakeCompatibleName(),
+            )
+        } else {
+            TableName(
+                namespace = config.internalTableSchema,
+                name =
                     TypingDedupingUtil.concatenateRawTableName(
-                        (streamDescriptor.namespace ?: config.schema).toSnowflakeCompatibleName(),
-                        streamDescriptor.name.toSnowflakeCompatibleName()
-                    )
-                },
-        )
+                        namespace = escapeJsonIdentifier(namespace),
+                        name = escapeJsonIdentifier(streamDescriptor.name),
+                    ),
+            )
+        }
+    }
 }
 
 @Singleton
-class SnowflakeColumnNameGenerator : ColumnNameGenerator {
+class SnowflakeColumnNameGenerator(private val config: SnowflakeConfiguration) :
+    ColumnNameGenerator {
     override fun getColumnName(column: String): ColumnNameGenerator.ColumnName {
-        return ColumnNameGenerator.ColumnName(
-            column.toSnowflakeCompatibleName(),
-            column.toSnowflakeCompatibleName(),
-        )
+        return if (!config.legacyRawTablesOnly) {
+            ColumnNameGenerator.ColumnName(
+                column.toSnowflakeCompatibleName(),
+                column.toSnowflakeCompatibleName(),
+            )
+        } else {
+            ColumnNameGenerator.ColumnName(
+                column,
+                column,
+            )
+        }
     }
 }
 
@@ -67,7 +78,7 @@ fun String.toSnowflakeCompatibleName(): String {
 
     // Handle empty strings
     if (identifier.isEmpty()) {
-        return "DEFAULT_NAME_${UUID.randomUUID()}".replace("-", "_")
+        throw ConfigErrorException("Empty string is invalid identifier")
     }
 
     // Snowflake scripting language does something weird when the `${` bigram shows up in the

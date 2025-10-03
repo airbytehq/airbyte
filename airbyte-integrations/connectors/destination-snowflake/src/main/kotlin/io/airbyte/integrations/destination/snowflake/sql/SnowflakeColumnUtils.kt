@@ -25,11 +25,13 @@ import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_LOADED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_DATA
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.integrations.destination.snowflake.db.SnowflakeColumnNameGenerator
+import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import jakarta.inject.Singleton
 import kotlin.collections.component1
@@ -63,7 +65,16 @@ internal val DEFAULT_COLUMNS =
 internal val RAW_DATA_COLUMN =
     ColumnAndType(
         columnName = COLUMN_NAME_DATA,
-        columnType = "${SnowflakeDataType.VARCHAR.typeName} $NOT_NULL"
+        columnType = "${SnowflakeDataType.VARIANT.typeName} $NOT_NULL"
+    )
+
+internal val RAW_COLUMNS =
+    listOf(
+        ColumnAndType(
+            columnName = COLUMN_NAME_AB_LOADED_AT,
+            columnType = SnowflakeDataType.TIMESTAMP_TZ.typeName
+        ),
+        RAW_DATA_COLUMN
     )
 
 @Singleton
@@ -74,8 +85,8 @@ class SnowflakeColumnUtils(
 
     @VisibleForTesting
     internal fun defaultColumns(): List<ColumnAndType> =
-        if (snowflakeConfiguration.legacyRawTablesOnly == true) {
-            DEFAULT_COLUMNS + listOf(RAW_DATA_COLUMN)
+        if (snowflakeConfiguration.legacyRawTablesOnly) {
+            DEFAULT_COLUMNS + RAW_COLUMNS
         } else {
             DEFAULT_COLUMNS
         }
@@ -88,8 +99,16 @@ class SnowflakeColumnUtils(
             )
         }
 
+    fun getGenerationIdColumnName(): String {
+        return if (snowflakeConfiguration.legacyRawTablesOnly) {
+            COLUMN_NAME_AB_GENERATION_ID
+        } else {
+            COLUMN_NAME_AB_GENERATION_ID.toSnowflakeCompatibleName()
+        }
+    }
+
     fun getColumnNames(columnNameMapping: ColumnNameMapping): String =
-        if (snowflakeConfiguration.legacyRawTablesOnly == true) {
+        if (snowflakeConfiguration.legacyRawTablesOnly) {
             getFormattedDefaultColumnNames(true).joinToString(",")
         } else {
             (getFormattedDefaultColumnNames(true) +
