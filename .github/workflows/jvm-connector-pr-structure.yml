@@ -2,9 +2,6 @@ name: PR cannot modify both bulk CDK and connectors
 
 on:
   pull_request:
-    paths:
-      - "airbyte-cdk/bulk/**/*"
-      - "airbyte-integrations/connectors/**/*"
 
 jobs:
   enforce-pr-structure:
