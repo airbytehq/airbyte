@@ -118,7 +118,7 @@ commit;
 3. Run the script using the [Worksheet page](https://docs.snowflake.com/en/user-guide/ui-worksheet.html) or [Snowsight](https://docs.snowflake.com/en/user-guide/ui-snowsight-gs.html).
   Make sure to select the **All Queries** checkbox if using the Classic Console or select and highlight the entire query if you are using Snowsight.
 
-Note: Our integration automatically creates the necessary schemas in your Snowflake destination database. 
+Note: Our integration automatically creates the necessary schemas in your Snowflake destination database.
 To enable this, ensure the connection user has `CREATE SCHEMA` privileges on the target database.
 If you prefer to create schemas manually, that's supported—however, our connection user must have `OWNERSHIP` privileges on those schemas.
 This allows us to manage tables and other objects required for the integration to function properly.
