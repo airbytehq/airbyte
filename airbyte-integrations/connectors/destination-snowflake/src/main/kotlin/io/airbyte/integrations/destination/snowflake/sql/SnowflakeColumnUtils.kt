@@ -72,7 +72,7 @@ internal val RAW_COLUMNS =
     listOf(
         ColumnAndType(
             columnName = COLUMN_NAME_AB_LOADED_AT,
-            columnType = "${SnowflakeDataType.TIMESTAMP_TZ.typeName} $NOT_NULL"
+            columnType = SnowflakeDataType.TIMESTAMP_TZ.typeName
         ),
         RAW_DATA_COLUMN
     )
