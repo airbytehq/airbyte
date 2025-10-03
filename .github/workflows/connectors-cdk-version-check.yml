@@ -1,0 +1,11 @@
+name: Connectors CDK Version Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  connectors-cdk-version-check:
+    name: Connectors CDK Version Check
+    uses: airbytehq/airbyte/.github/workflows/connectors-cdk-version-check.yml@master
+    secrets: inherit
