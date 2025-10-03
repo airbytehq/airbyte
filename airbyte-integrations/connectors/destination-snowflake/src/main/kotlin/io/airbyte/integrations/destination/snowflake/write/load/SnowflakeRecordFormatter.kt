@@ -37,7 +37,7 @@ class SnowflakeSchemaRecordFormatter(
                 record[columnName.lowercase()].toCsvValue()
             } else {
                 record.keys
-                    .find { it == columnName.toSnowflakeCompatibleName() }
+                    .find { it.toSnowflakeCompatibleName() == columnName }
                     ?.let { record[it].toCsvValue() }
                     ?: ""
             }
