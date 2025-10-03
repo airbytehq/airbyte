@@ -33,7 +33,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 54c75c42-df4a-4f3e-a5f3-d50cf80f1649
-  dockerImageTag: 0.3.1
+  dockerImageTag: 0.3.2
   dockerRepository: airbyte/source-uptick
   githubIssueLabel: source-uptick
   icon: icon.svg
