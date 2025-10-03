@@ -48,6 +48,25 @@ class SnowflakeInsertAcceptanceTest :
     }
 }
 
+class SnowflakeInsertProtoAcceptanceTest :
+    SnowflakeAcceptanceTest(
+        configPath = CONFIG_PATH,
+        dataDumper =
+            SnowflakeDataDumper { spec ->
+                SnowflakeConfigurationFactory().make(spec as SnowflakeSpecification)
+            },
+        recordMapper = SnowflakeExpectedRecordMapper,
+        dataChannelFormat = DataChannelFormat.PROTOBUF,
+        dataChannelMedium = DataChannelMedium.SOCKET,
+        unknownTypesBehavior = UnknownTypesBehavior.NULL,
+        isStreamSchemaRetroactiveForUnknownTypeToString = false,
+    ) {
+    @Test
+    override fun testBasicWrite() {
+        super.testBasicWrite()
+    }
+}
+
 class SnowflakeRawInsertAcceptanceTest :
     SnowflakeAcceptanceTest(
         configPath = RAW_CONFIG_PATH,
@@ -67,6 +86,29 @@ class SnowflakeRawInsertAcceptanceTest :
     }
 }
 
+class SnowflakeRawInsertProtoAcceptanceTest :
+    SnowflakeAcceptanceTest(
+        configPath = RAW_CONFIG_PATH,
+        dataDumper =
+            SnowflakeRawDataDumper { spec ->
+                SnowflakeConfigurationFactory().make(spec as SnowflakeSpecification)
+            },
+        recordMapper = SnowflakeExpectedRawRecordMapper,
+        isStreamSchemaRetroactive = false,
+        isStreamSchemaRetroactiveForUnknownTypeToString = false,
+        dedupBehavior = null,
+        nullEqualsUnset = false,
+        coercesLegacyUnions = false,
+        dataChannelFormat = DataChannelFormat.PROTOBUF,
+        dataChannelMedium = DataChannelMedium.SOCKET,
+        unknownTypesBehavior = UnknownTypesBehavior.NULL,
+    ) {
+    @Test
+    override fun testBasicWrite() {
+        super.testBasicWrite()
+    }
+}
+
 abstract class SnowflakeAcceptanceTest(
     configPath: Path,
     dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
@@ -74,9 +116,11 @@ abstract class SnowflakeAcceptanceTest(
     dataDumper: DestinationDataDumper,
     recordMapper: ExpectedRecordMapper,
     isStreamSchemaRetroactive: Boolean = true,
+    isStreamSchemaRetroactiveForUnknownTypeToString: Boolean = true,
     dedupBehavior: DedupBehavior? = DedupBehavior(DedupBehavior.CdcDeletionMode.HARD_DELETE),
     nullEqualsUnset: Boolean = true,
     coercesLegacyUnions: Boolean = false,
+    unknownTypesBehavior: UnknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
 ) :
     BasicFunctionalityIntegrationTest(
         configContents = Files.readString(configPath),
@@ -84,6 +128,8 @@ abstract class SnowflakeAcceptanceTest(
         dataDumper = dataDumper,
         destinationCleaner = SnowflakeDataCleaner,
         isStreamSchemaRetroactive = isStreamSchemaRetroactive,
+        isStreamSchemaRetroactiveForUnknownTypeToString =
+            isStreamSchemaRetroactiveForUnknownTypeToString,
         dedupBehavior = dedupBehavior,
         stringifySchemalessObjects = true,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
@@ -101,7 +147,7 @@ abstract class SnowflakeAcceptanceTest(
                 numberCanBeLarge = true,
                 nestedFloatLosesPrecision = false,
             ),
-        unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
+        unknownTypesBehavior = unknownTypesBehavior,
         nullEqualsUnset = nullEqualsUnset,
         dedupChangeUsesDefault = false,
         testSpeedModeStatsEmission = true,
