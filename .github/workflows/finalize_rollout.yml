@@ -27,12 +27,12 @@ jobs:
           fi
         shell: bash
       - name: Checkout Airbyte
-        uses: actions/checkout@v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
 
       # Authenticate as the GitHub App to ensure CI can run.  This is necessary because
       # commits created with the built-in GitHub token will not trigger workflows.
       - name: Authenticate as GitHub App
-        uses: actions/create-github-app-token@v1
+        uses: actions/create-github-app-token@d72941d797fd3113feb6b93fd0dec494b13a2547 # v1.12.0
         id: get-app-token
         with:
           owner: "airbytehq"
