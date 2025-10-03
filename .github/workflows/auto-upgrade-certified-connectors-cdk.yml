@@ -19,8 +19,8 @@ jobs:
       - name: List certified connectors
         id: list-connectors
         run: |
-          # dev-null isn't certified, but we should probably keep it on the latest CDK anyway
-          connectors=(destination-dev-null)
+          # datagen and dev-null aren't certified, but we should probably keep them on the latest CDK anyway
+          connectors=(destination-dev-null source-datagen)
           for dir in airbyte-integrations/connectors/*; do
             metadata_file="${dir}/metadata.yaml"
             build_gradle="${dir}/build.gradle"
