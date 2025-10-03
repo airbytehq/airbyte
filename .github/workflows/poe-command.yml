@@ -3,17 +3,6 @@ name: On-Demand Poe Task
 on:
   workflow_dispatch:
     inputs:
-      # The following 4 inputs are always passed by the Slash Command Dispatch:
-      repo:
-        description: Repo Name. Ignored.
-        type: choice
-        required: false
-        default: airbytehq/airbyte-enterprise
-        options:
-          - airbytehq/airbyte-enterprise
-      gitref:
-        description: Git Ref. Ignored.
-        required: false
       comment-id:
         description: Comment ID. Optional.
         required: false
@@ -21,8 +10,6 @@ on:
         description: PR Number.
         type: number
         required: false
-
-      # The following is specific to this workflow:
       command:
         description: |
           Poe command to run (without the 'poe' prefix). Optional.
