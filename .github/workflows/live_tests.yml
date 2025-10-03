@@ -52,7 +52,7 @@ jobs:
     timeout-minutes: 360 # 6 hours
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
       - name: Extract branch name [WORKFLOW DISPATCH]
         shell: bash
         if: github.event_name == 'workflow_dispatch'
@@ -61,7 +61,7 @@ jobs:
 
       - name: Install Poetry
         id: install_poetry
-        uses: snok/install-poetry@v1
+        uses: snok/install-poetry@76e04a911780d5b312d89783f7b1cd627778900a # v1.4.1
         with:
           version: 1.8.5
 

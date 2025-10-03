@@ -13,19 +13,19 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
           submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
           fetch-depth: 0
 
       - name: Setup Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
         with:
           distribution: "zulu"
           java-version: "21"
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@748248ddd2a24f49513d8f472f81c3a07d4d50e1 # v4.4.4
         with:
           gradle-version: "8.14"
 
@@ -56,12 +56,12 @@ jobs:
       - name: Checkout Airbyte
         if: matrix.connector
         id: checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
           submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
 
       # Java deps
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
         if: matrix.connector
         with:
           distribution: zulu
@@ -70,14 +70,14 @@ jobs:
 
       # The default behaviour is read-only on PR branches and read/write on master.
       # See https://github.com/gradle/actions/blob/main/docs/setup-gradle.md#using-the-cache-read-only.
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@748248ddd2a24f49513d8f472f81c3a07d4d50e1 # v4.4.4
         if: matrix.connector
         with:
           gradle-version: "8.14"
 
       - name: Install the latest version of uv
         if: matrix.connector
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
 
       - name: Install Poe
         if: matrix.connector
@@ -115,7 +115,7 @@ jobs:
 
       - name: Slack Notification on Failure
         if: github.event_name == 'schedule' && failure() && (steps.run-unit-tests.outcome == 'failure' || steps.run-integration-tests.outcome == 'failure')
-        uses: slackapi/slack-github-action@v2.1.1
+        uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
         with:
           token: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
           method: chat.postMessage
