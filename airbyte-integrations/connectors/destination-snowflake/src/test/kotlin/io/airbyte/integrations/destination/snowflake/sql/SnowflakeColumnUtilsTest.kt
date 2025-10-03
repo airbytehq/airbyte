@@ -205,7 +205,7 @@ internal class SnowflakeColumnUtilsTest {
             )
         assertEquals(DEFAULT_COLUMNS.size + 1, columns.size)
         assertEquals(
-            "${SnowflakeDataType.VARCHAR.typeName} $NOT_NULL",
+            "${SnowflakeDataType.VARIANT.typeName} $NOT_NULL",
             columns.find { it.columnName == RAW_DATA_COLUMN.columnName }?.columnType
         )
     }
