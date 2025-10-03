@@ -1,0 +1,213 @@
+name: Auto Upgrade CDK for Certified Connectors
+on:
+  # schedule:
+  # TODO run every 3 weeks
+  #   # Run daily at 2 AM UTC
+  #   - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  list-certified-connectors:
+    name: List Certified Connectors
+    runs-on: ubuntu-24.04
+    outputs:
+      connectors: ${{ steps.list-connectors.outputs.connectors }}
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
+
+      - name: List certified connectors
+        id: list-connectors
+        run: |
+          # datagen and dev-null aren't certified, but we should probably keep them on the latest CDK anyway
+          connectors=(destination-dev-null source-datagen)
+          for dir in airbyte-integrations/connectors/*; do
+            metadata_file="${dir}/metadata.yaml"
+            build_gradle="${dir}/build.gradle"
+            build_gradle_kts="${dir}/build.gradle.kts"
+
+            # If metadata.yaml exists and says we're certified
+            if test -f "$metadata_file" && grep -q "supportLevel: certified" "$metadata_file"; then
+              # If we have a gradle buildscript using the bulk connector plugin
+              if (test -f "$build_gradle" && grep -q "airbyte-bulk-connector" "$build_gradle") || \
+                  (test -f "$build_gradle_kts" && grep -q "airbyte-bulk-connector" "$build_gradle_kts"); then
+                connector_name=$(basename "$dir")
+                connectors+=("$connector_name")
+              fi
+            fi
+          done
+
+          # Nonobvious `printf | jq | jq` thing here:
+          # Print each element of the array on a separate line
+          # -> jq converts each line to a JSON string (i.e. wrap in double quotes)
+          # -> jq reads those lines and wraps them into a JSON array (compact-output is needed for compatibility with github's output format)
+          json_array=$(printf '%s\n' "${connectors[@]}" | jq --raw-input . | jq --compact-output --slurp .)
+          echo "connectors=$json_array" >> $GITHUB_OUTPUT
+          echo "Found ${#connectors[@]} certified bulk CDK connectors"
+
+  upgrade-connector-cdk:
+    name: Upgrade CDK for ${{ matrix.connector }}
+    needs: list-certified-connectors
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        connector: ${{ fromJson(needs.list-certified-connectors.outputs.connectors) }}
+      fail-fast: false
+      max-parallel: 5
+    steps:
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2
+        id: app-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+      - name: Get GitHub App User ID
+        id: get-user-id
+        run: echo "user-id=$(gh api "/users/${{ steps.app-token.outputs.app-slug }}[bot]" --jq .id)" >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+      - run: |
+          git config --global user.name '${{ steps.app-token.outputs.app-slug }}[bot]'
+          git config --global user.email '${{ steps.get-user-id.outputs.user-id }}+${{ steps.app-token.outputs.app-slug }}[bot]@users.noreply.github.com'
+
+      - name: Checkout Airbyte
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install yq
+        run: sudo snap install yq
+
+      - name: Setup Java
+        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4
+        with:
+          distribution: "zulu"
+          java-version: "21"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@80e941e61874822d2a89974089c4915748e8f4b7 # v4
+
+      - name: Run upgradeCdk for ${{ matrix.connector }}
+        id: upgrade-cdk
+        run: |
+          ./gradlew :airbyte-integrations:connectors:${{ matrix.connector }}:upgradeCdk
+          # --quiet disables all of gradle's normal logging, so we only get the CDK version number
+          new_cdk_version=$(./gradlew :airbyte-integrations:connectors:${{ matrix.connector }}:getCdkVersion --quiet)
+          echo "new_cdk_version=$new_cdk_version" >> $GITHUB_OUTPUT
+
+      - name: Check for changes
+        id: check-changes
+        if: steps.upgrade-cdk.outputs.exit_code == '0'
+        run: |
+          if git diff --quiet; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "No changes detected for ${{ matrix.connector }}"
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "Changes detected for ${{ matrix.connector }}"
+          fi
+
+      - name: Bump connector version
+        id: bump-version
+        if: steps.check-changes.outputs.has_changes == 'true'
+        run: |
+          metadata_file="airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml"
+
+          # Extract current version
+          current_version=$(yq '.data.dockerImageTag' "$metadata_file")
+          echo "Current version: $current_version"
+
+          # Parse version components
+          IFS='.' read -r major minor patch <<< "$current_version"
+
+          # Increment patch version
+          new_patch=$((patch + 1))
+          new_version="${major}.${minor}.${new_patch}"
+          echo "New version: $new_version"
+
+          # Update metadata.yaml
+          yq --inplace --prettyPrint ".data.dockerImageTag = \"${new_version}\"" "$metadata_file"
+
+          echo "Updated dockerImageTag from $current_version to $new_version"
+          echo "new_version=$new_version" >> $GITHUB_OUTPUT
+
+      - name: Create Pull Request
+        id: create-pr
+        if: steps.check-changes.outputs.has_changes == 'true'
+        uses: peter-evans/create-pull-request@c5a7806660adbe173f04e3e038b0ccdcd758773c # v6
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          commit-message: "chore: upgrade bulk CDK for ${{ matrix.connector }}"
+          branch: "auto-upgrade-jvm-bulk-cdk/${{ steps.upgrade-cdk.outputs.new_cdk_version }}/${{ matrix.connector }}"
+          delete-branch: true
+          # TODO remove the TEST text
+          title: "[TEST] chore: upgrade ${{ matrix.connector }} to bulk CDK ${{ steps.upgrade-cdk.outputs.new_cdk_version }}"
+          body: |
+            Upgrade Bulk CDK version for `${{ matrix.connector }}`
+
+            🤖 Generated by [automated workflow](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+          labels: |
+            area/connectors
+            auto-cdk-upgrade
+          assignees: ""
+          reviewers: ""
+          draft: true
+
+      - name: Update connector changelog
+        if: steps.check-changes.outputs.has_changes == 'true'
+        run: |
+          # Convert connector name to docs path:
+          # destination-dev-null -> docs/integrations/destinations/dev-null.md
+          # source-postgres -> docs/integrations/sources/postgres.md
+          connector_type=$(echo "${{ matrix.connector }}" | cut -d'-' -f1)
+          connector_name=$(echo "${{ matrix.connector }}" | cut -d'-' -f2-)
+          docs_file="docs/integrations/${connector_type}s/${connector_name}.md"
+
+          if ! test -f "$docs_file"; then
+            echo "Docs file not found at $docs_file. This connector is probably doing something weird." >&2
+            exit 1
+          fi
+
+          new_version="${{ steps.bump-version.outputs.new_version }}"
+          pr_number="${{ steps.create-pr.outputs.pull-request-number }}"
+          # YYYY-MM-DD format
+          today=$(date +%Y-%m-%d)
+
+          new_entry="| ${new_version} | ${today} | [${pr_number}](https://github.com/airbytehq/airbyte/pull/${pr_number}) | Upgrade to Bulk CDK ${{ steps.upgrade-cdk.outputs.new_cdk_version }}. |"
+
+          # Find the changelog table and insert the new entry after the header row
+          # The changelog table starts with a header row (`| Version | Date | Pull Request | Subject |`),
+          # followed by a separator line.
+          # We want to insert the new entry after the separator line.
+          # The awk script is doing exactly that:
+          # When it sees a line matching the changelog header row, awk prints that line and sets the `header` flag.
+          # If the `header` flag is set and awk sees the separator line, awk prints the separator followed by the new changelog entry.
+          # Otherwise, awk just prints the line unchanged.
+          awk -v entry="$new_entry" '
+            /^\| Version *\| Date *\| Pull Request *\| Subject *\|$/ { print; header=1; next }
+            header && /^\|:?-+\|:?-+\|:?-+\|:?-+\|$/ { print; print entry; header=0; next }
+            { print }
+          ' "$docs_file" > "${docs_file}.tmp"
+
+          if cmp -s "$docs_file" "${docs_file}.tmp"; then
+            echo "Error: awk command made no edits to $docs_file. Changelog table may not exist or has unexpected format." >&2
+            exit 1
+          fi
+
+          mv "${docs_file}.tmp" "$docs_file"
+
+          echo "Added changelog entry to $docs_file"
+
+          # Commit and push the changelog changes
+          branch_name="${{ steps.create-pr.outputs.pull-request-branch }}"
+          git fetch --depth=1 origin "$branch_name"
+          git checkout "$branch_name"
+          git add "$docs_file"
+          git commit -m "update changelog for ${{ matrix.connector }}"
+          git push origin "$branch_name"
+
+          # Mark the PR as ready for review
+          # TODO uncomment this
+          # gh pr ready "$pr_number"
