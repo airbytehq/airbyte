@@ -4,10 +4,10 @@
 
 import re
 from abc import ABC, abstractmethod
-from datetime import timedelta
+from datetime import timedelta, timezone
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib import parse
-
+from dateutil.parser import parse as date_parse
 import requests
 
 from airbyte_cdk import BackoffStrategy, StreamSlice
@@ -1441,7 +1441,8 @@ class Workflows(SemiIncrementalMixin, GithubStream):
             yield self.transform(record=record, stream_slice=stream_slice)
 
     def convert_cursor_value(self, value):
-        return ab_datetime_format(value, "YYYY-MM-DDTHH:mm:ss[Z]")
+        parsed_value = date_parse(value).astimezone(timezone.utc)
+        return ab_datetime_format(parsed_value, "%Y-%m-%dT%H:%M:%SZ")
 
 
 class WorkflowRuns(SemiIncrementalMixin, GithubStream):
