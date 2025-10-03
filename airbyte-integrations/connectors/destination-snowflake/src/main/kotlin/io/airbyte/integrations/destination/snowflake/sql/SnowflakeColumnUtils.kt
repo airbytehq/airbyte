@@ -25,6 +25,7 @@ import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_LOADED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_DATA
@@ -49,6 +50,10 @@ internal val DEFAULT_COLUMNS =
         ),
         ColumnAndType(
             columnName = COLUMN_NAME_AB_EXTRACTED_AT,
+            columnType = "${SnowflakeDataType.TIMESTAMP_TZ.typeName} $NOT_NULL"
+        ),
+        ColumnAndType(
+            columnName = COLUMN_NAME_AB_LOADED_AT,
             columnType = "${SnowflakeDataType.TIMESTAMP_TZ.typeName} $NOT_NULL"
         ),
         ColumnAndType(
