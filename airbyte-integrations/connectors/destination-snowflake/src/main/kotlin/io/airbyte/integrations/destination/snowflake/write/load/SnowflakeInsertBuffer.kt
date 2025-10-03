@@ -28,6 +28,8 @@ internal const val CSV_QUOTE_CHARACTER = '"'
 internal val CSV_LINE_DELIMITER = LineDelimiter.LF
 internal const val DEFAULT_FLUSH_LIMIT = 1000
 
+private const val CSV_WRITER_BUFFER_SIZE = 1024 * 1024 // 1 MB
+
 class SnowflakeInsertBuffer(
     private val tableName: TableName,
     val columns: List<String>,
@@ -45,6 +47,7 @@ class SnowflakeInsertBuffer(
 
     private val csvWriterBuilder =
         CsvWriter.builder()
+            .bufferSize(CSV_WRITER_BUFFER_SIZE)
             .fieldSeparator(CSV_FIELD_SEPARATOR)
             .quoteCharacter(CSV_QUOTE_CHARACTER)
             .lineDelimiter(CSV_LINE_DELIMITER)
