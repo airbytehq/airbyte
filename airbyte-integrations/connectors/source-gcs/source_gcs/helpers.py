@@ -4,12 +4,15 @@
 
 
 import json
+import urllib.parse
+from datetime import timedelta
 from typing import Any
 
+import pytz
 from google.cloud import storage
 from google.oauth2 import credentials, service_account
 
-from airbyte_cdk.sources.file_based.remote_file import RemoteFile
+from airbyte_cdk.sources.file_based.remote_file import UploadableRemoteFile
 
 
 def get_gcs_client(config):
@@ -45,7 +48,7 @@ def get_stream_name(blob):
     return stream_name
 
 
-class GCSRemoteFile(RemoteFile):
+class GCSUploadableRemoteFile(UploadableRemoteFile):
     """
     Extends RemoteFile instance with displayed_uri attribute.
     displayed_uri is being used by Cursor to identify files with temporal local path in their uri attribute.
@@ -53,3 +56,30 @@ class GCSRemoteFile(RemoteFile):
 
     blob: Any
     displayed_uri: str = None
+
+    @property
+    def mime_type(self) -> str:
+        return ".".join(self.blob.name.split(".")[1:])
+
+    @property
+    def id(self) -> str:
+        return self.blob.id
+
+    @property
+    def size(self) -> int:
+        return self.blob.size
+
+    @property
+    def created_at(self) -> str:
+        return self.blob.time_created.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+
+    @property
+    def updated_at(self) -> str:
+        return self.blob.updated.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+
+    def download_to_local_directory(self, local_file_path: str) -> None:
+        self.blob.download_to_filename(local_file_path)
+
+    @property
+    def source_file_relative_path(self) -> str:
+        return urllib.parse.unquote(self.blob.path)
