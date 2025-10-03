@@ -16,10 +16,10 @@ While logged into the Airbyte UI, go to the `settings/applications` page, then c
 
 ## Step 2: Obtain an Access Token
 
-With your `client_id` and `client_secret` in hand, make the following API request, replacing `<YOUR_WEBAPP_URL>` with the URL you use to access the Airbyte UI:
+With your `client_id` and `client_secret` in hand, make the following API request, replacing `<YOUR_AIRBYTE_URL>` with the URL you use to access the Airbyte UI:
 
 ```yml
-POST <YOUR_WEBAPP_URL>/api/v1/applications/token
+POST <YOUR_AIRBYTE_URL>/api/v1/applications/token
 ```
 
 Ensure the following JSON Body is attached to the request, populated with your `client_id` and `client_secret`:
@@ -35,7 +35,7 @@ The API response should provide an `access_token` which is a Bearer Token valid 
 You may now make requests to any endpoint documented in our [Airbyte API Reference](https://reference.airbyte.com). For example, you may use the [List workspaces endpoint](https://reference.airbyte.com/reference/listworkspaces) to verify the list of workspaces in your organization. Ensure to include your `access_token` as a `Bearer Token` in your request.:
 
 ```yaml
-GET <YOUR_WEBAPP_URL>/api/public/v1/workspaces
+GET <YOUR_AIRBYTE_URL>/api/public/v1/workspaces
 ```
 
 Expect a response like the following:

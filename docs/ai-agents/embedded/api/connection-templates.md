@@ -20,20 +20,16 @@ You'll need the following to create a connection template:
 - The destination name: We'll automatically create a destination with the given name in your user's workspaces
 - (optional) A cron expression describing when to run syncs. The cron expression must follow the Quartz syntax. You can use [freeformatter.com](https://www.freeformatter.com/cron-expression-generator-quartz.html) to help validate the expression
 
-:::info
-S3 is the only destination we currently support for Airbyte Embedded.
-:::
 
 Here is an example request for creating a connection template:
 ```
-curl --request POST 'https://api.airbyte.ai/api/v1/integrations/connections/' \
+curl --request POST 'https://api.airbyte.ai/api/v1/integrations/templates/connections' \
   --header "Content-Type: application/json" \
-  --header "Authorization: Bearer <bearer_token>" -H 'Content-Type: application/json' \
+  --header "Authorization: Bearer <bearer_token>" \
   --data-raw '{
-    "destination_name": "s3", 
-    "cron_expression": "0 15 2 * * *",
     "organization_id": "<organization_id>",
-    "destination_actor_definition_id": "4816b78f-1489-44c1-9060-4b19d5fa9362",
+    "destination_name": "string",
+    "destination_definition_id": "<destination_definition_id>",
     "destination_config": {
       "access_key_id": "<aws_access_key>",
       "secret_access_key": "<aws_secret_key>",
@@ -47,10 +43,15 @@ curl --request POST 'https://api.airbyte.ai/api/v1/integrations/connections/' \
         },
         "flattening": "Root level flattening"
       }
-    }
+    },
+    "cron_expression": "string",
+    "non_breaking_changes_preference": "ignore",
+    "sync_on_create": true
   }'
 ```
 
 You can find the full connector specification in the [Connector Registry](https://connectors.airbyte.com/files/registries/v0/cloud_registry.json).
 
-You can find the [reference docs for creating a connection template here](https://api.airbyte.ai/api/v1/redoc#tag/Template-Connections/operation/create_integrations_templates_connections).
+Alternatively, if you want to view the full JSON for a given connector when creating a source or destination from scratch in Airbyte Cloud. After configuring the connector to your desired specifications (partially complete if you want an end user to complete the rest), you can select "Copy JSON". This will give you necessary details like the configuration and the `destination_definition_id`.
+
+You can find [the reference docs for creating a connection template here](https://api.airbyte.ai/api/v1/docs#tag/Template-Connections/operation/create_integrations_templates_connections).

@@ -3,7 +3,15 @@
 #
 
 
+import copy
 from enum import EnumMeta
+
+
+def deep_copy_params(to_call):
+    def f(*args, **kwargs):
+        return to_call(*copy.deepcopy(args), **copy.deepcopy(kwargs))
+
+    return f
 
 
 class CaseInsensitiveKeys(EnumMeta):

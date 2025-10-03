@@ -6,14 +6,35 @@ dockerRepository: airbyte/destination-hubspot
 
 This page guides you through the process of setting up the [HubSpot](https://www.hubspot.com/) destination connector. This connector supports [data activation](/platform/next/move-data/elt-data-activation) for operational workflows.
 
-:::info
-Data activation is in **early access**. Try it today with the HubSpot and Customer.io destinations in Airbyte Cloud or Self-Managed version 1.8 and later. If you'd like to be an early adopter, chat with the team, and share feedback, [fill out this form](https://form.typeform.com/to/STc7a0jx).
-:::
-
 ## Prerequisites
 
-- HubSpot Account
-- A version of the Airbyte platform version to be at least 1.8 or cloud
+- A HubSpot account
+- Airbyte version 1.8 or later, or Airbyte Cloud
+
+### S3 prerequisites for rejected records
+
+If you're using an S3 bucket to store rejected records, you also need the following.
+
+1. Allow connections from Airbyte to your AWS S3/Minio S3 cluster (if they exist in separate VPCs).
+2. [Enforce encryption of data in transit](https://docs.aws.amazon.com/AmazonS3/latest/userguide/security-best-practices.html#transit).
+3. An S3 bucket with credentials, a Role ARN, or an instance profile with read/write permissions configured for the host (EC2, EKS).
+
+    - These fields are always required:
+
+      - **S3 Bucket Name**
+      - **S3 Bucket Region**
+      - **Prefix Path in the Bucket**
+
+    - If you are using STS Assume Role, you must provide:
+
+      - **Role ARN**
+
+    - If you are using AWS credentials, you must provide:
+
+      - **Access Key ID**
+      - **Secret Access Key**
+
+    - If you are using an Instance Profile, you may omit the Access Key ID, Secret Access Key, and Role ARN.
 
 ## Setup guide
 
@@ -24,7 +45,7 @@ Data activation is in **early access**. Try it today with the HubSpot and Custom
 3. On the Set up the destination page, select HubSpot from the Destination tiles.
 4. Enter a name for the HubSpot connector.
 5. From the **Authentication** dropdown, OAuth authentication is available so click **Authenticate your HubSpot account** to sign in with HubSpot and authorize your account.
-   
+
    :::note HubSpot Authentication issues
    You may encounter an error during the authentication process in the popup window with the message `An invalid scope name was provided`. To resolve this, close the window and retry authentication.
    :::
@@ -78,11 +99,14 @@ Hubspot has **scopes** for each API call. Each stream is tied to a scope and wil
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                                    | Subject                    |
-|:--------|:-----------|:----------------------------------------------------------------|:---------------------------|
-| 0.0.4   | 2025-08-01 | [64144](https://github.com/airbytehq/airbyte/pull/64144)        | OSS release                |
-| 0.0.3   | 2025-07-18 | [205](https://github.com/airbytehq/airbyte-enterprise/pull/205) | Forcing new release        |
-| 0.0.2   | 2025-07-18 | [204](https://github.com/airbytehq/airbyte-enterprise/pull/204) | Fixing auth                |
-| 0.0.1   | 2025-07-18 | [201](https://github.com/airbytehq/airbyte-enterprise/pull/201) | First iteration internally |
+| Version | Date       | Pull Request                                                    | Subject                                   |
+|:--------|:-----------|:----------------------------------------------------------------|:------------------------------------------|
+| 0.0.7   | 2025-09-24 | [66684](https://github.com/airbytehq/airbyte/pull/66684)        | Pin to CDK artifact                       |
+| 0.0.6   | 2025-09-09 | [65986](https://github.com/airbytehq/airbyte/pull/65986)        | Adding product object                     |
+| 0.0.5   | 2025-09-08 | [65157](https://github.com/airbytehq/airbyte/pull/65157)        | Update following breaking changes on spec |
+| 0.0.4   | 2025-08-01 | [64144](https://github.com/airbytehq/airbyte/pull/64144)        | OSS release                               |
+| 0.0.3   | 2025-07-18 | [205](https://github.com/airbytehq/airbyte-enterprise/pull/205) | Forcing new release                       |
+| 0.0.2   | 2025-07-18 | [204](https://github.com/airbytehq/airbyte-enterprise/pull/204) | Fixing auth                               |
+| 0.0.1   | 2025-07-18 | [201](https://github.com/airbytehq/airbyte-enterprise/pull/201) | First iteration internally                |
 
 </details>

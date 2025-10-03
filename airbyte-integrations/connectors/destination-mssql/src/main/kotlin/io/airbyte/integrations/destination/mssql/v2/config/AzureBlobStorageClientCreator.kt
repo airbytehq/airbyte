@@ -24,6 +24,9 @@ object AzureBlobStorageClientCreator {
                         containerName = bulkLoadConfiguration.containerName,
                         sharedAccessSignature = bulkLoadConfiguration.sharedAccessSignature,
                         accountKey = bulkLoadConfiguration.accountKey,
+                        tenantId = null,
+                        clientId = null,
+                        clientSecret = null,
                     )
             }
         return AzureBlobStorageClientFactory(configProvider).make()

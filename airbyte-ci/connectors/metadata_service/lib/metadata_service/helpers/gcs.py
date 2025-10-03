@@ -10,9 +10,9 @@ from google.cloud import storage
 from google.oauth2 import service_account
 
 
-def get_gcs_storage_client() -> storage.Client:
+def get_gcs_storage_client(gcs_creds: Optional[str] = None) -> storage.Client:
     """Get the GCS storage client using credentials form GCS_CREDENTIALS env variable."""
-    gcs_creds = os.environ.get("GCS_CREDENTIALS")
+    gcs_creds = os.environ.get("GCS_CREDENTIALS") if not gcs_creds else gcs_creds
     if not gcs_creds:
         raise ValueError("Please set the GCS_CREDENTIALS env var.")
 

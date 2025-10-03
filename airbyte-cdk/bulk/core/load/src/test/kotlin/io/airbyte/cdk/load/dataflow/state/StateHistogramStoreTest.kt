@@ -29,7 +29,7 @@ class StateHistogramStoreTest {
         stateHistogramStore.acceptExpectedCounts(stateKey, 5L)
 
         val partitionHistogram = PartitionHistogram(ConcurrentHashMap())
-        repeat(5) { partitionHistogram.increment(partitionKey) }
+        repeat(5) { partitionHistogram.increment(partitionKey, 1) }
         stateHistogramStore.acceptFlushedCounts(partitionHistogram)
 
         // When
@@ -50,9 +50,9 @@ class StateHistogramStoreTest {
         stateHistogramStore.acceptExpectedCounts(stateKey, 15L) // 5 + 3 + 7 = 15
 
         val partitionHistogram = PartitionHistogram(ConcurrentHashMap())
-        repeat(5) { partitionHistogram.increment(partitionKey1) }
-        repeat(3) { partitionHistogram.increment(partitionKey2) }
-        repeat(7) { partitionHistogram.increment(partitionKey3) }
+        repeat(5) { partitionHistogram.increment(partitionKey1, 1) }
+        repeat(3) { partitionHistogram.increment(partitionKey2, 1) }
+        repeat(7) { partitionHistogram.increment(partitionKey3, 1) }
         stateHistogramStore.acceptFlushedCounts(partitionHistogram)
 
         // When
@@ -71,7 +71,7 @@ class StateHistogramStoreTest {
         stateHistogramStore.acceptExpectedCounts(stateKey, 10L)
 
         val partitionHistogram = PartitionHistogram(ConcurrentHashMap())
-        repeat(7) { partitionHistogram.increment(partitionKey) } // Less than expected
+        repeat(7) { partitionHistogram.increment(partitionKey, 1) } // Less than expected
         stateHistogramStore.acceptFlushedCounts(partitionHistogram)
 
         // When
@@ -90,7 +90,7 @@ class StateHistogramStoreTest {
         stateHistogramStore.acceptExpectedCounts(stateKey, 5L)
 
         val partitionHistogram = PartitionHistogram(ConcurrentHashMap())
-        repeat(8) { partitionHistogram.increment(partitionKey) } // More than expected
+        repeat(8) { partitionHistogram.increment(partitionKey, 1) } // More than expected
         stateHistogramStore.acceptFlushedCounts(partitionHistogram)
 
         // When
@@ -107,7 +107,7 @@ class StateHistogramStoreTest {
         val stateKey = StateKey(1L, listOf(partitionKey))
 
         val partitionHistogram = PartitionHistogram(ConcurrentHashMap())
-        repeat(5) { partitionHistogram.increment(partitionKey) }
+        repeat(5) { partitionHistogram.increment(partitionKey, 1) }
         stateHistogramStore.acceptFlushedCounts(partitionHistogram)
 
         // When
@@ -142,7 +142,7 @@ class StateHistogramStoreTest {
         stateHistogramStore.acceptExpectedCounts(stateKey, 3L)
 
         val partitionHistogram = PartitionHistogram(ConcurrentHashMap())
-        repeat(3) { partitionHistogram.increment(partitionKey1) }
+        repeat(3) { partitionHistogram.increment(partitionKey1, 1) }
         // partitionKey2 has no flushed counts, should be treated as 0
         stateHistogramStore.acceptFlushedCounts(partitionHistogram)
 
@@ -154,28 +154,34 @@ class StateHistogramStoreTest {
     }
 
     @Test
-    fun `remove should delete both expected and flushed counts for state key`() {
+    fun `remove should delete both expected and flushed counts for state key and return count`() {
         // Given
         val partitionKey1 = PartitionKey("partition-1")
         val partitionKey2 = PartitionKey("partition-2")
         val stateKey = StateKey(1L, listOf(partitionKey1, partitionKey2))
         val expectedCount = 10L
+        val bytes1 = 1000L
+        val bytes2 = 2000L
 
         stateHistogramStore.acceptExpectedCounts(stateKey, expectedCount)
 
-        val partitionHistogram = PartitionHistogram(ConcurrentHashMap())
-        repeat(5) { partitionHistogram.increment(partitionKey1) }
-        repeat(3) { partitionHistogram.increment(partitionKey2) }
-        stateHistogramStore.acceptFlushedCounts(partitionHistogram)
+        val partitionCountsHistogram = PartitionHistogram(ConcurrentHashMap())
+        repeat(5) { partitionCountsHistogram.increment(partitionKey1, 1) }
+        repeat(3) { partitionCountsHistogram.increment(partitionKey2, 1) }
+        stateHistogramStore.acceptFlushedCounts(partitionCountsHistogram)
+
+        val partitionBytesHistogram = PartitionHistogram(ConcurrentHashMap())
+        partitionBytesHistogram.increment(partitionKey1, bytes1)
+        partitionBytesHistogram.increment(partitionKey2, bytes2)
 
         // When
         val count = stateHistogramStore.remove(stateKey)
 
         // Then
+        assertEquals(expectedCount, count)
         assertFalse(
             stateHistogramStore.isComplete(stateKey)
         ) // Should be false due to missing expected count
-        assertEquals(expectedCount, count)
     }
 
     @Test
@@ -192,9 +198,9 @@ class StateHistogramStoreTest {
         stateHistogramStore.acceptExpectedCounts(stateKey2, 4L)
 
         val partitionHistogram = PartitionHistogram(ConcurrentHashMap())
-        repeat(5) { partitionHistogram.increment(partitionKey1) }
-        repeat(3) { partitionHistogram.increment(partitionKey2) }
-        repeat(4) { partitionHistogram.increment(partitionKey3) }
+        repeat(5) { partitionHistogram.increment(partitionKey1, 1) }
+        repeat(3) { partitionHistogram.increment(partitionKey2, 1) }
+        repeat(4) { partitionHistogram.increment(partitionKey3, 1) }
         stateHistogramStore.acceptFlushedCounts(partitionHistogram)
 
         // When
