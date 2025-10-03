@@ -1,0 +1,11 @@
+name: CDK Connector Compatibility Test
+
+on:
+  schedule:
+    - cron: "0 12 * * *"
+
+jobs:
+  cdk-connector-compatibility-test:
+    name: CDK Connector Compatibility Test
+    uses: airbytehq/airbyte/.github/workflows/cdk-connector-compatibility-test.yml@master
+    secrets: inherit
