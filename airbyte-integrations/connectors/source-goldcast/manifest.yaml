@@ -1087,6 +1087,8 @@ definitions:
                 type: string
               contact_job_title:
                 type: string
+              cs_webinar_follow_up:
+                type: string
           tags:
             type:
               - "null"
@@ -2872,6 +2874,8 @@ streams:
               tag_form_type:
                 type: string
               contact_job_title:
+                type: string
+              cs_webinar_follow_up:
                 type: string
           tags:
             type:
