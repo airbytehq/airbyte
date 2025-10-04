@@ -96,6 +96,7 @@ The Intercom connector should not run into Intercom API limitations under normal
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                          |
 |:-----------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|
+| 0.13.9 | 2025-09-04 | [62088](https://github.com/airbytehq/airbyte/pull/62088) | Add dataset_export stream for historical data export |
 | 0.13.8 | 2025-09-30 | [66789](https://github.com/airbytehq/airbyte/pull/66789) | Update dependencies |
 | 0.13.7 | 2025-09-25 | [66665](https://github.com/airbytehq/airbyte/pull/66665) | Fix Typo on Error Message |
 | 0.13.6 | 2025-09-09 | [66056](https://github.com/airbytehq/airbyte/pull/66056) | Update dependencies |
