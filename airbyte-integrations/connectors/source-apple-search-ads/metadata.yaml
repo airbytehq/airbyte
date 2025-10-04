@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e59c8416-c2fa-4bd3-9e95-52677ea281c1
-  dockerImageTag: 0.8.8
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-apple-search-ads
   githubIssueLabel: source-apple-search-ads
   icon: icon.svg
@@ -18,6 +18,13 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
+  releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: false
+    breakingChanges:
+      1.0.0:
+        message: Move adgroups_daily_reports and keywords_daily_reports to use a global_cursor_state`.
+        upgradeDeadline: "2025-10-31"
   documentationUrl: https://docs.airbyte.com/integrations/sources/apple-search-ads
   tags:
     - cdk:low-code
