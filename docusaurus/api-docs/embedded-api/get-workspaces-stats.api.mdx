@@ -1,0 +1,73 @@
+---
+id: get-workspaces-stats
+title: "Get Workspace Stats"
+description: "Get workspace statistics for the authenticated organization."
+sidebar_label: "Get Workspace Stats"
+hide_title: true
+hide_table_of_contents: true
+api: eJztWNtu3DYQ/RWCD00LaHd96fqiNydIUgNtEsQOWsA27FlyJDGhSIUcrbNd6N+LofaatdEg6OXFT7uShnOGw8PhHM4lQRllfiV/9+FTbEBhlDeZ1BhVMA0Z72QuXyOJ++V3EQnIRDIqisIHQRUKaKlCR0YBoRY+lODMn8Cjh9fu2r1HaoOLyVT51pHwhQBFZooCnBbGLR5WIHEoM+kbDMnJuZa5LJFu199vOYooMxlRtcHQTOZXc/nL5eW75wgBg8yvbrqbTDYQoEbCEJOBgxplLr8MNmMcGC0zaXimFYLGIDMZ8HNrAmqZF2AjZjKqCmuQ+VzSrGEfkYJxpcxk4UMNJHPZtsnRdu4u0KKiNHWO3rhyOz/iDSqMEcJMROMUijZiiEKBExO03pWCvKhbS6axuDU05YgMWY7mj8HbzRmda9n9p5FwrgPGxruIkbN0sLfHP1+F0CqGKFor3i+MZSaVd4SO2ByaxjKLjHejj5HHzDcy3wSmBJkeoefMbSLUxroYR1imNVzm5qwn14tk+HVW3rT1BMMGIdcc4xQuqfkNMOdLFv8d0AN0ZyjyBPYbcC7Z7hGQ/ptbQW0iMETv008+oqItll9tp3Nn4tvh3ayjWdWNC96Qq1XtOsb7+SESPActGBgjff/i18zUEtMwN3tbpN29vTO7bPXGtdYmii6j/m0xvMskhuBD8mkI67gLVRi0+nuBXqXBXfZPB3yrvP5uZy/Zg3jBHh5ixWrfNCZZyrUNhAAz+ZWnmGhYQGspld1vcLnDk8NdnrzyYWK0RvfEkieWJJYcHOyy5INrgk/n1sSi4CaEZk+EeSIMm48fOn7OHWFwYEXEMMUg0ryfGPPEmESZGqnyC7khWT5QJXM5gsaMpvujdTs1WusPZlGvLtpgWUMQNfloZL0CW/m426SdmTCZEYoL7yCIs3fnKSdLIXPBROsXfFPOrJLI7uVCj/DzpDfoUrNa+GS5mGQCYNu2riHM1tDPIsOKgBQMTjEKDQTCc6NfgS24c5z5NgjVRvI1qwCWaQWijsIQ64D0Gcok+lKXWVh/nxTJ9lyv3WWFCYz3FxgXxaHgmUQGQacbbxzF/NoNxN0yzVhPUGvUdzlbDFiHDApQrFjYE3mhvE1iRgXUHAPYONxyEXnqd7noNaQPaygeXiCpqp90EXy9QulfRd8GhVH8CI2J4gehg5li/EncG6pYPpnAkylM2QbUj4eQOvdewMa7XIC1SXs9HFENDkpc+V3IKhbP5yRMFAGVr2t0GjWbxwaVKWbJYeGt9fecnF69CuMSWFoiZsuy2+Ys393dzaC2125HMOZbku5ZFCxn04AUw72xVqCLbUBBFfQ6Mpiyoq1xHGsbUaergeWUl/gcmYKIfWgp4SYKEDUu9coj8vLanSdGCu/sTFQwReHdtlHGxExBLioApykF6h1mwlOF4d5E7C8hOLJkXICxw2tuMXkX95zdG54O92QmvwysL9OGWm/smI9GSrthE7we3uMkGsJBYSzGofL16GhvjHv7E3UwLo5x/xRODvD45+OTk9HR4eEYDk81nKjTowkcj8cHe5P98dHtr770wzgt0wZufKQa0nmzuKngq5eVxBIXi6Kztcfm66Pr/7qpWZQmwi80aiwYx5U6JW2+KKFXEhrDWd6XmdxQpZnsC+lNJlOtzK/kfD6BiB+C7Tp+/blFLl1XN5mcQjDc5qXini0va7jyapP6v/V1zaMZ+rfvYx7KxCecPXLpNAXbsn06JXuzM6WwoY1vO90Inxarc+r1y0uZSV7WjTNicSZkyz8bpzK42Ybv+by3uPSf0HWdXMZK/Cy7m67r/gLaYwiv
+sidebar_class_name: "get api-method"
+info_path: embedded-api///sonar
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Get Workspace Stats"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/api/v1/workspaces/stats"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Get workspace statistics for the authenticated organization.
+
+Returns the count of active and inactive workspaces.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"name":"x-organization-id","in":"header","required":false,"schema":{"type":"string","format":"uuid","description":"Select the working organization. Necessary since users can belong to multiple organizations.","title":"X-Organization-Id"},"description":"Select the working organization. Necessary since users can belong to multiple organizations."}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={undefined}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"properties":{"active_count":{"type":"integer","title":"Active Count","description":"Number of active workspaces"},"inactive_count":{"type":"integer","title":"Inactive Count","description":"Number of inactive workspaces"},"total_count":{"type":"integer","title":"Total Count","description":"Total number of workspaces"}},"type":"object","required":["active_count","inactive_count","total_count"],"title":"WorkspaceStatsResponse"}}}},"400":{"description":"Bad request","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"403":{"description":"Forbidden","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"422":{"description":"Unprocessable entity","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"500":{"description":"Internal server error","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}}}}
+>
+  
+</StatusCodes>
+
+
+      
