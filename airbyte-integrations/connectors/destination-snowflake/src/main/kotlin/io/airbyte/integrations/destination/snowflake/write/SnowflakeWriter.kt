@@ -20,7 +20,8 @@ import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
-import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
+import io.airbyte.integrations.destination.snowflake.db.escapeJsonIdentifier
+import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import jakarta.inject.Singleton
 
 @Singleton
@@ -30,13 +31,19 @@ class SnowflakeWriter(
     private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
     private val snowflakeClient: SnowflakeAirbyteClient,
     private val tempTableNameGenerator: TempTableNameGenerator,
+    private val snowflakeConfiguration: SnowflakeConfiguration,
 ) : DestinationWriter {
     private lateinit var initialStatuses: Map<DestinationStream, DirectLoadInitialStatus>
 
     override suspend fun setup() {
         names.values
             .map { (tableNames, _) -> tableNames.finalTableName!!.namespace }
-            .forEach { snowflakeClient.createNamespace(it.toSnowflakeCompatibleName()) }
+            .toSet()
+            .forEach { snowflakeClient.createNamespace(it) }
+
+        snowflakeClient.createNamespace(
+            escapeJsonIdentifier(snowflakeConfiguration.internalTableSchema)
+        )
 
         initialStatuses = stateGatherer.gatherInitialStatus(names)
     }
@@ -51,16 +58,29 @@ class SnowflakeWriter(
             0L ->
                 when (stream.importType) {
                     is Dedupe ->
-                        DirectLoadTableDedupStreamLoader(
-                            stream,
-                            initialStatus,
-                            realTableName = realTableName,
-                            tempTableName = tempTableName,
-                            columnNameMapping,
-                            snowflakeClient,
-                            snowflakeClient,
-                            streamStateStore,
-                        )
+                        if (!snowflakeConfiguration.legacyRawTablesOnly) {
+                            DirectLoadTableDedupStreamLoader(
+                                stream,
+                                initialStatus,
+                                realTableName = realTableName,
+                                tempTableName = tempTableName,
+                                columnNameMapping,
+                                snowflakeClient,
+                                snowflakeClient,
+                                streamStateStore,
+                            )
+                        } else {
+                            DirectLoadTableAppendStreamLoader(
+                                stream,
+                                initialStatus,
+                                realTableName = realTableName,
+                                tempTableName = tempTableName,
+                                columnNameMapping,
+                                snowflakeClient,
+                                snowflakeClient,
+                                streamStateStore,
+                            )
+                        }
                     else ->
                         DirectLoadTableAppendStreamLoader(
                             stream,
@@ -76,17 +96,30 @@ class SnowflakeWriter(
             stream.generationId ->
                 when (stream.importType) {
                     is Dedupe ->
-                        DirectLoadTableDedupTruncateStreamLoader(
-                            stream,
-                            initialStatus,
-                            realTableName = realTableName,
-                            tempTableName = tempTableName,
-                            columnNameMapping,
-                            snowflakeClient,
-                            snowflakeClient,
-                            streamStateStore,
-                            tempTableNameGenerator,
-                        )
+                        if (!snowflakeConfiguration.legacyRawTablesOnly) {
+                            DirectLoadTableDedupTruncateStreamLoader(
+                                stream,
+                                initialStatus,
+                                realTableName = realTableName,
+                                tempTableName = tempTableName,
+                                columnNameMapping,
+                                snowflakeClient,
+                                snowflakeClient,
+                                streamStateStore,
+                                tempTableNameGenerator,
+                            )
+                        } else {
+                            DirectLoadTableAppendTruncateStreamLoader(
+                                stream,
+                                initialStatus,
+                                realTableName = realTableName,
+                                tempTableName = tempTableName,
+                                columnNameMapping,
+                                snowflakeClient,
+                                snowflakeClient,
+                                streamStateStore,
+                            )
+                        }
                     else ->
                         DirectLoadTableAppendTruncateStreamLoader(
                             stream,

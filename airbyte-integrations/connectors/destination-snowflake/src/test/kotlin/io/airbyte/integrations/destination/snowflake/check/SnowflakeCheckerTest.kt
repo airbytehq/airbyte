@@ -7,6 +7,9 @@ package io.airbyte.integrations.destination.snowflake.check
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
+import io.airbyte.integrations.destination.snowflake.sql.DEFAULT_COLUMNS
+import io.airbyte.integrations.destination.snowflake.sql.RAW_DATA_COLUMN
+import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -20,19 +23,33 @@ internal class SnowflakeCheckerTest {
     @ParameterizedTest
     @ValueSource(booleans = [true, false])
     fun testSuccessfulCheck(isLegacyRawTablesOnly: Boolean) {
+        val defaultColumns =
+            if (isLegacyRawTablesOnly) {
+                (DEFAULT_COLUMNS + RAW_DATA_COLUMN).map { it.columnName }
+            } else {
+                DEFAULT_COLUMNS.map { it.columnName.toSnowflakeCompatibleName() }
+            }
         val snowflakeAirbyteClient: SnowflakeAirbyteClient =
-            mockk(relaxed = true) { coEvery { countTable(any()) } returns 1L }
+            mockk(relaxed = true) {
+                coEvery { countTable(any()) } returns 1L
+                coEvery { describeTable(any()) } returns defaultColumns
+            }
 
         val testSchema = "test-schema"
         val snowflakeConfiguration: SnowflakeConfiguration = mockk {
             every { schema } returns testSchema
             every { legacyRawTablesOnly } returns isLegacyRawTablesOnly
         }
+        val snowflakeColumnUtils =
+            mockk<SnowflakeColumnUtils>(relaxUnitFun = true) {
+                every { getFormattedDefaultColumnNames(any()) } returns defaultColumns
+            }
 
         val checker =
             SnowflakeChecker(
                 snowflakeAirbyteClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
+                snowflakeColumnUtils = snowflakeColumnUtils,
             )
         checker.check()
 
@@ -46,19 +63,33 @@ internal class SnowflakeCheckerTest {
     @ParameterizedTest
     @ValueSource(booleans = [true, false])
     fun testUnsuccessfulCheck(isLegacyRawTablesOnly: Boolean) {
+        val defaultColumns =
+            if (isLegacyRawTablesOnly) {
+                (DEFAULT_COLUMNS + RAW_DATA_COLUMN).map { it.columnName }
+            } else {
+                DEFAULT_COLUMNS.map { it.columnName.toSnowflakeCompatibleName() }
+            }
         val snowflakeAirbyteClient: SnowflakeAirbyteClient =
-            mockk(relaxed = true) { coEvery { countTable(any()) } returns 0L }
+            mockk(relaxed = true) {
+                coEvery { countTable(any()) } returns 0L
+                coEvery { describeTable(any()) } returns defaultColumns
+            }
 
         val testSchema = "test-schema"
         val snowflakeConfiguration: SnowflakeConfiguration = mockk {
             every { schema } returns testSchema
             every { legacyRawTablesOnly } returns isLegacyRawTablesOnly
         }
+        val snowflakeColumnUtils =
+            mockk<SnowflakeColumnUtils>(relaxUnitFun = true) {
+                every { getFormattedDefaultColumnNames(any()) } returns defaultColumns
+            }
 
         val checker =
             SnowflakeChecker(
                 snowflakeAirbyteClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
+                snowflakeColumnUtils = snowflakeColumnUtils,
             )
 
         assertThrows<IllegalArgumentException> { checker.check() }
