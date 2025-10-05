@@ -1,42 +1,48 @@
 # See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-youtube-analytics:dev
-tests:
+acceptance-tests:
   spec:
-    - spec_path: "source_youtube_analytics/spec.json"
+    tests:
+      - spec_path: "source_youtube_analytics/spec.json"
   connection:
-    - config_path: "secrets/config.json"
-      status: "succeed"
-    - config_path: "integration_tests/invalid_config.json"
-      status: "exception"
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "exception"
   discovery:
-    - config_path: "secrets/config.json"
-      backward_compatibility_tests_config:
-        disable_for_version: "0.1.0"
+    tests:
+      - config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          disable_for_version: "0.1.0"
   basic_read:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      timeout_seconds: 1200
-      empty_streams:
-        - channel_annotations_a2
-        - channel_cards_a2
-        - channel_demographics_a1
-        - channel_end_screens_a2
-        - channel_sharing_service_a2
-        - channel_province_a3
-        - playlist_basic_a2
-        - playlist_combined_a2
-        - playlist_device_os_a2
-        - playlist_playback_location_a2
-        - playlist_province_a2
-        - playlist_traffic_source_a2
-      fail_on_extra_columns: false
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        timeout_seconds: 1200
+        empty_streams:
+          - channel_annotations_a2
+          - channel_cards_a2
+          - channel_demographics_a1
+          - channel_end_screens_a2
+          - channel_sharing_service_a2
+          - channel_province_a3
+          - playlist_basic_a2
+          - playlist_combined_a2
+          - playlist_device_os_a2
+          - playlist_playback_location_a2
+          - playlist_province_a2
+          - playlist_traffic_source_a2
+        fail_on_extra_columns: false
   incremental:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      future_state_path: "integration_tests/abnormal_state.json"
-      timeout_seconds: 7200
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        future_state_path: "integration_tests/abnormal_state.json"
+        timeout_seconds: 7200
   full_refresh:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      timeout_seconds: 3600
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        timeout_seconds: 3600
