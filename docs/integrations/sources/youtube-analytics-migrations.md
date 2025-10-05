@@ -21,7 +21,7 @@ The YouTube Analytics Bulk Reports API made changes one of which is  create new 
     1. Ensure the **Reset affected streams** option is checked.
         > [!NOTE]  
         > Depending on destination type you may not be prompted to reset your data.
-4. Select **Save connection**. 
+4. Select **Save connection**.
     > [!NOTE]  
     > This will reset the data in your destination and initiate a fresh sync.
 
