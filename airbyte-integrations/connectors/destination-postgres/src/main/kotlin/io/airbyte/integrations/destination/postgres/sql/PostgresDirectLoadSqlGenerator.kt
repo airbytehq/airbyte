@@ -56,4 +56,20 @@ class PostgresDirectLoadSqlGenerator {
     @Suppress("UNUSED_PARAMETER")
     fun getGenerationId(tableName: TableName): String =
         TODO("PostgresDirectLoadSqlGenerator.getGenerationId not yet implemented")
+
+    fun showColumns(tableName: TableName): String =
+        """
+        SELECT column_name
+        FROM information_schema.columns
+        WHERE table_schema = '${tableName.namespace}'
+          AND table_name = '${tableName.name}'
+        ORDER BY ordinal_position
+        """.trimIndent()
+
+    fun copyFromCsv(tableName: TableName, filePath: String): String =
+        """
+        COPY "${tableName.namespace}"."${tableName.name}"
+        FROM '$filePath'
+        WITH (FORMAT csv)
+        """.trimIndent()
 }

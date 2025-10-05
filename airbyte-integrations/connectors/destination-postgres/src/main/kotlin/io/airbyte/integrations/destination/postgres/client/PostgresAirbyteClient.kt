@@ -109,6 +109,28 @@ class PostgresAirbyteClient(
             0L
         }
 
+    fun describeTable(tableName: TableName): List<String> =
+        dataSource.connection.use { connection ->
+            val resultSet =
+                connection.createStatement().executeQuery(sqlGenerator.showColumns(tableName))
+            val columns = mutableListOf<String>()
+            while (resultSet.next()) {
+                columns.add(resultSet.getString("column_name"))
+            }
+            return columns
+        }
+
+    fun copyFromCsv(tableName: TableName, filePath: String) {
+        dataSource.connection.use { connection ->
+            val copyManager = connection.unwrap(org.postgresql.core.BaseConnection::class.java)
+                .getCopyAPI()
+            val sql = sqlGenerator.copyFromCsv(tableName, filePath)
+            java.io.FileInputStream(filePath).use { fileInputStream ->
+                copyManager.copyIn(sql, fileInputStream)
+            }
+        }
+    }
+
     internal fun execute(query: String) =
         dataSource.connection.use { connection -> connection.createStatement().executeQuery(query) }
 }
