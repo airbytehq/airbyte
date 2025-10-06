@@ -137,7 +137,6 @@ internal class SnowflakeValueCoercerTest {
 
     @Test
     fun testInvalidInteger() {
-        // Test integer that exceeds the 38 9s limit
         val integerValue = IntegerValue(INT_MAX.plus(BigInteger.ONE))
         val airbyteValue =
             EnrichedAirbyteValue(
@@ -533,7 +532,6 @@ internal class SnowflakeValueCoercerTest {
 
     @Test
     fun testStringJustUnderSizeLimit() {
-        // Test string that is just under the 33554432 character quick-check limit
         val largeString = StringValue("a".repeat(VARCHAR_AND_VARIANT_LIMIT_BYTES))
         val airbyteValue =
             EnrichedAirbyteValue(
