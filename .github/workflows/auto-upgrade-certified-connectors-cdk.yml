@@ -109,7 +109,7 @@ jobs:
           commit-message: "chore: upgrade bulk CDK for ${{ matrix.connector }}"
           branch: "auto-upgrade-jvm-bulk-cdk/${{ steps.upgrade-cdk.outputs.new_cdk_version }}/${{ matrix.connector }}"
           delete-branch: true
-          title: "chore: upgrade ${{ matrix.connector }} to bulk CDK ${{ steps.upgrade-cdk.outputs.new_cdk_version }}"
+          title: "[TEST] chore: upgrade ${{ matrix.connector }} to bulk CDK ${{ steps.upgrade-cdk.outputs.new_cdk_version }}"
           body: |
             Upgrade Bulk CDK version for `${{ matrix.connector }}`
 
@@ -144,6 +144,6 @@ jobs:
           git push origin "$branch_name"
 
       # We've pushed all the changes to the PR. Mark it ready for review.
-      - name: Ready for review
-        if: steps.check-changes.outputs.has_changes == 'true'
-        run: gh pr ready "$pr_number"
+      # - name: Ready for review
+      #   if: steps.check-changes.outputs.has_changes == 'true'
+      #   run: gh pr ready "$pr_number"
