@@ -13,5 +13,6 @@ Currently supported 'flavors': Incremental
 
 | Version | Date       | Pull Request                                             | Subject                            |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------|
+| 0.1.1 | 2025-10-06 | [67091](https://github.com/airbytehq/airbyte/pull/67091) | Upgrade to Bulk CDK 0.1.46. |
 | 0.1.0   | 2025-09-16 | [66331](https://github.com/airbytehq/airbyte/pull/66331) | Creation of initial DataGen Source |
 </details>
