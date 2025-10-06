@@ -1,32 +1,13 @@
 name: Auto Upgrade CDK for Certified Connectors
 on:
   schedule:
-    # Cron doesn't have a good way to specify "every X weeks" or "the first Monday of every month",
-    # so we'll just run every Monday at 16:00 UTC.
-    # The `limit-run-frequency` job has logic to limit this
-    # to only actually _do_ anything every on the first Monday of the month.
-    - cron: "0 16 * * 1"
+    # Run at 16:37 UTC on the first of every month
+    - cron: "37 16 1 * *"
   workflow_dispatch:
   workflow_call:
 
 jobs:
-  limit-run-frequency:
-    runs-on: ubuntu-latest
-    outputs:
-      is_valid_run: ${{ steps.check.outputs.is_valid_run }}
-    steps:
-      - id: check
-        # If the day-of-month is <= 7, then we're in the first week of the month.
-        # This workflow only runs on Mondays, so that would imply it's the first monday of the month.
-        run: |
-          if test $(date +%d) -le 7; then
-            echo "is_valid_run=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "is_valid_run=false" >> "$GITHUB_OUTPUT"
-          fi
   list-certified-connectors:
-    needs: limit-run-frequency
-    if: ${{ needs.limit-run-frequency.outputs.is_valid_run == 'true' }}
     name: List Certified Connectors
     runs-on: ubuntu-24.04
     outputs:
