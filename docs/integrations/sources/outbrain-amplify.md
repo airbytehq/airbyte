@@ -1,4 +1,4 @@
-****# Outbrain Amplify
+# Outbrain Amplify
 
 ## Sync overview
 
