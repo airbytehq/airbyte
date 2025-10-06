@@ -25,7 +25,12 @@ _REMOVED_FIELDS = ["conversion_lead_rate", "cost_per_conversion_lead", "adset_st
 adjusted_ads_insights_fields = {key: value for key, value in AdsInsights.Field.__dict__.items() if key not in _REMOVED_FIELDS}
 ValidFields = Enum("ValidEnums", adjusted_ads_insights_fields)
 
-ValidBreakdowns = Enum("ValidBreakdowns", AdsInsights.Breakdowns.__dict__)
+# Copy public breakdowns from the library
+base_breakdowns = dict(AdsInsights.Breakdowns.__dict__)
+
+# Add the missing one: https://github.com/airbytehq/oncall/issues/9525
+base_breakdowns["user_segment_key"] = "user_segment_key"
+ValidBreakdowns = Enum("ValidBreakdowns", base_breakdowns)
 ValidActionBreakdowns = Enum("ValidActionBreakdowns", AdsInsights.ActionBreakdowns.__dict__)
 ValidCampaignStatuses = Enum("ValidCampaignStatuses", Campaign.EffectiveStatus.__dict__)
 ValidAdSetStatuses = Enum("ValidAdSetStatuses", AdSet.EffectiveStatus.__dict__)
