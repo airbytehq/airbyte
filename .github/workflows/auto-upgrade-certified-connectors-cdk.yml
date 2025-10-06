@@ -22,31 +22,9 @@ jobs:
       - name: List certified connectors
         id: list-connectors
         run: |
-          # datagen and dev-null aren't certified, but we should probably keep them on the latest CDK anyway
-          connectors=(destination-dev-null source-datagen)
-          for dir in airbyte-integrations/connectors/*; do
-            metadata_file="${dir}/metadata.yaml"
-            build_gradle="${dir}/build.gradle"
-            build_gradle_kts="${dir}/build.gradle.kts"
-
-            # If metadata.yaml exists and says we're certified
-            if (test -f "$metadata_file") && (test $(yq '.data.supportLevel' "$metadata_file") = 'certified'); then
-              # If we have a gradle buildscript using the bulk connector plugin
-              if (test -f "$build_gradle" && grep -q "airbyte-bulk-connector" "$build_gradle") || \
-                  (test -f "$build_gradle_kts" && grep -q "airbyte-bulk-connector" "$build_gradle_kts"); then
-                connector_name=$(basename "$dir")
-                connectors+=("$connector_name")
-              fi
-            fi
-          done
-
-          # Nonobvious `printf | jq | jq` thing here:
-          # Print each element of the array on a separate line
-          # -> jq converts each line to a JSON string (i.e. wrap in double quotes)
-          # -> jq reads those lines and wraps them into a JSON array (compact-output is needed for compatibility with github's output format)
-          json_array=$(printf '%s\n' "${connectors[@]}" | jq --raw-input . | jq --compact-output --slurp .)
+          json_array=$(tools/bin/bulk-cdk-auto-upgrade/list-connectors-to-upgrade.sh)
           echo "connectors=$json_array" >> $GITHUB_OUTPUT
-          echo "Found ${#connectors[@]} certified bulk CDK connectors"
+          echo "Found bulk CDK connectors to upgrade: $json_array"
 
   upgrade-connector-cdk:
     name: Upgrade CDK for ${{ matrix.connector }}
@@ -95,6 +73,7 @@ jobs:
       - name: Run upgradeCdk for ${{ matrix.connector }}
         id: upgrade-cdk
         run: |
+          set -euo pipefail
           ./gradlew :airbyte-integrations:connectors:${{ matrix.connector }}:upgradeCdk
           # --quiet disables all of gradle's normal logging, so we only get the CDK version number
           new_cdk_version=$(./gradlew :airbyte-integrations:connectors:${{ matrix.connector }}:getCdkVersion --quiet)
@@ -116,24 +95,9 @@ jobs:
         id: bump-version
         if: steps.check-changes.outputs.has_changes == 'true'
         run: |
-          metadata_file="airbyte-integrations/connectors/${{ matrix.connector }}/metadata.yaml"
-
-          # Extract current version
-          current_version=$(yq '.data.dockerImageTag' "$metadata_file")
-          echo "Current version: $current_version"
-
-          # Parse version components
-          IFS='.' read -r major minor patch <<< "$current_version"
-
-          # Increment patch version
-          new_patch=$((patch + 1))
-          new_version="${major}.${minor}.${new_patch}"
-          echo "New version: $new_version"
-
-          # Update metadata.yaml
-          yq --inplace --prettyPrint ".data.dockerImageTag = \"${new_version}\"" "$metadata_file"
-
-          echo "Updated dockerImageTag from $current_version to $new_version"
+          set -euo pipefail
+          new_version=$(tools/bin/bulk-cdk-auto-upgrade/bump-connector-metadata.sh "${{ matrix.connector }}")
+          echo "Updated dockerImageTag to $new_version"
           echo "new_version=$new_version" >> $GITHUB_OUTPUT
 
       - name: Create Pull Request
@@ -157,61 +121,29 @@ jobs:
           # We'll rely on CODEOWNERS to tag the right people.
           reviewers: ""
           # Submit as draft: true, because we need to push another commit to this branch to update the changelog.
-          # There's a `gh pr ready` at the bottom of that step to switch to ready-for-review.
+          # The `ready for review` step is where we switch the PR out of draft mode.
           draft: true
 
+      # Update the connector changelog and push the commit to the new branch
       - name: Update connector changelog
         if: steps.check-changes.outputs.has_changes == 'true'
         run: |
-          # Convert connector name to docs path:
-          # destination-dev-null -> docs/integrations/destinations/dev-null.md
-          # source-postgres -> docs/integrations/sources/postgres.md
-          connector_type=$(echo "${{ matrix.connector }}" | cut -d'-' -f1)
-          connector_name=$(echo "${{ matrix.connector }}" | cut -d'-' -f2-)
-          docs_file="docs/integrations/${connector_type}s/${connector_name}.md"
-
-          if ! test -f "$docs_file"; then
-            echo "Docs file not found at $docs_file. This connector is probably doing something weird." >&2
-            exit 1
-          fi
-
-          new_version="${{ steps.bump-version.outputs.new_version }}"
-          pr_number="${{ steps.create-pr.outputs.pull-request-number }}"
-          # YYYY-MM-DD format
-          today=$(date +%Y-%m-%d)
-
-          new_entry="| ${new_version} | ${today} | [${pr_number}](https://github.com/airbytehq/airbyte/pull/${pr_number}) | Upgrade to Bulk CDK ${{ steps.upgrade-cdk.outputs.new_cdk_version }}. |"
-
-          # Find the changelog table and insert the new entry after the header row
-          # The changelog table starts with a header row (`| Version | Date | Pull Request | Subject |`),
-          # followed by a separator line.
-          # We want to insert the new entry after the separator line.
-          # The awk script is doing exactly that:
-          # When it sees a line matching the changelog header row, awk prints that line and sets the `header` flag.
-          # If the `header` flag is set and awk sees the separator line, awk prints the separator followed by the new changelog entry.
-          # Otherwise, awk just prints the line unchanged.
-          awk -v entry="$new_entry" '
-            /^\| Version *\| Date *\| Pull Request *\| Subject *\|$/ { print; header=1; next }
-            header && /^\|:?-+\|:?-+\|:?-+\|:?-+\|$/ { print; print entry; header=0; next }
-            { print }
-          ' "$docs_file" > "${docs_file}.tmp"
-
-          if cmp -s "$docs_file" "${docs_file}.tmp"; then
-            echo "Error: awk command made no edits to $docs_file. Changelog table may not exist or has unexpected format." >&2
-            exit 1
-          fi
-
-          mv "${docs_file}.tmp" "$docs_file"
-
-          echo "Added changelog entry to $docs_file"
+          set -euo pipefail
+          tools/bin/bulk-cdk-auto-upgrade/populate-connector-changelog.sh \
+            "${{ matrix.connector }}" \
+            "${{ steps.bump-version.outputs.new_version }}" \
+            "${{ steps.create-pr.outputs.pull-request-number }}" \
+            "Upgrade to Bulk CDK ${{ steps.upgrade-cdk.outputs.new_cdk_version }}."
 
           # Commit and push the changelog changes
           branch_name="${{ steps.create-pr.outputs.pull-request-branch }}"
           git fetch --depth=1 origin "$branch_name"
           git checkout "$branch_name"
-          git add "$docs_file"
+          git add docs
           git commit -m "update changelog for ${{ matrix.connector }}"
           git push origin "$branch_name"
 
-          # Mark the PR as ready for review
-          gh pr ready "$pr_number"
+      # We've pushed all the changes to the PR. Mark it ready for review.
+      - name: Ready for review
+        if: steps.check-changes.outputs.has_changes == 'true'
+        run: gh pr ready "$pr_number"
