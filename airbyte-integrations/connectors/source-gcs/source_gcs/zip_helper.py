@@ -8,7 +8,7 @@ from typing import Iterable
 
 from google.cloud.storage.blob import Blob
 
-from source_gcs.helpers import GCSRemoteFile
+from source_gcs.helpers import GCSUploadableRemoteFile
 
 
 logger = logging.getLogger("airbyte")
@@ -17,7 +17,7 @@ logger = logging.getLogger("airbyte")
 class ZipHelper:
     BUFFER_SIZE_DEFAULT = 1024 * 1024
 
-    def __init__(self, blob: Blob, zip_file: GCSRemoteFile, tmp_dir: tempfile.TemporaryDirectory):
+    def __init__(self, blob: Blob, zip_file: GCSUploadableRemoteFile, tmp_dir: tempfile.TemporaryDirectory):
         self._blob = blob
         self._size = blob.size
         self._tmp_dir = tmp_dir
@@ -42,16 +42,17 @@ class ZipHelper:
             with zipfile.ZipFile(bytes_io, "r") as zf:
                 zf.extractall(self._tmp_dir.name)
 
-    def get_gcs_remote_files(self) -> Iterable[GCSRemoteFile]:
+    def get_gcs_remote_files(self) -> Iterable[GCSUploadableRemoteFile]:
         self._extract_files_to_tmp_directory(self._chunk_download())
 
         for unzipped_file in os.listdir(self._tmp_dir.name):
             logger.info(f"Picking up file {unzipped_file.split('/')[-1]} from zip archive {self._blob.public_url}.")
             file_extension = unzipped_file.split(".")[-1]
 
-            yield GCSRemoteFile(
+            yield GCSUploadableRemoteFile(
                 uri=os.path.join(self._tmp_dir.name, unzipped_file),  # uri to temporal local file
                 last_modified=self._zip_file.last_modified,
                 mime_type=file_extension,
                 displayed_uri=self._zip_file.uri,  # uri to remote file .zip
+                blob=self._blob,
             )
