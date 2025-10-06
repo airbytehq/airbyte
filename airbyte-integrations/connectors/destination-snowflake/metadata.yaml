@@ -35,6 +35,7 @@ data:
     jobSpecific:
       - jobType: sync
         resourceRequirements:
+          memory_limit: 2Gi
           memory_request: 2Gi
   supportLevel: certified
   supportsDbt: true
