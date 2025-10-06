@@ -17,7 +17,6 @@ from .models import CustomerModel
 from .streams import (
     CustomerClient,
 )
-from .utils import logger
 
 
 class SourceGoogleAds(YamlDeclarativeSource):

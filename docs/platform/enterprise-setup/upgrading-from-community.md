@@ -73,36 +73,28 @@ kind: Ingress
 metadata:
   name: # ingress name, example: enterprise-demo
   annotations:
-    ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   ingressClassName: nginx
   rules:
-    - host: # host, example: enterprise-demo.airbyte.com
+    - host: airbyte.example.com # replace with your host
       http:
         paths:
           - backend:
               service:
-                # format is ${RELEASE_NAME}-airbyte-webapp-svc
-                name: airbyte-enterprise-airbyte-webapp-svc
+                # format is ${RELEASE_NAME}-airbyte-connector-builder-server-svc
+                name: airbyte-enterprise-airbyte-connector-builder-server-svc
                 port:
                   number: 80 # service port, example: 8080
-            path: /
+            path: /api/v1/connector_builder/
             pathType: Prefix
           - backend:
               service:
-                # format is ${RELEASE_NAME}-airbyte-keycloak-svc
-                name: airbyte-enterprise-airbyte-keycloak-svc
-                port:
-                  number: 8180
-            path: /auth
-            pathType: Prefix
-          - backend:
-              service:
-                # format is ${RELEASE_NAME}-airbyte--server-svc
+                # format is ${RELEASE_NAME}-airbyte-server-svc
                 name: airbyte-enterprise-airbyte-server-svc
                 port:
-                  number: 8001
-            path: /api/public
+                  number: 8001 # service port, example: 8080
+            path: /
             pathType: Prefix
 ```
 
