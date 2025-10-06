@@ -43,8 +43,8 @@ class SnowflakeInsertAcceptanceTest :
         recordMapper = SnowflakeExpectedRecordMapper,
     ) {
     @Test
-    override fun testBasicWrite() {
-        super.testBasicWrite()
+    override fun testFunkyCharactersDedup() {
+        super.testFunkyCharactersDedup()
     }
 }
 
@@ -62,8 +62,8 @@ class SnowflakeRawInsertAcceptanceTest :
         coercesLegacyUnions = false,
     ) {
     @Test
-    override fun testBasicWrite() {
-        super.testBasicWrite()
+    override fun testFunkyCharacters() {
+        super.testFunkyCharacters()
     }
 }
 
@@ -130,7 +130,7 @@ fun stringToMeta(metaAsString: String?): OutputRecord.Meta? {
         (metaJson["changes"] as ArrayNode).map { change ->
             val changeNode = change as JsonNode
             Meta.Change(
-                field = changeNode["field"].textValue(),
+                field = changeNode["field"].textValue().uppercase(),
                 change =
                     AirbyteRecordMessageMetaChange.Change.fromValue(
                         changeNode["change"].textValue()

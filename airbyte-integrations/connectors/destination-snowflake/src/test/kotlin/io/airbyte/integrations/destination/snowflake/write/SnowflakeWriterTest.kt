@@ -53,14 +53,13 @@ internal class SnowflakeWriterTest {
                 stateGatherer = stateGatherer,
                 streamStateStore = mockk(),
                 snowflakeClient = snowflakeClient,
-                tempTableNameGenerator = mockk()
+                tempTableNameGenerator = mockk(),
+                snowflakeConfiguration = mockk(relaxed = true),
             )
 
         runBlocking { writer.setup() }
 
-        coVerify(exactly = 1) {
-            snowflakeClient.createNamespace(tableName.namespace.toSnowflakeCompatibleName())
-        }
+        coVerify(exactly = 1) { snowflakeClient.createNamespace(tableName.namespace) }
         coVerify(exactly = 1) { stateGatherer.gatherInitialStatus(catalog) }
     }
 
@@ -100,7 +99,8 @@ internal class SnowflakeWriterTest {
                 stateGatherer = stateGatherer,
                 streamStateStore = mockk(),
                 snowflakeClient = snowflakeClient,
-                tempTableNameGenerator = tempTableNameGenerator
+                tempTableNameGenerator = tempTableNameGenerator,
+                snowflakeConfiguration = mockk(relaxed = true),
             )
 
         runBlocking {
@@ -146,7 +146,8 @@ internal class SnowflakeWriterTest {
                 stateGatherer = stateGatherer,
                 streamStateStore = mockk(),
                 snowflakeClient = snowflakeClient,
-                tempTableNameGenerator = tempTableNameGenerator
+                tempTableNameGenerator = tempTableNameGenerator,
+                snowflakeConfiguration = mockk(relaxed = true),
             )
 
         runBlocking {
@@ -191,7 +192,8 @@ internal class SnowflakeWriterTest {
                 stateGatherer = stateGatherer,
                 streamStateStore = mockk(),
                 snowflakeClient = snowflakeClient,
-                tempTableNameGenerator = tempTableNameGenerator
+                tempTableNameGenerator = tempTableNameGenerator,
+                snowflakeConfiguration = mockk(relaxed = true),
             )
 
         runBlocking {
@@ -219,7 +221,8 @@ internal class SnowflakeWriterTest {
                 stateGatherer = stateGatherer,
                 streamStateStore = mockk(),
                 snowflakeClient = snowflakeClient,
-                tempTableNameGenerator = mockk()
+                tempTableNameGenerator = mockk(),
+                snowflakeConfiguration = mockk(),
             )
 
         // Simulate network failure during namespace creation
@@ -249,7 +252,8 @@ internal class SnowflakeWriterTest {
                 stateGatherer = stateGatherer,
                 streamStateStore = mockk(),
                 snowflakeClient = snowflakeClient,
-                tempTableNameGenerator = mockk()
+                tempTableNameGenerator = mockk(),
+                snowflakeConfiguration = mockk(),
             )
 
         // Simulate failure while gathering initial status
@@ -259,9 +263,7 @@ internal class SnowflakeWriterTest {
         assertThrows(RuntimeException::class.java) { runBlocking { writer.setup() } }
 
         // Verify namespace creation was still attempted
-        coVerify(exactly = 1) {
-            snowflakeClient.createNamespace(tableName.namespace.toSnowflakeCompatibleName())
-        }
+        coVerify(exactly = 1) { snowflakeClient.createNamespace(tableName.namespace) }
     }
 
     @Test
@@ -302,7 +304,8 @@ internal class SnowflakeWriterTest {
                 stateGatherer = stateGatherer,
                 streamStateStore = mockk(),
                 snowflakeClient = snowflakeClient,
-                tempTableNameGenerator = mockk()
+                tempTableNameGenerator = mockk(),
+                snowflakeConfiguration = mockk(relaxed = true),
             )
 
         runBlocking {
@@ -319,39 +322,6 @@ internal class SnowflakeWriterTest {
         // TableNames constructor throws IllegalStateException when both names are null
         assertThrows(IllegalStateException::class.java) {
             TableNames(rawTableName = null, finalTableName = null)
-        }
-    }
-
-    @Test
-    fun testSetupWithEmptyNamespaceInFinalTable() {
-        val tableName = TableName(namespace = "", name = "test-name")
-        val tableNames = TableNames(rawTableName = null, finalTableName = tableName)
-        val stream = mockk<DestinationStream>()
-        val tableInfo =
-            TableNameInfo(
-                tableNames = tableNames,
-                columnNameMapping = ColumnNameMapping(emptyMap())
-            )
-        val catalog = TableCatalog(mapOf(stream to tableInfo))
-        val snowflakeClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
-        val stateGatherer =
-            mockk<DatabaseInitialStatusGatherer<DirectLoadInitialStatus>> {
-                coEvery { gatherInitialStatus(any()) } returns emptyMap()
-            }
-        val writer =
-            SnowflakeWriter(
-                names = catalog,
-                stateGatherer = stateGatherer,
-                streamStateStore = mockk(),
-                snowflakeClient = snowflakeClient,
-                tempTableNameGenerator = mockk()
-            )
-
-        // Should handle empty namespace gracefully by converting to default name
-        runBlocking {
-            writer.setup()
-            // Verify it attempted to create namespace with a generated default name
-            coVerify { snowflakeClient.createNamespace(match { it.startsWith("default_name_") }) }
         }
     }
 
@@ -382,10 +352,12 @@ internal class SnowflakeWriterTest {
                 stateGatherer = stateGatherer,
                 streamStateStore = mockk(),
                 snowflakeClient = snowflakeClient,
-                tempTableNameGenerator = mockk()
+                tempTableNameGenerator = mockk(),
+                snowflakeConfiguration = mockk(),
             )
 
-        // First namespace succeeds, second fails
+        // First namespace succeeds, second fails (namespaces are uppercased by
+        // toSnowflakeCompatibleName)
         coEvery { snowflakeClient.createNamespace("namespace1") } returns Unit
         coEvery { snowflakeClient.createNamespace("namespace2") } throws
             RuntimeException("Connection timeout")
