@@ -16,7 +16,7 @@ This guide is for administrators. It assumes you have:
 
 - Basic knowledge of Okta, OpenID Connect (OIDC), and Airbyte
 - The permissions to manage Okta in your organization
-- The permissions to manage Airbyte in your organization
+- Organization admin permissions for Airbyte
 
 The exact process differs between the Cloud or Self-Managed versions of Airbyte. Steps for both are below.
 
@@ -60,15 +60,17 @@ Follow these steps to set up SSO in Airbyte Cloud.
 
     - Leave other values as defaults unless you have a reason to change them.
 
-3. Click **Save**.
+4. Click **Save**.
 
 #### Configure SSO in Airbyte
 
-1. In Airbyte, click **Settings**.
+1. In Airbyte, click **Organization settings** > **General**.
 
-2. Under **Organization**, click **General**.
+    :::info
+    Currently, this portion of the setup can only be done by an Airbyte employee. Contact Support to proceed.
+    :::
 
-3. Click **Set up SSO**, then input the following information.
+2. Click **Set up SSO**, then input the following information.
 
     - **Email domain**: The full email domain of users who sign in to Okta. For example, `airbyte.io`.
 
@@ -90,9 +92,9 @@ Follow these steps to set up SSO in Airbyte Cloud.
 
       - It's often your organization name or domain. For example, `airbyte`.
 
-4. Click **Save changes**.
+3. Click **Save changes**.
 
-5. Test SSO to make sure people can access Airbyte. **Stay logged in so you don't lock yourself out** and ask a colleague to complete the following steps.
+4. Test SSO to make sure people can access Airbyte. **Stay logged in so you don't lock yourself out** and ask a colleague to complete the following steps.
 
     1. Sign out of Airbyte.
 

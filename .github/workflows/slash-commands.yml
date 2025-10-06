@@ -37,6 +37,7 @@ jobs:
           commands: |
             approve-regression-tests
             bump-bulk-cdk-and-release-connectors
+            bump-bulk-cdk-version
             bump-cdk-version-and-merge
             bump-version
             build-connector-images

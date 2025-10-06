@@ -3,8 +3,6 @@
 #
 
 
-import logging
-import re
 from collections import namedtuple
 from unittest.mock import MagicMock, Mock, call
 
@@ -15,8 +13,18 @@ from source_google_ads.models import CustomerModel
 from source_google_ads.source import SourceGoogleAds
 from source_google_ads.streams import chunk_date_range
 
-from airbyte_cdk import AirbyteTracedException
-from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, FailureType, SyncMode
+from airbyte_cdk import Record
+from airbyte_cdk.models import (
+    AirbyteStream,
+    AirbyteStreamStatus,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    DestinationSyncMode,
+    SyncMode,
+    TraceType,
+)
+from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
+from airbyte_cdk.test.entrypoint_wrapper import read
 
 from .conftest import get_source
 
@@ -107,8 +115,6 @@ def test_streams_count(config, mock_get_customers):
 
 
 def test_read_missing_stream(config, mock_get_customers):
-    source = SourceGoogleAds(config, None, None)
-
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(
@@ -119,13 +125,32 @@ def test_read_missing_stream(config, mock_get_customers):
                 ),
                 sync_mode=SyncMode.full_refresh,
                 destination_sync_mode=DestinationSyncMode.overwrite,
-            )
+            ),
+            # FIXME In the CDK today, there is a bug where the last stream does not exist, the trace message is not sent.
+            # Until this is fixed, we will have this stream added here
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(
+                    name="ad_group",
+                    json_schema={},
+                    supported_sync_modes=[SyncMode.full_refresh],
+                ),
+                sync_mode=SyncMode.full_refresh,
+                destination_sync_mode=DestinationSyncMode.overwrite,
+            ),
         ]
     )
 
-    with pytest.raises(AirbyteTracedException) as e:
-        list(source.read(logging.getLogger("airbyte"), config=config, catalog=catalog))
-    assert e.value.failure_type == FailureType.config_error
+    source = SourceGoogleAds(catalog, config, None)
+    output = read(source, config, catalog)
+    fake_stream_statuses = list(
+        filter(
+            lambda message: message.trace.type == TraceType.STREAM_STATUS
+            and message.trace.stream_status.stream_descriptor.name == "fake_stream",
+            output.trace_messages,
+        )
+    )
+    assert len(fake_stream_statuses) == 1
+    assert fake_stream_statuses[0].trace.stream_status.status == AirbyteStreamStatus.INCOMPLETE
 
 
 def mock_send_request(query: str, customer_id: str, login_customer_id: str = "default"):
@@ -205,7 +230,7 @@ def test_get_customers(config, mocker, customer_status_filter, expected_ids, sen
 
 
 @pytest.mark.parametrize(
-    "input_state, records_and_slices, expected",
+    "input_state, record_and_slices, expected",
     [
         # no partitions ⇒ empty
         ({}, [], {}),
@@ -259,21 +284,27 @@ def test_get_customers(config, mocker, customer_status_filter, expected_ids, sen
         ),
     ],
 )
-def test_state_migration(input_state, records_and_slices, expected):
+def test_state_migration(input_state, record_and_slices, expected):
     # Create a fake customer_client_stream
     stream_mock = MagicMock()
 
     # Define what _read_parent_stream will yield
-    stream_mock.stream_slices.return_value = (s for _, s in records_and_slices)
+    stream_mock.generate_partitions.return_value = (mock_partition(_slice, record) for record, _slice in record_and_slices)
 
     def fake_read_records(stream_slice, sync_mode):
-        return (r for r, s in records_and_slices if s == stream_slice)
+        return (r for r, s in record_and_slices if s == stream_slice)
 
     stream_mock.read_records.side_effect = fake_read_records
 
     migrator = GoogleAdsPerPartitionStateMigration(config=None, customer_client_stream=stream_mock)
 
     assert migrator.migrate(input_state) == expected
+
+
+def mock_partition(_slice, record):
+    partition = Mock(spec=Partition)
+    partition.read.return_value = [Record(record, "stream_name", _slice)]
+    return partition
 
 
 _ANY_VALUE = -1
