@@ -40,7 +40,13 @@ class AzureBlobStorageSpecification :
 
     override val azureBlobStorageAccountKey: String? = null
 
-    @get:JsonSchemaTitle("Azure Blob Storage target blob size (Megabytes)")
+    override val azureTenantId: String? = null
+
+    override val azureClientId: String? = null
+
+    override val azureClientSecret: String? = null
+
+    @get:JsonSchemaTitle("Azure Blob Storage Target Blob Size (MB)")
     @get:JsonPropertyDescription(
         "The amount of megabytes after which the connector should spill the records in a new blob object. Make sure to configure size greater than individual records. Enter 0 if not applicable."
     )

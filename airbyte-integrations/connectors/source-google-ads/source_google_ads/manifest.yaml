@@ -6,10 +6,6 @@ check:
   type: CheckStream
   stream_names:
     - campaign
-  dynamic_streams_check_configs:
-    - type: DynamicStreamCheckConfig
-      dynamic_stream_name: dynamic_stream_0
-      stream_count: 1
 
 definitions:
   # Authenticator Definitions
@@ -273,11 +269,11 @@ definitions:
                     ["change_status.resource_status"],
                   ]
                 incremental_dependency: true
-        transformations:
-          - type: CustomTransformation
-            class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
-          - type: CustomTransformation
-            class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
+      transformations:
+        - type: CustomTransformation
+          class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
+        - type: CustomTransformation
+          class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: change_status.last_change_date_time
@@ -873,11 +869,11 @@ definitions:
             parent_key: "clientCustomer"
             partition_field: "customer_id"
             extra_fields: [["manager"]]
-      transformations:
-        - type: CustomTransformation
-          class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
-        - type: CustomTransformation
-          class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
+    transformations:
+      - type: CustomTransformation
+        class_name: "source_google_ads.components.KeysToSnakeCaseGoogleAdsTransformation"
+      - type: CustomTransformation
+        class_name: "source_google_ads.components.FlattenNestedDictsTransformation"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: change_status.last_change_date_time
@@ -987,7 +983,7 @@ definitions:
           value: >-
             {
               "type": "DatetimeBasedCursor",
-              "cursor_field": "{{ components_values.get('cursor_field') }}",
+              "cursor_field": "segments.date",
               "datetime_format": "%Y-%m-%d",
               "lookback_window": "P{{ config.get('conversion_window_days', 14) }}D",
               "cursor_granularity": "P1D",
@@ -1003,7 +999,7 @@ definitions:
                 "datetime_format": "%Y-%m-%d"
               }
             }
-          condition: "{{ components_values.get('cursor_field', False) }}"
+          condition: "{{ (components_values.get('query', '').count('segments.date') == 1 and (components_values.get('query') | regex_search('SELECT.*segments\\.date.*FROM')) is not none) or (components_values.get('query', '').count('segments.date') == 2 and (components_values.get('query') | regex_search('SELECT.*segments\\.date.*FROM')) is not none and (components_values.get('query') | regex_search('ORDER BY.*?segments\\.date.*?LIMIT')) is not none) }}"
           create_or_update: true
         - type: ComponentMappingDefinition
           field_path:
@@ -1019,8 +1015,8 @@ definitions:
             - requester
             - $parameters
             - cursor_field
-          value: "{{ components_values.get('cursor_field', None) }}"
-          condition: "{{ components_values.get('cursor_field', False) }}"
+          value: "segments.date"
+          condition: "{{ (components_values.get('query', '').count('segments.date') == 1 and (components_values.get('query') | regex_search('SELECT.*segments\\.date.*FROM')) is not none) or (components_values.get('query', '').count('segments.date') == 2 and (components_values.get('query') | regex_search('SELECT.*segments\\.date.*FROM')) is not none and (components_values.get('query') | regex_search('ORDER BY.*?segments\\.date.*?LIMIT')) is not none) }}"
           create_or_update: true
         - type: ComponentMappingDefinition
           field_path:
@@ -1033,8 +1029,8 @@ definitions:
           field_path:
             - schema_loader
             - cursor_field
-          value: "{{ components_values.get('cursor_field', None) }}"
-          condition: "{{ components_values.get('cursor_field', False) }}"
+          value: "segments.date"
+          condition: "{{ (components_values.get('query', '').count('segments.date') == 1 and (components_values.get('query') | regex_search('SELECT.*segments\\.date.*FROM')) is not none) or (components_values.get('query', '').count('segments.date') == 2 and (components_values.get('query') | regex_search('SELECT.*segments\\.date.*FROM')) is not none and (components_values.get('query') | regex_search('ORDER BY.*?segments\\.date.*?LIMIT')) is not none) }}"
           create_or_update: true
         - type: ComponentMappingDefinition
           field_path:

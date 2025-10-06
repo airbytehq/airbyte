@@ -6,10 +6,9 @@ import copy
 import json
 import logging
 import os
-import urllib.parse
 from collections import defaultdict
 from enum import Enum
-from typing import Optional, Union
+from typing import Union
 
 import semver
 import sentry_sdk
@@ -21,7 +20,6 @@ from metadata_service.constants import (
     ANALYTICS_BUCKET,
     ANALYTICS_FOLDER,
     METADATA_FOLDER,
-    PUBLIC_GCS_BASE_URL,
     PUBLISH_UPDATE_CHANNEL,
     REGISTRIES_FOLDER,
     VALID_REGISTRIES,
@@ -307,13 +305,6 @@ def _persist_registry(registry: ConnectorRegistryV0, registry_name: str, bucket:
     Returns:
         None
     """
-
-    # TODO: Remove the dev bucket set up once registry artificts have been validated and then add the bucket as a parameter. This block exists so we can write the registry artifacts to the dev bucket for validation.
-    gcs_creds = os.environ.get("GCS_DEV_CREDENTIALS")
-    service_account_info = json.loads(gcs_creds)
-    credentials = service_account.Credentials.from_service_account_info(service_account_info)
-    client = storage.Client(credentials=credentials)
-    bucket = client.bucket("dev-airbyte-cloud-connector-metadata-service")
 
     registry_file_name = f"{registry_name}_registry.json"
     registry_file_path = f"{REGISTRIES_FOLDER}/{registry_file_name}"

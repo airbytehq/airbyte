@@ -23,4 +23,4 @@ For each user who wants to connect their data:
 
 This approach separates one-time organizational setup from per-user operations, making your integration more scalable.
 
-The complete API reference can be found at https://api.airbyte.ai/api/v1/redoc
+The complete API reference can be found at [api.airbyte.ai/api/v1/docs](https://api.airbyte.ai/api/v1/docs).

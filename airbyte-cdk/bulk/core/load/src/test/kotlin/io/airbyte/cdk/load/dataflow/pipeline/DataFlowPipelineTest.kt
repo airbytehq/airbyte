@@ -9,19 +9,19 @@ import io.airbyte.cdk.load.dataflow.stages.AggregateStage
 import io.mockk.coEvery
 import io.mockk.coVerifySequence
 import io.mockk.mockk
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 
-@ExperimentalCoroutinesApi
 class DataFlowPipelineTest {
     private val parse = mockk<DataFlowStage>()
     private val aggregate = mockk<AggregateStage>()
     private val flush = mockk<DataFlowStage>()
     private val state = mockk<DataFlowStage>()
-    private val startHandler = mockk<PipelineStartHandler>()
     private val completionHandler = mockk<PipelineCompletionHandler>()
+
     private val memoryAndParallelismConfig =
         MemoryAndParallelismConfig(
             maxOpenAggregates = 2,
@@ -30,6 +30,11 @@ class DataFlowPipelineTest {
 
     @Test
     fun `pipeline execution flow`() = runTest {
+        // Create test scope and dispatchers
+        val testScope = TestScope(this.testScheduler)
+        val aggregationDispatcher = StandardTestDispatcher(testScope.testScheduler)
+        val flushDispatcher = StandardTestDispatcher(testScope.testScheduler)
+
         // Given
         val initialIO = mockk<DataFlowStageIO>()
         val input = flowOf(initialIO)
@@ -40,9 +45,10 @@ class DataFlowPipelineTest {
                 aggregate,
                 flush,
                 state,
-                startHandler,
                 completionHandler,
-                memoryAndParallelismConfig
+                memoryAndParallelismConfig,
+                aggregationDispatcher,
+                flushDispatcher,
             )
 
         val parsedIO = mockk<DataFlowStageIO>()
@@ -50,7 +56,6 @@ class DataFlowPipelineTest {
         val flushedIO = mockk<DataFlowStageIO>()
         val stateIO = mockk<DataFlowStageIO>()
 
-        coEvery { startHandler.run() } returns Unit
         coEvery { parse.apply(initialIO) } returns parsedIO
         coEvery { aggregate.apply(parsedIO, any()) } coAnswers
             {
@@ -64,9 +69,11 @@ class DataFlowPipelineTest {
         // When
         pipeline.run()
 
+        // Advance the test scheduler to process all coroutines
+        testScope.testScheduler.advanceUntilIdle()
+
         // Then
         coVerifySequence {
-            startHandler.run()
             parse.apply(initialIO)
             aggregate.apply(parsedIO, any())
             flush.apply(aggregatedIO)

@@ -10,9 +10,6 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.file.TimeProvider
 import io.airbyte.cdk.load.message.CheckpointMessage
-import io.airbyte.cdk.load.message.CheckpointMessage.Companion.COMMITTED_BYTES_COUNT
-import io.airbyte.cdk.load.message.CheckpointMessage.Companion.COMMITTED_RECORDS_COUNT
-import io.airbyte.cdk.load.message.CheckpointMessage.Companion.REJECTED_RECORDS_COUNT
 import io.airbyte.cdk.load.message.GlobalCheckpoint
 import io.airbyte.cdk.load.message.GlobalSnapshotCheckpoint
 import io.airbyte.cdk.load.util.use
@@ -303,13 +300,11 @@ class CheckpointManager(
                 } else null
             }
             .forEach { (checkpoint, committedData) ->
-                checkpoint.additionalProperties.apply {
-                    put(COMMITTED_RECORDS_COUNT, committedData.records)
-                    put(COMMITTED_BYTES_COUNT, committedData.serializedBytes)
-                    if (committedData.rejectedRecords > 0) {
-                        put(REJECTED_RECORDS_COUNT, committedData.rejectedRecords)
-                    }
-                }
+                checkpoint.updateStats(
+                    committedData.records,
+                    committedData.serializedBytes,
+                    committedData.rejectedRecords,
+                )
             }
     }
 
