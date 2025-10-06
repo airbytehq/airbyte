@@ -134,6 +134,44 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
     @get:JsonSchemaInject(json = """{"group": "advanced", "order": 10}""")
     @Suppress("RedundantNullableReturnType")
     val retentionPeriodDays: Int? = 1
+
+    // ----------
+
+    @get:JsonSchemaTitle("maxOpenAggregates")
+    @get:JsonProperty("maxOpenAggregates")
+    @get:JsonSchemaInject(json = """{"group": "perf", "order": 11}""")
+    @Suppress("RedundantNullableReturnType")
+    val maxOpenAggregates: Int? = 5
+
+    @get:JsonSchemaTitle("maxBufferedAggregates")
+    @get:JsonProperty("maxBufferedAggregates")
+    @get:JsonSchemaInject(json = """{"group": "perf", "order": 12}""")
+    @Suppress("RedundantNullableReturnType")
+    val maxBufferedAggregates: Int? = 3
+
+    @get:JsonSchemaTitle("stalenessDeadlinePerAgg")
+    @get:JsonProperty("stalenessDeadlinePerAgg")
+    @get:JsonSchemaInject(json = """{"group": "perf", "order": 13}""")
+    @Suppress("RedundantNullableReturnType")
+    val stalenessDeadlinePerAgg: Int? = 5
+
+    @get:JsonSchemaTitle("maxRecordsPerAgg")
+    @get:JsonProperty("maxRecordsPerAgg")
+    @get:JsonSchemaInject(json = """{"group": "perf", "order": 14}""")
+    @Suppress("RedundantNullableReturnType")
+    val maxRecordsPerAgg: Long? = 100_000L
+
+    @get:JsonSchemaTitle("maxEstBytesPerAgg")
+    @get:JsonProperty("maxEstBytesPerAgg")
+    @get:JsonSchemaInject(json = """{"group": "perf", "order": 15}""")
+    @Suppress("RedundantNullableReturnType")
+    val maxEstBytesPerAgg: Long? = 50_000_000L
+
+    @get:JsonSchemaTitle("maxConcurrentLifecycleOperations")
+    @get:JsonProperty("maxConcurrentLifecycleOperations")
+    @get:JsonSchemaInject(json = """{"group": "perf", "order": 16}""")
+    @Suppress("RedundantNullableReturnType")
+    val maxConcurrentLifecycleOperations: Int? = 10
 }
 
 @JsonTypeInfo(
@@ -206,5 +244,6 @@ class SnowflakeSpecificationExtension : DestinationSpecificationExtension {
             DestinationSpecificationExtension.Group("connection", "Connection"),
             DestinationSpecificationExtension.Group("sync_behavior", "Sync Behavior"),
             DestinationSpecificationExtension.Group("advanced", "Advanced"),
+            DestinationSpecificationExtension.Group("perf", "Performance"),
         )
 }
