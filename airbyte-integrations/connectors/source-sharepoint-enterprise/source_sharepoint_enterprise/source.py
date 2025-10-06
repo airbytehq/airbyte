@@ -28,14 +28,6 @@ from source_sharepoint_enterprise.utils import PlaceholderUrlBuilder
 
 
 class SourceMicrosoftSharePoint(FileBasedSource):
-    SCOPES = ["offline_access", "Files.Read.All", "Sites.Read.All", "Sites.Selected"]
-    IDENTITIES_SCOPES = [
-        "User.Read.All",
-        "Group.Read.All",
-        "Application.Read.All",
-        "Device.Read.All",
-    ]
-
     def __init__(
         self,
         catalog: Optional[ConfiguredAirbyteCatalog],
@@ -64,7 +56,7 @@ class SourceMicrosoftSharePoint(FileBasedSource):
             .add_key_value_placeholder_param("client_id")
             .add_key_value_placeholder_param("redirect_uri")
             .add_key_value_placeholder_param("state")
-            .add_key_value_placeholder_param("scope")
+            .add_literal_param("scope={{scopes | urlencode }}")
             .add_literal_param("response_type=code")
             .build()
         )
@@ -76,7 +68,6 @@ class SourceMicrosoftSharePoint(FileBasedSource):
             .set_path("/{{tenant_id}}/oauth2/v2.0/token")
             .build()
         )
-        scopes = " ".join(SourceMicrosoftSharePoint.SCOPES + SourceMicrosoftSharePoint.IDENTITIES_SCOPES)
 
         oauth_connector_input_specification = OauthConnectorInputSpecification(
             consent_url=consent_url,
@@ -91,7 +82,6 @@ class SourceMicrosoftSharePoint(FileBasedSource):
                 "client_secret": "{{ client_secret_value }}",
                 "grant_type": "authorization_code",
             },
-            scope=scopes,
         )
 
         return ConnectorSpecification(
@@ -155,7 +145,14 @@ class SourceMicrosoftSharePoint(FileBasedSource):
                                     "credentials",
                                     "tenant_id",
                                 ],
-                            }
+                            },
+                            "scopes": {
+                                "type": "string",
+                                "path_in_connector_config": [
+                                    "credentials",
+                                    "scopes",
+                                ],
+                            },
                         },
                     },
                 ),

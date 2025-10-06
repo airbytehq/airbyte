@@ -5,7 +5,7 @@
 
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, Literal, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Union
 
 import dpath.util
 from pydantic.v1 import BaseModel, Field
@@ -16,6 +16,15 @@ from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import (
     DeliverRawFiles,
     DeliverRecords,
 )
+
+
+SCOPES = ["offline_access", "Files.Read.All", "Sites.Read.All", "Sites.Selected"]
+IDENTITIES_SCOPES = [
+    "User.Read.All",
+    "Group.Read.All",
+    "Application.Read.All",
+    "Device.Read.All",
+]
 
 
 class RemoteIdentityType(Enum):
@@ -79,6 +88,11 @@ class OAuthCredentials(BaseModel):
         title="Refresh Token",
         description="Refresh Token of your Microsoft developer application",
         airbyte_secret=True,
+    )
+    scopes: Optional[str] = Field(
+        title="Scopes",
+        description="Scopes to request when authorizing. If you want to change scopes after source was created, you need to Re-authenticate to actually apply this change to your access token. ",
+        default=" ".join(SCOPES + IDENTITIES_SCOPES),
     )
 
 
@@ -162,6 +176,13 @@ class SourceMicrosoftSharePointSpec(AbstractFileBasedSpec, BaseModel):
         description="Url of SharePoint site to search for files. Leave empty to search in the main site. Use 'https://<tenant_name>.sharepoint.com/sites/' to iterate over all sites.",
         order=5,
         default="",
+    )
+
+    file_contains_query: Optional[List[str]] = Field(
+        title="File properties contains query text",
+        description="Input additional query to search files. It will make search files step faster if your Sharepoint account has a lot of files and folders. This query text will be used in the request that will look for files which properties contains inserted text. You can use multiple query texts, they will be applied in search request one by one.",
+        order=6,
+        default=None,
     )
 
     @classmethod

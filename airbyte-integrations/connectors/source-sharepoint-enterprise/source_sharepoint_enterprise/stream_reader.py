@@ -290,10 +290,102 @@ class SourceMicrosoftSharePointStreamReader(SharepointBaseReader, AbstractFileBa
             if parent_reference and parent_reference["driveId"] not in drive_ids:
                 yield from self._get_shared_drive_object(parent_reference["driveId"], drive_item.id, drive_item.web_url)
 
+    def _search_all_accessible_files(self, drives, folder_path) -> Iterable[MicrosoftSharePointRemoteFile]:
+        """Yields files from the specified drive."""
+        path_levels = [level for level in folder_path.split("/") if level]
+        folder_path = "/".join(path_levels)
+
+        for drive in drives:
+            is_sharepoint = drive.drive_type == "documentLibrary"
+            if is_sharepoint:
+                # Define a base path for drive files to differentiate files between drives
+                if folder_path in self.ROOT_PATH:
+                    folder = drive.root
+                    folder_path_url = drive.web_url
+                else:
+                    try:
+                        folder = execute_query_with_retry(drive.root.get_by_path(folder_path).get())
+                    except FolderNotFoundException:
+                        continue
+                    folder_path_url = drive.web_url + "/" + folder_path
+
+                drive_items = execute_query_with_retry(folder.children.get())
+                for item in drive_items:
+                    item_path = folder_path_url + "/" + item.name if path else item.name
+                    if item.is_file:
+                        # last_modified and created_at are type datetime.datetime e.g. (2025, 2, 18, 19, 32, 4)
+                        yield MicrosoftSharePointRemoteFile(
+                            uri=item_path,
+                            download_url=item.properties["@microsoft.graph.downloadUrl"],
+                            last_modified=item.properties["lastModifiedDateTime"],
+                            created_at=item.properties["createdDateTime"],
+                            id=item.id,
+                            drive_id=drive.id,
+                            from_shared_drive=False,
+                        )
+                    else:
+                        yield from self.search_file_in_drive(drive.id)
+                yield from []
+
+    def search_all_shared_files(self, parsed_drives):
+        drive_ids = [drive.id for drive in parsed_drives]
+
+        shared_drive_items = execute_query_with_retry(self.one_drive_client.me.drive.shared_with_me())
+        for drive_item in shared_drive_items:
+            parent_reference = drive_item.remote_item.parentReference
+
+            # check if drive is already parsed
+            if parent_reference and parent_reference["driveId"] not in drive_ids:
+                yield from self.search_file_in_drive(parent_reference["driveId"])
+
+    def search_file_in_drive(self, drive_id: str):
+        access_token = self.get_access_token()
+        headers = {"Authorization": f"Bearer {access_token}"}
+        base_url = f"https://graph.microsoft.com/v1.0/drives/{drive_id}"
+        for query_text in self.config.file_contains_query:
+            item_response = requests.get(base_url + f"/root/search(q='{query_text}')", headers=headers)
+            if item_response.status_code != 200:
+                error_info = item_response.json().get("error", {}).get("message", "No additional error information provided.")
+                raise RuntimeError(
+                    f"Failed to find by query text {query_text} object in drive with id '{drive_id}'."
+                    f" HTTP status: {item_response.status_code}. Error: {error_info}"
+                )
+            items_data = item_response.json().get("value", [])
+            for item_data in items_data:
+                if item_data.get("file"):  # Initial object is a file
+                    additional_data_response = requests.get(
+                        f'https://graph.microsoft.com/v1.0/drives/{item_data["parentReference"]["driveId"]}/items/{item_data["id"]}',
+                        headers=headers,
+                    )
+                    if additional_data_response.status_code != 200:
+                        error_info = item_response.json().get("error", {}).get("message", "No additional error information provided.")
+                        raise RuntimeError(
+                            f"Failed to get additional info for file that match query {query_text} object with id {item_data['id']} in drive with id '{drive_id}'."
+                            f" HTTP status: {item_response.status_code}. Error: {error_info}"
+                        )
+                    additional_data = additional_data_response.json()
+                    last_modified = datetime.strptime(additional_data["lastModifiedDateTime"], "%Y-%m-%dT%H:%M:%SZ")
+                    created_at = datetime.strptime(additional_data["createdDateTime"], "%Y-%m-%dT%H:%M:%SZ")
+                    yield MicrosoftSharePointRemoteFile(
+                        uri=additional_data["webUrl"],
+                        download_url=additional_data["@microsoft.graph.downloadUrl"],
+                        last_modified=last_modified,
+                        created_at=created_at,
+                        id=additional_data.get("id"),
+                        drive_id=item_data["parentReference"]["driveId"],
+                        from_shared_drive=True,
+                    )
+            else:
+                # Initial object is a folder, start file retrieval
+                yield from []
+
     def get_all_files(self) -> Iterable[MicrosoftSharePointRemoteFile]:
         if self.config.search_scope in ("ACCESSIBLE_DRIVES", "ALL"):
             # Get files from accessible drives
-            yield from self._get_files_by_drive_name(self.drives, self.config.folder_path)
+            if self.config.file_contains_query:
+                yield from self._search_all_accessible_files(self.drives, self.config.folder_path)
+            else:
+                yield from self._get_files_by_drive_name(self.drives, self.config.folder_path)
 
         # skip this step for application authentication flow
         if self.config.credentials.auth_type != "Client" or (
@@ -303,7 +395,10 @@ class SourceMicrosoftSharePointStreamReader(SharepointBaseReader, AbstractFileBa
                 parsed_drives = [] if self.config.search_scope == "SHARED_ITEMS" else self.drives
 
                 # Get files from shared items
-                yield from self._get_shared_files_from_all_drives(parsed_drives)
+                if self.config.file_contains_query:
+                    yield from self.search_all_shared_files(parsed_drives)
+                else:
+                    yield from self._get_shared_files_from_all_drives(parsed_drives)
 
     def get_matching_files(self, globs: List[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[RemoteFile]:
         """

@@ -56,6 +56,7 @@ def setup_reader_class():
     config.site_url = ""
     config.credentials.auth_type = "Client"
     config.search_scope = "ALL"
+    config.file_contains_query = None
     reader.config = config  # Set up the necessary configuration
 
     # Mock the client creation
@@ -1028,8 +1029,7 @@ def test_get_site_drive_error_handling():
 def test_retrieve_files_from_accessible_drives(mocker, refresh_token, auth_type, search_scope, expected_methods_called):
     reader = SourceMicrosoftSharePointStreamReader()
     config = MagicMock(
-        credentials=MagicMock(auth_type=auth_type, refresh_token=refresh_token),
-        search_scope=search_scope,
+        credentials=MagicMock(auth_type=auth_type, refresh_token=refresh_token), search_scope=search_scope, file_contains_query=None
     )
 
     reader._config = config
@@ -1169,3 +1169,135 @@ def test_get_all_sites_with_no_results(test_case, search_job_value, primary_quer
             "contentclass:STS_Site NOT Path:https://test-tenant-my.sharepoint.com"
         )
         mock_execute_query.assert_called_once_with(mock_search_job)
+
+
+@pytest.mark.parametrize(
+    "query_text, search_scope, expected_result",
+    [
+        (["test_file"], "ALL", []),
+    ],
+)
+def test_search_files_by_query(query_text, search_scope, expected_result, requests_mock):
+    reader = SourceMicrosoftSharePointStreamReader()
+    config = MagicMock(
+        credentials=MagicMock(auth_type="Client", refresh_token="dummy_refresh_token", tenant_id="dummy_tenant_id"),
+        search_scope=search_scope,
+        file_contains_query=query_text,
+        site_url=None,
+        folder_path=".",
+    )
+
+    authority_url = "https://login.microsoftonline.com/dummy_tenant_id/v2.0/.well-known/openid-configuration"
+    token_endpoint = "https://login.microsoftonline.com/dummy_tenant_id/v2.0/.well-known/openid-configuration/oauth2/v2.0/token"
+    authorization_endpoint = "https://login.microsoftonline.com/dummy_tenant_id/v2.0/.well-known/openid-configuration/oauth2/v2.0/authorize"
+    mock_response = {"authorization_endpoint": authorization_endpoint, "token_endpoint": token_endpoint}
+
+    requests_mock.post(token_endpoint, json={}, status_code=200)
+    requests_mock.get(authority_url, json=mock_response, status_code=200)
+    reader._config = config
+
+    class DummyDriveItem:
+        id: str
+        remote_item: MagicMock
+        drive_type: str
+        root = None
+        web_url = None
+        name = None
+        is_file = False
+
+        def __init__(self, id, remote_item, drive_type, root=None, web_url=None, name="dummy_name", is_file=False):
+            self.id = id
+            self.remote_item = remote_item
+            self.drive_type = drive_type
+            self.root = root
+            self.name = name
+            self.is_file = False
+            if self.root:
+                self.root.children = MagicMock()
+            self.web_url = web_url
+
+    accessible_drive_id = 1
+    shared_drive_id = 2
+    drive_items = [
+        DummyDriveItem(
+            id=str(accessible_drive_id),
+            remote_item=MagicMock(parentReference={"driveId": accessible_drive_id * 100}),
+            drive_type="documentLibrary",
+            web_url="some_web_url",
+            name="accessible_test_file",
+            root=DummyDriveItem(
+                id=str(accessible_drive_id),
+                remote_item=MagicMock(parentReference={"driveId": accessible_drive_id * 100}),
+                drive_type="documentLibrary",
+                name="accessible_test_file",
+            ),
+        )
+    ]
+    shared_drive_items = [
+        DummyDriveItem(
+            id=str(shared_drive_id), remote_item=MagicMock(parentReference={"driveId": shared_drive_id * 100}), drive_type="notSharepoint"
+        )
+    ]
+
+    requests_mock.get(
+        f"https://graph.microsoft.com/v1.0/drives/{shared_drive_items[0].remote_item.parentReference['driveId']}/root/search(q='test_file')",
+        json={
+            "value": [{"file": True, "id": "shared_test_file", "parentReference": {"driveId": "200"}}],
+        },
+        status_code=200,
+    )
+    requests_mock.get(
+        f"https://graph.microsoft.com/v1.0/drives/{shared_drive_items[0].remote_item.parentReference['driveId']}/items/shared_test_file",
+        json={
+            "lastModifiedDateTime": "2025-01-01T00:00:00Z",
+            "createdDateTime": "2025-01-01T00:00:00Z",
+            "webUrl": "some_web_url",
+            "@microsoft.graph.downloadUrl": "some_download_url",
+            "id": "shared_test_file",
+        },
+        status_code=200,
+    )
+
+    requests_mock.get(
+        f"https://graph.microsoft.com/v1.0/drives/{accessible_drive_id}/root/search(q='test_file')",
+        json={
+            "value": [{"file": True, "id": "accessible_test_file", "parentReference": {"driveId": "100"}}],
+        },
+        status_code=200,
+    )
+    requests_mock.get(
+        f"https://graph.microsoft.com/v1.0/drives/{drive_items[0].remote_item.parentReference['driveId']}/items/accessible_test_file",
+        json={
+            "lastModifiedDateTime": "2025-01-01T00:00:00Z",
+            "createdDateTime": "2025-01-01T00:00:00Z",
+            "webUrl": "some_web_url",
+            "@microsoft.graph.downloadUrl": "some_download_url",
+            "id": "accessible_test_file",
+        },
+        status_code=200,
+    )
+
+    with (
+        patch(
+            "source_sharepoint_enterprise.stream_reader.SourceMicrosoftSharePointStreamReader.drives", new_callable=PropertyMock
+        ) as drives_mock,
+        patch("source_sharepoint_enterprise.stream_reader.execute_query_with_retry") as execute_query_mock,
+        patch(
+            "source_sharepoint_enterprise.stream_reader.SourceMicrosoftSharePointStreamReader.get_access_token",
+            return_value="dummy_access_token",
+        ) as access_token_mock,
+    ):
+        execute_query_mock.side_effect = [
+            [
+                DummyDriveItem(
+                    id=str(accessible_drive_id),
+                    remote_item=MagicMock(parentReference={"driveId": accessible_drive_id * 100}),
+                    drive_type="documentLibrary",
+                    web_url="some_web_url",
+                )
+            ],
+            shared_drive_items,
+        ]
+        drives_mock.return_value = drive_items
+        files = list(reader.get_all_files())
+        assert len(files) == 2
