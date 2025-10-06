@@ -41,11 +41,19 @@ class SnowflakeDirectLoadSqlGenerator(
     private val snowflakeSqlNameUtils: SnowflakeSqlNameUtils,
 ) {
     fun countTable(tableName: TableName): String {
-        return "SELECT COUNT(*) AS ${COUNT_TOTAL_ALIAS.quote()} FROM ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}".andLog()
+        return "SELECT COUNT(*) AS ${COUNT_TOTAL_ALIAS.quote()} FROM ${
+            snowflakeSqlNameUtils.fullyQualifiedName(
+                tableName,
+            )
+        }".andLog()
     }
 
     fun createNamespace(namespace: String): String {
-        return "CREATE SCHEMA IF NOT EXISTS ${snowflakeSqlNameUtils.fullyQualifiedNamespace(namespace)}".andLog()
+        return "CREATE SCHEMA IF NOT EXISTS ${
+            snowflakeSqlNameUtils.fullyQualifiedNamespace(
+                namespace,
+            )
+        }".andLog()
     }
 
     fun createTable(
@@ -183,7 +191,7 @@ class SnowflakeDirectLoadSqlGenerator(
         val cdcSkipInsertClause: String
         if (
             stream.schema.asColumns().containsKey(CDC_DELETED_AT_COLUMN) &&
-                snowflakeConfiguration.cdcDeletionMode == CdcDeletionMode.HARD_DELETE
+            snowflakeConfiguration.cdcDeletionMode == CdcDeletionMode.HARD_DELETE
         ) {
             // Execute CDC deletions if there's already a record
             cdcDeleteClause =
@@ -334,7 +342,7 @@ class SnowflakeDirectLoadSqlGenerator(
     }
 
     fun createSnowflakeStage(tableName: TableName): String {
-        val stageName = snowflakeSqlNameUtils.fullyQualifiedStageName(tableName)
+        val stageName = createStageName(tableName, false)
         val formatName = snowflakeSqlNameUtils.fullyQualifiedFormatName(tableName.namespace)
         return """
             CREATE STAGE IF NOT EXISTS $stageName
@@ -344,20 +352,8 @@ class SnowflakeDirectLoadSqlGenerator(
             .andLog()
     }
 
-    fun putInStage(tableName: TableName, tempFilePath: String): String {
-        val stageName = snowflakeSqlNameUtils.fullyQualifiedStageName(tableName, true)
-        return """
-            PUT 'file://$tempFilePath' '@$stageName'
-            AUTO_COMPRESS = FALSE
-            SOURCE_COMPRESSION = GZIP
-            OVERWRITE = TRUE
-        """
-            .trimIndent()
-            .andLog()
-    }
-
     fun copyFromStage(tableName: TableName, filename: String): String {
-        val stageName = snowflakeSqlNameUtils.fullyQualifiedStageName(tableName, true)
+        val stageName = createStageName(tableName)
         val formatName = snowflakeSqlNameUtils.fullyQualifiedFormatName(tableName.namespace)
 
         return """
@@ -374,7 +370,11 @@ class SnowflakeDirectLoadSqlGenerator(
 
     fun swapTableWith(sourceTableName: TableName, targetTableName: TableName): String {
         return """
-            ALTER TABLE ${snowflakeSqlNameUtils.fullyQualifiedName(sourceTableName)} SWAP WITH ${snowflakeSqlNameUtils.fullyQualifiedName(targetTableName)}
+            ALTER TABLE ${snowflakeSqlNameUtils.fullyQualifiedName(sourceTableName)} SWAP WITH ${
+            snowflakeSqlNameUtils.fullyQualifiedName(
+                targetTableName,
+            )
+        }
         """
             .trimIndent()
             .andLog()
@@ -384,7 +384,11 @@ class SnowflakeDirectLoadSqlGenerator(
         // Snowflake RENAME TO only accepts the table name, not a fully qualified name
         // The renamed table stays in the same schema
         return """
-            ALTER TABLE ${snowflakeSqlNameUtils.fullyQualifiedName(sourceTableName)} RENAME TO ${snowflakeSqlNameUtils.fullyQualifiedName(targetTableName)}
+            ALTER TABLE ${snowflakeSqlNameUtils.fullyQualifiedName(sourceTableName)} RENAME TO ${
+            snowflakeSqlNameUtils.fullyQualifiedName(
+                targetTableName,
+            )
+        }
         """
             .trimIndent()
             .andLog()
@@ -394,7 +398,14 @@ class SnowflakeDirectLoadSqlGenerator(
         schemaName: String,
         tableName: String,
     ): String =
-        """DESCRIBE TABLE ${snowflakeSqlNameUtils.fullyQualifiedName(TableName(schemaName, tableName))}""".andLog()
+        """DESCRIBE TABLE ${
+            snowflakeSqlNameUtils.fullyQualifiedName(
+                TableName(
+                    schemaName,
+                    tableName,
+                ),
+            )
+        }""".andLog()
 
     fun alterTable(
         tableName: TableName,
@@ -406,7 +417,7 @@ class SnowflakeDirectLoadSqlGenerator(
         val prettyTableName = snowflakeSqlNameUtils.fullyQualifiedName(tableName)
         addedColumns.forEach {
             clauses.add(
-                "ALTER TABLE $prettyTableName ADD COLUMN ${it.name.quote()} ${it.type};".andLog()
+                "ALTER TABLE $prettyTableName ADD COLUMN ${it.name.quote()} ${it.type};".andLog(),
             )
         }
         deletedColumns.forEach {
@@ -415,26 +426,29 @@ class SnowflakeDirectLoadSqlGenerator(
         modifiedColumns.forEach {
             val tempColumn = "${it.name}_${uuidGenerator.v4()}"
             clauses.add(
-                "ALTER TABLE $prettyTableName ADD COLUMN ${tempColumn.quote()} ${it.type};".andLog()
+                "ALTER TABLE $prettyTableName ADD COLUMN ${tempColumn.quote()} ${it.type};".andLog(),
             )
             clauses.add(
-                "UPDATE $prettyTableName SET ${tempColumn.quote()} = CAST(${it.name.quote()} AS ${it.type});".andLog()
+                "UPDATE $prettyTableName SET ${tempColumn.quote()} = CAST(${it.name.quote()} AS ${it.type});".andLog(),
             )
             val backupColumn = "${tempColumn}_backup"
             clauses.add(
                 """ALTER TABLE $prettyTableName
                 RENAME COLUMN "${it.name}" TO "$backupColumn";
-            """.trimIndent()
+            """.trimIndent(),
             )
             clauses.add(
                 """ALTER TABLE $prettyTableName
                 RENAME COLUMN "$tempColumn" TO "${it.name}";
-            """.trimIndent()
+            """.trimIndent(),
             )
             clauses.add(
-                "ALTER TABLE $prettyTableName DROP COLUMN ${backupColumn.quote()};".andLog()
+                "ALTER TABLE $prettyTableName DROP COLUMN ${backupColumn.quote()};".andLog(),
             )
         }
         return clauses
     }
+
+    fun createStageName(tableName: TableName, escape: Boolean = true) =
+        snowflakeSqlNameUtils.fullyQualifiedStageName(tableName, escape)
 }

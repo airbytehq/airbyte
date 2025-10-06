@@ -20,8 +20,10 @@ import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlG
 import io.airbyte.integrations.destination.snowflake.sql.andLog
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
+import java.io.InputStream
 import java.sql.ResultSet
 import javax.sql.DataSource
+import net.snowflake.client.jdbc.SnowflakeConnection
 import net.snowflake.client.jdbc.SnowflakeSQLException
 
 internal const val DESCRIBE_TABLE_COLUMN_NAME_FIELD = "column_name"
@@ -294,10 +296,6 @@ class SnowflakeAirbyteClient(
         execute(sqlGenerator.createSnowflakeStage(tableName))
     }
 
-    fun putInStage(tableName: TableName, tempFilePath: String) {
-        execute(sqlGenerator.putInStage(tableName, tempFilePath))
-    }
-
     fun copyFromStage(tableName: TableName, filename: String) {
         execute(sqlGenerator.copyFromStage(tableName, filename))
     }
@@ -314,6 +312,18 @@ class SnowflakeAirbyteClient(
                 columns
             }
         }
+
+    fun uploadToStage(tableName: TableName, inputStream: InputStream, fileName: String, compressData: Boolean) {
+        dataSource.connection.use { connection ->
+            connection.unwrap(SnowflakeConnection::class.java).uploadStream(
+                "'@${sqlGenerator.createStageName(tableName)}'",
+                null,
+                inputStream,
+                fileName,
+                compressData,
+            )
+        }
+    }
 
     internal fun execute(query: String) =
         dataSource.connection.use { connection ->

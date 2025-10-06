@@ -310,22 +310,6 @@ new_record."_AIRBYTE_GENERATION_ID"
     }
 
     @Test
-    fun testGeneratePutInStage() {
-        val tableName = TableName(namespace = "namespace", name = "name")
-        val tempFilePath = "/some/file/path.csv"
-        val stagingTableName = snowflakeSqlNameUtils.fullyQualifiedStageName(tableName)
-        val sql = snowflakeDirectLoadSqlGenerator.putInStage(tableName, tempFilePath)
-        val expectedSql =
-            """
-            PUT 'file://$tempFilePath' '@$stagingTableName'
-            AUTO_COMPRESS = FALSE
-            SOURCE_COMPRESSION = GZIP
-            OVERWRITE = TRUE
-        """.trimIndent()
-        assertEquals(expectedSql, sql)
-    }
-
-    @Test
     fun testGenerateCopyFromStage() {
         val tableName = TableName(namespace = "namespace", name = "name")
         val targetTableName = snowflakeSqlNameUtils.fullyQualifiedName(tableName)
@@ -784,5 +768,14 @@ new_record."_AIRBYTE_GENERATION_ID"
 
         // Reserved keywords should be properly quoted
         assertEquals("CREATE TABLE $expectedTableName (\n    \n)", sql)
+    }
+
+    @Test
+    fun testCreateStageName() {
+        val tableName = TableName(namespace = "namespace", name = "name")
+        val stageName = snowflakeDirectLoadSqlGenerator.createStageName(tableName)
+        val expectedName = "\"${snowflakeConfiguration.database.toSnowflakeCompatibleName()}\".\"${tableName.namespace}\".\"${STAGE_NAME_PREFIX}${tableName.name}\""
+
+        assertEquals(expectedName, stageName)
     }
 }

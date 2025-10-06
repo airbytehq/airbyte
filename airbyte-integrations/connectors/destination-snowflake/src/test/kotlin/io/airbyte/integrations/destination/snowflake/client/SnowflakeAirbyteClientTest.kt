@@ -28,6 +28,7 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
+import java.io.InputStream
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
@@ -35,6 +36,7 @@ import java.sql.SQLException
 import java.sql.Statement
 import javax.sql.DataSource
 import kotlinx.coroutines.runBlocking
+import net.snowflake.client.jdbc.SnowflakeConnection
 import net.snowflake.client.jdbc.SnowflakeSQLException
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -468,31 +470,6 @@ internal class SnowflakeAirbyteClientTest {
     }
 
     @Test
-    fun testPutInStaging() {
-        val tableName = TableName(namespace = "namespace", name = "name")
-        val tempFilePath = "/some/file/path.csv"
-        val resultSet = mockk<ResultSet>(relaxed = true)
-        val statement =
-            mockk<Statement> {
-                every { executeQuery(any()) } returns resultSet
-                every { close() } just Runs
-            }
-        val mockConnection =
-            mockk<Connection> {
-                every { close() } just Runs
-                every { createStatement() } returns statement
-            }
-
-        every { dataSource.connection } returns mockConnection
-
-        runBlocking {
-            client.putInStage(tableName, tempFilePath)
-            verify(exactly = 1) { sqlGenerator.putInStage(tableName, tempFilePath) }
-            verify(exactly = 1) { mockConnection.close() }
-        }
-    }
-
-    @Test
     fun testCopyFromStaging() {
         val tableName = TableName(namespace = "namespace", name = "name")
         val resultSet = mockk<ResultSet>(relaxed = true)
@@ -756,5 +733,29 @@ internal class SnowflakeAirbyteClientTest {
             assertEquals(390114, e.errorCode) // NETWORK_ERROR
             // In production, this would typically trigger a retry
         }
+    }
+
+    @Test
+    fun testUploadToStage() {
+        val fileName = "file-name.csv.gz"
+        val inputStream = mockk<InputStream>(relaxed = true)
+        val tableName = TableName("namespace", "name")
+
+        val connection = mockk<Connection>(moreInterfaces = arrayOf(SnowflakeConnection::class)) {
+            every { unwrap<SnowflakeConnection>(any()) } returns (this as SnowflakeConnection)
+            every { close() } just Runs
+        }
+
+        every { dataSource.connection } returns connection
+        every { (connection as SnowflakeConnection).uploadStream(any(), any(), any(), any(), any()) } just Runs
+
+        client.uploadToStage(
+            tableName = tableName,
+            inputStream = inputStream,
+            fileName = fileName,
+            compressData = true,
+        )
+
+        verify(exactly = 1) { (connection as SnowflakeConnection).uploadStream(any(), any(), inputStream, fileName, true) }
     }
 }
