@@ -8,6 +8,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 import requests
+import urllib.parse as urlparse
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -21,7 +22,7 @@ DEFAULT_END_DATE = pendulum.now()
 DEFAULT_GEO_LOCATION_BREAKDOWN = "region"
 DEFAULT_REPORT_GRANULARITY = "daily"
 DEFAULT_REPORT_CONVERSION_COUNT_BY_CLICK_DATE = "conversion_time"
-
+DEFAULT_LIMIT = 50
 
 # Basic full refresh stream
 class OutbrainAmplifyStream(HttpStream, ABC):
@@ -29,14 +30,25 @@ class OutbrainAmplifyStream(HttpStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         if response.json():
-            total_pages = response.json().get("totalCount")
-            current_page = response.json().get("count")
-            if current_page < total_pages - 1:
-                diff = (total_pages - current_page) - 1
-                if diff < current_page + 1:
-                    return {"offset": current_page + 1}
-            else:
+            # Number of records in the current page
+            current_count = response.json().get("count", 0)
+
+            offset = 0
+            limit = DEFAULT_LIMIT
+
+            if response.request and response.request.url:
+                parsed = urlparse.urlparse(response.request.url)
+                params = dict(urlparse.parse_qsl(parsed.query))
+
+                offset = int(params.get("offset", 0))
+                limit = int(params.get("limit", DEFAULT_LIMIT))
+
+            if current_count < limit:
                 return None
+            else:
+                next_offset = offset + limit
+
+                return {"offset": next_offset, "limit": limit}
         else:
             return None
 
@@ -160,7 +172,7 @@ class CampaignsByMarketers(OutbrainAmplifyStream, HttpSubStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return f"marketers/{stream_slice['marketer_id']}/campaigns"
+        return f"marketers/{stream_slice['marketer_id']}/campaigns?limit={DEFAULT_LIMIT}"
 
 
 # Retrieve Campaign GeoLocations.
@@ -259,7 +271,7 @@ class PromotedLinksForCampaigns(OutbrainAmplifyStream, HttpSubStream):
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return f"campaigns/{stream_slice['campaign_id']}/promotedLinks"
+        return f"campaigns/{stream_slice['campaign_id']}/promotedLinks?limit={DEFAULT_LIMIT}"
 
 
 # List PromotedLinksSequences for Campaign.
