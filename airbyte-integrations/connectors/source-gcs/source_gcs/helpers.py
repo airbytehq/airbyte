@@ -58,10 +58,6 @@ class GCSUploadableRemoteFile(UploadableRemoteFile):
     displayed_uri: str = None
 
     @property
-    def mime_type(self) -> str:
-        return ".".join(self.blob.name.split(".")[1:])
-
-    @property
     def id(self) -> str:
         return self.blob.id
 

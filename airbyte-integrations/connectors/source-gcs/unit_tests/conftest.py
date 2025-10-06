@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, Mock
 
 import pytest
 from source_gcs import Cursor, SourceGCSStreamReader
-from source_gcs.helpers import GCSRemoteFile
+from source_gcs.helpers import GCSUploadableRemoteFile
 
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 
@@ -24,22 +24,23 @@ def _file_uri() -> str:
 @pytest.fixture
 def remote_file():
     blob = MagicMock(size=100, id="test/file/id", time_created=datetime.now() - timedelta(hours=1), updated=datetime.now())
-    return GCSRemoteFile(uri=_file_uri(), last_modified=datetime.now(), mime_type="csv", blob=blob)
+    blob.name.return_value = "file.csv"
+    return GCSUploadableRemoteFile(uri=_file_uri(), last_modified=datetime.now(), mime_type=".csv", blob=blob)
 
 
 @pytest.fixture
 def remote_file_older():
-    return GCSRemoteFile(uri=_file_uri(), last_modified=datetime.now() - timedelta(days=1))
+    return GCSUploadableRemoteFile(uri=_file_uri(), last_modified=datetime.now() - timedelta(days=1), blob=MagicMock())
 
 
 @pytest.fixture
 def remote_file_future():
-    return GCSRemoteFile(uri=_file_uri(), last_modified=datetime.now() + timedelta(days=1))
+    return GCSUploadableRemoteFile(uri=_file_uri(), last_modified=datetime.now() + timedelta(days=1), blob=MagicMock())
 
 
 @pytest.fixture
 def remote_file_b():
-    return GCSRemoteFile(uri=_file_uri().replace("a.csv", "b.csv"), last_modified=datetime.now())
+    return GCSUploadableRemoteFile(uri=_file_uri().replace("a.csv", "b.csv"), last_modified=datetime.now(), blob=MagicMock())
 
 
 @pytest.fixture
@@ -61,10 +62,10 @@ def mocked_reader():
 
 @pytest.fixture
 def zip_file():
-    return GCSRemoteFile(
+    return GCSUploadableRemoteFile(
         uri=str(Path(__file__).parent / "resource/files/test.csv.zip"),
+        blob=MagicMock(name="file.zip"),
         last_modified=datetime.today(),
-        mime_type=".zip",
         displayed_uri="resource/files/test.csv.zip",
     )
 

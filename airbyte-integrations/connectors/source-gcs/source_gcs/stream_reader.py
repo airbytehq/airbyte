@@ -17,7 +17,6 @@ from google.oauth2 import credentials, service_account
 
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import DeliverRawFiles
 from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles, FileBasedSourceError
-from airbyte_cdk.sources.file_based.file_based_file_transfer_reader import AbstractFileBasedFileTransferReader
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from source_gcs.config import Config
 from source_gcs.helpers import GCSUploadableRemoteFile
@@ -33,37 +32,10 @@ ERROR_MESSAGE_ACCESS = (
 )
 
 
-class GCSFileTransferReader(AbstractFileBasedFileTransferReader):
-    @property
-    def file_id(self) -> str:
-        return self.remote_file.blob.id
-
-    @property
-    def file_created_at(self) -> str:
-        return self.remote_file.blob.time_created.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-
-    @property
-    def file_updated_at(self) -> str:
-        return self.remote_file.blob.updated.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-
-    @property
-    def file_size(self) -> int:
-        return self.remote_file.blob.size
-
-    def download_to_local_directory(self, local_file_path: str) -> None:
-        self.remote_file.blob.download_to_filename(local_file_path)
-
-    @property
-    def source_file_relative_path(self) -> str:
-        return urllib.parse.unquote(self.remote_file.blob.path)
-
-
 class SourceGCSStreamReader(AbstractFileBasedStreamReader):
     """
     Stream reader for Google Cloud Storage (GCS).
     """
-
-    file_transfer_reader_class = GCSFileTransferReader
 
     def __init__(self):
         super().__init__()
@@ -133,7 +105,9 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
                         else:
                             uri = blob.generate_signed_url(expiration=timedelta(days=7), version="v4")
 
-                        remote_file = GCSUploadableRemoteFile(uri=uri, blob=blob, last_modified=last_modified)
+                        remote_file = GCSUploadableRemoteFile(
+                            uri=uri, blob=blob, last_modified=last_modified, mime_type=".".join(blob.name.split(".")[1:])
+                        )
 
                         if remote_file.mime_type == "zip" and self.config.delivery_method.delivery_type != DeliverRawFiles.delivery_type:
                             yield from ZipHelper(blob, remote_file, self.tmp_dir).get_gcs_remote_files()
