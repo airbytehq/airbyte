@@ -5,7 +5,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 424892c4-daac-4491-b35d-c6688ba547ba
-  dockerImageTag: 3.15.11-rc.2
+  dockerImageTag: 3.15.12
   dockerRepository: airbyte/destination-snowflake
   documentationUrl: https://docs.airbyte.com/integrations/destinations/snowflake
   githubIssueLabel: destination-snowflake
@@ -34,7 +34,6 @@ data:
     jobSpecific:
       - jobType: sync
         resourceRequirements:
-          memory_limit: 2Gi
           memory_request: 2Gi
   supportLevel: certified
   supportsDbt: true
