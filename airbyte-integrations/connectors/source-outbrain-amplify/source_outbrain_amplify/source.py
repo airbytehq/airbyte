@@ -26,6 +26,7 @@ DEFAULT_REPORT_CONVERSION_COUNT_BY_CLICK_DATE = "conversion_time"
 # Default limit for Outbrain API, setting it higher will cause an API error
 DEFAULT_LIMIT = 50
 
+
 # Basic full refresh stream
 class OutbrainAmplifyStream(HttpStream, ABC):
     url_base = "https://api.outbrain.com/amplify/v0.1/"
