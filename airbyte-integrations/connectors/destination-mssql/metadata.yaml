@@ -17,7 +17,7 @@ data:
             type: GSM
   connectorType: destination
   definitionId: d4353156-9217-4cad-8dd7-c108fd4f74cf
-  dockerImageTag: 2.2.13
+  dockerImageTag: 2.2.14
   dockerRepository: airbyte/destination-mssql
   documentationUrl: https://docs.airbyte.com/integrations/destinations/mssql
   githubIssueLabel: destination-mssql
@@ -32,13 +32,12 @@ data:
   releases:
     breakingChanges:
       2.0.0:
-        message: >
+        message: |
           'This version introduces new configuration options (bulk insert via Azure Cloud Storage) and removes
            the use of a raw table prior to final insertion in the destination table.  These changes will either
            require the execution of a truncate refresh on an existing connection or the creation of a new connection.
            If a new connection is set up, you may delete the old connection and the raw table in the destination after
           a successful initial sync of the new connection.
-
           '
         upgradeDeadline: "2025-09-11"
   releaseStage: generally_available
