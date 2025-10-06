@@ -22,6 +22,8 @@ DEFAULT_END_DATE = pendulum.now()
 DEFAULT_GEO_LOCATION_BREAKDOWN = "region"
 DEFAULT_REPORT_GRANULARITY = "daily"
 DEFAULT_REPORT_CONVERSION_COUNT_BY_CLICK_DATE = "conversion_time"
+
+# Default limit for Outbrain API, setting it higher will cause an API error
 DEFAULT_LIMIT = 50
 
 # Basic full refresh stream
@@ -30,7 +32,8 @@ class OutbrainAmplifyStream(HttpStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         if response.json():
-            # Number of records in the current page
+            # Number of records in the current page as defined in Outbrain API for
+            # all endpoints. Example: https://developer.outbrain.com/home-page/amplify-api/documentation/#/reference/campaigns/campaigns-collection-via-marketer/retrieve-multiple-campaigns?console=1
             current_count = response.json().get("count", 0)
 
             offset = 0
