@@ -62,12 +62,16 @@ def get_pr_creation_arguments(
     step_results: Iterable[StepResult],
     dependency_updates: Iterable[DependencyUpdate],
 ) -> Tuple[Tuple, Dict]:
-    return (modified_files,), {
-        "branch_id": f"up-to-date/{context.connector.technical_name}",
-        "commit_message": "\n".join(step_result.step.title for step_result in step_results if step_result.success),
-        "pr_title": f"🐙 {context.connector.technical_name}: run up-to-date pipeline [{datetime.now(timezone.utc).strftime('%Y-%m-%d')}]",
-        "pr_body": get_pr_body(context, step_results, dependency_updates),
-    }
+    return (
+        (modified_files,),
+        {
+            "branch_id": f"up-to-date/{context.connector.technical_name}",
+            "commit_message": "[up-to-date]"  # << We can skip Vercel builds if this is in the commit message
+            + "; ".join(step_result.step.title for step_result in step_results if step_result.success),
+            "pr_title": f"🐙 {context.connector.technical_name}: run up-to-date pipeline [{datetime.now(timezone.utc).strftime('%Y-%m-%d')}]",
+            "pr_body": get_pr_body(context, step_results, dependency_updates),
+        },
+    )
 
 
 ## MAIN FUNCTION
@@ -143,10 +147,13 @@ async def run_connector_up_to_date_pipeline(
 
                 # We open a PR even if build is failing.
                 # This might allow a developer to fix the build in the PR.
-                # ---
-                # We are skipping CI on this first PR creation attempt to avoid useless runs:
-                # the new changelog entry is missing, it will fail QA checks
-                initial_pr_creation = CreateOrUpdatePullRequest(context, skip_ci=True, labels=DEFAULT_PR_LABELS)
+                initial_pr_creation = CreateOrUpdatePullRequest(
+                    context,
+                    labels=DEFAULT_PR_LABELS,
+                    # Reduce pressure on rate limit, since we need to push a
+                    # a follow-on commit anyway once we have the PR number:
+                    skip_ci=True,
+                )
                 pr_creation_args, pr_creation_kwargs = get_pr_creation_arguments(
                     all_modified_files, context, step_results, dependency_updates
                 )
@@ -176,7 +183,15 @@ async def run_connector_up_to_date_pipeline(
                     context.logger.info(f"Exported files following the changelog entry: {exported_modified_files}")
                     all_modified_files.update(exported_modified_files)
                     final_labels = DEFAULT_PR_LABELS + [AUTO_MERGE_PR_LABEL] if auto_merge else DEFAULT_PR_LABELS
-                    post_changelog_pr_update = CreateOrUpdatePullRequest(context, skip_ci=False, labels=final_labels)
+                    post_changelog_pr_update = CreateOrUpdatePullRequest(
+                        context,
+                        labels=final_labels,
+                        # For this 'up-to-date' pipeline, we want GitHub to merge organically
+                        # if/when all required checks pass. Maintainers can also easily disable
+                        # auto-merge if they want to review or update the PR before merging.
+                        github_auto_merge=auto_merge,
+                        skip_ci=False,
+                    )
                     pr_creation_args, pr_creation_kwargs = get_pr_creation_arguments(
                         all_modified_files, context, step_results, dependency_updates
                     )

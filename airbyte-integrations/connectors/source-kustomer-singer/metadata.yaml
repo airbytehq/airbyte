@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/source-kustomer-singer
   githubIssueLabel: source-kustomer-singer
   icon: kustomer.svg
-  license: MIT
+  license: ELv2
   name: Kustomer
   remoteRegistries:
     pypi:

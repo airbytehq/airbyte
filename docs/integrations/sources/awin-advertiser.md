@@ -25,6 +25,11 @@ Documentation: https://developer.awin.com/apidocs/for-advertisers
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.7 | 2025-09-30 | [65646](https://github.com/airbytehq/airbyte/pull/65646) | Update dependencies |
+| 0.0.6 | 2025-08-09 | [64645](https://github.com/airbytehq/airbyte/pull/64645) | Update dependencies |
+| 0.0.5 | 2025-08-02 | [64430](https://github.com/airbytehq/airbyte/pull/64430) | Update dependencies |
+| 0.0.4 | 2025-06-25 | [62059](https://github.com/airbytehq/airbyte/pull/62059) | source-awin-advertiser contribution from navneetmaharishi |
+| 0.0.3 | 2025-06-21 | [60733](https://github.com/airbytehq/airbyte/pull/60733) | Update dependencies |
 | 0.0.2 | 2025-05-10 | [59902](https://github.com/airbytehq/airbyte/pull/59902) | Update dependencies |
 | 0.0.1 | 2025-04-29 | | Initial release by [@ryanmcg2203](https://github.com/ryanmcg2203) via Connector Builder |
 

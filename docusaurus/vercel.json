@@ -42,6 +42,11 @@
       "statusCode": 301
     },
     {
+      "source": "/changelog",
+      "destination": "/release_notes",
+      "statusCode": 301
+    },
+    {
       "source": "/connector-development/config-based/understanding-the-yaml-file/stream-slicers",
       "destination": "/platform/connector-development/config-based/understanding-the-yaml-file/partition-router",
       "statusCode": 301
@@ -454,6 +459,16 @@
     {
       "source": "/integrations/enterprise-connectors",
       "destination": "/integrations",
+      "statusCode": 301
+    },
+    {
+      "source": "/integrations/enterprise-connectors/source-db2",
+      "destination": "/integrations/enterprise-connectors/source-db2-enterprise",
+      "statusCode": 301
+    },
+    {
+      "source": "/integrations/enterprise-connectors/source-netsuite",
+      "destination": "/integrations/enterprise-connectors/source-netsuite-enterprise",
       "statusCode": 301
     },
     {

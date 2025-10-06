@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/source-qonto
   githubIssueLabel: source-qonto
   icon: qonto.svg
-  license: MIT
+  license: ELv2
   name: Qonto My
   releaseDate: "2023-10-19"
   releaseStage: alpha

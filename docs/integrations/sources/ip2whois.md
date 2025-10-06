@@ -32,6 +32,18 @@ Ip2whois APIs allows you to query up to 500 WHOIS domain name per month.
 
 | Version | Date       | Pull Request                                              | Subject                                                                         |
 | :------ | :--------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.36 | 2025-09-30 | [66784](https://github.com/airbytehq/airbyte/pull/66784) | Update dependencies |
+| 0.2.35 | 2025-09-09 | [66052](https://github.com/airbytehq/airbyte/pull/66052) | Update dependencies |
+| 0.2.34 | 2025-08-23 | [65363](https://github.com/airbytehq/airbyte/pull/65363) | Update dependencies |
+| 0.2.33 | 2025-08-09 | [64592](https://github.com/airbytehq/airbyte/pull/64592) | Update dependencies |
+| 0.2.32 | 2025-08-02 | [64237](https://github.com/airbytehq/airbyte/pull/64237) | Update dependencies |
+| 0.2.31 | 2025-07-26 | [63914](https://github.com/airbytehq/airbyte/pull/63914) | Update dependencies |
+| 0.2.30 | 2025-07-19 | [63513](https://github.com/airbytehq/airbyte/pull/63513) | Update dependencies |
+| 0.2.29 | 2025-07-12 | [63108](https://github.com/airbytehq/airbyte/pull/63108) | Update dependencies |
+| 0.2.28 | 2025-07-05 | [62626](https://github.com/airbytehq/airbyte/pull/62626) | Update dependencies |
+| 0.2.27 | 2025-06-28 | [62181](https://github.com/airbytehq/airbyte/pull/62181) | Update dependencies |
+| 0.2.26 | 2025-06-21 | [61798](https://github.com/airbytehq/airbyte/pull/61798) | Update dependencies |
+| 0.2.25 | 2025-06-14 | [61081](https://github.com/airbytehq/airbyte/pull/61081) | Update dependencies |
 | 0.2.24 | 2025-05-24 | [60607](https://github.com/airbytehq/airbyte/pull/60607) | Update dependencies |
 | 0.2.23 | 2025-05-10 | [59831](https://github.com/airbytehq/airbyte/pull/59831) | Update dependencies |
 | 0.2.22 | 2025-05-03 | [59235](https://github.com/airbytehq/airbyte/pull/59235) | Update dependencies |

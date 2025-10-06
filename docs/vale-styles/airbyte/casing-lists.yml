@@ -1,0 +1,8 @@
+extends: existence
+message: "Don't start list items with a lowercase letter."
+level: error
+scope: list
+ignorecase: false
+nonword: true
+tokens:
+  - '^[a-z]'

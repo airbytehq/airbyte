@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/source-appstore-singer
   githubIssueLabel: source-appstore-singer
   icon: appstore.svg
-  license: MIT
+  license: ELv2
   name: Appstore
   remoteRegistries:
     pypi:

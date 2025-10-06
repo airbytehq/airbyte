@@ -1,0 +1,42 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/surrealdb-destination-python",
+  "supported_destination_sync_modes": ["overwrite", "append", "append_dedup"],
+  "supportsIncremental": true,
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "SurrealDB Destination",
+    "type": "object",
+    "required": [
+      "surrealdb_url",
+      "surrealdb_namespace",
+      "surrealdb_database",
+      "surrealdb_username",
+      "surrealdb_password"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "surrealdb_url": {
+        "type": "string",
+        "description": "The URL of the SurrealDB instance."
+      },
+      "surrealdb_namespace": {
+        "type": "string",
+        "description": "The namespace to use in SurrealDB.",
+        "default": "airbyte"
+      },
+      "surrealdb_database": {
+        "type": "string",
+        "description": "The database to use in SurrealDB.",
+        "default": "airbyte"
+      },
+      "surrealdb_username": {
+        "type": "string",
+        "description": "The username to use in SurrealDB."
+      },
+      "surrealdb_password": {
+        "type": "string",
+        "description": "The password to use in SurrealDB."
+      }
+    }
+  }
+}

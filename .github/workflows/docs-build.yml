@@ -1,0 +1,129 @@
+# This workflow builds the documentation for the project using `poe` and `uv`.
+# It is redundant with the Vercel Preview deployment, but is runs unprivileged and
+# can be used on forks to verify the documentation build without deploying it.
+name: Docs
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  detect-changes:
+    name: Detect Changes
+    runs-on: ubuntu-24.04
+    steps:
+      # Checkout not required from `pull_request` event.
+      # The detection method uses the GitHub REST API.
+      - name: Detect Changes
+        id: detect-changes
+        uses: dorny/paths-filter@v3.0.2
+        with:
+          filters: |
+            docs:
+              - 'docs/**'
+              - 'docusaurus/**'
+              - '.markdownlint.jsonc'
+
+    outputs:
+      # 'true' if any of the docs files have changed, 'false' otherwise.
+      changed: ${{ steps.detect-changes.outputs.docs }}
+
+  build-docs:
+    name: Build Airbyte Docs
+    runs-on: ubuntu-24.04
+    needs: detect-changes
+    if: needs.detect-changes.outputs.changed == 'true'
+    steps:
+      - name: Checkout Current Branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.head_ref }}
+
+      - name: Check For Skip Conditions
+        id: check-skip
+        run: |
+          # temporarily disable -e so we can capture a non-zero exit
+          set +e
+          # Run the script and capture the exit code.
+          ./docs/check-docs-git-diff.sh
+          exit_code=$?
+          set -e
+
+          if [ $exit_code -eq 0 ]; then
+            echo "✅ Documentation already up-to-date. No build required."
+            echo skip-build=true | tee -a $GITHUB_OUTPUT
+          else
+            echo "❌ Documentation needs to be built."
+            echo skip-build=false | tee -a $GITHUB_OUTPUT
+          fi
+
+      - name: Set Up pnpm
+        if: steps.check-skip.outputs.skip-build != 'true'
+        # pnpm is used to manage the dependencies of the documentation build.
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.12.1
+
+      - name: Install uv
+        if: steps.check-skip.outputs.skip-build != 'true'
+        uses: astral-sh/setup-uv@v6
+
+      - name: Install Poe
+        if: steps.check-skip.outputs.skip-build != 'true'
+        run: |
+          # Install Poe so we can run the connector tasks:
+          uv tool install poethepoet
+
+      - name: Build Docs
+        if: steps.check-skip.outputs.skip-build != 'true'
+        run: |
+          poe docs-build
+
+  vercel-preview:
+    name: Vercel Preview
+    needs: detect-changes
+    if: >
+      github.event.pull_request.head.repo.full_name == github.repository
+      && needs.detect-changes.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    # This workflow deploys preview builds to Vercel on pull requests.
+    # Pull requests from forks are ignored.
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+
+    steps:
+      - name: Checkout Current Branch
+        uses: actions/checkout@v4.2.2
+        with:
+          fetch-depth: 1
+
+      - name: Deploy to Vercel
+        id: deploy-vercel
+        uses: amondnet/vercel-action@v41.1.4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ env.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ env.VERCEL_PROJECT_ID }}
+          vercel-args: --archive=tgz
+
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@v2.0.6
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
+      # If successful, post a check status with the Preview URL as its "details" link
+      - name: Post Custom Check with Preview URL (${{ steps.deploy-vercel.outputs.preview-url }})
+        uses: LouisBrunner/checks-action@v2.0.0
+        with:
+          name: "Vercel Preview Deployed" # << Name of the check
+          status: completed
+          conclusion: success
+          details_url: ${{ steps.deploy-vercel.outputs.preview-url }}
+          token: ${{ steps.get-app-token.outputs.token }}

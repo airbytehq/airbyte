@@ -11,7 +11,8 @@ class CursorInfo(
     val originalCursorRecordCount: Long,
     val cursorField: String?,
     var cursor: String?,
-    var cursorRecordCount: Long
+    var cursorRecordCount: Long,
+    var cutoffTime: String? = null
 ) {
     constructor(
         originalCursorField: String?,

@@ -445,6 +445,13 @@ WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configura
 
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                         |
 |:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.2.5 | 2025-08-13 | [64905](https://github.com/airbytehq/airbyte/pull/64905) | bumping up java cdk version for mssql |
+| 4.2.4 | 2025-07-03 | [62491](https://github.com/airbytehq/airbyte/pull/62491) | Improve Debezium performance by configuring the poll interval parameter. |
+| 4.2.3 | 2025-07-01 | [62052](https://github.com/airbytehq/airbyte/pull/62052) | Revert change to CDK interface signature. |
+| 4.2.2 | 2025-06-25 | [61729](https://github.com/airbytehq/airbyte/pull/61729) | Support the use of logical primary keys for CDC. |
+| 4.2.1 | 2025-06-23 | [62015](https://github.com/airbytehq/airbyte/pull/62015) | Fix previous merge. Improve cutoff date handling |
+| 4.2.0   | 2025-06-19 | [62015](https://github.com/airbytehq/airbyte/pull/61685)                                                          | Add an option to exclude today's data from cursor based incremental syncs when using temporal cursor (datetime).                                |
+| 4.1.29  | 2025-06-03 | [61320](https://github.com/airbytehq/airbyte/pull/61320)                                                          | Add error handling for connection issues and adopt the latest CDK version.                                                                      |
 | 4.1.28  | 2025-05-15 | [60311](https://github.com/airbytehq/airbyte/pull/60311)                                                          | Migrate to new gradle flow.                                                                                                                     |
 | 4.1.27  | 2025-04-28 | [59124](https://github.com/airbytehq/airbyte/pull/59124)                                                          | Fix _ab_cdc_event_serial_no datatype in addMetaDataToRowsFetchedOutsideDebezium method                                                          |
 | 4.1.26  | 2025-03-27 | [56401](https://github.com/airbytehq/airbyte/pull/56401)                                                          | Fix non-unique value clustered index issue                                                                                                      |

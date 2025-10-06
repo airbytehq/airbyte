@@ -15,8 +15,11 @@ import io.airbyte.cdk.load.test.mock.MockDestinationConfiguration
 import io.airbyte.cdk.load.test.mock.MockDestinationDataDumper.getFilename
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
+
+private val logger = KotlinLogging.logger {}
 
 @Singleton
 @Requires(env = [MOCK_TEST_MICRONAUT_ENVIRONMENT])
@@ -41,14 +44,14 @@ class MockStreamLoader(override val stream: DestinationStream) : StreamLoader {
             when (val importType = stream.importType) {
                 is Append -> {
                     MockDestinationBackend.commitFrom(
-                        getFilename(stream.descriptor, staging = true),
-                        getFilename(stream.descriptor)
+                        getFilename(stream.mappedDescriptor, staging = true),
+                        getFilename(stream.mappedDescriptor)
                     )
                 }
                 is Dedupe -> {
                     MockDestinationBackend.commitAndDedupeFrom(
-                        getFilename(stream.descriptor, staging = true),
-                        getFilename(stream.descriptor),
+                        getFilename(stream.mappedDescriptor, staging = true),
+                        getFilename(stream.mappedDescriptor),
                         importType.primaryKey,
                         importType.cursor,
                     )
@@ -56,9 +59,13 @@ class MockStreamLoader(override val stream: DestinationStream) : StreamLoader {
                 else -> throw IllegalArgumentException("Unsupported import type $importType")
             }
             MockDestinationBackend.deleteOldRecords(
-                getFilename(stream.descriptor),
+                getFilename(stream.mappedDescriptor),
                 stream.minimumGenerationId
             )
+        } else {
+            logger.info {
+                "Skipping commit because stream ${stream.mappedDescriptor.toPrettyString()} was not successful"
+            }
         }
     }
 }

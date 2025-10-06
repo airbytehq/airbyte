@@ -13,15 +13,15 @@ data:
       enabled: false
       packageName: airbyte-source-height
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.51.0@sha256:890b109f243b8b9406f23ea7522de41025f7b3e87f6fc9710bc1e521213a276f
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.2.2@sha256:588e3aaeae219b31b47da458972e559556e3501c6b6ab9f858ff83e6c8f6dc7a
   connectorSubtype: api
   connectorType: source
   definitionId: 8f4b2d64-970a-4a6f-b316-3d1144c67be8
-  dockerImageTag: 0.0.27
+  dockerImageTag: 0.0.37
   dockerRepository: airbyte/source-height
   githubIssueLabel: source-height
   icon: icon.svg
-  license: MIT
+  license: ELv2
   name: Height
   releaseDate: 2024-08-31
   releaseStage: alpha

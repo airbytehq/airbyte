@@ -37,6 +37,16 @@ A manifest only source for EZOfficeInventory. https://ezo.io/ezofficeinventory/
 
 | Version | Date       | Pull Request                                             | Subject                                                                                   |
 |---------|------------|----------------------------------------------------------|-------------------------------------------------------------------------------------------|
+| 0.0.34 | 2025-09-30 | [65832](https://github.com/airbytehq/airbyte/pull/65832) | Update dependencies |
+| 0.0.33 | 2025-08-23 | [65297](https://github.com/airbytehq/airbyte/pull/65297) | Update dependencies |
+| 0.0.32 | 2025-08-09 | [64709](https://github.com/airbytehq/airbyte/pull/64709) | Update dependencies |
+| 0.0.31 | 2025-08-02 | [63976](https://github.com/airbytehq/airbyte/pull/63976) | Update dependencies |
+| 0.0.30 | 2025-07-19 | [63544](https://github.com/airbytehq/airbyte/pull/63544) | Update dependencies |
+| 0.0.29 | 2025-07-12 | [63020](https://github.com/airbytehq/airbyte/pull/63020) | Update dependencies |
+| 0.0.28 | 2025-07-05 | [62763](https://github.com/airbytehq/airbyte/pull/62763) | Update dependencies |
+| 0.0.27 | 2025-06-28 | [62355](https://github.com/airbytehq/airbyte/pull/62355) | Update dependencies |
+| 0.0.26 | 2025-06-21 | [61943](https://github.com/airbytehq/airbyte/pull/61943) | Update dependencies |
+| 0.0.25 | 2025-06-14 | [61235](https://github.com/airbytehq/airbyte/pull/61235) | Update dependencies |
 | 0.0.24 | 2025-05-24 | [60380](https://github.com/airbytehq/airbyte/pull/60380) | Update dependencies |
 | 0.0.23 | 2025-05-10 | [59943](https://github.com/airbytehq/airbyte/pull/59943) | Update dependencies |
 | 0.0.22 | 2025-05-03 | [58867](https://github.com/airbytehq/airbyte/pull/58867) | Update dependencies |

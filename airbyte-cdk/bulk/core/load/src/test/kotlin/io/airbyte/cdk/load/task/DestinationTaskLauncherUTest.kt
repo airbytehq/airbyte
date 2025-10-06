@@ -71,6 +71,7 @@ class DestinationTaskLauncherUTest {
             inputConsumerTask,
             heartbeatTask = mockk(relaxed = true),
             updateBatchTask = mockk(relaxed = true),
+            statsEmitter = mockk(relaxed = true),
             setupTaskFactory,
             openStreamTask,
             closeStreamTaskFactory,
@@ -80,7 +81,6 @@ class DestinationTaskLauncherUTest {
             failStreamTaskFactory,
             failSyncTaskFactory,
             openStreamQueue,
-            batchUpdateQueue,
             hasThrown = AtomicBoolean(false),
         )
     }
@@ -95,7 +95,7 @@ class DestinationTaskLauncherUTest {
 
         val stream = mockk<DestinationStream>(relaxed = true)
         val streamDescriptor = DestinationStream.Descriptor("namespace", "name")
-        every { stream.descriptor } returns streamDescriptor
+        every { stream.mappedDescriptor } returns streamDescriptor
         coEvery { catalog.streams } returns listOf(stream)
     }
 
@@ -119,7 +119,7 @@ class DestinationTaskLauncherUTest {
         val streamManager = StreamManager(stream1)
         val stream1 = catalog.streams[0]
         every { syncManager.getStreamManager(any()) } returns streamManager
-        destinationTaskLauncher.handleStreamComplete(stream1.descriptor)
+        destinationTaskLauncher.handleStreamComplete(stream1.mappedDescriptor)
         coVerify(exactly = 1) { closeStreamTaskFactory.make(any(), any()) }
     }
 

@@ -1,3 +1,0 @@
-[run]
-omit =
-    source_google_search_console/run.py

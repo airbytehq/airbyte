@@ -6,7 +6,10 @@ package io.airbyte.cdk.read
 
 import io.airbyte.cdk.data.IntCodec
 import io.airbyte.cdk.data.LocalDateCodec
+import io.airbyte.cdk.data.TextCodec
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
+import io.airbyte.cdk.output.sockets.FieldValueEncoder
+import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.read.TestFixtures.assertFailures
 import io.airbyte.cdk.read.TestFixtures.bootstrap
 import io.airbyte.cdk.read.TestFixtures.factory
@@ -22,6 +25,13 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 class JdbcPartitionsCreatorTest {
+
+    private fun idDateString(id: Int, dateStr: String, string: String): NativeRecordPayload =
+        mutableMapOf(
+            "id" to FieldValueEncoder(id, IntCodec),
+            "ts" to FieldValueEncoder(LocalDate.parse(dateStr), LocalDateCodec),
+            "msg" to FieldValueEncoder(string, TextCodec),
+        )
 
     @Test
     fun testConcurrentSnapshotWithCursor() {
@@ -45,7 +55,9 @@ class JdbcPartitionsCreatorTest {
                                     From(stream().name, stream().namespace),
                                 ),
                             expectedParameters = SelectQuerier.Parameters(fetchSize = null),
-                            """{"max":"$cursorUpperBound"}""",
+                            mutableMapOf(
+                                "max" to FieldValueEncoder(cursorUpperBound, LocalDateCodec)
+                            )
                         ),
                         TestFixtures.MockedQuery(
                             expectedQuerySpec =
@@ -55,13 +67,14 @@ class JdbcPartitionsCreatorTest {
                                         stream().name,
                                         stream().namespace,
                                         sampleRateInvPow2 = 16,
-                                        sampleSize = 4
+                                        sampleSize = 4,
+                                        where = NoWhere
                                     ),
                                     NoWhere,
                                     OrderBy(id)
                                 ),
                             expectedParameters = SelectQuerier.Parameters(fetchSize = null),
-                            """{"id":10000,"ts":"2024-08-01","msg":"foo"}""",
+                            idDateString(10000, "2024-08-01", "foo"),
                         ),
                         TestFixtures.MockedQuery(
                             expectedQuerySpec =
@@ -71,16 +84,17 @@ class JdbcPartitionsCreatorTest {
                                         stream().name,
                                         stream().namespace,
                                         sampleRateInvPow2 = 8,
-                                        sampleSize = 4
+                                        sampleSize = 4,
+                                        where = NoWhere
                                     ),
                                     NoWhere,
                                     OrderBy(id)
                                 ),
                             expectedParameters = SelectQuerier.Parameters(fetchSize = null),
-                            """{"id":10000,"ts":"2024-08-01","msg":"foo"}""",
-                            """{"id":20000,"ts":"2024-08-02","msg":"bar"}""",
-                            """{"id":30000,"ts":"2024-08-03","msg":"baz"}""",
-                            """{"id":40000,"ts":"2024-08-04","msg":"quux"}""",
+                            idDateString(10000, "2024-08-01", "foo"),
+                            idDateString(20000, "2024-08-02", "bar"),
+                            idDateString(30000, "2024-08-03", "baz"),
+                            idDateString(40000, "2024-08-04", "quux"),
                         )
                     ),
             )
@@ -131,13 +145,23 @@ class JdbcPartitionsCreatorTest {
                                         stream().name,
                                         stream().namespace,
                                         sampleRateInvPow2 = 16,
-                                        sampleSize = 4
+                                        sampleSize = 4,
+                                        where =
+                                            Where(
+                                                Or(
+                                                    listOf(
+                                                        And(
+                                                            listOf(Greater(id, IntCodec.encode(22)))
+                                                        )
+                                                    )
+                                                )
+                                            )
                                     ),
-                                    Where(Greater(id, IntCodec.encode(22))),
+                                    NoWhere,
                                     OrderBy(id)
                                 ),
                             expectedParameters = SelectQuerier.Parameters(fetchSize = null),
-                            """{"id":10000,"ts":"2024-08-01","msg":"foo"}""",
+                            idDateString(10000, "2024-08-01", "foo"),
                         ),
                         TestFixtures.MockedQuery(
                             expectedQuerySpec =
@@ -147,16 +171,26 @@ class JdbcPartitionsCreatorTest {
                                         stream().name,
                                         stream().namespace,
                                         sampleRateInvPow2 = 8,
-                                        sampleSize = 4
+                                        sampleSize = 4,
+                                        where =
+                                            Where(
+                                                Or(
+                                                    listOf(
+                                                        And(
+                                                            listOf(Greater(id, IntCodec.encode(22)))
+                                                        )
+                                                    )
+                                                )
+                                            )
                                     ),
-                                    Where(Greater(id, IntCodec.encode(22))),
+                                    NoWhere,
                                     OrderBy(id)
                                 ),
                             expectedParameters = SelectQuerier.Parameters(fetchSize = null),
-                            """{"id":10000,"ts":"2024-08-01","msg":"foo"}""",
-                            """{"id":20000,"ts":"2024-08-02","msg":"bar"}""",
-                            """{"id":30000,"ts":"2024-08-03","msg":"baz"}""",
-                            """{"id":40000,"ts":"2024-08-04","msg":"quux"}""",
+                            idDateString(10000, "2024-08-01", "foo"),
+                            idDateString(20000, "2024-08-02", "bar"),
+                            idDateString(30000, "2024-08-03", "baz"),
+                            idDateString(40000, "2024-08-04", "quux"),
                         )
                     ),
             )
@@ -244,13 +278,23 @@ class JdbcPartitionsCreatorTest {
                                         stream().name,
                                         stream().namespace,
                                         sampleRateInvPow2 = 16,
-                                        sampleSize = 4
+                                        sampleSize = 4,
+                                        where =
+                                            Where(
+                                                Or(
+                                                    listOf(
+                                                        And(
+                                                            listOf(Greater(id, IntCodec.encode(22)))
+                                                        )
+                                                    )
+                                                )
+                                            )
                                     ),
-                                    Where(Greater(id, IntCodec.encode(22))),
+                                    NoWhere,
                                     OrderBy(id)
                                 ),
                             expectedParameters = SelectQuerier.Parameters(fetchSize = null),
-                            """{"id":10000,"ts":"2024-08-01","msg":"foo"}""",
+                            idDateString(10000, "2024-08-01", "foo"),
                         ),
                         TestFixtures.MockedQuery(
                             expectedQuerySpec =
@@ -260,16 +304,26 @@ class JdbcPartitionsCreatorTest {
                                         stream().name,
                                         stream().namespace,
                                         sampleRateInvPow2 = 8,
-                                        sampleSize = 4
+                                        sampleSize = 4,
+                                        where =
+                                            Where(
+                                                Or(
+                                                    listOf(
+                                                        And(
+                                                            listOf(Greater(id, IntCodec.encode(22)))
+                                                        )
+                                                    )
+                                                )
+                                            )
                                     ),
-                                    Where(Greater(id, IntCodec.encode(22))),
+                                    NoWhere,
                                     OrderBy(id)
                                 ),
                             expectedParameters = SelectQuerier.Parameters(fetchSize = null),
-                            """{"id":10000,"ts":"2024-08-01","msg":"foo"}""",
-                            """{"id":20000,"ts":"2024-08-02","msg":"bar"}""",
-                            """{"id":30000,"ts":"2024-08-03","msg":"baz"}""",
-                            """{"id":40000,"ts":"2024-08-04","msg":"quux"}""",
+                            idDateString(10000, "2024-08-01", "foo"),
+                            idDateString(20000, "2024-08-02", "bar"),
+                            idDateString(30000, "2024-08-03", "baz"),
+                            idDateString(40000, "2024-08-04", "quux"),
                         )
                     ),
             )
@@ -302,7 +356,9 @@ class JdbcPartitionsCreatorTest {
                                     From(stream().name, stream().namespace),
                                 ),
                             expectedParameters = SelectQuerier.Parameters(fetchSize = null),
-                            """{"max":"$cursorUpperBound"}""",
+                            mutableMapOf(
+                                "max" to FieldValueEncoder(cursorUpperBound, LocalDateCodec)
+                            )
                         ),
                     )
             )

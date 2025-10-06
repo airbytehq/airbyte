@@ -362,3 +362,47 @@ nav a.navbar__link--active {
 .MarkpromptOverlay {
   z-index: 201 !important;
 }
+
+.MarkpromptContentDialog[data-variant="sheet"] {
+  max-width: 580px !important;
+}
+
+.MarkpromptMessageAvatarContainer {
+  width: 48px !important;
+  height: 48px !important;
+}
+
+.MarkpromptMessageAvatarImage {
+  width: 48px !important;
+  height: 48px !important;
+}
+
+.MarkpromptMessageAvatar {
+  width: 48px !important;
+  height: 48px !important;
+}
+
+.MarkpromptContentDialog {
+  --markprompt-text-size: 1em !important;
+  --markprompt-text-size-code: 1em !important;
+}
+
+.MarkpromptPrompt {
+  padding-block: 0.35rem !important;
+}
+
+/* Header with button styling */
+.header-with-button {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-with-button h1 {
+  margin-bottom: 0;
+}
+
+/* Force no margin on the bottom when inside a flex container */
+header h1 {
+  margin-bottom: 0;
+}

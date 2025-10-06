@@ -1,13 +1,10 @@
 /*
  * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
  */
-
 package io.airbyte.integrations.destination.teradata.util
 
 import java.sql.SQLException
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertThrows
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -20,7 +17,7 @@ class JSONStructTest {
     /** Setup method to initialize objects before each test. */
     @BeforeEach
     fun setup() {
-        struct = JSONStruct("JSON", arrayOf(json))
+        struct = JSONStruct("JSON", arrayOf<Any?>(json))
     }
 
     /**
@@ -31,20 +28,7 @@ class JSONStructTest {
     @Test
     @Throws(SQLException::class)
     fun testGetAttributes() {
-        assertEquals(json, struct.getAttributes()[0])
-    }
-
-    /** Test the getAttributes method when an exception is expected. */
-    @Test
-    fun testGetAttributesException() {
-        val exception =
-            assertThrows(SQLException::class.java) {
-                val inputMap: MutableMap<String, Class<*>> = HashMap()
-                struct.getAttributes(inputMap)
-            }
-        val expectedMessage = "getAttributes (Map) NOT SUPPORTED"
-        val actualMessage = exception.message
-        assertTrue(actualMessage!!.contains(expectedMessage))
+        Assertions.assertEquals(json, struct.attributes[0])
     }
 
     /**
@@ -55,6 +39,6 @@ class JSONStructTest {
     @Test
     @Throws(SQLException::class)
     fun testGetSQLTypeName() {
-        assertEquals("JSON", struct.getSQLTypeName())
+        Assertions.assertEquals("JSON", struct.sqlTypeName)
     }
 }

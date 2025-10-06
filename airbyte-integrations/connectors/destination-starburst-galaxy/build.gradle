@@ -1,6 +1,8 @@
 plugins {
     id 'application'
     id 'airbyte-java-connector'
+    id "io.airbyte.gradle.docker"
+    id 'airbyte-connector-docker-convention'
 }
 
 airbyteJavaConnector {
@@ -25,9 +27,18 @@ application {
 dependencies {
     implementation project(path: ':airbyte-integrations:connectors:destination-s3')
 
-    implementation ('io.trino:trino-iceberg:411') {exclude group: 'commons-cli', module: 'commons-cli'}
-    implementation ('io.trino:trino-main:411') {exclude group: 'commons-cli', module: 'commons-cli'}
-    implementation ('io.trino:trino-jdbc:411') {exclude group: 'commons-cli', module: 'commons-cli'}
+    implementation ('io.trino:trino-iceberg:411') {
+        exclude group: 'commons-cli', module: 'commons-cli'
+        exclude group: 'org.apache.logging.log4j', module: 'log4j-to-slf4j'
+    }
+    implementation ('io.trino:trino-main:411') {
+        exclude group: 'commons-cli', module: 'commons-cli'
+        exclude group: 'org.apache.logging.log4j', module: 'log4j-to-slf4j'
+    }
+    implementation ('io.trino:trino-jdbc:411') {
+        exclude group: 'commons-cli', module: 'commons-cli'
+        exclude group: 'org.apache.logging.log4j', module: 'log4j-to-slf4j'
+    }
 
     implementation 'org.apache.avro:avro:1.11.1'
 

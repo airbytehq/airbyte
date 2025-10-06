@@ -43,6 +43,18 @@ Visit `https://developers.gorgias.com/reference/introduction` for API documentat
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.1.25 | 2025-09-30 | [66399](https://github.com/airbytehq/airbyte/pull/66399) | Update dependencies |
+| 0.1.24 | 2025-09-09 | [66058](https://github.com/airbytehq/airbyte/pull/66058) | Update dependencies |
+| 0.1.23 | 2025-08-23 | [65350](https://github.com/airbytehq/airbyte/pull/65350) | Update dependencies |
+| 0.1.22 | 2025-08-09 | [64599](https://github.com/airbytehq/airbyte/pull/64599) | Update dependencies |
+| 0.1.21 | 2025-08-02 | [64303](https://github.com/airbytehq/airbyte/pull/64303) | Update dependencies |
+| 0.1.20 | 2025-07-26 | [63845](https://github.com/airbytehq/airbyte/pull/63845) | Update dependencies |
+| 0.1.19 | 2025-07-19 | [63487](https://github.com/airbytehq/airbyte/pull/63487) | Update dependencies |
+| 0.1.18 | 2025-07-12 | [63114](https://github.com/airbytehq/airbyte/pull/63114) | Update dependencies |
+| 0.1.17 | 2025-07-05 | [62553](https://github.com/airbytehq/airbyte/pull/62553) | Update dependencies |
+| 0.1.16 | 2025-06-28 | [62193](https://github.com/airbytehq/airbyte/pull/62193) | Update dependencies |
+| 0.1.15 | 2025-06-21 | [61810](https://github.com/airbytehq/airbyte/pull/61810) | Update dependencies |
+| 0.1.14 | 2025-06-14 | [61147](https://github.com/airbytehq/airbyte/pull/61147) | Update dependencies |
 | 0.1.13 | 2025-05-24 | [60609](https://github.com/airbytehq/airbyte/pull/60609) | Update dependencies |
 | 0.1.12 | 2025-05-10 | [59874](https://github.com/airbytehq/airbyte/pull/59874) | Update dependencies |
 | 0.1.11 | 2025-05-03 | [59240](https://github.com/airbytehq/airbyte/pull/59240) | Update dependencies |

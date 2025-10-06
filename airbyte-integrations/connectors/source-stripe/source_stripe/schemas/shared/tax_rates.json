@@ -1,6 +1,0 @@
-{
-  "type": ["null", "array"],
-  "items": {
-    "$ref": "tax_rate.json"
-  }
-}

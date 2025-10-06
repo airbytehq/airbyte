@@ -3,16 +3,16 @@
 import gzip
 from typing import Any, Mapping
 
-import pendulum
 import pytest
 import requests_mock
-from source_amazon_ads import SourceAmazonAds
 
 from airbyte_cdk.models import Level as LogLevel
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.state_builder import StateBuilder
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
+from unit_tests.conftest import get_source
 
 
 # Fixture for the configuration with a valid region value
@@ -59,7 +59,7 @@ class TestDisplayReportStreams:
     def _read(config: Mapping[str, Any], stream_name: str, sync_mode: SyncMode = SyncMode.full_refresh) -> EntrypointOutput:
         catalog = CatalogBuilder().with_stream(stream_name, sync_mode).build()
         state = StateBuilder().build()
-        source = SourceAmazonAds(catalog, config, state)
+        source = get_source(config, state)
         return read(source, config, catalog, state)
 
     def test_given_file_when_read_brands_v3_report_then_return_records(
@@ -94,9 +94,9 @@ class TestDisplayReportStreams:
             status_code=200,
         )
         output = self._read(config, "sponsored_brands_v3_report_stream", SyncMode.incremental)
-        start_date = pendulum.today(tz="UTC").date()
+        start_date = ab_datetime_now()
         assert output.most_recent_state.stream_state.states == [
-            {"cursor": {"reportDate": start_date.format("YYYY-MM-DD")}, "partition": {"parent_slice": {}, "profileId": 1}}
+            {"cursor": {"reportDate": start_date.strftime("%Y-%m-%d")}, "partition": {"parent_slice": {}, "profileId": 1}}
         ]
         assert len(output.records) == 1
 

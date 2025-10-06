@@ -23,10 +23,11 @@ import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfigurati
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfigurationProvider
 import io.airbyte.cdk.load.command.s3.S3BucketConfiguration
 import io.airbyte.cdk.load.command.s3.S3BucketConfigurationProvider
-import io.airbyte.cdk.load.file.NoopProcessor
+import io.airbyte.cdk.load.data.Transformations
+import io.airbyte.cdk.load.file.GZIPProcessor
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
 import io.airbyte.integrations.destination.bigquery.spec.GcsStagingConfiguration
-import java.io.ByteArrayOutputStream
+import java.io.BufferedOutputStream
 
 data class BigqueryBulkLoadConfiguration(
     val bigQueryConfiguration: BigqueryConfiguration,
@@ -38,10 +39,10 @@ data class BigqueryBulkLoadConfiguration(
     AWSAccessKeyConfigurationProvider,
     AWSArnRoleConfigurationProvider,
     GcsClientConfigurationProvider,
-    ObjectStorageCompressionConfigurationProvider<ByteArrayOutputStream> {
+    ObjectStorageCompressionConfigurationProvider<BufferedOutputStream> {
     override val objectStoragePathConfiguration: ObjectStoragePathConfiguration
     override val objectStorageFormatConfiguration: ObjectStorageFormatConfiguration =
-        CSVFormatConfiguration()
+        CSVFormatConfiguration(rootLevelFlattening = !bigQueryConfiguration.legacyRawTablesOnly)
     override val objectStorageUploadConfiguration: ObjectStorageUploadConfiguration =
         ObjectStorageUploadConfiguration()
     override val s3BucketConfiguration: S3BucketConfiguration
@@ -50,7 +51,7 @@ data class BigqueryBulkLoadConfiguration(
     override val gcsClientConfiguration: GcsClientConfiguration =
         (bigQueryConfiguration.loadingMethod as GcsStagingConfiguration).gcsClientConfig
     override val objectStorageCompressionConfiguration =
-        ObjectStorageCompressionConfiguration(NoopProcessor)
+        ObjectStorageCompressionConfiguration(GZIPProcessor)
 
     init {
         bigQueryConfiguration.loadingMethod as GcsStagingConfiguration
@@ -75,6 +76,7 @@ data class BigqueryBulkLoadConfiguration(
                 pathPattern =
                     "\${NAMESPACE}/\${STREAM_NAME}/\${YEAR}/\${MONTH}/\${DAY}/\${HOUR}/\${UUID}",
                 fileNamePattern = "{date}_{timestamp}_{part_number}{format_extension}",
+                resolveNamesMethod = { Transformations.toAlphanumericAndUnderscore(it) }
             )
     }
 }

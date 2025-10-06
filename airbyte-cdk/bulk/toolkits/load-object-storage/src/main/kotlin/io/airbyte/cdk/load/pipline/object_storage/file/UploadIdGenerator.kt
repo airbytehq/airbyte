@@ -4,12 +4,16 @@
 
 package io.airbyte.cdk.load.pipline.object_storage.file
 
-import java.util.UUID
+import io.airbyte.cdk.load.util.UUIDGenerator
+import jakarta.inject.Singleton
 
 /**
  * Generate a unique upload id to keep track of the upload in the case of file name collisions.
  * Factored out for testability.
  */
-class UploadIdGenerator {
-    fun generate() = UUID.randomUUID().toString()
+@Singleton
+class UploadIdGenerator(
+    private val uuidGenerator: UUIDGenerator,
+) {
+    fun generate() = uuidGenerator.v7().toString()
 }

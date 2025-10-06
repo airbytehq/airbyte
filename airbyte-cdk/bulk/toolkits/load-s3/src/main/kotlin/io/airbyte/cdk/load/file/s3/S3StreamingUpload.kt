@@ -29,7 +29,7 @@ class S3StreamingUpload(
     private val isComplete = AtomicBoolean(false)
 
     override suspend fun uploadPart(part: ByteArray, index: Int) {
-        log.info { "Uploading part $index to ${response.key} (uploadId=${response.uploadId}" }
+        log.debug { "Uploading part $index to ${response.key} (uploadId=${response.uploadId}" }
 
         try {
             val request = UploadPartRequest {
@@ -57,7 +57,7 @@ class S3StreamingUpload(
     override suspend fun complete(): S3Object {
         try {
             if (isComplete.setOnce()) {
-                log.info {
+                log.debug {
                     "Completing multipart upload to ${response.key} (uploadId=${response.uploadId}"
                 }
                 val partsSorted = uploadedParts.toList().sortedBy { it.partNumber }

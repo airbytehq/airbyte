@@ -12,7 +12,13 @@ from typing import TYPE_CHECKING, Callable, Optional
 
 from github import Auth, Github
 
-from .consts import AIRBYTE_REPO, AUTO_MERGE_BYPASS_CI_CHECKS_LABEL, AUTO_MERGE_LABEL, BASE_BRANCH, MERGE_METHOD
+from .consts import (
+    AIRBYTE_REPO,
+    AUTO_MERGE_BYPASS_CI_CHECKS_LABEL,
+    AUTO_MERGE_LABEL,
+    BASE_BRANCH,
+    MERGE_METHOD,
+)
 from .env import GITHUB_TOKEN, PRODUCTION
 from .helpers import generate_job_summary_as_markdown
 from .pr_validators import VALIDATOR_MAPPING
@@ -70,11 +76,23 @@ def get_pr_validators(pr: PullRequest) -> set[Callable]:
     Returns:
         list[callable]: The validators
     """
-
+    validators: set[Callable] = set()
     for label in pr.labels:
         if label.name in VALIDATOR_MAPPING:
-            return VALIDATOR_MAPPING[label.name]
-    return VALIDATOR_MAPPING[AUTO_MERGE_LABEL]
+            # Add these to our validators set:
+            validators |= VALIDATOR_MAPPING[label.name]
+
+    if not validators:
+        # We shouldn't reach this point, but if we do, we raise an error.
+        # TODO: We could consider returning a dummy callable which always returns False,
+        # but for now, we raise an error to ensure we catch any misconfigurations.
+        raise ValueError(
+            f"PR #{pr.number} does not have a valid auto-merge label. "
+            f"Expected one of [{', '.join(VALIDATOR_MAPPING.keys())}], but got: "
+            f"[{'; '.join(label.name for label in pr.labels)}]",
+        )
+
+    return validators
 
 
 def merge_with_retries(pr: PullRequest, max_retries: int = 3, wait_time: int = 60) -> Optional[PullRequest]:
@@ -157,7 +175,9 @@ def auto_merge() -> None:
             f"repo:{AIRBYTE_REPO} is:pr label:{AUTO_MERGE_LABEL},{AUTO_MERGE_BYPASS_CI_CHECKS_LABEL} base:{BASE_BRANCH} state:open"
         )
         prs = [issue.as_pull_request() for issue in candidate_issues]
-        logger.info(f"Found {len(prs)} open PRs targeting {BASE_BRANCH} with the {AUTO_MERGE_LABEL} label")
+        logger.info(
+            f"Found {len(prs)} open PRs targeting {BASE_BRANCH} with the '{AUTO_MERGE_LABEL}' or '{AUTO_MERGE_BYPASS_CI_CHECKS_LABEL}' label"
+        )
         merged_prs = []
         for pr in prs:
             back_off_if_rate_limited(gh_client)

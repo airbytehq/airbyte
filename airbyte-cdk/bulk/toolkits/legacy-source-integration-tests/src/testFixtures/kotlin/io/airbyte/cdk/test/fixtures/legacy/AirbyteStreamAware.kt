@@ -3,7 +3,7 @@
  */
 package io.airbyte.cdk.test.fixtures.legacy
 
-import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair
 import java.util.*
 
 /**

@@ -4,6 +4,7 @@ import React from "react";
 import { getSupportLevelDisplay } from "../connector_registry";
 import { Callout } from "./Callout";
 import { Chip } from "./Chip";
+import { CopyPageButton } from "./CopyPageButton/CopyPageButton";
 import styles from "./HeaderDecoration.module.css";
 
 // Extend Day.js with the relativeTime plugin
@@ -241,37 +242,24 @@ const ConnectorMetadataCallout = ({
     <dl className={styles.connectorMetadata}>
       <MetadataStat label="Availability">
         <div className={styles.availability}>
-          {isEnterprise ? (
-            <>
-              <Chip className={styles.available}>
-                <EnabledIcon isEnabled={true} /> Cloud <b>with Teams add-on</b>
-              </Chip>
-              <Chip className={isOss ? styles.available : styles.unavailable}>
-                <EnabledIcon isEnabled={isOss} /> Self-Managed Community
-              </Chip>
-              <Chip className={styles.available}>
-                <EnabledIcon isEnabled={true} /> Self-Managed Enterprise
-              </Chip>
-              <Chip className={styles.unavailable}>
-                <EnabledIcon isEnabled={false} /> PyAirbyte
-              </Chip>
-            </>
-          ) : (
-            <>
-              <Chip className={isCloud ? styles.available : styles.unavailable}>
-                <EnabledIcon isEnabled={isCloud} /> Cloud
-              </Chip>
-              <Chip className={isOss ? styles.available : styles.unavailable}>
-                <EnabledIcon isEnabled={isOss} /> Self-Managed Community
-              </Chip>
-              <Chip className={isOss ? styles.available : styles.unavailable}>
-                <EnabledIcon isEnabled={isOss} /> Self-Managed Enterprise
-              </Chip>
-              <Chip className={isOss ? styles.available : styles.unavailable}>
-                <EnabledIcon isEnabled={isOss} /> PyAirbyte
-              </Chip>
-            </>
-          )}
+          <Chip className={isOss ? styles.available : styles.unavailable}>
+            <EnabledIcon isEnabled={isOss} /> Core
+          </Chip>
+          <Chip className={isCloud ? styles.available : styles.unavailable}>
+            <EnabledIcon isEnabled={isCloud} /> Standard
+          </Chip>
+          <Chip className={isEnterprise || isCloud ? styles.available : styles.unavailable}>
+            <EnabledIcon isEnabled={isEnterprise || isCloud} /> Pro
+          </Chip>
+          <Chip className={isEnterprise || isCloud ? styles.available : styles.unavailable}>
+            <EnabledIcon isEnabled={isEnterprise || isCloud} /> Enterprise Flex
+          </Chip>
+          <Chip className={isEnterprise || isOss ? styles.available : styles.unavailable}>
+            <EnabledIcon isEnabled={isEnterprise || isOss} /> Self-Managed Enterprise
+          </Chip>
+          <Chip className={isOss ? styles.available : styles.unavailable}>
+            <EnabledIcon isEnabled={isOss} /> PyAirbyte
+          </Chip>
         </div>
       </MetadataStat>
       <MetadataStat label="Support Level">
@@ -313,7 +301,11 @@ const ConnectorMetadataCallout = ({
       )}
       {isEnterprise && (
         <MetadataStat label="Enterprise Connector">
-          <strong>This premium connector is available to Enterprise customers at an additional cost</strong>.{" "}
+          <strong>
+            This premium connector is available to Enterprise customers at an
+            additional cost
+          </strong>
+          .{" "}
           <a href="https://airbyte.com/company/talk-to-sales" target="_blank">
             Talk to Sales{" "}
           </a>
@@ -329,10 +321,10 @@ const ConnectorMetadataCallout = ({
   </Callout>
 );
 
-const ConnectorTitle = ({ iconUrl, originalTitle, originalId, isArchived }) => (
+const ConnectorTitle = ({ iconUrl, originalTitle, isArchived, enterpriseConnector }) => (
   <div className={styles.header}>
     <img src={iconUrl} alt="" className={styles.connectorIcon} />
-    <h1 id={originalId}>
+    <h1 data-enterprise-connector={enterpriseConnector}>
       {isArchived ? (
         <span>
           {originalTitle} <span style={{ color: "gray" }}>[ARCHIVED]</span>
@@ -352,7 +344,6 @@ export const HeaderDecoration = ({
   supportLevel,
   iconUrl,
   originalTitle,
-  originalId,
   github_url,
   cdkVersion,
   isLatestCDKString,
@@ -361,6 +352,7 @@ export const HeaderDecoration = ({
   usageRate,
   lastUpdated,
   definitionId,
+  "enterprise-connector": enterpriseConnector,
 }) => {
   const isOss = boolStringToBool(isOssString);
   const isCloud = boolStringToBool(isCloudString);
@@ -370,12 +362,17 @@ export const HeaderDecoration = ({
 
   return (
     <>
-      <ConnectorTitle
-        iconUrl={iconUrl}
-        originalTitle={originalTitle}
-        originalId={originalId}
-        isArchived={isArchived}
-      />
+      <div
+        className={styles.connectorHeader}
+      >
+        <ConnectorTitle
+          iconUrl={iconUrl}
+          originalTitle={originalTitle}
+          isArchived={isArchived}
+          enterpriseConnector={enterpriseConnector}
+        />
+        <CopyPageButton />
+      </div>
       <ConnectorMetadataCallout
         isCloud={isCloud}
         isOss={isOss}

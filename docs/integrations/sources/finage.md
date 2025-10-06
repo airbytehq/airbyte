@@ -44,6 +44,18 @@ This connector can be used to extract data from various APIs such as symbol-list
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.34 | 2025-09-30 | [66765](https://github.com/airbytehq/airbyte/pull/66765) | Update dependencies |
+| 0.0.33 | 2025-09-24 | [65820](https://github.com/airbytehq/airbyte/pull/65820) | Update dependencies |
+| 0.0.32 | 2025-08-23 | [65239](https://github.com/airbytehq/airbyte/pull/65239) | Update dependencies |
+| 0.0.31 | 2025-08-09 | [64756](https://github.com/airbytehq/airbyte/pull/64756) | Update dependencies |
+| 0.0.30 | 2025-08-02 | [64354](https://github.com/airbytehq/airbyte/pull/64354) | Update dependencies |
+| 0.0.29 | 2025-07-26 | [63988](https://github.com/airbytehq/airbyte/pull/63988) | Update dependencies |
+| 0.0.28 | 2025-07-19 | [63602](https://github.com/airbytehq/airbyte/pull/63602) | Update dependencies |
+| 0.0.27 | 2025-07-12 | [62973](https://github.com/airbytehq/airbyte/pull/62973) | Update dependencies |
+| 0.0.26 | 2025-07-05 | [62767](https://github.com/airbytehq/airbyte/pull/62767) | Update dependencies |
+| 0.0.25 | 2025-06-28 | [62375](https://github.com/airbytehq/airbyte/pull/62375) | Update dependencies |
+| 0.0.24 | 2025-06-22 | [61991](https://github.com/airbytehq/airbyte/pull/61991) | Update dependencies |
+| 0.0.23 | 2025-06-14 | [61229](https://github.com/airbytehq/airbyte/pull/61229) | Update dependencies |
 | 0.0.22 | 2025-05-24 | [59963](https://github.com/airbytehq/airbyte/pull/59963) | Update dependencies |
 | 0.0.21 | 2025-05-03 | [59397](https://github.com/airbytehq/airbyte/pull/59397) | Update dependencies |
 | 0.0.20 | 2025-04-26 | [58878](https://github.com/airbytehq/airbyte/pull/58878) | Update dependencies |

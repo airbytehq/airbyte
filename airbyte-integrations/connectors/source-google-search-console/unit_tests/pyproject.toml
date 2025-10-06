@@ -1,0 +1,19 @@
+[build-system]
+requires = ["poetry-core=^1.0.0"]
+build-backend = "poetry.core.masonry.api"
+[tool.poetry]
+name = "source-google-search-console-tests"
+version = "0.0.0"
+description = "Unit tests for source-google-search-console"
+authors = ["Airbyte <contact@airbyte.io>"]
+package-mode = false
+[tool.poetry.dependencies]
+python = "^3.10,<3.13"
+airbyte-cdk = "^6"
+pytest = "^8"
+pytest-lazy-fixtures = "^1.1.4"
+requests-mock = "^1.12.1"
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore:This class is experimental*"
+]

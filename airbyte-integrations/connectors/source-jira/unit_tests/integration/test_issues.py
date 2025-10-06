@@ -78,7 +78,7 @@ class IssuesTest(TestCase):
         )
         http_mocker.get(
             HttpRequest(
-                f"https://{_DOMAIN}/rest/api/3/search",
+                f"https://{_DOMAIN}/rest/api/3/search/jql",
                 {
                     "fields": "*all",
                     "jql": f"updated >= {timestamp_with_timezone} ORDER BY updated asc",

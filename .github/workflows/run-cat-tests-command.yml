@@ -68,6 +68,10 @@ jobs:
           ref: ${{ steps.job-vars.outputs.branch }}
           fetch-depth: 0
 
+      # NOTE: We still use a PAT here (rather than a GitHub App) because the workflow needs
+      # permissions to add commits to our main repo as well as forks. This will only work on
+      # forks if the user installs the app into their fork. Until we document this as a clear
+      # path, we will have to keep using the PAT.
       - name: Run CAT tests with `airbyte-ci`
         if: github.event_name == 'workflow_dispatch'
         uses: ./.github/actions/run-airbyte-ci
@@ -86,19 +90,12 @@ jobs:
           git_revision: ${{ steps.job-vars.outputs.commit_id }}
           subcommand: "connectors --modified test --only-step=acceptance"
 
-      - name: Append success comment
+      - name: Append completion comment
         uses: peter-evans/create-or-update-comment@v4
-        with:
-          comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
-          reactions: hooray
-          body: |
-            > ✅ CAT Tests ran successfully.
-
-      - name: Append failure comment
-        uses: peter-evans/create-or-update-comment@v4
-        if: failure()
+        if: always()
         with:
           comment-id: ${{ steps.first-comment-action.outputs.comment-id }}
           reactions: confused
           body: |
-            > 🔴 CAT Tests failed.
+            > CAT Tests completed.
+            > _**Important: Please check the job output to verify the results.**_

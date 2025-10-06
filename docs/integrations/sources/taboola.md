@@ -33,6 +33,15 @@ You can learn more about the API here https://developers.taboola.com/backstage-a
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.30 | 2025-09-30 | [66877](https://github.com/airbytehq/airbyte/pull/66877) | Update dependencies |
+| 0.0.29 | 2025-09-23 | [66375](https://github.com/airbytehq/airbyte/pull/66375) | Update dependencies |
+| 0.0.28 | 2025-09-09 | [66127](https://github.com/airbytehq/airbyte/pull/66127) | Update dependencies |
+| 0.0.27 | 2025-08-24 | [65013](https://github.com/airbytehq/airbyte/pull/65013) | Update dependencies |
+| 0.0.26 | 2025-08-02 | [63681](https://github.com/airbytehq/airbyte/pull/63681) | Update dependencies |
+| 0.0.25 | 2025-07-12 | [63051](https://github.com/airbytehq/airbyte/pull/63051) | Update dependencies |
+| 0.0.24 | 2025-07-05 | [62747](https://github.com/airbytehq/airbyte/pull/62747) | Update dependencies |
+| 0.0.23 | 2025-06-28 | [62292](https://github.com/airbytehq/airbyte/pull/62292) | Update dependencies |
+| 0.0.22 | 2025-06-14 | [61469](https://github.com/airbytehq/airbyte/pull/61469) | Update dependencies |
 | 0.0.21 | 2025-05-24 | [60450](https://github.com/airbytehq/airbyte/pull/60450) | Update dependencies |
 | 0.0.20 | 2025-05-10 | [60184](https://github.com/airbytehq/airbyte/pull/60184) | Update dependencies |
 | 0.0.19 | 2025-05-04 | [59572](https://github.com/airbytehq/airbyte/pull/59572) | Update dependencies |

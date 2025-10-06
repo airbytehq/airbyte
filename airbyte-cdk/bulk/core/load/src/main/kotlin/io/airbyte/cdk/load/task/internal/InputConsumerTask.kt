@@ -5,15 +5,15 @@
 package io.airbyte.cdk.load.task.internal
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
-import io.airbyte.cdk.load.command.DestinationCatalog
-import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.DestinationStreamAffinedMessage
+import io.airbyte.cdk.load.message.Ignored
 import io.airbyte.cdk.load.message.PartitionedQueue
 import io.airbyte.cdk.load.message.PipelineEndOfStream
 import io.airbyte.cdk.load.message.PipelineEvent
 import io.airbyte.cdk.load.message.PipelineMessage
+import io.airbyte.cdk.load.message.ProbeMessage
 import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.message.Undefined
 import io.airbyte.cdk.load.pipeline.InputPartitioner
@@ -24,7 +24,8 @@ import io.airbyte.cdk.load.task.Task
 import io.airbyte.cdk.load.task.TerminalCondition
 import io.airbyte.cdk.load.util.use
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.flow.fold
+
+private val log = KotlinLogging.logger {}
 
 /**
  * Routes @[DestinationStreamAffinedMessage]s by stream to the appropriate channel and @
@@ -37,26 +38,22 @@ import kotlinx.coroutines.flow.fold
     justification = "message is guaranteed to be non-null by Kotlin's type system"
 )
 class InputConsumerTask(
-    private val catalog: DestinationCatalog,
     private val inputFlow: ReservingDeserializingInputFlow,
     private val pipelineInputQueue:
         PartitionedQueue<PipelineEvent<StreamKey, DestinationRecordRaw>>,
     private val partitioner: InputPartitioner,
     private val pipelineEventBookkeepingRouter: PipelineEventBookkeepingRouter
 ) : Task {
-    private val log = KotlinLogging.logger {}
 
     override val terminalCondition: TerminalCondition = OnSyncFailureOnly
 
     private suspend fun handleRecordForPipeline(
         reserved: Reserved<DestinationStreamAffinedMessage>,
-        unopenedStreams: MutableSet<DestinationStream.Descriptor>,
     ) {
         val pipelineEvent =
             pipelineEventBookkeepingRouter.handleStreamMessage(
                 reserved.value,
                 postProcessingCallback = { reserved.release() },
-                unopenedStreams
             )
         when (pipelineEvent) {
             is PipelineMessage -> {
@@ -79,20 +76,22 @@ class InputConsumerTask(
      */
     override suspend fun execute() {
         log.info { "Starting consuming messages from the input flow" }
-        val unopenedStreams = catalog.streams.map { it.descriptor }.toMutableSet()
         pipelineInputQueue.use {
             pipelineEventBookkeepingRouter.use {
-                inputFlow.fold(unopenedStreams) { unopenedStreams, (_, reserved) ->
+                inputFlow.collect { (_, reserved) ->
                     when (val message = reserved.value) {
                         is DestinationStreamAffinedMessage ->
-                            handleRecordForPipeline(reserved.replace(message), unopenedStreams)
+                            handleRecordForPipeline(reserved.replace(message))
                         is CheckpointMessage ->
                             pipelineEventBookkeepingRouter.handleCheckpoint(
                                 reserved.replace(message)
                             )
-                        is Undefined -> log.warn { "Unhandled message: $message" }
+                        Undefined -> log.warn { "Unhandled message: $message" }
+                        ProbeMessage,
+                        Ignored -> {
+                            /* do nothing */
+                        }
                     }
-                    unopenedStreams
                 }
             }
         }

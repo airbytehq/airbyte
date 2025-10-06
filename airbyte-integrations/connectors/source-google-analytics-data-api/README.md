@@ -10,38 +10,6 @@ For information about how to use this connector within Airbyte, see [the documen
 - Python (~=3.9)
 - Poetry (~=1.7) - installation instructions [here](https://python-poetry.org/docs/#installation)
 
-### Installing the connector
-
-From this connector directory, run:
-
-```bash
-poetry install --with dev
-```
-
-### Create credentials
-
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/google-analytics-data-api)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_google_analytics_data_api/spec.yaml` file.
-Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
-See `sample_files/sample_config.json` for a sample config file.
-
-### Locally running the connector
-
-```
-poetry run source-google-analytics-data-api spec
-poetry run source-google-analytics-data-api check --config secrets/config.json
-poetry run source-google-analytics-data-api discover --config secrets/config.json
-poetry run source-google-analytics-data-api read --config secrets/config.json --catalog sample_files/configured_catalog.json
-```
-
-### Running unit tests
-
-To run unit tests locally, from the connector directory run:
-
-```
-poetry run pytest unit_tests
-```
-
 ### Building the docker image
 
 1. Install [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md)
@@ -76,17 +44,6 @@ airbyte-ci connectors --name=source-google-analytics-data-api test
 
 Customize `acceptance-test-config.yml` file to configure acceptance tests. See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference) for more information.
 If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
-
-### Dependency Management
-
-All of your dependencies should be managed via Poetry.
-To add a new dependency, run:
-
-```bash
-poetry add <package-name>
-```
-
-Please commit the changes to `pyproject.toml` and `poetry.lock` files.
 
 ## Publishing a new version of the connector
 

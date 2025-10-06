@@ -192,9 +192,10 @@ class PicocliCommandLineFactory(
             .exclusive(true)
             .addArg(spec)
             .addArg(check)
+            .addArg(discover)
             .apply {
                 when (runner) {
-                    is AirbyteSourceRunner -> addArg(discover).addArg(read)
+                    is AirbyteSourceRunner -> addArg(read)
                     is AirbyteDestinationRunner -> addArg(write)
                 }
             }

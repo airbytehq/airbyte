@@ -3,16 +3,14 @@
 #
 from unittest.mock import MagicMock
 
-from source_greenhouse.components import GreenhouseStateMigration
 
-
-def test_migrate():
+def test_migrate(components_module):
     declarative_stream = MagicMock()
     declarative_stream.retriever.partition_router.parent_stream_configs = [
         {"partition_field": "parent_id"},
     ]
     config = MagicMock()
-    state_migrator = GreenhouseStateMigration(declarative_stream, config)
+    state_migrator = components_module.GreenhouseStateMigration(declarative_stream, config)
 
     stream_state = {
         "1111111111": {"updated_at": "2025-01-01T00:00:00.000Z"},

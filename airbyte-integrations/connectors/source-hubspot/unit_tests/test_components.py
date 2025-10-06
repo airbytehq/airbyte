@@ -6,8 +6,10 @@ from unittest.mock import Mock, patch
 
 import pytest
 import requests
+import requests_mock
 from requests import Response
 
+from airbyte_cdk.sources.declarative.decoders import JsonDecoder
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 
 
@@ -456,6 +458,59 @@ def test_associations_extractor(config, components_module):
         assert records[1]["contacts"] == expected_records[1]["contacts"]
 
 
+def test_associations_extractor_with_permissions_error(requests_mock, config, components_module):
+    response = requests.Response()
+    response._content = (
+        b'{"results": [{"id": "123", "updatedAt": "2022-02-25T16:43:11Z"}, {"id": "456", "updatedAt": "2022-02-25T16:43:11Z"}]}'
+    )
+    response.status_code = 200
+
+    companies_associations_responses = [
+        {"json": {"error": "The OAuth token used to make this call expired 0 second(s) ago."}, "status_code": 401},
+        {
+            "json": {
+                "results": [
+                    {
+                        "from": {"id": "123"},
+                        "to": [{"associationTypes": [{"category": "HUBSPOT_DEFINED", "label": None, "typeId": 3}], "toObjectId": "408"}],
+                    },
+                    {
+                        "from": {"id": "456"},
+                        "to": [{"associationTypes": [{"category": "HUBSPOT_DEFINED", "label": None, "typeId": 3}], "toObjectId": "888"}],
+                    },
+                ]
+            },
+            "status_code": 200,
+        },
+    ]
+
+    contacts_associations_responses = [{"json": {"results": []}, "status_code": 200}]
+
+    requests_mock.register_uri(
+        "POST", "https://api.hubapi.com/crm/v4/associations/deals/companies/batch/read", companies_associations_responses
+    )
+    requests_mock.register_uri(
+        "POST", "https://api.hubapi.com/crm/v4/associations/deals/contacts/batch/read", contacts_associations_responses
+    )
+
+    extractor = components_module.HubspotAssociationsExtractor(
+        field_path=["results"],
+        entity="deals",
+        associations_list=["companies", "contacts"],
+        decoder=JsonDecoder(parameters={}),
+        config=config,
+        parameters={},
+    )
+
+    records = list(extractor.extract_records(response=response))
+
+    assert len(records) == 2
+    assert records[0]["id"] == "123"
+    assert records[0]["companies"] == ["408"]
+    assert records[1]["id"] == "456"
+    assert records[1]["companies"] == ["888"]
+
+
 def test_extractor_supports_entity_interpolation(config, components_module):
     parameters = {"entity": "engagements_emails"}
 
@@ -520,6 +575,18 @@ def test_extractor_supports_associations_list_interpolation(config, associations
             "174824652345600.0",
             id="test_unparsable_overflow_error_returns_original_value",
         ),
+        pytest.param(
+            "12345;6789;1525",
+            {"type": ["null", "number"]},
+            "12345;6789;1525",
+            id="test_semicolon_separated_string_returns_original_value_for_number_type",
+        ),
+        pytest.param(
+            "abc123",
+            {"type": ["null", "number"]},
+            "abc123",
+            id="test_non_numeric_string_returns_original_value_for_number_type",
+        ),
     ],
 )
 def test_entity_schema_normalization(components_module, original_value, field_schema, expected_value):
@@ -530,3 +597,57 @@ def test_entity_schema_normalization(components_module, original_value, field_sc
     normalized_value = transform_function(original_value=original_value, field_schema=field_schema)
 
     assert normalized_value == expected_value
+
+
+@pytest.mark.parametrize(
+    "json_response,last_page_size,last_record,last_page_token_value,expected_next_page_token",
+    [
+        pytest.param(
+            {"paging": {"next": {"after": 1200}}}, 200, {"id": 5000}, {"after": 1000}, {"after": 1200}, id="test_next_page_on_first_chunk"
+        ),
+        pytest.param(
+            {"paging": {"next": {"after": 1200}}},
+            100,
+            {"id": 5000},
+            {"after": 1000},
+            None,
+            id="test_stop_paging_when_last_page_is_less_than_page_size",
+        ),
+        pytest.param(
+            {"paging": {"next": {"after": 1200}}}, 0, {"id": 5000}, {"after": 1000}, None, id="test_stop_paging_when_last_page_size_is_zero"
+        ),
+        pytest.param({}, 200, {"id": 5000}, {"after": 1000}, None, id="test_stop_paging_when_no_after_in_response"),
+        pytest.param(
+            {"paging": {"next": {"after": 10000}}},
+            200,
+            {"id": 25000},
+            {"after": 9800},
+            {"after": 0, "id": 25001},
+            id="test_reset_page_and_move_to_next_chunk",
+        ),
+        pytest.param(
+            {"paging": {"next": {"after": 200}}},
+            200,
+            {"id": 30000},
+            {"after": 0, "id": 25001},
+            {"after": 200, "id": 25001},
+            id="test_next_page_on_next_chunk_of_records",
+        ),
+    ],
+)
+def test_crm_search_pagination_strategy(
+    components_module, json_response, last_page_size, last_record, last_page_token_value, expected_next_page_token
+):
+    pagination_strategy = components_module.HubspotCRMSearchPaginationStrategy(page_size=200)
+
+    response = Mock()
+    response.json.return_value = json_response
+
+    actual_next_page_token = pagination_strategy.next_page_token(
+        response=response,
+        last_page_size=last_page_size,
+        last_record=last_record,
+        last_page_token_value=last_page_token_value,
+    )
+
+    assert actual_next_page_token == expected_next_page_token

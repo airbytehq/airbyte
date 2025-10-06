@@ -2,9 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import json
 import logging
-import os
 import re
 import tempfile
 from dataclasses import dataclass
@@ -15,7 +13,6 @@ import git
 import requests
 import yaml
 from google.cloud import storage
-from google.oauth2 import service_account
 from pydash import set_
 from pydash.objects import get
 
@@ -33,6 +30,7 @@ from metadata_service.constants import (
     RELEASE_CANDIDATE_GCS_FOLDER_NAME,
 )
 from metadata_service.helpers.files import compute_gcs_md5, create_zip_and_get_sha256
+from metadata_service.helpers.gcs import get_gcs_storage_client
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from metadata_service.models.generated.GitInfo import GitInfo
 from metadata_service.models.transform import to_json_sanitized_dict
@@ -85,13 +83,9 @@ class ManifestOnlyFilePaths:
 # 🛣️ FILES AND PATHS
 
 
-def get_doc_local_file_path(metadata: ConnectorMetadataDefinitionV0, docs_path: Path, inapp: bool) -> Optional[Path]:
-    pattern = re.compile(r"^https://docs\.airbyte\.com/(.+)$")
-    match = pattern.search(metadata.data.documentationUrl)
-    if match:
-        extension = ".inapp.md" if inapp else ".md"
-        return (docs_path / match.group(1)).with_suffix(extension)
-    return None
+def get_doc_local_file_path(docs_path: Path, inapp: bool) -> Optional[Path]:
+    extension = ".inapp.md" if inapp else ".md"
+    return docs_path.with_suffix(extension)
 
 
 def get_manifest_only_file_paths(working_directory: Path) -> ManifestOnlyFilePaths:
@@ -134,17 +128,6 @@ def _write_metadata_to_tmp_file(metadata_dict: dict) -> Path:
 
 
 # 🛠️ HELPERS
-
-
-def _get_storage_client() -> storage.Client:
-    """Get the GCS storage client using credentials form GCS_CREDENTIALS env variable."""
-    gcs_creds = os.environ.get("GCS_CREDENTIALS")
-    if not gcs_creds:
-        raise ValueError("Please set the GCS_CREDENTIALS env var.")
-
-    service_account_info = json.loads(gcs_creds)
-    credentials = service_account.Credentials.from_service_account_info(service_account_info)
-    return storage.Client(credentials=credentials)
 
 
 def _safe_load_metadata_file(metadata_file_path: Path) -> dict:
@@ -434,7 +417,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
     should_upload_release_candidate = is_release_candidate and not is_pre_release
     should_upload_latest = not is_release_candidate and not is_pre_release
 
-    storage_client = _get_storage_client()
+    storage_client = get_gcs_storage_client()
     bucket = storage_client.bucket(bucket_name)
     docs_path = Path(validator_opts.docs_path)
     gcp_connector_dir = f"{METADATA_FOLDER}/{metadata.data.dockerRepository}"
@@ -492,7 +475,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
 
     # Doc upload
 
-    local_doc_path = get_doc_local_file_path(metadata, docs_path, inapp=False)
+    local_doc_path = get_doc_local_file_path(docs_path, inapp=False)
     doc_files_uploaded = _file_upload(
         file_key="doc",
         local_path=local_doc_path,
@@ -505,7 +488,7 @@ def upload_metadata_to_gcs(bucket_name: str, metadata_file_path: Path, validator
     )
     uploaded_files.extend(doc_files_uploaded)
 
-    local_inapp_doc_path = get_doc_local_file_path(metadata, docs_path, inapp=True)
+    local_inapp_doc_path = get_doc_local_file_path(docs_path, inapp=True)
     inapp_doc_files_uploaded = _file_upload(
         file_key="inapp_doc",
         local_path=local_inapp_doc_path,
@@ -582,7 +565,7 @@ def delete_release_candidate_from_gcs(bucket_name: str, docker_repository: str, 
     Returns:
         MetadataDeleteInfo: Information about the files that were deleted.
     """
-    storage_client = _get_storage_client()
+    storage_client = get_gcs_storage_client()
     bucket = storage_client.bucket(bucket_name)
 
     gcp_connector_dir = f"{METADATA_FOLDER}/{docker_repository}"
@@ -641,7 +624,7 @@ def promote_release_candidate_in_gcs(
         Tuple[MetadataUploadInfo, MetadataDeleteInfo]: Information about the files that were uploaded (new latest version) and deleted (release candidate).
     """
 
-    storage_client = _get_storage_client()
+    storage_client = get_gcs_storage_client()
     bucket = storage_client.bucket(bucket_name)
 
     gcp_connector_dir = f"{METADATA_FOLDER}/{docker_repository}"

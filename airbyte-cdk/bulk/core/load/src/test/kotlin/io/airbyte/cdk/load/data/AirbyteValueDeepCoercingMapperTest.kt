@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.load.data
 
-import io.airbyte.cdk.load.data.AirbyteValueDeepCoercingMapper.Companion.DATE_TIME_FORMATTER
+import io.airbyte.cdk.load.data.AirbyteValueCoercer.DATE_TIME_FORMATTER
 import io.airbyte.cdk.load.data.json.toAirbyteValue
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.util.Jsons

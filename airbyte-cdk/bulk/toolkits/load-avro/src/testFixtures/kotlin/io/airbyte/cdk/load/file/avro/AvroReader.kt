@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.file.avro
 
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.data.Transformations
 import java.io.Closeable
 import java.io.InputStream
 import kotlin.io.path.outputStream
@@ -38,7 +39,8 @@ fun InputStream.toAvroReader(streamDescriptor: DestinationStream.Descriptor): Av
     val reader = GenericDatumReader<GenericRecord>()
     val tmpFile =
         kotlin.io.path.createTempFile(
-            prefix = "${streamDescriptor.namespace}.${streamDescriptor.name}",
+            prefix =
+                "${streamDescriptor.namespace}.${Transformations.toAlphanumericAndUnderscore(streamDescriptor.name)}",
             suffix = ".avro",
         )
     tmpFile.outputStream().use { outputStream -> this.copyTo(outputStream) }

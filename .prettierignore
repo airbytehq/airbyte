@@ -4,6 +4,9 @@ airbyte-integrations/bases/connector-acceptance-test/unit_tests/data/docs
 airbyte-integrations/connectors/destination-*/src/test-integration/resources/expected-spec*.json
 airbyte-cdk/bulk/*/*/src/test-integration/resources/expected-spec-*.json
 
+# Ignore documentation linter configuration files
+docs/vale-styles/**
+
 # Ignore manifest files in manifest-only connectors
 # This is done due to prettier being overly opinionated on the formatting of quotes
 # Ref: https://github.com/prettier/prettier/issues/973

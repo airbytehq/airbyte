@@ -851,6 +851,12 @@ schemas:
         type:
           - "null"
           - array
+        items:
+          type:
+            - string
+            - "null"
+    required:
+      - id
   campaigns_analytics:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -931,7 +937,7 @@ schemas:
           - integer
   campaigns_details:
     type: object
-    $schema: http://json-schema.org/draft-07/schema#
+    $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
       description:
@@ -963,7 +969,15 @@ schemas:
             - "null"
             - object
           additionalProperties: true
-          properties: {}
+          properties:
+            type:
+              type:
+                - string
+                - "null"
+            window:
+              type:
+                - number
+                - "null"
       created_at:
         type:
           - "null"
@@ -982,6 +996,10 @@ schemas:
           - "null"
           - string
         format: date-time
+      has_post_launch_draft:
+        type:
+          - "null"
+          - boolean
       last_sent:
         type:
           - "null"
@@ -1004,6 +1022,14 @@ schemas:
           - "null"
           - string
       tags:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      teams:
         type:
           - "null"
           - array

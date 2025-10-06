@@ -1,0 +1,7 @@
+{
+  "RequestStatus": "Completed",
+  "ResultFileUrl": "https://bulk.api.bingads.microsoft.com/path/to/bulk/resultquery/url",
+  "PercentComplete": 100,
+  "ForwardCompatibilityMap": [],
+  "Errors": null
+}

@@ -8,8 +8,9 @@ Self-Managed Community
 Self-Managed Enterprise
 Cloud
 Cloud Teams
-Cloud Enterprise
+Enterprise Flex
 abctl
+Airbox
 PyAirbyte
 [Nn]amespace
 Connector Builder
@@ -37,6 +38,10 @@ Python
 MarkDownLint
 markdownlint-cli2
 JavaScript
+ETL
+ELT
+[Dd]ata activation
+ID
 
 # Common acronyms and initialisms that don't need definitions
 
@@ -48,17 +53,33 @@ CSV
 CSVs
 API
 APIs
+OAuth
+DPath
+UUID
+URL
+SSO
+SQL
+IP[s]
+CDC
 
 # Airbyte connectors
 
 Nessie
 S3 Data Lake
+PostgreSQL
+Postgres
 
 # Companies, products, and jargon
 
 Glue
 [Gg]raph[Qq][Ll]
 \bDocker(?:'s)?\b
+npm
+HubSpot
+Zendesk
+Okta
+Entra
+Slack
 
 # Acceptable non-words that shouldn't trigger spellcheck
 

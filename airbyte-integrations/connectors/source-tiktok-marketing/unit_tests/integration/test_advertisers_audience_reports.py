@@ -3,16 +3,17 @@
 import json
 from unittest import TestCase
 
-from advetiser_slices import mock_advertisers_slices
-from config_builder import ConfigBuilder
 from freezegun import freeze_time
-from source_tiktok_marketing import SourceTiktokMarketing
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
+
+from ..conftest import get_source
+from .advetiser_slices import mock_advertisers_slices
+from .config_builder import ConfigBuilder
 
 
 class TestAdvertiserAudienceReportsLifetime(TestCase):
@@ -60,7 +61,7 @@ class TestAdvertiserAudienceReportsLifetime(TestCase):
     def test_basic_read(self, http_mocker: HttpMocker):
         self._mock_response(http_mocker)
 
-        output = read(SourceTiktokMarketing(config=self.config(), catalog=None, state=None), self.config(), self.catalog())
+        output = read(get_source(config=self.config(), state=None), self.config(), self.catalog())
         assert len(output.records) == 2
 
     @HttpMocker()
@@ -69,7 +70,7 @@ class TestAdvertiserAudienceReportsLifetime(TestCase):
         self._mock_response(http_mocker, True)
 
         output = read(
-            SourceTiktokMarketing(config=self.config(include_deleted=True), catalog=None, state=None),
+            get_source(config=self.config(include_deleted=True), state=None),
             self.config(include_deleted=True),
             self.catalog(),
         )

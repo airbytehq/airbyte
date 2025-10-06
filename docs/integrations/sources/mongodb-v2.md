@@ -50,11 +50,22 @@ access to the database.
 
 ![Database User Privileges](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_6.png)
 
-7. Enable "Restrict Access to Specific Clusters/Federated Database instances" and enable only those clusters/database that you wish to replicate.
+7. Under "Database User Privileges", navigate to "Specific Privileges", then click "Add Specific Privilege" and add `readAnyDatabase`. 
+
+:::info
+Starting in version `v2.0.0`, change data capture now supports monitoring the entire cluster, not just a single database.
+This allows you to sync multiple collections across different databases using a single source.
+
+The `readAnyDatabase` privilege is required for this expanded access. Without it, the connection will fail with an authorization error.
+:::
+
+![Read Database Privileges](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_read_permission.png)
+
+8. Enable "Restrict Access to Specific Clusters/Federated Database instances" and enable only those clusters/database that you wish to replicate.
 
 ![Restrict Access](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_7.png)
 
-8. Click on "Add User" at the bottom to save the user.
+9. Click on "Add User" at the bottom to save the user.
 
 ![Add User](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_8.png)
 
@@ -138,7 +149,7 @@ The source will test the connection to the MongoDB instance upon creation.
 ## Replication Methods
 
 The MongoDB source utilizes change data capture (CDC) as a reliable way to keep your data up to date.
-In addtion MongoDB source now allows for syncing in a full refresh mode.
+In addition, MongoDB source now allows for syncing in a full refresh mode.
 
 ### CDC
 
@@ -147,12 +158,12 @@ Airbyte utilizes [the change streams feature](https://www.mongodb.com/docs/manua
 ### Full Refresh
 
 The Full refresh sync mode added in v4.0.0 allows for reading a the entire contents of a collection, repeatedly.
-The MongoDB source connector is using checkpointing in Full Refresh read so a sync job that failed for netwrok error for example,
+The MongoDB source connector is using checkpointing in Full Refresh read so a sync job that failed for network error for example,
 Rather than starting over it will continue its full refresh read from a last known point.
 
 ### Schema Enforcement
 
-By default the MongoDB V2 source connector enforces a schema. This means that while setting up a connector it will sample a configureable number of docuemnts and will create a set of fields to sync. From that set of fields, an admin can then deselect specific fields from the Replication screen to filter them out from the sync.
+By default, the MongoDB V2 source connector enforces a schema. This means that while setting up a connector it will sample a configurable number of documents and will create a set of fields to sync. From that set of fields, an admin can then deselect specific fields from the Replication screen to filter them out from the sync.
 
 When the schema enforced option is disabled, MongoDB collections are read in schema-less mode which doesn't assume documents share the same structure.
 This allows for greater flexibility in reading data that is unstructured or vary a lot in between documents in a single collection.
@@ -180,7 +191,7 @@ To see connector limitations, or troubleshoot your MongoDB connector, see more [
 | :----------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Cluster Type                               | The type of the MongoDB cluster ([MongoDB Atlas](https://www.mongodb.com/atlas/database) replica set or self-hosted replica set).                                                                                                                                                                                                                                                                                                          |
 | Connection String                          | The connection string of the source MongoDB cluster. For Atlas hosted clusters, see [the quick start guide](#step-2-discover-the-mongodb-cluster-connection-string) for steps to find the connection string. For self-hosted clusters, refer to the [MongoDB connection string documentation](https://www.mongodb.com/docs/manual/reference/connection-string/#find-your-self-hosted-deployment-s-connection-string) for more information. |
-| Database Name                              | The name of the database that contains the source collection(s) to sync.                                                                                                                                                                                                                                                                                                                                                                   |
+| Database Names                             | The names of the MongoDB databases that contain the source collection(s) to sync. Allows specifying multiple databases to discover and sync collections from.                                                                                                                                                                                                                                                                                |
 | Username                                   | The username which is used to access the database. Required for MongoDB Atlas clusters.                                                                                                                                                                                                                                                                                                                                                    |
 | Password                                   | The password associated with this username. Required for MongoDB Atlas clusters.                                                                                                                                                                                                                                                                                                                                                           |
 | Authentication Source                      | (MongoDB Atlas clusters only) Specifies the database that the supplied credentials should be validated against. Defaults to `admin`. See the [MongoDB documentation](https://www.mongodb.com/docs/manual/reference/connection-string/#mongodb-urioption-urioption.authSource) for more details.                                                                                                                                            |
@@ -197,8 +208,13 @@ For more information regarding configuration parameters, please see [MongoDb Doc
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                                                   |
-|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------|
+| Version | Date       | Pull Request                                             | Subject                                                                                                  |
+|:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------|
+| 2.0.4   | 2025-08-28 | [65579](https://github.com/airbytehq/airbyte/pull/65579) | Add validation to ensure state format consistency.                              |
+| 2.0.3   | 2025-08-12 | [64900](https://github.com/airbytehq/airbyte/pull/64900) | Fix hardcoded read preferences to allow specification in connection string.                              |
+| 2.0.2   | 2025-07-14 | [62938](https://github.com/airbytehq/airbyte/pull/62938) | Only require a single database read permission when configured to sync a single database.                 |
+| 2.0.1   | 2025-06-04 | [61369](https://github.com/airbytehq/airbyte/pull/61369) | Do not pin on 1.5.17                                                                                      |
+| 2.0.0   | 2025-05-27 | [60252](https://github.com/airbytehq/airbyte/pull/60252) | Add support for multiple databases                                                                        |
 | 1.5.19  | 2025-05-15 | [60311](https://github.com/airbytehq/airbyte/pull/60311) | Migrate to new Gradle flow                                                                                |
 | 1.5.18  | 2025-04-24 | [58132](https://github.com/airbytehq/airbyte/pull/58132) | Fix vulnerabilities in dependencies.                                                                      |
 | 1.5.17  | 2025-04-17 | [58111](https://github.com/airbytehq/airbyte/pull/58111) | Implement timeout for document discovery                                                                  |

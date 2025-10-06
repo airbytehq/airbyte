@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/source-punk-api
   githubIssueLabel: source-punk-api
   icon: punkapi.svg
-  license: MIT
+  license: ELv2
   name: Punk API
   remoteRegistries:
     pypi:

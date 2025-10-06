@@ -196,15 +196,14 @@ definitions:
     $parameters:
       name: "metafields"
       data_path: "metafields"
-  # PRODUCTS
-  products_stream:
+  # PLANS
+  plans_stream:
     description: >-
-      Products Stream: https://developer.rechargepayments.com/2021-11/products/products_list
-      Products endpoint has 422 error with 2021-11 API version
-    $ref: "#/definitions/base_deprecated_api_stream"
+      Plans Stream: https://developer.rechargepayments.com/2021-11/plans/plans_list
+    $ref: "#/definitions/base_modern_api_stream"
     $parameters:
-      name: "products"
-      data_path: "products"
+      name: "plans"
+      data_path: "plans"
   # SHOP
   shop_stream:
     description: >-
@@ -318,7 +317,7 @@ streams:
   - "#/definitions/discounts_stream"
   - "#/definitions/metafields_stream"
   - "#/definitions/onetimes_stream"
-  - "#/definitions/products_stream"
+  - "#/definitions/plans_stream"
   - "#/definitions/shop_stream"
   - "#/definitions/subscriptions_stream"
   - "#/definitions/events_stream"
