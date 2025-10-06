@@ -9,6 +9,7 @@ import com.zaxxer.hikari.HikariDataSource
 import io.airbyte.cdk.Operation
 import io.airbyte.cdk.load.check.CheckOperationV2
 import io.airbyte.cdk.load.check.DestinationCheckerV2
+import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.dataflow.config.MemoryAndParallelismConfig
 import io.airbyte.cdk.load.orchestration.db.DefaultTempTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
@@ -204,13 +205,21 @@ class SnowflakeBeanFactory {
     ) = CheckOperationV2(destinationChecker, outputConsumer)
 
     @Singleton
-    fun getMemoryAndParallelismConfig(): MemoryAndParallelismConfig {
-        return MemoryAndParallelismConfig(
-            maxBufferedAggregates = 6,
-            maxOpenAggregates = 8,
-            maxRecordsPerAgg = 10_000_000_000_000L,
-            maxEstBytesPerAgg = 700_000_000L,
-            maxConcurrentLifecycleOperations = 10
-        )
+    fun getMemoryAndParallelismConfig(dataChannelMedium: DataChannelMedium): MemoryAndParallelismConfig {
+        // NOT speed mode
+        return if (dataChannelMedium == DataChannelMedium.STDIO) {
+            MemoryAndParallelismConfig(
+                maxRecordsPerAgg = 10_000_000_000_000L,
+                maxEstBytesPerAgg = 300_000_000L,
+            )
+        } else {
+            MemoryAndParallelismConfig(
+                maxRecordsPerAgg = 10_000_000_000_000L,
+                maxEstBytesPerAgg = 300_000_000L,
+                maxBufferedAggregates = 6,
+                maxOpenAggregates = 8,
+                maxConcurrentLifecycleOperations = 10
+            )
+        }
     }
 }
