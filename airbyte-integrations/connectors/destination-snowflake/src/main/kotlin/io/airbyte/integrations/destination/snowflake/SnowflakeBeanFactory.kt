@@ -205,6 +205,12 @@ class SnowflakeBeanFactory {
 
     @Singleton
     fun getMemoryAndParallelismConfig(): MemoryAndParallelismConfig {
-        return MemoryAndParallelismConfig(maxBufferedAggregates=6, maxOpenAggregates=8, maxRecordsPerAgg=10_000_000_000_000L, maxEstBytesPerAgg=700_000_000L, maxConcurrentLifecycleOperations=10)
+        return MemoryAndParallelismConfig(
+            maxBufferedAggregates = 6,
+            maxOpenAggregates = 8,
+            maxRecordsPerAgg = 10_000_000_000_000L,
+            maxEstBytesPerAgg = 700_000_000L,
+            maxConcurrentLifecycleOperations = 10
+        )
     }
 }
