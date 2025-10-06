@@ -57,25 +57,25 @@ class GCSUploadableRemoteFile(UploadableRemoteFile):
     blob: Any
     displayed_uri: str = None
 
-    @property
-    def id(self) -> str:
-        return self.blob.id
+    def __init__(self, blob: Any, displayed_uri: str = None, **kwargs):
+        super().__init__(**kwargs)
+        self.blob = blob
+        self.displayed_uri = displayed_uri
+        self.id = self.blob.id
+        self.created_at = self.blob.time_created.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        self.updated_at = self.blob.updated.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
     @property
     def size(self) -> int:
         return self.blob.size
-
-    @property
-    def created_at(self) -> str:
-        return self.blob.time_created.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-
-    @property
-    def updated_at(self) -> str:
-        return self.blob.updated.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
     def download_to_local_directory(self, local_file_path: str) -> None:
         self.blob.download_to_filename(local_file_path)
 
     @property
     def source_file_relative_path(self) -> str:
+        return urllib.parse.unquote(self.blob.path)
+
+    @property
+    def file_uri_for_logging(self) -> str:
         return urllib.parse.unquote(self.blob.path)
