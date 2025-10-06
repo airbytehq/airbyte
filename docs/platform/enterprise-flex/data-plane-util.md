@@ -69,7 +69,7 @@ Airbyte runs on Kubernetes. When you deploy your data plane, Airbyte uses Docker
 
 You need an Airbyte application so Airbox can access your control plane. If you don't have one, create one and note the Client ID and Client Secret. If you already have one, you can skip creating one and reuse your existing credentials.
 
-1. In Airbyte's UI, click your user name > **User Settings** > **Applications** > **Create an application**.
+1. In Airbyte's UI, click your user name > **User settings** > **Applications** > **Create an application**.
 
 2. Enter a descriptive application name. For example, "Data plane deployment." Airbyte creates your application. Note the Client ID and Client Secret.
 

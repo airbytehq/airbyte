@@ -23,15 +23,18 @@ class StateStatsEnricher(
     fun enrich(msg: CheckpointMessage, key: StateKey): CheckpointMessage {
         return when (msg) {
             is StreamCheckpoint -> enrichStreamState(msg, key)
-            is GlobalSnapshotCheckpoint -> enrichGlobalState(msg, msg.checkpoints, key)
-            is GlobalCheckpoint -> enrichGlobalState(msg, msg.checkpoints, key)
+            is GlobalSnapshotCheckpoint,
+            is GlobalCheckpoint -> enrichGlobalState(msg, key)
         }
     }
 
     @VisibleForTesting
+    @Suppress("UNUSED_PARAMETER")
     fun enrichTopLevelDestinationStats(msg: CheckpointMessage, count: Long): CheckpointMessage {
+        // TODO: set this using the count above once we get to total rejected
+        // records.
         msg.updateStats(
-            destinationStats = CheckpointMessage.Stats(count),
+            destinationStats = msg.sourceStats,
         )
 
         return msg
@@ -68,11 +71,10 @@ class StateStatsEnricher(
     @VisibleForTesting
     fun enrichGlobalState(
         msg: CheckpointMessage,
-        checkpoints: List<CheckpointMessage.Checkpoint>,
         key: StateKey,
     ): CheckpointMessage {
         val (committed, cumulative) =
-            checkpoints
+            msg.checkpoints
                 .map {
                     val desc =
                         namespaceMapper.map(
