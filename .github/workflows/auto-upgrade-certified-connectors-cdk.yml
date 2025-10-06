@@ -170,7 +170,10 @@ jobs:
             area/connectors
             auto-cdk-upgrade
           assignees: ""
+          # We'll rely on CODEOWNERS to tag the right people.
           reviewers: ""
+          # Submit as draft: true, because we need to push another commit to this branch to update the changelog.
+          # There's a `gh pr ready` at the bottom of that step to switch to ready-for-review.
           draft: true
 
       - name: Update connector changelog
