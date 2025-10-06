@@ -335,6 +335,14 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.1.0 | 2025-10-06 | [61703](https://github.com/airbytehq/airbyte/pull/61703) | Add new stream 'details' |
+| 6.0.4 | 2025-09-30 | [66409](https://github.com/airbytehq/airbyte/pull/66409) | Update dependencies |
+| 6.0.3 | 2025-09-25 | [66700](https://github.com/airbytehq/airbyte/pull/66700) | Revert to 6.0.1 |
+| 6.0.2 | 2025-09-12 | [65947](https://github.com/airbytehq/airbyte/pull/65947) | Set fallback target type to 'string' for numbers and booleans |
+| 6.0.1 | 2025-09-09 | [66100](https://github.com/airbytehq/airbyte/pull/66100) | Update dependencies |
+| 6.0.0 | 2025-08-28 | [65100](https://github.com/airbytehq/airbyte/pull/65100) | Migrate Marketing Emails stream from deprecated v1 API to v3 API. Breaking change requires stream reset. This change also enables incremental syncs for `marketing_emails` stream. |
+| 5.8.20 | 2025-08-25 | [65513](https://github.com/airbytehq/airbyte/pull/65513) | Add missing datetime format |
+| 5.8.19 | 2025-08-23 | [65327](https://github.com/airbytehq/airbyte/pull/65327) | Update dependencies |
 | 5.8.18 | 2025-08-09 | [64603](https://github.com/airbytehq/airbyte/pull/64603) | Update dependencies |
 | 5.8.17 | 2025-08-02 | [64197](https://github.com/airbytehq/airbyte/pull/64197) | Update dependencies |
 | 5.8.16 | 2025-07-26 | [63898](https://github.com/airbytehq/airbyte/pull/63898) | Update dependencies |
