@@ -4,14 +4,17 @@
 
 package io.airbyte.integrations.source.postgres.operations.types
 
+import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.TextNode
-import io.airbyte.cdk.data.JsonEncoder
+import io.airbyte.cdk.data.JsonCodec
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
-import io.airbyte.cdk.jdbc.JdbcFieldType
-import io.airbyte.cdk.jdbc.JdbcGetter
+import io.airbyte.cdk.jdbc.JdbcAccessor
+import io.airbyte.cdk.jdbc.SymmetricJdbcFieldType
 import io.airbyte.cdk.output.sockets.ConnectorJsonEncoder
 import io.airbyte.cdk.output.sockets.ProtoEncoder
+import io.airbyte.cdk.util.Jsons
+import java.sql.PreparedStatement
 import java.sql.ResultSet
 import kotlin.reflect.KClass
 import org.postgresql.geometric.PGbox
@@ -24,21 +27,29 @@ import org.postgresql.geometric.PGpolygon
 import org.postgresql.util.PGobject
 
 open class ObjectFieldType<T : PGobject>(kClass: KClass<T>) :
-    JdbcFieldType<T>(
+    SymmetricJdbcFieldType<T>(
         LeafAirbyteSchemaType.STRING,
-        ObjectGetter(kClass),
-        ObjectEncoder(),
+        ObjectAccessor(kClass),
+        ObjectCodec(),
     )
 
-class ObjectGetter<T : PGobject>(val kClass: KClass<T>) : JdbcGetter<T> {
+class ObjectAccessor<T : PGobject>(val kClass: KClass<T>) : JdbcAccessor<T> {
     override fun get(rs: ResultSet, colIdx: Int): T? {
         return rs.getObject(colIdx, kClass.java)
     }
+
+    override fun set(stmt: PreparedStatement, paramIdx: Int, value: T) {
+        stmt.setString(paramIdx, value.value)
+    }
 }
 
-class ObjectEncoder<T : PGobject>() : JsonEncoder<T>, ConnectorJsonEncoder {
+class ObjectCodec<T : PGobject>() : JsonCodec<T>, ConnectorJsonEncoder {
     override fun encode(decoded: T): JsonNode {
         return TextNode(decoded.value)
+    }
+
+    override fun decode(encoded: JsonNode): T {
+        return Jsons.readValue(encoded.asText(), object : TypeReference<T>() {})
     }
 
     override fun toProtobufEncoder(): ProtoEncoder<*> {

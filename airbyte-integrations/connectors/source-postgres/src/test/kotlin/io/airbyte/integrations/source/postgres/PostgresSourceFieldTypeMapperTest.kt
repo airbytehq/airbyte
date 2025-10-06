@@ -36,9 +36,8 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
         scalarAndArray(
             "OID",
             LeafAirbyteSchemaType.INTEGER,
-            // unsigned type - positive values only
+            // unsigned type - nonnegative values only
             mapOf(
-                "null" to "null",
                 "0" to "0",
                 "3000000000::oid" to "3000000000" // requires unsigned: bigger than an int can hold
             )
@@ -84,20 +83,18 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
             "CHAR",
             LeafAirbyteSchemaType.STRING,
             mapOf(
-                "null" to "null",
                 "'A'" to "\"A\"",
             )
         )
         scalarAndArray(
             "BIT(1)",
             LeafAirbyteSchemaType.BOOLEAN,
-            mapOf("null" to "null", "B'0'" to "false", "B'1'" to "true")
+            mapOf("B'0'" to "false", "B'1'" to "true")
         )
         scalarAndArray(
             "BIT(10)",
             LeafAirbyteSchemaType.STRING,
             mapOf(
-                "null" to "null",
                 "B'0000000000'" to "\"0000000000\"",
                 "B'1111111111'" to "\"1111111111\"",
             )
@@ -106,7 +103,6 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
             "BIT VARYING",
             LeafAirbyteSchemaType.STRING,
             mapOf(
-                "null" to "null",
                 "B'00000'" to "\"00000\"",
                 "B'11111'" to "\"11111\"",
             )
@@ -115,7 +111,6 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
             "BYTEA",
             LeafAirbyteSchemaType.BINARY,
             mapOf(
-                "null" to "null",
                 "decode('someBase64xx', 'base64')" to "\"someBase64xx\"",
             )
         )
@@ -140,6 +135,7 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
             "HSTORE",
             LeafAirbyteSchemaType.STRING,
             mapOf(
+                "null" to "null",
                 "hstore('color','red')" to "\"{\\\"color\\\":\\\"red\\\"}\"",
                 // Requires ObjectMapper with SerializationFeature.WRITE_NULL_MAP_VALUES
                 "hstore('size', NULL)" to "\"{\\\"size\\\":null}\""
@@ -256,21 +252,14 @@ class PostgresSourceFieldTypeMapperTest : FieldTypeMapperTest() {
         return TestCase(schema, sqlType, values, type)
     }
 
-    private fun MutableList<TestCase>.scalar(
-        sqlType: String,
-        type: AirbyteSchemaType,
-        values: Map<String, String>
-    ) {
-        this.add(testCase(sqlType, type, values))
-    }
-
     private fun MutableList<TestCase>.scalarAndArray(
         sqlType: String,
         type: AirbyteSchemaType,
         values: Map<String, String>
     ) {
-        this.add(testCase(sqlType, type, values))
-        this.add(testCase("$sqlType[]", ArrayAirbyteSchemaType(type), values.toArrayVals()))
+        val valsWithNull = values.plus("null" to "null")
+        this.add(testCase(sqlType, type, valsWithNull))
+        this.add(testCase("$sqlType[]", ArrayAirbyteSchemaType(type), valsWithNull.toArrayVals()))
     }
 
     // We created maps of inserted values to expected values to be used in tests of scalar types.
