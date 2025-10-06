@@ -35,6 +35,9 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
 
+      - name: Install yq
+        run: sudo snap install yq
+
       - name: List certified connectors
         id: list-connectors
         run: |
@@ -46,7 +49,7 @@ jobs:
             build_gradle_kts="${dir}/build.gradle.kts"
 
             # If metadata.yaml exists and says we're certified
-            if test -f "$metadata_file" && grep -q "supportLevel: certified" "$metadata_file"; then
+            if (test -f "$metadata_file") && (test $(yq '.data.supportLevel' "$metadata_file") = 'certified'); then
               # If we have a gradle buildscript using the bulk connector plugin
               if (test -f "$build_gradle" && grep -q "airbyte-bulk-connector" "$build_gradle") || \
                   (test -f "$build_gradle_kts" && grep -q "airbyte-bulk-connector" "$build_gradle_kts"); then
