@@ -8,7 +8,6 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 import requests
-import urllib.parse as urlparse
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
