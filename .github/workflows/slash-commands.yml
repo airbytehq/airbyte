@@ -63,11 +63,8 @@ jobs:
                 "dispatch_type": "workflow",
                 "static_args": [
                   "pr=${{ github.event.issue.number }}",
-                  "comment-id=${{ github.event.comment.id }}",
-                  "repo=${{ fromJSON(steps.pr-info.outputs.json).head.repo.full_name || github.repository }}",
-                  "gitref=${{ fromJSON(steps.pr-info.outputs.json).head.ref }}"
-                ],
-                "repository": "airbytehq/airbyte"
+                  "comment-id=${{ github.event.comment.id }}"
+                ]
               }
             ]
 
