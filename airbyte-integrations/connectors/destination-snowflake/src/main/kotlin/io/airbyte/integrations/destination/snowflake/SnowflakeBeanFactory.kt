@@ -205,7 +205,9 @@ class SnowflakeBeanFactory {
     ) = CheckOperationV2(destinationChecker, outputConsumer)
 
     @Singleton
-    fun getMemoryAndParallelismConfig(dataChannelMedium: DataChannelMedium): MemoryAndParallelismConfig {
+    fun getMemoryAndParallelismConfig(
+        dataChannelMedium: DataChannelMedium
+    ): MemoryAndParallelismConfig {
         // NOT speed mode
         return if (dataChannelMedium == DataChannelMedium.STDIO) {
             MemoryAndParallelismConfig(
