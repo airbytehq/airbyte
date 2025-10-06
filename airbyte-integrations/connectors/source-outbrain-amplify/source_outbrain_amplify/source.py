@@ -5,10 +5,10 @@
 
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from urllib.parse import parse_qsl, urlparse
 
 import pendulum
 import requests
-from urllib.parse import parse_qsl, urlparse
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
