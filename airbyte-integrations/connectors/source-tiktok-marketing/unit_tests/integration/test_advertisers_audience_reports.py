@@ -44,10 +44,6 @@ class TestAdvertiserAudienceReportsLifetime(TestCase):
             "page_size": 1000,
             "advertiser_id": self.advertiser_id,
         }
-        if include_deleted:
-            query_params["filters"] = (
-                '[{"filter_value": ["STATUS_ALL"], "field_name": "ad_status", "filter_type": "IN"}, {"filter_value": ["STATUS_ALL"], "field_name": "campaign_status", "filter_type": "IN"}, {"filter_value": ["STATUS_ALL"], "field_name": "adgroup_status", "filter_type": "IN"}]'
-            )
         http_mocker.get(
             HttpRequest(
                 url=f"https://business-api.tiktok.com/open_api/v1.3/report/integrated/get/",
