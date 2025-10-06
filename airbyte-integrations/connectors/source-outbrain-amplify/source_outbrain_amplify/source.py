@@ -8,6 +8,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 import requests
+from urllib.parse import parse_qsl, urlparse
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -39,8 +40,8 @@ class OutbrainAmplifyStream(HttpStream, ABC):
             limit = DEFAULT_LIMIT
 
             if response.request and response.request.url:
-                parsed = urlparse.urlparse(response.request.url)
-                params = dict(urlparse.parse_qsl(parsed.query))
+                parsed = urlparse(response.request.url)
+                params = dict(parse_qsl(parsed.query))
 
                 offset = int(params.get("offset", 0))
                 limit = int(params.get("limit", DEFAULT_LIMIT))
