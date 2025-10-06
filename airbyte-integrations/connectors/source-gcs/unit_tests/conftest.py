@@ -25,7 +25,7 @@ def _file_uri() -> str:
 def remote_file():
     blob = MagicMock(size=100, id="test/file/id", time_created=datetime.now() - timedelta(hours=1), updated=datetime.now())
     blob.name.return_value = "file.csv"
-    return GCSUploadableRemoteFile(uri=_file_uri(), last_modified=datetime.now(), mime_type=".csv", blob=blob)
+    return GCSUploadableRemoteFile(uri=_file_uri(), last_modified=datetime.now(), mime_type="csv", blob=blob)
 
 
 @pytest.fixture
@@ -64,7 +64,7 @@ def mocked_reader():
 def zip_file():
     return GCSUploadableRemoteFile(
         uri=str(Path(__file__).parent / "resource/files/test.csv.zip"),
-        blob=MagicMock(name="file.zip"),
+        blob=MagicMock(),
         last_modified=datetime.today(),
         displayed_uri="resource/files/test.csv.zip",
     )
