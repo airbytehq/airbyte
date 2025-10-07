@@ -718,4 +718,116 @@ internal class SnowflakeValueCoercerTest {
         val result = coercer.validate(airbyteValue)
         assertEquals(airbyteValue, result)
     }
+
+    @Test
+    fun testMapStringToIntegerValid() {
+        val stringValue = StringValue("12345")
+        val enrichedValue =
+            EnrichedAirbyteValue(
+                abValue = stringValue,
+                type = IntegerType,
+                name = "numeric_field",
+                changes = mutableListOf(),
+                airbyteMetaField = null,
+            )
+
+        val result = coercer.map(enrichedValue)
+        assertEquals(IntegerValue(BigInteger("12345")), result.abValue)
+        assertEquals(0, result.changes.size)
+    }
+
+    @Test
+    fun testMapStringToIntegerInvalid() {
+        val stringValue = StringValue("A")
+        val enrichedValue =
+            EnrichedAirbyteValue(
+                abValue = stringValue,
+                type = IntegerType,
+                name = "numeric_field",
+                changes = mutableListOf(),
+                airbyteMetaField = null,
+            )
+
+        val result = coercer.map(enrichedValue)
+        assertEquals(NullValue, result.abValue)
+        assertEquals(1, result.changes.size)
+        assertEquals(Change.NULLED, result.changes.first().change)
+        assertEquals(
+            AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR,
+            result.changes.first().reason
+        )
+    }
+
+    @Test
+    fun testMapStringToNumberValid() {
+        val stringValue = StringValue("123.45")
+        val enrichedValue =
+            EnrichedAirbyteValue(
+                abValue = stringValue,
+                type = NumberType,
+                name = "decimal_field",
+                changes = mutableListOf(),
+                airbyteMetaField = null,
+            )
+
+        val result = coercer.map(enrichedValue)
+        assertEquals(NumberValue(BigDecimal("123.45")), result.abValue)
+        assertEquals(0, result.changes.size)
+    }
+
+    @Test
+    fun testMapStringToNumberInvalid() {
+        val stringValue = StringValue("A")
+        val enrichedValue =
+            EnrichedAirbyteValue(
+                abValue = stringValue,
+                type = NumberType,
+                name = "decimal_field",
+                changes = mutableListOf(),
+                airbyteMetaField = null,
+            )
+
+        val result = coercer.map(enrichedValue)
+        assertEquals(NullValue, result.abValue)
+        assertEquals(1, result.changes.size)
+        assertEquals(Change.NULLED, result.changes.first().change)
+        assertEquals(
+            AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR,
+            result.changes.first().reason
+        )
+    }
+
+    @Test
+    fun testMapStringToIntegerNegativeValue() {
+        val stringValue = StringValue("-999")
+        val enrichedValue =
+            EnrichedAirbyteValue(
+                abValue = stringValue,
+                type = IntegerType,
+                name = "numeric_field",
+                changes = mutableListOf(),
+                airbyteMetaField = null,
+            )
+
+        val result = coercer.map(enrichedValue)
+        assertEquals(IntegerValue(BigInteger("-999")), result.abValue)
+        assertEquals(0, result.changes.size)
+    }
+
+    @Test
+    fun testMapStringToNumberScientificNotation() {
+        val stringValue = StringValue("1.23E10")
+        val enrichedValue =
+            EnrichedAirbyteValue(
+                abValue = stringValue,
+                type = NumberType,
+                name = "decimal_field",
+                changes = mutableListOf(),
+                airbyteMetaField = null,
+            )
+
+        val result = coercer.map(enrichedValue)
+        assertEquals(NumberValue(BigDecimal("1.23E10")), result.abValue)
+        assertEquals(0, result.changes.size)
+    }
 }

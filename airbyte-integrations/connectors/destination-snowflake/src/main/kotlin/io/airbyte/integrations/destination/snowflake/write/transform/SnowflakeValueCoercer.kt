@@ -8,7 +8,10 @@ import com.google.common.base.Utf8
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
+import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
+import io.airbyte.cdk.load.data.NullValue
+import io.airbyte.cdk.load.data.NumberType
 import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
@@ -64,10 +67,31 @@ fun isStringValid(s: String): Boolean {
 class SnowflakeValueCoercer : ValueCoercer {
     override fun map(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
         value.abValue =
-            if (value.type is UnionType) {
-                StringValue(value.abValue.serializeToString())
-            } else {
-                value.abValue
+            when {
+                value.type is UnionType -> StringValue(value.abValue.serializeToString())
+                value.type is IntegerType && value.abValue is StringValue -> {
+                    try {
+                        IntegerValue(BigInteger((value.abValue as StringValue).value))
+                    } catch (e: NumberFormatException) {
+                        value.nullify(
+                            AirbyteRecordMessageMetaChange.Reason
+                                .DESTINATION_SERIALIZATION_ERROR
+                        )
+                        NullValue
+                    }
+                }
+                value.type is NumberType && value.abValue is StringValue -> {
+                    try {
+                        NumberValue(BigDecimal((value.abValue as StringValue).value))
+                    } catch (e: NumberFormatException) {
+                        value.nullify(
+                            AirbyteRecordMessageMetaChange.Reason
+                                .DESTINATION_SERIALIZATION_ERROR
+                        )
+                        NullValue
+                    }
+                }
+                else -> value.abValue
             }
         return value
     }
