@@ -89,51 +89,66 @@ jobs:
       - name: Generate Connector Matrix from Changes
         id: generate-matrix
         run: |
-          # Get the list of modified connectors
+          # Get the list of all modified connectors
           echo "connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json)" | tee -a $GITHUB_OUTPUT
 
-          # If local-cdk-changed is true, get Java connectors with useLocalCdk = true
-          # Otherwise, get modified Java connectors
+          # Get JVM connectors list (for language detection in enhanced matrix)
           if [[ "${{ steps.cdk-changes.outputs.java-cdk == 'true' }}" == "true" ]]; then
-            echo "jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --local-cdk)" | tee -a $GITHUB_OUTPUT
+            jvm_connectors=$(./poe-tasks/get-modified-connectors.sh --local-cdk)
           else
-            echo "jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --java)" | tee -a $GITHUB_OUTPUT
+            jvm_connectors=$(./poe-tasks/get-modified-connectors.sh --java)
           fi
 
-          echo "non_jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --no-java)" | tee -a $GITHUB_OUTPUT
+          # Get all connectors as JSON
+          all_connectors_json=$(./poe-tasks/get-modified-connectors.sh --json)
 
-      - name: Set JVM Runner Type
-        id: set-jvm-runner-type
-        run: |
-          # Default to ubuntu-24.04 for all connectors
-          echo "jvm-runner-type=ubuntu-24.04" >> $GITHUB_OUTPUT
+          # Determine JVM runner type
           if [[ "${{ github.repository }}" == "airbytehq/airbyte" || "${{ github.repository }}" == "airbytehq/airbyte-enterprise" ]]; then
-            # Within our own repo, we can use the custom (larger) runner
-            echo "jvm-runner-type=linux-24.04-large" | tee -a "$GITHUB_OUTPUT"
+            jvm_runner="linux-24.04-large"
+          else
+            jvm_runner="ubuntu-24.04"
           fi
+
+          # Convert JVM connectors list to JSON array for easier matching
+          jvm_array=$(echo "$jvm_connectors" | jq -R . | jq -s .)
+
+          # Create enhanced matrix with language and runner information
+          enhanced_matrix=$(echo "$all_connectors_json" | jq -c \
+            --argjson jvm_array "$jvm_array" \
+            --arg jvm_runner "$jvm_runner" '
+            {
+              include: [
+                .connector[] | {
+                  connector: .,
+                  language: (if ($jvm_array | index(.)) then "java" else "python" end),
+                  runner: (if ($jvm_array | index(.)) then $jvm_runner else "ubuntu-24.04" end)
+                }
+              ]
+            }
+          ')
+
+          echo "connectors_test_matrix=$enhanced_matrix" | tee -a $GITHUB_OUTPUT
 
     outputs:
       connectors-matrix: ${{ steps.generate-matrix.outputs.connectors_matrix }}
-      jvm-connectors-matrix: ${{ steps.generate-matrix.outputs.jvm_connectors_matrix }}
-      non-jvm-connectors-matrix: ${{ steps.generate-matrix.outputs.non_jvm_connectors_matrix }}
-      jvm-runner-type: ${{ steps.set-jvm-runner-type.outputs.jvm-runner-type }}
+      connectors-test-matrix: ${{ steps.generate-matrix.outputs.connectors_test_matrix }}
       # The commit SHA of the current branch, used to report test results:
       commit-sha: ${{ steps.checkout.outputs.commit }}
       creds-available: ${{ (secrets.GCP_PROJECT_ID == '') && (vars.GCP_PROJECT_ID == '') && 'false' || 'true' }}
 
-  jvm-connectors-test:
+  connectors-test:
     needs: [generate-matrix]
-    runs-on: ${{ needs.generate-matrix.outputs.jvm-runner-type }} # Custom runner, defined in GitHub org settings
+    runs-on: ${{ matrix.runner }}
     env:
       GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
       GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID || vars.GCP_PROJECT_ID }}
       DD_TAGS: "connector.name:${{ matrix.connector }}"
 
     strategy:
-      matrix: ${{ fromJson(needs.generate-matrix.outputs.jvm-connectors-matrix) }}
+      matrix: ${{ fromJson(needs.generate-matrix.outputs.connectors-test-matrix) }}
       max-parallel: 5 # Limit number of parallel jobs
       fail-fast: false # Don't stop on first failure
-    name: Test ${{ matrix.connector }} Connector ${{ ! matrix.connector && ' (no JVM-based connectors modified)' || ( needs.generate-matrix.outputs.creds-available == 'false' && ' [No Creds]' || '') }}
+    name: Test ${{ matrix.connector }} Connector (${{ matrix.language }})${{ ! matrix.connector && ' (no connectors modified)' || ( needs.generate-matrix.outputs.creds-available == 'false' && ' [No Creds]' || '') }}
     steps:
       - name: Checkout Airbyte
         if: matrix.connector
@@ -145,23 +160,21 @@ jobs:
           submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
           fetch-depth: 1
 
-      # Java deps
+      # Java deps (JVM connectors only)
       - uses: actions/setup-java@v4
-        if: matrix.connector
+        if: matrix.connector && matrix.language == 'java'
         with:
           distribution: zulu
           java-version: 21
           cache: gradle
 
-      # The default behaviour is read-only on PR branches and read/write on master.
-      # See https://github.com/gradle/actions/blob/main/docs/setup-gradle.md#using-the-cache-read-only.
       - uses: gradle/actions/setup-gradle@v4
-        if: matrix.connector
+        if: matrix.connector && matrix.language == 'java'
         with:
           gradle-version: "8.14"
 
-      # TODO: We can delete this step once Airbyte-CI is removed from Java integration tests.
-      - name: Set up Python (For Airbyte-CI)
+      # Python deps (all connectors - needed for Poe tasks and Python connectors)
+      - name: Set up Python
         if: matrix.connector
         uses: actions/setup-python@v5
         with:
@@ -169,15 +182,39 @@ jobs:
           check-latest: true
           update-environment: true
 
+      - name: Install and configure Poetry
+        if: matrix.connector && matrix.language == 'python'
+        uses: snok/install-poetry@v1
+        with:
+          version: 1.8.5
+
       - name: Install the latest version of uv
         if: matrix.connector
         uses: astral-sh/setup-uv@v6
 
-      - name: Install Poe
+      - name: Install system dependencies
+        if: matrix.connector && matrix.language == 'python'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            libssl-dev \
+            libffi-dev \
+            python3-dev
+
+      - name: Install Poe and Dev Dependencies
         if: matrix.connector
         run: |
           # Install Poe so we can run the connector tasks:
           uv tool install poethepoet
+
+          # These should be included as dev dependencies in the connector, but
+          # for many connectors they are undeclared (Python connectors only):
+          if [[ "${{ matrix.language }}" == "python" ]]; then
+            uv tool install ruff
+            uv tool install pytest
+            uv tool install mypy
+          fi
 
       - name: Install connector dependencies
         if: matrix.connector
@@ -202,113 +239,15 @@ jobs:
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-integration-tests
 
-      - name: Publish Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v2
-        # Skip if cancelled, if no connector is specified, or if running from a fork.
-        if: always() && !cancelled() && matrix.connector && github.repository == 'airbytehq/airbyte'
-        with:
-          check_name: "`${{ matrix.connector }}` Connector Test Results"
-          commit: ${{ steps.checkout.outputs.commit }}
-          large_files: true
-          files: |
-            airbyte-integrations/connectors/${{ matrix.connector }}/build/test-results/**/*.xml
-
-  non-jvm-connectors-test:
-    needs: [generate-matrix]
-    runs-on: ubuntu-24.04
-    env:
-      GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
-      GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID || vars.GCP_PROJECT_ID }}
-
-    strategy:
-      matrix: ${{ fromJson(needs.generate-matrix.outputs.non-jvm-connectors-matrix) }}
-      max-parallel: 5 # Limit number of parallel jobs
-      fail-fast: false # Don't stop on first failure
-    name: Test ${{ matrix.connector }} Connector ${{ ! matrix.connector && ' (no non-JVM-based connectors modified)' || ( needs.generate-matrix.outputs.creds-available == 'false' && ' [No Creds]' || '') }}
-    steps:
-      - name: Checkout Airbyte
-        if: matrix.connector
-        id: checkout
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
-          ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
-          submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
-          fetch-depth: 1
-
-      # Python deps
-      - name: Set up Python
-        if: matrix.connector
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-          check-latest: true
-          update-environment: true
-
-      - name: Install and configure Poetry
-        if: matrix.connector
-        uses: snok/install-poetry@v1
-        with:
-          version: 1.8.5
-
-      - name: Install the latest version of uv
-        if: matrix.connector
-        uses: astral-sh/setup-uv@v6
-
-      - name: Install system dependencies
-        if: matrix.connector
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            build-essential \
-            libssl-dev \
-            libffi-dev \
-            python3-dev
-
-      - name: Install Poe and Dev Dependencies
-        if: matrix.connector
-        run: |
-          # Install Poe so we can run the connector tasks:
-          uv tool install poethepoet
-
-          # These should be included as dev dependencies in the connector, but
-          # for many connectors they are undeclared:
-          uv tool install ruff
-          uv tool install pytest
-          uv tool install mypy
-
-      - name: Install connector dependencies
-        if: matrix.connector
-        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
-        run: poe install
-
-      - name: Fetch connector secrets
-        # This will be skipped if the repo or fork does not set GCP_PROJECT_ID, or if it is set to an empty value.
-        # Later integration tests will likely fail in this case, but we at least let them run.
-        if: matrix.connector && env.GCP_PROJECT_ID != ''
-        run: |
-          airbyte-cdk secrets fetch ${{ matrix.connector }} \
-            --print-ci-secrets-masks
-
-      - name: Run Unit Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Unprivileged, Executed from Fork]' || '' }}
-        if: matrix.connector
-        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
-        run: poe test-unit-tests
-
-      - name: Run Integration Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Unprivileged, Executed from Fork]' || '' }}
-        if: matrix.connector
-        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
-        run: poe test-integration-tests
-
       - name: Container Tests
-        if: matrix.connector
+        if: matrix.connector && matrix.language == 'python'
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: |
           airbyte-cdk image test
 
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
-        # Skip if cancelled, if no connector is specified, or if the repository is a fork.
+        # Skip if cancelled, if no connector is specified, or if running from a fork.
         if: always() && !cancelled() && matrix.connector && github.repository == 'airbytehq/airbyte'
         with:
           check_name: "`${{ matrix.connector }}` Connector Test Results"
@@ -465,8 +404,7 @@ jobs:
     if: always()
     needs:
       - generate-matrix
-      - jvm-connectors-test
-      - non-jvm-connectors-test
+      - connectors-test
       - pre-release-checks
       - connectors-lint
     runs-on: ubuntu-24.04
@@ -474,8 +412,7 @@ jobs:
       - name: Evaluate Status
         id: evaluate-status
         run: |
-          if [[ "${{ needs.jvm-connectors-test.result }}" == "success" &&
-                "${{ needs.non-jvm-connectors-test.result }}" == "success" &&
+          if [[ "${{ needs.connectors-test.result }}" == "success" &&
                 "${{ needs.connectors-lint.result }}" == "success" ]]; then
             echo "result=success" | tee -a $GITHUB_OUTPUT
           else
