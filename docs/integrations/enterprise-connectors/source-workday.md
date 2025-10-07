@@ -6,8 +6,8 @@ enterprise-connector: true
 
 Airbyte's [Workday](https://workday.com) enterprise source connector currently offers the following features:
 
-- Full Refresh [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes). Note that incremental syncs are only supported for specific streams. 
-- Reliable replication at any size with [checkpointing](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing). 
+- Full Refresh [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes). Note that incremental syncs are only supported for specific streams.
+- Reliable replication at any size with [checkpointing](https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/#state--checkpointing).
 - Support for Workday Report-as-a-Service (RaaS) streams. Each provided Report ID can be used as a separate stream with an auto-detected schema.
 
 ## Features
@@ -16,15 +16,15 @@ Airbyte's [Workday](https://workday.com) enterprise source connector currently o
 |:------------------------------|:-----------|
 | Full Refresh Sync             | Yes        |
 | Incremental Sync              | No         |
-| Replicate Incremental Deletes | No         | 
+| Replicate Incremental Deletes | No         |
 | SSL connection                | Yes        |
-| Namespaces                    | No         | 
+| Namespaces                    | No         |
 
 ## Prerequisites
 
-- Workday tenant - The Organization ID for your Workday environment. This can be found by logging into your Workday account and going to My Account > Organization ID 
+- Workday tenant - The Organization ID for your Workday environment. This can be found by logging into your Workday account and going to My Account > Organization ID
 - Workday hostname - The endpoint for connecting into your Workday environment. This can be found by logging into your Workday instance and searching “Public Web Service” in the search bar and selecting the appropriate report. Use the ellipse (...) button to select **Web Service > View WSDL**
-- Workday username and password - A user account that has the necessary permissions to access the reports you want to sync. 
+- Workday username and password - A user account that has the necessary permissions to access the reports you want to sync.
 - Report IDs - Each report in Workday has a unique Report ID.
 
 ## Setup Guide
