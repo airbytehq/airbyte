@@ -94,17 +94,3 @@ jobs:
               "description": "Connector tests failed in fork with BYO secrets",
               "target_url": "${{ steps.trigger-tests.outputs.workflow-url || format(''{0}/{1}/actions/runs/{2}'', github.server_url, github.repository, github.run_id) }}"
             }'
-
-      - name: Comment on PR with results
-        if: steps.get-app-token.outcome == 'success'
-        uses: peter-evans/create-or-update-comment@v4
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            ## Fork Connector Tests Results
-
-            ${{ steps.trigger-tests.outputs.workflow-conclusion == 'success' && '✅ Tests passed' || '❌ Tests failed' }}
-
-            The connector tests ran in your fork's repository context using your BYO secrets.
-
-            [View test results](${{ steps.trigger-tests.outputs.workflow-url }})
