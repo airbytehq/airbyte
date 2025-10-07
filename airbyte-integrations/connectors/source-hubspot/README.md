@@ -46,3 +46,5 @@ You can run our full test suite locally using [`airbyte-ci`](https://github.com/
 ```bash
 airbyte-ci connectors --name=source-hubspot test
 ```
+
+<!-- Test comment to trigger CI -->
