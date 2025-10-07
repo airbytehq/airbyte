@@ -115,20 +115,28 @@ private inline fun <T> generateProtoEncoder(
 
 val offsetTimeProtoEncoder =
     generateProtoEncoder<OffsetTime> { builder, value ->
-        builder.setTimeWithTimezone(value.format(OffsetTimeCodec.formatter))
+        builder.setTimeWithTimezone(
+            AirbyteRecordMessage.OffsetTime.newBuilder()
+                .setNanosOfDay(value.toLocalTime().toNanoOfDay())
+                .setOffsetSeconds(value.offset.totalSeconds)
+                .build()
+        )
     }
 val localDateTimeProtoEncoder =
     generateProtoEncoder<LocalDateTime> { builder, value ->
-        builder.setTimestampWithoutTimezone(value.format(LocalDateTimeCodec.formatter))
+        builder.setTimestampWithoutTimezone(
+            AirbyteRecordMessage.LocalDateTime.newBuilder()
+                .setDateDaysSinceEpoch(value.toLocalDate().toEpochDay().toInt())
+                .setNanosOfDay(value.toLocalTime().toNanoOfDay())
+                .build()
+        )
     }
 val localTimeProtoEncoder =
     generateProtoEncoder<LocalTime> { builder, time ->
-        builder.setTimeWithoutTimezone(time.format(LocalTimeCodec.formatter))
+        builder.setTimeWithoutTimezone(time.toNanoOfDay())
     }
 val localDateProtoEncoder =
-    generateProtoEncoder<LocalDate> { builder, date ->
-        builder.setDate(date.format(LocalDateCodec.formatter))
-    }
+    generateProtoEncoder<LocalDate> { builder, date -> builder.setDate(date.toEpochDay().toInt()) }
 val urlProtoEncoder =
     generateProtoEncoder<URL> { builder, url -> builder.setString(url.toExternalForm()) }
 val doubleProtoEncoder = generateProtoEncoder<Double> { builder, value -> builder.setNumber(value) }
@@ -155,7 +163,13 @@ val booleanProtoEncoder =
     generateProtoEncoder<Boolean> { builder, value -> builder.setBoolean(value) }
 val offsetDateTimeProtoEncoder =
     generateProtoEncoder<OffsetDateTime> { builder, decoded ->
-        builder.setTimestampWithTimezone(decoded.format(OffsetDateTimeCodec.formatter))
+        builder.setTimestampWithTimezone(
+            AirbyteRecordMessage.OffsetDateTime.newBuilder()
+                .setEpochSecond(decoded.toEpochSecond())
+                .setNano(decoded.nano)
+                .setOffsetSeconds(decoded.offset.totalSeconds)
+                .build()
+        )
     }
 val floatProtoEncoder =
     generateProtoEncoder<Float> { builder, decoded -> builder.setBigDecimal(decoded.toString()) }
