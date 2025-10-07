@@ -29,6 +29,7 @@ Documentation: https://api-docs.partnerize.com/partner/#section/Introduction
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.21 | 2025-10-07 | [67338](https://github.com/airbytehq/airbyte/pull/67338) | Update dependencies |
 | 0.0.20 | 2025-09-30 | [66376](https://github.com/airbytehq/airbyte/pull/66376) | Update dependencies |
 | 0.0.19 | 2025-09-09 | [65778](https://github.com/airbytehq/airbyte/pull/65778) | Update dependencies |
 | 0.0.18 | 2025-08-23 | [65196](https://github.com/airbytehq/airbyte/pull/65196) | Update dependencies |
