@@ -14,6 +14,20 @@ a matrix configuration for GitHub Actions that includes language detection
 and runner type selection.
 
 Functions are designed to be called by poethepoet script tasks.
+
+Testing
+-------
+This module includes doctests for key utility functions. To run the tests:
+
+    cd ~/repos/airbyte
+    python -m doctest poe-tasks/connector_matrix.py -v
+
+All tests should pass. The doctests demonstrate expected behavior for:
+- CSV file list parsing
+- File filtering based on ignore patterns
+- Connector path extraction
+- Empty matrix format
+- Output formatting (JSON vs text)
 """
 
 import json
