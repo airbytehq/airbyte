@@ -205,7 +205,7 @@ jobs:
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         # Skip if cancelled, if no connector is specified, or if running from a fork.
-        if: always() && !cancelled() && matrix.connector && github.repository == 'airbytehq/airbyte'
+        if: always() && !cancelled() && matrix.connector && github.repository == 'airbytehq/airbyte' && github.event_name == 'workflow_call'
         with:
           check_name: "`${{ matrix.connector }}` Connector Test Results"
           commit: ${{ steps.checkout.outputs.commit }}
@@ -309,7 +309,7 @@ jobs:
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         # Skip if cancelled, if no connector is specified, or if the repository is a fork.
-        if: always() && !cancelled() && matrix.connector && github.repository == 'airbytehq/airbyte'
+        if: always() && !cancelled() && matrix.connector && github.repository == 'airbytehq/airbyte' && github.event_name == 'workflow_call'
         with:
           check_name: "`${{ matrix.connector }}` Connector Test Results"
           commit: ${{ steps.checkout.outputs.commit }}
