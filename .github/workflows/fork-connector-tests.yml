@@ -72,6 +72,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           status: ${{ steps.trigger-tests.outcome == 'success' && steps.trigger-tests.outputs.workflow-conclusion == 'success' && 'success' || 'failure' }}
           context: Fork Connector Tests
-          description: ${{ steps.trigger-tests.outcome == 'success' && steps.trigger-tests.outputs.workflow-conclusion == 'success' && 'Connector tests passed in fork with BYO secrets' || 'Connector tests failed in fork with BYO secrets' }}
+          # Workflow conclusion 'success' or 'failure'
+          description: Connector tests ${{ steps.trigger-tests.outputs.workflow-conclusion }} using BYO secrets
           targetUrl: ${{ steps.trigger-tests.outputs.workflow-url || format('{0}/{1}/actions/runs/{2}', github.server_url, github.repository, github.run_id) }}
           sha: ${{ github.event.pull_request.head.sha }}
