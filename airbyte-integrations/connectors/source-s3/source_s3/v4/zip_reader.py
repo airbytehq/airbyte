@@ -313,7 +313,6 @@ class ZipContentReader:
         self.buffer_size = buffer_size
         self.buffer = bytearray()
         self._closed = False
-        self._utf_8_sig_skip = False
 
     def __iter__(self):
         """
@@ -365,12 +364,13 @@ class ZipContentReader:
             self.buffer += chunk
 
         # utf_8_sig considers `\xef\xbb\xbf` as a single character and therefore calling `bytearray(b'\xef').decode("utf_8_sig") will
-        # cause an exception to be raised. This character should only be at the beginning of the file so we can skip it. Here, we add
-        # self._utf_8_sig_skip to make sure the condition is only executed once to reduce the performance hit.
+        # cause an exception to be raised.
         actual_size = size
-        if self._utf_8_sig_skip and self.encoding == "utf_8_sig" and self.buffer[:3] == bytearray(b'\xef\xbb\xbf'):
-            actual_size += 2
-            self._utf_8_sig_skip = True
+        if self.encoding == "utf_8_sig":
+            if self.buffer[:size] == bytearray(b'\xef'):
+                actual_size += 2
+            elif self.buffer[:size] == bytearray(b'\xbb'):
+                actual_size += 1
 
         data = self.buffer[:actual_size]
         self.buffer = self.buffer[actual_size:]
