@@ -68,3 +68,4 @@ Currently, these are the source and destination connectors that support faster s
 - [S3](destinations/s3)
 - [Azure Blob Storage](destinations/azure-blob-storage)
 - [BigQuery](destinations/bigquery)
+- [ClickHouse](destinations/clickhouse)
