@@ -46,8 +46,16 @@ def get_git_remote() -> str:
 
 
 def get_modified_files(prev_commit: bool = False, files_list: str | None = None) -> list[str]:
-    """Get list of modified files using git or from provided CSV string."""
-    if files_list:
+    """Get list of modified files using git or from provided CSV string.
+
+    >>> get_modified_files(files_list="file1.py, file2.txt,file3.md")
+    ['file1.py', 'file2.txt', 'file3.md']
+    >>> get_modified_files(files_list="  spaced.py  ,  another.txt  ")
+    ['spaced.py', 'another.txt']
+    >>> get_modified_files(files_list="")
+    []
+    """
+    if files_list is not None:
         files = [f.strip() for f in files_list.split(",") if f.strip()]
         return files
 
@@ -117,7 +125,17 @@ def get_modified_files(prev_commit: bool = False, files_list: str | None = None)
 
 
 def filter_ignored_files(files: list[str]) -> list[str]:
-    """Filter out files matching ignore patterns."""
+    """Filter out files matching ignore patterns.
+
+    >>> filter_ignored_files(["airbyte-integrations/connectors/source-faker/setup.py"])
+    ['airbyte-integrations/connectors/source-faker/setup.py']
+    >>> filter_ignored_files(["airbyte-integrations/connectors/source-faker/README.md"])
+    []
+    >>> filter_ignored_files(["airbyte-integrations/connectors/source-faker/poe_tasks.toml"])
+    []
+    >>> filter_ignored_files(["some/path/.coveragerc"])
+    []
+    """
     ignore_regex = "|".join(re.escape(pattern) for pattern in IGNORE_PATTERNS)
     ignore_pattern = re.compile(f"/({ignore_regex})$")
 
@@ -126,7 +144,17 @@ def filter_ignored_files(files: list[str]) -> list[str]:
 
 
 def extract_connector_paths(files: list[str]) -> list[str]:
-    """Extract connector paths from file list."""
+    """Extract connector paths from file list.
+
+    >>> extract_connector_paths(["airbyte-integrations/connectors/source-faker/setup.py"])
+    ['airbyte-integrations/connectors/source-faker/setup.py']
+    >>> extract_connector_paths(["airbyte-integrations/connectors/destination-bigquery/build.gradle"])
+    ['airbyte-integrations/connectors/destination-bigquery/build.gradle']
+    >>> extract_connector_paths(["docs/some-file.md"])
+    []
+    >>> extract_connector_paths(["airbyte-integrations/connectors/source-faker/"])
+    ['airbyte-integrations/connectors/source-faker/']
+    """
     connector_pattern = re.compile(r"^airbyte-integrations/connectors/(source-[^/]+|destination-[^/]+)(/|$)")
     return [f for f in files if connector_pattern.match(f)]
 
@@ -201,12 +229,26 @@ def find_local_cdk_connectors() -> list[str]:
 
 
 def return_empty_json() -> str:
-    """Return empty JSON matrix format for GitHub Actions."""
+    """Return empty JSON matrix format for GitHub Actions.
+
+    >>> return_empty_json()
+    '{"include": []}'
+    """
     return '{"include": []}'
 
 
 def format_output(connectors: list[str], json_output: bool) -> str:
-    """Format connector list as JSON matrix or newline-delimited."""
+    """Format connector list as JSON matrix or newline-delimited.
+
+    >>> format_output(["source-faker", "destination-bigquery"], json_output=False)
+    'source-faker\\ndestination-bigquery'
+    >>> format_output(["source-faker"], json_output=True)
+    '{"connector": ["source-faker"]}'
+    >>> format_output([], json_output=True)
+    '{"include": []}'
+    >>> format_output([], json_output=False)
+    ''
+    """
     if not json_output:
         return "\n".join(connectors)
 
