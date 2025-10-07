@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.output.sockets
 
-import com.fasterxml.jackson.core.io.BigDecimalParser
 import io.airbyte.cdk.data.BigDecimalCodec
 import io.airbyte.cdk.data.BinaryCodec
 import io.airbyte.cdk.data.BooleanCodec
@@ -26,9 +25,11 @@ import io.airbyte.cdk.data.TextCodec
 import io.airbyte.cdk.data.UrlCodec
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.StringFieldType
+import io.airbyte.cdk.protocol.ProtobufTypeBasedDecoder
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteRecordMessageProtobuf
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteValueProtobuf
 import java.math.BigDecimal
+import java.math.BigInteger
 import java.net.URI
 import java.nio.ByteBuffer
 import java.time.LocalDate
@@ -43,6 +44,7 @@ import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
 
 class NativeRecordProtobufEncoderTest {
+    private val protoDecoder = ProtobufTypeBasedDecoder()
 
     data class TestCase<T>(
         val value: T,
@@ -59,22 +61,24 @@ class NativeRecordProtobufEncoderTest {
             TestCase(
                 value = 123L,
                 jsonEncoder = LongCodec,
-                decoder = { proto -> proto.getData(0).integer }
+                decoder = { proto ->
+                    (protoDecoder.decode(proto.getData(0)) as BigInteger).toLong()
+                }
             ),
             TestCase(
                 value = 123,
                 jsonEncoder = IntCodec,
-                decoder = { proto -> proto.getData(0).integer.toInt() }
+                decoder = { proto -> (protoDecoder.decode(proto.getData(0)) as BigInteger).toInt() }
             ),
             TestCase(
                 value = "text value",
                 jsonEncoder = TextCodec,
-                decoder = { proto -> proto.getData(0).string }
+                decoder = { proto -> protoDecoder.decode(proto.getData(0)) }
             ),
             TestCase(
                 value = true,
                 jsonEncoder = BooleanCodec,
-                decoder = { proto -> proto.getData(0).boolean }
+                decoder = { proto -> protoDecoder.decode(proto.getData(0)) }
             ),
             TestCase(
                 value =
@@ -82,34 +86,34 @@ class NativeRecordProtobufEncoderTest {
                         OffsetDateTime.now().format(OffsetDateTimeCodec.formatter)
                     ),
                 jsonEncoder = OffsetDateTimeCodec,
-                decoder = { proto -> OffsetDateTime.parse(proto.getData(0).timestampWithTimezone) }
+                decoder = { proto -> protoDecoder.decode(proto.getData(0)) },
             ),
             TestCase(
                 value = 123.456f,
                 jsonEncoder = FloatCodec,
                 decoder = { proto ->
-                    BigDecimalParser.parseWithFastParser(proto.getData(0).bigDecimal).toFloat()
+                    (protoDecoder.decode(proto.getData(0)) as BigDecimal).toFloat()
                 }
             ),
             TestCase(
                 value = "hello".toByteArray().let { ByteBuffer.wrap(it) },
                 jsonEncoder = BinaryCodec,
                 decoder = { proto ->
-                    ByteBuffer.wrap(Base64.getDecoder().decode(proto.getData(0).string))
+                    ByteBuffer.wrap(
+                        Base64.getDecoder().decode(protoDecoder.decode(proto.getData(0)) as String)
+                    )
                 }
             ),
             TestCase(
                 value = BigDecimal.valueOf(1234.567),
                 jsonEncoder = BigDecimalCodec,
-                decoder = { proto ->
-                    BigDecimalParser.parseWithFastParser(proto.getData(0).bigDecimal)
-                }
+                decoder = { proto -> protoDecoder.decode(proto.getData(0)) }
             ),
             TestCase(
                 value = BigDecimal.valueOf(987),
                 jsonEncoder = BigDecimalCodec,
                 decoder = { proto ->
-                    BigDecimalParser.parseWithFastParser(proto.getData(0).bigInteger)
+                    (protoDecoder.decode(proto.getData(0)) as BigInteger).toBigDecimal()
                 }
             ),
             TestCase(
@@ -131,7 +135,9 @@ class NativeRecordProtobufEncoderTest {
                 value = "{\"hello\":1234}".toByteArray().let { ByteBuffer.wrap(it) },
                 jsonEncoder = JsonBytesCodec,
                 decoder = { proto ->
-                    ByteBuffer.wrap(Base64.getDecoder().decode(proto.getData(0).string))
+                    ByteBuffer.wrap(
+                        Base64.getDecoder().decode(protoDecoder.decode(proto.getData(0)) as String)
+                    )
                 }
             ),
             TestCase(
@@ -142,30 +148,28 @@ class NativeRecordProtobufEncoderTest {
             TestCase(
                 value = URI("http://www.example.com").toURL(),
                 jsonEncoder = UrlCodec,
-                decoder = { proto -> URI(proto.getData(0).string).toURL() }
+                decoder = { proto -> URI(protoDecoder.decode(proto.getData(0)) as String).toURL() }
             ),
             TestCase(
                 value = LocalDate.now(),
                 jsonEncoder = LocalDateCodec,
-                decoder = { proto -> LocalDate.parse(proto.getData(0).date) }
+                decoder = { proto -> protoDecoder.decode(proto.getData(0)) }
             ),
             TestCase(
                 value = LocalTime.parse(LocalTime.now().format(LocalTimeCodec.formatter)),
                 jsonEncoder = LocalTimeCodec,
-                decoder = { proto -> LocalTime.parse(proto.getData(0).timeWithoutTimezone) }
+                decoder = { proto -> protoDecoder.decode(proto.getData(0)) }
             ),
             TestCase(
                 value =
                     LocalDateTime.parse(LocalDateTime.now().format(LocalDateTimeCodec.formatter)),
                 jsonEncoder = LocalDateTimeCodec,
-                decoder = { proto ->
-                    LocalDateTime.parse(proto.getData(0).timestampWithoutTimezone)
-                }
+                decoder = { proto -> protoDecoder.decode(proto.getData(0)) }
             ),
             TestCase(
                 value = OffsetTime.parse(OffsetTime.now().format(OffsetTimeCodec.formatter)),
                 jsonEncoder = OffsetTimeCodec,
-                decoder = { proto -> OffsetTime.parse(proto.getData(0).timeWithTimezone) }
+                decoder = { proto -> protoDecoder.decode(proto.getData(0)) }
             ),
         )
     @TestFactory
@@ -174,7 +178,7 @@ class NativeRecordProtobufEncoderTest {
         return testCases.map { case ->
             @Suppress("UNCHECKED_CAST")
             val fve = FieldValueEncoder(case.value, case.jsonEncoder as JsonEncoder<in Any>)
-            DynamicTest.dynamicTest("test-${case.value.javaClass.simpleName}") {
+            DynamicTest.dynamicTest("test-${case.value!!.javaClass.simpleName}") {
                 val n: NativeRecordPayload = mutableMapOf("id" to fve)
                 val actualProto =
                     n.toProtobuf(setOf(Field("id", StringFieldType)), protoBuilder, valBuilder)
