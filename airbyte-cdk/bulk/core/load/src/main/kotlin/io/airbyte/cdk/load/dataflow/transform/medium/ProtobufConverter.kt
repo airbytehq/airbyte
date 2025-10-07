@@ -276,31 +276,36 @@ class ProtobufConverter(
             StringValue::class.java -> StringValue(rawValue.toString())
             IntegerValue::class.java -> IntegerValue(rawValue as BigInteger)
             NumberValue::class.java -> NumberValue(rawValue as BigDecimal)
-            DateValue::class.java -> when (rawValue) {
-                is LocalDate -> DateValue(rawValue)
-                is String -> DateValue(rawValue)
-                else -> DateValue(rawValue.toString())
-            }
-            TimestampWithTimezoneValue::class.java -> when (rawValue) {
-                is OffsetDateTime -> TimestampWithTimezoneValue(rawValue)
-                is String -> TimestampWithTimezoneValue(rawValue)
-                else -> TimestampWithTimezoneValue(rawValue.toString())
-            }
-            TimestampWithoutTimezoneValue::class.java -> when (rawValue) {
-                is java.time.LocalDateTime -> TimestampWithoutTimezoneValue(rawValue)
-                is String -> TimestampWithoutTimezoneValue(rawValue)
-                else -> TimestampWithoutTimezoneValue(rawValue.toString())
-            }
-            TimeWithTimezoneValue::class.java -> when (rawValue) {
-                is OffsetTime -> TimeWithTimezoneValue(rawValue)
-                is String -> TimeWithTimezoneValue(rawValue)
-                else -> TimeWithTimezoneValue(rawValue.toString())
-            }
-            TimeWithoutTimezoneValue::class.java -> when (rawValue) {
-                is LocalTime -> TimeWithoutTimezoneValue(rawValue)
-                is String -> TimeWithoutTimezoneValue(rawValue)
-                else -> TimeWithoutTimezoneValue(rawValue.toString())
-            }
+            DateValue::class.java ->
+                when (rawValue) {
+                    is LocalDate -> DateValue(rawValue)
+                    is String -> DateValue(rawValue)
+                    else -> DateValue(rawValue.toString())
+                }
+            TimestampWithTimezoneValue::class.java ->
+                when (rawValue) {
+                    is OffsetDateTime -> TimestampWithTimezoneValue(rawValue)
+                    is String -> TimestampWithTimezoneValue(rawValue)
+                    else -> TimestampWithTimezoneValue(rawValue.toString())
+                }
+            TimestampWithoutTimezoneValue::class.java ->
+                when (rawValue) {
+                    is java.time.LocalDateTime -> TimestampWithoutTimezoneValue(rawValue)
+                    is String -> TimestampWithoutTimezoneValue(rawValue)
+                    else -> TimestampWithoutTimezoneValue(rawValue.toString())
+                }
+            TimeWithTimezoneValue::class.java ->
+                when (rawValue) {
+                    is OffsetTime -> TimeWithTimezoneValue(rawValue)
+                    is String -> TimeWithTimezoneValue(rawValue)
+                    else -> TimeWithTimezoneValue(rawValue.toString())
+                }
+            TimeWithoutTimezoneValue::class.java ->
+                when (rawValue) {
+                    is LocalTime -> TimeWithoutTimezoneValue(rawValue)
+                    is String -> TimeWithoutTimezoneValue(rawValue)
+                    else -> TimeWithoutTimezoneValue(rawValue.toString())
+                }
             NullValue::class.java -> NullValue
             AirbyteValue::class.java ->
                 rawValue as AirbyteValue // Already an AirbyteValue (JSON types)

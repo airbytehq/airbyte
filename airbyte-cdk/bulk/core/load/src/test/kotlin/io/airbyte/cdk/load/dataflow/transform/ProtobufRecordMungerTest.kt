@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.dataflow.transform
 
-import com.google.protobuf.kotlin.toByteString
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.computeUnknownColumnChanges
@@ -27,9 +26,9 @@ import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.dataflow.transform.medium.JsonConverter
 import io.airbyte.cdk.load.dataflow.transform.medium.ProtobufConverter
 import io.airbyte.cdk.load.message.DestinationRecordProtobufSource
-import io.airbyte.cdk.protocol.ProtobufTypeBasedEncoder
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.Meta
+import io.airbyte.cdk.protocol.ProtobufTypeBasedEncoder
 import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteMessageProtobuf
@@ -143,10 +142,22 @@ class ProtobufRecordMungerTest {
                 encoder.encode(12.34, LeafAirbyteSchemaType.NUMBER),
                 encoder.encode("hello", LeafAirbyteSchemaType.STRING),
                 encoder.encode(LocalDate.parse("2025-06-17"), LeafAirbyteSchemaType.DATE),
-                encoder.encode(OffsetTime.parse("23:59:59+02:00"), LeafAirbyteSchemaType.TIME_WITH_TIMEZONE),
-                encoder.encode(LocalTime.parse("23:59:59"), LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE),
-                encoder.encode(OffsetDateTime.parse("2025-06-17T23:59:59+02:00"), LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE),
-                encoder.encode(LocalDateTime.parse("2025-06-17T23:59:59"), LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE),
+                encoder.encode(
+                    OffsetTime.parse("23:59:59+02:00"),
+                    LeafAirbyteSchemaType.TIME_WITH_TIMEZONE
+                ),
+                encoder.encode(
+                    LocalTime.parse("23:59:59"),
+                    LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE
+                ),
+                encoder.encode(
+                    OffsetDateTime.parse("2025-06-17T23:59:59+02:00"),
+                    LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE
+                ),
+                encoder.encode(
+                    LocalDateTime.parse("2025-06-17T23:59:59"),
+                    LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE
+                ),
                 encoder.encode("""["a","b"]""", LeafAirbyteSchemaType.JSONB),
                 encoder.encode("""{"k":"v"}""", LeafAirbyteSchemaType.JSONB),
                 encoder.encode("""{"u":1}""", LeafAirbyteSchemaType.JSONB),
@@ -476,10 +487,22 @@ class ProtobufRecordMungerTest {
                 encoder.encode(12.34, LeafAirbyteSchemaType.NUMBER),
                 encoder.encode("hello", LeafAirbyteSchemaType.STRING),
                 encoder.encode(LocalDate.parse("2025-06-17"), LeafAirbyteSchemaType.DATE),
-                encoder.encode(OffsetTime.parse("23:59:59+02:00"), LeafAirbyteSchemaType.TIME_WITH_TIMEZONE),
-                encoder.encode(LocalTime.parse("23:59:59"), LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE),
-                encoder.encode(OffsetDateTime.parse("2025-06-17T23:59:59+02:00"), LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE),
-                encoder.encode(LocalDateTime.parse("2025-06-17T23:59:59"), LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE),
+                encoder.encode(
+                    OffsetTime.parse("23:59:59+02:00"),
+                    LeafAirbyteSchemaType.TIME_WITH_TIMEZONE
+                ),
+                encoder.encode(
+                    LocalTime.parse("23:59:59"),
+                    LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE
+                ),
+                encoder.encode(
+                    OffsetDateTime.parse("2025-06-17T23:59:59+02:00"),
+                    LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE
+                ),
+                encoder.encode(
+                    LocalDateTime.parse("2025-06-17T23:59:59"),
+                    LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE
+                ),
                 encoder.encode("""["a","b"]""", LeafAirbyteSchemaType.JSONB),
                 encoder.encode("""{"k":"v"}""", LeafAirbyteSchemaType.JSONB),
                 encoder.encode("""{"u":1}""", LeafAirbyteSchemaType.JSONB),
@@ -514,15 +537,16 @@ class ProtobufRecordMungerTest {
     fun `handles invalid timestamp with proper error tracking`() {
         // Create an invalid timestamp using a manually crafted protobuf value
         // that will fail parsing in the decoder
-        val invalidTimestampValue = AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
-            .setTimestampWithTimezone(
-                AirbyteRecordMessage.OffsetDateTime.newBuilder()
-                    .setEpochSecond(Long.MAX_VALUE) // Invalid - will cause overflow
-                    .setNano(999999999)
-                    .setOffsetSeconds(7200)
-                    .build()
-            )
-            .build()
+        val invalidTimestampValue =
+            AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
+                .setTimestampWithTimezone(
+                    AirbyteRecordMessage.OffsetDateTime.newBuilder()
+                        .setEpochSecond(Long.MAX_VALUE) // Invalid - will cause overflow
+                        .setNano(999999999)
+                        .setOffsetSeconds(7200)
+                        .build()
+                )
+                .build()
 
         val invalidTimestampProtoValues =
             mutableListOf(
@@ -531,10 +555,19 @@ class ProtobufRecordMungerTest {
                 encoder.encode(12.34, LeafAirbyteSchemaType.NUMBER),
                 encoder.encode("hello", LeafAirbyteSchemaType.STRING),
                 encoder.encode(LocalDate.parse("2025-06-17"), LeafAirbyteSchemaType.DATE),
-                encoder.encode(OffsetTime.parse("23:59:59+02:00"), LeafAirbyteSchemaType.TIME_WITH_TIMEZONE),
-                encoder.encode(LocalTime.parse("23:59:59"), LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE),
+                encoder.encode(
+                    OffsetTime.parse("23:59:59+02:00"),
+                    LeafAirbyteSchemaType.TIME_WITH_TIMEZONE
+                ),
+                encoder.encode(
+                    LocalTime.parse("23:59:59"),
+                    LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE
+                ),
                 invalidTimestampValue, // Invalid timestamp
-                encoder.encode(LocalDateTime.parse("2025-06-17T23:59:59"), LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE),
+                encoder.encode(
+                    LocalDateTime.parse("2025-06-17T23:59:59"),
+                    LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE
+                ),
                 encoder.encode("""["a","b"]""", LeafAirbyteSchemaType.JSONB),
                 encoder.encode("""{"k":"v"}""", LeafAirbyteSchemaType.JSONB),
                 encoder.encode("""{"u":1}""", LeafAirbyteSchemaType.JSONB),
@@ -593,10 +626,22 @@ class ProtobufRecordMungerTest {
                 encoder.encode(12.34, LeafAirbyteSchemaType.NUMBER),
                 encoder.encode("hello", LeafAirbyteSchemaType.STRING),
                 encoder.encode(LocalDate.parse("2025-06-17"), LeafAirbyteSchemaType.DATE),
-                encoder.encode(OffsetTime.parse("23:59:59+02:00"), LeafAirbyteSchemaType.TIME_WITH_TIMEZONE),
-                encoder.encode(LocalTime.parse("23:59:59"), LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE),
-                encoder.encode(OffsetDateTime.parse("2025-06-17T23:59:59+02:00"), LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE),
-                encoder.encode(LocalDateTime.parse("2025-06-17T23:59:59"), LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE),
+                encoder.encode(
+                    OffsetTime.parse("23:59:59+02:00"),
+                    LeafAirbyteSchemaType.TIME_WITH_TIMEZONE
+                ),
+                encoder.encode(
+                    LocalTime.parse("23:59:59"),
+                    LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE
+                ),
+                encoder.encode(
+                    OffsetDateTime.parse("2025-06-17T23:59:59+02:00"),
+                    LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE
+                ),
+                encoder.encode(
+                    LocalDateTime.parse("2025-06-17T23:59:59"),
+                    LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE
+                ),
                 encoder.encode("""[]""", LeafAirbyteSchemaType.JSONB), // Empty array
                 encoder.encode("""{}""", LeafAirbyteSchemaType.JSONB), // Empty object
                 encoder.encode("""{"u":1}""", LeafAirbyteSchemaType.JSONB),
@@ -619,9 +664,10 @@ class ProtobufRecordMungerTest {
     @Test
     fun `handles invalid date format with proper error tracking`() {
         // Create an invalid date using an out-of-range value
-        val invalidDateValue = AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
-            .setDate(Integer.MAX_VALUE) // Out of range date
-            .build()
+        val invalidDateValue =
+            AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
+                .setDate(Integer.MAX_VALUE) // Out of range date
+                .build()
 
         val invalidDateProtoValues =
             mutableListOf(
@@ -630,10 +676,22 @@ class ProtobufRecordMungerTest {
                 encoder.encode(12.34, LeafAirbyteSchemaType.NUMBER),
                 encoder.encode("hello", LeafAirbyteSchemaType.STRING),
                 invalidDateValue, // Invalid date format
-                encoder.encode(OffsetTime.parse("23:59:59+02:00"), LeafAirbyteSchemaType.TIME_WITH_TIMEZONE),
-                encoder.encode(LocalTime.parse("23:59:59"), LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE),
-                encoder.encode(OffsetDateTime.parse("2025-06-17T23:59:59+02:00"), LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE),
-                encoder.encode(LocalDateTime.parse("2025-06-17T23:59:59"), LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE),
+                encoder.encode(
+                    OffsetTime.parse("23:59:59+02:00"),
+                    LeafAirbyteSchemaType.TIME_WITH_TIMEZONE
+                ),
+                encoder.encode(
+                    LocalTime.parse("23:59:59"),
+                    LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE
+                ),
+                encoder.encode(
+                    OffsetDateTime.parse("2025-06-17T23:59:59+02:00"),
+                    LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE
+                ),
+                encoder.encode(
+                    LocalDateTime.parse("2025-06-17T23:59:59"),
+                    LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE
+                ),
                 encoder.encode("""["a","b"]""", LeafAirbyteSchemaType.JSONB),
                 encoder.encode("""{"k":"v"}""", LeafAirbyteSchemaType.JSONB),
                 encoder.encode("""{"u":1}""", LeafAirbyteSchemaType.JSONB),

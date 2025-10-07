@@ -61,23 +61,29 @@ class ProtobufConverterTest {
 
     private fun vInteger(i: Long) = encoder.encode(i, LeafAirbyteSchemaType.INTEGER)
 
-    private fun vBigInteger(str: String) = encoder.encode(BigInteger(str), LeafAirbyteSchemaType.INTEGER)
+    private fun vBigInteger(str: String) =
+        encoder.encode(BigInteger(str), LeafAirbyteSchemaType.INTEGER)
 
     private fun vNumber(d: Double) = encoder.encode(d, LeafAirbyteSchemaType.NUMBER)
 
-    private fun vBigDecimal(str: String) = encoder.encode(BigDecimal(str), LeafAirbyteSchemaType.NUMBER)
+    private fun vBigDecimal(str: String) =
+        encoder.encode(BigDecimal(str), LeafAirbyteSchemaType.NUMBER)
 
     private fun vString(s: String) = encoder.encode(s, LeafAirbyteSchemaType.STRING)
 
     private fun vDate(date: LocalDate) = encoder.encode(date, LeafAirbyteSchemaType.DATE)
 
-    private fun vTimeTz(time: OffsetTime) = encoder.encode(time, LeafAirbyteSchemaType.TIME_WITH_TIMEZONE)
+    private fun vTimeTz(time: OffsetTime) =
+        encoder.encode(time, LeafAirbyteSchemaType.TIME_WITH_TIMEZONE)
 
-    private fun vTimeNoTz(time: LocalTime) = encoder.encode(time, LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE)
+    private fun vTimeNoTz(time: LocalTime) =
+        encoder.encode(time, LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE)
 
-    private fun vTsTz(ts: OffsetDateTime) = encoder.encode(ts, LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE)
+    private fun vTsTz(ts: OffsetDateTime) =
+        encoder.encode(ts, LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE)
 
-    private fun vTsNoTz(ts: LocalDateTime) = encoder.encode(ts, LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE)
+    private fun vTsNoTz(ts: LocalDateTime) =
+        encoder.encode(ts, LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE)
 
     private fun vJson(json: String) = encoder.encode(json, LeafAirbyteSchemaType.JSONB)
 
@@ -178,7 +184,12 @@ class ProtobufConverterTest {
                 vDate(LocalDate.parse("2025-06-17")),
                 vTimeTz(OffsetTime.of(LocalTime.parse("23:59:59"), ZoneOffset.ofHours(2))),
                 vTimeNoTz(LocalTime.parse("23:59:59")),
-                vTsTz(OffsetDateTime.of(LocalDateTime.parse("2025-06-17T23:59:59"), ZoneOffset.ofHours(2))),
+                vTsTz(
+                    OffsetDateTime.of(
+                        LocalDateTime.parse("2025-06-17T23:59:59"),
+                        ZoneOffset.ofHours(2)
+                    )
+                ),
                 vTsNoTz(LocalDateTime.parse("2025-06-17T23:59:59")),
                 vJson("""["a","b"]"""),
                 vJson("""{"k":"v"}"""),

@@ -26,21 +26,31 @@ class AirbyteValueToProtobuf {
 
         // For complex types (arrays, objects, unions), encode as JSON
         return when (type) {
-            is ArrayType, ArrayTypeWithoutSchema -> {
+            is ArrayType,
+            ArrayTypeWithoutSchema -> {
                 if (value is ArrayValue) {
-                    encoder.encode(value.toJson().serializeToJsonBytes(), LeafAirbyteSchemaType.JSONB)
+                    encoder.encode(
+                        value.toJson().serializeToJsonBytes(),
+                        LeafAirbyteSchemaType.JSONB
+                    )
                 } else {
                     encoder.encode(null, LeafAirbyteSchemaType.STRING)
                 }
             }
-            is ObjectType, ObjectTypeWithEmptySchema, ObjectTypeWithoutSchema -> {
+            is ObjectType,
+            ObjectTypeWithEmptySchema,
+            ObjectTypeWithoutSchema -> {
                 if (value is ObjectValue) {
-                    encoder.encode(value.toJson().serializeToJsonBytes(), LeafAirbyteSchemaType.JSONB)
+                    encoder.encode(
+                        value.toJson().serializeToJsonBytes(),
+                        LeafAirbyteSchemaType.JSONB
+                    )
                 } else {
                     encoder.encode(null, LeafAirbyteSchemaType.STRING)
                 }
             }
-            is UnionType, is UnknownType -> {
+            is UnionType,
+            is UnknownType -> {
                 encoder.encode(value.toJson().serializeToJsonBytes(), LeafAirbyteSchemaType.JSONB)
             }
             // For scalar and temporal types, extract the underlying value and use the encoder
@@ -69,47 +79,80 @@ class AirbyteValueToProtobuf {
                 if (value is NumberValue) {
                     encoder.encode(value.value, LeafAirbyteSchemaType.NUMBER)
                 } else {
-                    encoder.encode(value.toJson().serializeToJsonBytes(), LeafAirbyteSchemaType.JSONB)
+                    encoder.encode(
+                        value.toJson().serializeToJsonBytes(),
+                        LeafAirbyteSchemaType.JSONB
+                    )
                 }
             }
             is DateType -> {
-                val dateValue = when (value) {
-                    is DateValue -> value.value
-                    is StringValue -> try { LocalDate.parse(value.value) } catch (_: Exception) { null }
-                    else -> null
-                }
+                val dateValue =
+                    when (value) {
+                        is DateValue -> value.value
+                        is StringValue ->
+                            try {
+                                LocalDate.parse(value.value)
+                            } catch (_: Exception) {
+                                null
+                            }
+                        else -> null
+                    }
                 encoder.encode(dateValue, LeafAirbyteSchemaType.DATE)
             }
             is TimeTypeWithTimezone -> {
-                val timeValue = when (value) {
-                    is TimeWithTimezoneValue -> value.value
-                    is StringValue -> try { OffsetTime.parse(value.value) } catch (_: Exception) { null }
-                    else -> null
-                }
+                val timeValue =
+                    when (value) {
+                        is TimeWithTimezoneValue -> value.value
+                        is StringValue ->
+                            try {
+                                OffsetTime.parse(value.value)
+                            } catch (_: Exception) {
+                                null
+                            }
+                        else -> null
+                    }
                 encoder.encode(timeValue, LeafAirbyteSchemaType.TIME_WITH_TIMEZONE)
             }
             is TimeTypeWithoutTimezone -> {
-                val timeValue = when (value) {
-                    is TimeWithoutTimezoneValue -> value.value
-                    is StringValue -> try { LocalTime.parse(value.value) } catch (_: Exception) { null }
-                    else -> null
-                }
+                val timeValue =
+                    when (value) {
+                        is TimeWithoutTimezoneValue -> value.value
+                        is StringValue ->
+                            try {
+                                LocalTime.parse(value.value)
+                            } catch (_: Exception) {
+                                null
+                            }
+                        else -> null
+                    }
                 encoder.encode(timeValue, LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE)
             }
             is TimestampTypeWithTimezone -> {
-                val timestampValue = when (value) {
-                    is TimestampWithTimezoneValue -> value.value
-                    is StringValue -> try { OffsetDateTime.parse(value.value) } catch (_: Exception) { null }
-                    else -> null
-                }
+                val timestampValue =
+                    when (value) {
+                        is TimestampWithTimezoneValue -> value.value
+                        is StringValue ->
+                            try {
+                                OffsetDateTime.parse(value.value)
+                            } catch (_: Exception) {
+                                null
+                            }
+                        else -> null
+                    }
                 encoder.encode(timestampValue, LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE)
             }
             is TimestampTypeWithoutTimezone -> {
-                val timestampValue = when (value) {
-                    is TimestampWithoutTimezoneValue -> value.value
-                    is StringValue -> try { LocalDateTime.parse(value.value) } catch (_: Exception) { null }
-                    else -> null
-                }
+                val timestampValue =
+                    when (value) {
+                        is TimestampWithoutTimezoneValue -> value.value
+                        is StringValue ->
+                            try {
+                                LocalDateTime.parse(value.value)
+                            } catch (_: Exception) {
+                                null
+                            }
+                        else -> null
+                    }
                 encoder.encode(timestampValue, LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE)
             }
         }

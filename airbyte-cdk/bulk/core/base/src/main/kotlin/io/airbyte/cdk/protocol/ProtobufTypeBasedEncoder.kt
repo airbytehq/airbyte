@@ -23,14 +23,14 @@ import java.time.ZoneOffset
  * Type-based encoder for protobuf values. Sources use this to encode values based on the
  * AirbyteSchemaType from field discovery.
  *
- * You can provide an existing [AirbyteValueProtobuf.Builder] to avoid repeated allocations.
- * When provided, the builder is cleared before use.
+ * You can provide an existing [AirbyteValueProtobuf.Builder] to avoid repeated allocations. When
+ * provided, the builder is cleared before use.
  */
 class ProtobufTypeBasedEncoder {
 
     /**
-     * Encodes a value into protobuf format based on its AirbyteSchemaType.
-     * Returns a protobuf representing a null value if [value] is null.
+     * Encodes a value into protobuf format based on its AirbyteSchemaType. Returns a protobuf
+     * representing a null value if [value] is null.
      *
      * @param builder Optional builder to reuse. If provided, it will be cleared at the start.
      */
@@ -54,11 +54,12 @@ class ProtobufTypeBasedEncoder {
             LeafAirbyteSchemaType.TIME_WITH_TIMEZONE -> encodeTimeWithTimezone(value, b)
             LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE -> encodeTimeWithoutTimezone(value, b)
             LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE -> encodeTimestampWithTimezone(value, b)
-            LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE -> encodeTimestampWithoutTimezone(value, b)
+            LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE ->
+                encodeTimestampWithoutTimezone(value, b)
             LeafAirbyteSchemaType.NULL -> buildNull(b)
             LeafAirbyteSchemaType.JSONB -> encodeJson(value, b)
             LeafAirbyteSchemaType.BINARY -> encodeJson(value, b)
-            is ArrayAirbyteSchemaType -> encodeJson(value, b) // Arrays encoded as JSON
+            is ArrayAirbyteSchemaType -> encodeJson(value, b)
         }
     }
 
@@ -94,73 +95,110 @@ class ProtobufTypeBasedEncoder {
     private fun encodeNumber(value: Any, b: AirbyteValueProtobuf.Builder): AirbyteValueProtobuf {
         return when (value) {
             is BigDecimal -> b.setBigDecimal(value.toString()).build()
-            is Double -> b.setNumber(value).build()
-            is Float -> b.setNumber(value.toDouble()).build()
+            is Double -> {
+                if (value.isInfinite() || value.isNaN()) {
+                    error("Infinite/NaN values are not allowed")
+                }
+                b.setNumber(value).build()
+            }
+            is Float -> {
+                if (value.isInfinite() || value.isNaN()) {
+                    error("Infinite/NaN values are not allowed")
+                }
+                b.setNumber(value.toDouble()).build()
+            }
             else -> error("Expected BigDecimal, Double, or Float, got ${value::class.simpleName}")
         }
     }
 
     private fun encodeDate(value: Any, b: AirbyteValueProtobuf.Builder): AirbyteValueProtobuf {
-        val localDate = when (value) {
-            is LocalDate -> value
-            is java.sql.Date -> value.toLocalDate()
-            else -> error("Expected LocalDate or java.sql.Date, got ${value::class.simpleName}")
-        }
+        val localDate =
+            when (value) {
+                is LocalDate -> value
+                is java.sql.Date -> value.toLocalDate()
+                else -> error("Expected LocalDate or java.sql.Date, got ${value::class.simpleName}")
+            }
         return b.setDate(localDate.toEpochDay().toInt()).build()
     }
 
-    private fun encodeTimeWithTimezone(value: Any, b: AirbyteValueProtobuf.Builder): AirbyteValueProtobuf {
+    private fun encodeTimeWithTimezone(
+        value: Any,
+        b: AirbyteValueProtobuf.Builder
+    ): AirbyteValueProtobuf {
         require(value is OffsetTime) { "Expected OffsetTime, got ${value::class.simpleName}" }
-        val offsetTimeMsg = io.airbyte.protocol.protobuf.AirbyteRecordMessage.OffsetTime.newBuilder()
-            .setNanosOfDay(value.toLocalTime().toNanoOfDay())
-            .setOffsetSeconds(value.offset.totalSeconds)
-            .build()
+        val offsetTimeMsg =
+            io.airbyte.protocol.protobuf.AirbyteRecordMessage.OffsetTime.newBuilder()
+                .setNanosOfDay(value.toLocalTime().toNanoOfDay())
+                .setOffsetSeconds(value.offset.totalSeconds)
+                .build()
         return b.setTimeWithTimezone(offsetTimeMsg).build()
     }
 
-    private fun encodeTimeWithoutTimezone(value: Any, b: AirbyteValueProtobuf.Builder): AirbyteValueProtobuf {
-        val localTime = when (value) {
-            is LocalTime -> value
-            is java.sql.Time -> value.toLocalTime()
-            else -> error("Expected LocalTime or java.sql.Time, got ${value::class.simpleName}")
-        }
+    private fun encodeTimeWithoutTimezone(
+        value: Any,
+        b: AirbyteValueProtobuf.Builder
+    ): AirbyteValueProtobuf {
+        val localTime =
+            when (value) {
+                is LocalTime -> value
+                is java.sql.Time -> value.toLocalTime()
+                else -> error("Expected LocalTime or java.sql.Time, got ${value::class.simpleName}")
+            }
         return b.setTimeWithoutTimezone(localTime.toNanoOfDay()).build()
     }
 
-    private fun encodeTimestampWithTimezone(value: Any, b: AirbyteValueProtobuf.Builder): AirbyteValueProtobuf {
-        val offsetDateTime = when (value) {
-            is OffsetDateTime -> value
-            is java.sql.Timestamp -> OffsetDateTime.ofInstant(value.toInstant(), ZoneOffset.UTC)
-            else -> error("Expected OffsetDateTime or java.sql.Timestamp, got ${value::class.simpleName}")
-        }
+    private fun encodeTimestampWithTimezone(
+        value: Any,
+        b: AirbyteValueProtobuf.Builder
+    ): AirbyteValueProtobuf {
+        val offsetDateTime =
+            when (value) {
+                is OffsetDateTime -> value
+                is java.sql.Timestamp -> OffsetDateTime.ofInstant(value.toInstant(), ZoneOffset.UTC)
+                else ->
+                    error(
+                        "Expected OffsetDateTime or java.sql.Timestamp, got ${value::class.simpleName}"
+                    )
+            }
         val instant = offsetDateTime.toInstant()
-        val offsetDateTimeMsg = io.airbyte.protocol.protobuf.AirbyteRecordMessage.OffsetDateTime.newBuilder()
-            .setEpochSecond(instant.epochSecond)
-            .setNano(instant.nano)
-            .setOffsetSeconds(offsetDateTime.offset.totalSeconds)
-            .build()
+        val offsetDateTimeMsg =
+            io.airbyte.protocol.protobuf.AirbyteRecordMessage.OffsetDateTime.newBuilder()
+                .setEpochSecond(instant.epochSecond)
+                .setNano(instant.nano)
+                .setOffsetSeconds(offsetDateTime.offset.totalSeconds)
+                .build()
         return b.setTimestampWithTimezone(offsetDateTimeMsg).build()
     }
 
-    private fun encodeTimestampWithoutTimezone(value: Any, b: AirbyteValueProtobuf.Builder): AirbyteValueProtobuf {
-        val localDateTime = when (value) {
-            is LocalDateTime -> value
-            is java.sql.Timestamp -> value.toLocalDateTime()
-            else -> error("Expected LocalDateTime or java.sql.Timestamp, got ${value::class.simpleName}")
-        }
-        val localDateTimeMsg = io.airbyte.protocol.protobuf.AirbyteRecordMessage.LocalDateTime.newBuilder()
-            .setDateDaysSinceEpoch(localDateTime.toLocalDate().toEpochDay().toInt())
-            .setNanosOfDay(localDateTime.toLocalTime().toNanoOfDay())
-            .build()
+    private fun encodeTimestampWithoutTimezone(
+        value: Any,
+        b: AirbyteValueProtobuf.Builder
+    ): AirbyteValueProtobuf {
+        val localDateTime =
+            when (value) {
+                is LocalDateTime -> value
+                is java.sql.Timestamp -> value.toLocalDateTime()
+                else ->
+                    error(
+                        "Expected LocalDateTime or java.sql.Timestamp, got ${value::class.simpleName}"
+                    )
+            }
+        val localDateTimeMsg =
+            io.airbyte.protocol.protobuf.AirbyteRecordMessage.LocalDateTime.newBuilder()
+                .setDateDaysSinceEpoch(localDateTime.toLocalDate().toEpochDay().toInt())
+                .setNanosOfDay(localDateTime.toLocalTime().toNanoOfDay())
+                .build()
         return b.setTimestampWithoutTimezone(localDateTimeMsg).build()
     }
 
     private fun encodeJson(value: Any, b: AirbyteValueProtobuf.Builder): AirbyteValueProtobuf {
-        val jsonBytes = when (value) {
-            is String -> value.toByteArray(StandardCharsets.UTF_8)
-            is ByteArray -> value
-            else -> error("Expected String or ByteArray for JSON, got ${value::class.simpleName}")
-        }
+        val jsonBytes =
+            when (value) {
+                is String -> value.toByteArray(StandardCharsets.UTF_8)
+                is ByteArray -> value
+                else ->
+                    error("Expected String or ByteArray for JSON, got ${value::class.simpleName}")
+            }
         return b.setJson(ByteString.copyFrom(jsonBytes)).build()
     }
 }

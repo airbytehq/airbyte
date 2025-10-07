@@ -43,29 +43,19 @@ class AirbyteValueProtobufProxy(private val data: List<AirbyteValueProtobuf>) : 
         getNullable(field) { decoder.decode(data[it.index]) as? BigDecimal }
 
     override fun getDate(field: FieldAccessor): String? =
-        getNullable(field) {
-            (decoder.decode(data[it.index]) as? LocalDate)?.toString()
-        }
+        getNullable(field) { (decoder.decode(data[it.index]) as? LocalDate)?.toString() }
 
     override fun getTimeWithTimezone(field: FieldAccessor): String? =
-        getNullable(field) {
-            (decoder.decode(data[it.index]) as? OffsetTime)?.toString()
-        }
+        getNullable(field) { (decoder.decode(data[it.index]) as? OffsetTime)?.toString() }
 
     override fun getTimeWithoutTimezone(field: FieldAccessor): String? =
-        getNullable(field) {
-            (decoder.decode(data[it.index]) as? java.time.LocalTime)?.toString()
-        }
+        getNullable(field) { (decoder.decode(data[it.index]) as? java.time.LocalTime)?.toString() }
 
     override fun getTimestampWithTimezone(field: FieldAccessor): String? =
-        getNullable(field) {
-            (decoder.decode(data[it.index]) as? OffsetDateTime)?.toString()
-        }
+        getNullable(field) { (decoder.decode(data[it.index]) as? OffsetDateTime)?.toString() }
 
     override fun getTimestampWithoutTimezone(field: FieldAccessor): String? =
-        getNullable(field) {
-            (decoder.decode(data[it.index]) as? LocalDateTime)?.toString()
-        }
+        getNullable(field) { (decoder.decode(data[it.index]) as? LocalDateTime)?.toString() }
 
     override fun getJsonBytes(field: FieldAccessor): ByteArray? =
         getNullable(field) { data[field.index].json.toByteArray() }
