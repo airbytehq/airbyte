@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableExe
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
+import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeInsertBuffer
 import jakarta.inject.Singleton
 
@@ -19,6 +20,7 @@ class SnowflakeAggregateFactory(
     private val snowflakeClient: SnowflakeAirbyteClient,
     private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
     private val snowflakeConfiguration: SnowflakeConfiguration,
+    private val snowflakeColumnUtils: SnowflakeColumnUtils,
 ) : AggregateFactory {
 
     override fun create(key: StoreKey): Aggregate {
@@ -28,7 +30,8 @@ class SnowflakeAggregateFactory(
                 tableName = tableName,
                 columns = snowflakeClient.describeTable(tableName),
                 snowflakeClient = snowflakeClient,
-                snowflakeConfiguration = snowflakeConfiguration
+                snowflakeConfiguration = snowflakeConfiguration,
+                snowflakeColumnUtils = snowflakeColumnUtils,
             )
         return SnowflakeAggregate(buffer = buffer)
     }

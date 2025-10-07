@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.snowflake.db
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingUtil
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.mockk.every
 import io.mockk.mockk
@@ -16,10 +15,10 @@ internal class SnowflakeFinalTableNameGeneratorTest {
 
     @Test
     fun testGetTableNameWithInternalNamespace() {
-        val internalNamespace = "test-internal-namespace"
         val configuration =
             mockk<SnowflakeConfiguration> {
-                every { internalTableSchema } returns internalNamespace
+                every { internalTableSchema } returns "test-internal-namespace"
+                every { legacyRawTablesOnly } returns true
             }
         val generator = SnowflakeFinalTableNameGenerator(config = configuration)
         val streamName = "test-stream-name"
@@ -30,18 +29,14 @@ internal class SnowflakeFinalTableNameGeneratorTest {
                 every { name } returns streamName
             }
         val tableName = generator.getTableName(streamDescriptor)
-        assertEquals(
-            TypingDedupingUtil.concatenateRawTableName(streamNamespace, streamName)
-                .toSnowflakeCompatibleName(),
-            tableName.name
-        )
-        assertEquals(internalNamespace.toSnowflakeCompatibleName(), tableName.namespace)
+        assertEquals("test-stream-namespace_raw__stream_test-stream-name", tableName.name)
+        assertEquals("test-internal-namespace", tableName.namespace)
     }
 
     @Test
     fun testGetTableNameWithNamespace() {
         val configuration =
-            mockk<SnowflakeConfiguration> { every { internalTableSchema } returns null }
+            mockk<SnowflakeConfiguration> { every { legacyRawTablesOnly } returns false }
         val generator = SnowflakeFinalTableNameGenerator(config = configuration)
         val streamName = "test-stream-name"
         val streamNamespace = "test-stream-namespace"
@@ -51,8 +46,8 @@ internal class SnowflakeFinalTableNameGeneratorTest {
                 every { name } returns streamName
             }
         val tableName = generator.getTableName(streamDescriptor)
-        assertEquals(streamName.toSnowflakeCompatibleName(), tableName.name)
-        assertEquals(streamNamespace.toSnowflakeCompatibleName(), tableName.namespace)
+        assertEquals("TEST-STREAM-NAME", tableName.name)
+        assertEquals("TEST-STREAM-NAMESPACE", tableName.namespace)
     }
 
     @Test
@@ -60,8 +55,8 @@ internal class SnowflakeFinalTableNameGeneratorTest {
         val defaultNamespace = "test-default-namespace"
         val configuration =
             mockk<SnowflakeConfiguration> {
-                every { internalTableSchema } returns null
                 every { schema } returns defaultNamespace
+                every { legacyRawTablesOnly } returns false
             }
         val generator = SnowflakeFinalTableNameGenerator(config = configuration)
         val streamName = "test-stream-name"
@@ -71,7 +66,7 @@ internal class SnowflakeFinalTableNameGeneratorTest {
                 every { name } returns streamName
             }
         val tableName = generator.getTableName(streamDescriptor)
-        assertEquals(streamName.toSnowflakeCompatibleName(), tableName.name)
-        assertEquals(defaultNamespace.toSnowflakeCompatibleName(), tableName.namespace)
+        assertEquals("TEST-STREAM-NAME", tableName.name)
+        assertEquals("TEST-DEFAULT-NAMESPACE", tableName.namespace)
     }
 }

@@ -113,28 +113,15 @@ on database identifier($airbyte_database)
 to role identifier($airbyte_role);
 
 commit;
-
-begin;
-
-USE DATABASE identifier($airbyte_database);
-
--- create schema for Airbyte data
-CREATE SCHEMA IF NOT EXISTS identifier($airbyte_schema);
-
-commit;
-
-begin;
-
--- grant Airbyte schema access
-grant OWNERSHIP
-on schema identifier($airbyte_schema)
-to role identifier($airbyte_role);
-
-commit;
 ```
 
 3. Run the script using the [Worksheet page](https://docs.snowflake.com/en/user-guide/ui-worksheet.html) or [Snowsight](https://docs.snowflake.com/en/user-guide/ui-snowsight-gs.html).
   Make sure to select the **All Queries** checkbox if using the Classic Console or select and highlight the entire query if you are using Snowsight.
+
+Note: Our integration automatically creates the necessary schemas in your Snowflake destination database.
+To enable this, ensure the connection user has `CREATE SCHEMA` privileges on the target database.
+If you prefer to create schemas manually, that's supported—however, our connection user must have `OWNERSHIP` privileges on those schemas.
+This allows us to manage tables and other objects required for the integration to function properly.
 
 ### Step 2: Set up a data loading method
 
@@ -196,10 +183,12 @@ could be subject to change in future versions.
 ### Final Table schema
 
 The final table contains these fields, in addition to the columns declared in your stream schema:
-- `airbyte_raw_id`
-- `_airbyte_generation_id`
-- `airbyte_extracted_at`
-- `_airbyte_meta`
+
+- `_AIRBYTE_RAW_ID`
+- `_AIRBYTE_GENERATION_ID`
+- `_AIRBYTE_EXCTRACTED_AT`
+- `_AIRBYTE_LOADED_AT`
+- `_AIRBYTE_META`
 
 Again, see [here](/platform/understanding-airbyte/airbyte-metadata-fields) for more information about these fields.
 
@@ -255,11 +244,6 @@ A quick fix could be to edit your connection's 'Replication' settings from `Mirr
 to `Destination Default`. Otherwise, make sure to grant the role the required permissions in the
 desired namespace.
 
-### Running SHOW and DESCRIBE queries on Warehouses
-
-It is known that the Snowflake Destination currently runs SHOW and DESCRIBE queries on a warehouse.
-This is unnecessary, and leads to additional costs. Airbyte is currently in the process of fixing this.
-
 ## Changelog
 
 <details>
@@ -267,6 +251,9 @@ This is unnecessary, and leads to additional costs. Airbyte is currently in the 
 
 | Version         | Date       | Pull Request                                                     | Subject                                                                                                                                                                                |
 |:----------------|:-----------|:-----------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.1           | 2025-10-06 | [67106](https://github.com/airbytehq/airbyte/pull/67106)         | Removes unnecessary operations and allocations in value validator.                                                                                                                     |
+| 4.0.0           | 2025-10-06 | [66747](https://github.com/airbytehq/airbyte/pull/66747)         | Upgrade to direct-load tables; add option for soft CDC deletes.                                                                                                                        |
+| 3.15.11-rc.2    | 2025-09-29 | [66753](https://github.com/airbytehq/airbyte/pull/66753)         | Pin to CDK artifact                                                                                                                                                                    |
 | 3.15.11-rc.1    | 2025-09-25 | [66307](https://github.com/airbytehq/airbyte/pull/66307)         | Initial Direct Load RC release                                                                                                                                                         |
 | 3.15.10         | 2025-06-13 | [61588](https://github.com/airbytehq/airbyte/pull/61588)         | Publish version to account for possible duplicate publishing in pipeline. Noop change.                                                                                                 |
 | 3.15.9          | 2025-05-16 | [60328](https://github.com/airbytehq/airbyte/pull/60328)         | Migrate to base 2.0.2.                                                                                                                                                                 |
