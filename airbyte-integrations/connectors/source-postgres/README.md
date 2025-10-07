@@ -33,5 +33,3 @@ you need to follow a few simple steps.
    psql -h <host> -d <db-name> -U <username> -p <port> -a -q -f src/test-performance/sql/3-run-script.sql
    ```
 4. After the script finishes, you will receive the number of tables specified in the script, with names starting with **test_0** and ending with **test\_(the number of tables minus 1)**.
-
-<!-- Test comment to trigger CI -->

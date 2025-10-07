@@ -7545,5 +7545,3 @@ schemas:
         type:
           - "null"
           - boolean
-
-# Test comment to trigger CI
