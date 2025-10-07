@@ -32,6 +32,8 @@ Docs : https://elasticemail.com/developers/api-documentation/rest-api
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.34 | 2025-09-30 | [66288](https://github.com/airbytehq/airbyte/pull/66288) | Update dependencies |
+| 0.0.33 | 2025-09-09 | [65774](https://github.com/airbytehq/airbyte/pull/65774) | Update dependencies |
 | 0.0.32 | 2025-08-23 | [65286](https://github.com/airbytehq/airbyte/pull/65286) | Update dependencies |
 | 0.0.31 | 2025-08-09 | [64725](https://github.com/airbytehq/airbyte/pull/64725) | Update dependencies |
 | 0.0.30 | 2025-08-02 | [64319](https://github.com/airbytehq/airbyte/pull/64319) | Update dependencies |

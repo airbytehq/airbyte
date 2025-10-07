@@ -62,7 +62,7 @@ airbyte-abctl-cron-b48bccb78-jnz7b                       1/1     Running     0  
 airbyte-abctl-pod-sweeper-pod-sweeper-599fd8f56d-kj5t9   1/1     Running     0               4h20m
 airbyte-abctl-server-74465db7fd-gk25q                    1/1     Running     0               4h20m
 airbyte-abctl-temporal-bbb84b56c-jh8x7                   1/1     Running     0               4h33m
-airbyte-abctl-webapp-745c949464-brpjf                    1/1     Running     0               4h20m
+airbyte-abctl-server-745c949464-brpjf                    1/1     Running     0               4h20m
 airbyte-abctl-worker-79c895c7dc-ssqvc                    1/1     Running     0               4h20m
 airbyte-db-0                                             1/1     Running     0               4h34m
 airbyte-minio-0                                          1/1     Running     0               4h34m
@@ -159,7 +159,7 @@ To compile and build the platform, run the following command in your local `airb
 
 This will build all the code and run all the unit tests.
 
-`./gradlew build` creates all the necessary artifacts \(Webapp, Jars, and Docker images\) so that you can run Airbyte locally. Since this builds everything, it can take some time.
+`./gradlew build` creates all the necessary artifacts \(Jars and Docker images\) so that you can run Airbyte locally. Since this builds everything, it can take some time.
 
 
 :::info
@@ -227,9 +227,9 @@ Test containers start Airbyte locally, run the tests, and shutdown Airbyte after
 USE_EXTERNAL_DEPLOYMENT=true ./gradlew :oss:airbyte-tests:acceptanceTests
 ```
 
-## Webapp Contributions
+## UI Contributions
 
-To develop features in the Airbyte Webapp, you must first bring up an instance of Airbyte on TCP port 8001. To do this
+To develop features in the Airbyte UI, you must first bring up an instance of Airbyte on TCP port 8001. To do this
 using `abctl`, first follow the [Quickstart](../using-airbyte/getting-started/oss-quickstart.md) to install `abctl`. Then run the following:
 
 ```bash
@@ -259,7 +259,7 @@ abctl local install --port 8001 --values ./values.yaml
 - Use `nvm` to install the required node version:
 
 ```bash
-cd airbyte-webapp
+cd airbyte-server
 nvm install
 ```
 
@@ -269,7 +269,7 @@ nvm install
 corepack enable && corepack install
 ```
 
-### Running the Webapp
+### Running the UI
 
 - Start up the react app.
 

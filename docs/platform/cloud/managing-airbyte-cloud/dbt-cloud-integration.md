@@ -22,7 +22,7 @@ Generate a [service token](https://docs.getdbt.com/docs/dbt-cloud-apis/service-t
 
 ## Step 2: Set up the dbt Cloud integration for the workspace
 
-1. Click **Settings** and then **Integrations**. Enter your access URL (for example, `https://cloud.getdbt.com/`). [Custom access URLs](https://docs.getdbt.com/docs/cloud/about-cloud/access-regions-ip-addresses#accessing-your-account) are also supported.
+1. Click **Workspace settings** > **Integrations**. Enter your access URL (for example, `https://cloud.getdbt.com/`). [Custom access URLs](https://docs.getdbt.com/docs/cloud/about-cloud/access-regions-ip-addresses#accessing-your-account) are also supported.
 
 2. Enter the service token and click **Save changes**.
 

@@ -39,6 +39,9 @@ Create an application and note down the Account Id and the API key, you will nee
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.3.19 | 2025-10-07 | [67184](https://github.com/airbytehq/airbyte/pull/67184) | Update dependencies |
+| 0.3.18 | 2025-09-30 | [66251](https://github.com/airbytehq/airbyte/pull/66251) | Update dependencies |
+| 0.3.17 | 2025-09-09 | [65767](https://github.com/airbytehq/airbyte/pull/65767) | Update dependencies |
 | 0.3.16 | 2025-08-22 | [PR_NUMBER] | Add RequiredBy field and enhance datetime support |
 | 0.3.15 | 2025-08-23 | [65248](https://github.com/airbytehq/airbyte/pull/65248) | Update dependencies |
 | 0.3.14 | 2025-08-14 | [64942](https://github.com/airbytehq/airbyte/pull/64942) | Fix docker image entrypoint for platform syncs |
