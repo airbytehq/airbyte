@@ -24,6 +24,6 @@ You can use workspaces for the following purposes.
 
 - Set up notifications.
 
-If you use Self-Managed Community, you only have one workspace.
+If you use {{product_name_sm_oss}}, you only have one workspace.
 
 <DocCardList />

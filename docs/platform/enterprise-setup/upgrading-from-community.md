@@ -7,7 +7,7 @@ import TabItem from '@theme/TabItem';
 
 # Existing Instance Upgrades
 
-This page supplements the [{{product_name_sm_enterprise}} implementation guide](./implementation-guide.md). It highlights the steps to take if you are currently using Airbyte Self-Managed Community, our free open source offering, and are ready to upgrade to [Airbyte {{product_name_sm_enterprise}}](./README.md).
+This page supplements the [{{product_name_sm_enterprise}} implementation guide](./implementation-guide.md). It highlights the steps to take if you are currently using Airbyte {{product_name_sm_oss}}, our free open source offering, and are ready to upgrade to [Airbyte {{product_name_sm_enterprise}}](./README.md).
 
 A valid license key is required to get started with Airbyte Enterprise. [Talk to sales](https://airbyte.com/company/talk-to-sales) to receive your license key.
 

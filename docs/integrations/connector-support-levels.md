@@ -13,7 +13,7 @@ The following table describes the support levels of Airbyte connectors.
 | **Support: Cloud**                   | Supported\* | Supported\*            | No Support                                                                                                                 | Supported\*\*  |
 | **Support: Powered by Airbyte**      | Supported\* | Supported\*            | No Support                                                                                                                 | Supported\*\*  |
 | **Support: {{product_name_sm_enterprise}}** | Supported\* | Supported\*            | No Support                                                                                                                 | Supported\*\*  |
-| **Support: Self-Managed Community**  | Slack only  | N/A                    | No Support                                                                                                                 | Slack only     |
+| **Support: {{product_name_sm_oss}}**  | Slack only  | N/A                    | No Support                                                                                                                 | Slack only     |
 | **Who can use them**                 | Everyone    | Extra license required | Everyone                                                                                                                   | You            |
 
 \*For Airbyte Connectors, Official Support SLAs are only available to customers with Premium

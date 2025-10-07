@@ -218,12 +218,12 @@ Certain Airbyte products reserve some platform features. To avoid confusion and 
 
 To enable badges, include `products` in the Markdown metadata. The following values are possible, and you can combine them as needed.
 
-**Badge display:** all 5 badges always appear in order - Core, Standard, Pro, {{product_name_cloud_enterprise}}, {{product_name_sm_enterprise}}. Available badges appear highlighted, unavailable badges appear grayed out.
+**Badge display:** all 5 badges always appear in order - {{product_name_sm_oss}}, Standard, Pro, {{product_name_cloud_enterprise}}, {{product_name_sm_enterprise}}. Available badges appear highlighted, unavailable badges appear grayed out.
 
 **Metadata keys:**
 
-- `all`: Core, {{product_name_sm_enterprise}}, and Standard - doesn't include Pro, {{product_name_cloud_enterprise}}, or Embedded
-- `oss-community`: Core only
+- `all`: {{product_name_sm_oss}}, {{product_name_sm_enterprise}}, and Standard - doesn't include Pro, {{product_name_cloud_enterprise}}, or Embedded
+- `oss-community`: {{product_name_sm_oss}} only
 - `oss-enterprise`: {{product_name_sm_enterprise}} only
 - `cloud`: Standard only (also enables Pro and {{product_name_cloud_enterprise}} due to Cloud tier inheritance)
 - `cloud-teams`: Pro only (also enables {{product_name_cloud_enterprise}} due to Cloud tier inheritance)
@@ -236,21 +236,21 @@ To enable badges, include `products` in the Markdown metadata. The following val
 - If you specify `cloud-teams`: Pro and {{product_name_cloud_enterprise}} badges become enabled - Standard turns off
 - If you specify `enterprise-flex`: Only {{product_name_cloud_enterprise}} badge becomes enabled
 
-**Self-managed plans** Core and {{product_name_sm_enterprise}} don't inherit from each other.
+**Self-managed plans** {{product_name_sm_oss}} and {{product_name_sm_enterprise}} don't inherit from each other.
 
-In this example, the Core badge appears highlighted, and all other badges appear grayed out.
+In this example, the {{product_name_sm_oss}} badge appears highlighted, and all other badges appear grayed out.
 
 ```markdown
 ---
 products: oss-community
 ---
 
-# This topic is only for Core
+# This topic is only for {{product_name_sm_oss}}
 
 Some text.
 ```
 
-In this example, Pro, and {{product_name_cloud_enterprise}} badges appear highlighted due to Cloud tier inheritance, while Core, Standard, and {{product_name_sm_enterprise}} badges appear grayed out.
+In this example, Pro, and {{product_name_cloud_enterprise}} badges appear highlighted due to Cloud tier inheritance, while {{product_name_sm_oss}}, Standard, and {{product_name_sm_enterprise}} badges appear grayed out.
 
 ```markdown
 ---
