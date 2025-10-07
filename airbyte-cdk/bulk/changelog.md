@@ -1,3 +1,9 @@
+## Version 0.1.47
+
+**Extract CDK**
+
+* **Changed:** Correct encoding of CDC_UPDATED_AT and CDC_DELETED_AT fields in protobuf records.
+
 ## Version 0.1.46
 
 Noop: Move stream lifecyle dispatchers to bean factory.
