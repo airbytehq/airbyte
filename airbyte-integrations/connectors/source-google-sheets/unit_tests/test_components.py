@@ -302,26 +302,18 @@ def test_dpath_schema_matching_extractor_without_properties_to_match():
 @pytest.mark.parametrize(
     "alt_status_code, expected_action, expected_message",
     [
-        (
-            200,
-            "IGNORE",
-            "Skipping sheet 'TestSheet' due to corrupt grid data"
-        ),
-        (
-            500,
-            "FAIL",
-            "Internal server error encountered. The Google Sheets API returned a 500 error."
-        ),
+        (200, "IGNORE", "Skipping sheet 'TestSheet' due to corrupt grid data"),
+        (500, "FAIL", "Internal server error encountered. The Google Sheets API returned a 500 error."),
     ],
     ids=["alt_200_ignore", "alt_500_fail"],
 )
-@patch('components.requests.get')
-@patch('components.logger')
+@patch("components.requests.get")
+@patch("components.logger")
 def test_grid_data_error_handler_500_filter(mock_logger, mock_requests_get, alt_status_code, expected_action, expected_message):
     """Test Filter 4: grid_data_500 handling in GridDataErrorHandler."""
     # Create handler with max_retries=5
     handler = GridDataErrorHandler(config={}, parameters={"max_retries": 5})
-    
+
     # Create mock response for 500 error with grid data
     mock_response = create_response({})
     mock_response.status_code = 500
@@ -329,33 +321,33 @@ def test_grid_data_error_handler_500_filter(mock_logger, mock_requests_get, alt_
     mock_response.request.url = "https://sheets.googleapis.com/v4/spreadsheets/test?includeGridData=true&ranges=TestSheet!1:1"
     mock_response.request.headers = {"Authorization": "Bearer test"}
     mock_response.json = Mock(return_value={"error": "Internal Server Error"})
-    
+
     # Mock the alt response for the test without grid data
     mock_alt_response = Mock()
     mock_alt_response.status_code = alt_status_code
     mock_requests_get.return_value = mock_alt_response
-    
+
     # First 4 attempts should return RETRY
     for attempt in range(1, 5):
         resolution = handler.interpret_response(mock_response)
         assert resolution.response_action.name == "RETRY"
         assert resolution.failure_type.name == "transient_error"
         assert resolution.error_message == "Internal server error."
-    
+
     # 5th attempt (last) should trigger the alt test
     resolution = handler.interpret_response(mock_response)
-    
+
     # Verify the alt request was made
     mock_requests_get.assert_called_once_with(
         "https://sheets.googleapis.com/v4/spreadsheets/test?includeGridData=false&ranges=TestSheet!1:1",
         headers={"Authorization": "Bearer test"},
-        timeout=30
+        timeout=30,
     )
-    
+
     # Check the result based on alt_status_code
     assert resolution.response_action.name == expected_action
     assert expected_message in resolution.error_message
-    
+
     # Verify appropriate logging
     if alt_status_code == 200:
         mock_logger.warning.assert_called_once()
