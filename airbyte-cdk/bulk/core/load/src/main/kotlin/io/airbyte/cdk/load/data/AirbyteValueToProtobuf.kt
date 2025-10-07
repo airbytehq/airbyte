@@ -34,7 +34,7 @@ class AirbyteValueToProtobuf {
                         LeafAirbyteSchemaType.JSONB
                     )
                 } else {
-                    encoder.encode(null, LeafAirbyteSchemaType.STRING)
+                    encoder.encode(null, LeafAirbyteSchemaType.JSONB)
                 }
             }
             is ObjectType,
@@ -46,7 +46,7 @@ class AirbyteValueToProtobuf {
                         LeafAirbyteSchemaType.JSONB
                     )
                 } else {
-                    encoder.encode(null, LeafAirbyteSchemaType.STRING)
+                    encoder.encode(null, LeafAirbyteSchemaType.JSONB)
                 }
             }
             is UnionType,
@@ -58,7 +58,7 @@ class AirbyteValueToProtobuf {
                 if (value is BooleanValue) {
                     encoder.encode(value.value, LeafAirbyteSchemaType.BOOLEAN)
                 } else {
-                    encoder.encode(null, LeafAirbyteSchemaType.STRING)
+                    encoder.encode(null, LeafAirbyteSchemaType.BOOLEAN)
                 }
             }
             is StringType -> {
@@ -72,18 +72,22 @@ class AirbyteValueToProtobuf {
                 if (value is IntegerValue) {
                     encoder.encode(value.value, LeafAirbyteSchemaType.INTEGER)
                 } else {
-                    encoder.encode(null, LeafAirbyteSchemaType.STRING)
+                    encoder.encode(null, LeafAirbyteSchemaType.INTEGER)
                 }
             }
             is NumberType -> {
-                if (value is NumberValue) {
-                    encoder.encode(value.value, LeafAirbyteSchemaType.NUMBER)
-                } else {
-                    encoder.encode(
-                        value.toJson().serializeToJsonBytes(),
-                        LeafAirbyteSchemaType.JSONB
-                    )
-                }
+                val numberValue =
+                    when (value) {
+                        is NumberValue -> value.value
+                        is StringValue ->
+                            try {
+                                value.value.toBigDecimal()
+                            } catch (_: Exception) {
+                                null
+                            }
+                        else -> null
+                    }
+                encoder.encode(numberValue, LeafAirbyteSchemaType.NUMBER)
             }
             is DateType -> {
                 val dateValue =
