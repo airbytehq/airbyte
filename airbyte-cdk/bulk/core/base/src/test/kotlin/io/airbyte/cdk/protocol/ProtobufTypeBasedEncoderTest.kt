@@ -153,7 +153,7 @@ class ProtobufTypeBasedEncoderTest {
     fun testEncodeDateLocalDate() {
         val date = LocalDate.of(2025, 10, 6)
         val result = encoder.encode(date, LeafAirbyteSchemaType.DATE)
-        assertEquals(date.toEpochDay().toInt(), result.date)
+        assertEquals(date.toEpochDay(), result.date)
         assertEquals(AirbyteValueProtobuf.ValueCase.DATE, result.valueCase)
     }
 
@@ -161,7 +161,7 @@ class ProtobufTypeBasedEncoderTest {
     fun testEncodeDateSqlDate() {
         val date = SqlDate.valueOf("2025-10-06")
         val result = encoder.encode(date, LeafAirbyteSchemaType.DATE)
-        assertEquals(date.toLocalDate().toEpochDay().toInt(), result.date)
+        assertEquals(date.toLocalDate().toEpochDay(), result.date)
         assertEquals(AirbyteValueProtobuf.ValueCase.DATE, result.valueCase)
     }
 
@@ -259,7 +259,7 @@ class ProtobufTypeBasedEncoderTest {
         val timestamp = LocalDateTime.of(2025, 10, 6, 14, 30, 45, 123456789)
         val result = encoder.encode(timestamp, LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE)
         assertEquals(
-            timestamp.toLocalDate().toEpochDay().toInt(),
+            timestamp.toLocalDate().toEpochDay(),
             result.timestampWithoutTimezone.dateDaysSinceEpoch
         )
         assertEquals(
@@ -275,7 +275,7 @@ class ProtobufTypeBasedEncoderTest {
         val result = encoder.encode(timestamp, LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE)
         val localDateTime = timestamp.toLocalDateTime()
         assertEquals(
-            localDateTime.toLocalDate().toEpochDay().toInt(),
+            localDateTime.toLocalDate().toEpochDay(),
             result.timestampWithoutTimezone.dateDaysSinceEpoch
         )
         assertEquals(
@@ -478,7 +478,7 @@ class ProtobufTypeBasedEncoderTest {
         // Test extreme dates
         val farFutureDate = LocalDate.of(9999, 12, 31)
         val futureDateResult = encoder.encode(farFutureDate, LeafAirbyteSchemaType.DATE)
-        assertEquals(farFutureDate.toEpochDay().toInt(), futureDateResult.date)
+        assertEquals(farFutureDate.toEpochDay(), futureDateResult.date)
     }
 
     @Test

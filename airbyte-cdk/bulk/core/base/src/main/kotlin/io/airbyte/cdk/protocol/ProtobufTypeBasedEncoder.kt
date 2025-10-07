@@ -118,7 +118,7 @@ class ProtobufTypeBasedEncoder {
                 is java.sql.Date -> value.toLocalDate()
                 else -> error("Expected LocalDate or java.sql.Date, got ${value::class.simpleName}")
             }
-        return b.setDate(localDate.toEpochDay().toInt()).build()
+        return b.setDate(localDate.toEpochDay()).build()
     }
 
     private fun encodeTimeWithTimezone(
@@ -185,7 +185,7 @@ class ProtobufTypeBasedEncoder {
             }
         val localDateTimeMsg =
             io.airbyte.protocol.protobuf.AirbyteRecordMessage.LocalDateTime.newBuilder()
-                .setDateDaysSinceEpoch(localDateTime.toLocalDate().toEpochDay().toInt())
+                .setDateDaysSinceEpoch(localDateTime.toLocalDate().toEpochDay())
                 .setNanosOfDay(localDateTime.toLocalTime().toNanoOfDay())
                 .build()
         return b.setTimestampWithoutTimezone(localDateTimeMsg).build()

@@ -25,7 +25,7 @@ message AirbyteValueProtobuf {
     double number = 5;
     string big_decimal = 6; // Prefer over number iff it exists
 
-    sint32 date = 7;
+    sint64 date = 7;
     OffsetTime time_with_timezone = 8;
     uint64 time_without_timezone = 9;
     OffsetDateTime timestamp_with_timezone = 10;
@@ -36,7 +36,7 @@ message AirbyteValueProtobuf {
 }
 
 message LocalDateTime {
-  sint32 date_days_since_epoch = 1;
+  sint64 date_days_since_epoch = 1;
   uint64 nanos_of_day = 2;
 }
 

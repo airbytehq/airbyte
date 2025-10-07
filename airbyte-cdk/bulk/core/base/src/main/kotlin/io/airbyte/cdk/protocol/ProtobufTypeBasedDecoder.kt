@@ -34,7 +34,7 @@ class ProtobufTypeBasedDecoder {
             AirbyteValueProtobuf.ValueCase.NUMBER -> value.number.toBigDecimal()
             AirbyteValueProtobuf.ValueCase.BIG_DECIMAL ->
                 BigDecimalParser.parseWithFastParser(value.bigDecimal)
-            AirbyteValueProtobuf.ValueCase.DATE -> LocalDate.ofEpochDay(value.date.toLong())
+            AirbyteValueProtobuf.ValueCase.DATE -> LocalDate.ofEpochDay(value.date)
             AirbyteValueProtobuf.ValueCase.TIME_WITHOUT_TIMEZONE ->
                 LocalTime.ofNanoOfDay(value.timeWithoutTimezone)
             AirbyteValueProtobuf.ValueCase.TIME_WITH_TIMEZONE -> {
@@ -45,7 +45,7 @@ class ProtobufTypeBasedDecoder {
             }
             AirbyteValueProtobuf.ValueCase.TIMESTAMP_WITHOUT_TIMEZONE -> {
                 val localDateTimeMsg = value.timestampWithoutTimezone
-                val localDate = LocalDate.ofEpochDay(localDateTimeMsg.dateDaysSinceEpoch.toLong())
+                val localDate = LocalDate.ofEpochDay(localDateTimeMsg.dateDaysSinceEpoch)
                 val localTime = LocalTime.ofNanoOfDay(localDateTimeMsg.nanosOfDay)
                 LocalDateTime.of(localDate, localTime)
             }
