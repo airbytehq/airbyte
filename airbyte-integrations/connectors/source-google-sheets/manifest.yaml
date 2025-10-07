@@ -232,11 +232,10 @@ definitions:
         path: >-
           {% if config["spreadsheet_id"] | regex_search("^(https://.*)") %}{{ config["spreadsheet_id"] | regex_search("/([-\\w]{20,})([/]?)") }}{% else %}{{ config["spreadsheet_id"] }}{% endif %}?includeGridData=true&ranges={{stream_partition.sheet_id | urlencode}}!1:1&alt=json
         error_handler:
-          type: DefaultErrorHandler
+          type: CustomErrorHandler
+          class_name: source_declarative_manifest.components.GridDataErrorHandler
           backoff_strategies:
             - type: ExponentialBackoffStrategy
-          response_filters:
-            $ref: "#/definitions/response_filters/single_sheet_response_error_filters"
   response_filters:
     expected_one_sheet:
       type: HttpResponseFilter

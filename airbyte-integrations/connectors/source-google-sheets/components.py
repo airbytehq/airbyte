@@ -14,10 +14,13 @@ import dpath
 import requests
 import unidecode
 
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.partition_routers.single_partition_router import SinglePartitionRouter
+from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
+from airbyte_cdk.sources.streams.http.error_handlers.response_models import ErrorResolution, ResponseAction
 from airbyte_cdk.sources.types import Config, StreamSlice
 
 
@@ -448,3 +451,182 @@ def exception_description_by_status_code(code: int, spreadsheet_id) -> str:
         return "Rate limit has been reached. Please try later or request a higher quota for your account."
 
     return ""
+
+
+class GridDataErrorHandler(DefaultErrorHandler):
+    """
+    Custom error handler for handling 500 errors with grid data requests.
+    
+    This handler extends the DefaultErrorHandler by adding special handling for 500 errors
+    when includeGridData=true. On the last retry attempt, it tests if the sheet can be fetched
+    without grid data. If successful, the sheet is skipped (IGNORE). If it still fails, the error
+    is propagated as a normal 500 error (FAIL).
+    
+    Also includes all standard response filters:
+    - expected_one_sheet: Fails if response doesn't contain exactly 1 sheet
+    - deduplicate_headers: Ignores (skips) sheets with duplicate headers
+    - rate_limit: Handles 429 rate limit errors
+    """
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        # Call parent's __post_init__ to initialize response_filters and other attributes
+        super().__post_init__(parameters)
+        self._attempt_count = {}  # Track attempts per request URL
+
+    def interpret_response(
+        self, response_or_exception: Optional[Union[requests.Response, Exception]]
+    ) -> ErrorResolution:
+        """
+        Interpret the response and determine the appropriate action.
+        
+        Applies filters in order:
+        1. expected_one_sheet - Must have exactly 1 sheet in response
+        2. deduplicate_headers - Skip sheets with duplicate headers
+        3. rate_limit - Handle 429 rate limiting
+        4. grid_data_500 - Special handling for 500 errors with grid data
+        """
+        # Only handle Response objects (not exceptions) with our custom filters
+        # For exceptions, delegate to parent immediately
+        if not isinstance(response_or_exception, requests.Response):
+            return super().interpret_response(response_or_exception)
+        
+        response = response_or_exception
+        url = response.request.url
+        
+        # Track attempt count for this URL
+        if url not in self._attempt_count:
+            self._attempt_count[url] = 0
+        self._attempt_count[url] += 1
+        
+        # Filter 1: expected_one_sheet
+        # Predicate: {{ 'sheets' in response and response["sheets"] | length != 1  }}
+        # Action: FAIL
+        try:
+            response_json = response.json()
+            if 'sheets' in response_json and len(response_json['sheets']) != 1:
+                return ErrorResolution(
+                    response_action=ResponseAction.FAIL,
+                    failure_type=FailureType.system_error,
+                    error_message="Unable to read the schema of sheet. Error: Unexpected return result: Sheet was expected to contain data on exactly 1 sheet."
+                )
+        except Exception:
+            pass  # If we can't parse JSON, continue to other filters
+        
+        # Filter 2: deduplicate_headers
+        # Predicate: {{ response["sheets"][0]["data"][0]["rowData"][0]["values"] |
+        #             map(attribute="formattedValue") | list | length !=
+        #             response["sheets"][0]["data"][0]["rowData"][0]["values"] |
+        #             map(attribute="formattedValue") | list | unique | list | length }}
+        # Action: IGNORE
+        try:
+            response_json = response.json()
+            # Only check if we have the expected structure
+            if ('sheets' in response_json and len(response_json['sheets']) > 0 and
+                'data' in response_json['sheets'][0] and len(response_json['sheets'][0]['data']) > 0 and
+                'rowData' in response_json['sheets'][0]['data'][0] and len(response_json['sheets'][0]['data'][0]['rowData']) > 0 and
+                'values' in response_json['sheets'][0]['data'][0]['rowData'][0]):
+                
+                values = response_json['sheets'][0]['data'][0]['rowData'][0]['values']
+                headers_found = [v.get('formattedValue') for v in values]
+                unique_headers = list(set(headers_found))
+                
+                # Check if duplicates exist (mimicking the YAML predicate exactly)
+                if len(headers_found) != len(unique_headers):
+                    # Build the error message exactly as in YAML
+                    headers_count = {}
+                    duplicate_fields = []
+                    for header_found in headers_found:
+                        if header_found is not None:
+                            headers_count[header_found] = headers_count.get(header_found, 0) + 1
+                            if headers_count[header_found] > 1 and header_found not in duplicate_fields:
+                                duplicate_fields.append(header_found)
+                    
+                    sheet_title = response_json['sheets'][0]['properties']['title']
+                    return ErrorResolution(
+                        response_action=ResponseAction.IGNORE,
+                        failure_type=None,
+                        error_message=f"Duplicate headers found in sheet {sheet_title}. Deduplicating them by appending cell position: {duplicate_fields}"
+                    )
+        except Exception:
+            pass  # If we can't parse, continue to other filters
+        
+        # Filter 3: rate_limit
+        # http_codes: [429]
+        # Action: RATE_LIMITED
+        if response.status_code == 429:
+            return ErrorResolution(
+                response_action=ResponseAction.RATE_LIMITED,
+                failure_type=FailureType.transient_error,
+                error_message="Rate limit has been reached. Please try later or request a higher quota for your account."
+            )
+        
+        # Filter 4: grid_data_500
+        # Special handling for 500 errors with includeGridData=true
+        if response.status_code == 500 and url and "includeGridData=true" in url:
+            # Check if this is the last retry attempt
+            is_last_attempt = self._attempt_count[url] >= (self._max_retries or 5)
+            
+            if is_last_attempt:
+                # On last attempt, test without grid data
+                sheet_match = re.search(r'ranges=([^!&]+)', url)
+                sheet_name = sheet_match.group(1) if sheet_match else "unknown"
+                
+                logger.info(f"Last retry attempt for sheet '{sheet_name}' - testing without grid data...")
+                
+                # Test the same request but without grid data
+                alt_url = url.replace("includeGridData=true", "includeGridData=false")
+                
+                try:
+                    # Copy headers from original request
+                    headers = dict(response.request.headers)
+                    
+                    # Make test request without grid data
+                    alt_response = requests.get(alt_url, headers=headers, timeout=30)
+                    
+                    # If the test succeeds (200 OK), the sheet exists but has bad grid data - skip it
+                    if alt_response.status_code == 200:
+                        logger.warning(
+                            f"Sheet '{sheet_name}' has corrupt or incompatible grid data and will be skipped. "
+                            f"This usually happens with sheets containing complex formatting or data types "
+                            f"that the Google Sheets API cannot process with includeGridData=true."
+                        )
+                        # Clear attempt count for this URL
+                        self._attempt_count.pop(url, None)
+                        return ErrorResolution(
+                            response_action=ResponseAction.IGNORE,
+                            failure_type=None,
+                            error_message=f"Skipping sheet '{sheet_name}' due to corrupt grid data"
+                        )
+                    else:
+                        # Test also failed - this is a real 500 error, fail
+                        logger.error(
+                            f"Sheet '{sheet_name}' test without grid data also failed with status {alt_response.status_code}. "
+                            f"This appears to be a genuine server error."
+                        )
+                        self._attempt_count.pop(url, None)
+                        return ErrorResolution(
+                            response_action=ResponseAction.FAIL,
+                            failure_type=FailureType.system_error,
+                            error_message="Internal server error encountered. The Google Sheets API returned a 500 error."
+                        )
+                        
+                except Exception as e:
+                    # If test request fails with exception, fail with the original error
+                    logger.error(f"Test request for sheet '{sheet_name}' failed with exception: {e}")
+                    self._attempt_count.pop(url, None)
+                    return ErrorResolution(
+                        response_action=ResponseAction.FAIL,
+                        failure_type=FailureType.system_error,
+                        error_message=f"Internal server error encountered: {str(e)}"
+                    )
+            else:
+                # Not the last attempt - retry with default exponential backoff
+                return ErrorResolution(
+                    response_action=ResponseAction.RETRY,
+                    failure_type=FailureType.transient_error,
+                    error_message="Internal server error."
+                )
+        
+
+        # If none of our custom filters matched, delegate to parent's interpret_response for default handling
+        return super().interpret_response(response_or_exception)
