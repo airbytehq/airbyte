@@ -138,7 +138,7 @@ jobs:
       # Update the connector changelog and push the commit to the new branch
       - name: Update connector changelog
         # airbyte-enterprise doesn't have changelogs, so only do this in the OSS repo.
-        if: steps.check-changes.outputs.has_changes == 'true' && ${{ inputs.repositories }} != 'airbyte-enterprise'
+        if: steps.check-changes.outputs.has_changes == 'true' && inputs.repositories != 'airbyte-enterprise'
         run: |
           set -euo pipefail
           tools/bin/bulk-cdk-auto-upgrade/populate-connector-changelog.sh \
