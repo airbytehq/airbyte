@@ -14,6 +14,7 @@ import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableCleaner
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.integrations.destination.s3_data_lake.io.S3DataLakeUtil
 import jakarta.inject.Singleton
+import java.util.UUID
 import org.apache.iceberg.Schema
 import org.apache.iceberg.types.Types
 
@@ -40,7 +41,10 @@ class S3DataLakeChecker(
                     is RestCatalogConfiguration -> it.namespace
                 }
             }
-        val testTableIdentifier = DestinationStream.Descriptor(defaultNamespace, TEST_TABLE)
+
+        // Use a unique table name to avoid conflicts with existing tables or stale metadata
+        val uniqueTestTableName = "${TEST_TABLE}_${UUID.randomUUID().toString().replace("-", "_")}"
+        val testTableIdentifier = DestinationStream.Descriptor(defaultNamespace, uniqueTestTableName)
 
         val testTableSchema =
             Schema(
@@ -48,6 +52,7 @@ class S3DataLakeChecker(
                 Types.NestedField.optional(2, "data", Types.StringType.get()),
             )
         s3DataLakeUtil.createNamespaceWithGlueHandling(testTableIdentifier, catalog)
+
         val table =
             icebergUtil.createTable(
                 testTableIdentifier,
