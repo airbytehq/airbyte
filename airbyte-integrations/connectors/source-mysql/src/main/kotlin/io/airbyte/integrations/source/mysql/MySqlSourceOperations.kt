@@ -95,9 +95,16 @@ class MySqlSourceOperations :
         stream: Stream,
         recordData: NativeRecordPayload
     ) {
-        recordData[CommonMetaField.CDC_UPDATED_AT.id] = FieldValueEncoder(timestamp, CommonMetaField.CDC_UPDATED_AT.type.jsonEncoder as JsonEncoder<Any>)
+        recordData[CommonMetaField.CDC_UPDATED_AT.id] =
+            FieldValueEncoder(
+                timestamp,
+                CommonMetaField.CDC_UPDATED_AT.type.jsonEncoder as JsonEncoder<Any>
+            )
         recordData[MySqlSourceCdcMetaFields.CDC_LOG_POS.id] =
-            FieldValueEncoder(0, MySqlSourceCdcMetaFields.CDC_LOG_POS.type.jsonEncoder as JsonEncoder<Any>)
+            FieldValueEncoder(
+                0,
+                MySqlSourceCdcMetaFields.CDC_LOG_POS.type.jsonEncoder as JsonEncoder<Any>
+            )
         if (globalStateValue == null) {
             return
         }
@@ -105,9 +112,15 @@ class MySqlSourceOperations :
             MySqlSourceDebeziumOperations.deserializeStateUnvalidated(globalStateValue).offset
         val position: MySqlSourceCdcPosition = MySqlSourceDebeziumOperations.position(offset)
         recordData[MySqlSourceCdcMetaFields.CDC_LOG_FILE.id] =
-            FieldValueEncoder(position.fileName, MySqlSourceCdcMetaFields.CDC_LOG_FILE.type.jsonEncoder as JsonEncoder<Any>)
+            FieldValueEncoder(
+                position.fileName,
+                MySqlSourceCdcMetaFields.CDC_LOG_FILE.type.jsonEncoder as JsonEncoder<Any>
+            )
         recordData[MySqlSourceCdcMetaFields.CDC_LOG_POS.id] =
-            FieldValueEncoder(position.position, MySqlSourceCdcMetaFields.CDC_LOG_POS.type.jsonEncoder as JsonEncoder<Any>)
+            FieldValueEncoder(
+                position.position,
+                MySqlSourceCdcMetaFields.CDC_LOG_POS.type.jsonEncoder as JsonEncoder<Any>
+            )
     }
 
     override fun decorateRecordData(

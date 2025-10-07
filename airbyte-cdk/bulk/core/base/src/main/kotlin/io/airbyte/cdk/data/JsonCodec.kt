@@ -324,7 +324,6 @@ data object OffsetDateTimeCodec : JsonCodec<OffsetDateTime> {
 // In catalog but are OffsetDateTime - CDC_UPDATED_AT, CDC_DELETED_AT etc.
 data object CdcOffsetDateTimeCodec : JsonCodec<OffsetDateTime> by OffsetDateTimeCodec
 
-
 data object NullCodec : JsonCodec<Any?> {
     override fun encode(decoded: Any?): JsonNode = Jsons.nullNode()
 

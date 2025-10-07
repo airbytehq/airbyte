@@ -2,6 +2,7 @@
 package io.airbyte.cdk.discover
 
 import io.airbyte.cdk.data.AirbyteSchemaType
+import io.airbyte.cdk.data.CdcOffsetDateTimeCodec
 import io.airbyte.cdk.data.DoubleCodec
 import io.airbyte.cdk.data.JsonDecoder
 import io.airbyte.cdk.data.JsonEncoder
@@ -9,7 +10,6 @@ import io.airbyte.cdk.data.JsonStringCodec
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.data.LongCodec
 import io.airbyte.cdk.data.OffsetDateTimeCodec
-import io.airbyte.cdk.data.CdcOffsetDateTimeCodec
 import java.time.OffsetDateTime
 
 /** Internal equivalent of a [io.airbyte.protocol.models.Field]. */
@@ -84,7 +84,6 @@ data object CdcOffsetDateTimeStringMetaFieldType : LosslessFieldType {
     override val jsonEncoder: JsonEncoder<OffsetDateTime> = CdcOffsetDateTimeCodec
     override val jsonDecoder: JsonDecoder<OffsetDateTime> = CdcOffsetDateTimeCodec
 }
-
 
 data object CdcIntegerMetaFieldType : LosslessFieldType {
     override val airbyteSchemaType: AirbyteSchemaType = LeafAirbyteSchemaType.INTEGER

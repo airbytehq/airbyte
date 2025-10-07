@@ -12,6 +12,7 @@ import io.airbyte.cdk.data.BigDecimalIntegerCodec
 import io.airbyte.cdk.data.BinaryCodec
 import io.airbyte.cdk.data.BooleanCodec
 import io.airbyte.cdk.data.ByteCodec
+import io.airbyte.cdk.data.CdcOffsetDateTimeCodec
 import io.airbyte.cdk.data.DoubleCodec
 import io.airbyte.cdk.data.FloatCodec
 import io.airbyte.cdk.data.IntCodec
@@ -25,7 +26,6 @@ import io.airbyte.cdk.data.LongCodec
 import io.airbyte.cdk.data.NullCodec
 import io.airbyte.cdk.data.OffsetDateTimeCodec
 import io.airbyte.cdk.data.OffsetTimeCodec
-import io.airbyte.cdk.data.CdcOffsetDateTimeCodec
 import io.airbyte.cdk.data.ShortCodec
 import io.airbyte.cdk.data.TextCodec
 import io.airbyte.cdk.data.UrlCodec

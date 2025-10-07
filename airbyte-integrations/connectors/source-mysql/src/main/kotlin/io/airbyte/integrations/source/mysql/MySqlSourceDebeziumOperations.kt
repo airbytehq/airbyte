@@ -148,26 +148,39 @@ class MySqlSourceDebeziumOperations(
         val transactionOffsetDateTime: OffsetDateTime =
             OffsetDateTime.ofInstant(Instant.ofEpochMilli(transactionMillis), ZoneOffset.UTC)
         resultRow[CommonMetaField.CDC_UPDATED_AT.id] =
-            FieldValueEncoder(transactionOffsetDateTime, CommonMetaField.CDC_UPDATED_AT.type.jsonEncoder as JsonEncoder<Any>)
+            FieldValueEncoder(
+                transactionOffsetDateTime,
+                CommonMetaField.CDC_UPDATED_AT.type.jsonEncoder as JsonEncoder<Any>
+            )
 
         resultRow[CommonMetaField.CDC_DELETED_AT.id] =
             FieldValueEncoder(
                 if (isDelete) transactionOffsetDateTime else null,
-                (if (isDelete) CommonMetaField.CDC_DELETED_AT.type.jsonEncoder else NullCodec) as JsonEncoder<Any>
+                (if (isDelete) CommonMetaField.CDC_DELETED_AT.type.jsonEncoder else NullCodec)
+                    as JsonEncoder<Any>
             )
 
         // Set _ab_cdc_log_file and _ab_cdc_log_pos meta-field values.
         val position = MySqlSourceCdcPosition(source["file"].asText(), source["pos"].asLong())
 
         resultRow[MySqlSourceCdcMetaFields.CDC_LOG_FILE.id] =
-            FieldValueEncoder(position.fileName, MySqlSourceCdcMetaFields.CDC_LOG_FILE.type.jsonEncoder as JsonEncoder<Any>)
+            FieldValueEncoder(
+                position.fileName,
+                MySqlSourceCdcMetaFields.CDC_LOG_FILE.type.jsonEncoder as JsonEncoder<Any>
+            )
 
         resultRow[MySqlSourceCdcMetaFields.CDC_LOG_POS.id] =
-            FieldValueEncoder(position.position, MySqlSourceCdcMetaFields.CDC_LOG_POS.type.jsonEncoder as JsonEncoder<Any>)
+            FieldValueEncoder(
+                position.position,
+                MySqlSourceCdcMetaFields.CDC_LOG_POS.type.jsonEncoder as JsonEncoder<Any>
+            )
 
         // Set the _ab_cdc_cursor meta-field value.
         resultRow[MySqlSourceCdcMetaFields.CDC_CURSOR.id] =
-            FieldValueEncoder(position.cursorValue, MySqlSourceCdcMetaFields.CDC_CURSOR.type.jsonEncoder as JsonEncoder<Any>)
+            FieldValueEncoder(
+                position.cursorValue,
+                MySqlSourceCdcMetaFields.CDC_CURSOR.type.jsonEncoder as JsonEncoder<Any>
+            )
 
         // Return a DeserializedRecord instance.
         return DeserializedRecord(resultRow, emptyMap())
