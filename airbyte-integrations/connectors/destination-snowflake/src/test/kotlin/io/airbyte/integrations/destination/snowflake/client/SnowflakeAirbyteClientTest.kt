@@ -741,13 +741,16 @@ internal class SnowflakeAirbyteClientTest {
         val inputStream = mockk<InputStream>(relaxed = true)
         val tableName = TableName("namespace", "name")
 
-        val connection = mockk<Connection>(moreInterfaces = arrayOf(SnowflakeConnection::class)) {
-            every { unwrap<SnowflakeConnection>(any()) } returns (this as SnowflakeConnection)
-            every { close() } just Runs
-        }
+        val connection =
+            mockk<Connection>(moreInterfaces = arrayOf(SnowflakeConnection::class)) {
+                every { unwrap<SnowflakeConnection>(any()) } returns (this as SnowflakeConnection)
+                every { close() } just Runs
+            }
 
         every { dataSource.connection } returns connection
-        every { (connection as SnowflakeConnection).uploadStream(any(), any(), any(), any(), any()) } just Runs
+        every {
+            (connection as SnowflakeConnection).uploadStream(any(), any(), any(), any(), any())
+        } just Runs
 
         client.uploadToStage(
             tableName = tableName,
@@ -756,6 +759,14 @@ internal class SnowflakeAirbyteClientTest {
             compressData = true,
         )
 
-        verify(exactly = 1) { (connection as SnowflakeConnection).uploadStream(any(), any(), inputStream, fileName, true) }
+        verify(exactly = 1) {
+            (connection as SnowflakeConnection).uploadStream(
+                any(),
+                any(),
+                inputStream,
+                fileName,
+                true
+            )
+        }
     }
 }

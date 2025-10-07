@@ -22,7 +22,7 @@ import org.apache.commons.text.StringEscapeUtils
 private val logger = KotlinLogging.logger {}
 
 internal const val CSV_FIELD_SEPARATOR = ","
-internal const val CSV_LINE_DELIMITER ="\n"
+internal const val CSV_LINE_DELIMITER = "\n"
 
 class SnowflakeInsertBuffer(
     private val tableName: TableName,
@@ -58,7 +58,8 @@ class SnowflakeInsertBuffer(
         buffer?.let { b ->
             try {
                 logger.info { "Beginning insert into ${tableName.toPrettyString(quote = QUOTE)}" }
-                val fileName = "snowflake${java.lang.Long.toUnsignedString(random.nextLong())}.csv.gz"
+                val fileName =
+                    "snowflake${java.lang.Long.toUnsignedString(random.nextLong())}.csv.gz"
 
                 val inputStream = getInputStream(b)
 
@@ -82,18 +83,21 @@ class SnowflakeInsertBuffer(
                 buffer = null
                 recordCount = 0
             }
-        } ?: logger.warn { "Buffer is null: nothing to flush." }
-
+        }
+            ?: logger.warn { "Buffer is null: nothing to flush." }
 
     private fun bufferCsvRecord(record: Map<String, AirbyteValue>) {
         buffer?.let { b ->
-            val line = snowflakeRecordFormatter.format(record)
-                    .joinToString(separator = CSV_FIELD_SEPARATOR, postfix = CSV_LINE_DELIMITER) { col ->
-                        when (col) {
-                            is String -> StringEscapeUtils.escapeCsv(col)
-                            else -> col.toString()
-                        }
+            val line =
+                snowflakeRecordFormatter.format(record).joinToString(
+                    separator = CSV_FIELD_SEPARATOR,
+                    postfix = CSV_LINE_DELIMITER
+                ) { col ->
+                    when (col) {
+                        is String -> StringEscapeUtils.escapeCsv(col)
+                        else -> col.toString()
                     }
+                }
             outputStream.write(line.toByteArray())
             recordCount++
         }

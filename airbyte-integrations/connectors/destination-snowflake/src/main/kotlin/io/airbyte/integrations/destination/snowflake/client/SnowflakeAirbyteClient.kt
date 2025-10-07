@@ -313,15 +313,22 @@ class SnowflakeAirbyteClient(
             }
         }
 
-    fun uploadToStage(tableName: TableName, inputStream: InputStream, fileName: String, compressData: Boolean) {
+    fun uploadToStage(
+        tableName: TableName,
+        inputStream: InputStream,
+        fileName: String,
+        compressData: Boolean
+    ) {
         dataSource.connection.use { connection ->
-            connection.unwrap(SnowflakeConnection::class.java).uploadStream(
-                "'@${sqlGenerator.createStageName(tableName)}'",
-                null,
-                inputStream,
-                fileName,
-                compressData,
-            )
+            connection
+                .unwrap(SnowflakeConnection::class.java)
+                .uploadStream(
+                    "'@${sqlGenerator.createStageName(tableName)}'",
+                    null,
+                    inputStream,
+                    fileName,
+                    compressData,
+                )
         }
     }
 

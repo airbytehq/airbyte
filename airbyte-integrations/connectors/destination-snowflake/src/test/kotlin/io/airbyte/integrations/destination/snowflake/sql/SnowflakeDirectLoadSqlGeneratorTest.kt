@@ -774,7 +774,8 @@ new_record."_AIRBYTE_GENERATION_ID"
     fun testCreateStageName() {
         val tableName = TableName(namespace = "namespace", name = "name")
         val stageName = snowflakeDirectLoadSqlGenerator.createStageName(tableName)
-        val expectedName = "\"${snowflakeConfiguration.database.toSnowflakeCompatibleName()}\".\"${tableName.namespace}\".\"${STAGE_NAME_PREFIX}${tableName.name}\""
+        val expectedName =
+            "\"${snowflakeConfiguration.database.toSnowflakeCompatibleName()}\".\"${tableName.namespace}\".\"${STAGE_NAME_PREFIX}${tableName.name}\""
 
         assertEquals(expectedName, stageName)
     }

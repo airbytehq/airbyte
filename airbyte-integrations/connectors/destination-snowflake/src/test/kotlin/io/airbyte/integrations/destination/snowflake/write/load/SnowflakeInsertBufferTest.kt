@@ -16,8 +16,6 @@ import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
 import java.util.zip.GZIPInputStream
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -100,7 +98,9 @@ internal class SnowflakeInsertBufferTest {
             buffer.flush()
         }
 
-        coVerify(exactly = 1) { snowflakeAirbyteClient.uploadToStage(tableName, any(), any(), any()) }
+        coVerify(exactly = 1) {
+            snowflakeAirbyteClient.uploadToStage(tableName, any(), any(), any())
+        }
         coVerify(exactly = 1) {
             snowflakeAirbyteClient.copyFromStage(tableName, match { it.endsWith(".csv.gz") })
         }
@@ -129,7 +129,9 @@ internal class SnowflakeInsertBufferTest {
             buffer.flush()
         }
 
-        coVerify(exactly = 1) { snowflakeAirbyteClient.uploadToStage(tableName, any(), any(), any()) }
+        coVerify(exactly = 1) {
+            snowflakeAirbyteClient.uploadToStage(tableName, any(), any(), any())
+        }
         coVerify(exactly = 1) {
             snowflakeAirbyteClient.copyFromStage(tableName, match { it.endsWith(".csv.gz") })
         }
@@ -151,10 +153,7 @@ internal class SnowflakeInsertBufferTest {
 
         runBlocking {
             buffer.accumulate(record)
-            assertEquals(
-                "test-value$CSV_FIELD_SEPARATOR$CSV_LINE_DELIMITER",
-                readContents(buffer)
-            )
+            assertEquals("test-value$CSV_FIELD_SEPARATOR$CSV_LINE_DELIMITER", readContents(buffer))
         }
     }
 
@@ -176,17 +175,15 @@ internal class SnowflakeInsertBufferTest {
 
         runBlocking {
             buffer.accumulate(record)
-            assertEquals(
-                "test-value$CSV_FIELD_SEPARATOR$CSV_LINE_DELIMITER",
-                readContents(buffer)
-            )
+            assertEquals("test-value$CSV_FIELD_SEPARATOR$CSV_LINE_DELIMITER", readContents(buffer))
         }
     }
 
     private fun readContents(buffer: SnowflakeInsertBuffer): String {
         return buffer.buffer?.let { b ->
             GZIPInputStream(buffer.getInputStream(b)).bufferedReader().use { it.readText() }
-        } ?: ""
+        }
+            ?: ""
     }
 
     private fun createRecord(columnName: String) =

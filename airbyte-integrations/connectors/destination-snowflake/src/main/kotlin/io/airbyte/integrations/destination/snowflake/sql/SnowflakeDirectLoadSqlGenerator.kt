@@ -191,7 +191,7 @@ class SnowflakeDirectLoadSqlGenerator(
         val cdcSkipInsertClause: String
         if (
             stream.schema.asColumns().containsKey(CDC_DELETED_AT_COLUMN) &&
-            snowflakeConfiguration.cdcDeletionMode == CdcDeletionMode.HARD_DELETE
+                snowflakeConfiguration.cdcDeletionMode == CdcDeletionMode.HARD_DELETE
         ) {
             // Execute CDC deletions if there's already a record
             cdcDeleteClause =
