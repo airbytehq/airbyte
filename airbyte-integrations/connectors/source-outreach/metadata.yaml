@@ -10,7 +10,7 @@ data:
   releases:
     breakingChanges:
       2.0.0:
-        upgradeDeadline: "2025-07-30"
+        upgradeDeadline: "2025-10-30"
         message: "Change the data type from array to single integer to make data relationship easier."
       1.0.0:
         upgradeDeadline: "2024-06-30"
