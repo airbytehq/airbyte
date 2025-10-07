@@ -628,7 +628,7 @@ class ProtoToBigQueryStandardInsertRecordFormatterTest {
                 AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder().setString("hello").build(),
                 // Invalid date
                 AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
-                    .setDate(Integer.MAX_VALUE)
+                    .setDate(Integer.MAX_VALUE.toLong())
                     .build(),
                 encoder.encode(
                     OffsetTime.parse("23:59:59+02:00"),

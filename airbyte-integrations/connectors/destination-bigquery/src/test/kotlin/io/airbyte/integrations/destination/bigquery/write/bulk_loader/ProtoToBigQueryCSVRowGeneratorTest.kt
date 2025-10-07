@@ -548,7 +548,7 @@ class ProtoToBigQueryCSVRowGeneratorTest {
                 encoder.encode(12.34, LeafAirbyteSchemaType.NUMBER),
                 encoder.encode("hello", LeafAirbyteSchemaType.STRING),
                 AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
-                    .setDate(Int.MIN_VALUE) // Invalid date format
+                    .setDate(Long.MIN_VALUE) // Invalid date format
                     .build(),
                 encoder.encode(
                     OffsetTime.parse("23:59:59+02:00"),
