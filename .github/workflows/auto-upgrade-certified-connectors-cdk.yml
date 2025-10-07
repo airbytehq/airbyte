@@ -9,7 +9,7 @@ on:
 jobs:
   auto-upgrade-certified-connector-bulk-cdk:
     name: Auto Upgrade CDK for Certified Connectors
-    uses: airbytehq/airbyte/.github/workflows/auto-upgrade-certified-connectors-cdk.yml@edgao/autobump_cron
+    uses: airbytehq/airbyte/.github/workflows/auto-upgrade-certified-connectors-cdk.yml@master
     secrets: inherit
     with:
       repositories: airbyte-enterprise
