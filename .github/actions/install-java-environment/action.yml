@@ -19,11 +19,11 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: actions/setup-java@v4
+    - uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
       with:
         distribution: corretto
         java-version: ${{ inputs.java_version }}
-    - uses: gradle/actions/setup-gradle@v3
+    - uses: gradle/actions/setup-gradle@d9c87d481d55275bb5441eef3fe0e46805f9ef70 # v3.5.0
       with:
         cache-read-only: ${{ inputs.gradle_cache_read_only }}
         cache-write-only: ${{ inputs.gradle_cache_write_only }}

@@ -17,7 +17,7 @@ jobs:
     runs-on: tooling-publish-medium
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2.7.0
       - name: Deploy the metadata orchestrator [On merge to master]
         id: metadata-orchestrator-deploy-orchestrator-pipeline-prod
         if: github.event_name == 'push'

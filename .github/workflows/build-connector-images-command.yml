@@ -43,7 +43,7 @@ jobs:
 
       - name: Append start comment
         id: append-start-comment
-        uses: peter-evans/create-or-update-comment@v4
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         if: success()
         with:
           comment-id: ${{ inputs.comment-id }}
@@ -58,7 +58,7 @@ jobs:
             > [Check job output.](${{ steps.job-vars.outputs.run-url }})
 
       - name: Repo Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
           repository: ${{ inputs.repo || github.repository }}
           ref: ${{ inputs.gitref || '' }}
@@ -98,7 +98,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Append end comment
-        uses: peter-evans/create-or-update-comment@v4
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         with:
           comment-id: ${{ needs.init-workflow.outputs.comment-id }}
           issue-number: ${{ needs.init-workflow.outputs.pr-number }}

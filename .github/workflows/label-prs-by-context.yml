@@ -15,7 +15,7 @@ jobs:
       # so we should consider moving off of this specialized action onto a normal
       # action step.
       - name: Run Issue Command from workflow-actions
-        uses: nick-fields/private-action-loader@v3
+        uses: nick-fields/private-action-loader@6fa713597d3de3707f8b7a3029a5c262f32c5bca # v3.0.12
         with:
           pal-repo-token: "${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}"
           pal-repo-name: airbytehq/workflow-actions@production

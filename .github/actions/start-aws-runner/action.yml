@@ -35,7 +35,7 @@ runs:
   using: "composite"
   steps:
     - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
+      uses: aws-actions/configure-aws-credentials@67fbcbb121271f7775d2e7715933280b06314838 # v1.7.0
       with:
         aws-access-key-id: ${{ inputs.aws-access-key-id }}
         aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
@@ -54,7 +54,7 @@ runs:
 
     - name: Start EC2 runner
       id: start-ec2-runner
-      uses: airbytehq/ec2-github-runner@MSGv0.0.5
+      uses: airbytehq/ec2-github-runner@b671ff1f194623671b398d973a8965348391831d # MSGv0.0.5
       with:
         mode: start
         github-token: ${{ inputs.github-token }}
