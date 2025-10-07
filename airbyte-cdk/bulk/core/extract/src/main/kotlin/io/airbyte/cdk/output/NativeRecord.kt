@@ -126,7 +126,7 @@ val localDateTimeProtoEncoder =
     generateProtoEncoder<LocalDateTime> { builder, value ->
         builder.setTimestampWithoutTimezone(
             AirbyteRecordMessage.LocalDateTime.newBuilder()
-                .setDateDaysSinceEpoch(value.toLocalDate().toEpochDay().toInt())
+                .setDateDaysSinceEpoch(value.toLocalDate().toEpochDay())
                 .setNanosOfDay(value.toLocalTime().toNanoOfDay())
                 .build()
         )
@@ -136,7 +136,7 @@ val localTimeProtoEncoder =
         builder.setTimeWithoutTimezone(time.toNanoOfDay())
     }
 val localDateProtoEncoder =
-    generateProtoEncoder<LocalDate> { builder, date -> builder.setDate(date.toEpochDay().toInt()) }
+    generateProtoEncoder<LocalDate> { builder, date -> builder.setDate(date.toEpochDay()) }
 val urlProtoEncoder =
     generateProtoEncoder<URL> { builder, url -> builder.setString(url.toExternalForm()) }
 val doubleProtoEncoder = generateProtoEncoder<Double> { builder, value -> builder.setNumber(value) }

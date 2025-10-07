@@ -137,6 +137,8 @@ class ProtobufEncoderDecoderRoundTripTest {
         testRoundTrip(LocalDate.of(2024, 2, 29), LeafAirbyteSchemaType.DATE) // Leap day
         testRoundTrip(LocalDate.of(9999, 12, 31), LeafAirbyteSchemaType.DATE)
         testRoundTrip(LocalDate.of(1, 1, 1), LeafAirbyteSchemaType.DATE)
+        testRoundTrip(LocalDate.MIN, LeafAirbyteSchemaType.DATE)
+        testRoundTrip(LocalDate.MAX, LeafAirbyteSchemaType.DATE)
 
         // Test SqlDate conversion
         val sqlDate = SqlDate.valueOf("2025-10-06")
@@ -150,6 +152,7 @@ class ProtobufEncoderDecoderRoundTripTest {
         testRoundTrip(LocalTime.MIDNIGHT, LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE)
         testRoundTrip(LocalTime.NOON, LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE)
         testRoundTrip(LocalTime.MAX, LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE)
+        testRoundTrip(LocalTime.MIN, LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE)
         testRoundTrip(LocalTime.of(14, 30, 45), LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE)
         testRoundTrip(
             LocalTime.of(14, 30, 45, 123456789),
@@ -188,6 +191,8 @@ class ProtobufEncoderDecoderRoundTripTest {
                 OffsetTime.of(14, 30, 45, 0, offset),
                 LeafAirbyteSchemaType.TIME_WITH_TIMEZONE
             )
+            testRoundTrip(OffsetTime.MIN, LeafAirbyteSchemaType.TIME_WITH_TIMEZONE)
+            testRoundTrip(OffsetTime.MAX, LeafAirbyteSchemaType.TIME_WITH_TIMEZONE)
             testRoundTrip(
                 OffsetTime.of(14, 30, 45, 123456789, offset),
                 LeafAirbyteSchemaType.TIME_WITH_TIMEZONE
@@ -229,6 +234,8 @@ class ProtobufEncoderDecoderRoundTripTest {
             LocalDateTime.of(9999, 12, 31, 23, 59, 59, 999999999),
             LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE
         )
+        testRoundTrip(LocalDateTime.MIN, LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE)
+        testRoundTrip(LocalDateTime.MAX, LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE)
 
         // Test SqlTimestamp conversion
         val sqlTimestamp = SqlTimestamp.valueOf("2025-10-06 14:30:45.123456789")
@@ -263,6 +270,8 @@ class ProtobufEncoderDecoderRoundTripTest {
                 OffsetDateTime.of(2025, 10, 6, 14, 30, 45, 0, offset),
                 LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE
             )
+            testRoundTrip(OffsetDateTime.MIN, LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE)
+            testRoundTrip(OffsetDateTime.MAX, LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE)
             testRoundTrip(
                 OffsetDateTime.of(2025, 10, 6, 14, 30, 45, 123456789, offset),
                 LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE

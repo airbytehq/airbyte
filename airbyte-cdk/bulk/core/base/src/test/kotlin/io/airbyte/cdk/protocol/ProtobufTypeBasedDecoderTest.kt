@@ -127,7 +127,7 @@ class ProtobufTypeBasedDecoderTest {
     @Test
     fun testDecodeDate() {
         val date = LocalDate.of(2025, 10, 6)
-        val value = AirbyteValueProtobuf.newBuilder().setDate(date.toEpochDay().toInt()).build()
+        val value = AirbyteValueProtobuf.newBuilder().setDate(date.toEpochDay()).build()
         val result = decoder.decode(value)
         assertEquals(date, result)
     }
@@ -143,7 +143,7 @@ class ProtobufTypeBasedDecoderTest {
     @Test
     fun testDecodeDateFarFuture() {
         val date = LocalDate.of(9999, 12, 31)
-        val value = AirbyteValueProtobuf.newBuilder().setDate(date.toEpochDay().toInt()).build()
+        val value = AirbyteValueProtobuf.newBuilder().setDate(date.toEpochDay()).build()
         val result = decoder.decode(value)
         assertEquals(date, result)
     }
@@ -231,7 +231,7 @@ class ProtobufTypeBasedDecoderTest {
         val timestamp = LocalDateTime.of(2025, 10, 6, 14, 30, 45, 123456789)
         val protoTimestamp =
             ProtoLocalDateTime.newBuilder()
-                .setDateDaysSinceEpoch(timestamp.toLocalDate().toEpochDay().toInt())
+                .setDateDaysSinceEpoch(timestamp.toLocalDate().toEpochDay())
                 .setNanosOfDay(timestamp.toLocalTime().toNanoOfDay())
                 .build()
         val value =
@@ -256,7 +256,7 @@ class ProtobufTypeBasedDecoderTest {
         val timestamp = LocalDateTime.of(2025, 10, 6, 0, 0, 0, 0)
         val protoTimestamp =
             ProtoLocalDateTime.newBuilder()
-                .setDateDaysSinceEpoch(timestamp.toLocalDate().toEpochDay().toInt())
+                .setDateDaysSinceEpoch(timestamp.toLocalDate().toEpochDay())
                 .setNanosOfDay(0L)
                 .build()
         val value =
@@ -463,7 +463,7 @@ class ProtobufTypeBasedDecoderTest {
         val preciseTimestamp = LocalDateTime.of(2025, 10, 6, 12, 30, 45, 987654321)
         val protoTimestamp =
             ProtoLocalDateTime.newBuilder()
-                .setDateDaysSinceEpoch(preciseTimestamp.toLocalDate().toEpochDay().toInt())
+                .setDateDaysSinceEpoch(preciseTimestamp.toLocalDate().toEpochDay())
                 .setNanosOfDay(preciseTimestamp.toLocalTime().toNanoOfDay())
                 .build()
         val timestampValue =
@@ -580,7 +580,7 @@ class ProtobufTypeBasedDecoderTest {
             )
 
         leapYearDates.forEach { date ->
-            val value = AirbyteValueProtobuf.newBuilder().setDate(date.toEpochDay().toInt()).build()
+            val value = AirbyteValueProtobuf.newBuilder().setDate(date.toEpochDay()).build()
             val result = decoder.decode(value)
             assertEquals(date, result)
         }
@@ -600,7 +600,7 @@ class ProtobufTypeBasedDecoderTest {
             )
 
         boundaryDates.forEach { date ->
-            val value = AirbyteValueProtobuf.newBuilder().setDate(date.toEpochDay().toInt()).build()
+            val value = AirbyteValueProtobuf.newBuilder().setDate(date.toEpochDay()).build()
             val result = decoder.decode(value)
             assertEquals(date, result)
         }
