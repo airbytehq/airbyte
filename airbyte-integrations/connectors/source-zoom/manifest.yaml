@@ -14437,7 +14437,7 @@ streams:
           type:
           - 'null'
           - string
-        user_name:
+        name:
           type:
           - 'null'
           - string
