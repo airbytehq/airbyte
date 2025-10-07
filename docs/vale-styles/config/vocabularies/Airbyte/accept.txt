@@ -4,6 +4,7 @@
 
 Airbyte
 Airbyte's
+Cloud
 abctl
 Airbox
 PyAirbyte
