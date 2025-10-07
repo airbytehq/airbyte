@@ -75,20 +75,18 @@ class SnowflakeInsertBuffer(
         }
 
     private fun bufferCsvRecord(record: Map<String, AirbyteValue>) {
-        buffer?.let { b ->
-            val line =
-                snowflakeRecordFormatter.format(record).joinToString(
-                    separator = CSV_FIELD_SEPARATOR,
-                    postfix = CSV_LINE_DELIMITER
-                ) { col ->
-                    when (col) {
-                        is String -> StringEscapeUtils.escapeCsv(col)
-                        else -> col.toString()
-                    }
+        val line =
+            snowflakeRecordFormatter.format(record).joinToString(
+                separator = CSV_FIELD_SEPARATOR,
+                postfix = CSV_LINE_DELIMITER
+            ) { col ->
+                when (col) {
+                    is String -> StringEscapeUtils.escapeCsv(col)
+                    else -> col.toString()
                 }
-            outputStream.write(line.toByteArray())
-            recordCount++
-        }
+            }
+        outputStream.write(line.toByteArray())
+        recordCount++
     }
 
     @VisibleForTesting
