@@ -126,8 +126,6 @@ internal class SnowflakeMigratingConfigurationSpecificationSupplierTest {
                 this.javaClass.getResource("/config_with_top_level_password.json")!!.readText()
             )
 
-        println(json)
-
         val supplier =
             SnowflakeMigratingConfigurationSpecificationSupplier(jsonPropertyValue = json)
         assertDoesNotThrow {

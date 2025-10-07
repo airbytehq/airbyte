@@ -3,19 +3,14 @@
 #
 
 import os
-from http import HTTPStatus
-from unittest.mock import MagicMock, patch
 
 import pytest
-import requests
-from source_pinterest.components.components import AdAccountRecordExtractor
+from components import AdAccountRecordExtractor
 
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice
-from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
 
-from .conftest import get_analytics_columns, get_stream_by_name, read_from_stream
-from .utils import create_requests_response
+from .conftest import get_stream_by_name, read_from_stream
 
 
 os.environ["REQUEST_CACHE_PATH"] = "/tmp"

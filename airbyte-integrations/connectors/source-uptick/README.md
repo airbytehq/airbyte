@@ -2,8 +2,7 @@
 
 This directory contains the manifest-only connector for `source-uptick`.
 
-Extract data from Uptick - The new standard in
-fire inspection software.
+Extract data from Uptick (field service management).
 
 ## Usage
 

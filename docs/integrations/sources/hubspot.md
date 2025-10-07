@@ -335,6 +335,7 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.0.4 | 2025-09-30 | [66409](https://github.com/airbytehq/airbyte/pull/66409) | Update dependencies |
 | 6.0.3 | 2025-09-25 | [66700](https://github.com/airbytehq/airbyte/pull/66700) | Revert to 6.0.1 |
 | 6.0.2 | 2025-09-12 | [65947](https://github.com/airbytehq/airbyte/pull/65947) | Set fallback target type to 'string' for numbers and booleans |
 | 6.0.1 | 2025-09-09 | [66100](https://github.com/airbytehq/airbyte/pull/66100) | Update dependencies |

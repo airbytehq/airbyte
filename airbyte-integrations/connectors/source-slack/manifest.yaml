@@ -148,13 +148,10 @@ definitions:
         record_filter:
           type: RecordFilter
           condition: "{{ record.name in config.channel_filter or not config.channel_filter }}"
-        $parameters:
-          transformations: [[]]
       paginator:
         $ref: "#/definitions/default_paginator"
         $parameters:
           url_base: https://slack.com/api/
-      partition_router: []
 
   channels_partition_router:
     type: SubstreamPartitionRouter
@@ -296,6 +293,9 @@ definitions:
     primary_key:
       - channel_id
       - ts
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: "source_declarative_manifest.components.ThreadsStateMigration"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
@@ -324,8 +324,7 @@ definitions:
       paginator:
         $ref: "#/definitions/default_paginator"
       partition_router:
-        type: CustomPartitionRouter
-        class_name: source_declarative_manifest.components.ThreadsPartitionRouter
+        type: SubstreamPartitionRouter
         parent_stream_configs:
           - type: ParentStreamConfig
             stream:

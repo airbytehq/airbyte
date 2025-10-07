@@ -1,9 +1,9 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 from datetime import datetime
-from unittest.mock import Mock
+from unittest.mock import MagicMock, Mock
 
-from source_gcs.helpers import GCSRemoteFile
+from source_gcs.helpers import GCSUploadableRemoteFile
 from source_gcs.stream import GCSStream
 
 
@@ -26,7 +26,8 @@ def test_transform_record(zip_file, mocked_reader, logger):
     assert transformed_record["_ab_source_file_url"] != zip_file.uri
 
     last_updated = datetime.today().isoformat()
-    csv_file = GCSRemoteFile(uri="https://storage.googleapis.com/test/test", last_modified=last_updated, mime_type="csv")
+
+    csv_file = GCSUploadableRemoteFile(uri="https://storage.googleapis.com/test/test", blob=MagicMock(), last_modified=last_updated)
     transformed_record = stream.transform_record({"field1": 1}, csv_file, last_updated)
 
     assert transformed_record["_ab_source_file_url"] == csv_file.uri

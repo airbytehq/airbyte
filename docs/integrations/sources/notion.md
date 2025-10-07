@@ -119,6 +119,7 @@ The connector is restricted by Notion [request limits](https://developers.notion
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.3.1 | 2025-09-30 | [66927](https://github.com/airbytehq/airbyte/pull/66927) | Update dependencies |
 | 3.3.0 | 2025-09-29 | [66734](https://github.com/airbytehq/airbyte/pull/66734) | Promoting release candidate 3.3.0-rc.1 to a main version. |
 | 3.3.0-rc.1  | 2025-09-25 | [66532](https://github.com/airbytehq/airbyte/pull/66532) | Migrate to manifest-only.                                                                                                                                              |
 | 3.2.0       | 2025-09-25 | [66695](https://github.com/airbytehq/airbyte/pull/66695) | Promoting release candidate 3.2.0-rc.4 to a main version.                                                                                                              |
