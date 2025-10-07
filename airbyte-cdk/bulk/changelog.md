@@ -1,3 +1,7 @@
+## Version 0.1.47
+
+Update temporal type representation for proto format
+
 ## Version 0.1.46
 
 Noop: Move stream lifecyle dispatchers to bean factory.
