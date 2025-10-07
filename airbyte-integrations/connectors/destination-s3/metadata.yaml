@@ -10,7 +10,7 @@ data:
   name: S3
   connectorIPCOptions:
     dataChannel:
-      version: "0.0.1"
+      version: "0.0.2"
       supportedSerialization: ["JSONL", "PROTOBUF"]
       supportedTransport: ["SOCKET", "STDIO"]
   connectorBuildOptions:
