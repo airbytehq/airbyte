@@ -143,6 +143,7 @@ Syncing data with an hourly granularity often generates large data volumes and c
 
 | Version    | Date       | Pull Request                                             | Subject                                                                        |
 |:-----------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 1.5.21 | 2025-10-06 | [62873](https://github.com/airbytehq/airbyte/pull/62873) | Add a new field to `campaigns stats daily` stream                                |
 | 1.5.20 | 2025-09-30 | [66898](https://github.com/airbytehq/airbyte/pull/66898) | Update dependencies |
 | 1.5.19 | 2025-09-24 | [66264](https://github.com/airbytehq/airbyte/pull/66264) | Update dependencies |
 | 1.5.18 | 2025-09-09 | [65393](https://github.com/airbytehq/airbyte/pull/65393) | Update dependencies |
