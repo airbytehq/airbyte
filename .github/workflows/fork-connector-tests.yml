@@ -32,7 +32,7 @@ jobs:
         if: steps.get-app-token.outcome != 'success'
         run: |
           echo "Skipping fork connector tests - GitHub App not installed on fork"
-          echo "Fork owner '${{ github.event.pull_request.head.repo.owner.login }}' needs to install the Airbyte GitHub App"
+          echo "Fork has not yet installed the Airbyte GitHub App: https://github.com/${{ github.event.pull_request.head.repo.owner.login }}/airbyte"
 
       - name: Post pending commit status
         if: steps.get-app-token.outcome == 'success'
