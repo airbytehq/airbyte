@@ -148,7 +148,7 @@ class MySqlSourceDebeziumOperations(
         val transactionOffsetDateTime: OffsetDateTime =
             OffsetDateTime.ofInstant(Instant.ofEpochMilli(transactionMillis), ZoneOffset.UTC)
         resultRow[CommonMetaField.CDC_UPDATED_AT.id] =
-            FieldValueEncoder(transactionOffsetDateTime, /*OffsetDateTimeCodec*/CommonMetaField.CDC_UPDATED_AT.type.jsonEncoder as JsonEncoder<Any>)
+            FieldValueEncoder(transactionOffsetDateTime, CommonMetaField.CDC_UPDATED_AT.type.jsonEncoder as JsonEncoder<Any>)
 
         resultRow[CommonMetaField.CDC_DELETED_AT.id] =
             FieldValueEncoder(
