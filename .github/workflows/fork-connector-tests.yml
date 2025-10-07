@@ -19,37 +19,14 @@ jobs:
     runs-on: ubuntu-24.04
     if: github.event.pull_request.head.repo.full_name != github.repository
     steps:
-      - name: Check if fork is from outside airbytehq org
-        id: check-fork
-        run: |
-          FORK_REPO="${{ github.event.pull_request.head.repo.full_name }}"
-          echo "fork-repo=$FORK_REPO" >> $GITHUB_OUTPUT
-
-          if [[ "$FORK_REPO" == airbytehq/* ]]; then
-            echo "is-external-fork=false" >> $GITHUB_OUTPUT
-            echo "Fork is from airbytehq org, skipping"
-          else
-            echo "is-external-fork=true" >> $GITHUB_OUTPUT
-            echo "Fork is external: $FORK_REPO"
-          fi
-
-      - name: Get fork owner
-        id: fork-owner
-        if: steps.check-fork.outputs.is-external-fork == 'true'
-        run: |
-          FORK_OWNER=$(echo "${{ steps.check-fork.outputs.fork-repo }}" | cut -d'/' -f1)
-          echo "owner=$FORK_OWNER" >> $GITHUB_OUTPUT
-          echo "Fork owner: $FORK_OWNER"
-
       - name: Attempt to get GitHub App token for fork
         id: get-app-token
-        if: steps.check-fork.outputs.is-external-fork == 'true'
         continue-on-error: true
         uses: actions/create-github-app-token@v2
         with:
           app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
           private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
-          owner: ${{ steps.fork-owner.outputs.owner }}
+          owner: ${{ github.event.pull_request.head.repo.owner.login }}
 
       - name: Post pending commit status
         if: steps.get-app-token.outcome == 'success'
@@ -71,7 +48,7 @@ jobs:
         uses: the-actions-org/workflow-dispatch@v4
         with:
           token: ${{ steps.get-app-token.outputs.token }}
-          repo: ${{ steps.check-fork.outputs.fork-repo }}
+          repo: ${{ github.event.pull_request.head.repo.full_name }}
           workflow: connector-ci-checks.yml
           ref: ${{ github.event.pull_request.head.ref }}
           wait-for-completion: true
@@ -79,7 +56,7 @@ jobs:
           wait-for-completion-interval: 30s
           inputs: |
             {
-              "repo": "${{ steps.check-fork.outputs.fork-repo }}",
+              "repo": "${{ github.event.pull_request.head.repo.full_name }}",
               "gitref": "${{ github.event.pull_request.head.ref }}",
               "pr": "${{ github.event.pull_request.number }}"
             }
@@ -126,13 +103,8 @@ jobs:
 
             [View test results](${{ steps.trigger-tests.outputs.workflow-url }})
 
-      - name: Skip message for non-external forks
-        if: steps.check-fork.outputs.is-external-fork != 'true'
-        run: |
-          echo "Skipping fork connector tests - PR is not from an external fork"
-
       - name: Skip message for missing GitHub App
-        if: steps.check-fork.outputs.is-external-fork == 'true' && steps.get-app-token.outcome != 'success'
+        if: steps.get-app-token.outcome != 'success'
         run: |
           echo "Skipping fork connector tests - GitHub App not installed on fork"
-          echo "Fork owner '${{ steps.fork-owner.outputs.owner }}' needs to install the Airbyte GitHub App"
+          echo "Fork owner '${{ github.event.pull_request.head.repo.owner.login }}' needs to install the Airbyte GitHub App"
