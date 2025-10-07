@@ -246,10 +246,9 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 <details>
   <summary>Expand to review</summary>
 
-
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
 |:-----------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.0.11     | 2025-10-06 | [66082](https://github.com/airbytehq/airbyte/pull/66082) | Update to CDK v7 |
+| 3.0.11 | 2025-10-07 | [67448](https://github.com/airbytehq/airbyte/pull/67448) | Update dependencies |
 | 3.0.10 | 2025-09-30 | [66904](https://github.com/airbytehq/airbyte/pull/66904) | Update dependencies |
 | 3.0.9 | 2025-09-16 | [66291](https://github.com/airbytehq/airbyte/pull/66291) | Promoting release candidate 3.0.9-rc.1 to a main version. |
 | 3.0.9-rc.1 | 2025-09-09 | [65987](https://github.com/airbytehq/airbyte/pull/65987) | Use filter field value to adjust slice for streams with ID cursor field.                                                                                                                                                                                                                                                                                                                  |
@@ -391,6 +390,5 @@ For all `Shopify GraphQL BULK` api requests these limitations are applied: https
 | 0.1.5      | 2021-06-10 | [3973](https://github.com/airbytehq/airbyte/pull/3973)   | Added `AIRBYTE_ENTRYPOINT` for Kubernetes support                                                                                                                                                                                                                                                                                                                                         |
 | 0.1.4      | 2021-06-09 | [3926](https://github.com/airbytehq/airbyte/pull/3926)   | New attributes to Orders schema                                                                                                                                                                                                                                                                                                                                                           |
 | 0.1.3      | 2021-06-08 | [3787](https://github.com/airbytehq/airbyte/pull/3787)   | Added Native Shopify Source Connector                                                                                                                                                                                                                                                                                                                                                     |
->>>>>>> master
 
 </details>
