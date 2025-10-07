@@ -24,7 +24,7 @@ jobs:
         run: |
           FORK_REPO="${{ github.event.pull_request.head.repo.full_name }}"
           echo "fork-repo=$FORK_REPO" >> $GITHUB_OUTPUT
-          
+
           if [[ "$FORK_REPO" == airbytehq/* ]]; then
             echo "is-external-fork=false" >> $GITHUB_OUTPUT
             echo "Fork is from airbytehq org, skipping"
@@ -119,11 +119,11 @@ jobs:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
             ## Fork Connector Tests Results
-            
+
             ${{ steps.trigger-tests.outputs.workflow-conclusion == 'success' && '✅ Tests passed' || '❌ Tests failed' }}
-            
+
             The connector tests ran in your fork's repository context using your BYO secrets.
-            
+
             [View test results](${{ steps.trigger-tests.outputs.workflow-url }})
 
       - name: Skip message for non-external forks
