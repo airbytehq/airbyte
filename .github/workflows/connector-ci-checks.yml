@@ -192,12 +192,12 @@ jobs:
           airbyte-cdk secrets fetch ${{ matrix.connector }} \
             --print-ci-secrets-masks
 
-      - name: Run Unit Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Unprivileged, Executed from Fork]' || '' }}
+      - name: Run Unit Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Non-Blocking (Unprivileged) Test From Fork]' || '' }}
         if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-unit-tests
 
-      - name: Run Integration Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Unprivileged, Executed from Fork]' || '' }}
+      - name: Run Integration Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Non-Blocking (Unprivileged) Test From Fork]' || '' }}
         if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-integration-tests
@@ -290,12 +290,12 @@ jobs:
           airbyte-cdk secrets fetch ${{ matrix.connector }} \
             --print-ci-secrets-masks
 
-      - name: Run Unit Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Unprivileged, Executed from Fork]' || '' }}
+      - name: Run Unit Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Non-Blocking (Unprivileged) Test From Fork]' || '' }}
         if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-unit-tests
 
-      - name: Run Integration Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Unprivileged, Executed from Fork]' || '' }}
+      - name: Run Integration Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Non-Blocking (Unprivileged) Test From Fork]' || '' }}
         if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-integration-tests
