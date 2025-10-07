@@ -202,7 +202,7 @@ def find_local_cdk_connectors() -> list[str]:
 
 def return_empty_json() -> str:
     """Return empty JSON matrix format for GitHub Actions."""
-    return '{"connector": [""]}'
+    return '{"include": []}'
 
 
 def format_output(connectors: list[str], json_output: bool) -> str:

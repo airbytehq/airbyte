@@ -411,8 +411,8 @@ jobs:
       - name: Evaluate Status
         id: evaluate-status
         run: |
-          if [[ "${{ needs.connectors-test.result }}" == "success" &&
-                "${{ needs.connectors-lint.result }}" == "success" ]]; then
+          if [[ ("${{ needs.connectors-test.result }}" == "success" || "${{ needs.connectors-test.result }}" == "skipped") &&
+                ("${{ needs.connectors-lint.result }}" == "success" || "${{ needs.connectors-lint.result }}" == "skipped") ]]; then
             echo "result=success" | tee -a $GITHUB_OUTPUT
           else
             echo "result=failure" | tee -a $GITHUB_OUTPUT
