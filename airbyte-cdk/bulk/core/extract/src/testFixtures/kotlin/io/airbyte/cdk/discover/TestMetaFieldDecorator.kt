@@ -37,6 +37,7 @@ class TestMetaFieldDecorator : MetaFieldDecorator {
         recordData: ObjectNode
     ) {
         recordData.putNull(CommonMetaField.CDC_DELETED_AT.id)
+        @Suppress("UNCHECKED_CAST")
         recordData.set<JsonNode>(
             CommonMetaField.CDC_UPDATED_AT.id,
             (CommonMetaField.CDC_UPDATED_AT.type.jsonEncoder as JsonEncoder<Any>).encode(timestamp)
