@@ -23,6 +23,8 @@ new_version="${major}.${minor}.${new_patch}"
 # Update metadata.yaml
 # Don't use `yq` for this. yq introduces unrelated diffs and does not preserve formatting.
 # In particular, yq may introduce diffs that cause our formatter to complain.
-sed -i '' "s/dockerImageTag: ${current_version}/dockerImageTag: ${new_version}/" "$metadata_file"
+# Don't use `-i` b/c it's not platform-agnostic (macos requires `-i ''`, but that doesn't work on linux)
+sed "s/dockerImageTag: ${current_version}/dockerImageTag: ${new_version}/" "$metadata_file" > "$metadata_file.tmp"
+mv "$metadata_file.tmp" "$metadata_file"
 
 echo "$new_version"
