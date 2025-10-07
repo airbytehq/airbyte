@@ -5,24 +5,12 @@
 import copy
 import json
 import os
-from unittest.mock import MagicMock
 
-import pytest
 from freezegun import freeze_time
-from source_pinterest import SourcePinterest
-from source_pinterest.reports.reports import (
-    AdGroupTargetingReport,
-    AdvertiserTargetingReport,
-    CampaignTargetingReport,
-    KeywordReport,
-    PinPromotionTargetingReport,
-    ProductGroupTargetingReport,
-)
-from source_pinterest.utils import get_analytics_columns
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.state_builder import StateBuilder
-from unit_tests.conftest import read_from_stream
+from unit_tests.conftest import get_analytics_columns, get_source, read_from_stream
 
 
 os.environ["REQUEST_CACHE_PATH"] = "/tmp"
@@ -34,8 +22,6 @@ def test_read_records(requests_mock, test_config, analytics_report_stream, date_
     report_request_url = "https://api.pinterest.com/v5/ad_accounts/123/reports"
 
     final_report_status = {"report_status": "FINISHED", "url": report_download_url}
-
-    initial_response = {"report_status": "IN_PROGRESS", "token": "token", "message": ""}
 
     final_response = {"campaign_id": [{"metric": 1}]}
 
@@ -108,7 +94,7 @@ def test_read_records(requests_mock, test_config, analytics_report_stream, date_
 
 
 def test_streams(test_config):
-    source = SourcePinterest(None, test_config, None)
+    source = get_source(test_config)
     streams = source.streams(test_config)
     expected_streams_number = 32
     assert len(streams) == expected_streams_number
@@ -130,22 +116,7 @@ def test_custom_streams(test_config):
             "start_date": "2023-01-08",
         }
     ]
-    source = SourcePinterest(None, config, None)
+    source = get_source(config)
     streams = source.streams(config)
     expected_streams_number = 33
     assert len(streams) == expected_streams_number
-
-
-@pytest.mark.parametrize(
-    ("report_name", "expected_level"),
-    (
-        [CampaignTargetingReport, "CAMPAIGN_TARGETING"],
-        [AdvertiserTargetingReport, "ADVERTISER_TARGETING"],
-        [AdGroupTargetingReport, "AD_GROUP_TARGETING"],
-        [PinPromotionTargetingReport, "PIN_PROMOTION_TARGETING"],
-        [ProductGroupTargetingReport, "PRODUCT_GROUP_TARGETING"],
-        [KeywordReport, "KEYWORD"],
-    ),
-)
-def test_level(test_config, report_name, expected_level):
-    assert report_name(parent=None, config=MagicMock()).level == expected_level

@@ -1,6 +1,22 @@
+## Version 0.1.46
+
+Noop: Move stream lifecyle dispatchers to bean factory.
+
+## Version 0.1.45
+
+Noop release. 0.1.44 suspected to have a bad publish.
+
+## Version 0.1.44
+
+Dataflow Load CDK: Set dest stats equal to source stats.
+
+## Version 0.1.43
+
+Dataflow Load CDK: Properly handle interleaved per stream states.
+
 ## Version 0.1.42
 
-Datflow Load CDK: Fixes hang when one of many parallel pipelines fails. Organizes thread pools. 
+Dataflow Load CDK: Fixes hang when one of many parallel pipelines fails. Organizes thread pools.
 
 ## Version 0.1.41
 
@@ -52,7 +68,7 @@ Extract CDK: Pass WhereNode to FromSample node so we can apply filters to the sa
 
 ## Version 0.1.30
 
-Add Low-code API destination support for statically defined discover operations 
+Add Low-code API destination support for statically defined discover operations
 
 ## Version 0.1.29
 
