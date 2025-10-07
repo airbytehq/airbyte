@@ -59,3 +59,5 @@ compileKotlin {
 tasks.named('sourcesJar').configure {
     dependsOn tasks.named('generateJsonSchema2Pojo')
 }
+
+// Test comment to trigger CI
