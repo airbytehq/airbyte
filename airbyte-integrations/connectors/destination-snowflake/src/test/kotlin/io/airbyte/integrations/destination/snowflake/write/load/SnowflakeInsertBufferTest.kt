@@ -179,12 +179,8 @@ internal class SnowflakeInsertBufferTest {
         }
     }
 
-    private fun readContents(buffer: SnowflakeInsertBuffer): String {
-        return buffer.buffer?.let { b ->
-            GZIPInputStream(buffer.getInputStream(b)).bufferedReader().use { it.readText() }
-        }
-            ?: ""
-    }
+    private fun readContents(buffer: SnowflakeInsertBuffer) =
+        GZIPInputStream(buffer.getInputStream(buffer.buffer)).bufferedReader().use { it.readText() }
 
     private fun createRecord(columnName: String) =
         mapOf(

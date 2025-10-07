@@ -34,9 +34,9 @@ class SnowflakeInsertBuffer(
 
     @VisibleForTesting internal var recordCount = 0
 
-    @VisibleForTesting internal var buffer: InputOutputBuffer? = null
+    @VisibleForTesting internal val buffer: InputOutputBuffer = InputOutputBuffer()
 
-    private lateinit var outputStream: GZIPOutputStream
+    private val outputStream: GZIPOutputStream = GZIPOutputStream(buffer)
 
     private val random: Random = Random()
 
@@ -47,44 +47,32 @@ class SnowflakeInsertBuffer(
         }
 
     fun accumulate(recordFields: Map<String, AirbyteValue>) {
-        if (buffer == null) {
-            buffer = InputOutputBuffer()
-            outputStream = GZIPOutputStream(buffer)
-        }
         bufferCsvRecord(recordFields)
     }
 
     suspend fun flush() =
-        buffer?.let { b ->
-            try {
-                logger.info { "Beginning insert into ${tableName.toPrettyString(quote = QUOTE)}" }
-                val fileName =
-                    "snowflake${java.lang.Long.toUnsignedString(random.nextLong())}.csv.gz"
+        try {
+            logger.info { "Beginning insert into ${tableName.toPrettyString(quote = QUOTE)}" }
+            val fileName = "snowflake${java.lang.Long.toUnsignedString(random.nextLong())}.csv.gz"
 
-                val inputStream = getInputStream(b)
+            val inputStream = getInputStream(buffer)
 
-                inputStream.use {
-                    snowflakeClient.uploadToStage(
-                        tableName = tableName,
-                        inputStream = inputStream,
-                        fileName = fileName,
-                        compressData = false,
-                    )
-                }
-                snowflakeClient.copyFromStage(tableName, fileName)
-                logger.info {
-                    "Finished insert of $recordCount row(s) into ${tableName.toPrettyString(quote = QUOTE)}"
-                }
-            } catch (e: Exception) {
-                logger.error(e) { "Unable to flush accumulated data." }
-                throw e
-            } finally {
-                buffer?.close()
-                buffer = null
-                recordCount = 0
+            inputStream.use {
+                snowflakeClient.uploadToStage(
+                    tableName = tableName,
+                    inputStream = inputStream,
+                    fileName = fileName,
+                    compressData = false,
+                )
             }
+            snowflakeClient.copyFromStage(tableName, fileName)
+            logger.info {
+                "Finished insert of $recordCount row(s) into ${tableName.toPrettyString(quote = QUOTE)}"
+            }
+        } catch (e: Exception) {
+            logger.error(e) { "Unable to flush accumulated data." }
+            throw e
         }
-            ?: logger.warn { "Buffer is null: nothing to flush." }
 
     private fun bufferCsvRecord(record: Map<String, AirbyteValue>) {
         buffer?.let { b ->
