@@ -86,6 +86,11 @@ jobs:
               - 'airbyte-cdk/java/**/**/src/main/**/*'
               - 'airbyte-cdk/bulk/**/**/src/main/**/*'
 
+      - name: Install Poe
+        run: |
+          # Install Poe so we can run the connector tasks:
+          uv tool install poethepoet
+
       - name: Generate Connector Matrix from Changes
         id: generate-matrix
         run: |
