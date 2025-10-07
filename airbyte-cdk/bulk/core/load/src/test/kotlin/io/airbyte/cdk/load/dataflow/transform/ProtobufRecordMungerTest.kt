@@ -665,9 +665,7 @@ class ProtobufRecordMungerTest {
     fun `handles invalid date format with proper error tracking`() {
         // Create an invalid date using an out-of-range value
         val invalidDateValue =
-            AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
-                .setDate(Integer.MAX_VALUE) // Out of range date
-                .build()
+            AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder().setString("invalid-date").build()
 
         val invalidDateProtoValues =
             mutableListOf(

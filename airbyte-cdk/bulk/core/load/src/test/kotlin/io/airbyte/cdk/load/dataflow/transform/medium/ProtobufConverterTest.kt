@@ -431,7 +431,10 @@ class ProtobufConverterTest {
         val converter = ProtobufConverter(columnNameMapper, valueCoercer)
 
         val accessors = arrayOf(fa("invalid_int", IntegerType, 0))
-        val protoValues = listOf(vBigInteger("not-a-number"))
+
+        val invalidBigInteger =
+            AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder().setBigInteger("boom!").build()
+        val protoValues = listOf(invalidBigInteger)
 
         val msg = mockMsgWithStream(accessors)
         val source = buildProtoSource(protoValues)
@@ -470,7 +473,10 @@ class ProtobufConverterTest {
                 )
             )
 
-        val protoValues = listOf(vString("hello"), vBigInteger("boom!"))
+        val invalidBigInteger =
+            AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder().setBigInteger("boom!").build()
+
+        val protoValues = listOf(vString("hello"), invalidBigInteger)
 
         val unknownColumnChanges =
             listOf(
