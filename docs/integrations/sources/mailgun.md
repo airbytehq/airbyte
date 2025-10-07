@@ -68,6 +68,7 @@ MailGun's [API reference](https://documentation.mailgun.com/en/latest/api_refere
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ |:-----------| :------------------------------------------------------- |:--------------------------------------------------------------------------------|
+| 0.3.36 | 2025-10-07 | [62057](https://github.com/airbytehq/airbyte/pull/62057) | Replace deprecated `Events` stream by `Logs` stream |
 | 0.3.35 | 2025-09-30 | [66817](https://github.com/airbytehq/airbyte/pull/66817) | Update dependencies |
 | 0.3.34 | 2025-09-24 | [66646](https://github.com/airbytehq/airbyte/pull/66646) | Update dependencies |
 | 0.3.33 | 2025-09-09 | [66043](https://github.com/airbytehq/airbyte/pull/66043) | Update dependencies |
