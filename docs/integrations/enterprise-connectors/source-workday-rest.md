@@ -16,7 +16,7 @@ Airbyte's [Workday](https://workday.com) enterprise source connector currently o
 |:------------------------------|:-----------|
 | Full Refresh Sync             | Yes        |
 | Incremental Sync              | Yes        |
-| Replicate Incremental Deletes | No         | 
+| Replicate Incremental Deletes | No         |
 | SSL connection                | Yes        |
 | Namespaces                    | No         | 
 
