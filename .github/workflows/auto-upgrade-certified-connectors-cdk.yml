@@ -1,0 +1,15 @@
+name: Auto Upgrade CDK for Certified Connectors
+
+on:
+  schedule:
+    # Run at 16:37 UTC on the first of every month
+    - cron: "37 16 1 * *"
+  workflow_dispatch:
+
+jobs:
+  auto-upgrade-certified-connector-bulk-cdk:
+    name: Auto Upgrade CDK for Certified Connectors
+    uses: airbytehq/airbyte/.github/workflows/auto-upgrade-certified-connectors-cdk.yml@edgao/autobump_cron
+    secrets: inherit
+    with:
+      repositories: airbyte-enterprise
