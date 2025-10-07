@@ -236,7 +236,6 @@ jobs:
           token: ${{ steps.get-app-token.outputs.token }}
           details_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
-
   non-jvm-connectors-test:
     needs: [generate-matrix]
     runs-on: ubuntu-24.04
@@ -363,7 +362,6 @@ jobs:
           conclusion: ${{ success() && 'success' || 'failure' }}
           token: ${{ steps.get-app-token.outputs.token }}
           details_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-
 
   # Lint and format checks
 
