@@ -29,6 +29,7 @@ jobs:
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 #v5.0.0
         with:
           submodules: true
+          fetch-depth: 0 # We need this to fetch all history of origin/master in the submodule
 
       - name: Check if pinned commit is on master
         run: |
