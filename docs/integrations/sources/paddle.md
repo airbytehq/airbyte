@@ -34,7 +34,11 @@ API Reference: https://developer.paddle.com/api-reference/overview
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.2.0   | 2025-07-10 | [62891](https://github.com/airbytehq/airbyte/pull/62891) | Remove `custom_data` property constraints and add it to `customers` stream            |
+| 0.2.4 | 2025-09-30 | [66390](https://github.com/airbytehq/airbyte/pull/66390) | Update dependencies |
+| 0.2.3 | 2025-09-09 | [65806](https://github.com/airbytehq/airbyte/pull/65806) | Update dependencies |
+| 0.2.2 | 2025-08-23 | [65194](https://github.com/airbytehq/airbyte/pull/65194) | Update dependencies |
+| 0.2.1 | 2025-08-09 | [64749](https://github.com/airbytehq/airbyte/pull/64749) | Update dependencies |
+| 0.2.0 | 2025-07-10 | [62891](https://github.com/airbytehq/airbyte/pull/62891) | Remove `custom_data` property constraints and add it to `customers` stream |
 | 0.1.5 | 2025-08-02 | [64300](https://github.com/airbytehq/airbyte/pull/64300) | Update dependencies |
 | 0.1.4 | 2025-07-26 | [63842](https://github.com/airbytehq/airbyte/pull/63842) | Update dependencies |
 | 0.1.3 | 2025-07-19 | [63388](https://github.com/airbytehq/airbyte/pull/63388) | Update dependencies |

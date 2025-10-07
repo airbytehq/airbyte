@@ -147,6 +147,7 @@ global:
     secretName: "airbyte-config-secrets" # Name of your Kubernetes secret.
     googleSecretManager:
       projectId: <project-id>
+      region: "" ## Optional - e.g. us-central1
       credentialsSecretKey: gcp.json
 ```
 
@@ -156,10 +157,11 @@ global:
 ```yaml title="values.yaml"
 global:
   secretsManager:
-    type: GOOGLE_SECRET_MANAGE
+    type: GOOGLE_SECRET_MANAGER
     secretName: "airbyte-config-secrets" # Name of your Kubernetes secret.
     googleSecretManager:
       projectId: <project-id>
+      region: "" ## Optional - e.g. us-central1
       credentialsSecretKey: gcp.json
 ```
 

@@ -51,6 +51,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "text/csv",
                                 "name": "test.csv",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/abc/view?usp=drivesdk",
                             }
                         ]
@@ -64,6 +65,7 @@ def flatten_list(list_of_lists):
                     mime_type="text/csv",
                     original_mime_type="text/csv",
                     last_modified=datetime.datetime(2021, 1, 1),
+                    created_at=datetime.datetime(2021, 1, 1),
                     view_link=f"https://docs.google.com/file/d/abc/view?usp=drivesdk",
                 )
             ],
@@ -80,6 +82,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "text/csv",
                                 "name": "test.csv",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/abc/view?usp=drivesdk",
                             },
                             {
@@ -87,6 +90,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "text/csv",
                                 "name": "another_file.csv",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/def/view?usp=drivesdk",
                             },
                         ]
@@ -100,6 +104,7 @@ def flatten_list(list_of_lists):
                     mime_type="text/csv",
                     original_mime_type="text/csv",
                     last_modified=datetime.datetime(2021, 1, 1),
+                    created_at=datetime.datetime(2021, 1, 1),
                     view_link=f"https://docs.google.com/file/d/abc/view?usp=drivesdk",
                 ),
                 GoogleDriveRemoteFile(
@@ -108,6 +113,7 @@ def flatten_list(list_of_lists):
                     mime_type="text/csv",
                     original_mime_type="text/csv",
                     last_modified=datetime.datetime(2021, 1, 1),
+                    created_at=datetime.datetime(2021, 1, 1),
                     view_link=f"https://docs.google.com/file/d/def/view?usp=drivesdk",
                 ),
             ],
@@ -124,6 +130,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "text/csv",
                                 "name": "test.csv",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/abc/view?usp=drivesdk",
                             }
                         ]
@@ -135,6 +142,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "text/csv",
                                 "name": "another_file.csv",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/def/view?usp=drivesdk",
                             }
                         ]
@@ -148,6 +156,7 @@ def flatten_list(list_of_lists):
                     mime_type="text/csv",
                     original_mime_type="text/csv",
                     last_modified=datetime.datetime(2021, 1, 1),
+                    created_at=datetime.datetime(2021, 1, 1),
                     view_link=f"https://docs.google.com/file/d/abc/view?usp=drivesdk",
                 ),
                 GoogleDriveRemoteFile(
@@ -156,6 +165,7 @@ def flatten_list(list_of_lists):
                     mime_type="text/csv",
                     original_mime_type="text/csv",
                     last_modified=datetime.datetime(2021, 1, 1),
+                    created_at=datetime.datetime(2021, 1, 1),
                     view_link=f"https://docs.google.com/file/d/def/view?usp=drivesdk",
                 ),
             ],
@@ -182,6 +192,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "text/csv",
                                 "name": "test.csv",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/abc/view?usp=drivesdk",
                             },
                             {
@@ -189,6 +200,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "application/vnd.google-apps.folder",
                                 "name": "subfolder",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/sub/view?usp=drivesdk",
                             },
                         ]
@@ -203,6 +215,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "text/csv",
                                 "name": "another_file.csv",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/def/view?usp=drivesdk",
                             },
                             {
@@ -210,6 +223,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "application/vnd.google-apps.folder",
                                 "name": "subsubfolder",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/subsub/view?usp=drivesdk",
                             },
                         ]
@@ -224,6 +238,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "text/csv",
                                 "name": "yet_another_file.csv",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/ghi/view?usp=drivesdk",
                             },
                         ]
@@ -237,6 +252,7 @@ def flatten_list(list_of_lists):
                     mime_type="text/csv",
                     original_mime_type="text/csv",
                     last_modified=datetime.datetime(2021, 1, 1),
+                    created_at=datetime.datetime(2021, 1, 1),
                     view_link=f"https://docs.google.com/file/d/abc/view?usp=drivesdk",
                 ),
                 GoogleDriveRemoteFile(
@@ -245,6 +261,7 @@ def flatten_list(list_of_lists):
                     mime_type="text/csv",
                     original_mime_type="text/csv",
                     last_modified=datetime.datetime(2021, 1, 1),
+                    created_at=datetime.datetime(2021, 1, 1),
                     view_link=f"https://docs.google.com/file/d/def/view?usp=drivesdk",
                 ),
                 GoogleDriveRemoteFile(
@@ -253,6 +270,7 @@ def flatten_list(list_of_lists):
                     mime_type="text/csv",
                     original_mime_type="text/csv",
                     last_modified=datetime.datetime(2021, 1, 1),
+                    created_at=datetime.datetime(2021, 1, 1),
                     view_link=f"https://docs.google.com/file/d/ghi/view?usp=drivesdk",
                 ),
             ],
@@ -269,6 +287,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "text/csv",
                                 "name": "test.csv",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/abc/view?usp=drivesdk",
                             },
                             {
@@ -276,6 +295,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "application/vnd.google-apps.folder",
                                 "name": "subfolder",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/sub/view?usp=drivesdk",
                             },
                         ]
@@ -290,6 +310,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "text/csv",
                                 "name": "test.csv",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/abc/view?usp=drivesdk",
                             },
                             {
@@ -297,6 +318,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "application/vnd.google-apps.folder",
                                 "name": "subsubfolder",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/subsub/view?usp=drivesdk",
                             },
                         ]
@@ -311,6 +333,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "text/csv",
                                 "name": "test.csv",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/abc/view?usp=drivesdk",
                             },
                             {
@@ -318,6 +341,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "application/vnd.google-apps.folder",
                                 "name": "link_to_subfolder",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/sub/view?usp=drivesdk",
                             },
                         ]
@@ -331,6 +355,7 @@ def flatten_list(list_of_lists):
                     mime_type="text/csv",
                     original_mime_type="text/csv",
                     last_modified=datetime.datetime(2021, 1, 1),
+                    created_at=datetime.datetime(2021, 1, 1),
                     view_link=f"https://docs.google.com/file/d/abc/view?usp=drivesdk",
                 ),
             ],
@@ -347,6 +372,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "text/csv",
                                 "name": "test.csv",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/abc/view?usp=drivesdk",
                             },
                             {
@@ -354,6 +380,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "application/vnd.google-apps.folder",
                                 "name": "subfolder",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/sub/view?usp=drivesdk",
                             },
                         ]
@@ -368,6 +395,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "text/csv",
                                 "name": "another_file.csv",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/def/view?usp=drivesdk",
                             },
                             {
@@ -375,6 +403,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "text/jsonl",
                                 "name": "non_matching.jsonl",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/ghi/view?usp=drivesdk",
                             },
                         ]
@@ -388,6 +417,7 @@ def flatten_list(list_of_lists):
                     mime_type="text/csv",
                     original_mime_type="text/csv",
                     last_modified=datetime.datetime(2021, 1, 1),
+                    created_at=datetime.datetime(2021, 1, 1),
                     view_link=f"https://docs.google.com/file/d/def/view?usp=drivesdk",
                 ),
             ],
@@ -404,6 +434,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "text/csv",
                                 "name": "test.csv",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/abc/view?usp=drivesdk",
                             },
                             {
@@ -411,6 +442,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "application/vnd.google-apps.folder",
                                 "name": "subfolder",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/sub/view?usp=drivesdk",
                             },
                             # This won't get queued because it has no chance of matching the glob
@@ -419,6 +451,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "application/vnd.google-apps.folder",
                                 "name": "ignored_subfolder",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/sub/view?usp=drivesdk",
                             },
                         ]
@@ -433,6 +466,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "text/csv",
                                 "name": "another_file.csv",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/def/view?usp=drivesdk",
                             },
                             # This will get queued because it matches the prefix (event though it can't match the glob)
@@ -441,6 +475,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "application/vnd.google-apps.folder",
                                 "name": "subsubfolder",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/subsub/view?usp=drivesdk",
                             },
                         ]
@@ -455,6 +490,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "text/csv",
                                 "name": "yet_another_file.csv",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/ghi/view?usp=drivesdk",
                             },
                         ]
@@ -468,6 +504,7 @@ def flatten_list(list_of_lists):
                     mime_type="text/csv",
                     original_mime_type="text/csv",
                     last_modified=datetime.datetime(2021, 1, 1),
+                    created_at=datetime.datetime(2021, 1, 1),
                     view_link=f"https://docs.google.com/file/d/def/view?usp=drivesdk",
                 ),
             ],
@@ -484,6 +521,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "text/csv",
                                 "name": "test.csv",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/abc/view?usp=drivesdk",
                             },
                             {
@@ -491,6 +529,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "application/vnd.google-apps.folder",
                                 "name": "subfolder",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/sub/view?usp=drivesdk",
                             },
                         ]
@@ -505,6 +544,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "text/csv",
                                 "name": "another_file.csv",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/def/view?usp=drivesdk",
                             },
                             # This will get queued because it matches the prefix (event though it can't match the glob)
@@ -513,6 +553,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "application/vnd.google-apps.folder",
                                 "name": "subsubfolder",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/subsub/view?usp=drivesdk",
                             },
                         ]
@@ -527,6 +568,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "text/csv",
                                 "name": "yet_another_file.csv",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/ghi/view?usp=drivesdk",
                             },
                             # This will get queued because it matches the prefix (event though it can't match the glob)
@@ -535,6 +577,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "application/vnd.google-apps.folder",
                                 "name": "ignored_subsubsubfolder",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/subsubsub/view?usp=drivesdk",
                             },
                         ]
@@ -549,6 +592,7 @@ def flatten_list(list_of_lists):
                     mime_type="text/csv",
                     original_mime_type="text/csv",
                     last_modified=datetime.datetime(2021, 1, 1),
+                    created_at=datetime.datetime(2021, 1, 1),
                     view_link=f"https://docs.google.com/file/d/ghi/view?usp=drivesdk",
                 ),
             ],
@@ -565,6 +609,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "application/vnd.google-apps.document",
                                 "name": "MyDoc",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/document/d/abc/edit?usp=drivesdk",
                             }
                         ]
@@ -578,6 +623,7 @@ def flatten_list(list_of_lists):
                     original_mime_type="application/vnd.google-apps.document",
                     mime_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                     last_modified=datetime.datetime(2021, 1, 1),
+                    created_at=datetime.datetime(2021, 1, 1),
                     view_link=f"https://docs.google.com/document/d/abc/edit?usp=drivesdk",
                 )
             ],
@@ -594,6 +640,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "application/vnd.google-apps.presentation",
                                 "name": "MySlides",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/presentation/d/abc/edit?usp=drivesdk",
                             }
                         ]
@@ -607,6 +654,7 @@ def flatten_list(list_of_lists):
                     original_mime_type="application/vnd.google-apps.presentation",
                     mime_type="application/pdf",
                     last_modified=datetime.datetime(2021, 1, 1),
+                    created_at=datetime.datetime(2021, 1, 1),
                     view_link=f"https://docs.google.com/presentation/d/abc/edit?usp=drivesdk",
                 )
             ],
@@ -623,6 +671,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "application/vnd.google-apps.drawing",
                                 "name": "MyDrawing",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/drawings/d/abc/edit?usp=drivesdk",
                             }
                         ]
@@ -636,6 +685,7 @@ def flatten_list(list_of_lists):
                     original_mime_type="application/vnd.google-apps.drawing",
                     mime_type="application/pdf",
                     last_modified=datetime.datetime(2021, 1, 1),
+                    created_at=datetime.datetime(2021, 1, 1),
                     view_link=f"https://docs.google.com/drawings/d/abc/edit?usp=drivesdk",
                 )
             ],
@@ -652,6 +702,7 @@ def flatten_list(list_of_lists):
                                 "mimeType": "application/vnd.google-apps.video",
                                 "name": "MyVideo",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
+                                "createdTime": "2021-01-01T00:00:00.000Z",
                                 "webViewLink": "https://docs.google.com/file/d/abc/view?usp=drivesdk",
                             }
                         ]
@@ -665,6 +716,7 @@ def flatten_list(list_of_lists):
                     original_mime_type="application/vnd.google-apps.video",
                     mime_type="application/vnd.google-apps.video",
                     last_modified=datetime.datetime(2021, 1, 1),
+                    created_at=datetime.datetime(2021, 1, 1),
                     view_link=f"https://docs.google.com/file/d/abc/view?usp=drivesdk",
                 )
             ],
@@ -708,6 +760,7 @@ def test_matching_files(mock_build_service, mock_service_account, glob, listing_
                 mime_type="text/csv",
                 original_mime_type="text/csv",
                 last_modified=datetime.datetime(2021, 1, 1),
+                created_at=datetime.datetime(2021, 1, 1),
                 view_link=f"https://docs.google.com/file/d/abc/view?usp=drivesdk",
             ),
             b"test",
@@ -725,6 +778,7 @@ def test_matching_files(mock_build_service, mock_service_account, glob, listing_
                 mime_type="text/csv",
                 original_mime_type="text/csv",
                 last_modified=datetime.datetime(2021, 1, 1),
+                created_at=datetime.datetime(2021, 1, 1),
                 view_link=f"https://docs.google.com/file/d/abc/view?usp=drivesdk",
             ),
             b"test",
@@ -742,6 +796,7 @@ def test_matching_files(mock_build_service, mock_service_account, glob, listing_
                 mime_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 original_mime_type="application/vnd.google-apps.document",
                 last_modified=datetime.datetime(2021, 1, 1),
+                created_at=datetime.datetime(2021, 1, 1),
                 view_link=f"https://docs.google.com/document/d/abc/edit?usp=drivesdk",
             ),
             b"test",
@@ -812,6 +867,7 @@ def test_open_file(
             GoogleDriveRemoteFile(
                 uri="some/path/in/source/test.jsonl",
                 last_modified=datetime.datetime(2023, 10, 16, 6, 16, 6),
+                created_at=datetime.datetime(2023, 10, 16, 6, 16, 6),
                 mime_type="application/octet-stream",
                 id="1",
                 original_mime_type="application/octet-stream",
@@ -832,6 +888,7 @@ def test_open_file(
             GoogleDriveRemoteFile(
                 uri="subfolder/test2.jsonl",
                 last_modified=datetime.datetime(2023, 10, 19, 1, 43, 56),
+                created_at=datetime.datetime(2023, 10, 19, 1, 43, 56),
                 mime_type="application/octet-stream",
                 id="test2",
                 original_mime_type="application/octet-stream",
@@ -852,6 +909,7 @@ def test_open_file(
             GoogleDriveRemoteFile(
                 uri="testdoc_docx.docx",
                 last_modified=datetime.datetime(2023, 10, 27, 0, 45, 54),
+                created_at=datetime.datetime(2023, 10, 27, 0, 45, 54),
                 mime_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 id="testdoc_docx",
                 original_mime_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -868,6 +926,7 @@ def test_open_file(
             GoogleDriveRemoteFile(
                 uri="testdoc_pdf.pdf",
                 last_modified=datetime.datetime(2023, 10, 27, 0, 45, 58),
+                created_at=datetime.datetime(2023, 10, 27, 0, 45, 58),
                 mime_type="application/pdf",
                 id="testdoc_pdf",
                 original_mime_type="application/pdf",
@@ -884,6 +943,7 @@ def test_open_file(
             GoogleDriveRemoteFile(
                 uri="testdoc_ocr_pdf.pdf",
                 last_modified=datetime.datetime(2023, 10, 27, 0, 46, 4),
+                created_at=datetime.datetime(2023, 10, 27, 0, 46, 4),
                 mime_type="application/pdf",
                 id="testdoc_ocr_pdf",
                 original_mime_type="application/pdf",
@@ -900,6 +960,7 @@ def test_open_file(
             GoogleDriveRemoteFile(
                 uri="testdoc_google",
                 last_modified=datetime.datetime(2023, 11, 10, 13, 46, 18, 551000),
+                created_at=datetime.datetime(2023, 11, 10, 13, 46, 18, 551000),
                 mime_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 id="testdoc_google",
                 original_mime_type="application/vnd.google-apps.document",
@@ -916,6 +977,7 @@ def test_open_file(
             GoogleDriveRemoteFile(
                 uri="testdoc_presentation",
                 last_modified=datetime.datetime(2023, 11, 10, 13, 49, 6, 640000),
+                created_at=datetime.datetime(2023, 11, 10, 13, 49, 6, 640000),
                 mime_type="application/vnd.openxmlformats-officedocument.presentationml.presentation",
                 id="testdoc_presentation",
                 original_mime_type="application/vnd.google-apps.presentation",
@@ -991,7 +1053,7 @@ def test_upload_file(
         assert expected_paths["file_relative_path"] == file_reference.source_file_relative_path
         assert file.mime_type == file_record_data.mime_type
 
-        assert path.basename(expected_paths["staging_file_url"]) == file_record_data.filename
+        assert path.basename(expected_paths["staging_file_url"]) == file_record_data.file_name
         assert path.dirname(expected_paths["staging_file_url"].replace(f"{TEST_LOCAL_DIRECTORY}/", "")) == file_record_data.folder
 
         assert mock_downloader.next_chunk.call_count == 2
@@ -1010,6 +1072,7 @@ def test_upload_file(
             GoogleDriveRemoteFile(
                 uri="test.csv",
                 last_modified=datetime.datetime(2023, 10, 16, 6, 16, 6),
+                created_at=datetime.datetime(2023, 10, 16, 6, 16, 6),
                 mime_type="text/csv",
                 id="123",
                 original_mime_type="text/csv",
@@ -1022,6 +1085,7 @@ def test_upload_file(
             GoogleDriveRemoteFile(
                 uri="shared_drive_test.csv",
                 last_modified=datetime.datetime(2023, 10, 16, 6, 16, 6),
+                created_at=datetime.datetime(2023, 10, 16, 6, 16, 6),
                 mime_type="text/csv",
                 id="456",
                 original_mime_type="text/csv",

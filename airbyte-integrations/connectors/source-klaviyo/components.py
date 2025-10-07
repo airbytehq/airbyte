@@ -10,10 +10,10 @@ import dpath
 import requests
 from requests.exceptions import InvalidURL
 
-from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import DeclarativeStream as DeclarativeStreamModel
 from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import WaitTimeFromHeaderBackoffStrategy
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
@@ -61,10 +61,10 @@ class ArchivedToPerPartitionStateMigration(StateMigration, ABC):
     }
     """
 
-    declarative_stream: DeclarativeStream
+    declarative_stream: DeclarativeStreamModel
     config: Config
 
-    def __init__(self, declarative_stream: DeclarativeStream, config: Config):
+    def __init__(self, declarative_stream: DeclarativeStreamModel, config: Config):
         self._config = config
         self.declarative_stream = declarative_stream
         self._cursor = declarative_stream.incremental_sync
@@ -311,10 +311,10 @@ class PerPartitionToSingleStateMigration(StateMigration):
     }
     """
 
-    declarative_stream: DeclarativeStream
+    declarative_stream: DeclarativeStreamModel
     config: Config
 
-    def __init__(self, declarative_stream: DeclarativeStream, config: Config):
+    def __init__(self, declarative_stream: DeclarativeStreamModel, config: Config):
         self._config = config
         self.declarative_stream = declarative_stream
         self._cursor = declarative_stream.incremental_sync

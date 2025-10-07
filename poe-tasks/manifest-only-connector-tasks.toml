@@ -62,12 +62,16 @@ fi
 # Generic tasks (same across all connector types)
 
 [tasks.get-language]
-cmd = """yq eval '.data.tags[] | select(test("^language:")) | sub("language:","")' $PWD/metadata.yaml"""
+cmd = """yq eval '.data.tags[] | select(test("^language:")) | sub("language:","")' ${POE_PWD}/metadata.yaml"""
 help = "Get the language of the connector from its metadata.yaml file. Use with -qq to get just the language name."
 
 [tasks.get-base-image]
-cmd = """yq eval '.data.connectorBuildOptions.baseImage' $PWD/metadata.yaml"""
+cmd = """yq eval '.data.connectorBuildOptions.baseImage' ${POE_PWD}/metadata.yaml"""
 help = "Get the base image of the connector from its metadata.yaml file."
+
+[tasks.get-version]
+cmd = """yq eval '.data.dockerImageTag' ${POE_PWD}/metadata.yaml"""
+help = "Get the version of the connector from its metadata.yaml file."
 
 [tasks.run-cat-tests]
 shell = "airbyte-ci connectors --name=`poe -qq get-connector-name` test --only-step=acceptance"

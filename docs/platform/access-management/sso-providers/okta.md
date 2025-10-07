@@ -8,65 +8,109 @@ import TabItem from "@theme/TabItem";
 
 # Set up single sign on using Okta
 
-This guide shows you how to set up Okta and Airbyte so your users can log into Airbyte using your organization's identity provider (IdP) using OpenID Connect (OIDC).
+This guide shows you how to set up Okta and Airbyte so your users can log into Airbyte using your organization's identity provider (IdP).
 
 ## Overview
 
 This guide is for administrators. It assumes you have:
 
-- Basic knowledge of Okta, OIDC, and Airbyte
+- Basic knowledge of Okta, OpenID Connect (OIDC), and Airbyte
 - The permissions to manage Okta in your organization
-- The permissions to manage Airbyte in your organization
+- Organization admin permissions for Airbyte
 
 The exact process differs between the Cloud or Self-Managed versions of Airbyte. Steps for both are below.
 
 ## Cloud Teams with Okta OIDC
 
+Follow the steps below to set up single sign on with Okta.
+
 :::warning
-For security purposes, Airbyte disables existing [applications](/platform/enterprise-setup/api-access-config) used to access the Airbyte API once the user who owns the application signs in with SSO for the first time. Replace any Application secrets that were previously in use to ensure your integrations don't break.
+For security purposes, when a user who owns [applications](/platform/enterprise-setup/api-access-config) logs in with SSO for the first time, Airbyte disables their existing applications. Those users must replace any application secrets that were previously in use to ensure API and Terraform integrations don't break.
 :::
 
-You need to create a new Okta OIDC App Integration for Airbyte. Documentation on how to do this in Okta can be found [here](https://help.okta.com/en-us/content/topics/apps/apps_app_integration_wizard_oidc.htm). You should create an app integration with **OIDC - OpenID Connect** as the sign-in method and **Web Application** as the application type:
+### Set up SSO for the first time
 
-![Screenshot of Okta app integration creation modal](./assets/okta-create-new-app-integration.png)
+Follow these steps to set up SSO in Airbyte Cloud.
 
-Before you can proceed, you require your **Company Identifier** so you can properly fill in these values. Your contact at Airbyte gives this to you.
+#### Create a new Okta application
 
-1. Create the application with the following parameters:
+1. In Okta, create a new Okta OIDC App Integration for Airbyte. For help, see [Okta's documentation](https://help.okta.com/en-us/content/topics/apps/apps_app_integration_wizard_oidc.htm). Create an app integration with the following options.
 
-    <dl>
-      <dt>**App integration name**</dt>
-      <dd>A human readable name for the application (e.g. **Airbyte Cloud**). This is only used for identification inside your Okta dashboard.</dd>
-      <dt>**Logo** (optional)</dt>
-      <dd>You can upload an Airbyte logo, which you can find at https://airbyte.com/company/press</dd>
-      <dt>**Grant type**</dt>
-      <dd>Only select **Authorization Code**.</dd>
-      <dt>**Sign-in redirect URIs**</dt>
-      <dd>
-      ```
-      https://cloud.airbyte.com/auth/realms/<your-company-identifier>/broker/default/endpoint
-      ```
-      </dd>
-      <dt>**Sign-out redirect URIs**</dt>
-      <dd>
-      ```
-      https://cloud.airbyte.com/auth/realms/<your-company-identifier>/broker/default/endpoint/logout_response
-      ```
-      </dd>
-      <dt>**Trusted Origins**</dt>
-      <dd>Leave empty.</dd>
-      <dt>**Assignments > Controlled Access**</dt>
-      <dd>You can control whether everyone in your Okta organization should be able to access Airbyte using their Okta account or limit it only to a subset of your users by selecting specific groups who should get access.</dd>
-    </dl>
-    
-2. Give your Airbyte contact the following information of the created application.
+    - **Sign-in method**: OIDC - OpenID Connect
 
-    - Your **Okta domain** (it's not specific to this application, see [Find your Okta domain](https://developer.okta.com/docs/guides/find-your-domain/main/))
-    - **Client ID**
-    - **Client Secret**
-    - **Email Domain** (users signing in from this domain are required to sign in via SSO)
+    - **Application type**: Web application
 
-3. Your contact at Airbyte sets up SSO for you and lets you know once it's ready.
+      ![Screenshot of Okta app integration creation modal](./assets/okta-create-new-app-integration.png)
+
+2. Click **Next**.
+
+3. Set the following parameters for your app integration.
+
+    - **App integration name**: `Airbyte` (or something similar)
+
+    - **Grant type**: `Authorization code`
+
+    - **Sign-in redirect URIs**: `https://cloud.airbyte.com/auth/realms/<your-company-identifier>/broker/default/endpoint`
+
+    - **Sign-out redirect URIs**: `https://cloud.airbyte.com/auth/realms/<your-company-identifier>/broker/default/endpoint/logout_response`
+
+    - **Trusted origins**: Leave empty.
+
+    - **Assignments > Controlled access**: Depending on your needs, choose either `Limit access to selected groups` or `Allow everyone in your organization to access`.
+
+    - Leave other values as defaults unless you have a reason to change them.
+
+4. Click **Save**.
+
+#### Configure SSO in Airbyte
+
+1. In Airbyte, click **Organization settings** > **General**.
+
+    :::info
+    Currently, this portion of the setup can only be done by an Airbyte employee. Contact Support to proceed.
+    :::
+
+2. Click **Set up SSO**, then input the following information.
+
+    - **Email domain**: The full email domain of users who sign in to Okta. For example, `airbyte.io`.
+
+      :::note
+      If you use multiple email domains, only enter one domain here. Contact Airbyte's [support team](https://support.airbyte.com) to have them add additional domains after you're done.
+      :::
+
+    - **Client ID**: In Okta's administrator panel, **Applications** > **Applications** > **Airbyte** > **General** tab > **Client ID**.
+
+    - **Client secret**: Your client secret from your Okta application.
+
+    - **Discovery URL**: Your OpenID Connect (OIDC) metadata endpoint. It's similar to `https://<yourOktaDomain>/.well-known/openid-configuration`.
+
+    - **SSO subdomain**: Your company identifier, which Airbyte users use to access Airbyte.
+
+      - It must be a unique.
+
+      - It must be consistent with the company identifier you used in the redirect URI you defined in Okta.
+
+      - It's often your organization name or domain. For example, `airbyte`.
+
+3. Click **Save changes**.
+
+4. Test SSO to make sure people can access Airbyte. **Stay logged in so you don't lock yourself out** and ask a colleague to complete the following steps.
+
+    1. Sign out of Airbyte.
+
+    2. On the Airbyte login page, click **Continue with SSO**, enter your company identifier, and click **Continue with SSO**. The Okta sign in page appears.
+
+    3. Sign into Okta. Okta then forwards you back to Airbyte, which logs you in.
+
+    :::note
+    If you were already logged into your company’s IdP somewhere else, you might not see a login screen. In this case, Airbyte forwards you directly to Airbyte's logged-in area.
+    :::
+
+If you successfully set up SSO, but your users can't log into Airbyte, verify that they have access to the Airbyte application you created in Okta.
+
+### Update or delete SSO configurations
+
+To prevent a situation where you could lock yourself out of Airbyte, we require that you contact Airbyte's [support team](https://support.airbyte.com) if you need to change or remove SSO in your Cloud organization.
 
 ## Self-Managed Enterprise with Okta OIDC
 
@@ -222,9 +266,10 @@ global:
   auth:
     identityProvider: 
       type: generic-oidc
-      generic-oidc: 
+      genericOidc: 
         clientId: YOUR_CLIENT_ID
         audience: YOUR_AUDIENCE
+        extraScopes: YOUR_EXTRA_SCOPES
         issuer: YOUR_ISSUER
         endpoints: 
           authorizationServerEndpoint: YOUR_AUTH_ENDPOINT
@@ -236,6 +281,8 @@ You collect these values from Okta in the locations shown below.
 - `clientId`: In Okta's administrator panel, **Applications** > **Applications** > **Airbyte** > **General** tab > **Client ID**.
 
 - `audience`: In Okta's administrator panel, **Security** > **API** > **Authorization Servers** tab > **Audience**. Choose the audience for the authorization server you're using with Airbyte.
+
+- `extraScopes`: If you've defined extra scopes in your authorization server, you can reference them here. Extra scopes are included in the authorization code flow and are sometimes required to provide web apps like Airbyte with valid JSON web tokens. In Okta's administrator panel, **Security** > **API** > **Authorization Servers** tab > your authorization server > **Scopes**.
 
 - `issuer`: In your well-known endpoint, use the `issuer`.
 

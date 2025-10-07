@@ -74,6 +74,7 @@ class PipelineEventBookkeepingRouter(
     private val clientCount = AtomicInteger(numDataChannels)
     private val sawEndOfStreamComplete = ConcurrentHashSet<DestinationStream.Descriptor>()
     private val checkpointIndexes = ConcurrentHashMap<DestinationStream.Descriptor, AtomicInteger>()
+    private val unopenedStreams = ConcurrentHashSet(catalog.streams.map { it.mappedDescriptor })
 
     init {
         log.info { "Creating bookkeeping router for $numDataChannels data channels" }
@@ -94,10 +95,9 @@ class PipelineEventBookkeepingRouter(
     suspend fun handleStreamMessage(
         message: DestinationStreamAffinedMessage,
         postProcessingCallback: suspend () -> Unit = {},
-        unopenedStreams: MutableSet<DestinationStream.Descriptor>
     ): PipelineInputEvent {
         val stream = message.stream
-        if (unopenedStreams.remove(stream.mappedDescriptor)) {
+        if (this.unopenedStreams.remove(stream.mappedDescriptor)) {
             log.info {
                 "Saw first record for stream ${stream.mappedDescriptor}; awaiting setup complete"
             }

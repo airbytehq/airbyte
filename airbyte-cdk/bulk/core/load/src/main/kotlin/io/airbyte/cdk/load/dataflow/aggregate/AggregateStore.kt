@@ -6,33 +6,34 @@ package io.airbyte.cdk.load.dataflow.aggregate
 
 import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.dataflow.config.MemoryAndParallelismConfig
 import io.airbyte.cdk.load.dataflow.state.PartitionHistogram
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
 import io.github.oshai.kotlinlogging.KotlinLogging
-import jakarta.inject.Singleton
 import java.util.concurrent.ConcurrentHashMap
 
 typealias StoreKey = DestinationStream.Descriptor
 
-@Singleton
 class AggregateStore(
     private val aggFactory: AggregateFactory,
+    memoryAndParallelismConfig: MemoryAndParallelismConfig,
 ) {
     private val log = KotlinLogging.logger {}
 
-    // TODO: Inject
-    private val maxConcurrentAggregates = 5L
-    private val stalenessDeadlinePerAggMs = 5L * 60000
-    private val maxRecordsPerAgg = 100_000L
-    private val maxEstBytesPerAgg = 70_000_000L
+    private val maxConcurrentAggregates = memoryAndParallelismConfig.maxOpenAggregates
+    private val stalenessDeadlinePerAggMs =
+        memoryAndParallelismConfig.stalenessDeadlinePerAgg.inWholeMilliseconds
+    private val maxRecordsPerAgg = memoryAndParallelismConfig.maxRecordsPerAgg
+    private val maxEstBytesPerAgg = memoryAndParallelismConfig.maxEstBytesPerAgg
 
     private val aggregates = ConcurrentHashMap<StoreKey, AggregateEntry>()
 
     fun acceptFor(key: StoreKey, record: RecordDTO) {
-        val (agg, histogram, timeTrigger, countTrigger, bytesTrigger) = getOrCreate(key)
+        val (_, agg, counts, bytes, timeTrigger, countTrigger, bytesTrigger) = getOrCreate(key)
 
         agg.accept(record)
-        histogram.increment(record.partitionKey)
+        counts.increment(record.partitionKey, 1)
+        bytes.increment(record.partitionKey, record.sizeBytes)
         countTrigger.increment(1)
         bytesTrigger.increment(record.sizeBytes)
         timeTrigger.update(record.emittedAtMs)
@@ -68,8 +69,10 @@ class AggregateStore(
         val entry =
             aggregates.computeIfAbsent(key) {
                 AggregateEntry(
+                    key = key,
                     value = aggFactory.create(it),
-                    partitionHistogram = PartitionHistogram(),
+                    partitionCountsHistogram = PartitionHistogram(),
+                    partitionBytesHistogram = PartitionHistogram(),
                     stalenessTrigger = TimeTrigger(stalenessDeadlinePerAggMs),
                     recordCountTrigger = SizeTrigger(maxRecordsPerAgg),
                     estimatedBytesTrigger = SizeTrigger(maxEstBytesPerAgg),
@@ -86,8 +89,10 @@ class AggregateStore(
 }
 
 data class AggregateEntry(
+    val key: StoreKey,
     val value: Aggregate,
-    val partitionHistogram: PartitionHistogram,
+    val partitionCountsHistogram: PartitionHistogram,
+    val partitionBytesHistogram: PartitionHistogram,
     val stalenessTrigger: TimeTrigger,
     val recordCountTrigger: SizeTrigger,
     val estimatedBytesTrigger: SizeTrigger,
@@ -99,4 +104,12 @@ data class AggregateEntry(
     fun isStale(ts: Long): Boolean {
         return stalenessTrigger.isComplete(ts)
     }
+}
+
+/* For testing purposes so we can mock. */
+class AggregateStoreFactory(
+    private val aggFactory: AggregateFactory,
+    private val memoryAndParallelismConfig: MemoryAndParallelismConfig,
+) {
+    fun make() = AggregateStore(aggFactory, memoryAndParallelismConfig)
 }
