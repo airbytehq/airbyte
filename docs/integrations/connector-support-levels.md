@@ -12,7 +12,7 @@ The following table describes the support levels of Airbyte connectors.
 | **Production readiness**             | Guaranteed  | Guaranteed             | No SLAs, docs show their popularity and success rate data                                                                  | Not guaranteed |
 | **Support: Cloud**                   | Supported\* | Supported\*            | No Support                                                                                                                 | Supported\*\*  |
 | **Support: Powered by Airbyte**      | Supported\* | Supported\*            | No Support                                                                                                                 | Supported\*\*  |
-| **Support: Self-Managed Enterprise** | Supported\* | Supported\*            | No Support                                                                                                                 | Supported\*\*  |
+| **Support: {{product_name_sm_enterprise}}** | Supported\* | Supported\*            | No Support                                                                                                                 | Supported\*\*  |
 | **Support: Self-Managed Community**  | Slack only  | N/A                    | No Support                                                                                                                 | Slack only     |
 | **Who can use them**                 | Everyone    | Extra license required | Everyone                                                                                                                   | You            |
 
@@ -34,7 +34,7 @@ maintenance/upgrades are owned by the customer.
 
 ## Enterprise connectors
 
-**Enterprise** Connectors are premium connectors available exclusively for Self-Managed Enterprise and Cloud Teams customers at **an additional cost**. These connectors:
+**Enterprise** Connectors are premium connectors available exclusively for {{product_name_sm_enterprise}} and Cloud Teams customers at **an additional cost**. These connectors:
 
 - Are built and maintained by the Airbyte team.
 - Provide enhanced capabilities and support for critical enterprise systems.

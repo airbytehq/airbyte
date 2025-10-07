@@ -110,7 +110,7 @@ If you successfully set up SSO, but your users can't log into Airbyte, verify th
 
 To prevent a situation where you could lock yourself out of Airbyte, we require that you contact Airbyte's [support team](https://support.airbyte.com) if you need to change or remove SSO in your Cloud organization.
 
-## Self-Managed Enterprise with Entra ID OIDC
+## {{product_name_sm_enterprise}} with Entra ID OIDC
 
 ### Create application
 
@@ -139,18 +139,18 @@ Depending on the default "Admin consent require' value for your organization you
 
 ### Setup information needed
 
-Once your Microsoft Entra ID app is set up, you're ready to deploy Airbyte Self-Managed Enterprise with SSO. Take note of the following configuration values, as you will need them to configure Airbyte to use your new SSO app integration:
+Once your Microsoft Entra ID app is set up, you're ready to deploy Airbyte {{product_name_sm_enterprise}} with SSO. Take note of the following configuration values, as you will need them to configure Airbyte to use your new SSO app integration:
 
     * OpenID Connect metadata document: You'll find this in the list of endpoints found in the **Endpoints** panel, which you can open from the top bar of the **Overview** page. This will be used to populate the `Domain` field in your `airbyte.yml`.
     * App Integration Name: The name of the Entra ID application created in the first step.
     * Client ID: You'll find this in the **Essentials** section on the **Overview** page of the application you created.
     * Client Secret: The client secret you copied in the previous step.
 
-Use this information to configure the auth details of your `airbyte.yml` for your Self-Managed Enterprise deployment. To learn more on deploying Self-Managed Enterprise, see our [implementation guide](/platform/enterprise-setup/implementation-guide).
+Use this information to configure the auth details of your `airbyte.yml` for your {{product_name_sm_enterprise}} deployment. To learn more on deploying {{product_name_sm_enterprise}}, see our [implementation guide](/platform/enterprise-setup/implementation-guide).
 
-## Self-Managed Enterprise with Entra ID Generic OIDC
+## {{product_name_sm_enterprise}} with Entra ID Generic OIDC
 
-To set up single sign on for Airbyte Self-Managed Enterprise, complete the following steps.
+To set up single sign on for Airbyte {{product_name_sm_enterprise}}, complete the following steps.
 
 - [Create an Entra ID application for Airbyte](#sme-entra-id-app)
 - [Create client credentials](#sme-credentials)

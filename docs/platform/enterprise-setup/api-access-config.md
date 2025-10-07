@@ -6,7 +6,7 @@ products: oss-enterprise
 
 The Airbyte API enables you to programmatically interact with Airbyte: create sources, destinations, run syncs, list workspaces, and much more.
 
-Access to the API in Self-Managed Enterprise deployments is controlled via application keys. Applications keys are tied to individual users and their respective permissions. Prior to configuring API access, ensure you have an up and running deployment of Airbyte Self-Managed Enterprise that exposes the `airbyte-server` service. To do this, follow the steps in the [implementation guide](./implementation-guide.md).
+Access to the API in {{product_name_sm_enterprise}} deployments is controlled via application keys. Applications keys are tied to individual users and their respective permissions. Prior to configuring API access, ensure you have an up and running deployment of Airbyte {{product_name_sm_enterprise}} that exposes the `airbyte-server` service. To do this, follow the steps in the [implementation guide](./implementation-guide.md).
 
 ## Step 1: Create an Application
 

@@ -112,7 +112,7 @@ If you successfully set up SSO, but your users can't log into Airbyte, verify th
 
 To prevent a situation where you could lock yourself out of Airbyte, we require that you contact Airbyte's [support team](https://support.airbyte.com) if you need to change or remove SSO in your Cloud organization.
 
-## Self-Managed Enterprise with Okta OIDC
+## {{product_name_sm_enterprise}} with Okta OIDC
 
 You need to create a new Okta OIDC App Integration for Airbyte. Documentation on how to do this in Okta can be found [here](https://help.okta.com/en-us/content/topics/apps/apps_app_integration_wizard_oidc.htm). You should create an app integration with **OIDC - OpenID Connect** as the sign-in method and **Web Application** as the application type:
 
@@ -160,9 +160,9 @@ Once your Okta app is set up, you're ready to deploy Airbyte with SSO. Take note
 
 Visit the [implementation guide](../../enterprise-setup/implementation-guide.md) for instructions on how to deploy Airbyte Enterprise using `kubernetes`, `kubectl` and `helm`.
 
-## Self-Managed Enterprise with Okta Generic OIDC
+## {{product_name_sm_enterprise}} with Okta Generic OIDC
 
-To set up single sign using generic OIDC for Airbyte Self-Managed Enterprise, complete the following steps.
+To set up single sign using generic OIDC for Airbyte {{product_name_sm_enterprise}}, complete the following steps.
 
 - [Create an Okta application for Airbyte](#sme-create-okta-app)
 - [Add an authorization server (optional)](#sme-auth-server)

@@ -129,5 +129,5 @@ See [State and Logging Storage](../deploying-airbyte/integrations/storage.md) fo
 
 ## Server
 
-1. `AUDIT_LOGGING_ENABLED` - For Self-Managed Enterprise only, defines whether Airbyte enables audit logging. Set to `true` or `false`. If `true`, specify `STORAGE_BUCKET_AUDIT_LOGGING`.
-2. `STORAGE_BUCKET_AUDIT_LOGGING` - For Self-Managed Enterprise only, if `AUDIT_LOGGING_ENABLED` is true, define your audit logging bucket here. You must configure a blob storage solution, like AWS S3, Google Cloud Storage, or Azure Blob Storage.
+1. `AUDIT_LOGGING_ENABLED` - For {{product_name_sm_enterprise}} only, defines whether Airbyte enables audit logging. Set to `true` or `false`. If `true`, specify `STORAGE_BUCKET_AUDIT_LOGGING`.
+2. `STORAGE_BUCKET_AUDIT_LOGGING` - For {{product_name_sm_enterprise}} only, if `AUDIT_LOGGING_ENABLED` is true, define your audit logging bucket here. You must configure a blob storage solution, like AWS S3, Google Cloud Storage, or Azure Blob Storage.

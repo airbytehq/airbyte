@@ -4,7 +4,7 @@ products: all
 
 # API documentation
 
-The Airbyte API provides a way for developers to programmatically interact with Airbyte. It is available for all Airbyte products: Airbyte OSS, Cloud & Self-Hosted Enterprise.
+The Airbyte API provides a way for developers to programmatically interact with Airbyte. It is available for all Airbyte plans.
 
 Our API is a reliable, easy-to-use interface for programmatically controlling the Airbyte platform. It can be extended to:
 
