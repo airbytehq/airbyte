@@ -76,6 +76,7 @@ Pexels-API's [API reference]https://www.pexels.com/api/documentation) has v1 at 
 
 | Version | Date       | Pull Request                                            | Subject        |
 | :------ | :--------- | :------------------------------------------------------ | :------------- |
+| 0.2.36 | 2025-10-07 | [67496](https://github.com/airbytehq/airbyte/pull/67496) | Update dependencies |
 | 0.2.35 | 2025-09-30 | [66963](https://github.com/airbytehq/airbyte/pull/66963) | Update dependencies |
 | 0.2.34 | 2025-09-23 | [66413](https://github.com/airbytehq/airbyte/pull/66413) | Update dependencies |
 | 0.2.33 | 2025-09-09 | [65882](https://github.com/airbytehq/airbyte/pull/65882) | Update dependencies |
