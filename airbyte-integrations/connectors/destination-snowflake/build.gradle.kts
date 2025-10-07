@@ -44,6 +44,7 @@ dependencies {
     implementation("com.zaxxer:HikariCP:$hikariCpVersion")
     implementation("com.google.guava:guava:32.1.1-jre")
     implementation("de.siegmar:fastcsv:4.0.0")
+    implementation("io.micronaut.cache:micronaut-cache-caffeine")
 
     testImplementation("io.mockk:mockk:1.14.5")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
