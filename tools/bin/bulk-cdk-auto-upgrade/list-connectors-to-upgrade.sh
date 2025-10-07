@@ -6,8 +6,25 @@ set -euo pipefail
 # And also source-datagen + destination-dev-null.
 # Prints the result as a JSON array.
 
+connectors=()
+
 # datagen and dev-null aren't certified, but we should probably keep them on the latest CDK anyway
-connectors=(destination-dev-null source-datagen)
+default_connectors=(destination-dev-null source-datagen)
+# check whether these connectors exist. This is to support airbyte-enterprise.
+for connector in "${default_connectors[@]}"; do
+  metadata_file="airbyte-integrations/connectors/${connector}/metadata.yaml"
+  build_gradle="airbyte-integrations/connectors/${connector}/build.gradle"
+  build_gradle_kts="airbyte-integrations/connectors/${connector}/build.gradle.kts"
+
+  # If metadata.yaml exists
+  if test -f "$metadata_file"; then
+    # If we're on a "normal" version (e.g. 12.34.56)
+    if echo $(yq '.data.dockerImageTag' "$metadata_file") | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+      connectors+=("$connector")
+    fi
+  fi
+done
+
 for dir in airbyte-integrations/connectors/*; do
   metadata_file="${dir}/metadata.yaml"
   build_gradle="${dir}/build.gradle"
