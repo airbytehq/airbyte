@@ -48,6 +48,7 @@ jobs:
               "target_url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
             }'
 
+      # GitHub App tokens expire after 60 minutes, so we limit the wait timeout to 55 minutes
       - name: Trigger connector tests in fork
         id: trigger-tests
         if: steps.get-app-token.outcome == 'success'
@@ -58,7 +59,7 @@ jobs:
           workflow: connector-ci-checks.yml
           ref: ${{ github.event.pull_request.head.ref }}
           wait-for-completion: true
-          wait-for-completion-timeout: 2h
+          wait-for-completion-timeout: 55m
           wait-for-completion-interval: 30s
           inputs: |
             {
@@ -67,30 +68,16 @@ jobs:
               "pr": "${{ github.event.pull_request.number }}"
             }
 
-      - name: Post success commit status
-        if: steps.trigger-tests.outcome == 'success' && steps.trigger-tests.outputs.workflow-conclusion == 'success'
+      - name: Post commit status
+        if: steps.get-app-token.outcome == 'success'
         run: |
           curl -X POST \
             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             -H "Accept: application/vnd.github+json" \
             "${{ github.api_url }}/repos/${{ github.repository }}/statuses/${{ github.event.pull_request.head.sha }}" \
             -d '{
-              "state": "success",
+              "state": "${{ steps.trigger-tests.outcome == 'success' && steps.trigger-tests.outputs.workflow-conclusion == 'success' && 'success' || 'failure' }}",
               "context": "Fork Connector Tests",
-              "description": "Connector tests passed in fork with BYO secrets",
-              "target_url": "${{ steps.trigger-tests.outputs.workflow-url }}"
-            }'
-
-      - name: Post failure commit status
-        if: steps.get-app-token.outcome == 'success' && (steps.trigger-tests.outcome == 'failure' || steps.trigger-tests.outputs.workflow-conclusion != 'success')
-        run: |
-          curl -X POST \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            -H "Accept: application/vnd.github+json" \
-            "${{ github.api_url }}/repos/${{ github.repository }}/statuses/${{ github.event.pull_request.head.sha }}" \
-            -d '{
-              "state": "failure",
-              "context": "Fork Connector Tests",
-              "description": "Connector tests failed in fork with BYO secrets",
-              "target_url": "${{ steps.trigger-tests.outputs.workflow-url || format(''{0}/{1}/actions/runs/{2}'', github.server_url, github.repository, github.run_id) }}"
+              "description": "${{ steps.trigger-tests.outcome == 'success' && steps.trigger-tests.outputs.workflow-conclusion == 'success' && 'Connector tests passed in fork with BYO secrets' || 'Connector tests failed in fork with BYO secrets' }}",
+              "target_url": "${{ steps.trigger-tests.outputs.workflow-url || format('{0}/{1}/actions/runs/{2}', github.server_url, github.repository, github.run_id) }}"
             }'
