@@ -44,7 +44,8 @@ class S3DataLakeChecker(
 
         // Use a unique table name to avoid conflicts with existing tables or stale metadata
         val uniqueTestTableName = "${TEST_TABLE}_${UUID.randomUUID().toString().replace("-", "_")}"
-        val testTableIdentifier = DestinationStream.Descriptor(defaultNamespace, uniqueTestTableName)
+        val testTableIdentifier =
+            DestinationStream.Descriptor(defaultNamespace, uniqueTestTableName)
 
         val testTableSchema =
             Schema(
