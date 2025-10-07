@@ -34,7 +34,7 @@ class SnowflakeInsertBuffer(
 
     @VisibleForTesting internal var recordCount = 0
 
-    @VisibleForTesting internal var buffer: ByteArrayOutputStream? = null
+    @VisibleForTesting internal var buffer: InputOutputBuffer? = null
 
     private lateinit var outputStream: GZIPOutputStream
 
@@ -48,7 +48,7 @@ class SnowflakeInsertBuffer(
 
     fun accumulate(recordFields: Map<String, AirbyteValue>) {
         if (buffer == null) {
-            buffer = ByteArrayOutputStream()
+            buffer = InputOutputBuffer()
             outputStream = GZIPOutputStream(buffer)
         }
         bufferCsvRecord(recordFields)
@@ -104,10 +104,17 @@ class SnowflakeInsertBuffer(
     }
 
     @VisibleForTesting
-    internal fun getInputStream(buffer: ByteArrayOutputStream): InputStream {
+    internal fun getInputStream(buffer: InputOutputBuffer): InputStream {
         // Flush and close the GZIP output stream to finalize the compressed contents
         outputStream.flush()
         outputStream.close()
-        return ByteArrayInputStream(buffer.toByteArray())
+        return buffer.toInputStream()
+    }
+
+    internal class InputOutputBuffer : ByteArrayOutputStream() {
+        fun toInputStream(): InputStream {
+            flush()
+            return ByteArrayInputStream(this.buf, 0, this.count)
+        }
     }
 }
