@@ -25,6 +25,7 @@ import io.airbyte.cdk.data.LongCodec
 import io.airbyte.cdk.data.NullCodec
 import io.airbyte.cdk.data.OffsetDateTimeCodec
 import io.airbyte.cdk.data.OffsetTimeCodec
+import io.airbyte.cdk.data.CdcOffsetDateTimeCodec
 import io.airbyte.cdk.data.ShortCodec
 import io.airbyte.cdk.data.TextCodec
 import io.airbyte.cdk.data.UrlCodec
@@ -82,6 +83,7 @@ fun <T> JsonEncoder<T>.toProtobufEncoder(): ProtoEncoder<*> {
         is LocalDateTimeCodec, -> localDateTimeProtoEncoder
         is OffsetTimeCodec, -> offsetTimeProtoEncoder
         is ArrayEncoder<*>, -> anyProtoEncoder
+        is CdcOffsetDateTimeCodec -> offsetDateTimeStringProtoEncoder
         else -> anyProtoEncoder
     }
 }
@@ -157,12 +159,17 @@ val offsetDateTimeProtoEncoder =
     generateProtoEncoder<OffsetDateTime> { builder, decoded ->
         builder.setTimestampWithTimezone(decoded.format(OffsetDateTimeCodec.formatter))
     }
+
+// Supports the case where OffsetDateTime is encoded as a protobuf string (e.g. in CDC scenarios)
+val offsetDateTimeStringProtoEncoder =
+    generateProtoEncoder<OffsetDateTime> { builder, decoded ->
+        builder.setString(decoded.format(OffsetDateTimeCodec.formatter))
+    }
 val floatProtoEncoder =
     generateProtoEncoder<Float> { builder, decoded -> builder.setBigDecimal(decoded.toString()) }
 
 val nullProtoEncoder = generateProtoEncoder<Any?> { builder, _ -> builder.setIsNull(true) }
 val anyProtoEncoder = textProtoEncoder
-// typealias AnyProtoEncoder = TextProtoEncoder
 
 fun NativeRecordPayload.toProtobuf(
     schema: Set<FieldOrMetaField>,

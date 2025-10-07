@@ -86,11 +86,13 @@ class MySqlSourceDebeziumOperations(
         configuration.incrementalConfiguration as CdcIncrementalConfiguration
     }
 
+    @Suppress("UNCHECKED_CAST")
     override fun deserializeRecord(
         key: DebeziumRecordKey,
         value: DebeziumRecordValue,
         stream: Stream,
     ): DeserializedRecord {
+        log.info { "*** deserializeRecord" }
         val before: JsonNode = value.before
         val after: JsonNode = value.after
         val source: JsonNode = value.source
@@ -148,52 +150,30 @@ class MySqlSourceDebeziumOperations(
         val transactionMillis: Long = source["ts_ms"].asLong()
         val transactionOffsetDateTime: OffsetDateTime =
             OffsetDateTime.ofInstant(Instant.ofEpochMilli(transactionMillis), ZoneOffset.UTC)
-        val transactionTimestampJsonNode: JsonNode =
-            OffsetDateTimeCodec.encode(transactionOffsetDateTime)
-        data.set<JsonNode>(
-            CommonMetaField.CDC_UPDATED_AT.id,
-            transactionTimestampJsonNode,
-        )
         resultRow[CommonMetaField.CDC_UPDATED_AT.id] =
-            FieldValueEncoder(transactionOffsetDateTime, OffsetDateTimeCodec)
+            FieldValueEncoder(transactionOffsetDateTime, /*OffsetDateTimeCodec*/CommonMetaField.CDC_UPDATED_AT.type.jsonEncoder as JsonEncoder<Any>)
 
-        data.set<JsonNode>(
-            CommonMetaField.CDC_DELETED_AT.id,
-            if (isDelete) transactionTimestampJsonNode else Jsons.nullNode(),
-        )
-        @Suppress("UNCHECKED_CAST")
         resultRow[CommonMetaField.CDC_DELETED_AT.id] =
             FieldValueEncoder(
                 if (isDelete) transactionOffsetDateTime else null,
-                (if (isDelete) OffsetDateTimeCodec else NullCodec) as JsonEncoder<Any>
+                (if (isDelete) CommonMetaField.CDC_DELETED_AT.type.jsonEncoder else NullCodec) as JsonEncoder<Any>
             )
 
         // Set _ab_cdc_log_file and _ab_cdc_log_pos meta-field values.
         val position = MySqlSourceCdcPosition(source["file"].asText(), source["pos"].asLong())
-        data.set<JsonNode>(
-            MySqlSourceCdcMetaFields.CDC_LOG_FILE.id,
-            TextCodec.encode(position.fileName)
-        )
-        resultRow[MySqlSourceCdcMetaFields.CDC_LOG_FILE.id] =
-            FieldValueEncoder(position.fileName, TextCodec)
 
-        data.set<JsonNode>(
-            MySqlSourceCdcMetaFields.CDC_LOG_POS.id,
-            LongCodec.encode(position.position)
-        )
+        resultRow[MySqlSourceCdcMetaFields.CDC_LOG_FILE.id] =
+            FieldValueEncoder(position.fileName, MySqlSourceCdcMetaFields.CDC_LOG_FILE.type.jsonEncoder as JsonEncoder<Any>)
+
         resultRow[MySqlSourceCdcMetaFields.CDC_LOG_POS.id] =
-            FieldValueEncoder(position.position, LongCodec)
+            FieldValueEncoder(position.position, MySqlSourceCdcMetaFields.CDC_LOG_POS.type.jsonEncoder as JsonEncoder<Any>)
 
         // Set the _ab_cdc_cursor meta-field value.
-        data.set<JsonNode>(
-            MySqlSourceCdcMetaFields.CDC_CURSOR.id,
-            LongCodec.encode(position.cursorValue)
-        )
         resultRow[MySqlSourceCdcMetaFields.CDC_CURSOR.id] =
-            FieldValueEncoder(position.cursorValue, LongCodec)
+            FieldValueEncoder(position.cursorValue, MySqlSourceCdcMetaFields.CDC_CURSOR.type.jsonEncoder as JsonEncoder<Any>)
 
         // Return a DeserializedRecord instance.
-        return DeserializedRecord(resultRow, emptyMap()) // TEMP
+        return DeserializedRecord(resultRow, emptyMap())
     }
 
     override fun findStreamNamespace(key: DebeziumRecordKey, value: DebeziumRecordValue): String? =
