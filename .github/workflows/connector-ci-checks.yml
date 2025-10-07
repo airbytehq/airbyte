@@ -205,7 +205,7 @@ jobs:
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         # Skip if cancelled, if no connector is specified, or if running from a fork.
-        if: always() && !cancelled() && matrix.connector && github.repository == 'airbytehq/airbyte' && github.event_name == 'workflow_call'
+        if: always() && !cancelled() && matrix.connector && github.repository == 'airbytehq/airbyte'
         with:
           check_name: "`${{ matrix.connector }}` Connector Test Results"
           commit: ${{ steps.checkout.outputs.commit }}
@@ -229,7 +229,7 @@ jobs:
           steps.get-app-token.outcome == 'success'
         uses: LouisBrunner/checks-action@v2.0.0
         with:
-          name: "Test ${{ matrix.connector }} Connector"
+          name: "Test ${{ matrix.connector }} Connector [On-Demand]"
           sha: ${{ steps.checkout.outputs.commit }}
           status: completed
           conclusion: ${{ job.status }}
@@ -332,7 +332,7 @@ jobs:
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         # Skip if cancelled, if no connector is specified, or if the repository is a fork.
-        if: always() && !cancelled() && matrix.connector && github.repository == 'airbytehq/airbyte' && github.event_name == 'workflow_call'
+        if: always() && !cancelled() && matrix.connector && github.repository == 'airbytehq/airbyte'
         with:
           check_name: "`${{ matrix.connector }}` Connector Test Results"
           commit: ${{ steps.checkout.outputs.commit }}
@@ -356,7 +356,7 @@ jobs:
           steps.get-app-token.outcome == 'success'
         uses: LouisBrunner/checks-action@v2.0.0
         with:
-          name: "Test ${{ matrix.connector }} Connector"
+          name: "Test ${{ matrix.connector }} Connector [On-Demand]"
           sha: ${{ steps.checkout.outputs.commit }}
           status: completed
           conclusion: ${{ job.status }}
