@@ -53,18 +53,24 @@ class S3DataLakeChecker(
             )
         s3DataLakeUtil.createNamespaceWithGlueHandling(testTableIdentifier, catalog)
 
-        val table =
-            icebergUtil.createTable(
-                testTableIdentifier,
-                catalog,
-                testTableSchema,
-            )
-
-        icebergTableCleaner.clearTable(
-            catalog,
-            tableIdGenerator.toTableIdentifier(testTableIdentifier),
-            table.io(),
-            table.location()
-        )
+        var table: org.apache.iceberg.Table? = null
+        try {
+            table =
+                icebergUtil.createTable(
+                    testTableIdentifier,
+                    catalog,
+                    testTableSchema,
+                )
+        } finally {
+            // Always cleanup test table, even if creation or validation fails
+            table?.let {
+                icebergTableCleaner.clearTable(
+                    catalog,
+                    tableIdGenerator.toTableIdentifier(testTableIdentifier),
+                    it.io(),
+                    it.location()
+                )
+            }
+        }
     }
 }
