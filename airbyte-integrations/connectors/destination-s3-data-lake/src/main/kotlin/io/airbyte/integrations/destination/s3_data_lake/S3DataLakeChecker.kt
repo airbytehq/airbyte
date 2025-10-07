@@ -47,11 +47,12 @@ class S3DataLakeChecker(
     /**
      * Validates catalog connectivity by creating a temporary test table and cleaning it up.
      *
-     * Creates a uniquely-named test table in the configured namespace, then immediately
-     * cleans it up. The cleanup is guaranteed via try-finally to prevent orphaned resources.
+     * Creates a uniquely-named test table in the configured namespace, then immediately cleans it
+     * up. The cleanup is guaranteed via try-finally to prevent orphaned resources.
      *
      * @param config The S3 Data Lake destination configuration
-     * @throws Exception if catalog validation fails (e.g., invalid credentials, missing permissions)
+     * @throws Exception if catalog validation fails (e.g., invalid credentials, missing
+     * permissions)
      */
     private fun catalogValidation(config: S3DataLakeConfiguration) {
         val catalogProperties = s3DataLakeUtil.toCatalogProperties(config)
