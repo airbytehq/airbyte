@@ -232,7 +232,7 @@ jobs:
           name: "Test ${{ matrix.connector }} Connector"
           sha: ${{ steps.checkout.outputs.commit }}
           status: completed
-          conclusion: ${{ success() && 'success' || 'failure' }}
+          conclusion: ${{ job.status }}
           token: ${{ steps.get-app-token.outputs.token }}
           details_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
@@ -359,7 +359,7 @@ jobs:
           name: "Test ${{ matrix.connector }} Connector"
           sha: ${{ steps.checkout.outputs.commit }}
           status: completed
-          conclusion: ${{ success() && 'success' || 'failure' }}
+          conclusion: ${{ job.status }}
           token: ${{ steps.get-app-token.outputs.token }}
           details_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
