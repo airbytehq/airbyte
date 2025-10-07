@@ -333,8 +333,9 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 <details>
   <summary>Expand to review</summary>
 
-| Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
-|:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
+|:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.1.0 | 2025-10-06 | [61703](https://github.com/airbytehq/airbyte/pull/61703) | Add new stream 'details' |
 | 6.0.4 | 2025-09-30 | [66409](https://github.com/airbytehq/airbyte/pull/66409) | Update dependencies |
 | 6.0.3 | 2025-09-25 | [66700](https://github.com/airbytehq/airbyte/pull/66700) | Revert to 6.0.1 |
 | 6.0.2 | 2025-09-12 | [65947](https://github.com/airbytehq/airbyte/pull/65947) | Set fallback target type to 'string' for numbers and booleans |
