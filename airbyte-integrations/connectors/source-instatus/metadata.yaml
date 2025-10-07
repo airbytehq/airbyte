@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/source-instatus
   githubIssueLabel: source-instatus
   icon: instatus.svg
-  license: MIT
+  license: ELv2
   name: Instatus
   remoteRegistries:
     pypi:

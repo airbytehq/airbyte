@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/source-ashby
   githubIssueLabel: source-ashby
   icon: ashby.svg
-  license: MIT
+  license: ELv2
   name: Ashby
   remoteRegistries:
     pypi:

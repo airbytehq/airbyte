@@ -48,8 +48,8 @@ class MondayBaseRequestBuilder(MondayRequestBuilder):
         }
 
     @property
-    def request_body(self):
-        return super().request_body
+    def query_params(self):
+        return super().query_params
 
     def with_authenticator(self, authenticator: Authenticator) -> "MondayBaseRequestBuilder":
         self._authenticator: Authenticator = authenticator

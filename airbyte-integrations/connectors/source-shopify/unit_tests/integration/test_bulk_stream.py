@@ -21,11 +21,13 @@ from airbyte_cdk.models import AirbyteStateMessage, SyncMode
 from airbyte_cdk.test.state_builder import StateBuilder
 from unit_tests.integration.api.authentication import grant_all_scopes, set_up_shop
 from unit_tests.integration.api.bulk import (
+    CustomerAddressResponseBuilder,
     JobCreationResponseBuilder,
     JobStatusResponseBuilder,
     MetafieldOrdersJobResponseBuilder,
     create_job_cancel_request,
     create_job_creation_body,
+    create_job_creation_customer_address_request,
     create_job_creation_request,
     create_job_status_request,
 )
@@ -34,6 +36,8 @@ from unit_tests.integration.api.bulk import (
 _BULK_OPERATION_ID = "gid://shopify/BulkOperation/4472588009661"
 _BULK_STREAM = "metafield_orders"
 _SHOP_NAME = "airbyte-integration-test"
+
+_CUSTOMER_ADDRESS_STREAM = "customer_address"
 
 _JOB_START_DATE = datetime.fromisoformat("2024-05-05T00:00:00+00:00")
 _JOB_END_DATE = _JOB_START_DATE + timedelta(hours=2, minutes=24)
@@ -399,3 +403,137 @@ class GraphQlBulkStreamIncrementalTest(TestCase):
         catalog = CatalogBuilder().with_stream(_BULK_STREAM, sync_mode).build()
         output = read(SourceShopify(), config, catalog, state=state)
         return output
+
+    def _read_customer_address(self, config, sync_mode=SyncMode.full_refresh, state: Optional[List[AirbyteStateMessage]] = None):
+        catalog = CatalogBuilder().with_stream(_CUSTOMER_ADDRESS_STREAM, sync_mode).build()
+        output = read(SourceShopify(), config, catalog, state=state)
+        return output
+
+    def test_when_read_with_updated_at_field_before_bulk_request_window_start_date_customer_address(self):
+        """
+        The test logic is identical to the test above but with the another stream type, where cursor field is ID
+        and filter_checkpointed_cursor value should be used as the value to adjust slice end.
+        """
+
+        def add_n_records(builder, n, record_date: Optional[str] = None):
+            for _ in range(n):
+                builder = builder.with_record(updated_at=record_date)
+            return builder
+
+        # *************** 1st bulk job ***************************
+        job_created_at = _INCREMENTAL_JOB_END_DATE - timedelta(minutes=5)
+        # create a job request
+        self._http_mocker.post(
+            create_job_creation_customer_address_request(_SHOP_NAME, _INCREMENTAL_JOB_START_DATE, _INCREMENTAL_JOB_END_DATE),
+            JobCreationResponseBuilder(job_created_at=job_created_at.strftime("%Y-%m-%dT%H:%M:%SZ"))
+            .with_bulk_operation_id(_BULK_OPERATION_ID)
+            .build(),
+        )
+        # get job status
+        self._http_mocker.post(
+            create_job_status_request(_SHOP_NAME, _BULK_OPERATION_ID),
+            [
+                JobStatusResponseBuilder().with_running_status(_BULK_OPERATION_ID, object_count="500").build(),
+                # this should make the job get canceled as it gets over 15000 rows
+                JobStatusResponseBuilder().with_running_status(_BULK_OPERATION_ID, object_count="16000").build(),
+                # this will complete the job
+                JobStatusResponseBuilder().with_canceled_status(_BULK_OPERATION_ID, _JOB_RESULT_URL, object_count="1700").build(),
+            ],
+        )
+        # mock the cancel operation request as we passed the 15000 rows
+        self._http_mocker.post(create_job_cancel_request(_SHOP_NAME, _BULK_OPERATION_ID), [HttpResponse(json.dumps({}), status_code=200)])
+        # get results for the request that got cancelled
+        adjusted_checkpoint_start_date = _INCREMENTAL_JOB_START_DATE - timedelta(days=2, hours=6, minutes=30)
+        adjusted_record_date = adjusted_checkpoint_start_date.strftime("%Y-%m-%dT%H:%M:%SZ")
+        self._http_mocker.get(
+            HttpRequest(_JOB_RESULT_URL),
+            add_n_records(CustomerAddressResponseBuilder(), 80, adjusted_record_date).build(),
+        )
+
+        # *************** 2nd bulk job ***************************
+        # create a job request for a new job with checkpoint date
+        # that will be the adjusted_record_date + 1 day
+        next_bulk_operation_id = "gid://shopify/BulkOperation/4472588009771"
+        adjusted_checkpoint_end_date = adjusted_checkpoint_start_date + timedelta(days=1)
+        job_created_at = _INCREMENTAL_JOB_END_DATE - timedelta(minutes=4)
+        self._http_mocker.post(
+            # The start date is caused by record date in previous iteration
+            create_job_creation_customer_address_request(_SHOP_NAME, adjusted_checkpoint_start_date, adjusted_checkpoint_end_date),
+            JobCreationResponseBuilder(job_created_at=job_created_at.strftime("%Y-%m-%dT%H:%M:%SZ"))
+            .with_bulk_operation_id(next_bulk_operation_id)
+            .build(),
+        )
+        # get job status
+        next_job_result_url = "https://storage.googleapis.com/shopify-tiers-assets-prod-us-east1/bulk-operation-outputs/l6lersgk4i81iqc3n6iisywwtipb-final?GoogleAccessId=assets-us-prod%40shopify-tiers.iam.gserviceaccount.com&Expires=1715633149&Signature=oMjQelfAzUW%2FdulC3HbuBapbUriUJ%2Bc9%2FKpIIf954VTxBqKChJAdoTmWT9ymh%2FnCiHdM%2BeM%2FADz5siAC%2BXtHBWkJfvs%2F0cYpse0ueiQsw6R8gW5JpeSbizyGWcBBWkv5j8GncAnZOUVYDxRIgfxcPb8BlFxBfC3wsx%2F00v9D6EHbPpkIMTbCOAhheJdw9GmVa%2BOMqHGHlmiADM34RDeBPrvSo65f%2FakpV2LBQTEV%2BhDt0ndaREQ0MrpNwhKnc3vZPzA%2BliOGM0wyiYr9qVwByynHq8c%2FaJPPgI5eGEfQcyepgWZTRW5S0DbmBIFxZJLN6Nq6bJ2bIZWrVriUhNGx2g%3D%3D&response-content-disposition=attachment%3B+filename%3D%22bulk-4476008693950.jsonl%22%3B+filename%2A%3DUTF-8%27%27bulk-4476008693950.jsonl&response-content-type=application%2Fjsonl"
+        self._http_mocker.post(
+            create_job_status_request(_SHOP_NAME, next_bulk_operation_id),
+            [
+                # this will output the job is running
+                JobStatusResponseBuilder().with_completed_status(next_bulk_operation_id, next_job_result_url).build(),
+            ],
+        )
+        # get results for the request that got cancelled
+        self._http_mocker.get(
+            HttpRequest(next_job_result_url),
+            add_n_records(CustomerAddressResponseBuilder(), 90, adjusted_record_date).build(),
+        )
+
+        # *************** 3rd and n+ bulk job ***************************
+        next_bulk_operation_id = "gid://shopify/BulkOperation/4472588009881"
+        adjusted_checkpoint_start_date = adjusted_checkpoint_end_date
+        adjusted_checkpoint_end_date = adjusted_checkpoint_start_date + timedelta(days=1)
+        job_created_at = _INCREMENTAL_JOB_END_DATE - timedelta(minutes=4)
+        create_job_request = create_job_creation_customer_address_request(
+            _SHOP_NAME, adjusted_checkpoint_start_date, adjusted_checkpoint_end_date
+        )
+
+        self._http_mocker.post(
+            create_job_request,
+            JobCreationResponseBuilder(job_created_at=job_created_at.strftime("%Y-%m-%dT%H:%M:%SZ"))
+            .with_bulk_operation_id(next_bulk_operation_id)
+            .build(),
+        )
+
+        base_status_responses = [
+            JobStatusResponseBuilder().with_running_status(next_bulk_operation_id, object_count="500").build(),
+            # this should make the job get canceled as it gets over 15000 rows
+            JobStatusResponseBuilder().with_running_status(next_bulk_operation_id, object_count="16000").build(),
+            # this will complete the job
+            JobStatusResponseBuilder().with_canceled_status(next_bulk_operation_id, next_job_result_url, object_count="1700").build(),
+        ]
+
+        n_times_to_loop = 4
+        responses_in_loop = base_status_responses * n_times_to_loop
+        # get job status
+        next_job_result_url = "https://storage.googleapis.com/shopify-tiers-assets-prod-us-east1/bulk-operation-outputs/l6lersgk4i81iqc3n6iisywwtipb-final?GoogleAccessId=assets-us-prod%40shopify-tiers.iam.gserviceaccount.com&Expires=1715633149&Signature=oMjQelfAzUW%2FdulC3HbuBapbUriUJ%2Bc9%2FKpIIf954VTxBqKChJAdoTmWT9ymh%2FnCiHdM%2BeM%2FADz5siAC%2BXtHBWkJfvs%2F0cYpse0ueiQsw6R8gW5JpeSbizyGWcBBWkv5j8GncAnZOUVYDxRIgfxcPb8BlFxBfC3wsx%2F00v9D6EHbPpkIMTbCOAhheJdw9GmVa%2BOMqHGHlmiADM34RDeBPrvSo65f%2FakpV2LBQTEV%2BhDt0ndaREQ0MrpNwhKnc3vZPzA%2BliOGM0wyiYr9qVwByynHq8c%2FaJPPgI5eGEfQcyepgWZTRW5S0DbmBIFxZJLN6Nq6bJ2bIZWrVriUhNGx2g%3D%3D&response-content-disposition=attachment%3B+filename%3D%22bulk-4476008693960.jsonl%22%3B+filename%2A%3DUTF-8%27%27bulk-4476008693960.jsonl&response-content-type=application%2Fjsonl"
+
+        self._http_mocker.post(create_job_status_request(_SHOP_NAME, next_bulk_operation_id), responses_in_loop)
+
+        # mock the cancel operation request as we passed the 15000 rows
+        self._http_mocker.post(
+            create_job_cancel_request(_SHOP_NAME, next_bulk_operation_id), [HttpResponse(json.dumps({}), status_code=200)]
+        )
+
+        # get results
+        adjusted_record_date = adjusted_checkpoint_start_date.strftime("%Y-%m-%dT%H:%M:%SZ")
+        self._http_mocker.get(
+            HttpRequest(next_job_result_url),
+            add_n_records(CustomerAddressResponseBuilder(), 80, adjusted_record_date).build(),
+        )
+
+        # ********* end of request mocking *************
+
+        customer_address_stream_state = {"id": 11111111111111, "customers": {"updated_at": _INCREMENTAL_JOB_START_DATE_ISO}}
+        stream_state = StateBuilder().with_stream_state(_CUSTOMER_ADDRESS_STREAM, customer_address_stream_state).build()
+
+        # we are passing to config a start date let's set something "old" as happen in many sources like 2 years ago
+        config_start_date = _INCREMENTAL_JOB_START_DATE - timedelta(weeks=104)
+        output = self._read_customer_address(
+            _get_config(config_start_date, job_checkpoint_interval=15000), sync_mode=SyncMode.incremental, state=stream_state
+        )
+
+        expected_error_message = "The stream: `customer_address` checkpoint collision is detected."
+        result = output.errors[0].trace.error.internal_message
+
+        # The result of the test should be the `ShopifyBulkExceptions.BulkJobCheckpointCollisionError`
+        assert result is not None and expected_error_message in result

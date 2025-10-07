@@ -11,6 +11,8 @@ class Transformations {
     companion object {
         private const val S3_SAFE_CHARACTERS = "\\p{Alnum}/!_.*')("
         private const val S3_SPECIAL_CHARACTERS = "&$@=;:+,?-"
+        private val TRAILING_DOTS = Regex("\\.+$")
+
         private val S3_CHARACTER_PATTERN =
             "[^${S3_SAFE_CHARACTERS}${Pattern.quote(S3_SPECIAL_CHARACTERS)}]"
         const val NON_ALPHANUMERIC_AND_UNDERSCORE_PATTERN: String = "[^\\p{Alnum}_]"
@@ -22,6 +24,16 @@ class Transformations {
                     "",
                 ) // P{M} matches a code point that is not a combining mark (unicode)
                 .replace(S3_CHARACTER_PATTERN.toRegex(), "_")
+        }
+
+        fun toAzureBlobSafePath(input: String): String {
+            // Azure doesn't allow trailing dots
+            // (see
+            // https://learn.microsoft.com/en-us/rest/api/storageservices/naming-and-referencing-containers--blobs--and-metadata
+            val safe = toS3SafeCharacters(input)
+            return safe.split('/').joinToString("/") { seg ->
+                if (seg.isEmpty()) seg else seg.replace(TRAILING_DOTS, "_")
+            }
         }
 
         fun toAlphanumericAndUnderscore(s: String): String {

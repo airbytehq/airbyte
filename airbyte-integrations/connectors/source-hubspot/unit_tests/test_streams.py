@@ -3,6 +3,7 @@
 #
 
 import json
+from datetime import datetime
 
 import pytest
 
@@ -18,6 +19,7 @@ from airbyte_cdk.models import (
 from airbyte_cdk.sources.types import Record
 from airbyte_cdk.test.entrypoint_wrapper import discover, read
 from airbyte_cdk.test.state_builder import StateBuilder
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 
 from .conftest import find_stream, get_source, mock_dynamic_schema_requests_with_skip, read_from_stream
 from .utils import read_full_refresh, read_incremental
@@ -73,7 +75,7 @@ def test_updated_at_field_non_exist_handler(requests_mock, config, fake_properti
         ("goals", "goal_targets", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("leads", "leads", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("line_items", "line_item", {"updatedAt": "2022-02-25T16:43:11Z"}),
-        ("marketing_emails", "", {"updated": "1634050455543"}),
+        ("marketing_emails", "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("owners", "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("owners_archived", "", {"updatedAt": "2022-02-25T16:43:11Z"}),
         ("products", "product", {"updatedAt": "2022-02-25T16:43:11Z"}),
@@ -463,54 +465,6 @@ def test_get_custom_objects_metadata_success(
 
 
 @pytest.mark.parametrize(
-    "stream_class, cursor_value, data_to_cast, expected_casted_data",
-    [
-        ("marketing_emails", {"updated": 1634050455543}, {"rootMicId": 123456}, {"rootMicId": "123456"}),
-        ("marketing_emails", {"updated": 1634050455543}, {"rootMicId": None}, {"rootMicId": None}),
-        ("marketing_emails", {"updated": 1634050455543}, {"rootMicId": "123456"}, {"rootMicId": "123456"}),
-        ("marketing_emails", {"updated": 1634050455543}, {"rootMicId": 1234.56}, {"rootMicId": "1234.56"}),
-    ],
-)
-def test_cast_record_fields_with_schema_if_needed(stream_class, cursor_value, requests_mock, data_to_cast, expected_casted_data, config):
-    """
-    Test that the stream cast record fields with stream json schema if needed
-    """
-    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
-    stream = find_stream(stream_class, config)
-    data_field = stream.retriever.record_selector.extractor.field_path[0]
-
-    responses = [
-        {
-            "json": {
-                data_field: [
-                    {
-                        "id": "test_id",
-                        "created": "2022-02-25T16:43:11Z",
-                    }
-                    | data_to_cast
-                    | cursor_value
-                ],
-            }
-        }
-    ]
-
-    stream._sync_mode = SyncMode.full_refresh
-
-    if isinstance(stream_class, str):
-        stream_url = stream.retriever.requester.url_base + stream.retriever.requester.path
-    else:
-        stream_url = stream.url
-
-    stream._sync_mode = None
-
-    requests_mock.register_uri("GET", stream_url, responses)
-    records = read_full_refresh(stream)
-    record = records[0]
-    for casted_key, casted_value in expected_casted_data.items():
-        assert record[casted_key] == casted_value
-
-
-@pytest.mark.parametrize(
     "stream_class, endpoint, cursor_value, fake_properties_list_response, data_to_cast, expected_casted_data",
     [
         (
@@ -625,7 +579,7 @@ def test_cast_record_fields_if_needed(
         ("engagements_meetings", "crm.objects.contacts.read", "https://api.hubapi.com/crm/v3/objects/meetings", "GET"),
         ("engagements_notes", "crm.objects.contacts.read", "https://api.hubapi.com/crm/v3/objects/notes", "GET"),
         ("engagements_tasks", "crm.objects.contacts.read", "https://api.hubapi.com/crm/v3/objects/tasks", "GET"),
-        ("marketing_emails", "content", "https://api.hubapi.com/marketing-emails/v1/emails/with-statistics", "GET"),
+        ("marketing_emails", "content", "https://api.hubapi.com/marketing/v3/emails", "GET"),
         ("deals_archived", "contacts, crm.objects.deals.read", "https://api.hubapi.com/crm/v3/objects/deals", "GET"),
         ("forms", "forms", "https://api.hubapi.com/marketing/v3/forms", "GET"),
         # form_submissions have parent stream forms
@@ -695,7 +649,7 @@ def test_discover_if_scopes_missing(config, requests_mock, mock_dynamic_schema_r
 
 def test_read_catalog_with_missing_scopes(config, requests_mock, mock_dynamic_schema_requests):
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
-    requests_mock.get("https://api.hubapi.com/marketing-emails/v1/emails/with-statistics", json={}, status_code=403)
+    requests_mock.get("https://api.hubapi.com/marketing/v3/emails", json={}, status_code=403)
     requests_mock.get("https://api.hubapi.com/email/public/v1/subscriptions", json={}, status_code=403)
     catalog = ConfiguredAirbyteCatalogSerializer.load(
         {

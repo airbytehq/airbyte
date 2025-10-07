@@ -28,7 +28,7 @@ data:
   dockerRepository: airbyte/source-rss
   githubIssueLabel: source-rss
   icon: rss.svg
-  license: MIT
+  license: ELv2
   name: Rss
   releaseDate: 2022-10-12
   releaseStage: alpha

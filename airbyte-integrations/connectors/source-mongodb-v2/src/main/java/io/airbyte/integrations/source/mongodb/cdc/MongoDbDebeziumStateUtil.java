@@ -5,8 +5,6 @@
 package io.airbyte.integrations.source.mongodb.cdc;
 
 import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants.OffsetState.KEY_SERVER_ID;
-import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumPropertiesManager.DATABASE_INCLUDE_LIST_KEY;
-import static io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumPropertiesManager.normalizeName;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.MongoChangeStreamException;
@@ -169,17 +167,6 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
     safeProps.put("mongodb.password", "****");
     LOGGER.info("properties: " + safeProps);
     Optional<BsonDocument> offset = parseSavedOffset(debeziumProperties);
-    if (offset.isEmpty()) {
-      LOGGER
-          .info(
-              "This connector is using the old offset format where server_id is set to database name, migrating to the new offset format where save_id is now connection string.");
-      for (String databaseName : debeziumProperties.getProperty(DATABASE_INCLUDE_LIST_KEY).split(",")) {
-        debeziumProperties.setProperty("name", normalizeName(databaseName));
-        offset = parseSavedOffset(debeziumProperties);
-        if (!offset.isEmpty())
-          break;
-      }
-    }
     return offset;
   }
 
@@ -242,7 +229,7 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
      * io.debezium.connector.mongodb.SourceInfo class for the ordering of keys in the list/map.
      */
     final Map<String, String> sourceInfoMap = new LinkedHashMap<>();
-    final String normalizedServerId = MongoDbDebeziumPropertiesManager.normalizeName(serverId);
+    final String normalizedServerId = MongoDbDebeziumPropertiesManager.normalizeToDebeziumFormat(serverId);
     sourceInfoMap.put(KEY_SERVER_ID, normalizedServerId);
 
     final List<Object> key = new LinkedList<>();

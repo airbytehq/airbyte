@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.task.internal
 
-import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.DestinationMessage
@@ -19,7 +18,6 @@ import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.pipeline.InputPartitioner
 import io.airbyte.cdk.load.state.PipelineEventBookkeepingRouter
 import io.airbyte.cdk.load.state.Reserved
-import io.airbyte.cdk.load.state.SyncManager
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -36,10 +34,8 @@ import org.junit.jupiter.api.Test
 //   There are historical reasons that these are separate classes, but those
 //   reasons are no longer true.
 class InputConsumerTaskUTest {
-    @MockK lateinit var catalog: DestinationCatalog
     @MockK lateinit var inputFlow: ReservingDeserializingInputFlow
     @MockK lateinit var checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>
-    @MockK lateinit var syncManager: SyncManager
     @MockK lateinit var fileTransferQueue: MessageQueue<FileTransferQueueMessage>
     @MockK
     lateinit var recordQueueForPipeline:
@@ -53,7 +49,6 @@ class InputConsumerTaskUTest {
 
     private fun createTask() =
         InputConsumerTask(
-            catalog,
             inputFlow,
             recordQueueForPipeline,
             partitioner,
@@ -64,7 +59,6 @@ class InputConsumerTaskUTest {
     fun setup() {
         dstream = mockk<DestinationStream>(relaxed = true)
         every { dstream.mappedDescriptor } returns streamDescriptor
-        coEvery { catalog.streams } returns listOf(dstream)
         coEvery { fileTransferQueue.close() } returns Unit
         coEvery { recordQueueForPipeline.close() } returns Unit
         coEvery { openStreamQueue.close() } returns Unit

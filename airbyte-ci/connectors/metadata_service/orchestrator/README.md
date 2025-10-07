@@ -232,7 +232,6 @@ RESOURCES = {
     **DATA_WAREHOUSE_RESOURCE_TREE,
     **REGISTRY_RESOURCE_TREE,
     **REGISTRY_ENTRY_RESOURCE_TREE,
-    **CONNECTOR_TEST_REPORT_RESOURCE_TREE,
 }
 ```
 
@@ -248,5 +247,3 @@ Each resource represents a specific functionality or service that can be used by
 - DATA_WAREHOUSE_RESOURCE_TREE: Contains resources for handling connector metrics.
 - REGISTRY_RESOURCE_TREE: Contains resources for managing registries.
 - REGISTRY_ENTRY_RESOURCE_TREE: Contains resources for managing registry entries.
-- CONNECTOR_TEST_REPORT_SENSOR_RESOURCE_TREE: Contains resources for handling connector test reports.
-- CONNECTOR_TEST_REPORT_RESOURCE_TREE: Contains resources for generating connector test reports.

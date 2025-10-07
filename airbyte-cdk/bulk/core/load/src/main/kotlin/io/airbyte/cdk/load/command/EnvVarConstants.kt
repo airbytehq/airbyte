@@ -21,6 +21,7 @@ package io.airbyte.cdk.load.command
 data class Property(val micronautProperty: String, val environmentVariable: String)
 
 object EnvVarConstants {
+    val AIRBYTE_EDITION = Property("airbyte.edition", "AIRBYTE_EDITION")
     val FILE_TRANSFER_ENABLED =
         Property(
             "airbyte.destination.core.file-transfer.enabled",

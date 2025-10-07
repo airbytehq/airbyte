@@ -15,6 +15,7 @@ import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.message.InputRecord
 import io.airbyte.cdk.load.message.InputStreamCheckpoint
 import io.airbyte.cdk.load.message.Meta.Change
+import io.airbyte.cdk.load.spec.NoopSpec
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
@@ -22,7 +23,6 @@ import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
 import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.UnionBehavior
 import io.airbyte.cdk.load.write.Untyped
-import io.airbyte.integrations.destination.customerio.CustomerIoSpecification
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.nio.file.Files
@@ -51,10 +51,10 @@ object CustomerIoDataCleaner : DestinationCleaner {
     override fun cleanup() {}
 }
 
-class CustomerIoWriterTest() :
+class CustomerIoWriterTest :
     BasicFunctionalityIntegrationTest(
         configContents = Files.readString(Path.of("secrets/config.json")),
-        configSpecClass = CustomerIoSpecification::class.java,
+        configSpecClass = NoopSpec::class.java,
         dataDumper = CustomerIoDataDumper(),
         destinationCleaner = CustomerIoDataCleaner,
         commitDataIncrementally = true,
@@ -66,7 +66,6 @@ class CustomerIoWriterTest() :
         schematizedArrayBehavior = SchematizedNestedValueBehavior.STRINGIFY,
         schematizedObjectBehavior = SchematizedNestedValueBehavior.STRINGIFY,
         unionBehavior = UnionBehavior.STRINGIFY,
-        preserveUndeclaredFields = true,
         supportFileTransfer = false,
     ) {
     private val personEventStream: DestinationStream =
@@ -137,13 +136,13 @@ class CustomerIoWriterTest() :
                     InputStreamCheckpoint(
                         unmappedNamespace = personEventStream.unmappedNamespace,
                         unmappedName = personEventStream.unmappedName,
-                        blob = """{"foo": "bar"}""",
+                        blob = """{}""",
                         sourceRecordCount = 1,
                     ),
                     InputStreamCheckpoint(
                         unmappedNamespace = personIdentifyStream.unmappedNamespace,
                         unmappedName = personIdentifyStream.unmappedName,
-                        blob = """{"foo": "bar"}""",
+                        blob = """{}""",
                         sourceRecordCount = 1,
                     ),
                 ),
@@ -166,12 +165,7 @@ class CustomerIoWriterTest() :
                             OutputRecord(
                                 extractedAt = 1234,
                                 generationId = 0,
-                                data =
-                                    if (preserveUndeclaredFields) {
-                                        mapOf("id" to 5678, "undeclared" to "asdf")
-                                    } else {
-                                        mapOf("id" to 5678)
-                                    },
+                                data = mapOf("id" to 5678),
                                 airbyteMeta =
                                     OutputRecord.Meta(
                                         changes =

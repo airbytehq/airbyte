@@ -5,15 +5,15 @@ products: oss-*
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Update ingress for version 1.7
+# Update ingress for version 1.7 and later
 
 Airbyte version 1.7 introduced a breaking change for ingress to the Connector Builder. If you're a Self-Managed Community user or Self-Managed Enterprise customer, and you're upgrading to version 1.7.0 or later, complete these steps when you upgrade. If you don't, the Connector Builder gives you 403 Forbidden errors and you can't test streams or use the Connector Builder UI.
 
 ## What changed
 
-In version 1.7, Airbyte removed the `webapp` service, merging its functions into `server`. When you deployed Airbyte, you probably set up ingress to expect that `webapp` would exist and function as a proxy.
+In version 1.7, Airbyte began merging the `webapp` service and its functions into `server`. As of version 1.8, Airbyte no longer publishes an `airbyte-webapp` image and it's no longer independently deployable. When you first deployed Airbyte, you probably set up ingress to expect that `webapp` would exist and function as a proxy.
 
-Update your rules to reflect that it no longer exists. How you do this depends if you deploy Airbyte with Helm or abctl.
+If you're upgrading to version 1.7 or later, update your ingress rules to reflect that the webapp no longer exists. How you do this depends if you deploy Airbyte with Helm or abctl.
 
 ## Deploying with Helm
 
@@ -37,6 +37,16 @@ spec:
     - host: airbyte.example.com # replace with your host
       http:
         paths:
+          # BEGIN: Self-Managed Enterprise only - Do not include if you are an open source user
+          - backend:
+              service:
+                # format is ${RELEASE_NAME}-airbyte-keycloak-svc 
+                name: airbyte-airbyte-keycloak-svc 
+                port: 
+                  number: 8180 
+            path: /auth
+            pathType: Prefix
+          # END: Self-Managed Enterprise only
           - backend:
               service:
                 # format is ${RELEASE_NAME}-airbyte-connector-builder-server-svc
@@ -82,6 +92,15 @@ spec:
     - host: airbyte.example.com # replace with your host
       http:
         paths:
+          # BEGIN: Self-Managed Enterprise only - Do not include if you are an open source user
+          - backend:
+              service:
+                name: airbyte-airbyte-keycloak-svc
+                port:
+                  number: 8180
+            path: /auth
+            pathType: Prefix
+          # END: Self-Managed Enterprise only
           - backend:
               service:
                 name: airbyte-airbyte-connector-builder-server-svc
@@ -103,7 +122,7 @@ spec:
 
 ## Deploying with abctl
 
-If you deploy Airbyte with abctl, abctl handles ingress for you. abctl version 0.28 and later support the changes in Airbyte 1.7.
+If you deploy Airbyte with abctl, abctl handles ingress for you. abctl version 0.28 and later support the changes in Airbyte 1.7 and later.
 
 1. Upgrade abctl to the latest version. For example, `brew upgrade abctl`.
 

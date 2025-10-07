@@ -10,6 +10,10 @@ jobs:
     name: "Add Labels to PRs.  Safe to Merge on fail"
     runs-on: ubuntu-24.04
     steps:
+      # TODO: Replace PAT with a GitHub App token.
+      # The "private-action-loader" action does not seem to be compatible with it,
+      # so we should consider moving off of this specialized action onto a normal
+      # action step.
       - name: Run Issue Command from workflow-actions
         uses: nick-fields/private-action-loader@v3
         with:

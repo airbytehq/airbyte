@@ -27,6 +27,8 @@ import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.cdk.load.write.WriteOperation
 import io.airbyte.integrations.destination.bigquery.check.BigqueryCheckCleaner
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
+import io.airbyte.integrations.destination.bigquery.write.bulk_loader.BigQueryBulkOneShotUploader
+import io.airbyte.integrations.destination.bigquery.write.bulk_loader.BigQueryBulkOneShotUploaderStep
 import io.airbyte.integrations.destination.bigquery.write.bulk_loader.BigqueryBulkLoadConfiguration
 import io.airbyte.integrations.destination.bigquery.write.bulk_loader.BigqueryConfiguredForBulkLoad
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.BigQueryDatabaseHandler
@@ -43,8 +45,8 @@ import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.io.ByteArrayInputStream
 import java.io.InputStream
+import java.io.OutputStream
 import java.nio.charset.StandardCharsets
-import org.threeten.bp.Duration
 
 private val logger = KotlinLogging.logger {}
 
@@ -55,6 +57,22 @@ class BigqueryBeansFactory {
     @Singleton
     @Requires(condition = BigqueryConfiguredForBulkLoad::class)
     fun getBulkLoadConfig(config: BigqueryConfiguration) = BigqueryBulkLoadConfiguration(config)
+
+    @Singleton
+    @Named("bigQueryOneShotStep")
+    @Requires(condition = BigqueryConfiguredForBulkLoad::class)
+    @Requires(property = "airbyte.destination.core.data-channel.medium", value = "SOCKET")
+    fun <O : OutputStream> getBigQueryOneShotStep(
+        bigQueryOneShotUploader: BigQueryBulkOneShotUploader<O>,
+        taskFactory: io.airbyte.cdk.load.task.internal.LoadPipelineStepTaskFactory,
+        @Named("numInputPartitions") numInputPartitions: Int,
+    ): BigQueryBulkOneShotUploaderStep<io.airbyte.cdk.load.message.StreamKey, O> {
+        return BigQueryBulkOneShotUploaderStep(
+            bigQueryOneShotUploader,
+            taskFactory,
+            numInputPartitions
+        )
+    }
 
     @Singleton
     @Named("checkNamespace")

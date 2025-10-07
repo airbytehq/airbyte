@@ -26,7 +26,7 @@ A Clear can be triggered either from the UI or Airbyte API. Airbyte allows you t
 
 ## Steps to Clear Data
 
-To perform a full removal of the data for all your streams, navigate to a connection's `Settings` tab and click "Clear data". Confirm the selection to remove all previously synced data from the destination for that connection.
+To perform a full removal of the data for all your streams, navigate to a connection's **Settings** tab and click **Clear data**. Confirm the selection to remove all previously synced data from the destination for that connection.
 
 To clear data for a single stream, navigate to a Connection's status page, click the three grey dots next to any stream, and select "Clear data". This will clear the data for just that stream. You will then need to sync the connection again in order to reload data for that stream.
 

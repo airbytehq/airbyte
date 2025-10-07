@@ -7394,6 +7394,324 @@
       "source_defined_primary_key": [["purchaseOrderNumber"]]
     },
     {
+      "name": "VendorOrdersStatus",
+      "json_schema": {
+        "title": "Vendor Orders Status",
+        "description": "Status of vendor purchase orders",
+        "type": "object",
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "properties": {
+          "purchaseOrderNumber": {
+            "description": "Purchase order number",
+            "type": ["null", "string"]
+          },
+          "status": {
+            "description": "Status of the purchase order",
+            "type": ["null", "string"]
+          },
+          "changedBefore": {
+            "description": "The timestamp indicating the maximum creation date of the status data to be fetched.",
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "orderDetails": {
+            "description": "Details of the vendor order.",
+            "type": ["null", "object"],
+            "properties": {
+              "purchaseOrderDate": {
+                "description": "Purchase order creation date and time",
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "purchaseOrderChangedDate": {
+                "description": "Date and time when the purchase order was last changed",
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "purchaseOrderStateChangedDate": {
+                "description": "Date and time when the purchase order state changed",
+                "type": ["null", "string"],
+                "format": "date-time"
+              },
+              "purchaseOrderType": {
+                "description": "Type of purchase order",
+                "type": ["null", "string"]
+              },
+              "importDetails": {
+                "description": "Details related to import of the order",
+                "type": ["null", "object"],
+                "properties": {
+                  "methodOfPayment": {
+                    "description": "Method of payment for import",
+                    "type": ["null", "string"]
+                  },
+                  "internationalCommercialTerms": {
+                    "description": "International commercial terms",
+                    "type": ["null", "string"]
+                  },
+                  "portOfDelivery": {
+                    "description": "Port of delivery",
+                    "type": ["null", "string"]
+                  },
+                  "importContainers": {
+                    "description": "Information about import containers",
+                    "type": ["null", "string"]
+                  },
+                  "shippingInstructions": {
+                    "description": "Instructions for shipping",
+                    "type": ["null", "string"]
+                  }
+                }
+              },
+              "dealCode": {
+                "description": "Deal code associated with the order",
+                "type": ["null", "string"]
+              },
+              "paymentMethod": {
+                "description": "Payment method for the order",
+                "type": ["null", "string"]
+              },
+              "buyingParty": {
+                "description": "Information about the party making the purchase",
+                "type": ["null", "object"],
+                "properties": {
+                  "partyId": {
+                    "description": "ID of the buying party",
+                    "type": ["null", "string"]
+                  },
+                  "address": {
+                    "description": "Address of the buying party",
+                    "type": ["null", "object"],
+                    "properties": {
+                      "name": {
+                        "description": "Name of the buying party",
+                        "type": ["null", "string"]
+                      },
+                      "addressLine1": {
+                        "description": "First line of the address",
+                        "type": ["null", "string"]
+                      },
+                      "city": {
+                        "description": "City of the address",
+                        "type": ["null", "string"]
+                      },
+                      "stateOrRegion": {
+                        "description": "State or region of the address",
+                        "type": ["null", "string"]
+                      },
+                      "postalCode": {
+                        "description": "Postal code of the address",
+                        "type": ["null", "string"]
+                      },
+                      "countryCode": {
+                        "description": "Country code of the address",
+                        "type": ["null", "string"]
+                      },
+                      "phone": {
+                        "description": "Phone number of the buying party",
+                        "type": ["null", "string"]
+                      }
+                    }
+                  }
+                }
+              },
+              "sellingParty": {
+                "description": "Information about the party selling the product",
+                "type": ["null", "object"],
+                "properties": {
+                  "partyId": {
+                    "description": "ID of the selling party",
+                    "type": ["null", "string"]
+                  }
+                }
+              },
+              "shipToParty": {
+                "description": "Information about the party to ship to",
+                "type": ["null", "object"],
+                "properties": {
+                  "partyId": {
+                    "description": "ID of the ship to party",
+                    "type": ["null", "string"]
+                  },
+                  "address": {
+                    "description": "Address of the ship to party",
+                    "type": ["null", "object"],
+                    "properties": {
+                      "name": {
+                        "description": "Name of the ship to party",
+                        "type": ["null", "string"]
+                      },
+                      "addressLine1": {
+                        "description": "First line of the address",
+                        "type": ["null", "string"]
+                      },
+                      "city": {
+                        "description": "City of the address",
+                        "type": ["null", "string"]
+                      },
+                      "stateOrRegion": {
+                        "description": "State or region of the address",
+                        "type": ["null", "string"]
+                      },
+                      "postalCode": {
+                        "description": "Postal code of the address",
+                        "type": ["null", "string"]
+                      },
+                      "countryCode": {
+                        "description": "Country code of the address",
+                        "type": ["null", "string"]
+                      },
+                      "phone": {
+                        "description": "Phone number of the ship to party",
+                        "type": ["null", "string"]
+                      }
+                    }
+                  }
+                }
+              },
+              "billToParty": {
+                "description": "Information about the party to bill",
+                "type": ["null", "object"],
+                "properties": {
+                  "partyId": {
+                    "description": "ID of the bill to party",
+                    "type": ["null", "string"]
+                  },
+                  "address": {
+                    "description": "Address of the bill to party",
+                    "type": ["null", "object"],
+                    "properties": {
+                      "name": {
+                        "description": "Name of the bill to party",
+                        "type": ["null", "string"]
+                      },
+                      "addressLine1": {
+                        "description": "First line of the address",
+                        "type": ["null", "string"]
+                      },
+                      "city": {
+                        "description": "City of the address",
+                        "type": ["null", "string"]
+                      },
+                      "stateOrRegion": {
+                        "description": "State or region of the address",
+                        "type": ["null", "string"]
+                      },
+                      "postalCode": {
+                        "description": "Postal code of the address",
+                        "type": ["null", "string"]
+                      },
+                      "countryCode": {
+                        "description": "Country code of the address",
+                        "type": ["null", "string"]
+                      },
+                      "phone": {
+                        "description": "Phone number of the bill to party",
+                        "type": ["null", "string"]
+                      }
+                    }
+                  }
+                }
+              },
+              "taxInfo": {
+                "description": "Tax information for the order",
+                "type": ["null", "object"],
+                "properties": {
+                  "taxType": {
+                    "description": "Type of tax",
+                    "type": ["null", "string"]
+                  },
+                  "taxRegistrationNumber": {
+                    "description": "Tax registration number",
+                    "type": ["null", "string"]
+                  }
+                }
+              }
+            }
+          },
+          "deliveryWindow": {
+            "description": "Delivery window for the order",
+            "type": ["null", "string"]
+          },
+          "items": {
+            "description": "List of items in the order",
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "properties": {
+                "itemSequenceNumber": {
+                  "description": "Sequence number of the item",
+                  "type": ["null", "string"]
+                },
+                "amazonProductIdentifier": {
+                  "description": "Amazon product identifier",
+                  "type": ["null", "string"]
+                },
+                "vendorProductIdentifier": {
+                  "description": "Vendor product identifier",
+                  "type": ["null", "string"]
+                },
+                "orderedQuantity": {
+                  "description": "Quantity ordered",
+                  "type": ["null", "object"],
+                  "properties": {
+                    "amount": {
+                      "description": "Amount of the quantity",
+                      "type": ["null", "integer"]
+                    },
+                    "unitOfMeasure": {
+                      "description": "Unit of measure for the quantity",
+                      "type": ["null", "string"]
+                    },
+                    "unitSize": {
+                      "description": "Unit size for the quantity",
+                      "type": ["null", "integer"]
+                    }
+                  }
+                },
+                "isBackOrderAllowed": {
+                  "description": "Whether back order is allowed",
+                  "type": ["null", "boolean"]
+                },
+                "netCost": {
+                  "description": "Net cost of the item",
+                  "type": ["null", "object"],
+                  "properties": {
+                    "amount": {
+                      "description": "Amount of the net cost",
+                      "type": ["null", "string"]
+                    },
+                    "currencyCode": {
+                      "description": "Currency code for the net cost",
+                      "type": ["null", "string"]
+                    }
+                  }
+                },
+                "listPrice": {
+                  "description": "List price of the item",
+                  "type": ["null", "object"],
+                  "properties": {
+                    "amount": {
+                      "description": "Amount of the list price",
+                      "type": ["null", "string"]
+                    },
+                    "currencyCode": {
+                      "description": "Currency code for the list price",
+                      "type": ["null", "string"]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": ["createdBefore"],
+      "source_defined_primary_key": [["purchaseOrderNumber"]]
+    },
+    {
       "name": "GET_VENDOR_FORECASTING_FRESH_REPORT",
       "json_schema": {
         "title": "Vendor Forecasting Fresh Report",

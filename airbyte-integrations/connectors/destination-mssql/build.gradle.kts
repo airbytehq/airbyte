@@ -12,7 +12,6 @@ plugins {
 airbyteBulkConnector {
     core = "load"
     toolkits = listOf("load-azure-blob-storage", "load-db")
-    cdk = "local"
 }
 
 application {
@@ -62,8 +61,4 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 
     integrationTestImplementation("org.testcontainers:mssqlserver:$testContainersVersion")
-}
-
-tasks.named<Test>("test") {
-    systemProperties(mapOf("mockk.junit.extension.keepmocks" to "true", "mockk.junit.extension.requireParallelTesting" to "true"))
 }

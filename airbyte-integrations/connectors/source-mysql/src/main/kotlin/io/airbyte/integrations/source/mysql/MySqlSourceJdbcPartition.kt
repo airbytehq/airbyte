@@ -257,7 +257,15 @@ class MySqlSourceJdbcSplittableCdcRfrSnapshotPartition(
     override val upperBound: List<JsonNode>?,
 ) : MySqlSourceJdbcResumablePartition(selectQueryGenerator, streamState, primaryKey) {
     override val completeState: OpaqueStateValue
-        get() = MySqlSourceCdcInitialSnapshotStateValue.getSnapshotCompletedState(stream)
+        get() =
+            when (upperBound) {
+                null -> MySqlSourceCdcInitialSnapshotStateValue.getSnapshotCompletedState(stream)
+                else ->
+                    MySqlSourceCdcInitialSnapshotStateValue.snapshotCheckpoint(
+                        primaryKey = checkpointColumns,
+                        primaryKeyCheckpoint = checkpointColumns.map { upperBound.get(0) },
+                    )
+            }
 
     override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
         MySqlSourceCdcInitialSnapshotStateValue.snapshotCheckpoint(
@@ -520,6 +528,15 @@ class MySqlJdbcConcurrentPartitionsCreator<
                 .filter { random.nextDouble() < secondarySamplingRate }
                 .mapNotNull { (splitBoundary: OpaqueStateValue?, _) -> splitBoundary }
                 .distinct()
+
+        // Handle edge case with empty split boundaries when sampling rate is too low,
+        // causing random filtering to discard all sampled boundaries, which would
+        // lead to division by zero the in the split() function. Fall back to single partition.
+        if (splitBoundaries.isEmpty()) {
+            log.warn { "No split boundaries found, using single partition" }
+            return listOf(JdbcNonResumablePartitionReader(partition))
+        }
+
         val partitions: List<JdbcPartition<*>> = partitionFactory.split(partition, splitBoundaries)
         log.info { "Table will be read by ${partitions.size} concurrent partition reader(s)." }
         return partitions.map { JdbcNonResumablePartitionReader(it) }

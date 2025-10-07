@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/source-fullstory
   githubIssueLabel: source-fullstory
   icon: fullstory.svg
-  license: MIT
+  license: ELv2
   name: Fullstory
   remoteRegistries:
     pypi:

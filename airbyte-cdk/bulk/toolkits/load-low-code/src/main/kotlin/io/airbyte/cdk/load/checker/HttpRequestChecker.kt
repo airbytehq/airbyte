@@ -4,14 +4,12 @@
 
 package io.airbyte.cdk.load.checker
 
-import io.airbyte.cdk.load.check.DestinationChecker
-import io.airbyte.cdk.load.command.DestinationConfiguration
+import io.airbyte.cdk.load.check.DestinationCheckerV2
 import io.airbyte.cdk.load.http.HttpRequester
 import io.airbyte.cdk.load.http.consumeBodyToString
 
-class HttpRequestChecker<C : DestinationConfiguration>(private val requester: HttpRequester) :
-    DestinationChecker<C> {
-    override fun check(config: C) {
+class HttpRequestChecker(private val requester: HttpRequester) : DestinationCheckerV2 {
+    override fun check() {
         val response = requester.send()
         response.use {
             if (it.statusCode != 200) {

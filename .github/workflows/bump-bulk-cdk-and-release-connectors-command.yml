@@ -63,9 +63,8 @@ jobs:
       matrix:
         connector_name: ${{ fromJson(needs.bump-cdk-version.outputs.modified_connectors_json) }}
     with:
-      connectors-options: "--name=${{ matrix.connector_name }}"
-      publish-options: --main-release
-      airbyte_ci_binary_url: "https://connectors.airbyte.com/airbyte-ci/releases/ubuntu/latest/airbyte-ci"
+      connectors: "--name=${{ matrix.connector_name }}"
+      release-type: main-release
     secrets: inherit
 
   update-changelog-and-merge:

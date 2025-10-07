@@ -179,3 +179,8 @@ data class PartitionReadCheckpoint(
 
 /** A [PartitionReader] with no time limit for its execution. */
 interface UnlimitedTimePartitionReader : PartitionReader
+
+private val charPool: List<Char> = ('a'..'z') + ('A'..'Z') + ('0'..'9')
+
+fun generatePartitionId(length: Int): String =
+    (1..length).map { charPool.random() }.joinToString("")

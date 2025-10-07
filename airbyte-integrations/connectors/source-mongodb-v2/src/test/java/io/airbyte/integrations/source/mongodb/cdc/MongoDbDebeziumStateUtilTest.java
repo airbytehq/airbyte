@@ -148,11 +148,12 @@ class MongoDbDebeziumStateUtilTest {
 
   @Test
   void testOffsetDataFormat() {
-    final JsonNode offsetState = MongoDbDebeziumStateUtil.formatState("test_server_id", RESUME_TOKEN);
+    final JsonNode offsetState = MongoDbDebeziumStateUtil.formatState("mongodb://host:12345/", RESUME_TOKEN);
 
     assertNotNull(offsetState);
-    assertEquals("[\"" + "test-server-id" + "\",{\""
-        + MongoDbDebeziumConstants.OffsetState.KEY_SERVER_ID + "\":\"" + "test-server-id" + "\"}]", offsetState.fieldNames().next());
+    final String expectedNormalized = MongoDbDebeziumPropertiesManager.normalizeToDebeziumFormat("mongodb://host:12345/");
+    assertEquals("[\"" + expectedNormalized + "\",{\""
+        + MongoDbDebeziumConstants.OffsetState.KEY_SERVER_ID + "\":\"" + expectedNormalized + "\"}]", offsetState.fieldNames().next());
   }
 
   @Test

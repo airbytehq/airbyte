@@ -15,7 +15,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/elasticsearch
   githubIssueLabel: source-elasticsearch
   icon: elasticsearch.svg
-  license: MIT
+  license: ELv2
   name: Elasticsearch
   registryOverrides:
     cloud:

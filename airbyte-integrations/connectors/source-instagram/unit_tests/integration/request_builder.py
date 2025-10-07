@@ -12,7 +12,7 @@ from ..conftest import get_source
 from .config import ACCOUNTS_FIELDS
 
 
-GRAPH_URL = resolve_manifest(source=get_source(config={}, state=None)).record.data["manifest"]["definitions"]["base_requester"]["url_base"]
+GRAPH_URL = "https://graph.facebook.com/v23.0"
 
 
 def get_account_request() -> RequestBuilder:

@@ -42,7 +42,6 @@ const plugin = () => {
     visit(ast, "heading", (node) => {
       if (firstHeading && node.depth === 1 && node.children.length === 1) {
         const originalTitle = node.children[0].value;
-        const originalId = node.data.hProperties.id;
 
         const attrDict = {
           isOss: false,
@@ -53,7 +52,7 @@ const plugin = () => {
           dockerImageTag: version,
           github_url: undefined,
           originalTitle,
-          originalId,
+          "enterprise-connector": vfile.data.frontMatter["enterprise-connector"] || true,
         };
 
         firstHeading = false;

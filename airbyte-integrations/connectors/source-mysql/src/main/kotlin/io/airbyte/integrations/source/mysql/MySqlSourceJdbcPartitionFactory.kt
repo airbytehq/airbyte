@@ -83,8 +83,6 @@ class MySqlSourceJdbcPartitionFactory(
         }
     }
 
-    val pkLowerBoundQuery = "SELECT MIN(`%s`) FROM `%s`.`%s`"
-
     private fun findPkLowerBound(stream: Stream, pkChosenFromCatalog: List<Field>): JsonNode {
         val jdbcConnectionFactory = JdbcConnectionFactory(config)
         val from = From(stream.name, stream.namespace)
@@ -235,7 +233,7 @@ class MySqlSourceJdbcPartitionFactory(
 
             if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
                 val upperBound = findPkUpperBound(stream, pkChosenFromCatalog)
-                if (sv.pkVal == upperBound.asText()) {
+                if (sv.pkVal == upperBound.asText() || sv.pkVal == null) {
                     return null
                 }
                 val pkLowerBound: JsonNode = stateValueToJsonNode(pkChosenFromCatalog[0], sv.pkVal)
@@ -452,6 +450,8 @@ class MySqlSourceJdbcPartitionFactory(
                 unsplitPartition.split(opaqueStateValues.size, upperBoundVal, lowerBoundVal)
             is MySqlSourceJdbcCdcSnapshotPartition ->
                 unsplitPartition.split(opaqueStateValues.size, upperBoundVal, lowerBoundVal)
+            is MySqlSourceJdbcCdcRfrSnapshotPartition ->
+                unsplitPartition.split(opaqueStateValues.size, upperBoundVal, lowerBoundVal)
             else -> null
         }
             ?: listOf(unsplitPartition)
@@ -505,6 +505,29 @@ class MySqlSourceJdbcPartitionFactory(
         }
     }
 
+    private fun MySqlSourceJdbcCdcRfrSnapshotPartition.split(
+        num: Int,
+        upperBound: Any?,
+        effectiveLowerBound: Any?
+    ): List<MySqlSourceJdbcResumablePartition>? {
+        val type = checkpointColumns[0].type as LosslessJdbcFieldType<*, *>
+        val lowerBound =
+            when (lowerBound.isNullOrEmpty()) {
+                true -> effectiveLowerBound
+                false -> type.jsonDecoder.decode(lowerBound[0])
+            }
+
+        return calculateBoundaries(num, lowerBound, upperBound)?.map { (l, u) ->
+            MySqlSourceJdbcSplittableRfrSnapshotPartition(
+                selectQueryGenerator,
+                streamState,
+                checkpointColumns,
+                listOf(stateValueToJsonNode(checkpointColumns[0], l.toString())),
+                u?.let { listOf(stateValueToJsonNode(checkpointColumns[0], u.toString())) },
+            )
+        }
+    }
+
     private fun MySqlSourceJdbcCdcSnapshotPartition.split(
         num: Int,
         upperBound: Any?,
@@ -528,18 +551,22 @@ class MySqlSourceJdbcPartitionFactory(
         }
     }
 
-    private fun <T> calculateBoundaries(num: Int, lowerBound: T?, upperBound: T): Map<*, *>? {
-        return when (upperBound) {
-            is Long -> calculateBoundaries(num, lowerBound as Long?, upperBound)
-            is Int -> calculateBoundaries(num, lowerBound as Long?, upperBound.toLong())
-            is String -> calculateBoundaries(num, lowerBound as String?, upperBound)
-            is Double -> calculateBoundaries(num, lowerBound as Double?, upperBound)
-            is OffsetDateTime -> calculateBoundaries(num, lowerBound as? OffsetDateTime, upperBound)
+    private fun <T> calculateBoundaries(num: Int, lowerBound: T?, upperBound: T): Map<*, *>? =
+        when {
+            lowerBound is Long? && upperBound is Long ->
+                internalCalculateBoundaries(num, lowerBound, upperBound)
+            lowerBound is Int? && upperBound is Int ->
+                internalCalculateBoundaries(num, lowerBound?.toLong(), upperBound.toLong())
+            lowerBound is String? && upperBound is String ->
+                internalCalculateBoundaries(num, lowerBound, upperBound)
+            lowerBound is Double? && upperBound is Double ->
+                internalCalculateBoundaries(num, lowerBound, upperBound)
+            lowerBound is OffsetDateTime? && upperBound is OffsetDateTime ->
+                internalCalculateBoundaries(num, lowerBound, upperBound)
             else -> null
         }
-    }
 
-    private fun calculateBoundaries(
+    private fun internalCalculateBoundaries(
         num: Int,
         lowerBound: OffsetDateTime?,
         upperBound: OffsetDateTime
@@ -557,7 +584,7 @@ class MySqlSourceJdbcPartitionFactory(
         return lbs.zip(ubs).toMap()
     }
 
-    private fun calculateBoundaries(
+    private fun internalCalculateBoundaries(
         num: Int,
         lowerBound: Long?,
         upperBound: Long
@@ -566,7 +593,7 @@ class MySqlSourceJdbcPartitionFactory(
         val effectiveLowerBound = lowerBound ?: Long.MIN_VALUE
         val eachStep: Long = (upperBound - effectiveLowerBound) / num
         for (i in 1..(num - 1)) {
-            queryPlan.add(i * eachStep)
+            queryPlan.add(effectiveLowerBound + i * eachStep)
         }
 
         val lbs: List<Long> = listOf(effectiveLowerBound) + queryPlan
@@ -575,7 +602,7 @@ class MySqlSourceJdbcPartitionFactory(
         return lbs.zip(ubs).toMap()
     }
 
-    private fun calculateBoundaries(
+    private fun internalCalculateBoundaries(
         num: Int,
         lowerBound: Double?,
         upperBound: Double
@@ -584,14 +611,14 @@ class MySqlSourceJdbcPartitionFactory(
         val effectiveLowerBound = lowerBound ?: Double.MIN_VALUE
         val eachStep: Double = (upperBound - effectiveLowerBound) / num
         for (i in 1..(num - 1)) {
-            queryPlan.add(i * eachStep)
+            queryPlan.add(effectiveLowerBound + i * eachStep)
         }
         val lbs: List<Double> = listOf(effectiveLowerBound) + queryPlan
         val ubs: List<Double?> = queryPlan + null
         return lbs.zip(ubs).toMap()
     }
 
-    private fun calculateBoundaries(
+    private fun internalCalculateBoundaries(
         num: Int,
         lowerBound: String?,
         upperBound: String

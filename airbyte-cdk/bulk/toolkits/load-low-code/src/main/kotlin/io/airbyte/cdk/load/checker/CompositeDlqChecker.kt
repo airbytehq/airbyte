@@ -4,17 +4,21 @@
 
 package io.airbyte.cdk.load.checker
 
-import io.airbyte.cdk.load.check.DestinationChecker
+import io.airbyte.cdk.load.check.DestinationCheckerV2
 import io.airbyte.cdk.load.check.dlq.DlqChecker
-import io.airbyte.cdk.load.command.DestinationConfiguration
-import io.airbyte.cdk.load.command.dlq.ObjectStorageConfigProvider
+import io.airbyte.cdk.load.command.dlq.ObjectStorageConfig
 
-class CompositeDlqChecker<C>(
-    private val decorated: DestinationChecker<C>,
-    private val dlqChecker: DlqChecker
-) : DestinationChecker<C> where C : DestinationConfiguration, C : ObjectStorageConfigProvider {
-    override fun check(config: C) {
-        decorated.check(config)
-        dlqChecker.check(config.objectStorageConfig)
+class CompositeDlqChecker(
+    private val decorated: DestinationCheckerV2,
+    private val dlqChecker: DlqChecker,
+    private val objectStorageConfig: ObjectStorageConfig
+) : DestinationCheckerV2 {
+    override fun check() {
+        decorated.check()
+        dlqChecker.check(objectStorageConfig)
+    }
+
+    override fun cleanup() {
+        decorated.cleanup()
     }
 }

@@ -353,6 +353,42 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/incidents"
+    alerts:
+      type: DeclarativeStream
+      name: alerts
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /v2/alerts
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - alerts
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: after
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: page_size
+            inject_into: request_parameter
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 50
+            cursor_value: "{{ response.get('pagination_meta', {}).get('after') }}"
+            stop_condition: "{{ response.get('pagination_meta', {}).get('after') is none }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/alerts"
   base_requester:
     type: HttpRequester
     url_base: https://api.incident.io
@@ -374,6 +410,7 @@ streams:
   - $ref: "#/definitions/streams/severities"
   - $ref: "#/definitions/streams/schedules"
   - $ref: "#/definitions/streams/incidents"
+  - $ref: "#/definitions/streams/alerts"
 
 spec:
   type: Spec
@@ -407,6 +444,7 @@ metadata:
     severities: false
     schedules: false
     incidents: true
+    alerts: true
   testedStreams:
     actions:
       streamHash: 66bd85de048e14ed758adfad4f83d9ab9ef62b7e
@@ -494,6 +532,13 @@ metadata:
       primaryKeysAreUnique: true
     incidents:
       streamHash: c7ab9d59ffea3d32aec4306215c27a7fa5b52c30
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    alerts:
+      streamHash: 2085de45af65a2f97da5b70a3f478fa3bd74bb3c
       hasResponse: true
       responsesAreSuccessful: true
       hasRecords: true
@@ -1720,6 +1765,111 @@ schemas:
       workload_minutes_working:
         type:
           - number
+          - "null"
+    required:
+      - id
+  alerts:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      description:
+        type:
+          - string
+          - "null"
+      alert_source_id:
+        type:
+          - string
+          - "null"
+      attributes:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - object
+            - "null"
+          properties:
+            attribute:
+              type:
+                - object
+                - "null"
+              properties:
+                type:
+                  type:
+                    - string
+                    - "null"
+                array:
+                  type:
+                    - boolean
+                    - "null"
+                id:
+                  type:
+                    - string
+                    - "null"
+                name:
+                  type:
+                    - string
+                    - "null"
+            value:
+              type:
+                - object
+                - "null"
+              properties:
+                catalog_entry:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    catalog_type_id:
+                      type:
+                        - string
+                        - "null"
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                label:
+                  type:
+                    - string
+                    - "null"
+                literal:
+                  type:
+                    - string
+                    - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+      deduplication_key:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      resolved_at:
+        type:
+          - string
+          - "null"
+      source_url:
+        type:
+          - string
+          - "null"
+      status:
+        type:
+          - string
+          - "null"
+      title:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
           - "null"
     required:
       - id

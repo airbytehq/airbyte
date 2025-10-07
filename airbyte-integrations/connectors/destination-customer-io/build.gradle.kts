@@ -5,12 +5,13 @@
 plugins {
     id("application")
     id("airbyte-bulk-connector")
+    id("io.airbyte.gradle.docker")
+    id("airbyte-connector-docker-convention")
 }
 
 airbyteBulkConnector {
     core = "load"
     toolkits = listOf("load-csv", "load-dlq", "load-http", "load-low-code")
-    cdk = "local"
 }
 
 application {
@@ -56,8 +57,4 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-params:$junitVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
-}
-
-tasks.named<Test>("test") {
-    systemProperties(mapOf("mockk.junit.extension.keepmocks" to "true", "mockk.junit.extension.requireParallelTesting" to "true"))
 }

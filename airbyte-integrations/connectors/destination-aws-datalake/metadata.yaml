@@ -8,7 +8,7 @@ data:
   dockerRepository: airbyte/destination-aws-datalake
   githubIssueLabel: destination-aws-datalake
   icon: awsdatalake.svg
-  license: MIT
+  license: ELv2
   name: AWS Datalake
   registryOverrides:
     cloud:

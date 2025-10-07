@@ -70,7 +70,7 @@ class MongoDbDebeziumPropertiesManagerTest {
     final var debeziumPropertiesManager = new MongoDbDebeziumPropertiesManager(cdcProperties, config, catalog, cdcStreamList);
 
     final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties(offsetManager);
-    assertEquals(MongoDbDebeziumPropertiesManager.normalizeName(EXPECTED_CONNECTION_STRING), debeziumProperties.get(NAME_KEY));
+    assertEquals(MongoDbDebeziumPropertiesManager.normalizeToDebeziumFormat(EXPECTED_CONNECTION_STRING), debeziumProperties.get(NAME_KEY));
     assertEquals(EXPECTED_CONNECTION_STRING, debeziumProperties.get(MONGODB_CONNECTION_STRING_KEY));
     assertEquals(MONGODB_CONNECTION_MODE_VALUE, debeziumProperties.get(MONGODB_CONNECTION_MODE_KEY));
     assertEquals(config.get(USERNAME_CONFIGURATION_KEY).asText(), debeziumProperties.get(MONGODB_USER_KEY));
@@ -127,7 +127,8 @@ class MongoDbDebeziumPropertiesManagerTest {
     final var debeziumPropertiesManager = new MongoDbDebeziumPropertiesManager(cdcProperties, config, catalog, cdcStreamList);
 
     final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties(offsetManager);
-    assertEquals(debeziumProperties.get(MONGODB_CONNECTION_STRING_KEY).toString(), debeziumProperties.get(NAME_KEY));
+    assertEquals(MongoDbDebeziumPropertiesManager.normalizeToDebeziumFormat(debeziumProperties.get(MONGODB_CONNECTION_STRING_KEY).toString()),
+        debeziumProperties.get(NAME_KEY));
 
     assertEquals(EXPECTED_CONNECTION_STRING, debeziumProperties.get(MONGODB_CONNECTION_STRING_KEY));
     assertEquals(MONGODB_CONNECTION_MODE_VALUE, debeziumProperties.get(MONGODB_CONNECTION_MODE_KEY));
@@ -233,11 +234,19 @@ class MongoDbDebeziumPropertiesManagerTest {
     final String blankName = "";
     final String nullName = null;
 
-    assertEquals("name-with-underscore", MongoDbDebeziumPropertiesManager.normalizeName(nameWithUnderscore));
-    assertEquals(nameWithoutUnderscore, MongoDbDebeziumPropertiesManager.normalizeName(nameWithoutUnderscore));
-    assertEquals(blankName, MongoDbDebeziumPropertiesManager.normalizeName(blankName));
-    assertNull(MongoDbDebeziumPropertiesManager.normalizeName(nullName));
+    assertEquals("name-with-underscore", MongoDbDebeziumPropertiesManager.normalizeToDebeziumFormat(nameWithUnderscore));
+    assertEquals(nameWithoutUnderscore, MongoDbDebeziumPropertiesManager.normalizeToDebeziumFormat(nameWithoutUnderscore));
+    assertEquals(blankName, MongoDbDebeziumPropertiesManager.normalizeToDebeziumFormat(blankName));
+    assertNull(MongoDbDebeziumPropertiesManager.normalizeToDebeziumFormat(nullName));
 
+  }
+
+  @Test
+  void testNormalizedServerId() {
+    // testing special chars for edge cases
+    final String serverId = "mongodb://fake_user:ABCD$@$1234@fake.abcd1.mongo.nothing/";
+    final String expectedNormalization = "mongodb___fake-user_ABCD___1234_fake.abcd1.mongo.nothing_";
+    assertEquals(MongoDbDebeziumPropertiesManager.normalizeToDebeziumFormat(serverId), expectedNormalization);
   }
 
   @Test

@@ -202,6 +202,13 @@ object TestFixtures {
             stream: Stream,
             recordData: ObjectNode
         ) {}
+
+        override fun decorateRecordData(
+            timestamp: OffsetDateTime,
+            globalStateValue: OpaqueStateValue?,
+            stream: Stream,
+            recordData: NativeRecordPayload
+        ) {}
     }
 
     fun Stream.bootstrap(opaqueStateValue: OpaqueStateValue?): StreamFeedBootstrap =

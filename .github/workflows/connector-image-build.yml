@@ -87,6 +87,7 @@ jobs:
           cache-read-only: false
           cache-write-only: false
           add-job-summary: "on-failure"
+          gradle-version: "8.14"
 
       - name: Build Connector Tarball
         if: ${{ steps.vars.outputs.connector-language == 'java' }}

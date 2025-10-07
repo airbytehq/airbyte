@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.clickhouse.spec
 
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
+import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import jakarta.inject.Singleton
 
 data class ClickhouseConfiguration(
@@ -16,12 +17,16 @@ data class ClickhouseConfiguration(
     val username: String,
     val password: String,
     val enableJson: Boolean,
+    val tunnelConfig: SshTunnelMethodConfiguration?,
+    val recordWindowSize: Long?,
 ) : DestinationConfiguration() {
     val endpoint = "$protocol://$hostname:$port"
     val resolvedDatabase = database.ifEmpty { Defaults.DATABASE_NAME }
+    val resolvedRecordWindowSize = recordWindowSize ?: Defaults.RECORDS_PER_AGGREGATE
 
     object Defaults {
         const val DATABASE_NAME = "default"
+        const val RECORDS_PER_AGGREGATE = 100_000L
     }
 }
 
@@ -38,13 +43,15 @@ class ClickhouseConfigurationFactory :
             }
 
         return ClickhouseConfiguration(
-            pojo.hostname,
-            pojo.port,
-            protocol,
-            pojo.database,
-            pojo.username,
-            pojo.password,
-            pojo.enableJson ?: false,
+            hostname = pojo.hostname,
+            port = pojo.port,
+            protocol = protocol,
+            database = pojo.database,
+            username = pojo.username,
+            password = pojo.password,
+            enableJson = pojo.enableJson ?: false,
+            tunnelConfig = pojo.getTunnelMethodValue(),
+            recordWindowSize = pojo.recordWindowSize,
         )
     }
 
@@ -67,6 +74,8 @@ class ClickhouseConfigurationFactory :
             username = overrides.getOrDefault("username", spec.username),
             enableJson =
                 overrides.getOrDefault("enable_json", spec.enableJson.toString()).toBoolean(),
+            tunnelConfig = spec.getTunnelMethodValue(),
+            recordWindowSize = spec.recordWindowSize,
         )
     }
 }

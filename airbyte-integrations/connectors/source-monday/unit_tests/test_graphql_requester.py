@@ -38,7 +38,7 @@ nested_array_schema = {
             nested_object_schema,
             "test_stream",
             {},
-            {"query": "query{test_stream(limit:100,page:2){root{nested{nested_of_nested}},sibling}}"},
+            {"query": "{test_stream(limit:100,page:2){root{nested{nested_of_nested}},sibling}}"},
             {"next_page_token": 2},
             id="test_get_request_params_produces_graphql_query_for_object_items",
         ),
@@ -46,7 +46,7 @@ nested_array_schema = {
             nested_array_schema,
             "test_stream",
             {},
-            {"query": "query{test_stream(limit:100,page:2){root{nested{nested_of_nested}},sibling}}"},
+            {"query": "{test_stream(limit:100,page:2){root{nested{nested_of_nested}},sibling}}"},
             {"next_page_token": 2},
             id="test_get_request_params_produces_graphql_query_for_array_items",
         ),
@@ -54,7 +54,7 @@ nested_array_schema = {
             nested_array_schema,
             "items",
             {},
-            {"query": 'query{next_items_page(limit:100,cursor:"cursor_bla"){cursor,items{root{nested{nested_of_nested}},sibling}}}'},
+            {"query": '{next_items_page(limit:100,cursor:"cursor_bla"){cursor,items{root{nested{nested_of_nested}},sibling}}}'},
             {"next_page_token": (2, "cursor_bla")},
             id="test_get_request_params_produces_graphql_query_for_items_stream",
         ),
@@ -62,7 +62,7 @@ nested_array_schema = {
             nested_array_schema,
             "teams",
             {"teams_limit": 100},
-            {"query": "query{teams(limit:100,page:2){id,name,picture_url,users(limit:100){id}}}"},
+            {"query": "{teams(limit:100,page:2){id,name,picture_url,users(limit:100){id}}}"},
             {"next_page_token": 2},
             id="test_get_request_params_produces_graphql_query_for_teams_optimized_stream",
         ),
@@ -70,7 +70,7 @@ nested_array_schema = {
             nested_array_schema,
             "teams",
             {},
-            {"query": "query{teams(limit:100,page:2){root{nested{nested_of_nested}},sibling}}"},
+            {"query": "{teams(limit:100,page:2){root{nested{nested_of_nested}},sibling}}"},
             {"next_page_token": 2},
             id="test_get_request_params_produces_graphql_query_for_teams_stream",
         ),
@@ -97,7 +97,7 @@ def test_get_request_params(components_module, input_schema, graphql_query, stre
         parameters={"name": stream_name, "items_per_page": 100, "nested_items_per_page": 100},
         config=config,
     )
-    assert requester.get_request_params(stream_state={}, stream_slice={}, next_page_token=next_page_token) == graphql_query
+    assert requester.get_request_body_json(stream_state={}, stream_slice={}, next_page_token=next_page_token) == graphql_query
 
 
 @pytest.fixture

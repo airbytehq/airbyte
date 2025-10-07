@@ -6,7 +6,7 @@ data:
   dockerRepository: airbyte/source-genesys
   githubIssueLabel: source-genesys
   icon: genesys.svg
-  license: MIT
+  license: ELv2
   name: Genesys
   remoteRegistries:
     pypi:

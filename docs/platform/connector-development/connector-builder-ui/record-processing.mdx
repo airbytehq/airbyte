@@ -1,5 +1,3 @@
-import Diff from "./assets/record-processing-schema-diff.png";
-
 # Record processing
 
 Connectors built with the connector builder always make HTTP requests, receive the responses and emit records. Besides making the right requests, it's important to properly hand over the records to the system:
@@ -301,22 +299,13 @@ When you set your HTTP response format to ZIP or gzip, you can nest another deco
 
 ## Record Selection
 
-<iframe
-  width="583"
-  height="393"
-  src="https://www.loom.com/embed/f4a36e769a1d4f87a14e3982f59d1fb2"
-  frameborder="0"
-  webkitallowfullscreen
-  mozallowfullscreen
-  allowfullscreen
-></iframe>
-
 After decoding the response into normalized JSON objects (see [Response Decoding](#response-decoding)), the connector must then decide how to extract records from those JSON objects.
 
 The Record Selector component contains a few different levers to configure this extraction:
 - Field Path
 - Record Filter
 - Cast Record Fields to Schema Types
+- Transform Before Filtering
 
 These will be explained below.
 
@@ -471,7 +460,7 @@ A Field Path with a placeholder `*` selects all children at the current position
 ```
 
 ### Record Filter
-In some cases, certain certain records should be excluded from the final output of the connector, which can be accomplished through the Record Filter feature within the Record Selector component.
+In some cases, certain records should be excluded from the final output of the connector, which can be accomplished through the Record Filter feature within the Record Selector component.
 
 For example, say your API response looks like this:
 ```
@@ -496,10 +485,56 @@ You can accomplish this by setting the Record Filter to `{{ record.status != 'ex
 
 Any records for which this expression evaluates to `true` will be emitted by the connector, and any for which it evaluates to `false` will be excluded from the output.
 
+#### Available variables in filter expressions
+
+The filter condition has access to multiple context variables for dynamic filtering:
+
+- `record` - The current record being evaluated
+- `config` - The connector configuration
+- `next_page_token` - Token for pagination context
+- `stream_interval` - Time interval for incremental syncs
+- `stream_partition` - Current partition being processed
+- `stream_slice` - Current stream slice (for incremental syncs)
+
+#### Examples
+
+- `{{ record.status in ['active', 'expired'] }}` - Include records with specific status values
+- `{{ record['created_at'] >= stream_interval['start_time'] }}` - Date range filtering using stream interval
+- `{{ record['priority'] > config['min_priority'] }}` - Filter based on configuration values
+- `{{ record.get('email') is not none }}` - Only records with email addresses
+
 Note that Record Filter value must be an [interpolated string](/platform/connector-development/config-based/advanced-topics/string-interpolation) with the filtering condition placed inside double curly braces `{{ }}`.
 
 ### Cast Record Fields to Schema Types
 Sometimes the type of a field in the record is not the desired type. If the existing field type can be simply cast to the desired type, this can be solved by setting the stream's declared schema to the desired type and enabling `Cast Record Fields to Schema Types`.
+
+#### Schema normalization options
+
+You can configure schema normalization behavior with two options:
+
+- **Default**: Enables type casting and normalization according to the declared schema. Fields will be converted to match the expected types (e.g., string numbers to numeric types, date strings to proper date formats, boolean normalization).
+- **None**: Disables schema normalization. Records are passed through without type casting, preserving the original field types from the API response.
+
+#### When to use each option
+
+**Use "Default" when:**
+- You need consistent data types for downstream processing
+- Your destination requires specific field types
+- You want to ensure data quality and type safety
+
+**Use "None" when:**
+- You want to preserve the original API response format
+- Your destination can handle mixed or dynamic types
+- You're experiencing issues with type conversion
+
+### Transform Before Filtering
+
+The `transform_before_filtering` property controls whether record transformations are applied before or after record filtering:
+
+- **true**: Transformations are applied first, then filtering
+- **false** (default): Filtering is applied first, then transformations
+
+This setting is useful when you need to transform records before applying filter conditions, or when you want to filter records before expensive transformation operations.
 
 For example, say the API response looks like this:
 ```
@@ -562,16 +597,6 @@ It is recommended to not change records during the extraction process the connec
 The "transformations" feature can be used for these purposes.
 
 ### Removing fields
-
-<iframe
-  width="640"
-  height="538"
-  src="https://www.loom.com/embed/8dca8feaa54f49848667d3fd5b945372"
-  frameborder="0"
-  webkitallowfullscreen
-  mozallowfullscreen
-  allowfullscreen
-></iframe>
 
 To remove a field from a record, add a new transformation in the "Transformations" section of type "remove" and enter the field path. For example in case of the [EmailOctopus API](https://emailoctopus.com/api-documentation/campaigns/get-all), the campaigns records also include the html content of the mailing which takes up a lot of space:
 
@@ -647,16 +672,6 @@ The `*` character can also be used as a placeholder to filter for all fields tha
 ```
 
 ### Adding fields
-
-<iframe
-  width="640"
-  height="409"
-  src="https://www.loom.com/embed/ab3b72cafb734112b645607ab6d1ab1f"
-  frameborder="0"
-  webkitallowfullscreen
-  mozallowfullscreen
-  allowfullscreen
-></iframe>
 
 Adding fields can be used to apply a hashing function to an existing field to pseudonymize it. To do this, add a new transformation in the "Transformations" section of type "add" and enter the field path and the new value. For example in case of the [EmailOctopus API](https://emailoctopus.com/api-documentation/campaigns/get-all), the campaigns records include the name of the sender:
 
@@ -791,11 +806,7 @@ More strict is always better, but the detected schema is a good default to rely 
 
 If `Automatically import detected schema` is disabled, and the declared schema deviates from the detected schema, the "Detected schema" tab in the testing panel highlights the differences. It's important to note that differences are not necessarily a problem that needs to be fixed - in some cases the currently loaded set of records in the testing panel doesn't feature all possible cases so the detected schema is too strict. However, if the declared schema is incompatible with the detected schema based on the test records, it's very likely there will be errors when running syncs.
 
-<img
-  src={Diff}
-  width="600"
-  alt="Detected schema with highlighted differences"
-/>
+![Detected schema with highlighted differences](./assets/record-processing-schema-diff.png)
 
 In the case of the example above, there are two differences between detected and declared schema. The first difference for the `name` field is not problematic:
 
