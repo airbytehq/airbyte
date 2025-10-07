@@ -92,7 +92,6 @@ class MySqlSourceDebeziumOperations(
         value: DebeziumRecordValue,
         stream: Stream,
     ): DeserializedRecord {
-        log.info { "*** deserializeRecord" }
         val before: JsonNode = value.before
         val after: JsonNode = value.after
         val source: JsonNode = value.source
