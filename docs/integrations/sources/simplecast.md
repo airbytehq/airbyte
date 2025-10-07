@@ -27,6 +27,7 @@ Say hello to the modern end-to-end podcasting platform. Simplecast remains the e
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.35 | 2025-10-07 | [67434](https://github.com/airbytehq/airbyte/pull/67434) | Update dependencies |
 | 0.0.34 | 2025-09-30 | [66901](https://github.com/airbytehq/airbyte/pull/66901) | Update dependencies |
 | 0.0.33 | 2025-09-24 | [66262](https://github.com/airbytehq/airbyte/pull/66262) | Update dependencies |
 | 0.0.32 | 2025-09-09 | [66111](https://github.com/airbytehq/airbyte/pull/66111) | Update dependencies |
