@@ -67,36 +67,38 @@ fun isStringValid(s: String): Boolean {
 class SnowflakeValueCoercer : ValueCoercer {
     override fun map(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
         value.abValue =
-            when {
-                value.type is UnionType -> StringValue(value.abValue.serializeToString())
-                value.type is IntegerType && value.abValue is StringValue -> {
-                    try {
-                        IntegerValue(BigInteger((value.abValue as StringValue).value))
-                    } catch (e: NumberFormatException) {
-                        value.nullify(
-                            AirbyteRecordMessageMetaChange.Reason
-                                .DESTINATION_SERIALIZATION_ERROR
-                        )
-                        NullValue
-                    }
-                }
-                value.type is NumberType && value.abValue is StringValue -> {
-                    try {
-                        NumberValue(BigDecimal((value.abValue as StringValue).value))
-                    } catch (e: NumberFormatException) {
-                        value.nullify(
-                            AirbyteRecordMessageMetaChange.Reason
-                                .DESTINATION_SERIALIZATION_ERROR
-                        )
-                        NullValue
-                    }
-                }
-                else -> value.abValue
+            if (value.type is UnionType) {
+                StringValue(value.abValue.serializeToString())
+            } else {
+                value.abValue
             }
         return value
     }
 
     override fun validate(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
+        when {
+            value.type is IntegerType && value.abValue is StringValue -> {
+                try {
+                    value.abValue = IntegerValue(BigInteger((value.abValue as StringValue).value))
+                } catch (e: NumberFormatException) {
+                    value.nullify(
+                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR
+                    )
+                    value.abValue = NullValue
+                }
+            }
+            value.type is NumberType && value.abValue is StringValue -> {
+                try {
+                    value.abValue = NumberValue(BigDecimal((value.abValue as StringValue).value))
+                } catch (e: NumberFormatException) {
+                    value.nullify(
+                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_SERIALIZATION_ERROR
+                    )
+                    value.abValue = NullValue
+                }
+            }
+        }
+
         if (!isValid(value.abValue)) {
             value.nullify(AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION)
         }

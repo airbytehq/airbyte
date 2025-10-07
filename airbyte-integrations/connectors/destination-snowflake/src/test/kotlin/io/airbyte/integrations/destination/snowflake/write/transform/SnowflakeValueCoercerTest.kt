@@ -731,7 +731,8 @@ internal class SnowflakeValueCoercerTest {
                 airbyteMetaField = null,
             )
 
-        val result = coercer.map(enrichedValue)
+        val mapped = coercer.map(enrichedValue)
+        val result = coercer.validate(mapped)
         assertEquals(IntegerValue(BigInteger("12345")), result.abValue)
         assertEquals(0, result.changes.size)
     }
@@ -748,7 +749,8 @@ internal class SnowflakeValueCoercerTest {
                 airbyteMetaField = null,
             )
 
-        val result = coercer.map(enrichedValue)
+        val mapped = coercer.map(enrichedValue)
+        val result = coercer.validate(mapped)
         assertEquals(NullValue, result.abValue)
         assertEquals(1, result.changes.size)
         assertEquals(Change.NULLED, result.changes.first().change)
@@ -770,7 +772,8 @@ internal class SnowflakeValueCoercerTest {
                 airbyteMetaField = null,
             )
 
-        val result = coercer.map(enrichedValue)
+        val mapped = coercer.map(enrichedValue)
+        val result = coercer.validate(mapped)
         assertEquals(NumberValue(BigDecimal("123.45")), result.abValue)
         assertEquals(0, result.changes.size)
     }
@@ -787,7 +790,8 @@ internal class SnowflakeValueCoercerTest {
                 airbyteMetaField = null,
             )
 
-        val result = coercer.map(enrichedValue)
+        val mapped = coercer.map(enrichedValue)
+        val result = coercer.validate(mapped)
         assertEquals(NullValue, result.abValue)
         assertEquals(1, result.changes.size)
         assertEquals(Change.NULLED, result.changes.first().change)
@@ -809,7 +813,8 @@ internal class SnowflakeValueCoercerTest {
                 airbyteMetaField = null,
             )
 
-        val result = coercer.map(enrichedValue)
+        val mapped = coercer.map(enrichedValue)
+        val result = coercer.validate(mapped)
         assertEquals(IntegerValue(BigInteger("-999")), result.abValue)
         assertEquals(0, result.changes.size)
     }
@@ -826,7 +831,8 @@ internal class SnowflakeValueCoercerTest {
                 airbyteMetaField = null,
             )
 
-        val result = coercer.map(enrichedValue)
+        val mapped = coercer.map(enrichedValue)
+        val result = coercer.validate(mapped)
         assertEquals(NumberValue(BigDecimal("1.23E10")), result.abValue)
         assertEquals(0, result.changes.size)
     }
