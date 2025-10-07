@@ -5,6 +5,12 @@ on:
     - cron: "37 16 1 * *"
   workflow_dispatch:
   workflow_call:
+    inputs:
+      repositories:
+        description: "Repository name for GitHub App authentication"
+        required: false
+        type: string
+        default: "airbyte"
 
 jobs:
   list-certified-connectors:
@@ -41,7 +47,7 @@ jobs:
         id: app-token
         with:
           owner: "airbytehq"
-          repositories: "airbyte"
+          repositories: ${{ inputs.repositories || 'airbyte' }}
           app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
           private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
       - name: Get GitHub App User ID
