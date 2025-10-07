@@ -18,6 +18,20 @@ import java.util.UUID
 import org.apache.iceberg.Schema
 import org.apache.iceberg.types.Types
 
+/**
+ * Validates S3 Data Lake destination connectivity by creating and cleaning up a test Iceberg table.
+ *
+ * This checker validates:
+ * - Catalog connectivity (Glue, Nessie, or REST)
+ * - S3 bucket access and permissions
+ * - Ability to create namespaces and tables
+ * - Proper cleanup of test resources
+ *
+ * Uses UUID-based unique table names to prevent conflicts with:
+ * - Concurrent check operations
+ * - Stale metadata from previous test runs
+ * - User tables with similar names
+ */
 @Singleton
 class S3DataLakeChecker(
     private val icebergTableCleaner: IcebergTableCleaner,
@@ -29,6 +43,16 @@ class S3DataLakeChecker(
     override fun check(config: S3DataLakeConfiguration) {
         catalogValidation(config)
     }
+
+    /**
+     * Validates catalog connectivity by creating a temporary test table and cleaning it up.
+     *
+     * Creates a uniquely-named test table in the configured namespace, then immediately
+     * cleans it up. The cleanup is guaranteed via try-finally to prevent orphaned resources.
+     *
+     * @param config The S3 Data Lake destination configuration
+     * @throws Exception if catalog validation fails (e.g., invalid credentials, missing permissions)
+     */
     private fun catalogValidation(config: S3DataLakeConfiguration) {
         val catalogProperties = s3DataLakeUtil.toCatalogProperties(config)
         val catalog = icebergUtil.createCatalog(DEFAULT_CATALOG_NAME, catalogProperties)
