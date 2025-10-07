@@ -15,6 +15,24 @@ and runner type selection.
 
 Functions are designed to be called by poethepoet script tasks.
 
+Usage
+-----
+List modified connectors (regular git detection):
+
+    poe get-modified-connectors --json
+
+List modified connectors with custom file list override:
+
+    poe get-modified-connectors --json --files-list "airbyte-integrations/connectors/source-faker/setup.py,airbyte-integrations/connectors/destination-bigquery/build.gradle"
+
+Generate enhanced matrix for GitHub Actions (regular git detection):
+
+    poe generate-connector-matrix airbytehq/airbyte
+
+Generate enhanced matrix with custom file list override:
+
+    poe generate-connector-matrix airbytehq/airbyte --files-list "airbyte-integrations/connectors/source-faker/setup.py"
+
 Testing
 -------
 This module includes doctests for key utility functions. To run the tests:
