@@ -57,6 +57,12 @@ Your default login username and password could be used as secrets, ref: `https:/
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.34 | 2025-09-30 | [66888](https://github.com/airbytehq/airbyte/pull/66888) | Update dependencies |
+| 0.0.33 | 2025-09-23 | [66365](https://github.com/airbytehq/airbyte/pull/66365) | Update dependencies |
+| 0.0.32 | 2025-09-09 | [65726](https://github.com/airbytehq/airbyte/pull/65726) | Update dependencies |
+| 0.0.31 | 2025-08-24 | [65026](https://github.com/airbytehq/airbyte/pull/65026) | Update dependencies |
+| 0.0.30 | 2025-08-02 | [64462](https://github.com/airbytehq/airbyte/pull/64462) | Update dependencies |
+| 0.0.29 | 2025-07-26 | [63984](https://github.com/airbytehq/airbyte/pull/63984) | Update dependencies |
 | 0.0.28 | 2025-07-19 | [63645](https://github.com/airbytehq/airbyte/pull/63645) | Update dependencies |
 | 0.0.27 | 2025-07-05 | [61454](https://github.com/airbytehq/airbyte/pull/61454) | Update dependencies |
 | 0.0.26 | 2025-05-24 | [60482](https://github.com/airbytehq/airbyte/pull/60482) | Update dependencies |

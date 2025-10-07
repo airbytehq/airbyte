@@ -47,20 +47,7 @@ helm repo add airbyte https://airbytehq.github.io/helm-charts
 helm repo update
 ```
 
-In this example, `airbyte` is the name of the repository that will be indexed locally.
-
-</TabItem>
-<TabItem value='helm-2' label='Helm chart V2' default>
-
-```bash
-helm repo add airbyte-v2 https://airbytehq.github.io/helm-charts
-helm repo update
-```
-
-In this example, `airbyte-v2` is the name of the repository that will be indexed locally.
-
-</TabItem>
-</Tabs>
+In this example, `airbyte` is the name of the repository that is indexed locally.
 
 To browse all charts uploaded to the repository, run `helm search repo airbyte`.
 
@@ -68,36 +55,73 @@ An example of the chart output:
 
 ```text
 NAME                               	CHART VERSION	APP VERSION	DESCRIPTION                                       
-airbyte/airbyte                    	0.290.0      	0.63.6     	Helm chart to deploy airbyte                      
-airbyte/airbyte-api-server         	0.290.0      	0.63.6     	Helm chart to deploy airbyte-api-server           
-airbyte/airbyte-bootloader         	0.290.0      	0.63.6     	Helm chart to deploy airbyte-bootloader           
+airbyte/airbyte                    	1.8.0        	1.8.0      	Helm chart to deploy airbyte                      
+airbyte/airbyte-api-server         	0.293.4      	0.63.8     	Helm chart to deploy airbyte-api-server           
+airbyte/airbyte-bootloader         	1.8.0        	1.8.0      	Helm chart to deploy airbyte-bootloader           
 airbyte/airbyte-cron               	0.40.37      	0.40.17    	Helm chart to deploy airbyte-cron                 
+airbyte/airbyte-data-plane         	1.6.0        	1.6.0      	A Helm chart for installing an Airbyte Data Plane.
+airbyte/airbyte-keycloak           	0.1.2        	0.1.0      	A Helm chart for Kubernetes                       
 airbyte/airbyte-workload-api-server	0.49.18      	0.50.33    	Helm chart to deploy airbyte-api-server           
-airbyte/connector-builder-server   	0.290.0      	0.63.6     	Helm chart to deploy airbyte-connector-builder-...
-airbyte/cron                       	0.290.0      	0.63.6     	Helm chart to deploy airbyte-cron                 
-airbyte/keycloak                   	0.290.0      	0.63.6     	Helm chart to deploy airbyte-keycloak             
-airbyte/keycloak-setup             	0.290.0      	0.63.6     	Helm chart to deploy airbyte-keycloak-setup       
-airbyte/metrics                    	0.290.0      	0.63.6     	Helm chart to deploy airbyte-metrics              
-airbyte/pod-sweeper                	0.290.0      	0.63.6     	Helm chart to deploy airbyte-pod-sweeper          
-airbyte/server                     	0.290.0      	0.63.6     	Helm chart to deploy airbyte-server               
-airbyte/temporal                   	0.290.0      	0.63.6     	Helm chart to deploy airbyte-temporal             
-airbyte/webapp                     	0.290.0      	0.63.6     	Helm chart to deploy airbyte-webapp               
-airbyte/worker                     	0.290.0      	0.63.6     	Helm chart to deploy airbyte-worker               
+airbyte/connector-builder-server   	1.8.0        	1.8.0      	Helm chart to deploy airbyte-connector-builder-...
+airbyte/connector-rollout-worker   	1.8.0        	1.8.0      	Helm chart to deploy airbyte-connector-rollout-...
+airbyte/cron                       	1.8.0        	1.8.0      	Helm chart to deploy airbyte-cron                 
+airbyte/keycloak                   	1.8.0        	1.8.0      	Helm chart to deploy airbyte-keycloak             
+airbyte/keycloak-setup             	1.8.0        	1.8.0      	Helm chart to deploy airbyte-keycloak-setup       
+airbyte/metrics                    	1.8.0        	1.8.0      	Helm chart to deploy airbyte-metrics              
+airbyte/pod-sweeper                	1.5.1        	1.5.1      	Helm chart to deploy airbyte-pod-sweeper          
+airbyte/server                     	1.8.0        	1.8.0      	Helm chart to deploy airbyte-server               
+airbyte/temporal                   	1.8.0        	1.8.0      	Helm chart to deploy airbyte-temporal             
+airbyte/temporal-ui                	1.8.0        	1.8.0      	Helm chart to deploy airbyte-temporal-ui                      
+airbyte/worker                     	1.8.0        	1.8.0      	Helm chart to deploy airbyte-worker               
 airbyte/workload-api               	0.50.3       	0.50.35    	Helm chart to deploy the workload-api service     
-airbyte/workload-api-server        	0.290.0      	0.63.6     	Helm chart to deploy the workload-api service     
-airbyte/workload-launcher          	0.290.0      	0.63.6     	Helm chart to deploy airbyte-workload-launcher    
+airbyte/workload-api-server        	1.8.0        	1.8.0      	Helm chart to deploy the workload-api service     
+airbyte/workload-launcher          	1.8.0        	1.8.0      	Helm chart to deploy airbyte-workload-launcher     
 ```
+
+</TabItem>
+<TabItem value='helm-2' label='Helm chart V2' default>
+
+```bash
+helm repo add airbyte-v2 https://airbytehq.github.io/charts
+helm repo update
+```
+
+In this example, `airbyte-v2` is the name of the repository that is indexed locally.
+
+To browse all charts uploaded to the repository, run `helm search repo airbyte-v2`.
+
+An example of the chart output:
+
+```text
+NAME              	CHART VERSION	APP VERSION	DESCRIPTION                 
+airbyte-v2/airbyte	2.0.7        	1.8.0      	Helm chart to deploy airbyte 
+```
+
+</TabItem>
+</Tabs>
 
 ### 2. Create a Namespace for Airbyte
 
-While it is not strictly necessary to isolate the Airbyte installation into its own namespace, it is good practice and recommended as a part of the installation.
-This documentation assumes that you chose the name `airbyte` for the namespace, but you may choose a different name if required.
+While it's not strictly necessary to isolate the Airbyte installation into its own namespace, it's good practice and recommended as a part of the installation. This documentation assumes that you chose the name `airbyte` or `airbyte-v2` for the namespace, but you may choose a different name if required.
 
 To create a namespace run the following:
 
-```sh
+<Tabs groupId="helm-chart-version">
+<TabItem value='helm-1' label='Helm chart V1' default>
+
+```bash
 kubectl create namespace airbyte
 ```
+
+</TabItem>
+<TabItem value='helm-2' label='Helm chart V2' default>
+
+```bash
+kubectl create namespace airbyte-v2
+```
+
+</TabItem>
+</Tabs>
 
 ### 3. Create a values.yaml override file
 
@@ -121,7 +145,6 @@ Each of these integrations can be configured to suit your specific needs and is 
 
 Before you can configure this stuff in a cloud provider, you need to set up your policies:
 * [AWS Policies](./infrastructure/aws.md#policies)
-* [Azure Policies](./infrastructure/azure.md#policies)
 * [GCP Policies](./infrastructure/gcp.md#policies)
 
 After your policies are set up, here's a list of customizations.
@@ -163,14 +186,30 @@ After the installation has completed, you can configure your [Ingress](./integra
 
 ### 6. Set up port forward for UI access
 
-Helm install with spit out instructions for how to set up the port forward. Go ahead and run that command. It should look something like this:
+Helm install spits out instructions for how to set up the port forward. Go ahead and run that command. It should look something like this:
+
+<Tabs groupId="helm-chart-version">
+<TabItem value='helm-1' label='Helm chart V1' default>
 
 ```bash
-export POD_NAME=$(kubectl get pods --namespace airbyte -l "app.kubernetes.io/name=webapp" -o jsonpath="{.items[0].metadata.name}")
-  export CONTAINER_PORT=$(kubectl get pod --namespace airbyte $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
-  echo "Visit http://127.0.0.1:8080 to use your application"
-  kubectl --namespace airbyte port-forward $POD_NAME 8080:$CONTAINER_PORT
+Get the application URL by running these commands:
+
+echo "Visit http://127.0.0.1:8080 to use your application"
+kubectl -n airbyte port-forward deployment/airbyte-server 8080:8001
 ```
+
+</TabItem>
+<TabItem value='helm-2' label='Helm chart V2' default>
+
+```bash
+Get the application URL by running these commands:
+
+echo "Visit http://127.0.0.1:8080 to use your application"
+kubectl -n airbyte-v2 port-forward deployment/airbyte-server 8080:8001
+```
+
+</TabItem>
+</Tabs>
 
 You can now access the UI in your browser at: http://127.0.0.1:8080.
 

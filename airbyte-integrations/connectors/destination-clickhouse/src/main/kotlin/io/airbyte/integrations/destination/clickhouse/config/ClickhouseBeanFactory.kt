@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.clickhouse.config
 import com.clickhouse.client.api.Client
 import com.clickhouse.client.api.internal.ServerSettings
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
+import io.airbyte.cdk.load.dataflow.config.MemoryAndParallelismConfig
 import io.airbyte.cdk.load.orchestration.db.DefaultTempTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
 import io.airbyte.cdk.ssh.SshConnectionOptions
@@ -17,13 +18,10 @@ import io.airbyte.cdk.ssh.createTunnelSession
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfigurationFactory
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseSpecification
-import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 import org.apache.sshd.common.util.net.SshdSocketAddress
-
-private val log = KotlinLogging.logger {}
 
 @Factory
 class ClickhouseBeanFactory {
@@ -87,4 +85,11 @@ class ClickhouseBeanFactory {
 
     @Singleton
     fun tempTableNameGenerator(): TempTableNameGenerator = DefaultTempTableNameGenerator()
+
+    @Singleton
+    fun getConfig(clickhouseConfiguration: ClickhouseConfiguration): MemoryAndParallelismConfig {
+        return MemoryAndParallelismConfig(
+            maxRecordsPerAgg = clickhouseConfiguration.resolvedRecordWindowSize,
+        )
+    }
 }

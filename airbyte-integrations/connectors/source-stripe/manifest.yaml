@@ -321,16 +321,16 @@ definitions:
       type: StateDelegatingStream
       $parameters:
         name: customers
-        schema_loader:
-          type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/customers"
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: customers
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/customers"
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
         retriever:
@@ -338,15 +338,15 @@ definitions:
           $parameters:
             request_parameters:
               types[]: '{{["customer.created", "customer.updated", "customer.deleted"]}}'
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/customers"
 
     subscriptions:
       type: StateDelegatingStream
       $parameters:
         name: subscriptions
-        schema_loader:
-          type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/subscriptions"
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
         retriever:
@@ -357,6 +357,10 @@ definitions:
             $ref: "#/definitions/base_requester"
             request_parameters:
               status: "all"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/subscriptions"
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
         retriever:
@@ -364,15 +368,15 @@ definitions:
           $parameters:
             request_parameters:
               types[]: '{{["customer.subscription.created", "customer.subscription.paused", "customer.subscription.pending_update_applied", "customer.subscription.pending_update_expired", "customer.subscription.resumed", "customer.subscription.trial_will_end", "customer.subscription.updated", "customer.subscription.deleted"]}}'
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/subscriptions"
 
     invoices:
       type: StateDelegatingStream
       $parameters:
         name: invoices
-        schema_loader:
-          type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/invoices"
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
         retriever:
@@ -383,6 +387,10 @@ definitions:
             $ref: "#/definitions/base_requester"
             request_parameters:
               expand[]: '{{["data.discounts", "data.total_tax_amounts.tax_rate"]}}'
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/invoices"
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
         retriever:
@@ -390,21 +398,25 @@ definitions:
           $parameters:
             request_parameters:
               types[]: '{{["invoice.created", "invoice.deleted", "invoice.finalization_failed", "invoice.finalized", "invoice.marked_uncollectible", "invoice.overdue", "invoice.paid", "invoice.payment_action_required", "invoice.payment_failed", "invoice.payment_succeeded", "invoice.sent", "invoice.updated", "invoice.voided", "invoice.will_be_due"]}}'
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/invoices"
 
     transfers:
       type: StateDelegatingStream
       $parameters:
         name: transfers
-        schema_loader:
-          type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/transfers"
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: transfers
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/transfers"
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
         retriever:
@@ -412,21 +424,25 @@ definitions:
           $parameters:
             request_parameters:
               types[]: '{{["transfer.created", "transfer.reversed", "transfer.updated"]}}'
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/transfers"
 
     refunds:
       type: StateDelegatingStream
       $parameters:
         name: refunds
-        schema_loader:
-          type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/refunds"
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: refunds
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/refunds"
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
         retriever:
@@ -434,21 +450,25 @@ definitions:
           $parameters:
             request_parameters:
               types[]: '{{["refund.created", "refund.updated", "charge.refund.updated"]}}'
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/refunds"
 
     authorizations:
       type: StateDelegatingStream
       $parameters:
         name: authorizations
-        schema_loader:
-          type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/authorizations"
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: issuing/authorizations
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/authorizations"
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
         retriever:
@@ -456,21 +476,25 @@ definitions:
           $parameters:
             request_parameters:
               types[]: '{{["issuing_authorization.created", "issuing_authorization.request", "issuing_authorization.updated"]}}'
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/authorizations"
 
     cardholders:
       type: StateDelegatingStream
       $parameters:
         name: cardholders
-        schema_loader:
-          type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/cardholders"
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: issuing/cardholders
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/cardholders"
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
         retriever:
@@ -478,15 +502,15 @@ definitions:
           $parameters:
             request_parameters:
               types[]: '{{["issuing_cardholder.created", "issuing_cardholder.updated"]}}'
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/cardholders"
 
     charges:
       type: StateDelegatingStream
       $parameters:
         name: charges
-        schema_loader:
-          type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/charges"
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
         retriever:
@@ -497,6 +521,10 @@ definitions:
             $ref: "#/definitions/base_requester"
             request_parameters:
               expand[]: '{{["data.refunds"]}}'
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/charges"
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
         retriever:
@@ -504,21 +532,25 @@ definitions:
           $parameters:
             request_parameters:
               types[]: '{{["charge.captured", "charge.expired", "charge.failed", "charge.pending", "charge.refunded", "charge.refund.updated", "charge.succeeded", "charge.updated"]}}'
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/charges"
 
     coupons:
       type: StateDelegatingStream
       $parameters:
         name: coupons
-        schema_loader:
-          type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/coupons"
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: coupons
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/coupons"
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
         retriever:
@@ -526,21 +558,25 @@ definitions:
           $parameters:
             request_parameters:
               types[]: '{{["coupon.created", "coupon.updated", "coupon.deleted"]}}'
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/coupons"
 
     disputes:
       type: StateDelegatingStream
       $parameters:
         name: disputes
-        schema_loader:
-          type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/disputes"
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: disputes
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/disputes"
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
         retriever:
@@ -548,21 +584,25 @@ definitions:
           $parameters:
             request_parameters:
               types[]: '{{["charge.dispute.closed", "charge.dispute.created", "charge.dispute.funds_reinstated", "charge.dispute.funds_withdrawn", "charge.dispute.updated"]}}'
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/disputes"
 
     application_fees:
       type: StateDelegatingStream
       $parameters:
         name: application_fees
-        schema_loader:
-          type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/application_fees"
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: application_fees
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/application_fees"
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
         retriever:
@@ -570,21 +610,25 @@ definitions:
           $parameters:
             request_parameters:
               types[]: '{{["application_fee.created", "application_fee.refunded"]}}'
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/application_fees"
 
     invoice_items:
       type: StateDelegatingStream
       $parameters:
         name: invoice_items
-        schema_loader:
-          type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/invoice_items"
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: invoiceitems
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/invoice_items"
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
         retriever:
@@ -592,21 +636,25 @@ definitions:
           $parameters:
             request_parameters:
               types[]: '{{["invoiceitem.created", "invoiceitem.updated", "invoiceitem.deleted"]}}'
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/invoice_items"
 
     payouts:
       type: StateDelegatingStream
       $parameters:
         name: payouts
-        schema_loader:
-          type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/payouts"
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: payouts
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/payouts"
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
         retriever:
@@ -614,15 +662,15 @@ definitions:
           $parameters:
             request_parameters:
               types[]: '{{["payout.canceled", "payout.created", "payout.failed", "payout.paid", "payout.reconciliation_completed", "payout.updated"]}}'
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/payouts"
 
     plans:
       type: StateDelegatingStream
       $parameters:
         name: plans
-        schema_loader:
-          type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/plans"
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
         retriever:
@@ -633,6 +681,10 @@ definitions:
             $ref: "#/definitions/base_requester"
             request_parameters:
               expand[]: '{{["data.tiers"]}}'
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/plans"
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
         retriever:
@@ -640,21 +692,25 @@ definitions:
           $parameters:
             request_parameters:
               types[]: '{{["plan.created", "plan.updated", "plan.deleted"]}}'
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/plans"
 
     prices:
       type: StateDelegatingStream
       $parameters:
         name: prices
-        schema_loader:
-          type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/prices"
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: prices
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/prices"
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
         retriever:
@@ -662,21 +718,25 @@ definitions:
           $parameters:
             request_parameters:
               types[]: '{{["price.created", "price.updated", "price.deleted"]}}'
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/prices"
 
     products:
       type: StateDelegatingStream
       $parameters:
         name: products
-        schema_loader:
-          type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/products"
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: products
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/products"
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
         retriever:
@@ -684,21 +744,25 @@ definitions:
           $parameters:
             request_parameters:
               types[]: '{{["product.created", "product.updated", "product.deleted"]}}'
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/products"
 
     reviews:
       type: StateDelegatingStream
       $parameters:
         name: reviews
-        schema_loader:
-          type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/reviews"
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: reviews
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/reviews"
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
         retriever:
@@ -706,21 +770,25 @@ definitions:
           $parameters:
             request_parameters:
               types[]: '{{["review.closed", "review.opened"]}}'
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/reviews"
 
     subscription_schedule:
       type: StateDelegatingStream
       $parameters:
         name: subscription_schedule
-        schema_loader:
-          type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/subscription_schedule"
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: subscription_schedules
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/subscription_schedule"
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
         retriever:
@@ -728,21 +796,25 @@ definitions:
           $parameters:
             request_parameters:
               types[]: '{{["subscription_schedule.aborted", "subscription_schedule.canceled", "subscription_schedule.completed", "subscription_schedule.created", "subscription_schedule.expiring", "subscription_schedule.released", "subscription_schedule.updated"]}}'
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/subscription_schedule"
 
     payment_intents:
       type: StateDelegatingStream
       $parameters:
         name: payment_intents
-        schema_loader:
-          type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/payment_intents"
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: payment_intents
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/payment_intents"
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
         retriever:
@@ -750,21 +822,25 @@ definitions:
           $parameters:
             request_parameters:
               types[]: '{{["payment_intent.amount_capturable_updated", "payment_intent.canceled", "payment_intent.created", "payment_intent.partially_funded", "payment_intent.payment_failed", "payment_intent.processing", "payment_intent.requires_action", "payment_intent.succeeded"]}}'
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/payment_intents"
 
     promotion_codes:
       type: StateDelegatingStream
       $parameters:
         name: promotion_codes
-        schema_loader:
-          type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/promotion_codes"
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: promotion_codes
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/promotion_codes"
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
         retriever:
@@ -772,21 +848,25 @@ definitions:
           $parameters:
             request_parameters:
               types[]: '{{["promotion_code.created", "promotion_code.updated"]}}'
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/promotion_codes"
 
     setup_intents:
       type: StateDelegatingStream
       $parameters:
         name: setup_intents
-        schema_loader:
-          type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/setup_intents"
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"   
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: setup_intents
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/setup_intents"
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
         retriever:
@@ -794,21 +874,25 @@ definitions:
           $parameters:
             request_parameters:
               types[]: '{{["setup_intent.canceled", "setup_intent.created", "setup_intent.requires_action", "setup_intent.setup_failed", "setup_intent.succeeded"]}}'
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/setup_intents"
 
     cards:
       type: StateDelegatingStream
       $parameters:
         name: cards
-        schema_loader:
-          type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/cards"
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: issuing/cards
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/cards"
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
         retriever:
@@ -816,21 +900,25 @@ definitions:
           $parameters:
             request_parameters:
               types[]: '{{["issuing_card.created", "issuing_card.updated"]}}'
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/cards"
 
     transactions:
       type: StateDelegatingStream
       $parameters:
         name: transactions
-        schema_loader:
-          type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/transactions"
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: issuing/transactions
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/transactions"
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
         retriever:
@@ -838,21 +926,25 @@ definitions:
           $parameters:
             request_parameters:
               types[]: '{{["issuing_transaction.created", "issuing_transaction.updated"]}}'
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/transactions"
 
     top_ups:
       type: StateDelegatingStream
       $parameters:
         name: top_ups
-        schema_loader:
-          type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/top_ups"
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: topups
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/top_ups"
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
         retriever:
@@ -860,21 +952,25 @@ definitions:
           $parameters:
             request_parameters:
               types[]: '{{["topup.canceled", "topup.created", "topup.failed", "topup.reversed", "topup.succeeded"]}}'
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/top_ups"
 
     accounts:
       type: StateDelegatingStream
       $parameters:
         name: accounts
-        schema_loader:
-          type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/accounts"
       full_refresh_stream:
         $ref: "#/definitions/entity_restricted_stream"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: accounts
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/accounts"
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
         retriever:
@@ -882,21 +978,25 @@ definitions:
           $parameters:
             request_parameters:
               types[]: '{{["account.updated", "account.external_account.created", "account.external_account.updated", "account.external_account.deleted"]}}'
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/accounts"
 
     checkout_sessions:
       type: StateDelegatingStream
       $parameters:
         name: checkout_sessions
-        schema_loader:
-          type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/checkout_sessions"
       full_refresh_stream:
         $ref: "#/definitions/entity_restricted_stream"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: checkout/sessions
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/checkout_sessions"
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
         retriever:
@@ -904,15 +1004,15 @@ definitions:
           $parameters:
             request_parameters:
               types[]: '{{["checkout.session.async_payment_failed", "checkout.session.async_payment_succeeded", "checkout.session.completed", "checkout.session.expired"]}}'
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/checkout_sessions"
 
     external_account_cards:
       type: StateDelegatingStream
       $parameters:
         name: external_account_cards
-        schema_loader:
-          type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/external_account_cards"
       full_refresh_stream:
         $ref: "#/definitions/entity_restricted_stream"
         retriever:
@@ -923,6 +1023,10 @@ definitions:
             $ref: "#/definitions/base_requester"
             request_parameters:
               object: "card"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/external_account_cards"
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
         retriever:
@@ -932,15 +1036,15 @@ definitions:
               types[]: '{{["account.external_account.created", "account.external_account.updated", "account.external_account.deleted"]}}'
             record_filter:
               condition: "{{ record['object'] == 'card' }}"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/external_account_cards"
 
     external_account_bank_accounts:
       type: StateDelegatingStream
       $parameters:
         name: external_account_bank_accounts
-        schema_loader:
-          type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/external_account_bank_accounts"
       full_refresh_stream:
         $ref: "#/definitions/entity_restricted_stream"
         retriever:
@@ -951,6 +1055,10 @@ definitions:
             $ref: "#/definitions/base_requester"
             request_parameters:
               object: "bank_account"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/external_account_bank_accounts"
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
         retriever:
@@ -960,21 +1068,25 @@ definitions:
               types[]: '{{["account.external_account.created", "account.external_account.updated", "account.external_account.deleted"]}}'
             record_filter:
               condition: "{{ record['object'] == 'bank_account' }}"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/external_account_bank_accounts"
 
     credit_notes:
       type: StateDelegatingStream
       $parameters:
         name: credit_notes
-        schema_loader:
-          type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/credit_notes"
       full_refresh_stream:
         $ref: "#/definitions/entity_restricted_stream"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: credit_notes
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/credit_notes"
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
         retriever:
@@ -982,21 +1094,25 @@ definitions:
           $parameters:
             request_parameters:
               types[]: '{{["credit_note.created", "credit_note.updated", "credit_note.voided"]}}'
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/credit_notes"
 
     early_fraud_warnings:
       type: StateDelegatingStream
       $parameters:
         name: early_fraud_warnings
-        schema_loader:
-          type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/early_fraud_warnings"
       full_refresh_stream:
         $ref: "#/definitions/entity_restricted_stream"
         retriever:
           $ref: "#/definitions/base_retriever"
           $parameters:
             path: radar/early_fraud_warnings
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/early_fraud_warnings"
       incremental_stream:
         $ref: "#/definitions/events_based_stream"
         retriever:
@@ -1004,6 +1120,10 @@ definitions:
           $parameters:
             request_parameters:
               types[]: '{{["radar.early_fraud_warning.created", "radar.early_fraud_warning.updated"]}}'
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/early_fraud_warnings"
 
     customer_balance_transactions:
       $ref: "#/definitions/entity_stream"
@@ -1170,11 +1290,6 @@ definitions:
     payment_methods:
       type: StateDelegatingStream
       name: payment_methods
-      $parameters:
-        schema_loader:
-          type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/payment_methods"
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
         name: payment_methods
@@ -1190,6 +1305,10 @@ definitions:
                   $ref: "#/definitions/streams/customers"
           $parameters:
             path: customers/{{stream_partition.customer_id}}/payment_methods
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/payment_methods"
         incremental_sync:
           $ref: "#/definitions/entity_single_slice_cursor"
           global_substream_cursor: true
@@ -1201,15 +1320,15 @@ definitions:
           requester:
             $ref: "#/definitions/events_objects_retriever/requester"
             request_parameters: "{{ {'type': 'payment_method.*'} }}"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/payment_methods"
 
     persons:
       type: StateDelegatingStream
       $parameters:
         name: persons
-        schema_loader:
-          type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/persons"
       full_refresh_stream:
         $ref: "#/definitions/entity_stream"
         retriever:
@@ -1224,6 +1343,10 @@ definitions:
                   $ref: "#/definitions/streams/accounts"
           $parameters:
             path: accounts/{{stream_partition.account_id}}/persons
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/persons"
         incremental_sync:
           $ref: "#/definitions/entity_single_slice_cursor"
           global_substream_cursor: true
@@ -1234,15 +1357,15 @@ definitions:
           $parameters:
             request_parameters:
               types[]: '{{["person.created", "person.updated", "person.deleted"]}}'
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/persons"
 
     invoice_line_items:
       type: StateDelegatingStream
       $parameters:
         name: invoice_line_items
-        schema_loader:
-          type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/invoice_line_items"
       full_refresh_stream:
         type: DeclarativeStream
         primary_key:
@@ -1275,6 +1398,10 @@ definitions:
                 lazy_read_pointer: ["lines"]
                 stream:
                   $ref: "#/definitions/streams/invoices"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/invoice_line_items"
         incremental_sync:
           $ref: "#/definitions/entity_single_slice_cursor"
           cursor_field: invoice_updated
@@ -1308,6 +1435,10 @@ definitions:
           $parameters:
             request_parameters:
               types[]: '{{["invoice.created", "invoice.deleted", "invoice.updated"]}}'
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/invoice_line_items"
         transformations:
           - type: AddFields
             fields:
@@ -1336,10 +1467,6 @@ definitions:
       type: StateDelegatingStream
       $parameters:
         name: application_fees_refunds
-        schema_loader:
-          type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/application_fees_refunds"
       full_refresh_stream:
         type: DeclarativeStream
         primary_key:
@@ -1370,6 +1497,10 @@ definitions:
                 lazy_read_pointer: ["refunds"]
                 stream:
                   $ref: "#/definitions/streams/application_fees"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/application_fees_refunds"
         incremental_sync:
           $ref: "#/definitions/entity_single_slice_cursor"
           cursor_field: updated
@@ -1387,15 +1518,15 @@ definitions:
           $ref: "#/definitions/events_objects_retriever"
           $parameters:
             request_parameters: "{{ {'type': 'application_fee.refund.updated'} }}"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/application_fees_refunds"
 
     subscription_items:
       type: StateDelegatingStream
       $parameters:
         name: subscription_items
-        schema_loader:
-          type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/subscription_items"
       full_refresh_stream:
         type: DeclarativeStream
         primary_key:
@@ -1428,6 +1559,10 @@ definitions:
                   - ["updated"]
                 stream:
                   $ref: "#/definitions/streams/subscriptions"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/subscription_items"
         incremental_sync:
           $ref: "#/definitions/entity_single_slice_cursor"
           cursor_field: subscription_updated
@@ -1449,6 +1584,10 @@ definitions:
           $parameters:
             request_parameters:
               types[]: '{{["customer.subscription.created", "customer.subscription.updated"]}}'
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/subscription_items"
         transformations:
           - type: AddFields
             fields:
@@ -1477,10 +1616,6 @@ definitions:
       type: StateDelegatingStream
       $parameters:
         name: bank_accounts
-        schema_loader:
-          type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/bank_accounts"
       full_refresh_stream:
         type: DeclarativeStream
         primary_key:
@@ -1532,6 +1667,10 @@ definitions:
                       $parameters:
                         request_parameters:
                           types[]: '{{["customer.created", "customer.updated", "customer.deleted"]}}'
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/bank_accounts"
         incremental_sync:
           $ref: "#/definitions/entity_single_slice_cursor"
           cursor_field: updated
@@ -1552,6 +1691,10 @@ definitions:
               types[]: '{{["customer.source.created", "customer.source.expiring", "customer.source.updated", "customer.source.deleted"]}}'
             record_filter:
               condition: "{{ record['object'] == 'bank_account' }}"
+        schema_loader:
+          type: InlineSchemaLoader
+          schema:
+            $ref: "#/schemas/bank_accounts"
 
     setup_attempts:
       $ref: "#/definitions/created_stream"

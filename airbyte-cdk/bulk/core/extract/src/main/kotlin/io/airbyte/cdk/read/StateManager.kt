@@ -10,8 +10,8 @@ import io.airbyte.protocol.models.v0.AirbyteGlobalState
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStateStats
 import io.airbyte.protocol.models.v0.AirbyteStreamState
-import java.util.concurrent.atomic.AtomicInteger
 import kotlin.collections.List
+import kotlin.collections.mutableMapOf
 
 /** Singleton object which tracks the state of an ongoing READ operation. */
 class StateManager(
@@ -87,11 +87,13 @@ class StateManager(
      * Updates the internal state of the [StateManager] to ensure idempotency (no redundant messages
      * are emitted).
      */
-    fun checkpoint(): List<AirbyteStateMessage> =
-        listOfNotNull(global?.checkpoint()) +
+    fun checkpoint(): List<AirbyteStateMessage> {
+        return (global?.checkpoint()
+            ?: emptyList()) +
             nonGlobal
                 .mapNotNull { it.value.checkpoint()?.filter { it.stream.streamState.isNull.not() } }
                 .flatten()
+    }
 
     data class StateForCheckpointWithPartitionId(
         val pendingState: OpaqueStateValue,
@@ -220,65 +222,115 @@ private class GlobalStateManager(
             .mapValues { GlobalStreamStateManager(it.key, it.value) }
             .mapKeys { it.key.id }
 
-    private val stateId: AtomicInteger = AtomicInteger(1)
-    fun checkpoint(): AirbyteStateMessage? {
+    /**
+     * Builds for each stream queues of [Fresh] states, if there are pending, and a map of [Stale]
+     * states.
+     */
+    private fun collectStatesForCheckpoints(
+        pendingFreshStates: MutableMap<StreamIdentifier, ArrayDeque<StateForCheckpoint>>,
+        staleStates: MutableMap<StreamIdentifier, StateForCheckpoint>
+    ) {
+        // ensure that all streams have at least stale checkpoint
+        // if a fresh state happens to be pending for a stream, add to fresh queue
+        streamStateManagers.keys.forEach { streamId ->
+            while (staleStates.containsKey(streamId).not()) {
+                streamStateManagers[streamId]!!.takeForCheckpoint().forEach { stateForCheckpoint ->
+                    when (stateForCheckpoint) {
+                        is Fresh ->
+                            pendingFreshStates
+                                .computeIfAbsent(streamId) { ArrayDeque() }
+                                .add(stateForCheckpoint)
+                        is Stale -> staleStates[streamId] = stateForCheckpoint
+                    }
+                }
+            }
+        }
+    }
+    fun checkpoint(): List<AirbyteStateMessage>? {
+
         var shouldCheckpoint = false
         var totalNumRecords = 0L
         // CDC partitions emit a single checkpoint
         val globalStateForCheckpoint: StateForCheckpoint = takeForCheckpoint().last()
         totalNumRecords += globalStateForCheckpoint.numRecords
         if (globalStateForCheckpoint is Fresh) shouldCheckpoint = true
-        val streamStates = mutableListOf<AirbyteStreamState>()
-        for ((_, streamStateManager) in streamStateManagers) {
-            val pendingStreamStates: List<StateForCheckpoint> =
-                streamStateManager.takeForCheckpoint()
-            val streamStateForCheckpoint: StateForCheckpoint = pendingStreamStates.last()
-            totalNumRecords += pendingStreamStates.sumOf { it.numRecords }
-            if (streamStateForCheckpoint is Fresh) shouldCheckpoint = true
-            val streamID: StreamIdentifier = streamStateManager.feed.id
-            streamStates.add(
-                AirbyteStreamState()
-                    .withStreamDescriptor(streamID.asProtocolStreamDescriptor())
-                    .withStreamState(
-                        when (streamStateForCheckpoint.opaqueStateValue?.isNull) {
-                            null,
-                            true -> Jsons.objectNode()
-                            false -> streamStateForCheckpoint.opaqueStateValue ?: Jsons.objectNode()
-                        }
-                    )
-                    // Only add id and partition_id if they are not null (stdio mode compatibility).
-                    .apply {
-                        streamStateForCheckpoint.id?.let { id -> withAdditionalProperty("id", id) }
-                    }
-                    .apply {
-                        streamStateForCheckpoint.partitionId?.let { partitionId ->
-                            withAdditionalProperty("partition_id", partitionId)
-                        }
-                    },
-            )
-        }
+        val stateMessages = mutableListOf<AirbyteStateMessage>()
+        val multipleStreamsState = mutableListOf<MutableList<AirbyteStreamState>>()
+        val recordCounts = mutableListOf<Long>()
+        val pendingFreshStates = mutableMapOf<StreamIdentifier, ArrayDeque<StateForCheckpoint>>()
+        val staleStates = mutableMapOf<StreamIdentifier, StateForCheckpoint>()
+        collectStatesForCheckpoints(pendingFreshStates, staleStates)
+
+        if (pendingFreshStates.isNotEmpty()) shouldCheckpoint = true
+
         if (!shouldCheckpoint) {
             return null
         }
 
-        val airbyteGlobalState =
-            AirbyteGlobalState()
-                .withSharedState(globalStateForCheckpoint.opaqueStateValue)
-                .withStreamStates(streamStates)
+        // The following loop is building the stream states for all pending stream states.
+        // We need to collect at least one set of stale states to emit a global state message
+        // When no stream is checkpointing.
+        do {
+            val streamStates = mutableListOf<AirbyteStreamState>()
 
-        return AirbyteStateMessage()
-            .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
-            .withGlobal(airbyteGlobalState)
-            .withSourceStats(AirbyteStateStats().withRecordCount(totalNumRecords.toDouble()))
-            // Only partition_id if not null (stdio mode compatibility). id is added before being
-            // send to wire in FeedReader.maybeCheckpoint()
-            // As global state may be checkpointed multiple times, we use a unique id for each
-            // checkpoint.
-            .apply {
-                globalStateForCheckpoint.partitionId?.let { partitionId ->
-                    withAdditionalProperty("partition_id", partitionId)
-                }
+            for (streamID in streamStateManagers.keys) {
+                val streamStateForCheckpoint: StateForCheckpoint =
+                    pendingFreshStates[streamID]?.removeFirstOrNull() ?: staleStates[streamID]!!
+                totalNumRecords += streamStateForCheckpoint.numRecords
+                streamStates.add(
+                    AirbyteStreamState()
+                        .withStreamDescriptor(streamID.asProtocolStreamDescriptor())
+                        .withStreamState(
+                            when (streamStateForCheckpoint.opaqueStateValue?.isNull) {
+                                null,
+                                true -> Jsons.objectNode()
+                                false -> streamStateForCheckpoint.opaqueStateValue
+                                        ?: Jsons.objectNode()
+                            }
+                        )
+                        // Only add id and partition_id if they are not null (stdio mode
+                        // compatibility).
+                        .apply {
+                            streamStateForCheckpoint.id?.let { id ->
+                                withAdditionalProperty("id", id)
+                            }
+                        }
+                        .apply {
+                            streamStateForCheckpoint.partitionId?.let { partitionId ->
+                                withAdditionalProperty("partition_id", partitionId)
+                            }
+                        },
+                )
             }
+            multipleStreamsState.add(streamStates)
+            recordCounts.add(totalNumRecords)
+            totalNumRecords = 0L
+        } while (pendingFreshStates.any { it.value.isNotEmpty() })
+
+        // Build a global state message for each set of stream states.
+        multipleStreamsState.zip(recordCounts).forEach { (streamsState, recordCount) ->
+            val airbyteGlobalState =
+                AirbyteGlobalState()
+                    .withSharedState(globalStateForCheckpoint.opaqueStateValue)
+                    .withStreamStates(streamsState)
+
+            val stateMessage =
+                AirbyteStateMessage()
+                    .withType(AirbyteStateMessage.AirbyteStateType.GLOBAL)
+                    .withGlobal(airbyteGlobalState)
+                    .withSourceStats(AirbyteStateStats().withRecordCount(recordCount.toDouble()))
+                    // Only partition_id if not null (stdio mode compatibility).
+                    // id is added before being sent to wire in FeedReader.maybeCheckpoint().
+                    // As global state may be checkpointed multiple times, we use a unique id for
+                    // each checkpoint.
+                    .apply {
+                        globalStateForCheckpoint.partitionId?.let { partitionId ->
+                            withAdditionalProperty("partition_id", partitionId)
+                        }
+                    }
+            stateMessages.add(stateMessage)
+        }
+        return stateMessages
     }
 }
 

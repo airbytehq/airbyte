@@ -14,11 +14,11 @@ data:
       enabled: false
       packageName: airbyte-source-segment
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.58.1@sha256:165974dd98ea8d1278bfd77afff4465b8a41caf9138e3b7e1f33c77ee71e6f72
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.2.2@sha256:588e3aaeae219b31b47da458972e559556e3501c6b6ab9f858ff83e6c8f6dc7a
   connectorSubtype: api
   connectorType: source
   definitionId: b17132d0-4108-4a76-ae5e-639c15beae47
-  dockerImageTag: 0.0.25
+  dockerImageTag: 0.0.32
   dockerRepository: airbyte/source-segment
   githubIssueLabel: source-segment
   icon: icon.svg

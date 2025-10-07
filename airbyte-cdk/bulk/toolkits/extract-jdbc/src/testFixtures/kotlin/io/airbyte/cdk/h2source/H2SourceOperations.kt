@@ -35,6 +35,7 @@ import io.airbyte.cdk.jdbc.ShortFieldType
 import io.airbyte.cdk.jdbc.StringFieldType
 import io.airbyte.cdk.jdbc.UrlFieldType
 import io.airbyte.cdk.jdbc.XmlFieldType
+import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.read.And
 import io.airbyte.cdk.read.Equal
 import io.airbyte.cdk.read.From
@@ -100,6 +101,15 @@ class H2SourceOperations :
         recordData.putNull(H2GlobalCursor.id)
         recordData.putNull(CommonMetaField.CDC_UPDATED_AT.id)
         recordData.putNull(CommonMetaField.CDC_DELETED_AT.id)
+    }
+
+    override fun decorateRecordData(
+        timestamp: OffsetDateTime,
+        globalStateValue: OpaqueStateValue?,
+        stream: Stream,
+        recordData: NativeRecordPayload
+    ) {
+        // no-op
     }
 
     override fun toFieldType(c: JdbcMetadataQuerier.ColumnMetadata): FieldType =

@@ -272,6 +272,13 @@ The Google Analytics connector is subject to Google Analytics Data API quotas. P
 
 | Version        | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:---------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.9.11 | 2025-09-30 | [66306](https://github.com/airbytehq/airbyte/pull/66306) | Update dependencies |
+| 2.9.10 | 2025-09-10 | [66008](https://github.com/airbytehq/airbyte/pull/66008) | Update to CDK v7 |
+| 2.9.9 | 2025-09-09 | [65895](https://github.com/airbytehq/airbyte/pull/65895) | Update dependencies |
+| 2.9.8 | 2025-08-23 | [65311](https://github.com/airbytehq/airbyte/pull/65311) | Update dependencies |
+| 2.9.7 | 2025-08-09 | [64631](https://github.com/airbytehq/airbyte/pull/64631) | Update dependencies |
+| 2.9.6 | 2025-08-02 | [64254](https://github.com/airbytehq/airbyte/pull/64254) | Update dependencies |
+| 2.9.5 | 2025-07-26 | [63820](https://github.com/airbytehq/airbyte/pull/63820) | Update dependencies |
 | 2.9.4 | 2025-07-19 | [63528](https://github.com/airbytehq/airbyte/pull/63528) | Update dependencies |
 | 2.9.3 | 2025-07-16 | [63339](https://github.com/airbytehq/airbyte/pull/63339) | Promoting release candidate 2.9.3-rc.2 to a main version. |
 | 2.9.3-rc.2 | 2025-07-15 | [63297](https://github.com/airbytehq/airbyte/pull/63297) | Enable progressive rollout |

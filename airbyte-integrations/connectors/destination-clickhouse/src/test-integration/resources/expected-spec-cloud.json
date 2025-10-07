@@ -56,6 +56,12 @@
         "order" : 6,
         "default" : false
       },
+      "record_window_size" : {
+        "type" : "integer",
+        "description" : "Warning: Tuning this parameter can impact the performances. The maximum number of records that should be written to a batch. The batch size limit is still limited to 70 Mb",
+        "title" : "Record Window Size",
+        "order" : 8
+      },
       "tunnel_method" : {
         "oneOf" : [ {
           "title" : "No Tunnel",

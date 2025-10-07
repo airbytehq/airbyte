@@ -6,11 +6,11 @@ data:
     hosts:
       - api.stripe.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:6.59.2@sha256:89dcb86ee03b8d951b8a2a80a64d2c84a369dacef29346ec6a5f64c9fb7132f8
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.2.3@sha256:33bb65d8317f1a0997e38acf1bd28f7c66b17bbbf0051ac47212e26e763143e9
   connectorSubtype: api
   connectorType: source
   definitionId: e094cb9a-26de-4645-8761-65c0c425d1de
-  dockerImageTag: 5.15.0-rc.1
+  dockerImageTag: 5.15.8
   dockerRepository: airbyte/source-stripe
   documentationUrl: https://docs.airbyte.com/integrations/sources/stripe
   erdUrl: https://dbdocs.io/airbyteio/source-stripe?view=relationships
@@ -31,7 +31,7 @@ data:
   releaseStage: generally_available
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: true
+      enableProgressiveRollout: false
     breakingChanges:
       4.0.0:
         message: Version 4.0.0 changes the cursors in most of the Stripe streams that support incremental sync mode. This is done to not only sync the data that was created since previous sync, but also the data that was modified. A schema refresh of all effected streams is required to use the new cursor format.

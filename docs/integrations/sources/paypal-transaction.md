@@ -264,6 +264,12 @@ The below table contains the configuraiton parameters available for this connect
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
+| 2.6.13 | 2025-09-30 | [66378](https://github.com/airbytehq/airbyte/pull/66378) | Update dependencies |
+| 2.6.12 | 2025-09-09 | [65835](https://github.com/airbytehq/airbyte/pull/65835) | Update dependencies |
+| 2.6.11 | 2025-08-23 | [65171](https://github.com/airbytehq/airbyte/pull/65171) | Update dependencies |
+| 2.6.10 | 2025-08-09 | [64716](https://github.com/airbytehq/airbyte/pull/64716) | Update dependencies |
+| 2.6.9 | 2025-08-02 | [64258](https://github.com/airbytehq/airbyte/pull/64258) | Update dependencies |
+| 2.6.8 | 2025-07-26 | [63821](https://github.com/airbytehq/airbyte/pull/63821) | Update dependencies |
 | 2.6.7 | 2025-07-19 | [63449](https://github.com/airbytehq/airbyte/pull/63449) | Update dependencies |
 | 2.6.6 | 2025-07-12 | [63255](https://github.com/airbytehq/airbyte/pull/63255) | Update dependencies |
 | 2.6.5 | 2025-07-05 | [62625](https://github.com/airbytehq/airbyte/pull/62625) | Update dependencies |

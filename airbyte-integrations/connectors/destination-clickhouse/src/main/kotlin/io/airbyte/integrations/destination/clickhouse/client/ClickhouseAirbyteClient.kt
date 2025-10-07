@@ -7,10 +7,12 @@ package io.airbyte.integrations.destination.clickhouse.client
 import com.clickhouse.client.api.Client as ClickHouseClientRaw
 import com.clickhouse.client.api.command.CommandResponse
 import com.clickhouse.client.api.data_formats.ClickHouseBinaryFormatReader
+import com.clickhouse.client.api.metadata.TableSchema
 import com.clickhouse.client.api.query.QueryResponse
 import com.clickhouse.data.ClickHouseColumn
 import com.clickhouse.data.ClickHouseDataType
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.client.AirbyteClient
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
@@ -21,6 +23,7 @@ import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNativeOperations
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableSqlOperations
 import io.airbyte.integrations.destination.clickhouse.client.ClickhouseSqlGenerator.Companion.DATETIME_WITH_PRECISION
+import io.airbyte.integrations.destination.clickhouse.client.ClickhouseSqlGenerator.Companion.DECIMAL_WITH_PRECISION_AND_SCALE
 import io.airbyte.integrations.destination.clickhouse.config.ClickhouseFinalTableNameGenerator
 import io.airbyte.integrations.destination.clickhouse.config.toClickHouseCompatibleName
 import io.airbyte.integrations.destination.clickhouse.model.AlterationSummary
@@ -112,10 +115,25 @@ class ClickhouseAirbyteClient(
         columnNameMapping: ColumnNameMapping
     ) {
         val properTableName = nameGenerator.getTableName(stream.mappedDescriptor)
-        val tableSchema = client.getTableSchema(properTableName.name, properTableName.namespace)
+        val tableSchema: TableSchema =
+            client.getTableSchema(properTableName.name, properTableName.namespace)
+
+        log.info { "Fetch the clickhouse table schema: $tableSchema" }
+
+        val hasAllAirbyteColumn =
+            tableSchema.columns.map { it.columnName }.containsAll(COLUMN_NAMES)
+
+        if (!hasAllAirbyteColumn) {
+            val message =
+                "The target table ($properTableName) already exists in the destination, but does not contain Airbyte's internal columns. Airbyte can only sync to Airbyte-controlled tables. To fix this error, you must either delete the target table or add a prefix in the connection configuration in order to sync to a separate table in the destination."
+            log.error { message }
+            throw ConfigErrorException(message)
+        }
 
         val tableSchemaWithoutAirbyteColumns: List<ClickHouseColumn> =
             tableSchema.columns.filterNot { column -> column.columnName in COLUMN_NAMES }
+
+        log.info { "Found Clickhouse columns: $tableSchemaWithoutAirbyteColumns" }
 
         if (!stream.schema.isObject) {
             val error =
@@ -124,11 +142,6 @@ class ClickhouseAirbyteClient(
             throw IllegalStateException(error)
         }
 
-        val airbyteSchemaWithClickhouseType: Map<String, String> =
-            getAirbyteSchemaWithClickhouseType(stream)
-
-        val clickhousePks: List<String> =
-            tableSchemaWithoutAirbyteColumns.filterNot { it.isNullable }.map { it.columnName }
         val currentPKs: List<String> =
             when (stream.importType) {
                 is Dedupe ->
@@ -139,12 +152,21 @@ class ClickhouseAirbyteClient(
                 else -> listOf()
             }
 
+        val airbyteSchemaWithClickhouseType: Map<String, String> =
+            getAirbyteSchemaWithClickhouseType(stream, currentPKs)
+
+        log.info { "Airbyte columns: $airbyteSchemaWithClickhouseType" }
+
+        val clickhousePks: List<String> =
+            tableSchemaWithoutAirbyteColumns.filterNot { it.isNullable }.map { it.columnName }
+
         val columnChanges: AlterationSummary =
             getChangedColumns(
                 tableSchemaWithoutAirbyteColumns,
                 airbyteSchemaWithClickhouseType,
                 clickhousePks,
                 currentPKs,
+                columnNameMapping,
             )
 
         if (columnChanges.hasApplicableAlterations() && !columnChanges.hasDedupChange) {
@@ -160,30 +182,62 @@ class ClickhouseAirbyteClient(
             log.info {
                 "Detected deduplication change for table $properTableName, applying deduplication changes"
             }
-            val tempTableName = tempTableNameGenerator.generate(properTableName)
-            execute(sqlGenerator.createNamespace(tempTableName.namespace))
-            execute(
-                sqlGenerator.createTable(
-                    stream,
-                    tempTableName,
-                    columnNameMapping,
-                    true,
-                ),
+            applyDeduplicationChanges(
+                stream,
+                properTableName,
+                columnNameMapping,
+                tableSchemaWithoutAirbyteColumns
             )
-            execute(
-                sqlGenerator.copyTable(
-                    columnNameMapping,
-                    properTableName,
-                    tempTableName,
-                ),
-            )
-            execute(sqlGenerator.exchangeTable(tempTableName, properTableName))
-            execute(sqlGenerator.dropTable(tempTableName))
         }
     }
 
+    private suspend fun applyDeduplicationChanges(
+        stream: DestinationStream,
+        properTableName: TableName,
+        columnNameMapping: ColumnNameMapping,
+        tableSchemaWithoutAirbyteColumns: List<ClickHouseColumn>
+    ) {
+        val tempTableName = tempTableNameGenerator.generate(properTableName)
+        execute(sqlGenerator.createNamespace(tempTableName.namespace))
+        execute(
+            sqlGenerator.createTable(
+                stream,
+                tempTableName,
+                columnNameMapping,
+                true,
+            ),
+        )
+        copyIntersectionColumn(
+            tableSchemaWithoutAirbyteColumns,
+            columnNameMapping,
+            properTableName,
+            tempTableName
+        )
+        execute(sqlGenerator.exchangeTable(tempTableName, properTableName))
+        execute(sqlGenerator.dropTable(tempTableName))
+    }
+
+    internal suspend fun copyIntersectionColumn(
+        tableSchemaWithoutAirbyteColumns: List<ClickHouseColumn>,
+        columnNameMapping: ColumnNameMapping,
+        properTableName: TableName,
+        tempTableName: TableName
+    ) {
+        val clickhouseColumnsName = tableSchemaWithoutAirbyteColumns.map { it.columnName }
+        execute(
+            sqlGenerator.copyTable(
+                ColumnNameMapping(
+                    columnNameMapping.filter { clickhouseColumnsName.contains(it.value) }
+                ),
+                properTableName,
+                tempTableName,
+            ),
+        )
+    }
+
     internal fun getAirbyteSchemaWithClickhouseType(
-        stream: DestinationStream
+        stream: DestinationStream,
+        pks: List<String>
     ): Map<String, String> =
         stream.schema
             .asColumns()
@@ -193,7 +247,13 @@ class ClickhouseAirbyteClient(
                 // nullable in the destination
                 // Add map key
                 fieldName.toClickHouseCompatibleName() to
-                    fieldType.type.toDialectType(clickhouseConfiguration.enableJson)
+                    if (pks.contains(fieldName)) {
+                        fieldType.type.toDialectType(clickhouseConfiguration.enableJson)
+                    } else {
+                        fieldType.type
+                            .toDialectType(clickhouseConfiguration.enableJson)
+                            .sqlNullable()
+                    }
             }
             .toMap()
 
@@ -201,18 +261,23 @@ class ClickhouseAirbyteClient(
         tableColumns: List<ClickHouseColumn>,
         catalogColumns: Map<String, String>,
         clickhousePks: List<String>,
-        airbytePks: List<String>
+        airbytePks: List<String>,
+        columnNameMapping: ColumnNameMapping
     ): AlterationSummary {
 
         val modified = mutableMapOf<String, String>()
         val deleted = mutableSetOf<String>()
-        val mutableCatalogColumns: MutableMap<String, String> = catalogColumns.toMutableMap()
+        val mutableCatalogColumns: MutableMap<String, String> =
+            catalogColumns.mapKeys { (key, _) -> columnNameMapping.get(key) ?: key }.toMutableMap()
 
         tableColumns.forEach { clickhouseColumn ->
             if (!mutableCatalogColumns.containsKey(clickhouseColumn.columnName)) {
                 deleted.add(clickhouseColumn.columnName)
             } else {
-                val clickhouseType = clickhouseColumn.dataType.getDataTypeAsString()
+                val clickhouseType =
+                    if (clickhouseColumn.isNullable)
+                        clickhouseColumn.dataType.getDataTypeAsString().sqlNullable()
+                    else clickhouseColumn.dataType.getDataTypeAsString()
                 if (mutableCatalogColumns[clickhouseColumn.columnName] != clickhouseType) {
                     modified[clickhouseColumn.columnName] =
                         mutableCatalogColumns[clickhouseColumn.columnName]!!
@@ -226,12 +291,17 @@ class ClickhouseAirbyteClient(
         val hasDedupChange =
             !(clickhousePks.containsAll(airbytePks) && airbytePks.containsAll(clickhousePks))
 
-        return AlterationSummary(
-            added = added,
-            modified = modified,
-            deleted = deleted,
-            hasDedupChange = hasDedupChange
-        )
+        val alterationSummary =
+            AlterationSummary(
+                added = added,
+                modified = modified,
+                deleted = deleted,
+                hasDedupChange = hasDedupChange
+            )
+
+        log.info { "Alteration summary: $alterationSummary" }
+
+        return alterationSummary
     }
 
     override suspend fun countTable(tableName: TableName): Long? {
@@ -273,6 +343,8 @@ class ClickhouseAirbyteClient(
     private fun ClickHouseDataType.getDataTypeAsString(): String {
         return if (this.name == "DateTime64") {
             DATETIME_WITH_PRECISION
+        } else if (this.name == "Decimal") {
+            DECIMAL_WITH_PRECISION_AND_SCALE
         } else {
             this.name
         }

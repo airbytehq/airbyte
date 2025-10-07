@@ -245,6 +245,7 @@ class DestinationMotherDuck(Destination):
                     # Hold until the end of the stream, and then yield them all at once.
                     legacy_state_messages.append(message)
                     continue
+
                 stream_name = message.state.stream.stream_descriptor.name
                 _ = message.state.stream.stream_descriptor.namespace  # Unused currently
                 # flush the buffer

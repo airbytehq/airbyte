@@ -21,6 +21,14 @@ const config = {
   },
   markdown: {
     mermaid: true,
+    preprocessor: ({filePath, fileContent}) => {
+      return fileContent
+        .replace(/\{\{product_name_sm_oss\}\}/g, 'Core')
+        .replace(/\{\{product_name_sm_enterprise\}\}/g, 'Self-Managed Enterprise')
+        .replace(/\{\{product_name_cloud_standard\}\}/g, 'Standard')
+        .replace(/\{\{product_name_cloud_pro\}\}/g, 'Pro')
+        .replace(/\{\{product_name_cloud_enterprise\}\}/g, 'Enterprise Flex');
+    },
   },
   themes: [
     "@docusaurus/theme-mermaid",
@@ -66,13 +74,6 @@ const config = {
         content: "plvcr4wcl9abmq0itvi63c",
       },
     },
-    {
-      tagName: "meta",
-      attributes: {
-        name: "google-site-verification",
-        content: "3bGvGd17EJ-wHoyGlRszHtmMGmtWGQ4dDFEQy8ampQ0",
-      },
-    },
     ...(process.env.NODE_ENV === "production" && process.env.SEGMENT_WRITE_KEY
       ? [
           {
@@ -89,6 +90,10 @@ const config = {
         ]
       : []),
   ],
+  i18n: {
+    defaultLocale: 'en',
+    locales: ['en'],
+  },
   // The preset is the "main" docs instance, though in reality, most content does not live under this preset. See the plugins array below, which defines the behavior of each docs instance.
   presets: [
     [
@@ -144,14 +149,14 @@ const config = {
         ],
       },
     ],
-    // This plugin controls Airbyte Embedded docs, which are not versioned
+    // This plugin controls AI Agent Tools docs, which are not versioned
     [
       "@docusaurus/plugin-content-docs",
       {
-        id: "embedded",
-        path: "../docs/embedded",
-        routeBasePath: "/embedded",
-        sidebarPath: "./sidebar-embedded.js",
+        id: "ai-agents",
+        path: "../docs/ai-agents",
+        routeBasePath: "/ai-agents",
+        sidebarPath: "./sidebar-ai-agents.js",
         editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
         remarkPlugins: [
           docsHeaderDecoration,
@@ -249,6 +254,33 @@ const config = {
       colorMode: {
         disableSwitch: false,
       },
+      mermaid: {
+        theme: {
+          light: 'base',  // "base" theme is fully customizable
+          dark: 'base'
+        },
+        options: {
+          themeVariables: {
+            primaryColor: '#5F5CFF',        // Airbyte blue
+            primaryTextColor: '#FFFFFF',    // white labels on colored shapes
+            primaryBorderColor: '#1A194D',  // slightly darker for contrast
+            secondaryColor: '#FF6A4D',      // accent orange
+            // secondaryTextColor: '#FF6A4D',      // accent orange
+            // secondaryBorderColor: '#FF6A4D',      // accent orange
+            tertiaryColor: '#E8EAF6',        // light neutral fill
+            tertiaryTextColor: '#000000',    // black labels on light shapes
+            tertiaryBorderColor: '#E8EAF6',    // light neutral border
+            background: '#FFFFFF',
+            clusterBkg: '#F5F5F5',
+            fontFamily: 'var(--ifm-font-family-base)',
+          },
+          flowchart: {
+            rankSpacing: 100,   // vertical space
+            subGraphTitleMargin: 10, // space within subgraph border for title
+            nodeSpacing: 100,   // horizontal space
+          },
+        },
+      },
       docs: {
         sidebar: {
           autoCollapseCategories: true,
@@ -300,9 +332,9 @@ const config = {
           {
             type: "docSidebar",
             position: "left",
-            docsPluginId: "embedded",
-            sidebarId: "embedded",
-            label: "Airbyte Embedded",
+            docsPluginId: "ai-agents",
+            sidebarId: "ai-agents",
+            label: "AI Agents",
           },
           {
             href: "https://support.airbyte.com/",

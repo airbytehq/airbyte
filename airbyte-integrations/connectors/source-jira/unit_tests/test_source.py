@@ -14,5 +14,5 @@ from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 def test_streams(config):
     source = YamlDeclarativeSource(config=config, catalog=None, state=None, path_to_yaml=str(_YAML_FILE_PATH))
     streams = source.streams(config)
-    expected_streams_number = 55
+    expected_streams_number = 56
     assert len(streams) == expected_streams_number

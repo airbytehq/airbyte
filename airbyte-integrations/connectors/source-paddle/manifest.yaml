@@ -872,6 +872,10 @@ schemas:
         type:
           - string
           - "null"
+      custom_data:
+        type:
+          - object
+          - "null"
       status:
         type:
           - string
@@ -1102,44 +1106,6 @@ schemas:
         type:
           - object
           - "null"
-        properties:
-          features:
-            type:
-              - object
-              - "null"
-            properties:
-              aircraft_performance:
-                type:
-                  - boolean
-                  - "null"
-              compliance_monitoring:
-                type:
-                  - boolean
-                  - "null"
-              flight_log_management:
-                type:
-                  - boolean
-                  - "null"
-              payment_by_invoice:
-                type:
-                  - boolean
-                  - "null"
-              route_planning:
-                type:
-                  - boolean
-                  - "null"
-              sso:
-                type:
-                  - boolean
-                  - "null"
-          suggested_addons:
-            type:
-              - array
-              - "null"
-            items:
-              type:
-                - string
-                - "null"
       id:
         type: string
       image_url:
@@ -1292,44 +1258,6 @@ schemas:
             type:
               - object
               - "null"
-            properties:
-              features:
-                type:
-                  - object
-                  - "null"
-                properties:
-                  aircraft_performance:
-                    type:
-                      - boolean
-                      - "null"
-                  compliance_monitoring:
-                    type:
-                      - boolean
-                      - "null"
-                  flight_log_management:
-                    type:
-                      - boolean
-                      - "null"
-                  payment_by_invoice:
-                    type:
-                      - boolean
-                      - "null"
-                  route_planning:
-                    type:
-                      - boolean
-                      - "null"
-                  sso:
-                    type:
-                      - boolean
-                      - "null"
-              suggested_addons:
-                type:
-                  - array
-                  - "null"
-                items:
-                  type:
-                    - string
-                    - "null"
           customer_id:
             type:
               - string
@@ -1831,48 +1759,6 @@ schemas:
                   type:
                     - object
                     - "null"
-                  properties:
-                    features:
-                      type:
-                        - object
-                        - "null"
-                      properties:
-                        aircraft_performance:
-                          type:
-                            - boolean
-                            - "null"
-                        compliance_monitoring:
-                          type:
-                            - boolean
-                            - "null"
-                        flight_log_management:
-                          type:
-                            - boolean
-                            - "null"
-                        payment_by_invoice:
-                          type:
-                            - boolean
-                            - "null"
-                        route_planning:
-                          type:
-                            - boolean
-                            - "null"
-                        sso:
-                          type:
-                            - boolean
-                            - "null"
-                    suggested_addons:
-                      type:
-                        - array
-                        - "null"
-                      items:
-                        type:
-                          - string
-                          - "null"
-                    upgrade_description:
-                      type:
-                        - string
-                        - "null"
                 status:
                   type:
                     - string
@@ -2159,6 +2045,10 @@ schemas:
       status:
         type:
           - string
+          - "null"
+      custom_data:
+        type:
+          - object
           - "null"
       subscription_id:
         type:

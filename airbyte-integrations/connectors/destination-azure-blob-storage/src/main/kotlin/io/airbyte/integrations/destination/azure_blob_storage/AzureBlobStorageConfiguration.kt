@@ -17,6 +17,7 @@ import io.airbyte.cdk.load.command.object_storage.ObjectStoragePathConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStoragePathConfigurationProvider
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfiguration
 import io.airbyte.cdk.load.command.object_storage.ObjectStorageUploadConfigurationProvider
+import io.airbyte.cdk.load.data.Transformations
 import io.airbyte.cdk.load.file.NoopProcessor
 import io.airbyte.cdk.load.file.azureBlobStorage.GENERATION_ID_METADATA_KEY_OVERRIDE
 import io.micronaut.context.annotation.Factory
@@ -63,6 +64,7 @@ class AzureBlobStorageConfiguration<T : OutputStream>(
             // which is (a) confusing, and (b) makes the file transfer tests more annoying.
             pathPattern = "\${NAMESPACE}/\${STREAM_NAME}/",
             fileNamePattern = "{date}_{timestamp}_{part_number}{format_extension}",
+            resolveNamesMethod = { Transformations.toAzureBlobSafePath(it) },
         )
 
     override val generationIdMetadataKey = GENERATION_ID_METADATA_KEY_OVERRIDE

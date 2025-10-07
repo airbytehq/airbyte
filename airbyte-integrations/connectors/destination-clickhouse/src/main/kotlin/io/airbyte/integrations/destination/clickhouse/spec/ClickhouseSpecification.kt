@@ -17,6 +17,7 @@ import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.spec.DestinationSpecificationExtension
 import io.airbyte.cdk.ssh.MicronautPropertiesFriendlySshTunnelMethodConfigurationSpecification
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
+import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration.Defaults.RECORDS_PER_AGGREGATE
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.micronaut.context.annotation.ConfigurationBuilder
 import io.micronaut.context.annotation.Requires
@@ -31,6 +32,7 @@ sealed class ClickhouseSpecification : ConfigurationSpecification() {
     abstract val password: String
     abstract val enableJson: Boolean?
     abstract fun getTunnelMethodValue(): SshTunnelMethodConfiguration?
+    abstract val recordWindowSize: Long?
 }
 
 @Singleton
@@ -100,6 +102,14 @@ class ClickhouseSpecificationOss : ClickhouseSpecification() {
     @JsonSchemaInject(json = """{"order":5}""")
     override fun getTunnelMethodValue(): SshTunnelMethodConfiguration? =
         tunnelConfig ?: tunnelMethod.asSshTunnelMethod()
+
+    @get:JsonSchemaTitle("Record Window Size")
+    @get:JsonPropertyDescription(
+        "Warning: Tuning this parameter can impact the performances. The maximum number of records that should be written to a batch. The batch size limit is still limited to 70 Mb"
+    )
+    @get:JsonProperty("record_window_size")
+    @get:JsonSchemaInject(json = """{"order": 8}""")
+    override val recordWindowSize: Long? = RECORDS_PER_AGGREGATE
 }
 
 @Singleton
@@ -169,6 +179,14 @@ open class ClickhouseSpecificationCloud : ClickhouseSpecification() {
     @JsonSchemaInject(json = """{"order":7}""")
     override fun getTunnelMethodValue(): SshTunnelMethodConfiguration? =
         tunnelConfig ?: tunnelMethod.asSshTunnelMethod()
+
+    @get:JsonSchemaTitle("Record Window Size")
+    @get:JsonPropertyDescription(
+        "Warning: Tuning this parameter can impact the performances. The maximum number of records that should be written to a batch. The batch size limit is still limited to 70 Mb"
+    )
+    @get:JsonProperty("record_window_size")
+    @get:JsonSchemaInject(json = """{"order": 8}""")
+    override val recordWindowSize: Long? = RECORDS_PER_AGGREGATE
 }
 
 enum class ClickhouseConnectionProtocol(@get:JsonValue val value: String) {

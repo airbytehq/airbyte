@@ -148,7 +148,7 @@ internal class S3DataLakeStreamLoaderTest {
         }
         val icebergUtil: IcebergUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
-            every { createTable(any(), any(), any(), any()) } returns table
+            every { createTable(any(), any(), any()) } returns table
             every { toIcebergSchema(any()) } answers
                 {
                     stream.schema.withAirbyteMeta(true).toIcebergSchema(emptyList())
@@ -248,7 +248,7 @@ internal class S3DataLakeStreamLoaderTest {
         }
         val icebergUtil: IcebergUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
-            every { createTable(any(), any(), any(), any()) } returns table
+            every { createTable(any(), any(), any()) } returns table
             every { toIcebergSchema(any()) } answers
                 {
                     stream.schema.withAirbyteMeta(true).toIcebergSchema(emptyList())
@@ -401,7 +401,7 @@ internal class S3DataLakeStreamLoaderTest {
         }
         val icebergUtil: IcebergUtil = mockk {
             every { createCatalog(any(), any()) } returns catalog
-            every { createTable(any(), any(), any(), any()) } returns table
+            every { createTable(any(), any(), any()) } returns table
             every { toIcebergSchema(any()) } answers
                 {
                     stream.schema.withAirbyteMeta(true).toIcebergSchema(listOf(primaryKeys))

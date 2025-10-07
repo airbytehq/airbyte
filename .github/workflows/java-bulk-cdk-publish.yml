@@ -45,16 +45,7 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
-      - name: Set Build Number [manual]
-        if: github.event.inputs.build-number
-        env:
-          BUILD_NUMBER: ${{ github.event.inputs.build-number }}
-        run: |
-          mkdir -p airbyte-cdk/bulk/build/generated
-          echo $BUILD_NUMBER > airbyte-cdk/bulk/build/generated/build.number
-
-      - name: Set Build Number [auto]
-        if: ${{ !github.event.inputs.build-number }}
+      - name: Error if CDK Version Exists
         uses: burrunan/gradle-cache-action@v1
         env:
           CI: true
@@ -62,10 +53,7 @@ jobs:
           job-id: bulk-cdk-publish
           concurrent: true
           gradle-distribution-sha-256-sum-warning: false
-          arguments: --scan :airbyte-cdk:bulk:generateBuildNumberFile
-
-      - name: Read Build Number
-        run: echo "BUILD_NUMBER=$(cat airbyte-cdk/bulk/build/generated/build.number)" >>$GITHUB_ENV
+          arguments: --scan :airbyte-cdk:bulk:checkBuildNumber
 
       - name: Build Bulk CDK
         uses: burrunan/gradle-cache-action@v1

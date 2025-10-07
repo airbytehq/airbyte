@@ -26,20 +26,15 @@ class BigQueryDatabaseHandlerTest {
     fun `billing errors are wrapped as ConfigErrorException`() {
         val bqError = BigQueryError(BILLING_ERROR, "loc", BILLING_ERROR)
         val bq: BigQuery = mockk {
-            every { create(any(JobInfo::class), *anyVararg()) } returns
+            every { create(any(JobInfo::class), *anyVararg()).status } returns
                 mockk {
-                    every { status } returns
-                        mockk {
-                            every { state } returns JobStatus.State.DONE
-                            every { error } returns bqError
-                            every { executionErrors } returns listOf(bqError)
-                        }
+                    every { state } returns JobStatus.State.DONE
+                    every { error } returns bqError
+                    every { executionErrors } returns listOf(bqError)
                 }
         }
         val handler = BigQueryDatabaseHandler(bq, "location")
 
-        assertThrows<ConfigErrorException> {
-            handler.execute(Sql(listOf(listOf("select * from nowhere"))))
-        }
+        assertThrows<ConfigErrorException> { handler.execute(Sql.of("select * from nowhere")) }
     }
 }

@@ -1,6 +1,6 @@
 # Connector Builder tutorial
 
-In tis tutorial, you'll create an Airbyte connector using the Connector Builder UI to read and extract data from an API called the Exchange Rates API. The steps here are a foundation you can use to build connectors for any API you might be interested in. You can complete this tutorial in 30-45 minutes.
+In this tutorial, you'll create an Airbyte connector using the Connector Builder UI to read and extract data from an API called the Exchange Rates API. The steps here are a foundation you can use to build connectors for any API you might be interested in. You can complete this tutorial in 30-45 minutes.
 
 [Here's the API documentation](https://apilayer.com/marketplace/exchangerates_data-api) for the Exchange Rates API. Feel free to review it, but you don't need to know it well. In this tutorial, you'll read data from the following endpoints:
 
@@ -107,9 +107,11 @@ Set up a new stream and tell your connector how to retrieve records from this so
 
     1. Set **API Key** to `{{ config['api_key'] }}`. This allows the stream to use the API key input you created earlier when you test it. If someone else uses your connector later, the connector uses the API key they input, not yours.
 
-    2. Turn on **Inject API Key Into Outgoing HTTP Request**. Set **Field Path** to `apikey`, and set **Inject Into** to `header`.
+    2. Turn on **Inject API Key Into Outgoing HTTP Request**.
 
-6. Click **Test** to test the stream. 
+    3. Set **Inject Into** to `Header` and set **Header Name** to `apikey`.
+
+6. Click **Test** to test the stream.
 
 The API returns a response that looks like this.
 

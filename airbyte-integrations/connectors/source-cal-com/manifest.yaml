@@ -860,6 +860,22 @@ schemas:
         type:
           - boolean
           - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+      cancelledByEmail:
+        type:
+          - string
+          - "null"
+      cancellationReason:
+        type:
+          - string
+          - "null"
+      rescheduledByEmail:
+        type:
+          - string
+          - "null"
     required:
       - id
   conferencing:
