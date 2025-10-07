@@ -3,28 +3,17 @@
 #
 # /// script
 # requires-python = ">=3.10"
-# dependencies = ["typer"]
+# dependencies = []
 # ///
 
 """
 Generate GitHub Actions matrix for modified Airbyte connectors.
 
-This script detects which connectors have been modified and generates
+This module detects which connectors have been modified and generates
 a matrix configuration for GitHub Actions that includes language detection
 and runner type selection.
 
-Usage:
-    ./connector_matrix.py --json
-
-    ./connector_matrix.py --json --java
-
-    ./connector_matrix.py --json --no-java
-
-    ./connector_matrix.py --json --local-cdk
-
-    ./connector_matrix.py --json --prev-commit
-
-    ./connector_matrix.py generate-matrix airbytehq/airbyte
+Functions are designed to be called by poethepoet script tasks.
 """
 
 import json
@@ -33,10 +22,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-import typer
-
-
-app = typer.Typer(help="Generate connector test matrices for GitHub Actions")
 
 DEFAULT_BRANCH = "master"
 CONNECTORS_DIR = Path("airbyte-integrations/connectors")
@@ -231,16 +216,19 @@ def format_output(connectors: list[str], json_output: bool) -> str:
     return json.dumps({"connector": connectors})
 
 
-@app.command()
-def list_connectors(
-    java: bool = typer.Option(False, "--java", help="Filter to only Java connectors"),
-    no_java: bool = typer.Option(False, "--no-java", help="Filter to exclude Java connectors"),
-    json_output: bool = typer.Option(False, "--json", help="Output in GitHub Actions matrix JSON format"),
-    prev_commit: bool = typer.Option(False, "--prev-commit", help="Compare with previous commit instead of master"),
-    local_cdk: bool = typer.Option(False, "--local-cdk", help="Include connectors using local CDK"),
-    files_list: str = typer.Option(None, "--files-list", help="CSV string of file paths (overrides git detection)"),
-):
-    """List Airbyte connectors modified in the current branch."""
+def get_modified_connectors(
+    java: bool = False,
+    no_java: bool = False,
+    json: bool = False,
+    prev_commit: bool = False,
+    local_cdk: bool = False,
+    files_list: str | None = None,
+) -> None:
+    """
+    List Airbyte connectors modified in the current branch.
+
+    Called by poethepoet as: poe get-modified-connectors [flags]
+    """
     files = get_modified_files(prev_commit, files_list)
 
     filtered = filter_ignored_files(files)
@@ -249,7 +237,7 @@ def list_connectors(
             "⚠️ Warning: No files remaining after filtering. Returning empty connector list.",
             file=sys.stderr,
         )
-        if json_output:
+        if json:
             print(return_empty_json())
         return
 
@@ -259,7 +247,7 @@ def list_connectors(
             "⚠️ Warning: No connector paths found. Returning empty connector list.",
             file=sys.stderr,
         )
-        if json_output:
+        if json:
             print(return_empty_json())
         return
 
@@ -269,7 +257,7 @@ def list_connectors(
             "⚠️ Warning: Failed to extract connector directories. Returning empty connector list.",
             file=sys.stderr,
         )
-        if json_output:
+        if json:
             print(return_empty_json())
         return
 
@@ -289,16 +277,19 @@ def list_connectors(
         else:  # no_java
             connectors = [c for c in connectors if c not in java_connectors]
 
-    print(format_output(connectors, json_output))
+    print(format_output(connectors, json))
 
 
-@app.command()
-def generate_matrix(
-    repo: str = typer.Argument(..., help="Repository name (e.g., airbytehq/airbyte)"),
-    local_cdk: bool = typer.Option(False, "--local-cdk", help="Include connectors using local CDK"),
-    files_list: str = typer.Option(None, "--files-list", help="CSV string of file paths (overrides git detection)"),
-):
-    """Generate enhanced GitHub Actions matrix with language detection and runner assignment."""
+def generate_enhanced_matrix(
+    repo: str,
+    local_cdk: bool = False,
+    files_list: str | None = None,
+) -> None:
+    """
+    Generate enhanced GitHub Actions matrix with language detection and runner assignment.
+
+    Called by poethepoet as: poe generate-connector-matrix <repo> [flags]
+    """
     files = get_modified_files(prev_commit=False, files_list=files_list)
     filtered = filter_ignored_files(files)
 
@@ -344,7 +335,3 @@ def generate_matrix(
         print(return_empty_json())
     else:
         print(json.dumps({"include": matrix_items}))
-
-
-if __name__ == "__main__":
-    app()
