@@ -70,9 +70,9 @@ Airbyte applies and removes tags and you select and deselect them.
 
 Rename and recolor a tag.
 
-1. Open Airbyte and click **Settings** > **General**.
+1. Open Airbyte and click **Workspace settings** > **General**.
 
-2. Under **Workspace Tags**, click the pencil icon <svg fill="none" data-icon="pencil" role="img" viewBox="0 0 24 24" class="inline-svg"><path fill="currentColor" d="M22 7.24a1 1 0 0 0-.29-.71l-4.24-4.24a1 1 0 0 0-.71-.29 1 1 0 0 0-.71.29l-2.83 2.83L2.29 16.05a1 1 0 0 0-.29.71V21a1 1 0 0 0 1 1h4.24a1 1 0 0 0 .76-.29l10.87-10.93L21.71 8q.138-.146.22-.33.015-.12 0-.24a.7.7 0 0 0 0-.14zM6.83 20H4v-2.83l9.93-9.93 2.83 2.83zM18.17 8.66l-2.83-2.83 1.42-1.41 2.82 2.82z"></path></svg>.
+2. Under **Connection tags**, click the pencil icon <svg fill="none" data-icon="pencil" role="img" viewBox="0 0 24 24" class="inline-svg"><path fill="currentColor" d="M22 7.24a1 1 0 0 0-.29-.71l-4.24-4.24a1 1 0 0 0-.71-.29 1 1 0 0 0-.71.29l-2.83 2.83L2.29 16.05a1 1 0 0 0-.29.71V21a1 1 0 0 0 1 1h4.24a1 1 0 0 0 .76-.29l10.87-10.93L21.71 8q.138-.146.22-.33.015-.12 0-.24a.7.7 0 0 0 0-.14zM6.83 20H4v-2.83l9.93-9.93 2.83 2.83zM18.17 8.66l-2.83-2.83 1.42-1.41 2.82 2.82z"></path></svg>.
 
 3. Rename the tag and update the color as you prefer. The color must be a valid hexadecimal code. Click the color sample and use the color picker to generate this for you.
 
@@ -84,9 +84,9 @@ Airbyte updates your tag. Next time you view the Connections page, your tags wil
 
 Delete a tag from Airbyte and remove it from any connections that use it.
 
-1. Open Airbyte and click **Settings** > **General**.
+1. Open Airbyte and click **Workspace settings** > **General**.
 
-2. Under **Workspace Tags**, click the trash icon <svg fill="none" data-icon="trash" role="img" viewBox="0 0 24 24" class="inline-svg"><path fill="currentColor" d="M20 6h-4V5a3 3 0 0 0-3-3h-2a3 3 0 0 0-3 3v1H4a1 1 0 0 0 0 2h1v11a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3V8h1a1 1 0 1 0 0-2M10 5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v1h-4zm7 14a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V8h10z"></path></svg>.
+2. Under **Connection tags**, click the trash icon <svg fill="none" data-icon="trash" role="img" viewBox="0 0 24 24" class="inline-svg"><path fill="currentColor" d="M20 6h-4V5a3 3 0 0 0-3-3h-2a3 3 0 0 0-3 3v1H4a1 1 0 0 0 0 2h1v11a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3V8h1a1 1 0 1 0 0-2M10 5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v1h-4zm7 14a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V8h10z"></path></svg>.
 
 3. Click **Delete**.
 

@@ -10,6 +10,7 @@ from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordSel
 from airbyte_cdk.sources.declarative.requesters import HttpRequester
 from airbyte_cdk.sources.streams.call_rate import MovingWindowCallRatePolicy, UnlimitedCallRatePolicy
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
+from airbyte_cdk.test.state_builder import StateBuilder
 from unit_tests.conftest import get_stream_by_name, oauth_config, token_config
 
 
@@ -93,7 +94,7 @@ def test_join_channel_read(requests_mock, token_config, joined_channel, caplog, 
 @pytest.mark.parametrize(
     "threads_stream_state, expected_parent_state",
     (
-        ({}, {}),
+        ({}, None),
         (
             {"float_ts": 7270247822.0},
             # lookback window applied
@@ -122,11 +123,9 @@ def test_join_channel_read(requests_mock, token_config, joined_channel, caplog, 
     ),
     ids=["no_state", "old_format_state", "new_format_state"],
 )
-def test_threads_partition_router(token_config, threads_stream_state, expected_parent_state):
-    stream = get_stream_by_name("threads", token_config)
-    threads_partition_router = stream.retriever.stream_slicer._partition_router
-    threads_partition_router.set_initial_state(stream_state=threads_stream_state)
-    assert threads_partition_router.parent_stream_configs[0].stream.state["state"] == expected_parent_state
+def test_threads_state_migration(token_config, threads_stream_state, expected_parent_state):
+    stream = get_stream_by_name("threads", token_config, StateBuilder().with_stream_state("threads", threads_stream_state).build())
+    assert stream.cursor.state.get("parent_state", {}).get("channel_messages", None) == expected_parent_state
 
 
 @pytest.mark.parametrize(
@@ -166,13 +165,14 @@ def test_threads_partition_router(token_config, threads_stream_state, expected_p
     ),
     ids=["rate_limited_oauth_policy", "no_rate_limits_token_policy", "no_rate_limits_policy"],
 )
-def test_threads_and_messages_api_budget(
+def tesadfst_threads_and_messages_api_budget(
     response_status_code, api_response, config, expected_policy, oauth_config, token_config, requests_mock
 ):
     stream = get_stream_by_name("threads", oauth_config if config == "oauth" else token_config)
-    assert len(stream.retriever.requester._http_client._api_budget._policies) == (1 if config == "oauth" else 0)
+    retriever = stream._stream_partition_generator._partition_factory._retriever
+    assert len(retriever.requester._http_client._api_budget._policies) == (1 if config == "oauth" else 0)
     if config == "oauth":
-        assert isinstance(stream.retriever.requester._http_client._api_budget._policies[0], UnlimitedCallRatePolicy)
+        assert isinstance(retriever.requester._http_client._api_budget._policies[0], UnlimitedCallRatePolicy)
 
     messages = [{"ts": 1577866844}, {"ts": 1577877406}]
 
@@ -192,10 +192,8 @@ def test_threads_and_messages_api_budget(
         [{"json": {"messages": messages}}, {"json": {"messages": []}}],
     )
 
-    stream_slice = list(stream.stream_slices(sync_mode=SyncMode.incremental, stream_state={}))[0]
+    list(record for partition in stream.generate_partitions() for record in partition.read())
 
-    list(stream.retriever.read_records(records_schema={}, stream_slice=stream_slice))
-
-    assert len(stream.retriever.requester._http_client._api_budget._policies) == (1 if config == "oauth" else 0)
+    assert len(retriever.requester._http_client._api_budget._policies) == (1 if config == "oauth" else 0)
     if config == "oauth":
-        assert isinstance(stream.retriever.requester._http_client._api_budget._policies[0], expected_policy)
+        assert isinstance(retriever.requester._http_client._api_budget._policies[0], expected_policy)

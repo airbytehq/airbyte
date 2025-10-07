@@ -21,6 +21,14 @@ const config = {
   },
   markdown: {
     mermaid: true,
+    preprocessor: ({filePath, fileContent}) => {
+      return fileContent
+        .replace(/\{\{product_name_sm_oss\}\}/g, 'Core')
+        .replace(/\{\{product_name_sm_enterprise\}\}/g, 'Self-Managed Enterprise')
+        .replace(/\{\{product_name_cloud_standard\}\}/g, 'Standard')
+        .replace(/\{\{product_name_cloud_pro\}\}/g, 'Pro')
+        .replace(/\{\{product_name_cloud_enterprise\}\}/g, 'Enterprise Flex');
+    },
   },
   themes: [
     "@docusaurus/theme-mermaid",
@@ -245,6 +253,33 @@ const config = {
     ({
       colorMode: {
         disableSwitch: false,
+      },
+      mermaid: {
+        theme: {
+          light: 'base',  // "base" theme is fully customizable
+          dark: 'base'
+        },
+        options: {
+          themeVariables: {
+            primaryColor: '#5F5CFF',        // Airbyte blue
+            primaryTextColor: '#FFFFFF',    // white labels on colored shapes
+            primaryBorderColor: '#1A194D',  // slightly darker for contrast
+            secondaryColor: '#FF6A4D',      // accent orange
+            // secondaryTextColor: '#FF6A4D',      // accent orange
+            // secondaryBorderColor: '#FF6A4D',      // accent orange
+            tertiaryColor: '#E8EAF6',        // light neutral fill
+            tertiaryTextColor: '#000000',    // black labels on light shapes
+            tertiaryBorderColor: '#E8EAF6',    // light neutral border
+            background: '#FFFFFF',
+            clusterBkg: '#F5F5F5',
+            fontFamily: 'var(--ifm-font-family-base)',
+          },
+          flowchart: {
+            rankSpacing: 100,   // vertical space
+            subGraphTitleMargin: 10, // space within subgraph border for title
+            nodeSpacing: 100,   // horizontal space
+          },
+        },
       },
       docs: {
         sidebar: {

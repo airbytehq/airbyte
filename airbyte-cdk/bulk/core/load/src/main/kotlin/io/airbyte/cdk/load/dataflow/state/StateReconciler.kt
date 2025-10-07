@@ -4,8 +4,9 @@
 
 package io.airbyte.cdk.load.dataflow.state
 
-import io.airbyte.cdk.load.message.CheckpointMessage
+import io.airbyte.cdk.load.dataflow.state.stats.EmittedStatsStore
 import io.airbyte.cdk.output.OutputConsumer
+import io.airbyte.protocol.models.v0.AirbyteMessage
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.time.Duration
@@ -21,20 +22,22 @@ import kotlinx.coroutines.launch
 @Singleton
 class StateReconciler(
     private val stateStore: StateStore,
+    private val emittedStatsStore: EmittedStatsStore,
     private val consumer: OutputConsumer,
-    @Named("stateReconciliationInterval")
-    reconciliationInterval: Duration?, // only java durations can be injected
+    @Named("stateReconcilerScope") private val scope: CoroutineScope,
+    @Named("stateReconcilerInterval") interval: Duration?, // only java durations can be injected
 ) {
     // allow overriding this for test purposes
-    private val reconciliationInterval = reconciliationInterval?.toKotlinDuration() ?: 30.seconds
+    private val interval = interval?.toKotlinDuration() ?: 30.seconds
     private lateinit var job: Job
 
-    fun run(scope: CoroutineScope) {
+    fun run() {
         job =
             scope.launch {
                 while (true) {
-                    delay(reconciliationInterval)
+                    delay(interval)
                     flushCompleteStates()
+                    flushEmittedStats()
                 }
             }
     }
@@ -42,13 +45,18 @@ class StateReconciler(
     fun flushCompleteStates() {
         var complete = stateStore.getNextComplete()
         while (complete != null) {
-            publish(complete)
+            publish(complete.asProtocolMessage())
             complete = stateStore.getNextComplete()
         }
     }
 
-    fun publish(msg: CheckpointMessage) {
-        consumer.accept(msg.asProtocolMessage())
+    fun flushEmittedStats() {
+        val stats = emittedStatsStore.getStats()
+        stats?.let { stats.forEach(::publish) }
+    }
+
+    fun publish(msg: AirbyteMessage) {
+        consumer.accept(msg)
     }
 
     suspend fun disable() = job.cancelAndJoin()

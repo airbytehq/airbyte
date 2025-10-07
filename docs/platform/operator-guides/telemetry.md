@@ -37,6 +37,7 @@ If you'd like to turn off telemetry data collection, follow the directions below
     tracking:
       strategy: logging
   ```
+  
   </TabItem>
 
   <TabItem value="cloud" label="Cloud">
@@ -45,8 +46,9 @@ If you'd like to turn off telemetry data collection, follow the directions below
 
   To change this later, do one of the following.
   
-  - In Airbyte, go to **Settings** > **User Settings** > **Cookie Preferences**.
-  - On Airbyte's website, click **Cookie Preferences** in the footer of our [homepage](https://airbyte.com).
+  - In the navigation bar, click your user name > **User settings** > **Cookie Preferences**.
+
+  - On Airbyte's [website](https://airbyte.com), click **Cookie Preferences** in the footer.
 
   You can't change server-side telemetry collection in Airbyte Cloud.
 

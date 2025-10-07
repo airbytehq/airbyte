@@ -50,7 +50,7 @@ the synchronization attempt will be failed. It fails with a cause being the sour
 
 The heartbeat can be configured using the file flags.yaml through 2 entries:
 
-- `hseartbeat-max-seconds-between-messages`: this configures the maximum time allowed between 2 messages.
+- `heartbeat-max-seconds-between-messages`: this configures the maximum time allowed between 2 messages.
   The default is 3 hours.
 - `heartbeat.failSync`: Setting this to true will make the syncs to fail if a missed heartbeat is detected.
   If false no sync will be failed because of a missed heartbeat. The default value is true.
