@@ -21,6 +21,8 @@ new_patch=$((patch + 1))
 new_version="${major}.${minor}.${new_patch}"
 
 # Update metadata.yaml
-yq --inplace --prettyPrint ".data.dockerImageTag = \"${new_version}\"" "$metadata_file"
+# Don't use `yq` for this. yq introduces unrelated diffs and does not preserve formatting.
+# In particular, yq may introduce diffs that cause our formatter to complain.
+sed -i '' "s/dockerImageTag: ${current_version}/dockerImageTag: ${new_version}/" "$metadata_file"
 
 echo "$new_version"
