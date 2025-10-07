@@ -113,6 +113,17 @@ def test_no_dimension_filter_config_transformation(components_module):
     assert "dimensionFilter" not in config["custom_reports_array"][0]
 
 
+def test_no_custom_report_dimension_filter_config_transformation(components_module):
+    dimension_filter_config_transformation = components_module.DimensionFilterConfigTransformation()
+
+    config = _CONFIG.copy()
+    del config["custom_reports_array"]
+
+    dimension_filter_config_transformation.transform(config)
+
+    assert "custom_reports_array" not in config
+
+
 @pytest.mark.parametrize(
     "filter_type, expected_transformed_dimension_filter",
     [
@@ -152,7 +163,7 @@ def test_no_dimension_filter_config_transformation(components_module):
         ),
     ],
 )
-def test_dimension_filter_config_transformation_groups(components_module, filter_type, expected_transformed_dimension_filter):
+def test_groups_dimension_filter_config_transformation(components_module, filter_type, expected_transformed_dimension_filter):
     dimension_filter_config_transformation = components_module.DimensionFilterConfigTransformation()
 
     config = _CONFIG.copy()
@@ -186,7 +197,7 @@ def test_dimension_filter_config_transformation_groups(components_module, filter
     assert config["custom_reports_array"][0]["dimensionFilter"] == expected_transformed_dimension_filter
 
 
-def test_dimension_filter_config_transformation_not_expression(components_module):
+def test_not_expression_dimension_filter_config_transformation(components_module):
     dimension_filter_config_transformation = components_module.DimensionFilterConfigTransformation()
 
     config = _CONFIG.copy()

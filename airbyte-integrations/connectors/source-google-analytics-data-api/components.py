@@ -112,7 +112,7 @@ class DimensionFilterConfigTransformation(RecordTransformation):
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
     ) -> None:
-        for custom_report in record["custom_reports_array"]:
+        for custom_report in record.get("custom_reports_array", []):
             if "dimensionFilter" in custom_report:
                 custom_report["dimensionFilter"] = self.transform_dimension_filter(custom_report["dimensionFilter"])
 
