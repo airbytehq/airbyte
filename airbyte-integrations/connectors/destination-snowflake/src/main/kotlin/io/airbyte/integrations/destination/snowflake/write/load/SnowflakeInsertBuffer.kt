@@ -15,6 +15,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
+import java.io.OutputStream
 import java.util.Random
 import java.util.zip.GZIPOutputStream
 import org.apache.commons.text.StringEscapeUtils
@@ -36,7 +37,7 @@ class SnowflakeInsertBuffer(
 
     @VisibleForTesting internal val buffer: InputOutputBuffer = InputOutputBuffer()
 
-    private val outputStream: GZIPOutputStream = GZIPOutputStream(buffer)
+    private val outputStream: OutputStream = CompressionOutputStream(buffer, 5)
 
     private val random: Random = Random()
 
@@ -101,6 +102,13 @@ class SnowflakeInsertBuffer(
         fun toInputStream(): InputStream {
             flush()
             return ByteArrayInputStream(this.buf, 0, this.count)
+        }
+    }
+
+    internal class CompressionOutputStream(outputStream: OutputStream, level: Int) :
+        GZIPOutputStream(outputStream) {
+        init {
+            def.setLevel(level)
         }
     }
 }
