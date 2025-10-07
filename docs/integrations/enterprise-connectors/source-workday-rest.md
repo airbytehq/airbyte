@@ -1,5 +1,5 @@
 ---
-dockerRepository: airbyte/source-workday
+dockerRepository: airbyte/source-workday-rest
 enterprise-connector: true
 ---
 # Source Workday REST
