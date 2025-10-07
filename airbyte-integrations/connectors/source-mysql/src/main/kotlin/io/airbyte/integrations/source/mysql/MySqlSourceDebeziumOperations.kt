@@ -18,9 +18,7 @@ import io.airbyte.cdk.data.FloatCodec
 import io.airbyte.cdk.data.JsonCodec
 import io.airbyte.cdk.data.JsonEncoder
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
-import io.airbyte.cdk.data.LongCodec
 import io.airbyte.cdk.data.NullCodec
-import io.airbyte.cdk.data.OffsetDateTimeCodec
 import io.airbyte.cdk.data.TextCodec
 import io.airbyte.cdk.discover.CommonMetaField
 import io.airbyte.cdk.discover.Field
