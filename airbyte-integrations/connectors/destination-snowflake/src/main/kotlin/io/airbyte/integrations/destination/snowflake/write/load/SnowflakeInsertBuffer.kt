@@ -14,7 +14,9 @@ import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
+import java.io.InputStream
 import java.util.Random
+import java.util.zip.GZIPOutputStream
 import org.apache.commons.text.StringEscapeUtils
 
 private val logger = KotlinLogging.logger {}
@@ -34,6 +36,8 @@ class SnowflakeInsertBuffer(
 
     @VisibleForTesting internal var buffer: ByteArrayOutputStream? = null
 
+    private lateinit var outputStream: GZIPOutputStream
+
     private val random: Random = Random()
 
     private val snowflakeRecordFormatter: SnowflakeRecordFormatter =
@@ -45,6 +49,7 @@ class SnowflakeInsertBuffer(
     fun accumulate(recordFields: Map<String, AirbyteValue>) {
         if (buffer == null) {
             buffer = ByteArrayOutputStream()
+            outputStream = GZIPOutputStream(buffer)
         }
         bufferCsvRecord(recordFields)
     }
@@ -54,15 +59,15 @@ class SnowflakeInsertBuffer(
             try {
                 logger.info { "Beginning insert into ${tableName.toPrettyString(quote = QUOTE)}" }
                 val fileName = "snowflake${java.lang.Long.toUnsignedString(random.nextLong())}.csv.gz"
-                buffer?.flush()
-                val inputStream = ByteArrayInputStream(b.toByteArray())
+
+                val inputStream = getInputStream(b)
 
                 inputStream.use {
                     snowflakeClient.uploadToStage(
                         tableName = tableName,
                         inputStream = inputStream,
                         fileName = fileName,
-                        compressData = true,
+                        compressData = false,
                     )
                 }
                 snowflakeClient.copyFromStage(tableName, fileName)
@@ -89,8 +94,16 @@ class SnowflakeInsertBuffer(
                             else -> col.toString()
                         }
                     }
-            b.write(line.toByteArray())
+            outputStream.write(line.toByteArray())
             recordCount++
         }
+    }
+
+    @VisibleForTesting
+    internal fun getInputStream(buffer: ByteArrayOutputStream): InputStream {
+        // Flush and close the GZIP output stream to finalize the compressed contents
+        outputStream.flush()
+        outputStream.close()
+        return ByteArrayInputStream(buffer.toByteArray())
     }
 }
