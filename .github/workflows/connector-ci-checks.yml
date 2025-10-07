@@ -89,43 +89,15 @@ jobs:
       - name: Generate Connector Matrix from Changes
         id: generate-matrix
         run: |
-          # Get the list of all modified connectors
-          echo "connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json)" | tee -a $GITHUB_OUTPUT
+          # Get the list of all modified connectors for basic matrix
+          echo "connectors_matrix=$(poe get-modified-connectors --json)" | tee -a $GITHUB_OUTPUT
 
-          # Get JVM connectors list (for language detection in enhanced matrix)
-          if [[ "${{ steps.cdk-changes.outputs.java-cdk == 'true' }}" == "true" ]]; then
-            jvm_connectors=$(./poe-tasks/get-modified-connectors.sh --local-cdk)
+          # Generate enhanced matrix with language and runner information
+          if [[ "${{ steps.cdk-changes.outputs.java-cdk }}" == "true" ]]; then
+            enhanced_matrix=$(poe generate-connector-matrix "${{ github.repository }}" --local-cdk)
           else
-            jvm_connectors=$(./poe-tasks/get-modified-connectors.sh --java)
+            enhanced_matrix=$(poe generate-connector-matrix "${{ github.repository }}")
           fi
-
-          # Get all connectors as JSON
-          all_connectors_json=$(./poe-tasks/get-modified-connectors.sh --json)
-
-          # Determine JVM runner type
-          if [[ "${{ github.repository }}" == "airbytehq/airbyte" || "${{ github.repository }}" == "airbytehq/airbyte-enterprise" ]]; then
-            jvm_runner="linux-24.04-large"
-          else
-            jvm_runner="ubuntu-24.04"
-          fi
-
-          # Convert JVM connectors list to JSON array for easier matching
-          jvm_array=$(echo "$jvm_connectors" | jq -R . | jq -s .)
-
-          # Create enhanced matrix with language and runner information
-          enhanced_matrix=$(echo "$all_connectors_json" | jq -c \
-            --argjson jvm_array "$jvm_array" \
-            --arg jvm_runner "$jvm_runner" '
-            {
-              include: [
-                .connector[] | {
-                  connector: .,
-                  language: (if ($jvm_array | index(.)) then "java" else "python" end),
-                  runner: (if ($jvm_array | index(.)) then $jvm_runner else "ubuntu-24.04" end)
-                }
-              ]
-            }
-          ')
 
           echo "connectors_test_matrix=$enhanced_matrix" | tee -a $GITHUB_OUTPUT
 

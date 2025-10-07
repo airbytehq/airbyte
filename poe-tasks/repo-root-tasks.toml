@@ -26,12 +26,11 @@ pnpm build
 
 [tasks.get-modified-connectors]
 help = """List Airbyte connectors modified. This considers all committed, staged, unstaged, and untracked files."""
-shell = '''
-./poe-tasks/get-modified-connectors.sh ${java_filter}
-'''
-args = [
-  { name = "java_filter", positional = true, multiple = true, help = "Optional. To filter Java connectors, pass either 'java-only' or 'no-java'" },
-]
+cmd = "./poe-tasks/connector_matrix.py list-connectors"
+
+[tasks.generate-connector-matrix]
+help = """Generate enhanced GitHub Actions matrix with language detection and runner assignment"""
+cmd = "./poe-tasks/connector_matrix.py generate-matrix"
 
 [tasks.connector]
 help = """Run a poe task in a connector's directory. Usage: poe connector <connector-name> <task> [args...]
