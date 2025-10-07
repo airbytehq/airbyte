@@ -137,7 +137,7 @@ class AirbyteValueProxyTest {
                 data.add(protoField)
             }
 
-            val proxy = AirbyteValueProtobufProxy(data)
+            @Suppress("DEPRECATION") val proxy = AirbyteValueProtobufProxy(data)
             validate(objectTree, proxy)
         }
     }
