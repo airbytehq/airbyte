@@ -38,4 +38,3 @@ tasks.withType(Test).configureEach {
             '--add-opens=java.base/sun.nio.ch=ALL-UNNAMED'
     )
 }
-
