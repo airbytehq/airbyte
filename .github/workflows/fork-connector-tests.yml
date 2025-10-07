@@ -28,6 +28,12 @@ jobs:
           private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
           owner: ${{ github.event.pull_request.head.repo.owner.login }}
 
+      - name: Skip message for missing GitHub App
+        if: steps.get-app-token.outcome != 'success'
+        run: |
+          echo "Skipping fork connector tests - GitHub App not installed on fork"
+          echo "Fork owner '${{ github.event.pull_request.head.repo.owner.login }}' needs to install the Airbyte GitHub App"
+
       - name: Post pending commit status
         if: steps.get-app-token.outcome == 'success'
         run: |
@@ -102,9 +108,3 @@ jobs:
             The connector tests ran in your fork's repository context using your BYO secrets.
 
             [View test results](${{ steps.trigger-tests.outputs.workflow-url }})
-
-      - name: Skip message for missing GitHub App
-        if: steps.get-app-token.outcome != 'success'
-        run: |
-          echo "Skipping fork connector tests - GitHub App not installed on fork"
-          echo "Fork owner '${{ github.event.pull_request.head.repo.owner.login }}' needs to install the Airbyte GitHub App"
