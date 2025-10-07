@@ -1,8 +1,8 @@
-#!/usr/bin/env -S uv run --script
+#!/usr/bin/env -S uv run --python 3.12 --script
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 # /// script
-# requires-python = ">=3.10"
+# requires-python = "==3.12"
 # dependencies = []
 # ///
 
@@ -17,6 +17,10 @@ Functions are designed to be called by poethepoet script tasks.
 
 Usage
 -----
+Run doctests to verify utility functions:
+
+    ./poe-tasks/connector_matrix.py --run-tests
+
 List modified connectors (regular git detection):
 
     poe get-modified-connectors --json
@@ -48,6 +52,7 @@ All tests should pass. The doctests demonstrate expected behavior for:
 - Output formatting (JSON vs text)
 """
 
+import doctest
 import json
 import re
 import subprocess
@@ -409,3 +414,22 @@ def generate_enhanced_matrix(
         print(return_empty_json())
     else:
         print(json.dumps({"include": matrix_items}))
+
+
+if __name__ == "__main__":
+    if "--run-tests" in sys.argv:
+        print("Running doctests...", file=sys.stderr)
+        result = doctest.testmod(verbose=True)
+        if result.failed == 0:
+            print(f"\n✅ All {result.attempted} doctests passed!", file=sys.stderr)
+            sys.exit(0)
+        else:
+            print(f"\n❌ {result.failed} of {result.attempted} doctests failed!", file=sys.stderr)
+            sys.exit(1)
+    else:
+        print("Usage:", file=sys.stderr)
+        print("  ./poe-tasks/connector_matrix.py --run-tests", file=sys.stderr)
+        print("\nThis script is designed to be called via poethepoet:", file=sys.stderr)
+        print("  poe get-modified-connectors [flags]", file=sys.stderr)
+        print("  poe generate-connector-matrix <repo> [flags]", file=sys.stderr)
+        sys.exit(1)
