@@ -1,0 +1,10 @@
+extends: substitution
+level: warning
+message: "When talking about Airbyte plan names in connectors docs, use '{{match}}' instead of the '{{suggestion}}' variable because the in-app MarkDown processor doesn't support it yet."
+ignorecase: false
+swap:
+  Self-Managed Enterprise: "{{product_name_sm_enterprise}}"
+  Core: "{{product_name_sm_oss}}"
+  Standard: "{{product_name_cloud_standard}}"
+  Pro: "{{product_name_cloud_pro}}"
+  Enterprise Flex: "{{product_name_cloud_enterprise}}"
