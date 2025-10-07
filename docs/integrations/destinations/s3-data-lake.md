@@ -338,6 +338,7 @@ Now, you can identify the latest version of the 'Alice' record by querying wheth
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------|
+| 0.3.39 | 2025-10-07 | [67555](https://github.com/airbytehq/airbyte/pull/67555) | Upgrade to Bulk CDK 0.1.47. |
 | 0.3.38  | 2025-10-07 | [67005](https://github.com/airbytehq/airbyte/pull/67005)   | Fix: Treat empty string role_arn as null to prevent misleading config errors                                                    |
 | 0.3.37  | 2025-10-07 | [67150](https://github.com/airbytehq/airbyte/pull/67150)   | Fix check operation to use unique table names, preventing conflicts with stale metadata and concurrent operations              |
 | 0.3.36  | 2025-09-25 | [66711](https://github.com/airbytehq/airbyte/pull/66711)   | CHECK operation uses configured default dataset instead of `airbyte_test_namespace`                                             |
