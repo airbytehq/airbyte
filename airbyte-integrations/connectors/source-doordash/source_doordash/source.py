@@ -1,3 +1,4 @@
+
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
@@ -8,7 +9,9 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
+
 from datetime import datetime, timedelta
+
 import pytz
 import time
 import tempfile
@@ -16,6 +19,10 @@ import zipfile
 import os
 import csv
 
+
+
+import math
+import base64
 
 class DoordashStream(HttpStream, ABC):
     url_base = 'https://openapi.doordash.com/dataexchange/v1/reports'
@@ -156,7 +163,11 @@ class SourceDoordash(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
             url_base = 'https://openapi.doordash.com/dataexchange/v1/reports'
-            auth = TokenAuthenticator(token=config['api_key'])
+            sToken = self.generate_jwt(config);
+          #  sToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImRkLXZlciI6IkRELUpXVC1WMSJ9.eyJraWQiOiI0YmRiYzk4ZS01ZGEwLTQ0ODAtOTAyNC1kNGQ4NWVmYTgwMDEiLCJleHAiOjE3NTkyNzYwNTcsImlhdCI6MTc1OTI3NTc1NywiaXNzIjoiZTcyYTIxNWYtOTRkMC00YWRhLWFkMDAtOWIxOTk4NmQwNDZmIiwiYXVkIjoiZG9vcmRhc2gifQ.9UPB2SRYCr7OkOOHVkV0bN3moES2hC14uBRIBC0M9S0";";
+            auth = TokenAuthenticator(token=sToken)
+            # auth = TokenAuthenticator(token=config['api_key'])
+
             body = { 
                 "store_ids": [],
                 "start_date": "2023-01-01",
@@ -164,6 +175,7 @@ class SourceDoordash(AbstractSource):
                 "report_type": "ORDER_DETAIL",
                 "report_version": 2
             }
+            #print (auth.get_auth_header())
             response = requests.post(url_base, headers=auth.get_auth_header(), json=body)
             response.raise_for_status()
             return True, None
@@ -171,7 +183,25 @@ class SourceDoordash(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        auth = TokenAuthenticator(token=config['api_key'])  
+        # Use JWT for authentication.
+        sToken = self.generate_jwt(config);
+        #sToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImRkLXZlciI6IkRELUpXVC1WMSJ9.eyJraWQiOiI0YmRiYzk4ZS01ZGEwLTQ0ODAtOTAyNC1kNGQ4NWVmYTgwMDEiLCJleHAiOjE3NTk0MjY4NTAsImlhdCI6MTc1OTQyNTA1MCwiaXNzIjoiZTcyYTIxNWYtOTRkMC00YWRhLWFkMDAtOWIxOTk4NmQwNDZmIiwiYXVkIjoiZG9vcmRhc2gifQ.CUSBk0QkegxB9KpxcYJM3qxGkWEszUdrMI0IzjUxnT0";
+        auth = TokenAuthenticator(token=sToken)  
+        # auth = TokenAuthenticator(token=config['api_key'])
+        print (auth.get_auth_header())
         return [OrderDetails(authenticator=auth, config=config), 
                 TransactionDetails(authenticator=auth, config=config),
                 TemporaryDeactivations(authenticator=auth, config=config)]
+    
+  
+    def generate_jwt(self,config: Mapping[str, Any]) -> str:
+
+        response = requests.get(config.get('airbytehelpers_doordash_url'))
+
+        response.raise_for_status()
+        if response.status_code != 200:
+            raise Exception("Error getting jwt from jwt service")
+        return response.json()['token']
+    
+
+
