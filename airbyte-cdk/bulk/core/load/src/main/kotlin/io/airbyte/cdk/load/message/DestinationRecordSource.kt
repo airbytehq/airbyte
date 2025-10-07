@@ -81,6 +81,7 @@ value class DestinationRecordProtobufSource(val source: AirbyteMessageProtobuf) 
     override fun asJsonRecord(orderedSchema: Array<FieldAccessor>): JsonNode =
         asAirbyteValueProxy().asJson(orderedSchema)
 
+    @Suppress("DEPRECATION")
     override fun asAirbyteValueProxy(): AirbyteValueProxy =
         AirbyteValueProtobufProxy(source.record.dataList)
 }
