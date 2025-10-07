@@ -17,7 +17,7 @@ import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.spec.DestinationSpecificationExtension
 import io.airbyte.cdk.ssh.MicronautPropertiesFriendlySshTunnelMethodConfigurationSpecification
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
-import io.airbyte.integrations.destination.clickhouse.write.load.ClickhouseDirectLoader.Constants.MAX_BATCH_SIZE_RECORDS
+import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration.Defaults.RECORDS_PER_AGGREGATE
 import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.micronaut.context.annotation.ConfigurationBuilder
 import io.micronaut.context.annotation.Requires
@@ -109,7 +109,7 @@ class ClickhouseSpecificationOss : ClickhouseSpecification() {
     )
     @get:JsonProperty("record_window_size")
     @get:JsonSchemaInject(json = """{"order": 8}""")
-    override val recordWindowSize: Long? = MAX_BATCH_SIZE_RECORDS
+    override val recordWindowSize: Long? = RECORDS_PER_AGGREGATE
 }
 
 @Singleton
@@ -186,7 +186,7 @@ open class ClickhouseSpecificationCloud : ClickhouseSpecification() {
     )
     @get:JsonProperty("record_window_size")
     @get:JsonSchemaInject(json = """{"order": 8}""")
-    override val recordWindowSize: Long? = MAX_BATCH_SIZE_RECORDS
+    override val recordWindowSize: Long? = RECORDS_PER_AGGREGATE
 }
 
 enum class ClickhouseConnectionProtocol(@get:JsonValue val value: String) {

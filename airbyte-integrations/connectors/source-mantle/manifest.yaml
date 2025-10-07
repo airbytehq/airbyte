@@ -82,7 +82,7 @@ definitions:
             inject_into: request_parameter
           pagination_strategy:
             type: CursorPagination
-            page_size: 500
+            page_size: 10000
             cursor_value: "{{response['cursor']}}"
             stop_condition: "{{ response.hasNextPage is false }}"
         requester:
@@ -103,6 +103,7 @@ definitions:
           $ref: "#/schemas/subscriptions"
       incremental_sync:
         type: DatetimeBasedCursor
+        step: P1D
         cursor_field: createdAt
         end_datetime:
           type: MinMaxDatetime
@@ -117,10 +118,12 @@ definitions:
           type: RequestOption
           field_name: endDate
           inject_into: request_parameter
+        lookback_window: PT1H
         start_time_option:
           type: RequestOption
           field_name: startDate
           inject_into: request_parameter
+        cursor_granularity: PT0.001S
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
   base_requester:
@@ -161,14 +164,14 @@ metadata:
   testedStreams:
     customers:
       hasRecords: true
-      streamHash: 07b7c3c5d526a0f2752fd70387c08046c2d51fab
+      streamHash: c2aa0aae068606353f572dce2f7fcbb1bea7cb0b
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     subscriptions:
       hasRecords: true
-      streamHash: 91b908973a8502069dc9c8b8fcec85eaf6896ea0
+      streamHash: 28ea0881f084a88638cf3fad7abe79cef3e21059
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -203,6 +206,10 @@ schemas:
         type:
           - array
           - "null"
+        items:
+          type:
+            - string
+            - "null"
       test:
         type:
           - boolean
@@ -507,6 +514,10 @@ schemas:
                   type:
                     - boolean
                     - "null"
+                cancelOn:
+                  type:
+                    - string
+                    - "null"
                 subtotal:
                   type:
                     - number
@@ -712,10 +723,6 @@ schemas:
             type:
               - array
               - "null"
-          deprecatedAt:
-            type:
-              - string
-              - "null"
           shopifyPlans:
             type:
               - array
@@ -751,6 +758,10 @@ schemas:
       active:
         type:
           - boolean
+          - "null"
+      frozenAt:
+        type:
+          - string
           - "null"
       subtotal:
         type:
@@ -795,6 +806,10 @@ schemas:
               type:
                 - string
                 - "null"
+      canceledAt:
+        type:
+          - string
+          - "null"
       activatedAt:
         type:
           - string

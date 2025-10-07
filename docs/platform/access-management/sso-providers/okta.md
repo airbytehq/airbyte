@@ -16,7 +16,7 @@ This guide is for administrators. It assumes you have:
 
 - Basic knowledge of Okta, OpenID Connect (OIDC), and Airbyte
 - The permissions to manage Okta in your organization
-- The permissions to manage Airbyte in your organization
+- Organization admin permissions for Airbyte
 
 The exact process differs between the Cloud or Self-Managed versions of Airbyte. Steps for both are below.
 
@@ -60,15 +60,17 @@ Follow these steps to set up SSO in Airbyte Cloud.
 
     - Leave other values as defaults unless you have a reason to change them.
 
-3. Click **Save**.
+4. Click **Save**.
 
 #### Configure SSO in Airbyte
 
-1. In Airbyte, click **Settings**.
+1. In Airbyte, click **Organization settings** > **General**.
 
-2. Under **Organization**, click **General**.
+    :::info
+    Currently, this portion of the setup can only be done by an Airbyte employee. Contact Support to proceed.
+    :::
 
-3. Click **Set up SSO**, then input the following information.
+2. Click **Set up SSO**, then input the following information.
 
     - **Email domain**: The full email domain of users who sign in to Okta. For example, `airbyte.io`.
 
@@ -90,9 +92,9 @@ Follow these steps to set up SSO in Airbyte Cloud.
 
       - It's often your organization name or domain. For example, `airbyte`.
 
-4. Click **Save changes**.
+3. Click **Save changes**.
 
-5. Test SSO to make sure people can access Airbyte. **Stay logged in so you don't lock yourself out** and ask a colleague to complete the following steps.
+4. Test SSO to make sure people can access Airbyte. **Stay logged in so you don't lock yourself out** and ask a colleague to complete the following steps.
 
     1. Sign out of Airbyte.
 
@@ -264,9 +266,10 @@ global:
   auth:
     identityProvider: 
       type: generic-oidc
-      generic-oidc: 
+      genericOidc: 
         clientId: YOUR_CLIENT_ID
         audience: YOUR_AUDIENCE
+        extraScopes: YOUR_EXTRA_SCOPES
         issuer: YOUR_ISSUER
         endpoints: 
           authorizationServerEndpoint: YOUR_AUTH_ENDPOINT
@@ -278,6 +281,8 @@ You collect these values from Okta in the locations shown below.
 - `clientId`: In Okta's administrator panel, **Applications** > **Applications** > **Airbyte** > **General** tab > **Client ID**.
 
 - `audience`: In Okta's administrator panel, **Security** > **API** > **Authorization Servers** tab > **Audience**. Choose the audience for the authorization server you're using with Airbyte.
+
+- `extraScopes`: If you've defined extra scopes in your authorization server, you can reference them here. Extra scopes are included in the authorization code flow and are sometimes required to provide web apps like Airbyte with valid JSON web tokens. In Okta's administrator panel, **Security** > **API** > **Authorization Servers** tab > your authorization server > **Scopes**.
 
 - `issuer`: In your well-known endpoint, use the `issuer`.
 
