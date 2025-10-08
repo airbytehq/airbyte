@@ -14,33 +14,34 @@ This script replaces get-modified-connectors.sh with a more maintainable Python 
 It detects modified connector directories and outputs them in text or JSON format for CI workflows.
 
 Usage:
+    # Show usage syntax:
+    poe get-modified-connectors --help
+
+    # Get modified connectors compared to master:
     poe get-modified-connectors
-
     poe get-modified-connectors --json
-
     poe get-modified-connectors --java --json
-
     poe get-modified-connectors --no-java --json
-
     poe get-modified-connectors --certified --json
-
     poe get-modified-connectors --no-certified --json
-
     poe get-modified-connectors --local-cdk --json
 
+    # Get modified connectors with overridden files list:
     poe get-modified-connectors --files-list "airbyte-integrations/connectors/source-faker/metadata.yaml,airbyte-integrations/connectors/destination-bigquery/README.md"
 
-Testing:
-    ./poe-tasks/get_connector_matrix.py --run-tests
-
-    python -m doctest poe-tasks/get_connector_matrix.py -v
+    # Run all tests:
+    poe get-modified-connectors --run-tests
 
 Contributing:
     When adding new functions to this script, please include doctests that demonstrate
     the expected behavior. Doctests serve as both documentation and unit tests.
 
-    For more information on doctests, see:
-    https://docs.python.org/3/library/doctest.html
+    Confirm your changes work by running:
+        poe get-modified-connectors --run-tests
+    Or:
+        uv run poe-tasks/get_connector_matrix.py --run-tests
+
+    For more information on doctests, see: https://docs.python.org/3/library/doctest.html
 """
 
 import json
@@ -426,7 +427,7 @@ def run_doctests() -> None:
     import doctest
 
     print("🧪 Running doctests...")
-    results = doctest.testmod(verbose=False)
+    results = doctest.testmod(verbose=True)
 
     if results.failed == 0:
         print(f"✅ All {results.attempted} doctests passed!")
