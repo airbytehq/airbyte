@@ -22,6 +22,38 @@ connectionSpecification:
         - client_credentials
       default: refresh_token
       order: 2
+    client_id:
+      title: Client ID
+      description: Enter your Salesforce developer application's <a
+        href="https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG">Client ID</a>
+      type: string
+      order: 3
+    client_secret:
+      title: Client Secret
+      description: Enter your Salesforce developer application's <a
+        href="https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG">Client secret</a>
+      type: string
+      airbyte_secret: true
+      order: 4
+    refresh_token:
+      title: Refresh Token
+      description: >-
+        Enter your application's <a
+        href="https://developer.salesforce.com/docs/atlas.en-us.mobile_sdk.meta/mobile_sdk/oauth_refresh_token_flow.htm">Salesforce Refresh Token</a> used for Airbyte to access your Salesforce account. Required when using refresh token authentication.
+      type: string
+      airbyte_secret: true
+      order: 5
+    domain_url:
+      title: Domain URL
+      description: >-
+        Enter your Salesforce domain URL in the format: https://your-domain.my.salesforce.com 
+        (e.g., https://contorix-dev-ed.develop.my.salesforce.com). Required when using client credentials authentication.
+      type: string
+      pattern: "^https://[a-zA-Z0-9.-]+\\.(my\\.)?salesforce\\.com$"
+      examples:
+        - "https://contorix-dev-ed.develop.my.salesforce.com"
+        - "https://mycompany.my.salesforce.com"
+      order: 5
     start_date:
       title: Start Date
       description: >-
@@ -82,72 +114,10 @@ connectionSpecification:
             order: 2
       title: Filter Salesforce Objects
       description: Add filters to select only required stream based on `SObject` name. Use this field to filter which tables are displayed by this connector. This is useful if your Salesforce account has a large number of tables (>1000), in which case you may find it easier to navigate the UI and speed up the connector's performance if you restrict the tables displayed by this connector.
-  allOf:
-    - if:
-        properties:
-          auth_type:
-            const: refresh_token
-      then:
-        required:
-          - client_id
-          - client_secret
-          - refresh_token
-        properties:
-          client_id:
-            title: Client ID
-            description: Enter your Salesforce developer application's <a
-              href="https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG">Client ID</a>
-            type: string
-            order: 3
-          client_secret:
-            title: Client Secret
-            description: Enter your Salesforce developer application's <a
-              href="https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG">Client secret</a>
-            type: string
-            airbyte_secret: true
-            order: 4
-          refresh_token:
-            title: Refresh Token
-            description: >-
-              Enter your application's <a
-              href="https://developer.salesforce.com/docs/atlas.en-us.mobile_sdk.meta/mobile_sdk/oauth_refresh_token_flow.htm">Salesforce Refresh Token</a> used for Airbyte to access your Salesforce account.
-            type: string
-            airbyte_secret: true
-            order: 5
-    - if:
-        properties:
-          auth_type:
-            const: client_credentials
-      then:
-        required:
-          - client_id
-          - client_secret
-          - domain_url
-        properties:
-          client_id:
-            title: Client ID
-            description: Enter your Salesforce developer application's <a
-              href="https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG">Client ID</a>
-            type: string
-            order: 3
-          client_secret:
-            title: Client Secret
-            description: Enter your Salesforce developer application's <a
-              href="https://developer.salesforce.com/forums/?id=9062I000000DLgbQAG">Client secret</a>
-            type: string
-            airbyte_secret: true
-            order: 4
-          domain_url:
-            title: Domain URL
-            description: >-
-              Enter your Salesforce domain URL in the format: https://your-domain.my.salesforce.com 
-              (e.g., https://contorix-dev-ed.develop.my.salesforce.com). This is required for client credentials authentication.
-            type: string
-            pattern: "^https://[a-zA-Z0-9.-]+\\.(my\\.)?salesforce\\.com$"
-            examples:
-              - "https://contorix-dev-ed.develop.my.salesforce.com"
-              - "https://mycompany.my.salesforce.com"
-            order: 5
+  required:
+    - auth_type
+    - client_id
+    - client_secret
 advanced_auth:
   auth_flow_type: oauth2.0
   predicate_key:
