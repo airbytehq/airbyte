@@ -93,12 +93,6 @@ class PostgresDirectLoadSqlGenerator {
             .andLog()
     }
 
-    /**
-     * CREATE TABLE new_table AS
-     * SELECT *
-     * FROM existing_table;
-     */
-    @Suppress("UNUSED_PARAMETER")
     //I'm not sure if this is right. I'm assuming one table exists, and the other doesn't
     fun copyTable(
         columnNameMapping: ColumnNameMapping,
