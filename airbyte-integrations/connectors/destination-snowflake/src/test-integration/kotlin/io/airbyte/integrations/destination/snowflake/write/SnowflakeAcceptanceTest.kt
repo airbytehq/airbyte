@@ -11,6 +11,8 @@ import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
+import io.airbyte.cdk.load.test.util.NameMapper
+import io.airbyte.cdk.load.test.util.NoopNameMapper
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
@@ -41,6 +43,7 @@ class SnowflakeInsertAcceptanceTest :
                 SnowflakeConfigurationFactory().make(spec as SnowflakeSpecification)
             },
         recordMapper = SnowflakeExpectedRecordMapper,
+        nameMapper = SnowflakeNameMapper(),
     ) {
     @Test
     override fun testFunkyCharactersDedup() {
@@ -56,6 +59,7 @@ class SnowflakeInsertProtoAcceptanceTest :
                 SnowflakeConfigurationFactory().make(spec as SnowflakeSpecification)
             },
         recordMapper = SnowflakeExpectedRecordMapper,
+        nameMapper = SnowflakeNameMapper(),
         dataChannelFormat = DataChannelFormat.PROTOBUF,
         dataChannelMedium = DataChannelMedium.SOCKET,
         unknownTypesBehavior = UnknownTypesBehavior.NULL,
@@ -75,6 +79,7 @@ class SnowflakeRawInsertAcceptanceTest :
                 SnowflakeConfigurationFactory().make(spec as SnowflakeSpecification)
             },
         recordMapper = SnowflakeExpectedRawRecordMapper,
+        nameMapper = NoopNameMapper,
         isStreamSchemaRetroactive = false,
         dedupBehavior = null,
         nullEqualsUnset = false,
@@ -94,6 +99,7 @@ class SnowflakeRawInsertProtoAcceptanceTest :
                 SnowflakeConfigurationFactory().make(spec as SnowflakeSpecification)
             },
         recordMapper = SnowflakeExpectedRawRecordMapper,
+        nameMapper = NoopNameMapper,
         isStreamSchemaRetroactive = false,
         isStreamSchemaRetroactiveForUnknownTypeToString = false,
         dedupBehavior = null,
@@ -115,6 +121,7 @@ abstract class SnowflakeAcceptanceTest(
     dataChannelFormat: DataChannelFormat = DataChannelFormat.JSONL,
     dataDumper: DestinationDataDumper,
     recordMapper: ExpectedRecordMapper,
+    nameMapper: NameMapper,
     isStreamSchemaRetroactive: Boolean = true,
     isStreamSchemaRetroactiveForUnknownTypeToString: Boolean = true,
     dedupBehavior: DedupBehavior? = DedupBehavior(DedupBehavior.CdcDeletionMode.HARD_DELETE),
@@ -156,6 +163,7 @@ abstract class SnowflakeAcceptanceTest(
         dataChannelFormat = dataChannelFormat,
         mismatchedTypesUnrepresentable = false,
         recordMangler = recordMapper,
+        nameMapper = nameMapper,
         coercesLegacyUnions = coercesLegacyUnions,
     ) {
 
