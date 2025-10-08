@@ -12,6 +12,7 @@ import io.airbyte.cdk.output.sockets.DATA_CHANNEL_PROPERTY_PREFIX
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.airbyte.integrations.source.datagen.flavor.Flavor
+import io.airbyte.integrations.source.datagen.flavor.all_types.TypesFlavor
 import io.airbyte.integrations.source.datagen.flavor.increment.IncrementFlavor
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
@@ -79,11 +80,15 @@ constructor(
             }
         log.info { "Effective concurrency: $maxConcurrency" }
 
-        // TODO: use factory method to select and instantiate flavor
+        val flavorSpec = pojo.getFlavor()
+        val flavor: Flavor = when (flavorSpec) {
+            Incremental -> IncrementFlavor
+            Types -> TypesFlavor
+        }
 
         return DataGenSourceConfiguration(
             maxConcurrency = maxConcurrency,
-            flavor = IncrementFlavor,
+            flavor = flavor,
             maxRecords = pojo.maxRecords
         )
     }

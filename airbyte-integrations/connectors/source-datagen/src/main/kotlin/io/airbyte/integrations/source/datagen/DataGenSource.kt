@@ -19,14 +19,14 @@ object DataGenSource {
             }
         }
 
-//        val rootPath = "/Users/sophie.c/dev/airbytestuff/secrets"
-//        val configPath = "$rootPath/config.json"
-//        val catalogPath = "$rootPath/catalog.json"
-//        val statePath = "$rootPath/state.json"
-//        val checkArgs = arrayOf("--check", "--config", configPath)
-//        val discoverArgs = arrayOf("--discover", "--config", configPath)
-//        val readArgs = arrayOf("--read", "--config", configPath, "--catalog", catalogPath)
+        val rootPath = "/Users/sophie.c/dev/airbytestuff/secrets"
+        val configPath = "$rootPath/config.json"
+        val catalogPath = "$rootPath/catalog.json"
+        val statePath = "$rootPath/state.json"
+        val checkArgs = arrayOf("--check", "--config", configPath)
+        val discoverArgs = arrayOf("--discover", "--config", configPath)
+        val readArgs = arrayOf("--read", "--config", configPath, "--catalog", catalogPath)
 
-        AirbyteSourceRunner.run(*args)
+        AirbyteSourceRunner.run(*readArgs)
     }
 }

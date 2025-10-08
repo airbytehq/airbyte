@@ -21,25 +21,22 @@ sealed interface AirbyteSchemaType {
 }
 
 data class ArrayAirbyteSchemaType(
-    val item: AirbyteSchemaType? = null,
+    val item: AirbyteSchemaType,
 ) : AirbyteSchemaType {
     override fun asJsonSchemaType(): JsonSchemaType {
         val builder = JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.ARRAY)
-        if (item != null) {
-            builder.withItems(item.asJsonSchemaType())
-        }
-        return builder.build()
+        return builder.withItems(item.asJsonSchemaType()).build()
     }
 }
 
  data class ObjectAirbyteSchemaType(
-    val properties: LinkedHashMap<String, AirbyteSchemaType>? = null,
+    val properties: LinkedHashMap<String, AirbyteSchemaType>,
     val additionalProperties: Boolean = true,
     val required: List<String> = emptyList()
  ) : AirbyteSchemaType {
     override fun asJsonSchemaType(): JsonSchemaType {
         val builder = JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.OBJECT)
-        properties?.forEach { (name, _) ->
+        properties.forEach { (name, _) ->
             builder.withLegacyAirbyteTypeProperty(name)
         }
         return builder.build()

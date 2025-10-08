@@ -2,13 +2,14 @@ package io.airbyte.integrations.source.datagen.flavor.all_types
 
 import io.airbyte.cdk.discover.Field
 import io.airbyte.integrations.source.datagen.ArrayFieldType
-import io.airbyte.integrations.source.datagen.ArrayWithoutSchemaFieldType
+import io.airbyte.integrations.source.datagen.BigDecimalFieldType
+import io.airbyte.integrations.source.datagen.BigIntegerFieldType
 import io.airbyte.integrations.source.datagen.BooleanFieldType
 import io.airbyte.integrations.source.datagen.DateFieldType
 import io.airbyte.integrations.source.datagen.IntegerFieldType
-import io.airbyte.integrations.source.datagen.ObjectFieldType
-import io.airbyte.integrations.source.datagen.ObjectWithEmptySchemaFieldType
-import io.airbyte.integrations.source.datagen.ObjectWithoutSchemaFieldType
+import io.airbyte.integrations.source.datagen.JsonFieldType
+import io.airbyte.integrations.source.datagen.NumberFieldType
+//import io.airbyte.integrations.source.datagen.ObjectFieldType
 import io.airbyte.integrations.source.datagen.StringFieldType
 import io.airbyte.integrations.source.datagen.TimeWithTimeZoneFieldType
 import io.airbyte.integrations.source.datagen.TimeWithoutTimeZoneFieldType
@@ -26,26 +27,27 @@ data object TypesFlavor : Flavor {
             typesTableName to
                 listOf(
                     Field("id", IntegerFieldType),
+                    Field("big integer", BigIntegerFieldType),
                     Field("string", StringFieldType),
                     Field("boolean", BooleanFieldType),
+                    Field("number", NumberFieldType),
+                    Field("big decimal", BigDecimalFieldType),
                     Field("date", DateFieldType),
                     Field("time with time zone", TimeWithTimeZoneFieldType),
                     Field("time without time zone", TimeWithoutTimeZoneFieldType),
                     Field("timestamp with time zone", TimestampWithTimeZoneFieldType),
                     Field("timestamp without time zone", TimestampWithoutTimeZoneFieldType),
+                    Field("json", JsonFieldType),
                     Field("array", ArrayFieldType(IntegerFieldType)),
-                    Field("array without schema", ArrayWithoutSchemaFieldType),
-                    Field("object", ObjectFieldType(
-                        linkedMapOf(
-                            "id" to IntegerFieldType,
-                            "name" to StringFieldType)
-                        )
-                    ),
-                    Field("object with empty schema", ObjectWithEmptySchemaFieldType()),
-                    Field("object without schema", ObjectWithoutSchemaFieldType),
+//                    Field("object", ObjectFieldType(
+//                        linkedMapOf(
+//                            "id" to IntegerFieldType,
+//                            "name" to StringFieldType)
+//                        )
+//                    ),
                 )
         )
-    override val primaryKeys = mapOf(typesTableName to listOf(listOf(("id"))))
+    override val primaryKeys = mapOf(typesTableName to listOf(listOf(("string"))))
 
     override val dataGenerator = TypesDataGenerator()
 }

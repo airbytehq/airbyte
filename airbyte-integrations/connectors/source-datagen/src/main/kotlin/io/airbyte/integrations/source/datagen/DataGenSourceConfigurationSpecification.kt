@@ -56,6 +56,7 @@ class DataGenSourceConfigurationSpecification : ConfigurationSpecification() {
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "data_type")
 @JsonSubTypes(
     JsonSubTypes.Type(value = Incremental::class, name = "incremental"),
+    JsonSubTypes.Type(value = Types::class, name = "types"),
 )
 @JsonSchemaTitle("Data Type")
 @JsonSchemaDescription("Configures what kind of data is generated for the source.")
@@ -66,3 +67,9 @@ sealed interface FlavorSpec
     "Generates incrementally increasing numerical data for the source.",
 )
 data object Incremental : FlavorSpec
+
+@JsonSchemaTitle("All Types")
+@JsonSchemaDescription(
+    "Generates one column per data type for the source.",
+)
+data object Types : FlavorSpec
