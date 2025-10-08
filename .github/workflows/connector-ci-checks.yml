@@ -50,7 +50,7 @@ jobs:
     steps:
       - name: Checkout Current Branch
         id: checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
           repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
           ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
@@ -78,7 +78,7 @@ jobs:
           git fetch --quiet upstream master
 
       - id: cdk-changes
-        uses: dorny/paths-filter@v2
+        uses: dorny/paths-filter@4512585405083f25c027a35db413c2b3b9006d50 # v2.11.1
         with:
           # Note: expressions within a filter are OR'ed
           filters: |
@@ -138,7 +138,7 @@ jobs:
       - name: Checkout Airbyte
         if: matrix.connector
         id: checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
           repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
           ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
@@ -146,7 +146,7 @@ jobs:
           fetch-depth: 1
 
       # Java deps
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
         if: matrix.connector
         with:
           distribution: zulu
@@ -155,7 +155,7 @@ jobs:
 
       # The default behaviour is read-only on PR branches and read/write on master.
       # See https://github.com/gradle/actions/blob/main/docs/setup-gradle.md#using-the-cache-read-only.
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@748248ddd2a24f49513d8f472f81c3a07d4d50e1 # v4.4.4
         if: matrix.connector
         with:
           gradle-version: "8.14"
@@ -163,7 +163,7 @@ jobs:
       # TODO: We can delete this step once Airbyte-CI is removed from Java integration tests.
       - name: Set up Python (For Airbyte-CI)
         if: matrix.connector
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: "3.11"
           check-latest: true
@@ -171,7 +171,7 @@ jobs:
 
       - name: Install the latest version of uv
         if: matrix.connector
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
 
       - name: Install Poe
         if: matrix.connector
@@ -192,18 +192,18 @@ jobs:
           airbyte-cdk secrets fetch ${{ matrix.connector }} \
             --print-ci-secrets-masks
 
-      - name: Run Unit Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Unprivileged, Executed from Fork]' || '' }}
+      - name: Run Unit Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Non-Blocking (Unprivileged) Test From Fork, pls run `/run-connector-tests`]' || '' }}
         if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-unit-tests
 
-      - name: Run Integration Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Unprivileged, Executed from Fork]' || '' }}
+      - name: Run Integration Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Non-Blocking (Unprivileged) Test From Fork, pls run `/run-connector-tests`]' || '' }}
         if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-integration-tests
 
       - name: Publish Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v2
+        uses: EnricoMi/publish-unit-test-result-action@3a74b2957438d0b6e2e61d67b05318aa25c9e6c6 # v2.20.0
         # Skip if cancelled, if no connector is specified, or if running from a fork.
         if: always() && !cancelled() && matrix.connector && github.repository == 'airbytehq/airbyte'
         with:
@@ -229,7 +229,7 @@ jobs:
       - name: Checkout Airbyte
         if: matrix.connector
         id: checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
           repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
           ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
@@ -239,7 +239,7 @@ jobs:
       # Python deps
       - name: Set up Python
         if: matrix.connector
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: "3.11"
           check-latest: true
@@ -247,13 +247,13 @@ jobs:
 
       - name: Install and configure Poetry
         if: matrix.connector
-        uses: snok/install-poetry@v1
+        uses: snok/install-poetry@76e04a911780d5b312d89783f7b1cd627778900a # v1.4.1
         with:
           version: 1.8.5
 
       - name: Install the latest version of uv
         if: matrix.connector
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
 
       - name: Install system dependencies
         if: matrix.connector
@@ -290,12 +290,12 @@ jobs:
           airbyte-cdk secrets fetch ${{ matrix.connector }} \
             --print-ci-secrets-masks
 
-      - name: Run Unit Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Unprivileged, Executed from Fork]' || '' }}
+      - name: Run Unit Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Non-Blocking (Unprivileged) Test From Fork, pls run `/run-connector-tests`]' || '' }}
         if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-unit-tests
 
-      - name: Run Integration Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Unprivileged, Executed from Fork]' || '' }}
+      - name: Run Integration Tests ${{ needs.generate-matrix.outputs.creds-available == 'false' && '[Non-Blocking (Unprivileged) Test From Fork, pls run `/run-connector-tests`]' || '' }}
         if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-integration-tests
@@ -307,7 +307,7 @@ jobs:
           airbyte-cdk image test
 
       - name: Publish Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v2
+        uses: EnricoMi/publish-unit-test-result-action@3a74b2957438d0b6e2e61d67b05318aa25c9e6c6 # v2.20.0
         # Skip if cancelled, if no connector is specified, or if the repository is a fork.
         if: always() && !cancelled() && matrix.connector && github.repository == 'airbytehq/airbyte'
         with:
@@ -330,7 +330,7 @@ jobs:
     steps:
       - name: Checkout Airbyte
         if: matrix.connector
-        uses: actions/checkout@v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
           repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
           ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
@@ -338,14 +338,14 @@ jobs:
           fetch-depth: 1
 
       # Java deps
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
         if: matrix.connector
         with:
           distribution: zulu
           java-version: 21
           cache: gradle
 
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@748248ddd2a24f49513d8f472f81c3a07d4d50e1 # v4.4.4
         if: matrix.connector
         with:
           cache-read-only: false
@@ -355,20 +355,20 @@ jobs:
       # Python deps
       - name: Set up Python
         if: matrix.connector
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: "3.11"
           check-latest: true
           update-environment: true
       - name: Install and configure Poetry
         if: matrix.connector
-        uses: snok/install-poetry@v1
+        uses: snok/install-poetry@76e04a911780d5b312d89783f7b1cd627778900a # v1.4.1
         with:
           version: 1.8.5
 
       - name: Install the latest version of uv
         if: matrix.connector
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
 
       - name: Install system dependencies
         if: matrix.connector
@@ -421,7 +421,7 @@ jobs:
     steps:
       - name: Checkout Airbyte
         if: matrix.connector
-        uses: actions/checkout@v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
           repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
           ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
@@ -429,7 +429,7 @@ jobs:
           fetch-depth: 0
       - name: Install uv
         if: matrix.connector
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
 
       - name: Install Poe
         if: matrix.connector
@@ -489,13 +489,11 @@ jobs:
       # be available, so the following steps will be a no-op.
 
       - name: Authenticate as GitHub App
-        uses: actions/create-github-app-token@v1
+        uses: actions/create-github-app-token@d72941d797fd3113feb6b93fd0dec494b13a2547 # v1.12.0
         id: get-app-token
         if: always() && !cancelled()
         continue-on-error: true
         with:
-          owner: "airbytehq"
-          repositories: "airbyte"
           app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
           private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
 
@@ -503,10 +501,9 @@ jobs:
         if: >
           always() && !cancelled() &&
           steps.get-app-token.outcome == 'success'
-        uses: LouisBrunner/checks-action@v2.0.0
+        uses: LouisBrunner/checks-action@6b626ffbad7cc56fd58627f774b9067e6118af23 # v2.0.0
         with:
           name: "Connector CI Checks Summary" # << Name of the 'Required' check
-          repo: "airbytehq/airbyte" # Post to the main repo, not the fork
           sha: ${{ needs.generate-matrix.outputs.commit-sha }}
           status: completed
           conclusion: ${{ steps.evaluate-status.outputs.result }}

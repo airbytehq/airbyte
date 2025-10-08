@@ -39,8 +39,11 @@ class AzureBlobStreamingUploadTest {
             AzureBlobStorageClientConfiguration(
                 accountName = "fakeAccount",
                 containerName = "fakeContainer",
-                sharedAccessSignature = "",
+                sharedAccessSignature = null,
                 accountKey = "test",
+                tenantId = null,
+                clientId = null,
+                clientSecret = null,
             )
         every { blockBlobClient.blobName } returns "testBlob"
         streamingUpload = AzureBlobStreamingUpload(blockBlobClient, config, metadata)
@@ -149,8 +152,11 @@ class AzureBlobStreamingUploadTest {
             AzureBlobStorageClientConfiguration(
                 accountName = "acc",
                 containerName = "container",
-                sharedAccessSignature = "",
-                accountKey = "key"
+                sharedAccessSignature = null,
+                accountKey = "key",
+                tenantId = null,
+                clientId = null,
+                clientSecret = null,
             )
         val uploader = AzureBlobStreamingUpload(client, cfg, emptyMap())
 

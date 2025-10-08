@@ -102,11 +102,17 @@ For each of these, you should put all of the possible status values that the API
 
 The connector first uses the Status Extractor to get the raw status value, then uses the Status Mapping to determine what action to take next.
 
-#### Download Target Extractor Explained
+#### Download Target Extractor and Download Target Requester Explained
 
-The **Download Target Extractor** works similarly to the Status Extractor but extracts a download URL or identifier from the successful API response. This extracted value will be used in the Download stage to retrieve the data.
+The **Download Target Extractor** works similarly to the Status Extractor but extracts a download URL or identifier from the successful API response during the Polling stage. This extracted value will be used in the Download stage to retrieve the data.
 
-#### Example Configuration (SendGrid):
+The **Download Target Requester** (Optional) makes an additional API request once jobs have completed to retrieve download URLs or identifiers. When configured, the Download Target Extractor will operate on this API response rather than the API response from the Polling stage. This is typically only needed for complex APIs.
+
+:::note
+The Download Target Extractor is optional if not using the Download Target Requester. If not specified, the connector will make a _single_ request during the Download stage without the `download_target` interpolation context. This is suitable for simple APIs.
+:::
+
+#### Example Configuration (SendGrid)
 
 In the UI, for the [SendGrid contacts export](https://www.twilio.com/docs/sendgrid/api-reference/contacts/export-contacts), you would configure:
 
@@ -127,9 +133,9 @@ In the UI, for the [SendGrid contacts export](https://www.twilio.com/docs/sendgr
 
 The Download tab configures how to retrieve the results once the job is complete. This tab provides comprehensive configuration options for processing the downloaded data.
 
-#### Key Components:
+#### Key Components
 
-- **API Endpoint URL** (required): The full URL for downloading results. Use the `{{ download_target }}` variable to reference the value extracted by the Download Target Extractor
+- **API Endpoint URL** (required): The full URL for downloading results. Use the `{{ download_target }}` variable to reference the value extracted by the Download Target Extractor. Use the `{{ creation_response }}` variable to reference the creation request response when constructing this URL and use the `{{ polling_response }}` to reference the polling response when constructing the download URL.
 - **HTTP Method**: HTTP method for downloading, typically GET but can vary by API
 - **Download HTTP Response Format**: Format of the downloaded data (JSON, CSV, XML, etc.)
 - **Record Selector**: Configuration for identifying and extracting individual records from the response, including the extractor field path
@@ -239,5 +245,6 @@ Let's walk through the complete flow using the [SendGrid contacts export](https:
 
 6. **Test Thoroughly**: Test the stream verify each phase of the asynchronous process works correctly.
 
+7. **Leverage Enhanced Interpolation**: Take advantage of `creation_response` and `polling_response` contexts to simplify your configuration. For APIs that provide download URLs directly in creation or polling responses, you may not need a Download Target Extractor at all.
 
 Remember that asynchronous streams often take longer to test than synchronous streams, especially if the API takes time to process jobs.

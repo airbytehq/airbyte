@@ -100,6 +100,8 @@ For more information, see [the Twilio docs for rate limitations](https://support
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------| :------------------------------------------------------- |:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.17.1 | 2025-09-11 | [66090](https://github.com/airbytehq/airbyte/pull/66090) | Update to CDK v7 |
+| 0.17.0 | 2025-09-05 | [65955](https://github.com/airbytehq/airbyte/pull/65955) | Promoting release candidate 0.17.0-rc.2 to a main version. |
 | 0.17.0-rc.2 | 2025-09-04 | [65936](https://github.com/airbytehq/airbyte/pull/65936) | Fix lookback window                                                                                                                                                    |
 | 0.17.0-rc.1 | 2025-08-20 | [65072](https://github.com/airbytehq/airbyte/pull/65072) | Migrate to manifest-only                                                                                                                                               |
 | 0.16.0      | 2025-08-28 | [65593](https://github.com/airbytehq/airbyte/pull/65593) | Promoting release candidate 0.16.0-rc.1 to a main version.                                                                                                             |

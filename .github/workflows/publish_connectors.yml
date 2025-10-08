@@ -21,11 +21,6 @@ on:
         required: false
         default: false
         type: boolean
-      original-trigger:
-        description: "The original trigger that caused this workflow to be called. The two possible values are `push-to-master` and `manual`"
-        required: false
-        default: "manual"
-        type: string
   workflow_dispatch:
     inputs:
       connectors:
@@ -57,13 +52,13 @@ jobs:
           submodules: true # Required for the enterprise repo since it uses a submodule that needs to exist for this workflow to run successfully.
       - name: List connectors to publish [manual]
         id: list-connectors-manual
-        if: github.event_name == 'workflow_dispatch' || inputs.original-trigger == 'manual'
+        if: github.event_name == 'workflow_dispatch'
         shell: bash
         # When invoked manually, we run on the connectors specified in the input.
         run: echo connectors-to-publish=$(./poe-tasks/parse-connector-name-args.sh ${{ inputs.connectors }}) | tee -a $GITHUB_OUTPUT
       - name: List connectors to publish [On merge to master]
         id: list-connectors-master
-        if: github.event_name == 'push' || inputs.original-trigger == 'push-to-master'
+        if: github.event_name == 'push'
         shell: bash
         # When merging to master, we run on connectors that have changed since the previous commit.
         run: echo connectors-to-publish=$(./poe-tasks/get-modified-connectors.sh --prev-commit --json) | tee -a $GITHUB_OUTPUT
@@ -73,17 +68,29 @@ jobs:
         run: |
           # If workflow is triggered on merge to master, do a main release.
           # If workflow is triggered manually, use the input release type.
-          if [[ "${{ github.event_name }}" == "push" || "${{ inputs.original-trigger }}" == "push-to-master" ]]; then
+          if [[ "${{ github.event_name }}" == "push" ]]; then
             echo "release-type=main-release" | tee -a $GITHUB_OUTPUT
           else
             echo "release-type=${{ inputs.release-type }}" | tee -a $GITHUB_OUTPUT
+          fi
+      - name: Resolve publish-java-tars
+        id: resolve-publish-java-tars
+        shell: bash
+        run: |
+          # If workflow is triggered on merge to master, we can assume
+          # the workflow is running in the open-source repo and we always want to publish.
+          if [[ "${{ inputs.publish-java-tars }}" == "" ]]; then
+            echo "publish-java-tars=true" | tee -a $GITHUB_OUTPUT
+          # if workflow is triggered manually, any other way, use the input publish-java-tars.
+          else
+            echo "publish-java-tars=${{ inputs.publish-java-tars }}" | tee -a $GITHUB_OUTPUT
           fi
     outputs:
       # Exactly one of the manual/master steps will run, so just OR them together.
       connectors-to-publish: ${{ steps.list-connectors-manual.outputs.connectors-to-publish || steps.list-connectors-master.outputs.connectors-to-publish }}
       release-type: ${{ steps.resolve-release-type.outputs.release-type }}
       # publishing java tars is not optional if triggered by push to master (in the non-enterprise repo).
-      publish-java-tars: ${{ inputs.publish-java-tars || github.event_name == 'push' }}
+      publish-java-tars: ${{ steps.resolve-publish-java-tars.outputs.publish-java-tars }}
   publish_connectors:
     name: Publish connectors
     needs: [publish_options]
@@ -106,14 +113,14 @@ jobs:
         shell: bash
         run: docker buildx create --use --driver=docker-container --name builder --platform linux/amd64,linux/arm64
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
         with:
           distribution: zulu
           java-version: 21
           cache: gradle
 
       - name: Log in to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
@@ -135,7 +142,7 @@ jobs:
           version: 1.8.5
 
       - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
 
       - name: Install Poe
         run: |
@@ -269,7 +276,7 @@ jobs:
         run: poetry install --directory airbyte-ci/connectors/metadata_service/lib
 
       - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
 
       - name: Install Poe
         run: |
@@ -306,7 +313,7 @@ jobs:
             --docker-image-tag ${{ steps.connector-metadata.outputs.docker-image-tag }} \
             ${{ steps.connector-metadata.outputs.release-type-flag }}
         env:
-          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
 
       - name: Generate Cloud Registry Entry
@@ -322,7 +329,7 @@ jobs:
             --docker-image-tag ${{ steps.connector-metadata.outputs.docker-image-tag }} \
             ${{ steps.connector-metadata.outputs.release-type-flag }}
         env:
-          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_DEV_GCS_CREDENTIALS }}
+          GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
           SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
 
   generate_connector_registry:
@@ -341,6 +348,8 @@ jobs:
       - name: Checkout Airbyte
         # v4
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
+        with:
+          submodules: true # Required for the enterprise repo since it uses a submodule that needs to exist for this workflow to run successfully.
       - name: Match GitHub User to Slack User
         id: match-github-to-slack-user
         uses: ./.github/actions/match-github-to-slack-user
@@ -349,7 +358,7 @@ jobs:
           GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Send publish failures to connector-publish-failures channel
         id: slack
-        uses: slackapi/slack-github-action@v1.26.0
+        uses: slackapi/slack-github-action@70cd7be8e40a46e8b0eced40b0de447bdb42f68e # v1.26.0
         with:
           # This data can be any valid JSON from a previous step in the GitHub Action
           payload: |
@@ -371,6 +380,8 @@ jobs:
       - name: Checkout Airbyte
         # v4
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955
+        with:
+          submodules: true # Required for the enterprise repo since it uses a submodule that needs to exist for this workflow to run successfully.
       - name: Notify PagerDuty
         id: pager-duty
         uses: ./.github/actions/send-pager-duty-event

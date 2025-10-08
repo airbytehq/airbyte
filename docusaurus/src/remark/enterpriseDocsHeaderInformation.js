@@ -52,6 +52,7 @@ const plugin = () => {
           dockerImageTag: version,
           github_url: undefined,
           originalTitle,
+          "enterprise-connector": vfile.data.frontMatter["enterprise-connector"] || true,
         };
 
         firstHeading = false;

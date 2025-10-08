@@ -1,33 +1,24 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-import json
+
 from copy import deepcopy
 from unittest.mock import MagicMock, Mock
 
-import pendulum
 import pytest
 from requests import Response
-from source_slack import SourceSlack
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalogSerializer, SyncMode
 from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.state_builder import StateBuilder
+from unit_tests.conftest import get_retriever, get_source, get_stream_by_name
 
 
 @pytest.fixture
 def authenticator(token_config):
     return TokenAuthenticator(token_config["credentials"]["api_token"])
-
-
-def get_stream_by_name(stream_name, config):
-    streams = SourceSlack(catalog={}, config=config, state={}).streams(config=config)
-    for stream in streams:
-        if stream.name == stream_name:
-            return stream
-    raise ValueError(f"Stream {stream_name} not found")
 
 
 @pytest.mark.parametrize(
@@ -84,7 +75,7 @@ def test_threads_stream_slices(requests_mock, authenticator, token_config, start
     )
 
     stream = get_stream_by_name("threads", token_config)
-    slices = list(stream.stream_slices(sync_mode=SyncMode.incremental, stream_state=stream_state))
+    slices = list(map(lambda partition: partition.to_slice(), stream.generate_partitions()))
 
     assert len(slices) == len(expected_result)
     for s in slices:
@@ -133,7 +124,7 @@ def test_get_updated_state(requests_mock, authenticator, token_config, current_s
         }
     )
     state = StateBuilder().with_stream_state("threads", current_state).build()
-    source_slack = SourceSlack(catalog=catalog, config=token_config, state=state)
+    source_slack = get_source(token_config, "threads", state)
     output = read(source_slack, config=token_config, catalog=catalog, state=state)
     assert output.records
     assert output.most_recent_state.stream_state.state == expected_state
@@ -142,7 +133,7 @@ def test_get_updated_state(requests_mock, authenticator, token_config, current_s
 def test_threads_request_params(authenticator, token_config):
     stream = get_stream_by_name("threads", token_config)
     threads_slice = {"parent_slice": {"channel": "airbyte-for-beginners"}}
-    assert stream.retriever.requester.get_request_params(stream_slice=threads_slice, next_page_token={}) == {
+    assert get_retriever(stream).requester.get_request_params(stream_slice=threads_slice, next_page_token={}) == {
         "channel": "airbyte-for-beginners"
     }
 
@@ -203,7 +194,7 @@ def test_threads_parse_response(requests_mock, authenticator, token_config):
         }
     )
     state = StateBuilder().with_stream_state("threads", {}).build()
-    source_slack = SourceSlack(catalog=catalog, config=token_config, state=state)
+    source_slack = get_source(token_config, "threads", state)
     output = read(source_slack, config=token_config, catalog=catalog, state=state)
     actual_response = output.records
     assert len(actual_response) == 1
@@ -266,7 +257,7 @@ def test_backoff(requests_mock, token_config, authenticator, headers, expected_r
         }
     )
     state = StateBuilder().with_stream_state("threads", {}).build()
-    source_slack = SourceSlack(catalog=catalog, config=token_config, state=state)
+    source_slack = get_source(token_config, "threads", state)
     output = read(source_slack, config=token_config, catalog=catalog, state=state)
     assert len([log.log.message for log in output.logs if "Retrying. Sleeping for 15.0 seconds" == log.log.message]) == 1
     assert len(output.records) == expected_result
@@ -297,7 +288,7 @@ def test_channels_stream_with_autojoin(token_config, requests_mock) -> None:
             ]
         }
     )
-    source_slack = SourceSlack(catalog=catalog, config=token_config, state=state)
+    source_slack = get_source(token_config, "channels", state)
     output = read(source_slack, config=token_config, catalog=catalog, state=state)
     assert [record.record.data for record in output.records] == expected
 
@@ -308,7 +299,7 @@ def test_next_page_token(token_config):
     mocked_response.status_code = 200
     mocked_response.content = b'{"response_metadata": {"next_cursor": "next page"}}'
     mocked_response.headers = {"Content-Type": "application/json"}
-    assert stream.retriever.paginator.next_page_token(response=mocked_response, last_page_size=100, last_record={"id": "some id"}) == {
+    assert get_retriever(stream).paginator.next_page_token(response=mocked_response, last_page_size=100, last_record={"id": "some id"}) == {
         "next_page_token": "next page"
     }
 
@@ -327,13 +318,13 @@ def test_should_retry(token_config, status_code, expected):
     mocked_response = MagicMock(spec=Response, status_code=status_code)
     mocked_response.ok = status_code == 200
     mocked_response.headers = {"Content-Type": "application/json"}
-    assert stream.retriever.requester.error_handler.interpret_response(mocked_response).response_action == expected
+    assert get_retriever(stream).requester.error_handler.interpret_response(mocked_response).response_action == expected
 
 
 def test_channels_stream_with_include_private_channels_false(token_config) -> None:
     stream = get_stream_by_name("channels", token_config)
 
-    params = stream.retriever.requester.get_request_params()
+    params = get_retriever(stream).requester.get_request_params()
 
     assert params.get("types") == "public_channel"
 
@@ -344,6 +335,6 @@ def test_channels_stream_with_include_private_channels(token_config) -> None:
 
     stream = get_stream_by_name("channels", config)
 
-    params = stream.retriever.requester.get_request_params()
+    params = get_retriever(stream).requester.get_request_params()
 
     assert params.get("types") == "public_channel,private_channel"
