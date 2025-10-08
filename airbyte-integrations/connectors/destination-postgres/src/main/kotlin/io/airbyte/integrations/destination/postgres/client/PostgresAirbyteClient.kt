@@ -11,14 +11,13 @@ import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNativeOperations
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableSqlOperations
+import io.airbyte.integrations.destination.postgres.sql.COUNT_TOTAL_ALIAS
 import io.airbyte.integrations.destination.postgres.sql.PostgresDirectLoadSqlGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import javax.sql.DataSource
 
 private val log = KotlinLogging.logger {}
-
-internal const val COUNT_TOTAL_ALIAS = "total"
 
 @Singleton
 class PostgresAirbyteClient(
