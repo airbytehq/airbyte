@@ -24,6 +24,6 @@ You can use workspaces for the following purposes.
 
 - Set up notifications.
 
-If you use Self-Managed Community, you only have one workspace.
+If you use Self-Managed Community or Cloud Standard, you only have one workspace. Cloud Standard users can upgrade to Pro or Enterprise Flex to access multiple workspaces.
 
 <DocCardList />
