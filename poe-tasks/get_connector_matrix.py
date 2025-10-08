@@ -5,6 +5,7 @@
 # requires-python = "==3.12"
 # dependencies = [
 #   "pyyaml",
+#   "typer",
 # ]
 # ///
 """Generate GitHub Actions matrix for modified Airbyte connectors.
@@ -50,6 +51,8 @@ import sys
 from functools import lru_cache
 from pathlib import Path
 from typing import Optional
+
+import typer
 
 
 def get_modified_files(files_list: Optional[str] = None, prev_commit: bool = False) -> list[str]:
@@ -433,38 +436,37 @@ def run_doctests() -> None:
         sys.exit(1)
 
 
-def main() -> None:
-    """Main entry point for CLI usage."""
-    import argparse
+app = typer.Typer()
 
-    parser = argparse.ArgumentParser(description="Generate GitHub Actions matrix for modified Airbyte connectors")
-    parser.add_argument("--java", action="store_true", help="Filter to only Java connectors")
-    parser.add_argument("--no-java", action="store_true", help="Filter to exclude Java connectors")
-    parser.add_argument("--certified", action="store_true", help="Filter to only certified connectors")
-    parser.add_argument("--no-certified", action="store_true", help="Filter to exclude certified connectors")
-    parser.add_argument("--json", action="store_true", help="Output in GitHub Actions matrix JSON format")
-    parser.add_argument("--prev-commit", action="store_true", help="Compare with previous commit instead of master")
-    parser.add_argument("--local-cdk", action="store_true", help="Include connectors using local CDK")
-    parser.add_argument("--files-list", help="CSV string of file paths (overrides git detection)")
-    parser.add_argument("--run-tests", action="store_true", help="Run doctests and exit")
 
-    args = parser.parse_args()
-
-    if args.run_tests:
+@app.command()
+def main(
+    java: bool = typer.Option(False, "--java", help="Filter to only Java connectors"),
+    no_java: bool = typer.Option(False, "--no-java", help="Filter to exclude Java connectors"),
+    certified: bool = typer.Option(False, "--certified", help="Filter to only certified connectors"),
+    no_certified: bool = typer.Option(False, "--no-certified", help="Filter to exclude certified connectors"),
+    json: bool = typer.Option(False, "--json", help="Output in GitHub Actions matrix JSON format"),
+    prev_commit: bool = typer.Option(False, "--prev-commit", help="Compare with previous commit instead of master"),
+    local_cdk: bool = typer.Option(False, "--local-cdk", help="Include connectors using local CDK"),
+    files_list: Optional[str] = typer.Option(None, "--files-list", help="CSV string of file paths (overrides git detection)"),
+    run_tests: bool = typer.Option(False, "--run-tests", help="Run doctests and exit"),
+) -> None:
+    """Generate GitHub Actions matrix for modified Airbyte connectors."""
+    if run_tests:
         run_doctests()
         return
 
     get_modified_connectors(
-        java=args.java,
-        no_java=args.no_java,
-        certified=args.certified,
-        no_certified=args.no_certified,
-        json=args.json,
-        prev_commit=args.prev_commit,
-        local_cdk=args.local_cdk,
-        files_list=args.files_list,
+        java=java,
+        no_java=no_java,
+        certified=certified,
+        no_certified=no_certified,
+        json=json,
+        prev_commit=prev_commit,
+        local_cdk=local_cdk,
+        files_list=files_list,
     )
 
 
 if __name__ == "__main__":
-    main()
+    app()
