@@ -59,7 +59,9 @@ from typing_extensions import Annotated
 import typer
 
 
-def get_modified_files(prev_commit: bool = False) -> list[str]:
+def get_modified_files(
+    prev_commit: bool = False,
+) -> list[str]:
     """Get list of modified files from git or override string.
 
     Args:
@@ -67,6 +69,8 @@ def get_modified_files(prev_commit: bool = False) -> list[str]:
 
     Returns:
         List of modified file paths
+
+    Doctest Examples:
 
     >>> isinstance(get_modified_files(prev_commit=True), list)
     True
@@ -110,8 +114,12 @@ def get_modified_files(prev_commit: bool = False) -> list[str]:
     return list(set(f for f in all_files if f))
 
 
-def filter_ignored_files(files: list[str]) -> list[str]:
+def filter_ignored_files(
+    files: list[str],
+) -> list[str]:
     """Filter out files that should be ignored.
+
+    Doctest Examples:
 
     >>> filter_ignored_files(
     ...     ["airbyte-integrations/connectors/source-faker/metadata.yaml", "airbyte-integrations/connectors/source-faker/README.md"]
@@ -141,8 +149,12 @@ def filter_ignored_files(files: list[str]) -> list[str]:
     return filtered
 
 
-def extract_connector_paths(files: list[str]) -> list[str]:
+def extract_connector_paths(
+    files: list[str],
+) -> list[str]:
     """Extract connector directory paths from file paths.
+
+    Doctest Examples:
 
     >>> extract_connector_paths(["airbyte-integrations/connectors/source-faker/metadata.yaml"])
     ['airbyte-integrations/connectors/source-faker']
@@ -167,8 +179,12 @@ def extract_connector_paths(files: list[str]) -> list[str]:
     return sorted(list(connector_paths))
 
 
-def extract_connector_names(connector_paths: list[str]) -> list[str]:
+def extract_connector_names(
+    connector_paths: list[str],
+) -> list[str]:
     """Extract connector names from connector paths.
+
+    Doctest Examples:
 
     >>> extract_connector_names(["airbyte-integrations/connectors/source-faker"])
     ['source-faker']
@@ -197,14 +213,27 @@ def get_manifest_dict(connector_name: str) -> dict:
 
     Returns:
         Dictionary containing the parsed YAML content, or empty dict if not found
+
+    Doctest Examples:
+    >>> isinstance(get_manifest_dict("source-faker"), dict)
+    True
+
+    >>> from unittest.mock import patch, mock_open
+    >>> with patch('builtins.open', mock_open(read_data='data:\\n  tags: ["language:java"]\\n')):
+    ...     with patch('pathlib.Path.exists', return_value=True):
+    ...         result = get_manifest_dict("test-connector")
+    ...         result['data']['tags']
+    ['language:java']
     """
     import yaml
 
     metadata_path = Path(f"airbyte-integrations/connectors/{connector_name}/metadata.yaml")
 
     if not metadata_path.exists():
-        print(f"⚠️ metadata.yaml not found for '{connector_name}' (looking at {metadata_path})", file=sys.stderr)
-        return {}
+        raise FileNotFoundError(
+            f"File `metadata.yaml` not found for connector '{connector_name}' "
+            f"at path: {metadata_path}"
+        )
 
     try:
         with open(metadata_path) as f:
@@ -260,6 +289,12 @@ def is_java_connector(connector_name: str) -> bool:
 
     Returns:
         True if the connector uses Java, False otherwise
+
+    Doctest Examples:
+    >>> is_java_connector("source-faker")
+    False
+    >>> is_java_connector("destination-bigquery")
+    True
     """
     manifest = get_manifest_dict(connector_name)
     if not manifest:
@@ -281,6 +316,12 @@ def is_certified_connector(connector_name: str) -> bool:
 
     Returns:
         True if the connector has supportLevel: certified, False otherwise
+
+    Doctest Examples:
+    >>> is_certified_connector("source-faker")
+    False
+    >>> is_certified_connector("destination-bigquery")
+    True
     """
     manifest = get_manifest_dict(connector_name)
     if not manifest:
