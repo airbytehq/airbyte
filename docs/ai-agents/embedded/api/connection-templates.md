@@ -4,25 +4,27 @@ products: embedded
 
 # Connection Templates
 
+A *connection template* pre-defines the **destination side** of every pipeline your customers spin up through the Embedded widget. It answers two questions up-front:
 
-A *connection template* pre-defines the **Destination side** of every pipeline your customers spin up through the Embedded widget. It answers two questions up-front:
-
-1. Where should the data land?  
+1. Where should the data land?
 2. How often should it sync?
 
-When a customer finishes configuring a Source, Airbyte automatically creates the connection by combining their source settings with *your* template.
+When a customer finishes configuring a source, Airbyte automatically creates the connection by combining their source settings with *your* template.
 
+## Creating Connection Templates
 
 You'll need the following to create a connection template:
+
 - Your organization ID
 - The destination definition ID
 - The destination configuration
 - The destination name: We'll automatically create a destination with the given name in your user's workspaces
-- (optional) A cron expression describing when to run syncs. The cron expression must follow the Quartz syntax. You can use [freeformatter.com](https://www.freeformatter.com/cron-expression-generator-quartz.html) to help validate the expression
+- (Optional) A cron expression describing when to run syncs. The cron expression must follow the Quartz syntax. You can use [freeformatter.com](https://www.freeformatter.com/cron-expression-generator-quartz.html) to help validate the expression
+- (Optional) Tags to organize and filter templates
 
+### Example Request
 
-Here is an example request for creating a connection template:
-```
+```bash
 curl --request POST 'https://api.airbyte.ai/api/v1/integrations/templates/connections' \
   --header "Content-Type: application/json" \
   --header "Authorization: Bearer <bearer_token>" \
@@ -44,9 +46,10 @@ curl --request POST 'https://api.airbyte.ai/api/v1/integrations/templates/connec
         "flattening": "Root level flattening"
       }
     },
-    "cron_expression": "string",
-    "non_breaking_changes_preference": "ignore",
-    "sync_on_create": true
+    "cron_expression": "0 0 12 * * ?",
+    "non_breaking_changes_preference": "propagate_columns",
+    "sync_on_create": true,
+    "tags": ["analytics", "standard-sync"]
   }'
 ```
 
@@ -55,3 +58,297 @@ You can find the full connector specification in the [Connector Registry](https:
 Alternatively, if you want to view the full JSON for a given connector when creating a source or destination from scratch in Airbyte Cloud. After configuring the connector to your desired specifications (partially complete if you want an end user to complete the rest), you can select "Copy JSON". This will give you necessary details like the configuration and the `destination_definition_id`.
 
 You can find [the reference docs for creating a connection template here](https://api.airbyte.ai/api/v1/docs#tag/Template-Connections/operation/create_integrations_templates_connections).
+
+## Configuration Options
+
+### sync_on_create
+
+Controls whether the connection should automatically start syncing immediately after creation.
+
+- `true` (default) - Connection starts syncing as soon as it's created
+- `false` - Connection is created but remains paused; user must manually start it
+
+**Example:**
+
+```json
+{
+  "sync_on_create": false
+}
+```
+
+Use `sync_on_create: false` when you want users to review the connection configuration before the first sync runs.
+
+### non_breaking_changes_preference
+
+Controls how Airbyte handles non-breaking schema changes (e.g., new columns added to a table).
+
+**Available Options:**
+
+| Value | Behavior |
+|-------|----------|
+| `ignore` | Ignore schema changes; continue syncing only previously configured columns |
+| `disable` | Disable the connection when schema changes are detected |
+| `propagate_columns` | Automatically add new columns to the sync but don't update data types |
+| `propagate_fully` | Automatically propagate all schema changes including column additions and data type updates |
+
+**Example:**
+
+```json
+{
+  "non_breaking_changes_preference": "propagate_columns"
+}
+```
+
+**Use Cases:**
+
+- **`ignore`**: Use when you have strict schema requirements and don't want unexpected columns
+- **`disable`**: Use when schema changes require manual review
+- **`propagate_columns`**: Best for most use cases; adds new columns automatically
+- **`propagate_fully`**: Use when you want complete automation of schema evolution
+
+### Cron Expression Validation
+
+Airbyte provides an endpoint to validate and describe cron expressions:
+
+```bash
+curl -X POST https://api.airbyte.ai/api/v1/integrations/templates/connections/cron/describe \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "cron_expression": "0 0 12 * * ?"
+  }'
+```
+
+This endpoint returns a human-readable description of when the cron will execute.
+
+## Managing Connection Templates
+
+### List Connection Templates
+
+```bash
+curl 'https://api.airbyte.ai/api/v1/integrations/templates/connections' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Filter by Tags
+
+You can filter connection templates by tags:
+
+```bash
+curl 'https://api.airbyte.ai/api/v1/integrations/templates/connections?tags=analytics&tags=standard-sync&tags_mode=all' \
+  -H 'Authorization: Bearer <token>'
+```
+
+**Tag Selection Modes:**
+- `any` - Template must have at least one of the specified tags
+- `all` - Template must have all of the specified tags
+
+### Get Connection Template
+
+```bash
+curl 'https://api.airbyte.ai/api/v1/integrations/templates/connections/{id}' \
+  -H 'Authorization: Bearer <token>'
+```
+
+### Update Connection Template
+
+Use the PATCH endpoint to update an existing connection template:
+
+```bash
+curl -X PATCH 'https://api.airbyte.ai/api/v1/integrations/templates/connections/{id}' \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "cron_expression": "0 0 6 * * ?",
+    "non_breaking_changes_preference": "propagate_fully"
+  }'
+```
+
+### Delete Connection Template
+
+```bash
+curl -X DELETE 'https://api.airbyte.ai/api/v1/integrations/templates/connections/{id}' \
+  -H 'Authorization: Bearer <token>'
+```
+
+## Managing Template Tags
+
+### Add Tag to Connection Template
+
+```bash
+curl -X POST https://api.airbyte.ai/api/v1/integrations/templates/connections/{id}/tags \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "tag": "premium-features"
+  }'
+```
+
+### Remove Tag from Connection Template
+
+```bash
+curl -X DELETE https://api.airbyte.ai/api/v1/integrations/templates/connections/{id}/tags/{tag_name} \
+  -H 'Authorization: Bearer <token>'
+```
+
+For complete tag management documentation, see [Template Tags](./tags.md).
+
+## Using Connection Templates with Sources
+
+When a user creates a source from a source template, Airbyte automatically:
+
+1. Creates the destination configured in your connection template
+2. Creates a connection between the source and destination
+3. Applies the schedule (cron expression) to the connection
+4. Applies the schema change preference
+5. Starts syncing if `sync_on_create` is `true`
+
+### Filter Connection Templates by Tags
+
+You can control which connection templates are available when creating sources by using tag filtering in widget tokens or scoped tokens:
+
+```bash
+curl -X POST https://api.airbyte.ai/api/v1/embedded/widget-token \
+  -H 'Authorization: Bearer <operator_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "workspace_name": "customer_workspace",
+    "allowed_origin": "https://yourapp.com",
+    "selected_connection_template_tags": ["standard-sync"],
+    "selected_connection_template_tags_mode": "any"
+  }'
+```
+
+This ensures that only connection templates tagged with "standard-sync" are available when the user creates a source.
+
+## Common Patterns
+
+### Multi-Tenant Destinations
+
+Create separate connection templates for different customer tiers:
+
+**Free tier - Basic S3 sync:**
+
+```json
+{
+  "destination_name": "Free Tier S3",
+  "destination_definition_id": "s3-definition-id",
+  "destination_config": {
+    "s3_bucket_name": "free-tier-bucket",
+    "format": { "format_type": "CSV" }
+  },
+  "cron_expression": "0 0 12 * * ?",
+  "non_breaking_changes_preference": "ignore",
+  "tags": ["free-tier"]
+}
+```
+
+**Enterprise tier - Optimized BigQuery sync:**
+
+```json
+{
+  "destination_name": "Enterprise BigQuery",
+  "destination_definition_id": "bigquery-definition-id",
+  "destination_config": {
+    "project_id": "enterprise-project",
+    "dataset_id": "enterprise_data"
+  },
+  "cron_expression": "0 */4 * * * ?",
+  "non_breaking_changes_preference": "propagate_fully",
+  "sync_on_create": true,
+  "tags": ["enterprise"]
+}
+```
+
+### Testing vs Production
+
+Create separate templates for different environments:
+
+```bash
+# Development template - hourly syncs
+{
+  "destination_name": "Dev Database",
+  "cron_expression": "0 0 * * * ?",
+  "tags": ["development", "testing"]
+}
+
+# Production template - daily syncs
+{
+  "destination_name": "Prod Database",
+  "cron_expression": "0 0 2 * * ?",
+  "tags": ["production"]
+}
+```
+
+### Compliance-Based Templates
+
+Create templates for different compliance requirements:
+
+```bash
+# HIPAA-compliant template
+{
+  "destination_name": "HIPAA Compliant Warehouse",
+  "destination_definition_id": "snowflake-definition-id",
+  "destination_config": {
+    "encryption": "enabled",
+    "region": "us-west-2"
+  },
+  "tags": ["hipaa-compliant", "healthcare"]
+}
+
+# GDPR-compliant template
+{
+  "destination_name": "GDPR Compliant Warehouse",
+  "destination_definition_id": "bigquery-definition-id",
+  "destination_config": {
+    "region": "europe-west1"
+  },
+  "tags": ["gdpr-compliant", "eu-region"]
+}
+```
+
+## Best Practices
+
+### Cron Expressions
+
+- **Use consistent schedules** across templates for easier management
+- **Consider timezone differences** when setting sync schedules
+- **Test cron expressions** using the validation endpoint before deploying
+- **Document your schedules** for your team
+
+Common patterns:
+```
+Daily at 2 AM UTC:        0 0 2 * * ?
+Every 6 hours:            0 0 */6 * * ?
+Twice daily (6 AM, 6 PM): 0 0 6,18 * * ?
+Weekly on Monday at 3 AM: 0 0 3 ? * MON
+```
+
+### Schema Change Management
+
+- **Use `propagate_columns`** for most production use cases
+- **Use `ignore`** when schema stability is critical
+- **Use `disable`** for sensitive data pipelines requiring manual review
+- **Test schema changes** in development before using `propagate_fully`
+
+### Template Organization
+
+- **Use descriptive names** that indicate destination type and purpose
+- **Tag templates consistently** to enable filtering
+- **Document template purposes** in your internal documentation
+- **Review templates quarterly** to ensure they match current requirements
+
+### Resource Naming
+
+When setting `destination_name`:
+- Use clear, descriptive names
+- Include environment indicators (dev/prod)
+- Consider including the customer or workspace identifier
+- Keep names consistent across templates
+
+## Related Documentation
+
+- [Template Tags](./tags.md) - Organize and filter templates with tags
+- [Source Templates](./source-templates.md) - Configure which sources are available
+- [Authentication](./authentication.md) - Generate tokens with template filtering
+- [Configuring Sources](./configuring-sources.md) - How sources and connections work together

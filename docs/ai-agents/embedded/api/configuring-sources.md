@@ -5,17 +5,21 @@ products: embedded
 # Authentication & Token Management
 
 ## Overview
+
 Airbyte Embedded uses a two-tier authentication system:
+
 1. **Organization-level tokens**: Your main API credentials for managing templates and connections
 2. **User-scoped tokens**: Temporary tokens that allow end-users to configure sources in their isolated workspaces
+
+For complete authentication documentation including widget tokens and region selection, see [Authentication](./authentication.md).
 
 ## Generating User-Scoped Tokens
 
 When collecting credentials from your users, generate a scoped access token that only has permissions to read and modify integrations in their specific workspace. This follows the principle of least privilege and ensures user data isolation.
 
-This can be done by submitting a request to
+This can be done by submitting a request to:
 
-```
+```bash
 curl --location 'https://api.airbyte.ai/api/v1/embedded/scoped-token' \
   --header 'Content-Type: application/json' \
   --header 'Authorization: Bearer <your_access_token>' \
@@ -24,46 +28,55 @@ curl --location 'https://api.airbyte.ai/api/v1/embedded/scoped-token' \
     "workspace_name": "your_workspace_name",
     "region_id": "optional_region_id"
   }'
-
 ```
 
 Where:
-- `workspace_name` is a unique identifier within your organization for each customer's tenant.
-- `region_id` is the origin where you're embedding the widget (used for CORS validation). It can be an arbitrary string if you're not using the Embedded Widget.
+
+- `workspace_name` is a unique identifier within your organization for each customer's tenant
+- `region_id` (optional) is the region where the workspace should be created:
+  - US region: `645a183f-b12b-4c6e-8ad3-99e165603450` (default)
+  - EU region: `b9e48d61-f082-4a14-a8d0-799a907938cb`
 
 The API will return a JSON object with a token string:
-```
-{"token":"eyJ0b2tlbiI6ImV5SmhiR2NpT2lKSVV6STFOaUo5LmV5SmhkV1FpT2lKaGFYSmllWFJsTFhObGNuWmxjaUlzSW5OMVlpSTZJbVUyTUdRNE1XRTFMVGt6WkdZdE5HWTVZUzA0TURFekxXSmlZbVkzT1ROalpqQmhNaUlzSW1sdkxtRnBjbUo1ZEdVdVlYVjBhQzUzYjNKcmMzQmhZMlZmYzJOdmNHVWlPbnNpZDI5eWEzTndZV05sU1dRaU9pSm1ZbUU0TVRJeE9DMHpORFkzTFRRMU9EZ3RZVGhrTlMxaE9ETTVObU5rWlRaak1ETWlmU3dpWVdOMElqcDdJbk4xWWlJNkltWmtOR1kzWVdNd0xURmhaREV0TkRJME9DMWlZekZqTFRZNU1HSXdPREk0T1RVNU9TSjlMQ0p5YjJ4bGN5STZXeUpGVFVKRlJFUkZSRjlGVGtSZlZWTkZVaUpkTENKcGMzTWlPaUpvZEhSd2N6b3ZMMk5zYjNWa0xtRnBjbUo1ZEdVdVkyOXRJaXdpZEhsd0lqb2lhVzh1WVdseVlubDBaUzVoZFhSb0xtVnRZbVZrWkdWa1gzWXhJaXdpWlhod0lqb3hOelV6TXpFNE1EVXdmUS4tZ0xJYkQ2OVZ4VUpyajE2QnluSTJhMTJjTDZwU19lVlNTZGxMVGdIbTdFIiwid2lkZ2V0VXJsIjoiaHR0cHM6Ly9jbG91ZC5haXJieXRlLmNvbS9lbWJlZGRlZC13aWRnZXQ/d29ya3NwYWNlSWQ9ZmJhODEyMTgtMzQ2Ny00NTg4LWE4ZDUtYTgzOTZjZGU2YzAzJmFsbG93ZWRPcmlnaW49aHR0cHMlM0ElMkYlMkZhcGkuYWlyYnl0ZS5haSJ9"}
+
+```json
+{
+  "token": "eyJ0b2tlbiI6ImV5SmhiR2NpT2lKSVV6STFOaUo5..."
+}
 ```
 
 ## Understanding the Token Response
 
-The response contains:
-- `token`: A JWT token scoped to the user's workspace 
-- `widgetUrl`: A pre-configured URL for the Airbyte Embedded Widget
+The response contains a scoped JWT token that can be used to:
 
-### Using with the Embedded Widget
-Pass the entire response directly to the Airbyte Embedded Widget - no additional processing needed.
+- Create and manage sources in the workspace
+- List available source templates
+- Create connections from sources
 
-### Using with Custom Implementation  
-If building a custom integration, base64 decode the token field to extract the scoped access token:
+### Using the Scoped Token
 
-Here's an example decoded token:
+Use the token as a Bearer token in subsequent API calls:
+
+```bash
+curl https://api.airbyte.ai/api/v1/embedded/sources \
+  -H 'Authorization: Bearer <scoped_token>'
 ```
-{"token":"eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJhaXJieXRlLXNlcnZlciIsInN1YiI6ImU2MGQ4MWE1LTkzZGYtNGY5YS04MDEzLWJiYmY3OTNjZjBhMiIsImlvLmFpcmJ5dGUuYXV0aC53b3Jrc3BhY2Vfc2NvcGUiOnsid29ya3NwYWNlSWQiOiJmYmE4MTIxOC0zNDY3LTQ1ODgtYThkNS1hODM5NmNkZTZjMDMifSwiYWN0Ijp7InN1YiI6ImZkNGY3YWMwLTFhZDEtNDI0OC1iYzFjLTY5MGIwODI4OTU5OSJ9LCJyb2xlcyI6WyJFTUJFRERFRF9FTkRfVVNFUiJdLCJpc3MiOiJodHRwczovL2Nsb3VkLmFpcmJ5dGUuY29tIiwidHlwIjoiaW8uYWlyYnl0ZS5hdXRoLmVtYmVkZGVkX3YxIiwiZXhwIjoxNzUzMzE4MDUwfQ.-gLIbD69VxUJrj16BynI2a12cL6pS_eVSSdlLTgHm7E","widgetUrl":"https://cloud.airbyte.com/embedded-widget?workspaceId=fba81218-3467-4588-a8d5-a8396cde6c03&allowedOrigin=https%3A%2F%2Fapi.airbyte.ai"}
-```
 
-You can use the value of this token string as bearer token when creating a source.
+For widget integration, see [Authentication - Widget Token](./authentication.md#widget-token).
 
 # Creating a Source
 
 You'll need 3 pieces of information to create a source for your users:
+
 1. Their workspace ID
 2. The ID of the [Source Template](./source-templates.md) used
 3. The connection configuration
 
+## Basic Source Creation
+
 Here is an example request:
-```
+
+```bash
 curl --location 'https://api.airbyte.ai/api/v1/embedded/sources' \
   --header 'Content-Type: application/json' \
   --header 'Authorization: Bearer <scoped_token>' \
@@ -74,13 +87,410 @@ curl --location 'https://api.airbyte.ai/api/v1/embedded/sources' \
     "source_template_id": "your_source_template_id",
     "source_config": {
       // your source configuration fields here
-    },
-    "selected_connection_template_tags": ["optional_tag1", "optional_tag2"],
-    "selected_connection_template_tags_mode": "any" // or "all"
+    }
   }'
 ```
 
 The connection configuration should include all required fields from the connector specification, except for the ones included as default values in your source template.
+
 You can find the full connector specification in the [Connector Registry](https://connectors.airbyte.com/files/registries/v0/cloud_registry.json).
 
 You can find [the reference docs for creating a source here](https://api.airbyte.ai/api/v1/docs#tag/Sources/operation/create_integrations_sources).
+
+## Filtering Connection Templates with Tags
+
+When creating a source, you can control which connection templates are available by using tag filtering:
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/embedded/sources' \
+  --header 'Content-Type: application/json' \
+  --header 'Authorization: Bearer <scoped_token>' \
+  --header 'X-Organization-Id: <your_organization_id>' \
+  --data '{
+    "name": "your_source_name",
+    "workspace_id": "your_workspace_id",
+    "source_template_id": "your_source_template_id",
+    "source_config": {},
+    "selected_connection_template_tags": ["analytics", "standard-sync"],
+    "selected_connection_template_tags_mode": "any"
+  }'
+```
+
+**Tag Selection Modes:**
+
+- `any` - Connection template must have at least one of the specified tags
+- `all` - Connection template must have all of the specified tags
+
+This allows you to customize which sync configurations are available based on customer tier, compliance requirements, or other criteria. See [Template Tags](./tags.md) for more information.
+
+# Advanced: Stream Management
+
+After creating a source, you can manage individual streams (tables/collections) within that source. This allows fine-grained control over which data is synced.
+
+## Discover Source Catalog
+
+Discover all available streams for a source:
+
+```bash
+curl https://api.airbyte.ai/api/v1/integrations/sources/{source_id}/discover \
+  -H 'Authorization: Bearer <scoped_token>'
+```
+
+This returns the complete catalog of streams available from the source connector, including:
+
+- Stream names
+- Available sync modes
+- Schema information
+- Primary keys and cursors
+
+### Example Response
+
+```json
+{
+  "catalog": {
+    "streams": [
+      {
+        "name": "users",
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
+        "json_schema": {
+          "type": "object",
+          "properties": {
+            "id": {"type": "integer"},
+            "name": {"type": "string"},
+            "email": {"type": "string"},
+            "updated_at": {"type": "string", "format": "date-time"}
+          }
+        }
+      },
+      {
+        "name": "orders",
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["created_at"]
+      }
+    ]
+  }
+}
+```
+
+## Query Catalog with JMESPath
+
+For advanced filtering and transformation of the catalog, use JMESPath queries:
+
+```bash
+curl -X POST https://api.airbyte.ai/api/v1/integrations/sources/{source_id}/catalog/query \
+  -H 'Authorization: Bearer <scoped_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "jmes_query": "streams[?name==`users` || name==`orders`]"
+  }'
+```
+
+### JMESPath Query Examples
+
+**Filter by stream name:**
+
+```json
+{
+  "jmes_query": "streams[?name==`users`]"
+}
+```
+
+**Find streams with incremental support:**
+
+```json
+{
+  "jmes_query": "streams[?contains(supported_sync_modes, 'incremental')]"
+}
+```
+
+**Get only stream names:**
+
+```json
+{
+  "jmes_query": "streams[*].name"
+}
+```
+
+**Complex filtering:**
+
+```json
+{
+  "jmes_query": "streams[?source_defined_cursor==`true` && contains(supported_sync_modes, 'incremental')]"
+}
+```
+
+See [JMESPath specification](https://jmespath.org/) for complete query syntax.
+
+## Add Stream to Source
+
+Add a specific stream to an existing source:
+
+```bash
+curl -X POST https://api.airbyte.ai/api/v1/integrations/sources/{source_id}/streams \
+  -H 'Authorization: Bearer <scoped_token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "stream_name": "users",
+    "sync_mode": "incremental",
+    "destination_sync_mode": "append_dedup",
+    "cursor_field": ["updated_at"],
+    "primary_key": [["id"]]
+  }'
+```
+
+### Parameters
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `stream_name` | string | Yes | Name of the stream to add |
+| `sync_mode` | string | No | Source sync mode: `full_refresh` or `incremental` |
+| `destination_sync_mode` | string | No | Destination sync mode: `append`, `overwrite`, `append_dedup` |
+| `cursor_field` | array | No | Field to use as cursor for incremental syncs |
+| `primary_key` | array | No | Primary key field(s) for deduplication |
+
+## Update Stream Configuration
+
+Update stream settings using JSON Patch (RFC 6902):
+
+```bash
+curl -X PATCH https://api.airbyte.ai/api/v1/integrations/sources/{source_id}/streams/{stream_name} \
+  -H 'Authorization: Bearer <scoped_token>' \
+  -H 'Content-Type: application/json' \
+  -d '[
+    {
+      "op": "replace",
+      "path": "/sync_mode",
+      "value": "incremental"
+    },
+    {
+      "op": "replace",
+      "path": "/cursor_field",
+      "value": ["last_modified"]
+    }
+  ]'
+```
+
+### JSON Patch Operations
+
+The request body is a JSON Patch array following [RFC 6902](https://datatracker.ietf.org/doc/html/rfc6902).
+
+**Supported operations:**
+
+- `replace` - Replace a field value
+- `add` - Add a new field
+- `remove` - Remove a field
+
+**Common patch examples:**
+
+**Change sync mode:**
+
+```json
+[
+  {
+    "op": "replace",
+    "path": "/sync_mode",
+    "value": "incremental"
+  }
+]
+```
+
+**Update cursor field:**
+
+```json
+[
+  {
+    "op": "replace",
+    "path": "/cursor_field",
+    "value": ["updated_at"]
+  }
+]
+```
+
+**Change destination sync mode:**
+
+```json
+[
+  {
+    "op": "replace",
+    "path": "/destination_sync_mode",
+    "value": "append_dedup"
+  }
+]
+```
+
+**Multiple changes:**
+
+```json
+[
+  {
+    "op": "replace",
+    "path": "/sync_mode",
+    "value": "incremental"
+  },
+  {
+    "op": "replace",
+    "path": "/destination_sync_mode",
+    "value": "append_dedup"
+  },
+  {
+    "op": "replace",
+    "path": "/cursor_field",
+    "value": ["updated_at"]
+  },
+  {
+    "op": "replace",
+    "path": "/primary_key",
+    "value": [["id"]]
+  }
+]
+```
+
+## Remove Stream from Source
+
+Remove a stream from a source:
+
+```bash
+curl -X DELETE https://api.airbyte.ai/api/v1/integrations/sources/{source_id}/streams/{stream_name} \
+  -H 'Authorization: Bearer <scoped_token>'
+```
+
+This stops syncing the specified stream but does not delete historical data.
+
+## Common Stream Management Workflows
+
+### Workflow 1: Add Multiple Streams
+
+```bash
+# Discover available streams
+CATALOG=$(curl https://api.airbyte.ai/api/v1/integrations/sources/$SOURCE_ID/discover \
+  -H "Authorization: Bearer $SCOPED_TOKEN")
+
+# Add users stream with incremental sync
+curl -X POST https://api.airbyte.ai/api/v1/integrations/sources/$SOURCE_ID/streams \
+  -H "Authorization: Bearer $SCOPED_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "stream_name": "users",
+    "sync_mode": "incremental",
+    "cursor_field": ["updated_at"]
+  }'
+
+# Add orders stream with full refresh
+curl -X POST https://api.airbyte.ai/api/v1/integrations/sources/$SOURCE_ID/streams \
+  -H "Authorization: Bearer $SCOPED_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "stream_name": "orders",
+    "sync_mode": "full_refresh",
+    "destination_sync_mode": "overwrite"
+  }'
+```
+
+### Workflow 2: Optimize Existing Streams
+
+```bash
+# Change from full_refresh to incremental for better performance
+curl -X PATCH https://api.airbyte.ai/api/v1/integrations/sources/$SOURCE_ID/streams/users \
+  -H "Authorization: Bearer $SCOPED_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '[
+    {
+      "op": "replace",
+      "path": "/sync_mode",
+      "value": "incremental"
+    },
+    {
+      "op": "replace",
+      "path": "/cursor_field",
+      "value": ["updated_at"]
+    }
+  ]'
+```
+
+### Workflow 3: Find and Add Incremental Streams
+
+```bash
+# Find all streams that support incremental sync
+INCREMENTAL_STREAMS=$(curl -X POST \
+  https://api.airbyte.ai/api/v1/integrations/sources/$SOURCE_ID/catalog/query \
+  -H "Authorization: Bearer $SCOPED_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "jmes_query": "streams[?contains(supported_sync_modes, '\''incremental'\'')].name"
+  }')
+
+# Add each incremental stream
+# (In a real implementation, you would parse the JSON response and iterate)
+```
+
+## Best Practices
+
+### Stream Selection
+
+- **Start selective**: Add only the streams you need rather than syncing everything
+- **Use incremental when possible**: Reduces data transfer and processing time
+- **Monitor stream performance**: Remove or optimize slow streams
+
+### Sync Mode Selection
+
+| Sync Mode | Use Case | Performance | Data Usage |
+|-----------|----------|-------------|------------|
+| `full_refresh` + `overwrite` | Small tables, dimension tables | Lower (replaces all data) | High |
+| `full_refresh` + `append` | Audit logs, immutable events | Lower | Very High |
+| `incremental` + `append` | Event streams, logs | High | Low |
+| `incremental` + `append_dedup` | Mutable tables with updates | Medium | Low |
+
+### Cursor Field Selection
+
+- **Use indexed fields**: Choose cursor fields that are indexed in the source
+- **Prefer immutable fields**: Use `created_at` over `updated_at` when possible
+- **Validate cursor coverage**: Ensure the cursor field is present in all records
+
+### Performance Optimization
+
+1. **Discover once, reuse**: Cache catalog discovery results
+2. **Batch stream operations**: Add multiple streams in quick succession
+3. **Use JMESPath filtering**: Reduce data transfer when querying catalogs
+4. **Monitor sync performance**: Use stream-level metrics to identify bottlenecks
+
+## Error Handling
+
+### 404 Stream Not Found
+
+```json
+{
+  "detail": "Stream 'invalid_stream' not found in source catalog"
+}
+```
+
+**Solution**: Discover the catalog to verify stream names
+
+### 422 Validation Error
+
+```json
+{
+  "detail": "Sync mode 'invalid_mode' not supported for stream 'users'"
+}
+```
+
+**Solution**: Check the stream's `supported_sync_modes` in the catalog
+
+### 400 Invalid JSON Patch
+
+```json
+{
+  "detail": "Invalid JSON Patch operation"
+}
+```
+
+**Solution**: Verify JSON Patch syntax follows RFC 6902
+
+## Related Documentation
+
+- [Source Templates](./source-templates.md) - Create and manage source templates
+- [Connection Templates](./connection-templates.md) - Configure sync behavior
+- [Template Tags](./tags.md) - Organize templates with tags
+- [Authentication](./authentication.md) - Token generation and management
