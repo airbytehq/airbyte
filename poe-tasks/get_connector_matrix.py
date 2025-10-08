@@ -48,15 +48,15 @@ Contributing:
 import json
 import os
 import re
-import click
 import subprocess
 import sys
 from functools import lru_cache
 from pathlib import Path
 from typing import Optional
-from typing_extensions import Annotated
 
+import click
 import typer
+from typing_extensions import Annotated
 
 
 def get_modified_files(
@@ -79,7 +79,10 @@ def get_modified_files(
     """
     try:
         subprocess.run(
-            ["git", "remote", "get-url", "upstream"], check=True, capture_output=True, text=True,
+            ["git", "remote", "get-url", "upstream"],
+            check=True,
+            capture_output=True,
+            text=True,
         )
     except subprocess.CalledProcessError:
         remote = "origin"
@@ -89,8 +92,9 @@ def get_modified_files(
 
     default_branch = "master"
 
-    subprocess.run([
-        "git", "fetch", "--quiet", remote, default_branch], check=True,
+    subprocess.run(
+        ["git", "fetch", "--quiet", remote, default_branch],
+        check=True,
     )
 
     all_files: list[str] = []
@@ -108,17 +112,26 @@ def get_modified_files(
         committed: list[str] = result.stdout.strip().split("\n") if result.stdout.strip() else []
 
         result = subprocess.run(
-            ["git", "diff", "--cached", "--name-only"], capture_output=True, text=True, check=True,
+            ["git", "diff", "--cached", "--name-only"],
+            capture_output=True,
+            text=True,
+            check=True,
         )
         staged: list[str] = result.stdout.strip().split("\n") if result.stdout.strip() else []
 
         result = subprocess.run(
-            ["git", "diff", "--name-only"], capture_output=True, text=True, check=True,
+            ["git", "diff", "--name-only"],
+            capture_output=True,
+            text=True,
+            check=True,
         )
         unstaged: list[str] = result.stdout.strip().split("\n") if result.stdout.strip() else []
 
         result = subprocess.run(
-            ["git", "ls-files", "--others", "--exclude-standard"], capture_output=True, text=True, check=True,
+            ["git", "ls-files", "--others", "--exclude-standard"],
+            capture_output=True,
+            text=True,
+            check=True,
         )
         untracked: list[str] = result.stdout.strip().split("\n") if result.stdout.strip() else []
         all_files = committed + staged + unstaged + untracked
@@ -231,10 +244,10 @@ def get_manifest_dict(connector_name: str) -> dict:
     True
 
     >>> from unittest.mock import patch, mock_open
-    >>> with patch('builtins.open', mock_open(read_data='data:\\n  tags: ["language:java"]\\n')):
-    ...     with patch('pathlib.Path.exists', return_value=True):
+    >>> with patch("builtins.open", mock_open(read_data='data:\\n  tags: ["language:java"]\\n')):
+    ...     with patch("pathlib.Path.exists", return_value=True):
     ...         result = get_manifest_dict("test-connector")
-    ...         result['data']['tags']
+    ...         result["data"]["tags"]
     ['language:java']
     """
     import yaml
@@ -242,10 +255,7 @@ def get_manifest_dict(connector_name: str) -> dict:
     metadata_path = Path(f"airbyte-integrations/connectors/{connector_name}/metadata.yaml")
 
     if not metadata_path.exists():
-        raise FileNotFoundError(
-            f"File `metadata.yaml` not found for connector '{connector_name}' "
-            f"at path: {metadata_path}"
-        )
+        raise FileNotFoundError(f"File `metadata.yaml` not found for connector '{connector_name}' " f"at path: {metadata_path}")
 
     try:
         with open(metadata_path) as f:
@@ -272,11 +282,7 @@ def find_local_cdk_connectors() -> list[str]:
             continue
 
         build_file: Path | None = next(
-            (
-                file
-                for file in [connector_dir / "build.gradle", connector_dir / "build.gradle.kts"]
-                if file.exists()
-            ),
+            (file for file in [connector_dir / "build.gradle", connector_dir / "build.gradle.kts"] if file.exists()),
             None,
         )
         if build_file:
@@ -475,7 +481,7 @@ def get_modified_connectors(
         return []
 
     modified_files = filter_ignored_files(modified_files)
-    if not modified_files and not local_cdk:
+    if not modified_files:
         print(
             "⚠️ Warning: No files remaining after filtering. Returning empty connector list.",
             file=sys.stderr,
@@ -507,10 +513,7 @@ app = typer.Typer(add_completion=False)
 
 @app.command()
 def main(
-    files_list: Annotated[
-        Optional[str],
-        typer.Option(help="CSV string of file paths (overrides git detection).")
-    ] = None,
+    files_list: Annotated[Optional[str], typer.Option(help="CSV string of file paths (overrides git detection).")] = None,
     local_cdk: Annotated[
         bool,
         typer.Option(
@@ -551,7 +554,10 @@ def main(
 
     >>> main(files_list="airbyte-integrations/connectors/source-faker/metadata.yaml", json_matrix=False)
     source-faker
-    >>> main(files_list="airbyte-integrations/connectors/source-faker/metadata.yaml,airbyte-integrations/connectors/destination-bigquery/README.md", json_matrix=True)
+    >>> main(
+    ...     files_list="airbyte-integrations/connectors/source-faker/metadata.yaml,airbyte-integrations/connectors/destination-bigquery/README.md",
+    ...     json_matrix=True,
+    ... )
     {"connector": ["source-faker"]}
     """
     if run_tests:
@@ -565,10 +571,7 @@ def main(
     else:
         connectors_list = get_modified_connectors(
             prev_commit=prev_commit,
-            override_files_list=(
-                None if files_list is None else
-                [file.strip() for file in files_list.replace("\n", ",").split(",")]
-            ),
+            override_files_list=(None if files_list is None else [file.strip() for file in files_list.replace("\n", ",").split(",")]),
         )
 
     if not connectors_list:
