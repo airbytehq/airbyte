@@ -1,0 +1,59 @@
+name: Auto Approval Command
+on:
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: "Pull request number"
+        type: number
+        required: true
+      comment-id:
+        description: "The comment-id of the slash command"
+        required: false
+      reason:
+        description: "Reason for auto-approval"
+        required: false
+        default: "Slash command approval"
+      repo:
+        description: "Repo (Ignored)"
+        required: false
+        default: "airbytehq/airbyte"
+      gitref:
+        description: "Git ref (Ignored)"
+        required: false
+
+run-name: "Auto Approval Command for PR #${{ github.event.inputs.pr }}"
+
+jobs:
+  auto-approve-command:
+    name: "Execute Auto Approval"
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v4
+
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@v2
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
+      - name: Trigger Auto Approval Workflow
+        env:
+          GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
+        run: |
+          gh api \
+            --method POST \
+            /repos/${{ github.repository }}/dispatches \
+            -f event_type='auto-approve' \
+            -f client_payload='{"pr-number":${{ github.event.inputs.pr }},"requester":"${{ github.actor }}","reason":"${{ github.event.inputs.reason }}"}'
+
+      - name: Update Comment
+        if: github.event.inputs.comment-id
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          body: |
+            > Auto-approval workflow triggered for PR #${{ github.event.inputs.pr }}
