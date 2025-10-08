@@ -22,8 +22,10 @@ import org.apache.commons.text.StringEscapeUtils
 
 private val logger = KotlinLogging.logger {}
 
-internal val CSV_FIELD_SEPARATOR = ",".toByteArray()
-internal val CSV_LINE_DELIMITER = "\n".toByteArray()
+internal const val CSV_FIELD_SEPARATOR = ","
+internal const val CSV_LINE_DELIMITER = "\n"
+internal val CSV_FIELD_SEPARATOR_B = CSV_FIELD_SEPARATOR.toByteArray()
+internal val CSV_LINE_DELIMITER_B = CSV_LINE_DELIMITER.toByteArray()
 
 class SnowflakeInsertBuffer(
     private val tableName: TableName,
@@ -87,11 +89,11 @@ class SnowflakeInsertBuffer(
             outputStream.write(csvValue.toByteArray())
 
             if (i != formattedValues.lastIndex) {
-                outputStream.write(CSV_FIELD_SEPARATOR)
+                outputStream.write(CSV_FIELD_SEPARATOR_B)
             }
         }
 
-        outputStream.write(CSV_LINE_DELIMITER)
+        outputStream.write(CSV_LINE_DELIMITER_B)
         recordCount++
     }
 
