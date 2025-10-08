@@ -1,8 +1,6 @@
 package io.airbyte.integrations.source.datagen
 
-import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.data.AirbyteSchemaType
-import io.airbyte.cdk.data.AnyEncoder
 import io.airbyte.cdk.data.ArrayAirbyteSchemaType
 import io.airbyte.cdk.data.ArrayEncoder
 import io.airbyte.cdk.data.BigDecimalCodec
@@ -16,13 +14,9 @@ import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.data.LocalDateCodec
 import io.airbyte.cdk.data.LocalDateTimeCodec
 import io.airbyte.cdk.data.LocalTimeCodec
-import io.airbyte.cdk.data.LongCodec
-//import io.airbyte.cdk.data.ObjectAirbyteSchemaType
-//import io.airbyte.cdk.data.ObjectEncoder
 import io.airbyte.cdk.data.OffsetDateTimeCodec
 import io.airbyte.cdk.data.OffsetTimeCodec
 import io.airbyte.cdk.data.TextCodec
-//import io.airbyte.cdk.data.UnknownAirbyteSchemaType
 import io.airbyte.cdk.discover.FieldType
 
 data object IntegerFieldType : FieldType {
@@ -90,24 +84,3 @@ data object JsonFieldType : FieldType {
          ArrayAirbyteSchemaType(elementFieldType.airbyteSchemaType)
      override val jsonEncoder: JsonEncoder<*> = ArrayEncoder(elementFieldType.jsonEncoder)
  }
-
- //  TODO: left off here
- data class UnionFieldType(val options: Set<FieldType>,
-                            val isLegacyUnion: Boolean,) : FieldType {
-     override val airbyteSchemaType: AirbyteSchemaType = TODO()
-     override val jsonEncoder: JsonEncoder<*> = TODO()
- }
-
-// data class ObjectFieldType(
-//     val properties: LinkedHashMap<String, FieldType>? = emptyMap(),
-//     val additionalProperties: Boolean = true, // should this be here
-//     val required: List<String> = emptyList()// should this be here
-// ): FieldType {
-//     val schemaMap: LinkedHashMap<String, AirbyteSchemaType> =
-//         LinkedHashMap(properties.mapValues { it.value.airbyteSchemaType })
-//     override val airbyteSchemaType: AirbyteSchemaType =
-//         ObjectAirbyteSchemaType(schemaMap, additionalProperties, required)
-//     val propertyEncoder: LinkedHashMap<String, JsonEncoder<*>> =
-//         LinkedHashMap(properties.mapValues { it.value.jsonEncoder })
-//     override val jsonEncoder: JsonEncoder<*> = ObjectEncoder(propertyEncoder)
-// }

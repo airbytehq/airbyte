@@ -9,7 +9,6 @@ import io.airbyte.integrations.source.datagen.DateFieldType
 import io.airbyte.integrations.source.datagen.IntegerFieldType
 import io.airbyte.integrations.source.datagen.JsonFieldType
 import io.airbyte.integrations.source.datagen.NumberFieldType
-//import io.airbyte.integrations.source.datagen.ObjectFieldType
 import io.airbyte.integrations.source.datagen.StringFieldType
 import io.airbyte.integrations.source.datagen.TimeWithTimeZoneFieldType
 import io.airbyte.integrations.source.datagen.TimeWithoutTimeZoneFieldType
@@ -39,12 +38,6 @@ data object TypesFlavor : Flavor {
                     Field("timestamp without time zone", TimestampWithoutTimeZoneFieldType),
                     Field("json", JsonFieldType),
                     Field("array", ArrayFieldType(IntegerFieldType)),
-//                    Field("object", ObjectFieldType(
-//                        linkedMapOf(
-//                            "id" to IntegerFieldType,
-//                            "name" to StringFieldType)
-//                        )
-//                    ),
                 )
         )
     override val primaryKeys = mapOf(typesTableName to listOf(listOf(("string"))))

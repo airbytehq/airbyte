@@ -29,56 +29,6 @@ data class ArrayAirbyteSchemaType(
     }
 }
 
- data class ObjectAirbyteSchemaType(
-    val properties: LinkedHashMap<String, AirbyteSchemaType>,
-    val additionalProperties: Boolean = true,
-    val required: List<String> = emptyList()
- ) : AirbyteSchemaType {
-    override fun asJsonSchemaType(): JsonSchemaType {
-        val builder = JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.OBJECT)
-        properties.forEach { (name, _) ->
-            builder.withLegacyAirbyteTypeProperty(name)
-        }
-        return builder.build()
-    }
- }
-
-data class UnionAirbyteSchemaType(
-    val options: Set<AirbyteSchemaType>,
-    val isLegacyUnion: Boolean,
-) : AirbyteSchemaType {
-    override fun asJsonSchemaType(): JsonSchemaType {
-        // For legacy unions, JsonSchemaType expects an array of type strings in the jsonSchemaTypeMap
-        // For non-legacy unions (oneOf), we need to return a representation that includes oneOf
-        // Since JsonSchemaType doesn't have a withOneOf method, we follow the pattern of other types
-        // and return the most appropriate single type representation
-
-        if (isLegacyUnion) {
-            // For legacy unions like ["null", "string"], we choose the best non-null type
-            val nonNullOptions = options.filter { it != LeafAirbyteSchemaType.NULL }
-            if (nonNullOptions.size == 1) {
-                return nonNullOptions.first().asJsonSchemaType()
-            }
-            // If multiple non-null types, choose the first one (arbitrary but consistent)
-            return nonNullOptions.firstOrNull()?.asJsonSchemaType()
-                ?: LeafAirbyteSchemaType.NULL.asJsonSchemaType()
-        } else {
-            // For non-legacy unions (oneOf), return the first option as a fallback
-            // The full oneOf structure would need to be represented at the JSON level
-            return options.firstOrNull()?.asJsonSchemaType()
-                ?: LeafAirbyteSchemaType.NULL.asJsonSchemaType()
-        }
-    }
-}
-
- data class UnknownAirbyteSchemaType(
-    val schema: JsonNode
- ) : AirbyteSchemaType {
-    override fun asJsonSchemaType(): JsonSchemaType {
-        return JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.OBJECT).build()
-    }
- }
-
 enum class LeafAirbyteSchemaType(
     private val jsonSchemaType: JsonSchemaType,
 ) : AirbyteSchemaType {

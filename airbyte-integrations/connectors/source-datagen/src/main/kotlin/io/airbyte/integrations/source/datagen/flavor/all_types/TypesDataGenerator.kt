@@ -1,6 +1,5 @@
 package io.airbyte.integrations.source.datagen.flavor.all_types
 
-import io.airbyte.cdk.data.AnyEncoder
 import io.airbyte.cdk.data.ArrayEncoder
 import io.airbyte.cdk.data.BigDecimalCodec
 import io.airbyte.cdk.data.BigDecimalIntegerCodec
@@ -11,14 +10,11 @@ import io.airbyte.cdk.data.JsonStringCodec
 import io.airbyte.cdk.data.LocalDateCodec
 import io.airbyte.cdk.data.LocalDateTimeCodec
 import io.airbyte.cdk.data.LocalTimeCodec
-import io.airbyte.cdk.data.LongCodec
-//import io.airbyte.cdk.data.ObjectEncoder
 import io.airbyte.cdk.data.OffsetDateTimeCodec
 import io.airbyte.cdk.data.OffsetTimeCodec
 import io.airbyte.cdk.data.TextCodec
 import io.airbyte.cdk.output.sockets.FieldValueEncoder
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
-import io.airbyte.integrations.source.datagen.ArrayFieldType
 import io.airbyte.integrations.source.datagen.BigDecimalFieldType
 import io.airbyte.integrations.source.datagen.BigIntegerFieldType
 import io.airbyte.integrations.source.datagen.BooleanFieldType
@@ -26,7 +22,6 @@ import io.airbyte.integrations.source.datagen.DateFieldType
 import io.airbyte.integrations.source.datagen.IntegerFieldType
 import io.airbyte.integrations.source.datagen.JsonFieldType
 import io.airbyte.integrations.source.datagen.NumberFieldType
-//import io.airbyte.integrations.source.datagen.ObjectFieldType
 import io.airbyte.integrations.source.datagen.StringFieldType
 import io.airbyte.integrations.source.datagen.TimeWithTimeZoneFieldType
 import io.airbyte.integrations.source.datagen.TimeWithoutTimeZoneFieldType
@@ -93,10 +88,6 @@ class TypesDataGenerator() : DataGenerator {
         recordData["json"] = FieldValueEncoder(json, JsonFieldType.jsonEncoder as JsonStringCodec)
 
         recordData["array"] = FieldValueEncoder(array, ArrayEncoder(IntCodec))
-
-//        recordData["object"] = FieldValueEncoder(linkedMapOf("id" to incrementedID, "name" to "Alice$incrementedID"),
-//            ObjectEncoder(linkedMapOf("id" to LongCodec, "name" to TextCodec))
-//        )
 
         return recordData
     }
