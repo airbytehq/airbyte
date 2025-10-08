@@ -155,10 +155,6 @@ class PostgresDirectLoadSqlGenerator {
 
     fun AirbyteType.toDialectType(): String =
         when (this) {
-            //not sure what's the source of truth for this mapping
-            // I went with using what's in the docs of the existing
-            // postgres destination
-            // https://docs.airbyte.com/integrations/destinations/postgres#final-tables-data-type-mapping
             BooleanType -> SQLDataType.BOOLEAN.typeName
             DateType -> SQLDataType.DATE.typeName
             IntegerType -> SQLDataType.BIGINT.typeName
