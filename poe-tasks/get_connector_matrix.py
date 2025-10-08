@@ -512,7 +512,10 @@ app = typer.Typer(add_completion=False)
 
 @app.command()
 def main(
-    files_list: Annotated[Optional[str], typer.Option(help="CSV string of file paths (overrides git detection).")] = None,
+    files_list: Annotated[
+        Optional[str],
+        typer.Option(help="CSV string of file paths (overrides git detection).")
+    ] = None,
     local_cdk: Annotated[
         bool,
         typer.Option(
@@ -572,12 +575,6 @@ def main(
             prev_commit=prev_commit,
             override_files_list=(None if files_list is None else [file.strip() for file in files_list.replace("\n", ",").split(",")]),
         )
-
-    if not connectors_list:
-        print("⚠️ Warning: No connectors found. Returning empty connector list.", file=sys.stderr)
-        if json_matrix:
-            print(return_empty_json())
-        return
 
     if java is not None:
         connectors_list = filter_by_language(connectors_list, java=java)
