@@ -30,6 +30,7 @@ This source can sync data from the [Sonar cloud API](https://sonarcloud.io/web_a
 
 | Version | Date                                                                  | Pull Request                                              | Subject                                                                         |
 | :------ | :-------------------------------------------------------------------- | :-------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 0.2.32 | 2025-10-07 | [67452](https://github.com/airbytehq/airbyte/pull/67452) | Update dependencies |
 | 0.2.31 | 2025-09-30 | [66906](https://github.com/airbytehq/airbyte/pull/66906) | Update dependencies |
 | 0.2.30 | 2025-09-24 | [65670](https://github.com/airbytehq/airbyte/pull/65670) | Update dependencies |
 | 0.2.29 | 2025-08-23 | [65394](https://github.com/airbytehq/airbyte/pull/65394) | Update dependencies |
