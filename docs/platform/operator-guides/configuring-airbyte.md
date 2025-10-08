@@ -4,13 +4,12 @@ products: oss-*
 
 # Configuring Airbyte
 
-This section covers the various configuration options Airbyte accepts. [Airbyte runs on Kubernetes](../deploying-airbyte/deploying-airbyte.md). To configure the Airbyte Kubernetes deployment, modify the `values.yaml` file. If you want to manage your own Kube manifests, refer to the `Helm Chart`.
-
-The following configuration options are possible, organized by service. Internal-only variables are omitted for clarity. See `Configs.java` for a full list of variables.
-
-:::warning
-Be careful using variables marked as `alpha`. They aren't meant for public consumption.
+:::important
+You probably don't need to reference this file. This page documents Airbyte's internal configuration API. This is how Airbyte retrieves values. To configure Airbyte, modify the [values.yaml](../deploying-airbyte/values) file.  `values.yaml` has a rich interface and is suitable for all integrations and configurations, especially once you've upgraded to Helm Chart V2.
+<!-- [Helm chart V2](../deploying-airbyte/chart-v2-community). -->
 :::
+
+Be careful using variables marked as `alpha`. They aren't meant for public consumption.
 
 ## Core
 
@@ -47,7 +46,7 @@ Be careful using variables marked as `alpha`. They aren't meant for public consu
 
 1. `TEMPORAL_HOST` - Defines the url where Temporal is hosted at. Please include the port. Airbyte services use this information.
 2. `INTERNAL_API_HOST` - Defines the url where the Airbyte Server is hosted at. Please include the port. Airbyte services use this information.
-3. `WEBAPP_URL` - Defines the url the Airbyte Webapp is hosted at. Please include the port. Airbyte services use this information. You can set this variable to your custom domain name to change the Airbyte instance URL provided in notifications.
+3. `AIRBYTE_URL` -  Formerly `WEBAPP_URL`. Defines the URL the Airbyte web app is hosted at. Please include the port. Airbyte services use this information. You can set this variable to your custom domain name to change the Airbyte instance URL provided in notifications.
 
 ## Jobs
 
@@ -131,5 +130,4 @@ See [State and Logging Storage](../deploying-airbyte/integrations/storage.md) fo
 ## Server
 
 1. `AUDIT_LOGGING_ENABLED` - For Self-Managed Enterprise only, defines whether Airbyte enables audit logging. Set to `true` or `false`. If `true`, specify `STORAGE_BUCKET_AUDIT_LOGGING`.
-2. `STORAGE_BUCKET_AUDIT_LOGGING` - For Self-Managed Enterprise only, if `AUDIT_LOGGING_ENABLED` is true, define your audit logging bucket here. You
-must configure a blob storage solution, like AWS S3, Google Cloud Storage, or Azure Blob Storage.
+2. `STORAGE_BUCKET_AUDIT_LOGGING` - For Self-Managed Enterprise only, if `AUDIT_LOGGING_ENABLED` is true, define your audit logging bucket here. You must configure a blob storage solution, like AWS S3, Google Cloud Storage, or Azure Blob Storage.

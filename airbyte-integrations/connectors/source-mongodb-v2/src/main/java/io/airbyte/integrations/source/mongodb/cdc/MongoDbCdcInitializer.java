@@ -64,22 +64,6 @@ public class MongoDbCdcInitializer {
     this(new MongoDbDebeziumStateUtil());
   }
 
-  /**
-   * Generates the list of stream iterators based on the configured catalog and stream state. This
-   * list will include any initial snapshot iterators, followed by incremental iterators, where
-   * applicable.
-   *
-   * @param mongoClient The {@link MongoClient} used to interact with the target MongoDB server.
-   * @param cdcMetadataInjector The {@link MongoDbCdcConnectorMetadataInjector} used to add metadata
-   *        to generated records.
-   * @param streams The configured Airbyte catalog of streams for the source.
-   * @param stateManager The {@link MongoDbStateManager} that provides state information used for
-   *        iterator selection.
-   * @param emittedAt The timestamp of the sync.
-   * @param config The configuration of the source.
-   * @return The list of stream iterators with initial snapshot iterators before any incremental
-   *         iterators.
-   */
   public List<AutoCloseableIterator<AirbyteMessage>> createCdcIterators(
                                                                         final MongoClient mongoClient,
                                                                         final MongoDbCdcConnectorMetadataInjector cdcMetadataInjector,
@@ -92,26 +76,81 @@ public class MongoDbCdcInitializer {
     final Duration firstRecordWaitTime = Duration.ofSeconds(config.getInitialWaitingTimeSeconds());
     // #35059: debezium heartbeats are not sent on the expected interval. this is
     // a workaround to allow making subsequent wait time configurable.
-    final Duration subsequentRecordWaitTime = firstRecordWaitTime;
-    LOGGER.info("Subsequent cdc record wait time: {} seconds", subsequentRecordWaitTime);
+    LOGGER.info("Subsequent cdc record wait time: {} seconds", firstRecordWaitTime);
     final Duration initialLoadTimeout = InitialLoadTimeoutUtil.getInitialLoadTimeout(config.rawConfig());
 
     final int queueSize = MongoUtil.getDebeziumEventQueueSize(config);
-    final String databaseName = config.getDatabaseName();
     final boolean isEnforceSchema = config.getEnforceSchema();
-
     final Properties defaultDebeziumProperties = MongoDbCdcProperties.getDebeziumProperties();
     logOplogInfo(mongoClient);
 
+    final List<String> databaseNames = config.getDatabaseNames();
+    final List<List<ConfiguredAirbyteStream>> streamsByDatabase = new ArrayList<>();
+    for (String databaseName : databaseNames) {
+      List<ConfiguredAirbyteStream> s = streams.stream()
+          .filter(stream -> stream.getStream().getNamespace().equals(databaseName))
+          .map(Jsons::clone)
+          .toList();
+      streamsByDatabase.add(s);
+    }
+    // calculate the initial resume token for all the collections discovered for the input databases.
     final BsonDocument initialResumeToken =
-        MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient, databaseName, incrementalOnlyStreamsCatalog);
-    final JsonNode initialDebeziumState =
-        mongoDbDebeziumStateUtil.constructInitialDebeziumState(initialResumeToken, databaseName);
+        MongoDbResumeTokenHelper.getMostRecentResumeTokenForDatabases(mongoClient, databaseNames, streamsByDatabase);
 
-    final MongoDbCdcState cdcState =
-        (stateManager.getCdcState() == null || stateManager.getCdcState().state() == null || stateManager.getCdcState().state().isNull())
-            ? new MongoDbCdcState(initialDebeziumState, isEnforceSchema)
-            : new MongoDbCdcState(Jsons.clone(stateManager.getCdcState().state()), stateManager.getCdcState().schema_enforced());
+    final String serverId = config.getDatabaseConfig().get("connection_string").asText();
+    final JsonNode initialDebeziumState =
+        mongoDbDebeziumStateUtil.constructInitialDebeziumState(initialResumeToken, serverId);
+
+    boolean needsStateMigration = false;
+    String extractedResumeTokenString = null;
+
+    // Check if we have saved CDC state and validate it for corruption or outdated format
+    if (stateManager.getCdcState() != null && stateManager.getCdcState().state() != null) {
+      JsonNode savedCdcState = stateManager.getCdcState().state();
+      String correctlyNormalizedServerId = MongoDbDebeziumPropertiesManager.normalizeToDebeziumFormat(serverId);
+
+      List<Map.Entry<String, JsonNode>> savedStateEntries = new ArrayList<>();
+      savedCdcState.fields().forEachRemaining(savedStateEntries::add);
+      // Check for either corrupted state (multiple partitions) OR migration needed (old database name
+      // format)
+      boolean needsCleaning = hasOldFormatState(savedStateEntries, correctlyNormalizedServerId);
+
+      // Handle problematic state scenarios. Extracting the resume token based on each case.
+      if (needsCleaning) {
+        if (savedCdcState.size() > 1) { // Multiple partitions: Extract resume token from the state with correct server_id format
+          LOGGER.warn("Detected {} partition entries in CDC state - should only have 1", savedCdcState.size());
+          for (Map.Entry<String, JsonNode> entry : savedStateEntries) {
+            String keyString = entry.getKey();
+            if (keyString.contains(correctlyNormalizedServerId)) {
+              extractedResumeTokenString = getTokenFromCorruptedState(entry.getValue().asText());
+              break;
+            }
+          }
+        } else { // Single partition with old format: Extract resume token from the single state (migration case)
+          LOGGER.info("Detected old database name format in CDC state, migrating to connection string format");
+          extractedResumeTokenString = getTokenFromCorruptedState(savedStateEntries.get(0).getValue().asText());
+        }
+        needsStateMigration = true;
+      }
+    }
+
+    final MongoDbCdcState cdcState;
+    if (needsStateMigration && extractedResumeTokenString != null) {
+      JsonNode cleanDebeziumState = MongoDbDebeziumStateUtil.formatState(serverId, extractedResumeTokenString);
+      // Corruption/migration: create a clean state using extracted resume token string
+      cdcState = new MongoDbCdcState(cleanDebeziumState, isEnforceSchema);
+      LOGGER.info("Created clean MongoDbCdcState from extracted resume token");
+    } else if (stateManager.getCdcState() == null ||
+        stateManager.getCdcState().state() == null ||
+        stateManager.getCdcState().state().isNull()) {
+      // No cdc state: create a new state from initial Debezium state.
+      cdcState = new MongoDbCdcState(initialDebeziumState, isEnforceSchema);
+      LOGGER.info("Created new MongoDbCdcState from initial state");
+    } else {
+      // Valid existing state: use the current state
+      cdcState = new MongoDbCdcState(Jsons.clone(stateManager.getCdcState().state()), stateManager.getCdcState().schema_enforced());
+      LOGGER.info("Using existing valid MongoDbCdcState");
+    }
 
     final Optional<BsonDocument> optSavedOffset = mongoDbDebeziumStateUtil.savedOffset(
         Jsons.clone(defaultDebeziumProperties),
@@ -127,7 +166,7 @@ public class MongoDbCdcInitializer {
 
     final boolean savedOffsetIsValid =
         optSavedOffset
-            .filter(savedOffset -> mongoDbDebeziumStateUtil.isValidResumeToken(savedOffset, mongoClient, databaseName, incrementalOnlyStreamsCatalog))
+            .filter(savedOffset -> mongoDbDebeziumStateUtil.isValidResumeToken(savedOffset, mongoClient, databaseNames, streamsByDatabase))
             .isPresent();
 
     if (!savedOffsetIsValid) {
@@ -136,7 +175,6 @@ public class MongoDbCdcInitializer {
         throw new ConfigErrorException(
             "Saved offset is not valid. Please reset the connection, and then increase oplog retention and/or increase sync frequency to prevent his from happening in the future. See https://docs.airbyte.com/integrations/sources/mongodb-v2#mongodb-oplog-and-change-streams for more details");
       }
-
       LOGGER.info("Saved offset is not valid. Airbyte will trigger a full refresh.");
       // If the offset in the state is invalid, reset the state to the initial STATE
       stateManager.resetState(new MongoDbCdcState(initialDebeziumState, config.getEnforceSchema()));
@@ -170,9 +208,12 @@ public class MongoDbCdcInitializer {
         .filter(stream -> (!initialSnapshotStreams.contains(stream) || inProgressSnapshotStreams.contains(stream)))
         .map(stream -> stream.getStream().getNamespace() + "\\." + stream.getStream().getName()).toList();
 
-    final List<AutoCloseableIterator<AirbyteMessage>> initialSnapshotIterators =
-        initialSnapshotHandler.getIterators(initialSnapshotStreams, stateManager, mongoClient.getDatabase(databaseName),
-            config, false, false, emittedAt, Optional.of(initialLoadTimeout));
+    final List<AutoCloseableIterator<AirbyteMessage>> initialSnapshotIterators = new ArrayList<>();
+    for (int i = 0; i < databaseNames.size(); i++) {
+      initialSnapshotIterators
+          .addAll(initialSnapshotHandler.getIterators(initialSnapshotStreams, stateManager, mongoClient.getDatabase(databaseNames.get(i)),
+              config, false, false, emittedAt, Optional.of(initialLoadTimeout)));
+    }
 
     final AirbyteDebeziumHandler<BsonTimestamp> handler = new AirbyteDebeziumHandler<>(config.getDatabaseConfig(),
         new MongoDbCdcTargetPosition(initialResumeToken), false, firstRecordWaitTime, queueSize, false);
@@ -267,6 +308,32 @@ public class MongoDbCdcInitializer {
     }
   }
 
+  private String getTokenFromCorruptedState(String valueString) {
+    try {
+      JsonNode valueJson = Jsons.deserialize(valueString);
+      if (valueJson.has("resume_token")) {
+        return valueJson.get("resume_token").asText();
+      }
+    } catch (Exception e) {
+      LOGGER.warn("Failed to parse value JSON: {}", e.getMessage());
+    }
+    return null;
+  }
+
+  private boolean hasOldFormatState(List<Map.Entry<String, JsonNode>> stateEntries, String correctNormalizedServerId) {
+    for (Map.Entry<String, JsonNode> entry : stateEntries) {
+      if (!entry.getKey().contains(correctNormalizedServerId)) {
+        return true; // Found a state entry that doesn't match current state format
+      }
+    }
+    return false; // All state entries match current state format
+  }
+
+  /**
+   * Logs oplog information such as max size and free space.
+   *
+   * @param mongoClient The MongoDB client used to connect to the database.
+   */
   private void logOplogInfo(final MongoClient mongoClient) {
     try {
       final MongoDatabase localDatabase = mongoClient.getDatabase("local");

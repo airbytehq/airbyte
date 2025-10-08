@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.mssql.v2
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.write.DirectLoader
@@ -15,6 +16,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 
+@SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", "kotlin coroutines")
 class MSSQLDirectLoader(
     config: MSSQLConfiguration,
     stateStore: StreamStateStore<MSSQLStreamState>,
@@ -37,7 +39,7 @@ class MSSQLDirectLoader(
     private val preparedStatement =
         connection.prepareStatement(state.sqlBuilder.getFinalTableInsertColumnHeader().trimIndent())
 
-    override fun accept(
+    override suspend fun accept(
         record: DestinationRecordRaw,
     ): DirectLoader.DirectLoadResult {
         sqlBuilder.populateStatement(preparedStatement, record, sqlBuilder.finalTableSchema)
@@ -70,7 +72,7 @@ class MSSQLDirectLoader(
         }
     }
 
-    override fun finish() {
+    override suspend fun finish() {
         log.info { "Finishing batch $batch for stream $streamDescriptor" }
 
         // Execute remaining records if any

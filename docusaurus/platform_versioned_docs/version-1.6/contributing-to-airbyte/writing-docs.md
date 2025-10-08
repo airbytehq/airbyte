@@ -189,33 +189,46 @@ Some platform features are reserved for certain Airbyte products. To avoid confu
 
 To enable badges, include `products` in the Markdown metadata. The following values are possible, and you can combine them as needed.
 
-- `all`: Self-Managed Community, Self-Managed Enterprise, and Cloud (doesn't include Cloud Teams or Embedded)
-- `oss-community`: Self-Managed Community only
+**Badge display:** All 5 badges are always shown in order: Core, Standard, Pro, Enterprise Flex, Self-Managed Enterprise. Available badges are highlighted, unavailable badges are grayed out.
+
+**Metadata keys:**
+
+- `all`: Core, Self-Managed Enterprise, and Standard (doesn't include Pro, Enterprise Flex, or Embedded)
+- `oss-community`: Core only
 - `oss-enterprise`: Self-Managed Enterprise only
-- `cloud`: Cloud only
-- `cloud-teams`: Cloud Teams only
+- `cloud`: Standard only (also enables Pro and Enterprise Flex due to Cloud tier inheritance)
+- `cloud-teams`: Pro only (also enables Enterprise Flex due to Cloud tier inheritance)
+- `enterprise-flex`: Enterprise Flex only
 - `embedded`: Embedded only (hidden if not specified - there is no off state for the Embedded badge)
 
-In this example, the Self-Managed Community badge is highlighted, and Cloud and Self-Managed Enterprise badges are grayed out.
+**Cloud tier inheritance:** Higher Cloud plans automatically inherit availability from lower tiers:
+
+- If `cloud` is specified: Standard, Pro, and Enterprise Flex badges are all enabled
+- If `cloud-teams` is specified: Pro and Enterprise Flex badges are enabled (Standard is disabled)
+- If `enterprise-flex` is specified: Only Enterprise Flex badge is enabled
+
+**Self-managed plans** (Core and Self-Managed Enterprise) do not inherit from each other.
+
+In this example, the Core badge is highlighted, and all other badges are grayed out.
 
 ```markdown
 ---
 products: oss-community
 ---
 
-# This topic is only for Self-Managed Community
+# This topic is only for Core
 
 Some text.
 ```
 
-In this example, the Self-Managed Community badge is grayed out, but the Cloud Teams and Self-Managed Enterprise badges are highlighted.
+In this example, Pro and Enterprise Flex badges are highlighted due to Cloud tier inheritance, while Core, Standard, and Self-Managed Enterprise badges are grayed out.
 
 ```markdown
 ---
-products: cloud-teams, oss-enterprise
+products: cloud-teams, enterprise-flex, oss-enterprise
 ---
 
-# This topic is only for Cloud Teams and Self-Managed Enterprise
+# This topic is for Pro, Enterprise Flex, and Self-Managed Enterprise
 
 Some text.
 ```

@@ -4,61 +4,66 @@ products: all
 
 # Manage notifications
 
-This page provides guidance on how to manage notifications for Airbyte, allowing you to stay up-to-date on the activities in your workspace.
+If you want Airbyte to notify you about important events, use its built-in notification system.
 
-## Notification Event Types
+## How it works
 
-| Type of Notification                              | Description                                                                                                                                                              |
-| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Failed Syncs**                                  | A sync from any of your connections fails. Note that if sync runs frequently or if there are many syncs in the workspace these types of events can be noisy              |
-| **Successful Syncs**                              | A sync from any of your connections succeeds. Note that if sync runs frequently or if there are many syncs in the workspace these types of events can be noisy           |
-| **Automated Connection Updates**                  | A connection is updated automatically (ex. a source schema is automatically updated)                                                                                     |
-| **Connection Updates Requiring Action**           | A connection update requires you to take action (ex. a breaking schema change is detected)                                                                               |
-| **Warning - Repeated Failures**                   | A connection will be disabled soon due to repeated failures. It has failed 20 times consecutively and there were only failed jobs in the past 4 days                     |
-| **Sync Disabled - Repeated Failures**             | A connection was automatically disabled due to repeated failures. It will be disabled when it has failed 30 times consecutively and has been failing for 7 days in a row |
-| **Warning - Upgrade Required** (Cloud only)       | A new connector version is available and requires manual upgrade                                                                                                         |
-| **Sync Disabled - Upgrade Required** (Cloud only) | One or more connections were automatically disabled due to a connector upgrade deadline passing                                                                          |
+You configure notifications for each workspace separately. Once you do, Airbyte can send notifications to an email address, webhook, or both.
+
+- Airbyte Cloud can send notifications to an email or webhook.
+
+- Self-Managed versions of Airbyte can send notifications to a webhook, but not an email.
+
+### Events Airbyte can notify you about
+
+| Event                                   | Cloud    | Self-Managed | Description                                                                                                                                            |
+| --------------------------------------- | -------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Failed syncs**                        | &#10003; | &#10003;     | A sync from any of your connections fails. If syncs runs frequently or if there are many syncs in the workspace, this event can be noisy.              |
+| **Successful syncs**                    | &#10003; | &#10003;     | A sync from any of your connections succeeds. If syncs runs frequently or if there are many syncs in the workspace, this event can be noisy.           |
+| **Connection Updates**                  | &#10003; | &#10003;     | A connection is updated automatically. For example, a source schema is automatically updated.                                                          |
+| **Connection Updates Requiring Action** | &#10003; | &#10003;     | A connection update requires you to take action. For example, a breaking change.                                                                       |
+| **Warning - Repeated Failures**         | &#10003; | &#10003;     | Airbyte is at risk of turning off a connection due to repeated failures. It has failed 20 times consecutively and his not been successful in the last 4 days. |
+| **Sync Disabled - Repeated Failures**   | &#10003; | &#10003;     | Airbyte has turned off a connection due to repeated failures. It has failed 30 times consecutively and has not been successful in the last 7 days.     |
+| **Warning - Upgrade Required**          | &#10003; |              | A new connector version is available, but you need to manually upgrade.                                                                                |
+| **Sync Disabled - Upgrade Required**    | &#10003; |              | Airbyte turned off one or more connections automatically because you missed the deadline to upgrade the connector.                                     |
 
 ### Enabling schema update notifications
 
-To be notified of any source schema changes, make sure you have enabled `Automatic Connection Updates` and `Connection Updates Requiring Action` notifications. If these are off, even if you turned on schema update notifications in a connection's settings, Airbyte will _NOT_ send out any notifications related to these types of events.
+If you want Airbyte to notify you of source schema changes, enable the following notifications.
 
-To edit this setting, click **Connections** and select the connection you want to receive notifications for. Click the **Settings** tab on the Connection page. In the **Advanced Settings**, toggle **Schema update notifications**.
+- `Connection Updates`
+- `Connection Updates Requiring Action`.
 
-## Configure Email Notification Settings
+If these are off, even if you turned on schema update notifications in a connection's settings, Airbyte won't send notifications about schema changes.
 
-<AppliesTo cloud />
+To edit this setting, click **Connections** and select the connection you want to receive notifications for. Click the **Settings** tab on the Connection page. In the **Advanced Settings**, toggle **Be notified when schema changes occur**.
 
-To set up email notifications, click **Settings** and navigate to **Workspace** > **Notifications**.
+## Set up email notifications (Cloud only)
 
-Toggle which messages you'd like to receive from Airbyte. All email notifications will be sent by default to the creator of the workspace.
+Follow these steps to set up email notifications from Airbyte Cloud. Email notifications are not available from self-managed editions of Airbyte.
 
-![](./assets/notifications-email.png)
+1. Click **Workspace settings** > **Notifications**.
 
-:::note
-All email notifications except for Successful Syncs are enabled by default.
-:::
+2. Under **Email Notification Recipient**, enter the email you want to receive notifications. If you would like to send email notifications to more than one recipient, enter a distribution list as the recipient.
 
-### Modify the email recipient
+3. Use the toggles in the **Email** column to set which notifications you want to receive.
 
-To change the recipient, edit and save the **notification email recipient**. If you would like to send email notifications to more than one recipient, you can enter an email distribution list (ie Google Group) as the recipient.
+## Set up webhook notifications
 
-## Configure Webhook Notification Settings
+Airbyte can send notifications to any generic webhook service. You can use the webhook to send a notification to Slack or trigger other downstream transformations.
 
-Airbyte can send notifications to any generic webhook service. This is helpful when using a downstream service to trigger transformations or other tasks in your data stack.
-
-### Example Webhook Notification Payload
+### Example webhook payload
 
 Open each section to see an example of the payload returned for the notification type.
 
 :::info
-Airbyte passes both the `data` payload along with text blocks that are intended for Slack usage.
+Airbyte passes both the `data` payload along with text blocks that intended for Slack usage.
 :::
 
 <details>
-  <summary>Failed Sync</summary>
+  <summary>Failed sync</summary>
 
-```
+```json
 {
     "data": {
         "workspace": {
@@ -100,13 +105,13 @@ Airbyte passes both the `data` payload along with text blocks that are intended 
 }
 ```
 
-Note that `errorType` refers to the type of error that occurred, and may indicate the need for a followup action. For example `config_error` indicates a problem with the source or destination configuration (look to `errorOrigin`), while `transient_error` indicates a temporary issue that may resolve itself.
+`errorType` refers to the type of error that occurred, and may indicate the need for a followup action. For example `config_error` indicates a problem with the source or destination configuration. In this case, look to `errorOrigin`. `transient_error` indicates a temporary issue that may resolve itself.
 
 </details>
 <details>
-  <summary>Successful Sync</summary>
+  <summary>Successful sync</summary>
 
-```
+```json
 {
     "data": {
         "workspace": {
@@ -148,81 +153,79 @@ Note that `errorType` refers to the type of error that occurred, and may indicat
 </details>
 
 <details>
-  <summary>Automated Connection Updates</summary>
+  <summary>Connection updates</summary>
 
-Webhook does not contain payload and only works for Slack notifications
+Webhook doesn't contain payload and only works for Slack notifications.
 
 </details>
 
 <details>
-  <summary>Connection Updates Requiring Action</summary>
+  <summary>Connection updates requiring action</summary>
 
-Webhook does not contain payload and only works for Slack notifications
+Webhook doesn't contain payload and only works for Slack notifications.
 
 </details>
 
 <details>
   <summary>Warning - Repeated Failures</summary>
 
-Webhook does not contain payload and only works for Slack notifications
+Webhook doesn't contain payload and only works for Slack notifications.
 
 </details>
 
 <details>
   <summary>Sync Disabled - Repeated Failures</summary>
 
-Webhook does not contain payload and only works for Slack notifications
+Webhook doesn't contain payload and only works for Slack notifications.
 
 </details>
 <details>
   <summary>Warning - Upgrade Required</summary>
 
-Webhook does not contain payload and only works for Slack notifications
+Webhook doesn't contain payload and only works for Slack notifications.
 
 </details>
 <details>
   <summary>Sync Disabled - Upgrade Required</summary>
 
-Webhook does not contain payload and only works for Slack notifications
+Webhook doesn't contain payload and only works for Slack notifications.
 
 </details>
 
-### Configuring Slack Notifications
+### Configure Slack notifications
 
-The webhook notification also integrates easily with Slack.
+The webhook notification integrates with Slack. To set up a Slack integration, you create a Slack app, then enable the webhook notification from Airbyte.
 
-If you're more of a visual learner, head over to [this video](https://www.youtube.com/watch?v=NjYm8F-KiFc&ab_channel=Airbyte) to learn how to set up a Slack app to receive notifications. You can also refer to the Slack documentation on how to [create an incoming webhook for Slack](https://api.slack.com/messaging/webhooks).
+#### Part 1: Create a Slack app
 
-### Create a Slack app
+1. Navigate to https://api.slack.com/apps/.
 
-1. To set up Slack notifications, navigate to https://api.slack.com/apps/. Select `Create an App`.
+2. Click **Create an App**.
 
-![](./assets/notification-slack-create-app.png)
+3. Click **From Scratch**. Enter an app name (for example, "Airbyte Notifications") and pick the Slack workspace you want it to operate in.
 
-2. Select `From Scratch`. Enter your App Name (e.g. Airbyte Sync Notifications) and pick your desired Slack workspace.
+4. Click **Incoming Webhooks**.
 
-3. **Enable Incoming Webhooks**: in the left sidebar, click on `Incoming Webhooks`. Click the slider button in the top right to turn the feature on. Then click `Add New Webhook to Workspace`.
+5. Click the toggle in the top right to turn the feature on.
 
-![](./assets/notification-slack-add-webhook.png)
+6. Click **Add New Webhook**.
 
-4. Select the channel that you want to receive Airbyte notifications in (ideally a dedicated one), and click `Allow` to give it permissions to access the channel. You should see the bot show up in the selected channel now. You will see an active webhook right above the `Add New Webhook to Workspace` button.
+7. Select the channel that you want to receive Airbyte notifications in.
 
-![](./assets/notification-slack-webhook-url-success.png)
+8. Click **Allow** to give the app permissions to access the channel. Your webhook appears under "Webhook URLs for Your Workspace", and the bot for this app joins your selected channel.
 
-5. Click `Copy.` to copy the link to your clipboard, which you will need to enter into Airbyte.
+9. Copy the webhook URL. It looks similar to `https://hooks.slack.com/services/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PM1`
 
-Your Webhook URL should look similar to this:
+#### Part 2: Enable the Slack notification from Airbyte
 
-```
-https://hooks.slack.com/services/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PM1
-```
+Once you have set up your Slack app, follow these steps to set up webhook notifications from Airbyte.
 
-### Enable the Slack notification in Airbyte
+1. Click **Workspace settings** > **Notifications**.
 
-1. Click **Settings** and navigate to **Notifications**. On this page, you can toggle each slider decide whether you want notifications on each notification type. Paste the copied webhook URL to `Webhook URL`.
+2. Use the toggles in the **Webhook** column to set which notifications you want to receive.
 
-2. **Test it out**: you can click `Test` to send a test message to the channel. Or, just run a sync now and try it out! For a successful sync, you should receive a notification that looks like this:
+3. Enter the webhook URL, which you copied earlier, for each webhook you enabled.
 
-![](./assets/notification-slack-success.png)
+4. Click **Test** to send a message to the channel.
 
-4. Click **Save changes** to ensure you continue to receive alerts about your Airbyte syncs.
+5. Click **Save changes**.

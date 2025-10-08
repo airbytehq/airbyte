@@ -21,17 +21,22 @@ public class MssqlCdcHelper {
 
   // legacy replication method config before version 0.4.0
   // it is an enum with possible values: STANDARD and CDC
-  private static final String LEGACY_REPLICATION_FIELD = "replication_method";
+  public static final String LEGACY_REPLICATION_FIELD = "replication_method";
   // new replication method config since version 0.4.0
   // it is an oneOf object
-  private static final String REPLICATION_FIELD = "replication";
-  private static final String REPLICATION_TYPE_FIELD = "replication_type";
-  private static final String METHOD_FIELD = "method";
+  public static final String REPLICATION_FIELD = "replication";
+  public static final String REPLICATION_TYPE_FIELD = "replication_type";
+  public static final String METHOD_FIELD = "method";
 
   private static final Duration HEARTBEAT_INTERVAL = Duration.ofSeconds(10L);
 
   // Test execution latency is lower when heartbeats are more frequent.
   private static final Duration HEARTBEAT_INTERVAL_IN_TESTS = Duration.ofSeconds(1L);
+
+  private static final Duration POLL_INTERVAL = Duration.ofSeconds(5L);
+
+  // The poll.interval.ms must be lower than the heartbeat.interval.ms
+  private static final Duration POLL_INTERVAL_IN_TESTS = Duration.ofMillis(500L);
 
   public enum ReplicationMethod {
     STANDARD,
@@ -91,11 +96,26 @@ public class MssqlCdcHelper {
     props.setProperty("schema.include.list", getSchema(catalog));
     props.setProperty("database.names", config.get(JdbcUtils.DATABASE_KEY).asText());
 
+    final String msgKeyColumns = getMessageKeyColumnValue(catalog);
+    System.out.println("msgKeyColumns: " + msgKeyColumns);
+    if (isCdc(config) && !msgKeyColumns.isEmpty()) {
+      // If the replication method is CDC, we need to set the message key columns
+      props.setProperty("message.key.columns", msgKeyColumns);
+    }
+
     final Duration heartbeatInterval =
         (database.getSourceConfig().has("is_test") && database.getSourceConfig().get("is_test").asBoolean())
             ? HEARTBEAT_INTERVAL_IN_TESTS
             : HEARTBEAT_INTERVAL;
     props.setProperty("heartbeat.interval.ms", Long.toString(heartbeatInterval.toMillis()));
+
+    // Set poll.interval.ms to 5s. This parameter will determine how long Debezium will wait before
+    // querying for new data. It must be lower than heartbeat.interval.ms
+    final Duration pollInterval =
+        (database.getSourceConfig().has("is_test") && database.getSourceConfig().get("is_test").asBoolean())
+            ? POLL_INTERVAL_IN_TESTS
+            : POLL_INTERVAL;
+    props.setProperty("poll.interval.ms", Long.toString(pollInterval.toMillis()));
 
     if (config.has("ssl_method")) {
       final JsonNode sslConfig = config.get("ssl_method");
@@ -136,6 +156,50 @@ public class MssqlCdcHelper {
         // debezium needs commas escaped to split properly
         .map(x -> StringUtils.escape(x, new char[] {','}, "\\,"))
         .collect(Collectors.joining(","));
+  }
+
+  /**
+   * Escapes the following special characters in the input string: comma (,), period (.), semicolon
+   * (;), and colon (:). Each special character is prefixed with a backslash.
+   *
+   * @param input the string to escape
+   * @return the escaped string
+   */
+  private static String escapeSpecialChars(String input) {
+    if (input == null) {
+      return null;
+    }
+    StringBuilder sb = new StringBuilder();
+    for (char c : input.toCharArray()) {
+      if (c == ',' || c == '.' || c == ';' || c == ':') {
+        sb.append('\\');
+      }
+      sb.append(c);
+    }
+    return sb.toString();
+  }
+
+  /**
+   * Returns a string representation of the message key columns for the streams in the catalog. The
+   * format is "schema1.table1:keyCol1,keyCol2;schema2.table2:keyCol1,keyCol2". This is used to set
+   * the message key columns in the debezium properties. The method filters the streams to only
+   * include those with incremental sync mode and user-defined primary keys.
+   *
+   * @param catalog the configured airbyte catalog
+   * @return a string representation of the message key columns
+   */
+  private static String getMessageKeyColumnValue(final ConfiguredAirbyteCatalog catalog) {
+    return catalog.getStreams().stream()
+        .filter(s -> s.getSyncMode() == SyncMode.INCREMENTAL)
+        .filter(s -> !s.getPrimaryKey().isEmpty())
+        .map(s -> {
+          final String tableId = escapeSpecialChars(s.getStream().getNamespace()) + "." + escapeSpecialChars(s.getStream().getName());
+          final String keyCols = s.getPrimaryKey().get(0).stream()
+              .map(col -> escapeSpecialChars(col))
+              .collect(Collectors.joining(","));
+          return tableId + ":" + keyCols;
+        })
+        .collect(Collectors.joining(";"));
   }
 
 }

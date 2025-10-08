@@ -4,8 +4,6 @@ products: all
 
 # Incremental Sync - Append + Deduped
 
-## High-Level Context
-
 This sync mode syncs data **incrementally**, which means that only new or modified data will be synced. In contrast with the [Incremental Append mode](./incremental-append.md), this mode updates rows that have been modified instead of adding a new version of the row with the updated data. 
 
 If you've synced a row before and it has since been updated, this sync mode will combine the two rows in the destination and use the most recent data. On the other hand, the [Incremental Append mode](./incremental-append.md) would just add a new row with the updated data.
@@ -47,14 +45,15 @@ In the next sync, the delta contains the following record:
 
 | name      | deceased | updated_at |
 | :-------- | :------- | :--------- |
-| Louis XVI | false    | 1785       |
+| Louis XVII | false    | 1785       |
 
 At the end of this incremental sync, the data warehouse would now contain:
 
 | name             | deceased | updated_at |
 | :--------------- | :------- | :--------- |
 | Marie Antoinette | false    | 1755       |
-| Louis XVI        | false    | 1785       |
+| Louis XVI        | false    | 1754       |
+| Louis XVII       | false    | 1785       |
 
 ### Updating a Record
 
@@ -71,6 +70,7 @@ In the final de-duplicated table:
 | :--------------- | :------- | :--------- |
 | Louis XVI        | true     | 1793       |
 | Marie Antoinette | true     | 1793       |
+| Louis XVII       | false    | 1785       |
 
 ## Source-Defined Cursor
 

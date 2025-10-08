@@ -3,76 +3,98 @@
 #
 
 import copy
+import json
 import os
-from unittest.mock import MagicMock
 
-import pytest
-from source_pinterest import SourcePinterest
-from source_pinterest.reports import CampaignAnalyticsReport
-from source_pinterest.reports.reports import (
-    AdGroupReport,
-    AdGroupTargetingReport,
-    AdvertiserReport,
-    AdvertiserTargetingReport,
-    CampaignTargetingReport,
-    KeywordReport,
-    PinPromotionReport,
-    PinPromotionTargetingReport,
-    ProductGroupReport,
-    ProductGroupTargetingReport,
-    ProductItemReport,
-)
-from source_pinterest.utils import get_analytics_columns
+from freezegun import freeze_time
+
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.test.state_builder import StateBuilder
+from unit_tests.conftest import get_analytics_columns, get_source, read_from_stream
 
 
 os.environ["REQUEST_CACHE_PATH"] = "/tmp"
 
 
-def test_request_body_json(analytics_report_stream, date_range):
-    granularity = "DAY"
-    columns = get_analytics_columns()
-
-    expected_body = {
-        "start_date": date_range["start_date"],
-        "end_date": date_range["end_date"],
-        "granularity": granularity,
-        "columns": columns.split(","),
-        "level": analytics_report_stream.level,
-    }
-
-    body = analytics_report_stream.request_body_json(date_range)
-    assert body == expected_body
-
-
-def test_read_records(requests_mock, analytics_report_stream, date_range):
+@freeze_time("2022-11-16 12:03:11+00:00")
+def test_read_records(requests_mock, test_config, analytics_report_stream, date_range):
     report_download_url = "https://download.report"
     report_request_url = "https://api.pinterest.com/v5/ad_accounts/123/reports"
 
     final_report_status = {"report_status": "FINISHED", "url": report_download_url}
 
-    initial_response = {"report_status": "IN_PROGRESS", "token": "token", "message": ""}
-
     final_response = {"campaign_id": [{"metric": 1}]}
 
-    requests_mock.post(report_request_url, json=initial_response)
+    expected_body = {
+        "start_date": "2022-11-15",
+        "end_date": "2022-11-16",
+        "granularity": "DAY",
+        "columns": get_analytics_columns().split(","),
+        "level": "CAMPAIGN",
+    }
+
+    def match_json_body(request):
+        # request.body can be bytes or str; parse as JSON
+        raw = request.body.decode() if isinstance(request.body, (bytes, bytearray)) else request.body
+        return json.loads(raw) == expected_body
+
+    # creation success payload
+    initial_creation_ok = {"report_status": "IN_PROGRESS", "token": "token", "message": ""}
+
+    # simulate retryable *creation* errors, then success
+    creation_error_responses = [
+        {  # rate limit (retryable)
+            "status_code": 429,
+            "json": {"code": 2726, "message": "Reporting query cost limit exceeded. Retry after 1 seconds"},
+        },
+        {  # server error (retryable)
+            "status_code": 500,
+            "json": {"message": "internal error"},
+        },
+        {  # 400 treated as retryable by your error handler
+            "status_code": 400,
+            "json": {"code": 1, "message": "transient creation error"},
+        },
+        {  # finally succeed creating the job
+            "status_code": 200,
+            "json": initial_creation_ok,
+        },
+    ]
+
+    # parent resource
+    requests_mock.get("https://api.pinterest.com/v5/ad_accounts", json={"items": [{"id": 123}]})
+
+    # creation POST with stacked responses + body validation
+    requests_mock.post(
+        report_request_url,
+        creation_error_responses,
+        additional_matcher=match_json_body,
+    )
     requests_mock.get(report_request_url, json=final_report_status, status_code=200)
     requests_mock.get(report_download_url, json=final_response, status_code=200)
 
-    sync_mode = "full_refresh"
-    cursor_field = ["last_updated"]
-    stream_state = {
-        "start_date": "2023-01-01",
-        "end_date": "2023-01-31",
-    }
+    state = (
+        StateBuilder()
+        .with_stream_state(
+            "campaign_analytics_report",
+            {
+                "DATE": "2022-11-15",
+            },
+        )
+        .build()
+    )
 
-    records = analytics_report_stream.read_records(sync_mode, cursor_field, date_range, stream_state)
+    records = [
+        record.record.data
+        for record in read_from_stream(test_config, "campaign_analytics_report", SyncMode.incremental, state=state).records
+    ]
     expected_record = {"metric": 1}
 
-    assert next(records) == expected_record
+    assert records[0] == expected_record
 
 
 def test_streams(test_config):
-    source = SourcePinterest()
+    source = get_source(test_config)
     streams = source.streams(test_config)
     expected_streams_number = 32
     assert len(streams) == expected_streams_number
@@ -94,28 +116,7 @@ def test_custom_streams(test_config):
             "start_date": "2023-01-08",
         }
     ]
-    source = SourcePinterest()
+    source = get_source(config)
     streams = source.streams(config)
     expected_streams_number = 33
     assert len(streams) == expected_streams_number
-
-
-@pytest.mark.parametrize(
-    ("report_name", "expected_level"),
-    (
-        [CampaignAnalyticsReport, "CAMPAIGN"],
-        [CampaignTargetingReport, "CAMPAIGN_TARGETING"],
-        [AdvertiserReport, "ADVERTISER"],
-        [AdvertiserTargetingReport, "ADVERTISER_TARGETING"],
-        [AdGroupReport, "AD_GROUP"],
-        [AdGroupTargetingReport, "AD_GROUP_TARGETING"],
-        [PinPromotionReport, "PIN_PROMOTION"],
-        [PinPromotionTargetingReport, "PIN_PROMOTION_TARGETING"],
-        [ProductGroupReport, "PRODUCT_GROUP"],
-        [ProductGroupTargetingReport, "PRODUCT_GROUP_TARGETING"],
-        [ProductItemReport, "PRODUCT_ITEM"],
-        [KeywordReport, "KEYWORD"],
-    ),
-)
-def test_level(test_config, report_name, expected_level):
-    assert report_name(parent=None, config=MagicMock()).level == expected_level

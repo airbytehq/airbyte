@@ -8,9 +8,9 @@ from unittest import TestCase
 from unittest.mock import patch
 
 import freezegun
-from source_stripe import SourceStripe
+from unit_tests.conftest import get_source
 
-from airbyte_cdk.models import AirbyteStateBlob, AirbyteStateMessage, ConfiguredAirbyteCatalog, FailureType, StreamDescriptor, SyncMode
+from airbyte_cdk.models import AirbyteStateMessage, ConfiguredAirbyteCatalog, FailureType, StreamDescriptor, SyncMode
 from airbyte_cdk.sources.streams.http.error_handlers.http_status_error_handler import HttpStatusErrorHandler
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
@@ -61,10 +61,6 @@ def _catalog(sync_mode: SyncMode) -> ConfiguredAirbyteCatalog:
     return CatalogBuilder().with_stream(_STREAM_NAME, sync_mode).build()
 
 
-def _source(catalog: ConfiguredAirbyteCatalog, config: Dict[str, Any], state: Optional[List[AirbyteStateMessage]]) -> SourceStripe:
-    return SourceStripe(catalog, config, state)
-
-
 def _an_event() -> RecordBuilder:
     return create_record_builder(
         find_template("events", __file__),
@@ -98,7 +94,7 @@ def _read(
 ) -> EntrypointOutput:
     catalog = _catalog(sync_mode)
     config = config_builder.build()
-    return read(_source(catalog, config, state), config, catalog, state, expecting_exception)
+    return read(get_source(config, state), config, catalog, state, expecting_exception)
 
 
 @freezegun.freeze_time(_NOW.isoformat())

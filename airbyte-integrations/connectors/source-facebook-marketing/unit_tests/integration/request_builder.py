@@ -12,7 +12,7 @@ from airbyte_cdk.test.mock_http.request import HttpRequest
 from .config import ACCESS_TOKEN, ACCOUNT_ID
 
 
-API_VERSION = "v21.0"
+API_VERSION = "v23.0"
 
 
 def get_account_request(account_id: Optional[str] = ACCOUNT_ID) -> RequestBuilder:

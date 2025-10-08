@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.file.parquet
 
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.data.Transformations
 import java.io.Closeable
 import java.io.File
 import java.io.InputStream
@@ -34,7 +35,8 @@ class ParquetReader(
 fun InputStream.toParquetReader(descriptor: DestinationStream.Descriptor): ParquetReader {
     val tmpFile =
         kotlin.io.path.createTempFile(
-            prefix = "${descriptor.namespace}.${descriptor.name}",
+            prefix =
+                "${descriptor.namespace}.${Transformations.toAlphanumericAndUnderscore(descriptor.name)}",
             suffix = ".avro"
         )
     tmpFile.outputStream().use { outputStream -> this.copyTo(outputStream) }

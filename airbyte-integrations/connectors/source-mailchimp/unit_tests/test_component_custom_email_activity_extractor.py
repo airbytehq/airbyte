@@ -6,7 +6,7 @@
 import json
 
 import requests
-from source_mailchimp.components import MailChimpRecordExtractorEmailActivity
+from components import MailChimpRecordExtractorEmailActivity
 
 from airbyte_cdk.sources.declarative.decoders import JsonDecoder
 

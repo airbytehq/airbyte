@@ -21,6 +21,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 
+private const val DELETE_BATCH_SIZE = 100
+
 /** Represents a single blob in Google Cloud Storage. */
 data class GcsBlob(override val key: String, override val storageConfig: GcsClientConfiguration) :
     RemoteObject<GcsClientConfiguration>
@@ -62,6 +64,8 @@ class GcsS3Client(
     override suspend fun delete(remoteObject: GcsBlob) = s3Client.delete(remoteObject.toS3Object())
 
     override suspend fun delete(key: String) = s3Client.delete(key)
+
+    override suspend fun delete(keys: Set<String>) = s3Client.delete(keys)
 
     override suspend fun startStreamingUpload(
         key: String,
@@ -152,6 +156,13 @@ class GcsNativeClient(private val storage: Storage, private val config: GcsClien
 
     override suspend fun delete(remoteObject: GcsBlob) {
         delete(remoteObject.key)
+    }
+
+    override suspend fun delete(keys: Set<String>) {
+        keys.chunked(DELETE_BATCH_SIZE).forEach { chunk ->
+            val blobIds = chunk.map { key -> BlobId.of(config.gcsBucketName, key) }.toTypedArray()
+            storage.delete(*blobIds)
+        }
     }
 
     override suspend fun move(remoteObject: GcsBlob, toKey: String): GcsBlob {

@@ -5,17 +5,14 @@ from __future__ import annotations
 
 from typing import List, Optional, Union
 
-from source_instagram.source import SourceInstagram
-
 from airbyte_cdk.connector_builder.connector_builder_handler import resolve_manifest
 from airbyte_cdk.test.mock_http.request import HttpRequest
 
+from ..conftest import get_source
 from .config import ACCOUNTS_FIELDS
 
 
-GRAPH_URL = resolve_manifest(source=SourceInstagram(config={}, catalog=None, state=None)).record.data["manifest"]["definitions"][
-    "base_requester"
-]["url_base"]
+GRAPH_URL = "https://graph.facebook.com/v23.0"
 
 
 def get_account_request() -> RequestBuilder:

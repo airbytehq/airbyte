@@ -7,7 +7,6 @@ package io.airbyte.cdk.load.data
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
-import java.time.format.DateTimeFormatter
 
 /**
  * A mapper which coerces ALL values against the schema. This mapper MUST NOT be called after any
@@ -178,15 +177,4 @@ class AirbyteValueDeepCoercingMapper(
             )
             NullValue to context
         }
-
-    companion object {
-        val DATE_TIME_FORMATTER: DateTimeFormatter =
-            DateTimeFormatter.ofPattern(
-                "[yyyy][yy]['-']['/']['.'][' '][MMM][MM][M]['-']['/']['.'][' '][dd][d][[' '][G]][[' ']['T']HH:mm[':'ss[.][SSSSSS][SSSSS][SSSS][SSS][' '][z][zzz][Z][O][x][XXX][XX][X][[' '][G]]]]"
-            )
-        val TIME_FORMATTER: DateTimeFormatter =
-            DateTimeFormatter.ofPattern(
-                "HH:mm[':'ss[.][SSSSSS][SSSSS][SSSS][SSS][' '][z][zzz][Z][O][x][XXX][XX][X]]"
-            )
-    }
 }

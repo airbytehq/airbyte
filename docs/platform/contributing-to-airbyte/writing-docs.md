@@ -32,6 +32,16 @@ Even if you've never used it before, most developers and technical writers find 
 
 Follow the [Google developer documentation style guide](https://developers.google.com/style/highlights). It's a widely adopted style guide with good examples and easy-to-follow rules. You can [lint your content with Vale](#linting) to ensure style compliance.
 
+These articles in particular are helpful to know.
+
+- [Be conversational and friendly without being frivolous](https://developers.google.com/style/tone)
+- [Use second person](https://developers.google.com/style/person)
+- [Use active voice](https://developers.google.com/style/voice)
+- [Put conditional clauses before instructions](https://developers.google.com/style/clause-order)
+- [Put UI elements in bold](https://developers.google.com/style/ui-elements)
+- [Write inclusive documentation](https://developers.google.com/style/inclusive-documentation)
+- [Don't pre-announce anything in documentation](https://developers.google.com/style/future)
+
 ### Find a good first issue
 
 The Docs team maintains a list of [good first issues](https://github.com/airbytehq/airbyte/issues?q=is%3Aopen+is%3Aissue+label%3Aarea%2Fdocumentation+label%3A%22good+first+issue%22) for new contributors. If you'd like to start a complex documentation project, you can create or comment on a [GitHub issue](https://github.com/airbytehq/airbyte/issues) and tag [@ian-at-airbyte](https://github.com/ian-at-airbyte) to decide on an approach together.
@@ -40,7 +50,7 @@ The Docs team maintains a list of [good first issues](https://github.com/airbyte
 
 To make minor changes like fixing typos or editing a single file, you can edit the file directly in your browser.
 
-1. Click **Edit this page** at the bottom of any page on [docs.airbyte.com](https://docs.airbyte.com/). You'll be taken to the GitHub editor.
+1. Click **Edit this page** at the bottom of any page on [docs.airbyte.com](https://docs.airbyte.com/). GitHub takes you to the editor.
 2. Edit the file directly on GitHub and open a Pull Request ([help](https://docs.github.com/en/repositories/working-with-files/managing-files/editing-files)).
 
 ## Edit files on your local machine
@@ -107,9 +117,9 @@ To see changes as you make them in a development build:
    pnpm start
    ```
 
-2. Navigate to [http://localhost:3005/](http://localhost:3005/). Whenever you make and save changes, you will see them reflected in the server. To stop the running server, press <kbd>Ctrl</kbd>+<kbd>C</kbd> in the terminal.
+2. Navigate to [http://localhost:3005/](http://localhost:3005/). Whenever you make and save changes, you see them reflected in the server. To stop the running server, press <kbd>Ctrl</kbd>+<kbd>C</kbd> in the terminal.
 
-To create an optimized production build that does not update automatically:
+To create an optimized production build that doesn't update automatically:
 
 1. Run:
 
@@ -146,7 +156,7 @@ The [Good Docs Project](https://www.thegooddocsproject.dev/) maintains a collect
 [View all templates](https://www.thegooddocsproject.dev/template).
 
 :::important
-These templates can only be used for platform docs. Docs for connectors have their own template. See [Write connector docs](#connector-docs) for more details.
+You can only use these templates for platform docs. Docs for connectors have their own template. See [Write connector docs](#connector-docs) for more details.
 :::
 
 ## Write connector docs {#connector-docs}
@@ -159,10 +169,10 @@ The docs site uses [multiple instances](https://docusaurus.io/docs/docs-multi-in
 
 Currently, the site has four instances, but Airbyte could add more instances later.
 
-- Home (not versioned - this is our home page)
-- Platform (versioned)
-- Connectors (not versioned)
-- Release notes (not versioned)
+- Home - not versioned, this is the home page
+- Platform - versioned
+- Connectors - not versioned
+- Release notes - not versioned
 
 For most contributors, this reality isn't particularly relevant to producing docs. However, there is one important concept to keep in mind.
 
@@ -174,25 +184,25 @@ For help creating and managing versions, see [Release and manage documentation v
 
 ## Common patterns and components
 
-Since the docs site is based on Docusaurus, it inherits all of Docusaurus' capabilities. You should be aware of some Airbyte-specific elements. Most of these customizations can be combined together.
+Since the docs site uses Docusaurus, it inherits all of Docusaurus' capabilities. You should be aware of some Airbyte-specific elements. You can combine most of these customizations together.
 
 ### Tabs
 
 Use tabs to display mutually exclusive concepts in a concise way. See [Tabs](https://docusaurus.io/docs/markdown-features/tabs).
 
 :::note
-We maintain a separate `Tabs` implementation to support rendering tabs in Airbyte's in-app documentation. Airbyte's in-app renderer creates some additional rules that aren't necessarily true in other Docusaurus implementations:
+Airbyte maintains a separate `Tabs` implementation to support rendering tabs in Airbyte's in-app documentation. Airbyte's in-app renderer creates some additional rules that aren't necessarily true in other Docusaurus implementations:
 
-- Always use empty lines to separate different Markup elements (tags, paragraphs, lists, etc.)
-- Do not indent `TabItem` tags and their content according to normal HTML conventions. Different Markdown rendering tools handle indented tags inconsistently.
+- Always use empty lines to separate different Markup elements like tags, paragraphs, and lists
+- Don't indent `TabItem` tags and their content according to normal HTML conventions. Different Markdown rendering tools handle indented tags inconsistently.
 
 :::
 
 ### Code blocks
 
-Code blocks are used to represent sample code and command line input and output with easy-to-read syntax highlighting. See [Code blocks](https://docusaurus.io/docs/markdown-features/code-blocks).
+Code blocks represent sample code and command line input and output with easy-to-read syntax highlighting. See [Code blocks](https://docusaurus.io/docs/markdown-features/code-blocks).
 
-Not all languages are turned on. If syntax highlighting doesn't work for your language, add it to `docusaurus/docusaurus.config.js`'s `module.exports.themeConfig.prism.additionalLanguages` property. Then, restart your local server to test the new language.
+Not all languages have syntax highlighting enabled. If syntax highlighting doesn't work for your language, add it to `docusaurus/docusaurus.config.js`'s `module.exports.themeConfig.prism.additionalLanguages` property. Then, restart your local server to test the new language.
 
 ### Admonitions (notes, warnings, tips, etc.)
 
@@ -204,37 +214,50 @@ Details panels are a great way to render content that's not relevant to everyone
 
 ### Product badges
 
-Some platform features are reserved for certain Airbyte products. To avoid confusion and indicate which products a topic applies to, pages can display badges in a prominent location under the title. [This page is an example](../using-airbyte/getting-started/oss-quickstart).
+Certain Airbyte products reserve some platform features. To avoid confusion and indicate which products a topic applies to, pages can display badges in a prominent location under the title. [This page is an example](../using-airbyte/getting-started/oss-quickstart).
 
 To enable badges, include `products` in the Markdown metadata. The following values are possible, and you can combine them as needed.
 
-- `all`: Self-Managed Community, Self-Managed Enterprise, and Cloud (doesn't include Cloud Teams or Embedded)
-- `oss-community`: Self-Managed Community only
+**Badge display:** all 5 badges always appear in order - Core, Standard, Pro, Enterprise Flex, Self-Managed Enterprise. Available badges appear highlighted, unavailable badges appear grayed out.
+
+**Metadata keys:**
+
+- `all`: Core, Self-Managed Enterprise, and Standard - doesn't include Pro, Enterprise Flex, or Embedded
+- `oss-community`: Core only
 - `oss-enterprise`: Self-Managed Enterprise only
-- `cloud`: Cloud only
-- `cloud-teams`: Cloud Teams only
+- `cloud`: Standard only (also enables Pro and Enterprise Flex due to Cloud tier inheritance)
+- `cloud-teams`: Pro only (also enables Enterprise Flex due to Cloud tier inheritance)
+- `enterprise-flex`: Enterprise Flex only
 - `embedded`: Embedded only (hidden if not specified - there is no off state for the Embedded badge)
 
-In this example, the Self-Managed Community badge is highlighted, and Cloud and Self-Managed Enterprise badges are grayed out.
+**Cloud tier inheritance:** higher Cloud plans automatically inherit availability from lower tiers:
+
+- If you specify `cloud`: Standard, Pro, and Enterprise Flex badges all become enabled
+- If you specify `cloud-teams`: Pro and Enterprise Flex badges become enabled - Standard turns off
+- If you specify `enterprise-flex`: Only Enterprise Flex badge becomes enabled
+
+**Self-managed plans** Core and Self-Managed Enterprise don't inherit from each other.
+
+In this example, the Core badge appears highlighted, and all other badges appear grayed out.
 
 ```markdown
 ---
 products: oss-community
 ---
 
-# This topic is only for Self-Managed Community
+# This topic is only for Core
 
 Some text.
 ```
 
-In this example, the Self-Managed Community badge is grayed out, but the Cloud Teams and Self-Managed Enterprise badges are highlighted.
+In this example, Pro, and Enterprise Flex badges appear highlighted due to Cloud tier inheritance, while Core, Standard, and Self-Managed Enterprise badges appear grayed out.
 
 ```markdown
 ---
-products: cloud-teams, oss-enterprise
+products: cloud-teams, enterprise-flex, oss-enterprise
 ---
 
-# This topic is only for Cloud Teams and Self-Managed Enterprise
+# This topic is for Pro, Enterprise Flex, and Self-Managed Enterprise
 
 Some text.
 ```
@@ -291,7 +314,7 @@ Each instance in the docs has its own sidebar. Make sure you add topics to the s
 
 If you're moving or renaming a page, you should add a redirect to its new location. If you're deleting a page, you should add a redirect to the most relevant new file, like a replacement topic or a parent page.
 
-Redirects are managed by Vercel. To add or change a redirect, open the [`docusaurus/vercel.json`](https://github.com/airbytehq/airbyte/blob/master/docusaurus/vercel.json) file and add an entry from the old path to the new path. Vercel.json supports complex redirects using wildcards and regular expressions, if necessary. For help, see [Configuring projects with vercel.json](https://vercel.com/docs/project-configuration#redirects).
+Vercel manages redirects. To add or change a redirect, open the [`docusaurus/vercel.json`](https://github.com/airbytehq/airbyte/blob/master/docusaurus/vercel.json) file and add an entry from the old path to the new path. Vercel.json supports complex redirects using wildcards and regular expressions, if necessary. For help, see [Configuring projects with vercel.json](https://vercel.com/docs/project-configuration#redirects).
 
 You can test redirects on the test build Vercel generates after you submit a pull request.
 
@@ -304,7 +327,7 @@ Redirect rules with trailing slashes in them may not function correctly. Vercel.
 If you're adding a README to a code module, make sure the README has the following components:
 
 - A brief description of the module
-- Development prerequisites (like which language or binaries are required for development)
+- Development prerequisites like which language or binaries you need for development
 - How to install dependencies
 - How to build and run the code locally and via Docker
 - Any other information needed for local iteration
@@ -318,7 +341,7 @@ AI tools like ChatGPT and GitHub Copilot are good at describing code. For open s
 The documentation runs two linters, Vale and MarkDownLint. Vale lints for style, writing, and grammar. MarkDownLint lints for MarkDown structure. For example, Vale tells you when you use passive language and MarkDownLint tells you that you've skipped a heading level. Together, these linters provide broad protection against most common readability, accessibility, and rendering problems.
 
 :::note
-Vale and MarkDownLint are newly implemented. They might still generate false positives or false negatives. Currently, Airbyte doesn't enforce them on pull requests. This might happen in the future. For now, just do your best to comply with the linters' recommendations.
+Vale and MarkDownLint are newly implemented. They might still generate false positives or false negatives. Currently, MarkDownLint is the only one of the two that runs on pull requests, and compliance isn't mandatory. This may change in the future. For now, just do your best to comply with the linters' recommendations as you see them.
 :::
 
 ### Lint with Vale
@@ -329,11 +352,11 @@ Airbyte uses Vale to promote standardization and minimum quality for docs conten
 
 A configuration file, `//docusaurus/vale.ini`, controls Vale at the highest level. This file specifies the location of Vale's style rules, libraries, vocabularies, and other resources. Those styles and rules exist in `//docs/vale-styles`. Some of them are Airbyte-specific, but most rules come from the [Google](https://github.com/errata-ai/Google) and [Write Good](https://github.com/errata-ai/write-good) libraries.
 
-The repository imports those libraries from an external source. Don't modify them, or a future update may overwrite your modifications. If you want to improve these rules, modify `//docs/vale-styles/airbyte` or our vocabularies in `//docs/vale-styles/config/airbyte`.
+The repository imports those libraries from an external source. Don't modify them, or a future update may overwrite your modifications. If you want to improve these rules, modify `//docs/vale-styles/airbyte` or the vocabularies in `//docs/vale-styles/config/airbyte`.
 
 #### Install Vale
 
-The easiest way to install Vale is with a package manager. This ensures Vale is available in your PATH and allows you to keep up to date with new releases. For more options, see [Vale's documentation](https://vale.sh/docs/install).
+The easiest way to install Vale is with a package manager. This ensures Vale is available in your PATH and allows you to keep up to date with new releases. For more options, see the Vale documentation at https://vale.sh/docs/install.
 
 1. Install Vale.
 
@@ -426,7 +449,7 @@ To lint files:
    - To lint a directory and its subdirectories recursively:
 
       ```bash
-      markdownlint-cli2 "./docs/folder/**/*.md
+      markdownlint-cli2 "./docs/folder/**/*.md"
       ```
 
    - To auto-fix issues, add a `--fix` modifier. MarkDownLint can fix most issues on its own, but it might not fix them all.
@@ -468,7 +491,7 @@ If you're not finished but want to collaborate with others, create a draft pull 
 :::
 
 :::note
-Before Airbyte accepts your contribution, you need to sign the Contributor License Agreement (CLA). By signing a CLA, Airbyte can ensure that the community is free and confident in its ability to use your contributions. GitHub prompts you to sign the CLA when you open your first pull request.
+Before Airbyte accepts your contribution, you need to sign the Contributor License Agreement. By signing a Contributor License Agreement, Airbyte can ensure that the community is free and confident in its ability to use your contributions. GitHub prompts you to sign the Contributor License Agreement when you open your first pull request.
 :::
 
 ## Deploy the documentation site
@@ -485,7 +508,7 @@ When you release a new version of Airbyte, make a new docs version of the docs t
 
 ### Create a new major version
 
-When you release a new major version of Airbyte (for example, 2.0, 2.1, etc.), generate a documentation version for it. This process generates a "frozen" set of the docs based on their state at that point in time. Once the version exists, you _can_ still update those docs, but changes you make don't carry forward to future versions.
+When you release a new major version of Airbyte like 2.0 or 2.1, generate a documentation version for it. This process generates a "frozen" set of the docs based on their state at that point in time. Once the version exists, you _can_ still update those docs, but changes you make don't carry forward to future versions.
 
 1. In GitHub, create a new branch off `master`.
 
@@ -512,7 +535,7 @@ When you release a new major version of Airbyte (for example, 2.0, 2.1, etc.), g
 
 ### Create a new minor version
 
-Typically, you don't generate a docs version for patch releases (2.1.1). The only exception is if there is an actual substantive change in that patch and it needs separate documentation. If you actually need to do this, the process is the same as a major version, described in the preceding section.
+Typically, you don't generate a docs version for patch releases like 2.1.1. The only exception is if there is an actual substantive change in that patch and it needs separate documentation. If you actually need to do this, the process is the same as a major version, described in the preceding section.
 
 ### Delete a version
 

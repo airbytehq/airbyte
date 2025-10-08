@@ -1,49 +1,57 @@
 ---
-products: cloud
+products: cloud, oss-enterprise
 ---
 
-# Setting data residency
+# Set data residency
 
-In Airbyte Cloud, you can set the default data residency for your workspace and also set the data residency for individual connections, which can help you comply with data localization requirements.
+Your connections can run in the managed or self-managed region of your choice.
 
-## Choose your workspace default data residency
+## How it works
 
-Setting a default data residency allows you to choose where your data is processed. Set the default data residency **before** creating a new source or connection so that subsequent workflows that rely on the default data residency, such as fetching the schema or testing the source or destination, can process data in the correct region.
+You set data residency by assigning a region to a workspace. All connections that run in that workspace run in that region. Changes to data residency do not affect syncs that are already in progress, but affect future syncs.
 
-:::note
+```mermaid
+flowchart LR
+  subgraph Reg[Region]
+    DP[Data Plane]
+  end
 
-While the data is processed in a data plane of the chosen residency, the cursor and primary key data is stored in the US control plane. If you have data that cannot be stored in the US, do not use it as a cursor or primary key.
+  subgraph Org[Organization]
+    subgraph WS[Workspace]
+      C[Connection]
+    end
+  end
 
-:::
+  C -- "Runs in" --> Reg
+  Reg -- "Assigned to" --> WS
+```
 
-When you set the default data residency, it applies your preference to new connections only. If you do not adjust the default data residency, the [Airbyte Default](configuring-connections.md) region is used (United States). If you want to change the data residency for an individual connection, you can do so in its [connection settings](configuring-connections.md).
+### Capabilities by plan
 
-To choose your default data residency, click **Settings** in the Airbyte UI. Navigate to **Workspace** > **Data Residency**. Use the dropdown to choose the location for your default data residency and save your changes.
+- **Cloud**: If you're a cloud customer, you can choose from Airbyte's managed regions. If you're an [Enterprise Flex](../../enterprise-flex/) customer, you can also choose one of your own self-managed regions.
 
-:::info
+- **Self-Managed**: If you're a [Self-Managed Enterprise](../../enterprise-setup/) customer, you can choose one of your own self-managed regions.
 
-Depending on your network configuration, you may need to add [IP addresses](/platform/operating-airbyte/security/#network-security-1) to your allowlist.
+### Connector Builder data residency
 
-:::
+The Connector Builder processes all data through Airbyte's control plane, regardless of your workspace's default data residency settings. This limitation applies to the development and testing of connectors within the Connector Builder interface. It doesn't apply to actual connections using that connector, which use the region you set for that workspace.
 
-## Choose the data residency for a connection
+### Cursor and primary key data residency
 
-:::info
-As of November 2024, the option to enable a custom data residency for a connection has been deprecated from Airbyte Cloud.
-:::
+While Airbyte processes data in a data plane from your chosen region, it runs cursor and primary key data through the control plane. Airbyte Cloud's control plane is in the United States. If you have data you can't process in the United States, don't use it as a cursor or primary key.
 
-You can additionally choose the data residency for your connection in the connection settings. You can choose the data residency when creating a new connection, or you can set the default data residency for your workspace so that it applies for any new connections moving forward.
+### IP addresses for managed data planes
 
-To choose a custom data residency for your connection, click **Connections** in the Airbyte UI and then select the connection that you want to configure. Navigate to the **Settings** tab, open the **Advanced Settings**, and select the **Data residency** for the connection.
+If you're a Cloud customer using one of Airbyte's managed data planes, you might need to add [these IP addresses](/platform/operating-airbyte/ip-allowlist) to your allow list.
 
-:::note
+## Assign a region to a workspace
 
-Changes to data residency will not affect any sync in progress.
+When you assign a region to a workspace, all connections in that workspace run in that region, except for the preceding limitations. Follow the steps below to assign a region to a workspace.
 
-:::
+1. Switch to the workspace you want to change data residency on.
 
-## Connector Builder data residency
+2. Click **Workspace settings**.
 
-The Connector Builder currently processes all data through US data planes, regardless of your workspace's default data residency settings. This limitation applies to the development and testing of connectors within the builder interface.
+3. Under **Region**, select the region you want that workspace to use.
 
-If your use case requires strict data residency compliance outside the US, you can still publish a custom connector from the builder which will respect your workspace's data residency settings during syncs. However, you will be unable to verify the connector's behavior within the builder itself.
+4. Click **Save changes**.

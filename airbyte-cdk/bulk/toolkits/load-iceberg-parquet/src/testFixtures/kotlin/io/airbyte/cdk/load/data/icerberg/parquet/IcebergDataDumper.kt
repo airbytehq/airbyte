@@ -81,7 +81,7 @@ class IcebergDataDumper(
         stream: DestinationStream
     ): List<OutputRecord> {
         val catalog = getCatalog(spec)
-        val table = catalog.loadTable(tableIdGenerator.toTableIdentifier(stream.descriptor))
+        val table = catalog.loadTable(tableIdGenerator.toTableIdentifier(stream.mappedDescriptor))
 
         val outputRecords = mutableListOf<OutputRecord>()
         IcebergGenerics.read(table).build().use { records ->

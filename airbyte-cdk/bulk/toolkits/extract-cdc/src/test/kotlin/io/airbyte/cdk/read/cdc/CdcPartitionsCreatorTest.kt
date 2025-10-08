@@ -14,6 +14,7 @@ import io.airbyte.cdk.read.ConfiguredSyncMode
 import io.airbyte.cdk.read.Global
 import io.airbyte.cdk.read.GlobalFeedBootstrap
 import io.airbyte.cdk.read.PartitionReader
+import io.airbyte.cdk.read.ResourceAcquirer
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.StreamDescriptor
@@ -61,6 +62,7 @@ class CdcPartitionsCreatorTest {
         get() =
             CdcPartitionsCreator(
                 concurrencyResource,
+                ResourceAcquirer(listOf()),
                 globalFeedBootstrap,
                 creatorOps,
                 readerOps,

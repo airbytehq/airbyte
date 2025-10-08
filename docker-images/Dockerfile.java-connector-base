@@ -1,15 +1,15 @@
-# Migrated from airbyte-ci/connectors/base_images/README.md
-
 # https://hub.docker.com/_/amazoncorretto/tags?name=21-al2023
-ARG BASE_IMAGE=docker.io/amazoncorretto:21-al2023@sha256:b88419ff8e6f18de4e8e78b1814b12df4805cfe42dcf0c036671da86f589f35f
+ARG BASE_IMAGE=docker.io/amazoncorretto:21-al2023
 FROM ${BASE_IMAGE}
 
 # Install dependencies
-RUN sh -c set -o xtrace && \
-    yum install -y shadow-utils tar openssl findutils && \
-    yum update -y --security && \
-    yum clean all && \
-    rm -rf /var/cache/yum
+RUN set -o xtrace && \
+    dnf clean all && \
+    dnf makecache --refresh && \
+    dnf install -y shadow-utils tar openssl findutils && \
+    dnf update --releasever=latest -y --security && \
+    dnf clean all && \
+    rm -rf /var/cache/dnf
 
 # Set-up groups, users, and directories
 RUN groupadd --gid 1000 airbyte && \
@@ -42,3 +42,6 @@ ADD https://raw.githubusercontent.com/airbytehq/airbyte/6d8a3a2bc4f4ca79f1016444
     /airbyte/javabase.sh
 ADD https://dtdg.co/latest-java-tracer \
     /airbyte/dd-java-agent.jar
+
+RUN chown airbyte:airbyte /airbyte/base.sh /airbyte/javabase.sh /airbyte/dd-java-agent.jar && \
+    chmod 750 /airbyte/base.sh /airbyte/javabase.sh

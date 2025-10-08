@@ -1,9 +1,6 @@
 // @ts-check
 // Note: type annotations allow type checking and IDEs autocompletion
 import "dotenv/config.js";
-const yaml = require("js-yaml");
-const fs = require("node:fs");
-const path = require("node:path");
 
 const { themes } = require("prism-react-renderer");
 const lightCodeTheme = themes.github;
@@ -15,13 +12,29 @@ const productInformation = require("./src/remark/productInformation");
 const connectorList = require("./src/remark/connectorList");
 const specDecoration = require("./src/remark/specDecoration");
 const docMetaTags = require("./src/remark/docMetaTags");
+const addButtonToTitle = require("./src/remark/addButtonToTitle");
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
+  future: {
+    experimental_faster: true,
+  },
   markdown: {
     mermaid: true,
+    preprocessor: ({filePath, fileContent}) => {
+      return fileContent
+        .replace(/\{\{product_name_sm_oss\}\}/g, 'Core')
+        .replace(/\{\{product_name_sm_enterprise\}\}/g, 'Self-Managed Enterprise')
+        .replace(/\{\{product_name_cloud_standard\}\}/g, 'Standard')
+        .replace(/\{\{product_name_cloud_pro\}\}/g, 'Pro')
+        .replace(/\{\{product_name_cloud_enterprise\}\}/g, 'Enterprise Flex');
+    },
   },
-  themes: ["@docusaurus/theme-mermaid"],
+  themes: [
+    "@docusaurus/theme-mermaid",
+    "@saucelabs/theme-github-codeblock",
+    "docusaurus-theme-openapi-docs",
+  ],
   title: "Airbyte Docs",
   tagline:
     "Airbyte is an open-source data integration platform to build ELT pipelines. Consolidate your data in your data warehouses, lakes and databases.",
@@ -61,14 +74,26 @@ const config = {
         content: "plvcr4wcl9abmq0itvi63c",
       },
     },
-    {
-      tagName: "meta",
-      attributes: {
-        name: "google-site-verification",
-        content: "3bGvGd17EJ-wHoyGlRszHtmMGmtWGQ4dDFEQy8ampQ0",
-      },
-    },
+    ...(process.env.NODE_ENV === "production" && process.env.SEGMENT_WRITE_KEY
+      ? [
+          {
+            tagName: "script",
+            attributes: {
+              name: "segment-script",
+            },
+            innerHTML: `  
+        !function(){var i="analytics",analytics=window[i]=window[i]||[];if(!analytics.initialize)if(analytics.invoked)window.console&&console.error&&console.error("Segment snippet included twice.");else{analytics.invoked=!0;analytics.methods=["trackSubmit","trackClick","trackLink","trackForm","pageview","identify","reset","group","track","ready","alias","debug","page","screen","once","off","on","addSourceMiddleware","addIntegrationMiddleware","setAnonymousId","addDestinationMiddleware","register"];analytics.factory=function(e){return function(){if(window[i].initialized)return window[i][e].apply(window[i],arguments);var n=Array.prototype.slice.call(arguments);if(["track","screen","alias","group","page","identify"].indexOf(e)>-1){var c=document.querySelector("link[rel='canonical']");n.push({__t:"bpc",c:c&&c.getAttribute("href")||void 0,p:location.pathname,u:location.href,s:location.search,t:document.title,r:document.referrer})}n.unshift(e);analytics.push(n);return analytics}};for(var n=0;n<analytics.methods.length;n++){var key=analytics.methods[n];analytics[key]=analytics.factory(key)}analytics.load=function(key,n){var t=document.createElement("script");t.type="text/javascript";t.async=!0;t.setAttribute("data-global-segment-analytics-key",i);t.src="https://cdn.segment.com/analytics.js/v1/" + key + "/analytics.min.js";var r=document.getElementsByTagName("script")[0];r.parentNode.insertBefore(t,r);analytics._loadOptions=n};analytics._writeKey="${process.env.SEGMENT_WRITE_KEY}";;analytics.SNIPPET_VERSION="5.2.0";
+        analytics.load("${process.env.SEGMENT_WRITE_KEY}");
+        analytics.page();
+      }}();`,
+          },
+        ]
+      : []),
   ],
+  i18n: {
+    defaultLocale: 'en',
+    locales: ['en'],
+  },
   // The preset is the "main" docs instance, though in reality, most content does not live under this preset. See the plugins array below, which defines the behavior of each docs instance.
   presets: [
     [
@@ -87,6 +112,7 @@ const config = {
             enterpriseDocsHeaderInformation,
             productInformation,
             docMetaTags,
+            addButtonToTitle,
           ],
         },
         blog: false,
@@ -105,29 +131,39 @@ const config = {
         path: "../docs/platform",
         routeBasePath: "/platform",
         sidebarPath: "./sidebar-platform.js",
-        editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
+        editUrl: ({ version, docPath }) => {
+          if (version === "current") {
+            // For the "next" (unreleased) version
+            return `https://github.com/airbytehq/airbyte/edit/master/docs/platform/${docPath}`;
+          } else {
+            // For released versions
+            return `https://github.com/airbytehq/airbyte/edit/master/docusaurus/platform_versioned_docs/version-${version}/${docPath}`;
+          }
+        },
         remarkPlugins: [
           docsHeaderDecoration,
           enterpriseDocsHeaderInformation,
           productInformation,
           docMetaTags,
+          addButtonToTitle,
         ],
       },
     ],
-    // This plugin controls Airbyte Embedded docs, which are not versioned
+    // This plugin controls AI Agent Tools docs, which are not versioned
     [
       "@docusaurus/plugin-content-docs",
       {
-        id: "embedded",
-        path: "../docs/embedded",
-        routeBasePath: "/embedded",
-        sidebarPath: "./sidebar-embedded.js",
+        id: "ai-agents",
+        path: "../docs/ai-agents",
+        routeBasePath: "/ai-agents",
+        sidebarPath: "./sidebar-ai-agents.js",
         editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
         remarkPlugins: [
           docsHeaderDecoration,
           enterpriseDocsHeaderInformation,
           productInformation,
           docMetaTags,
+          addButtonToTitle,
         ],
       },
     ],
@@ -145,6 +181,7 @@ const config = {
           enterpriseDocsHeaderInformation,
           productInformation,
           docMetaTags,
+          addButtonToTitle,
         ],
       },
     ],
@@ -167,6 +204,18 @@ const config = {
       },
     ],
     require.resolve("./src/plugins/enterpriseConnectors"),
+    [
+      "@signalwire/docusaurus-plugin-llms-txt",
+      {
+        siteTitle: "docs.airbyte.com llms.txt",
+        siteDescription:
+          "Airbyte is an open source platform designed for building and managing data pipelines, offering extensive connector options to facilitate data movement from various sources to destinations efficiently and effectively.",
+        depth: 4,
+        content: {
+          includePages: true,
+        },
+      },
+    ],
     () => ({
       name: "Yaml loader",
       configureWebpack() {
@@ -189,6 +238,9 @@ const config = {
   ],
   customFields: {
     requestErdApiUrl: process.env.REQUEST_ERD_API_URL,
+    markpromptProjectKey:
+      process.env.MARKPROMPT_PROJECT_KEY ||
+      "sk_test_cbPFAzAxUvafRj6l1yjzrESu0bRpzQGK",
   },
   clientModules: [
     require.resolve("./src/scripts/cloudStatus.js"),
@@ -201,6 +253,33 @@ const config = {
     ({
       colorMode: {
         disableSwitch: false,
+      },
+      mermaid: {
+        theme: {
+          light: 'base',  // "base" theme is fully customizable
+          dark: 'base'
+        },
+        options: {
+          themeVariables: {
+            primaryColor: '#5F5CFF',        // Airbyte blue
+            primaryTextColor: '#FFFFFF',    // white labels on colored shapes
+            primaryBorderColor: '#1A194D',  // slightly darker for contrast
+            secondaryColor: '#FF6A4D',      // accent orange
+            // secondaryTextColor: '#FF6A4D',      // accent orange
+            // secondaryBorderColor: '#FF6A4D',      // accent orange
+            tertiaryColor: '#E8EAF6',        // light neutral fill
+            tertiaryTextColor: '#000000',    // black labels on light shapes
+            tertiaryBorderColor: '#E8EAF6',    // light neutral border
+            background: '#FFFFFF',
+            clusterBkg: '#F5F5F5',
+            fontFamily: 'var(--ifm-font-family-base)',
+          },
+          flowchart: {
+            rankSpacing: 100,   // vertical space
+            subGraphTitleMargin: 10, // space within subgraph border for title
+            nodeSpacing: 100,   // horizontal space
+          },
+        },
       },
       docs: {
         sidebar: {
@@ -253,9 +332,9 @@ const config = {
           {
             type: "docSidebar",
             position: "left",
-            docsPluginId: "embedded",
-            sidebarId: "embedded",
-            label: "Airbyte Embedded",
+            docsPluginId: "ai-agents",
+            sidebarId: "ai-agents",
+            label: "AI Agents",
           },
           {
             href: "https://support.airbyte.com/",

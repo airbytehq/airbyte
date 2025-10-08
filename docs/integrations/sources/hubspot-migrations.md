@@ -1,5 +1,45 @@
 # HubSpot Migration Guide
 
+## Upgrading to 6.0.0
+
+:::note
+This change is only breaking if you are syncing the `marketing_emails` stream.
+:::
+
+This update migrates the `marketing_emails` stream from HubSpot's deprecated v1 API to the new v3 API. While this migration significantly changes the schema of the stream, removing many fields that were previously present, it also enables incremental sync support for the stream. Users will need to refresh the source schema and reset the `marketing_emails` stream after upgrading. Please refer to HubSpot's [`marketing_emails` API documentation](https://developers.hubspot.com/docs/reference/api/marketing/emails/marketing-emails#get-%2Fmarketing%2Fv3%2Femails%2F) for more information on the changes to the endpoint and schema.
+
+Users should:
+
+- Refresh the source schema for the `marketing_email` stream.
+- Reset the stream after upgrading to ensure uninterrupted syncs.
+
+### Refresh affected schemas and reset data
+
+1. Select **Connections** in the main nav bar.
+   1. Select the connection affected by the update.
+2. Select the **Schema** tab.
+   1. Select **Refresh source schema**.
+   2. Select **OK**.
+
+:::note
+Any detected schema changes will be listed for your review.
+:::
+
+3. Select **Save changes** at the top right of the page.
+   1. Ensure the **Reset affected streams** option is checked.
+
+:::note
+Depending on destination type you may not be prompted to reset your data.
+:::
+
+4. Select **Save connection**.
+
+:::note
+This will reset the data in your destination and initiate a fresh sync.
+:::
+
+For more information on resetting your data in Airbyte, see [this page](/platform/operator-guides/clear)
+
 ## Upgrading to 5.0.0
 
 :::note

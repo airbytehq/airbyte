@@ -20,6 +20,11 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 
+/**
+ * Unit tests for the {@link TeradataDestination} class. These tests verify the correct construction
+ * of JDBC configuration and connection properties under various authentication and SSL
+ * configurations.
+ */
 class TeradataDestinationTest {
 
     private lateinit var config: JsonNode
@@ -188,6 +193,11 @@ class TeradataDestinationTest {
     }
 
     companion object {
+        /**
+         * Provides test cases for query band normalization logic.
+         *
+         * @return a stream of arguments with input and expected values
+         */
         @JvmStatic
         fun provideQueryBandTestCases(): Stream<Arguments> {
             return Stream.of(
@@ -227,7 +237,7 @@ class TeradataDestinationTest {
             )
         }
     }
-
+    /** Tests that the JDBC configuration is constructed correctly using LDAP authentication. */
     @Test
     fun testAuthTypeLDAPConnection() {
         val rawConfig = buildConfigForLDAPAuth()
@@ -237,7 +247,7 @@ class TeradataDestinationTest {
         assertEquals("username", jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText())
         assertEquals("verysecure", jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText())
     }
-
+    /** Tests that the JDBC configuration is constructed correctly using TD2 authentication. */
     @Test
     fun testAuthTypeTD2Connection() {
         val rawConfig = buildConfigNoJdbcParameters()
@@ -248,7 +258,10 @@ class TeradataDestinationTest {
         assertEquals("username", jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText())
         assertEquals("verysecure", jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText())
     }
-
+    /**
+     * Tests that the JDBC configuration is constructed correctly using browser-based
+     * authentication.
+     */
     @Test
     fun testAuthTypeBrowserConnection() {
         val rawConfig = buildConfigForBrowserAuth()
@@ -259,7 +272,10 @@ class TeradataDestinationTest {
         assertNull(jdbcConfig.get(JdbcUtils.USERNAME_KEY))
         assertNull(jdbcConfig.get(JdbcUtils.PASSWORD_KEY))
     }
-
+    /**
+     * Tests that the JDBC configuration is constructed correctly when no extra JDBC parameters are
+     * provided.
+     */
     @Test
     fun testJdbcUrlAndConfigNoExtraParams() {
         val jdbcConfig = destination.toJdbcConfig(buildConfigNoJdbcParameters())
@@ -268,7 +284,10 @@ class TeradataDestinationTest {
         assertEquals("username", jdbcConfig.get(JdbcUtils.USERNAME_KEY).asText())
         assertEquals("verysecure", jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText())
     }
-
+    /**
+     * Tests that when the extra JDBC parameters are an empty string, the resulting JDBC URL and
+     * config do not include any additional parameters.
+     */
     @Test
     fun testJdbcUrlEmptyExtraParams() {
         val jdbcConfig = destination.toJdbcConfig(buildConfigWithExtraJdbcParameters(""))
@@ -278,7 +297,10 @@ class TeradataDestinationTest {
         assertEquals("verysecure", jdbcConfig.get(JdbcUtils.PASSWORD_KEY).asText())
         assertEquals("", jdbcConfig.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText())
     }
-
+    /**
+     * Tests that when extra JDBC parameters are provided, they are correctly included in the JDBC
+     * URL and config.
+     */
     @Test
     fun testJdbcUrlExtraParams() {
         val jdbcConfig =
@@ -288,7 +310,10 @@ class TeradataDestinationTest {
         assertEquals("db", jdbcConfig.get(JdbcUtils.SCHEMA_KEY).asText())
         assertEquals(EXTRA_JDBC_PARAMS, jdbcConfig.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText())
     }
-
+    /**
+     * Tests that the default schema name is correctly applied when no explicit schema is provided
+     * in the config.
+     */
     @Test
     fun testDefaultSchemaName() {
         val jdbcConfig = destination.toJdbcConfig(buildConfigDefaultSchema())
@@ -298,14 +323,20 @@ class TeradataDestinationTest {
             jdbcConfig.get(JdbcUtils.SCHEMA_KEY).asText()
         )
     }
-
+    /**
+     * Tests that when SSL is disabled in the configuration, the resulting connection properties do
+     * not contain any SSL mode.
+     */
     @Test
     fun testSSLDisable() {
         val jdbcConfig = createConfig(false)
         val properties: Map<String, String> = destination.getDefaultConnectionProperties(jdbcConfig)
         assertNull(properties[TeradataConstants.PARAM_SSLMODE])
     }
-
+    /**
+     * Tests that when SSL is enabled with no mode specified, the default SSL mode is set to
+     * "require".
+     */
     @Test
     fun testSSLDefaultMode() {
         val jdbcConfig = createConfig(true)
@@ -315,7 +346,7 @@ class TeradataDestinationTest {
             properties[TeradataConstants.PARAM_SSLMODE].toString()
         )
     }
-
+    /** Tests that the SSL mode "allow" is correctly reflected in the connection properties. */
     @Test
     fun testSSLAllowMode() {
         val jdbcConfig = createConfig(TeradataConstants.ALLOW)
@@ -325,9 +356,12 @@ class TeradataDestinationTest {
             properties[TeradataConstants.PARAM_SSLMODE].toString()
         )
     }
-
+    /**
+     * Tests that the "verify-ca" SSL mode is correctly set in the connection properties, and that
+     * the CA certificate parameter is present.
+     */
     @Test
-    fun testSSLVerfifyCAMode() {
+    fun testSSLVerifyCAMode() {
         val jdbcConfig = createConfig(TeradataConstants.VERIFY_CA)
         val properties: Map<String, String> = destination.getDefaultConnectionProperties(jdbcConfig)
         assertEquals(
@@ -336,9 +370,12 @@ class TeradataDestinationTest {
         )
         assertNotNull(properties[TeradataConstants.PARAM_SSLCA].toString())
     }
-
+    /**
+     * Tests that the "verify-full" SSL mode is correctly set in the connection properties, and that
+     * the CA certificate parameter is present.
+     */
     @Test
-    fun testSSLVerfifyFullMode() {
+    fun testSSLVerifyFullMode() {
         val jdbcConfig = createConfig(TeradataConstants.VERIFY_FULL)
         val properties: Map<String, String> = destination.getDefaultConnectionProperties(jdbcConfig)
         assertEquals(
@@ -347,7 +384,18 @@ class TeradataDestinationTest {
         )
         assertNotNull(properties[TeradataConstants.PARAM_SSLCA].toString())
     }
-
+    /**
+     * Parameterized test that verifies the correct formatting and assignment of the query band
+     * string when custom query band input is provided in the JDBC configuration.
+     *
+     * @param queryBandInput the raw query band string input provided via configuration
+     * @param expectedQueryBand the expected formatted query band that should be set on the
+     * destination
+     *
+     * The method uses a parameterized test with inputs supplied by the `provideQueryBandTestCases`
+     * method. It merges the base parameters with a custom query band map, converts it to a JSON
+     * config, and verifies that the `destination.queryBand` is correctly populated.
+     */
     @ParameterizedTest
     @MethodSource("provideQueryBandTestCases")
     fun testQueryBandCustom(queryBandInput: String, expectedQueryBand: String) {

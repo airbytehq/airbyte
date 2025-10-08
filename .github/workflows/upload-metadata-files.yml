@@ -9,15 +9,15 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout Airbyte Cloud
-        uses: actions/checkout@v2
+        uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2.7.0
       - name: Get changed files
         id: changed-files
-        uses: tj-actions/changed-files@v44
+        uses: tj-actions/changed-files@2d756ea4c53f7f6b397767d8723b3a10a9f35bf2 # v44.0.0
         with:
           files: "airbyte-integrations/connectors/**/metadata.yaml"
       - name: Setup Python 3.10
         if: steps.changed-files.outputs.any_changed == 'true'
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@7f4fc3e22c37d6ff65e88745f38bd3157c663f7c # v4.9.1
         with:
           python-version: "3.11"
           check-latest: true
@@ -37,7 +37,7 @@ jobs:
           done
       - name: Slack Notification - Failure
         if: failure()
-        uses: rtCamp/action-slack-notify@master
+        uses: rtCamp/action-slack-notify@07cbdbfd6c6190970778d8f98f11d073b2932aae # master
         env:
           SLACK_WEBHOOK: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
           SLACK_USERNAME: Metadata Service

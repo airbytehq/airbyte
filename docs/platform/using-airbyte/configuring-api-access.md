@@ -24,7 +24,7 @@ Access to the API is controlled through application keys. Applications keys are 
 
 ## Step 1: Create an Application
 
-While logged into the Airbyte UI, go to Settings -> Account -> Applications. Click the button "Create an application". 
+While logged into the Airbyte UI, go to \<Your Name\> -> User Settings -> Applications. Click the button "Create an application".
 
 ![Create an Application](./assets/applications-ui.png)
 

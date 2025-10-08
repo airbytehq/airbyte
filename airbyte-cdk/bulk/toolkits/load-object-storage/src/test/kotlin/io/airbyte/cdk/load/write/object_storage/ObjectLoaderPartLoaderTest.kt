@@ -42,7 +42,7 @@ class ObjectLoaderPartLoaderTest<T> {
         stream = mockk(relaxed = true)
         client = mockk(relaxed = true)
         catalog = mockk(relaxed = true)
-        coEvery { stream.descriptor } returns streamDescriptor
+        coEvery { stream.mappedDescriptor } returns streamDescriptor
         metadata = destinationConfig.metadataFor(stream)
     }
 

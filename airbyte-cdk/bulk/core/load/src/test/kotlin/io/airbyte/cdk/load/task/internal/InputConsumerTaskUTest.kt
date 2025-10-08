@@ -4,9 +4,7 @@
 
 package io.airbyte.cdk.load.task.internal
 
-import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.DestinationMessage
 import io.airbyte.cdk.load.message.DestinationRecord
@@ -20,23 +18,24 @@ import io.airbyte.cdk.load.message.StreamKey
 import io.airbyte.cdk.load.pipeline.InputPartitioner
 import io.airbyte.cdk.load.state.PipelineEventBookkeepingRouter
 import io.airbyte.cdk.load.state.Reserved
-import io.airbyte.cdk.load.state.SyncManager
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.mockk
+import java.util.UUID
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
+// TODO merge this class into InputConsumerTaskTest.
+//   There are historical reasons that these are separate classes, but those
+//   reasons are no longer true.
 class InputConsumerTaskUTest {
-    @MockK lateinit var catalog: DestinationCatalog
     @MockK lateinit var inputFlow: ReservingDeserializingInputFlow
     @MockK lateinit var checkpointQueue: QueueWriter<Reserved<CheckpointMessageWrapped>>
-    @MockK lateinit var syncManager: SyncManager
     @MockK lateinit var fileTransferQueue: MessageQueue<FileTransferQueueMessage>
     @MockK
     lateinit var recordQueueForPipeline:
@@ -50,7 +49,6 @@ class InputConsumerTaskUTest {
 
     private fun createTask() =
         InputConsumerTask(
-            catalog,
             inputFlow,
             recordQueueForPipeline,
             partitioner,
@@ -60,8 +58,7 @@ class InputConsumerTaskUTest {
     @BeforeEach
     fun setup() {
         dstream = mockk<DestinationStream>(relaxed = true)
-        every { dstream.descriptor } returns streamDescriptor
-        coEvery { catalog.streams } returns listOf(dstream)
+        every { dstream.mappedDescriptor } returns streamDescriptor
         coEvery { fileTransferQueue.close() } returns Unit
         coEvery { recordQueueForPipeline.close() } returns Unit
         coEvery { openStreamQueue.close() } returns Unit
@@ -83,8 +80,8 @@ class InputConsumerTaskUTest {
                             DestinationRecord(
                                 stream = dstream,
                                 message = mockk(relaxed = true),
-                                schema = ObjectTypeWithoutSchema,
-                                0L
+                                serializedSizeBytes = 0L,
+                                airbyteRawId = UUID.randomUUID()
                             )
                         )
                     )

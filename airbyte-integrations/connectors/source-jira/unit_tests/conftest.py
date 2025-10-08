@@ -337,7 +337,7 @@ def mock_projects_responses_additional_project(config, projects_response):
 def mock_issues_responses_with_date_filter(config, issues_response):
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/search",
+        f"https://{config['domain']}/rest/api/3/search/jql",
         match=[
             matchers.query_param_matcher(
                 {
@@ -352,7 +352,7 @@ def mock_issues_responses_with_date_filter(config, issues_response):
     )
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/search",
+        f"https://{config['domain']}/rest/api/3/search/jql",
         match=[
             matchers.query_param_matcher(
                 {
@@ -367,7 +367,7 @@ def mock_issues_responses_with_date_filter(config, issues_response):
     )
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/search",
+        f"https://{config['domain']}/rest/api/3/search/jql",
         match=[
             matchers.query_param_matcher(
                 {
@@ -383,7 +383,7 @@ def mock_issues_responses_with_date_filter(config, issues_response):
     )
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/search",
+        f"https://{config['domain']}/rest/api/3/search/jql",
         match=[
             matchers.query_param_matcher(
                 {

@@ -38,7 +38,7 @@ instead of relying on the generic JDBC metadata methods.
 ## Dependencies
 
 The Bulk CDK gradle build relies heavily on so-called [BOM dependencies](https://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html#bill-of-materials-bom-poms).
-This pattern is strongly encouraged to keep transitive version conflicts to a minimum.  This is beneficial for many reasons, including reproducible builds and a good security posture. 
+This pattern is strongly encouraged to keep transitive version conflicts to a minimum.  This is beneficial for many reasons, including reproducible builds and a good security posture.
 
 Consider for example the whole Jackson ecosystem.
 Using a BOM allows us to add specific Jackson dependencies without having to figure out which
@@ -87,19 +87,23 @@ If there's truly a need to develop both simultaneously, then the way to go may b
 
 ## Publishing
 
-While the CDK is incubating, its published version numbers are 0.X where X is the _build number_.
-This build number is monotonically increasing and is based on the maximum version value found on
-the [maven repository that the jars are published to](https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/io/airbyte/bulk-cdk/).
+The CDK version is a SemVer version which is published here: [maven repository that the jars are published to](https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/io/airbyte/bulk-cdk/).
+Some legacy versions don't follow the SemVer format. Any CDK version with 0.x e.g. 0.600 is an example.
 
 Artifact publication happens via a [github workflow](../../.github/workflows/publish-bulk-cdk.yml)
 which gets triggered by any push to the master branch, i.e. after merging a pull request.
 
-From a contributor's perspective, this means that there's no need to worry about versions or
-changelogs.
-From a client's perspective, just always use the latest version.
+The contributor needs to manually bump the version and populate the [changelog](changelog.md) before merging.
 
-Once the incubation period winds down and the CDK stabilizes, we can start thinking about contracts,
-semantic versioning, and so forth; but not until then.
+In the build process, we are checking that the version of the bulk CDK doesn't exist already.
+
+A utility Gradle task exists to update both of those files:
+```shell
+./gradlew :airbyte-cdk:bulk:bumpVersion --<major|minor|patch> [--changelog 'My cool CDK update']
+```
+If invoked without the `--changelog` flag, it will prompt for a changelog entry via stdin.
+
+This task can also be invoked by commenting on your Github PR: `/bump-bulk-cdk-version bump=<major|minor|patch> changelog="My cool CDK update"`.
 
 ## Licensing
 

@@ -62,6 +62,10 @@ binlog_row_image           = FULL
 binlog_expire_logs_seconds  = 864000
 ```
 
+:::note Amazon RDS MySQL Configuration
+RDS does not use `binlog_expire_logs_seconds`. Instead, it uses a parameter called `binlog retention hours` which defaults to 0 (meaning binary logs are removed immediately). You need to increase this value using the RDS-specific procedure described in the [AWS documentation](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/mysql-stored-proc-configuring.html).
+:::
+
 - server-id : The value for the server-id must be unique for each server and replication client in the MySQL cluster. The `server-id` should be a non-zero value. If the `server-id` is already set to a non-zero value, you don't need to make any change. You can set the `server-id` to any value between 1 and 4294967295. For more information refer [mysql doc](https://dev.mysql.com/doc/refman/8.0/en/replication-options.html#sysvar_server_id)
 - log_bin : The value of log_bin is the base name of the sequence of binlog files. If the `log_bin` is already set, you don't need to make any change. For more information refer [mysql doc](https://dev.mysql.com/doc/refman/8.0/en/replication-options-binary-log.html#option_mysqld_log-bin)
 - binlog_format : The `binlog_format` must be set to `ROW`. For more information refer [mysql doc](https://dev.mysql.com/doc/refman/8.0/en/replication-options-binary-log.html#sysvar_binlog_format)
@@ -226,7 +230,21 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.11.19     | 2025-05-11 | [60214](https://github.com/airbytehq/airbyte/pull/60214) | Migrate to new Gradle flow.
+| 3.50.9      | 2025-10-06  | [67151](https://github.com/airbytehq/airbyte/pull/66515)   | Fix CDC decorating fields encoding to Protobuf                                                                                                  |
+| 3.50.8      | 2025-09-18 | [66515](https://github.com/airbytehq/airbyte/pull/66515)   | Fix division by zero in partition creation when sampling produces no split boundaries.                                                          |
+| 3.50.7      | 2025-09-10 | [66179](https://github.com/airbytehq/airbyte/pull/66179)   | Bump to the latest CDK fixing protobuf encoding of certain column types                                                                         |
+| 3.50.6      | 2025-08-08 | [64569](https://github.com/airbytehq/airbyte/pull/64569)   | Moved db version logging from connector to new CDK version                                                                                      |
+| 3.50.5      | 2025-07-30 | [63377](https://github.com/airbytehq/airbyte/pull/63377)   | Global state compatibility in speed mode                                                                                                        |
+| 3.50.4      | 2025-07-30 | [64134](https://github.com/airbytehq/airbyte/pull/64134)   | Log db version for mysql                                                                                                                        |
+| 3.50.3      | 2025-07-18 | [63349](https://github.com/airbytehq/airbyte/pull/63349)   | Make concurrency level match number of sockets in speed mode                                                                                    |
+| 3.50.2      | 2025-07-17 | [62932](https://github.com/airbytehq/airbyte/pull/62932)   | CDC fixes                                                                                                                                       |
+| 3.50.1-rc.1 | 2025-07-08 | [62862](https://github.com/airbytehq/airbyte/pull/62862)   | Prepare to enable speed improvements                                                                                                            |
+| 3.50.0      | 2025-07-08 | [62863](https://github.com/airbytehq/airbyte/pull/62863)   | Promoting release candidate 3.50.0-rc.1 to a main version.                                                                                      |
+| 3.50.0-rc.1 | 2025-07-08 | [60993](https://github.com/airbytehq/airbyte/pull/60993)   | Prepare to enable speed improvements                                                                                                            |
+| 3.12.0      | 2025-06-26 | [60993](https://github.com/airbytehq/airbyte/pull/60993)   | Boosted Mode                                                                                                                                    |
+| 3.11.21     | 2025-05-30 | [61014](https://github.com/airbytehq/airbyte/pull/61014)   | Fix merge error. Point to a published CDK                                                                                                       |
+| 3.11.20     | 2025-05-29 | [60218](https://github.com/airbytehq/airbyte/pull/60218)   | Testing concurrent read.                                                                                                                        |
+| 3.11.19     | 2025-05-11 | [60214](https://github.com/airbytehq/airbyte/pull/60214)   | Migrate to new Gradle flow.                                                                                                                     |
 | 3.11.18     | 2025-05-02 | [59732](https://github.com/airbytehq/airbyte/pull/59732)   | Fix a bug that caused the sync to go into a loop in some cases.                                                                                 |
 | 3.11.17     | 2025-05-02 | [59683](https://github.com/airbytehq/airbyte/pull/59683)   | CDK version bump.                                                                                                                               |
 | 3.11.16     | 2025-05-02 | [59223](https://github.com/airbytehq/airbyte/pull/59223)   | Improve handling of big int and decimal values preventing it from represented with scientific notation                                          |
