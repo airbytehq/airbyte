@@ -46,11 +46,13 @@ Don't forget to click save!
 
 ### Retrieving the Airbyte Connection ID
 
-We'll need the Airbyte Connection ID so our Airflow DAG knows which Airbyte Connection to trigger.
+Get the Airbyte Connection ID so your Airflow DAG knows which Airbyte Connection to trigger.
 
-![](/.gitbook/assets/airflow_airbyte_connection.png)
+1. Open Airbyte.
 
-This ID can be seen in the URL on the connection page in the Airbyte UI. The Airbyte UI can be accessed at `localhost:8000`.
+2. Click **Connections** > your connection.
+
+3. Get the connection ID from the URL. The URL looks like the following example, and your connection ID appears near the end: `https://<YOUR_DOMAIN>/workspaces/<YOUR_WORKSPACE_ID>/connections/<YOUR_CONNECTION_ID>/status`.
 
 ### Creating a simple Airflow DAG to run an Airbyte Sync Job
 
@@ -85,15 +87,11 @@ The Airbyte Airflow Operator accepts the following parameters:
 - `timeout`: Maximum time Airflow will wait for the Airbyte job to complete. Only valid when `asynchronous=False`. Default value is `3600` seconds.
 - `wait_seconds`: The amount of time to wait between checks. Only valid when `asynchronous=False`. Default value is `3` seconds.
 
-This code will produce the following simple DAG in the Airbyte UI:
-
-![](/.gitbook/assets/airflow_airbyte_dag.png)
+This code will produce the following simple DAG in the Airbyte UI: `airbyte_money_json_example`.
 
 Our DAG will show up in the Airflow UI shortly after we place our DAG file, and be automatically triggered shortly after.
 
-Check Airbyte UI's Sync History tab to see if the job started syncing!
-
-![](/.gitbook/assets/airflow_airbyte_trigger_job.png)
+Check the Timeline tab to see if the job started syncing.
 
 ### Using the `asynchronous` parameter
 
@@ -130,8 +128,6 @@ with DAG(dag_id='airbyte_trigger_job_example_async',
 ## That's it!
 
 Don't be fooled by our simple example of only one Airflow task. Airbyte is a powerful data integration platform supporting many sources and destinations. The Airbyte Airflow Operator means Airbyte can now be easily used with the Airflow ecosystem - give it a shot!
-
-We love to hear any questions or feedback on our [Slack](https://slack.airbyte.io/). If you see any rough edges or want to request a connector, feel free to create an issue on our [Github](https://github.com/airbytehq/airbyte) or thumbs up an existing issue.
 
 ## Related articles and guides
 

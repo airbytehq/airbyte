@@ -18,7 +18,10 @@ import io.mockk.verify
 import io.mockk.verifyOrder
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toJavaDuration
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
@@ -37,15 +40,23 @@ class StateReconcilerTest {
 
     private val interval = 30.seconds
 
+    private lateinit var testScope: TestScope
+
+    private lateinit var reconcilerScope: CoroutineScope
+
     private lateinit var stateReconciler: StateReconciler
 
     @BeforeEach
     fun setUp() {
+        testScope = TestScope(StandardTestDispatcher())
+        reconcilerScope = CoroutineScope(testScope.coroutineContext)
+
         stateReconciler =
             StateReconciler(
                 stateStore,
                 emittedStatsStore,
                 consumer,
+                reconcilerScope,
                 interval.toJavaDuration(),
             )
     }
@@ -135,8 +146,19 @@ class StateReconcilerTest {
         every { emittedStatsStore.getStats() } returns statsList
 
         every { consumer.accept(any<AirbyteMessage>()) } just Runs
+
+        // Create a new reconciler with the test scope for this test
+        val localReconciler =
+            StateReconciler(
+                stateStore,
+                emittedStatsStore,
+                consumer,
+                this.backgroundScope,
+                interval.toJavaDuration(),
+            )
+
         // When
-        stateReconciler.run(this.backgroundScope)
+        localReconciler.run()
 
         // Advance time to trigger multiple flushes
         advanceTimeBy(interval) // First flush
@@ -168,11 +190,21 @@ class StateReconcilerTest {
         every { stateStore.getNextComplete() } returns null
         every { emittedStatsStore.getStats() } returns null
 
+        // Create a new reconciler with the test scope for this test
+        val localReconciler =
+            StateReconciler(
+                stateStore,
+                emittedStatsStore,
+                consumer,
+                this.backgroundScope,
+                interval.toJavaDuration(),
+            )
+
         // Start the reconciler
-        stateReconciler.run(this.backgroundScope)
+        localReconciler.run()
 
         // When
-        stateReconciler.disable()
+        localReconciler.disable()
 
         // Then
         advanceTimeBy(60.seconds)
