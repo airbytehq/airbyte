@@ -5,7 +5,7 @@
 package io.airbyte.cdk.load.dataflow.aggregate
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.dataflow.config.MemoryAndParallelismConfig
+import io.airbyte.cdk.load.dataflow.config.AggregatePublishingConfig
 import io.airbyte.cdk.load.dataflow.state.PartitionHistogram
 import io.airbyte.cdk.load.dataflow.state.PartitionKey
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
@@ -30,7 +30,7 @@ class AggregateStoreTest {
 
     @MockK private lateinit var aggregateFactory: AggregateFactory
     @MockK private lateinit var mockAggregate: Aggregate
-    private lateinit var memoryConfig: MemoryAndParallelismConfig
+    private lateinit var memoryConfig: AggregatePublishingConfig
     private lateinit var aggregateStore: AggregateStore
 
     private val testKey = DestinationStream.Descriptor(namespace = "test", name = "stream")
@@ -41,8 +41,8 @@ class AggregateStoreTest {
         every { aggregateFactory.create(any()) } returns mockAggregate
 
         memoryConfig =
-            MemoryAndParallelismConfig(
-                maxOpenAggregates = 5,
+            AggregatePublishingConfig(
+                maxEstBytesAllAggregates = 5000L,
                 maxRecordsPerAgg = 100L,
                 maxEstBytesPerAgg = 1000L,
                 stalenessDeadlinePerAgg = 10.seconds
