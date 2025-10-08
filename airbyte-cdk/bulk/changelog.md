@@ -1,3 +1,17 @@
+## Version 0.1.47
+
+**Extract CDK**
+
+* **Changed:** Correct encoding of CDC_UPDATED_AT and CDC_DELETED_AT fields in protobuf records.
+
+## Version 0.1.46
+
+Noop: Move stream lifecyle dispatchers to bean factory.
+
+## Version 0.1.45
+
+Noop release. 0.1.44 suspected to have a bad publish.
+
 ## Version 0.1.44
 
 Dataflow Load CDK: Set dest stats equal to source stats.
@@ -60,7 +74,7 @@ Extract CDK: Pass WhereNode to FromSample node so we can apply filters to the sa
 
 ## Version 0.1.30
 
-Add Low-code API destination support for statically defined discover operations 
+Add Low-code API destination support for statically defined discover operations
 
 ## Version 0.1.29
 

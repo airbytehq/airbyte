@@ -6,7 +6,6 @@ package io.airbyte.cdk.load.dataflow
 
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.dataflow.config.MemoryAndParallelismConfig
 import io.airbyte.cdk.load.dataflow.finalization.StreamCompletionTracker
 import io.airbyte.cdk.load.dataflow.pipeline.PipelineRunner
 import io.airbyte.cdk.load.write.DestinationWriter
@@ -15,6 +14,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 
@@ -24,8 +24,8 @@ class DestinationLifecycleTest {
     private val destinationCatalog: DestinationCatalog = mockk(relaxed = true)
     private val pipeline: PipelineRunner = mockk(relaxed = true)
     private val completionTracker: StreamCompletionTracker = mockk(relaxed = true)
-    private val memoryAndParallelismConfig: MemoryAndParallelismConfig =
-        MemoryAndParallelismConfig(maxOpenAggregates = 1, maxBufferedAggregates = 1)
+    private val streamInitDispatcher = Dispatchers.Default
+    private val streamFinalizeDispatcher = Dispatchers.Default
 
     private val destinationLifecycle =
         DestinationLifecycle(
@@ -33,7 +33,8 @@ class DestinationLifecycleTest {
             destinationCatalog,
             pipeline,
             completionTracker,
-            memoryAndParallelismConfig,
+            streamInitDispatcher,
+            streamFinalizeDispatcher,
         )
 
     @Test
