@@ -1,3 +1,9 @@
+## Version 0.1.48
+
+**Extract CDK**
+
+* **Changed:** Enable heart beat timeout for CDC sync.
+
 ## Version 0.1.47
 
 **Extract CDK**
