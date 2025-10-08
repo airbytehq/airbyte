@@ -93,7 +93,6 @@ class PostgresDirectLoadSqlGenerator {
             .andLog()
     }
 
-    //I'm not sure if this is right. I'm assuming one table exists, and the other doesn't
     fun copyTable(
         columnNameMapping: ColumnNameMapping,
         sourceTableName: TableName,
