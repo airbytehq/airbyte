@@ -196,12 +196,10 @@ class S3DataLakeUtil(
                 AwsClientProperties.CLIENT_REGION to region,
             )
 
+        val roleArn = catalogConfig.awsArnRoleConfiguration.roleArn
         val clientProperties =
-            if (catalogConfig.awsArnRoleConfiguration.roleArn != null) {
-                buildRoleBasedClientProperties(
-                    catalogConfig.awsArnRoleConfiguration.roleArn!!,
-                    config
-                )
+            if (!roleArn.isNullOrBlank()) {
+                buildRoleBasedClientProperties(roleArn, config)
             } else {
                 buildKeyBasedClientProperties(config)
             }
