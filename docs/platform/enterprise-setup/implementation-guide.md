@@ -773,10 +773,78 @@ global:
 
 #### Configuring Ingress
 
-To access the Airbyte UI, you will need to manually attach an ingress configuration to your deployment. The following is a skimmed down definition of an ingress resource you could use for Self-Managed Enterprise:
+To access the Airbyte UI, you need to configure ingress for your deployment. You have two options:
+
+1. **Use Airbyte's Helm chart ingress configuration** - Configure ingress through your `values.yaml` file (Helm chart V2 only)
+2. **Bring your own ingress** - Manually create and manage your own Kubernetes ingress resource
+
+:::important
+These are mutually exclusive options. Choose one approach based on your needs:
+- Use the Helm chart ingress configuration if you want Airbyte to manage ingress creation and updates automatically
+- Use your own ingress if you need custom ingress configurations beyond what the Helm chart provides, or if you prefer to manage ingress independently
+:::
 
 <details>
-<summary>Ingress configuration setup steps</summary>
+<summary>Option 1: Using Airbyte's Helm Chart Ingress Configuration (Helm chart V2 only)</summary>
+
+Starting with Helm chart V2, you can configure ingress directly in your `values.yaml` file. Airbyte will automatically create and manage the ingress resource for you.
+
+**Basic Configuration for Enterprise:**
+
+```yaml
+ingress:
+  enabled: true
+  className: "nginx"  # Specify your ingress class
+  annotations: {}
+    # Add any ingress-specific annotations here
+  hosts:
+    - host: airbyte.example.com  # Replace with your domain
+      paths:
+        - path: /auth
+          pathType: Prefix
+          backend: keycloak  # For Keycloak authentication (if using OIDC)
+        - path: /
+          pathType: Prefix
+          backend: server  # Routes to airbyte-server
+  tls: []
+    # Optionally configure TLS
+    # - secretName: airbyte-tls
+    #   hosts:
+    #     - airbyte.example.com
+```
+
+**Backend Services for Enterprise:**
+
+The `backend` field specifies which service to route to:
+- `keycloak` - Routes to Keycloak service (required for OIDC authentication, omit if using generic OIDC)
+- `server` - Routes to the main Airbyte API server
+- `connector-builder-server` - Routes to the connector builder service
+
+**Before enabling ingress:**
+- You must have an ingress controller deployed in your Kubernetes cluster
+- Refer to ingress controller documentation for setup: [NGINX](https://kubernetes.github.io/ingress-nginx/deploy/), [AWS ALB](https://docs.aws.amazon.com/eks/latest/userguide/alb-ingress.html), or your controller's documentation
+- For TLS certificate management, refer to [cert-manager](https://cert-manager.io/docs/) or your cloud provider's certificate service
+
+**Switching from manual ingress to Helm chart ingress:**
+1. Delete your existing manual ingress resource
+2. Add the ingress configuration to your `values.yaml` file
+3. Upgrade your Helm deployment
+
+For more details, see the [Ingress documentation](../deploying-airbyte/integrations/ingress).
+
+</details>
+
+<details>
+<summary>Option 2: Bring Your Own Ingress (manual configuration)</summary>
+
+If you prefer to manage your own ingress resource, or if you're using Helm chart V1, you can manually create a Kubernetes ingress resource.
+
+**Switching from Helm chart ingress to manual ingress:**
+1. Disable ingress in your `values.yaml`: `ingress.enabled: false`
+2. Upgrade your Helm deployment to remove the ingress resource
+3. Create your manual ingress resource using the examples below
+
+**Manual Ingress Examples:**
 <Tabs>
 <TabItem value="NGINX" label="NGINX">
 
@@ -875,9 +943,10 @@ The ALB controller will use a `ServiceAccount` that requires the [following IAM 
 
 </TabItem>
 </Tabs>
+
 </details>
 
-Once this is complete, ensure that the value of the `airbyteUrl` field in your `values.yaml` is configured to match the ingress URL.
+Once ingress is configured (using either option), ensure that the value of the `airbyteUrl` field in your `values.yaml` is configured to match the ingress URL.
 
 You may configure ingress using a load balancer or an API Gateway. We do not currently support most service meshes (such as Istio). If you are having networking issues after fully deploying Airbyte, please verify that firewalls or lacking permissions are not interfering with pod-pod communication. Please also verify that deployed pods have the right permissions to make requests to your external database.
 
