@@ -78,16 +78,23 @@ def get_modified_files(
     True
     """
     try:
-        subprocess.run(["git", "remote", "get-url", "upstream"], check=True, capture_output=True, text=True)
-        remote = "upstream"
+        subprocess.run(
+            ["git", "remote", "get-url", "upstream"], check=True, capture_output=True, text=True,
+        )
     except subprocess.CalledProcessError:
         remote = "origin"
+    else:
+        # No exception raised
+        remote = "upstream"
 
     default_branch = "master"
 
-    subprocess.run(["git", "fetch", "--quiet", remote, default_branch], check=True)
+    subprocess.run([
+        "git", "fetch", "--quiet", remote, default_branch], check=True,
+    )
 
-    all_files = []
+    all_files: list[str] = []
+    result: subprocess.CompletedProcess[str]
 
     if prev_commit:
         result = subprocess.run(
@@ -98,17 +105,22 @@ def get_modified_files(
         result = subprocess.run(
             ["git", "diff", "--name-only", f"{remote}/{default_branch}...HEAD"], capture_output=True, text=True, check=True
         )
-        committed = result.stdout.strip().split("\n") if result.stdout.strip() else []
+        committed: list[str] = result.stdout.strip().split("\n") if result.stdout.strip() else []
 
-        result = subprocess.run(["git", "diff", "--cached", "--name-only"], capture_output=True, text=True, check=True)
-        staged = result.stdout.strip().split("\n") if result.stdout.strip() else []
+        result = subprocess.run(
+            ["git", "diff", "--cached", "--name-only"], capture_output=True, text=True, check=True,
+        )
+        staged: list[str] = result.stdout.strip().split("\n") if result.stdout.strip() else []
 
-        result = subprocess.run(["git", "diff", "--name-only"], capture_output=True, text=True, check=True)
-        unstaged = result.stdout.strip().split("\n") if result.stdout.strip() else []
+        result = subprocess.run(
+            ["git", "diff", "--name-only"], capture_output=True, text=True, check=True,
+        )
+        unstaged: list[str] = result.stdout.strip().split("\n") if result.stdout.strip() else []
 
-        result = subprocess.run(["git", "ls-files", "--others", "--exclude-standard"], capture_output=True, text=True, check=True)
-        untracked = result.stdout.strip().split("\n") if result.stdout.strip() else []
-
+        result = subprocess.run(
+            ["git", "ls-files", "--others", "--exclude-standard"], capture_output=True, text=True, check=True,
+        )
+        untracked: list[str] = result.stdout.strip().split("\n") if result.stdout.strip() else []
         all_files = committed + staged + unstaged + untracked
 
     return list(set(f for f in all_files if f))
