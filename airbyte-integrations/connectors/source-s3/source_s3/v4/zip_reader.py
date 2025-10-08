@@ -363,7 +363,6 @@ class ZipContentReader:
                 break
             self.buffer += chunk
 
-
         data = self.buffer[:size]
         self.buffer = self.buffer[size:]
 
@@ -374,9 +373,9 @@ class ZipContentReader:
                 # utf_8_sig considers `\xef\xbb\xbf` as a single character and therefore calling `bytearray(b'\xef').decode("utf_8_sig") will
                 # cause an exception to be raised.
                 number_of_bytes_to_add = size - 1
-                if data.endswith(bytearray(b'\xef')):
+                if data.endswith(bytearray(b"\xef")):
                     number_of_bytes_to_add += 2
-                elif data.endswith(bytearray(b'\xbb')):
+                elif data.endswith(bytearray(b"\xbb")):
                     number_of_bytes_to_add += 1
                 data = data + self.buffer[:number_of_bytes_to_add]
                 self.buffer = self.buffer[number_of_bytes_to_add:]
