@@ -23,10 +23,10 @@ sealed interface AirbyteSchemaType {
 data class ArrayAirbyteSchemaType(
     val item: AirbyteSchemaType,
 ) : AirbyteSchemaType {
-    override fun asJsonSchemaType(): JsonSchemaType {
-        val builder = JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.ARRAY)
-        return builder.withItems(item.asJsonSchemaType()).build()
-    }
+    override fun asJsonSchemaType(): JsonSchemaType =
+        JsonSchemaType.builder(JsonSchemaPrimitiveUtil.JsonSchemaPrimitive.ARRAY)
+            .withItems(item.asJsonSchemaType())
+            .build()
 }
 
 enum class LeafAirbyteSchemaType(
