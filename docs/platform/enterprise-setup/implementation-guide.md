@@ -19,6 +19,7 @@ Airbyte has begun rolling out a new Helm chart called Helm chart V2. The instruc
 ## Prerequisites
 
 ### Infrastructure Prerequisites
+
 For a production-ready deployment of Self-Managed Enterprise, various infrastructure components are required. We recommend deploying to Amazon EKS or Google Kubernetes Engine. The following diagram illustrates a typical Airbyte deployment running on AWS:
 
 ![AWS Architecture Diagram](./assets/self-managed-enterprise-aws.png)
@@ -33,12 +34,11 @@ Prior to deploying Self-Managed Enterprise, we recommend having each of the foll
 | Dedicated Database       | [Amazon RDS Postgres](#configuring-the-airbyte-database) with at least one read replica.                                                                                  |
 | External Secrets Manager | [Amazon Secrets Manager](/platform/operator-guides/configuring-airbyte#secrets) for storing connector secrets.                                                                     |
 
-
 A few notes on Kubernetes cluster provisioning for Airbyte Self-Managed Enterprise:
-* We support Amazon Elastic Kubernetes Service (EKS) on EC2 or Google Kubernetes Engine (GKE) on Google Compute Engine (GCE). Improved support for Azure Kubernetes Service (AKS) is coming soon.
-* We recommend running Airbyte on memory-optimized instances, such as M7i / M7g instance types.
-* While we support GKE Autopilot, we do not support Amazon EKS on Fargate. 
-* We recommend running Airbyte on instances with at least 2 cores and 8 gigabytes of RAM.
+- We support Amazon Elastic Kubernetes Service (EKS) on EC2 or Google Kubernetes Engine (GKE) on Google Compute Engine (GCE). Improved support for Azure Kubernetes Service (AKS) is coming soon.
+- We recommend running Airbyte on memory-optimized instances, such as M7i / M7g instance types.
+- While we support GKE Autopilot, we do not support Amazon EKS on Fargate.
+- We recommend running Airbyte on instances with at least 2 cores and 8 gigabytes of RAM.
 
 We require you to install and configure the following Kubernetes tooling:
 
@@ -87,7 +87,6 @@ You may apply your Kubernetes secrets by applying the example manifests below to
 #### Creating a Kubernetes Secret
 
 While you can set the name of the secret to whatever you prefer, you will need to set that name in various places in your values.yaml file. For this reason we suggest that you keep the name of `airbyte-config-secrets` unless you have a reason to change it.
-
 
 <details>
 <summary>airbyte-config-secrets</summary>
@@ -156,12 +155,10 @@ kubectl create secret generic airbyte-config-secrets \
   --namespace airbyte
 ```
 
-
 </TabItem>
 <TabItem value="GCS" label="GCS">
 
 First, create a new file `gcp.json` containing the credentials JSON blob for the service account you are looking to assume.
-
 
 ```yaml
 apiVersion: v1
@@ -319,8 +316,6 @@ Follow these instructions to add the Airbyte helm repository:
     </TabItem>
     </Tabs>
 
-
-
 4. You must configure the public facing URL of your Airbyte instance to your `values.yaml` file, under `global`:
 
     <Tabs groupId="helm-chart-version">
@@ -341,7 +336,6 @@ Follow these instructions to add the Airbyte helm repository:
 
     </TabItem>
     </Tabs>
-    
 
 5. Verify the configuration of your `values.yaml` so far. Ensure `license-key`, `instance-admin-email` and `instance-admin-password` are all available via Kubernetes Secrets (configured in [prerequisites](#creating-a-kubernetes-secret)). It should appear as follows:
 
@@ -392,7 +386,6 @@ global:
 
 </TabItem>
 </Tabs>
-
 
 </details>
 
@@ -622,7 +615,6 @@ global:
 </TabItem>
 </Tabs>
 
-
 </TabItem>
 </Tabs>
 
@@ -721,8 +713,6 @@ global:
 </TabItem>
 </Tabs>
 
-
-
 </TabItem>
 
 <TabItem label="Azure Key Vault" value="Azure">
@@ -780,8 +770,10 @@ To access the Airbyte UI, you need to configure ingress for your deployment. You
 
 :::important
 These are mutually exclusive options. Choose one approach based on your needs:
+
 - Use the Helm chart ingress configuration if you want Airbyte to manage ingress creation and updates automatically
 - Use your own ingress if you need custom ingress configurations beyond what the Helm chart provides, or if you prefer to manage ingress independently
+
 :::
 
 <details>
@@ -816,16 +808,19 @@ ingress:
 **Backend Services for Enterprise:**
 
 The `backend` field specifies which service to route to:
+
 - `keycloak` - Routes to Keycloak service (required for OIDC authentication, omit if using generic OIDC)
 - `server` - Routes to the main Airbyte API server
 - `connector-builder-server` - Routes to the connector builder service
 
 **Before enabling ingress:**
+
 - You must have an ingress controller deployed in your Kubernetes cluster
 - Refer to ingress controller documentation for setup: [NGINX](https://kubernetes.github.io/ingress-nginx/deploy/), [AWS ALB](https://docs.aws.amazon.com/eks/latest/userguide/alb-ingress.html), or your controller's documentation
 - For TLS certificate management, refer to [cert-manager](https://cert-manager.io/docs/) or your cloud provider's certificate service
 
 **Switching from manual ingress to Helm chart ingress:**
+
 1. Delete your existing manual ingress resource
 2. Add the ingress configuration to your `values.yaml` file
 3. Upgrade your Helm deployment
@@ -840,6 +835,7 @@ For more details, see the [Ingress documentation](../deploying-airbyte/integrati
 If you prefer to manage your own ingress resource, or if you're using Helm chart V1, you can manually create a Kubernetes ingress resource.
 
 **Switching from Helm chart ingress to manual ingress:**
+
 1. Disable ingress in your `values.yaml`: `ingress.enabled: false`
 2. Upgrade your Helm deployment to remove the ingress resource
 3. Create your manual ingress resource using the examples below
@@ -1150,7 +1146,7 @@ If your registry requires authentication, you can create a Kubernetes secret and
 <details>
 <summary>Step 2: Tag and push Airbyte images</summary>
 
-Tag and push Airbyte's images to your custom image registry. 
+Tag and push Airbyte's images to your custom image registry.
 
 In this example, you tag all platform images and push them all to GitHub.
 
@@ -1227,7 +1223,6 @@ The [following policies](https://docs.aws.amazon.com/AmazonS3/latest/userguide/e
 ```
 
 ### AWS Secret Manager Policy
-
 
 ```yaml
 {

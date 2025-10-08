@@ -18,8 +18,10 @@ To access the Airbyte UI, you need to configure ingress for your deployment. You
 
 :::important
 These are mutually exclusive options. Choose one approach based on your needs:
+
 - Use the Helm chart ingress configuration if you want Airbyte to manage ingress creation and updates automatically
 - Use your own ingress if you need custom ingress configurations beyond what the Helm chart provides, or if you prefer to manage ingress independently
+
 :::
 
 :::tip
@@ -100,6 +102,7 @@ For TLS certificate management, refer to tools like [cert-manager](https://cert-
 If you previously created a manual ingress resource and want to switch to using the Helm chart ingress configuration:
 
 1. Delete your existing manual ingress resource:
+
    ```bash
    kubectl delete ingress <your-ingress-name> -n <namespace>
    ```
@@ -107,6 +110,7 @@ If you previously created a manual ingress resource and want to switch to using 
 2. Add the ingress configuration to your `values.yaml` file as shown above
 
 3. Upgrade your Helm deployment:
+
    ```bash
    helm upgrade airbyte airbyte-v2/airbyte \
      --namespace <namespace> \
@@ -124,12 +128,14 @@ These guides assume that you have already deployed an ingress controller. The fo
 If you previously used the Helm chart ingress configuration and want to switch to manual ingress management:
 
 1. Disable ingress in your `values.yaml`:
+
    ```yaml
    ingress:
      enabled: false
    ```
 
 2. Upgrade your Helm deployment to remove the ingress resource:
+
    ```bash
    helm upgrade airbyte airbyte-v2/airbyte \
      --namespace <namespace> \
