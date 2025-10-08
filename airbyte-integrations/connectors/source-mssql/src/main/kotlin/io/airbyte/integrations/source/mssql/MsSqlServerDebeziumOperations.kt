@@ -15,7 +15,6 @@ import io.airbyte.cdk.data.JsonCodec
 import io.airbyte.cdk.data.JsonEncoder
 import io.airbyte.cdk.data.LongCodec
 import io.airbyte.cdk.data.NullCodec
-import io.airbyte.cdk.data.OffsetDateTimeCodec
 import io.airbyte.cdk.data.TextCodec
 import io.airbyte.cdk.discover.CommonMetaField
 import io.airbyte.cdk.output.sockets.FieldValueEncoder
@@ -26,6 +25,7 @@ import io.airbyte.cdk.read.cdc.CdcPartitionReaderDebeziumOperations
 import io.airbyte.cdk.read.cdc.CdcPartitionsCreatorDebeziumOperations
 import io.airbyte.cdk.read.cdc.DebeziumOffset
 import io.airbyte.cdk.read.cdc.DebeziumPropertiesBuilder
+import io.airbyte.cdk.read.cdc.DebeziumPropertiesBuilder.Companion.AIRBYTE_HEARTBEAT_TIMEOUT_SECONDS
 import io.airbyte.cdk.read.cdc.DebeziumRecordKey
 import io.airbyte.cdk.read.cdc.DebeziumRecordValue
 import io.airbyte.cdk.read.cdc.DebeziumSchemaHistory
@@ -69,6 +69,7 @@ class MsSqlServerDebeziumOperations(private val configuration: MsSqlServerSource
 
     private val log = KotlinLogging.logger {}
 
+    @Suppress("UNCHECKED_CAST")
     override fun deserializeRecord(
         key: DebeziumRecordKey,
         value: DebeziumRecordValue,
@@ -132,7 +133,6 @@ class MsSqlServerDebeziumOperations(private val configuration: MsSqlServerSource
                             else -> codec.decode(fieldValue)
                         }
 
-                    @Suppress("UNCHECKED_CAST")
                     resultRow[field.id] = FieldValueEncoder(decodedValue, codec as JsonCodec<Any>)
                 }
             }
@@ -144,20 +144,32 @@ class MsSqlServerDebeziumOperations(private val configuration: MsSqlServerSource
             OffsetDateTime.ofInstant(Instant.ofEpochMilli(transactionMillis), ZoneOffset.UTC)
 
         resultRow[CommonMetaField.CDC_UPDATED_AT.id] =
-            FieldValueEncoder(transactionOffsetDateTime, OffsetDateTimeCodec)
-        @Suppress("UNCHECKED_CAST")
+            FieldValueEncoder(
+                transactionOffsetDateTime,
+                CommonMetaField.CDC_UPDATED_AT.type.jsonEncoder as JsonEncoder<Any>
+            )
+
         resultRow[CommonMetaField.CDC_DELETED_AT.id] =
             FieldValueEncoder(
                 if (isDelete) transactionOffsetDateTime else null,
-                (if (isDelete) OffsetDateTimeCodec else NullCodec) as JsonEncoder<Any>
+                (if (isDelete) CommonMetaField.CDC_DELETED_AT.type.jsonEncoder else NullCodec)
+                    as JsonEncoder<Any>
             )
 
         // Set MSSQL-specific CDC meta-fields
         val commitLsn = source["commit_lsn"].asText()
         resultRow[MsSqlSourceOperations.MsSqlServerCdcMetaFields.CDC_LSN.id] =
-            FieldValueEncoder(commitLsn, TextCodec)
+            FieldValueEncoder(
+                commitLsn,
+                MsSqlSourceOperations.MsSqlServerCdcMetaFields.CDC_LSN.type.jsonEncoder
+                    as JsonEncoder<Any>
+            )
         resultRow[MsSqlSourceOperations.MsSqlServerCdcMetaFields.CDC_CURSOR.id] =
-            FieldValueEncoder(recordCounter.getAndIncrement(), LongCodec)
+            FieldValueEncoder(
+                recordCounter.getAndIncrement(),
+                MsSqlSourceOperations.MsSqlServerCdcMetaFields.CDC_CURSOR.type.jsonEncoder
+                    as JsonEncoder<Any>
+            )
 
         // Return a DeserializedRecord instance.
         return DeserializedRecord(resultRow, changes = emptyMap())
@@ -227,9 +239,9 @@ class MsSqlServerDebeziumOperations(private val configuration: MsSqlServerSource
         val offsetNode = stateNode[MSSQL_CDC_OFFSET] as JsonNode
         val offsetMap: Map<JsonNode, JsonNode> =
             offsetNode
-                .fields()
+                .fieldNames()
                 .asSequence()
-                .map { (k, v) -> Jsons.readTree(k) to Jsons.readTree(v.textValue()) }
+                .map { k -> Jsons.readTree(k) to Jsons.readTree(offsetNode[k].textValue()) }
                 .toMap()
         if (offsetMap.size != 1) {
             throw RuntimeException("Offset object should have 1 key in $opaqueStateValue")
@@ -497,7 +509,7 @@ class MsSqlServerDebeziumOperations(private val configuration: MsSqlServerSource
             )
             // Enable heartbeat timeout for MSSQL to detect idle database states
             .with(
-                "airbyte.first.record.wait.seconds",
+                AIRBYTE_HEARTBEAT_TIMEOUT_SECONDS,
                 configuration.incrementalReplicationConfiguration.initialWaitingSeconds
                     .toSeconds()
                     .toString()

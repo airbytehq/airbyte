@@ -215,7 +215,6 @@ class MsSqlServerExcludeTodaysDataIntegrationTest {
 
         // Extract only the new records from incremental sync
         val allDates = extractDates(incrementalRecords, "order_date")
-        val statusValues = incrementalRecords.mapNotNull { it.get("status")?.asText() }
 
         // Count records by date
         val todayCount = allDates.count { it == today.toString() }

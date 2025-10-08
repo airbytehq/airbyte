@@ -149,14 +149,11 @@ object MsSqlServerDatatypeTestOperations :
     private fun activateCdcWithInitialLsn(connection: Connection) {
         try {
             connection.createStatement().use { stmt ->
-                // Create dummy table and enable CDC
+                // Drop and recreate dummy table to ensure clean state
+                stmt.execute("DROP TABLE IF EXISTS dbo.cdc_dummy")
+                stmt.execute("CREATE TABLE dbo.cdc_dummy (id INT PRIMARY KEY)")
                 stmt.execute(
-                    "IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'dbo.cdc_dummy') AND type = 'U') " +
-                        "CREATE TABLE dbo.cdc_dummy (id INT PRIMARY KEY)"
-                )
-                stmt.execute(
-                    "IF NOT EXISTS (SELECT 1 FROM cdc.change_tables WHERE source_object_id = OBJECT_ID('dbo.cdc_dummy')) " +
-                        "EXEC sys.sp_cdc_enable_table @source_schema = 'dbo', @source_name = 'cdc_dummy', @role_name = NULL"
+                    "EXEC sys.sp_cdc_enable_table @source_schema = 'dbo', @source_name = 'cdc_dummy', @role_name = NULL"
                 )
 
                 // Insert data to generate LSN
@@ -617,6 +614,7 @@ data class MsSqlServerDatatypeTestCase(
     val ddl: List<String>
         get() =
             listOf(
+                "DROP TABLE IF EXISTS $id",
                 "CREATE TABLE $id " + "(pk INT IDENTITY(1,1) PRIMARY KEY, $fieldName $sqlType)",
             )
 
