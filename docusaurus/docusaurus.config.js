@@ -254,6 +254,33 @@ const config = {
       colorMode: {
         disableSwitch: false,
       },
+      mermaid: {
+        theme: {
+          light: 'base',  // "base" theme is fully customizable
+          dark: 'base'
+        },
+        options: {
+          themeVariables: {
+            primaryColor: '#5F5CFF',        // Airbyte blue
+            primaryTextColor: '#FFFFFF',    // white labels on colored shapes
+            primaryBorderColor: '#1A194D',  // slightly darker for contrast
+            secondaryColor: '#FF6A4D',      // accent orange
+            // secondaryTextColor: '#FF6A4D',      // accent orange
+            // secondaryBorderColor: '#FF6A4D',      // accent orange
+            tertiaryColor: '#E8EAF6',        // light neutral fill
+            tertiaryTextColor: '#000000',    // black labels on light shapes
+            tertiaryBorderColor: '#E8EAF6',    // light neutral border
+            background: '#FFFFFF',
+            clusterBkg: '#F5F5F5',
+            fontFamily: 'var(--ifm-font-family-base)',
+          },
+          flowchart: {
+            rankSpacing: 100,   // vertical space
+            subGraphTitleMargin: 10, // space within subgraph border for title
+            nodeSpacing: 100,   // horizontal space
+          },
+        },
+      },
       docs: {
         sidebar: {
           autoCollapseCategories: true,
@@ -267,7 +294,7 @@ const config = {
       announcementBar: {
         id: "try_airbyte_cloud",
         content:
-          '<a target="_blank" rel="noopener noreferrer" href="https://cloud.airbyte.io/signup?utm_campaign=22Q1_AirbyteCloudSignUpCampaign_Trial&utm_source=Docs&utm_content=NavBar">Try Airbyte Cloud</a>! Free for 14 days, no credit card needed.',
+          '<a target="_blank" rel="noopener noreferrer" href="https://cloud.airbyte.io/signup?utm_campaign=22Q1_AirbyteCloudSignUpCampaign_Trial&utm_source=Docs&utm_content=NavBar">Try Airbyte Cloud</a>! Free for 30 days, no credit card needed.',
         backgroundColor: "#615eff",
         textColor: "#ffffff",
         isCloseable: true,

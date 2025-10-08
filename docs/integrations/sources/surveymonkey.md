@@ -87,6 +87,8 @@ SurveyMonkey's API has [default rate limits](https://developer.surveymonkey.com/
 
 | Version | Date       | Pull Request                                             | Subject                                                                          |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------- |
+| 0.3.45 | 2025-10-07 | [67476](https://github.com/airbytehq/airbyte/pull/67476) | Update dependencies |
+| 0.3.44 | 2025-09-30 | [66894](https://github.com/airbytehq/airbyte/pull/66894) | Update dependencies |
 | 0.3.43 | 2025-09-23 | [66372](https://github.com/airbytehq/airbyte/pull/66372) | Update dependencies |
 | 0.3.42 | 2025-09-09 | [65682](https://github.com/airbytehq/airbyte/pull/65682) | Update dependencies |
 | 0.3.41 | 2025-08-24 | [65476](https://github.com/airbytehq/airbyte/pull/65476) | Update dependencies |

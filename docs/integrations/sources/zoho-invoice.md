@@ -33,6 +33,8 @@ Docs : https://www.zoho.com/invoice/api/v3/introduction/#overview
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.33 | 2025-10-07 | [67478](https://github.com/airbytehq/airbyte/pull/67478) | Update dependencies |
+| 0.0.32 | 2025-09-30 | [66943](https://github.com/airbytehq/airbyte/pull/66943) | Update dependencies |
 | 0.0.31 | 2025-09-24 | [66462](https://github.com/airbytehq/airbyte/pull/66462) | Update dependencies |
 | 0.0.30 | 2025-09-09 | [65659](https://github.com/airbytehq/airbyte/pull/65659) | Update dependencies |
 | 0.0.29 | 2025-08-24 | [65490](https://github.com/airbytehq/airbyte/pull/65490) | Update dependencies |
