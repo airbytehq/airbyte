@@ -10,6 +10,7 @@ import com.microsoft.sqlserver.jdbc.Geography
 import com.microsoft.sqlserver.jdbc.Geometry
 import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.data.FloatCodec
+import io.airbyte.cdk.data.JsonEncoder
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.data.TextCodec
 import io.airbyte.cdk.discover.CdcIntegerMetaFieldType
@@ -359,7 +360,7 @@ class MsSqlSourceOperations :
                 val offsetNode = stateNode["mssql_cdc_offset"] as? ObjectNode
                 if (offsetNode != null && offsetNode.size() > 0) {
                     // Extract LSN from the offset if available
-                    val offsetValue = offsetNode.fields().next().value
+                    val offsetValue = offsetNode.values().asSequence().first()
                     val lsn = Jsons.readTree(offsetValue.textValue())["commit_lsn"]?.asText()
                     if (lsn != null) {
                         recordData.set<JsonNode>(
@@ -374,6 +375,7 @@ class MsSqlSourceOperations :
         }
     }
 
+    @Suppress("UNCHECKED_CAST")
     override fun decorateRecordData(
         timestamp: OffsetDateTime,
         globalStateValue: OpaqueStateValue?,
@@ -382,7 +384,10 @@ class MsSqlSourceOperations :
     ) {
         // Add CDC_UPDATED_AT field
         recordData[CommonMetaField.CDC_UPDATED_AT.id] =
-            FieldValueEncoder(timestamp, CdcOffsetDateTimeMetaFieldType.jsonEncoder)
+            FieldValueEncoder(
+                timestamp,
+                CommonMetaField.CDC_UPDATED_AT.type.jsonEncoder as JsonEncoder<Any>
+            )
 
         // Add CDC_LSN field with empty string as default
         var lsnValue = ""
@@ -395,7 +400,7 @@ class MsSqlSourceOperations :
                     val offsetNode = stateNode["mssql_cdc_offset"] as? ObjectNode
                     if (offsetNode != null && offsetNode.size() > 0) {
                         // Extract LSN from the offset if available
-                        val offsetValue = offsetNode.fields().next().value
+                        val offsetValue = offsetNode.values().asSequence().first()
                         val lsn = Jsons.readTree(offsetValue.textValue())["commit_lsn"]?.asText()
                         if (lsn != null) {
                             lsnValue = lsn
@@ -408,7 +413,10 @@ class MsSqlSourceOperations :
         }
 
         recordData[MsSqlServerCdcMetaFields.CDC_LSN.id] =
-            FieldValueEncoder(lsnValue, CdcStringMetaFieldType.jsonEncoder)
+            FieldValueEncoder(
+                lsnValue,
+                MsSqlServerCdcMetaFields.CDC_LSN.type.jsonEncoder as JsonEncoder<Any>
+            )
     }
 
     enum class MsSqlServerCdcMetaFields(override val type: FieldType) : MetaField {
