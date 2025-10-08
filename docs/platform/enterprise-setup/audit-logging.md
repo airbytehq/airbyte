@@ -49,7 +49,7 @@ Here is an example log for a deleted workspace. Logs for all events follow this 
 
 ## Enable logging
 
-### Self-Managed Enterprise
+### {{product_name_sm_enterprise}}
 
 To enable logging, set up a blob storage solution to store audit logs. Then, you use Airbyte's `values.yaml` file to configure that storage solution in Airbyte.
 

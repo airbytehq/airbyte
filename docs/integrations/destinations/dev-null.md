@@ -45,7 +45,7 @@ This mode throws an exception after receiving a configurable number of messages.
 <details>
   <summary>Expand to review</summary>
 
-The OSS and Cloud variants have the same version number starting from version `0.2.2`.
+The self-managed and Cloud variants have the same version number starting from version `0.2.2`.
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|

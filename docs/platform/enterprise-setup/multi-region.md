@@ -5,9 +5,9 @@ products: oss-enterprise
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Multiple region deployments (Self-Managed Enterprise)
+# Multiple region deployments ({{product_name_sm_enterprise}})
 
-Self-Managed Enterprise customers can use Airbyte's public API to define regions and create independent data planes that operate in those regions. This ensures you're satisfying your data residency and governance requirements with a single Airbyte deployment, and it can help you reduce data egress costs with cloud providers.
+{{product_name_sm_enterprise}} customers can use Airbyte's public API to define regions and create independent data planes that operate in those regions. This ensures you're satisfying your data residency and governance requirements with a single Airbyte deployment, and it can help you reduce data egress costs with cloud providers.
 
 ![Stylized diagram showing a control plane above multiple data planes in different global regions](assets/data-planes.png)
 
@@ -45,7 +45,7 @@ While data planes process data in their respective regions, some metadata remain
 
 Before you begin, make sure you've completed the following.
 
-- Deploy your Self-Managed Enterprise version of Airbyte as described in the [implementation guide](implementation-guide).
+- Deploy your {{product_name_sm_enterprise}} version of Airbyte as described in the [implementation guide](implementation-guide).
 
 - You must be an Instance Administrator to manage regions and data planes.
 
@@ -376,7 +376,7 @@ Add the following overrides to a new `values.yaml` file.
 ```yaml title="values.yaml"
 airbyteUrl: https://airbyte.example.com # Base URL for the control plane so Airbyte knows where to authenticate
 
-edition: enterprise # Required for Self-Managed Enterprise
+edition: enterprise # Required for {{product_name_sm_enterprise}}
 
 # Logging:
 #  level: DEBUG

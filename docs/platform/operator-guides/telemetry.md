@@ -60,15 +60,12 @@ If you'd like to turn off telemetry data collection, follow the directions below
 
   Anonymous usage tracking ("telemetry") helps us understand how PyAirbyte is being used,
   including which connectors are working well and which connectors are frequently failing. This helps
-  us to prioritize product improvements which benefit users of PyAirbyte as well as Airbyte Cloud,
-  OSS, and Enterprise.
+  us to prioritize product improvements.
 
-  We will _never_ collect any information which could be considered PII (personally identifiable
-  information) or sensitive data. We _do not_ collect IP addresses, hostnames, or any other
+  We _never_ collect any personally identifiable information (PII) or sensitive data. We _don't_ collect IP addresses, hostnames, or any other
   information that could be used to identify you or your organization.
 
-  You can opt-out of anonymous usage reporting by setting the environment variable `DO_NOT_TRACK`
-  to any value.
+  You can opt-out of anonymous usage reporting by setting the environment variable `DO_NOT_TRACK` to any value.
 
   </TabItem>
 </Tabs>
