@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.datagen.flavor.all_types
 
 import io.airbyte.cdk.data.ArrayEncoder
@@ -29,12 +33,12 @@ import io.airbyte.integrations.source.datagen.TimestampWithTimeZoneFieldType
 import io.airbyte.integrations.source.datagen.TimestampWithoutTimeZoneFieldType
 import io.airbyte.integrations.source.datagen.flavor.DataGenerator
 import java.math.BigDecimal
-import kotlin.collections.set
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.time.OffsetTime
+import kotlin.collections.set
 import kotlin.random.Random
 
 class TypesDataGenerator() : DataGenerator {
@@ -70,20 +74,31 @@ class TypesDataGenerator() : DataGenerator {
         recordData["big decimal"] =
             FieldValueEncoder(bigDecimal, BigDecimalFieldType.jsonEncoder as BigDecimalCodec)
 
-        recordData["date"] =
-            FieldValueEncoder(date,DateFieldType.jsonEncoder as LocalDateCodec)
+        recordData["date"] = FieldValueEncoder(date, DateFieldType.jsonEncoder as LocalDateCodec)
 
         recordData["time with time zone"] =
-            FieldValueEncoder(timeWithTimeZone, TimeWithTimeZoneFieldType.jsonEncoder as OffsetTimeCodec)
+            FieldValueEncoder(
+                timeWithTimeZone,
+                TimeWithTimeZoneFieldType.jsonEncoder as OffsetTimeCodec
+            )
 
         recordData["time without time zone"] =
-            FieldValueEncoder(timeWithoutTimeZone, TimeWithoutTimeZoneFieldType.jsonEncoder as LocalTimeCodec)
+            FieldValueEncoder(
+                timeWithoutTimeZone,
+                TimeWithoutTimeZoneFieldType.jsonEncoder as LocalTimeCodec
+            )
 
         recordData["timestamp with time zone"] =
-            FieldValueEncoder(timestampWithTimeZone,TimestampWithTimeZoneFieldType.jsonEncoder as OffsetDateTimeCodec)
+            FieldValueEncoder(
+                timestampWithTimeZone,
+                TimestampWithTimeZoneFieldType.jsonEncoder as OffsetDateTimeCodec
+            )
 
         recordData["timestamp without time zone"] =
-            FieldValueEncoder(timestampWithoutTimeZone,TimestampWithoutTimeZoneFieldType.jsonEncoder as LocalDateTimeCodec)
+            FieldValueEncoder(
+                timestampWithoutTimeZone,
+                TimestampWithoutTimeZoneFieldType.jsonEncoder as LocalDateTimeCodec
+            )
 
         recordData["json"] = FieldValueEncoder(json, JsonFieldType.jsonEncoder as JsonStringCodec)
 

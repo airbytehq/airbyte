@@ -7,9 +7,7 @@ package io.airbyte.integrations.source.datagen.flavor.increment
 import io.airbyte.cdk.data.LongCodec
 import io.airbyte.cdk.output.sockets.FieldValueEncoder
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
-import io.airbyte.integrations.source.datagen.BooleanFieldType
 import io.airbyte.integrations.source.datagen.IntegerFieldType
-import io.airbyte.integrations.source.datagen.StringFieldType
 import io.airbyte.integrations.source.datagen.flavor.DataGenerator
 
 class IncrementDataGenerator() : DataGenerator {

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.datagen
 
 import io.airbyte.cdk.data.AirbyteSchemaType
@@ -49,38 +53,40 @@ data object StringFieldType : FieldType {
     override val jsonEncoder: JsonEncoder<*> = TextCodec
 }
 
- data object DateFieldType : FieldType {
-     override val airbyteSchemaType: AirbyteSchemaType = LeafAirbyteSchemaType.DATE
-     override val jsonEncoder: JsonEncoder<*> = LocalDateCodec
- }
+data object DateFieldType : FieldType {
+    override val airbyteSchemaType: AirbyteSchemaType = LeafAirbyteSchemaType.DATE
+    override val jsonEncoder: JsonEncoder<*> = LocalDateCodec
+}
 
- data object TimeWithTimeZoneFieldType : FieldType {
-     override val airbyteSchemaType: AirbyteSchemaType = LeafAirbyteSchemaType.TIME_WITH_TIMEZONE
-     override val jsonEncoder: JsonEncoder<*> = OffsetTimeCodec
- }
+data object TimeWithTimeZoneFieldType : FieldType {
+    override val airbyteSchemaType: AirbyteSchemaType = LeafAirbyteSchemaType.TIME_WITH_TIMEZONE
+    override val jsonEncoder: JsonEncoder<*> = OffsetTimeCodec
+}
 
- data object TimeWithoutTimeZoneFieldType : FieldType {
-     override val airbyteSchemaType: AirbyteSchemaType = LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE
-     override val jsonEncoder: JsonEncoder<*> = LocalTimeCodec
- }
+data object TimeWithoutTimeZoneFieldType : FieldType {
+    override val airbyteSchemaType: AirbyteSchemaType = LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE
+    override val jsonEncoder: JsonEncoder<*> = LocalTimeCodec
+}
 
- data object TimestampWithTimeZoneFieldType : FieldType {
-     override val airbyteSchemaType: AirbyteSchemaType = LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE
-     override val jsonEncoder: JsonEncoder<*> = OffsetDateTimeCodec
- }
+data object TimestampWithTimeZoneFieldType : FieldType {
+    override val airbyteSchemaType: AirbyteSchemaType =
+        LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE
+    override val jsonEncoder: JsonEncoder<*> = OffsetDateTimeCodec
+}
 
- data object TimestampWithoutTimeZoneFieldType : FieldType {
-     override val airbyteSchemaType: AirbyteSchemaType = LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE
-     override val jsonEncoder: JsonEncoder<*> = LocalDateTimeCodec
- }
+data object TimestampWithoutTimeZoneFieldType : FieldType {
+    override val airbyteSchemaType: AirbyteSchemaType =
+        LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE
+    override val jsonEncoder: JsonEncoder<*> = LocalDateTimeCodec
+}
 
 data object JsonFieldType : FieldType {
     override val airbyteSchemaType: AirbyteSchemaType = LeafAirbyteSchemaType.JSONB
     override val jsonEncoder: JsonEncoder<*> = JsonStringCodec
 }
 
- data class ArrayFieldType(val elementFieldType: FieldType) : FieldType {
-     override val airbyteSchemaType: AirbyteSchemaType =
-         ArrayAirbyteSchemaType(elementFieldType.airbyteSchemaType)
-     override val jsonEncoder: JsonEncoder<*> = ArrayEncoder(elementFieldType.jsonEncoder)
- }
+data class ArrayFieldType(val elementFieldType: FieldType) : FieldType {
+    override val airbyteSchemaType: AirbyteSchemaType =
+        ArrayAirbyteSchemaType(elementFieldType.airbyteSchemaType)
+    override val jsonEncoder: JsonEncoder<*> = ArrayEncoder(elementFieldType.jsonEncoder)
+}

@@ -81,10 +81,11 @@ constructor(
         log.info { "Effective concurrency: $maxConcurrency" }
 
         val flavorSpec = pojo.getFlavor()
-        val flavor: Flavor = when (flavorSpec) {
-            Incremental -> IncrementFlavor
-            Types -> TypesFlavor
-        }
+        val flavor: Flavor =
+            when (flavorSpec) {
+                Incremental -> IncrementFlavor
+                Types -> TypesFlavor
+            }
 
         return DataGenSourceConfiguration(
             maxConcurrency = maxConcurrency,
