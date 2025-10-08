@@ -1,4 +1,4 @@
-#!/usr/bin/env -S uv run --python 3.12 --script
+#!/usr/bin/env -S uv run --python 3.12 --script --no-project
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
 # /// script
@@ -6,6 +6,7 @@
 # dependencies = [
 #   "pyyaml",
 #   "typer",
+#   "pytest",
 # ]
 # ///
 """Generate GitHub Actions matrix for modified Airbyte connectors.
@@ -34,51 +35,44 @@ Usage:
 
 Contributing:
     When adding new functions to this script, please include doctests that demonstrate
-    the expected behavior. Doctests serve as both documentation and unit tests.
+    the expected behavior. Doctest tests serve as both documentation and unit tests.
 
     Confirm your changes work by running:
         poe get-modified-connectors --run-tests
     Or:
         uv run poe-tasks/get_connector_matrix.py --run-tests
 
-    For more information on doctests, see: https://docs.python.org/3/library/doctest.html
+    For more information on doctest, see: https://docs.python.org/3/library/doctest.html
 """
 
 import json
 import os
 import re
+import click
 import subprocess
 import sys
 from functools import lru_cache
 from pathlib import Path
 from typing import Optional
+from typing_extensions import Annotated
 
 import typer
 
 
-def get_modified_files(files_list: Optional[str] = None, prev_commit: bool = False) -> list[str]:
+def get_modified_files(prev_commit: bool = False) -> list[str]:
     """Get list of modified files from git or override string.
 
     Args:
-        files_list: Optional CSV string of file paths to override git detection
         prev_commit: If True, compare with previous commit instead of master
 
     Returns:
         List of modified file paths
 
-    >>> files = get_modified_files(files_list="file1.py,file2.md,file3.yaml")
-    >>> files
-    ['file1.py', 'file2.md', 'file3.yaml']
-    >>> get_modified_files(files_list="")
-    []
-    >>> isinstance(get_modified_files(files_list=None), list)
+    >>> isinstance(get_modified_files(prev_commit=True), list)
+    True
+    >>> isinstance(get_modified_files(prev_commit=False), list)
     True
     """
-    if files_list is not None:
-        if not files_list.strip():
-            return []
-        return [f.strip() for f in files_list.split(",") if f.strip()]
-
     try:
         subprocess.run(["git", "remote", "get-url", "upstream"], check=True, capture_output=True, text=True)
         remote = "upstream"
@@ -128,13 +122,13 @@ def filter_ignored_files(files: list[str]) -> list[str]:
     >>> filter_ignored_files(["airbyte-integrations/connectors/source-faker/src/main.py"])
     ['airbyte-integrations/connectors/source-faker/src/main.py']
     """
-    ignore_patterns = [
+    ignore_patterns: list[str] = [
         r"/\.coveragerc$",
         r"/poe_tasks\.toml$",
         r"/README\.md$",
     ]
 
-    filtered = []
+    filtered: list[str] = []
     for file in files:
         should_ignore = False
         for pattern in ignore_patterns:
@@ -230,18 +224,20 @@ def find_local_cdk_connectors() -> list[str]:
     connectors_dir = Path("airbyte-integrations/connectors")
 
     if not connectors_dir.exists():
-        return local_cdk_connectors
+        raise FileNotFoundError(f"Connectors directory not found: {connectors_dir}")
 
     for connector_dir in connectors_dir.iterdir():
         if not connector_dir.is_dir():
             continue
 
-        build_file = None
-        if (connector_dir / "build.gradle").exists():
-            build_file = connector_dir / "build.gradle"
-        elif (connector_dir / "build.gradle.kts").exists():
-            build_file = connector_dir / "build.gradle.kts"
-
+        build_file: Path | None = next(
+            (
+                file
+                for file in [connector_dir / "build.gradle", connector_dir / "build.gradle.kts"]
+                if file.exists()
+            ),
+            None,
+        )
         if build_file:
             content = build_file.read_text()
             if "airbyteBulkConnector" in content and re.search(r"cdk\s*=\s*['\"]local['\"]", content):
@@ -256,6 +252,12 @@ def is_java_connector(connector_name: str) -> bool:
     Args:
         connector_name: Name of the connector (e.g., 'source-faker')
 
+    Contributor's Note:
+        This function currently only checks for Java vs non-Java. It could
+        be rewritten to simply return the language string if we need
+        to support more languages in the future. (Java is the only language that
+        has special CI handling as of now.)
+
     Returns:
         True if the connector uses Java, False otherwise
     """
@@ -263,8 +265,12 @@ def is_java_connector(connector_name: str) -> bool:
     if not manifest:
         return False
 
-    language = manifest.get("data", {}).get("language", "")
-    return language == "java"
+    if "language" in manifest.get("data", {}):
+        language = manifest["data"]["language"]
+        return language.lower() == "java"
+
+    language_tag = manifest.get("data", {}).get("tags", [])
+    return "language:java" in (tag.lower() for tag in language_tag)
 
 
 def is_certified_connector(connector_name: str) -> bool:
@@ -284,66 +290,80 @@ def is_certified_connector(connector_name: str) -> bool:
     return support_level == "certified"
 
 
-def filter_by_language(connectors: list[str], java_only: bool = False, no_java: bool = False) -> list[str]:
+def filter_by_language(
+    connectors: list[str],
+    java: Annotated[
+        bool | None,
+        "Filter to Java-only if True, non-Java if False.",
+    ] = None,
+) -> list[str]:
     """Filter connectors by language (Java or non-Java).
-
-    Args:
-        connectors: List of connector names
-        java_only: If True, return only Java connectors
-        no_java: If True, return only non-Java connectors
 
     Returns:
         Filtered list of connector names
+
+    Contributor's Note:
+        If use cases arise, this function can be extended to support other languages.
+        Right now, we only actually need special handling for Java vs non-Java.
+
+    Doctest Examples:
+    >>> filter_by_language(["source-faker", "destination-bigquery"], java=True)
+    ['destination-bigquery']
+    >>> filter_by_language(["source-faker", "destination-bigquery"], java=False)
+    ['source-faker']
+    >>> filter_by_language(["source-faker", "destination-bigquery"], java=None)
+    ['source-faker', 'destination-bigquery']
     """
-    if not java_only and not no_java:
+    if java is None:
         return connectors
 
-    java_connectors = [c for c in connectors if is_java_connector(c)]
-
-    if java_only:
-        return java_connectors
-
-    if no_java:
-        return [c for c in connectors if c not in java_connectors]
-
-    return connectors
+    return [c for c in connectors if is_java_connector(c) == java]
 
 
-def filter_by_support_level(connectors: list[str], certified_only: bool = False, no_certified: bool = False) -> list[str]:
+def filter_by_support_level(
+    connectors: list[str],
+    certified: bool | None = None,
+) -> list[str]:
     """Filter connectors by support level (certified or non-certified).
 
     Args:
         connectors: List of connector names
-        certified_only: If True, return only certified connectors
-        no_certified: If True, return only non-certified connectors
+        certified:
+        - If True, return only certified connectors.
+        - If False, return only non-certified connectors.
+        - If None, return all connectors.
 
     Returns:
         Filtered list of connector names
+
+    Doctest Examples:
+    >>> filter_by_support_level(["source-faker", "destination-bigquery"], certified=True)
+    ['destination-bigquery']
+    >>> filter_by_support_level(["source-faker", "destination-bigquery"], certified=False)
+    ['source-faker']
+    >>> filter_by_support_level(["source-faker", "destination-bigquery"], certified=None)
+    ['source-faker', 'destination-bigquery']
     """
-    if not certified_only and not no_certified:
+    if certified is None:
         return connectors
 
-    certified_connectors = [c for c in connectors if is_certified_connector(c)]
-
-    if certified_only:
-        return certified_connectors
-
-    if no_certified:
-        return [c for c in connectors if c not in certified_connectors]
-
-    return connectors
+    return [c for c in connectors if is_certified_connector(c) == certified]
 
 
 def return_empty_json() -> str:
     """Return empty JSON matrix format for GitHub Actions.
 
+    Doctest Examples:
     >>> return_empty_json()
     '{"connector": [""]}'
     """
     return '{"connector": [""]}'
 
 
-def format_output(connectors: list[str], json_output: bool = False) -> str:
+def format_output(
+    connectors: list[str],
+    json_output: bool = False,
+) -> str:
     """Format connector list as text or JSON.
 
     Args:
@@ -353,6 +373,7 @@ def format_output(connectors: list[str], json_output: bool = False) -> str:
     Returns:
         Formatted output string
 
+    Doctest Examples:
     >>> format_output(["source-faker", "destination-bigquery"], json_output=False)
     'source-faker\\ndestination-bigquery'
     >>> format_output(["source-faker"], json_output=True)
@@ -361,6 +382,8 @@ def format_output(connectors: list[str], json_output: bool = False) -> str:
     '{"connector": [""]}'
     >>> format_output([], json_output=False)
     ''
+    >>> format_output(["source-faker"], json_output=False)
+    'source-faker'
     """
     if not json_output:
         return "\n".join(connectors)
@@ -372,101 +395,157 @@ def format_output(connectors: list[str], json_output: bool = False) -> str:
 
 
 def get_modified_connectors(
-    java: bool = False,
-    no_java: bool = False,
-    certified: bool = False,
-    no_certified: bool = False,
-    json: bool = False,
+    *,
+    # This modifies the starting files list:
     prev_commit: bool = False,
-    local_cdk: bool = False,
-    files_list: Optional[str] = None,
-) -> None:
-    """Main function to get modified connectors and output them.
+    override_files_list: Optional[list[str]] = None,
+) -> list[str]:
+    """Function to get modified connectors and output them.
 
-    This function is called by poethepoet and handles all the logic.
+    This function gets modified files and filters them to find the relevant connectors.
     """
-    modified_files = get_modified_files(files_list=files_list, prev_commit=prev_commit)
+    modified_files: list[str]
+    if override_files_list is not None:
+        modified_files = override_files_list
+        print(
+            f"ℹ️ Using overridden files list with {len(modified_files)} entries.",
+            file=sys.stderr,
+        )
+    else:
+        modified_files = get_modified_files(prev_commit=prev_commit)
 
-    filtered = filter_ignored_files(modified_files)
-    if not filtered and not local_cdk:
-        print("⚠️ Warning: No files remaining after filtering. Returning empty connector list.", file=sys.stderr)
-        if json:
-            print(return_empty_json())
-        return
+    if not modified_files:
+        print(
+            "⚠️ Warning: No modified files found. Returning empty connector list.",
+            file=sys.stderr,
+        )
+        return []
 
-    connector_paths = extract_connector_paths(filtered)
-    if not connector_paths and not local_cdk:
-        print("⚠️ Warning: No connector paths found. Returning empty connector list.", file=sys.stderr)
-        if json:
-            print(return_empty_json())
-        return
+    modified_files = filter_ignored_files(modified_files)
+    if not modified_files and not local_cdk:
+        print(
+            "⚠️ Warning: No files remaining after filtering. Returning empty connector list.",
+            file=sys.stderr,
+        )
+        return []
 
-    connectors = extract_connector_names(connector_paths)
+    connector_paths = extract_connector_paths(modified_files)
+    if not connector_paths:
+        print(
+            "⚠️ Warning: No connector paths found. Returning empty connector list.",
+            file=sys.stderr,
+        )
+        return []
 
-    if local_cdk:
-        print("Finding Java Bulk CDK connectors with version = local...", file=sys.stderr)
-        local_cdk_connectors = find_local_cdk_connectors()
-        connectors = sorted(list(set(connectors + local_cdk_connectors)))
+    connectors: list[str] = extract_connector_names(connector_paths)
 
     if not connectors:
-        print("⚠️ Warning: No connectors found. Returning empty connector list.", file=sys.stderr)
-        if json:
-            print(return_empty_json())
-        return
+        print(
+            "⚠️ Warning: No connectors found. Returning empty connector list.",
+            file=sys.stderr,
+        )
+        return []
 
-    connectors = filter_by_language(connectors, java_only=java, no_java=no_java)
-    connectors = filter_by_support_level(connectors, certified_only=certified, no_certified=no_certified)
-
-    output = format_output(connectors, json_output=json)
-    if output:
-        print(output)
+    return connectors
 
 
-def run_doctests() -> None:
-    """Run all doctests in this module and report results."""
-    import doctest
-
-    print("🧪 Running doctests...")
-    results = doctest.testmod(verbose=True)
-
-    if results.failed == 0:
-        print(f"✅ All {results.attempted} doctests passed!")
-        sys.exit(0)
-    else:
-        print(f"❌ {results.failed} of {results.attempted} doctests failed!")
-        sys.exit(1)
-
-
-app = typer.Typer()
+app = typer.Typer(add_completion=False)
 
 
 @app.command()
 def main(
-    java: bool = typer.Option(False, "--java", help="Filter to only Java connectors"),
-    no_java: bool = typer.Option(False, "--no-java", help="Filter to exclude Java connectors"),
-    certified: bool = typer.Option(False, "--certified", help="Filter to only certified connectors"),
-    no_certified: bool = typer.Option(False, "--no-certified", help="Filter to exclude certified connectors"),
-    json: bool = typer.Option(False, "--json", help="Output in GitHub Actions matrix JSON format"),
-    prev_commit: bool = typer.Option(False, "--prev-commit", help="Compare with previous commit instead of master"),
-    local_cdk: bool = typer.Option(False, "--local-cdk", help="Include connectors using local CDK"),
-    files_list: Optional[str] = typer.Option(None, "--files-list", help="CSV string of file paths (overrides git detection)"),
-    run_tests: bool = typer.Option(False, "--run-tests", help="Run doctests and exit"),
+    files_list: Annotated[
+        Optional[str],
+        typer.Option(help="CSV string of file paths (overrides git detection).")
+    ] = None,
+    local_cdk: Annotated[
+        bool,
+        typer.Option(
+            "--local-cdk",  # Don't auto-add the '--no-' inverse flag
+            help="Get list of connectors using the local CDK (overrides git detection).",
+        ),
+    ] = False,
+    prev_commit: Annotated[
+        bool,
+        typer.Option(
+            "--prev-commit",  # Don't auto-add the '--no-' inverse flag
+            help="Compare with previous commit instead of master.",
+        ),
+    ] = False,
+    java: Annotated[
+        bool | None,
+        typer.Option(help="Filter to only Java connectors."),
+    ] = None,
+    certified: Annotated[
+        bool | None,
+        typer.Option(help="Filter to only certified connectors."),
+    ] = None,
+    json_matrix: Annotated[
+        bool,
+        typer.Option(help="Output in GitHub Actions matrix JSON format."),
+    ] = False,
+    run_tests: Annotated[
+        bool,
+        typer.Option(
+            "--run-tests",  # Don't auto-add the '--no-' inverse flag
+            help="Run doctest tests and exit (Ignores other options).",
+        ),
+    ] = False,
 ) -> None:
-    """Generate GitHub Actions matrix for modified Airbyte connectors."""
+    """Generate GitHub Actions matrix for modified Airbyte connectors.
+
+    Doctest Examples:
+
+    >>> main(files_list="airbyte-integrations/connectors/source-faker/metadata.yaml", json_matrix=False)
+    source-faker
+    >>> main(files_list="airbyte-integrations/connectors/source-faker/metadata.yaml,airbyte-integrations/connectors/destination-bigquery/README.md", json_matrix=True)
+    {"connector": ["source-faker"]}
+    """
     if run_tests:
-        run_doctests()
+        run_doctest_tests()
         return
 
-    get_modified_connectors(
-        java=java,
-        no_java=no_java,
-        certified=certified,
-        no_certified=no_certified,
-        json=json,
-        prev_commit=prev_commit,
-        local_cdk=local_cdk,
-        files_list=files_list,
-    )
+    connectors_list: list[str]
+    if local_cdk:
+        connectors_list = find_local_cdk_connectors()
+
+    else:
+        connectors_list = get_modified_connectors(
+            prev_commit=prev_commit,
+            override_files_list=(
+                None if files_list is None else
+                [file.strip() for file in files_list.replace("\n", ",").split(",")]
+            ),
+        )
+
+    if not connectors_list:
+        print("⚠️ Warning: No connectors found. Returning empty connector list.", file=sys.stderr)
+        if json_matrix:
+            print(return_empty_json())
+        return
+
+    if java is not None:
+        connectors_list = filter_by_language(connectors_list, java=java)
+
+    if certified is not None:
+        connectors_list = filter_by_support_level(connectors_list, certified=certified)
+
+    output = format_output(connectors_list, json_output=json_matrix)
+    if output:
+        print(output)
+
+
+def run_doctest_tests() -> None:
+    """Run all doctest tests in this module and report results."""
+    import pytest  # Defer import in case not running with uv
+
+    args = [
+        "-q",
+        "--color=yes",
+        "--doctest-modules",
+        __file__,
+    ]
+    raise SystemExit(pytest.main(args))
 
 
 if __name__ == "__main__":
