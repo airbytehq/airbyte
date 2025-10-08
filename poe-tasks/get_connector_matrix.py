@@ -54,7 +54,6 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Optional
 
-import click
 import typer
 from typing_extensions import Annotated
 
