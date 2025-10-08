@@ -8,28 +8,28 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
 /**
- * This class configures the publishing of aggregates downstream for uploading to the destination.
+ * Configures the publishing of aggregates downstream for uploading to the destination.
  *
  * By extension this controls memory usage in the destination for storing customer data. Note: the
  * defaults presume we are storing the aggregates in memory, but if we are storing them on disk, we
  * can handle a larger quantity of larger aggregates.
  *
  * Per aggregate configuration:
- * - maxEstBytesPerAgg configures the size of each aggregate based on our estimated byte counts.
+ * @property maxEstBytesPerAgg configures the size of each aggregate based on our estimated byte counts.
  * Once an aggregate reaches this size, we publish it.
- * - maxRecordsPerAgg configures the max number of records in an aggregate. Once an aggregate has
- * accumulated this
- * - stalenessDeadlinePerAggMs is how long we will wait to flush an aggregate after it stops
+ * @property maxRecordsPerAgg configures the max number of records in an aggregate. Once an aggregate has
+ * accumulated this many records, we publish it.
+ * @property stalenessDeadlinePerAgg is how long we will wait to flush an aggregate after it stops
  * receiving data.
  *
  * Across all aggregate configuration:
- * - maxEstBytesAllAggregates - if the total accumulated estimated bytes for all open aggregates is
+ * @property maxEstBytesAllAggregates if the total accumulated estimated bytes for all open aggregates is
  * greater than this value, we will publish the largest aggregate.
- * - maxBufferedAggregates configures the number of published aggregates we buffer before
+ * @property maxBufferedAggregates configures the number of published aggregates we buffer before
  * backpressuring preventing further aggregate publishes.
  *
  * Memory considerations:
- * - The max memory consumption is maxEstBytesAllAggregates, but one should make sure this is a
+ * The max memory consumption is maxEstBytesAllAggregates, but one should make sure this is a
  * multiple of maxEstBytesPerAgg.
  */
 data class AggregatePublishingConfig(
