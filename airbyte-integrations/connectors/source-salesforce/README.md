@@ -23,7 +23,16 @@ poetry install --with dev
 **If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/salesforce)
 to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_salesforce/spec.yaml` file.
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
-See `integration_tests/sample_config.json` for a sample config file.
+
+The connector supports two authentication methods:
+
+1. **Refresh Token Authentication** (default): Uses OAuth 2.0 refresh token flow. See `integration_tests/sample_config.json` for a sample config file.
+2. **Client Credentials Authentication**: Uses OAuth 2.0 client credentials flow. See `integration_tests/sample_config_client_credentials.json` for a sample config file.
+
+For client credentials authentication, you need to:
+- Set `auth_type` to `"client_credentials"`
+- Provide your Salesforce domain URL in the format: `https://your-domain.my.salesforce.com`
+- Ensure your connected app has the appropriate permissions for client credentials flow
 
 ### Locally running the connector
 

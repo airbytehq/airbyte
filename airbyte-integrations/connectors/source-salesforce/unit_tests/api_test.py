@@ -115,6 +115,146 @@ def test_login_authentication_error_handler(stream_config, requests_mock, login_
     assert err.value.message == expected_error_msg
 
 
+def test_login_with_client_credentials_success(requests_mock):
+    """Test successful login with client credentials authentication"""
+    config = ConfigBuilder().with_client_credentials_auth("https://test-domain.my.salesforce.com").build()
+    
+    # Mock the OAuth2 token endpoint for client credentials
+    token_response = {
+        "access_token": "fake_access_token",
+        "instance_url": "https://test-domain.my.salesforce.com",
+        "id": "https://login.salesforce.com/id/00Dxx0000000000EAA/005xx000000000TAAQ",
+        "token_type": "Bearer",
+        "issued_at": "1234567890",
+        "signature": "fake_signature"
+    }
+    requests_mock.register_uri(
+        "POST", "https://test-domain.my.salesforce.com/services/oauth2/token", 
+        json=token_response, status_code=200
+    )
+    
+    # Create Salesforce instance and login
+    sf = Salesforce(**config)
+    sf.login()
+    
+    # Verify the access token and instance URL are set
+    assert sf.access_token == "fake_access_token"
+    assert sf.instance_url == "https://test-domain.my.salesforce.com"
+    
+    # Verify the request was made with correct parameters
+    assert len(requests_mock.request_history) == 1
+    request = requests_mock.request_history[0]
+    assert request.method == "POST"
+    assert request.url == "https://test-domain.my.salesforce.com/services/oauth2/token"
+    
+    # Check the form data
+    request_body = request.text
+    assert "grant_type=client_credentials" in request_body
+    assert "client_id=fake_client_id" in request_body
+    assert "client_secret=fake_client_secret" in request_body
+    assert "refresh_token" not in request_body
+
+
+def test_login_with_client_credentials_domain_url_formatting(requests_mock):
+    """Test that domain_url is correctly formatted for OAuth endpoint"""
+    config = ConfigBuilder().with_client_credentials_auth("https://test-domain.my.salesforce.com/").build()
+    
+    token_response = {
+        "access_token": "fake_access_token",
+        "instance_url": "https://test-domain.my.salesforce.com"
+    }
+    requests_mock.register_uri(
+        "POST", "https://test-domain.my.salesforce.com/services/oauth2/token", 
+        json=token_response, status_code=200
+    )
+    
+    sf = Salesforce(**config)
+    sf.login()
+    
+    # Verify the request was made to the correctly formatted URL
+    assert len(requests_mock.request_history) == 1
+    request = requests_mock.request_history[0]
+    assert request.url == "https://test-domain.my.salesforce.com/services/oauth2/token"
+
+
+def test_login_with_client_credentials_missing_domain_url():
+    """Test that login fails when domain_url is missing for client credentials"""
+    config = ConfigBuilder().auth_type("client_credentials").build()
+    # Remove domain_url to test the error case
+    config.pop("domain_url", None)
+    
+    sf = Salesforce(**config)
+    
+    with pytest.raises(ValueError) as err:
+        sf.login()
+    assert "domain_url is required for client_credentials authentication" in str(err.value)
+
+
+@pytest.mark.parametrize(
+    "login_status_code, login_json_resp, expected_error_msg",
+    [
+        (
+            400,
+            {"error": "invalid_client", "error_description": "invalid client credentials"},
+            "The authentication to SalesForce has expired. Re-authenticate to restore access to SalesForce.",
+        ),
+        (
+            401,
+            {"error": "unauthorized_client", "error_description": "client not authorized for client credentials flow"},
+            'An error occurred: {"error": "unauthorized_client", "error_description": "client not authorized for client credentials flow"}',
+        ),
+    ],
+)
+def test_login_client_credentials_authentication_error_handler(requests_mock, login_status_code, login_json_resp, expected_error_msg):
+    """Test error handling for client credentials authentication failures"""
+    config = ConfigBuilder().with_client_credentials_auth("https://test-domain.my.salesforce.com").build()
+    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
+    logger = logging.getLogger("airbyte")
+    
+    requests_mock.register_uri(
+        "POST", "https://test-domain.my.salesforce.com/services/oauth2/token", 
+        json=login_json_resp, status_code=login_status_code
+    )
+
+    with pytest.raises(AirbyteTracedException) as err:
+        source.check_connection(logger, config)
+    assert err.value.message == expected_error_msg
+
+
+def test_refresh_token_authentication_still_works(requests_mock):
+    """Test that existing refresh token authentication continues to work"""
+    config = ConfigBuilder().build()  # Default is refresh_token auth
+    
+    token_response = {
+        "access_token": "fake_access_token",
+        "instance_url": "https://fake-instance.salesforce.com"
+    }
+    requests_mock.register_uri(
+        "POST", "https://login.salesforce.com/services/oauth2/token", 
+        json=token_response, status_code=200
+    )
+    
+    sf = Salesforce(**config)
+    sf.login()
+    
+    # Verify the access token and instance URL are set
+    assert sf.access_token == "fake_access_token"
+    assert sf.instance_url == "https://fake-instance.salesforce.com"
+    
+    # Verify the request was made with correct parameters for refresh token flow
+    assert len(requests_mock.request_history) == 1
+    request = requests_mock.request_history[0]
+    assert request.method == "POST"
+    assert request.url == "https://login.salesforce.com/services/oauth2/token"
+    
+    # Check the form data
+    request_body = request.text
+    assert "grant_type=refresh_token" in request_body
+    assert "client_id=fake_client_id" in request_body
+    assert "client_secret=fake_client_secret" in request_body
+    assert "refresh_token=fake_refresh_token" in request_body
+
+
 def test_stream_unsupported_by_bulk(stream_config, stream_api):
     """
     Stream `AcceptedEventRelation` is not supported by BULK API, so that REST API stream will be used for it.
