@@ -94,6 +94,8 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 | Version | Date       | Pull Request                                             | Subject               |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------- |
+| 1.0.27 | 2025-10-07 | [67342](https://github.com/airbytehq/airbyte/pull/67342) | Update dependencies |
+| 1.0.26 | 2025-09-30 | [66393](https://github.com/airbytehq/airbyte/pull/66393) | Update dependencies |
 | 1.0.25 | 2025-09-23 | [65782](https://github.com/airbytehq/airbyte/pull/66592) | Fix pagination when >100K records returned |
 | 1.0.24 | 2025-09-09 | [65782](https://github.com/airbytehq/airbyte/pull/65782) | Update dependencies |
 | 1.0.23 | 2025-08-23 | [65172](https://github.com/airbytehq/airbyte/pull/65172) | Update dependencies |

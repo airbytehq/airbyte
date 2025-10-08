@@ -3,13 +3,28 @@ name: Connectors CDK Version Check
 on:
   pull_request:
     types: [opened, synchronize, reopened]
-    paths:
-      - "airbyte-integrations/connectors/*/gradle.properties"
+  workflow_call:
 
 jobs:
+  detect-changes:
+    name: Detect Connector CDK Version Changes
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Detect Connector CDK Version Changes
+        id: connector-cdk-version-changes
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 #v3.0.2
+        with:
+          filters: |
+            cdk-version:
+              - "airbyte-integrations/connectors/*/gradle.properties"
+    outputs:
+      changed: ${{ steps.connector-cdk-version-changes.outputs.cdk-version }}
+
   connectors-cdk-version-check:
     name: Connectors CDK Version Check
     runs-on: ubuntu-24.04
+    needs: detect-changes
+    if: needs.detect-changes.outputs.changed == 'true'
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 #v5.0.0
