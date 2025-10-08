@@ -118,11 +118,9 @@ class PostgresDirectLoadSqlGenerator {
     ): String = TODO("PostgresDirectLoadSqlGenerator.upsertTable not yet implemented")
 
     fun dropTable(tableName: TableName): String =
-        //should I always wrap in double quotes?
         "DROP TABLE IF EXISTS ${fullyQualifiedName(tableName)};".andLog()
 
     fun countTable(tableName: TableName): String {
-        //TODO: use a util class to build the full table name assuming we use this in many places
         return "SELECT COUNT(*) AS $COUNT_TOTAL_ALIAS FROM ${fullyQualifiedName(tableName)};".andLog()
     }
 
