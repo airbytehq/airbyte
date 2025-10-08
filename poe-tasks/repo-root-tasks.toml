@@ -27,10 +27,27 @@ pnpm build
 [tasks.get-modified-connectors]
 help = """List Airbyte connectors modified. This considers all committed, staged, unstaged, and untracked files."""
 shell = '''
-./poe-tasks/get-modified-connectors.sh ${java_filter}
+#!/bin/bash
+cmd="./poe-tasks/get_connector_matrix.py"
+[ "${java}" = "True" ] && cmd="$cmd --java"
+[ "${no_java}" = "True" ] && cmd="$cmd --no-java"
+[ "${certified}" = "True" ] && cmd="$cmd --certified"
+[ "${no_certified}" = "True" ] && cmd="$cmd --no-certified"
+[ "${json}" = "True" ] && cmd="$cmd --json"
+[ "${prev_commit}" = "True" ] && cmd="$cmd --prev-commit"
+[ "${local_cdk}" = "True" ] && cmd="$cmd --local-cdk"
+[ -n "${files_list}" ] && cmd="$cmd --files-list '${files_list}'"
+eval "$cmd"
 '''
 args = [
-  { name = "java_filter", positional = true, multiple = true, help = "Optional. To filter Java connectors, pass either 'java-only' or 'no-java'" },
+  { name = "java", options = ["--java"], type = "boolean", help = "Filter to only Java connectors" },
+  { name = "no_java", options = ["--no-java"], type = "boolean", help = "Filter to exclude Java connectors" },
+  { name = "certified", options = ["--certified"], type = "boolean", help = "Filter to only certified connectors" },
+  { name = "no_certified", options = ["--no-certified"], type = "boolean", help = "Filter to exclude certified connectors" },
+  { name = "json", options = ["--json"], type = "boolean", help = "Output in GitHub Actions matrix JSON format" },
+  { name = "prev_commit", options = ["--prev-commit"], type = "boolean", help = "Compare with previous commit instead of master" },
+  { name = "local_cdk", options = ["--local-cdk"], type = "boolean", help = "Include connectors using local CDK" },
+  { name = "files_list", options = ["--files-list"], help = "CSV string of file paths (overrides git detection)" },
 ]
 
 [tasks.connector]
