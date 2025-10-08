@@ -1,6 +1,6 @@
 | Helm chart V1                                                        | Helm chart V2                                          |
 | -------------------------------------------------------------------- | ------------------------------------------------------ |
-| Not available (manual ingress only)                                  | `ingress` (unified ingress configuration) - See [Ingress documentation](../platform/deploying-airbyte/integrations/ingress) |
+| Not available (manual ingress only)                                  | `ingress` (unified ingress configuration) - See [Ingress documentation](../deploying-airbyte/integrations/ingress) |
 | `global.database.database`                                           | `global.database.name`                                 |
 | `workload-launcher`                                                  | `workloadLauncher`                                     |
 | `airbyte-bootloader`                                                 | `airbyteBootloader`                                    |
