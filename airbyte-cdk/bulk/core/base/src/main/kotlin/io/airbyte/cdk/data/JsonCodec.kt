@@ -320,6 +320,10 @@ data object OffsetDateTimeCodec : JsonCodec<OffsetDateTime> {
     val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern(PATTERN)
 }
 
+// We need a specialized CDC OffsetDateTimeCodec to support CDC metafield that are string
+// In catalog but are OffsetDateTime - CDC_UPDATED_AT, CDC_DELETED_AT etc.
+data object CdcOffsetDateTimeCodec : JsonCodec<OffsetDateTime> by OffsetDateTimeCodec
+
 data object NullCodec : JsonCodec<Any?> {
     override fun encode(decoded: Any?): JsonNode = Jsons.nullNode()
 
