@@ -318,6 +318,9 @@ class SnowflakeDirectLoadSqlGenerator(
 
     fun createFileFormat(namespace: String): String {
         val formatName = snowflakeSqlNameUtils.fullyQualifiedFormatName(namespace)
+        // We need the ESCAPE and ESCAPE_UNENCLOSED_FIELD options set,
+        // otherwise snowflake defaults to `\`.
+        //  Which causes weird behavior on string fields with a trailing `\` in the value.
         return """
             CREATE OR REPLACE FILE FORMAT $formatName
             TYPE = 'CSV'
