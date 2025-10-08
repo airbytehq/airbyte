@@ -240,6 +240,7 @@ definitions:
     expected_one_sheet:
       type: HttpResponseFilter
       action: FAIL
+      failure_type: config_error
       predicate: >-
         {{ 'sheets' in response and response["sheets"] | length != 1  }}
       # error lacks of information as error_message can't interpolate stream_slice["potato"]

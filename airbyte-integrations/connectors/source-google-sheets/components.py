@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import json
 import logging
 import re
 from collections import Counter
@@ -491,10 +492,7 @@ class GridDataErrorHandler(DefaultErrorHandler):
         response = response_or_exception
         url = response.request.url
 
-        # Track attempt count for this URL
-        if url not in self._attempt_count:
-            self._attempt_count[url] = 0
-        self._attempt_count[url] += 1
+        self._attempt_count[url] = self._attempt_count.get(url, 0) + 1
 
         # Filter 1: expected_one_sheet
         # Predicate: {{ 'sheets' in response and response["sheets"] | length != 1  }}
@@ -504,11 +502,12 @@ class GridDataErrorHandler(DefaultErrorHandler):
             if "sheets" in response_json and len(response_json["sheets"]) != 1:
                 return ErrorResolution(
                     response_action=ResponseAction.FAIL,
-                    failure_type=FailureType.system_error,
+                    failure_type=FailureType.config_error,
                     error_message="Unable to read the schema of sheet. Error: Unexpected return result: Sheet was expected to contain data on exactly 1 sheet.",
                 )
-        except Exception:
-            pass  # If we can't parse JSON, continue to other filters
+        except (json.JSONDecodeError, KeyError, TypeError) as e:
+            logger.debug(f"Failed to check expected_one_sheet filter: {e}")
+            pass  # If we can't parse or access JSON, continue to other filters
 
         # Filter 2: deduplicate_headers
         # Predicate: {{ response["sheets"][0]["data"][0]["rowData"][0]["values"] |
@@ -520,12 +519,9 @@ class GridDataErrorHandler(DefaultErrorHandler):
             response_json = response.json()
             # Only check if we have the expected structure
             if (
-                "sheets" in response_json
-                and len(response_json["sheets"]) > 0
-                and "data" in response_json["sheets"][0]
-                and len(response_json["sheets"][0]["data"]) > 0
-                and "rowData" in response_json["sheets"][0]["data"][0]
-                and len(response_json["sheets"][0]["data"][0]["rowData"]) > 0
+                len(response_json.get("sheets", [])) > 0
+                and len(response_json["sheets"][0].get("data", [])) > 0
+                and len(response_json["sheets"][0]["data"][0].get("rowData", [])) > 0
                 and "values" in response_json["sheets"][0]["data"][0]["rowData"][0]
             ):
                 values = response_json["sheets"][0]["data"][0]["rowData"][0]["values"]
@@ -549,22 +545,13 @@ class GridDataErrorHandler(DefaultErrorHandler):
                         failure_type=None,
                         error_message=f"Duplicate headers found in sheet {sheet_title}. Deduplicating them by appending cell position: {duplicate_fields}",
                     )
-        except Exception:
-            pass  # If we can't parse, continue to other filters
+        except (json.JSONDecodeError, KeyError, TypeError, IndexError) as e:
+            logger.debug(f"Failed to check deduplicate_headers filter: {e}")
+            pass  # If we can't parse or access JSON, continue to other filters
 
-        # Filter 3: rate_limit
-        # http_codes: [429]
-        # Action: RATE_LIMITED
-        if response.status_code == 429:
-            return ErrorResolution(
-                response_action=ResponseAction.RATE_LIMITED,
-                failure_type=FailureType.transient_error,
-                error_message="Rate limit has been reached. Please try later or request a higher quota for your account.",
-            )
-
-        # Filter 4: grid_data_500
+        # Filter 3: grid_data_500
         # Special handling for 500 errors with includeGridData=true
-        if response.status_code == 500 and url and "includeGridData=true" in url:
+        if response.status_code == 500 and "includeGridData=true" in url:
             # Check if this is the last retry attempt
             is_last_attempt = self._attempt_count[url] >= (self._max_retries or 5)
 
@@ -612,7 +599,7 @@ class GridDataErrorHandler(DefaultErrorHandler):
                             error_message="Internal server error encountered. The Google Sheets API returned a 500 error.",
                         )
 
-                except Exception as e:
+                except (json.JSONDecodeError, KeyError, TypeError, IndexError) as e:
                     # If test request fails with exception, fail with the original error
                     logger.error(f"Test request for sheet '{sheet_name}' failed with exception: {e}")
                     self._attempt_count.pop(url, None)
