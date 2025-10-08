@@ -251,6 +251,7 @@ desired namespace.
 
 | Version         | Date       | Pull Request                                                     | Subject                                                                                                                                                                                |
 |:----------------|:-----------|:-----------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.3 | 2025-10-07 | [67558](https://github.com/airbytehq/airbyte/pull/67558) | Upgrade to Bulk CDK 0.1.47. |
 | 4.0.2           | 2025-10-07 | [67301](https://github.com/airbytehq/airbyte/pull/67301)         | Improve performance and reduce cost by caching `SHOW COLUMNS` output.                                                                                                                  |
 | 4.0.1           | 2025-10-06 | [67106](https://github.com/airbytehq/airbyte/pull/67106)         | Removes unnecessary operations and allocations in value validator.                                                                                                                     |
 | 4.0.0           | 2025-10-06 | [66747](https://github.com/airbytehq/airbyte/pull/66747)         | Upgrade to direct-load tables; add option for soft CDC deletes.                                                                                                                        |
