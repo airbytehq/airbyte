@@ -46,6 +46,14 @@ class SourceS3Spec(SourceFilesAbstractSpec, BaseModel):
             always_show=True,
             order=7,
         )
+        external_id: Optional[str] = Field(
+            title=f"AWS Role External ID",
+            default=None,
+            description="Specifies the External ID to be used when assuming the provided `role_arn`. "
+            f"This can be left null and fallback to AWS_ASSUME_ROLE_EXTERNAL_ID",
+            always_show=True,
+            order=8,
+        )
         path_prefix: str = Field(
             default="",
             description="By providing a path-like prefix (e.g. myFolder/thisTable/) under which all the relevant files sit, "
