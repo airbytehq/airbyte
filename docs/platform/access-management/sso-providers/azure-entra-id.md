@@ -20,7 +20,7 @@ This guide is for administrators. It assumes you have:
 
 The exact process differs between the Cloud or Self-Managed versions of Airbyte. Steps for both are below.
 
-## Cloud Teams with Entra ID OIDC
+## Cloud {{product_name_cloud_pro}} with Entra ID OIDC
 
 :::warning
 For security purposes, Airbyte disables existing [applications](/platform/enterprise-setup/api-access-config) used to access the Airbyte API once the user who owns the application signs in with SSO for the first time. Replace any Application secrets that were previously in use to ensure your integrations don't break.

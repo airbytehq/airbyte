@@ -6,11 +6,11 @@ products: cloud
 
 Understanding the following limitations will help you more effectively manage Airbyte Cloud.
 
-## Standard plan limitations
+## {{product_name_cloud_standard}} plan limitations
 
-These limitations only apply to those using the Standard plan. If you upgrade to Pro or {{product_name_cloud_enterprise}}, Airbyte removes these limitations.
+These limitations only apply to those using the {{product_name_cloud_standard}} plan. If you upgrade to {{product_name_cloud_pro}} or {{product_name_cloud_enterprise}}, Airbyte removes these limitations.
 
-- Max number of workspaces per user: 1. If you were a Cloud Standard customer before September 24, 2025, Airbyte has grandfathered you into its historical 3-workspace limit.
+- Max number of workspaces per user: 1. If you were a Cloud {{product_name_cloud_standard}} customer before September 24, 2025, Airbyte has grandfathered you into its historical 3-workspace limit.
 
 - Max number of instances of the same source connector: 10
 

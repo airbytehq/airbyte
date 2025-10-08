@@ -34,7 +34,7 @@ maintenance/upgrades are owned by the customer.
 
 ## Enterprise connectors
 
-**Enterprise** Connectors are premium connectors available exclusively for {{product_name_sm_enterprise}} and Cloud Teams customers at **an additional cost**. These connectors:
+**Enterprise** Connectors are premium connectors available exclusively for {{product_name_sm_enterprise}} and {{product_name_cloud_pro}} customers at **an additional cost**. These connectors:
 
 - Are built and maintained by the Airbyte team.
 - Provide enhanced capabilities and support for critical enterprise systems.
