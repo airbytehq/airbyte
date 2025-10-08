@@ -117,6 +117,12 @@ class DimensionFilterConfigTransformation(RecordTransformation):
                 custom_report["dimensionFilter"] = self.transform_dimension_filter(custom_report["dimensionFilter"])
 
     def transform_dimension_filter(self, dimension_filter: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        Performs an in-place transformation of the incoming dimension_filter from our config
+        settings into its expected shape according to Google's docs:
+        https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/FilterExpression
+        """
+
         transformed_json = {}
         filter_type = dimension_filter.get("filter_type")
 
@@ -136,6 +142,11 @@ class DimensionFilterConfigTransformation(RecordTransformation):
         return transformed_json
 
     def transform_expression(self, expression: Mapping[str, Any]):
+        """
+        Performs an in-place transformation of the incoming dimension_filter from our config
+        settings into its expected shape according to Google's docs:
+        https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/FilterExpression#filter
+        """
         transformed_expression = {"fieldName": expression.get("field_name")}
         filter = expression.get("filter")
         filter_name = filter.get("filter_name")
