@@ -248,9 +248,9 @@ desired namespace.
 
 <details>
   <summary>Expand to review</summary>
-
 | Version         | Date       | Pull Request                                                     | Subject                                                                                                                                                                                |
 |:----------------|:-----------|:-----------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.5        | 2025-10-08 | [66591](https://github.com/airbytehq/airbyte/pull/66591)   | Fix to enable syncing a row_number column from the source to Snowflake 
 | 4.0.4           | 2025-10-08 | [67569](https://github.com/airbytehq/airbyte/pull/67569)         | Prevent crashes when a column value ends with `\`.                                                                                                                                     |
 | 4.0.3           | 2025-10-08 | [67556](https://github.com/airbytehq/airbyte/pull/67556)         | Improve performance and reduce cost by increasing maximum parallel processing.                                                                                                         |
 | 4.0.2           | 2025-10-07 | [67301](https://github.com/airbytehq/airbyte/pull/67301)         | Improve performance and reduce cost by caching `SHOW COLUMNS` output.                                                                                                                  |

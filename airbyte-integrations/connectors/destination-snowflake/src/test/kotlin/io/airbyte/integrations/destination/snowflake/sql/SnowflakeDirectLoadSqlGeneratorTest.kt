@@ -216,12 +216,12 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
             ), numbered_rows AS (
               SELECT *, ROW_NUMBER() OVER (
                 PARTITION BY "primaryKey" ORDER BY "cursor" DESC NULLS LAST, "_AIRBYTE_EXTRACTED_AT" DESC
-              ) AS row_number
+              ) AS _airbyte_intermediate_data_row_number
               FROM records
             )
             SELECT ${expectedColumns.joinToString(",\n") { it.quote() } }
             FROM numbered_rows
-            WHERE row_number = 1
+            WHERE _airbyte_intermediate_data_row_number = 1
             ) AS new_record
             ON (target_table."primaryKey" = new_record."primaryKey" OR (target_table."primaryKey" IS NULL AND new_record."primaryKey" IS NULL))
             WHEN MATCHED AND (

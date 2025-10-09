@@ -289,12 +289,12 @@ class SnowflakeDirectLoadSqlGenerator(
             ), numbered_rows AS (
               SELECT *, ROW_NUMBER() OVER (
                 PARTITION BY $pkList ORDER BY $cursorOrderClause "${COLUMN_NAME_AB_EXTRACTED_AT.toSnowflakeCompatibleName()}" DESC
-              ) AS row_number
+              ) AS _airbyte_intermediate_data_row_number
               FROM records
             )
             SELECT $columnList
             FROM numbered_rows
-            WHERE row_number = 1
+            WHERE _airbyte_intermediate_data_row_number = 1
         """
             .trimIndent()
             .andLog()
