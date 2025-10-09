@@ -31,28 +31,35 @@ class PostgresConfigurationFactory :
     override fun makeWithoutExceptionHandling(
         pojo: PostgresSpecification
     ): PostgresConfiguration {
+        return makeWithOverrides(spec = pojo)
+    }
+
+    fun makeWithOverrides(
+        spec: PostgresSpecification,
+        overrides: Map<String, String> = emptyMap()
+    ): PostgresConfiguration {
         return PostgresConfiguration(
-            host = pojo.host,
-            port = pojo.port,
-            database = pojo.database,
-            schema = pojo.schema,
-            username = pojo.username,
-            password = pojo.password,
-            sslMode = pojo.sslMode,
-            jdbcUrlParams = pojo.jdbcUrlParams,
-            cdcDeletionMode = pojo.cdcDeletionMode ?: CdcDeletionMode.HARD_DELETE,
-            legacyRawTablesOnly = pojo.legacyRawTablesOnly ?: false,
+            host = overrides.getOrDefault("host", spec.host),
+            port = overrides.getOrDefault("port", spec.port.toString()).toInt(),
+            database = overrides.getOrDefault("database", spec.database),
+            schema = overrides.getOrDefault("schema", spec.schema),
+            username = overrides.getOrDefault("username", spec.username),
+            password = overrides.getOrDefault("password", spec.password),
+            sslMode = spec.sslMode,
+            jdbcUrlParams = overrides.getOrDefault("jdbcUrlParams", spec.jdbcUrlParams),
+            cdcDeletionMode = spec.cdcDeletionMode ?: CdcDeletionMode.HARD_DELETE,
+            legacyRawTablesOnly = spec.legacyRawTablesOnly ?: false,
             internalTableSchema =
-                if (pojo.legacyRawTablesOnly == true) {
-                    if (pojo.internalTableSchema.isNullOrBlank()) {
+                if (spec.legacyRawTablesOnly == true) {
+                    if (spec.internalTableSchema.isNullOrBlank()) {
                         DbConstants.DEFAULT_RAW_TABLE_NAMESPACE
                     } else {
-                        pojo.internalTableSchema
+                        spec.internalTableSchema
                     }
                 } else {
                     null
                 },
-            tunnelMethod = pojo.getTunnelMethodValue()
+            tunnelMethod = spec.getTunnelMethodValue()
         )
     }
 }

@@ -58,6 +58,8 @@ class SnowflakeInsertBuffer(
             try {
                 csvPrinter?.flush()
                 logger.info { "Beginning insert into ${tableName.toPrettyString(quote = QUOTE)}" }
+                logger.error { "_________________________" }
+                logger.error { File(filePath.pathString).readText() }
                 // Next, put the CSV file into the staging table
                 snowflakeClient.putInStage(tableName, filePath.pathString)
                 // Finally, copy the data from the staging table to the final table
@@ -86,6 +88,8 @@ class SnowflakeInsertBuffer(
 
     private fun writeToCsvFile(record: Map<String, AirbyteValue>) {
         csvPrinter?.let {
+            logger.error { "--------------- ${snowflakeRecordFormatter.format(record)}" }
+            logger.error { "--------------- $record" }
             it.printRecord(snowflakeRecordFormatter.format(record))
             recordCount++
             if ((recordCount % flushLimit) == 0) {

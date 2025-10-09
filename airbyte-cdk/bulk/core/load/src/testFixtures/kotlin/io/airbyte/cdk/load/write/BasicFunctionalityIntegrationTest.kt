@@ -3338,12 +3338,12 @@ abstract class BasicFunctionalityIntegrationTest(
                     """
                         {
                           "id": 1,
-                          "string": "fo\u0000o",
+                          "string": "fo,\u0000o",
                           "number": 42.1,
                           "integer": 42,
                           "boolean": true,
                           "timestamp_with_timezone": "2023-01-23T11:34:56-01:00",
-                          "timestamp_without_timezone": "2023-01-23T12:34:56",
+                          "timestamp_without_timezone": "2023-01-23T12:34:56,5",
                           "time_with_timezone": "11:34:56-01:00",
                           "time_without_timezone": "12:34:56",
                           "date": "2023-01-23"

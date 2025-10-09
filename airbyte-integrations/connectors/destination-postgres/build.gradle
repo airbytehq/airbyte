@@ -26,6 +26,7 @@ def hikariCpVersion = "7.0.2"
 def junitVersion = "5.13.4"
 def junitPlatformVersion = "1.13.4"
 def postgresqlVersion = "42.7.2"
+def testContainersVersion = "1.20.5"
 
 dependencies {
     implementation("org.postgresql:postgresql:$postgresqlVersion")
@@ -40,5 +41,6 @@ dependencies {
 
     integrationTestImplementation("com.zaxxer:HikariCP:$hikariCpVersion")
     integrationTestImplementation("org.postgresql:postgresql:$postgresqlVersion")
+    integrationTestImplementation("org.testcontainers:postgresql:$testContainersVersion")
     integrationTestImplementation(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies"))
 }
