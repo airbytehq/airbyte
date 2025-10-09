@@ -4452,6 +4452,101 @@ schemas:
         type:
           - "null"
           - string
+      sla:
+        description: Available if type is "apply_sla". The SLA policy and target being enforced on the ticket and metric in question
+        type:
+          - "null"
+          - object
+        properties:
+          policy:
+            description: SLA policy information
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: Unique identifier for the SLA policy
+                type:
+                  - "null"
+                  - integer
+              title:
+                description: Title of the SLA policy
+                type:
+                  - "null"
+                  - string
+              description:
+                description: Description of the SLA policy
+                type:
+                  - "null"
+                  - string
+          target:
+            description: Target time in minutes for the SLA
+            type:
+              - "null"
+              - integer
+          business_hours:
+            description: Whether the SLA target uses business hours
+            type:
+              - "null"
+              - boolean
+      group_sla:
+        description: Available if type is "apply_group_sla". The Group SLA policy and target being enforced on the ticket and metric in question
+        type:
+          - "null"
+          - object
+        properties:
+          policy:
+            description: Group SLA policy information
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: Unique identifier for the Group SLA policy
+                type:
+                  - "null"
+                  - integer
+              title:
+                description: Title of the Group SLA policy
+                type:
+                  - "null"
+                  - string
+              description:
+                description: Description of the Group SLA policy
+                type:
+                  - "null"
+                  - string
+          target:
+            description: Target time in minutes for the Group SLA
+            type:
+              - "null"
+              - integer
+          business_hours:
+            description: Whether the Group SLA target uses business hours
+            type:
+              - "null"
+              - boolean
+      status:
+        description: Available if type is "update_status". Minutes since the metric has been open
+        type:
+          - "null"
+          - object
+        properties:
+          calendar:
+            description: Minutes the metric has been open in calendar hours
+            type:
+              - "null"
+              - integer
+          business:
+            description: Minutes the metric has been open in business hours
+            type:
+              - "null"
+              - integer
+      deleted:
+        description: Available if type is "breach". In general, any branch event can be ignored when deleted is true
+        type:
+          - "null"
+          - boolean
   ticket_forms:
     $schema: https://json-schema.org/draft-07/schema#
     type:
