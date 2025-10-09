@@ -144,7 +144,7 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
             setattr(current_token, count_attr, getattr(current_token, count_attr) - 1)
             return True
         elif all(getattr(x, count_attr) == 0 for x in self._tokens.values()):
-            min_time_to_wait = min((getattr(x, reset_attr) - ab_datetime_now()).seconds for x in self._tokens.values())
+            min_time_to_wait = min((getattr(x, reset_attr) - ab_datetime_now()).total_seconds() for x in self._tokens.values())
             if min_time_to_wait < self.max_time:
                 time.sleep(min_time_to_wait if min_time_to_wait > 0 else 0)
                 self.check_all_tokens()
