@@ -446,7 +446,7 @@ class ChangeStatusRetriever(SimpleRetriever):
 
             # Update the stream slice start time to the last record's cursor
             last_cursor = last_record[self.cursor_field]
-            cursor_slice = stream_slice.cursor_slice
+            cursor_slice = dict(stream_slice.cursor_slice)
             cursor_slice["start_time"] = last_cursor
             stream_slice = StreamSlice(
                 partition=stream_slice.partition,
@@ -531,6 +531,7 @@ class CriterionRetriever(SimpleRetriever):
                             "deleted_at": ts,
                         },
                         stream_name=self.name,
+                        associated_slice=stream_slice,
                     )
                 else:
                     updated_ids.append(_id)
