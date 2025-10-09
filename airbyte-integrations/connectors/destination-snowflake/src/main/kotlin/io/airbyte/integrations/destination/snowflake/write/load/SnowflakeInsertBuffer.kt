@@ -31,7 +31,7 @@ internal const val ZSTD_FILE_EXTENSION = ".zst"
 
 class SnowflakeInsertBuffer(
     private val tableName: TableName,
-    val columns: List<String>,
+    val columns: LinkedHashMap<String, String>,
     private val snowflakeClient: SnowflakeAirbyteClient,
     val snowflakeConfiguration: SnowflakeConfiguration,
     val snowflakeColumnUtils: SnowflakeColumnUtils,
