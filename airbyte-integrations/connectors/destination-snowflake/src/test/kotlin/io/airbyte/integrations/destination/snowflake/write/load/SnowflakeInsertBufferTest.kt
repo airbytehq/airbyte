@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.snowflake.write.load
 
-import com.github.luben.zstd.ZstdInputStream
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
@@ -17,6 +16,7 @@ import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import java.util.zip.GZIPInputStream
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -102,7 +102,7 @@ internal class SnowflakeInsertBufferTest {
             snowflakeAirbyteClient.uploadToStage(tableName, any(), any(), any())
         }
         coVerify(exactly = 1) {
-            snowflakeAirbyteClient.copyFromStage(tableName, match { it.endsWith(".csv.gz") })
+            snowflakeAirbyteClient.copyFromStage(tableName, match { it.endsWith("$CSV_FILE_EXTENSION$FILE_SUFFIX") })
         }
     }
 
@@ -133,7 +133,7 @@ internal class SnowflakeInsertBufferTest {
             snowflakeAirbyteClient.uploadToStage(tableName, any(), any(), any())
         }
         coVerify(exactly = 1) {
-            snowflakeAirbyteClient.copyFromStage(tableName, match { it.endsWith(".csv.gz") })
+            snowflakeAirbyteClient.copyFromStage(tableName, match { it.endsWith("$CSV_FILE_EXTENSION$FILE_SUFFIX") })
         }
     }
 
@@ -180,7 +180,7 @@ internal class SnowflakeInsertBufferTest {
     }
 
     private fun readContents(buffer: SnowflakeInsertBuffer) =
-        ZstdInputStream(buffer.getInputStream(buffer.buffer)).bufferedReader().use { it.readText() }
+        GZIPInputStream(buffer.getInputStream(buffer.buffer)).bufferedReader().use { it.readText() }
 
     private fun createRecord(columnName: String) =
         mapOf(

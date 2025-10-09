@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.destination.snowflake.write.load
 
-import com.github.luben.zstd.Zstd
-import com.github.luben.zstd.ZstdOutputStream
 import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.orchestration.db.TableName
@@ -19,6 +17,7 @@ import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.io.OutputStream
 import java.util.Random
+import java.util.zip.GZIPOutputStream
 import org.apache.commons.text.StringEscapeUtils
 
 private val logger = KotlinLogging.logger {}
@@ -27,7 +26,7 @@ internal const val CSV_FILE_EXTENSION = ".csv"
 internal const val CSV_FIELD_SEPARATOR = ","
 internal const val CSV_LINE_DELIMITER = "\n"
 internal const val FILE_PREFIX = "snowflake"
-internal const val ZSTD_FILE_EXTENSION = ".zst"
+internal const val FILE_SUFFIX = ".csv"
 
 class SnowflakeInsertBuffer(
     private val tableName: TableName,
@@ -41,8 +40,7 @@ class SnowflakeInsertBuffer(
 
     @VisibleForTesting internal val buffer: InputOutputBuffer = InputOutputBuffer()
 
-    private val outputStream: CompressionOutputStream =
-        CompressionOutputStream(buffer, Zstd.defaultCompressionLevel())
+    private val outputStream: CompressionOutputStream = CompressionOutputStream(buffer, 5)
 
     private val random: Random = Random()
 
@@ -102,7 +100,7 @@ class SnowflakeInsertBuffer(
     }
 
     private fun generateFileName() =
-        "$FILE_PREFIX${java.lang.Long.toUnsignedString(random.nextLong())}$CSV_FILE_EXTENSION${outputStream.fileExtension()}"
+        "$FILE_PREFIX${java.lang.Long.toUnsignedString(random.nextLong())}$CSV_FILE_EXTENSION$FILE_SUFFIX"
 
     @VisibleForTesting
     internal fun getInputStream(buffer: InputOutputBuffer): InputStream {
@@ -119,8 +117,10 @@ class SnowflakeInsertBuffer(
         }
     }
 
-    internal class CompressionOutputStream(outputStream: OutputStream, level: Int) :
-        ZstdOutputStream(outputStream, level) {
-        fun fileExtension() = ZSTD_FILE_EXTENSION
+    private class CompressionOutputStream(outputStream: OutputStream, level: Int) :
+        GZIPOutputStream(outputStream) {
+        init {
+            def.setLevel(level)
+        }
     }
 }
