@@ -34,6 +34,13 @@ definitions:
               action: RETRY
             - predicate: "{{ 'error_code' in response and response['error_code'] == 'complexityBudgetExhausted' }}"
               action: RETRY
+              #Doc: https://developer.monday.com/api-reference/docs/error-handling
+              #Monday returns 200 status code even if there is an error, so we need to check the response body for error_code and fail so we can surface the actual error to the user.
+              #Otherwise, we would get a misleading 'data' key not found error.
+            - predicate: "{{ 'error_code' in response and response['error_code'] is not none }}"
+              action: FAIL
+              failure_type: config_error
+              error_message: "{{ response.get('error_message', 'Unknown API error') }} (Error code: {{ response.get('error_code', 'unknown') }}). Request ID: {{ response.get('extensions', {}).get('request_id', 'unknown') }}. For more information about Monday.com API errors, please visit: https://developer.monday.com/api-reference/docs/error-handling"
           backoff_strategies:
             - type: WaitTimeFromHeader
               header: retry-after
