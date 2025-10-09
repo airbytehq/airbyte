@@ -331,6 +331,9 @@ class Salesforce:
             if not self.domain_url:
                 raise ValueError("domain_url is required for client_credentials authentication")
             
+            if not self.domain_url.startswith("https://"):
+                self.domain_url = f"https://{self.domain_url}"
+
             # Ensure domain_url ends with the correct path for OAuth token endpoint
             if not self.domain_url.endswith('/services/oauth2/token'):
                 login_url = f"{self.domain_url.rstrip('/')}/services/oauth2/token"
