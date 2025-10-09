@@ -52,17 +52,18 @@ class CheckMigrationGuide(DocumentationCheck):
         expected_title = f"# {connector.name_from_metadata} Migration Guide"
         expected_version_header_start = "## Upgrading to "
         migration_guide_content = migration_guide_file_path.read_text()
-        
+
         from .helpers import get_first_heading
+
         first_heading = get_first_heading(migration_guide_content)
-        
+
         if not first_heading:
             return self.create_check_result(
                 connector=connector,
                 passed=False,
                 message=f"Migration guide file for {connector.technical_name} does not contain a markdown heading.",
             )
-            
+
         if first_heading != expected_title:
             return self.create_check_result(
                 connector=connector,
