@@ -10,7 +10,7 @@ authors = ["Airbyte <contact@airbyte.io>"]
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.13"
-airbyte-cdk = "7.3.2dev0"
+airbyte-cdk = "^7.3.3"
 pytest = "^8"
 requests_mock = "^1"
 
