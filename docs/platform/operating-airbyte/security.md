@@ -95,7 +95,7 @@ Airbyte Cloud leverages the security features of leading Cloud providers and set
 
 ### Physical infrastructure
 
-Airbyte Cloud is currently deployed on GCP with all servers located in the United States. We use isolated pods to ensure your data is kept separate from other customers’ data.
+Airbyte Cloud uses control planes on GCP in the United States. Airbyte uses isolated pods to keep your data separate from other customers’ data. Data planes [are available](../cloud/managing-airbyte-cloud/manage-data-residency) in the United States (GCP) and European Union (AWS). If you [deploy your own data plane](../enterprise-flex/), that data plane runs in your own infrastructure.
 
 Only certain Airbyte staff can access Airbyte infrastructure and technical logs for deployments, upgrades, configuration changes, and troubleshooting.
 
