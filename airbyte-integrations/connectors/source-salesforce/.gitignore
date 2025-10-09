@@ -1,0 +1,3 @@
+.venv
+integration_tests/config.json
+*.pyc

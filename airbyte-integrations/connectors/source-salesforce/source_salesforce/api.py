@@ -251,12 +251,16 @@ class Salesforce:
         client_secret: str = None,
         is_sandbox: bool = None,
         start_date: str = None,
+        auth_type: str = "refresh_token",
+        domain_url: str = None,
         **kwargs: Any,
     ) -> None:
         self.refresh_token = refresh_token
         self.token = token
         self.client_id = client_id
         self.client_secret = client_secret
+        self.auth_type = auth_type
+        self.domain_url = domain_url
         self.access_token = None
         self.instance_url = ""
         self.session = requests.Session()
@@ -322,13 +326,32 @@ class Salesforce:
         return resp
 
     def login(self):
-        login_url = f"https://{'test' if self.is_sandbox else 'login'}.salesforce.com/services/oauth2/token"
-        login_body = {
-            "grant_type": "refresh_token",
-            "client_id": self.client_id,
-            "client_secret": self.client_secret,
-            "refresh_token": self.refresh_token,
-        }
+        if self.auth_type == "client_credentials":
+            # Use client credentials flow
+            if not self.domain_url:
+                raise ValueError("domain_url is required for client_credentials authentication")
+            
+            # Ensure domain_url ends with the correct path for OAuth token endpoint
+            if not self.domain_url.endswith('/services/oauth2/token'):
+                login_url = f"{self.domain_url.rstrip('/')}/services/oauth2/token"
+            else:
+                login_url = self.domain_url
+                
+            login_body = {
+                "grant_type": "client_credentials",
+                "client_id": self.client_id,
+                "client_secret": self.client_secret,
+            }
+        else:
+            # Use refresh token flow (default)
+            login_url = f"https://{'test' if self.is_sandbox else 'login'}.salesforce.com/services/oauth2/token"
+            login_body = {
+                "grant_type": "refresh_token",
+                "client_id": self.client_id,
+                "client_secret": self.client_secret,
+                "refresh_token": self.refresh_token,
+            }
+        
         resp = self._make_request("POST", login_url, body=login_body, headers={"Content-Type": "application/x-www-form-urlencoded"})
         auth = resp.json()
         self.access_token = auth["access_token"]

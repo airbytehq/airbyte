@@ -1,0 +1,8 @@
+{
+  "auth_type": "client_credentials",
+  "client_id": "test_client_id",
+  "client_secret": "test_client_secret", 
+  "domain_url": "https://test.my.salesforce.com",
+  "start_date": "2021-07-25T00:00:00Z",
+  "is_sandbox": false
+}

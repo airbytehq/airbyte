@@ -617,6 +617,22 @@
             "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory",
             "console": "integratedTerminal",
             "python": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory/.venv/bin/python"
+        },
+        {
+            "name": "Salesforce: Read All Streams (Client Credentials)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-salesforce/main.py",
+            "args": [
+                "read",
+                "--config",
+                "integration_tests/config.json",
+                "--catalog",
+                "integration_tests/configured_catalog.json"
+            ],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-salesforce",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-salesforce/.venv/bin/python"
         }
     ]
 }
