@@ -125,22 +125,45 @@ constructor(val featureFlags: Set<FeatureFlag>) :
             }
 
         val sshTunnel: SshTunnelMethodConfiguration? = pojo.getTunnelMethodValue()
-        val encryptionSpec: EncryptionSpecification? = pojo.getEncryptionValue()
+
+        // Check if encryption was explicitly set in JSON (encryptionJson != null)
+        // vs using the default value (encryptionJson == null).
+        // Old connector used "ssl_method" field which was optional, so legacy configs
+        // won't have ssl_mode at all, resulting in encryptionJson being null.
+        val isLegacyConfig = pojo.encryptionJson == null
         val jdbcEncryption =
-            when (encryptionSpec) {
-                is MsSqlServerEncryptionDisabledConfigurationSpecification,
-                null -> {
-                    if (
-                        featureFlags.contains(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT) &&
-                            sshTunnel is SshNoTunnelMethod
-                    ) {
-                        throw ConfigErrorException(
-                            "Connection from Airbyte Cloud requires " +
-                                "SSL encryption or an SSH tunnel."
-                        )
-                    } else {
+            when (val encryptionSpec: EncryptionSpecification? = pojo.getEncryptionValue()) {
+                is MsSqlServerEncryptionDisabledConfigurationSpecification -> {
+                    // For legacy configs without ssl_mode field, allow unencrypted for backward
+                    // compatibility
+                    // even in cloud deployments. This handles migration from old connector
+                    // versions.
+                    if (isLegacyConfig) {
+                        log.warn {
+                            "No encryption configuration found in JSON. " +
+                                "This appears to be a legacy configuration migrated from an older connector version. " +
+                                "Consider adding SSL encryption for better security."
+                        }
                         mapOf("encrypt" to "false", "trustServerCertificate" to "true")
+                    } else {
+                        // Explicitly disabled encryption (user set ssl_mode.mode = "unencrypted")
+                        // should fail in cloud without SSH tunnel
+                        if (
+                            featureFlags.contains(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT) &&
+                                sshTunnel is SshNoTunnelMethod
+                        ) {
+                            throw ConfigErrorException(
+                                "Connection from Airbyte Cloud requires " +
+                                    "SSL encryption or an SSH tunnel."
+                            )
+                        } else {
+                            mapOf("encrypt" to "false", "trustServerCertificate" to "true")
+                        }
                     }
+                }
+                null -> {
+                    // This should never happen since getEncryptionValue() has a default
+                    mapOf("encrypt" to "false", "trustServerCertificate" to "true")
                 }
                 is MsSqlServerEncryptionRequiredTrustServerCertificateConfigurationSpecification ->
                     mapOf("encrypt" to "true", "trustServerCertificate" to "true")
