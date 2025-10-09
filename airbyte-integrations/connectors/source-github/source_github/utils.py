@@ -65,10 +65,25 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
         self._auth_method = auth_method
         self._auth_header = auth_header
         self._tokens = {t: Token() for t in tokens}
+        # It would've been nice to instantiate a single client on this authenticator. However, we are checking
+        # the limits of each token which is associated with a TokenAuthenticator. And each HttpClient can only
+        # correspond to one authenticator.
+        self._token_to_http_client: Mapping[str, HttpClient] = self._initialize_http_clients(tokens)
         self.check_all_tokens()
         self._tokens_iter = cycle(self._tokens)
         self._active_token = next(self._tokens_iter)
         self._max_time = 60 * 10  # 10 minutes as default
+
+    def _initialize_http_clients(self, tokens: List[str]) -> Mapping[str, HttpClient]:
+        return {
+            token: HttpClient(
+                name="token_validator",
+                logger=self._logger,
+                authenticator=TokenAuthenticator(token, auth_method=self._auth_method),
+                use_cache=False,  # We don't want to reuse cached valued because rate limit values change frequently
+            )
+            for token in tokens
+        }
 
     @property
     def auth_header(self) -> str:
@@ -118,17 +133,11 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
     def _check_token_limits(self, token: str):
         """check that token is not limited"""
 
-        # It would've been nice to instantiate a single client on this authenticator. However, we are checking
-        # the limits of each token which is associated with a TokenAuthenticator. And each HttpClient can only
-        # correspond to one authenticator.
-        self._http_client = HttpClient(
-            name="token_validator",
-            logger=self._logger,
-            authenticator=TokenAuthenticator(token, auth_method=self._auth_method),
-            use_cache=False,  # We don't want to reuse cached valued because rate limit values change frequently
-        )
+        http_client = self._token_to_http_client.get(token)
+        if not http_client:
+            raise ValueError("No HttpClient was initialized for this token. This is unexpected. Please contact Airbyte support.")
 
-        _, response = self._http_client.send_request(
+        _, response = http_client.send_request(
             http_method="GET",
             url="https://api.github.com/rate_limit",
             headers={"Accept": "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28"},
