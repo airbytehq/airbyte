@@ -118,11 +118,11 @@ class InputBeanFactory {
     @Singleton
     fun aggregateStoreFactory(
         aggFactory: AggregateFactory,
-        memoryAndParallelismConfig: MemoryAndParallelismConfig,
+        aggregatePublishingConfig: AggregatePublishingConfig,
     ) =
         AggregateStoreFactory(
             aggFactory,
-            memoryAndParallelismConfig,
+            aggregatePublishingConfig,
         )
 
     @Singleton
@@ -134,7 +134,7 @@ class InputBeanFactory {
         aggregateStoreFactory: AggregateStoreFactory,
         stateHistogramStore: StateHistogramStore,
         statsStore: CommittedStatsStore,
-        memoryAndParallelismConfig: MemoryAndParallelismConfig,
+        aggregatePublishingConfig: AggregatePublishingConfig,
         @Named("aggregationDispatcher") aggregationDispatcher: CoroutineDispatcher,
         @Named("flushDispatcher") flushDispatcher: CoroutineDispatcher,
     ): List<DataFlowPipeline> =
@@ -155,7 +155,7 @@ class InputBeanFactory {
                 flush = flush,
                 state = state,
                 completionHandler = completionHandler,
-                memoryAndParallelismConfig = memoryAndParallelismConfig,
+                aggregatePublishingConfig = aggregatePublishingConfig,
                 aggregationDispatcher = aggregationDispatcher,
                 flushDispatcher = flushDispatcher,
             )
