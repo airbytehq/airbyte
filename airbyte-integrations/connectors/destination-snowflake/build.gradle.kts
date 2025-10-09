@@ -45,6 +45,7 @@ dependencies {
     implementation("com.google.guava:guava:32.1.1-jre")
     implementation("org.apache.commons:commons-text:1.14.0")
     implementation("io.micronaut.cache:micronaut-cache-caffeine:4.3.1")
+    implementation("com.github.luben:zstd-jni:1.5.7-5")
 
     testImplementation("io.mockk:mockk:1.14.5")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")

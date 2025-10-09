@@ -329,7 +329,7 @@ class SnowflakeDirectLoadSqlGenerator(
         return """
             CREATE OR REPLACE FILE FORMAT $formatName
             TYPE = 'CSV'
-            COMPRESSION = GZIP
+            COMPRESSION = ZSTD
             FIELD_DELIMITER = '$CSV_FIELD_SEPARATOR'
             RECORD_DELIMITER = '$CSV_LINE_DELIMITER'
             FIELD_OPTIONALLY_ENCLOSED_BY = '"'

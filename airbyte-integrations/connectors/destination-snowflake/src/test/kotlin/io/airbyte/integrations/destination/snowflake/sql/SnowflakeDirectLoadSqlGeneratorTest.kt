@@ -285,7 +285,7 @@ new_record."_AIRBYTE_GENERATION_ID"
             """
             CREATE OR REPLACE FILE FORMAT $fileFormatName
             TYPE = 'CSV'
-            COMPRESSION = GZIP
+            COMPRESSION = ZSTD
             FIELD_DELIMITER = '$CSV_FIELD_SEPARATOR'
             RECORD_DELIMITER = '$CSV_LINE_DELIMITER'
             FIELD_OPTIONALLY_ENCLOSED_BY = '"'

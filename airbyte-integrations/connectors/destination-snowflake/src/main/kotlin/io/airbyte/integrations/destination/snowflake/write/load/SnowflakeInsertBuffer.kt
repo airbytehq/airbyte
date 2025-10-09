@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.snowflake.write.load
 
+import com.github.luben.zstd.Zstd
+import com.github.luben.zstd.ZstdOutputStream
 import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.orchestration.db.TableName
@@ -17,13 +19,14 @@ import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.io.OutputStream
 import java.util.Random
-import java.util.zip.GZIPOutputStream
 import org.apache.commons.text.StringEscapeUtils
 
 private val logger = KotlinLogging.logger {}
 
+internal const val CSV_FILE_EXTENSION = ".csv"
 internal const val CSV_FIELD_SEPARATOR = ","
 internal const val CSV_LINE_DELIMITER = "\n"
+internal const val FILE_PREFIX = "snowflake"
 
 class SnowflakeInsertBuffer(
     private val tableName: TableName,
@@ -37,7 +40,8 @@ class SnowflakeInsertBuffer(
 
     @VisibleForTesting internal val buffer: InputOutputBuffer = InputOutputBuffer()
 
-    private val outputStream: OutputStream = CompressionOutputStream(buffer, 5)
+    private val outputStream: CompressionOutputStream =
+        CompressionOutputStream(buffer, Zstd.defaultCompressionLevel())
 
     private val random: Random = Random()
 
@@ -54,7 +58,7 @@ class SnowflakeInsertBuffer(
     suspend fun flush() =
         try {
             logger.info { "Beginning insert into ${tableName.toPrettyString(quote = QUOTE)}" }
-            val fileName = "snowflake${java.lang.Long.toUnsignedString(random.nextLong())}.csv.gz"
+            val fileName = generateFileName()
 
             val inputStream = getInputStream(buffer)
 
@@ -76,19 +80,27 @@ class SnowflakeInsertBuffer(
         }
 
     private fun bufferCsvRecord(record: Map<String, AirbyteValue>) {
-        val line =
-            snowflakeRecordFormatter.format(record).joinToString(
-                separator = CSV_FIELD_SEPARATOR,
-                postfix = CSV_LINE_DELIMITER
-            ) { col ->
-                when (col) {
-                    is String -> StringEscapeUtils.escapeCsv(col)
-                    else -> col.toString()
+        val formattedRecordValues = snowflakeRecordFormatter.format(record)
+        formattedRecordValues.forEachIndexed { i, value ->
+            val escapedValue =
+                when (value) {
+                    is String -> StringEscapeUtils.escapeCsv(value)
+                    else -> value.toString()
                 }
+            outputStream.write(escapedValue.toByteArray())
+
+            val lastBytes = if (i != formattedRecordValues.lastIndex) {
+                CSV_FIELD_SEPARATOR.toByteArray()
+            } else {
+                CSV_LINE_DELIMITER.toByteArray()
             }
-        outputStream.write(line.toByteArray())
+            outputStream.write(lastBytes)
+        }
         recordCount++
     }
+
+    private fun generateFileName() =
+        "$FILE_PREFIX${java.lang.Long.toUnsignedString(random.nextLong())}$CSV_FILE_EXTENSION${outputStream.fileExtension()}"
 
     @VisibleForTesting
     internal fun getInputStream(buffer: InputOutputBuffer): InputStream {
@@ -106,9 +118,7 @@ class SnowflakeInsertBuffer(
     }
 
     internal class CompressionOutputStream(outputStream: OutputStream, level: Int) :
-        GZIPOutputStream(outputStream) {
-        init {
-            def.setLevel(level)
-        }
+        ZstdOutputStream(outputStream, level) {
+        fun fileExtension() = ".zst"
     }
 }

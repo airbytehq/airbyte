@@ -212,13 +212,13 @@ class SnowflakeBeanFactory {
         return if (dataChannelMedium == DataChannelMedium.STDIO) {
             MemoryAndParallelismConfig(
                 maxRecordsPerAgg = 10_000_000_000_000L,
-                maxEstBytesPerAgg = 350_000_000L,
+                maxEstBytesPerAgg = 100_000_000L,
                 maxOpenAggregates = 50,
             )
         } else {
             MemoryAndParallelismConfig(
                 maxRecordsPerAgg = 10_000_000_000_000L,
-                maxEstBytesPerAgg = 350_000_000L,
+                maxEstBytesPerAgg = 100_000_000L,
                 maxBufferedAggregates = 6,
                 maxOpenAggregates = 50,
                 maxConcurrentLifecycleOperations = 10
