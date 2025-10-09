@@ -38,10 +38,12 @@ Set appropriate backend timeout values for the Airbyte server ingress. Timeout v
 ## Option 1: Use Airbyte's Helm chart
 
 :::note
-This option is only available in Helm chart V2. If you're using Helm chart V1, use [Option 2](#option-2-bring-your-own-ingress) instead.
+**Helm V2 users:** Follow the configuration examples below.
+
+**Helm V1 users:** Ingress is available but uses a different configuration format. See the [values.yaml reference](/platform/deploying-airbyte/values) for the V1 ingress configuration structure.
 :::
 
-Starting with Helm chart V2, you can configure ingress directly in your `values.yaml` file. Airbyte will automatically create and manage the ingress resource for you.
+You can configure ingress directly in your `values.yaml` file. Airbyte will automatically create and manage the ingress resource for you.
 
 ### Basic configuration
 
@@ -98,7 +100,7 @@ If you previously created a manual ingress resource and want to switch to using 
 
 ## Option 2: Bring your own ingress
 
-If you prefer to manage your own ingress resource, or if you're using Helm chart V1, you can manually create a Kubernetes ingress resource. This approach gives you complete control over the ingress configuration.
+If you prefer to manage your own ingress resource, you can manually create a Kubernetes ingress resource. This approach gives you complete control over the ingress configuration.
 
 ### Switching from Helm Chart Ingress to Manual Ingress
 

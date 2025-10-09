@@ -781,7 +781,13 @@ Set appropriate backend timeout values for the Airbyte server ingress. Timeout v
 ##### Set up ingress in Airbyte
 
 <details>
-<summary>Option 1: use Airbyte's Helm chart ingress configuration (Helm chart V2 only)</summary>
+<summary>Option 1: use Airbyte's Helm chart ingress configuration</summary>
+
+:::note
+**Helm V2 users:** Follow the configuration examples below.
+
+**Helm V1 users:** Ingress is available but uses a different configuration format. See the [values.yaml reference](/platform/deploying-airbyte/values) for the V1 ingress configuration structure.
+:::
 
 You can configure ingress directly in your `values.yaml` file. Airbyte automatically creates and manages the ingress resource for you.
 
@@ -821,7 +827,7 @@ The `backend` field specifies which service to route to:
 <details>
 <summary>Option 2: bring your own ingress</summary>
 
-If you prefer to manage your own ingress resource, or if you're using Helm chart V1, you can manually create a Kubernetes ingress resource.
+If you prefer to manage your own ingress resource, you can manually create a Kubernetes ingress resource.
 
 <Tabs>
 <TabItem value="NGINX" label="NGINX">
