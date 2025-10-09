@@ -27,6 +27,7 @@ import io.airbyte.cdk.util.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeFormatterBuilder
@@ -318,18 +319,35 @@ class MsSqlServerJdbcPartitionFactory(
                         }
                     }
                     LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE -> {
-                        val timestampInStatePattern = "yyyy-MM-dd'T'HH:mm:ss"
                         try {
-                            val formatter: DateTimeFormatter =
-                                DateTimeFormatter.ofPattern(timestampInStatePattern)
-                            Jsons.valueToTree(
-                                LocalDateTime.parse(stateValue, formatter)
-                                    .minusDays(1)
-                                    .atOffset(ZoneOffset.UTC)
-                                    .format(OffsetDateTimeCodec.formatter)
-                            )
+                            if (stateValue == null || stateValue.isEmpty()) {
+                                return Jsons.nullNode()
+                            }
+
+                            // Normalize: remove spaces before timezone indicators
+                            val normalizedValue =
+                                stateValue.trim().replace(Regex("\\s+(?=[+\\-]|Z)"), "")
+
+                            // Try parsing with timezone first, then fall back to assuming UTC
+                            val offsetDateTime =
+                                try {
+                                    OffsetDateTime.parse(
+                                        normalizedValue,
+                                        timestampWithTimezoneParser
+                                    )
+                                } catch (e: DateTimeParseException) {
+                                    // No timezone info - parse as LocalDateTime and assume UTC
+                                    LocalDateTime.parse(
+                                            normalizedValue,
+                                            timestampWithoutTimezoneParser
+                                        )
+                                        .atOffset(ZoneOffset.UTC)
+                                }
+
+                            // Format using standard codec formatter (6 decimal places, Z or offset)
+                            Jsons.valueToTree(offsetDateTime.format(OffsetDateTimeCodec.formatter))
                         } catch (e: DateTimeParseException) {
-                            // Resolve to use the new format.
+                            // If all parsing fails, return as-is (already in new format)
                             Jsons.valueToTree(stateValue)
                         }
                     }
@@ -387,6 +405,25 @@ class MsSqlServerJdbcPartitionFactory(
                 .optionalStart()
                 .appendFraction(ChronoField.NANO_OF_SECOND, 1, 6, true)
                 .optionalEnd()
+                .toFormatter()
+
+        // Parser for timestamps without timezone info
+        val timestampWithoutTimezoneParser: DateTimeFormatter =
+            DateTimeFormatterBuilder()
+                .appendPattern("yyyy-MM-dd'T'HH:mm:ss")
+                .optionalStart()
+                .appendFraction(ChronoField.NANO_OF_SECOND, 0, 9, true)
+                .optionalEnd()
+                .toFormatter()
+
+        // Parser for timestamps with timezone info
+        val timestampWithTimezoneParser: DateTimeFormatter =
+            DateTimeFormatterBuilder()
+                .appendPattern("yyyy-MM-dd'T'HH:mm:ss")
+                .optionalStart()
+                .appendFraction(ChronoField.NANO_OF_SECOND, 0, 9, true)
+                .optionalEnd()
+                .appendOffset("+HH:MM", "Z")
                 .toFormatter()
     }
 }
