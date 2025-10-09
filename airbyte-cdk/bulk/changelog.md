@@ -1,3 +1,21 @@
+## Version 0.1.49
+
+**Extract CDK**
+
+* **Changed:** Support nano sec to preserve precision in TimeAccessor.
+
+## Version 0.1.48
+
+**Extract CDK**
+
+* **Changed:** Enable heart beat timeout for CDC sync.
+
+## Version 0.1.47
+
+**Extract CDK**
+
+* **Changed:** Correct encoding of CDC_UPDATED_AT and CDC_DELETED_AT fields in protobuf records.
+
 ## Version 0.1.46
 
 Noop: Move stream lifecyle dispatchers to bean factory.
