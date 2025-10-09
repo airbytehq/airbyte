@@ -311,7 +311,7 @@ def test_dpath_schema_matching_extractor_without_properties_to_match():
 @patch("components.logger")
 def test_grid_data_error_handler_500_filter(mock_logger, mock_requests_get, alt_status_code, expected_action, expected_message):
     """Test Filter 3: grid_data_500 handling in GridDataErrorHandler.
-    
+
     When a 500 error occurs with includeGridData=true, the handler immediately tests
     with includeGridData=false to determine if it's corrupt grid data or a genuine server error.
     """
