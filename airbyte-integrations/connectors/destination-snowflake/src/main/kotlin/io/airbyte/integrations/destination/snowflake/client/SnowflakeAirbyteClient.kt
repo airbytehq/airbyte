@@ -13,6 +13,7 @@ import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNat
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableSqlOperations
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
+import io.airbyte.integrations.destination.snowflake.db.escapeJsonIdentifier
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.COUNT_TOTAL_ALIAS
@@ -206,7 +207,7 @@ class SnowflakeAirbyteClient(
                 val columnsInDb: MutableSet<ColumnDefinition> = mutableSetOf()
 
                 while (rs.next()) {
-                    val columnName = rs.getString("name").toSnowflakeCompatibleName()
+                    val columnName = escapeJsonIdentifier(rs.getString("name"))
 
                     // Filter out airbyte columns
                     if (airbyteColumnNames.contains(columnName)) {
