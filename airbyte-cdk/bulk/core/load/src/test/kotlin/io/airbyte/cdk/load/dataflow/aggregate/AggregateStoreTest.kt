@@ -136,7 +136,7 @@ class AggregateStoreTest {
     @Test
     fun `removeNextComplete should remove complete aggregate by bytes`() {
         // Add records to reach the bytes limit
-        repeat(20) { i ->
+        repeat(20) {
             val record =
                 Fixtures.dto(partitionKey = "partition1", sizeBytes = 110, emittedAtMs = 2000L)
             aggregateStore.acceptFor(testKey, record)
