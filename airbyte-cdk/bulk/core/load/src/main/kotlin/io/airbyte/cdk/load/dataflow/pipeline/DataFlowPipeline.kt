@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.load.dataflow.pipeline
 
-import io.airbyte.cdk.load.dataflow.config.MemoryAndParallelismConfig
+import io.airbyte.cdk.load.dataflow.config.AggregatePublishingConfig
 import io.airbyte.cdk.load.dataflow.stages.AggregateStage
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
@@ -21,7 +21,7 @@ class DataFlowPipeline(
     private val flush: DataFlowStage,
     private val state: DataFlowStage,
     private val completionHandler: PipelineCompletionHandler,
-    private val memoryAndParallelismConfig: MemoryAndParallelismConfig,
+    private val aggregatePublishingConfig: AggregatePublishingConfig,
     private val aggregationDispatcher: CoroutineDispatcher,
     private val flushDispatcher: CoroutineDispatcher,
 ) {
@@ -29,7 +29,7 @@ class DataFlowPipeline(
         input
             .map(parse::apply)
             .transform { aggregate.apply(it, this) }
-            .buffer(capacity = memoryAndParallelismConfig.maxBufferedAggregates)
+            .buffer(capacity = aggregatePublishingConfig.maxBufferedAggregates)
             .flowOn(aggregationDispatcher)
             .map(flush::apply)
             .map(state::apply)
