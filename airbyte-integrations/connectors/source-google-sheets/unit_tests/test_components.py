@@ -303,15 +303,19 @@ def test_dpath_schema_matching_extractor_without_properties_to_match():
     "alt_status_code, expected_action, expected_message",
     [
         (200, "IGNORE", "Skipping sheet 'TestSheet' due to corrupt grid data"),
-        (500, "FAIL", "Internal server error encountered. The Google Sheets API returned a 500 error."),
+        (500, "RETRY", "Internal server error encountered. Retrying with backoff."),
     ],
-    ids=["alt_200_ignore", "alt_500_fail"],
+    ids=["alt_200_ignore", "alt_500_retry"],
 )
 @patch("components.requests.get")
 @patch("components.logger")
 def test_grid_data_error_handler_500_filter(mock_logger, mock_requests_get, alt_status_code, expected_action, expected_message):
-    """Test Filter 4: grid_data_500 handling in GridDataErrorHandler."""
-    # Create handler with max_retries=5
+    """Test Filter 3: grid_data_500 handling in GridDataErrorHandler.
+    
+    When a 500 error occurs with includeGridData=true, the handler immediately tests
+    with includeGridData=false to determine if it's corrupt grid data or a genuine server error.
+    """
+    # Create handler
     handler = GridDataErrorHandler(config={}, parameters={"max_retries": 5})
 
     # Create mock response for 500 error with grid data
@@ -327,17 +331,10 @@ def test_grid_data_error_handler_500_filter(mock_logger, mock_requests_get, alt_
     mock_alt_response.status_code = alt_status_code
     mock_requests_get.return_value = mock_alt_response
 
-    # First 4 attempts should return RETRY
-    for attempt in range(1, 5):
-        resolution = handler.interpret_response(mock_response)
-        assert resolution.response_action.name == "RETRY"
-        assert resolution.failure_type.name == "transient_error"
-        assert resolution.error_message == "Internal server error."
-
-    # 5th attempt (last) should trigger the alt test
+    # Call interpret_response - it should immediately test without grid data
     resolution = handler.interpret_response(mock_response)
 
-    # Verify the alt request was made
+    # Verify the alt request was made immediately
     mock_requests_get.assert_called_once_with(
         "https://sheets.googleapis.com/v4/spreadsheets/test?includeGridData=false&ranges=TestSheet!1:1",
         headers={"Authorization": "Bearer test"},
@@ -350,8 +347,12 @@ def test_grid_data_error_handler_500_filter(mock_logger, mock_requests_get, alt_
 
     # Verify appropriate logging
     if alt_status_code == 200:
+        # Corrupt grid data case - should log warning
         mock_logger.warning.assert_called_once()
-        mock_logger.error.assert_not_called()
+        assert "corrupt or incompatible grid data" in mock_logger.warning.call_args[0][0]
     else:
-        mock_logger.error.assert_called_once()
-        mock_logger.warning.assert_not_called()
+        # Genuine server error case - should log info about retrying
+        mock_logger.info.assert_called()
+        # Check that one of the info calls mentions the failure
+        info_calls = [call[0][0] for call in mock_logger.info.call_args_list]
+        assert any("also failed" in msg for msg in info_calls)

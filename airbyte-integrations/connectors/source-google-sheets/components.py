@@ -459,20 +459,15 @@ class GridDataErrorHandler(DefaultErrorHandler):
     Custom error handler for handling 500 errors with grid data requests.
 
     This handler extends the DefaultErrorHandler by adding special handling for 500 errors
-    when includeGridData=true. On the last retry attempt, it tests if the sheet can be fetched
-    without grid data. If successful, the sheet is skipped (IGNORE). If it still fails, the error
-    is propagated as a normal 500 error (FAIL).
+    when includeGridData=true. When a 500 error occurs, it immediately tests if the sheet can be
+    fetched without grid data. If successful, the sheet is skipped (IGNORE). If it still fails,
+    the error is retried using the default backoff strategy (RETRY).
 
     Also includes all standard response filters:
     - expected_one_sheet: Fails if response doesn't contain exactly 1 sheet
     - deduplicate_headers: Ignores (skips) sheets with duplicate headers
     - rate_limit: Handles 429 rate limit errors
     """
-
-    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
-        # Call parent's __post_init__ to initialize response_filters and other attributes
-        super().__post_init__(parameters)
-        self._attempt_count = {}  # Track attempts per request URL
 
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
         """
@@ -491,8 +486,6 @@ class GridDataErrorHandler(DefaultErrorHandler):
 
         response = response_or_exception
         url = response.request.url
-
-        self._attempt_count[url] = self._attempt_count.get(url, 0) + 1
 
         # Filter 1: expected_one_sheet
         # Predicate: {{ 'sheets' in response and response["sheets"] | length != 1  }}
@@ -552,66 +545,54 @@ class GridDataErrorHandler(DefaultErrorHandler):
         # Filter 3: grid_data_500
         # Special handling for 500 errors with includeGridData=true
         if response.status_code == 500 and "includeGridData=true" in url:
-            # Check if this is the last retry attempt
-            is_last_attempt = self._attempt_count[url] >= (self._max_retries or 5)
+            # Immediately test without grid data to determine if this is a corrupt grid data issue
+            # or a genuine server error
+            sheet_match = re.search(r"ranges=([^!&]+)", url)
+            sheet_name = sheet_match.group(1) if sheet_match else "unknown"
 
-            if is_last_attempt:
-                # On last attempt, test without grid data
-                sheet_match = re.search(r"ranges=([^!&]+)", url)
-                sheet_name = sheet_match.group(1) if sheet_match else "unknown"
+            logger.info(f"500 error encountered for sheet '{sheet_name}' - testing without grid data...")
 
-                logger.info(f"Last retry attempt for sheet '{sheet_name}' - testing without grid data...")
+            # Test the same request but without grid data
+            alt_url = url.replace("includeGridData=true", "includeGridData=false")
 
-                # Test the same request but without grid data
-                alt_url = url.replace("includeGridData=true", "includeGridData=false")
+            try:
+                # Copy headers from original request
+                headers = dict(response.request.headers)
 
-                try:
-                    # Copy headers from original request
-                    headers = dict(response.request.headers)
+                # Make test request without grid data
+                alt_response = requests.get(alt_url, headers=headers, timeout=30)
 
-                    # Make test request without grid data
-                    alt_response = requests.get(alt_url, headers=headers, timeout=30)
-
-                    # If the test succeeds (200 OK), the sheet exists but has bad grid data - skip it
-                    if alt_response.status_code == 200:
-                        logger.warning(
-                            f"Sheet '{sheet_name}' has corrupt or incompatible grid data and will be skipped. "
-                            f"This usually happens with sheets containing complex formatting or data types "
-                            f"that the Google Sheets API cannot process with includeGridData=true."
-                        )
-                        # Clear attempt count for this URL
-                        self._attempt_count.pop(url, None)
-                        return ErrorResolution(
-                            response_action=ResponseAction.IGNORE,
-                            failure_type=None,
-                            error_message=f"Skipping sheet '{sheet_name}' due to corrupt grid data",
-                        )
-                    else:
-                        # Test also failed - this is a real 500 error, fail
-                        logger.error(
-                            f"Sheet '{sheet_name}' test without grid data also failed with status {alt_response.status_code}. "
-                            f"This appears to be a genuine server error."
-                        )
-                        self._attempt_count.pop(url, None)
-                        return ErrorResolution(
-                            response_action=ResponseAction.FAIL,
-                            failure_type=FailureType.system_error,
-                            error_message="Internal server error encountered. The Google Sheets API returned a 500 error.",
-                        )
-
-                except (json.JSONDecodeError, KeyError, TypeError, IndexError) as e:
-                    # If test request fails with exception, fail with the original error
-                    logger.error(f"Test request for sheet '{sheet_name}' failed with exception: {e}")
-                    self._attempt_count.pop(url, None)
-                    return ErrorResolution(
-                        response_action=ResponseAction.FAIL,
-                        failure_type=FailureType.system_error,
-                        error_message=f"Internal server error encountered: {str(e)}",
+                # If the test succeeds (200 OK), the sheet exists but has bad grid data - skip it
+                if alt_response.status_code == 200:
+                    logger.warning(
+                        f"Sheet '{sheet_name}' has corrupt or incompatible grid data and will be skipped. "
+                        f"This usually happens with sheets containing complex formatting or data types "
+                        f"that the Google Sheets API cannot process with includeGridData=true."
                     )
-            else:
-                # Not the last attempt - retry with default exponential backoff
+                    return ErrorResolution(
+                        response_action=ResponseAction.IGNORE,
+                        failure_type=None,
+                        error_message=f"Skipping sheet '{sheet_name}' due to corrupt grid data",
+                    )
+                else:
+                    # Test also failed - this is a genuine server error, retry with backoff
+                    logger.info(
+                        f"Sheet '{sheet_name}' test without grid data also failed with status {alt_response.status_code}. "
+                        f"This appears to be a genuine server error. Retrying with backoff..."
+                    )
+                    return ErrorResolution(
+                        response_action=ResponseAction.RETRY,
+                        failure_type=FailureType.transient_error,
+                        error_message="Internal server error encountered. Retrying with backoff.",
+                    )
+
+            except Exception as e:
+                # If test request fails with exception, this is likely a genuine server error - retry with backoff
+                logger.info(f"Test request for sheet '{sheet_name}' failed with exception: {e}. Retrying with backoff...")
                 return ErrorResolution(
-                    response_action=ResponseAction.RETRY, failure_type=FailureType.transient_error, error_message="Internal server error."
+                    response_action=ResponseAction.RETRY,
+                    failure_type=FailureType.transient_error,
+                    error_message=f"Internal server error encountered: {str(e)}. Retrying with backoff.",
                 )
 
         # If none of our custom filters matched, delegate to parent's interpret_response for default handling
