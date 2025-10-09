@@ -278,37 +278,11 @@ new_record."_AIRBYTE_GENERATION_ID"
     }
 
     @Test
-    fun testGenerateCreateFileFormat() {
-        val namespace = "test-namespace"
-        val fileFormatName = snowflakeSqlNameUtils.fullyQualifiedFormatName(namespace)
-        val expected =
-            """
-            CREATE OR REPLACE FILE FORMAT $fileFormatName
-            TYPE = 'CSV'
-            COMPRESSION = GZIP
-            FIELD_DELIMITER = '$CSV_FIELD_SEPARATOR'
-            RECORD_DELIMITER = '$CSV_LINE_DELIMITER'
-            FIELD_OPTIONALLY_ENCLOSED_BY = '"'
-            TRIM_SPACE = TRUE
-            ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE
-            REPLACE_INVALID_CHARACTERS = TRUE
-            ESCAPE = NONE
-            ESCAPE_UNENCLOSED_FIELD = NONE
-        """.trimIndent()
-        val sql = snowflakeDirectLoadSqlGenerator.createFileFormat(namespace)
-        assertEquals(expected, sql)
-    }
-
-    @Test
     fun testGenerateCreateStage() {
         val tableName = TableName(namespace = "namespace", name = "name")
         val stagingTableName = snowflakeSqlNameUtils.fullyQualifiedStageName(tableName)
-        val fileFormat = snowflakeSqlNameUtils.fullyQualifiedFormatName(tableName.namespace)
         val sql = snowflakeDirectLoadSqlGenerator.createSnowflakeStage(tableName)
-        assertEquals(
-            "CREATE STAGE IF NOT EXISTS $stagingTableName\n    FILE_FORMAT = $fileFormat;",
-            sql
-        )
+        assertEquals("CREATE STAGE IF NOT EXISTS $stagingTableName", sql)
     }
 
     @Test
@@ -316,13 +290,23 @@ new_record."_AIRBYTE_GENERATION_ID"
         val tableName = TableName(namespace = "namespace", name = "name")
         val targetTableName = snowflakeSqlNameUtils.fullyQualifiedName(tableName)
         val stagingTableName = snowflakeSqlNameUtils.fullyQualifiedStageName(tableName)
-        val fileFormat = snowflakeSqlNameUtils.fullyQualifiedFormatName(tableName.namespace)
         val sql = snowflakeDirectLoadSqlGenerator.copyFromStage(tableName, "test.csv.gz")
         val expectedSql =
             """
             COPY INTO $targetTableName
             FROM '@$stagingTableName'
-            FILE_FORMAT = $fileFormat
+            FILE_FORMAT = (
+                TYPE = 'CSV'
+                COMPRESSION = GZIP
+                FIELD_DELIMITER = '$CSV_FIELD_SEPARATOR'
+                RECORD_DELIMITER = '$CSV_LINE_DELIMITER'
+                FIELD_OPTIONALLY_ENCLOSED_BY = '"'
+                TRIM_SPACE = TRUE
+                ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE
+                REPLACE_INVALID_CHARACTERS = TRUE
+                ESCAPE = NONE
+                ESCAPE_UNENCLOSED_FIELD = NONE
+            )
             ON_ERROR = 'ABORT_STATEMENT'
             PURGE = TRUE
             files = ('test.csv.gz')
