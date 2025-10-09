@@ -94,9 +94,7 @@ class TestCheckMigrationGuide:
             migration_guide_file_path=tmp_path / "migration_guide.md",
         )
         connector.migration_guide_file_path.write_text(
-            "import SpecialDoc from '@site/src/components/SpecialDoc';\n\n"
-            "# Test Connector Migration Guide\n"
-            "## Upgrading to 1.0.0\n"
+            "import SpecialDoc from '@site/src/components/SpecialDoc';\n\n" "# Test Connector Migration Guide\n" "## Upgrading to 1.0.0\n"
         )
 
         # Act
