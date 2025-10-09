@@ -221,6 +221,7 @@ class SnowflakeBeanFactory {
                 maxEstBytesPerAgg = 350_000_000L,
                 maxBufferedAggregates = 6,
                 maxOpenAggregates = 50,
+                maxConcurrentLifecycleOperations = 10
             )
         }
     }
