@@ -48,7 +48,7 @@ You can also use the `client_id` and `client_secret` to retrive an access token 
   <TabItem value="cloud" label="Cloud">
     
     ```yml
-    POST https://api.airbyte.com/api/v1/applications/token
+    POST https://api.airbyte.com/v1/applications/token
     ```
 
     Ensure the following JSON Body is attached to the request, populated with your `client_id` and `client_secret`:
