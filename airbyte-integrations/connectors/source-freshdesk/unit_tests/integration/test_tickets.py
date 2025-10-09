@@ -6,6 +6,8 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 from unittest import TestCase
 
+from config_builder import ConfigBuilder
+
 from airbyte_cdk import ConfiguredAirbyteCatalog, SyncMode, TState, YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput
@@ -15,13 +17,13 @@ from airbyte_cdk.test.mock_http.response_builder import (
     FieldPath,
     HttpResponseBuilder,
     RecordBuilder,
+    RootPath,
     create_record_builder,
     create_response_builder,
-    find_template, RootPath,
+    find_template,
 )
 from airbyte_cdk.test.state_builder import StateBuilder
 
-from config_builder import ConfigBuilder
 
 PAGE_LIMIT_300TH_REACHED = '{"description":"Validation failed","errors":[{"field":"page","message":"You cannot access tickets beyond the 300th page. Please provide a smaller page number.","code":"invalid_value"}]}'
 
@@ -40,6 +42,7 @@ sys.path.append(str(_SOURCE_FOLDER_PATH))  # to allow loading custom components
 
 _DOMAIN = "a-domain.freshdesk.com"
 _API_KEY = "an_api_key"
+
 
 def _catalog() -> ConfiguredAirbyteCatalog:
     return CatalogBuilder().with_stream("tickets", SyncMode.full_refresh).build()
@@ -81,7 +84,9 @@ class TicketsTest(TestCase):
     @HttpMocker()
     def test_when_read_then_extract_records(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(
-            HttpRequest(f"https://{_DOMAIN}/api/v2/tickets?order_type=asc&order_by=updated_at&include=description,requester,stats&per_page=100&updated_since=2022-01-01T00%3A00%3A00Z"),
+            HttpRequest(
+                f"https://{_DOMAIN}/api/v2/tickets?order_type=asc&order_by=updated_at&include=description,requester,stats&per_page=100&updated_since=2022-01-01T00%3A00%3A00Z"
+            ),
             _response().with_record(_record()).with_record(_record()).build(),
         )
         output = read(ConfigBuilder().domain(_DOMAIN).start_date(datetime(2022, 1, 1)), StateBuilder())
@@ -90,21 +95,29 @@ class TicketsTest(TestCase):
     @HttpMocker()
     def test_given_hitting_300th_page_when_read_then_reset_pagination(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(
-            HttpRequest(f"https://{_DOMAIN}/api/v2/tickets?order_type=asc&order_by=updated_at&include=description,requester,stats&per_page=100&updated_since=2022-01-01T00%3A00%3A00Z"),
+            HttpRequest(
+                f"https://{_DOMAIN}/api/v2/tickets?order_type=asc&order_by=updated_at&include=description,requester,stats&per_page=100&updated_since=2022-01-01T00%3A00%3A00Z"
+            ),
             self._a_response_with_full_page("2023-01-01T00:00:00Z"),
         )
         for page in range(2, 301):
             http_mocker.get(
-                HttpRequest(f"https://{_DOMAIN}/api/v2/tickets?order_type=asc&order_by=updated_at&include=description,requester,stats&page={page}&per_page=100&updated_since=2022-01-01T00%3A00%3A00Z"),
+                HttpRequest(
+                    f"https://{_DOMAIN}/api/v2/tickets?order_type=asc&order_by=updated_at&include=description,requester,stats&page={page}&per_page=100&updated_since=2022-01-01T00%3A00%3A00Z"
+                ),
                 self._a_response_with_full_page("2023-01-01T00:00:00Z"),
             )
         http_mocker.get(
-            HttpRequest(f"https://{_DOMAIN}/api/v2/tickets?order_type=asc&order_by=updated_at&include=description,requester,stats&page=301&per_page=100&updated_since=2022-01-01T00%3A00%3A00Z"),
+            HttpRequest(
+                f"https://{_DOMAIN}/api/v2/tickets?order_type=asc&order_by=updated_at&include=description,requester,stats&page=301&per_page=100&updated_since=2022-01-01T00%3A00%3A00Z"
+            ),
             HttpResponse(PAGE_LIMIT_300TH_REACHED, 400),
         )
 
         http_mocker.get(
-            HttpRequest(f"https://{_DOMAIN}/api/v2/tickets?order_type=asc&order_by=updated_at&include=description,requester,stats&per_page=100&updated_since=2023-01-01T00%3A00%3A00Z"),
+            HttpRequest(
+                f"https://{_DOMAIN}/api/v2/tickets?order_type=asc&order_by=updated_at&include=description,requester,stats&per_page=100&updated_since=2023-01-01T00%3A00%3A00Z"
+            ),
             _response().with_record(_record()).with_record(_record()).build(),
         )
 
