@@ -161,6 +161,14 @@ class DebeziumPropertiesBuilder(private val props: Properties = Properties()) {
 
     companion object {
         private const val BYTE_VALUE_256_MB = (256 * 1024 * 1024).toString()
+
+        /**
+         * Airbyte-specific property: Maximum time in seconds to wait for the first CDC record. This
+         * is used by connectors to configure how long to wait before timing out when no initial
+         * records are received.
+         */
+        const val AIRBYTE_HEARTBEAT_TIMEOUT_SECONDS = "airbyte.heartbeat.timeout.seconds"
+
         fun joinIncludeList(includes: List<String>): String =
             includes.map { it.replace(",", "\\,") }.joinToString(",")
 
