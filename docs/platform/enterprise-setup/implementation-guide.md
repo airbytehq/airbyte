@@ -765,23 +765,24 @@ global:
 
 To access the Airbyte UI, you need to configure ingress for your deployment. You have two options:
 
-1. **Use Airbyte's Helm chart ingress configuration** - Configure ingress through your `values.yaml` file (Helm chart V2 only)
-2. **Bring your own ingress** - Manually create and manage your own Kubernetes ingress resource
+- **Use Airbyte's Helm chart ingress configuration** - Configure ingress through your `values.yaml` file.
 
-:::important
-These are mutually exclusive options. Choose one approach based on your needs:
+- **Bring your own ingress** - Manually create and manage your own Kubernetes ingress resource.
 
-- Use the Helm chart ingress configuration if you want Airbyte to manage ingress creation and updates automatically
-- Use your own ingress if you need custom ingress configurations beyond what the Helm chart provides, or if you prefer to manage ingress independently
+Use the Helm chart ingress configuration if you want Airbyte to manage ingress creation and updates automatically. Use your own ingress if you need custom ingress configurations beyond what the Helm chart provides, or if you prefer to manage ingress independently.
 
-:::
+##### Before enabling ingress
+
+You must have an ingress controller deployed in your Kubernetes cluster. Refer to ingress controller documentation for setup: [NGINX](https://kubernetes.github.io/ingress-nginx/deploy/), [AWS ALB](https://docs.aws.amazon.com/eks/latest/userguide/alb-ingress.html), or your controller's documentation. For TLS certificate management, refer to [cert-manager](https://cert-manager.io/docs/) or your cloud provider's certificate service.
+
+Set appropriate backend timeout values for the Airbyte server ingress. Timeout values that are too short can lead to 504 errors in the UI when creating new sources or destinations.
+
+##### Set up ingress in Airbyte
 
 <details>
-<summary>Option 1: Using Airbyte's Helm Chart Ingress Configuration (Helm chart V2 only)</summary>
+<summary>Option 1: use Airbyte's Helm chart ingress configuration (Helm chart V2 only)</summary>
 
-Starting with Helm chart V2, you can configure ingress directly in your `values.yaml` file. Airbyte will automatically create and manage the ingress resource for you.
-
-**Basic Configuration for Enterprise:**
+You can configure ingress directly in your `values.yaml` file. Airbyte automatically creates and manages the ingress resource for you.
 
 ```yaml
 ingress:
@@ -805,42 +806,19 @@ ingress:
     #     - airbyte.example.com
 ```
 
-**Backend Services for Enterprise:**
-
 The `backend` field specifies which service to route to:
 
 - `keycloak` - Routes to Keycloak service (required for OIDC authentication, omit if using generic OIDC)
-- `server` - Routes to the main Airbyte API server
+- `server` - Routes to the main Airbyte server
 - `connector-builder-server` - Routes to the connector builder service
-
-**Before enabling ingress:**
-
-- You must have an ingress controller deployed in your Kubernetes cluster
-- Refer to ingress controller documentation for setup: [NGINX](https://kubernetes.github.io/ingress-nginx/deploy/), [AWS ALB](https://docs.aws.amazon.com/eks/latest/userguide/alb-ingress.html), or your controller's documentation
-- For TLS certificate management, refer to [cert-manager](https://cert-manager.io/docs/) or your cloud provider's certificate service
-
-**Switching from manual ingress to Helm chart ingress:**
-
-1. Delete your existing manual ingress resource
-2. Add the ingress configuration to your `values.yaml` file
-3. Upgrade your Helm deployment
-
-For more details, see the [Ingress documentation](../deploying-airbyte/integrations/ingress).
 
 </details>
 
 <details>
-<summary>Option 2: Bring Your Own Ingress (manual configuration)</summary>
+<summary>Option 2: bring your own ingress</summary>
 
 If you prefer to manage your own ingress resource, or if you're using Helm chart V1, you can manually create a Kubernetes ingress resource.
 
-**Switching from Helm chart ingress to manual ingress:**
-
-1. Disable ingress in your `values.yaml`: `ingress.enabled: false`
-2. Upgrade your Helm deployment to remove the ingress resource
-3. Create your manual ingress resource using the examples below
-
-**Manual Ingress Examples:**
 <Tabs>
 <TabItem value="NGINX" label="NGINX">
 
@@ -942,7 +920,14 @@ The ALB controller will use a `ServiceAccount` that requires the [following IAM 
 
 </details>
 
-Once ingress is configured (using either option), ensure that the value of the `airbyteUrl` field in your `values.yaml` is configured to match the ingress URL.
+##### Ensure your airbyte URL matches your ingress host
+
+Once you configure ingress, ensure that the value of `global.airbyteUrl` in your values.yaml matches the ingress URL.
+
+```yaml
+global:
+  airbyteUrl: # e.g. https://airbyte.example.com
+```
 
 You may configure ingress using a load balancer or an API Gateway. We do not currently support most service meshes (such as Istio). If you are having networking issues after fully deploying Airbyte, please verify that firewalls or lacking permissions are not interfering with pod-pod communication. Please also verify that deployed pods have the right permissions to make requests to your external database.
 
