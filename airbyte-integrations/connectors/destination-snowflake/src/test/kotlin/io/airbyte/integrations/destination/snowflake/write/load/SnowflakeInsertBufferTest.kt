@@ -41,7 +41,7 @@ internal class SnowflakeInsertBufferTest {
     fun testAccumulate() {
         val tableName = mockk<TableName>(relaxed = true)
         val column = "columnName"
-        val columns = listOf(column)
+        val columns = linkedMapOf(column to "NUMBER(38,0)")
         val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
         val record = createRecord(column)
         val buffer =
@@ -64,7 +64,7 @@ internal class SnowflakeInsertBufferTest {
     fun testAccumulateRaw() {
         val tableName = mockk<TableName>(relaxed = true)
         val column = "columnName"
-        val columns = listOf(column)
+        val columns = linkedMapOf(column to "NUMBER(38,0)")
         val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
         val record = createRecord(column)
         val buffer =
@@ -89,7 +89,7 @@ internal class SnowflakeInsertBufferTest {
     fun testFlush() {
         val tableName = mockk<TableName>(relaxed = true)
         val column = "columnName"
-        val columns = listOf(column)
+        val columns = linkedMapOf(column to "NUMBER(38,0)")
         val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
         val record = createRecord(column)
         val buffer =
@@ -120,7 +120,7 @@ internal class SnowflakeInsertBufferTest {
     fun testFlushRaw() {
         val tableName = mockk<TableName>(relaxed = true)
         val column = "columnName"
-        val columns = listOf(column)
+        val columns = linkedMapOf(column to "NUMBER(38,0)")
         val snowflakeAirbyteClient = mockk<SnowflakeAirbyteClient>(relaxed = true)
         val record = createRecord(column)
         val buffer =
@@ -157,7 +157,7 @@ internal class SnowflakeInsertBufferTest {
         val buffer =
             SnowflakeInsertBuffer(
                 tableName = tableName,
-                columns = listOf("COLUMN1", "COLUMN2"),
+                columns = linkedMapOf("COLUMN1" to "NUMBER(38,0)", "COLUMN2" to "NUMBER(38,0)"),
                 snowflakeClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
                 flushLimit = 1,
@@ -183,7 +183,7 @@ internal class SnowflakeInsertBufferTest {
         val buffer =
             SnowflakeInsertBuffer(
                 tableName = tableName,
-                columns = listOf("COLUMN1", "COLUMN2"),
+                columns = linkedMapOf("COLUMN1" to "NUMBER(38,0)", "COLUMN2" to "NUMBER(38,0)"),
                 snowflakeClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
                 flushLimit = 1,

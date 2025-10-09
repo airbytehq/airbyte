@@ -316,37 +316,9 @@ class SnowflakeDirectLoadSqlGenerator(
             .andLog()
     }
 
-    fun createFileFormat(namespace: String): String {
-        val formatName = snowflakeSqlNameUtils.fullyQualifiedFormatName(namespace)
-        // We need the ESCAPE and ESCAPE_UNENCLOSED_FIELD options set,
-        // otherwise snowflake defaults to `\`.
-        //  Which causes weird behavior on string fields with a trailing `\` in the value.
-        return """
-            CREATE OR REPLACE FILE FORMAT $formatName
-            TYPE = 'CSV'
-            COMPRESSION = ZSTD
-            FIELD_DELIMITER = '$CSV_FIELD_SEPARATOR'
-            RECORD_DELIMITER = '$CSV_LINE_DELIMITER'
-            FIELD_OPTIONALLY_ENCLOSED_BY = '"'
-            TRIM_SPACE = TRUE
-            ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE
-            REPLACE_INVALID_CHARACTERS = TRUE
-            ESCAPE = NONE
-            ESCAPE_UNENCLOSED_FIELD = NONE
-        """
-            .trimIndent()
-            .andLog()
-    }
-
     fun createSnowflakeStage(tableName: TableName): String {
         val stageName = snowflakeSqlNameUtils.fullyQualifiedStageName(tableName)
-        val formatName = snowflakeSqlNameUtils.fullyQualifiedFormatName(tableName.namespace)
-        return """
-            CREATE STAGE IF NOT EXISTS $stageName
-                FILE_FORMAT = $formatName;
-        """
-            .trimIndent()
-            .andLog()
+        return "CREATE STAGE IF NOT EXISTS $stageName".andLog()
     }
 
     fun putInStage(tableName: TableName, tempFilePath: String): String {
@@ -363,12 +335,22 @@ class SnowflakeDirectLoadSqlGenerator(
 
     fun copyFromStage(tableName: TableName, filename: String): String {
         val stageName = snowflakeSqlNameUtils.fullyQualifiedStageName(tableName, true)
-        val formatName = snowflakeSqlNameUtils.fullyQualifiedFormatName(tableName.namespace)
 
         return """
             COPY INTO ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}
             FROM '@$stageName'
-            FILE_FORMAT = $formatName
+            FILE_FORMAT = (
+                TYPE = 'CSV'
+                COMPRESSION = ZSTD
+                FIELD_DELIMITER = '$CSV_FIELD_SEPARATOR'
+                RECORD_DELIMITER = '$CSV_LINE_DELIMITER'
+                FIELD_OPTIONALLY_ENCLOSED_BY = '"'
+                TRIM_SPACE = TRUE
+                ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE
+                REPLACE_INVALID_CHARACTERS = TRUE
+                ESCAPE = NONE
+                ESCAPE_UNENCLOSED_FIELD = NONE
+            )
             ON_ERROR = 'ABORT_STATEMENT'
             PURGE = TRUE
             files = ('$filename')

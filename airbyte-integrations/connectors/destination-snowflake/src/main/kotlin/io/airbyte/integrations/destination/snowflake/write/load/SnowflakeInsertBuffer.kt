@@ -35,7 +35,7 @@ private const val CSV_WRITER_BUFFER_SIZE = 1024 * 1024 // 1 MB
 
 class SnowflakeInsertBuffer(
     private val tableName: TableName,
-    val columns: List<String>,
+    val columns: LinkedHashMap<String, String>,
     private val snowflakeClient: SnowflakeAirbyteClient,
     val snowflakeConfiguration: SnowflakeConfiguration,
     private val snowflakeColumnUtils: SnowflakeColumnUtils,
@@ -66,7 +66,7 @@ class SnowflakeInsertBuffer(
         if (csvFilePath == null) {
             val csvFile = createCsvFile()
             csvFilePath = csvFile.toPath()
-            csvWriter = csvWriterBuilder.build(ZstdOutputStream(csvFile.outputStream()))
+            csvWriter = csvWriterBuilder.build(ZstdOutputStream(csvFile.outputStream(), -1))
         }
 
         writeToCsvFile(recordFields)
