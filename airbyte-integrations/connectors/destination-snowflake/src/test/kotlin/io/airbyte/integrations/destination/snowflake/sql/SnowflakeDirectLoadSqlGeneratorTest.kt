@@ -23,6 +23,7 @@ import io.airbyte.integrations.destination.snowflake.spec.CdcDeletionMode
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.write.load.CSV_FIELD_SEPARATOR
 import io.airbyte.integrations.destination.snowflake.write.load.CSV_LINE_DELIMITER
+import io.airbyte.integrations.destination.snowflake.write.load.FILE_SUFFIX
 import io.mockk.every
 import io.mockk.mockk
 import java.util.UUID
@@ -306,7 +307,7 @@ new_record."_AIRBYTE_GENERATION_ID"
         val tableName = TableName(namespace = "namespace", name = "name")
         val targetTableName = snowflakeSqlNameUtils.fullyQualifiedName(tableName)
         val stagingTableName = snowflakeSqlNameUtils.fullyQualifiedStageName(tableName)
-        val sql = snowflakeDirectLoadSqlGenerator.copyFromStage(tableName, "test.csv.gz")
+        val sql = snowflakeDirectLoadSqlGenerator.copyFromStage(tableName, "test$FILE_SUFFIX")
         val expectedSql =
             """
             COPY INTO $targetTableName
@@ -325,7 +326,7 @@ new_record."_AIRBYTE_GENERATION_ID"
             )
             ON_ERROR = 'ABORT_STATEMENT'
             PURGE = TRUE
-            files = ('test.csv.gz')
+            files = ('test$FILE_SUFFIX')
         """.trimIndent()
         assertEquals(expectedSql, sql)
     }

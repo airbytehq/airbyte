@@ -23,13 +23,12 @@ import kotlin.io.path.pathString
 
 private val logger = KotlinLogging.logger {}
 
-internal const val CSV_FILE_EXTENSION = ".csv"
 internal const val CSV_FIELD_SEPARATOR = ','
 internal const val CSV_QUOTE_CHARACTER = '"'
 internal val CSV_LINE_DELIMITER = LineDelimiter.LF
 internal const val DEFAULT_FLUSH_LIMIT = 1000
 internal const val FILE_PREFIX = "snowflake"
-internal const val FILE_SUFFIX = ".zst"
+internal const val FILE_SUFFIX = ".csv.zst"
 
 private const val CSV_WRITER_BUFFER_SIZE = 1024 * 1024 // 1 MB
 
@@ -101,7 +100,7 @@ class SnowflakeInsertBuffer(
     }
 
     private fun createCsvFile(): File {
-        val csvFile = File.createTempFile(FILE_PREFIX, "$CSV_FILE_EXTENSION$FILE_SUFFIX")
+        val csvFile = File.createTempFile(FILE_PREFIX, FILE_SUFFIX)
         csvFile.deleteOnExit()
         return csvFile
     }

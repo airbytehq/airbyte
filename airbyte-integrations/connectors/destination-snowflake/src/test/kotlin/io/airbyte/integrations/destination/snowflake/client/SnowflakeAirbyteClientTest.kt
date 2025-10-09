@@ -23,6 +23,7 @@ import io.airbyte.integrations.destination.snowflake.sql.DEFAULT_COLUMNS
 import io.airbyte.integrations.destination.snowflake.sql.QUOTE
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlGenerator
+import io.airbyte.integrations.destination.snowflake.write.load.FILE_SUFFIX
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
@@ -497,8 +498,8 @@ internal class SnowflakeAirbyteClientTest {
         every { dataSource.connection } returns mockConnection
 
         runBlocking {
-            client.copyFromStage(tableName, "test.csv.gz")
-            verify(exactly = 1) { sqlGenerator.copyFromStage(tableName, "test.csv.gz") }
+            client.copyFromStage(tableName, "test$FILE_SUFFIX")
+            verify(exactly = 1) { sqlGenerator.copyFromStage(tableName, "test$FILE_SUFFIX") }
             verify(exactly = 1) { mockConnection.close() }
         }
     }
