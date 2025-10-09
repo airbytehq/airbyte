@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+import logging
 import time
 from dataclasses import dataclass
 from datetime import timedelta
@@ -10,10 +10,12 @@ from typing import Any, List, Mapping
 
 import requests
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.http import HttpClient
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_token import AbstractHeaderAuthenticator
+from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_now, ab_datetime_parse
 
 
@@ -59,6 +61,7 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
     DURATION = timedelta(seconds=3600)  # Duration at which the current rate limit window resets
 
     def __init__(self, tokens: List[str], auth_method: str = "token", auth_header: str = "Authorization"):
+        self._logger = logging.getLogger("airbyte")
         self._auth_method = auth_method
         self._auth_header = auth_header
         self._tokens = {t: Token() for t in tokens}
@@ -114,14 +117,33 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
 
     def _check_token_limits(self, token: str):
         """check that token is not limited"""
-        headers = {"Accept": "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28"}
-        rate_limit_info = (
-            requests.get(
-                "https://api.github.com/rate_limit", headers=headers, auth=TokenAuthenticator(token, auth_method=self._auth_method)
-            )
-            .json()
-            .get("resources")
+
+        # It would've been nice to instantiate a single client on this authenticator. However, we are checking
+        # the limits of each token which is associated with a TokenAuthenticator. And each HttpClient can only
+        # correspond to one authenticator.
+        self._http_client = HttpClient(
+            name="token_validator",
+            logger=self._logger,
+            authenticator=TokenAuthenticator(token, auth_method=self._auth_method),
+            use_cache=False,  # We don't want to reuse cached valued because rate limit values change frequently
         )
+
+        _, response = self._http_client.send_request(
+            http_method="GET",
+            url="https://api.github.com/rate_limit",
+            headers={"Accept": "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28"},
+            request_kwargs={},
+        )
+
+        response_body = response.json()
+        if "resources" not in response_body:
+            raise AirbyteTracedException(
+                failure_type=FailureType.config_error,
+                internal_message=f"Token rate limit info response did not contain expected key: resources",
+                message="Unable to validate token. Please double check that specified authentication tokens are correct",
+            )
+
+        rate_limit_info = response_body.get("resources")
         token_info = self._tokens[token]
         remaining_info_core = rate_limit_info.get("core")
         token_info.count_rest, token_info.reset_at_rest = (
