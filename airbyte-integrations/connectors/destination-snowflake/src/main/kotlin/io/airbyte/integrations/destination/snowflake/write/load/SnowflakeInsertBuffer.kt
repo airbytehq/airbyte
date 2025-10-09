@@ -106,7 +106,7 @@ class SnowflakeInsertBuffer(
 
     @VisibleForTesting
     internal fun getInputStream(buffer: InputOutputBuffer): InputStream {
-        // Flush and close the GZIP output stream to finalize the compressed contents
+        // Flush and close the compressed output stream to finalize the compressed contents
         outputStream.flush()
         outputStream.close()
         return buffer.toInputStream()
