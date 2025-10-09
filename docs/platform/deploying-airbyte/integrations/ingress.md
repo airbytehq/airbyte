@@ -45,7 +45,7 @@ Starting with Helm chart V2, you can configure ingress directly in your `values.
 
 ### Basic configuration
 
-Add the following to your `values.yaml` file:
+Add the following to your `values.yaml` file. This example includes both required backend services for Airbyte to function properly:
 
 ```yaml
 ingress:
@@ -60,7 +60,10 @@ ingress:
       paths:
         - path: /
           pathType: Prefix
-          backend: server  # Routes to airbyte-server
+          backend: server  # Routes to airbyte-server (UI and API)
+        - path: /connector-builder
+          pathType: Prefix
+          backend: connector-builder-server  # Required for connector builder
   tls: []
     # Optionally configure TLS
     # - secretName: airbyte-tls
@@ -68,31 +71,10 @@ ingress:
     #     - airbyte.example.com
 ```
 
-### Backend Services
-
-The `backend` field in each path configuration specifies which Airbyte service to route to. Available options:
+The `backend` field specifies which Airbyte service to route to:
 
 - `server` - Routes to the main Airbyte API server (handles UI and API requests)
-- `connector-builder-server` - Routes to the connector builder service
-
-### Example: multiple path routing
-
-You can configure different paths to route to different services:
-
-```yaml
-ingress:
-  enabled: true
-  className: "nginx"
-  hosts:
-    - host: airbyte.example.com
-      paths:
-        - path: /
-          pathType: Prefix
-          backend: server
-        - path: /connector-builder
-          pathType: Prefix
-          backend: connector-builder-server
-```
+- `connector-builder-server` - Routes to the connector builder service (required for Airbyte's connector builder to work)
 
 ### Switching from external ingress to Helm chart ingress
 

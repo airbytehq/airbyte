@@ -35,6 +35,7 @@ Prior to deploying Self-Managed Enterprise, we recommend having each of the foll
 | External Secrets Manager | [Amazon Secrets Manager](/platform/operator-guides/configuring-airbyte#secrets) for storing connector secrets.                                                                     |
 
 A few notes on Kubernetes cluster provisioning for Airbyte Self-Managed Enterprise:
+
 - We support Amazon Elastic Kubernetes Service (EKS) on EC2 or Google Kubernetes Engine (GKE) on Google Compute Engine (GCE). Improved support for Azure Kubernetes Service (AKS) is coming soon.
 - We recommend running Airbyte on memory-optimized instances, such as M7i / M7g instance types.
 - While we support GKE Autopilot, we do not support Amazon EKS on Fargate.
@@ -799,6 +800,9 @@ ingress:
         - path: /
           pathType: Prefix
           backend: server  # Routes to airbyte-server
+        - path: /connector-builder
+          pathType: Prefix
+          backend: connector-builder-server  # Required for connector builder
   tls: []
     # Optionally configure TLS
     # - secretName: airbyte-tls
@@ -810,7 +814,7 @@ The `backend` field specifies which service to route to:
 
 - `keycloak` - Routes to Keycloak service (required for OIDC authentication, omit if using generic OIDC)
 - `server` - Routes to the main Airbyte server
-- `connector-builder-server` - Routes to the connector builder service
+- `connector-builder-server` - Routes to the connector builder service (required for Airbyte's connector builder to work)
 
 </details>
 
