@@ -512,10 +512,7 @@ app = typer.Typer(add_completion=False)
 
 @app.command()
 def main(
-    files_list: Annotated[
-        Optional[str],
-        typer.Option(help="CSV string of file paths (overrides git detection).")
-    ] = None,
+    files_list: Annotated[Optional[str], typer.Option(help="CSV string of file paths (overrides git detection).")] = None,
     local_cdk: Annotated[
         bool,
         typer.Option(
