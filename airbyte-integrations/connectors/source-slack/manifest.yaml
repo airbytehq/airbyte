@@ -1,0 +1,1433 @@
+version: 6.60.4
+type: DeclarativeSource
+
+definitions:
+
+  default_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: cursor
+    page_size_option:
+      type: RequestOption
+      field_name: limit
+      inject_into: request_parameter
+    pagination_strategy:
+      type: CursorPagination
+      page_size: 1000
+      cursor_value: '{{ response.get("response_metadata", {}).get("next_cursor", {}) }}'
+      stop_condition: >-
+        {{ not response.get("response_metadata", {}).get("next_cursor", {})
+        }}
+
+  api_token_auth:
+    type: BearerAuthenticator
+    api_token: "{{ config['credentials']['api_token'] }}"
+  access_token_auth:
+    type: BearerAuthenticator
+    api_token: "{{ config['credentials']['access_token'] }}"
+
+  authenticator:
+    type: SelectiveAuthenticator
+    authenticator_selection_path: ["credentials", "option_title"]
+    authenticators:
+      Default OAuth2.0 authorization: "#/definitions/access_token_auth"
+      API Token Credentials: "#/definitions/api_token_auth"
+
+  requester:
+    type: HttpRequester
+    url_base: https://slack.com/api/
+    path: "{{ parameters['path'] }}"
+    http_method: GET
+    request_parameters: {}
+    request_headers: {}
+    authenticator:
+      type: SelectiveAuthenticator
+      authenticator_selection_path: ["credentials", "option_title"]
+      authenticators:
+        Default OAuth2.0 authorization: "#/definitions/access_token_auth"
+        API Token Credentials: "#/definitions/api_token_auth"
+    request_body_json: {}
+    error_handler:
+      type: DefaultErrorHandler
+      response_filters:
+        - error_message_contains: "invalid_auth"
+          action: FAIL
+          error_message: Authentication has failed, please update your credentials.
+        - http_codes: [429]
+          action: RETRY
+          error_message: Failed to perform a request due to rate limits.
+        - http_codes: [500, 503]
+          action: RETRY
+          error_message: Failed to perform a request due to internal server error.
+
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path:
+        - "{{ parameters['extractor_field_path'] }}"
+
+  retriever:
+    type: SimpleRetriever
+    requester:
+      $ref: "#/definitions/requester"
+    record_selector:
+      $ref: "#/definitions/selector"
+    paginator:
+      $ref: "#/definitions/default_paginator"
+    partition_router: []
+
+  stream_base:
+    primary_key: "id"
+    retriever:
+      $ref: "#/definitions/retriever"
+
+  users_stream:
+    primary_key: "id"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - error_message_contains: "invalid_auth"
+              action: FAIL
+              error_message: Authentication has failed, please update your credentials.
+            - http_codes: [429]
+              action: RETRY
+              error_message: Failed to perform a request due to rate limits.
+            - http_codes: [403, 400]
+              action: FAIL
+              error_message: Got an exception while trying to set up the connection. Most probably, there are no users in the given Slack instance or your token is incorrect.
+            - http_codes: [500, 503]
+              action: RETRY
+              error_message: Failed to perform a request due to internal server error.
+      record_selector:
+        $ref: "#/definitions/selector"
+      paginator:
+        $ref: "#/definitions/default_paginator"
+      partition_router: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/users"
+    $parameters:
+      name: users
+      path: users.list
+      extractor_field_path: members
+
+  channels_stream:
+    primary_key: "id"
+    $parameters:
+      name: channels
+      path: conversations.list
+      extractor_field_path: channels
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/channels"
+    retriever:
+      class_name: "source_declarative_manifest.components.ChannelsRetriever"
+      requester:
+        $ref: "#/definitions/requester"
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 10
+          backoff_strategies:
+            - type: "WaitTimeFromHeader"
+              header: "retry-after"
+            - type: "WaitTimeFromHeader"
+              header: "Retry-After"
+        request_parameters:
+          types: "{{ 'public_channel,private_channel' if config['include_private_channels'] == true else 'public_channel' }}"
+      record_selector:
+        $ref: "#/definitions/selector"
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record.name in config.channel_filter or not config.channel_filter }}"
+      paginator:
+        $ref: "#/definitions/default_paginator"
+        $parameters:
+          url_base: https://slack.com/api/
+
+  channels_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - type: ParentStreamConfig
+        parent_key: id
+        request_option:
+          type: RequestOption
+          field_name: channel
+          inject_into: request_parameter
+        partition_field: channel_id
+        stream: "#/definitions/channels_stream"
+
+  channel_members_stream:
+    $ref: "#/definitions/stream_base"
+    $parameters:
+      name: channel_members
+      path: conversations.members
+      extractor_field_path: members
+    primary_key:
+      - member_id
+      - channel_id
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        $ref: "#/definitions/channels_partition_router"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          class_name: "source_declarative_manifest.components.ChannelMembersExtractor"
+          field_path: ["members"]
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - channel_id
+            value: "{{ stream_partition.get('channel_id') }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/channel_members"
+
+  channel_messages_stream:
+    $ref: "#/definitions/stream_base"
+    $parameters:
+      name: channel_messages
+      path: conversations.history
+      extractor_field_path: messages
+    primary_key:
+      - channel_id
+      - ts
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        type: CustomRequester
+        class_name: "source_declarative_manifest.components.MessagesAndThreadsHttpRequester"
+        url_match: "https://slack.com/api/conversations.history?.+"
+        url_base: https://slack.com/api/
+        path: "{{ parameters['path'] }}"
+        http_method: GET
+        request_parameters:
+          inclusive: "True"
+        request_headers: {}
+        authenticator:
+          $ref: "#/definitions/authenticator"
+        request_body_json: {}
+        error_handler:
+          type: DefaultErrorHandler
+          backoff_strategies:
+            - type: "WaitTimeFromHeader"
+              header: "retry-after"
+            - type: "WaitTimeFromHeader"
+              header: "Retry-After"
+        use_cache: true
+      record_selector:
+        $ref: "#/definitions/selector"
+      paginator:
+        $ref: "#/definitions/default_paginator"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/channels_stream"
+              $parameters:
+                name: channels
+                path: conversations.list
+                extractor_field_path: channels
+            parent_key: id
+            partition_field: channel
+            request_option:
+              field_name: "channel"
+              inject_into: "request_parameter"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: float_ts
+      cursor_datetime_formats:
+        - "%s_as_float"
+      step: "P{{ config.get('channel_messages_window_size', 100) }}D"
+      cursor_granularity: PT1S
+      lookback_window: "P{{ config.get('lookback_window', 0) }}D"
+      datetime_format: "%s_as_float"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_time_option:
+        inject_into: request_parameter
+        field_name: oldest
+        type: RequestOption
+      end_time_option:
+        inject_into: request_parameter
+        field_name: latest
+        type: RequestOption
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - float_ts
+            value: "{{ record.ts|float }}"
+          - path:
+              - channel_id
+            value: "{{ stream_partition.get('channel') }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/channel_messages"
+
+  threads_stream:
+    $ref: "#/definitions/stream_base"
+    $parameters:
+      name: threads
+      path: conversations.replies
+      extractor_field_path: messages
+    primary_key:
+      - channel_id
+      - ts
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: "source_declarative_manifest.components.ThreadsStateMigration"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        type: CustomRequester
+        class_name: "source_declarative_manifest.components.MessagesAndThreadsHttpRequester"
+        url_match: "https://slack.com/api/conversations.replies?.+"
+        url_base: https://slack.com/api/
+        path: "{{ parameters['path'] }}"
+        http_method: GET
+        request_parameters:
+          channel: "{{ stream_partition['parent_slice']['channel'] }}"
+        request_headers: {}
+        authenticator:
+          $ref: "#/definitions/authenticator"
+        request_body_json: {}
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 20
+          backoff_strategies:
+            - type: "WaitTimeFromHeader"
+              header: "retry-after"
+            - type: "WaitTimeFromHeader"
+              header: "Retry-After"
+      record_selector:
+        $ref: "#/definitions/selector"
+      paginator:
+        $ref: "#/definitions/default_paginator"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/channel_messages_stream"
+            # One complication is that threads can be updated at Any time in the future. Therefore, if we wanted to comprehensively sync data
+            # i.e: get every single response in a thread, we'd have to read every message in the slack instance every time we ran a sync,
+            # because otherwise there is no way to guarantee that a thread deep in the past didn't receive a new message.
+            # incremental_dependency set to true to read parent state incrementally with custom substream partition router
+            incremental_dependency: true
+            parent_key: ts
+            partition_field: float_ts
+            request_option:
+              type: RequestOption
+              field_name: "ts"
+              inject_into: "request_parameter"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      lookback_window: "P{{ config.get('lookback_window', 0) }}D"
+      cursor_field: "float_ts"
+      cursor_datetime_formats:
+        - "%s"
+      datetime_format: "%s"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') if not config.get('end_date') else format_datetime(config.get('end_date'), '%Y-%m-%dT%H:%M:%SZ')}}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - float_ts
+            value: "{{ record['ts']|float }}"
+          - path:
+              - channel_id
+            value: "{{ stream_partition['parent_slice']['channel'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/threads"
+
+streams:
+  - "#/definitions/users_stream"
+  - "#/definitions/channels_stream"
+  - "#/definitions/channel_members_stream"
+  - "#/definitions/channel_messages_stream"
+  - "#/definitions/threads_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - users
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    "$schema": http://json-schema.org/draft-07/schema#
+    title: Slack Spec
+    required:
+      - start_date
+      - lookback_window
+      - join_channels
+    additionalProperties: true
+    properties:
+      start_date:
+        type: string
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+        description: UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.
+        examples:
+          - "2017-01-25T00:00:00Z"
+        title: Start Date
+        format: date-time
+      lookback_window:
+        type: integer
+        title: Threads Lookback window (Days)
+        description: How far into the past to look for messages in threads, default is 0 days
+        examples:
+          - 7
+          - 14
+        minimum: 0
+        default: 0
+        maximum: 365
+      join_channels:
+        type: boolean
+        default: true
+        title: Join all channels
+        description: Whether to join all channels or to sync data only from channels the bot is already in.  If false, you''ll need to manually add the bot to all the channels from which you''d like to sync messages.
+      include_private_channels:
+        type: boolean
+        default: false
+        title: Include private channels
+        description: Whether to read information from private channels that the bot is already in.  If false, only public channels will be read.  If true, the bot must be manually added to private channels.
+      channel_filter:
+        type: array
+        default: []
+        items:
+          type: string
+          minLength: 0
+        title: Channel name filter
+        description: A channel name list (without leading '#' char) which limit the channels from which you'd like to sync. Empty list means no filter.
+        examples:
+          - channel_one
+          - channel_two
+      credentials:
+        title: Authentication mechanism
+        description: Choose how to authenticate into Slack
+        type: object
+        oneOf:
+        - type: object
+          title: Sign in via Slack (OAuth)
+          required:
+            - option_title
+            - client_id
+            - client_secret
+            - access_token
+          properties:
+            option_title:
+              type: string
+              const: Default OAuth2.0 authorization
+            client_id:
+              type: string
+              title: Client ID
+              description: Slack client_id. See our <a href="https://docs.airbyte.com/integrations/sources/slack">docs</a> if you need help finding this id.
+            client_secret:
+              type: string
+              title: Client Secret
+              description: Slack client_secret. See our <a href="https://docs.airbyte.com/integrations/sources/slack">docs</a> if you need help finding this secret.
+              airbyte_secret: true
+            access_token:
+              type: string
+              title: Access token
+              description: Slack access_token. See our <a href="https://docs.airbyte.com/integrations/sources/slack">docs</a> if you need help generating the token.
+              airbyte_secret: true
+          order: 0
+        - type: object
+          title: API Token
+          required:
+            - option_title
+            - api_token
+          properties:
+            option_title:
+              type: string
+              const: API Token Credentials
+            api_token:
+              type: string
+              title: API Token
+              description: A Slack bot token. See the <a href="https://docs.airbyte.com/integrations/sources/slack">docs</a> for instructions on how to generate it.
+              airbyte_secret: true
+          order: 1
+      num_workers:
+        type: integer
+        title: Number of concurrent workers
+        minimum: 2
+        maximum: 10
+        default: 2
+        examples:
+          - 2
+          - 3
+        description: The number of worker threads to use for the sync.
+        order: 7
+      channel_messages_window_size:
+        type: integer
+        order: 8
+        default: 100
+        minimum: 1
+        maximum: 100
+        title: Channel messages date window size (in days)
+        description: The size (in days) of the date window that will be used while syncing data from the channel messages stream. A smaller window will allow for greater parallelization when syncing records, but can lead to rate limiting errors.
+        examples:
+          - 30
+          - 10
+          - 5
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+      - credentials
+      - option_title
+    predicate_value: Default OAuth2.0 authorization
+    oauth_config_specification:
+#      oauth_user_input_from_connector_config_specification:
+      complete_oauth_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          access_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - access_token
+      complete_oauth_server_input_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_secret
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+        - type: ConfigMigration
+          description: |
+            Remaps the existing config authentication format to a new format
+            OLD: {"api_key": ...}
+            NEW: {"credentials": {"api_token": ..., "option_title": "API Token Credentials"}}
+          transformations:
+            - type: ConfigAddFields
+              fields:
+                - type: AddedFieldDefinition
+                  path: ["credentials", "api_token"]
+                  value: "{{ config['api_token'] }}"
+              condition: "{{ config.get('api_token', False) }}"
+            - type: ConfigAddFields
+              fields:
+                - type: AddedFieldDefinition
+                  path: ["credentials", "option_title"]
+                  value: "API Token Credentials"
+              condition: "{{ config.get('api_token', False) }}"
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 2) }}"
+  max_concurrency: 10
+
+schemas:
+  users:
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    type: object
+    properties:
+      id:
+        description: Unique identifier for the user.
+        type: string
+      profile:
+        description: User's profile information containing detailed details.
+        type: object
+        additionalProperties: true
+        properties:
+          always_active:
+            description: Indicates if the user is always active.
+            type:
+              - "null"
+              - boolean
+          avatar_hash:
+            description: Hash value representing the user's avatar.
+            type: string
+          status_text:
+            description: Text representing the user's status.
+            type: string
+          status_emoji:
+            description: Emoji representing the user's status.
+            type: string
+          real_name:
+            description: Full real name of the user.
+            type: string
+          display_name:
+            description: The display name of the user.
+            type: string
+          real_name_normalized:
+            description: Normalized full real name of the user.
+            type: string
+          display_name_normalized:
+            description: Normalized display name of the user.
+            type: string
+          email:
+            description: Email address of the user.
+            type: string
+          fields:
+            description: Custom fields associated with the user.
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+          huddle_state:
+            description: State of the user's huddle.
+            type: string
+          image_24:
+            description: URL of the user's 24px image.
+            type: string
+          image_32:
+            description: URL of the user's 32px image.
+            type: string
+          image_48:
+            description: URL of the user's 48px image.
+            type: string
+          image_72:
+            description: URL of the user's 72px image.
+            type: string
+          image_192:
+            description: URL of the user's 192px image.
+            type: string
+          image_512:
+            description: URL of the user's 512px image.
+            type: string
+          team:
+            description: Team associated with the user.
+            type: string
+          image_1024:
+            description: URL of the user's 1024px image.
+            type: string
+          image_original:
+            description: URL of the user's original image.
+            type: string
+          first_name:
+            description: First name of the user.
+            type: string
+          last_name:
+            description: Last name of the user.
+            type: string
+          title:
+            description: Job title of the user.
+            type: string
+          phone:
+            description: Phone number of the user.
+            type: string
+          skype:
+            description: Skype ID of the user.
+            type: string
+          status_emoji_display_info:
+            description: Information related to the display of status emoji.
+            type:
+              - "null"
+              - array
+            items:
+              description: Individual items for status emoji display info.
+              type:
+                - "null"
+                - string
+          status_expiration:
+            description: Expiration date for the user's status.
+            type:
+              - "null"
+              - integer
+          status_text_canonical:
+            description: Canonical text representing the user's status.
+            type:
+              - "null"
+              - string
+      team_id:
+        description: Unique identifier for the team the user belongs to.
+        type: string
+      name:
+        description: The username of the user.
+        type: string
+      deleted:
+        description: Indicates if the user is deleted or not.
+        type: boolean
+      color:
+        description: The color assigned to the user for visual purposes.
+        type: string
+      real_name:
+        description: The real name of the user.
+        type: string
+      tz:
+        description: Timezone of the user.
+        type: string
+      tz_label:
+        description: Label representing the timezone of the user.
+        type: string
+      tz_offset:
+        description: Offset of the user's timezone.
+        type: integer
+      is_admin:
+        description: Flag specifying if the user is an admin or not.
+        type: boolean
+      is_owner:
+        description: Flag indicating if the user is an owner.
+        type: boolean
+      is_primary_owner:
+        description: Specifies if the user is the primary owner.
+        type: boolean
+      is_restricted:
+        description: Flag specifying if the user is restricted.
+        type: boolean
+      is_ultra_restricted:
+        description: Indicates if the user has ultra-restricted access.
+        type: boolean
+      is_bot:
+        description: Indicates if the user is a bot account.
+        type: boolean
+      is_forgotten:
+        description: Specifies if the user is marked as forgotten.
+        type: boolean
+      is_invited_user:
+        description: Indicates if the user is invited or not.
+        type: boolean
+      is_email_confirmed:
+        description: Flag indicating if the user's email is confirmed.
+        type: boolean
+      updated:
+        description: Timestamp of when the user's information was last updated.
+        type: integer
+      who_can_share_contact_card:
+        description: Specifies who can share the user's contact card.
+        type: string
+      is_app_user:
+        description: Specifies if the user is an app user.
+        type: boolean
+      has_2fa:
+        description: Flag indicating if the user has two-factor authentication enabled.
+        type: boolean
+
+  channels:
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    type: object
+    properties:
+      id:
+        description: The unique identifier of the channel.
+        type: string
+      name:
+        description: The name of the channel.
+        type: string
+      is_channel:
+        description: Indicates if the entity is a channel.
+        type: boolean
+      is_group:
+        description: Indicates if the channel is a group (private channel) rather than a
+          regular channel.
+        type: boolean
+      is_im:
+        description: Indicates if the entity is a direct message (IM) channel.
+        type: boolean
+      context_team_id:
+        description: The unique identifier of the team context in which the channel exists.
+        type: string
+      created:
+        description: The timestamp when the channel was created.
+        type: integer
+      creator:
+        description: The ID of the user who created the channel.
+        type: string
+      is_archived:
+        description: Indicates if the channel is archived.
+        type: boolean
+      is_general:
+        description: Indicates if the channel is a general channel in the workspace.
+        type: boolean
+      unlinked:
+        description: Indicates if the channel is unlinked.
+        type: integer
+      updated:
+        description: The timestamp when the channel was last updated.
+        type: integer
+      name_normalized:
+        description: The normalized name of the channel.
+        type: string
+      is_read_only:
+        description: Indicates if the channel is read-only.
+        type: boolean
+      is_shared:
+        description: Indicates if the channel is shared.
+        type: boolean
+      is_ext_shared:
+        description: Indicates if the channel is externally shared.
+        type: boolean
+      is_org_shared:
+        description: Indicates if the channel is organization-wide shared.
+        type: boolean
+      pending_shared:
+        description: The list of pending shared items of the channel.
+        type: array
+        items:
+          description: List of pending shared items.
+      is_pending_ext_shared:
+        description: Indicates if the channel is pending external shared.
+        type: boolean
+      is_member:
+        description: Indicates if the calling user is a member of the channel.
+        type: boolean
+      is_private:
+        description: Indicates if the channel is a private channel.
+        type: boolean
+      is_mpim:
+        description: Indicates if the entity is a multiple person direct message (MPIM)
+          channel.
+        type: boolean
+      last_read:
+        description: The timestamp of the user's last read message in the channel.
+        type: string
+      topic:
+        description: The topic of the channel.
+        type: object
+        additionalProperties: true
+        properties:
+          value:
+            description: The value of the channel topic.
+            type: string
+          creator:
+            description: The ID of the user who last set the topic.
+            type: string
+          last_set:
+            description: The timestamp when the topic was last set.
+            type: integer
+      purpose:
+        description: The purpose of the channel.
+        type: object
+        additionalProperties: true
+        properties:
+          value:
+            description: The value of the channel purpose.
+            type: string
+          creator:
+            description: The ID of the user who last set the purpose.
+            type: string
+          last_set:
+            description: The timestamp when the purpose was last set.
+            type: integer
+      shared_team_ids:
+        description: The IDs of teams with which the channel is shared.
+        type: array
+        items:
+          description: List of shared team IDs.
+          type:
+            - "null"
+            - string
+      previous_names:
+        description: The previous names of the channel.
+        type: array
+        items:
+          description: List of previous names.
+          type: string
+      num_members:
+        description: The number of members in the channel.
+        type: integer
+      parent_conversation:
+        description: The parent conversation of the channel.
+        type:
+          - "null"
+          - string
+      pending_connected_team_ids:
+        description: The IDs of teams that are pending to be connected to the channel.
+        type: array
+        items:
+          description: List of pending connected team IDs.
+          type:
+            - "null"
+            - string
+      locale:
+        description: The locale of the channel.
+        type: string
+
+  channel_messages:
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    type: object
+    properties:
+      channel_id:
+        description: Unique identifier of the channel where the message was posted
+        type:
+          - "null"
+          - string
+      blocks:
+        description: List of blocks that make up the message
+        items:
+          additionalProperties: true
+          properties:
+            type:
+              description: Type of block (e.g., section, actions, context, etc.)
+              type:
+                - "null"
+                - string
+            block_id:
+              description: Unique identifier for the block
+              type:
+                - "null"
+                - string
+            elements:
+              type:
+                - "null"
+                - array
+              items:
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  elements:
+                    type:
+                      - "null"
+                      - array
+                    items:
+                      type:
+                        - "null"
+                        - object
+                      additionalProperties: true
+                      properties:
+                        text:
+                          description: Text content of the element
+                          type:
+                            - "null"
+                            - string
+                        type:
+                          description: Type of element (e.g., text, image, etc.)
+                          type:
+                            - "null"
+                            - string
+                  type:
+                    description: Type of elements container (e.g., context, actions, etc.)
+                    type:
+                      - "null"
+                      - string
+          type:
+            - "null"
+            - object
+        type:
+          - "null"
+          - array
+      bot_id:
+        description: Unique identifier of the bot that sent the message
+        type:
+          - "null"
+          - string
+      bot_profile:
+        description: Profile information of the bot user
+        additionalProperties: true
+        properties:
+          app_id:
+            description: ID of the Slack app associated with the bot
+            type:
+              - "null"
+              - string
+          deleted:
+            description: Flag indicating if the bot profile has been deleted
+            type:
+              - "null"
+              - boolean
+          id:
+            description: Unique identifier of the bot profile
+            type:
+              - "null"
+              - string
+          name:
+            description: Name of the bot
+            type:
+              - "null"
+              - string
+          team_id:
+            description: ID of the team to which the bot belongs
+            type:
+              - "null"
+              - string
+          updated:
+            description: Timestamp of the last profile update
+            type:
+              - "null"
+              - integer
+        type:
+          - "null"
+          - object
+      attachments:
+        description: List of attachments included in the message
+        items:
+          properties:
+            title:
+              description: Title of the attachment
+              type:
+                - "null"
+                - string
+            id:
+              description: Unique identifier for the attachment
+              type:
+                - "null"
+                - integer
+            color:
+              description: Color code to be used for the attachment
+              type:
+                - "null"
+                - string
+            fallback:
+              description: Plain text summary of the attachment
+              type:
+                - "null"
+                - string
+          type:
+            - "null"
+            - object
+        type:
+          - "null"
+          - array
+      client_msg_id:
+        description: Unique identifier for the client who sent the message
+        type:
+          - "null"
+          - string
+      display_as_bot:
+        description: Flag indicating if the message is displayed as coming from a bot
+        type:
+          - "null"
+          - boolean
+      file_id:
+        description: Unique identifier of the file attached to the message
+        type:
+          - "null"
+          - string
+      file_ids:
+        description: List of unique identifiers of files attached to the message
+        items:
+          type:
+            - "null"
+            - string
+        type:
+          - "null"
+          - array
+      icons:
+        description: Icons associated with the message
+        additionalProperties: true
+        properties:
+          emoji:
+            description: Emoji icon used in the message
+            type:
+              - "null"
+              - string
+        type:
+          - "null"
+          - object
+      inviter:
+        description: User ID of the member who invited a user to the channel
+        type:
+          - "null"
+          - string
+      is_delayed_message:
+        description: Flag indicating if the message was delayed
+        type:
+          - "null"
+          - boolean
+      is_intro:
+        description: Flag indicating if the message is an introduction message
+        type:
+          - "null"
+          - boolean
+      is_starred:
+        description: Flag indicating if the message is starred
+        type:
+          - "null"
+          - boolean
+      last_read:
+        description: Timestamp when the message was last read
+        type:
+          - "null"
+          - string
+      latest_reply:
+        description: Timestamp of the latest reply to the message
+        type:
+          - "null"
+          - string
+      name:
+        description: Name of the channel
+        type:
+          - "null"
+          - string
+      old_name:
+        description: Previous name of the channel if renamed
+        type:
+          - "null"
+          - string
+      parent_user_id:
+        description: Unique identifier of the parent user
+        type:
+          - "null"
+          - string
+      permalink:
+        description: Permanent link to the message
+        format: uri
+        type:
+          - "null"
+          - string
+      pinned_to:
+        description: List of channels where the message is pinned
+        items:
+          type:
+            - "null"
+            - string
+        type:
+          - "null"
+          - array
+      purpose:
+        description: Purpose set for the channel
+        type:
+          - "null"
+          - string
+      reactions:
+        description: List of reactions added to the message
+        items:
+          additionalProperties: true
+          properties:
+            count:
+              description: Number of users who reacted
+              type:
+                - "null"
+                - integer
+            name:
+              description: Emoji name of the reaction
+              type:
+                - "null"
+                - string
+            users:
+              description: List of users who reacted
+              items:
+                type:
+                  - "null"
+                  - string
+              type:
+                - "null"
+                - array
+          type:
+            - "null"
+            - object
+        type:
+          - "null"
+          - array
+      reply_count:
+        description: Number of replies to the message
+        type:
+          - "null"
+          - integer
+      reply_users:
+        description: List of users who replied to the message
+        items:
+          type:
+            - "null"
+            - string
+        type:
+          - "null"
+          - array
+      reply_users_count:
+        description: Number of users who replied to the message
+        type:
+          - "null"
+          - integer
+      source_team:
+        description: Team ID of the source team
+        type:
+          - "null"
+          - string
+      subscribed:
+        description: Flag indicating if the user is subscribed to the channel
+        type:
+          - "null"
+          - boolean
+      subtype:
+        description: Type of message subtype
+        type:
+          - "null"
+          - string
+      team:
+        description: Team ID where the message was posted
+        type:
+          - "null"
+          - string
+      text:
+        description: Text content of the message
+        type:
+          - "null"
+          - string
+      thread_ts:
+        description: Timestamp of the thread the message is part of
+        type:
+          - "null"
+          - string
+      topic:
+        description: Topic set for the channel
+        type:
+          - "null"
+          - string
+      ts:
+        description: Timestamp of the message
+        type:
+          - "null"
+          - string
+      float_ts:
+        description: Timestamp of the message in float format
+        type:
+          - "null"
+          - number
+      is_locked:
+        description: Flag indicating if the message is locked
+        type:
+          - "null"
+          - boolean
+      type:
+        description: Type of message (e.g., message, reply, etc.)
+        type:
+          - "null"
+          - string
+      unread_count:
+        description: Number of unread messages in the channel
+        type:
+          - "null"
+          - integer
+      upload:
+        description: Flag indicating if the message contains uploaded content
+        type:
+          - "null"
+          - boolean
+      user:
+        description: Unique identifier of the user who sent the message
+        type:
+          - "null"
+          - string
+      user_team:
+        description: Team ID of the user who sent the message
+        type:
+          - "null"
+          - string
+      username:
+        description: Username of the user who sent the message
+        type:
+          - "null"
+          - string
+
+  channel_members:
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    type: object
+    properties:
+      channel_id:
+        description: The unique identifier for the channel where the member is associated.
+        type: string
+      member_id:
+        description: The unique identifier for the member within the channel.
+        type: string
+
+  threads:
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    type: object
+    properties:
+      channel_id:
+        description: ID of the channel where the thread is posted
+        type:
+          - "null"
+          - string
+      bot_id:
+        description: ID of the bot user that posted the thread
+        type:
+          - "null"
+          - string
+      client_msg_id:
+        description: Unique identifier for the thread
+        type:
+          - "null"
+          - string
+      type:
+        description: Type of the thread
+        type:
+          - "null"
+          - string
+      text:
+        description: Text content of the thread
+        type:
+          - "null"
+          - string
+      user:
+        description: ID of the user who posted the thread
+        type:
+          - "null"
+          - string
+      ts:
+        description: Timestamp of the thread creation
+        type:
+          - "null"
+          - string
+      float_ts:
+        description: Timestamp in floating format
+        type:
+          - "null"
+          - number
+      subtype:
+        description: Type of the thread subtype
+        type:
+          - "null"
+          - string
+      is_locked:
+        description: Flag indicating if the thread is locked
+        type:
+          - "null"
+          - boolean
+      last_read:
+        description: Timestamp of the last read
+        type:
+          - "null"
+          - string
+      parent_user_id:
+        description: User ID of the parent thread's creator
+        type:
+          - "null"
+          - string
+      team:
+        description: ID of the team where the thread is posted
+        type:
+          - "null"
+          - string
+      blocks:
+        description: An array of blocks in the thread
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            type:
+              description: Type of the block
+              type:
+                - "null"
+                - string
+            block_id:
+              description: Unique identifier for the block
+              type:
+                - "null"
+                - string
+            elements:
+              description: An array of elements in the block
+              type:
+                - "null"
+                - array
+              items:
+                type:
+                  - "null"
+                  - object
+                additionalProperties: true
+                properties:
+                  elements:
+                    description: An array of text elements
+                    type:
+                      - "null"
+                      - array
+                    items:
+                      type:
+                        - "null"
+                        - object
+                      additionalProperties: true
+                      properties:
+                        text:
+                          description: The text content
+                          type:
+                            - "null"
+                            - string
+                        type:
+                          description: Type of element
+                          type:
+                            - "null"
+                            - string
+                        user_id:
+                          description: User ID associated with the element
+                          type:
+                            - "null"
+                            - string
+                  type:
+                    description: Type of elements in the block
+                    type:
+                      - "null"
+                      - string
+      thread_ts:
+        description: Timestamp of the thread
+        type:
+          - "null"
+          - string
+      reply_count:
+        description: Number of replies in the thread
+        type:
+          - "null"
+          - integer
+      reply_users_count:
+        description: Number of users who replied in the thread
+        type:
+          - "null"
+          - number
+      latest_reply:
+        description: Timestamp of the latest reply
+        type:
+          - "null"
+          - string
+      reply_users:
+        description: An array of user IDs who replied in the thread
+        type:
+          - "null"
+          - array
+        items:
+          type: string
+      subscribed:
+        description: Flag indicating if the user is subscribed to the thread
+        type:
+          - "null"
+          - boolean

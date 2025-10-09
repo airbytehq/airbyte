@@ -4,16 +4,17 @@
 
 import time
 from dataclasses import dataclass
+from datetime import timedelta
 from itertools import cycle
 from typing import Any, List, Mapping
 
-import pendulum
 import requests
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_token import AbstractHeaderAuthenticator
+from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_now, ab_datetime_parse
 
 
 def getter(D: dict, key_or_keys, strict=True):
@@ -43,8 +44,8 @@ class GitHubAPILimitException(Exception):
 class Token:
     count_rest: int = 5000
     count_graphql: int = 5000
-    reset_at_rest: pendulum.DateTime = pendulum.now()
-    reset_at_graphql: pendulum.DateTime = pendulum.now()
+    reset_at_rest: AirbyteDateTime = ab_datetime_now()
+    reset_at_graphql: AirbyteDateTime = ab_datetime_now()
 
 
 class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
@@ -55,7 +56,7 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
     the first token becomes available again.
     """
 
-    DURATION = pendulum.duration(seconds=3600)  # Duration at which the current rate limit window resets
+    DURATION = timedelta(seconds=3600)  # Duration at which the current rate limit window resets
 
     def __init__(self, tokens: List[str], auth_method: str = "token", auth_header: str = "Authorization"):
         self._auth_method = auth_method
@@ -125,13 +126,13 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
         remaining_info_core = rate_limit_info.get("core")
         token_info.count_rest, token_info.reset_at_rest = (
             remaining_info_core.get("remaining"),
-            pendulum.from_timestamp(remaining_info_core.get("reset")),
+            ab_datetime_parse(remaining_info_core.get("reset")),
         )
 
         remaining_info_graphql = rate_limit_info.get("graphql")
         token_info.count_graphql, token_info.reset_at_graphql = (
             remaining_info_graphql.get("remaining"),
-            pendulum.from_timestamp(remaining_info_graphql.get("reset")),
+            ab_datetime_parse(remaining_info_graphql.get("reset")),
         )
 
     def check_all_tokens(self):
@@ -143,7 +144,7 @@ class MultipleTokenAuthenticatorWithRateLimiter(AbstractHeaderAuthenticator):
             setattr(current_token, count_attr, getattr(current_token, count_attr) - 1)
             return True
         elif all(getattr(x, count_attr) == 0 for x in self._tokens.values()):
-            min_time_to_wait = min((getattr(x, reset_attr) - pendulum.now()).in_seconds() for x in self._tokens.values())
+            min_time_to_wait = min((getattr(x, reset_attr) - ab_datetime_now()).total_seconds() for x in self._tokens.values())
             if min_time_to_wait < self.max_time:
                 time.sleep(min_time_to_wait if min_time_to_wait > 0 else 0)
                 self.check_all_tokens()

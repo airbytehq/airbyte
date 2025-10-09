@@ -9,7 +9,6 @@ from unittest.mock import Mock, patch
 import pytest
 import yaml
 from google.cloud import storage
-from google.oauth2 import service_account
 
 from metadata_service.constants import REGISTRIES_FOLDER, SPECS_SECRETS_MASK_FILE_NAME, VALID_REGISTRIES
 from metadata_service.models.generated import ConnectorRegistryV0
@@ -290,20 +289,6 @@ class TestPersistSecretsToGcs:
         mock_blob.name = f"{REGISTRIES_FOLDER}/{SPECS_SECRETS_MASK_FILE_NAME}"
         return mock_blob
 
-    @pytest.fixture
-    def mock_gcs_credentials(self):
-        """Mock GCS credentials environment variable."""
-        return {
-            "type": "service_account",
-            "project_id": "test-project",
-            "private_key_id": "test-key-id",
-            "private_key": "-----BEGIN PRIVATE KEY-----\ntest-key\n-----END PRIVATE KEY-----\n",
-            "client_email": "test@test-project.iam.gserviceaccount.com",
-            "client_id": "123456789",
-            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-            "token_uri": "https://oauth2.googleapis.com/token",
-        }
-
     @pytest.mark.parametrize(
         "secrets_set,expected_yaml_content,description",
         [
@@ -313,34 +298,14 @@ class TestPersistSecretsToGcs:
             ({"z_secret", "a_secret", "m_secret"}, {"properties": ["a_secret", "m_secret", "z_secret"]}, "secrets sorted alphabetically"),
         ],
     )
-    def test_persist_secrets_to_gcs_various_secret_sets(
-        self, mock_bucket, mock_blob, mock_gcs_credentials, secrets_set, expected_yaml_content, description
-    ):
+    def test_persist_secrets_to_gcs_various_secret_sets(self, mock_bucket, mock_blob, secrets_set, expected_yaml_content, description):
         """Test persistence with different secret set sizes and contents."""
-        with (
-            patch.dict(os.environ, {"GCS_DEV_CREDENTIALS": json.dumps(mock_gcs_credentials)}),
-            patch("metadata_service.specs_secrets_mask.service_account.Credentials.from_service_account_info") as mock_creds,
-            patch("metadata_service.specs_secrets_mask.storage.Client") as mock_client_class,
-        ):
-            mock_credentials = Mock(spec=service_account.Credentials)
-            mock_creds.return_value = mock_credentials
+        mock_bucket.blob.return_value = mock_blob
 
-            mock_client = Mock()
-            mock_client_class.return_value = mock_client
+        _persist_secrets_to_gcs(secrets_set, mock_bucket)
 
-            mock_dev_bucket = Mock(spec=storage.Bucket)
-            mock_client.bucket.return_value = mock_dev_bucket
-            mock_dev_bucket.blob.return_value = mock_blob
-
-            _persist_secrets_to_gcs(secrets_set, mock_bucket)
-
-            mock_creds.assert_called_once_with(mock_gcs_credentials)
-            mock_client_class.assert_called_once_with(credentials=mock_credentials)
-
-            mock_client.bucket.assert_called_once_with("dev-airbyte-cloud-connector-metadata-service-2")
-            mock_dev_bucket.blob.assert_called_once_with(f"{REGISTRIES_FOLDER}/{SPECS_SECRETS_MASK_FILE_NAME}")
-
-            mock_blob.upload_from_string.assert_called_once()
-            uploaded_content = mock_blob.upload_from_string.call_args[0][0]
-            parsed_yaml = yaml.safe_load(uploaded_content)
-            assert parsed_yaml == expected_yaml_content, f"Failed for {description}"
+        mock_bucket.blob.assert_called_once_with(f"{REGISTRIES_FOLDER}/{SPECS_SECRETS_MASK_FILE_NAME}")
+        mock_blob.upload_from_string.assert_called_once()
+        uploaded_content = mock_blob.upload_from_string.call_args[0][0]
+        parsed_yaml = yaml.safe_load(uploaded_content)
+        assert parsed_yaml == expected_yaml_content, f"Failed for {description}"

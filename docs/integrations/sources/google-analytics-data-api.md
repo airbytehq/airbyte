@@ -272,6 +272,11 @@ The Google Analytics connector is subject to Google Analytics Data API quotas. P
 
 | Version        | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:---------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.9.13-rc.1 | 2025-10-08 | [67148](https://github.com/airbytehq/airbyte/pull/67148) | Add dimensionFilter into the body of requests for custom reports and custom DimensionFilterConfigTransformation component                                              |
+| 2.9.12 | 2025-10-07 | [67262](https://github.com/airbytehq/airbyte/pull/67262) | Update dependencies |
+| 2.9.11 | 2025-09-30 | [66306](https://github.com/airbytehq/airbyte/pull/66306) | Update dependencies |
+| 2.9.10 | 2025-09-10 | [66008](https://github.com/airbytehq/airbyte/pull/66008) | Update to CDK v7 |
+| 2.9.9 | 2025-09-09 | [65895](https://github.com/airbytehq/airbyte/pull/65895) | Update dependencies |
 | 2.9.8 | 2025-08-23 | [65311](https://github.com/airbytehq/airbyte/pull/65311) | Update dependencies |
 | 2.9.7 | 2025-08-09 | [64631](https://github.com/airbytehq/airbyte/pull/64631) | Update dependencies |
 | 2.9.6 | 2025-08-02 | [64254](https://github.com/airbytehq/airbyte/pull/64254) | Update dependencies |

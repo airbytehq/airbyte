@@ -462,6 +462,16 @@
       "statusCode": 301
     },
     {
+      "source": "/integrations/enterprise-connectors/source-db2",
+      "destination": "/integrations/enterprise-connectors/source-db2-enterprise",
+      "statusCode": 301
+    },
+    {
+      "source": "/integrations/enterprise-connectors/source-netsuite",
+      "destination": "/integrations/enterprise-connectors/source-netsuite-enterprise",
+      "statusCode": 301
+    },
+    {
       "source": "/platform/next/embedded-setup",
       "destination": "/embedded",
       "statusCode": 301
