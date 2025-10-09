@@ -43,7 +43,7 @@ dependencies {
     implementation("net.snowflake:snowflake-jdbc-thin:$snowflakeJdbcThinVersion")
     implementation("com.zaxxer:HikariCP:$hikariCpVersion")
     implementation("com.google.guava:guava:32.1.1-jre")
-    implementation("de.siegmar:fastcsv:4.0.0")
+    implementation("org.apache.commons:commons-text:1.14.0")
     implementation("io.micronaut.cache:micronaut-cache-caffeine:4.3.1")
 
     testImplementation("io.mockk:mockk:1.14.5")

@@ -16,11 +16,7 @@ import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import java.io.BufferedReader
-import java.io.File
-import java.io.InputStreamReader
 import java.util.zip.GZIPInputStream
-import kotlin.io.path.exists
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -50,13 +46,11 @@ internal class SnowflakeInsertBufferTest {
                 columns = columns,
                 snowflakeClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
-                flushLimit = 1,
                 snowflakeColumnUtils = snowflakeColumnUtils,
             )
 
         buffer.accumulate(record)
 
-        assertEquals(true, buffer.csvFilePath?.exists())
         assertEquals(1, buffer.recordCount)
     }
 
@@ -73,7 +67,6 @@ internal class SnowflakeInsertBufferTest {
                 columns = columns,
                 snowflakeClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
-                flushLimit = 1,
                 snowflakeColumnUtils = snowflakeColumnUtils,
             )
 
@@ -81,7 +74,6 @@ internal class SnowflakeInsertBufferTest {
 
         buffer.accumulate(record)
 
-        assertEquals(true, buffer.csvFilePath?.exists())
         assertEquals(1, buffer.recordCount)
     }
 
@@ -98,7 +90,6 @@ internal class SnowflakeInsertBufferTest {
                 columns = columns,
                 snowflakeClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
-                flushLimit = 1,
                 snowflakeColumnUtils = snowflakeColumnUtils,
             )
 
@@ -107,7 +98,9 @@ internal class SnowflakeInsertBufferTest {
             buffer.flush()
         }
 
-        coVerify(exactly = 1) { snowflakeAirbyteClient.putInStage(tableName, any()) }
+        coVerify(exactly = 1) {
+            snowflakeAirbyteClient.uploadToStage(tableName, any(), any(), any())
+        }
         coVerify(exactly = 1) {
             snowflakeAirbyteClient.copyFromStage(
                 tableName,
@@ -129,7 +122,6 @@ internal class SnowflakeInsertBufferTest {
                 columns = columns,
                 snowflakeClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
-                flushLimit = 1,
                 snowflakeColumnUtils = snowflakeColumnUtils,
             )
 
@@ -140,7 +132,9 @@ internal class SnowflakeInsertBufferTest {
             buffer.flush()
         }
 
-        coVerify(exactly = 1) { snowflakeAirbyteClient.putInStage(tableName, any()) }
+        coVerify(exactly = 1) {
+            snowflakeAirbyteClient.uploadToStage(tableName, any(), any(), any())
+        }
         coVerify(exactly = 1) {
             snowflakeAirbyteClient.copyFromStage(
                 tableName,
@@ -160,18 +154,12 @@ internal class SnowflakeInsertBufferTest {
                 columns = linkedMapOf("COLUMN1" to "NUMBER(38,0)", "COLUMN2" to "NUMBER(38,0)"),
                 snowflakeClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
-                flushLimit = 1,
                 snowflakeColumnUtils = snowflakeColumnUtils,
             )
 
         runBlocking {
             buffer.accumulate(record)
-            buffer.csvWriter?.flush()
-            buffer.csvWriter?.close()
-            assertEquals(
-                "test-value$CSV_FIELD_SEPARATOR$CSV_LINE_DELIMITER",
-                readFromCsvFile(buffer.csvFilePath!!.toFile())
-            )
+            assertEquals("test-value$CSV_FIELD_SEPARATOR$CSV_LINE_DELIMITER", readContents(buffer))
         }
     }
 
@@ -186,7 +174,6 @@ internal class SnowflakeInsertBufferTest {
                 columns = linkedMapOf("COLUMN1" to "NUMBER(38,0)", "COLUMN2" to "NUMBER(38,0)"),
                 snowflakeClient = snowflakeAirbyteClient,
                 snowflakeConfiguration = snowflakeConfiguration,
-                flushLimit = 1,
                 snowflakeColumnUtils = snowflakeColumnUtils,
             )
 
@@ -194,20 +181,12 @@ internal class SnowflakeInsertBufferTest {
 
         runBlocking {
             buffer.accumulate(record)
-            buffer.csvWriter?.flush()
-            buffer.csvWriter?.close()
-            assertEquals(
-                "test-value$CSV_FIELD_SEPARATOR$CSV_LINE_DELIMITER",
-                readFromCsvFile(buffer.csvFilePath!!.toFile())
-            )
+            assertEquals("test-value$CSV_FIELD_SEPARATOR$CSV_LINE_DELIMITER", readContents(buffer))
         }
     }
 
-    private fun readFromCsvFile(file: File) =
-        GZIPInputStream(file.inputStream()).use { input ->
-            val reader = BufferedReader(InputStreamReader(input))
-            reader.readText()
-        }
+    private fun readContents(buffer: SnowflakeInsertBuffer) =
+        GZIPInputStream(buffer.getInputStream(buffer.buffer)).bufferedReader().use { it.readText() }
 
     private fun createRecord(columnName: String) =
         mapOf(
