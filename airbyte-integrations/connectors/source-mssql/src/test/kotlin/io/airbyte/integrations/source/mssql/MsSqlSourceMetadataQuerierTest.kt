@@ -9,7 +9,12 @@ import io.airbyte.cdk.check.JdbcCheckQueries
 import io.airbyte.cdk.discover.JdbcMetadataQuerier
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
+import io.airbyte.protocol.models.v0.AirbyteStream
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
+import io.airbyte.protocol.models.v0.DestinationSyncMode
 import io.airbyte.protocol.models.v0.StreamDescriptor
+import io.airbyte.protocol.models.v0.SyncMode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.sql.Connection
 import org.junit.jupiter.api.*
@@ -324,6 +329,106 @@ class MsSqlSourceMetadataQuerierTest {
         assertNotNull(tableNoPk, "Should find table_with_clustered_no_pk")
         val noPkKeys = memoizedPrimaryKeys[tableNoPk]
         assertNull(noPkKeys, "Should not have primary key for table_with_clustered_no_pk")
+    }
+
+    @Test
+    @DisplayName("Should use user-defined logical PK from catalog when no physical PK exists")
+    fun testUserDefinedLogicalPrimaryKey() {
+        val streamId =
+            StreamIdentifier.from(
+                StreamDescriptor().withName("table_no_pk_no_clustered").withNamespace("dbo")
+            )
+
+        // Create a ConfiguredAirbyteCatalog with a user-defined logical PK
+        val configuredCatalog =
+            ConfiguredAirbyteCatalog()
+                .withStreams(
+                    listOf(
+                        ConfiguredAirbyteStream()
+                            .withStream(
+                                AirbyteStream()
+                                    .withName("table_no_pk_no_clustered")
+                                    .withNamespace("dbo")
+                            )
+                            .withSyncMode(SyncMode.INCREMENTAL)
+                            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                            .withPrimaryKey(listOf(listOf("name")))
+                    )
+                )
+
+        // Create a new querier with the configured catalog
+        val jdbcConnectionFactory = JdbcConnectionFactory(config)
+        val sourceOperations = MsSqlSourceOperations()
+        val base =
+            JdbcMetadataQuerier(
+                DefaultJdbcConstants(),
+                config,
+                sourceOperations,
+                sourceOperations,
+                JdbcCheckQueries(),
+                jdbcConnectionFactory
+            )
+        val querierWithCatalog = MsSqlSourceMetadataQuerier(base, configuredCatalog)
+
+        // Test that it uses the user-defined logical PK
+        val primaryKey = querierWithCatalog.primaryKey(streamId)
+
+        assertEquals(1, primaryKey.size, "Should have one logical primary key column")
+        assertEquals(
+            listOf("name"),
+            primaryKey[0],
+            "Should use user-defined logical primary key 'name' from catalog"
+        )
+    }
+
+    @Test
+    @DisplayName("Should prefer physical PK over user-defined logical PK")
+    fun testPhysicalPrimaryKeyPreferredOverLogical() {
+        val streamId =
+            StreamIdentifier.from(
+                StreamDescriptor().withName("table_with_pk_no_clustered").withNamespace("dbo")
+            )
+
+        // Create a ConfiguredAirbyteCatalog with a different logical PK
+        val configuredCatalog =
+            ConfiguredAirbyteCatalog()
+                .withStreams(
+                    listOf(
+                        ConfiguredAirbyteStream()
+                            .withStream(
+                                AirbyteStream()
+                                    .withName("table_with_pk_no_clustered")
+                                    .withNamespace("dbo")
+                            )
+                            .withSyncMode(SyncMode.INCREMENTAL)
+                            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+                            .withPrimaryKey(listOf(listOf("name")))
+                    )
+                )
+
+        // Create a new querier with the configured catalog
+        val jdbcConnectionFactory = JdbcConnectionFactory(config)
+        val sourceOperations = MsSqlSourceOperations()
+        val base =
+            JdbcMetadataQuerier(
+                DefaultJdbcConstants(),
+                config,
+                sourceOperations,
+                sourceOperations,
+                JdbcCheckQueries(),
+                jdbcConnectionFactory
+            )
+        val querierWithCatalog = MsSqlSourceMetadataQuerier(base, configuredCatalog)
+
+        // Test that it prefers the physical PK over the logical one
+        val primaryKey = querierWithCatalog.primaryKey(streamId)
+
+        assertEquals(1, primaryKey.size, "Should have one primary key column")
+        assertEquals(
+            listOf("id"),
+            primaryKey[0],
+            "Should use physical primary key 'id' even when logical PK 'name' is defined"
+        )
     }
 
     @AfterAll

@@ -212,7 +212,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
                 """
               {
               "cursor": "12345",
-              "version": 2,
+              "version": 3,
               "state_type": "cursor_based",
               "stream_name": "test_table",
               "cursor_field": [
@@ -250,7 +250,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
                 """
               {
                   "cursor": "$cursorVal",
-                  "version": 2,
+                  "version": 3,
                   "state_type": "cursor_based",
                   "stream_name": "timestamp_table",
                   "cursor_field": [
@@ -281,7 +281,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
                 """
               {
                   "cursor": "2025-01-20T10:30:45.123",
-                  "version": 2,
+                  "version": 3,
                   "state_type": "cursor_based",
                   "stream_name": "datetime_table",
                   "cursor_field": [
@@ -313,7 +313,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
                       {
                       "pk_val": "100000",
                       "pk_name": "id",
-                      "version": 2,
+                      "version": 3,
                       "state_type": "primary_key",
                       "incremental_state": {}  
                       }
@@ -334,7 +334,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
             {
             "pk_val": "50000",
             "pk_name": "id",
-            "version": 2,
+            "version": 3,
             "state_type": "primary_key",
             "incremental_state": {}
             }
@@ -375,7 +375,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
                 """
               {
                   "cursor": "QUJDREVGRw==",
-                  "version": 2,
+                  "version": 3,
                   "state_type": "cursor_based",
                   "stream_name": "binary_table",
                   "cursor_field": [
@@ -409,7 +409,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
                     ),
                 schema = setOf(fieldId),
                 configuredSyncMode = ConfiguredSyncMode.FULL_REFRESH,
-                configuredPrimaryKey = listOf(fieldId),
+                configuredPrimaryKey = listOf(), // No PK to avoid findPkUpperBound call
                 configuredCursor = null,
             )
 
@@ -428,7 +428,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
                     ),
                 schema = setOf(fieldId),
                 configuredSyncMode = ConfiguredSyncMode.FULL_REFRESH,
-                configuredPrimaryKey = listOf(fieldId),
+                configuredPrimaryKey = listOf(), // No PK to avoid findPkUpperBound call
                 configuredCursor = null,
             )
 

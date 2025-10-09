@@ -171,6 +171,14 @@ class MsSqlServerDebeziumOperations(private val configuration: MsSqlServerSource
                     as JsonEncoder<Any>
             )
 
+        val eventSerialNo = source["event_serial_no"]?.asInt() ?: 0
+        resultRow[MsSqlSourceOperations.MsSqlServerCdcMetaFields.CDC_EVENT_SERIAL_NO.id] =
+            FieldValueEncoder(
+                eventSerialNo,
+                MsSqlSourceOperations.MsSqlServerCdcMetaFields.CDC_EVENT_SERIAL_NO.type.jsonEncoder
+                    as JsonEncoder<Any>
+            )
+
         // Return a DeserializedRecord instance.
         return DeserializedRecord(resultRow, changes = emptyMap())
     }

@@ -12,6 +12,8 @@ import io.airbyte.cdk.discover.TableName
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.read.SelectQueryGenerator
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
@@ -25,6 +27,7 @@ private val log = KotlinLogging.logger {}
 /** Delegates to [JdbcMetadataQuerier] except for [fields]. */
 class MsSqlSourceMetadataQuerier(
     val base: JdbcMetadataQuerier,
+    val configuredCatalog: ConfiguredAirbyteCatalog? = null,
 ) : MetadataQuerier by base {
 
     override fun extraChecks() {
@@ -206,7 +209,8 @@ class MsSqlSourceMetadataQuerier(
      * 2. If single-column clustered index exists → Use it
      * 3. If composite clustered index exists → Use primary key
      * 4. If no clustered index exists → Use primary key
-     * 5. If no primary key exists → Return empty list
+     * 5. If no primary key exists → Check configured catalog for user-defined logical PK
+     * 6. If no logical PK exists → Return empty list
      */
     override fun primaryKey(
         streamID: StreamIdentifier,
@@ -218,26 +222,64 @@ class MsSqlSourceMetadataQuerier(
 
         // Use clustered index if it exists and is a single column
         // For composite clustered indexes, fall back to primary key
-        return when {
-            clusteredIndexKeys != null && clusteredIndexKeys.size == 1 -> {
-                log.info {
-                    "Using single-column clustered index for table ${table.schema}.${table.name}"
+        val databasePK =
+            when {
+                clusteredIndexKeys != null && clusteredIndexKeys.size == 1 -> {
+                    log.info {
+                        "Using single-column clustered index for table ${table.schema}.${table.name}"
+                    }
+                    clusteredIndexKeys
                 }
-                clusteredIndexKeys
-            }
-            clusteredIndexKeys != null && clusteredIndexKeys.size > 1 -> {
-                log.info {
-                    "Clustered index is composite for table ${table.schema}.${table.name}. Falling back to primary key."
+                clusteredIndexKeys != null && clusteredIndexKeys.size > 1 -> {
+                    log.info {
+                        "Clustered index is composite for table ${table.schema}.${table.name}. Falling back to primary key."
+                    }
+                    memoizedPrimaryKeys[table]
                 }
-                memoizedPrimaryKeys[table] ?: listOf()
-            }
-            else -> {
-                log.info {
-                    "No clustered index found for table ${table.schema}.${table.name}. Using primary key."
+                else -> {
+                    log.info {
+                        "No clustered index found for table ${table.schema}.${table.name}. Using primary key."
+                    }
+                    memoizedPrimaryKeys[table]
                 }
-                memoizedPrimaryKeys[table] ?: listOf()
             }
+
+        // If we found a database PK, use it
+        if (!databasePK.isNullOrEmpty()) {
+            return databasePK
         }
+
+        // Fall back to user-defined logical PK from configured catalog
+        // This handles migration from old connector where tables without physical PKs
+        // could have logical PKs configured in the UI
+        val logicalPK = getUserDefinedPrimaryKey(streamID)
+        if (logicalPK.isNotEmpty()) {
+            log.info {
+                "No physical primary key found for table ${table.schema}.${table.name}. " +
+                    "Using user-defined logical primary key from configured catalog: $logicalPK"
+            }
+            return logicalPK
+        }
+
+        return listOf()
+    }
+
+    /**
+     * Gets the user-defined logical primary key from the configured catalog. This is used for
+     * backward compatibility with the old connector where users could configure logical PKs for
+     * tables without physical PKs.
+     */
+    private fun getUserDefinedPrimaryKey(streamID: StreamIdentifier): List<List<String>> {
+        if (configuredCatalog == null) {
+            return listOf()
+        }
+
+        val configuredStream: ConfiguredAirbyteStream? =
+            configuredCatalog.streams.find {
+                it.stream.name == streamID.name && it.stream.namespace == streamID.namespace
+            }
+
+        return configuredStream?.primaryKey ?: listOf()
     }
 
     val memoizedPrimaryKeys: Map<TableName, List<List<String>>> by lazy {
@@ -368,6 +410,7 @@ class MsSqlSourceMetadataQuerier(
         val selectQueryGenerator: SelectQueryGenerator,
         val fieldTypeMapper: JdbcMetadataQuerier.FieldTypeMapper,
         val checkQueries: JdbcCheckQueries,
+        val configuredCatalog: ConfiguredAirbyteCatalog? = null,
     ) : MetadataQuerier.Factory<MsSqlServerSourceConfiguration> {
         /** The [SourceConfiguration] is deliberately not injected in order to support tests. */
         override fun session(config: MsSqlServerSourceConfiguration): MetadataQuerier {
@@ -381,7 +424,7 @@ class MsSqlSourceMetadataQuerier(
                     checkQueries,
                     jdbcConnectionFactory,
                 )
-            return MsSqlSourceMetadataQuerier(base)
+            return MsSqlSourceMetadataQuerier(base, configuredCatalog)
         }
     }
 }
