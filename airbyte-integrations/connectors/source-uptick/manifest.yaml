@@ -133,7 +133,7 @@ streams:
         request_parameters:
           ordering: -updated
           show_deleted: "true"
-          fields[Task]: id,created,updated,deleted,ref,description,is_active,inactive_date,extra_fields,due,due_after,pm_date,tolerance_start,tolerance_end,invoiced_date,name,scope_of_works,address,coord_lat,coord_lng,access_note,access_window,access_procedure,access_schedule,access_code,internal_note,workorder_url,technician_note,partner_uid,priority,sla_incident_notification_at,sla_due_inprogress,sla_due_inspected,charge_type,notes,invoice_note,estimated_duration,authorisation_name,authorisation_note,authorisation_ref,authorisation_amount,authorisation_date,contractor_note,status_changed_inprogress,status_changed_inspected,status_changed_complete,app_link,timezone,bulk_email_last_sent_at,contractor_authorisation_limit,category,servicegroup,client,property,billingcard,assigned_to,assigned_office,salesperson,technician,round,tags,branch,supporting_technicians,costcentre,parent_task,author,contractor,contractor_assigned_technician,updated_by,status,zone,required_accreditationtypes,project,projectsectiontask,sla,callout
+          fields[Task]: id,created,updated,deleted,ref,description,is_active,inactive_date,extra_fields,due,due_after,pm_date,tolerance_start,tolerance_end,invoiced_date,name,scope_of_works,address,coord_lat,coord_lng,access_note,access_window,access_procedure,access_schedule,access_code,internal_note,workorder_url,technician_note,partner_uid,priority,sla_incident_notification_at,sla_due_inprogress,sla_due_inspected,charge_type,notes,invoice_note,estimated_duration,authorisation_name,authorisation_note,authorisation_ref,authorisation_amount,authorisation_date,contractor_note,status_changed_inprogress,status_changed_inspected,status_changed_complete,app_link,timezone,bulk_email_last_sent_at,contractor_authorisation_limit,category,servicegroup,client,property,billingcard,assigned_to,assigned_office,salesperson,technician,round,tags,branch,supporting_technicians,costcentre,parent_task,author,contractor,contractor_assigned_technician,updated_by,status,zone,required_accreditationtypes,project,sla,callout
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -433,9 +433,6 @@ streams:
             type:
               - integer
               - "null"
-          projectsectiontask_id:
-            type:
-              - integer
           sla_id:
             type:
               - integer
@@ -741,10 +738,6 @@ streams:
             path:
               - project_id
             value: '{{ record["relationships"]["project"]["data"]["id"] or "None"}}'
-          - type: AddedFieldDefinition
-            path:
-              - projectsectiontask_id
-            value: '{{ record["relationships"]["projectsectiontask"]["data"]["id"] }}'
           - type: AddedFieldDefinition
             path:
               - sla_id
