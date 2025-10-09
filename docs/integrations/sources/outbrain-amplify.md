@@ -65,6 +65,7 @@ Specify credentials and a start date.
 
 | Version | Date       | Pull Request                                             | Subject                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------- |
+| 0.2.20 | 2025-10-07 | [67079](https://github.com/airbytehq/airbyte/pull/67079/) | Fix broken pagination. |
 | 0.2.19 | 2025-10-07 | [67354](https://github.com/airbytehq/airbyte/pull/67354) | Update dependencies |
 | 0.2.18 | 2025-09-30 | [66383](https://github.com/airbytehq/airbyte/pull/66383) | Update dependencies |
 | 0.2.17 | 2025-09-09 | [65847](https://github.com/airbytehq/airbyte/pull/65847) | Update dependencies |
