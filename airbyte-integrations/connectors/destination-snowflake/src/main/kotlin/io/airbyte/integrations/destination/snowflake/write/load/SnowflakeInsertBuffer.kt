@@ -27,6 +27,7 @@ internal const val CSV_FILE_EXTENSION = ".csv"
 internal const val CSV_FIELD_SEPARATOR = ","
 internal const val CSV_LINE_DELIMITER = "\n"
 internal const val FILE_PREFIX = "snowflake"
+internal const val ZSTD_FILE_EXTENSION = ".zst"
 
 class SnowflakeInsertBuffer(
     private val tableName: TableName,
@@ -89,11 +90,12 @@ class SnowflakeInsertBuffer(
                 }
             outputStream.write(escapedValue.toByteArray())
 
-            val lastBytes = if (i != formattedRecordValues.lastIndex) {
-                CSV_FIELD_SEPARATOR.toByteArray()
-            } else {
-                CSV_LINE_DELIMITER.toByteArray()
-            }
+            val lastBytes =
+                if (i != formattedRecordValues.lastIndex) {
+                    CSV_FIELD_SEPARATOR.toByteArray()
+                } else {
+                    CSV_LINE_DELIMITER.toByteArray()
+                }
             outputStream.write(lastBytes)
         }
         recordCount++
@@ -119,6 +121,6 @@ class SnowflakeInsertBuffer(
 
     internal class CompressionOutputStream(outputStream: OutputStream, level: Int) :
         ZstdOutputStream(outputStream, level) {
-        fun fileExtension() = ".zst"
+        fun fileExtension() = ZSTD_FILE_EXTENSION
     }
 }
