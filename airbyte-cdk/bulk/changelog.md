@@ -1,6 +1,18 @@
-## Version 0.1.48
+## Version 0.1.50
 
 Update temporal type representation for proto format
+
+## Version 0.1.49
+
+**Extract CDK**
+
+* **Changed:** Support nano sec to preserve precision in TimeAccessor.
+
+## Version 0.1.48
+
+**Extract CDK**
+
+* **Changed:** Enable heart beat timeout for CDC sync.
 
 ## Version 0.1.47
 
