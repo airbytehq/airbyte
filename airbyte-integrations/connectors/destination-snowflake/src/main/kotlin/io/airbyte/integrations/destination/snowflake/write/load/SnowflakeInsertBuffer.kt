@@ -37,7 +37,7 @@ class SnowflakeInsertBuffer(
     val columns: LinkedHashMap<String, String>,
     private val snowflakeClient: SnowflakeAirbyteClient,
     val snowflakeConfiguration: SnowflakeConfiguration,
-    private val snowflakeColumnUtils: SnowflakeColumnUtils,
+    val snowflakeColumnUtils: SnowflakeColumnUtils,
     private val flushLimit: Int = DEFAULT_FLUSH_LIMIT,
 ) {
 
