@@ -9,6 +9,93 @@ For users migrating from V1 to V2, please refer to the migration guides:
 
 These release notes focus on configuration options that users can modify when deploying Airbyte with the V2 Helm Chart.
 
+## Version 2.0.17
+
+No user-configurable changes in this version.
+
+## Version 2.0.16
+
+No user-configurable changes in this version.
+
+## Version 2.0.15
+
+### Removed
+
+- **Manifest Server Component**: Complete removal of `manifestServer.*` configuration section
+  - All manifest server deployment, ingress, and security configurations have been removed
+  - **Migration**: Remove any `manifestServer.*` configurations from your values.yaml file
+
+- **Stigg Sidecar Component**: Complete removal of `stiggSidecar.*` configuration section
+  - All Stigg sidecar deployment and configuration options have been removed
+  - **Migration**: Remove any `stiggSidecar.*` configurations from your values.yaml file
+
+- **OIDC Enhancements**: Removed OIDC display name and extra scopes configurations
+  - `auth.oidc.displayName` configuration option removed
+  - `auth.genericOidc.extraScopes` configuration option removed
+  - **Migration**: Remove these OIDC configuration options from your values.yaml if present
+
+- **Dataplane Groups**: Removed `global.dataplaneGroups` configuration
+  - **Migration**: Remove `global.dataplaneGroups` from your values.yaml if present
+
+- **Google Secret Manager Region**: Removed `storage.googleSecretManager.region` configuration option
+  - **Migration**: Remove the `region` field from your Google Secret Manager configuration if present
+
+### Changed
+
+- **Authentication**: `auth.enabled` changed from `true` to `false`
+  - **Migration**: If you require authentication, explicitly set `auth.enabled: true` in your values.yaml
+
+- **Connector Registry**: `connectorRegistry.seedProvider` changed from `"remote"` to `"local"`
+  - **Migration**: No action required - this change improves reliability by using local connector definitions
+
+## Version 2.0.14
+
+### Changed
+
+- **Authentication**: `auth.enabled` changed from `false` to `true`
+  - **Migration**: If you do not want authentication enabled, set `auth.enabled: false` in your values.yaml
+
+- **Manifest Server**: Updated `manifestServer.image.tag` from `"7.0.4"` to `"7.2.0"`
+  - **Migration**: No action required - this is an internal component update
+
+## Version 2.0.13
+
+### Added
+
+- **Manifest Server Component**: New `manifestServer.*` configuration section for manifest server deployment
+  - Complete deployment configuration including replicas, security context, probes, and ingress
+  - **Migration**: Configure `manifestServer.enabled: true` if you want to enable the manifest server component
+
+- **Stigg Sidecar Component**: New `stiggSidecar.*` configuration section for Stigg integration
+  - Complete sidecar configuration including deployment, security, and resource settings
+  - **Migration**: Configure `stiggSidecar.enabled: true` if you want to enable Stigg integration
+
+- **OIDC Enhancements**: Enhanced OIDC configuration options
+  - `auth.oidc.displayName` - OIDC application display name configuration
+  - `auth.genericOidc.extraScopes` - Additional OIDC scopes configuration
+  - **Migration**: Configure these options if you need enhanced OIDC functionality
+
+- **Dataplane Groups**: New `global.dataplaneGroups: {}` configuration for dataplane group management
+  - **Migration**: Configure dataplane groups if you need multi-dataplane deployments
+
+- **Google Secret Manager Region**: New `storage.googleSecretManager.region` configuration option
+  - **Migration**: Set the region (e.g., "us-central1") if using Google Secret Manager
+
+- **Stigg Configuration**: New `stigg.*` section for Stigg API integration
+  - `stigg.secretName` and `stigg.apiKeySecretKey` for API key management
+  - **Migration**: Configure if you need Stigg integration for usage tracking
+
+- **Container Orchestrator Secret Mount**: New `worker.containerOrchestrator.secretMountPath` configuration
+  - **Migration**: Configure if you need custom secret mount paths for container orchestrator
+
+### Changed
+
+- **Connector Registry**: `connectorRegistry.seedProvider` changed from `"local"` to `"remote"`
+  - **Migration**: No action required - this change uses remote connector definitions for better updates
+
+- **Update Definitions Job**: `cron.jobs.updateDefinitions.enabled` changed from `false` to `true`
+  - **Migration**: If you do not want automatic connector definition updates, set `cron.jobs.updateDefinitions.enabled: false` in your values.yaml
+
 ## Version 2.0.12
 
 ### Added
