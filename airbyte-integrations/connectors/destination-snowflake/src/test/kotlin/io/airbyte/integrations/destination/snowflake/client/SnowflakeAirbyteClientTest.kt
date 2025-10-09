@@ -182,10 +182,9 @@ internal class SnowflakeAirbyteClientTest {
         runBlocking {
             client.createNamespace(namespace)
             verify(exactly = 1) { sqlGenerator.createNamespace(namespace) }
-            verify(exactly = 1) { sqlGenerator.createFileFormat(namespace) }
             verify(exactly = 1) { preparedStatement.close() }
-            verify(exactly = 2) { statement.close() }
-            verify(exactly = 3) { mockConnection.close() }
+            verify(exactly = 1) { statement.close() }
+            verify(exactly = 2) { mockConnection.close() }
         }
     }
 
@@ -201,25 +200,15 @@ internal class SnowflakeAirbyteClientTest {
                 every { close() } just Runs
             }
 
-        // Mock for file format creation
-        val createResultSet = mockk<ResultSet>(relaxed = true)
-
         val preparedStatement =
             mockk<PreparedStatement>(relaxed = true) {
                 every { executeQuery() } returns schemaCheckResultSet
                 every { close() } just Runs
             }
 
-        val statement =
-            mockk<Statement> {
-                every { executeQuery(any()) } returns createResultSet
-                every { close() } just Runs
-            }
-
         val mockConnection =
             mockk<Connection> {
                 every { close() } just Runs
-                every { createStatement() } returns statement
                 every { prepareStatement(any()) } returns preparedStatement
             }
 
@@ -230,10 +219,8 @@ internal class SnowflakeAirbyteClientTest {
             verify(exactly = 0) {
                 sqlGenerator.createNamespace(namespace)
             } // Should NOT create schema
-            verify(exactly = 1) { sqlGenerator.createFileFormat(namespace) }
             verify(exactly = 1) { preparedStatement.close() }
-            verify(exactly = 1) { statement.close() }
-            verify(exactly = 2) { mockConnection.close() } // Only 2 closes: check + format
+            verify(exactly = 1) { mockConnection.close() } // Only 2 closes: check + format
         }
     }
 
