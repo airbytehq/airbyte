@@ -5,7 +5,7 @@ enterprise-connector: true
 
 # Source SAP HANA
 
-Airbyte's incubating SAP HANA enterprise source connector currently offers Full Refresh and Incrementals syncs for streams. Support for Change Data Capture (CDC) is available using a trigger-based approach.n.
+Airbyte's incubating SAP HANA enterprise source connector currently offers Full Refresh and Incrementals syncs for streams. Support for Change Data Capture (CDC) is available using a trigger-based approach.
 
 ## Features
 
@@ -16,7 +16,7 @@ Airbyte's incubating SAP HANA enterprise source connector currently offers Full 
 | Change Data Capture (CDC) | Yes          |       |
 
 
-## Prequisities
+## Prerequisites
 
 - Dedicated read-only Airbyte user with read-only access to tables needed for replication
 - SAP HANA Host Name URL
