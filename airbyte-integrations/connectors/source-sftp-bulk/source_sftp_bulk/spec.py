@@ -1,7 +1,7 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
 
-from typing import Literal, Optional, Union
+from typing import List, Literal, Optional, Union
 
 from pydantic.v1 import BaseModel, Field
 
@@ -58,6 +58,25 @@ class SourceSFTPBulkSpec(AbstractFileBasedSpec):
         display_type="radio",
         group="advanced",
         default="use_records_transfer",
+    )
+
+    max_traversal_depth: int = Field(
+        title="Maximum Directory Traversal Depth",
+        description="Maximum depth of subdirectories to traverse when searching for files. Set to 0 to only search the folder_path itself, or higher values to search nested subdirectories. This prevents runaway traversal and timeouts when starting from root directories.",
+        default=50,
+        ge=0,
+        le=100,
+        order=8,
+        group="advanced",
+    )
+
+    excluded_directories: List[str] = Field(
+        title="Excluded Directories",
+        description="List of directory paths or patterns to exclude from traversal. Supports exact paths (e.g., '/tmp', '/proc') or glob patterns (e.g., '**/.git', '**/node_modules'). Useful for skipping system directories, caches, or large irrelevant folders when searching from root or broad directories.",
+        default=[],
+        examples=[["/proc", "/sys", "/tmp", "**/node_modules", "**/.git", "**/__pycache__"]],
+        order=9,
+        group="advanced",
     )
 
     @classmethod
