@@ -44,6 +44,7 @@ class SnowflakeInsertAcceptanceTest :
             },
         recordMapper = SnowflakeExpectedRecordMapper,
         nameMapper = SnowflakeNameMapper(),
+        unknownTypesBehavior = UnknownTypesBehavior.SERIALIZE,
     ) {
     @Test
     override fun testFunkyCharactersDedup() {
@@ -84,6 +85,7 @@ class SnowflakeRawInsertAcceptanceTest :
         dedupBehavior = null,
         nullEqualsUnset = false,
         coercesLegacyUnions = false,
+        unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
     ) {
     @Test
     override fun testFunkyCharacters() {
@@ -127,7 +129,7 @@ abstract class SnowflakeAcceptanceTest(
     dedupBehavior: DedupBehavior? = DedupBehavior(DedupBehavior.CdcDeletionMode.HARD_DELETE),
     nullEqualsUnset: Boolean = true,
     coercesLegacyUnions: Boolean = false,
-    unknownTypesBehavior: UnknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
+    unknownTypesBehavior: UnknownTypesBehavior,
 ) :
     BasicFunctionalityIntegrationTest(
         configContents = Files.readString(configPath),

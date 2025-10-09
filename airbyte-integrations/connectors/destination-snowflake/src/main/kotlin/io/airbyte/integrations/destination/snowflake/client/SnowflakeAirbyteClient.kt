@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNativeOperations
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableSqlOperations
+import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
@@ -25,6 +26,7 @@ import javax.sql.DataSource
 import net.snowflake.client.jdbc.SnowflakeSQLException
 
 internal const val DESCRIBE_TABLE_COLUMN_NAME_FIELD = "column_name"
+internal const val DESCRIBE_TABLE_COLUMN_TYPE_FIELD = "data_type"
 
 private val log = KotlinLogging.logger {}
 
@@ -302,14 +304,26 @@ class SnowflakeAirbyteClient(
         execute(sqlGenerator.copyFromStage(tableName, filename))
     }
 
-    fun describeTable(tableName: TableName): List<String> =
+    fun describeTable(tableName: TableName): LinkedHashMap<String, String> =
         dataSource.connection.use { connection ->
             val statement = connection.createStatement()
             return statement.use {
                 val resultSet = it.executeQuery(sqlGenerator.showColumns(tableName))
-                val columns = mutableListOf<String>()
+                val columns = linkedMapOf<String, String>()
                 while (resultSet.next()) {
-                    columns.add(resultSet.getString(DESCRIBE_TABLE_COLUMN_NAME_FIELD))
+                    val columnName = resultSet.getString(DESCRIBE_TABLE_COLUMN_NAME_FIELD)
+                    // this is... incredibly annoying. The resultset will give us a string like
+                    // `{"type":"VARIANT","nullable":true}`.
+                    // So we need to parse that JSON, and then fetch the actual thing we care about.
+                    // Also, some of the type names aren't the ones we're familiar with (e.g.
+                    // `FIXED` for numeric columns),
+                    // so the output here is not particularly ergonomic.
+                    val columnType =
+                        resultSet
+                            .getString(DESCRIBE_TABLE_COLUMN_TYPE_FIELD)
+                            .deserializeToNode()["type"]
+                            .asText()
+                    columns[columnName] = columnType
                 }
                 columns
             }

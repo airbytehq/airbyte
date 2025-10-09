@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.csv.toCsvValue
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.util.Jsons
+import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 
@@ -18,7 +19,7 @@ interface SnowflakeRecordFormatter {
 }
 
 class SnowflakeSchemaRecordFormatter(
-    private val columns: List<String>,
+    private val columns: LinkedHashMap<String, String>,
     val snowflakeColumnUtils: SnowflakeColumnUtils,
 ) : SnowflakeRecordFormatter {
 
@@ -26,7 +27,7 @@ class SnowflakeSchemaRecordFormatter(
         snowflakeColumnUtils.getFormattedDefaultColumnNames(false).toSet()
 
     override fun format(record: Map<String, AirbyteValue>): List<Any> =
-        columns.map { columnName ->
+        columns.map { (columnName, columnType) ->
             /*
              * Meta columns are forced to uppercase for backwards compatibility with previous
              * versions of the destination.  Therefore, convert the column to lowercase so
@@ -38,16 +39,28 @@ class SnowflakeSchemaRecordFormatter(
             } else {
                 record.keys
                     .find { it == columnName.toSnowflakeCompatibleName() }
-                    ?.let { record[it].toCsvValue() }
+                    ?.let {
+                        if ("VARIANT" == columnType) {
+                            // When writing to a variant column, we need to explicitly
+                            // json-serialize.
+                            record[it].serializeToString()
+                        } else {
+                            // Otherwise, use the normal toCsvValue (e.g. if the value is a string,
+                            // just put it directly into the CSV).
+                            // Under the hood, objects/arrays are still json-serialized here.
+                            record[it].toCsvValue()
+                        }
+                    }
                     ?: ""
             }
         }
 }
 
 class SnowflakeRawRecordFormatter(
-    private val columns: List<String>,
+    columns: LinkedHashMap<String, String>,
     val snowflakeColumnUtils: SnowflakeColumnUtils,
 ) : SnowflakeRecordFormatter {
+    private val columns = columns.keys
 
     private val airbyteColumnNames =
         snowflakeColumnUtils.getFormattedDefaultColumnNames(false).toSet()
