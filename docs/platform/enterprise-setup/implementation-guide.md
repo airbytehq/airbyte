@@ -36,7 +36,7 @@ Prior to deploying Self-Managed Enterprise, we recommend having each of the foll
 
 A few notes on Kubernetes cluster provisioning for Airbyte Self-Managed Enterprise:
 
-- We support Amazon Elastic Kubernetes Service (EKS) on EC2 or Google Kubernetes Engine (GKE) on Google Compute Engine (GCE). Improved support for Azure Kubernetes Service (AKS) is coming soon.
+- We support Amazon Elastic Kubernetes Service (EKS) on EC2, Google Kubernetes Engine (GKE) on Google Compute Engine (GCE), and Azure Kubernetes Service (AKS).
 - We recommend running Airbyte on memory-optimized instances, such as M7i / M7g instance types.
 - While we support GKE Autopilot, we do not support Amazon EKS on Fargate.
 - We recommend running Airbyte on instances with at least 2 cores and 8 gigabytes of RAM.
