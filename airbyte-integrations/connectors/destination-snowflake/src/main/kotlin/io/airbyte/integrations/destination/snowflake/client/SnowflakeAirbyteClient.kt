@@ -99,9 +99,6 @@ class SnowflakeAirbyteClient(
             // Create the schema only if it doesn't exist
             execute(sqlGenerator.createNamespace(namespace))
         }
-
-        // Create the CSV file format in the schema if it does not exist
-        execute(sqlGenerator.createFileFormat(namespace))
     }
 
     override suspend fun createTable(

@@ -16,6 +16,7 @@ import io.airbyte.integrations.destination.snowflake.sql.QUOTE
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.File
+import java.io.OutputStream
 import java.nio.file.Path
 import java.util.zip.GZIPOutputStream
 import kotlin.io.path.deleteIfExists
@@ -23,10 +24,13 @@ import kotlin.io.path.pathString
 
 private val logger = KotlinLogging.logger {}
 
+internal const val CSV_FILE_EXTENSION = ".csv"
 internal const val CSV_FIELD_SEPARATOR = ','
 internal const val CSV_QUOTE_CHARACTER = '"'
 internal val CSV_LINE_DELIMITER = LineDelimiter.LF
 internal const val DEFAULT_FLUSH_LIMIT = 1000
+internal const val FILE_PREFIX = "snowflake"
+internal const val FILE_SUFFIX = ".csv"
 
 private const val CSV_WRITER_BUFFER_SIZE = 1024 * 1024 // 1 MB
 
@@ -63,7 +67,10 @@ class SnowflakeInsertBuffer(
         if (csvFilePath == null) {
             val csvFile = createCsvFile()
             csvFilePath = csvFile.toPath()
-            csvWriter = csvWriterBuilder.build(GZIPOutputStream(csvFile.outputStream()))
+            csvWriter =
+                csvWriterBuilder.build(
+                    CompressionOutputStream(outputStream = csvFile.outputStream(), level = 5)
+                )
         }
 
         writeToCsvFile(recordFields)
@@ -98,7 +105,7 @@ class SnowflakeInsertBuffer(
     }
 
     private fun createCsvFile(): File {
-        val csvFile = File.createTempFile("snowflake", ".csv.gz")
+        val csvFile = File.createTempFile(FILE_PREFIX, "$CSV_FILE_EXTENSION$FILE_SUFFIX")
         csvFile.deleteOnExit()
         return csvFile
     }
@@ -110,6 +117,13 @@ class SnowflakeInsertBuffer(
             if ((recordCount % flushLimit) == 0) {
                 it.flush()
             }
+        }
+    }
+
+    private class CompressionOutputStream(outputStream: OutputStream, level: Int) :
+        GZIPOutputStream(outputStream) {
+        init {
+            def.setLevel(level)
         }
     }
 }

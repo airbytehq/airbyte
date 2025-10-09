@@ -109,7 +109,10 @@ internal class SnowflakeInsertBufferTest {
 
         coVerify(exactly = 1) { snowflakeAirbyteClient.putInStage(tableName, any()) }
         coVerify(exactly = 1) {
-            snowflakeAirbyteClient.copyFromStage(tableName, match { it.endsWith(".csv.gz") })
+            snowflakeAirbyteClient.copyFromStage(
+                tableName,
+                match { it.endsWith("$CSV_FILE_EXTENSION$FILE_SUFFIX") }
+            )
         }
     }
 
@@ -139,7 +142,10 @@ internal class SnowflakeInsertBufferTest {
 
         coVerify(exactly = 1) { snowflakeAirbyteClient.putInStage(tableName, any()) }
         coVerify(exactly = 1) {
-            snowflakeAirbyteClient.copyFromStage(tableName, match { it.endsWith(".csv.gz") })
+            snowflakeAirbyteClient.copyFromStage(
+                tableName,
+                match { it.endsWith("$CSV_FILE_EXTENSION$FILE_SUFFIX") }
+            )
         }
     }
 
