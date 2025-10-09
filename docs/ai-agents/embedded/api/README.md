@@ -6,7 +6,7 @@ products: embedded
 
 The Airbyte API allows you to build a fully integrated Airbyte Embedded Experience.
 
-## Implementation Steps
+## Quick Start
 
 Follow these steps to implement Airbyte Embedded with the API:
 
@@ -23,4 +23,48 @@ For each user who wants to connect their data:
 
 This approach separates one-time organizational setup from per-user operations, making your integration more scalable.
 
-The complete API reference can be found at [api.airbyte.ai/api/v1/docs](https://api.airbyte.ai/api/v1/docs).
+## Core Concepts
+
+### [Authentication](./authentication.md)
+Understand the different token types and how to securely authenticate your API calls:
+- **Access Tokens**: Organization-level administrative access
+- **Scoped Tokens**: User-level limited access for individual workspaces
+- **Widget Tokens**: Specialized tokens for the Embedded Widget
+- Security best practices and implementation examples
+
+### [Workspace Management](./workspace-management.md)
+Learn how Airbyte Embedded creates isolated environments for each customer:
+- Multi-tenant architecture and data isolation
+- Automatic workspace creation
+- External ID best practices
+- Template tag filtering for workspace-specific configurations
+
+### [Schema Discovery](./schema-discovery.md)
+Programmatically explore your customers' data structures:
+- Discover available streams (tables/collections)
+- Query field schemas and data types
+- Understand primary keys and relationships
+- Build dynamic UIs based on available data
+
+## API Guides
+
+### Setup & Configuration
+- [Connection Templates](./connection-templates.md) - Configure destinations for your users
+- [Source Templates](./source-templates.md) - Define available data connectors
+- [Configuring Sources](./configuring-sources.md) - Collect user credentials and create sources
+
+### Advanced Topics
+- [Schema Discovery](./schema-discovery.md) - Explore data structures programmatically
+- [Workspace Management](./workspace-management.md) - Manage customer isolation
+- [Authentication](./authentication.md) - Secure token management
+
+## API Reference
+
+The complete API reference with all endpoints, request/response schemas, and interactive testing is available at [api.airbyte.ai/api/v1/docs](https://api.airbyte.ai/api/v1/docs).
+
+## Need Help?
+
+- **Documentation**: Browse the guides above for detailed implementation instructions
+- **API Reference**: [api.airbyte.ai/api/v1/docs](https://api.airbyte.ai/api/v1/docs)
+- **Support**: Contact [sonar@airbyte.io](mailto:sonar@airbyte.io) for assistance
+- **Sample App**: See a complete implementation in our [embedded demo app](https://github.com/airbytehq/embedded-demoapp)
