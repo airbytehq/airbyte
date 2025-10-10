@@ -23,7 +23,7 @@ jobs:
 
       - name: Generate Connector Matrix
         id: generate-matrix
-        run: echo "connectors_matrix=$(tools/bin/bulk-cdk/get-certified-connectors.sh))" | tee -a $GITHUB_OUTPUT
+        run: echo "connectors_matrix=$(tools/bin/bulk-cdk/get-certified-connectors.sh)" | tee -a $GITHUB_OUTPUT
 
     outputs:
       connectors-matrix: ${{ steps.generate-matrix.outputs.connectors_matrix }}
