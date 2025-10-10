@@ -42,8 +42,9 @@ internal val FLOAT_MAX = BigDecimal("9007199254740991")
 internal val FLOAT_MIN = BigDecimal("-9007199254740991")
 internal val FLOAT_RANGE = FLOAT_MIN..FLOAT_MAX
 
-// https://docs.snowflake.com/en/sql-reference/data-types-text#varchar
+// https://docs.snowflake.com/en/sql-reference/data-types-semistructured#characteristics-of-a-variant-value
 internal const val VARIANT_LIMIT_BYTES = 128 * 1024 * 1024
+// https://docs.snowflake.com/en/sql-reference/data-types-text#varchar
 internal const val VARCHAR_LIMIT_BYTES = 16 * 1024 * 1024
 
 // UTF-8 has max 4 bytes per char, so anything under this length is safe
