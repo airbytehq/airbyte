@@ -36,28 +36,40 @@ internal val FLOAT_MAX = BigDecimal("9007199254740991")
 internal val FLOAT_MIN = BigDecimal("-9007199254740991")
 internal val FLOAT_RANGE = FLOAT_MIN..FLOAT_MAX
 
+// https://docs.snowflake.com/en/sql-reference/data-types-semistructured#characteristics-of-a-variant-value
+internal const val VARIANT_LIMIT_BYTES = 128 * 1024 * 1024
 // https://docs.snowflake.com/en/sql-reference/data-types-text#varchar
-internal const val VARCHAR_AND_VARIANT_LIMIT_BYTES = 134217728 // 128 MB
+internal const val VARCHAR_LIMIT_BYTES = 16 * 1024 * 1024
+
 // UTF-8 has max 4 bytes per char, so anything under this length is safe
-internal const val MAX_UTF_8_STRING_LENGTH_UNDER_LIMIT = 33554432 // (134217728 / 4)
+internal const val MAX_UTF_8_VARIANT_LENGTH_UNDER_LIMIT = VARIANT_LIMIT_BYTES / 4 // (134217728 / 4)
+internal const val MAX_UTF_8_VARCHAR_LENGTH_UNDER_LIMIT = VARCHAR_LIMIT_BYTES / 4 // (16777216 / 4)
 
 fun isValid(value: AirbyteValue): Boolean {
     return when (value) {
         is ArrayValue,
-        is ObjectValue -> isStringValid(value.toCsvValue().toString())
+        is ObjectValue -> isVariantValid(value.toCsvValue().toString())
         is IntegerValue -> value.value in INT_RANGE
         is NumberValue -> value.value in FLOAT_RANGE
-        is StringValue -> isStringValid(value.value)
+        is StringValue -> isVarcharValid(value.value)
         else -> true
     }
 }
 
-fun isStringValid(s: String): Boolean {
+fun isVariantValid(s: String): Boolean {
     // avoid expensive size calculation if we're safely under the limit
-    if (s.length <= MAX_UTF_8_STRING_LENGTH_UNDER_LIMIT) return true
+    if (s.length <= MAX_UTF_8_VARIANT_LENGTH_UNDER_LIMIT) return true
 
     // sums size without allocating extra byte arrays / copying
-    return Utf8.encodedLength(s) <= VARCHAR_AND_VARIANT_LIMIT_BYTES
+    return Utf8.encodedLength(s) <= VARIANT_LIMIT_BYTES
+}
+
+fun isVarcharValid(s: String): Boolean {
+    // avoid expensive size calculation if we're safely under the limit
+    if (s.length <= MAX_UTF_8_VARCHAR_LENGTH_UNDER_LIMIT) return true
+
+    // sums size without allocating extra byte arrays / copying
+    return Utf8.encodedLength(s) <= VARCHAR_LIMIT_BYTES
 }
 
 @Singleton
