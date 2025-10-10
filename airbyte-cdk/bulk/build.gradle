@@ -17,7 +17,6 @@ final var cdkVersion = {
     return props.getProperty('version', 'undefined')
 }()
 
-
 allprojects {
     version = cdkVersion
     apply plugin: 'java-library'
