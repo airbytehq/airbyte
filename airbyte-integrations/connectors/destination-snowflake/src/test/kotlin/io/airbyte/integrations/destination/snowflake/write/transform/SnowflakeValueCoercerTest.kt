@@ -565,6 +565,63 @@ internal class SnowflakeValueCoercerTest {
     }
 
     @Test
+    fun testVariantJustUnderSizeLimit() {
+        // Test ObjectValue just under the VARIANT_LIMIT_BYTES limit
+        // When serialized to JSON, the format will be {"field":"aaa...aaa"}
+        // The overhead for {"field":""} is 12 bytes, so we need VARIANT_LIMIT_BYTES - 12 characters in the value
+        val stringLength = VARIANT_LIMIT_BYTES - 12
+        val largeObject = ObjectValue(
+            LinkedHashMap<String, AirbyteValue>().apply {
+                put("field", StringValue("a".repeat(stringLength)))
+            }
+        )
+        val airbyteValue =
+            EnrichedAirbyteValue(
+                abValue = largeObject,
+                type = ObjectType(
+                    properties = LinkedHashMap(),
+                    additionalProperties = true,
+                    required = emptyList()
+                ),
+                name = "large_variant",
+                changes = mutableListOf(),
+                airbyteMetaField = null,
+            )
+
+        val result = coercer.validate(airbyteValue)
+        assertEquals(airbyteValue, result)
+    }
+
+    @Test
+    fun testVariantAtExactSizeLimit() {
+        // Test ObjectValue at exactly the VARIANT_LIMIT_BYTES + 1 byte limit
+        // When serialized to JSON, the format will be {"field":"aaa...aaa"}
+        // The overhead for {"field":""} is 12 bytes, so we need VARIANT_LIMIT_BYTES + 1 - 12 characters in the value
+        val stringLength = VARIANT_LIMIT_BYTES + 1 - 12
+        val objectValue = ObjectValue(
+            LinkedHashMap<String, AirbyteValue>().apply {
+                put("field", StringValue("a".repeat(stringLength)))
+            }
+        )
+        val airbyteValue =
+            EnrichedAirbyteValue(
+                abValue = objectValue,
+                type = ObjectType(
+                    properties = LinkedHashMap(),
+                    additionalProperties = true,
+                    required = emptyList()
+                ),
+                name = "exact_limit_variant",
+                changes = mutableListOf(),
+                airbyteMetaField = null,
+            )
+
+        // This should still be valid as each 'a' is 1 byte and total is at the limit
+        val result = coercer.validate(airbyteValue)
+        assertEquals(airbyteValue, result)
+    }
+
+    @Test
     fun testFloatAtExactBoundary() {
         // Test float at exact boundary values defined in FLOAT_RANGE
         val exactMaxFloat = NumberValue(FLOAT_MAX)
@@ -711,6 +768,35 @@ internal class SnowflakeValueCoercerTest {
                 abValue = emojiString,
                 type = StringType,
                 name = "emoji_string",
+                changes = mutableListOf(),
+                airbyteMetaField = null,
+            )
+
+        val result = coercer.validate(airbyteValue)
+        assertEquals(airbyteValue, result)
+    }
+
+    @Test
+    fun testVariantWithMultiByteCharactersNearLimit() {
+        // Test ObjectValue with multi-byte UTF-8 characters
+        // Each emoji is 4 bytes, so we need fewer characters to hit the limit
+        // JSON overhead for {"field":""} is 12 bytes, so we account for that
+        val multiByteCount = (VARIANT_LIMIT_BYTES - 12) / 4
+        val emojiObject = ObjectValue(
+            LinkedHashMap<String, AirbyteValue>().apply {
+                put("field", StringValue("🎉".repeat(multiByteCount)))
+            }
+        )
+
+        val airbyteValue =
+            EnrichedAirbyteValue(
+                abValue = emojiObject,
+                type = ObjectType(
+                    properties = LinkedHashMap(),
+                    additionalProperties = true,
+                    required = emptyList()
+                ),
+                name = "emoji_variant",
                 changes = mutableListOf(),
                 airbyteMetaField = null,
             )
