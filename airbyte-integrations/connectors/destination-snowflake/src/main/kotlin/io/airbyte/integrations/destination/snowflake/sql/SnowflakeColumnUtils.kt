@@ -39,6 +39,8 @@ import kotlin.collections.component2
 import kotlin.collections.joinToString
 import kotlin.collections.map
 import kotlin.collections.plus
+import org.apache.avro.Schema
+import org.apache.avro.SchemaBuilder
 
 internal const val NOT_NULL = "NOT NULL"
 
@@ -54,7 +56,7 @@ internal val DEFAULT_COLUMNS =
         ),
         ColumnAndType(
             columnName = COLUMN_NAME_AB_META,
-            columnType = "${SnowflakeDataType.VARIANT.typeName} $NOT_NULL"
+            columnType = "${SnowflakeDataType.OBJECT.typeName} $NOT_NULL"
         ),
         ColumnAndType(
             columnName = COLUMN_NAME_AB_GENERATION_ID,
@@ -65,7 +67,7 @@ internal val DEFAULT_COLUMNS =
 internal val RAW_DATA_COLUMN =
     ColumnAndType(
         columnName = COLUMN_NAME_DATA,
-        columnType = "${SnowflakeDataType.VARIANT.typeName} $NOT_NULL"
+        columnType = "${SnowflakeDataType.OBJECT.typeName} $NOT_NULL"
     )
 
 internal val RAW_COLUMNS =
@@ -185,6 +187,16 @@ class SnowflakeColumnUtils(
             ObjectTypeWithoutSchema -> SnowflakeDataType.OBJECT.typeName
             is UnionType -> SnowflakeDataType.VARIANT.typeName
             is UnknownType -> SnowflakeDataType.VARIANT.typeName
+        }
+
+    fun toAvroType(snowflakeType: String): Schema =
+        when (SnowflakeDataType.valueOf(snowflakeType)) {
+            SnowflakeDataType.BOOLEAN -> SchemaBuilder.builder().booleanType()
+            SnowflakeDataType.FIXED,
+            SnowflakeDataType.NUMBER -> SchemaBuilder.builder().longType()
+            SnowflakeDataType.REAL,
+            SnowflakeDataType.FLOAT -> SchemaBuilder.builder().doubleType()
+            else -> SchemaBuilder.builder().stringType()
         }
 }
 

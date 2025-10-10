@@ -12,9 +12,12 @@ enum class SnowflakeDataType(val typeName: String) {
     // Numeric types
     NUMBER("NUMBER(38,0)"),
     FLOAT("FLOAT"),
+    FIXED("FIXED"),
+    REAL("REAL"),
 
     // String & binary types
     VARCHAR("VARCHAR"),
+    TEXT("TEXT"),
 
     // Boolean type
     BOOLEAN("BOOLEAN"),

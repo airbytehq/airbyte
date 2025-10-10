@@ -5,8 +5,18 @@
 package io.airbyte.integrations.destination.snowflake.write.load
 
 import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.ArrayValue
+import io.airbyte.cdk.load.data.BooleanValue
+import io.airbyte.cdk.load.data.DateValue
+import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NullValue
+import io.airbyte.cdk.load.data.NumberValue
+import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.TimeWithTimezoneValue
+import io.airbyte.cdk.load.data.TimeWithoutTimezoneValue
+import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
+import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.data.csv.toCsvValue
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.util.Jsons
@@ -15,7 +25,51 @@ import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleNam
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 
 interface SnowflakeRecordFormatter {
-    fun format(record: Map<String, AirbyteValue>): List<Any>
+    fun format(record: Map<String, AirbyteValue>): List<Any?>
+}
+
+class SnowflakeParquetRecordFormatter(
+    private val columns: LinkedHashMap<String, String>,
+    val snowflakeColumnUtils: SnowflakeColumnUtils,
+) : SnowflakeRecordFormatter {
+
+    private val airbyteColumnNames =
+        snowflakeColumnUtils.getFormattedDefaultColumnNames(false).toSet()
+
+    override fun format(record: Map<String, AirbyteValue>): List<Any?> =
+        columns.map { (columnName, _) ->
+            /*
+             * Meta columns are forced to uppercase for backwards compatibility with previous
+             * versions of the destination.  Therefore, convert the column to lowercase so
+             * that it can match the constants, which use the lowercase version of the meta
+             * column names.
+             */
+            if (airbyteColumnNames.contains(columnName)) {
+                convertValue(record[columnName.lowercase()])
+            } else {
+                record.keys
+                    .find { it == columnName.toSnowflakeCompatibleName() }
+                    ?.let { convertValue(record[it]) }
+            }
+        }
+
+    private fun convertValue(value: AirbyteValue?) =
+        value?.let {
+            when (value) {
+                is BooleanValue -> value.value
+                is DateValue -> value.value.toString()
+                is IntegerValue -> value.value
+                is NumberValue -> value.value
+                is TimeWithTimezoneValue -> value.value.toString()
+                is TimeWithoutTimezoneValue -> value.value.toString()
+                is TimestampWithoutTimezoneValue -> value.value.toString()
+                is TimestampWithTimezoneValue -> value.value.toString()
+                is ObjectValue -> value.serializeToString()
+                is ArrayValue -> value.serializeToString()
+                is StringValue -> value.value
+                is NullValue -> null
+            }
+        }
 }
 
 class SnowflakeSchemaRecordFormatter(
