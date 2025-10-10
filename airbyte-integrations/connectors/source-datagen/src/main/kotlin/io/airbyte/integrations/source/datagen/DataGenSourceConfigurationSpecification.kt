@@ -70,6 +70,6 @@ data object Incremental : FlavorSpec
 
 @JsonSchemaTitle("All Types")
 @JsonSchemaDescription(
-    "Generates one column per data type for the source.",
+    "Generates one column of each Airbyte data type.",
 )
 data object Types : FlavorSpec
