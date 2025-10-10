@@ -52,7 +52,6 @@ def test_updated_at_field_non_exist_handler(requests_mock, config, fake_properti
     assert records[0]["updatedAt"] == created_at
 
 
-@pytest.mark.skip(reason="long test, enable when needed")
 @pytest.mark.parametrize(
     "stream_class, endpoint, cursor_value",
     [
@@ -88,8 +87,9 @@ def test_updated_at_field_non_exist_handler(requests_mock, config, fake_properti
 def test_streams_read(stream_class, endpoint, cursor_value, requests_mock, fake_properties_list, config):
     mock_dynamic_schema_requests_with_skip(requests_mock, [])
     stream = find_stream(stream_class, config)
+    stream_retriever = stream._stream_partition_generator._partition_factory._retriever
     data_field = (
-        stream.retriever.record_selector.extractor.field_path[0] if len(stream.retriever.record_selector.extractor.field_path) > 0 else None
+        stream_retriever.record_selector.extractor.field_path[0] if len(stream_retriever.record_selector.extractor.field_path) > 0 else None
     )
     list_entities = [
         {
@@ -150,16 +150,21 @@ def test_streams_read(stream_class, endpoint, cursor_value, requests_mock, fake_
     ]
 
     stream._sync_mode = SyncMode.full_refresh
-    if isinstance(stream_class, str):
-        stream_slice = {}
-        if is_form_submission:
-            stream_slice = {"form_id": ["test_id"]}
-        stream_url = stream.retriever.requester.url_base + "/" + stream.retriever.requester.get_path(stream_slice=stream_slice)
-    else:
-        stream_url = stream.url + "/test_id" if is_form_submission else stream.url
+    stream_slice = {}
+    if is_form_submission:
+        stream_slice = {"form_id": ["test_id"]}
+    stream_url = stream_retriever.requester.url_base + "/" + stream_retriever.requester.get_path(stream_slice=stream_slice)
     stream._sync_mode = None
 
-    requests_mock.register_uri("GET", stream_url, responses)
+    requests_mock.register_uri(stream_retriever.requester._http_method.value, stream_url, responses)
+    # mock associations calls
+    if stream_retriever.requester._http_method.value == "POST":
+        for association in stream_retriever.requester._parameters.get("associations", []):
+            requests_mock.register_uri(
+                "POST",
+                f"https://api.hubapi.com/crm/v4/associations/{endpoint}/{association}/batch/read",
+                [{"json": {"results": []}, "status_code": 200}],
+            )
     requests_mock.register_uri("GET", "/crm/v3/objects/contact", contact_response)
     requests_mock.register_uri("GET", "/contacts/v1/lists/all/contacts/all", contact_lists_v1_response)
     requests_mock.register_uri("GET", "/marketing/v3/forms", responses if not is_form_submission else forms_response)
@@ -169,7 +174,7 @@ def test_streams_read(stream_class, endpoint, cursor_value, requests_mock, fake_
     requests_mock.register_uri("GET", "/contacts/v1/contact/vids/batch/", read_batch_contact_v1_response)
     requests_mock.register_uri("POST", "/crm/v3/lists/search", responses)
 
-    records = read_full_refresh(stream)
+    records = read_from_stream(config, stream_class, SyncMode.full_refresh).records
     assert records
 
 
