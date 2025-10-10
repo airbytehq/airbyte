@@ -531,7 +531,7 @@ internal class SnowflakeValueCoercerTest {
     }
 
     @Test
-    fun testStringJustUnderSizeLimit() {
+    fun testStringAtExactSizeLimit() {
         val largeString = StringValue("a".repeat(VARCHAR_AND_VARIANT_LIMIT_BYTES))
         val airbyteValue =
             EnrichedAirbyteValue(
@@ -547,8 +547,8 @@ internal class SnowflakeValueCoercerTest {
     }
 
     @Test
-    fun testStringAtExactSizeLimit() {
-        // Test string at exactly the 33554432 character limit
+    fun testStringOverSizeLimit() {
+        // Test string at exactly the 16777216-character limit
         val exactLimitString = StringValue("a".repeat(VARCHAR_AND_VARIANT_LIMIT_BYTES + 1))
         val airbyteValue =
             EnrichedAirbyteValue(
@@ -561,7 +561,7 @@ internal class SnowflakeValueCoercerTest {
 
         // This should still be valid as each 'a' is 1 byte
         val result = coercer.validate(airbyteValue)
-        assertEquals(airbyteValue, result)
+        assertEquals(NullValue, result.abValue)
     }
 
     @Test
@@ -700,8 +700,8 @@ internal class SnowflakeValueCoercerTest {
     }
 
     @Test
-    fun testStringWithMultiByteCharactersNearLimit() {
-        // Test string with multi-byte UTF-8 characters
+    fun testStringWithMultiByteCharactersAtLimit() {
+        // Test string with multibyte UTF-8 characters
         // Each emoji is 4 bytes, so we need fewer characters to hit the limit
         val multiByteCount = MAX_UTF_8_STRING_LENGTH_UNDER_LIMIT
         val emojiString = StringValue("🎉".repeat(multiByteCount))
@@ -717,5 +717,25 @@ internal class SnowflakeValueCoercerTest {
 
         val result = coercer.validate(airbyteValue)
         assertEquals(airbyteValue, result)
+    }
+
+    @Test
+    fun testStringWithMultiByteCharactersOverLimit() {
+        // Test string with multibyte UTF-8 characters
+        // Each emoji is 4 bytes, so we need fewer characters to hit the limit
+        val multiByteCount = MAX_UTF_8_STRING_LENGTH_UNDER_LIMIT
+        val emojiString = StringValue("🎉".repeat(multiByteCount) + 'a')
+
+        val airbyteValue =
+            EnrichedAirbyteValue(
+                abValue = emojiString,
+                type = StringType,
+                name = "emoji_string",
+                changes = mutableListOf(),
+                airbyteMetaField = null,
+            )
+
+        val result = coercer.validate(airbyteValue)
+        assertEquals(NullValue, result.abValue)
     }
 }
