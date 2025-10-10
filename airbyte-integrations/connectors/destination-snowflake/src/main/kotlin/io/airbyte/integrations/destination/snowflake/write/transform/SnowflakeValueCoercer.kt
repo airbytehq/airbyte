@@ -5,13 +5,16 @@
 package io.airbyte.integrations.destination.snowflake.write.transform
 
 import com.google.common.base.Utf8
+import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ArrayType
+import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.NumberType
 import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.UnionType
@@ -45,17 +48,15 @@ internal const val VARCHAR_LIMIT_BYTES = 16 * 1024 * 1024
 
 // UTF-8 has max 4 bytes per char, so anything under this length is safe
 internal const val MAX_UTF_8_VARIANT_LENGTH_UNDER_LIMIT = VARIANT_LIMIT_BYTES / 4 // (134217728 / 4)
-internal const val MAX_UTF_8_VARCHAR_LENGTH_UNDER_LIMIT = VARCHAR_LIMIT_BYTES / 4 // (134217728 / 4)
+internal const val MAX_UTF_8_VARCHAR_LENGTH_UNDER_LIMIT = VARCHAR_LIMIT_BYTES / 4 // (16777216 / 4)
 
-fun isValid(value: EnrichedAirbyteValue): Boolean {
-    return when (value.type) {
-        is ArrayType,
-        is UnionType,
-        is UnknownType,
-        is ObjectType -> isVariantValid(value.abValue.toCsvValue().toString())
-        is IntegerType -> (value.abValue as IntegerValue).value in INT_RANGE
-        is NumberType -> (value.abValue as NumberValue).value in FLOAT_RANGE
-        is StringType -> isVarcharValid((value.abValue as StringValue).value)
+fun isValid(value: AirbyteValue): Boolean {
+    return when (value) {
+        is ArrayValue,
+        is ObjectValue -> isVariantValid(value.toCsvValue().toString())
+        is IntegerValue -> value.value in INT_RANGE
+        is NumberValue -> value.value in FLOAT_RANGE
+        is StringValue -> isVarcharValid(value.value)
         else -> true
     }
 }
@@ -89,7 +90,7 @@ class SnowflakeValueCoercer : ValueCoercer {
     }
 
     override fun validate(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
-        if (!isValid(value)) {
+        if (!isValid(value.abValue)) {
             value.nullify(AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION)
         }
 
