@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.1.0"
+version = "0.3.21"
 name = "source-nexus-datasets"
 description = "Source implementation for nexus-datasets."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -12,18 +12,20 @@ readme = "README.md"
 documentation = "https://docs.airbyte.com/integrations/sources/nexus-datasets"
 homepage = "https://airbyte.com"
 repository = "https://github.com/airbytehq/airbyte"
-packages = [ { include = "source_nexus_datasets" }, {include = "main.py" } ]
+packages = [ { include = "source_nexus_datasets" }]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<3.12"
-airbyte-cdk = "6.36.2"
-pyarrow = ">=8.0.0,<16.0.0"
-pandas = ">=1.5.0,<3.0.0"
+airbyte-cdk = "6.61.0"
+pyarrow = ">=16.1,<22.0"
+pandas = "2.2.2"
+
 
 [tool.poetry.scripts]
 source-nexus-datasets = "source_nexus_datasets.run:run"
 
 [tool.poetry.group.dev.dependencies]
-requests-mock = "*"
-pytest-mock = "*"
-pytest = "*"
+requests-mock = "^1.9.3"
+pytest-mock = "^3.6.1"
+pytest = "^8.0.0"
+

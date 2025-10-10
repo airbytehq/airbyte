@@ -16,7 +16,9 @@ data:
     # https://hub.docker.com/r/airbyte/python-connector-base
     # Please use the full address with sha256 hash to guarantee build reproducibility.
     #docker.io/airbyte/python-connector-base:3.0.0@sha256:1a0845ff2b30eafa793c6eee4e8f4283c2e52e1bbd44eed6cb9e9abd5d34d844
-    baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
+    #base:3.0.2@sha256:73697fbe1c0e2ebb8ed58e2268484bb4bfb2cb56b653808e1680cbc50bafef75
+    #goes with above base airbyte-cdk = "6.61.0" and python = ">=3.10,<3.12"
+    baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
   connectorSubtype: api
   connectorType: source
   definitionId: 9e1fe63c-80ad-44fe-8927-10e66c9e209b
@@ -26,11 +28,25 @@ data:
   icon: nexus-datasets.svg
   license: MIT
   name: Nexus Datasets
-  releaseDate: TODO
+  releaseDate: 2025-11-15
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/nexus-datasets
   tags:
     - language:python
     - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: nexus_datasets_config_dev_null
+          id: TODO
+    - suite: unitTests
+    - suite: acceptanceTests
+      #optional: if your acceptance tests need credentials from CI secret store
+      #testSecrets:
+      #  - name: SECRET_SOURCE-NEXUS-DATASETS__CREDS
+      #    fileName: config.json
+      #    secretStore:
+      #      type: GSM
+      #      alias: airbyte-connector-testing-secret-store       
 metadataSpecVersion: "1.0"

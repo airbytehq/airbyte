@@ -1,11 +1,12 @@
-version: 6.5.0 # Ensure this matches your pyproject.toml and base image
+version: 6.5.0
+#6.6.0 # Ensure this matches your pyproject.toml and base image
 
 type: DeclarativeSource
 
 check:
   type: CheckStream
   stream_names:
-    - "datasets" # Assuming "datasets" is your primary data stream
+    - "datasets_schema" # Assuming "datasets" is your primary data stream
 
 definitions:
   # Base Requester with Authentication
@@ -39,15 +40,29 @@ streams:
         $parameters: # Parameters passed to FlexibleDecoder's __init__
           # file_type is removed from here as it's inferred from Content-Type header
           config: "{{ config }}" # Explicitly pass the config object (REQUIRED for 6.36.2 CustomDecoder)
-          # csv_options is removed from here as it's hardcoded in the decoder class
-          # If you want to pass other parameters that FlexibleDecoder's __init__ accepts,
-          # they would go here. The 'parameters: InitVar' will catch them.
-
-
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/datasets" # Reference the schema defined below
+     
+  - type: DeclarativeStream
+    name: datasets_schema # Name of your data stream
+    $parameters:
+      # Dynamic path construction using config properties
+      path: "{{ config['dataset_path'] }}"
+    retriever:
+      type: SimpleRetriever
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: [] # Assuming the records are at the root of the response, adjust if nested
+      requester:
+        $ref: "#/definitions/base_requester" # Reference the shared requester
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/datasets_schema" # Reference the schema defined below
 
 spec:
   type: Spec
@@ -63,11 +78,11 @@ spec:
       - secret_key
       - api_key
       - dataset_path
-      - dataset_name
+      #- dataset_name
       # file_type is no longer a required config field for the decoder,
       # but you might want to keep it if it's used elsewhere or for user clarity.
       # If it's only for decoder, you can remove it from 'required' and 'properties'.
-      - file_type
+      #- file_type
     additionalProperties: true
     properties:
       base_url:
@@ -78,15 +93,15 @@ spec:
       user_id:
         type: "string"
         description: "The user ID for the Nexus API."
-        default: "DataApiAgent@5717988960038861"
+        default: "DataApiAgentcj@5717988960038861"
       access_key_id:
         type: "string"
         description: "The access key ID for the Nexus API."
-        default: "1002n4gZe6nns3onZtu"
+        default: "1002n4gZecuf03nvZ37"
       secret_key:
         type: "string"
         description: "The secret key for HMAC authentication."
-        default: "uqhc7uqfmqwnyzmxd4fuskgotad4cl7xhdj6ac5rkf7eecphk22zpkc5lmhct75bcwpwi6hrnc6zos46hwks55ggha57o2wnskuolfa"
+        default: "tahzc52va2gds5colxb722p26lt6azrw2ow66hxafafr7v4jwodv3tdyqgdnslr2qodeqnhejveebualhg7fmhhpyv7pzovpa3wnkjy"
       api_key:
         type: string
         description: "The Nexus Data API Key."
@@ -99,7 +114,7 @@ spec:
       dataset_name:
         type: string
         description: "The name of the dataset to export."
-        default: "ExportDataSetSeven_PurchaseOrderTest3"
+        default: "PurchaseOrderexportTest2"
       dataset_export_prefix:
         type: string
         description: "Data Export Prefix."
@@ -143,13 +158,21 @@ spec:
             type: integer
             description: "Number of rows to skip before the header (default: 0)."
             default: 0
-        additionalProperties: false # Set to false if you want to strictly define CSV options
+        additionalProperties: true # Set to false if you want to strictly define CSV options
 schemas:
   datasets:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: false # IMPORTANT: Set to false if you only want the 'raw_data' column
+    additionalProperties: true # IMPORTANT: Set to false if you only want the 'raw_data' column
     properties:
       raw_data: # Define a single property for the entire record as a JSON string
+        type: ["string", "null"]
+        description: "The entire record as a JSON string."
+  datasets_schema:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true 
+    properties:
+      raw_data: 
         type: ["string", "null"]
         description: "The entire record as a JSON string."

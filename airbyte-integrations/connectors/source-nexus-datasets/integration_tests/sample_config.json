@@ -1,3 +1,12 @@
 {
-  "fix-me": "TODO"
+  "base_url": "<url>",
+  "user_id": "<data api agent user id>",
+  "access_key_id": "<access key for data api agent>",
+  "secret_key": "<secret key for data api agent>",
+  "api_key": "<data key for the organization>",
+  "dataset_path": "<static path and no need to define>",
+  "dataset_name": "<name of the dataset to be used>",
+  "dataset_export_prefix": "<always export>",
+  "file_type": "<JSONL or CSV or PARQUET>",
+  "mode": "<Full or Incremental>"
 }

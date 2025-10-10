@@ -1,0 +1,90 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/nexus-datasets
+connectionSpecification:
+  title: Nexus Datasets Spec
+  type: object
+  $schema: http://json-schema.org/draft-07/schema#
+  required:
+    - base_url
+    - user_id
+    - access_key_id
+    - secret_key
+    - api_key
+    - dataset_path
+    #- dataset_name
+    #- file_type
+  additionalProperties: true
+  properties:
+    base_url:
+      type: "string"
+      description: "The base URL of the Nexus API."
+      default: "https://fte-8faff6f82b424ed489e48095f4e58e91-infornexus.fte.gtnexus.info"
+      pattern: "^https?://[\\w.-]+(:\\d+)?(/[\\w.-]+)*/?$"
+    user_id:
+      type: "string"
+      description: "The user ID for the Nexus API."
+      default: "DataApiAgentcj@5717988960038861"
+    access_key_id:
+      type: "string"
+      description: "The access key ID for the Nexus API."
+      default: "1002n4gZecuf03nvZ37"
+    secret_key:
+      type: "string"
+      description: "The secret key for HMAC authentication."
+      default: "tahzc52va2gds5colxb722p26lt6azrw2ow66hxafafr7v4jwodv3tdyqgdnslr2qodeqnhejveebualhg7fmhhpyv7pzovpa3wnkjy"
+    api_key:
+      type: string
+      description: "The Nexus Data API Key."
+      default: "4354c1f5a341853211138ad8afb740ffdafc6527"
+    dataset_path:
+      type: string
+      description: "Data Set Path."
+      default: "rest/3.1/analytics/dataset"
+      airbyte_hidden: true # Hide this from UI if it's a fixed internal path
+    dataset_name:
+      type: string
+      description: "The name of the dataset to export."
+      default: "PurchaseOrderexportTest2"
+    dataset_export_prefix:
+      type: string
+      description: "Data Export Prefix."
+      default: "export"
+      airbyte_hidden: true # Hide this from UI if it's a fixed internal path
+    mode:
+      type: string
+      title: Mode
+      description: "Sync mode (Full or Incremental)."
+      enum:
+        - Full
+        - Incremental
+      default: Full
+    file_type: # Keep this if it's used for path construction or other logic, but not decoder selection
+      type: string
+      title: File Type
+      description: "Select the file type for the dataset export."
+      enum:
+        - JSONL
+        - CSV
+        - Parquet
+      default: JSONL
+    csv_options: # This section is no longer used by FlexibleDecoder if hardcoded
+      type: object
+      title: CSV Options
+      description: "Options for parsing CSV files. Only applicable if File Type is CSV."
+      properties:
+        delimiter:
+          type: string
+          description: "Delimiter character for CSV files (default: ',')."
+          default: ","
+        quote_char:
+          type: string
+          description: "Quote character for CSV files (default: '\"')."
+          default: "\""
+        encoding:
+          type: string
+          description: "Encoding for CSV files (default: 'utf-8')."
+          default: "utf-8"
+        skip_rows_before_header:
+          type: integer
+          description: "Number of rows to skip before the header (default: 0)."
+          default: 0
+      additionalProperties: true # Set to false if you want to strictly define CSV options
