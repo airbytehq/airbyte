@@ -2673,6 +2673,12 @@ definitions:
       url_base: "{{ config['endpoint'] }}"
       authenticator: "#/definitions/authenticator"
       http_method: POST
+      error_handler:
+        type: DefaultErrorHandler
+        max_retries: 10
+        backoff_strategies:
+          - type: ConstantBackoffStrategy
+            backoff_time_in_seconds: 120 # = (1 / rate (0.0167)) * safety_factor (2.0).
       request_headers:
         content-type: "application/json"
       request_body_json:
@@ -2696,6 +2702,12 @@ definitions:
       url_base: "{{ config['endpoint'] }}"
       authenticator: "#/definitions/authenticator"
       http_method: GET
+      error_handler:
+        type: DefaultErrorHandler
+        max_retries: 10
+        backoff_strategies:
+          - type: ConstantBackoffStrategy
+            backoff_time_in_seconds: 120 # = (1 / rate (0.0167)) * safety_factor (2.0).
       request_headers:
         content-type: "application/json"
 
@@ -2795,6 +2807,31 @@ api_budget:
       matchers:
         - method: GET
           url_path_pattern: "orders/v0/orders/[^/]+/orderItems(\\?.*)?$" # matches /orderItems
+    # API Budget for reports: https://developer-docs.amazon.com/sp-api/docs/reports-api-rate-limits#reports-v2021-06-30
+    - type: MovingWindowCallRatePolicy
+      # https://developer-docs.amazon.com/sp-api/reference/createreport
+      rates:
+        - limit: 1 # 0.0167 calls per second = around 1 request per minute
+          interval: PT1M
+      matchers:
+        - method: POST
+          url_path_pattern: "reports/2021-06-30/reports"
+    - type: MovingWindowCallRatePolicy
+      # https://developer-docs.amazon.com/sp-api/reference/getreport
+      rates:
+        - limit: 2 # 2 calls per second
+          interval: PT1S
+      matchers:
+        - method: GET
+          url_path_pattern: "reports/2021-06-30/reports/.+"
+    - type: MovingWindowCallRatePolicy
+      # https://developer-docs.amazon.com/sp-api/reference/getreportdocument
+      rates:
+        - limit: 1 # 0.0167 calls per second = around 1 request per minute
+          interval: PT1M
+      matchers:
+        - method: GET
+          url_path_pattern: "reports/2021-06-30/documents/.+"
   # Other API budget settings:
   status_codes_for_ratelimit_hit: [429]
 
