@@ -106,7 +106,7 @@ jobs:
         id: run-unit-tests
         if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
-        run: exit 0
+        run: exit 1
 
       - name: Run Integration Tests
         id: run-integration-tests
