@@ -149,5 +149,5 @@ jobs:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: tools/bin/bulk-cdk-compatibility-test/create-gh-issue.sh \
           ${{ matrix.connector }} \
-          ${{ github.sha }} \
-          "https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}"
+          "https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}" \
+          ${{ github.sha }}
