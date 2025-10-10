@@ -106,7 +106,7 @@ jobs:
         id: run-unit-tests
         if: matrix.connector
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
-        run: poe test-unit-tests
+        run: exit 1
 
       - name: Run Integration Tests
         id: run-integration-tests
@@ -119,20 +119,19 @@ jobs:
         if: always()
         run: |
           echo "should-notify=${{
-            github.event_name == 'schedule' &&
             startsWith(matrix.connector, 'destination-') &&
             (steps.run-unit-tests.outcome == 'failure' || steps.run-integration-tests.outcome == 'failure')
           }}" >> $GITHUB_OUTPUT
 
-      - name: Slack Notification on Failure
-        if: steps.check-move-notify.outputs.should-notify == 'true'
-        uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
-        with:
-          token: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
-          method: chat.postMessage
-          payload: |
-            channel: C09H56MT8J2
-            text: "`${{ matrix.connector }}` connector tests failed when using local CDK! <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|View Test Logs>"
+#      - name: Slack Notification on Failure
+#        if: steps.check-move-notify.outputs.should-notify == 'true'
+#        uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
+#        with:
+#          token: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+#          method: chat.postMessage
+#          payload: |
+#            channel: C09H56MT8J2
+#            text: "`${{ matrix.connector }}` connector tests failed when using local CDK! <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|View Test Logs>"
 
       - name: Authenticate as GitHub App
         if: steps.check-move-notify.outputs.should-notify == 'true'
