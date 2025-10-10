@@ -6,10 +6,9 @@ import copy
 import json
 import logging
 import os
-import urllib.parse
 from collections import defaultdict
 from enum import Enum
-from typing import Optional, Union
+from typing import Union
 
 import semver
 import sentry_sdk
@@ -21,7 +20,6 @@ from metadata_service.constants import (
     ANALYTICS_BUCKET,
     ANALYTICS_FOLDER,
     METADATA_FOLDER,
-    PUBLIC_GCS_BASE_URL,
     PUBLISH_UPDATE_CHANNEL,
     REGISTRIES_FOLDER,
     VALID_REGISTRIES,
@@ -308,13 +306,6 @@ def _persist_registry(registry: ConnectorRegistryV0, registry_name: str, bucket:
         None
     """
 
-    # TODO: Remove the dev bucket set up once registry artificts have been validated and then add the bucket as a parameter. This block exists so we can write the registry artifacts to the dev bucket for validation.
-    gcs_creds = os.environ.get("GCS_DEV_CREDENTIALS")
-    service_account_info = json.loads(gcs_creds)
-    credentials = service_account.Credentials.from_service_account_info(service_account_info)
-    client = storage.Client(credentials=credentials)
-    bucket = client.bucket("dev-airbyte-cloud-connector-metadata-service")
-
     registry_file_name = f"{registry_name}_registry.json"
     registry_file_path = f"{REGISTRIES_FOLDER}/{registry_file_name}"
     registry_json = registry.json(exclude_none=True)
@@ -323,6 +314,11 @@ def _persist_registry(registry: ConnectorRegistryV0, registry_name: str, bucket:
     try:
         logger.info(f"Uploading {registry_name} registry to {registry_file_path}")
         blob = bucket.blob(registry_file_path)
+        # In cloud, airbyte-cron polls the registry frequently, to enable faster connector updates.
+        # We should set a lower cache duration on the blob so that the cron receives an up-to-date view of the registry.
+        # However, OSS polls the registry much less frequently, so the default cache setting (1hr max-age) is fine.
+        if registry_name == "cloud":
+            blob.cache_control = "public, max-age=120"
         blob.upload_from_string(registry_json.encode("utf-8"), content_type="application/json")
         logger.info(f"Successfully uploaded {registry_name} registry to {registry_file_path}")
         return

@@ -5,13 +5,14 @@
 package io.airbyte.cdk.load.dataflow
 
 import io.airbyte.cdk.load.command.DestinationCatalog
-import io.airbyte.cdk.load.dataflow.config.MemoryAndParallelismConfig
+import io.airbyte.cdk.load.dataflow.finalization.StreamCompletionTracker
+import io.airbyte.cdk.load.dataflow.pipeline.PipelineRunner
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import io.github.oshai.kotlinlogging.KotlinLogging
+import jakarta.inject.Named
 import jakarta.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -21,8 +22,10 @@ import kotlinx.coroutines.runBlocking
 class DestinationLifecycle(
     private val destinationInitializer: DestinationWriter,
     private val destinationCatalog: DestinationCatalog,
-    private val pipeline: DataFlowPipeline,
-    private val memoryAndParallelismConfig: MemoryAndParallelismConfig,
+    private val pipeline: PipelineRunner,
+    private val completionTracker: StreamCompletionTracker,
+    @Named("streamInitDispatcher") private val streamInitDispatcher: CoroutineDispatcher,
+    @Named("streamFinalizeDispatcher") private val streamFinalizeDispatcher: CoroutineDispatcher,
 ) {
     private val log = KotlinLogging.logger {}
 
@@ -30,8 +33,8 @@ class DestinationLifecycle(
         // Initialize the destination to make sure that it is ready for the data ingestion
         initializeDestination()
 
-        // Create prepare individual streams for the data ingestion. E.g create tables and propagate
-        // the schema updates
+        // Create prepare individual streams for the data ingestion. E.g. create tables and
+        // propagate the schema updates
         val streamLoaders = initializeIndividualStreams()
 
         // Move data
@@ -53,28 +56,23 @@ class DestinationLifecycle(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun initializeIndividualStreams(): List<StreamLoader> {
-        val initDispatcher: CoroutineDispatcher =
-            Dispatchers.Default.limitedParallelism(
-                memoryAndParallelismConfig.maxConcurrentLifecycleOperations
-            )
-
         return runBlocking {
-            val result = mutableListOf<StreamLoader>()
-            destinationCatalog.streams
-                .map {
-                    async(initDispatcher) {
-                        log.info {
-                            "Starting stream loader for stream ${it.mappedDescriptor.namespace}:${it.mappedDescriptor.name}"
-                        }
-                        val streamLoader = destinationInitializer.createStreamLoader(it)
-                        streamLoader.start()
-                        result.add(streamLoader)
-                        log.info {
-                            "Stream loader for stream ${it.mappedDescriptor.namespace}:${it.mappedDescriptor.name} started"
+            val result =
+                destinationCatalog.streams
+                    .map {
+                        async(streamInitDispatcher) {
+                            log.info {
+                                "Starting stream loader for stream ${it.mappedDescriptor.namespace}:${it.mappedDescriptor.name}"
+                            }
+                            val streamLoader = destinationInitializer.createStreamLoader(it)
+                            streamLoader.start()
+                            log.info {
+                                "Stream loader for stream ${it.mappedDescriptor.namespace}:${it.mappedDescriptor.name} started"
+                            }
+                            streamLoader
                         }
                     }
-                }
-                .awaitAll()
+                    .awaitAll()
 
             return@runBlocking result
         }
@@ -82,19 +80,20 @@ class DestinationLifecycle(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun finalizeIndividualStreams(streamLoaders: List<StreamLoader>) {
-        val finalizeDispatcher: CoroutineDispatcher =
-            Dispatchers.Default.limitedParallelism(
-                memoryAndParallelismConfig.maxConcurrentLifecycleOperations
-            )
+        if (!completionTracker.allStreamsComplete()) {
+            log.warn {
+                "One or more streams did not complete. Skipping destructive finalization operations..."
+            }
+        }
 
         runBlocking {
             streamLoaders
                 .map {
-                    async(finalizeDispatcher) {
+                    async(streamFinalizeDispatcher) {
                         log.info {
                             "Finalizing stream ${it.stream.mappedDescriptor.namespace}:${it.stream.mappedDescriptor.name}"
                         }
-                        it.close(true)
+                        it.teardown(completionTracker.allStreamsComplete())
                         log.info {
                             "Finalized stream ${it.stream.mappedDescriptor.namespace}:${it.stream.mappedDescriptor.name}"
                         }

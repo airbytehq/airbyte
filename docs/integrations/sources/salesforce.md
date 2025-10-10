@@ -38,8 +38,8 @@ Using Permission Sets, you should grant this user read access to the data you wa
 -  On the top right of the screen, click the gear icon and then click **Setup**.
 -  In the left navigation bar, under Administration, click **Users** > **Users**. Create a new User, entering details for the user's first name, last name, alias, and email. Filling in the email field will auto-populate the username field and nickname.
       - Leave `role` unspecified
-      - Select `Salesforce Platform` for the User License
-      - Select `Standard Platform User` for Profile.
+      - Select `Salesforce` for the User License
+      - Select `Standard User` for Profile.
       - Decide whether to generate a new password and notify the user.
       - Select `save`
 #### 2. Create a new Permission Set:
@@ -53,6 +53,11 @@ Using Permission Sets, you should grant this user read access to the data you wa
    - Select “Edit” and check the "Read" permission and uncheck all other permissions (Create, Edit, Delete, etc.).
    - Click `Save`
    - Continue to add read permissions for any objects you want Airbyte to have access to.
+- To grant access to uninstalled connected apps, you need to enable additional permission.
+   - Click "System Permissions"
+   - Select “Edit”
+   - If [API Access Control](https://help.salesforce.com/s/articleView?id=xcloud.security_api_access_control_about.htm&language=en_US&type=5) is enabled, need to check the "Use Any API Client" permission. If API Access Control isn't enabled, need to check “Approve Uninstalled Connected Apps” permission.
+   - Click `Save`
 #### 3. Assign the Permission Set to the new User
 - From the Permission Sets page, click "Manage Assignments" next to the read-only permission set you just created.
 - Click "Add Assignments."
@@ -154,29 +159,31 @@ Common use cases for syncing Salesforce permission data include:
 The following streams contain security and permission-related data:
 
 - **[`User`](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_user.htm)** - Core user accounts with security-related fields including profiles, roles, and user permissions. Contains information about user status, login history, and assigned licenses.
-- **[`PermissionSet`](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_permissionset.htm)** - Represents sets of permissions used to grant additional access to users without changing their profile. Contains user, object, and field permissions as well as setup entity access settings.
 - **[`ActivePermSetLicenseMetric`](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_activepermsetlicensemetric.htm)** - Tracks permission set license usage metrics including assigned user counts, active user counts, and total available licenses.
 - **[`ActiveProfileMetric`](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_activeprofilemetric.htm)** - Provides metrics about user profile usage including user license associations and assignment counts.
 
+For comprehensive information about Salesforce security objects, refer to the [Salesforce Object Reference](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_concepts.htm) documentation.
+
 ### How Salesforce Permission Syncing Works
 
-Salesforce provides security data through its standard object model:
+Salesforce provides some security-related data through its standard object model:
 
-1. **Dynamic Object Discovery**: The connector automatically discovers all available Salesforce objects (sobjects) based on the authenticated user's permissions.
-2. **Permission-Based Access**: Which security objects are available depends on the permissions granted to the Salesforce user used for authentication.
-3. **Standard Object Syncing**: Security artifacts are available as regular Salesforce objects through the same sync mechanisms as other business data.
+1. **Dynamic Object Discovery**: The connector automatically discovers available Salesforce objects (sobjects) based on the authenticated user's permissions.
+2. **Permission-Based Access**: Which security objects are available depends on the permissions granted to the Salesforce user used for authentication and your Salesforce environment configuration.
+3. **Standard Object Syncing**: Available security-related objects are synced as regular Salesforce objects through the same sync mechanisms as other business data.
 
 :::note
-Security objects can be large datasets in organizations with many users, so monitor your Salesforce API limits accordingly.
+Security-related object availability varies by Salesforce environment (production vs sandbox) and user permissions. Security objects can be large datasets in organizations with many users, so monitor your Salesforce API limits accordingly.
 :::
 
 ### Permissions Needed to Sync Permissions Data {#permissions-to-sync-permissions}
 
 To sync security-related data from Salesforce, the authenticated Salesforce user must have appropriate permissions to read security objects. Consider granting these permissions through a dedicated permission set:
 
-   - "View Setup and Configuration" - Required to access PermissionSet objects.
    - "View All Users" - Required to access comprehensive User data.
    - Standard read permissions for the specific objects you want to sync.
+
+For more information about Salesforce security and permissions, refer to the official Salesforce documentation on [User Permissions](https://help.salesforce.com/s/articleView?id=sf.admin_userperms.htm&type=5) and [Permission Sets](https://help.salesforce.com/s/articleView?id=sf.perm_sets_overview.htm&type=5).
 
 ## Limitations & Troubleshooting
 
@@ -254,6 +261,7 @@ Now that you have set up the Salesforce source connector, check out the followin
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.7.12 | 2025-09-10 | [66136](https://github.com/airbytehq/airbyte/pull/66136) | Update to CDK v7 |
 | 2.7.11 | 2025-05-14 | [60271](https://github.com/airbytehq/airbyte/pull/60271) | Define suggested streams |
 | 2.7.10 | 2025-05-10 | [60100](https://github.com/airbytehq/airbyte/pull/60100) | Update dependencies |
 | 2.7.9 | 2025-05-04 | [59644](https://github.com/airbytehq/airbyte/pull/59644) | Update dependencies |
@@ -271,7 +279,7 @@ Now that you have set up the Salesforce source connector, check out the followin
 | 2.6.5-rc.1 | 2025-02-18 | [53229](https://github.com/airbytehq/airbyte/pull/53229) | Upgrade to API v62.0                                                                                                                                                   |
 | 2.6.4      | 2025-01-11 | [48635](https://github.com/airbytehq/airbyte/pull/48635) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 2.6.3      | 2024-11-05 | [46835](https://github.com/airbytehq/airbyte/pull/46835) | Update dependencies                                                                                                                                                    |
-| 2.6.2      | 2024-10-10 | [](https://github.com/airbytehq/airbyte/pull/) | Bump minimum CDK to 5.10.2                                                                                                                                             |
+| 2.6.2      | 2024-10-10 | [](https://github.com/airbytehq/airbyte/pull/)           | Bump minimum CDK to 5.10.2                                                                                                                                             |
 | 2.6.1      | 2024-10-05 | [46436](https://github.com/airbytehq/airbyte/pull/46436) | Update dependencies, including CDK fix in v5.10.2                                                                                                                      |
 | 2.6.0      | 2024-10-02 | [45678](https://github.com/airbytehq/airbyte/pull/45678) | Have bulk streams use CDK components                                                                                                                                   |
 | 2.5.34     | 2024-09-28 | [46187](https://github.com/airbytehq/airbyte/pull/46187) | Update dependencies                                                                                                                                                    |

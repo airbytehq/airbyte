@@ -74,7 +74,7 @@ The Iterable source connector supports the following [sync modes](https://docs.a
 
 ## Additional notes
 
-[List Users](https://api.iterable.com/api/docs#lists_getLists_0) Stream when meet `500 - Generic Error` will skip a broken slice and keep going with the next one. This is related to unexpected failures when trying to get users list for specific list ids. See #[24968](https://github.com/airbytehq/airbyte/issues/24968) issue for more details.
+[List Users](https://api.iterable.com/api/docs#lists_getLists_0) Stream when meeting `500 - Generic Error` will skip a broken slice and keep going with the next one. This is related to unexpected failures when trying to get users list for specific list ids. See #[24968](https://github.com/airbytehq/airbyte/issues/24968) issue for more details.
 
 ## Changelog
 
@@ -83,6 +83,11 @@ The Iterable source connector supports the following [sync modes](https://docs.a
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.6.51 | 2025-10-10 | [67602](https://github.com/airbytehq/airbyte/pull/67602) | Fix array schema definitions |
+| 0.6.50 | 2025-10-07 | [67361](https://github.com/airbytehq/airbyte/pull/67361) | Update dependencies |
+| 0.6.49 | 2025-09-30 | [66798](https://github.com/airbytehq/airbyte/pull/66798) | Update dependencies |
+| 0.6.48 | 2025-09-09 | [66107](https://github.com/airbytehq/airbyte/pull/66107) | Update dependencies |
+| 0.6.47 | 2025-08-23 | [65380](https://github.com/airbytehq/airbyte/pull/65380) | Update dependencies |
 | 0.6.46 | 2025-08-16 | [64970](https://github.com/airbytehq/airbyte/pull/64970) | Update dependencies |
 | 0.6.45 | 2025-08-09 | [64604](https://github.com/airbytehq/airbyte/pull/64604) | Update dependencies |
 | 0.6.44 | 2025-08-02 | [64284](https://github.com/airbytehq/airbyte/pull/64284) | Update dependencies |
@@ -146,7 +151,6 @@ The Iterable source connector supports the following [sync modes](https://docs.a
 | 0.3.0 | 2024-02-20 | [35465](https://github.com/airbytehq/airbyte/pull/35465) | Per-error reporting and continue sync on stream failures |
 | 0.2.2 | 2024-02-12 | [35150](https://github.com/airbytehq/airbyte/pull/35150) | Manage dependencies with Poetry. |
 | 0.2.1 | 2024-01-12 | [1234](https://github.com/airbytehq/airbyte/pull/1234) | prepare for airbyte-lib |
-| 0.2.1   | 2024-01-12 | [1234](https://github.com/airbytehq/airbyte/pull/1234) | prepare for airbyte-lib |
 | 0.2.0   | 2023-09-29 | [28457](https://github.com/airbytehq/airbyte/pull/30931) | Added `userId` to `email_bounce`, `email_click`, `email_complaint`, `email_open`, `email_send` `email_send_skip`, `email_subscribe`, `email_unsubscribe`, `events` streams |
 | 0.1.31  | 2023-12-06 | [33106](https://github.com/airbytehq/airbyte/pull/33106) | Base image migration: remove Dockerfile and use the python-connector-base image                                                                                            |
 | 0.1.30  | 2023-07-19 | [28457](https://github.com/airbytehq/airbyte/pull/28457) | Fixed TypeError for StreamSlice in debug mode                                                                                                                              |

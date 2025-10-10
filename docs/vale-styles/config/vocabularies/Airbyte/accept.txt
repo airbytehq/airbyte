@@ -8,8 +8,9 @@ Self-Managed Community
 Self-Managed Enterprise
 Cloud
 Cloud Teams
-Cloud Enterprise
+Enterprise Flex
 abctl
+Airbox
 PyAirbyte
 [Nn]amespace
 Connector Builder
@@ -57,11 +58,16 @@ DPath
 UUID
 URL
 SSO
+SQL
+IP[s]
+CDC
 
 # Airbyte connectors
 
 Nessie
 S3 Data Lake
+PostgreSQL
+Postgres
 
 # Companies, products, and jargon
 
@@ -73,6 +79,7 @@ HubSpot
 Zendesk
 Okta
 Entra
+Slack
 
 # Acceptable non-words that shouldn't trigger spellcheck
 

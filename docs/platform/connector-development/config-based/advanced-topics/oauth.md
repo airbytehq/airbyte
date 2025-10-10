@@ -1,5 +1,5 @@
 # OAuth Authentication Methods
-At Aribyte, we offer two options for authentication using `OAuth2.0`:
+At Airbyte, we offer two options for authentication using `OAuth2.0`:
 
 1. **Airbyte's Own OAuth Application**: With this option, you do not need to create your own OAuth application with the data provider. This is typically applied to `Airbyte Cloud` customers as a `pick-and-use` scenario.
 2. **Declarative OAuth2.0**: This option requires you to provide your own `client id` and `client secret` (parameters may vary based on the data provider's preferences). You will need to supply the configuration, which will be processed and executed by the Airbyte platform on your behalf (self-managed configuration).

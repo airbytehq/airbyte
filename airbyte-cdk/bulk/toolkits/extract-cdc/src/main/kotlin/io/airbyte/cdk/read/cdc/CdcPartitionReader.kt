@@ -21,12 +21,15 @@ import io.airbyte.cdk.read.ResourceType.RESOURCE_DB_CONNECTION
 import io.airbyte.cdk.read.ResourceType.RESOURCE_OUTPUT_SOCKET
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.read.UnlimitedTimePartitionReader
+import io.airbyte.cdk.read.cdc.DebeziumPropertiesBuilder.Companion.AIRBYTE_HEARTBEAT_TIMEOUT_SECONDS
 import io.airbyte.cdk.read.generatePartitionId
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.debezium.engine.ChangeEvent
 import io.debezium.engine.DebeziumEngine
 import io.debezium.engine.format.Json
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.time.Duration
+import java.time.LocalDateTime
 import java.util.*
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
@@ -206,6 +209,16 @@ class CdcPartitionReader<T : Comparable<T>>(
         private val coroutineContext: CoroutineContext,
     ) : Consumer<ChangeEvent<String?, String?>> {
 
+        private var lastHeartbeatPosition: T? = null
+        private var lastHeartbeatTime: LocalDateTime? = null
+        // Only enable heartbeat timeout if explicitly configured
+        private val heartbeatTimeoutDuration: Duration? =
+            debeziumProperties[AIRBYTE_HEARTBEAT_TIMEOUT_SECONDS]?.let {
+                Duration.ofSeconds(it.toLongOrNull() ?: 0L).takeIf { duration ->
+                    duration.seconds > 0
+                }
+            }
+
         override fun accept(changeEvent: ChangeEvent<String?, String?>) {
             val event = DebeziumEvent(changeEvent)
             val eventType: EventType = emitRecord(event)
@@ -302,6 +315,38 @@ class CdcPartitionReader<T : Comparable<T>>(
             }
 
             val currentPosition: T? = position(event.sourceRecord) ?: position(event.value)
+
+            // Only check for heartbeat timeout if it's configured AND this is a heartbeat event
+            if (eventType == EventType.HEARTBEAT && heartbeatTimeoutDuration != null) {
+                val now = LocalDateTime.now()
+
+                // Check if heartbeat position is progressing (LSN should increase)
+                //  - If lastHeartbeatPosition is null (first heartbeat) → isProgressing = true
+                //  - If currentPosition is null → skip timeout check (return early)
+                //  - Otherwise → isProgressing = (currentPosition > lastHeartbeatPosition)
+                if (currentPosition == null) {
+                    return null
+                }
+                val isProgressing = lastHeartbeatPosition?.let { currentPosition > it } ?: true
+                if (isProgressing) {
+                    lastHeartbeatPosition = currentPosition
+                    lastHeartbeatTime = now
+                    log.info { "Heartbeat progressing to position: $currentPosition" }
+                } else {
+                    val timeSinceLastProgress = Duration.between(lastHeartbeatTime!!, now)
+                    if (timeSinceLastProgress > heartbeatTimeoutDuration) {
+                        log.info {
+                            "Heartbeat timeout: no progress for ${timeSinceLastProgress.toMinutes()} minutes. " +
+                                "Last position: $lastHeartbeatPosition, current: $currentPosition"
+                        }
+                        return CloseReason.HEARTBEAT_NOT_PROGRESSING
+                    }
+                    log.info {
+                        "Heartbeat not progressing, time since last progress: ${timeSinceLastProgress.toSeconds()}s"
+                    }
+                }
+            }
+
             if (currentPosition == null || currentPosition < upperBound) {
                 return null
             }
@@ -386,6 +431,9 @@ class CdcPartitionReader<T : Comparable<T>>(
         ),
         RECORD_REACHED_TARGET_POSITION(
             "record indicates that WAL consumption has reached the target position"
+        ),
+        HEARTBEAT_NOT_PROGRESSING(
+            "heartbeat position has not progressed for an extended period, indicating database is idle"
         ),
     }
 }

@@ -21,6 +21,14 @@ const config = {
   },
   markdown: {
     mermaid: true,
+    preprocessor: ({filePath, fileContent}) => {
+      return fileContent
+        .replace(/\{\{product_name_sm_oss\}\}/g, 'Core')
+        .replace(/\{\{product_name_sm_enterprise\}\}/g, 'Self-Managed Enterprise')
+        .replace(/\{\{product_name_cloud_standard\}\}/g, 'Standard')
+        .replace(/\{\{product_name_cloud_pro\}\}/g, 'Pro')
+        .replace(/\{\{product_name_cloud_enterprise\}\}/g, 'Enterprise Flex');
+    },
   },
   themes: [
     "@docusaurus/theme-mermaid",
@@ -64,13 +72,6 @@ const config = {
       attributes: {
         name: "zd-site-verification",
         content: "plvcr4wcl9abmq0itvi63c",
-      },
-    },
-    {
-      tagName: "meta",
-      attributes: {
-        name: "google-site-verification",
-        content: "3bGvGd17EJ-wHoyGlRszHtmMGmtWGQ4dDFEQy8ampQ0",
       },
     },
     ...(process.env.NODE_ENV === "production" && process.env.SEGMENT_WRITE_KEY
@@ -148,14 +149,14 @@ const config = {
         ],
       },
     ],
-    // This plugin controls Airbyte Developer Tools docs, which are not versioned
+    // This plugin controls AI Agent Tools docs, which are not versioned
     [
       "@docusaurus/plugin-content-docs",
       {
-        id: "developer-tools",
-        path: "../docs/developer-tools",
-        routeBasePath: "/developer-tools",
-        sidebarPath: "./sidebar-developer-tools.js",
+        id: "ai-agents",
+        path: "../docs/ai-agents",
+        routeBasePath: "/ai-agents",
+        sidebarPath: "./sidebar-ai-agents.js",
         editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
         remarkPlugins: [
           docsHeaderDecoration,
@@ -253,6 +254,33 @@ const config = {
       colorMode: {
         disableSwitch: false,
       },
+      mermaid: {
+        theme: {
+          light: 'base',  // "base" theme is fully customizable
+          dark: 'base'
+        },
+        options: {
+          themeVariables: {
+            primaryColor: '#5F5CFF',        // Airbyte blue
+            primaryTextColor: '#FFFFFF',    // white labels on colored shapes
+            primaryBorderColor: '#1A194D',  // slightly darker for contrast
+            secondaryColor: '#FF6A4D',      // accent orange
+            // secondaryTextColor: '#FF6A4D',      // accent orange
+            // secondaryBorderColor: '#FF6A4D',      // accent orange
+            tertiaryColor: '#E8EAF6',        // light neutral fill
+            tertiaryTextColor: '#000000',    // black labels on light shapes
+            tertiaryBorderColor: '#E8EAF6',    // light neutral border
+            background: '#FFFFFF',
+            clusterBkg: '#F5F5F5',
+            fontFamily: 'var(--ifm-font-family-base)',
+          },
+          flowchart: {
+            rankSpacing: 100,   // vertical space
+            subGraphTitleMargin: 10, // space within subgraph border for title
+            nodeSpacing: 100,   // horizontal space
+          },
+        },
+      },
       docs: {
         sidebar: {
           autoCollapseCategories: true,
@@ -266,7 +294,7 @@ const config = {
       announcementBar: {
         id: "try_airbyte_cloud",
         content:
-          '<a target="_blank" rel="noopener noreferrer" href="https://cloud.airbyte.io/signup?utm_campaign=22Q1_AirbyteCloudSignUpCampaign_Trial&utm_source=Docs&utm_content=NavBar">Try Airbyte Cloud</a>! Free for 14 days, no credit card needed.',
+          '<a target="_blank" rel="noopener noreferrer" href="https://cloud.airbyte.io/signup?utm_campaign=22Q1_AirbyteCloudSignUpCampaign_Trial&utm_source=Docs&utm_content=NavBar">Try Airbyte Cloud</a>! Free for 30 days, no credit card needed.',
         backgroundColor: "#615eff",
         textColor: "#ffffff",
         isCloseable: true,
@@ -304,9 +332,9 @@ const config = {
           {
             type: "docSidebar",
             position: "left",
-            docsPluginId: "developer-tools",
-            sidebarId: "developer-tools",
-            label: "Developer Tools",
+            docsPluginId: "ai-agents",
+            sidebarId: "ai-agents",
+            label: "AI Agents",
           },
           {
             href: "https://support.airbyte.com/",

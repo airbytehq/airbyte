@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.dataflow.state
 
+import io.airbyte.cdk.load.dataflow.state.stats.StateStatsEnricher
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
@@ -14,6 +15,7 @@ import java.util.concurrent.atomic.AtomicLong
 class StateStore(
     private val keyClient: StateKeyClient,
     private val histogramStore: StateHistogramStore,
+    private val stateStatsEnricher: StateStatsEnricher,
 ) {
     private val log = KotlinLogging.logger {}
 
@@ -38,6 +40,11 @@ class StateStore(
         if (!histogramStore.isComplete(key)) return null
 
         stateSequence.incrementAndGet()
-        return states.remove(key)
+        histogramStore.remove(key)
+        val msg = states.remove(key)!!
+
+        return stateStatsEnricher.enrich(msg, key)
     }
+
+    fun hasStates(): Boolean = states.isNotEmpty()
 }
