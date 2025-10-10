@@ -37,9 +37,9 @@ internal val FLOAT_MIN = BigDecimal("-9007199254740991")
 internal val FLOAT_RANGE = FLOAT_MIN..FLOAT_MAX
 
 // https://docs.snowflake.com/en/sql-reference/data-types-text#varchar
-internal const val VARCHAR_AND_VARIANT_LIMIT_BYTES = 134217728 // 128 MB
+internal const val VARCHAR_AND_VARIANT_LIMIT_BYTES = 16777216 // 16 MB
 // UTF-8 has max 4 bytes per char, so anything under this length is safe
-internal const val MAX_UTF_8_STRING_LENGTH_UNDER_LIMIT = 33554432 // (134217728 / 4)
+internal const val MAX_UTF_8_STRING_LENGTH_UNDER_LIMIT = 4194304 // (16777216 / 4)
 
 fun isValid(value: AirbyteValue): Boolean {
     return when (value) {
