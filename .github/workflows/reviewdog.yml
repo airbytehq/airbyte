@@ -28,13 +28,13 @@ jobs:
     name: Docs / Vale
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # V5
         with:
           fetch-depth: 0
       - uses: errata-ai/vale-action@d89dee975228ae261d22c15adcd03578634d429c # Pinned to V2.1.1
         with:
-          vale_flags: --config=docusaurus/vale.ini
-          files: docs/
-          filter_mode: added
-          fail_on_error: false
-          reporter: github-pr-review
+          vale_flags: --config=docusaurus/vale.ini --minAlertLevel=warning # Location of Vale's config file and min alert level for CI (local linters will still see suggestions)
+          files: docs/ # Folder in which to lint
+          filter_mode: added # Only lint things that have changed
+          fail_on_error: false # Don't fail if the linter finds issues (compliance is optional)
+          reporter: github-pr-review # Post as annotations on the Changed Files page
