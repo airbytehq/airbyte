@@ -2,7 +2,7 @@
 
 The Airbyte Embedded API uses a hierarchical authentication system with three types of tokens, each designed for specific use cases and security requirements.
 
-## Token Types Overview
+## Token types overview
 
 | Token Type | Use Case | Scope | Access Level |
 |------------|----------|-------|--------------|
@@ -10,11 +10,11 @@ The Airbyte Embedded API uses a hierarchical authentication system with three ty
 | **Scoped Token** | API integration, programmatic workspace access | Single workspace | Limited to specific workspace |
 | **Widget Token** | Embedded widget integration | Single workspace + origin validation | Limited to specific workspace with CORS protection |
 
-## Operator Bearer Token
+## Operator bearer token
 
 The Operator Bearer Token provides full organization-level access and is used for administrative operations.
 
-### Use Cases
+### Use cases
 
 - Creating and managing source templates
 - Creating and managing connection templates
@@ -28,11 +28,13 @@ Include the operator token in the `Authorization` header:
 
 ```bash
 curl https://api.airbyte.ai/api/v1/integrations/templates/sources \
+
   -H 'Authorization: Bearer <your_operator_token>' \
   -H 'Content-Type: application/json'
+
 ```
 
-### Security Best Practices
+### Security best practices
 
 - **Never expose operator tokens in client-side code**
 - Store securely in environment variables or secrets management systems
@@ -40,11 +42,11 @@ curl https://api.airbyte.ai/api/v1/integrations/templates/sources \
 - Rotate tokens periodically
 - Limit token distribution to trusted administrators only
 
-## Scoped Token
+## Scoped token
 
 Scoped tokens provide workspace-level access and are designed for API integrations where end-users need to interact with a specific workspace.
 
-### Use Cases
+### Use cases
 
 - API integrations for specific workspaces
 - Programmatic access to workspace resources
@@ -58,66 +60,74 @@ Scoped tokens provide workspace-level access and are designed for API integratio
 - Region selection support (US or EU)
 - Embedded in JWT with `io.airbyte.auth.workspace_scope` claim
 
-### Generate Scoped Token
+### Generate scoped token
 
 #### Endpoint
 
-```
+```bash
 POST https://api.airbyte.ai/api/v1/embedded/scoped-token
+
 ```
 
 #### Authentication
 
 Requires **Operator Bearer Token**
 
-#### Request Body
+#### Request body
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `workspace_name` | string | Yes | Name of the workspace to create or use |
 | `region_id` | UUID | No | Region where workspace should be created (defaults to US) |
 
-#### Region IDs
+#### Region ids
 
 | Region | Region ID |
 |--------|-----------|
 | US (Default) | `645a183f-b12b-4c6e-8ad3-99e165603450` |
 | EU | `b9e48d61-f082-4a14-a8d0-799a907938cb` |
 
-#### Request Example
+#### Request example
 
 **Create scoped token for US workspace:**
 
 ```bash
 curl -X POST https://api.airbyte.ai/api/v1/embedded/scoped-token \
+
   -H 'Authorization: Bearer <your_operator_token>' \
   -H 'Content-Type: application/json' \
   -d '{
+
     "workspace_name": "customer_workspace_123"
   }'
+
 ```
 
 **Create scoped token for EU workspace:**
 
 ```bash
 curl -X POST https://api.airbyte.ai/api/v1/embedded/scoped-token \
+
   -H 'Authorization: Bearer <your_operator_token>' \
   -H 'Content-Type: application/json' \
   -d '{
+
     "workspace_name": "eu_customer_workspace",
     "region_id": "b9e48d61-f082-4a14-a8d0-799a907938cb"
   }'
+
 ```
 
-#### Response Example
+#### Response example
 
 ```json
 {
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 }
+
 ```
 
-#### Behavior Notes
+#### Behavior notes
 
 - If the workspace already exists, returns a token for the existing workspace
 - If the workspace doesn't exist:
@@ -126,56 +136,64 @@ curl -X POST https://api.airbyte.ai/api/v1/embedded/scoped-token \
   - If not found, creates new workspace in both Airbyte Cloud and local database
 - The `region_id` is only used when creating a new workspace
 
-### Using Scoped Tokens
+### Using scoped tokens
 
 Once generated, use scoped tokens to access workspace-specific endpoints:
 
 ```bash
 # List sources in the workspace
 curl https://api.airbyte.ai/api/v1/embedded/sources \
+
   -H 'Authorization: Bearer <scoped_token>'
 
 # Create a source
 curl -X POST https://api.airbyte.ai/api/v1/embedded/sources \
+
   -H 'Authorization: Bearer <scoped_token>' \
   -H 'Content-Type: application/json' \
   -d '{
+
     "source_template_id": "template-123",
     "name": "My Data Source"
   }'
+
 ```
 
-### Get Scoped Token Information
+### Get scoped token information
 
 Retrieve organization and workspace information from a scoped token.
 
 #### Endpoint
 
-```
+```bash
 GET https://api.airbyte.ai/api/v1/embedded/scoped-token/info
+
 ```
 
 #### Authentication
 
 Requires **Scoped Token**
 
-#### Request Example
+#### Request example
 
 ```bash
 curl https://api.airbyte.ai/api/v1/embedded/scoped-token/info \
+
   -H 'Authorization: Bearer <scoped_token>'
+
 ```
 
-#### Response Example
+#### Response example
 
 ```json
 {
   "organization_id": "12345678-1234-1234-1234-123456789012",
-  "workspace_id": "a1b2c3d4-e5f6-7890-ab12-cd34ef567890"
+  "workspace ID": "a1b2c3d4-e5f6-7890-ab12-cd34ef567890"
 }
+
 ```
 
-#### Deprecated Endpoints
+#### Deprecated endpoints
 
 The following endpoints also return scoped token information but are deprecated:
 
@@ -184,11 +202,11 @@ The following endpoints also return scoped token information but are deprecated:
 
 Use `/api/v1/embedded/scoped-token/info` for new implementations.
 
-## Widget Token
+## Widget token
 
 Widget tokens are specialized tokens designed for embedded widget integration with enhanced security features.
 
-### Use Cases
+### Use cases
 
 - Embedding the Airbyte configuration widget in your application
 - Providing end-users with a UI to configure data sources
@@ -202,72 +220,81 @@ Widget tokens are specialized tokens designed for embedded widget integration wi
 - Base64-encoded payload containing token and pre-configured widget URL
 - Tag selection modes: `any` (at least one tag) or `all` (all tags required)
 
-### Generate Widget Token
+### Generate widget token
 
 #### Endpoint
 
-```
+```bash
 POST https://api.airbyte.ai/api/v1/embedded/widget-token
+
 ```
 
 #### Authentication
 
 Requires **Operator Bearer Token**
 
-#### Request Body
+#### Request body
 
 | Field | Type | Required | Default | Description |
 |-------|------|----------|---------|-------------|
 | `workspace_name` | string | Yes | - | Name of the workspace to create or use |
-| `allowed_origin` | string | Yes | - | The allowed origin for CORS (e.g., `https://yourapp.com`) |
+| `allowed_origin` | string | Yes | - | The allowed origin for CORS (for example, `https://yourapp.com`) |
 | `region_id` | UUID | No | US region | Region where workspace should be created |
 | `selected_source_template_tags` | array of strings | No | `[]` | Tags to filter which source templates are available |
 | `selected_source_template_tags_mode` | string | No | `any` | Tag selection mode: `any` or `all` |
 | `selected_connection_template_tags` | array of strings | No | `[]` | Tags to filter which connection templates are available |
 | `selected_connection_template_tags_mode` | string | No | `any` | Tag selection mode: `any` or `all` |
 
-#### Tag Selection Modes
+#### Tag selection modes
 
 | Mode | Behavior | Example |
 |------|----------|---------|
 | `any` | Template must have **at least one** of the specified tags | Tags: `["crm", "sales"]` matches templates with either "crm" OR "sales" |
 | `all` | Template must have **all** of the specified tags | Tags: `["crm", "sales"]` matches only templates with both "crm" AND "sales" |
 
-#### Request Examples
+#### Request examples
 
 **Basic widget token:**
 
 ```bash
 curl -X POST https://api.airbyte.ai/api/v1/embedded/widget-token \
+
   -H 'Authorization: Bearer <your_operator_token>' \
   -H 'Content-Type: application/json' \
   -d '{
+
     "workspace_name": "customer_workspace_123",
     "allowed_origin": "https://yourapp.com"
   }'
+
 ```
 
 **Widget token with source template filtering:**
 
 ```bash
 curl -X POST https://api.airbyte.ai/api/v1/embedded/widget-token \
+
   -H 'Authorization: Bearer <your_operator_token>' \
   -H 'Content-Type: application/json' \
   -d '{
+
     "workspace_name": "customer_workspace_123",
     "allowed_origin": "https://yourapp.com",
     "selected_source_template_tags": ["crm", "sales"],
     "selected_source_template_tags_mode": "any"
   }'
+
 ```
 
 **Widget token with both source and connection template filtering:**
 
 ```bash
 curl -X POST https://api.airbyte.ai/api/v1/embedded/widget-token \
+
   -H 'Authorization: Bearer <your_operator_token>' \
   -H 'Content-Type: application/json' \
   -d '{
+
     "workspace_name": "customer_workspace_123",
     "allowed_origin": "https://yourapp.com",
     "selected_source_template_tags": ["crm"],
@@ -276,24 +303,26 @@ curl -X POST https://api.airbyte.ai/api/v1/embedded/widget-token \
     "selected_connection_template_tags_mode": "all",
     "region_id": "b9e48d61-f082-4a14-a8d0-799a907938cb"
   }'
+
 ```
 
-#### Response Example
+#### Response example
 
 ```json
 {
   "token": "eyJ0b2tlbiI6ImV5SmhiR2NpT2lKSVV6STFOaUlzSW5SNWNDSTZJa3BYVkNKOS4uLiIsIndpZGdldFVybCI6Imh0dHBzOi8vYXBwLmFpcmJ5dGUuYWkvcXVpY2stc3RhcnQvd2lkZ2V0P3dvcmtzcGFjZUlkPWExYjJjM2Q0LWU1ZjYtNzg5MC1hYjEyLWNkMzRlZjU2Nzg5MCZhbGxvd2VkT3JpZ2luPWh0dHBzOi8veW91cmFwcC5jb20ifQ=="
 }
+
 ```
 
-### Using Widget Tokens
+### Using widget tokens
 
 The widget token is a base64-encoded JSON object containing:
 
 1. **Scoped token** - For API authentication
 2. **Widget URL** - Pre-configured URL with workspace ID, origin, and template filters
 
-#### Decode Widget Token
+#### Decode widget token
 
 ```javascript
 // Example: Decode widget token in JavaScript
@@ -301,9 +330,10 @@ const decodedToken = JSON.parse(atob(widgetToken));
 
 console.log(decodedToken.token);      // Scoped token for API calls
 console.log(decodedToken.widgetUrl);  // URL to load the widget
+
 ```
 
-#### Embed Widget
+#### Embed widget
 
 ```html
 <!-- Embed the Airbyte widget in an iframe -->
@@ -323,15 +353,17 @@ console.log(decodedToken.widgetUrl);  // URL to load the widget
   // Set the iframe src to the pre-configured widget URL
   document.getElementById('airbyte-widget').src = decoded.widgetUrl;
 </script>
+
 ```
 
-### Template Filtering with Tags
+### Template filtering with tags
 
 Widget tokens support filtering both source templates and connection templates using tags. This allows you to customize which connectors and sync configurations are available to specific users or customer tiers.
 
-#### Use Cases
+#### Use cases
 
 **Tier-based access:**
+
 ```json
 {
   "workspace_name": "free_tier_customer",
@@ -339,9 +371,11 @@ Widget tokens support filtering both source templates and connection templates u
   "selected_source_template_tags": ["free-tier"],
   "selected_source_template_tags_mode": "any"
 }
+
 ```
 
 **Industry-specific connectors:**
+
 ```json
 {
   "workspace_name": "healthcare_customer",
@@ -349,9 +383,11 @@ Widget tokens support filtering both source templates and connection templates u
   "selected_source_template_tags": ["healthcare", "hipaa-compliant"],
   "selected_source_template_tags_mode": "all"
 }
+
 ```
 
 **Feature gating:**
+
 ```json
 {
   "workspace_name": "beta_customer",
@@ -361,11 +397,12 @@ Widget tokens support filtering both source templates and connection templates u
   "selected_connection_template_tags": ["premium-features"],
   "selected_connection_template_tags_mode": "any"
 }
+
 ```
 
-## Authentication Flow Patterns
+## Authentication flow patterns
 
-### Pattern 1: Direct API Integration
+### Pattern 1: direct API integration
 
 For backend services or API integrations:
 
@@ -377,16 +414,19 @@ For backend services or API integrations:
 ```bash
 # 1. Generate scoped token (once per workspace)
 SCOPED_TOKEN=$(curl -X POST https://api.airbyte.ai/api/v1/embedded/scoped-token \
+
   -H "Authorization: Bearer $OPERATOR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"workspace_name": "customer_123"}' | jq -r '.token')
 
 # 2. Use scoped token for operations
 curl https://api.airbyte.ai/api/v1/embedded/sources \
+
   -H "Authorization: Bearer $SCOPED_TOKEN"
+
 ```
 
-### Pattern 2: Embedded Widget Integration
+### Pattern 2: embedded widget integration
 
 For embedding the Airbyte UI in your application:
 
@@ -437,9 +477,10 @@ async function loadAirbyteWidget(customerId, tier) {
   const decoded = JSON.parse(atob(widgetToken));
   document.getElementById('airbyte-widget').src = decoded.widgetUrl;
 }
+
 ```
 
-### Pattern 3: Multi-Region Support
+### Pattern 3: multi-region support
 
 For applications serving users in different regions:
 
@@ -449,23 +490,26 @@ REGION_ID="645a183f-b12b-4c6e-8ad3-99e165603450"  # US
 # REGION_ID="b9e48d61-f082-4a14-a8d0-799a907938cb"  # EU
 
 curl -X POST https://api.airbyte.ai/api/v1/embedded/scoped-token \
+
   -H "Authorization: Bearer $OPERATOR_TOKEN" \
   -H "Content-Type: application/json" \
   -d "{
+
     \"workspace_name\": \"customer_workspace\",
     \"region_id\": \"$REGION_ID\"
   }"
+
 ```
 
-## Token Lifecycle Management
+## Token lifecycle management
 
-### Token Expiration
+### Token expiration
 
 - **Operator Bearer Tokens**: Long-lived, managed by Airbyte
 - **Scoped Tokens**: Long-lived, remain valid unless explicitly revoked
 - **Widget Tokens**: Contain scoped tokens, same lifetime
 
-### Token Refresh
+### Token refresh
 
 For long-running applications, implement token refresh logic:
 
@@ -503,11 +547,12 @@ class AirbyteTokenManager {
     this.scopedTokens.delete(workspaceName);
   }
 }
+
 ```
 
-## Security Considerations
+## Security considerations
 
-### Operator Bearer Token
+### Operator bearer token
 
 - **Never commit to version control**
 - Store in environment variables or secure secrets management
@@ -515,7 +560,7 @@ class AirbyteTokenManager {
 - Limit access to administrators only
 - Use separate tokens for development and production
 
-### Scoped Token
+### Scoped token
 
 - **Safe to store** on client-side applications (mobile apps, CLIs)
 - Automatically scoped to specific workspace
@@ -523,7 +568,7 @@ class AirbyteTokenManager {
 - Can be safely distributed to end-users
 - Consider user-specific token generation for audit trails
 
-### Widget Token
+### Widget token
 
 - **Origin validation** prevents unauthorized embedding
 - Ensure `allowed_origin` exactly matches your application's origin
@@ -531,7 +576,7 @@ class AirbyteTokenManager {
 - Decode token only in trusted frontend code
 - Monitor for unauthorized widget usage
 
-### CORS and Origin Validation
+### CORS and origin validation
 
 The `allowed_origin` parameter in widget tokens enforces CORS policies:
 
@@ -545,45 +590,52 @@ allowed_origin: "http://localhost:3000"     // ✓ For development
 allowed_origin: "https://yourapp.com/"      // ✗ No trailing slash
 allowed_origin: "yourapp.com"               // ✗ Missing protocol
 allowed_origin: "*.yourapp.com"             // ✗ No wildcards
+
 ```
 
-## Error Responses
+## Error responses
 
-### 401 Unauthorized
+### 401 unauthorized
 
 ```json
 {
   "detail": "Invalid authentication credentials"
 }
+
 ```
 
 **Causes:**
+
 - Missing Authorization header
 - Invalid or expired token
 - Wrong token type for endpoint
 
 **Solutions:**
+
 - Verify token is included in Authorization header
 - Ensure using correct token type (operator vs scoped)
 - Generate new token if expired
 
-### 403 Forbidden
+### 403 forbidden
 
 ```json
 {
   "detail": "Access denied to this resource"
 }
+
 ```
 
 **Causes:**
+
 - Scoped token trying to access resources in different workspace
 - Insufficient permissions for operation
 
 **Solutions:**
+
 - Verify token scope matches target workspace
 - Use operator token for organization-level operations
 
-### 422 Validation Error
+### 422 validation error
 
 ```json
 {
@@ -595,15 +647,16 @@ allowed_origin: "*.yourapp.com"             // ✗ No wildcards
     }
   ]
 }
+
 ```
 
 **Cause:** Missing or invalid request parameters
 
 **Solution:** Verify all required fields are included and properly formatted
 
-## Common Patterns and Examples
+## Common patterns and examples
 
-### Example: Multi-Tenant SaaS Application
+### Example: multi-tenant SaaS application
 
 ```javascript
 // Backend service managing customer workspaces
@@ -669,9 +722,10 @@ class CustomerWorkspaceManager {
     return await response.json();
   }
 }
+
 ```
 
-## Next Steps
+## Next steps
 
 - Learn about [Workspace Management](./workspaces.md)
 - Create [Source Templates](./source-templates.md)
