@@ -41,7 +41,9 @@ else
   issue_url=$(gh issue create -t "$title" -b "$INITIAL_BODY" -R $ISSUES_REPOSITORY)
   echo "Created issue ${issue_url}."
   item_id=$(gh project item-add $PROJECT_NUMBER --owner "airbytehq" --url "$issue_url" --format json --jq '.id')
+  echo "Created project item with ID $item_id."
   project_id=$(gh project view $PROJECT_NUMBER --owner "airbytehq" --format json --jq '.id')
+  echo "Project ID is $project_id."
   gh project item-edit \
     --id $item_id \
     --project-id $project_id \
