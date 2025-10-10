@@ -532,7 +532,7 @@ internal class SnowflakeValueCoercerTest {
 
     @Test
     fun testStringJustUnderSizeLimit() {
-        val largeString = StringValue("a".repeat(VARCHAR_AND_VARIANT_LIMIT_BYTES))
+        val largeString = StringValue("a".repeat(VARCHAR_LIMIT_BYTES))
         val airbyteValue =
             EnrichedAirbyteValue(
                 abValue = largeString,
@@ -548,8 +548,8 @@ internal class SnowflakeValueCoercerTest {
 
     @Test
     fun testStringAtExactSizeLimit() {
-        // Test string at exactly the 33554432 character limit
-        val exactLimitString = StringValue("a".repeat(VARCHAR_AND_VARIANT_LIMIT_BYTES + 1))
+        // Test string at exactly the 16777216 character limit
+        val exactLimitString = StringValue("a".repeat(VARCHAR_LIMIT_BYTES + 1))
         val airbyteValue =
             EnrichedAirbyteValue(
                 abValue = exactLimitString,
@@ -703,7 +703,7 @@ internal class SnowflakeValueCoercerTest {
     fun testStringWithMultiByteCharactersNearLimit() {
         // Test string with multi-byte UTF-8 characters
         // Each emoji is 4 bytes, so we need fewer characters to hit the limit
-        val multiByteCount = MAX_UTF_8_STRING_LENGTH_UNDER_LIMIT
+        val multiByteCount = MAX_UTF_8_VARCHAR_LENGTH_UNDER_LIMIT
         val emojiString = StringValue("🎉".repeat(multiByteCount))
 
         val airbyteValue =
