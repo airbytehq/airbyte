@@ -75,7 +75,8 @@ class TypesDataGenerator() : DataGenerator {
         recordData[fieldsForTable[5].id] =
             FieldValueEncoder(bigDecimal, BigDecimalFieldType.jsonEncoder as BigDecimalCodec)
 
-        recordData[fieldsForTable[6].id] = FieldValueEncoder(date, DateFieldType.jsonEncoder as LocalDateCodec)
+        recordData[fieldsForTable[6].id] =
+            FieldValueEncoder(date, DateFieldType.jsonEncoder as LocalDateCodec)
 
         recordData[fieldsForTable[7].id] =
             FieldValueEncoder(
@@ -101,7 +102,8 @@ class TypesDataGenerator() : DataGenerator {
                 TimestampWithoutTimeZoneFieldType.jsonEncoder as LocalDateTimeCodec
             )
 
-        recordData[fieldsForTable[11].id] = FieldValueEncoder(json, JsonFieldType.jsonEncoder as JsonStringCodec)
+        recordData[fieldsForTable[11].id] =
+            FieldValueEncoder(json, JsonFieldType.jsonEncoder as JsonStringCodec)
 
         recordData[fieldsForTable[12].id] = FieldValueEncoder(array, ArrayEncoder(IntCodec))
 
