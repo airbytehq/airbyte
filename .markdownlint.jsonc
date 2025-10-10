@@ -13,5 +13,6 @@
     },
     "MD004": {
         "style": "dash" // Enforce "dash" style for unordered list items (e.g., "- item")
-    }
+    },
+    "MD024": { "siblings_only": true } // Allow duplicate headings in different sections
 }
