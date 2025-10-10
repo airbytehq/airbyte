@@ -119,7 +119,6 @@ jobs:
         if: always()
         run: |
           echo "should-notify=${{
-            github.event_name == 'schedule' &&
             startsWith(matrix.connector, 'destination-') &&
             (steps.run-unit-tests.outcome == 'failure' || steps.run-integration-tests.outcome == 'failure')
           }}" >> $GITHUB_OUTPUT
