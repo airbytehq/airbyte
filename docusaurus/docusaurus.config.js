@@ -13,6 +13,9 @@ const connectorList = require("./src/remark/connectorList");
 const specDecoration = require("./src/remark/specDecoration");
 const docMetaTags = require("./src/remark/docMetaTags");
 const addButtonToTitle = require("./src/remark/addButtonToTitle");
+const fs = require("fs");
+
+const { SPEC_CACHE_PATH, API_SIDEBAR_PATH } = require("./src/scripts/embedded-api/constants");
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
@@ -203,6 +206,100 @@ const config = {
         ],
       },
     ],
+    [
+      "@docusaurus/plugin-content-docs",
+      {
+        id: "embedded-api",
+        path: "api-docs/embedded-api",
+        routeBasePath: "/embedded-api/",
+        docItemComponent: "@theme/ApiItem",
+        async sidebarItemsGenerator() {
+          // We only want to include visible endpoints on the sidebar. We need to filter out endpoints with tags
+          // that are not included in the spec. Even if we didn't need to filter out elements the OpenAPI plugin generates a sidebar.ts
+          // file that exports a nested object, but Docusaurus expects just the array of sidebar items, so we need to extracts the actual sidebar
+          // items from the generated file structure.
+
+          try {
+            const specPath = SPEC_CACHE_PATH; 
+
+            if (!fs.existsSync(specPath)) {
+              console.warn(
+                "Embedded API spec file not found, using empty sidebar",
+              );
+              return [];
+            }
+
+            const data = JSON.parse(fs.readFileSync(specPath, "utf8"));
+            console.log("Loaded embedded API spec from cache");
+
+            // Load the freshly generated sidebar (not the cached one from module load)
+            const sidebarPath = API_SIDEBAR_PATH;
+            let freshSidebar = [];
+
+            if (fs.existsSync(sidebarPath)) {
+              try {
+                const sidebarModule = require("./api-docs/embedded-api/sidebar.ts");
+                freshSidebar = sidebarModule.default || sidebarModule;
+                console.log("Loaded fresh sidebar from generated files");
+              } catch (sidebarError) {
+                console.warn(
+                  "Could not load fresh sidebar, using empty array:",
+                  sidebarError.message,
+                );
+                freshSidebar = [];
+              }
+            } else {
+              console.warn(
+                "Generated sidebar file not found, using empty array",
+              );
+              freshSidebar = [];
+            }
+
+            const allowedTags = data.tags?.map((tag) => tag["name"]) || [];
+
+            // Use freshly loaded sidebar items from the generated file
+            const sidebarItems = Array.isArray(freshSidebar)
+              ? freshSidebar
+              : [];
+
+            const filteredItems = sidebarItems.filter((item) => {
+              if (item.type !== "category") {
+                return true;
+              }
+
+              return allowedTags.includes(item.label);
+            });
+
+            return filteredItems;
+          } catch (error) {
+            console.warn(
+              "Error loading embedded API spec from cache:",
+              error.message,
+            );
+            return [];
+          }
+        },
+      },
+    ],
+    [
+      "docusaurus-plugin-openapi-docs",
+      {
+        id: "embedded-api",
+        docsPluginId: "embedded-api",
+        config: {
+          embedded: {
+            specPath: "src/data/embedded_api_spec.json",
+            outputDir: "api-docs/embedded-api",
+            sidebarOptions: {
+              groupPathsBy: "tag",
+              categoryLinkSource: "tag",
+              sidebarCollapsed: false,
+              sidebarCollapsible: false,
+            },
+          },
+        },
+      },
+    ],
     require.resolve("./src/plugins/enterpriseConnectors"),
     [
       "@signalwire/docusaurus-plugin-llms-txt",
@@ -330,11 +427,45 @@ const config = {
             label: "Release notes",
           },
           {
-            type: "docSidebar",
-            position: "left",
-            docsPluginId: "ai-agents",
-            sidebarId: "ai-agents",
-            label: "AI Agents",
+            type: 'dropdown',
+            label: 'Developers and AI',
+            position: 'left',
+            items: [
+              {
+                to: "/platform/using-airbyte/configuring-api-access",
+                label: "Get an access token",
+              },
+              {
+                type: 'html',
+                value: '<hr />',
+              },
+              {
+                to: '/platform/api-documentation',
+                label: 'Airbyte developer guides',
+              },
+              {
+                to: 'https://reference.airbyte.com',
+                html: 'Airbyte API reference <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"><path d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"/></svg>',
+              },
+              {
+                type: 'html',
+                value: '<hr />',
+              },
+              {
+                type: "docSidebar",
+                docsPluginId: "ai-agents",
+                sidebarId: "ai-agents",
+                label: "AI agents",
+              },
+
+              {
+                type: "docSidebar",
+                docsPluginId: "embedded-api",
+                sidebarId: "defaultSidebar",
+                label: "Embedded and Sonar API reference",
+              },
+              // ... more items
+            ],
           },
           {
             href: "https://support.airbyte.com/",
