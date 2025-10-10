@@ -15,13 +15,13 @@ Before getting started with this guide, make sure you have access to Airbyte Emb
 ::info
 Steps 1 and 2, connection template and source template creation, can also be managed via API. View our API docs at https://api.airbyte.ai/api/v1/docs for more information.
 
-_1. Create your connection template: _ Visit https://app.airbyte.ai and visit the "Connection templates" page to create at least one connection template for your organization. Connection templates will be used to create one connection for each source that your end users create, so that their data ends up in your bucket or data lake.
+**1. Create your connection template: ** Visit https://app.airbyte.ai and visit the "Connection templates" page to create at least one connection template for your organization. Connection templates will be used to create one connection for each source that your end users create, so that their data ends up in your bucket or data lake.
 
 By default we will apply _all_ connection templates to each new source your users set up. This means if you have two templates for two separate S3 buckets, every source created will sync to both. To manage this more precisely, you can use tags.
 
 For example, you might tag by product tier (`free`, `standard`, `enterprise`), usecase (`sales`, `retail`, `crm`), or whatever else makes sense for your organzation. These tags will be used later on when we load the widget itself.
 
-_2. Add integrations: _ Next, visit the "Integrations" page to clone source templates into your organization or create custom ones.
+**2. Add integrations: ** Next, visit the "Integrations" page to clone source templates into your organization or create custom ones.
 
 By default, we will show all of your organization's integrations to all of your users. These can also be managed via tags.
 
@@ -36,7 +36,7 @@ Never store your client_id and client_secret in client-side code.
 
 Your backend should implement the token fetching implementation for your widget. There are two steps to this -- fetching an application token, and then using that to fetch a widget token.
 
-_1. Request an Appliation token: _ An application token is a jwt associated with you (the organization admin) that can be used to request a widget token (the token for your end user).
+**1. Request an Appliation token: ** An application token is a jwt associated with you (the organization admin) that can be used to request a widget token (the token for your end user).
 
 ```BASH
 curl -X POST https://api.airbyte.ai/account/applications/token \
@@ -47,7 +47,7 @@ curl -X POST https://api.airbyte.ai/account/applications/token \
   }'
 ```
 
-_2. Add a way to request a widget token: _ A widdget token is a string that contains an encoded version of both a jwt and the URL the widget will use to open. To request a widget token, you will make a request like:
+**2. Add a way to request a widget token: ** A widdget token is a string that contains an encoded version of both a jwt and the URL the widget will use to open. To request a widget token, you will make a request like:
 
 ```BASH
 curl -X POST https://api.airbyte.ai/embedded/widget_token \
@@ -65,11 +65,11 @@ curl -X POST https://api.airbyte.ai/embedded/widget_token \
 
 #### In your frontend
 
-_1. Add the widget package to your project: _ The Airbyte Embedded widget is available as an npm package at https://www.npmjs.com/package/@airbyte-embedded/airbyte-embedded-widget. Install this using your package manager of choice.
+**1. Add the widget package to your project: ** The Airbyte Embedded widget is available as an npm package at https://www.npmjs.com/package/@airbyte-embedded/airbyte-embedded-widget. Install this using your package manager of choice.
 
-_2. Add the widget to your page: _ Embed the widget!
+**2. Add the widget to your page: ** Embed the widget!
 
-```typescript
+```ts
 import { AirbyteEmbeddedWidget } from "@airbyte-embedded/airbyte-embedded-widget";
 
 export const EmbeddedSection: React.FC = () => {
