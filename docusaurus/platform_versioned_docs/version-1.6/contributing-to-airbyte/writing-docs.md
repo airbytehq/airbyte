@@ -312,7 +312,7 @@ Both Vale and MarkDownLint run automatically on pull requests through the [Revie
 - Posts any violations as annotations on the "Files Changed" page in your pull request
 - Does not fail the build (compliance is optional but recommended)
 
-Running the linters locally before opening a pull request is optional but recommended. When you run the linters locally as described in the sections above, you'll see all violation levels including **suggestions**, which provide additional guidance that isn't shown in CI. This gives you the opportunity to improve your documentation beyond the minimum requirements before submitting for review.
+Running the linters locally before opening a pull request is optional but recommended. When you run the linters locally as described in the sections below, you'll see all violation levels including **suggestions**, which provide additional guidance that isn't shown in CI. This gives you the opportunity to improve your documentation beyond the minimum requirements before submitting for review.
 
 ### Lint with Vale
 
