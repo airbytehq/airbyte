@@ -146,6 +146,8 @@ jobs:
 
       - name: Create Github Issue on Failure
         if: always() && steps.check-move-notify.outputs.should-notify == 'true'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: tools/bin/bulk-cdk-compatibility-test/create-gh-issue.sh \
           ${{ matrix.connector }} \
           ${{ github.sha }} \
