@@ -1,6 +1,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 import copy
+import json
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 
@@ -14,7 +15,7 @@ from airbyte_cdk.models import AirbyteStateMessage, SyncMode
 
 from .config_builder import ConfigBuilder
 from .request_builders.api import CustomObjectsRequestBuilder, OAuthRequestBuilder, PropertiesRequestBuilder, ScopesRequestBuilder
-from .request_builders.streams import CRMStreamRequestBuilder, IncrementalCRMStreamRequestBuilder, WebAnalyticsRequestBuilder
+from .request_builders.streams import AssociationsBatchReadRequestBuilder, CRMSearchRequestBuilder, WebAnalyticsRequestBuilder
 from .response_builder.helpers import RootHttpResponseBuilder
 from .response_builder.api import ScopesResponseBuilder
 from .response_builder.streams import GenericResponseBuilder, HubspotStreamResponseBuilder
@@ -187,3 +188,108 @@ class HubspotTestCase:
         cls, cfg, stream: str, sync_mode: SyncMode, state: Optional[List[AirbyteStateMessage]] = None, expecting_exception: bool = False
     ) -> EntrypointOutput:
         return read(get_source(cfg, state), cfg, cls.catalog(stream, sync_mode), state, expecting_exception)
+
+
+class HubspotCRMSearchStream(HubspotTestCase):
+    def _ms(self, dt) -> int:
+        return int(dt.timestamp() * 1000)
+
+    def request(self, page_token: Optional[Dict[str, str]] = None):
+        start = self.start_date()
+        end = self.now()
+
+        builder = (
+            CRMSearchRequestBuilder()
+            .for_entity(self.OBJECT_TYPE)
+            .with_properties(list(self.PROPERTIES.keys()))
+            .with_cursor_range_ms(
+                cursor_field="hs_lastmodifieddate",
+                start_ms=self._ms(start),
+                end_ms=self._ms(end),
+            )
+        )
+        if page_token:
+            builder = builder.with_page_token(page_token)
+        return builder.build()
+
+    @property
+    def response_builder(self):
+        return HubspotStreamResponseBuilder.for_stream(self.STREAM_NAME)
+
+    def response(self, id: Optional[str] = None, with_pagination: bool = False):
+        record = (
+            self.record_builder(self.STREAM_NAME, FieldPath(self.CURSOR_FIELD))
+            .with_field(FieldPath(self.CURSOR_FIELD), self.dt_str(self.updated_at()))
+            .with_field(FieldPath("id"), id if id else self.OBJECT_ID)
+        )
+        response = self.response_builder.with_record(record)
+        if with_pagination:
+            response = response.with_pagination()
+        return response.build()
+
+    def _set_up_oauth(self, http_mocker: HttpMocker):
+        self.mock_oauth(http_mocker, self.ACCESS_TOKEN)
+
+    def _set_up_requests(
+        self, http_mocker: HttpMocker, with_oauth: bool = False, with_dynamic_schemas: bool = True, entities: Optional[List[str]] = None
+    ):
+        if with_oauth:
+            self._set_up_oauth(http_mocker)
+        self.mock_custom_objects(http_mocker)
+        self.mock_properties(http_mocker, self.OBJECT_TYPE, self.MOCK_PROPERTIES_FOR_SCHEMA_LOADER)
+        if with_dynamic_schemas:
+            self.mock_dynamic_schema_requests(http_mocker, entities)
+
+    def _mock_associations_with_stream_builder(
+        self,
+        http_mocker,
+        parent_entity: str,           # e.g. "calls" / "meetings"
+        association_name: str,        # e.g. "contacts"
+        record_ids: List[str],        # primary ids from the page, as strings
+        to_ids_per_record: Dict[str, List[int]],  # map primary id -> list of associated ids
+    ):
+        """
+        Mocks:
+          POST https://api.hubapi.com/crm/v4/associations/{parent_entity}/{association_name}/batch/read
+
+        Response body mirrors HubSpot's shape but only includes:
+          { "status": "COMPLETE", "results": [ { "from": {"id": ...}, "to": [ { "toObjectId": ..., "associationTypes": [...] }, ... ] }, ... ] }
+        We intentionally skip `errors` / `numErrors`.
+        """
+        req = (
+            AssociationsBatchReadRequestBuilder()
+            .for_parent(parent_entity)
+            .for_association(association_name)
+            .with_ids(record_ids)
+            .build()
+        )
+
+        results = []
+        for rid in record_ids:
+            to_list = [
+                {
+                    "toObjectId": int(x),
+                    "associationTypes": [
+                        {"category": "HUBSPOT_DEFINED", "typeId": 200, "label": None}
+                    ],
+                }
+                for x in to_ids_per_record.get(rid, [])
+            ]
+            results.append({"from": {"id": str(rid)}, "to": to_list})
+
+        body = json.dumps({"status": "COMPLETE", "results": results})
+        self.mock_response(http_mocker, req, HttpResponse(status_code=200, body=body), method="post")
+
+    def _mock_all_associations_for_ids(self, http_mocker: HttpMocker, parent_entity: str, record_ids: List[str]):
+        """
+        Convenience wrapper: for each association, create two deterministic associated IDs per record.
+        """
+        to_map = {rid: [int(rid) + 1, int(rid) + 2] for rid in record_ids if rid.isdigit()}
+        for assoc in self.ASSOCIATIONS:
+            self._mock_associations_with_stream_builder(
+                http_mocker,
+                parent_entity=parent_entity,
+                association_name=assoc,
+                record_ids=record_ids,
+                to_ids_per_record=to_map,
+            )
