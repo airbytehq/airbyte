@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.snowflake.spec
 
+import com.github.luben.zstd.Zstd
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
 import io.airbyte.cdk.load.write.db.DbConstants
@@ -22,6 +23,7 @@ data class SnowflakeConfiguration(
     val internalTableSchema: String,
     val jdbcUrlParams: String?,
     val retentionPeriodDays: Int,
+    val compressionLevel: Int,
 ) : DestinationConfiguration()
 
 sealed interface AuthTypeConfiguration
@@ -81,7 +83,8 @@ class SnowflakeConfigurationFactory :
                     pojo.internalTableSchema!!
                 },
             jdbcUrlParams = pojo.jdbcUrlParams,
-            retentionPeriodDays = pojo.retentionPeriodDays ?: 1
+            retentionPeriodDays = pojo.retentionPeriodDays ?: 1,
+            compressionLevel = pojo.compressionLevel ?: Zstd.defaultCompressionLevel(),
         )
     }
 }

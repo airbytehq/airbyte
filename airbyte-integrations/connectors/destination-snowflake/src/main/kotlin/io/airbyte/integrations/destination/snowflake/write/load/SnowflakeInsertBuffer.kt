@@ -65,7 +65,13 @@ class SnowflakeInsertBuffer(
         if (csvFilePath == null) {
             val csvFile = createCsvFile()
             csvFilePath = csvFile.toPath()
-            csvWriter = csvWriterBuilder.build(ZstdOutputStream(csvFile.outputStream(), -1))
+            csvWriter =
+                csvWriterBuilder.build(
+                    ZstdOutputStream(
+                        csvFile.outputStream(),
+                        snowflakeConfiguration.compressionLevel
+                    )
+                )
         }
 
         writeToCsvFile(recordFields)

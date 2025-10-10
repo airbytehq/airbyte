@@ -128,12 +128,20 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
 
     @get:JsonSchemaTitle("Data Retention Period (days)")
     @get:JsonPropertyDescription(
-        """The number of days of Snowflake Time Travel to enable on the tables. See <a href="https://docs.snowflake.com/en/user-guide/data-time-travel#data-retention-period">Snowflake's documentation</a> for more information. Setting a nonzero value will incur increased storage costs in your Snowflake instance.""",
+        """The number of days of Snowflake Time Travel to enable on the tables.  See <a href="https://docs.snowflake.com/en/user-guide/data-time-travel#data-retention-period">Snowflake's documentation</a> for more information. Setting a nonzero value will incur increased storage costs in your Snowflake instance.""",
     )
     @get:JsonProperty("retention_period_days")
     @get:JsonSchemaInject(json = """{"group": "advanced", "order": 10}""")
     @Suppress("RedundantNullableReturnType")
     val retentionPeriodDays: Int? = 1
+
+    @get:JsonSchemaTitle("Compression Level")
+    @get:JsonPropertyDescription(
+        """The compression level to use when writing data to Snowflake.  If not provided, the default level will be used.  See <a href="https://facebook.github.io/zstd/zstd_manual.html">zstd's documentation</a> for more information.""",
+    )
+    @get:JsonProperty("compression_level")
+    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 11}""")
+    val compressionLevel: Int? = null
 }
 
 @JsonTypeInfo(

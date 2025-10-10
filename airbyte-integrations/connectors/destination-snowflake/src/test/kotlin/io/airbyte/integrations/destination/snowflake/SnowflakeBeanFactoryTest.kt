@@ -55,6 +55,7 @@ internal class SnowflakeBeanFactoryTest {
                 internalTableSchema = "snowflake",
                 jdbcUrlParams = jdbcUrlParams,
                 retentionPeriodDays = 1,
+                compressionLevel = 1,
             )
         val factory = SnowflakeBeanFactory()
         val dataSource =
@@ -178,6 +179,7 @@ internal class SnowflakeBeanFactoryTest {
                 internalTableSchema = "snowflake",
                 jdbcUrlParams = jdbcUrlParams,
                 retentionPeriodDays = 1,
+                compressionLevel = 1,
             )
         val factory = SnowflakeBeanFactory()
         val dataSource =
