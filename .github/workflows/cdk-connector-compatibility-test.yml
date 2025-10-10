@@ -23,7 +23,7 @@ jobs:
 
       - name: Generate Connector Matrix
         id: generate-matrix
-        run: echo "connectors_matrix=$(tools/bin/bulk-cdk/get-certified-connectors.sh))" | tee -a $GITHUB_OUTPUT
+        run: echo "connectors_matrix=$(tools/bin/bulk-cdk/get-certified-connectors.sh)" | tee -a $GITHUB_OUTPUT
 
     outputs:
       connectors-matrix: ${{ steps.generate-matrix.outputs.connectors_matrix }}
@@ -38,7 +38,8 @@ jobs:
       DD_TAGS: "connector.name:${{ matrix.connector }}"
 
     strategy:
-      matrix: ${{ fromJson(needs.generate-matrix.outputs.connectors-matrix) }}
+      matrix:
+        connector: ${{ fromJson(needs.generate-matrix.outputs.connectors-matrix) }}
       max-parallel: 5 # Limit number of parallel jobs
       fail-fast: false # Don't stop on first failure
     steps:
