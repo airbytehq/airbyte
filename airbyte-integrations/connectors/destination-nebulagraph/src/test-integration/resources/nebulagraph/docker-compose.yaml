@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   metad:
@@ -86,5 +86,3 @@ volumes:
   storage: {}
   storage_logs: {}
   graph_logs: {}
-
-

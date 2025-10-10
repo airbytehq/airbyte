@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.nebulagraph;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -45,6 +49,5 @@ class TypedExtractorTest {
     assertEquals(1.2d, (double) out.get("f"), 0.0000001);
     assertEquals(2.5d, (double) out.get("d"), 0.0000001);
   }
+
 }
-
-

@@ -1,7 +1,10 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.nebulagraph;
 
 import com.fasterxml.jackson.databind.JsonNode;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -9,6 +12,7 @@ import java.util.List;
 import java.util.Objects;
 
 public final class NebulaGraphConfig {
+
   public static final int DEFAULT_MAX_BATCH_RECORDS = 500;
   public static final String DEFAULT_VID_SEPARATOR = "::";
   public static final boolean DEFAULT_USE_UPSERT = false; // false -> buffered INSERT; true -> per-record UPSERT
@@ -26,16 +30,16 @@ public final class NebulaGraphConfig {
   public final List<StreamConfig> streams;
 
   private NebulaGraphConfig(
-      String graphdAddresses,
-      String space,
-      String username,
-      String password,
-      boolean createSpaceIfMissing,
-      int vidFixedStringLength,
-      boolean useUpsert,
-      int maxBatchRecords,
-      String vidSeparator,
-      List<StreamConfig> streams) {
+                            String graphdAddresses,
+                            String space,
+                            String username,
+                            String password,
+                            boolean createSpaceIfMissing,
+                            int vidFixedStringLength,
+                            boolean useUpsert,
+                            int maxBatchRecords,
+                            String vidSeparator,
+                            List<StreamConfig> streams) {
     this.graphdAddresses = graphdAddresses;
     this.space = space;
     this.username = username;
@@ -47,7 +51,6 @@ public final class NebulaGraphConfig {
     this.vidSeparator = vidSeparator;
     this.streams = streams;
   }
-
 
   public static NebulaGraphConfig from(JsonNode root) {
     Objects.requireNonNull(root, "config is null");
@@ -76,7 +79,8 @@ public final class NebulaGraphConfig {
   }
 
   private static List<StreamConfig> parseStreams(JsonNode node) {
-    if (node == null || !node.isArray()) return Collections.emptyList();
+    if (node == null || !node.isArray())
+      return Collections.emptyList();
     List<StreamConfig> list = new ArrayList<>();
     for (JsonNode s : node) {
       list.add(StreamConfig.from(s));
@@ -108,20 +112,26 @@ public final class NebulaGraphConfig {
   }
 
   public static final class StreamConfig {
+
     public final String name;
     public final String namespace;
     public final String entityType; // vertex | edge
     public final List<String> vidFields; // vertex only
-    public final String edgeType;        // optional override
+    public final String edgeType; // optional override
     public final List<String> srcFields; // edge only
     public final List<String> dstFields; // edge only
-    public final String rankField;       // optional
+    public final String rankField; // optional
     public final boolean typedEnabled;
 
-    private StreamConfig(String name, String namespace, String entityType,
-                         List<String> vidFields, String edgeType,
-                         List<String> srcFields, List<String> dstFields,
-                         String rankField, boolean typedEnabled) {
+    private StreamConfig(String name,
+                         String namespace,
+                         String entityType,
+                         List<String> vidFields,
+                         String edgeType,
+                         List<String> srcFields,
+                         List<String> dstFields,
+                         String rankField,
+                         boolean typedEnabled) {
       this.name = name;
       this.namespace = namespace;
       this.entityType = entityType;
@@ -155,7 +165,8 @@ public final class NebulaGraphConfig {
         throw new IllegalArgumentException("entity_type must be vertex or edge");
       }
       if (entityType.equals("vertex")) {
-        if (vid.isEmpty()) throw new IllegalArgumentException("vertex stream requires vid_fields");
+        if (vid.isEmpty())
+          throw new IllegalArgumentException("vertex stream requires vid_fields");
       } else { // edge
         if (src.isEmpty() || dst.isEmpty()) {
           throw new IllegalArgumentException("edge stream requires src_fields and dst_fields");
@@ -166,14 +177,18 @@ public final class NebulaGraphConfig {
     }
 
     private static List<String> readStringArray(JsonNode arr) {
-      if (arr == null || !arr.isArray()) return Collections.emptyList();
+      if (arr == null || !arr.isArray())
+        return Collections.emptyList();
       List<String> out = new ArrayList<>();
       Iterator<JsonNode> it = arr.elements();
       while (it.hasNext()) {
         JsonNode e = it.next();
-        if (e != null && e.isTextual()) out.add(e.asText());
+        if (e != null && e.isTextual())
+          out.add(e.asText());
       }
       return out;
     }
+
   }
+
 }

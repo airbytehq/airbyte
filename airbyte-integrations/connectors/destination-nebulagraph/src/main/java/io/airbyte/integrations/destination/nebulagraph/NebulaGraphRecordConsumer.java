@@ -1,21 +1,24 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.nebulagraph;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.cdk.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 public final class NebulaGraphRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
+
   // 配置 & 依赖
   private final NebulaGraphConfig cfg;
   private final NebulaGraphClient client;
@@ -33,11 +36,9 @@ public final class NebulaGraphRecordConsumer extends FailureTrackingAirbyteMessa
   private final ConfiguredAirbyteCatalog catalog;
   private final Consumer<AirbyteMessage> outputCollector;
 
-
   private final Map<String, NebulaGraphConfig.StreamConfig> streamConfigByKey = new HashMap<>();
 
   private static final ObjectMapper OM = new ObjectMapper();
-
 
   private final Map<String, List<VertexRow>> vertexBuf = new LinkedHashMap<>();
   private final Map<String, String> vertexTagByStream = new LinkedHashMap<>();
@@ -55,8 +56,10 @@ public final class NebulaGraphRecordConsumer extends FailureTrackingAirbyteMessa
                                    Map<String, List<String>> knownEdgeTypedCols,
                                    ConfiguredAirbyteCatalog catalog,
                                    Consumer<AirbyteMessage> outputCollector) {
-    if (cfg == null || client == null || sb == null) throw new IllegalArgumentException("cfg/client/sb is null");
-    if (maxBatchRecords < 1) throw new IllegalArgumentException("maxBatchRecords must be >=1");
+    if (cfg == null || client == null || sb == null)
+      throw new IllegalArgumentException("cfg/client/sb is null");
+    if (maxBatchRecords < 1)
+      throw new IllegalArgumentException("maxBatchRecords must be >=1");
     this.cfg = cfg;
     this.client = client;
     this.sb = sb;
@@ -93,7 +96,8 @@ public final class NebulaGraphRecordConsumer extends FailureTrackingAirbyteMessa
     }
     if (airbyteMessage.getType() == AirbyteMessage.Type.RECORD) {
       final AirbyteRecordMessage record = airbyteMessage.getRecord();
-      if (record == null) return;
+      if (record == null)
+        return;
 
       final String stream = record.getStream();
       final String namespace = record.getNamespace();
@@ -236,7 +240,8 @@ public final class NebulaGraphRecordConsumer extends FailureTrackingAirbyteMessa
     for (int attempt = 0; attempt <= backoffMs.length; attempt++) {
       try {
         // Log first attempt statements (INFO for visibility in test logs, DEBUG full length)
-        if (attempt == 0 && (sql.startsWith("INSERT VERTEX") || sql.startsWith("UPSERT VERTEX") || sql.startsWith("INSERT EDGE") || sql.startsWith("UPSERT EDGE"))) {
+        if (attempt == 0 && (sql.startsWith("INSERT VERTEX") || sql.startsWith("UPSERT VERTEX") || sql.startsWith("INSERT EDGE")
+            || sql.startsWith("UPSERT EDGE"))) {
           String trimmed = sql.length() > 1200 ? sql.substring(0, 1200) + "..." : sql;
           org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(NebulaGraphRecordConsumer.class);
           logger.info("exec op={} attempt={} sqlSnippet={} chars={}", opDesc, attempt, trimmed.replaceAll("\n", "\\n"), sql.length());
@@ -276,8 +281,10 @@ public final class NebulaGraphRecordConsumer extends FailureTrackingAirbyteMessa
 
   /** Register a Vertex stream's Tag name (streamKey usually is namespace__stream) */
   public void registerVertexStream(String streamKey, String tagName) {
-    if (streamKey == null || streamKey.isEmpty()) throw new IllegalArgumentException("streamKey empty");
-    if (tagName == null || tagName.isEmpty()) throw new IllegalArgumentException("tagName empty");
+    if (streamKey == null || streamKey.isEmpty())
+      throw new IllegalArgumentException("streamKey empty");
+    if (tagName == null || tagName.isEmpty())
+      throw new IllegalArgumentException("tagName empty");
     vertexTagByStream.put(streamKey, tagName);
     vertexBuf.computeIfAbsent(streamKey, k -> new ArrayList<>());
     // startup-only schema; nothing to seed at runtime
@@ -285,8 +292,10 @@ public final class NebulaGraphRecordConsumer extends FailureTrackingAirbyteMessa
 
   /** Register an Edge stream's EdgeType name */
   public void registerEdgeStream(String streamKey, String edgeType) {
-    if (streamKey == null || streamKey.isEmpty()) throw new IllegalArgumentException("streamKey empty");
-    if (edgeType == null || edgeType.isEmpty()) throw new IllegalArgumentException("edgeType empty");
+    if (streamKey == null || streamKey.isEmpty())
+      throw new IllegalArgumentException("streamKey empty");
+    if (edgeType == null || edgeType.isEmpty())
+      throw new IllegalArgumentException("edgeType empty");
     edgeTypeByStream.put(streamKey, edgeType);
     edgeBuf.computeIfAbsent(streamKey, k -> new ArrayList<>());
     // startup-only schema; nothing to seed at runtime
@@ -322,9 +331,11 @@ public final class NebulaGraphRecordConsumer extends FailureTrackingAirbyteMessa
    */
   public void flushVertexAppend(String streamKey) {
     List<VertexRow> buf = vertexBuf.get(streamKey);
-    if (buf == null || buf.isEmpty()) return;
+    if (buf == null || buf.isEmpty())
+      return;
     String tag = vertexTagByStream.get(streamKey);
-    if (tag == null || tag.isEmpty()) throw new IllegalStateException("missing tag for stream: " + streamKey);
+    if (tag == null || tag.isEmpty())
+      throw new IllegalStateException("missing tag for stream: " + streamKey);
 
     final List<String> rawCols = List.of("_airbyte_data", "_airbyte_ab_id", "_airbyte_emitted_at", "_airbyte_loaded_at");
     final NebulaGraphConfig.StreamConfig sc = streamConfigByKey.get(streamKey);
@@ -367,7 +378,8 @@ public final class NebulaGraphRecordConsumer extends FailureTrackingAirbyteMessa
       String sql = sb.buildInsertVertexValues(tag, cols, vidAndValueTuples);
       execWithRetry(sql, "flushVertexAppend stream=" + streamKey + ", range=" + from + ".." + (to - 1));
 
-      // Debug probe: fetch first VID just written to verify properties actually stored (helps diagnose NULL issue)
+      // Debug probe: fetch first VID just written to verify properties actually stored (helps diagnose
+      // NULL issue)
       try {
         if (!page.isEmpty()) {
           String probeVid = page.get(0).vid;
@@ -375,13 +387,12 @@ public final class NebulaGraphRecordConsumer extends FailureTrackingAirbyteMessa
               + " YIELD " + sb.q(tag) + ".`_airbyte_data` AS d," + sb.q(tag) + ".`_airbyte_emitted_at` AS e," + sb.q(tag) + ".`_airbyte_ab_id` AS a";
           try {
             java.util.List<String> probe = client.queryJsonColumn(fetch, "d");
-            String firstVal = (probe!=null && !probe.isEmpty()? probe.get(0):null);
+            String firstVal = (probe != null && !probe.isEmpty() ? probe.get(0) : null);
             org.slf4j.LoggerFactory.getLogger(NebulaGraphRecordConsumer.class)
-                .info("probe vertex tag={} vid={} fetchRows={} d0={} sql={}"
-                    , tag, probeVid, (probe==null?0:probe.size())
-                    , (firstVal==null?"<null>":firstVal)
-                    , fetch.replace('\n',' '));
-            // Fallback: if firstVal is null, re-write this page using per-row UPSERT (robustness over performance)
+                .info("probe vertex tag={} vid={} fetchRows={} d0={} sql={}", tag, probeVid, (probe == null ? 0 : probe.size()),
+                    (firstVal == null ? "<null>" : firstVal), fetch.replace('\n', ' '));
+            // Fallback: if firstVal is null, re-write this page using per-row UPSERT (robustness over
+            // performance)
             if (firstVal == null) {
               org.slf4j.LoggerFactory.getLogger(NebulaGraphRecordConsumer.class)
                   .warn("batch INSERT returned NULL property; falling back to per-row UPSERT for page size={} tag={}", page.size(), tag);
@@ -403,10 +414,9 @@ public final class NebulaGraphRecordConsumer extends FailureTrackingAirbyteMessa
               // re-probe
               try {
                 java.util.List<String> reprobe = client.queryJsonColumn(fetch, "d");
-                String after = (reprobe!=null && !reprobe.isEmpty()? reprobe.get(0):null);
+                String after = (reprobe != null && !reprobe.isEmpty() ? reprobe.get(0) : null);
                 org.slf4j.LoggerFactory.getLogger(NebulaGraphRecordConsumer.class)
-                    .info("fallback UPSERT probe tag={} vid={} d0After={}"
-                        , tag, probeVid, after==null?"<null>":after);
+                    .info("fallback UPSERT probe tag={} vid={} d0After={}", tag, probeVid, after == null ? "<null>" : after);
               } catch (Exception ignoreReprobe) { /* ignore */ }
             }
           } catch (Exception fe) {
@@ -427,9 +437,11 @@ public final class NebulaGraphRecordConsumer extends FailureTrackingAirbyteMessa
   /** Batch INSERT EDGE (raw+typed), page execution. */
   public void flushEdgeAppend(String streamKey) {
     List<EdgeRow> buf = edgeBuf.get(streamKey);
-    if (buf == null || buf.isEmpty()) return;
+    if (buf == null || buf.isEmpty())
+      return;
     String edgeType = edgeTypeByStream.get(streamKey);
-    if (edgeType == null || edgeType.isEmpty()) throw new IllegalStateException("missing edgeType for stream: " + streamKey);
+    if (edgeType == null || edgeType.isEmpty())
+      throw new IllegalStateException("missing edgeType for stream: " + streamKey);
 
     final List<String> rawCols = List.of("_airbyte_data", "_airbyte_ab_id", "_airbyte_emitted_at", "_airbyte_loaded_at");
     final NebulaGraphConfig.StreamConfig sc = streamConfigByKey.get(streamKey);
@@ -447,7 +459,8 @@ public final class NebulaGraphRecordConsumer extends FailureTrackingAirbyteMessa
 
       // 2) column headers
       List<String> cols = new ArrayList<>(rawCols);
-      if (typedOn) cols.addAll(typedKeys);
+      if (typedOn)
+        cols.addAll(typedKeys);
 
       // 3) assemble "src"->"dst"@rank:(...)
       List<String> endpointsAndValueTuples = new ArrayList<>(page.size());
@@ -487,24 +500,28 @@ public final class NebulaGraphRecordConsumer extends FailureTrackingAirbyteMessa
   }
 
   public static final class VertexRow {
+
     public final String vid;
     public final String rawJson;
     public final String abId;
     public final long emittedAt;
     public final long loadedAt;
-    public Map<String, Object> typed; 
+    public Map<String, Object> typed;
 
     public VertexRow(String vid, String rawJson, String abId, long emittedAt, long loadedAt) {
-      if (vid == null) throw new IllegalArgumentException("vid is null");
+      if (vid == null)
+        throw new IllegalArgumentException("vid is null");
       this.vid = vid;
       this.rawJson = rawJson; // Can be null → write NULL
-      this.abId = abId;       // Can be null → write NULL
+      this.abId = abId; // Can be null → write NULL
       this.emittedAt = emittedAt;
       this.loadedAt = loadedAt;
     }
+
   }
 
   public static final class EdgeRow {
+
     public final String src;
     public final String dst;
     public final long rank;
@@ -515,8 +532,10 @@ public final class NebulaGraphRecordConsumer extends FailureTrackingAirbyteMessa
     public Map<String, Object> typed;
 
     public EdgeRow(String src, String dst, long rank, String rawJson, String abId, long emittedAt, long loadedAt) {
-      if (src == null) throw new IllegalArgumentException("src is null");
-      if (dst == null) throw new IllegalArgumentException("dst is null");
+      if (src == null)
+        throw new IllegalArgumentException("src is null");
+      if (dst == null)
+        throw new IllegalArgumentException("dst is null");
       this.src = src;
       this.dst = dst;
       this.rank = rank;
@@ -525,23 +544,37 @@ public final class NebulaGraphRecordConsumer extends FailureTrackingAirbyteMessa
       this.emittedAt = emittedAt;
       this.loadedAt = loadedAt;
     }
+
   }
 
   // Edge buffer append (raw-only)
   public void addEdgeRecord(String streamKey, String src, String dst, long rank, String rawJson, String abId, long emittedAt, long loadedAt) {
-    if (!edgeTypeByStream.containsKey(streamKey)) throw new IllegalStateException("stream not registered: " + streamKey);
+    if (!edgeTypeByStream.containsKey(streamKey))
+      throw new IllegalStateException("stream not registered: " + streamKey);
     List<EdgeRow> buf = edgeBuf.computeIfAbsent(streamKey, k -> new ArrayList<>());
     buf.add(new EdgeRow(src, dst, rank, rawJson, abId, emittedAt, loadedAt));
-    if (buf.size() >= maxBatchRecords) flushEdgeAppend(streamKey);
+    if (buf.size() >= maxBatchRecords)
+      flushEdgeAppend(streamKey);
   }
 
   // Edge buffer append (raw+typed)
-  public void addEdgeRecord(String streamKey, String src, String dst, long rank, String rawJson, String abId, long emittedAt, long loadedAt, Map<String, Object> typed) {
-    if (!edgeTypeByStream.containsKey(streamKey)) throw new IllegalStateException("stream not registered: " + streamKey);
+  public void addEdgeRecord(String streamKey,
+                            String src,
+                            String dst,
+                            long rank,
+                            String rawJson,
+                            String abId,
+                            long emittedAt,
+                            long loadedAt,
+                            Map<String, Object> typed) {
+    if (!edgeTypeByStream.containsKey(streamKey))
+      throw new IllegalStateException("stream not registered: " + streamKey);
     List<EdgeRow> buf = edgeBuf.computeIfAbsent(streamKey, k -> new ArrayList<>());
     EdgeRow row = new EdgeRow(src, dst, rank, rawJson, abId, emittedAt, loadedAt);
     row.typed = typed;
     buf.add(row);
-    if (buf.size() >= maxBatchRecords) flushEdgeAppend(streamKey);
+    if (buf.size() >= maxBatchRecords)
+      flushEdgeAppend(streamKey);
   }
+
 }

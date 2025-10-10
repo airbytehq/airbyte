@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.nebulagraph;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -33,19 +37,17 @@ class SchemaManagerTest {
     ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
     verify(client, atLeast(2)).execute(captor.capture());
 
-    boolean tagCreated = captor.getAllValues().stream().anyMatch(sql ->
-        sql.startsWith("CREATE TAG IF NOT EXISTS `public__users`") &&
-            sql.contains("`_airbyte_data` string") &&
-            sql.contains("`_airbyte_ab_id` string") &&
-            sql.contains("`_airbyte_emitted_at` int64") &&
-            sql.contains("`_airbyte_loaded_at` int64"));
+    boolean tagCreated = captor.getAllValues().stream().anyMatch(sql -> sql.startsWith("CREATE TAG IF NOT EXISTS `public__users`") &&
+        sql.contains("`_airbyte_data` string") &&
+        sql.contains("`_airbyte_ab_id` string") &&
+        sql.contains("`_airbyte_emitted_at` int64") &&
+        sql.contains("`_airbyte_loaded_at` int64"));
 
-    boolean edgeCreated = captor.getAllValues().stream().anyMatch(sql ->
-        sql.startsWith("CREATE EDGE IF NOT EXISTS `users_to_orders`") &&
-            sql.contains("`_airbyte_data` string") &&
-            sql.contains("`_airbyte_ab_id` string") &&
-            sql.contains("`_airbyte_emitted_at` int64") &&
-            sql.contains("`_airbyte_loaded_at` int64"));
+    boolean edgeCreated = captor.getAllValues().stream().anyMatch(sql -> sql.startsWith("CREATE EDGE IF NOT EXISTS `users_to_orders`") &&
+        sql.contains("`_airbyte_data` string") &&
+        sql.contains("`_airbyte_ab_id` string") &&
+        sql.contains("`_airbyte_emitted_at` int64") &&
+        sql.contains("`_airbyte_loaded_at` int64"));
 
     assertTrue(tagCreated, "CREATE TAG missing or malformed");
     assertTrue(edgeCreated, "CREATE EDGE missing or malformed");
@@ -69,9 +71,9 @@ class SchemaManagerTest {
 
     // Prepare columns in a deterministic order
     Map<String, Class<?>> cols = new LinkedHashMap<>();
-    cols.put("age", Long.class);     // -> int64
+    cols.put("age", Long.class); // -> int64
     cols.put("active", Boolean.class); // -> bool
-    cols.put("name", String.class);    // -> string
+    cols.put("name", String.class); // -> string
 
     sm.addTagColumnsIfMissing("public__users", cols);
 
@@ -109,8 +111,7 @@ class SchemaManagerTest {
     ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
     verify(client, atLeast(1)).execute(captor.capture());
 
-    boolean hasBatch = captor.getAllValues().stream().anyMatch(sql ->
-        sql.equals("ALTER EDGE `orders_edge` ADD (`score` double,`flag` bool)"));
+    boolean hasBatch = captor.getAllValues().stream().anyMatch(sql -> sql.equals("ALTER EDGE `orders_edge` ADD (`score` double,`flag` bool)"));
 
     assertTrue(hasBatch, "Expected batch ALTER EDGE ADD not found");
   }
@@ -211,7 +212,9 @@ class SchemaManagerTest {
     StatementBuilder sb = new StatementBuilder();
     SchemaManager sm = new SchemaManager(client, sb);
 
-    doAnswer(inv -> { throw new Exception("fatal"); }).when(client).execute(anyString());
+    doAnswer(inv -> {
+      throw new Exception("fatal");
+    }).when(client).execute(anyString());
 
     Map<String, Class<?>> cols = new LinkedHashMap<>();
     cols.put("x", String.class);
@@ -219,6 +222,5 @@ class SchemaManagerTest {
 
     assertThrows(RuntimeException.class, () -> sm.addTagColumnsIfMissing("t", cols));
   }
+
 }
-
-

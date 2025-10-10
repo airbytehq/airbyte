@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.nebulagraph;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -75,7 +79,9 @@ public final class NebulaGraphDestination extends BaseConnector implements Desti
       try {
         ensureSpaceExists(client, sb, cfg);
       } catch (Exception e) {
-        try { client.close(); } catch (Exception ignore) {}
+        try {
+          client.close();
+        } catch (Exception ignore) {}
         throw new RuntimeException("failed to USE space: " + cfg.space, e);
       }
 
@@ -165,7 +171,10 @@ public final class NebulaGraphDestination extends BaseConnector implements Desti
             boolean anyOnline = false;
             if (statuses != null) {
               for (String s : statuses) {
-                if (s != null && s.toUpperCase().contains("ONLINE")) { anyOnline = true; break; }
+                if (s != null && s.toUpperCase().contains("ONLINE")) {
+                  anyOnline = true;
+                  break;
+                }
               }
             }
             if (anyOnline) {
@@ -180,17 +189,19 @@ public final class NebulaGraphDestination extends BaseConnector implements Desti
             Thread.currentThread().interrupt();
             break;
           }
-          if (readyIdx < readyBackoffMs.length - 1) readyIdx++;
+          if (readyIdx < readyBackoffMs.length - 1)
+            readyIdx++;
         }
       } catch (Exception ignoreProbe) {
         // best-effort readiness; continue to CREATE
       }
-      // Try to create the space with FIXED_STRING(N). Include conservative defaults for partition/replica.
+      // Try to create the space with FIXED_STRING(N). Include conservative defaults for
+      // partition/replica.
       String create = "CREATE SPACE IF NOT EXISTS " + sb.q(cfg.space)
           + " (vid_type=FIXED_STRING(" + cfg.vidFixedStringLength + "), partition_num=1, replica_factor=1)";
       // Longer backoff for CREATE (≈180s)
       int[] createBackoffMs = new int[] {
-          200, 400, 800, 1600, 3200, 6400, 12800, 25600,
+        200, 400, 800, 1600, 3200, 6400, 12800, 25600,
       };
       Exception lastCreateErr = null;
       // Retry CREATE as storaged may not be registered yet (Host not enough)
@@ -206,7 +217,9 @@ public final class NebulaGraphDestination extends BaseConnector implements Desti
           if (!transientHost || i == createBackoffMs.length) {
             throw new RuntimeException("Failed to CREATE SPACE: " + cfg.space, ce);
           }
-          try { Thread.sleep(createBackoffMs[i]); } catch (InterruptedException ie) {
+          try {
+            Thread.sleep(createBackoffMs[i]);
+          } catch (InterruptedException ie) {
             Thread.currentThread().interrupt();
             throw new RuntimeException("Interrupted while waiting to create space: " + cfg.space, ce);
           }
@@ -222,7 +235,9 @@ public final class NebulaGraphDestination extends BaseConnector implements Desti
           if (i == useBackoffMs.length - 1) {
             throw new RuntimeException("Failed to USE space after creation: " + cfg.space, retryErr);
           }
-          try { Thread.sleep(useBackoffMs[i]); } catch (InterruptedException ie) {
+          try {
+            Thread.sleep(useBackoffMs[i]);
+          } catch (InterruptedException ie) {
             Thread.currentThread().interrupt();
             throw new RuntimeException("Interrupted while waiting for space creation: " + cfg.space, retryErr);
           }
@@ -233,9 +248,11 @@ public final class NebulaGraphDestination extends BaseConnector implements Desti
 
   private static Map<String, Class<?>> deriveTypedColumnsFromJsonSchema(JsonNode schema) {
     final Map<String, Class<?>> out = new LinkedHashMap<>();
-    if (schema == null || !schema.isObject()) return out;
+    if (schema == null || !schema.isObject())
+      return out;
     final JsonNode props = schema.get("properties");
-    if (props == null || !props.isObject()) return out;
+    if (props == null || !props.isObject())
+      return out;
     props.fields().forEachRemaining(e -> {
       final String name = e.getKey();
       final JsonNode p = e.getValue();
@@ -248,16 +265,24 @@ public final class NebulaGraphDestination extends BaseConnector implements Desti
   }
 
   private static Class<?> mapJsonTypeToJava(JsonNode p) {
-    if (p == null) return null;
+    if (p == null)
+      return null;
     final JsonNode t = p.get("type");
-    if (t == null) return null;
+    if (t == null)
+      return null;
     String ts = t.isArray() && t.size() > 0 ? t.get(0).asText() : t.asText();
-    if (ts == null) return null;
+    if (ts == null)
+      return null;
     ts = ts.trim().toLowerCase();
-    if ("boolean".equals(ts)) return Boolean.class;
-    if ("integer".equals(ts)) return Long.class;
-    if ("number".equals(ts)) return Double.class;
-    if ("string".equals(ts)) return String.class;
+    if ("boolean".equals(ts))
+      return Boolean.class;
+    if ("integer".equals(ts))
+      return Long.class;
+    if ("number".equals(ts))
+      return Double.class;
+    if ("string".equals(ts))
+      return String.class;
     return null;
   }
+
 }

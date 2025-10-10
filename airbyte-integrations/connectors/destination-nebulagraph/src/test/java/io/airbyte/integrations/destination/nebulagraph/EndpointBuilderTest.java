@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.nebulagraph;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -57,6 +61,5 @@ class EndpointBuilderTest {
     assertEquals(42L, eb.buildRank(rec, "r2"));
     assertEquals(0L, eb.buildRank(rec, "r3"));
   }
+
 }
-
-

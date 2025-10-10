@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.nebulagraph;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -10,10 +14,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -55,7 +59,8 @@ class NebulaGraphRecordConsumerTest {
               .withEmittedAt(1L * i)
               .withData(data)));
     }
-    for (AirbyteMessage m : records) consumer.accept(m);
+    for (AirbyteMessage m : records)
+      consumer.accept(m);
 
     // flush remaining (last page size 1)
     consumer.flushAll();
@@ -103,7 +108,8 @@ class NebulaGraphRecordConsumerTest {
               .withEmittedAt(1L * i)
               .withData(data)));
     }
-    for (AirbyteMessage m : records) consumer.accept(m);
+    for (AirbyteMessage m : records)
+      consumer.accept(m);
 
     consumer.flushAll();
 
@@ -140,7 +146,7 @@ class NebulaGraphRecordConsumerTest {
       consumerV.accept(new AirbyteMessage()
           .withType(AirbyteMessage.Type.RECORD)
           .withRecord(new AirbyteRecordMessage()
-              .withStream("users").withNamespace("public").withEmittedAt(1L*i).withData(data)));
+              .withStream("users").withNamespace("public").withEmittedAt(1L * i).withData(data)));
     }
 
     ArgumentCaptor<String> sqlV = ArgumentCaptor.forClass(String.class);
@@ -169,7 +175,7 @@ class NebulaGraphRecordConsumerTest {
       consumerE.accept(new AirbyteMessage()
           .withType(AirbyteMessage.Type.RECORD)
           .withRecord(new AirbyteRecordMessage()
-              .withStream("rels").withNamespace("public").withEmittedAt(1L*i).withData(data)));
+              .withStream("rels").withNamespace("public").withEmittedAt(1L * i).withData(data)));
     }
 
     ArgumentCaptor<String> sqlE = ArgumentCaptor.forClass(String.class);
@@ -263,7 +269,7 @@ class NebulaGraphRecordConsumerTest {
       ObjectNode data = M.createObjectNode();
       data.put("id", "u" + i);
       consumer.accept(new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
-          .withRecord(new AirbyteRecordMessage().withStream("users").withNamespace("public").withEmittedAt(1L*i).withData(data)));
+          .withRecord(new AirbyteRecordMessage().withStream("users").withNamespace("public").withEmittedAt(1L * i).withData(data)));
     }
 
     AirbyteMessage state = new AirbyteMessage()
@@ -316,23 +322,25 @@ class NebulaGraphRecordConsumerTest {
 
   // @Test
   // void con07UnmappedStreamMappingThrows() throws Exception {
-  //   NebulaGraphClient client = mock(NebulaGraphClient.class);
-  //   doNothing().when(client).execute(anyString());
+  // NebulaGraphClient client = mock(NebulaGraphClient.class);
+  // doNothing().when(client).execute(anyString());
 
-  //   // config has no streams; catalog has one -> start should throw IllegalStateException
-  //   NebulaGraphConfig cfg = buildVertexCfg("public", "users", null, false, List.of("id"));
-  //   // override: empty streams by building a config with different stream name and then not providing mapping? Simpler: build empty mapping
-  //   // Build config with no streams by rebuilding minimal root
-  //   ObjectNode raw = M.createObjectNode();
-  //   raw.put("graphd_addresses", "127.0.0.1:9669");
-  //   raw.put("space", "s1");
-  //   raw.put("username", "u");
-  //   NebulaGraphConfig cfgNoStreams = NebulaGraphConfig.from(raw);
+  // // config has no streams; catalog has one -> start should throw IllegalStateException
+  // NebulaGraphConfig cfg = buildVertexCfg("public", "users", null, false, List.of("id"));
+  // // override: empty streams by building a config with different stream name and then not providing
+  // mapping? Simpler: build empty mapping
+  // // Build config with no streams by rebuilding minimal root
+  // ObjectNode raw = M.createObjectNode();
+  // raw.put("graphd_addresses", "127.0.0.1:9669");
+  // raw.put("space", "s1");
+  // raw.put("username", "u");
+  // NebulaGraphConfig cfgNoStreams = NebulaGraphConfig.from(raw);
 
-  //   ConfiguredAirbyteCatalog catalog = buildCatalog("public", "users");
-  //   NebulaGraphRecordConsumer consumer = newConsumer(cfgNoStreams, client, 10, Map.of(), Map.of(), catalog, msg -> {});
+  // ConfiguredAirbyteCatalog catalog = buildCatalog("public", "users");
+  // NebulaGraphRecordConsumer consumer = newConsumer(cfgNoStreams, client, 10, Map.of(), Map.of(),
+  // catalog, msg -> {});
 
-  //   org.junit.jupiter.api.Assertions.assertThrows(IllegalStateException.class, consumer::start);
+  // org.junit.jupiter.api.Assertions.assertThrows(IllegalStateException.class, consumer::start);
   // }
 
   @Test
@@ -402,9 +410,11 @@ class NebulaGraphRecordConsumerTest {
   private static int countTuples(String sql) {
     int idx = sql.indexOf("VALUES\n");
     int end = sql.lastIndexOf(';');
-    if (idx < 0 || end <= idx) return 0;
+    if (idx < 0 || end <= idx)
+      return 0;
     String body = sql.substring(idx + 7, end);
-    if (body.isEmpty()) return 0;
+    if (body.isEmpty())
+      return 0;
     return body.split(",\n  ", -1).length;
   }
 
@@ -413,13 +423,15 @@ class NebulaGraphRecordConsumerTest {
     root.put("graphd_addresses", "127.0.0.1:9669");
     root.put("space", "s1");
     root.put("username", "u");
-    if (useUpsert != null) root.put("use_upsert", useUpsert.booleanValue());
+    if (useUpsert != null)
+      root.put("use_upsert", useUpsert.booleanValue());
     ObjectNode s = M.createObjectNode();
     s.put("name", name);
     s.put("namespace", ns);
     s.put("entity_type", "vertex");
     var arr = s.putArray("vid_fields");
-    for (String f : vidFields) arr.add(f);
+    for (String f : vidFields)
+      arr.add(f);
     if (typed) {
       ObjectNode t = M.createObjectNode();
       t.put("enabled", true);
@@ -434,15 +446,18 @@ class NebulaGraphRecordConsumerTest {
     root.put("graphd_addresses", "127.0.0.1:9669");
     root.put("space", "s1");
     root.put("username", "u");
-    if (useUpsert != null) root.put("use_upsert", useUpsert.booleanValue());
+    if (useUpsert != null)
+      root.put("use_upsert", useUpsert.booleanValue());
     ObjectNode s = M.createObjectNode();
     s.put("name", name);
     s.put("namespace", ns);
     s.put("entity_type", "edge");
     var as = s.putArray("src_fields");
-    for (String f : src) as.add(f);
+    for (String f : src)
+      as.add(f);
     var ad = s.putArray("dst_fields");
-    for (String f : dst) ad.add(f);
+    for (String f : dst)
+      ad.add(f);
     if (typed) {
       ObjectNode t = M.createObjectNode();
       t.put("enabled", true);
@@ -468,6 +483,5 @@ class NebulaGraphRecordConsumerTest {
         cfg, client, new StatementBuilder(), new VidGenerator(), new TypedExtractor(), maxBatch,
         knownVertex, knownEdge, catalog, collector);
   }
+
 }
-
-

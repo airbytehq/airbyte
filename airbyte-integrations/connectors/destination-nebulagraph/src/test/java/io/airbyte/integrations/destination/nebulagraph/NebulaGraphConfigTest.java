@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.nebulagraph;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -127,6 +131,5 @@ class NebulaGraphConfigTest {
     assertTrue(sc.typedEnabled);
     assertEquals(List.of("tenant_id"), sc.vidFields);
   }
+
 }
-
-

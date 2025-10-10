@@ -1,23 +1,26 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.nebulagraph;
 
-import com.vesoft.nebula.client.graph.data.ResultSet;
-import com.vesoft.nebula.client.graph.data.HostAddress;
-import com.vesoft.nebula.client.graph.net.NebulaPool;
 import com.vesoft.nebula.client.graph.NebulaPoolConfig;
+import com.vesoft.nebula.client.graph.data.HostAddress;
+import com.vesoft.nebula.client.graph.data.ResultSet;
+import com.vesoft.nebula.client.graph.net.NebulaPool;
 import com.vesoft.nebula.client.graph.net.Session;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public interface NebulaGraphClient extends AutoCloseable {
 
   void execute(String nGql) throws Exception;
 
   /**
-   * Execute a read-only nGQL and return the specified column as a list of strings.
-   * Intended for test-time retrieval of previously written raw JSON (e.g. alias 'd').
+   * Execute a read-only nGQL and return the specified column as a list of strings. Intended for
+   * test-time retrieval of previously written raw JSON (e.g. alias 'd').
    */
   default List<String> queryJsonColumn(String nGql, String alias) throws Exception {
     throw new UnsupportedOperationException("queryJsonColumn is not implemented");
@@ -121,8 +124,7 @@ public interface NebulaGraphClient extends AutoCloseable {
         } catch (Throwable t) {
           try {
             rowCount = (int) rs.getClass().getMethod("rowsSize").invoke(rs);
-          } catch (Exception ignore) {
-          }
+          } catch (Exception ignore) {}
         }
         LOG.debug("nGQL exec ok. sql='{}' cols={} targetAlias='{}' resolvedIndex={} rows={}", nGql, colNames, alias, idx, rowCount);
         List<String> out = new ArrayList<>(rowCount);
@@ -151,8 +153,7 @@ public interface NebulaGraphClient extends AutoCloseable {
                   cells = (List<?>) v;
                   break;
                 }
-              } catch (Exception ignore) {
-              }
+              } catch (Exception ignore) {}
             }
           }
           if (cells == null) {
@@ -173,33 +174,34 @@ public interface NebulaGraphClient extends AutoCloseable {
           boolean isNull = false;
           try {
             Object nv = cell.getClass().getMethod("isNull").invoke(cell);
-            if (nv instanceof Boolean && (Boolean) nv) isNull = true;
-          } catch (Exception ignore) {
-          }
+            if (nv instanceof Boolean && (Boolean) nv)
+              isNull = true;
+          } catch (Exception ignore) {}
           if (!isNull) {
             try {
               s = (String) cell.getClass().getMethod("asString").invoke(cell);
             } catch (Exception e1) {
               try {
                 s = String.valueOf(cell);
-              } catch (Exception ignore) {
-              }
+              } catch (Exception ignore) {}
             }
           }
-            // Fallback: if s still null but we have a cell, use cell.toString()
-            if (s == null && cell != null) {
-              try { s = cell.toString(); } catch (Exception ignore) { /* ignore */ }
-            }
-            // Only treat value as null if explicit null marker
-            if (s == null || "null".equalsIgnoreCase(s)) {
-              out.add(null);
-            } else {
-              out.add(s);
-            }
-            if (r < 3) {
-              LOG.info("sample row {} cellClass={} rawCell='{}' parsed='{}' isNullFlag={} index={} cols={}", r,
-                  cell == null ? "null" : cell.getClass().getName(), cell, s, isNull, idx, colNames);
-            }
+          // Fallback: if s still null but we have a cell, use cell.toString()
+          if (s == null && cell != null) {
+            try {
+              s = cell.toString();
+            } catch (Exception ignore) { /* ignore */ }
+          }
+          // Only treat value as null if explicit null marker
+          if (s == null || "null".equalsIgnoreCase(s)) {
+            out.add(null);
+          } else {
+            out.add(s);
+          }
+          if (r < 3) {
+            LOG.info("sample row {} cellClass={} rawCell='{}' parsed='{}' isNullFlag={} index={} cols={}", r,
+                cell == null ? "null" : cell.getClass().getName(), cell, s, isNull, idx, colNames);
+          }
         }
         return out;
       } catch (Throwable direct) {
@@ -227,8 +229,7 @@ public interface NebulaGraphClient extends AutoCloseable {
             }
           }
         }
-      } catch (ReflectiveOperationException ignore) {
-      }
+      } catch (ReflectiveOperationException ignore) {}
 
       int rows;
       try {
@@ -263,8 +264,7 @@ public interface NebulaGraphClient extends AutoCloseable {
                   cells = (List<?>) v;
                   break;
                 }
-              } catch (Exception ignore) {
-              }
+              } catch (Exception ignore) {}
             }
             if (cells == null) {
               try {
@@ -290,8 +290,7 @@ public interface NebulaGraphClient extends AutoCloseable {
                 isNull = true;
                 break;
               }
-            } catch (Exception ignore) {
-            }
+            } catch (Exception ignore) {}
           }
           if (!isNull) {
             try {
@@ -349,5 +348,7 @@ public interface NebulaGraphClient extends AutoCloseable {
         }
       }
     }
+
   }
+
 }

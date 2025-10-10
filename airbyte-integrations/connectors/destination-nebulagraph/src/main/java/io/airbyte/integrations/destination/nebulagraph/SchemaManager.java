@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.nebulagraph;
 
 import java.util.Collection;
@@ -7,6 +11,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class SchemaManager {
+
   private final NebulaGraphClient client;
   private final StatementBuilder sb;
 
@@ -20,7 +25,8 @@ public final class SchemaManager {
   }
 
   public void ensureTagExists(String tagName) {
-    // CREATE TAG IF NOT EXISTS `tag`(`_airbyte_data` string, `_airbyte_ab_id` string, `_airbyte_emitted_at` int, `_airbyte_loaded_at` int)
+    // CREATE TAG IF NOT EXISTS `tag`(`_airbyte_data` string, `_airbyte_ab_id` string,
+    // `_airbyte_emitted_at` int, `_airbyte_loaded_at` int)
     String sql = "CREATE TAG IF NOT EXISTS " + sb.q(tagName)
         + "(`_airbyte_data` string, `_airbyte_ab_id` string, `_airbyte_emitted_at` int64, `_airbyte_loaded_at` int64)";
     try {
@@ -33,7 +39,8 @@ public final class SchemaManager {
   }
 
   public void ensureEdgeTypeExists(String edgeType) {
-    // CREATE EDGE IF NOT EXISTS `edge_type`(`_airbyte_data` string, `_airbyte_ab_id` string, `_airbyte_emitted_at` int, `_airbyte_loaded_at` int)
+    // CREATE EDGE IF NOT EXISTS `edge_type`(`_airbyte_data` string, `_airbyte_ab_id` string,
+    // `_airbyte_emitted_at` int, `_airbyte_loaded_at` int)
     String sql = "CREATE EDGE IF NOT EXISTS " + sb.q(edgeType)
         + "(`_airbyte_data` string, `_airbyte_ab_id` string, `_airbyte_emitted_at` int64, `_airbyte_loaded_at` int64)";
     try {
@@ -46,7 +53,8 @@ public final class SchemaManager {
 
   // Seed known column cache - Tag
   public void seedKnownTagCols(String tagName, Collection<String> cols) {
-    if (tagName == null || cols == null || cols.isEmpty()) return;
+    if (tagName == null || cols == null || cols.isEmpty())
+      return;
     Map<String, ColumnType> map = knownTagCols.computeIfAbsent(tagName, k -> new LinkedHashMap<>());
     for (String col : cols) {
       if (col != null) {
@@ -60,7 +68,8 @@ public final class SchemaManager {
 
   // Seed known column cache - Edge (with type)
   public void seedKnownEdgeCols(String edgeType, Collection<String> cols) {
-    if (edgeType == null || cols == null || cols.isEmpty()) return;
+    if (edgeType == null || cols == null || cols.isEmpty())
+      return;
     Map<String, ColumnType> map = knownEdgeCols.computeIfAbsent(edgeType, k -> new LinkedHashMap<>());
     for (String col : cols) {
       if (col != null) {
@@ -72,28 +81,32 @@ public final class SchemaManager {
     }
   }
 
-
   public void addTagColumnsIfMissing(String tagName, Map<String, Class<?>> newCols) {
-    if (newCols == null || newCols.isEmpty()) return;
+    if (newCols == null || newCols.isEmpty())
+      return;
     Map<String, ColumnType> known = knownTagCols.computeIfAbsent(tagName, k -> new LinkedHashMap<>());
     // First collect columns to add/promote types, try to batch ADD for efficiency
     LinkedHashMap<String, ColumnType> toAdd = new LinkedHashMap<>();
     for (Map.Entry<String, Class<?>> entry : newCols.entrySet()) {
       String col = entry.getKey();
-      if (col == null || col.isEmpty()) continue;
+      if (col == null || col.isEmpty())
+        continue;
       ColumnType desiredType = ColumnType.fromJavaClass(entry.getValue());
       ColumnType current = known.get(col);
-      if (current != null && current.covers(desiredType)) continue;
+      if (current != null && current.covers(desiredType))
+        continue;
       ColumnType toApply = current == null ? desiredType : ColumnType.promote(current, desiredType);
       toAdd.put(col, toApply);
     }
-    if (toAdd.isEmpty()) return;
+    if (toAdd.isEmpty())
+      return;
 
     // Try batch ADD: ALTER TAG t ADD (`c1` type1,`c2` type2)
     StringBuilder sbCols = new StringBuilder();
     boolean first = true;
     for (Map.Entry<String, ColumnType> e : toAdd.entrySet()) {
-      if (!first) sbCols.append(",");
+      if (!first)
+        sbCols.append(",");
       sbCols.append(sb.q(e.getKey())).append(" ").append(e.getValue().ngqlType);
       first = false;
     }
@@ -105,7 +118,8 @@ public final class SchemaManager {
       }
       return;
     } catch (Exception batchErr) {
-      // If the batch statement fails because of some columns already exist, fall back to per-column ADD (with parentheses), and ignore the already exists error
+      // If the batch statement fails because of some columns already exist, fall back to per-column ADD
+      // (with parentheses), and ignore the already exists error
       if (!isAlreadyExists(batchErr)) {
         // Non-already exists error directly throw
         throw new RuntimeException("addTagColumnsIfMissing batch failed: " + tagName, batchErr);
@@ -129,29 +143,35 @@ public final class SchemaManager {
   }
 
   /**
-   * Lazy add Edge columns (type mapping: STRING/BOOL/DOUBLE/INT).
-   * Only execute ALTER for columns that do not exist or need to be promoted in the cache; both successful and already exist are merged into the cache.
+   * Lazy add Edge columns (type mapping: STRING/BOOL/DOUBLE/INT). Only execute ALTER for columns that
+   * do not exist or need to be promoted in the cache; both successful and already exist are merged
+   * into the cache.
    */
   public void addEdgeColumnsIfMissing(String edgeType, Map<String, Class<?>> newCols) {
-    if (newCols == null || newCols.isEmpty()) return;
+    if (newCols == null || newCols.isEmpty())
+      return;
     Map<String, ColumnType> known = knownEdgeCols.computeIfAbsent(edgeType, k -> new LinkedHashMap<>());
     LinkedHashMap<String, ColumnType> toAdd = new LinkedHashMap<>();
     for (Map.Entry<String, Class<?>> entry : newCols.entrySet()) {
       String col = entry.getKey();
-      if (col == null || col.isEmpty()) continue;
+      if (col == null || col.isEmpty())
+        continue;
       ColumnType desired = ColumnType.fromJavaClass(entry.getValue());
       ColumnType current = known.get(col);
-      if (current != null && current.covers(desired)) continue;
+      if (current != null && current.covers(desired))
+        continue;
       ColumnType toApply = current == null ? desired : ColumnType.promote(current, desired);
       toAdd.put(col, toApply);
     }
-    if (toAdd.isEmpty()) return;
+    if (toAdd.isEmpty())
+      return;
 
     // Batch ADD: ALTER EDGE e ADD (`c1` type1,`c2` type2)
     StringBuilder sbCols = new StringBuilder();
     boolean first = true;
     for (Map.Entry<String, ColumnType> e : toAdd.entrySet()) {
-      if (!first) sbCols.append(",");
+      if (!first)
+        sbCols.append(",");
       sbCols.append(sb.q(e.getKey())).append(" ").append(e.getValue().ngqlType);
       first = false;
     }
@@ -192,6 +212,7 @@ public final class SchemaManager {
   }
 
   enum ColumnType {
+
     STRING("string"),
     BOOL("bool"),
     DOUBLE("double"),
@@ -235,6 +256,7 @@ public final class SchemaManager {
       }
       return BOOL;
     }
-  }
-}
 
+  }
+
+}

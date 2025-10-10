@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.nebulagraph;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -108,7 +112,7 @@ class StatementBuilderTest {
         () -> sb.buildInsertVertexValues("users", List.of("c1"), List.of()));
     // edge: empty cols
     assertThrows(IllegalArgumentException.class,
-        () -> sb.buildInsertEdgeValues("e", List.of(), List.of(sb.formatEdgeEndpointsAndValues("s","d",0,List.of(1)))));
+        () -> sb.buildInsertEdgeValues("e", List.of(), List.of(sb.formatEdgeEndpointsAndValues("s", "d", 0, List.of(1)))));
     // edge: empty rows
     assertThrows(IllegalArgumentException.class,
         () -> sb.buildInsertEdgeValues("e", List.of("c1"), List.of()));
@@ -127,7 +131,7 @@ class StatementBuilderTest {
 
     // mismatch cols/values
     assertThrows(IllegalArgumentException.class,
-        () -> sb.buildUpsertEdge("rel", "s", "d", 0L, List.of("c1","c2"), List.of(1L)));
+        () -> sb.buildUpsertEdge("rel", "s", "d", 0L, List.of("c1", "c2"), List.of(1L)));
   }
 
   @Test
@@ -135,7 +139,7 @@ class StatementBuilderTest {
     StatementBuilder sb = new StatementBuilder();
     // mismatch cols/values
     assertThrows(IllegalArgumentException.class,
-        () -> sb.buildUpsertVertex("tag", "vid", List.of("c1","c2"), List.of(1L)));
+        () -> sb.buildUpsertVertex("tag", "vid", List.of("c1", "c2"), List.of(1L)));
     // null src/dst/vid guards
     assertThrows(IllegalArgumentException.class,
         () -> sb.buildUpsertVertex("tag", null, List.of("c1"), List.of(1L)));
@@ -144,6 +148,5 @@ class StatementBuilderTest {
     assertThrows(IllegalArgumentException.class,
         () -> sb.buildUpsertEdge("e", "s", null, 0L, List.of("c1"), List.of(1L)));
   }
+
 }
-
-

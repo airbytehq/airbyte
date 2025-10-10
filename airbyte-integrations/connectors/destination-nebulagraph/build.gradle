@@ -27,7 +27,7 @@ application {
 
 dependencies {
     // NebulaGraph Java client
-    implementation 'com.vesoft:client:3.8.4' 
+    implementation 'com.vesoft:client:3.8.4'
 
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.3'
 
