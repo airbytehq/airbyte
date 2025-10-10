@@ -114,12 +114,40 @@ jobs:
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: poe test-integration-tests
 
+      - name: Check if move team should be notified
+        id: check-move-notify
+        if: always()
+        run: |
+          echo "should-notify=${{
+            github.event_name == 'schedule' &&
+            startsWith(matrix.connector, 'destination-') &&
+            (steps.run-unit-tests.outcome == 'failure' || steps.run-integration-tests.outcome == 'failure')
+          }}" >> $GITHUB_OUTPUT
+
       - name: Slack Notification on Failure
-        if: github.event_name == 'schedule' && failure() && (steps.run-unit-tests.outcome == 'failure' || steps.run-integration-tests.outcome == 'failure')
+        if: steps.check-move-notify.outputs.should-notify == 'true'
         uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
         with:
           token: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
           method: chat.postMessage
           payload: |
-            channel: C09H56MT8J2 # jose-alert-test channel. The use of this channel is meant to be temporary while we evaluate the usefulness of these notifications.
+            channel: C09H56MT8J2
             text: "`${{ matrix.connector }}` connector tests failed when using local CDK! <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|View Test Logs>"
+
+      - name: Authenticate as GitHub App
+        if: steps.check-move-notify.outputs.should-notify == 'true'
+        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2
+        id: app-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte-internal-issues"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
+      - name: Create Github Issue on Failure
+        if: steps.check-move-notify.outputs.should-notify == 'true'
+        run: tools/bin/bulk-cdk-compatibility-test/create-gh-issue.sh \
+          ${{ matrix.connector }} \
+          ${{ github.sha }} \
+          "https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}"
+
