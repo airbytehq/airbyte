@@ -2,7 +2,7 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.datagen.flavor.all_types
+package io.airbyte.integrations.source.datagen.flavor.types
 
 import io.airbyte.cdk.discover.Field
 import io.airbyte.integrations.source.datagen.ArrayFieldType
@@ -30,10 +30,10 @@ data object TypesFlavor : Flavor {
             typesTableName to
                 listOf(
                     Field("id", IntegerFieldType),
-                    Field("big integer", BigIntegerFieldType),
                     Field("string", StringFieldType),
                     Field("boolean", BooleanFieldType),
                     Field("number", NumberFieldType),
+                    Field("big integer", BigIntegerFieldType),
                     Field("big decimal", BigDecimalFieldType),
                     Field("date", DateFieldType),
                     Field("time with time zone", TimeWithTimeZoneFieldType),
@@ -44,7 +44,7 @@ data object TypesFlavor : Flavor {
                     Field("array", ArrayFieldType(IntegerFieldType)),
                 )
         )
-    override val primaryKeys = mapOf(typesTableName to listOf(listOf(("string"))))
+    override val primaryKeys = mapOf(typesTableName to listOf(listOf(("id"))))
 
     override val dataGenerator = TypesDataGenerator()
 }

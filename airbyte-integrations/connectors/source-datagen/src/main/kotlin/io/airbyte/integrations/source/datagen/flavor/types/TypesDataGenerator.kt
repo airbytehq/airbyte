@@ -2,7 +2,7 @@
  * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.datagen.flavor.all_types
+package io.airbyte.integrations.source.datagen.flavor.types
 
 import io.airbyte.cdk.data.ArrayEncoder
 import io.airbyte.cdk.data.BigDecimalCodec
@@ -42,6 +42,7 @@ import kotlin.collections.set
 import kotlin.random.Random
 
 class TypesDataGenerator() : DataGenerator {
+    val fieldsForTable = TypesFlavor.fields[TypesFlavor.typesTableName]!!
     val bigInt = BigDecimal("3000000000")
     val bigDecimal = BigDecimal("3000000000.123")
     val date = LocalDate.now()
@@ -56,53 +57,53 @@ class TypesDataGenerator() : DataGenerator {
         val incrementedID = (currentID * modulo + offset)
         val recordData: NativeRecordPayload = mutableMapOf()
 
-        recordData["id"] =
+        recordData[fieldsForTable[0].id] =
             FieldValueEncoder(incrementedID.toInt(), IntegerFieldType.jsonEncoder as IntCodec)
 
-        recordData["string"] =
+        recordData[fieldsForTable[1].id] =
             FieldValueEncoder("string$incrementedID", StringFieldType.jsonEncoder as TextCodec)
 
-        recordData["boolean"] =
+        recordData[fieldsForTable[2].id] =
             FieldValueEncoder(Random.nextBoolean(), BooleanFieldType.jsonEncoder as BooleanCodec)
 
-        recordData["number"] =
+        recordData[fieldsForTable[3].id] =
             FieldValueEncoder(incrementedID.toDouble(), NumberFieldType.jsonEncoder as DoubleCodec)
 
-        recordData["big integer"] =
+        recordData[fieldsForTable[4].id] =
             FieldValueEncoder(bigInt, BigIntegerFieldType.jsonEncoder as BigDecimalIntegerCodec)
 
-        recordData["big decimal"] =
+        recordData[fieldsForTable[5].id] =
             FieldValueEncoder(bigDecimal, BigDecimalFieldType.jsonEncoder as BigDecimalCodec)
 
-        recordData["date"] = FieldValueEncoder(date, DateFieldType.jsonEncoder as LocalDateCodec)
+        recordData[fieldsForTable[6].id] = FieldValueEncoder(date, DateFieldType.jsonEncoder as LocalDateCodec)
 
-        recordData["time with time zone"] =
+        recordData[fieldsForTable[7].id] =
             FieldValueEncoder(
                 timeWithTimeZone,
                 TimeWithTimeZoneFieldType.jsonEncoder as OffsetTimeCodec
             )
 
-        recordData["time without time zone"] =
+        recordData[fieldsForTable[8].id] =
             FieldValueEncoder(
                 timeWithoutTimeZone,
                 TimeWithoutTimeZoneFieldType.jsonEncoder as LocalTimeCodec
             )
 
-        recordData["timestamp with time zone"] =
+        recordData[fieldsForTable[9].id] =
             FieldValueEncoder(
                 timestampWithTimeZone,
                 TimestampWithTimeZoneFieldType.jsonEncoder as OffsetDateTimeCodec
             )
 
-        recordData["timestamp without time zone"] =
+        recordData[fieldsForTable[10].id] =
             FieldValueEncoder(
                 timestampWithoutTimeZone,
                 TimestampWithoutTimeZoneFieldType.jsonEncoder as LocalDateTimeCodec
             )
 
-        recordData["json"] = FieldValueEncoder(json, JsonFieldType.jsonEncoder as JsonStringCodec)
+        recordData[fieldsForTable[11].id] = FieldValueEncoder(json, JsonFieldType.jsonEncoder as JsonStringCodec)
 
-        recordData["array"] = FieldValueEncoder(array, ArrayEncoder(IntCodec))
+        recordData[fieldsForTable[12].id] = FieldValueEncoder(array, ArrayEncoder(IntCodec))
 
         return recordData
     }

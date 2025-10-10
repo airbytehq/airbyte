@@ -29,10 +29,10 @@ class DataGenSourcePartitionFactory(val sharedState: DataGenSharedState) {
         }
 
         // An empty table stream state will be marked as a nullNode. This prevents repeated attempt
-        //        // to read it
-        //        if (streamFeedBootstrap.currentState?.isNull == true) {
-        //            return null
-        //        }
+        // to read it
+//        if (streamFeedBootstrap.currentState?.isNull == true) {
+//            return null
+//        }
 
         return DataGenSourcePartition(streamState(streamFeedBootstrap), 1, 0)
     }

@@ -12,7 +12,7 @@ import io.airbyte.cdk.output.sockets.DATA_CHANNEL_PROPERTY_PREFIX
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.airbyte.integrations.source.datagen.flavor.Flavor
-import io.airbyte.integrations.source.datagen.flavor.all_types.TypesFlavor
+import io.airbyte.integrations.source.datagen.flavor.types.TypesFlavor
 import io.airbyte.integrations.source.datagen.flavor.increment.IncrementFlavor
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
