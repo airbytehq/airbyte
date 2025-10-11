@@ -41,6 +41,14 @@ class Config(AbstractFileBasedSpec):
         order=6,
     )
 
+    external_id: Optional[str] = Field(
+        title=f"AWS Role External ID",
+        default=None,
+        description="Specifies the External ID to be used when assuming the provided `role_arn`. "
+        f"This can be left null and fallback to AWS_ASSUME_ROLE_EXTERNAL_ID",
+        order=7,
+    )
+
     aws_secret_access_key: Optional[str] = Field(
         title="AWS Secret Access Key",
         default=None,
@@ -89,6 +97,14 @@ class Config(AbstractFileBasedSpec):
             if endpoint:
                 if endpoint.startswith("http://"):  # ignore-https-check
                     raise ValidationError("The endpoint must be a secure HTTPS endpoint.", model=Config)
+                
+        role_arn = values.get("role_arn")
+        external_id = values.get("external_id")
+
+        if external_id and not role_arn:
+            raise ValidationError(
+                "`role_arn` must be provided if setting `external_id`.", model=Config
+            )
 
         return values
 
