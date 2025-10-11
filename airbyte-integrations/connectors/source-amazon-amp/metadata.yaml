@@ -1,0 +1,58 @@
+data:
+  ab_internal:
+    ql: 200
+    sl: 100
+  allowedHosts:
+    hosts:
+      - "aps-workspaces.*.amazonaws.com"
+  connectorBuildOptions:
+    # Please update to the latest version of the connector base image.
+    # https://hub.docker.com/r/airbyte/python-connector-base
+    # Please use the full address with sha256 hash to guarantee build reproducibility.
+    baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
+    #baseImage: docker.io/airbyte/python-connector-base:4.0.0@sha256:d9894b6895923b379f3006fa251147806919c62b7d9021b5cd125bb67d7bbe22
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 8f6b5a34-2f41-4a47-9b2b-7f2c6b58d3a1
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-amazon-amp
+  documentationUrl: https://docs.airbyte.com/integrations/sources/amazon-amp
+  githubIssueLabel: source-amazon-amp
+  icon: amazon-amp.svg
+  license: MIT
+  name: Amazon AMP
+  releaseDate: 2025-09-23
+  releases:
+    breakingChanges:
+      0.1.0:
+        upgradeDeadline: "2025-10-20"
+        message: "Development
+          development"
+  remoteRegistries:
+    pypi:
+      enabled: true
+      packageName: airbyte-source-amazon-amp
+  registryOverrides:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  supportLevel: community
+  tags:
+    - language:python
+    - cdk:python
+  connectorTestSuitesOptions:
+    - suite: liveTests
+      testConnections:
+        - name: amazon-amp_config_dev_null
+          id: 8f6b5a34-2f41-4a47-9b2b-7f2c6b58d3a1
+    - suite: unitTests
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-AMAZON-AMP__CREDS
+          fileName: secrets/config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+metadataSpecVersion: "1.0"
