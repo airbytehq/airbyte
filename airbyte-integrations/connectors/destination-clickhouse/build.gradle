@@ -33,6 +33,7 @@ application {
 
 dependencies {
     implementation 'com.clickhouse:client-v2:0.9.0'
+    implementation project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-db')
 
     testImplementation("io.mockk:mockk:1.14.2")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
@@ -42,4 +43,5 @@ dependencies {
     // https://mvnrepository.com/artifact/org.testcontainers/clickhouse
     integrationTestImplementation 'org.testcontainers:clickhouse:1.21.1'
     integrationTestImplementation 'com.clickhouse:client-v2:0.9.0'
+    integrationTestImplementation testFixtures(project(':airbyte-cdk:bulk:core:bulk-cdk-core-load'))
 }
