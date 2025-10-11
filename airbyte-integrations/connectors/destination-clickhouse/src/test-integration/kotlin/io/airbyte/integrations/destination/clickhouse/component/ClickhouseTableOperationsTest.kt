@@ -16,12 +16,13 @@ class ClickhouseTableOperationsTest: CoreTableOperationsSuite {
         super.`connect to database`()
     }
 
-    override fun `create and drop namespaces`() {
-        super.`create and drop namespaces`()
-    }
-
+    @Test
     override fun `create and drop tables`() {
         super.`create and drop tables`()
+    }
+
+    override fun `create and drop namespaces`() {
+        super.`create and drop namespaces`()
     }
 
     override fun `count table rows`() {
