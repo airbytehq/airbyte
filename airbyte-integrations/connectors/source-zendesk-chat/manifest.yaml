@@ -116,6 +116,10 @@ definitions:
           error_handler:
             type: DefaultErrorHandler
             description: The default error handler
+            response_filters:
+              - http_codes: [404]
+                action: IGNORE
+                error_message: "Record not found (likely deleted). Skipping."
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
@@ -247,6 +251,10 @@ definitions:
           error_handler:
             type: DefaultErrorHandler
             description: The default error handler
+            response_filters:
+              - http_codes: [404]
+                action: IGNORE
+                error_message: "Record not found (likely deleted). Skipping."
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
