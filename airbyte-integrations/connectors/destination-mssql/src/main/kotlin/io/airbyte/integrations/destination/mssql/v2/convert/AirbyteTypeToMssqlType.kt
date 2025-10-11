@@ -21,7 +21,6 @@ import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
-import io.airbyte.integrations.destination.mssql.v2.LIMITS
 import java.sql.Types
 
 enum class MssqlType(val sqlType: Int, val sqlStringOverride: String? = null) {
@@ -29,13 +28,11 @@ enum class MssqlType(val sqlType: Int, val sqlStringOverride: String? = null) {
     BIT(Types.BOOLEAN),
     DATE(Types.DATE),
     BIGINT(Types.BIGINT),
-    /**
-     * if you change the numeric precision/scale, remember to also update [LIMITS.MAX_NUMERIC] /
-     * [LIMITS.MIN_NUMERIC]
-     */
     DECIMAL(Types.DECIMAL, sqlStringOverride = "DECIMAL(38, 8)"),
     VARCHAR(Types.VARCHAR, sqlStringOverride = "VARCHAR(MAX)"),
     VARCHAR_INDEX(Types.VARCHAR, sqlStringOverride = "VARCHAR(200)"),
+    NVARCHAR(Types.NVARCHAR, sqlStringOverride = "NVARCHAR(MAX)"),
+    NVARCHAR_INDEX(Types.NVARCHAR, sqlStringOverride = "NVARCHAR(200)"),
     DATETIMEOFFSET(Types.TIMESTAMP_WITH_TIMEZONE),
     TIME(Types.TIME),
     DATETIME(Types.TIMESTAMP);
@@ -55,7 +52,7 @@ class AirbyteTypeToMssqlType {
             is NumberType -> MssqlType.DECIMAL
             is ObjectTypeWithEmptySchema -> MssqlType.TEXT
             is ObjectTypeWithoutSchema -> MssqlType.TEXT
-            is StringType -> if (isIndexed) MssqlType.VARCHAR_INDEX else MssqlType.VARCHAR
+            is StringType -> if (isIndexed) MssqlType.NVARCHAR_INDEX else MssqlType.NVARCHAR
             is TimeTypeWithTimezone -> MssqlType.DATETIMEOFFSET
             is TimeTypeWithoutTimezone -> MssqlType.TIME
             is TimestampTypeWithTimezone -> MssqlType.DATETIMEOFFSET
