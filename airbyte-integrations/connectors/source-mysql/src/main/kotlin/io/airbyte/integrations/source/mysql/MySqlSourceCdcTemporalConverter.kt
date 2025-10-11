@@ -37,7 +37,12 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
             TimeHandler,
             TimestampHandler
         )
-
+    /**
+     * Handles zero-dates (e.g., '0000-00-00 00:00:00') which MySQL allows in NON-NULLABLE columns
+     * but are invalid dates that JDBC drivers return as NULL. We are now converting those NULL
+     * values to epoch (1970-01-01...) to match default value behavior and satisfy Debezium's
+     * non-nullable schema constraints.
+     */
     data object DatetimeMillisHandler : RelationalColumnCustomConverter.Handler {
 
         override fun matches(column: RelationalColumn): Boolean =
@@ -48,7 +53,14 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
 
         override val partialConverters: List<PartialConverter> =
             listOf(
-                NullFallThrough,
+                PartialConverter {
+                    if (it == null) {
+                        val epoch = LocalDateTime.ofInstant(Instant.EPOCH, ZoneOffset.UTC)
+                        Converted(epoch.format(LocalDateTimeCodec.formatter))
+                    } else {
+                        NoConversion
+                    }
+                },
                 PartialConverter {
                     if (it is LocalDateTime) {
                         Converted(it.format(LocalDateTimeCodec.formatter))
@@ -80,7 +92,14 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
 
         override val partialConverters: List<PartialConverter> =
             listOf(
-                NullFallThrough,
+                PartialConverter {
+                    if (it == null) {
+                        val epoch = LocalDateTime.ofInstant(Instant.EPOCH, ZoneOffset.UTC)
+                        Converted(epoch.format(LocalDateTimeCodec.formatter))
+                    } else {
+                        NoConversion
+                    }
+                },
                 PartialConverter {
                     if (it is LocalDateTime) {
                         Converted(it.format(LocalDateTimeCodec.formatter))
@@ -112,7 +131,14 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
 
         override val partialConverters: List<PartialConverter> =
             listOf(
-                NullFallThrough,
+                PartialConverter {
+                    if (it == null) {
+                        val epoch = LocalDate.ofEpochDay(0)
+                        Converted(epoch.format(LocalDateCodec.formatter))
+                    } else {
+                        NoConversion
+                    }
+                },
                 PartialConverter {
                     if (it is LocalDate) {
                         Converted(it.format(LocalDateCodec.formatter))
@@ -131,7 +157,11 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
                 }
             )
     }
-
+    /**
+     * TIME supports '00:00:00' and it is considered valid, see
+     * https://dev.mysql.com/doc/refman/8.0/en/time.html. If we get a null value from the server, it
+     * means the TIME is invalid/corrupt and in that case we should return null.
+     */
     data object TimeHandler : RelationalColumnCustomConverter.Handler {
 
         override fun matches(column: RelationalColumn): Boolean =
@@ -164,6 +194,7 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
     }
 
     data object TimestampHandler : RelationalColumnCustomConverter.Handler {
+
         override fun matches(column: RelationalColumn): Boolean =
             column.typeName().equals("TIMESTAMP", ignoreCase = true)
 
@@ -171,7 +202,14 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
 
         override val partialConverters: List<PartialConverter> =
             listOf(
-                NullFallThrough,
+                PartialConverter {
+                    if (it == null) {
+                        val epoch = OffsetDateTime.ofInstant(Instant.EPOCH, ZoneOffset.UTC)
+                        Converted(epoch.format(OffsetDateTimeCodec.formatter))
+                    } else {
+                        NoConversion
+                    }
+                },
                 PartialConverter {
                     if (it is ZonedDateTime) {
                         val offsetDateTime: OffsetDateTime = it.toOffsetDateTime()
