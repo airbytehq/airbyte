@@ -210,6 +210,7 @@ tutorials:
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                                           |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.9 | 2025-10-07 | [67546](https://github.com/airbytehq/airbyte/pull/67546) | Upgrade to Bulk CDK 0.1.47. |
 | 3.0.8 | 2025-10-05 | [67078](https://github.com/airbytehq/airbyte/pull/67078) | Remove memory limit for sync jobs to improve performance and resource utilization. |
 | 3.0.7 | 2025-09-02 | [65905](https://github.com/airbytehq/airbyte/pull/65905) | Promoting release candidate 3.0.7-rc.1 to a main version. |
 | 3.0.7-rc.1  | 2025-08-27 | [65114](https://github.com/airbytehq/airbyte/pull/65114)   | Implement SOCKET+PROTO mode support.                                                                                                                                              |
