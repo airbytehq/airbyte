@@ -13,6 +13,7 @@ Create an application and note down the Account Id and the API key, you will nee
 |-------|------|-------------|---------------|
 | `accountid` | `string` | AccountID. The ID associated with your account. |  |
 | `api_key` | `string` | API Key. The API key associated with your account. |  |
+| `start_date` | `string` | Start Date. Start date for incremental sync (YYYY-MM-DD format). |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -29,7 +30,7 @@ Create an application and note down the Account Id and the API key, you will nee
 | purchases | ID | DefaultPaginator | ✅ |  ❌  |
 | suppliers | ID | DefaultPaginator | ✅ |  ❌  |
 | product_categories | ID | DefaultPaginator | ✅ |  ❌  |
-| sale_lists | ID | DefaultPaginator | ✅ |  ❌  |
+| sale_lists | ID | DefaultPaginator | ✅ |  ✅  |
 | product_families | ID | DefaultPaginator | ✅ |  ❌  |
 
 ## Changelog
@@ -39,6 +40,7 @@ Create an application and note down the Account Id and the API key, you will nee
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.3.20 | 2025-10-07 | [67027](https://github.com/airbytehq/airbyte/pull/67027) | Adding incremental_sync to sale_lists stream |
 | 0.3.19 | 2025-10-07 | [67184](https://github.com/airbytehq/airbyte/pull/67184) | Update dependencies |
 | 0.3.18 | 2025-09-30 | [66251](https://github.com/airbytehq/airbyte/pull/66251) | Update dependencies |
 | 0.3.17 | 2025-09-09 | [65767](https://github.com/airbytehq/airbyte/pull/65767) | Update dependencies |

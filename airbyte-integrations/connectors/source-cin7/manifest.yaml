@@ -570,6 +570,28 @@ definitions:
             inject_on_first_request: true
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: Updated
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}T00:00:00Z"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: UpdatedSince
+        end_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: UpdatedUntil
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -892,6 +914,7 @@ spec:
     required:
       - accountid
       - api_key
+      - start_date
     properties:
       accountid:
         type: string
@@ -904,6 +927,14 @@ spec:
         order: 1
         title: API Key
         airbyte_secret: true
+      start_date:
+        type: string
+        description: Start date for incremental sync (YYYY-MM-DD format)
+        order: 2
+        title: Start Date
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        examples:
+          - "2023-01-01"
     additionalProperties: true
 
 metadata:
