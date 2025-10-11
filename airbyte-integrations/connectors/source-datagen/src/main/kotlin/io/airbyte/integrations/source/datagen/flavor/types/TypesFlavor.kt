@@ -55,7 +55,10 @@ data object TypesFlavor : Flavor {
                     Field(FieldNames.TIME_WITH_TIME_ZONE, TimeWithTimeZoneFieldType),
                     Field(FieldNames.TIME_WITHOUT_TIME_ZONE, TimeWithoutTimeZoneFieldType),
                     Field(FieldNames.TIMESTAMP_WITH_TIME_ZONE, TimestampWithTimeZoneFieldType),
-                    Field(FieldNames.TIMESTAMP_WITHOUT_TIME_ZONE, TimestampWithoutTimeZoneFieldType),
+                    Field(
+                        FieldNames.TIMESTAMP_WITHOUT_TIME_ZONE,
+                        TimestampWithoutTimeZoneFieldType
+                    ),
                     Field(FieldNames.JSON, JsonFieldType),
                     Field(FieldNames.ARRAY, ArrayFieldType(IntegerFieldType)),
                 )

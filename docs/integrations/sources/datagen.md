@@ -3,7 +3,8 @@
 Airbyte's certified DataGen connector offers the following features:
 
 This source generates fake data for testing destinations in speed mode.
-Currently supported DataGen type(s): 
+Currently supported DataGen types:
+
 - Incremental: Has one column 'id' that contains monotonically increasing integers.
 - All Types: Produces one column per Airbyte data type.
 
