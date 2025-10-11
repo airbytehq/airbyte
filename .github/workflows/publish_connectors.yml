@@ -61,7 +61,7 @@ jobs:
         if: github.event_name == 'push'
         shell: bash
         # When merging to master, we run on connectors that have changed since the previous commit.
-        run: echo connectors-to-publish=$(./poe-tasks/get-modified-connectors.sh --prev-commit --json) | tee -a $GITHUB_OUTPUT
+        run: echo connectors-to-publish=$(./poe-tasks/get_connector_matrix.py --prev-commit --json-matrix) | tee -a $GITHUB_OUTPUT
       - name: Resolve release type
         id: resolve-release-type
         shell: bash

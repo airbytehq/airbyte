@@ -90,17 +90,17 @@ jobs:
         id: generate-matrix
         run: |
           # Get the list of modified connectors
-          echo "connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json)" | tee -a $GITHUB_OUTPUT
+          echo "connectors_matrix=$(./poe-tasks/get_connector_matrix.py --json-matrix)" | tee -a $GITHUB_OUTPUT
 
           # If local-cdk-changed is true, get Java connectors with useLocalCdk = true
           # Otherwise, get modified Java connectors
           if [[ "${{ steps.cdk-changes.outputs.java-cdk == 'true' }}" == "true" ]]; then
-            echo "jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --local-cdk)" | tee -a $GITHUB_OUTPUT
+            echo "jvm_connectors_matrix=$(./poe-tasks/get_connector_matrix.py --json-matrix --local-cdk)" | tee -a $GITHUB_OUTPUT
           else
-            echo "jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --java)" | tee -a $GITHUB_OUTPUT
+            echo "jvm_connectors_matrix=$(./poe-tasks/get_connector_matrix.py --json-matrix --java)" | tee -a $GITHUB_OUTPUT
           fi
 
-          echo "non_jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --no-java)" | tee -a $GITHUB_OUTPUT
+          echo "non_jvm_connectors_matrix=$(./poe-tasks/get_connector_matrix.py --json-matrix --no-java)" | tee -a $GITHUB_OUTPUT
 
       - name: Set JVM Runner Type
         id: set-jvm-runner-type
