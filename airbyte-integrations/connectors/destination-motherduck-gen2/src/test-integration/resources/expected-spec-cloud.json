@@ -1,0 +1,54 @@
+{
+  "documentationUrl" : "https://docs.airbyte.com/integrations/destinations/motherduck",
+  "connectionSpecification" : {
+    "$schema" : "http://json-schema.org/draft-07/schema#",
+    "title" : "Mother Duck Specification",
+    "type" : "object",
+    "additionalProperties" : true,
+    "properties" : {
+      "motherduck_api_key" : {
+        "type" : "string",
+        "description" : "Enter your MotherDuck access token. You can find your token at https://app.motherduck.com/ under Settings > Access Tokens.",
+        "title" : "MotherDuck Access Token",
+        "group" : "connection",
+        "order" : 0,
+        "airbyte_secret" : true
+      },
+      "destination_path" : {
+        "type" : "string",
+        "description" : "The path to your MotherDuck database. Use 'md:' to connect to the default database, 'md:<database_name>' for a specific MotherDuck database, or a file path for a local DuckDB file.",
+        "title" : "Database Path",
+        "group" : "connection",
+        "order" : 1,
+        "examples" : [ "md:", "md:my_database", "/local/path/to/file.duckdb" ]
+      },
+      "schema" : {
+        "type" : "string",
+        "description" : "Enter the name of the default schema. Defaults to 'main' if not specified.",
+        "title" : "Default Schema",
+        "group" : "connection",
+        "order" : 2,
+        "examples" : [ "main", "airbyte_schema" ]
+      },
+      "raw_data_schema" : {
+        "type" : "string",
+        "description" : "Airbyte will use this schema for various internal tables. Defaults to \"airbyte_internal\".",
+        "title" : "Airbyte Internal Table Schema Name",
+        "group" : "advanced",
+        "order" : 3
+      }
+    },
+    "required" : [ "motherduck_api_key", "destination_path", "schema" ],
+    "groups" : [ {
+      "id" : "connection",
+      "title" : "Connection"
+    }, {
+      "id" : "advanced",
+      "title" : "Advanced"
+    } ]
+  },
+  "supportsIncremental" : true,
+  "supportsNormalization" : false,
+  "supportsDBT" : false,
+  "supported_destination_sync_modes" : [ "overwrite", "append", "append_dedup" ]
+}
