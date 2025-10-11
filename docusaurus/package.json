@@ -2,6 +2,9 @@
   "name": "docu",
   "version": "0.0.0",
   "private": true,
+  "volta": {
+    "node": "18.15.0"
+  },
   "scripts": {
     "prepare-sidebar": "node src/scripts/prepare-sidebar-data.js",
     "prebuild": "pnpm run prepare-sidebar",
