@@ -1,3 +1,13 @@
+## Version 0.1.50
+
+Better handle interleaved streams in aggregate publishing.
+
+## Version 0.1.49
+
+**Extract CDK**
+
+* **Changed:** Support nano sec to preserve precision in TimeAccessor.
+
 ## Version 0.1.48
 
 **Extract CDK**
