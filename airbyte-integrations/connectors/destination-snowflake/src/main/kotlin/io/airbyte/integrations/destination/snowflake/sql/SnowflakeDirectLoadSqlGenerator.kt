@@ -15,8 +15,6 @@ import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.CdcDeletionMode
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
-import io.airbyte.integrations.destination.snowflake.write.load.CSV_FIELD_SEPARATOR
-import io.airbyte.integrations.destination.snowflake.write.load.CSV_LINE_DELIMITER
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 
@@ -325,8 +323,6 @@ class SnowflakeDirectLoadSqlGenerator(
         val stageName = snowflakeSqlNameUtils.fullyQualifiedStageName(tableName, true)
         return """
             PUT 'file://$tempFilePath' '@$stageName'
-            AUTO_COMPRESS = FALSE
-            SOURCE_COMPRESSION = GZIP
             OVERWRITE = TRUE
         """
             .trimIndent()
@@ -340,18 +336,13 @@ class SnowflakeDirectLoadSqlGenerator(
             COPY INTO ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}
             FROM '@$stageName'
             FILE_FORMAT = (
-                TYPE = 'CSV'
-                COMPRESSION = GZIP
-                FIELD_DELIMITER = '$CSV_FIELD_SEPARATOR'
-                RECORD_DELIMITER = '$CSV_LINE_DELIMITER'
-                FIELD_OPTIONALLY_ENCLOSED_BY = '"'
-                TRIM_SPACE = TRUE
-                ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE
+                TYPE = 'PARQUET'
+                SNAPPY_COMPRESSION = TRUE
+                USE_VECTORIZED_SCANNER = TRUE
                 REPLACE_INVALID_CHARACTERS = TRUE
-                ESCAPE = NONE
-                ESCAPE_UNENCLOSED_FIELD = NONE
             )
             ON_ERROR = 'ABORT_STATEMENT'
+            MATCH_BY_COLUMN_NAME = CASE_INSENSITIVE
             PURGE = TRUE
             files = ('$filename')
         """

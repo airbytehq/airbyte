@@ -13,7 +13,7 @@ import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
-import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeInsertBuffer
+import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeParquetInsertBuffer
 import io.micronaut.cache.annotation.CacheConfig
 import io.micronaut.cache.annotation.Cacheable
 import jakarta.inject.Singleton
@@ -30,7 +30,7 @@ open class SnowflakeAggregateFactory(
     override fun create(key: StoreKey): Aggregate {
         val tableName = streamStateStore.get(key)!!.tableName
         val buffer =
-            SnowflakeInsertBuffer(
+            SnowflakeParquetInsertBuffer(
                 tableName = tableName,
                 columns = getTableColumns(tableName),
                 snowflakeClient = snowflakeClient,

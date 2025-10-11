@@ -6,10 +6,10 @@ package io.airbyte.integrations.destination.snowflake.dataflow
 
 import io.airbyte.cdk.load.dataflow.aggregate.Aggregate
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
-import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeInsertBuffer
+import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeParquetInsertBuffer
 
 class SnowflakeAggregate(
-    private val buffer: SnowflakeInsertBuffer,
+    private val buffer: SnowflakeParquetInsertBuffer,
 ) : Aggregate {
     override fun accept(record: RecordDTO) {
         buffer.accumulate(record.fields)
