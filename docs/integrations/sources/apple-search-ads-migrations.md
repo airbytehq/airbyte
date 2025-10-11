@@ -2,7 +2,7 @@
 
 ## Upgrading to 1.0.0
 
-Version 1.0.0 of the Apple Ads connector has shifted to use a global cursor state for both [adgroups_report_daily](https://developer.apple.com/documentation/apple_search_ads/get__ad_group-level_reports) and [keywords_report_daily](https://developer.apple.com/documentation/apple_search_ads/get_keyword-level_reports)  
+Version 1.0.0 of the Apple Ads connector has shifted to use a global cursor state for both [adgroups_report_daily](https://developer.apple.com/documentation/apple_ads/get-ad-group-level-reports) and [keywords_report_daily](https://developer.apple.com/documentation/apple_ads/get-keyword-level-reports)  
 When upgrading to this version, the connector state must be manually changed to allow continued operation. Be sure
 to replace `YYYY-MM-DD` with the date you last synced these streams
 
