@@ -31,7 +31,7 @@ jobs:
       - name: List certified connectors
         id: list-connectors
         run: |
-          json_array=$(tools/bin/bulk-cdk-auto-upgrade/list-connectors-to-upgrade.sh)
+          json_array=$(tools/bin/bulk-cdk/get-certified-connectors.sh)
           echo "connectors=$json_array" >> $GITHUB_OUTPUT
           echo "Found bulk CDK connectors to upgrade: $json_array"
 
@@ -107,7 +107,7 @@ jobs:
         if: steps.check-changes.outputs.has_changes == 'true'
         run: |
           set -euo pipefail
-          new_version=$(tools/bin/bulk-cdk-auto-upgrade/bump-connector-metadata.sh "${{ matrix.connector }}")
+          new_version=$(tools/bin/bulk-cdk/auto-upgrade/bump-connector-metadata.sh "${{ matrix.connector }}")
           echo "Updated dockerImageTag to $new_version"
           echo "new_version=$new_version" >> $GITHUB_OUTPUT
 
@@ -141,7 +141,7 @@ jobs:
         if: steps.check-changes.outputs.has_changes == 'true' && inputs.repositories != 'airbyte-enterprise'
         run: |
           set -euo pipefail
-          tools/bin/bulk-cdk-auto-upgrade/populate-connector-changelog.sh \
+          tools/bin/bulk-cdk/auto-upgrade/populate-connector-changelog.sh \
             "${{ matrix.connector }}" \
             "${{ steps.bump-version.outputs.new_version }}" \
             "${{ steps.create-pr.outputs.pull-request-number }}" \

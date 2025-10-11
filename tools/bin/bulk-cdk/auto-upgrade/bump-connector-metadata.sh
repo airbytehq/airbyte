@@ -4,7 +4,7 @@ set -euo pipefail
 
 # Performs a patch version bump in the metadata.yaml of the given connector.
 # Prints the new version number.
-# Usage: tools/bin/bulk-cdk-auto-upgrade/bump-connector-metadata.sh destination-dev-null
+# Usage: tools/bin/bulk-cdk/auto-upgrade/bump-connector-metadata.sh destination-dev-null
 
 connector_name=$1
 
