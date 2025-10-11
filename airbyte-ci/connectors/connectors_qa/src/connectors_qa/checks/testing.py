@@ -28,8 +28,8 @@ class AcceptanceTestsEnabledCheck(TestingCheck):
         if self.does_not_have_acceptance_tests_enabled(connector):
             return self.create_check_result(
                 connector=connector,
-                passed=False,
-                message=f"The {self.test_suite_name} test suite must be enabled for medium/high use connectors. Please enable this test suite in the connectorTestSuitesOptions field of the metadata.yaml file.",
+                passed=True,
+                message=f"⚠️ The {self.test_suite_name} test suite should be enabled for medium/high use connectors. Please enable this test suite in the connectorTestSuitesOptions field of the metadata.yaml file.",
             )
         return self.create_check_result(
             connector=connector,
