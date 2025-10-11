@@ -8,6 +8,25 @@ on:
       - reopened
       - ready_for_review
 
+  workflow_dispatch:
+    inputs:
+      repo:
+        type: string
+        required: false
+        description: "The repository name"
+      gitref:
+        type: string
+        required: false
+        description: "The git reference (branch or tag)"
+      comment-id:
+        type: string
+        required: false
+        description: "The ID of the comment triggering the workflow. Unused as of now."
+      pr:
+        type: string
+        required: false
+        description: "The pull request number, if applicable. Unused as of now."
+
   # Available as a reusable workflow
   # (https://docs.github.com/en/actions/sharing-automations/reusing-workflows)
   workflow_call:
