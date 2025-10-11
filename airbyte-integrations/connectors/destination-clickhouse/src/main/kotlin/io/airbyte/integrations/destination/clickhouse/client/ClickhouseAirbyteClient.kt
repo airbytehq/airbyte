@@ -13,6 +13,7 @@ import com.clickhouse.data.ClickHouseColumn
 import com.clickhouse.data.ClickHouseDataType
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.load.CoreTableOperationsClient
 import io.airbyte.cdk.load.client.AirbyteClient
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
@@ -46,7 +47,7 @@ class ClickhouseAirbyteClient(
     private val nameGenerator: ClickhouseFinalTableNameGenerator,
     private val tempTableNameGenerator: TempTableNameGenerator,
     private val clickhouseConfiguration: ClickhouseConfiguration,
-) : AirbyteClient, DirectLoadTableSqlOperations, DirectLoadTableNativeOperations {
+) : CoreTableOperationsClient {
 
     override suspend fun createNamespace(namespace: String) {
         val statement = sqlGenerator.createNamespace(namespace)
@@ -348,5 +349,9 @@ class ClickhouseAirbyteClient(
         } else {
             this.name
         }
+    }
+
+    override suspend fun ping() {
+        execute("SELECT 1")
     }
 }
