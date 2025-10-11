@@ -39,5 +39,8 @@ data:
   connectorTestSuitesOptions:
     - suite: unitTests
     - suite: integrationTests
+      testSecrets:
+        - name: test_instance
+          fileName: test-instance.json
   supportsRefreshes: true
 metadataSpecVersion: "1.0"

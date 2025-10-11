@@ -15,8 +15,8 @@ import java.util.UUID
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.assertDoesNotThrow
 
-abstract class CoreTableOperationsSuite {
-    abstract val client: CoreTableOperationsClient
+interface CoreTableOperationsSuite {
+    val client: CoreTableOperationsClient
 
     fun `connect to database`() = runTest {
         assertDoesNotThrow {  client.ping() }
