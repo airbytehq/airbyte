@@ -6,15 +6,15 @@ products: embedded
 
 With your app up and running, you will be prompted to enter your web password before continuing. After authentication, you will be presented with a screen to allow customers to onboard by adding their email address.
 
-![Embedded Sample Web app home screen.](./assets/embedded-webapp-home.png)
+![Embedded Sample Web app home screen.](../assets/embedded-webapp-home.png)
 
 Once a user record is created, the customer can tap Connect Data to configure which source they wish to connect.
 
-![Embedded Sample Web app connect screen.](./assets/embedded-webapp-connect.png)
+![Embedded Sample Web app connect screen.](../assets/embedded-webapp-connect.png)
 
 This will render the Airbyte Embedded widget. This widget displays a list of available connectors.
 
-![Embedded Sample Web app widget.](./assets/embedded-webapp-widget.png)
+![Embedded Sample Web app widget.](../assets/embedded-webapp-widget.png)
 
 Customers can select a source and input their configuration. Upon save, a customer workspace will be created via Airbyte Embedded with the customer’s source configuration and a data pipeline created to sync data to your AI destination store. In this instance, S3.
 

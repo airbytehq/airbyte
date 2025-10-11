@@ -17,10 +17,18 @@ export default {
           type: "category",
           label: "Widget",
           items: [
-            "embedded/widget/prerequisites-setup",
-            "embedded/widget/develop-your-app",
-            "embedded/widget/use-embedded",
+            "embedded/widget/quickstart",
+            {
+              type: "category",
+              label: "Tutorials",
+              items: [
+                "embedded/widget/tutorials/prerequisites-setup",
+                "embedded/widget/tutorials/develop-your-app",
+                "embedded/widget/tutorials/use-embedded",
+              ]
+            },
             "embedded/widget/managing-embedded",
+            "embedded/widget/template-tags",
           ]
         },
         {
