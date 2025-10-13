@@ -77,6 +77,11 @@
       "statusCode": 301
     },
     {
+      "source": "/connector-support-levels",
+      "destination": "/integrations/connector-support-levels",
+      "statusCode": 301
+    },
+    {
       "source": "/project-overview/product-support-levels",
       "destination": "/integrations/connector-support-levels",
       "statusCode": 301

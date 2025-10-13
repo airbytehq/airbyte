@@ -252,8 +252,11 @@ function getSourceConnectors(registry) {
     ["readme"],
   );
   const enterpriseSourcesWithSupportLevel = enterpriseSources
-    .filter((item) => item.id.includes("source"))
-    .map((item) => {
+  .filter((item) => {
+    const itemId = item.id || item.link?.id;
+    return itemId && itemId.includes("source");
+  })
+  .map((item) => {
       return {
         ...item,
         customProps: { ...item.customProps, supportLevel: "enterprise" },
@@ -343,8 +346,11 @@ function getDestinationConnectors(registry) {
     ["readme"],
   );
   const enterpriseDestinationsWithSupportLevel = enterpriseDestinations
-    .filter((item) => item.id.includes("destination"))
-    .map((item) => {
+  .filter((item) => {
+    const itemId = item.id || item.link?.id;
+    return itemId && itemId.includes("destination");
+  })
+  .map((item) => {
       return {
         ...item,
         customProps: {
