@@ -6,7 +6,7 @@ products: embedded
 
 # Connection Templates
 
-A *connection template* pre-defines the **destination side** of every pipeline your customers spin up through the Embedded widget. It answers two questions up-front:
+A *connection template* pre-defines the **destination side** of every pipeline your customers spin up through the API or Embedded Widget. It answers two questions up-front:
 
 1. Where should the data land?
 2. How often should it sync?
@@ -71,7 +71,7 @@ You can find [the reference docs for creating a connection template here](https:
 Controls whether the connection should automatically start syncing immediately after creation.
 
 - `true` (default) - Connection starts syncing as soon as it's created
-- `false` - Connection is created but remains paused; user must manually start it
+- `false` - Connection is created but won't sync until its scheduled time or a manual trigger
 
 **Example:**
 
@@ -340,48 +340,6 @@ Create templates for different compliance requirements:
 }
 
 ```
-
-## Best practices
-
-### Cron expressions
-
-- **Use consistent schedules** across templates for easier management
-- **Consider timezone differences** when setting sync schedules
-- **Test cron expressions** using the validation endpoint before deploying
-- **Document your schedules** for your team
-
-Common patterns:
-
-```bash
-Daily at 2 AM UTC:        0 0 2 * * ?
-Every 6 hours:            0 0 */6 * * ?
-Twice daily (6 AM, 6 PM): 0 0 6,18 * * ?
-Weekly on Monday at 3 AM: 0 0 3 ? * MON
-
-```
-
-### Schema change management
-
-- **Use `propagate_columns`** for most production use cases
-- **Use `ignore`** when schema stability is critical
-- **Use `disable`** for sensitive data pipelines requiring manual review
-- **Test schema changes** in development before using `propagate_fully`
-
-### Template organization
-
-- **Use descriptive names** that indicate destination type and purpose
-- **Tag templates consistently** to enable filtering
-- **Document template purposes** in your internal documentation
-- **Review templates quarterly** to ensure they match current requirements
-
-### Resource naming
-
-When setting `destination_name`:
-
-- Use clear, descriptive names
-- Include environment indicators (dev/prod)
-- Consider including the customer or workspace identifier
-- Keep names consistent across templates
 
 ## Related documentation
 
