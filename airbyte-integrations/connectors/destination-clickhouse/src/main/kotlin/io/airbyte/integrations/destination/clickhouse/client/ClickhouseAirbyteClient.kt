@@ -351,4 +351,26 @@ class ClickhouseAirbyteClient(
     override suspend fun ping() {
         execute("SELECT 1")
     }
+
+    override suspend fun namespaceExists(namespace: String): Boolean {
+        val resp = query("EXISTS DATABASE `$namespace`")
+        val reader: ClickHouseBinaryFormatReader = client.newBinaryFormatReader(resp)
+        reader.next()
+        val exists = reader.getInteger("result")
+
+        return exists == 1
+    }
+
+    override suspend fun dropNamespace(namespace: String) {
+        execute("DROP DATABASE IF EXISTS `$namespace`")
+    }
+
+    override suspend fun tableExists(table: TableName): Boolean {
+        val resp = query("EXISTS TABLE `${table.namespace}`.`${table.name}`")
+        val reader: ClickHouseBinaryFormatReader = client.newBinaryFormatReader(resp)
+        reader.next()
+        val exists = reader.getInteger("result")
+
+        return exists == 1
+    }
 }

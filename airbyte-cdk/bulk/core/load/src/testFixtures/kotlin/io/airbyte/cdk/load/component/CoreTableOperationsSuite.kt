@@ -39,7 +39,7 @@ interface CoreTableOperationsSuite {
     fun `create and drop tables`() = runTest {
         val uniquePostFix = UUID.randomUUID()
         val testTable = TableName(
-            "table-test-namespace-$uniquePostFix",
+            "default",
             "table-test-table-$uniquePostFix",
         )
 
@@ -62,11 +62,11 @@ interface CoreTableOperationsSuite {
             replace = false,
         )
 
-        assert(client.tableExists(testTable))
+        assert(client.tableExists(testTable)) { "test table: ${testTable.namespace}.${testTable.name} was not created as expected." }
 
         client.dropTable(testTable)
 
-        assert(!client.tableExists(testTable))
+        assert(!client.tableExists(testTable)) { "test table: ${testTable.namespace}.${testTable.name} was not dropped as expected." }
     }
 
     fun `count table rows`() {}
