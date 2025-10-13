@@ -102,9 +102,7 @@ class Config(AbstractFileBasedSpec):
         external_id = values.get("external_id")
 
         if external_id and not role_arn:
-            raise ValidationError(
-                "`role_arn` must be provided if setting `external_id`.", model=Config
-            )
+            raise ValidationError("`role_arn` must be provided if setting `external_id`.", model=Config)
 
         return values
 
