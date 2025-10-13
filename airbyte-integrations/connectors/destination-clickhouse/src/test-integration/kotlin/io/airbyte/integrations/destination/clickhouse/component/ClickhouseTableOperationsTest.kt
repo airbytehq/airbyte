@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.clickhouse.component
 
 import io.airbyte.cdk.load.component.CoreTableOperationsSuite
@@ -7,9 +11,8 @@ import jakarta.inject.Inject
 import org.junit.jupiter.api.Test
 
 @MicronautTest
-class ClickhouseTableOperationsTest: CoreTableOperationsSuite {
-    @Inject
-    override lateinit var client: ClickhouseAirbyteClient
+class ClickhouseTableOperationsTest : CoreTableOperationsSuite {
+    @Inject override lateinit var client: ClickhouseAirbyteClient
 
     @Test
     override fun `connect to database`() {

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load
 
 import io.airbyte.cdk.load.client.AirbyteClient
@@ -6,9 +10,7 @@ import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNat
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableSqlOperations
 
 interface CoreTableOperationsClient :
-    AirbyteClient,
-    DirectLoadTableSqlOperations,
-    DirectLoadTableNativeOperations {
+    AirbyteClient, DirectLoadTableSqlOperations, DirectLoadTableNativeOperations {
 
     suspend fun ping() = Unit
 
@@ -17,5 +19,4 @@ interface CoreTableOperationsClient :
     suspend fun dropNamespace(namespace: String) = Unit
 
     suspend fun tableExists(table: TableName) = false
-
 }
