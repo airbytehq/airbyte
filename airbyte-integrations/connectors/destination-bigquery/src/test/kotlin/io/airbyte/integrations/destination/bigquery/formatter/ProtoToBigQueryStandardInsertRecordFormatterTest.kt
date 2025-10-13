@@ -327,43 +327,43 @@ class ProtoToBigQueryStandardInsertRecordFormatterTest {
         val nullProtoValues =
             mutableListOf(
                 AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
-                    .setIsNull(true)
+                    .setNull(com.google.protobuf.NullValue.NULL_VALUE)
                     .build(), // bool_col
                 AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
-                    .setIsNull(true)
+                    .setNull(com.google.protobuf.NullValue.NULL_VALUE)
                     .build(), // int_col
                 AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
-                    .setIsNull(true)
+                    .setNull(com.google.protobuf.NullValue.NULL_VALUE)
                     .build(), // num_col
                 AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
-                    .setIsNull(true)
+                    .setNull(com.google.protobuf.NullValue.NULL_VALUE)
                     .build(), // string_col
                 AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
-                    .setIsNull(true)
+                    .setNull(com.google.protobuf.NullValue.NULL_VALUE)
                     .build(), // date_col
                 AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
-                    .setIsNull(true)
+                    .setNull(com.google.protobuf.NullValue.NULL_VALUE)
                     .build(), // time_tz_col
                 AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
-                    .setIsNull(true)
+                    .setNull(com.google.protobuf.NullValue.NULL_VALUE)
                     .build(), // time_no_tz_col
                 AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
-                    .setIsNull(true)
+                    .setNull(com.google.protobuf.NullValue.NULL_VALUE)
                     .build(), // ts_tz_col
                 AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
-                    .setIsNull(true)
+                    .setNull(com.google.protobuf.NullValue.NULL_VALUE)
                     .build(), // ts_no_tz_col
                 AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
-                    .setIsNull(true)
+                    .setNull(com.google.protobuf.NullValue.NULL_VALUE)
                     .build(), // array_col
                 AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
-                    .setIsNull(true)
+                    .setNull(com.google.protobuf.NullValue.NULL_VALUE)
                     .build(), // obj_col
                 AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
-                    .setIsNull(true)
+                    .setNull(com.google.protobuf.NullValue.NULL_VALUE)
                     .build(), // union_col
                 AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
-                    .setIsNull(true)
+                    .setNull(com.google.protobuf.NullValue.NULL_VALUE)
                     .build(), // unknown_col
             )
 
@@ -432,7 +432,9 @@ class ProtoToBigQueryStandardInsertRecordFormatterTest {
                 AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
                     .setJson("""{"u":1}""".toByteArray().toByteString())
                     .build(),
-                AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder().setIsNull(true).build(),
+                AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
+                    .setNull(com.google.protobuf.NullValue.NULL_VALUE)
+                    .build(),
             )
 
         val oversizedRecord = buildModifiedRecord(oversizedProtoValues)
@@ -500,7 +502,9 @@ class ProtoToBigQueryStandardInsertRecordFormatterTest {
                 AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
                     .setJson("""{"u":1}""".toByteArray().toByteString())
                     .build(),
-                AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder().setIsNull(true).build(),
+                AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
+                    .setNull(com.google.protobuf.NullValue.NULL_VALUE)
+                    .build(),
             )
 
         val invalidRecord = buildModifiedRecord(invalidTimestampProtoValues)
@@ -600,7 +604,9 @@ class ProtoToBigQueryStandardInsertRecordFormatterTest {
                 AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
                     .setJson("""{"u":1}""".toByteArray().toByteString())
                     .build(),
-                AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder().setIsNull(true).build(),
+                AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
+                    .setNull(com.google.protobuf.NullValue.NULL_VALUE)
+                    .build(),
             )
 
         val emptyComplexRecord = buildModifiedRecord(emptyComplexTypesProtoValues)
@@ -655,7 +661,9 @@ class ProtoToBigQueryStandardInsertRecordFormatterTest {
                 AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
                     .setJson("""{"u":1}""".toByteArray().toByteString())
                     .build(),
-                AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder().setIsNull(true).build(),
+                AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
+                    .setNull(com.google.protobuf.NullValue.NULL_VALUE)
+                    .build(),
             )
 
         val invalidDateRecord = buildModifiedRecord(invalidDateProtoValues)
@@ -787,7 +795,9 @@ class ProtoToBigQueryStandardInsertRecordFormatterTest {
                 AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
                     .setJson("""{"u":1}""".toByteArray().toByteString())
                     .build(),
-                AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder().setIsNull(true).build(),
+                AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
+                    .setNull(com.google.protobuf.NullValue.NULL_VALUE)
+                    .build(),
             )
 
         val oversizedRecord = buildModifiedRecord(oversizedProtoValues)
@@ -869,7 +879,9 @@ class ProtoToBigQueryStandardInsertRecordFormatterTest {
                 AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
                     .setJson("""{"u":1}""".toByteArray().toByteString())
                     .build(),
-                AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder().setIsNull(true).build(),
+                AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
+                    .setNull(com.google.protobuf.NullValue.NULL_VALUE)
+                    .build(),
             )
 
         val invalidRecord = buildModifiedRecord(invalidTimestampProtoValues)
