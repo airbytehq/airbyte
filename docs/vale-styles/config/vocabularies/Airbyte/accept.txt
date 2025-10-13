@@ -87,3 +87,11 @@ Slack
 [Nn]amespaces
 [Ii]nitialisms
 \bCPU(?:s)?\b
+
+# Never lint Docusaurus admonitions markup
+:::
+:::note
+:::tip
+:::info
+:::warning
+:::danger
