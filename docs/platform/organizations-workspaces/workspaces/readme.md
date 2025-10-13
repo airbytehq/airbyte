@@ -24,6 +24,6 @@ You can use workspaces for the following purposes.
 
 - Set up notifications.
 
-If you use {{product_name_sm_oss}}, you only have one workspace.
+If you use {{product_name_sm_oss}}, you only have one workspace. If you use Cloud {{product_name_cloud_standard}}, each organization is limited to one workspace. You can upgrade to {{product_name_cloud_pro}} or {{product_name_cloud_enterprise}} to access multiple workspaces per organization.
 
 <DocCardList />
