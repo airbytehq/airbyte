@@ -92,6 +92,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: customers
           http_method: GET
+          request_parameters:
+            order_by: updated_datetime:desc
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -140,10 +142,7 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -266,10 +265,6 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_datetime
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"
@@ -280,6 +275,7 @@ definitions:
           - "%Y-%m-%d %H:%M:%S.%f+00:00"
           - "%Y-%m-%d %H:%M:%S+00:00"
           - "%Y-%m-%dT%H:%M:%S+00:00"
+        is_data_feed: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -333,10 +329,6 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_datetime
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"
@@ -400,10 +392,6 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_datetime
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"
@@ -414,6 +402,7 @@ definitions:
           - "%Y-%m-%d %H:%M:%S.%f+00:00"
           - "%Y-%m-%d %H:%M:%S+00:00"
           - "%Y-%m-%dT%H:%M:%S+00:00"
+        is_data_feed: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -429,6 +418,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: macros
           http_method: GET
+          request_parameters:
+            order_by: updated_datetime:desc
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -466,11 +457,7 @@ definitions:
             stop_condition: "{{ not response.get(\"meta\", {}).get(\"next_cursor\", {}) }}"
       incremental_sync:
         type: DatetimeBasedCursor
-        cursor_field: created_datetime
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        cursor_field: updated_datetime
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"
@@ -481,6 +468,7 @@ definitions:
           - "%Y-%m-%d %H:%M:%S.%f+00:00"
           - "%Y-%m-%d %H:%M:%S+00:00"
           - "%Y-%m-%dT%H:%M:%S+00:00"
+        is_data_feed: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -534,10 +522,6 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_datetime
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"
@@ -548,6 +532,7 @@ definitions:
           - "%Y-%m-%d %H:%M:%S.%f+00:00"
           - "%Y-%m-%d %H:%M:%S+00:00"
           - "%Y-%m-%dT%H:%M:%S+00:00"
+        is_data_feed: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -601,10 +586,6 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_datetime
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"
@@ -615,6 +596,7 @@ definitions:
           - "%Y-%m-%d %H:%M:%S.%f+00:00"
           - "%Y-%m-%d %H:%M:%S+00:00"
           - "%Y-%m-%dT%H:%M:%S+00:00"
+        is_data_feed: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -668,10 +650,6 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_datetime
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"
@@ -682,6 +660,7 @@ definitions:
           - "%Y-%m-%d %H:%M:%S.%f+00:00"
           - "%Y-%m-%d %H:%M:%S+00:00"
           - "%Y-%m-%dT%H:%M:%S+00:00"
+        is_data_feed: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -735,10 +714,6 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_datetime
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"
@@ -749,6 +724,7 @@ definitions:
           - "%Y-%m-%d %H:%M:%S.%f+00:00"
           - "%Y-%m-%d %H:%M:%S+00:00"
           - "%Y-%m-%dT%H:%M:%S+00:00"
+        is_data_feed: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -802,10 +778,6 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_datetime
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"
@@ -816,6 +788,7 @@ definitions:
           - "%Y-%m-%d %H:%M:%S.%f+00:00"
           - "%Y-%m-%d %H:%M:%S+00:00"
           - "%Y-%m-%dT%H:%M:%S+00:00"
+        is_data_feed: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -831,6 +804,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: tickets
           http_method: GET
+          request_parameters:
+            order_by: updated_datetime:desc
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -879,10 +854,7 @@ definitions:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        is_data_feed: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -936,10 +908,6 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_datetime
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"
@@ -950,6 +918,7 @@ definitions:
           - "%Y-%m-%d %H:%M:%S.%f+00:00"
           - "%Y-%m-%d %H:%M:%S+00:00"
           - "%Y-%m-%dT%H:%M:%S+00:00"
+        is_data_feed: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -965,6 +934,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: users
           http_method: GET
+          request_parameters:
+            order_by: created_datetime:desc
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -1003,10 +974,6 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_datetime
-        end_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config[\"start_date\"] }}"
@@ -1017,6 +984,7 @@ definitions:
           - "%Y-%m-%d %H:%M:%S.%f+00:00"
           - "%Y-%m-%d %H:%M:%S+00:00"
           - "%Y-%m-%dT%H:%M:%S+00:00"
+        is_data_feed: true
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1033,6 +1001,8 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: views/{{ stream_partition.view_id }}/items
           http_method: GET
+          request_parameters:
+            order_by: updated_datetime:desc
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
@@ -1078,7 +1048,7 @@ definitions:
                 $ref: "#/definitions/streams/views"
       incremental_sync:
         type: DatetimeBasedCursor
-        cursor_field: created_datetime
+        cursor_field: updated_datetime
         end_datetime:
           type: MinMaxDatetime
           datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
@@ -1093,6 +1063,7 @@ definitions:
           - "%Y-%m-%d %H:%M:%S.%f+00:00"
           - "%Y-%m-%d %H:%M:%S+00:00"
           - "%Y-%m-%dT%H:%M:%S+00:00"
+        is_data_feed: true
       transformations:
         - type: AddFields
           fields:
