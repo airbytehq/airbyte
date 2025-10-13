@@ -6,6 +6,7 @@ package io.airbyte.cdk.output.sockets
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import com.google.protobuf.NullValue
 import io.airbyte.cdk.data.ArrayEncoder
 import io.airbyte.cdk.data.BigDecimalCodec
 import io.airbyte.cdk.data.BigDecimalIntegerCodec
@@ -182,7 +183,8 @@ val offsetDateTimeStringProtoEncoder =
 val floatProtoEncoder =
     generateProtoEncoder<Float> { builder, decoded -> builder.setBigDecimal(decoded.toString()) }
 
-val nullProtoEncoder = generateProtoEncoder<Any?> { builder, _ -> builder.setIsNull(true) }
+val nullProtoEncoder =
+    generateProtoEncoder<Any?> { builder, _ -> builder.setNull(NullValue.NULL_VALUE) }
 val anyProtoEncoder = textProtoEncoder
 
 fun NativeRecordPayload.toProtobuf(

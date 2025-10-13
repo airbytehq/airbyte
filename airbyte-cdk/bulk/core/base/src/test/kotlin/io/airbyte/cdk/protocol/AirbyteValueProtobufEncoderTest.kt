@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.protocol
 
+import com.google.protobuf.NullValue
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteValueProtobuf
 import java.lang.IllegalStateException
@@ -20,7 +21,6 @@ import java.time.OffsetTime
 import java.time.ZoneOffset
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class AirbyteValueProtobufEncoderTest {
@@ -30,8 +30,8 @@ class AirbyteValueProtobufEncoderTest {
     @Test
     fun testEncodeNull() {
         val result = encoder.encode(null, LeafAirbyteSchemaType.STRING)
-        assertTrue(result.isNull)
-        assertEquals(AirbyteValueProtobuf.ValueCase.VALUE_NOT_SET, result.valueCase)
+        assertEquals(NullValue.NULL_VALUE, result.`null`)
+        assertEquals(AirbyteValueProtobuf.ValueCase.NULL, result.valueCase)
     }
 
     @Test
@@ -403,7 +403,7 @@ class AirbyteValueProtobufEncoderTest {
     @Test
     fun testEncodeNullType() {
         val result = encoder.encode("anything", LeafAirbyteSchemaType.NULL)
-        assertTrue(result.isNull)
+        assertEquals(NullValue.NULL_VALUE, result.`null`)
     }
 
     @Test

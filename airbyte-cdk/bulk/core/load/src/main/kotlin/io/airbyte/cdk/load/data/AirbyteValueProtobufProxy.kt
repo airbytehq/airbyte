@@ -65,7 +65,12 @@ class AirbyteValueProtobufProxy(private val data: List<AirbyteValueProtobuf>) : 
     }
 
     private inline fun <T> getNullable(field: FieldAccessor, getter: (FieldAccessor) -> T): T? {
-        return if (data.isEmpty() || data.size < field.index || data[field.index].isNull) null
+        return if (
+            data.isEmpty() ||
+                data.size < field.index ||
+                data[field.index].valueCase == AirbyteValueProtobuf.ValueCase.NULL
+        )
+            null
         else getter(field)
     }
 

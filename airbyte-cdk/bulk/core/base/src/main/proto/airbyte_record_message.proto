@@ -4,6 +4,7 @@
 syntax = "proto3";
 
 import "airbyte_record_message_meta.proto";
+import "google/protobuf/struct.proto";
 
 package io.airbyte.protocol.protobuf;
 
@@ -31,8 +32,8 @@ message AirbyteValueProtobuf {
     OffsetDateTime timestamp_with_timezone = 10;
     LocalDateTime timestamp_without_timezone = 11;
     bytes json = 12; // JSON-encoded arrays, objects, unions, or otherwise unknown.
+    google.protobuf.NullValue null = 13;
   }
-  bool is_null = 13;
 }
 
 message LocalDateTime {
