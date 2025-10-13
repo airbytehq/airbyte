@@ -185,7 +185,7 @@ class SourceGithub(AbstractSource):
             # 404 Client Error: Not Found for url: https://api.github.com/orgs/airbytehqBLA/repos?per_page=100
             org_name = message.split("https://api.github.com/orgs/")[1].split("/")[0]
             user_message = f'Organization name: "{org_name}" is unknown, "repository" config option should be updated. Please validate your repository config.'
-        elif "401 Client Error: Unauthorized for url" in message or "401. Error: Unauthorized" in message:
+        elif "401 Client Error: Unauthorized for url" in message or ("Error: Unauthorized" in message and "401" in message):
             # 401 Client Error: Unauthorized for url: https://api.github.com/orgs/datarootsio/repos?per_page=100&sort=updated&direction=desc
             user_message = (
                 "Github credentials have expired or changed, please review your credentials and re-authenticate or renew your access token."
