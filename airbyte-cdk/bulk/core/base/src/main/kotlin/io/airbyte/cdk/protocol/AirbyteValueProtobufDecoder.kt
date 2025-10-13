@@ -16,7 +16,7 @@ import java.time.OffsetDateTime
 import java.time.OffsetTime
 import java.time.ZoneOffset
 
-class ProtobufTypeBasedDecoder {
+class AirbyteValueProtobufDecoder {
 
     /**
      * Decodes a protobuf value into its corresponding Java type. Returns null if the value is

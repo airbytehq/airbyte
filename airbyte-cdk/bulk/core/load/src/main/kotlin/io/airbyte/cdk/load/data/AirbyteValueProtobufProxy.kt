@@ -7,7 +7,7 @@ package io.airbyte.cdk.load.data
 import com.fasterxml.jackson.databind.JsonNode
 import io.airbyte.cdk.load.data.AirbyteValueProxy.FieldAccessor
 import io.airbyte.cdk.load.util.Jsons
-import io.airbyte.cdk.protocol.ProtobufTypeBasedDecoder
+import io.airbyte.cdk.protocol.AirbyteValueProtobufDecoder
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteValueProtobuf
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -31,7 +31,7 @@ import java.time.temporal.ChronoField
  */
 @Deprecated("This is inefficient and should not be used. Use ProtobufConverter instead.")
 class AirbyteValueProtobufProxy(private val data: List<AirbyteValueProtobuf>) : AirbyteValueProxy {
-    private val decoder = ProtobufTypeBasedDecoder()
+    private val decoder = AirbyteValueProtobufDecoder()
 
     companion object {
         // Formatters that preserve full precision including trailing zeros

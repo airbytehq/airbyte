@@ -41,7 +41,7 @@ import io.airbyte.cdk.load.message.DestinationRecordProtobufSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.util.Jsons
-import io.airbyte.cdk.protocol.ProtobufTypeBasedDecoder
+import io.airbyte.cdk.protocol.AirbyteValueProtobufDecoder
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteValueProtobuf
 import java.math.BigDecimal
@@ -66,7 +66,7 @@ class ProtobufConverter(
 ) {
 
     private val isNoOpMapper = columnNameMapper is NoOpColumnNameMapper
-    private val decoder = ProtobufTypeBasedDecoder()
+    private val decoder = AirbyteValueProtobufDecoder()
 
     private val perStreamMappedNames =
         ConcurrentHashMap<DestinationStream.Descriptor, Array<String>>()

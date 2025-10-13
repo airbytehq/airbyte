@@ -28,7 +28,7 @@ import io.airbyte.cdk.load.dataflow.transform.medium.ProtobufConverter
 import io.airbyte.cdk.load.message.DestinationRecordProtobufSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.Meta
-import io.airbyte.cdk.protocol.ProtobufTypeBasedEncoder
+import io.airbyte.cdk.protocol.AirbyteValueProtobufEncoder
 import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteMessageProtobuf
@@ -56,7 +56,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 @ExtendWith(MockKExtension::class)
 class ProtobufRecordMungerTest {
 
-    private val encoder = ProtobufTypeBasedEncoder()
+    private val encoder = AirbyteValueProtobufEncoder()
     private val uuid: UUID = UUID.fromString("11111111-1111-1111-1111-111111111111")
     private val emittedAtMs = 1_724_438_400_000L
     private val syncId = 42L

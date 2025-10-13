@@ -25,8 +25,8 @@ import org.junit.jupiter.api.Test
  */
 class ProtobufEncoderDecoderRoundTripTest {
 
-    private val encoder = ProtobufTypeBasedEncoder()
-    private val decoder = ProtobufTypeBasedDecoder()
+    private val encoder = AirbyteValueProtobufEncoder()
+    private val decoder = AirbyteValueProtobufDecoder()
 
     private fun <T> testRoundTrip(value: T, schemaType: io.airbyte.cdk.data.AirbyteSchemaType) {
         testRoundTrip(value, value, schemaType)
