@@ -11,6 +11,7 @@ The SFTP Bulk connector offers several features that are not available in the st
 - **Bulk ingestion of files**: This connector can consolidate and process multiple files as a single data stream in your destination system.
 - **Incremental loading**: This connector supports incremental loading, allowing you to sync files from the SFTP server to your destination based on their creation or last modification time.
 - **Load most recent file**: You can choose to load only the most recent file from the designated folder path. This feature is particularly useful when dealing with snapshot files that are regularly added and contain the latest data.
+- **Performance optimizations**: Advanced settings for controlling directory traversal depth and excluding irrelevant directories help prevent timeouts and improve discovery performance on large SFTP servers.
 
 ## Prerequisites
 
@@ -95,7 +96,17 @@ log-([0-9]{4})([0-9]{2})([0-9]{2})
 
 This pattern will filter for files that match the format `log-YYYYMMDD`, where `YYYY`, `MM`, and `DD` represented four-digit, two-digit, and two-digit numbers, respectively. For example, `log-20230713`. Leaving this field blank will replicate all files not filtered by the previous two fields.
 
-14. Click **Set up source** to complete setup. A test will run to verify the configuration.
+13. (Optional, Advanced) Configure **Maximum Directory Traversal Depth** (default: 50). This controls how many levels of subdirectories to traverse when searching for files. Set to 0 to only search the folder_path itself. Higher values allow deeper traversal but may impact performance on servers with deeply nested structures.
+
+14. (Optional, Advanced) Configure **Excluded Directories**. Specify a list of directory paths or patterns to exclude from traversal. This improves performance by skipping irrelevant directories. Supports:
+   - Absolute paths: `/tmp`, `/proc`, `/sys`
+   - Glob patterns: `**/node_modules`, `**/.git`, `**/__pycache__`
+
+   Common examples:
+   - Skip system directories: `/proc`, `/sys`, `/dev`, `/tmp`
+   - Skip development artifacts: `**/node_modules`, `**/.git`, `**/dist`, `**/__pycache__`
+
+15. Click **Set up source** to complete setup. A test will run to verify the configuration.
 
 ### For Airbyte Open Source:
 
@@ -147,6 +158,7 @@ This source provides a single stream per file with a dynamic schema. The current
 
 | Version | Date       | Pull Request                                             | Subject                                                     |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------|
+| 1.8.6 | 2025-10-13 | [67713](https://github.com/airbytehq/airbyte/pull/67713/files) | Add performance improvements for file discovery: configurable max traversal depth, directory exclusion patterns, loop prevention, and enhanced observability |
 | 1.8.5 | 2025-10-07 | [67234](https://github.com/airbytehq/airbyte/pull/67234) | Update dependencies |
 | 1.8.4 | 2025-09-30 | [66868](https://github.com/airbytehq/airbyte/pull/66868) | Update dependencies |
 | 1.8.3 | 2025-09-12 | [66197](https://github.com/airbytehq/airbyte/pull/66197) | Update to CDK v7 |
