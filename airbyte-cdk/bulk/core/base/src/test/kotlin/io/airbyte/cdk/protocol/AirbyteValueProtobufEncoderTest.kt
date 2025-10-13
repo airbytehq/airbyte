@@ -23,9 +23,9 @@ import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
-class ProtobufTypeBasedEncoderTest {
+class AirbyteValueProtobufEncoderTest {
 
-    private val encoder = ProtobufTypeBasedEncoder()
+    private val encoder = AirbyteValueProtobufEncoder()
 
     @Test
     fun testEncodeNull() {

@@ -26,7 +26,7 @@ import java.time.ZoneOffset
  * You can provide an existing [AirbyteValueProtobuf.Builder] to avoid repeated allocations. When
  * provided, the builder is cleared before use.
  */
-class ProtobufTypeBasedEncoder {
+class AirbyteValueProtobufEncoder {
 
     /**
      * Encodes a value into protobuf format based on its AirbyteSchemaType. Returns a protobuf
@@ -96,15 +96,9 @@ class ProtobufTypeBasedEncoder {
         return when (value) {
             is BigDecimal -> b.setBigDecimal(value.toString()).build()
             is Double -> {
-                if (value.isInfinite() || value.isNaN()) {
-                    error("Infinite/NaN values are not allowed")
-                }
                 b.setNumber(value).build()
             }
             is Float -> {
-                if (value.isInfinite() || value.isNaN()) {
-                    error("Infinite/NaN values are not allowed")
-                }
                 b.setNumber(value.toDouble()).build()
             }
             else -> error("Expected BigDecimal, Double, or Float, got ${value::class.simpleName}")

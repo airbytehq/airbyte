@@ -25,7 +25,7 @@ import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.message.DestinationRecordProtobufSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
-import io.airbyte.cdk.protocol.ProtobufTypeBasedEncoder
+import io.airbyte.cdk.protocol.AirbyteValueProtobufEncoder
 import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.protobuf.AirbyteMessage
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage
@@ -93,7 +93,7 @@ abstract class ProtoFixtures(private val addUnknownTypeToSchema: Boolean) {
 
         fieldAccessors = fields.toTypedArray()
 
-        val encoder = ProtobufTypeBasedEncoder()
+        val encoder = AirbyteValueProtobufEncoder()
         val protoValues =
             mutableListOf(
                 encoder.encode(true, LeafAirbyteSchemaType.BOOLEAN),

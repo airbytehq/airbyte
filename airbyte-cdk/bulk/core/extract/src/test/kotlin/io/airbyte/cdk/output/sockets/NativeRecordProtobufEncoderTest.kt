@@ -26,7 +26,7 @@ import io.airbyte.cdk.data.TextCodec
 import io.airbyte.cdk.data.UrlCodec
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.discover.StringFieldType
-import io.airbyte.cdk.protocol.ProtobufTypeBasedDecoder
+import io.airbyte.cdk.protocol.AirbyteValueProtobufDecoder
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteRecordMessageProtobuf
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteValueProtobuf
 import java.math.BigDecimal
@@ -45,7 +45,7 @@ import org.junit.jupiter.api.DynamicTest
 import org.junit.jupiter.api.TestFactory
 
 class NativeRecordProtobufEncoderTest {
-    private val protoDecoder = ProtobufTypeBasedDecoder()
+    private val protoDecoder = AirbyteValueProtobufDecoder()
 
     data class TestCase<T>(
         val value: T,

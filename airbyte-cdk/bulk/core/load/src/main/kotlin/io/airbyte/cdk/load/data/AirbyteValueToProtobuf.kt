@@ -7,7 +7,7 @@ package io.airbyte.cdk.load.data
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.load.data.json.toJson
 import io.airbyte.cdk.load.util.serializeToJsonBytes
-import io.airbyte.cdk.protocol.ProtobufTypeBasedEncoder
+import io.airbyte.cdk.protocol.AirbyteValueProtobufEncoder
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteValueProtobuf
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -17,7 +17,7 @@ import java.time.OffsetTime
 
 /** Convenience class for testing. */
 class AirbyteValueToProtobuf {
-    private val encoder = ProtobufTypeBasedEncoder()
+    private val encoder = AirbyteValueProtobufEncoder()
     fun toProtobuf(value: AirbyteValue, type: AirbyteType): AirbyteValueProtobuf {
         // Handle null values
         if (value is NullValue) {

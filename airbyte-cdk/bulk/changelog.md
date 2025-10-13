@@ -1,6 +1,10 @@
-## Version 0.1.50
+## Version 0.1.51
 
 Update temporal type representation for proto format
+
+## Version 0.1.50
+
+Better handle interleaved streams in aggregate publishing.
 
 ## Version 0.1.49
 

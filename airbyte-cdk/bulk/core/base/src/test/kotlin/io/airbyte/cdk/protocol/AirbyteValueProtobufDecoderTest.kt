@@ -22,9 +22,9 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 
-class ProtobufTypeBasedDecoderTest {
+class AirbyteValueProtobufDecoderTest {
 
-    private val decoder = ProtobufTypeBasedDecoder()
+    private val decoder = AirbyteValueProtobufDecoder()
 
     @Test
     fun testDecodeNull() {
