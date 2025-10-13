@@ -27,7 +27,7 @@ import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.DestinationRecordSource
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.util.deserializeToNode
-import io.airbyte.cdk.protocol.ProtobufTypeBasedEncoder
+import io.airbyte.cdk.protocol.AirbyteValueProtobufEncoder
 import io.airbyte.integrations.destination.bigquery.BigQueryConsts
 import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.protobuf.AirbyteMessage
@@ -118,7 +118,7 @@ class ProtoToBigQueryCSVRowGeneratorTest {
                 Meta.COLUMN_NAME_AB_META
             )
 
-        val encoder = ProtobufTypeBasedEncoder()
+        val encoder = AirbyteValueProtobufEncoder()
         val protoValues =
             mutableListOf(
                 encoder.encode(true, LeafAirbyteSchemaType.BOOLEAN),
@@ -364,7 +364,7 @@ class ProtoToBigQueryCSVRowGeneratorTest {
     @Test
     fun `handles integer overflow with proper error tracking`() {
         val bigInteger = BigInteger.valueOf(Long.MAX_VALUE).add(BigInteger.ONE)
-        val encoder = ProtobufTypeBasedEncoder()
+        val encoder = AirbyteValueProtobufEncoder()
         val oversizedProtoValues =
             mutableListOf(
                 encoder.encode(true, LeafAirbyteSchemaType.BOOLEAN),
@@ -419,7 +419,7 @@ class ProtoToBigQueryCSVRowGeneratorTest {
                 .setNano(Int.MIN_VALUE)
                 .setOffsetSeconds(Int.MIN_VALUE)
                 .build()
-        val encoder = ProtobufTypeBasedEncoder()
+        val encoder = AirbyteValueProtobufEncoder()
         val invalidTimestampProtoValues =
             mutableListOf(
                 encoder.encode(true, LeafAirbyteSchemaType.BOOLEAN),
@@ -498,7 +498,7 @@ class ProtoToBigQueryCSVRowGeneratorTest {
 
     @Test
     fun `handles empty arrays and objects`() {
-        val encoder = ProtobufTypeBasedEncoder()
+        val encoder = AirbyteValueProtobufEncoder()
         val emptyComplexTypesProtoValues =
             mutableListOf(
                 encoder.encode(true, LeafAirbyteSchemaType.BOOLEAN),
@@ -540,7 +540,7 @@ class ProtoToBigQueryCSVRowGeneratorTest {
 
     @Test
     fun `handles invalid date format with proper error tracking`() {
-        val encoder = ProtobufTypeBasedEncoder()
+        val encoder = AirbyteValueProtobufEncoder()
         val invalidDateProtoValues =
             mutableListOf(
                 encoder.encode(true, LeafAirbyteSchemaType.BOOLEAN),
@@ -589,7 +589,7 @@ class ProtoToBigQueryCSVRowGeneratorTest {
 
     @Test
     fun `handles large numeric values with truncation`() {
-        val encoder = ProtobufTypeBasedEncoder()
+        val encoder = AirbyteValueProtobufEncoder()
         val largeNumericProtoValues =
             mutableListOf(
                 encoder.encode(true, LeafAirbyteSchemaType.BOOLEAN),

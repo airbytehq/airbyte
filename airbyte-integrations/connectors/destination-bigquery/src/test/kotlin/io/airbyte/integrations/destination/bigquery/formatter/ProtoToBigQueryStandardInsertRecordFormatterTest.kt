@@ -30,7 +30,7 @@ import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.DestinationRecordSource
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.util.deserializeToNode
-import io.airbyte.cdk.protocol.ProtobufTypeBasedEncoder
+import io.airbyte.cdk.protocol.AirbyteValueProtobufEncoder
 import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.protobuf.AirbyteMessage
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage
@@ -83,11 +83,11 @@ class ProtoToBigQueryStandardInsertRecordFormatterTest {
             )
         )
     private lateinit var formatter: ProtoToBigQueryStandardInsertRecordFormatter
-    private lateinit var encoder: ProtobufTypeBasedEncoder
+    private lateinit var encoder: AirbyteValueProtobufEncoder
 
     @BeforeEach
     fun setUp() {
-        encoder = ProtobufTypeBasedEncoder()
+        encoder = AirbyteValueProtobufEncoder()
         val fields =
             mutableListOf(
                 field("bool_col", BooleanType, 0),
