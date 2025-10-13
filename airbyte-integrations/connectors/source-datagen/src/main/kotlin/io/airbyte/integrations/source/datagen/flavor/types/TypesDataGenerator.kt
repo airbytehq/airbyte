@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.source.datagen.flavor.types
 
-import io.airbyte.cdk.data.ArrayEncoder
 import io.airbyte.cdk.data.BigDecimalCodec
 import io.airbyte.cdk.data.BigDecimalIntegerCodec
 import io.airbyte.cdk.data.BooleanCodec
@@ -50,7 +49,6 @@ class TypesDataGenerator() : DataGenerator {
     val timestampWithTimeZone = OffsetDateTime.now()
     val timestampWithoutTimeZone = LocalDateTime.now()
     val json = """{"id": 1, "name": "alice", "active": true}"""
-    val array = listOf(1, 2, 3)
 
     override fun generateData(currentID: Long, modulo: Int, offset: Int): NativeRecordPayload {
         val incrementedID = (currentID * modulo + offset)
@@ -103,8 +101,6 @@ class TypesDataGenerator() : DataGenerator {
 
         recordData[TypesFlavor.FieldNames.JSON] =
             FieldValueEncoder(json, JsonFieldType.jsonEncoder as JsonStringCodec)
-
-        recordData[TypesFlavor.FieldNames.ARRAY] = FieldValueEncoder(array, ArrayEncoder(IntCodec))
 
         return recordData
     }
