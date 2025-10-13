@@ -7,6 +7,7 @@ import logging
 from datetime import timedelta
 from urllib.parse import urlencode
 
+import mock
 import pytest
 
 from airbyte_cdk.models import Status, SyncMode
@@ -295,13 +296,12 @@ class TestSplittingPropertiesFunctionality:
             assert len(properties) == NUMBER_OF_PROPERTIES
 
 
-@pytest.mark.skip(reason="long test, enable when needed")
 def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(
     requests_mock, config, fake_properties_list, mock_dynamic_schema_requests
 ):
     """
     If there are more than 10,000 records that would be returned by the Hubspot search endpoint,
-    the CRMSearchStream instance should stop at the 10Kth record
+    the CRMSearchStream instance should stop at the 10Kth record. 10k changed to 1k for testing purposes.
     """
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
 
@@ -317,9 +317,16 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(
             },
             "status_code": 200,
         }
-        for x in range(1, 51)
+        for x in range(1, 5)
     ]
-    # After reaching 10K records, it performs a new search query.
+    # Last page... it does not have paging->next->after
+    responses.append(
+        {
+            "json": {"results": [{"id": f"{y}", "updatedAt": "2022-03-01T00:00:00Z"} for y in range(200)], "paging": {}},
+            "status_code": 200,
+        }
+    )
+    # After reaching 1000 records, it performs a new search query.
     responses.extend(
         [
             {
@@ -333,7 +340,7 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(
                 },
                 "status_code": 200,
             }
-            for x in range(1, 5)
+            for x in range(1, 3)
         ]
     )
     # Last page... it does not have paging->next->after
@@ -355,7 +362,6 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(
     ]
 
     # Create test_stream instance with some state
-    test_stream = find_stream("companies", config)
     state = (
         StateBuilder()
         .with_stream_state(
@@ -379,101 +385,12 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(
         [{"status_code": 200, "json": {"results": [{"from": {"id": "1"}, "to": [{"toObjectId": "2"}]}]}}],
     )
 
-    output = read_from_stream(config, "companies", SyncMode.incremental, state)
-    # The stream should not attempt to get more than 10K records.
+    with mock.patch("components.HubspotCRMSearchPaginationStrategy.RECORDS_LIMIT", 1000):
+        output = read_from_stream(config, "companies", SyncMode.incremental, state)
+    # The stream should not attempt to get more than 1000 records.
     # Instead, it should use the new state to start a new search query.
-    assert len(output.records) == 11000
+    assert len(output.records) == 1600
     assert output.state_messages[1].state.stream.stream_state.updatedAt == "2022-03-01T00:00:00.000000Z"
-
-
-@pytest.mark.skip(reason="long test, enable when needed")
-def test_search_based_incremental_stream_should_sort_by_id(requests_mock, config, fake_properties_list, mock_dynamic_schema_requests):
-    """
-    If there are more than 10,000 records that would be returned by the Hubspot search endpoint,
-    the CRMSearchStream instance should stop at the 10Kth record
-    """
-    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
-    # Create test_stream instance with some state
-    test_stream = find_stream("companies", config)
-    test_stream.associations = []
-
-    # Custom callback to mock search endpoint filter and sort behavior,
-    # returns 100 records per request.
-    # See _process_search in stream.py for details on the structure of the
-    # filter and sort parameters.
-    # The generated records will have an id that is the sum of the current id
-    # and the current "after" value and the updatedAt field will be a random
-    # date between min_time and max_time.
-    # Store "after" value in the record to check if it resets after 10k records.
-    responses = [
-        {
-            "json": {
-                "results": [{"id": f"{y}", "updatedAt": "2022-02-25T16:43:11Z"} for y in range(x * 200 - 200 + 1, x * 200 + 1)],
-                "paging": {
-                    "next": {
-                        "after": f"{x * 200}",
-                    }
-                },
-            },
-            "status_code": 200,
-        }
-        for x in range(1, 51)
-    ]
-    responses_more_than_10k = [
-        {
-            "json": {
-                "results": [{"id": f"{y + 10000}", "updatedAt": "2022-02-25T16:43:11Z"} for y in range(x * 200 - 200 + 1, x * 200 + 1)],
-                "paging": {
-                    "next": {
-                        "after": f"{x * 200}",
-                    }
-                }
-                if x < 5
-                else None,
-            },
-            "status_code": 200,
-        }
-        for x in range(1, 6)
-    ]
-    responses.extend(responses_more_than_10k)
-    properties_response = [
-        {
-            "json": [
-                {"name": property_name, "type": "string", "updatedAt": 1571085954360, "createdAt": 1565059306048}
-                for property_name in fake_properties_list
-            ],
-            "status_code": 200,
-        }
-    ]
-
-    test_stream_url = "https://api.hubapi.com/crm/v3/objects/company/search"
-    # Mocking Request
-    requests_mock.register_uri("POST", test_stream_url, responses)
-    requests_mock.register_uri("GET", "/properties/v2/company/properties", properties_response)
-    requests_mock.register_uri(
-        "POST",
-        "/crm/v4/associations/company/contacts/batch/read",
-        [{"status_code": 200, "json": {"results": [{"from": {"id": f"{x}"}, "to": [{"toObjectId": "2"}]}]}} for x in range(1, 11001, 200)],
-    )
-    state = (
-        StateBuilder()
-        .with_stream_state(
-            "companies",
-            {"updatedAt": "2022-01-24T16:43:11Z"},
-        )
-        .build()
-    )
-    output = read_from_stream(config, "companies", SyncMode.incremental, state)
-    records = output.records
-    # The stream should not attempt to get more than 10K records.
-    # Instead, it should use the new state to start a new search query.
-    assert len(records) == 11000
-    # Check that the records are sorted by id and that "after" resets after 10k records
-    assert dict(records[0].record.data)["id"] == "1"
-    assert dict(records[10000 - 1].record.data)["id"] == "10000"
-    assert dict(records[10000].record.data)["id"] == "10001"
-    assert dict(records[-1].record.data)["id"] == "11000"
-    assert output.state_messages[1].state.stream.stream_state.updatedAt == "2022-02-25T16:43:11.000000Z"
 
 
 def test_engagements_stream_pagination_works(requests_mock, config):
