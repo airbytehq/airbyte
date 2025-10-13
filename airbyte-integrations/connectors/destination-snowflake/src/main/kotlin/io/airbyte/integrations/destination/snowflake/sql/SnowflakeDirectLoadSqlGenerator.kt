@@ -20,7 +20,7 @@ import io.airbyte.integrations.destination.snowflake.write.load.CSV_LINE_DELIMIT
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 
-internal const val COUNT_TOTAL_ALIAS = "total"
+internal const val COUNT_TOTAL_ALIAS = "TOTAL"
 
 private val log = KotlinLogging.logger {}
 
@@ -41,7 +41,7 @@ class SnowflakeDirectLoadSqlGenerator(
     private val snowflakeSqlNameUtils: SnowflakeSqlNameUtils,
 ) {
     fun countTable(tableName: TableName): String {
-        return "SELECT COUNT(*) AS ${COUNT_TOTAL_ALIAS.quote()} FROM ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}".andLog()
+        return "SELECT COUNT(*) AS $COUNT_TOTAL_ALIAS FROM ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}".andLog()
     }
 
     fun createNamespace(namespace: String): String {
