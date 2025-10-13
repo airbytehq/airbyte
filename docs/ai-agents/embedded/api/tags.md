@@ -721,63 +721,6 @@ curl -X POST https://api.airbyte.ai/api/v1/embedded/widget-token \
 
 ```
 
-## Best practices
-
-### Tag naming conventions
-
-- **Use lowercase** with hyphens: `pro-tier`, `hipaa-compliant`
-- **Be consistent**: Establish naming patterns and stick to them
-- **Be descriptive**: `analytics-premium` is better than `tier2`
-- **Avoid spaces**: Use hyphens or underscores instead
-
-### Tag organization strategies
-
-**Hierarchical tagging:**
-
-```bash
-free-tier, pro-tier, enterprise
-stable, beta, experimental
-healthcare-basic, healthcare-advanced
-
-```
-
-**Multi-dimensional tagging:**
-
-```bash
-A template can have multiple tags:
-
-- Tier: "pro-tier"
-- Industry: "healthcare"
-- Stability: "stable"
-- Feature: "analytics"
-
-```
-
-This allows flexible filtering like:
-
-```json
-{
-  "selected_source_template_tags": ["pro-tier", "healthcare", "stable"],
-  "selected_source_template_tags_mode": "all"
-}
-
-```
-
-### Tag lifecycle management
-
-1. **Plan your tag structure** before creating templates
-2. **Document tag meanings** in your internal docs
-3. **Audit tags periodically** to remove unused tags
-4. **Communicate tag changes** to your team
-5. **Version control** your tagging strategy
-
-### Performance considerations
-
-- **Minimize tag count per template**: 3-5 tags per template is ideal
-- **Use tag filtering** instead of creating many similar templates
-- **Cache tag lists** in your application to reduce API calls
-- **Batch tag operations** when setting up new templates
-
 ## Error responses
 
 ### 404 tag not found
