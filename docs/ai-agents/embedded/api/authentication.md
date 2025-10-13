@@ -37,27 +37,25 @@ curl https://api.airbyte.ai/api/v1/integrations/templates/sources \
 ### Security best practices
 
 - **Never expose operator tokens in client-side code**
-- Store securely in environment variables or secrets management systems
+- Store securely in secrets management system
 - Use scoped tokens for end-user operations
 - Rotate tokens periodically
 - Limit token distribution to trusted administrators only
 
 ## Scoped token
 
-Scoped tokens provide workspace-level access and are designed for API integrations where end-users need to interact with a specific workspace.
+Scoped tokens provide workspace-level access and are designed for allowing end-users to create and edit sources in their workspace.
 
 ### Use cases
 
-- API integrations for specific workspaces
-- Programmatic access to workspace resources
-- Backend services managing user workspaces
-- Mobile applications or CLI tools
+- API integrations for managing sources within a specific workspace
+- Multi-tenant applications with isolated workspaces
 
 ### Features
 
 - Workspace-scoped access (cannot access other workspaces)
-- Automatically creates workspace if it doesn't exist
-- Region selection support (US or EU)
+- Automatically creates workspace from a workspace name if it doesn't exist
+- Region selection support
 - Embedded in JWT with `io.airbyte.auth.workspace_scope` claim
 
 ### Generate scoped token
@@ -192,15 +190,6 @@ curl https://api.airbyte.ai/api/v1/embedded/scoped-token/info \
 }
 
 ```
-
-#### Deprecated endpoints
-
-The following endpoints also return scoped token information but are deprecated:
-
-- `GET /api/v1/embedded/scoped-token-info` (deprecated)
-- `GET /api/v1/embedded/organizations/current-scoped` (deprecated)
-
-Use `/api/v1/embedded/scoped-token/info` for new implementations.
 
 ## Widget token
 
@@ -409,7 +398,7 @@ For backend services or API integrations:
 1. Store **Operator Bearer Token** securely in your backend
 2. Generate **Scoped Token** for each customer workspace
 3. Use scoped token for all workspace-specific API calls
-4. Cache scoped tokens (they don't expire frequently)
+4. Refresh scoped tokens when they expire (they expire after 20 minutes)
 
 ```bash
 # 1. Generate scoped token (once per workspace)
@@ -505,76 +494,11 @@ curl -X POST https://api.airbyte.ai/api/v1/embedded/scoped-token \
 
 ### Token expiration
 
-- **Operator Bearer Tokens**: Long-lived, managed by Airbyte
-- **Scoped Tokens**: Long-lived, remain valid unless explicitly revoked
+- **Operator Bearer Tokens**: Short-lived, expires after 15 minutes
+- **Scoped Tokens**: Short-lived, expires after 20 minutes
 - **Widget Tokens**: Contain scoped tokens, same lifetime
 
-### Token refresh
-
-For long-running applications, implement token refresh logic:
-
-```javascript
-class AirbyteTokenManager {
-  constructor(operatorToken) {
-    this.operatorToken = operatorToken;
-    this.scopedTokens = new Map();
-  }
-
-  async getScopedToken(workspaceName) {
-    // Check cache
-    if (this.scopedTokens.has(workspaceName)) {
-      return this.scopedTokens.get(workspaceName);
-    }
-
-    // Generate new scoped token
-    const response = await fetch('https://api.airbyte.ai/api/v1/embedded/scoped-token', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${this.operatorToken}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ workspace_name: workspaceName })
-    });
-
-    const { token } = await response.json();
-    this.scopedTokens.set(workspaceName, token);
-
-    return token;
-  }
-
-  // Clear cache to force token refresh
-  refreshToken(workspaceName) {
-    this.scopedTokens.delete(workspaceName);
-  }
-}
-
-```
-
 ## Security considerations
-
-### Operator bearer token
-
-- **Never commit to version control**
-- Store in environment variables or secure secrets management
-- Rotate periodically (every 90 days recommended)
-- Limit access to administrators only
-- Use separate tokens for development and production
-
-### Scoped token
-
-- **Safe to store** on client-side applications (mobile apps, CLIs)
-- Automatically scoped to specific workspace
-- Cannot access other workspaces
-- Can be safely distributed to end-users
-- Consider user-specific token generation for audit trails
-
-### Widget token
-
-- **Origin validation** prevents unauthorized embedding
-- Ensure `allowed_origin` exactly matches your application's origin
-- Use HTTPS origins in production
-- Decode token only in trusted frontend code
-- Monitor for unauthorized widget usage
 
 ### CORS and origin validation
 
@@ -653,77 +577,6 @@ allowed_origin: "*.yourapp.com"             // ✗ No wildcards
 **Cause:** Missing or invalid request parameters
 
 **Solution:** Verify all required fields are included and properly formatted
-
-## Common patterns and examples
-
-### Example: multi-tenant SaaS application
-
-```javascript
-// Backend service managing customer workspaces
-class CustomerWorkspaceManager {
-  constructor(airbyteOperatorToken) {
-    this.operatorToken = airbyteOperatorToken;
-  }
-
-  async provisionCustomerWorkspace(customerId, customerTier, region = 'US') {
-    const regionMap = {
-      'US': '645a183f-b12b-4c6e-8ad3-99e165603450',
-      'EU': 'b9e48d61-f082-4a14-a8d0-799a907938cb'
-    };
-
-    // Generate scoped token for customer workspace
-    const response = await fetch('https://api.airbyte.ai/api/v1/embedded/scoped-token', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${this.operatorToken}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        workspace_name: `customer_${customerId}`,
-        region_id: regionMap[region]
-      })
-    });
-
-    const { token } = await response.json();
-
-    // Store token in your database associated with customer
-    await db.customers.update(customerId, {
-      airbyte_token: token,
-      airbyte_workspace: `customer_${customerId}`
-    });
-
-    return token;
-  }
-
-  async getWidgetToken(customerId, allowedOrigin) {
-    const customer = await db.customers.get(customerId);
-
-    // Determine template tags based on customer tier
-    const tierTags = {
-      'free': ['free-tier'],
-      'pro': ['free-tier', 'pro-tier'],
-      'enterprise': ['free-tier', 'pro-tier', 'enterprise']
-    };
-
-    const response = await fetch('https://api.airbyte.ai/api/v1/embedded/widget-token', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${this.operatorToken}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        workspace_name: customer.airbyte_workspace,
-        allowed_origin: allowedOrigin,
-        selected_source_template_tags: tierTags[customer.tier],
-        selected_source_template_tags_mode: 'any'
-      })
-    });
-
-    return await response.json();
-  }
-}
-
-```
 
 ## Next steps
 
