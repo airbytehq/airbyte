@@ -137,6 +137,50 @@ curl --location 'https://api.airbyte.ai/api/v1/embedded/sources' \
 
 This allows you to customize which sync configurations are available based on customer tier, compliance requirements, or other criteria. See [Template Tags](./tags.md) for more information.
 
+## Controlling which streams are synced
+
+Stream selection is configured at the **source template level** using the `customization` field. This allows you to control which streams from a connector are included when connections are created from that template.
+
+### Stream selection modes
+
+There are three stream selection modes available:
+
+- `suggested` (default) - Only sync streams marked as "suggested" by the connector. If no streams are marked as suggested, all streams are synced.
+- `all` - Sync all available streams from the source
+- `whitelist` - Only sync specific streams that you explicitly list
+
+### Whitelisting specific streams
+
+To whitelist specific streams, configure your source template with the `whitelist` mode and provide a list of stream names:
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/embedded/templates/sources' \
+  --header 'Content-Type: application/json' \
+  --header 'Authorization: Bearer <your_access_token>' \
+  --header 'X-Organization-Id: <your_organization_id>' \
+  --data '{
+    "name": "PostgreSQL Analytics Template",
+    "actor_definition_id": "decd338e-5647-4c0b-adf4-da0e75f5a750",
+    "partial_default_config": {
+      "ssl_mode": {"mode": "require"}
+    },
+    "customization": {
+      "stream_selection_mode": "whitelist",
+      "stream_whitelist": ["orders", "customers", "products"]
+    }
+  }'
+```
+
+**Important notes:**
+
+- Syncing all streams can cause perceived performance issues depending on the source
+- When using `whitelist` mode, you must provide a non-empty `stream_whitelist` array
+- Stream names must exactly match the stream names provided by the connector
+- When a source is created from this template, only the whitelisted streams will be available for syncing
+- To find available stream names for a connector, use the [discover endpoint](https://api.airbyte.ai/api/v1/docs#tag/Sources/operation/get_source_catalog)
+
+For more information about creating and configuring source templates, see [Source Templates](./source-templates.md).
+
 ## Related documentation
 
 - [Source Templates](./source-templates.md) - Create and manage source templates
