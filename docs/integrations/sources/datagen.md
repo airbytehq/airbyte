@@ -53,16 +53,15 @@ None. This connector generates data locally without external dependencies.
 
 ## Setup guide
 
-### Step 1: Set up DataGen in Airbyte
-
-1. Select **End-to-End Testing (DataGen)** from the source list
-2. Enter a **Source name**
-3. Choose a **Data Generation Type**:
+1. In the navigation bar, click **Sources**.
+2. Select **End-to-End Testing (DataGen)** from the source list.
+3. Enter a **Source name**.
+4. Choose a **Data Generation Type**:
    - **Incremental**: Generates simple sequential integers
    - **All Types**: Generates one column per Airbyte data type
-4. Set **Max Records** (default: 100, range: 1 to 100 billion)
-5. Optionally configure **Max Concurrency** to control data generation performance
-6. Click **Set up source**
+5. Set **Max Records** (default: 100, range: 1 to 100 billion).
+6. Optionally configure **Max Concurrency** to control data generation performance.
+7. Click **Set up source**.
 
 ### Configuration options
 
