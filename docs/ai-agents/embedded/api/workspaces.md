@@ -356,48 +356,6 @@ curl https://api.airbyte.ai/api/v1/workspaces/stats \
 | `inactive_count` | integer | Number of workspaces with status `inactive` |
 | `total_count` | integer | Total number of workspaces |
 
-## Sync workspaces
-
-Synchronize workspaces from Airbyte Cloud to your local database. This operation fetches all workspaces for your organization and creates any that don't exist locally.
-
-### Endpoint
-
-```bash
-POST https://api.airbyte.ai/api/v1/workspaces/sync
-
-```
-
-### Use case
-
-Use this endpoint to:
-
-- Keep your local workspace cache in sync with Airbyte Cloud
-- Discover new workspaces created in Airbyte Cloud
-- Refresh workspace data after changes in the cloud
-
-### Request example
-
-```bash
-curl -X POST https://api.airbyte.ai/api/v1/workspaces/sync \
-
-  -H 'Authorization: Bearer <your_operator_token>'
-
-```
-
-### Response example
-
-```json
-{
-  "total_count": 15,
-  "created_count": 2,
-  "created_workspace IDs": [
-    "c3d4e5f6-g7h8-9012-cd34-ef56gh789012",
-    "d4e5f6g7-h8i9-0123-de45-fg67hi890123"
-  ]
-}
-
-```
-
 ### Response fields
 
 | Field | Type | Description |
@@ -442,18 +400,6 @@ curl -X PUT https://api.airbyte.ai/api/v1/workspaces/a1b2c3d4-e5f6-7890-ab12-cd3
 ```
 
 This automatically disables all connections, preventing any data syncs.
-
-### Keep local database in sync
-
-Schedule periodic workspace synchronization:
-
-```bash
-# Sync every hour to catch new workspaces
-curl -X POST https://api.airbyte.ai/api/v1/workspaces/sync \
-
-  -H 'Authorization: Bearer <your_token>'
-
-```
 
 ### Search for workspaces
 
