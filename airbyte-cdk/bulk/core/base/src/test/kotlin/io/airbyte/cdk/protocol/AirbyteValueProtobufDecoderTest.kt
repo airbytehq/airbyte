@@ -5,6 +5,7 @@
 package io.airbyte.cdk.protocol
 
 import com.google.protobuf.ByteString
+import com.google.protobuf.NullValue
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteValueProtobuf
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.LocalDateTime as ProtoLocalDateTime
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.OffsetDateTime as ProtoOffsetDateTime
@@ -28,7 +29,7 @@ class AirbyteValueProtobufDecoderTest {
 
     @Test
     fun testDecodeNull() {
-        val nullValue = AirbyteValueProtobuf.newBuilder().setIsNull(true).build()
+        val nullValue = AirbyteValueProtobuf.newBuilder().setNull(NullValue.NULL_VALUE).build()
         assertNull(decoder.decode(nullValue))
     }
 

@@ -191,7 +191,9 @@ class ProtobufConverter(
         accessor: FieldAccessor,
         enrichedValue: EnrichedAirbyteValue
     ): AirbyteValue {
-        if (protobufValue == null || protobufValue.isNull) {
+        if (
+            protobufValue == null || protobufValue.valueCase == AirbyteValueProtobuf.ValueCase.NULL
+        ) {
             return NullValue
         }
 

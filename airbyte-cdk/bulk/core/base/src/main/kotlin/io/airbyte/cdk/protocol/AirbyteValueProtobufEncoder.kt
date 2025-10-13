@@ -5,6 +5,7 @@
 package io.airbyte.cdk.protocol
 
 import com.google.protobuf.ByteString
+import com.google.protobuf.NullValue
 import io.airbyte.cdk.data.AirbyteSchemaType
 import io.airbyte.cdk.data.ArrayAirbyteSchemaType
 import io.airbyte.cdk.data.LeafAirbyteSchemaType
@@ -64,7 +65,7 @@ class AirbyteValueProtobufEncoder {
     }
 
     private fun buildNull(b: AirbyteValueProtobuf.Builder): AirbyteValueProtobuf {
-        return b.setIsNull(true).build()
+        return b.setNull(NullValue.NULL_VALUE).build()
     }
 
     private fun encodeBoolean(value: Any, b: AirbyteValueProtobuf.Builder): AirbyteValueProtobuf {

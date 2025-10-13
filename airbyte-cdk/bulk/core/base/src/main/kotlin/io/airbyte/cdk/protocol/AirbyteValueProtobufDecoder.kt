@@ -23,8 +23,6 @@ class AirbyteValueProtobufDecoder {
      * marked as null.
      */
     fun decode(value: AirbyteValueProtobuf): Any? {
-        if (value.isNull) return null
-
         return when (value.valueCase) {
             AirbyteValueProtobuf.ValueCase.BOOLEAN -> value.boolean
             AirbyteValueProtobuf.ValueCase.STRING -> value.string
@@ -60,6 +58,7 @@ class AirbyteValueProtobufDecoder {
                 OffsetDateTime.ofInstant(instant, offset)
             }
             AirbyteValueProtobuf.ValueCase.JSON -> value.json.toString(StandardCharsets.UTF_8)
+            AirbyteValueProtobuf.ValueCase.NULL,
             AirbyteValueProtobuf.ValueCase.VALUE_NOT_SET,
             null -> null
         }
