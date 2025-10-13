@@ -5,8 +5,8 @@ concurrency:
 
 on:
   schedule:
-    # Runs every Monday at 03:00 UTC (8 PM Pacific previous evening)
-    - cron: "0 3 * * 1"
+    # Runs every Tuesday at 03:00 UTC (8 PM Pacific Monday evening)
+    - cron: "0 3 * * 2"
   workflow_dispatch:
     inputs:
       connectors-options:
