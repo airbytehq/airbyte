@@ -94,18 +94,4 @@ internal class SnowflakeSqlNameUtilsTest {
         val fullyQualifiedName = snowflakeSqlNameUtils.fullyQualifiedStageName(tableName, true)
         assertEquals(expectedName, fullyQualifiedName)
     }
-
-    @Test
-    fun testFullyQualifiedFormatName() {
-        val databaseName = "test-database"
-        val namespace = "test-namespace"
-        every { snowflakeConfiguration.database } returns databaseName
-
-        val expectedNamespace =
-            snowflakeSqlNameUtils.combineParts(
-                listOf(databaseName.toSnowflakeCompatibleName(), namespace, STAGE_FORMAT_NAME)
-            )
-        val fullyQualifiedNamespace = snowflakeSqlNameUtils.fullyQualifiedFormatName(namespace)
-        assertEquals(expectedNamespace, fullyQualifiedNamespace)
-    }
 }
