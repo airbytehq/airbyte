@@ -88,7 +88,6 @@ Slack
 [Ii]nitialisms
 \bCPU(?:s)?\b
 
-
 # API and technical terms
 
 CLI
@@ -122,3 +121,11 @@ non_breaking_changes_preference
 Onboarding
 datetime
 workspace's
+
+# Never lint Docusaurus admonitions markup
+:::
+:::note
+:::tip
+:::info
+:::warning
+:::danger

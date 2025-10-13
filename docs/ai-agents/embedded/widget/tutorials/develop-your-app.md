@@ -68,7 +68,7 @@ Your app will now be running on http://localhost:5173
 
 The application is designed to run unchanged on Vercel, with the only configuration change required is setting environment keys via Settings > Environment Variables. It is recommended to use the Import .env button to avoid typo errors. Remember to change the SONAR_ALLOWED_ORIGIN to point to the vercel url.
 
-![Vercel environment variables.](./assets/vercel-env.png)
+![Vercel environment variables.](../assets/vercel-env.png)
 
 ## Widget Implementation
 
