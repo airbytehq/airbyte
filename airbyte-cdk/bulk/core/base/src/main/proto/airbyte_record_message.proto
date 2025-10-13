@@ -20,7 +20,7 @@ message AirbyteValueProtobuf {
   oneof value {
     bool boolean = 1;
     string string = 2;
-    int64 integer = 3;
+    sint64 integer = 3;
     string big_integer = 4; // Prefer over integer iff it exists
     double number = 5;
     string big_decimal = 6; // Prefer over number iff it exists
