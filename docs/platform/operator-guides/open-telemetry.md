@@ -16,15 +16,15 @@ Airbyte sends specific metrics to provide you with health insight in the followi
 
 ## Example dashboard
 
-Here's an example of a dashboard in Datadog using Airbyte's OTEL metrics.
+Here's an example of a dashboard in Datadog using Airbyte's OpenTelemetry metrics.
 
-![Airbyte OTEL metrics in a dashboard in Datadog](assets/otel-datadog.png)
+![Airbyte OpenTelemetry metrics in a dashboard in Datadog](assets/otel-datadog.png)
 
 ## Configure OpenTelemetry metrics
 
-1. Deploy an OpenTelemetry Collector if you don't already have one. See the [OpenTelemetry documentation](https://opentelemetry.io/docs/collector/getting-started/#kubernetes) for help doing this. If you use Datadog as your monitoring tool, they have an excellent guide to [set up a Datadog Collector and Exporter](https://docs.datadoghq.com/opentelemetry/collector_exporter/).
+1. Deploy an OpenTelemetry Collector if you don't already have one. See the [OpenTelemetry documentation](https://opentelemetry.io/docs/collector/getting-started/#kubernetes) for help doing this. If you use Datadog as your monitoring tool, they have an in-depth guide to [set up a Datadog Collector and Exporter](https://docs.datadoghq.com/opentelemetry/collector_exporter/).
 
-    1. For Airbyte to send metrics to your server, your OpenTelemetry service (collector or otherwise) must accept OpenTelemetry over HTTP. If you use an OpenTelemetry Collector, your configuration would need to include some variation of the below to accept OpenTelemetry over HTTP:
+    1. For Airbyte to send metrics to your server, your OpenTelemetry service (collector or otherwise) must accept OpenTelemetry Protocol (OTLP) over HTTP. If you use an OpenTelemetry Collector, your configuration would need to include some variation of the below to accept OTLP over HTTP:
 
     ```yml
     receivers:
