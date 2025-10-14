@@ -275,8 +275,9 @@ class RestWriteTest :
         getConfig(),
         SimpleTableIdGenerator(),
         { spec ->
-            S3DataLakeTestUtil.getCatalogWithoutAssumeRole(
-                S3DataLakeTestUtil.getConfig(spec as S3DataLakeSpecification)
+            S3DataLakeTestUtil.getCatalog(
+                S3DataLakeTestUtil.getConfig(spec as S3DataLakeSpecification),
+                null
             )
         }
     ) {
@@ -335,8 +336,9 @@ class PolarisWriteTest :
         configContents = getConfig(),
         tableIdGenerator = SimpleTableIdGenerator(),
         getCatalog = { spec ->
-            S3DataLakeTestUtil.getCatalogWithoutAssumeRole(
-                S3DataLakeTestUtil.getConfig(spec as S3DataLakeSpecification)
+            S3DataLakeTestUtil.getCatalog(
+                S3DataLakeTestUtil.getConfig(spec as S3DataLakeSpecification),
+                null
             )
         }
     ) {
