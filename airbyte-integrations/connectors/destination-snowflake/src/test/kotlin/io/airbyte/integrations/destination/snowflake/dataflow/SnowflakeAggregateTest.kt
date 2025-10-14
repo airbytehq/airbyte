@@ -5,7 +5,8 @@
 package io.airbyte.integrations.destination.snowflake.dataflow
 
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
-import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeInsertBuffer
+
+import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeParquetInsertBuffer
 import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.verify
@@ -17,7 +18,7 @@ internal class SnowflakeAggregateTest {
     @Test
     fun testAcceptingRecordsForAggregation() {
         val record = mockk<RecordDTO>(relaxed = true)
-        val buffer = mockk<SnowflakeInsertBuffer>(relaxed = true)
+        val buffer = mockk<SnowflakeParquetInsertBuffer>(relaxed = true)
         val aggregate = SnowflakeAggregate(buffer)
         aggregate.accept(record)
         verify(exactly = 1) { buffer.accumulate(any()) }
@@ -26,7 +27,7 @@ internal class SnowflakeAggregateTest {
     @Test
     fun testFlushingRecordsForAggregation() {
         val record = mockk<RecordDTO>(relaxed = true)
-        val buffer = mockk<SnowflakeInsertBuffer>(relaxed = true)
+        val buffer = mockk<SnowflakeParquetInsertBuffer>(relaxed = true)
         val aggregate = SnowflakeAggregate(buffer)
         aggregate.accept(record)
         runBlocking { aggregate.flush() }
