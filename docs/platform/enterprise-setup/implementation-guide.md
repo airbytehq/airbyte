@@ -10,7 +10,7 @@ import ContainerProviders from '@site/static/_docker_image_registries.md';
 
 Once you [have a license key](https://airbyte.com/company/talk-to-sales), you can deploy [Self-Managed Enterprise](./README.md) using the following instructions.
 
-Airbyte Self-Managed Enterprise must be deployed using Kubernetes. This is to enable Airbyte's best performance and scale. The core Airbyte components (`server`, `webapp`, `workload-launcher`) run as deployments. The `workload-launcher` is responsible for managing connector-related pods (`check`, `discover`, `read`, `write`, `orchestrator`).
+Airbyte Self-Managed Enterprise must be deployed using Kubernetes. This is to enable Airbyte's best performance and scale. The core Airbyte components (`server`, `workload-launcher`) run as deployments. The `workload-launcher` is responsible for managing connector-related pods (`check`, `discover`, `read`, `write`, `orchestrator`).
 
 :::note
 Airbyte has begun rolling out a new Helm chart called Helm chart V2. The instructions on this page describe both V1 and V2 requirements. Airbyte recommends using Helm chart V2 from the start. The new chart will become mandatory in the future and you can avoid having to upgrade later.
@@ -19,6 +19,7 @@ Airbyte has begun rolling out a new Helm chart called Helm chart V2. The instruc
 ## Prerequisites
 
 ### Infrastructure Prerequisites
+
 For a production-ready deployment of Self-Managed Enterprise, various infrastructure components are required. We recommend deploying to Amazon EKS or Google Kubernetes Engine. The following diagram illustrates a typical Airbyte deployment running on AWS:
 
 ![AWS Architecture Diagram](./assets/self-managed-enterprise-aws.png)
@@ -33,12 +34,12 @@ Prior to deploying Self-Managed Enterprise, we recommend having each of the foll
 | Dedicated Database       | [Amazon RDS Postgres](#configuring-the-airbyte-database) with at least one read replica.                                                                                  |
 | External Secrets Manager | [Amazon Secrets Manager](/platform/operator-guides/configuring-airbyte#secrets) for storing connector secrets.                                                                     |
 
-
 A few notes on Kubernetes cluster provisioning for Airbyte Self-Managed Enterprise:
-* We support Amazon Elastic Kubernetes Service (EKS) on EC2 or Google Kubernetes Engine (GKE) on Google Compute Engine (GCE). Improved support for Azure Kubernetes Service (AKS) is coming soon.
-* We recommend running Airbyte on memory-optimized instances, such as M7i / M7g instance types.
-* While we support GKE Autopilot, we do not support Amazon EKS on Fargate. 
-* We recommend running Airbyte on instances with at least 2 cores and 8 gigabytes of RAM.
+
+- We support Amazon Elastic Kubernetes Service (EKS) on EC2, Google Kubernetes Engine (GKE) on Google Compute Engine (GCE), and Azure Kubernetes Service (AKS).
+- We recommend running Airbyte on memory-optimized instances, such as M7i / M7g instance types.
+- While we support GKE Autopilot, we do not support Amazon EKS on Fargate.
+- We recommend running Airbyte on instances with at least 2 cores and 8 gigabytes of RAM.
 
 We require you to install and configure the following Kubernetes tooling:
 
@@ -87,7 +88,6 @@ You may apply your Kubernetes secrets by applying the example manifests below to
 #### Creating a Kubernetes Secret
 
 While you can set the name of the secret to whatever you prefer, you will need to set that name in various places in your values.yaml file. For this reason we suggest that you keep the name of `airbyte-config-secrets` unless you have a reason to change it.
-
 
 <details>
 <summary>airbyte-config-secrets</summary>
@@ -156,12 +156,10 @@ kubectl create secret generic airbyte-config-secrets \
   --namespace airbyte
 ```
 
-
 </TabItem>
 <TabItem value="GCS" label="GCS">
 
 First, create a new file `gcp.json` containing the credentials JSON blob for the service account you are looking to assume.
-
 
 ```yaml
 apiVersion: v1
@@ -319,8 +317,6 @@ Follow these instructions to add the Airbyte helm repository:
     </TabItem>
     </Tabs>
 
-
-
 4. You must configure the public facing URL of your Airbyte instance to your `values.yaml` file, under `global`:
 
     <Tabs groupId="helm-chart-version">
@@ -341,7 +337,6 @@ Follow these instructions to add the Airbyte helm repository:
 
     </TabItem>
     </Tabs>
-    
 
 5. Verify the configuration of your `values.yaml` so far. Ensure `license-key`, `instance-admin-email` and `instance-admin-password` are all available via Kubernetes Secrets (configured in [prerequisites](#creating-a-kubernetes-secret)). It should appear as follows:
 
@@ -392,7 +387,6 @@ global:
 
 </TabItem>
 </Tabs>
-
 
 </details>
 
@@ -622,7 +616,6 @@ global:
 </TabItem>
 </Tabs>
 
-
 </TabItem>
 </Tabs>
 
@@ -721,8 +714,6 @@ global:
 </TabItem>
 </Tabs>
 
-
-
 </TabItem>
 
 <TabItem label="Azure Key Vault" value="Azure">
@@ -773,10 +764,71 @@ global:
 
 #### Configuring Ingress
 
-To access the Airbyte UI, you will need to manually attach an ingress configuration to your deployment. The following is a skimmed down definition of an ingress resource you could use for Self-Managed Enterprise:
+To access the Airbyte UI, you need to configure ingress for your deployment. You have two options:
+
+- **Use Airbyte's Helm chart ingress configuration** - Configure ingress through your `values.yaml` file.
+
+- **Bring your own ingress** - Manually create and manage your own Kubernetes ingress resource.
+
+Use the Helm chart ingress configuration if you want Airbyte to manage ingress creation and updates automatically. Use your own ingress if you need custom ingress configurations beyond what the Helm chart provides, or if you prefer to manage ingress independently.
+
+##### Before enabling ingress
+
+You must have an ingress controller deployed in your Kubernetes cluster. Refer to ingress controller documentation for setup: [NGINX](https://kubernetes.github.io/ingress-nginx/deploy/), [AWS ALB](https://docs.aws.amazon.com/eks/latest/userguide/alb-ingress.html), or your controller's documentation. For TLS certificate management, refer to [cert-manager](https://cert-manager.io/docs/) or your cloud provider's certificate service.
+
+Set appropriate backend timeout values for the Airbyte server ingress. Timeout values that are too short can lead to 504 errors in the UI when creating new sources or destinations.
+
+##### Set up ingress in Airbyte
 
 <details>
-<summary>Ingress configuration setup steps</summary>
+<summary>Option 1: use Airbyte's Helm chart ingress configuration</summary>
+
+:::note
+**Helm V2 users:** Follow the configuration examples below.
+
+**Helm V1 users:** Ingress is available but uses a different configuration format. See the [values.yaml reference](/platform/deploying-airbyte/values) for the V1 ingress configuration structure.
+:::
+
+You can configure ingress directly in your `values.yaml` file. Airbyte automatically creates and manages the ingress resource for you.
+
+```yaml
+ingress:
+  enabled: true
+  className: "nginx"  # Specify your ingress class
+  annotations: {}
+    # Add any ingress-specific annotations here
+  hosts:
+    - host: airbyte.example.com  # Replace with your domain
+      paths:
+        - path: /auth
+          pathType: Prefix
+          backend: keycloak  # For Keycloak authentication (if using OIDC)
+        - path: /
+          pathType: Prefix
+          backend: server  # Routes to airbyte-server
+        - path: /connector-builder
+          pathType: Prefix
+          backend: connector-builder-server  # Required for connector builder
+  tls: []
+    # Optionally configure TLS
+    # - secretName: airbyte-tls
+    #   hosts:
+    #     - airbyte.example.com
+```
+
+The `backend` field specifies which service to route to:
+
+- `keycloak` - Routes to Keycloak service (required for OIDC authentication, omit if using generic OIDC)
+- `server` - Routes to the main Airbyte server
+- `connector-builder-server` - Routes to the connector builder service (required for Airbyte's connector builder to work)
+
+</details>
+
+<details>
+<summary>Option 2: bring your own ingress</summary>
+
+If you prefer to manage your own ingress resource, you can manually create a Kubernetes ingress resource.
+
 <Tabs>
 <TabItem value="NGINX" label="NGINX">
 
@@ -875,9 +927,17 @@ The ALB controller will use a `ServiceAccount` that requires the [following IAM 
 
 </TabItem>
 </Tabs>
+
 </details>
 
-Once this is complete, ensure that the value of the `webapp-url` field in your `values.yaml` is configured to match the ingress URL.
+##### Ensure your airbyte URL matches your ingress host
+
+Once you configure ingress, ensure that the value of `global.airbyteUrl` in your values.yaml matches the ingress URL.
+
+```yaml
+global:
+  airbyteUrl: # e.g. https://airbyte.example.com
+```
 
 You may configure ingress using a load balancer or an API Gateway. We do not currently support most service meshes (such as Istio). If you are having networking issues after fully deploying Airbyte, please verify that firewalls or lacking permissions are not interfering with pod-pod communication. Please also verify that deployed pods have the right permissions to make requests to your external database.
 
@@ -971,7 +1031,7 @@ After specifying your own configuration, run the following command:
 
 ### Configure a custom image registry
 
-You can optionally configure Airbyte to pull Docker images from a custom image registry rather than [Airbyte's public Docker repository](https://hub.docker.com/u/airbyte). In this case, Airbyte pulls both platform images (e.g. `server`, `webapp`, `workload-launcher`, etc.) and connector images (e.g. Postgres Source, S3 Destination, etc.) from the configured registry.
+You can optionally configure Airbyte to pull Docker images from a custom image registry rather than [Airbyte's public Docker repository](https://hub.docker.com/u/airbyte). In this case, Airbyte pulls both platform images (e.g. `server`, `workload-launcher`, etc.) and connector images (e.g. Postgres Source, S3 Destination, etc.) from the configured registry.
 
 Implementing Airbyte this way has several advantages.
 
@@ -1021,19 +1081,18 @@ abctl images manifest
 You should see something like this:
 
 ```bash
-airbyte/bootloader:1.3.1
-airbyte/connector-builder-server:1.3.1
-airbyte/connector-sidecar:1.3.1
-airbyte/container-orchestrator:1.3.1
-airbyte/cron:1.3.1
-airbyte/db:1.3.1
+airbyte/bootloader:1.8.0
+airbyte/connector-builder-server:1.8.0
+airbyte/connector-sidecar:1.8.0
+airbyte/container-orchestrator:1.8.0
+airbyte/cron:1.8.0
+airbyte/db:1.8.0
 airbyte/mc:latest
-airbyte/server:1.3.1
-airbyte/webapp:1.3.1
-airbyte/worker:1.3.1
-airbyte/workload-api-server:1.3.1
-airbyte/workload-init-container:1.3.1
-airbyte/workload-launcher:1.3.1
+airbyte/server:1.8.0
+airbyte/worker:1.8.0
+airbyte/workload-api-server:1.8.0
+airbyte/workload-init-container:1.8.0
+airbyte/workload-launcher:1.8.0
 bitnami/kubectl:1.28.9
 busybox:1.35
 busybox:latest
@@ -1082,7 +1141,7 @@ If your registry requires authentication, you can create a Kubernetes secret and
 <details>
 <summary>Step 2: Tag and push Airbyte images</summary>
 
-Tag and push Airbyte's images to your custom image registry. 
+Tag and push Airbyte's images to your custom image registry.
 
 In this example, you tag all platform images and push them all to GitHub.
 
@@ -1159,7 +1218,6 @@ The [following policies](https://docs.aws.amazon.com/AmazonS3/latest/userguide/e
 ```
 
 ### AWS Secret Manager Policy
-
 
 ```yaml
 {

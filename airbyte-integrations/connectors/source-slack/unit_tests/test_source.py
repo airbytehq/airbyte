@@ -6,11 +6,13 @@ import logging
 
 import pytest
 
+from airbyte_cdk.models import Status
+
 from .conftest import get_source, parametrized_configs
 
 
 def get_stream_by_name(stream_name, config):
-    streams = get_source(config)
+    streams = get_source(config, stream_name)
     for stream in streams:
         if stream.name == stream_name:
             return stream
@@ -51,7 +53,8 @@ def test_streams(conversations_list, config, is_valid):
 def test_check_connection(token_config, requests_mock, status_code, response, is_connection_successful, error_msg):
     requests_mock.register_uri("GET", "https://slack.com/api/users.list?limit=1000", status_code=status_code, json=response)
     source = get_source(token_config)
-    success, error = source.check_connection(logger=logging.getLogger("airbyte"), config=token_config)
+    connection_status = source.check(logger=logging.getLogger("airbyte"), config=token_config)
+    success = connection_status.status == Status.SUCCEEDED
     assert success is is_connection_successful
     if not success:
-        assert error_msg in error
+        assert error_msg in connection_status.message
