@@ -11,6 +11,7 @@ import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteValueProtobuf
 import java.math.BigDecimal
 import java.math.BigInteger
+import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -18,6 +19,7 @@ import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.time.OffsetTime
 import java.time.ZoneOffset
+import java.util.Base64
 
 /**
  * Type-based encoder for protobuf values. Sources use this to encode values based on the
@@ -38,7 +40,7 @@ class ProtobufTypeBasedEncoder {
         value: Any?,
         airbyteSchemaType: AirbyteSchemaType,
         builder: AirbyteValueProtobuf.Builder? = null
-    ): AirbyteValueProtobuf {
+    ): AirbyteValueProtobuf.Builder {
         val b = (builder ?: AirbyteValueProtobuf.newBuilder()).clear()
 
         if (value == null) {
@@ -58,99 +60,100 @@ class ProtobufTypeBasedEncoder {
                 encodeTimestampWithoutTimezone(value, b)
             LeafAirbyteSchemaType.NULL -> buildNull(b)
             LeafAirbyteSchemaType.JSONB -> encodeJson(value, b)
-            LeafAirbyteSchemaType.BINARY -> encodeJson(value, b)
+            LeafAirbyteSchemaType.BINARY -> encodeBinary(value, b)
             is ArrayAirbyteSchemaType -> encodeJson(value, b)
         }
     }
 
-    private fun buildNull(b: AirbyteValueProtobuf.Builder): AirbyteValueProtobuf {
-        return b.setIsNull(true).build()
+    private fun buildNull(b: AirbyteValueProtobuf.Builder): AirbyteValueProtobuf.Builder {
+        return b.setIsNull(true)
     }
 
-    private fun encodeBoolean(value: Any, b: AirbyteValueProtobuf.Builder): AirbyteValueProtobuf {
+    private fun encodeBoolean(value: Any, b: AirbyteValueProtobuf.Builder): AirbyteValueProtobuf.Builder {
         require(value is Boolean) { "Expected Boolean, got ${value::class.simpleName}" }
-        return b.setBoolean(value).build()
+        return b.setBoolean(value)
     }
 
-    private fun encodeString(value: Any, b: AirbyteValueProtobuf.Builder): AirbyteValueProtobuf {
+    private fun encodeString(value: Any, b: AirbyteValueProtobuf.Builder): AirbyteValueProtobuf.Builder {
         require(value is String) { "Expected String, got ${value::class.simpleName}" }
-        return b.setString(value).build()
+        return b.setString(value)
     }
 
-    private fun encodeInteger(value: Any, b: AirbyteValueProtobuf.Builder): AirbyteValueProtobuf {
+    private fun encodeInteger(value: Any, b: AirbyteValueProtobuf.Builder): AirbyteValueProtobuf.Builder {
         return when (value) {
             is BigInteger -> {
                 if (value.bitLength() < 63) {
-                    b.setInteger(value.longValueExact()).build()
+                    b.setInteger(value.longValueExact())
                 } else {
-                    b.setBigInteger(value.toString()).build()
+                    b.setBigInteger(value.toString())
                 }
             }
-            is Long -> b.setInteger(value).build()
-            is Int -> b.setInteger(value.toLong()).build()
+            is Long -> b.setInteger(value)
+            is Int -> b.setInteger(value.toLong())
+            is Short -> b.setInteger(value.toLong())
             else -> error("Expected BigInteger, Long, or Int, got ${value::class.simpleName}")
         }
     }
 
-    private fun encodeNumber(value: Any, b: AirbyteValueProtobuf.Builder): AirbyteValueProtobuf {
+    private fun encodeNumber(value: Any, b: AirbyteValueProtobuf.Builder): AirbyteValueProtobuf.Builder {
         return when (value) {
-            is BigDecimal -> b.setBigDecimal(value.toString()).build()
+            is BigDecimal -> b.setBigDecimal(value.toPlainString())
             is Double -> {
                 if (value.isInfinite() || value.isNaN()) {
                     error("Infinite/NaN values are not allowed")
                 }
-                b.setNumber(value).build()
+                b.setNumber(value)
             }
             is Float -> {
                 if (value.isInfinite() || value.isNaN()) {
                     error("Infinite/NaN values are not allowed")
                 }
-                b.setNumber(value.toDouble()).build()
+                b.setNumber(value.toDouble())
             }
             else -> error("Expected BigDecimal, Double, or Float, got ${value::class.simpleName}")
         }
     }
 
-    private fun encodeDate(value: Any, b: AirbyteValueProtobuf.Builder): AirbyteValueProtobuf {
+    private fun encodeDate(value: Any, b: AirbyteValueProtobuf.Builder): AirbyteValueProtobuf.Builder {
         val localDate =
             when (value) {
                 is LocalDate -> value
                 is java.sql.Date -> value.toLocalDate()
                 else -> error("Expected LocalDate or java.sql.Date, got ${value::class.simpleName}")
             }
-        return b.setDate(localDate.toEpochDay()).build()
+        return b.setDate(localDate.toEpochDay())
     }
 
     private fun encodeTimeWithTimezone(
         value: Any,
         b: AirbyteValueProtobuf.Builder
-    ): AirbyteValueProtobuf {
+    ): AirbyteValueProtobuf.Builder {
         require(value is OffsetTime) { "Expected OffsetTime, got ${value::class.simpleName}" }
         val offsetTimeMsg =
             io.airbyte.protocol.protobuf.AirbyteRecordMessage.OffsetTime.newBuilder()
                 .setNanosOfDay(value.toLocalTime().toNanoOfDay())
                 .setOffsetSeconds(value.offset.totalSeconds)
                 .build()
-        return b.setTimeWithTimezone(offsetTimeMsg).build()
+        return b.setTimeWithTimezone(offsetTimeMsg)
     }
 
     private fun encodeTimeWithoutTimezone(
         value: Any,
         b: AirbyteValueProtobuf.Builder
-    ): AirbyteValueProtobuf {
+    ): AirbyteValueProtobuf.Builder {
         val localTime =
             when (value) {
                 is LocalTime -> value
                 is java.sql.Time -> value.toLocalTime()
                 else -> error("Expected LocalTime or java.sql.Time, got ${value::class.simpleName}")
             }
-        return b.setTimeWithoutTimezone(localTime.toNanoOfDay()).build()
+        return b.setTimeWithoutTimezone(localTime.toNanoOfDay())
     }
 
     private fun encodeTimestampWithTimezone(
         value: Any,
         b: AirbyteValueProtobuf.Builder
-    ): AirbyteValueProtobuf {
+    ): AirbyteValueProtobuf.Builder {
         val offsetDateTime =
             when (value) {
                 is OffsetDateTime -> value
@@ -167,13 +170,13 @@ class ProtobufTypeBasedEncoder {
                 .setNano(instant.nano)
                 .setOffsetSeconds(offsetDateTime.offset.totalSeconds)
                 .build()
-        return b.setTimestampWithTimezone(offsetDateTimeMsg).build()
+        return b.setTimestampWithTimezone(offsetDateTimeMsg)
     }
 
     private fun encodeTimestampWithoutTimezone(
         value: Any,
         b: AirbyteValueProtobuf.Builder
-    ): AirbyteValueProtobuf {
+    ): AirbyteValueProtobuf.Builder {
         val localDateTime =
             when (value) {
                 is LocalDateTime -> value
@@ -188,17 +191,34 @@ class ProtobufTypeBasedEncoder {
                 .setDateDaysSinceEpoch(localDateTime.toLocalDate().toEpochDay())
                 .setNanosOfDay(localDateTime.toLocalTime().toNanoOfDay())
                 .build()
-        return b.setTimestampWithoutTimezone(localDateTimeMsg).build()
+        return b.setTimestampWithoutTimezone(localDateTimeMsg)
     }
 
-    private fun encodeJson(value: Any, b: AirbyteValueProtobuf.Builder): AirbyteValueProtobuf {
+    private fun encodeJson(value: Any, b: AirbyteValueProtobuf.Builder): AirbyteValueProtobuf.Builder {
         val jsonBytes =
             when (value) {
                 is String -> value.toByteArray(StandardCharsets.UTF_8)
                 is ByteArray -> value
+                is ByteBuffer -> value.array()
                 else ->
                     error("Expected String or ByteArray for JSON, got ${value::class.simpleName}")
             }
-        return b.setJson(ByteString.copyFrom(jsonBytes)).build()
+        return b.setJson(ByteString.copyFrom(jsonBytes))
+    }
+
+    private fun encodeBinary(value: Any, b: AirbyteValueProtobuf.Builder): AirbyteValueProtobuf.Builder {
+        val base64String =
+            when (value) {
+                is String -> value
+                is ByteArray -> BASE64_ENCODER.encodeToString(value)
+                is ByteBuffer -> BASE64_ENCODER.encodeToString(value.array())
+                else ->
+                    error("Expected String or ByteArray or ByteBuffer for Binary, got ${value::class.simpleName}")
+            }
+        return b.setString(base64String)
+    }
+
+    companion object {
+        private val BASE64_ENCODER = Base64.getEncoder()
     }
 }

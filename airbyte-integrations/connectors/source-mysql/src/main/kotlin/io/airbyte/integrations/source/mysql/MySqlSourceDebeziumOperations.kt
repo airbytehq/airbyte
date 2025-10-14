@@ -171,7 +171,7 @@ class MySqlSourceDebeziumOperations(
 
         resultRow[MySqlSourceCdcMetaFields.CDC_LOG_POS.id] =
             FieldValueEncoder(
-                position.position,
+                position.position.toDouble(),
                 MySqlSourceCdcMetaFields.CDC_LOG_POS.type.jsonEncoder as JsonEncoder<Any>
             )
 
