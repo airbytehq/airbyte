@@ -11,15 +11,18 @@ import com.clickhouse.client.api.metadata.TableSchema
 import com.clickhouse.client.api.query.QueryResponse
 import com.clickhouse.data.ClickHouseColumn
 import com.clickhouse.data.ClickHouseDataType
+import com.clickhouse.data.ClickHouseFormat
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.CoreTableOperationsClient
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAMES
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
+import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.integrations.destination.clickhouse.client.ClickhouseSqlGenerator.Companion.DATETIME_WITH_PRECISION
 import io.airbyte.integrations.destination.clickhouse.client.ClickhouseSqlGenerator.Companion.DECIMAL_WITH_PRECISION_AND_SCALE
 import io.airbyte.integrations.destination.clickhouse.config.ClickhouseFinalTableNameGenerator
@@ -372,5 +375,30 @@ class ClickhouseAirbyteClient(
         val exists = reader.getInteger("result")
 
         return exists == 1
+    }
+
+    override suspend fun insertRecords(table: TableName, records: List<Map<String, AirbyteValue>>) {
+        client
+            .insert(
+                "`${table.namespace}`.`${table.name}`",
+                records.serializeToString().byteInputStream(),
+                ClickHouseFormat.JSONEachRow,
+            )
+            .await()
+    }
+
+    override suspend fun readTable(table: TableName): List<Map<String, AirbyteValue>> {
+        val qualifiedTableName = "`${table.namespace}`.`${table.name}`"
+        val resp = query("SELECT * FROM $qualifiedTableName")
+        val schema = client.getTableSchema(qualifiedTableName)
+
+        val reader: ClickHouseBinaryFormatReader = client.newBinaryFormatReader(resp, schema)
+
+        val records = mutableListOf<Map<String, AirbyteValue>>()
+        while (reader.hasNext()) {
+            val record = reader.next().mapValues { AirbyteValue.from(it.value) }
+            records.add(record)
+        }
+        return records
     }
 }

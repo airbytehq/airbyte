@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load
 
 import io.airbyte.cdk.load.client.AirbyteClient
+import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNativeOperations
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableSqlOperations
@@ -19,4 +20,8 @@ interface CoreTableOperationsClient :
     suspend fun dropNamespace(namespace: String) = Unit
 
     suspend fun tableExists(table: TableName) = false
+
+    suspend fun insertRecords(table: TableName, records: List<Map<String, AirbyteValue>>) = Unit
+
+    suspend fun readTable(table: TableName): List<Map<String, AirbyteValue>> = listOf()
 }

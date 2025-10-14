@@ -29,23 +29,13 @@ class ClickhouseTableOperationsTest : CoreTableOperationsSuite {
         super.`create and drop tables`()
     }
 
+    @Test
+    override fun `insert record`() {
+        super.`insert record`()
+    }
+
+    @Test
     override fun `count table rows`() {
         super.`count table rows`()
-    }
-
-    override fun `overwrite tables`() {
-        super.`overwrite tables`()
-    }
-
-    override fun `copy tables`() {
-        super.`copy tables`()
-    }
-
-    override fun `upsert tables`() {
-        super.`upsert tables`()
-    }
-
-    override fun `get generation id`() {
-        super.`get generation id`()
     }
 }
