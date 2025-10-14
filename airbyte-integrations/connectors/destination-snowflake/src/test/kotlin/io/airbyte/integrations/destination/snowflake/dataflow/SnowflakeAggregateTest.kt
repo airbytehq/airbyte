@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.snowflake.dataflow
 
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
-
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeParquetInsertBuffer
 import io.mockk.coVerify
 import io.mockk.mockk
