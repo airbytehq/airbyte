@@ -20,11 +20,14 @@ import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.orchestration.db.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.UUID
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.assertDoesNotThrow
+
+private val log = KotlinLogging.logger {}
 
 interface CoreTableOperationsSuite {
     val client: CoreTableOperationsClient
@@ -38,13 +41,21 @@ interface CoreTableOperationsSuite {
             "test namespace: $testNamespace already exists. Please validate it's deleted before running again."
         }
 
-        client.createNamespace(testNamespace)
+        try {
+            client.createNamespace(testNamespace)
 
-        assert(client.namespaceExists(testNamespace))
+            assert(client.namespaceExists(testNamespace))
 
-        client.dropNamespace(testNamespace)
+            client.dropNamespace(testNamespace)
 
-        assert(!client.namespaceExists(testNamespace))
+            assert(!client.namespaceExists(testNamespace))
+        } finally {
+            try {
+                client.dropNamespace(testNamespace)
+            } catch (e: Exception) {
+                log.warn(e) { "Failed cleaning up test resource: $testNamespace" }
+            }
+        }
     }
 
     fun `create and drop tables`() = runTest {
@@ -59,31 +70,39 @@ interface CoreTableOperationsSuite {
             "test table: ${testTable.namespace}.${testTable.name} already exists. Please validate it's deleted before running again."
         }
 
-        client.createTable(
-            stream =
-                DestinationStream(
-                    unmappedNamespace = testTable.namespace,
-                    unmappedName = testTable.name,
-                    importType = Append,
-                    generationId = 1,
-                    minimumGenerationId = 0,
-                    syncId = 1,
-                    schema = ObjectType(linkedMapOf()),
-                    namespaceMapper = NamespaceMapper(),
-                ),
-            tableName = testTable,
-            columnNameMapping = ColumnNameMapping(mapOf()),
-            replace = false,
-        )
+        try {
+            client.createTable(
+                stream =
+                    DestinationStream(
+                        unmappedNamespace = testTable.namespace,
+                        unmappedName = testTable.name,
+                        importType = Append,
+                        generationId = 1,
+                        minimumGenerationId = 0,
+                        syncId = 1,
+                        schema = ObjectType(linkedMapOf()),
+                        namespaceMapper = NamespaceMapper(),
+                    ),
+                tableName = testTable,
+                columnNameMapping = ColumnNameMapping(mapOf()),
+                replace = false,
+            )
 
-        assert(client.tableExists(testTable)) {
-            "test table: ${testTable.namespace}.${testTable.name} was not created as expected."
-        }
+            assert(client.tableExists(testTable)) {
+                "test table: ${testTable.namespace}.${testTable.name} was not created as expected."
+            }
 
-        client.dropTable(testTable)
+            client.dropTable(testTable)
 
-        assert(!client.tableExists(testTable)) {
-            "test table: ${testTable.namespace}.${testTable.name} was not dropped as expected."
+            assert(!client.tableExists(testTable)) {
+                "test table: ${testTable.namespace}.${testTable.name} was not dropped as expected."
+            }
+        } finally {
+            try {
+                client.dropTable(testTable)
+            } catch (e: Exception) {
+                log.warn(e) { "Failed cleaning up test resource: $testTable" }
+            }
         }
     }
 
@@ -102,43 +121,51 @@ interface CoreTableOperationsSuite {
             "test table: ${testTable.namespace}.${testTable.name} already exists. Please validate it's deleted before running again."
         }
 
-        client.createTable(
-            stream =
-                DestinationStream(
-                    unmappedNamespace = testTable.namespace,
-                    unmappedName = testTable.name,
-                    importType = Append,
-                    generationId = 1,
-                    minimumGenerationId = 0,
-                    syncId = 1,
-                    schema = ObjectType(linkedMapOf("test" to FieldType(IntegerType, false))),
-                    namespaceMapper = NamespaceMapper(),
-                ),
-            tableName = testTable,
-            columnNameMapping = ColumnNameMapping(mapOf("test" to "test")),
-            replace = false,
-        )
-        assert(client.tableExists(testTable)) {
-            "test table: ${testTable.namespace}.${testTable.name} was not created as expected."
-        }
+        try {
+            client.createTable(
+                stream =
+                    DestinationStream(
+                        unmappedNamespace = testTable.namespace,
+                        unmappedName = testTable.name,
+                        importType = Append,
+                        generationId = 1,
+                        minimumGenerationId = 0,
+                        syncId = 1,
+                        schema = ObjectType(linkedMapOf("test" to FieldType(IntegerType, false))),
+                        namespaceMapper = NamespaceMapper(),
+                    ),
+                tableName = testTable,
+                columnNameMapping = ColumnNameMapping(mapOf("test" to "test")),
+                replace = false,
+            )
+            assert(client.tableExists(testTable)) {
+                "test table: ${testTable.namespace}.${testTable.name} was not created as expected."
+            }
 
-        client.insertRecords(testTable, inputRecords)
+            client.insertRecords(testTable, inputRecords)
 
-        val tableRead = client.readTable((testTable))
+            val tableRead = client.readTable((testTable))
 
-        assertEquals(1, tableRead.size) {
-            "More than 1 test record was found in ${testTable.namespace}.${testTable.name}"
-        }
+            assertEquals(1, tableRead.size) {
+                "More than 1 test record was found in ${testTable.namespace}.${testTable.name}"
+            }
 
-        val resultRecords =
-            tableRead.map { rec -> rec.filter { !Meta.COLUMN_NAMES.contains(it.key) } }
+            val resultRecords =
+                tableRead.map { rec -> rec.filter { !Meta.COLUMN_NAMES.contains(it.key) } }
 
-        assertEquals(expectedRecords, resultRecords)
+            assertEquals(expectedRecords, resultRecords)
 
-        client.dropTable(testTable)
+            client.dropTable(testTable)
 
-        assert(!client.tableExists(testTable)) {
-            "test table: ${testTable.namespace}.${testTable.name} was not dropped as expected."
+            assert(!client.tableExists(testTable)) {
+                "test table: ${testTable.namespace}.${testTable.name} was not dropped as expected."
+            }
+        } finally {
+            try {
+                client.dropTable(testTable)
+            } catch (e: Exception) {
+                log.warn(e) { "Failed cleaning up test resource: $testTable" }
+            }
         }
     }
 
@@ -160,70 +187,78 @@ interface CoreTableOperationsSuite {
             "test table: ${testTable.namespace}.${testTable.name} already exists. Please validate it's deleted before running again."
         }
 
-        client.createTable(
-            stream =
-                DestinationStream(
-                    unmappedNamespace = testTable.namespace,
-                    unmappedName = testTable.name,
-                    importType = Append,
-                    generationId = 1,
-                    minimumGenerationId = 0,
-                    syncId = 1,
-                    schema = ObjectType(linkedMapOf("test" to FieldType(IntegerType, false))),
-                    namespaceMapper = NamespaceMapper(),
-                ),
-            tableName = testTable,
-            columnNameMapping = ColumnNameMapping(mapOf("test" to "test")),
-            replace = false,
-        )
-        assert(client.tableExists(testTable)) {
-            "test table: ${testTable.namespace}.${testTable.name} was not created as expected."
-        }
-
-        val records1 =
-            listOf(
-                mapOf("test" to IntegerValue(42)),
-                mapOf("test" to IntegerValue(42)),
-                mapOf("test" to IntegerValue(42)),
+        try {
+            client.createTable(
+                stream =
+                    DestinationStream(
+                        unmappedNamespace = testTable.namespace,
+                        unmappedName = testTable.name,
+                        importType = Append,
+                        generationId = 1,
+                        minimumGenerationId = 0,
+                        syncId = 1,
+                        schema = ObjectType(linkedMapOf("test" to FieldType(IntegerType, false))),
+                        namespaceMapper = NamespaceMapper(),
+                    ),
+                tableName = testTable,
+                columnNameMapping = ColumnNameMapping(mapOf("test" to "test")),
+                replace = false,
             )
+            assert(client.tableExists(testTable)) {
+                "test table: ${testTable.namespace}.${testTable.name} was not created as expected."
+            }
 
-        client.insertRecords(testTable, records1)
+            val records1 =
+                listOf(
+                    mapOf("test" to IntegerValue(42)),
+                    mapOf("test" to IntegerValue(42)),
+                    mapOf("test" to IntegerValue(42)),
+                )
 
-        val count1 = client.countTable(testTable)
+            client.insertRecords(testTable, records1)
 
-        assertEquals(records1.size, count1?.toInt())
+            val count1 = client.countTable(testTable)
 
-        val records2 =
-            listOf(
-                mapOf("test" to IntegerValue(42)),
-            )
+            assertEquals(records1.size, count1?.toInt())
 
-        client.insertRecords(testTable, records2)
+            val records2 =
+                listOf(
+                    mapOf("test" to IntegerValue(42)),
+                )
 
-        val count2 = client.countTable(testTable)
+            client.insertRecords(testTable, records2)
 
-        assertEquals(records1.size + records2.size, count2?.toInt())
+            val count2 = client.countTable(testTable)
 
-        val records3 =
-            listOf(
-                mapOf("test" to IntegerValue(42)),
-                mapOf("test" to IntegerValue(42)),
-                mapOf("test" to IntegerValue(42)),
-                mapOf("test" to IntegerValue(42)),
-                mapOf("test" to IntegerValue(42)),
-                mapOf("test" to IntegerValue(42)),
-            )
+            assertEquals(records1.size + records2.size, count2?.toInt())
 
-        client.insertRecords(testTable, records3)
+            val records3 =
+                listOf(
+                    mapOf("test" to IntegerValue(42)),
+                    mapOf("test" to IntegerValue(42)),
+                    mapOf("test" to IntegerValue(42)),
+                    mapOf("test" to IntegerValue(42)),
+                    mapOf("test" to IntegerValue(42)),
+                    mapOf("test" to IntegerValue(42)),
+                )
 
-        val count3 = client.countTable(testTable)
+            client.insertRecords(testTable, records3)
 
-        assertEquals(records1.size + records2.size + records3.size, count3?.toInt())
+            val count3 = client.countTable(testTable)
 
-        client.dropTable(testTable)
+            assertEquals(records1.size + records2.size + records3.size, count3?.toInt())
 
-        assert(!client.tableExists(testTable)) {
-            "test table: ${testTable.namespace}.${testTable.name} was not dropped as expected."
+            client.dropTable(testTable)
+
+            assert(!client.tableExists(testTable)) {
+                "test table: ${testTable.namespace}.${testTable.name} was not dropped as expected."
+            }
+        } finally {
+            try {
+                client.dropTable(testTable)
+            } catch (e: Exception) {
+                log.warn(e) { "Failed cleaning up test resource: $testTable" }
+            }
         }
     }
 
@@ -247,34 +282,6 @@ interface CoreTableOperationsSuite {
             "test table: ${sourceTable.namespace}.${sourceTable.name} already exists. Please validate it's deleted before running again."
         }
 
-        client.createTable(
-            stream =
-                DestinationStream(
-                    unmappedNamespace = sourceTable.namespace,
-                    unmappedName = sourceTable.name,
-                    importType = Append,
-                    generationId = 1,
-                    minimumGenerationId = 0,
-                    syncId = 1,
-                    schema = ObjectType(linkedMapOf("test" to FieldType(IntegerType, false))),
-                    namespaceMapper = NamespaceMapper(),
-                ),
-            tableName = sourceTable,
-            columnNameMapping = ColumnNameMapping(mapOf("test" to "test")),
-            replace = false,
-        )
-        assert(client.tableExists(sourceTable)) {
-            "test table: ${sourceTable.namespace}.${sourceTable.name} was not created as expected."
-        }
-
-        client.insertRecords(sourceTable, sourceInputRecords)
-
-        val insertedIntoSourceCount = client.countTable(sourceTable)?.toInt()
-        val expectedSourceRecordCount = sourceInputRecords.size
-        assertEquals(expectedSourceRecordCount, insertedIntoSourceCount) {
-            "Expected records were not loaded into the source table."
-        }
-
         val targetTable =
             TableName(
                 "default",
@@ -285,53 +292,96 @@ interface CoreTableOperationsSuite {
             "test table: ${targetTable.namespace}.${targetTable.name} already exists. Please validate it's deleted before running again."
         }
 
-        client.createTable(
-            stream =
-                DestinationStream(
-                    unmappedNamespace = targetTable.namespace,
-                    unmappedName = targetTable.name,
-                    importType = Append,
-                    generationId = 1,
-                    minimumGenerationId = 0,
-                    syncId = 1,
-                    schema = ObjectType(linkedMapOf("test" to FieldType(IntegerType, false))),
-                    namespaceMapper = NamespaceMapper(),
-                ),
-            tableName = targetTable,
-            columnNameMapping = ColumnNameMapping(mapOf("test" to "test")),
-            replace = false,
-        )
+        try {
+            client.createTable(
+                stream =
+                    DestinationStream(
+                        unmappedNamespace = sourceTable.namespace,
+                        unmappedName = sourceTable.name,
+                        importType = Append,
+                        generationId = 1,
+                        minimumGenerationId = 0,
+                        syncId = 1,
+                        schema = ObjectType(linkedMapOf("test" to FieldType(IntegerType, false))),
+                        namespaceMapper = NamespaceMapper(),
+                    ),
+                tableName = sourceTable,
+                columnNameMapping = ColumnNameMapping(mapOf("test" to "test")),
+                replace = false,
+            )
+            assert(client.tableExists(sourceTable)) {
+                "test table: ${sourceTable.namespace}.${sourceTable.name} was not created as expected."
+            }
 
-        assert(client.tableExists(targetTable)) {
-            "test table: ${targetTable.namespace}.${targetTable.name} was not created as expected."
-        }
+            client.insertRecords(sourceTable, sourceInputRecords)
 
-        client.insertRecords(targetTable, targetInputRecords)
+            val insertedIntoSourceCount = client.countTable(sourceTable)?.toInt()
+            val expectedSourceRecordCount = sourceInputRecords.size
+            assertEquals(expectedSourceRecordCount, insertedIntoSourceCount) {
+                "Expected records were not loaded into the source table."
+            }
 
-        val insertedIntoTargetCount = client.countTable(targetTable)?.toInt()
-        val expectedTargetRecordCount = targetInputRecords.size
-        assertEquals(expectedTargetRecordCount, insertedIntoTargetCount) {
-            "Expected records were not loaded into the target table."
-        }
+            client.createTable(
+                stream =
+                    DestinationStream(
+                        unmappedNamespace = targetTable.namespace,
+                        unmappedName = targetTable.name,
+                        importType = Append,
+                        generationId = 1,
+                        minimumGenerationId = 0,
+                        syncId = 1,
+                        schema = ObjectType(linkedMapOf("test" to FieldType(IntegerType, false))),
+                        namespaceMapper = NamespaceMapper(),
+                    ),
+                tableName = targetTable,
+                columnNameMapping = ColumnNameMapping(mapOf("test" to "test")),
+                replace = false,
+            )
 
-        client.overwriteTable(sourceTable, targetTable)
+            assert(client.tableExists(targetTable)) {
+                "test table: ${targetTable.namespace}.${targetTable.name} was not created as expected."
+            }
 
-        val overwrittenTableRead = client.readTable(targetTable)
-        val overwrittenTableRecords =
-            overwrittenTableRead.map { rec -> rec.filter { !Meta.COLUMN_NAMES.contains(it.key) } }
+            client.insertRecords(targetTable, targetInputRecords)
 
-        assertEquals(expectedRecords, overwrittenTableRecords) {
-            "Expected records were not in the overwritten table."
-        }
+            val insertedIntoTargetCount = client.countTable(targetTable)?.toInt()
+            val expectedTargetRecordCount = targetInputRecords.size
+            assertEquals(expectedTargetRecordCount, insertedIntoTargetCount) {
+                "Expected records were not loaded into the target table."
+            }
 
-        assert(!client.tableExists(sourceTable)) {
-            "Source table: ${sourceTable.namespace}.${sourceTable.name} was not dropped as expected."
-        }
+            client.overwriteTable(sourceTable, targetTable)
 
-        client.dropTable(targetTable)
+            val overwrittenTableRead = client.readTable(targetTable)
+            val overwrittenTableRecords =
+                overwrittenTableRead.map { rec ->
+                    rec.filter { !Meta.COLUMN_NAMES.contains(it.key) }
+                }
 
-        assert(!client.tableExists(targetTable)) {
-            "test table: ${targetTable.namespace}.${targetTable.name} was not dropped as expected."
+            assertEquals(expectedRecords, overwrittenTableRecords) {
+                "Expected records were not in the overwritten table."
+            }
+
+            assert(!client.tableExists(sourceTable)) {
+                "Source table: ${sourceTable.namespace}.${sourceTable.name} was not dropped as expected."
+            }
+
+            client.dropTable(targetTable)
+
+            assert(!client.tableExists(targetTable)) {
+                "test table: ${targetTable.namespace}.${targetTable.name} was not dropped as expected."
+            }
+        } finally {
+            try {
+                client.dropTable(sourceTable)
+            } catch (e: Exception) {
+                log.warn(e) { "Failed cleaning up test resource: $sourceTable" }
+            }
+            try {
+                client.dropTable(targetTable)
+            } catch (e: Exception) {
+                log.warn(e) { "Failed cleaning up test resource: $targetTable" }
+            }
         }
     }
 
@@ -374,34 +424,6 @@ interface CoreTableOperationsSuite {
             "test table: ${sourceTable.namespace}.${sourceTable.name} already exists. Please validate it's deleted before running again."
         }
 
-        client.createTable(
-            stream =
-                DestinationStream(
-                    unmappedNamespace = sourceTable.namespace,
-                    unmappedName = sourceTable.name,
-                    importType = Append,
-                    generationId = 1,
-                    minimumGenerationId = 0,
-                    syncId = 1,
-                    schema = schema,
-                    namespaceMapper = NamespaceMapper(),
-                ),
-            tableName = sourceTable,
-            columnNameMapping = columnNameMapping,
-            replace = false,
-        )
-        assert(client.tableExists(sourceTable)) {
-            "test table: ${sourceTable.namespace}.${sourceTable.name} was not created as expected."
-        }
-
-        client.insertRecords(sourceTable, sourceInputRecords)
-
-        val insertedIntoSourceCount = client.countTable(sourceTable)?.toInt()
-        val expectedSourceRecordCount = sourceInputRecords.size
-        assertEquals(expectedSourceRecordCount, insertedIntoSourceCount) {
-            "Expected records were not loaded into the source table."
-        }
-
         val targetTable =
             TableName(
                 "default",
@@ -412,55 +434,96 @@ interface CoreTableOperationsSuite {
             "test table: ${targetTable.namespace}.${targetTable.name} already exists. Please validate it's deleted before running again."
         }
 
-        client.createTable(
-            stream =
-                DestinationStream(
-                    unmappedNamespace = targetTable.namespace,
-                    unmappedName = targetTable.name,
-                    importType = Append,
-                    generationId = 1,
-                    minimumGenerationId = 0,
-                    syncId = 1,
-                    schema = schema,
-                    namespaceMapper = NamespaceMapper(),
-                ),
-            tableName = targetTable,
-            columnNameMapping = columnNameMapping,
-            replace = false,
-        )
+        try {
+            client.createTable(
+                stream =
+                    DestinationStream(
+                        unmappedNamespace = sourceTable.namespace,
+                        unmappedName = sourceTable.name,
+                        importType = Append,
+                        generationId = 1,
+                        minimumGenerationId = 0,
+                        syncId = 1,
+                        schema = schema,
+                        namespaceMapper = NamespaceMapper(),
+                    ),
+                tableName = sourceTable,
+                columnNameMapping = columnNameMapping,
+                replace = false,
+            )
+            assert(client.tableExists(sourceTable)) {
+                "test table: ${sourceTable.namespace}.${sourceTable.name} was not created as expected."
+            }
 
-        assert(client.tableExists(targetTable)) {
-            "test table: ${targetTable.namespace}.${targetTable.name} was not created as expected."
-        }
+            client.insertRecords(sourceTable, sourceInputRecords)
 
-        client.insertRecords(targetTable, targetInputRecords)
+            val insertedIntoSourceCount = client.countTable(sourceTable)?.toInt()
+            val expectedSourceRecordCount = sourceInputRecords.size
+            assertEquals(expectedSourceRecordCount, insertedIntoSourceCount) {
+                "Expected records were not loaded into the source table."
+            }
 
-        val insertedIntoTargetCount = client.countTable(targetTable)?.toInt()
-        val expectedTargetRecordCount = targetInputRecords.size
-        assertEquals(expectedTargetRecordCount, insertedIntoTargetCount) {
-            "Expected records were not loaded into the target table."
-        }
+            client.createTable(
+                stream =
+                    DestinationStream(
+                        unmappedNamespace = targetTable.namespace,
+                        unmappedName = targetTable.name,
+                        importType = Append,
+                        generationId = 1,
+                        minimumGenerationId = 0,
+                        syncId = 1,
+                        schema = schema,
+                        namespaceMapper = NamespaceMapper(),
+                    ),
+                tableName = targetTable,
+                columnNameMapping = columnNameMapping,
+                replace = false,
+            )
 
-        client.copyTable(columnNameMapping, sourceTable, targetTable)
+            assert(client.tableExists(targetTable)) {
+                "test table: ${targetTable.namespace}.${targetTable.name} was not created as expected."
+            }
 
-        val copyTableRead = client.readTable(targetTable)
-        val copyTableRecords =
-            copyTableRead.map { rec -> rec.filter { !Meta.COLUMN_NAMES.contains(it.key) } }
+            client.insertRecords(targetTable, targetInputRecords)
 
-        assertEquals(expectedRecords.toSet(), copyTableRecords.toSet()) {
-            "Expected source records were not copied to the target table."
-        }
+            val insertedIntoTargetCount = client.countTable(targetTable)?.toInt()
+            val expectedTargetRecordCount = targetInputRecords.size
+            assertEquals(expectedTargetRecordCount, insertedIntoTargetCount) {
+                "Expected records were not loaded into the target table."
+            }
 
-        client.dropTable(sourceTable)
+            client.copyTable(columnNameMapping, sourceTable, targetTable)
 
-        assert(!client.tableExists(sourceTable)) {
-            "test table: ${sourceTable.namespace}.${sourceTable.name} was not dropped as expected."
-        }
+            val copyTableRead = client.readTable(targetTable)
+            val copyTableRecords =
+                copyTableRead.map { rec -> rec.filter { !Meta.COLUMN_NAMES.contains(it.key) } }
 
-        client.dropTable(targetTable)
+            assertEquals(expectedRecords.toSet(), copyTableRecords.toSet()) {
+                "Expected source records were not copied to the target table."
+            }
 
-        assert(!client.tableExists(targetTable)) {
-            "test table: ${targetTable.namespace}.${targetTable.name} was not dropped as expected."
+            client.dropTable(sourceTable)
+
+            assert(!client.tableExists(sourceTable)) {
+                "test table: ${sourceTable.namespace}.${sourceTable.name} was not dropped as expected."
+            }
+
+            client.dropTable(targetTable)
+
+            assert(!client.tableExists(targetTable)) {
+                "test table: ${targetTable.namespace}.${targetTable.name} was not dropped as expected."
+            }
+        } finally {
+            try {
+                client.dropTable(sourceTable)
+            } catch (e: Exception) {
+                log.warn(e) { "Failed cleaning up test resource: $sourceTable" }
+            }
+            try {
+                client.dropTable(targetTable)
+            } catch (e: Exception) {
+                log.warn(e) { "Failed cleaning up test resource: $targetTable" }
+            }
         }
     }
 
@@ -498,13 +561,13 @@ interface CoreTableOperationsSuite {
                     "id" to "id",
                     "test" to "test",
                     CDC_DELETED_AT_COLUMN to CDC_DELETED_AT_COLUMN,
-                )
+                ),
             )
         val sourceSchema =
             ObjectType(
                 linkedMapOf(
                     "id" to FieldType(StringType, false),
-                    "test" to FieldType(IntegerType, false)
+                    "test" to FieldType(IntegerType, false),
                 ),
             )
 
@@ -514,6 +577,11 @@ interface CoreTableOperationsSuite {
                 "default",
                 "upsert-test-source-table-$uniquePostFix",
             )
+
+        assert(!client.tableExists(sourceTable)) {
+            "test table: ${sourceTable.namespace}.${sourceTable.name} already exists. Please validate it's deleted before running again."
+        }
+
         val sourceStream =
             DestinationStream(
                 unmappedNamespace = sourceTable.namespace,
@@ -525,35 +593,12 @@ interface CoreTableOperationsSuite {
                 schema = sourceSchema,
                 namespaceMapper = NamespaceMapper(),
             )
-
-        assert(!client.tableExists(sourceTable)) {
-            "test table: ${sourceTable.namespace}.${sourceTable.name} already exists. Please validate it's deleted before running again."
-        }
-
-        client.createTable(
-            stream = sourceStream,
-            tableName = sourceTable,
-            columnNameMapping = columnNameMapping,
-            replace = false,
-        )
-        assert(client.tableExists(sourceTable)) {
-            "test table: ${sourceTable.namespace}.${sourceTable.name} was not created as expected."
-        }
-
-        client.insertRecords(sourceTable, sourceInputRecords)
-
-        val insertedIntoSourceCount = client.countTable(sourceTable)?.toInt()
-        val expectedSourceRecordCount = sourceInputRecords.size
-        assertEquals(expectedSourceRecordCount, insertedIntoSourceCount) {
-            "Expected records were not loaded into the source table."
-        }
-
         val targetSchema =
             ObjectType(
                 linkedMapOf(
                     "id" to FieldType(StringType, false),
                     "test" to FieldType(IntegerType, false),
-                    CDC_DELETED_AT_COLUMN to FieldType(IntegerType, false)
+                    CDC_DELETED_AT_COLUMN to FieldType(IntegerType, false),
                 ),
             )
         val targetTable =
@@ -561,6 +606,11 @@ interface CoreTableOperationsSuite {
                 "default",
                 "upsert-test-target-table-$uniquePostFix",
             )
+
+        assert(!client.tableExists(targetTable)) {
+            "test table: ${targetTable.namespace}.${targetTable.name} already exists. Please validate it's deleted before running again."
+        }
+
         val targetStream =
             DestinationStream(
                 unmappedNamespace = targetTable.namespace,
@@ -577,49 +627,77 @@ interface CoreTableOperationsSuite {
                 namespaceMapper = NamespaceMapper(),
             )
 
-        assert(!client.tableExists(targetTable)) {
-            "test table: ${targetTable.namespace}.${targetTable.name} already exists. Please validate it's deleted before running again."
-        }
+        try {
 
-        client.createTable(
-            stream = targetStream,
-            tableName = targetTable,
-            columnNameMapping = columnNameMapping,
-            replace = false,
-        )
+            client.createTable(
+                stream = sourceStream,
+                tableName = sourceTable,
+                columnNameMapping = columnNameMapping,
+                replace = false,
+            )
+            assert(client.tableExists(sourceTable)) {
+                "test table: ${sourceTable.namespace}.${sourceTable.name} was not created as expected."
+            }
 
-        assert(client.tableExists(targetTable)) {
-            "test table: ${targetTable.namespace}.${targetTable.name} was not created as expected."
-        }
+            client.insertRecords(sourceTable, sourceInputRecords)
 
-        client.insertRecords(targetTable, targetInputRecords)
+            val insertedIntoSourceCount = client.countTable(sourceTable)?.toInt()
+            val expectedSourceRecordCount = sourceInputRecords.size
+            assertEquals(expectedSourceRecordCount, insertedIntoSourceCount) {
+                "Expected records were not loaded into the source table."
+            }
 
-        val insertedIntoTargetCount = client.countTable(targetTable)?.toInt()
-        val expectedTargetRecordCount = targetInputRecords.size
-        assertEquals(expectedTargetRecordCount, insertedIntoTargetCount) {
-            "Expected records were not loaded into the target table."
-        }
+            client.createTable(
+                stream = targetStream,
+                tableName = targetTable,
+                columnNameMapping = columnNameMapping,
+                replace = false,
+            )
 
-        client.upsertTable(targetStream, columnNameMapping, sourceTable, targetTable)
+            assert(client.tableExists(targetTable)) {
+                "test table: ${targetTable.namespace}.${targetTable.name} was not created as expected."
+            }
 
-        val upsertTableRead = client.readTable(targetTable)
-        val upsertTableRecords =
-            upsertTableRead.map { rec -> rec.filter { !Meta.COLUMN_NAMES.contains(it.key) } }
+            client.insertRecords(targetTable, targetInputRecords)
 
-        assertEquals(expectedRecords.toSet(), upsertTableRecords.toSet()) {
-            "Upserted table did not contain expected records."
-        }
+            val insertedIntoTargetCount = client.countTable(targetTable)?.toInt()
+            val expectedTargetRecordCount = targetInputRecords.size
+            assertEquals(expectedTargetRecordCount, insertedIntoTargetCount) {
+                "Expected records were not loaded into the target table."
+            }
 
-        client.dropTable(sourceTable)
+            client.upsertTable(targetStream, columnNameMapping, sourceTable, targetTable)
 
-        assert(!client.tableExists(sourceTable)) {
-            "test table: ${sourceTable.namespace}.${sourceTable.name} was not dropped as expected."
-        }
+            val upsertTableRead = client.readTable(targetTable)
+            val upsertTableRecords =
+                upsertTableRead.map { rec -> rec.filter { !Meta.COLUMN_NAMES.contains(it.key) } }
 
-        client.dropTable(targetTable)
+            assertEquals(expectedRecords.toSet(), upsertTableRecords.toSet()) {
+                "Upserted table did not contain expected records."
+            }
 
-        assert(!client.tableExists(targetTable)) {
-            "test table: ${targetTable.namespace}.${targetTable.name} was not dropped as expected."
+            client.dropTable(sourceTable)
+
+            assert(!client.tableExists(sourceTable)) {
+                "test table: ${sourceTable.namespace}.${sourceTable.name} was not dropped as expected."
+            }
+
+            client.dropTable(targetTable)
+
+            assert(!client.tableExists(targetTable)) {
+                "test table: ${targetTable.namespace}.${targetTable.name} was not dropped as expected."
+            }
+        } finally {
+            try {
+                client.dropTable(sourceTable)
+            } catch (e: Exception) {
+                log.warn(e) { "Failed cleaning up test resource: $sourceTable" }
+            }
+            try {
+                client.dropTable(targetTable)
+            } catch (e: Exception) {
+                log.warn(e) { "Failed cleaning up test resource: $targetTable" }
+            }
         }
     }
 
@@ -631,14 +709,14 @@ interface CoreTableOperationsSuite {
                     mapOf(
                         "id" to StringValue("3"),
                         "test" to IntegerValue(75),
-                        CDC_DELETED_AT_COLUMN to IntegerValue(1234)
+                        CDC_DELETED_AT_COLUMN to IntegerValue(1234),
                     ),
                     mapOf("id" to StringValue("4"), "test" to IntegerValue(309)),
                     mapOf("id" to StringValue("5"), "test" to IntegerValue(309)),
                     mapOf(
                         "id" to StringValue("5"),
                         "test" to IntegerValue(309),
-                        CDC_DELETED_AT_COLUMN to IntegerValue(1234)
+                        CDC_DELETED_AT_COLUMN to IntegerValue(1234),
                     ),
                 ),
             targetInputRecords =
@@ -668,44 +746,52 @@ interface CoreTableOperationsSuite {
             "test table: ${testTable.namespace}.${testTable.name} already exists. Please validate it's deleted before running again."
         }
 
-        client.createTable(
-            stream =
-                DestinationStream(
-                    unmappedNamespace = testTable.namespace,
-                    unmappedName = testTable.name,
-                    importType = Append,
-                    generationId = 1,
-                    minimumGenerationId = 0,
-                    syncId = 1,
-                    schema = ObjectType(linkedMapOf("test" to FieldType(IntegerType, false))),
-                    namespaceMapper = NamespaceMapper(),
-                ),
-            tableName = testTable,
-            columnNameMapping = ColumnNameMapping(mapOf("test" to "test")),
-            replace = false,
-        )
-        assert(client.tableExists(testTable)) {
-            "test table: ${testTable.namespace}.${testTable.name} was not created as expected."
-        }
-
-        val genId = 17L
-        val inputRecords =
-            listOf(
-                mapOf(
-                    "test" to IntegerValue(42),
-                    Meta.COLUMN_NAME_AB_GENERATION_ID to IntegerValue(genId)
-                ),
+        try {
+            client.createTable(
+                stream =
+                    DestinationStream(
+                        unmappedNamespace = testTable.namespace,
+                        unmappedName = testTable.name,
+                        importType = Append,
+                        generationId = 1,
+                        minimumGenerationId = 0,
+                        syncId = 1,
+                        schema = ObjectType(linkedMapOf("test" to FieldType(IntegerType, false))),
+                        namespaceMapper = NamespaceMapper(),
+                    ),
+                tableName = testTable,
+                columnNameMapping = ColumnNameMapping(mapOf("test" to "test")),
+                replace = false,
             )
-        client.insertRecords(testTable, inputRecords)
+            assert(client.tableExists(testTable)) {
+                "test table: ${testTable.namespace}.${testTable.name} was not created as expected."
+            }
 
-        val result = client.getGenerationId(testTable)
+            val genId = 17L
+            val inputRecords =
+                listOf(
+                    mapOf(
+                        "test" to IntegerValue(42),
+                        Meta.COLUMN_NAME_AB_GENERATION_ID to IntegerValue(genId),
+                    ),
+                )
+            client.insertRecords(testTable, inputRecords)
 
-        assertEquals(17, result) { "Actual generation id differed from expected." }
+            val result = client.getGenerationId(testTable)
 
-        client.dropTable(testTable)
+            assertEquals(17, result) { "Actual generation id differed from expected." }
 
-        assert(!client.tableExists(testTable)) {
-            "test table: ${testTable.namespace}.${testTable.name} was not dropped as expected."
+            client.dropTable(testTable)
+
+            assert(!client.tableExists(testTable)) {
+                "test table: ${testTable.namespace}.${testTable.name} was not dropped as expected."
+            }
+        } finally {
+            try {
+                client.dropTable(testTable)
+            } catch (e: Exception) {
+                log.warn(e) { "Failed cleaning up test resource: $testTable" }
+            }
         }
     }
 }
