@@ -70,17 +70,26 @@ class AirbyteValueProtobufEncoder {
         return b.setNull(NullValue.NULL_VALUE)
     }
 
-    private fun encodeBoolean(value: Any, b: AirbyteValueProtobuf.Builder): AirbyteValueProtobuf.Builder {
+    private fun encodeBoolean(
+        value: Any,
+        b: AirbyteValueProtobuf.Builder
+    ): AirbyteValueProtobuf.Builder {
         require(value is Boolean) { "Expected Boolean, got ${value::class.simpleName}" }
         return b.setBoolean(value)
     }
 
-    private fun encodeString(value: Any, b: AirbyteValueProtobuf.Builder): AirbyteValueProtobuf.Builder {
+    private fun encodeString(
+        value: Any,
+        b: AirbyteValueProtobuf.Builder
+    ): AirbyteValueProtobuf.Builder {
         require(value is String) { "Expected String, got ${value::class.simpleName}" }
         return b.setString(value)
     }
 
-    private fun encodeInteger(value: Any, b: AirbyteValueProtobuf.Builder): AirbyteValueProtobuf.Builder {
+    private fun encodeInteger(
+        value: Any,
+        b: AirbyteValueProtobuf.Builder
+    ): AirbyteValueProtobuf.Builder {
         return when (value) {
             is BigInteger -> {
                 if (value.bitLength() < 63) {
@@ -96,26 +105,22 @@ class AirbyteValueProtobufEncoder {
         }
     }
 
-    private fun encodeNumber(value: Any, b: AirbyteValueProtobuf.Builder): AirbyteValueProtobuf.Builder {
+    private fun encodeNumber(
+        value: Any,
+        b: AirbyteValueProtobuf.Builder
+    ): AirbyteValueProtobuf.Builder {
         return when (value) {
             is BigDecimal -> b.setBigDecimal(value.toPlainString())
-            is Double -> {
-                if (value.isInfinite() || value.isNaN()) {
-                    error("Infinite/NaN values are not allowed")
-                }
-                b.setNumber(value)
-            }
-            is Float -> {
-                if (value.isInfinite() || value.isNaN()) {
-                    error("Infinite/NaN values are not allowed")
-                }
-                b.setNumber(value.toDouble())
-            }
+            is Double -> b.setNumber(value)
+            is Float -> b.setNumber(value.toDouble())
             else -> error("Expected BigDecimal, Double, or Float, got ${value::class.simpleName}")
         }
     }
 
-    private fun encodeDate(value: Any, b: AirbyteValueProtobuf.Builder): AirbyteValueProtobuf.Builder {
+    private fun encodeDate(
+        value: Any,
+        b: AirbyteValueProtobuf.Builder
+    ): AirbyteValueProtobuf.Builder {
         val localDate =
             when (value) {
                 is LocalDate -> value
@@ -195,7 +200,10 @@ class AirbyteValueProtobufEncoder {
         return b.setTimestampWithoutTimezone(localDateTimeMsg)
     }
 
-    private fun encodeJson(value: Any, b: AirbyteValueProtobuf.Builder): AirbyteValueProtobuf.Builder {
+    private fun encodeJson(
+        value: Any,
+        b: AirbyteValueProtobuf.Builder
+    ): AirbyteValueProtobuf.Builder {
         val jsonBytes =
             when (value) {
                 is String -> value.toByteArray(StandardCharsets.UTF_8)
@@ -207,14 +215,19 @@ class AirbyteValueProtobufEncoder {
         return b.setJson(ByteString.copyFrom(jsonBytes))
     }
 
-    private fun encodeBinary(value: Any, b: AirbyteValueProtobuf.Builder): AirbyteValueProtobuf.Builder {
+    private fun encodeBinary(
+        value: Any,
+        b: AirbyteValueProtobuf.Builder
+    ): AirbyteValueProtobuf.Builder {
         val base64String =
             when (value) {
                 is String -> value
                 is ByteArray -> BASE64_ENCODER.encodeToString(value)
                 is ByteBuffer -> BASE64_ENCODER.encodeToString(value.array())
                 else ->
-                    error("Expected String or ByteArray or ByteBuffer for Binary, got ${value::class.simpleName}")
+                    error(
+                        "Expected String or ByteArray or ByteBuffer for Binary, got ${value::class.simpleName}"
+                    )
             }
         return b.setString(base64String)
     }

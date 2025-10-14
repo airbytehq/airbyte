@@ -326,10 +326,17 @@ sealed class FeedBootstrap<T : Feed>(
                     stream.schema
                         .sortedBy { it.id }
                         .forEach { field ->
-                            val decodedValueForProto = decoratingFields[field.id]?.let { fve ->
-                                valueForProtobufEncoding(fve)
-                            }
-                            builder.addData(encoder.encode(decodedValueForProto, field.type.airbyteSchemaType, valueVBuilder.clear()))
+                            val decodedValueForProto =
+                                decoratingFields[field.id]?.let { fve ->
+                                    valueForProtobufEncoding(fve)
+                                }
+                            builder.addData(
+                                encoder.encode(
+                                    decodedValueForProto,
+                                    field.type.airbyteSchemaType,
+                                    valueVBuilder.clear()
+                                )
+                            )
                         }
                 }
 

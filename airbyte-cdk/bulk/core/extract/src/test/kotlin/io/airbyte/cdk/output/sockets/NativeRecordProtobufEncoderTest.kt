@@ -54,31 +54,37 @@ class NativeRecordProtobufEncoderTest {
         val airbyteSchemaType: AirbyteSchemaType,
     ) {
         val asDecoderType: Any
-            get() = when (value) {
-                is Short, -> value.toLong().toBigInteger()
-                is Int -> value.toBigInteger()
-                is Long -> value.toBigInteger()
-                is Float -> value.toDouble().toBigDecimal()
-                is BigDecimal -> if (value.scale() == 0) value.toBigInteger() else value
-                is URL -> value.toExternalForm()
-                is ByteBuffer -> when (jsonEncoder) {
-                    is JsonBytesCodec -> value.array().toString(Charsets.UTF_8)
-                    else -> java.util.Base64.getEncoder().encodeToString(value.array())
+            get() =
+                when (value) {
+                    is Short, -> value.toLong().toBigInteger()
+                    is Int -> value.toBigInteger()
+                    is Long -> value.toBigInteger()
+                    is Float -> value.toDouble().toBigDecimal()
+                    is BigDecimal -> if (value.scale() == 0) value.toBigInteger() else value
+                    is URL -> value.toExternalForm()
+                    is ByteBuffer ->
+                        when (jsonEncoder) {
+                            is JsonBytesCodec -> value.array().toString(Charsets.UTF_8)
+                            else -> java.util.Base64.getEncoder().encodeToString(value.array())
+                        }
+                    is Byte -> value.toLong().toBigInteger()
+                    is Double -> value.toBigDecimal()
+                    else -> value!!
                 }
-                is Byte -> value.toLong().toBigInteger()
-                is Double -> value.toBigDecimal()
-                else -> value!!
-            }
     }
 
     val valBuilder = AirbyteValueProtobuf.newBuilder()
     val protoBuilder =
         AirbyteRecordMessageProtobuf.newBuilder().also { it.addData(0, valBuilder.clear()) }
 
-    fun fieldOf(airbyteSchemaType: AirbyteSchemaType, jsonEncoder: JsonEncoder<*>): Field = Field("id", object : FieldType {
-        override val airbyteSchemaType = airbyteSchemaType
-        override val jsonEncoder = jsonEncoder
-    })
+    fun fieldOf(airbyteSchemaType: AirbyteSchemaType, jsonEncoder: JsonEncoder<*>): Field =
+        Field(
+            "id",
+            object : FieldType {
+                override val airbyteSchemaType = airbyteSchemaType
+                override val jsonEncoder = jsonEncoder
+            }
+        )
 
     val testCases =
         listOf(
@@ -192,10 +198,8 @@ class NativeRecordProtobufEncoderTest {
             DynamicTest.dynamicTest("test-${case.value!!.javaClass.simpleName}") {
                 val n: NativeRecordPayload = mutableMapOf("id" to fve)
                 val field = fieldOf(case.airbyteSchemaType, case.jsonEncoder)
-                val actualProto =
-                    n.toProtobuf(setOf(field), protoBuilder, valBuilder)
-                        .build()
-                assertEquals(case.asDecoderType,protoDecoder.decode(actualProto.getData(0)))
+                val actualProto = n.toProtobuf(setOf(field), protoBuilder, valBuilder).build()
+                assertEquals(case.asDecoderType, protoDecoder.decode(actualProto.getData(0)))
             }
         }
     }
