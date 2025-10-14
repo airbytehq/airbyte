@@ -29,6 +29,7 @@ Postman API Reference: https://documenter.getpostman.com/view/21126834/Uz5GnvaL#
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.20 | 2025-10-14 | [68018](https://github.com/airbytehq/airbyte/pull/68018) | Update dependencies |
 | 0.0.19 | 2025-10-07 | [67253](https://github.com/airbytehq/airbyte/pull/67253) | Update dependencies |
 | 0.0.18 | 2025-09-30 | [66304](https://github.com/airbytehq/airbyte/pull/66304) | Update dependencies |
 | 0.0.17 | 2025-09-09 | [66097](https://github.com/airbytehq/airbyte/pull/66097) | Update dependencies |
