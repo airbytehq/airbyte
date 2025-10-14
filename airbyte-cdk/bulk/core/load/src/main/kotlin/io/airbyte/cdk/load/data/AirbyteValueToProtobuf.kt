@@ -29,10 +29,9 @@ class AirbyteValueToProtobuf {
             is ArrayType,
             ArrayTypeWithoutSchema -> {
                 if (value is ArrayValue) {
-                    encoder.encode(
-                        value.toJson().serializeToJsonBytes(),
-                        LeafAirbyteSchemaType.JSONB
-                    ).build()
+                    encoder
+                        .encode(value.toJson().serializeToJsonBytes(), LeafAirbyteSchemaType.JSONB)
+                        .build()
                 } else {
                     encoder.encode(null, LeafAirbyteSchemaType.JSONB).build()
                 }
@@ -41,17 +40,18 @@ class AirbyteValueToProtobuf {
             ObjectTypeWithEmptySchema,
             ObjectTypeWithoutSchema -> {
                 if (value is ObjectValue) {
-                    encoder.encode(
-                        value.toJson().serializeToJsonBytes(),
-                        LeafAirbyteSchemaType.JSONB
-                    ).build()
+                    encoder
+                        .encode(value.toJson().serializeToJsonBytes(), LeafAirbyteSchemaType.JSONB)
+                        .build()
                 } else {
                     encoder.encode(null, LeafAirbyteSchemaType.JSONB).build()
                 }
             }
             is UnionType,
             is UnknownType -> {
-                encoder.encode(value.toJson().serializeToJsonBytes(), LeafAirbyteSchemaType.JSONB).build()
+                encoder
+                    .encode(value.toJson().serializeToJsonBytes(), LeafAirbyteSchemaType.JSONB)
+                    .build()
             }
             // For scalar and temporal types, extract the underlying value and use the encoder
             is BooleanType -> {
@@ -143,7 +143,9 @@ class AirbyteValueToProtobuf {
                             }
                         else -> null
                     }
-                encoder.encode(timestampValue, LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE).build()
+                encoder
+                    .encode(timestampValue, LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE)
+                    .build()
             }
             is TimestampTypeWithoutTimezone -> {
                 val timestampValue =
@@ -157,7 +159,9 @@ class AirbyteValueToProtobuf {
                             }
                         else -> null
                     }
-                encoder.encode(timestampValue, LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE).build()
+                encoder
+                    .encode(timestampValue, LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE)
+                    .build()
             }
         }
     }

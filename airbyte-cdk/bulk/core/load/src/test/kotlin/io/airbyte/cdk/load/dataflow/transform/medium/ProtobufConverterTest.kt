@@ -488,7 +488,8 @@ class ProtobufConverterTest {
             )
 
         val msg = mockMsgWithStream(accessors, unknownChanges = unknownColumnChanges)
-        val source = buildProtoSource(protoValues.map { it.build() }, metaChanges = sourceSideChanges)
+        val source =
+            buildProtoSource(protoValues.map { it.build() }, metaChanges = sourceSideChanges)
 
         val result = converter.convert(msg, source)
 

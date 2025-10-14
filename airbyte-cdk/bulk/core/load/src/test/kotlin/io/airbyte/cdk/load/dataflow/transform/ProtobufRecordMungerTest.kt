@@ -647,7 +647,8 @@ class ProtobufRecordMungerTest {
                 encoder.encode(null, LeafAirbyteSchemaType.STRING),
             )
 
-        val emptyComplexRecord = buildModifiedRecord(emptyComplexTypesProtoValues.map { it.build() })
+        val emptyComplexRecord =
+            buildModifiedRecord(emptyComplexTypesProtoValues.map { it.build() })
         every { record.rawData } returns emptyComplexRecord
 
         val result = munger.transformForDest(record)
