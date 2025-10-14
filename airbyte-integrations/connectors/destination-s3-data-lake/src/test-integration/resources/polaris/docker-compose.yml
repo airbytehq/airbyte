@@ -11,8 +11,8 @@ services:
       MINIO_ROOT_USER: minio_root
       MINIO_ROOT_PASSWORD: m1n1opwd
     ports:
-      - "9000:9000"   # S3 API
-      - "9001:9001"   # Web console
+      - "9000:9000" # S3 API
+      - "9001:9001" # Web console
     volumes:
       - minio-data:/data
     healthcheck:
@@ -56,7 +56,7 @@ services:
         echo "ERROR: Failed to ensure bucket after retries."
         exit 1
       '
-    restart: "no"   # one-shot job; fail if it can’t create
+    restart: "no" # one-shot job; fail if it can’t create
 
   postgres:
     image: postgres:16-alpine
@@ -101,8 +101,8 @@ services:
       POLARIS_S3_ENDPOINT: http://minio:9000
       POLARIS_S3_PATH_STYLE_ACCESS: "true"
     ports:
-      - "8181:8181"   # Catalog API
-      - "8182:8182"   # Health/metrics
+      - "8181:8181" # Catalog API
+      - "8182:8182" # Health/metrics
     restart: unless-stopped
 
 volumes:
