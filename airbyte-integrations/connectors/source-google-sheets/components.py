@@ -487,61 +487,6 @@ class GridDataErrorHandler(DefaultErrorHandler):
         response = response_or_exception
         url = response.request.url
 
-        # Filter 1: expected_one_sheet
-        # Predicate: {{ 'sheets' in response and response["sheets"] | length != 1  }}
-        # Action: FAIL
-        try:
-            response_json = response.json()
-            if "sheets" in response_json and len(response_json["sheets"]) != 1:
-                return ErrorResolution(
-                    response_action=ResponseAction.FAIL,
-                    failure_type=FailureType.config_error,
-                    error_message="Unable to read the schema of sheet. Error: Unexpected return result: Sheet was expected to contain data on exactly 1 sheet.",
-                )
-        except (json.JSONDecodeError, KeyError, TypeError) as e:
-            logger.debug(f"Failed to check expected_one_sheet filter: {e}")
-            pass  # If we can't parse or access JSON, continue to other filters
-
-        # Filter 2: deduplicate_headers
-        # Predicate: {{ response["sheets"][0]["data"][0]["rowData"][0]["values"] |
-        #             map(attribute="formattedValue") | list | length !=
-        #             response["sheets"][0]["data"][0]["rowData"][0]["values"] |
-        #             map(attribute="formattedValue") | list | unique | list | length }}
-        # Action: IGNORE
-        try:
-            response_json = response.json()
-            # Only check if we have the expected structure
-            if (
-                len(response_json.get("sheets", [])) > 0
-                and len(response_json["sheets"][0].get("data", [])) > 0
-                and len(response_json["sheets"][0]["data"][0].get("rowData", [])) > 0
-                and "values" in response_json["sheets"][0]["data"][0]["rowData"][0]
-            ):
-                values = response_json["sheets"][0]["data"][0]["rowData"][0]["values"]
-                headers_found = [v.get("formattedValue") for v in values]
-                unique_headers = list(set(headers_found))
-
-                # Check if duplicates exist (mimicking the YAML predicate exactly)
-                if len(headers_found) != len(unique_headers):
-                    # Build the error message exactly as in YAML
-                    headers_count = {}
-                    duplicate_fields = []
-                    for header_found in headers_found:
-                        if header_found is not None:
-                            headers_count[header_found] = headers_count.get(header_found, 0) + 1
-                            if headers_count[header_found] > 1 and header_found not in duplicate_fields:
-                                duplicate_fields.append(header_found)
-
-                    sheet_title = response_json["sheets"][0]["properties"]["title"]
-                    return ErrorResolution(
-                        response_action=ResponseAction.IGNORE,
-                        failure_type=None,
-                        error_message=f"Duplicate headers found in sheet {sheet_title}. Deduplicating them by appending cell position: {duplicate_fields}",
-                    )
-        except (json.JSONDecodeError, KeyError, TypeError, IndexError) as e:
-            logger.debug(f"Failed to check deduplicate_headers filter: {e}")
-            pass  # If we can't parse or access JSON, continue to other filters
-
         # Filter 3: grid_data_500
         # Special handling for 500 errors with includeGridData=true
         if response.status_code == 500 and "includeGridData=true" in url:
