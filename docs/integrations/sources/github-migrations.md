@@ -5,13 +5,13 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 ## Upgrading to 2.0.0
 
 We're continuously striving to enhance the quality and reliability of our connectors at Airbyte.
-As part of our commitment to delivering exceptional service, we have updated the GitHub source connector to normalize reaction field names for compatibility with Avro and Parquet destinations (such as S3, BigQuery, Snowflake, etc.).
+As part of our commitment to delivering exceptional service, we have updated the GitHub source connector to normalize reaction field names for compatibility across all destinations.
 
-This release introduces breaking changes to the `reactions` object schema, which appears in multiple streams. The GitHub API returns reaction fields named `+1` and `-1`, but these field names violate the Avro specification and cause duplicate field errors when syncing to Parquet/Avro destinations. Both `+1` and `-1` get normalized to `_1`, resulting in a "Duplicate field _1" error that breaks syncs.
+This release introduces breaking changes to the `reactions` object schema, which appears in multiple streams. The GitHub API returns reaction fields named `+1` and `-1`, but these field names contain special characters that are not supported by some destinations, causing sync errors.
 
 ### What changed
 
-The reaction fields have been renamed for Avro compatibility:
+The reaction fields have been renamed for compatibility:
 - `+1` → `plus_one`
 - `-1` → `minus_one`
 
