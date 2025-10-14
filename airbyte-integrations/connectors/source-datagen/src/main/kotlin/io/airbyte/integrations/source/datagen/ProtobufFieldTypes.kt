@@ -5,8 +5,6 @@
 package io.airbyte.integrations.source.datagen
 
 import io.airbyte.cdk.data.AirbyteSchemaType
-import io.airbyte.cdk.data.ArrayAirbyteSchemaType
-import io.airbyte.cdk.data.ArrayEncoder
 import io.airbyte.cdk.data.BigDecimalCodec
 import io.airbyte.cdk.data.BigDecimalIntegerCodec
 import io.airbyte.cdk.data.BooleanCodec
@@ -83,10 +81,4 @@ data object TimestampWithoutTimeZoneFieldType : FieldType {
 data object JsonFieldType : FieldType {
     override val airbyteSchemaType: AirbyteSchemaType = LeafAirbyteSchemaType.JSONB
     override val jsonEncoder: JsonEncoder<*> = JsonStringCodec
-}
-
-data class ArrayFieldType(val elementFieldType: FieldType) : FieldType {
-    override val airbyteSchemaType: AirbyteSchemaType =
-        ArrayAirbyteSchemaType(elementFieldType.airbyteSchemaType)
-    override val jsonEncoder: JsonEncoder<*> = ArrayEncoder(elementFieldType.jsonEncoder)
 }
