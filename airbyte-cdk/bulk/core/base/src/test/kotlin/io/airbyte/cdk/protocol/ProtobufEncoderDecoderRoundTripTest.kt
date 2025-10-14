@@ -317,7 +317,13 @@ class ProtobufEncoderDecoderRoundTripTest {
     fun testBinaryRoundTrip() {
         val binaryStrings = listOf("simple text", "binary data with special chars: \n\t\r", "")
 
-        binaryStrings.forEach { binary -> testRoundTrip(binary.toByteArray(), Base64.getEncoder().encodeToString( binary.toByteArray()), LeafAirbyteSchemaType.BINARY) }
+        binaryStrings.forEach { binary ->
+            testRoundTrip(
+                binary.toByteArray(),
+                Base64.getEncoder().encodeToString(binary.toByteArray()),
+                LeafAirbyteSchemaType.BINARY
+            )
+        }
 
         // Test with byte arrays
         val byteArrays =
