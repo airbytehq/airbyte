@@ -159,7 +159,7 @@ Information about expected report generation waiting time can be found [here](ht
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 7.3.5 | 2025-09-30 | [66708](https://github.com/airbytehq/airbyte/pull/66708) | Update cursor field to `date` for incremental report streams |
+| 7.3.6 | 2025-10-14 | [66708](https://github.com/airbytehq/airbyte/pull/66708) | Update `reportDate` to use `date` value for incremental report streams |
 | 7.3.4 | 2025-09-08 | [65992](https://github.com/airbytehq/airbyte/pull/65992) | Update to CDK v7 |
 | 7.3.3 | 2025-09-09 | [66032](https://github.com/airbytehq/airbyte/pull/66032) | Update dependencies |
 | 7.3.2 | 2025-08-09 | [64654](https://github.com/airbytehq/airbyte/pull/64654) | Update dependencies |

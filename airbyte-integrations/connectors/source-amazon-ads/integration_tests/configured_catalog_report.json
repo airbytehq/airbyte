@@ -12,7 +12,7 @@
           ["recordId"]
         ]
       },
-      "cursor_field": ["date"],
+      "cursor_field": ["reportDate"],
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"
     },
@@ -28,7 +28,7 @@
           ["recordId"]
         ]
       },
-      "cursor_field": ["cursor_field"],
+      "cursor_field": ["reportDate"],
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"
     },
@@ -44,7 +44,7 @@
           ["recordId"]
         ]
       },
-      "cursor_field": ["cursor_field"],
+      "cursor_field": ["reportDate"],
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"
     },
@@ -60,7 +60,7 @@
           ["recordId"]
         ]
       },
-      "cursor_field": ["cursor_field"],
+      "cursor_field": ["reportDate"],
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"
     }
