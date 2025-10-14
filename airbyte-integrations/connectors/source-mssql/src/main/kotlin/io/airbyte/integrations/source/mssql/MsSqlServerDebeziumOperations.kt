@@ -177,7 +177,7 @@ class MsSqlServerDebeziumOperations(
                     as JsonEncoder<Any>
             )
 
-        val eventSerialNo = source["event_serial_no"]?.asInt() ?: 0
+        val eventSerialNo = source["event_serial_no"]?.asInt()?.toString() ?: "0"
         resultRow[MsSqlSourceOperations.MsSqlServerCdcMetaFields.CDC_EVENT_SERIAL_NO.id] =
             FieldValueEncoder(
                 eventSerialNo,

@@ -422,7 +422,7 @@ class MsSqlSourceOperations :
     enum class MsSqlServerCdcMetaFields(override val type: FieldType) : MetaField {
         CDC_CURSOR(CdcIntegerMetaFieldType),
         CDC_LSN(CdcStringMetaFieldType),
-        CDC_EVENT_SERIAL_NO(CdcIntegerMetaFieldType);
+        CDC_EVENT_SERIAL_NO(CdcStringMetaFieldType);
 
         override val id: String
             get() = MetaField.META_PREFIX + name.lowercase()
