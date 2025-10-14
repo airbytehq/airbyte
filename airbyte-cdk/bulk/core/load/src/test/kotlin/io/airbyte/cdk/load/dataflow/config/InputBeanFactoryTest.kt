@@ -26,6 +26,7 @@ import io.mockk.mockk
 import io.mockk.unmockkAll
 import io.mockk.verify
 import java.io.ByteArrayInputStream
+import kotlinx.coroutines.CoroutineDispatcher
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -60,7 +61,11 @@ class InputBeanFactoryTest {
 
     @MockK private lateinit var committedStatsStore: CommittedStatsStore
 
-    private var memoryAndParallelismConfig = MemoryAndParallelismConfig()
+    @MockK private lateinit var aggregationDispatcher: CoroutineDispatcher
+
+    @MockK private lateinit var flushDispatcher: CoroutineDispatcher
+
+    private var aggregatePublishingConfig = AggregatePublishingConfig()
 
     private lateinit var factory: InputBeanFactory
 
@@ -238,7 +243,9 @@ class InputBeanFactoryTest {
                 aggregateStoreFactory = aggregateStoreFactory,
                 stateHistogramStore = stateHistogramStore,
                 statsStore = committedStatsStore,
-                memoryAndParallelismConfig = memoryAndParallelismConfig,
+                aggregatePublishingConfig = aggregatePublishingConfig,
+                aggregationDispatcher = aggregationDispatcher,
+                flushDispatcher = flushDispatcher,
             )
 
         // Then
@@ -273,7 +280,9 @@ class InputBeanFactoryTest {
                 aggregateStoreFactory = aggregateStoreFactory,
                 stateHistogramStore = stateHistogramStore,
                 statsStore = committedStatsStore,
-                memoryAndParallelismConfig = memoryAndParallelismConfig,
+                aggregatePublishingConfig = aggregatePublishingConfig,
+                aggregationDispatcher = aggregationDispatcher,
+                flushDispatcher = flushDispatcher,
             )
 
         // Then
@@ -323,7 +332,9 @@ class InputBeanFactoryTest {
                 aggregateStoreFactory = aggregateStoreFactory,
                 stateHistogramStore = stateHistogramStore,
                 statsStore = committedStatsStore,
-                memoryAndParallelismConfig = memoryAndParallelismConfig,
+                aggregatePublishingConfig = aggregatePublishingConfig,
+                aggregationDispatcher = aggregationDispatcher,
+                flushDispatcher = flushDispatcher,
             )
 
         // Then

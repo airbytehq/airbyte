@@ -235,7 +235,7 @@ class ProtobufConverter(
                 } else if (protobufValue.hasNumber()) {
                     protobufValue.number.toBigDecimal()
                 } else {
-                    BigDecimal.ZERO
+                    null
                 }
             }
             is DateType -> protobufValue.date

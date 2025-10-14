@@ -52,6 +52,9 @@ Documentation: https://rootly.com/api#/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.36 | 2025-10-07 | [67225](https://github.com/airbytehq/airbyte/pull/67225) | Update dependencies |
+| 0.0.35 | 2025-09-30 | [66857](https://github.com/airbytehq/airbyte/pull/66857) | Update dependencies |
+| 0.0.34 | 2025-09-23 | [66635](https://github.com/airbytehq/airbyte/pull/66635) | Update dependencies |
 | 0.0.33 | 2025-09-09 | [66112](https://github.com/airbytehq/airbyte/pull/66112) | Update dependencies |
 | 0.0.32 | 2025-08-24 | [65467](https://github.com/airbytehq/airbyte/pull/65467) | Update dependencies |
 | 0.0.31 | 2025-08-16 | [65033](https://github.com/airbytehq/airbyte/pull/65033) | Update dependencies |

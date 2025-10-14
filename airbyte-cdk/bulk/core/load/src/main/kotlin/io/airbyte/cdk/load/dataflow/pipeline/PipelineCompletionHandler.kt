@@ -23,7 +23,6 @@ class PipelineCompletionHandler(
         cause: Throwable?,
     ) = coroutineScope {
         if (cause != null) {
-            log.error { "Destination Pipeline Completed — Exceptionally" }
             throw cause
         }
 
