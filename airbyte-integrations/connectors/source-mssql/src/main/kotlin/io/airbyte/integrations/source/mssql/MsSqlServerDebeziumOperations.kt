@@ -17,6 +17,7 @@ import io.airbyte.cdk.data.LongCodec
 import io.airbyte.cdk.data.NullCodec
 import io.airbyte.cdk.data.TextCodec
 import io.airbyte.cdk.discover.CommonMetaField
+import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.output.sockets.FieldValueEncoder
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.read.Stream
@@ -34,6 +35,7 @@ import io.airbyte.cdk.read.cdc.DeserializedRecord
 import io.airbyte.cdk.read.cdc.InvalidDebeziumWarmStartState
 import io.airbyte.cdk.read.cdc.ResetDebeziumWarmStartState
 import io.airbyte.cdk.read.cdc.ValidDebeziumWarmStartState
+import io.airbyte.cdk.ssh.TunnelSession
 import io.airbyte.cdk.util.Jsons
 import io.debezium.connector.sqlserver.Lsn
 import io.debezium.connector.sqlserver.SqlServerConnector
@@ -44,6 +46,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
+import java.sql.Connection
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
@@ -61,7 +64,10 @@ data class MsSqlServerCdcPosition(val lsn: String) : Comparable<MsSqlServerCdcPo
 }
 
 @Singleton
-class MsSqlServerDebeziumOperations(private val configuration: MsSqlServerSourceConfiguration) :
+class MsSqlServerDebeziumOperations(
+    private val jdbcConnectionFactory: JdbcConnectionFactory,
+    private val configuration: MsSqlServerSourceConfiguration
+) :
     CdcPartitionsCreatorDebeziumOperations<MsSqlServerCdcPosition>,
     CdcPartitionReaderDebeziumOperations<MsSqlServerCdcPosition> {
 
@@ -251,10 +257,50 @@ class MsSqlServerDebeziumOperations(private val configuration: MsSqlServerSource
                 .asSequence()
                 .map { k -> Jsons.readTree(k) to Jsons.readTree(offsetNode[k].textValue()) }
                 .toMap()
-        if (offsetMap.size != 1) {
-            throw RuntimeException("Offset object should have 1 key in $opaqueStateValue")
-        }
-        val offset = DebeziumOffset(offsetMap)
+
+        // Handle legacy state with multiple offset keys (e.g., different database name casings)
+        val finalOffsetMap =
+            when {
+                offsetMap.size == 1 -> offsetMap
+                offsetMap.size > 1 -> {
+                    log.warn {
+                        "Found ${offsetMap.size} offset keys in saved state. This may be from a legacy connector version. " +
+                            "Selecting the offset with the highest LSN (most recent position)."
+                    }
+
+                    // Select the offset with the highest LSN
+                    val selectedEntry =
+                        offsetMap.entries.maxByOrNull { (_, value) ->
+                            val offsetValue = value as ObjectNode
+                            val commitLsn = offsetValue["commit_lsn"]?.asText()
+                            try {
+                                commitLsn?.let { Lsn.valueOf(it) } ?: Lsn.NULL
+                            } catch (e: Exception) {
+                                log.warn(e) { "Failed to parse LSN from offset value: $value" }
+                                Lsn.NULL
+                            }
+                        }
+
+                    if (selectedEntry == null) {
+                        throw RuntimeException(
+                            "Unable to select valid offset from multiple keys in $opaqueStateValue"
+                        )
+                    }
+
+                    log.info {
+                        "Selected offset key with commit_lsn='${(selectedEntry.value as ObjectNode)["commit_lsn"]?.asText()}' " +
+                            "from ${offsetMap.size} available offset keys."
+                    }
+
+                    mapOf(selectedEntry.key to selectedEntry.value)
+                }
+                else ->
+                    throw RuntimeException(
+                        "Offset object must have at least 1 key in $opaqueStateValue"
+                    )
+            }
+
+        val offset = DebeziumOffset(finalOffsetMap)
 
         // Validate the saved LSN is still available in SQL Server
         val savedLsn =
@@ -315,13 +361,8 @@ class MsSqlServerDebeziumOperations(private val configuration: MsSqlServerSource
      * the LSN is available, false otherwise.
      */
     private fun validateLsnStillAvailable(lsn: Lsn): Boolean {
-        val url = configuration.jdbcUrlFmt.format(configuration.realHost, configuration.realPort)
-        val properties =
-            java.util.Properties().apply {
-                configuration.jdbcProperties.forEach { (key, value) -> setProperty(key, value) }
-            }
-
-        java.sql.DriverManager.getConnection(url, properties).use { connection ->
+        // Use jdbcConnectionFactory which handles SSH tunneling
+        jdbcConnectionFactory.get().use { connection: Connection ->
             connection.createStatement().use { statement ->
                 // Check if the LSN is within the available range
                 // sys.fn_cdc_get_min_lsn returns the minimum available LSN for a capture instance
@@ -396,14 +437,8 @@ class MsSqlServerDebeziumOperations(private val configuration: MsSqlServerSource
      * @throws IllegalStateException if CDC is not enabled or LSN cannot be retrieved
      */
     private fun getCurrentMaxLsn(): Lsn {
-        // Create connection using the configuration's JDBC properties
-        val url = configuration.jdbcUrlFmt.format(configuration.realHost, configuration.realPort)
-        val properties =
-            java.util.Properties().apply {
-                configuration.jdbcProperties.forEach { (key, value) -> setProperty(key, value) }
-            }
-
-        java.sql.DriverManager.getConnection(url, properties).use { connection ->
+        // Use jdbcConnectionFactory which handles SSH tunneling
+        jdbcConnectionFactory.get().use { connection: Connection ->
             connection.createStatement().use { statement ->
                 // Query sys.fn_cdc_get_max_lsn() - no need for USE statement since connection is
                 // already to the right database
@@ -471,6 +506,7 @@ class MsSqlServerDebeziumOperations(private val configuration: MsSqlServerSource
         val databaseName = configuration.databaseName
         val schemaList = streams.map { it.namespace }.distinct().joinToString(",")
         val messageKeyColumns = buildMessageKeyColumns(streams)
+        val tunnelSession: TunnelSession = jdbcConnectionFactory.ensureTunnelSession()
 
         return DebeziumPropertiesBuilder()
             .withDefault()
@@ -491,8 +527,8 @@ class MsSqlServerDebeziumOperations(private val configuration: MsSqlServerSource
                     builder
                 }
             }
-            .withDatabase("hostname", configuration.realHost)
-            .withDatabase("port", configuration.realPort.toString())
+            .withDatabase("hostname", tunnelSession.address.hostName)
+            .withDatabase("port", tunnelSession.address.port.toString())
             .withDatabase("user", configuration.jdbcProperties["user"].toString())
             .withDatabase("password", configuration.jdbcProperties["password"].toString())
             .withDatabase("dbname", databaseName)
