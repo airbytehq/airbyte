@@ -33,6 +33,7 @@ class FieldValueEncoder<R>(val fieldValue: R?, val jsonEncoder: JsonEncoder<in R
 // A native jvm encoding of a database row, which can then be encoded to the desired output format
 // (json or protobuf)
 typealias NativeRecordPayload = MutableMap<String, FieldValueEncoder<*>>
+
 val encoder = ProtobufTypeBasedEncoder()
 
 fun NativeRecordPayload.toJson(parentNode: ObjectNode = Jsons.objectNode()): ObjectNode {
@@ -43,17 +44,18 @@ fun NativeRecordPayload.toJson(parentNode: ObjectNode = Jsons.objectNode()): Obj
 }
 
 /**
- * Transforms a field value into a protobuf-compatible representation.
- * Handles special conversions for types that need preprocessing before protobuf encoding,
- * such as ByteBuffer -> Base64 String, BigDecimal -> BigInteger, URL -> String, etc.
+ * Transforms a field value into a protobuf-compatible representation. Handles special conversions
+ * for types that need preprocessing before protobuf encoding, such as ByteBuffer -> Base64 String,
+ * BigDecimal -> BigInteger, URL -> String, etc.
  */
-fun <R> valueForProtobufEncoding(fve: FieldValueEncoder<R>) : Any? {
+fun <R> valueForProtobufEncoding(fve: FieldValueEncoder<R>): Any? {
     return fve.fieldValue?.let { value ->
         when (fve.jsonEncoder) {
             is BigDecimalIntegerCodec -> (value as BigDecimal).toBigInteger()
             is ByteCodec -> (value as Byte).toLong()
             is UrlCodec -> (value as URL).toExternalForm()
-            is CdcOffsetDateTimeCodec -> (value as OffsetDateTime).format(OffsetDateTimeCodec.formatter)
+            is CdcOffsetDateTimeCodec ->
+                (value as OffsetDateTime).format(OffsetDateTimeCodec.formatter)
             is ArrayEncoder<*> -> fve.encode().toString()
             else -> value
         }
@@ -72,8 +74,16 @@ fun NativeRecordPayload.toProtobuf(
                 // Protobuf does not have field names, so we use a sorted order of fields
                 // So for destination to know which fields it is, we order the fields alphabetically
                 // to make sure that the order is consistent.
-                val decodedValueForProto = this@toProtobuf[field.id]?.let { valueForProtobufEncoding(it) }
-                setData(index, encoder.encode(decodedValueForProto, field.type.airbyteSchemaType, valueBuilder.clear()))
+                val decodedValueForProto =
+                    this@toProtobuf[field.id]?.let { valueForProtobufEncoding(it) }
+                setData(
+                    index,
+                    encoder.encode(
+                        decodedValueForProto,
+                        field.type.airbyteSchemaType,
+                        valueBuilder.clear()
+                    )
+                )
             }
     }
 }
