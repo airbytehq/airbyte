@@ -41,6 +41,7 @@ import kotlin.collections.set
 import kotlin.random.Random
 
 class TypesDataGenerator() : DataGenerator {
+    val stringData = "string".repeat(200)
     val bigInt = BigDecimal("3000000000")
     val bigDecimal = BigDecimal("3000000000.123")
     val date = LocalDate.now()
@@ -58,7 +59,7 @@ class TypesDataGenerator() : DataGenerator {
             FieldValueEncoder(incrementedID.toInt(), IntegerFieldType.jsonEncoder as IntCodec)
 
         recordData[TypesFlavor.FieldNames.STRING] =
-            FieldValueEncoder("string$incrementedID", StringFieldType.jsonEncoder as TextCodec)
+            FieldValueEncoder(stringData, StringFieldType.jsonEncoder as TextCodec)
 
         recordData[TypesFlavor.FieldNames.BOOLEAN] =
             FieldValueEncoder(Random.nextBoolean(), BooleanFieldType.jsonEncoder as BooleanCodec)
