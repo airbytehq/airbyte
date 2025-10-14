@@ -10,7 +10,7 @@ import io.airbyte.cdk.Operation
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.cdk.load.check.CheckOperationV2
 import io.airbyte.cdk.load.check.DestinationCheckerV2
-import io.airbyte.cdk.load.dataflow.config.MemoryAndParallelismConfig
+import io.airbyte.cdk.load.dataflow.config.AggregatePublishingConfig
 import io.airbyte.cdk.load.orchestration.db.DefaultTempTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
 import io.airbyte.cdk.output.OutputConsumer
@@ -157,7 +157,7 @@ class PostgresBeanFactory {
     ) = CheckOperationV2(destinationChecker, outputConsumer)
 
     @Singleton
-    fun getMemoryAndParallelismConfig(): MemoryAndParallelismConfig {
-        return MemoryAndParallelismConfig()
+    fun aggregatePublishingConfig(): AggregatePublishingConfig {
+        return AggregatePublishingConfig()
     }
 }

@@ -14,6 +14,14 @@ tasks.withType(JavaCompile).configureEach {
     options.compilerArgs.add("-Xlint:-this-escape")
 }
 
+// Skip KSP for testFixtures since they only contain Java files
+// KSP has issues processing Java files with Micronaut annotations
+afterEvaluate {
+    tasks.matching { it.name == 'kspTestFixturesKotlin' }.configureEach {
+        enabled = false
+    }
+}
+
 application {
     mainClass = 'io.airbyte.integrations.destination.postgres.PostgresDestinationV2Kt'
     applicationDefaultJvmArgs = [
