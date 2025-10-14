@@ -48,6 +48,7 @@ Here's an example of a dashboard in Datadog using Airbyte's OTEL metrics.
                 # e.g. http://localhost:4318/v1/metrics
                 collectorEndpoint: "YOUR_ENDPOINT" 
     ```
+
 3. Redeploy Airbyte with the updated values.
 
 Airbyte sends metrics to the collector you specified in your configuration.
