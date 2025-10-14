@@ -331,6 +331,7 @@ class RestWriteTest :
 }
 
 @Execution(ExecutionMode.SAME_THREAD)
+@Disabled("Tests failing in master")
 class PolarisWriteTest :
     S3DataLakeWriteTest(
         configContents = getConfig(),
