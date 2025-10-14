@@ -541,4 +541,4 @@ class GridDataErrorHandler(DefaultErrorHandler):
                 )
 
         # If none of our custom filters matched, delegate to parent's interpret_response for default handling
-        return super().interpret_response(response_or_exception)
+        return None
