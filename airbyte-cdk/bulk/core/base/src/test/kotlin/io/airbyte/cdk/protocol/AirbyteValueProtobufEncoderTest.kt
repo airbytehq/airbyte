@@ -389,9 +389,9 @@ class AirbyteValueProtobufEncoderTest {
 
     @Test
     fun testEncodeBinaryString() {
-        val binary = "binary data"
+        val binary = "binary data".toByteArray()
         val result = encoder.encode(binary, LeafAirbyteSchemaType.BINARY)
-        assertEquals(binary, result.string)
+        assertEquals(Base64.getEncoder().encodeToString(binary), result.string)
     }
 
     @Test
