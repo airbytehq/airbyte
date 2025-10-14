@@ -30,8 +30,8 @@ class ClickhouseTableOperationsTest : CoreTableOperationsSuite {
     }
 
     @Test
-    override fun `insert record`() {
-        super.`insert record`()
+    override fun `insert records`() {
+        super.`insert records`()
     }
 
     @Test
@@ -47,5 +47,10 @@ class ClickhouseTableOperationsTest : CoreTableOperationsSuite {
     @Test
     override fun `copy tables`() {
         super.`copy tables`()
+    }
+
+    @Test
+    override fun `get generation id`() {
+        super.`get generation id`()
     }
 }

@@ -87,7 +87,7 @@ interface CoreTableOperationsSuite {
         }
     }
 
-    fun `insert record`(
+    fun `insert records`(
         inputRecords: List<Map<String, AirbyteValue>>,
         expectedRecords: List<Map<String, AirbyteValue>>,
     ) = runTest {
@@ -142,8 +142,8 @@ interface CoreTableOperationsSuite {
         }
     }
 
-    fun `insert record`() =
-        `insert record`(
+    fun `insert records`() =
+        `insert records`(
             inputRecords = listOf(mapOf("test" to IntegerValue(42))),
             expectedRecords = listOf(mapOf("test" to IntegerValue(42))),
         )
@@ -270,7 +270,7 @@ interface CoreTableOperationsSuite {
         client.insertRecords(sourceTable, sourceInputRecords)
 
         val insertedIntoSourceCount = client.countTable(sourceTable)?.toInt()
-        val expectedSourceRecordCount = targetInputRecords.size
+        val expectedSourceRecordCount = sourceInputRecords.size
         assertEquals(expectedSourceRecordCount, insertedIntoSourceCount) {
             "Expected records were not loaded into the source table."
         }
@@ -656,5 +656,56 @@ interface CoreTableOperationsSuite {
                 ),
         )
 
-    fun `get generation id`() = runTest {}
+    fun `get generation id`() = runTest {
+        val uniquePostFix = UUID.randomUUID()
+        val testTable =
+            TableName(
+                "default",
+                "gen-id-test-table-$uniquePostFix",
+            )
+
+        assert(!client.tableExists(testTable)) {
+            "test table: ${testTable.namespace}.${testTable.name} already exists. Please validate it's deleted before running again."
+        }
+
+        client.createTable(
+            stream =
+                DestinationStream(
+                    unmappedNamespace = testTable.namespace,
+                    unmappedName = testTable.name,
+                    importType = Append,
+                    generationId = 1,
+                    minimumGenerationId = 0,
+                    syncId = 1,
+                    schema = ObjectType(linkedMapOf("test" to FieldType(IntegerType, false))),
+                    namespaceMapper = NamespaceMapper(),
+                ),
+            tableName = testTable,
+            columnNameMapping = ColumnNameMapping(mapOf("test" to "test")),
+            replace = false,
+        )
+        assert(client.tableExists(testTable)) {
+            "test table: ${testTable.namespace}.${testTable.name} was not created as expected."
+        }
+
+        val genId = 17L
+        val inputRecords =
+            listOf(
+                mapOf(
+                    "test" to IntegerValue(42),
+                    Meta.COLUMN_NAME_AB_GENERATION_ID to IntegerValue(genId)
+                ),
+            )
+        client.insertRecords(testTable, inputRecords)
+
+        val result = client.getGenerationId(testTable)
+
+        assertEquals(17, result) { "Actual generation id differed from expected." }
+
+        client.dropTable(testTable)
+
+        assert(!client.tableExists(testTable)) {
+            "test table: ${testTable.namespace}.${testTable.name} was not dropped as expected."
+        }
+    }
 }
