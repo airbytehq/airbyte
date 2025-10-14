@@ -6,7 +6,6 @@ package io.airbyte.integrations.destination.postgres.typing_deduping
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.integrations.destination.postgres.PostgresDestination
-import io.airbyte.integrations.destination.postgres.PostgresTestDatabase
 import javax.sql.DataSource
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll

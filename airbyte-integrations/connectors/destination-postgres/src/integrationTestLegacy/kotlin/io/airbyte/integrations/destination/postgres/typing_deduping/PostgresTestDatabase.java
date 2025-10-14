@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.postgres;
+package io.airbyte.integrations.destination.postgres.typing_deduping;
 
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
@@ -192,7 +192,7 @@ public class PostgresTestDatabase extends
               .put("method", "CDC")
               .put("replication_slot", getTestDatabase().getReplicationSlotName())
               .put("publication", getTestDatabase().getPublicationName())
-              .put("initial_waiting_seconds", ConfigBuilder.DEFAULT_CDC_REPLICATION_INITIAL_WAIT.getSeconds())
+              .put("initial_waiting_seconds", DEFAULT_CDC_REPLICATION_INITIAL_WAIT.getSeconds())
               .put("lsn_commit_behaviour", LsnCommitBehaviour)
               .build()));
     }

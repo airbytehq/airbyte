@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.postgres;
+package io.airbyte.integrations.destination.postgres.typing_deduping;
 
 import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
 import io.airbyte.cdk.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
