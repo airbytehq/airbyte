@@ -13,6 +13,7 @@ The reaction fields have been renamed for compatibility:
 ### Affected streams
 
 All streams containing the `reactions` object are affected:
+
 - `comments`
 - `commit_comments`
 - `issue_events`
