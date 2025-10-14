@@ -19,6 +19,7 @@ import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.time.OffsetTime
 import java.time.ZoneOffset
+import java.util.Base64
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
@@ -390,14 +391,14 @@ class AirbyteValueProtobufEncoderTest {
     fun testEncodeBinaryString() {
         val binary = "binary data"
         val result = encoder.encode(binary, LeafAirbyteSchemaType.BINARY)
-        assertEquals(binary, result.json.toStringUtf8())
+        assertEquals(binary, result.string)
     }
 
     @Test
     fun testEncodeBinaryByteArray() {
         val binaryBytes = byteArrayOf(0x01, 0x02, 0x03)
         val result = encoder.encode(binaryBytes, LeafAirbyteSchemaType.BINARY)
-        assertEquals(3, result.json.size())
+        assertEquals(Base64.getEncoder().encodeToString(binaryBytes), result.string)
     }
 
     @Test
