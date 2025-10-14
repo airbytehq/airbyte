@@ -1,26 +1,63 @@
 plugins {
-    id 'airbyte-java-connector'
-    id "io.airbyte.gradle.docker"
-    id 'airbyte-connector-docker-convention'
+    id('application')
+    id('airbyte-bulk-connector')
+    id("io.airbyte.gradle.docker")
+    id('airbyte-connector-docker-convention')
 }
 
-airbyteJavaConnector {
-    cdkVersionRequired = '0.48.9'
-    features = ['db-destinations', 'datastore-postgres', 'typing-deduping']
-    useLocalCdk = false
+airbyteBulkConnector {
+    core = "load"
+    toolkits = ["load-db"]
 }
 
-compileKotlin {
-    compilerOptions {
-        allWarningsAsErrors = false
-    }
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs.add("-Xlint:-this-escape")
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.destination.postgres.PostgresDestination'
-    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
+    mainClass = 'io.airbyte.integrations.destination.postgres.PostgresDestinationV2Kt'
+    applicationDefaultJvmArgs = [
+            '-XX:+ExitOnOutOfMemoryError',
+            '-XX:MaxRAMPercentage=75.0'
+    ]
 }
 
+def hikariCpVersion = "7.0.2"
+def junitVersion = "5.13.4"
+def junitPlatformVersion = "1.13.4"
+def postgresqlVersion = "42.7.2"
+def testContainersVersion = "1.20.5"
+
 dependencies {
-    testFixturesApi 'org.testcontainers:postgresql:1.20.1'
+    implementation("org.postgresql:postgresql:$postgresqlVersion")
+    implementation("com.zaxxer:HikariCP:$hikariCpVersion")
+    implementation(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies"))
+    implementation(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core"))
+    implementation(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-db-destinations"))
+    implementation(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-typing-deduping"))
+    implementation(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-datastore-postgres"))
+
+    testFixturesImplementation(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies"))
+    testFixturesImplementation(testFixtures(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies")))
+    testFixturesImplementation('io.airbyte.airbyte-protocol:protocol-models:0.18.0')
+    testFixturesImplementation(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core"))
+    testFixturesApi(testFixtures(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-core")))
+    testFixturesImplementation(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-db-destinations"))
+    testFixturesApi(testFixtures(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-db-destinations")))
+    testFixturesImplementation(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-typing-deduping"))
+    testFixturesApi(testFixtures(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-typing-deduping")))
+    testFixturesImplementation(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-datastore-postgres"))
+    testFixturesApi(testFixtures(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-datastore-postgres")))
+
+    testImplementation("io.mockk:mockk:1.14.5")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
+    testImplementation("org.junit.jupiter:junit-jupiter:$junitVersion")
+    testRuntimeOnly("org.junit.platform:junit-platform-engine:$junitPlatformVersion")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher:$junitPlatformVersion")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
+
+    integrationTestImplementation("com.zaxxer:HikariCP:$hikariCpVersion")
+    integrationTestImplementation("org.postgresql:postgresql:$postgresqlVersion")
+    integrationTestImplementation("org.testcontainers:postgresql:$testContainersVersion")
+    integrationTestImplementation(project(":airbyte-cdk:java:airbyte-cdk:airbyte-cdk-dependencies"))
 }
