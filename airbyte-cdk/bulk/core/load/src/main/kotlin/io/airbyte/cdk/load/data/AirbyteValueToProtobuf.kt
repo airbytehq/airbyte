@@ -21,7 +21,7 @@ class AirbyteValueToProtobuf {
     fun toProtobuf(value: AirbyteValue, type: AirbyteType): AirbyteValueProtobuf {
         // Handle null values
         if (value is NullValue) {
-            return encoder.encode(null, LeafAirbyteSchemaType.STRING)
+            return encoder.encode(null, LeafAirbyteSchemaType.STRING).build()
         }
 
         // For complex types (arrays, objects, unions), encode as JSON
@@ -32,9 +32,9 @@ class AirbyteValueToProtobuf {
                     encoder.encode(
                         value.toJson().serializeToJsonBytes(),
                         LeafAirbyteSchemaType.JSONB
-                    )
+                    ).build()
                 } else {
-                    encoder.encode(null, LeafAirbyteSchemaType.JSONB)
+                    encoder.encode(null, LeafAirbyteSchemaType.JSONB).build()
                 }
             }
             is ObjectType,
@@ -44,35 +44,35 @@ class AirbyteValueToProtobuf {
                     encoder.encode(
                         value.toJson().serializeToJsonBytes(),
                         LeafAirbyteSchemaType.JSONB
-                    )
+                    ).build()
                 } else {
-                    encoder.encode(null, LeafAirbyteSchemaType.JSONB)
+                    encoder.encode(null, LeafAirbyteSchemaType.JSONB).build()
                 }
             }
             is UnionType,
             is UnknownType -> {
-                encoder.encode(value.toJson().serializeToJsonBytes(), LeafAirbyteSchemaType.JSONB)
+                encoder.encode(value.toJson().serializeToJsonBytes(), LeafAirbyteSchemaType.JSONB).build()
             }
             // For scalar and temporal types, extract the underlying value and use the encoder
             is BooleanType -> {
                 if (value is BooleanValue) {
-                    encoder.encode(value.value, LeafAirbyteSchemaType.BOOLEAN)
+                    encoder.encode(value.value, LeafAirbyteSchemaType.BOOLEAN).build()
                 } else {
-                    encoder.encode(null, LeafAirbyteSchemaType.BOOLEAN)
+                    encoder.encode(null, LeafAirbyteSchemaType.BOOLEAN).build()
                 }
             }
             is StringType -> {
                 if (value is StringValue) {
-                    encoder.encode(value.value, LeafAirbyteSchemaType.STRING)
+                    encoder.encode(value.value, LeafAirbyteSchemaType.STRING).build()
                 } else {
-                    encoder.encode(null, LeafAirbyteSchemaType.STRING)
+                    encoder.encode(null, LeafAirbyteSchemaType.STRING).build()
                 }
             }
             is IntegerType -> {
                 if (value is IntegerValue) {
-                    encoder.encode(value.value, LeafAirbyteSchemaType.INTEGER)
+                    encoder.encode(value.value, LeafAirbyteSchemaType.INTEGER).build()
                 } else {
-                    encoder.encode(null, LeafAirbyteSchemaType.INTEGER)
+                    encoder.encode(null, LeafAirbyteSchemaType.INTEGER).build()
                 }
             }
             is NumberType -> {
@@ -87,7 +87,7 @@ class AirbyteValueToProtobuf {
                             }
                         else -> null
                     }
-                encoder.encode(numberValue, LeafAirbyteSchemaType.NUMBER)
+                encoder.encode(numberValue, LeafAirbyteSchemaType.NUMBER).build()
             }
             is DateType -> {
                 val dateValue =
@@ -101,7 +101,7 @@ class AirbyteValueToProtobuf {
                             }
                         else -> null
                     }
-                encoder.encode(dateValue, LeafAirbyteSchemaType.DATE)
+                encoder.encode(dateValue, LeafAirbyteSchemaType.DATE).build()
             }
             is TimeTypeWithTimezone -> {
                 val timeValue =
@@ -115,7 +115,7 @@ class AirbyteValueToProtobuf {
                             }
                         else -> null
                     }
-                encoder.encode(timeValue, LeafAirbyteSchemaType.TIME_WITH_TIMEZONE)
+                encoder.encode(timeValue, LeafAirbyteSchemaType.TIME_WITH_TIMEZONE).build()
             }
             is TimeTypeWithoutTimezone -> {
                 val timeValue =
@@ -129,7 +129,7 @@ class AirbyteValueToProtobuf {
                             }
                         else -> null
                     }
-                encoder.encode(timeValue, LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE)
+                encoder.encode(timeValue, LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE).build()
             }
             is TimestampTypeWithTimezone -> {
                 val timestampValue =
@@ -143,7 +143,7 @@ class AirbyteValueToProtobuf {
                             }
                         else -> null
                     }
-                encoder.encode(timestampValue, LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE)
+                encoder.encode(timestampValue, LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE).build()
             }
             is TimestampTypeWithoutTimezone -> {
                 val timestampValue =
@@ -157,7 +157,7 @@ class AirbyteValueToProtobuf {
                             }
                         else -> null
                     }
-                encoder.encode(timestampValue, LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE)
+                encoder.encode(timestampValue, LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE).build()
             }
         }
     }

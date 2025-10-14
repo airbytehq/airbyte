@@ -198,7 +198,7 @@ class ProtobufConverterTest {
             )
 
         val msg = mockMsgWithStream(accessors)
-        val source = buildProtoSource(protoValues)
+        val source = buildProtoSource(protoValues.map { it.build() })
 
         val result = converter.convert(msg, source)
 
@@ -282,7 +282,7 @@ class ProtobufConverterTest {
             )
 
         val msg = mockMsgWithStream(accessors)
-        val source = buildProtoSource(protoValues)
+        val source = buildProtoSource(protoValues.map { it.build() })
 
         val result = converter.convert(msg, source)
 
@@ -313,7 +313,7 @@ class ProtobufConverterTest {
         val protoValues = listOf(vNull())
 
         val msg = mockMsgWithStream(accessors)
-        val source = buildProtoSource(protoValues)
+        val source = buildProtoSource(protoValues.map { it.build() })
 
         val result = converter.convert(msg, source)
         assertTrue(result.containsKey("null_field"))
@@ -338,7 +338,7 @@ class ProtobufConverterTest {
         val protoValues = listOf(vTimeNoTz(LocalTime.parse("12:34:56")))
 
         val msg = mockMsgWithStream(accessors)
-        val source = buildProtoSource(protoValues)
+        val source = buildProtoSource(protoValues.map { it.build() })
 
         val result = converter.convert(msg, source)
 
@@ -388,7 +388,7 @@ class ProtobufConverterTest {
         val protoValues = listOf(vString("hello"), vString("this_is_too_long"))
 
         val msg = mockMsgWithStream(accessors)
-        val source = buildProtoSource(protoValues)
+        val source = buildProtoSource(protoValues.map { it.build() })
 
         val result = converter.convert(msg, source)
 
@@ -415,7 +415,7 @@ class ProtobufConverterTest {
         val protoValues = listOf(vString("test"))
 
         val msg = mockMsgWithStream(accessors)
-        val source = buildProtoSource(protoValues)
+        val source = buildProtoSource(protoValues.map { it.build() })
 
         val result = converter.convert(msg, source)
 
@@ -474,7 +474,7 @@ class ProtobufConverterTest {
             )
 
         val invalidBigInteger =
-            AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder().setBigInteger("boom!").build()
+            AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder().setBigInteger("boom!")
 
         val protoValues = listOf(vString("hello"), invalidBigInteger)
 
@@ -488,7 +488,7 @@ class ProtobufConverterTest {
             )
 
         val msg = mockMsgWithStream(accessors, unknownChanges = unknownColumnChanges)
-        val source = buildProtoSource(protoValues, metaChanges = sourceSideChanges)
+        val source = buildProtoSource(protoValues.map { it.build() }, metaChanges = sourceSideChanges)
 
         val result = converter.convert(msg, source)
 
