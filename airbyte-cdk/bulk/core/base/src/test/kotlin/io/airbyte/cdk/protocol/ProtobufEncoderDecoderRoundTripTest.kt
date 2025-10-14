@@ -16,6 +16,7 @@ import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.time.OffsetTime
 import java.time.ZoneOffset
+import java.util.Base64
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -316,7 +317,7 @@ class ProtobufEncoderDecoderRoundTripTest {
     fun testBinaryRoundTrip() {
         val binaryStrings = listOf("simple text", "binary data with special chars: \n\t\r", "")
 
-        binaryStrings.forEach { binary -> testRoundTrip(binary, LeafAirbyteSchemaType.BINARY) }
+        binaryStrings.forEach { binary -> testRoundTrip(binary.toByteArray(), Base64.getEncoder().encodeToString( binary.toByteArray()), LeafAirbyteSchemaType.BINARY) }
 
         // Test with byte arrays
         val byteArrays =
@@ -329,7 +330,7 @@ class ProtobufEncoderDecoderRoundTripTest {
         byteArrays.forEach { bytes ->
             val encoded = encoder.encode(bytes, LeafAirbyteSchemaType.BINARY)
             val decoded = decoder.decode(encoded.build()) as String
-            assertEquals(String(bytes, Charsets.UTF_8), decoded)
+            assertEquals(Base64.getEncoder().encodeToString(bytes), decoded)
         }
     }
 
