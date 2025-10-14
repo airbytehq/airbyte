@@ -222,17 +222,13 @@ class AirbyteValueProtobufEncoder {
         val base64String =
             when (value) {
                 is String -> value
-                is ByteArray -> BASE64_ENCODER.encodeToString(value)
-                is ByteBuffer -> BASE64_ENCODER.encodeToString(value.array())
+                is ByteArray -> Base64.getEncoder().encodeToString(value)
+                is ByteBuffer -> Base64.getEncoder().encodeToString(value.array())
                 else ->
                     error(
                         "Expected String or ByteArray or ByteBuffer for Binary, got ${value::class.simpleName}"
                     )
             }
         return b.setString(base64String)
-    }
-
-    companion object {
-        private val BASE64_ENCODER = Base64.getEncoder()
     }
 }
