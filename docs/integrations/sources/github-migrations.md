@@ -7,6 +7,7 @@ This release introduces breaking changes to the `reactions` object schema, which
 ### What changed
 
 The reaction fields have been renamed for compatibility:
+
 - `+1` → `plus_one`
 - `-1` → `minus_one`
 
