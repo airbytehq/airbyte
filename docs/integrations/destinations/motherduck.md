@@ -72,6 +72,7 @@ This connector is primarily designed to work with MotherDuck and local DuckDB fi
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                          |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------- |
+| 0.1.25 | 2025-10-14 | [67952](https://github.com/airbytehq/airbyte/pull/67952) | Update dependencies |
 | 0.1.24 | 2025-10-07 | [66822](https://github.com/airbytehq/airbyte/pull/66822) | Update dependencies |
 | 0.1.23 | 2025-08-01 | [64161](https://github.com/airbytehq/airbyte/pull/64161) | feat: allow null values in primary key fields. Primary keys are no longer declared as table constraints. |
 | 0.1.22 | 2025-07-22 | [63714](https://github.com/airbytehq/airbyte/pull/63714) | fix(destination-motherduck): handle special characters in stream name when creating tables |
