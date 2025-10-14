@@ -15,7 +15,7 @@ import io.airbyte.cdk.data.NullCodec
 import io.airbyte.cdk.data.OffsetDateTimeCodec
 import io.airbyte.cdk.data.UrlCodec
 import io.airbyte.cdk.discover.FieldOrMetaField
-import io.airbyte.cdk.protocol.ProtobufTypeBasedEncoder
+import io.airbyte.cdk.protocol.AirbyteValueProtobufEncoder
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteRecordMessageProtobuf
@@ -34,7 +34,7 @@ class FieldValueEncoder<R>(val fieldValue: R?, val jsonEncoder: JsonEncoder<in R
 // (json or protobuf)
 typealias NativeRecordPayload = MutableMap<String, FieldValueEncoder<*>>
 
-val encoder = ProtobufTypeBasedEncoder()
+val encoder = AirbyteValueProtobufEncoder()
 
 fun NativeRecordPayload.toJson(parentNode: ObjectNode = Jsons.objectNode()): ObjectNode {
     for ((columnId, value) in this) {

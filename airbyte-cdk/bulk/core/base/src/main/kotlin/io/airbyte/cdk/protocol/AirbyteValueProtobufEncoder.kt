@@ -61,7 +61,7 @@ class AirbyteValueProtobufEncoder {
                 encodeTimestampWithoutTimezone(value, b)
             LeafAirbyteSchemaType.NULL -> buildNull(b)
             LeafAirbyteSchemaType.JSONB -> encodeJson(value, b)
-            LeafAirbyteSchemaType.BINARY -> encodeJson(value, b)
+            LeafAirbyteSchemaType.BINARY -> encodeBinary(value, b)
             is ArrayAirbyteSchemaType -> encodeJson(value, b)
         }
     }

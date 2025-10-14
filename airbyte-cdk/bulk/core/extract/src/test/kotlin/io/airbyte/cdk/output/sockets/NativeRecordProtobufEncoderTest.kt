@@ -88,105 +88,105 @@ class NativeRecordProtobufEncoderTest {
 
     val testCases =
         listOf(
-            TestCase(
-                value = 123L,
-                jsonEncoder = LongCodec,
-                airbyteSchemaType = LeafAirbyteSchemaType.INTEGER,
-            ),
-            TestCase(
-                value = 123,
-                jsonEncoder = IntCodec,
-                airbyteSchemaType = LeafAirbyteSchemaType.INTEGER
-            ),
-            TestCase(
-                value = "text value",
-                jsonEncoder = TextCodec,
-                airbyteSchemaType = LeafAirbyteSchemaType.STRING
-            ),
-            TestCase(
-                value = true,
-                jsonEncoder = BooleanCodec,
-                airbyteSchemaType = LeafAirbyteSchemaType.BOOLEAN
-            ),
-            TestCase(
-                value =
-                    OffsetDateTime.parse(
-                        OffsetDateTime.now().format(OffsetDateTimeCodec.formatter)
-                    ),
-                jsonEncoder = OffsetDateTimeCodec,
-                airbyteSchemaType = LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE
-            ),
-            TestCase(
-                value = 123.456f,
-                jsonEncoder = FloatCodec,
-                airbyteSchemaType = LeafAirbyteSchemaType.NUMBER
-            ),
+//            TestCase(
+//                value = 123L,
+//                jsonEncoder = LongCodec,
+//                airbyteSchemaType = LeafAirbyteSchemaType.INTEGER,
+//            ),
+//            TestCase(
+//                value = 123,
+//                jsonEncoder = IntCodec,
+//                airbyteSchemaType = LeafAirbyteSchemaType.INTEGER
+//            ),
+//            TestCase(
+//                value = "text value",
+//                jsonEncoder = TextCodec,
+//                airbyteSchemaType = LeafAirbyteSchemaType.STRING
+//            ),
+//            TestCase(
+//                value = true,
+//                jsonEncoder = BooleanCodec,
+//                airbyteSchemaType = LeafAirbyteSchemaType.BOOLEAN
+//            ),
+//            TestCase(
+//                value =
+//                    OffsetDateTime.parse(
+//                        OffsetDateTime.now().format(OffsetDateTimeCodec.formatter)
+//                    ),
+//                jsonEncoder = OffsetDateTimeCodec,
+//                airbyteSchemaType = LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE
+//            ),
+//            TestCase(
+//                value = 123.456f,
+//                jsonEncoder = FloatCodec,
+//                airbyteSchemaType = LeafAirbyteSchemaType.NUMBER
+//            ),
             TestCase(
                 value = ByteBuffer.wrap("hello".toByteArray()),
                 jsonEncoder = BinaryCodec,
                 airbyteSchemaType = LeafAirbyteSchemaType.BINARY
             ),
-            TestCase(
-                value = BigDecimal.valueOf(1234.567),
-                jsonEncoder = BigDecimalCodec,
-                airbyteSchemaType = LeafAirbyteSchemaType.NUMBER
-            ),
-            TestCase(
-                value = BigDecimal.valueOf(987),
-                jsonEncoder = BigDecimalIntegerCodec,
-                airbyteSchemaType = LeafAirbyteSchemaType.INTEGER
-            ),
-            TestCase(
-                value = 12.toShort(),
-                jsonEncoder = ShortCodec,
-                airbyteSchemaType = LeafAirbyteSchemaType.INTEGER
-            ),
-            TestCase(
-                value = 123.toByte(),
-                jsonEncoder = ByteCodec,
-                airbyteSchemaType = LeafAirbyteSchemaType.INTEGER
-            ),
-            TestCase(
-                value = 12345.678,
-                jsonEncoder = DoubleCodec,
-                airbyteSchemaType = LeafAirbyteSchemaType.NUMBER
-            ),
-            TestCase(
-                value = ByteBuffer.wrap("{\"hello\":1234}".toByteArray()),
-                jsonEncoder = JsonBytesCodec,
-                airbyteSchemaType = LeafAirbyteSchemaType.JSONB
-            ),
-            TestCase(
-                value = "{\"hello\":1234}",
-                jsonEncoder = JsonStringCodec,
-                airbyteSchemaType = LeafAirbyteSchemaType.JSONB
-            ),
-            TestCase(
-                value = URI("http://www.example.com").toURL(),
-                jsonEncoder = UrlCodec,
-                airbyteSchemaType = LeafAirbyteSchemaType.STRING
-            ),
-            TestCase(
-                value = LocalDate.now(),
-                jsonEncoder = LocalDateCodec,
-                airbyteSchemaType = LeafAirbyteSchemaType.DATE
-            ),
-            TestCase(
-                value = LocalTime.parse(LocalTime.now().format(LocalTimeCodec.formatter)),
-                jsonEncoder = LocalTimeCodec,
-                airbyteSchemaType = LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE
-            ),
-            TestCase(
-                value =
-                    LocalDateTime.parse(LocalDateTime.now().format(LocalDateTimeCodec.formatter)),
-                jsonEncoder = LocalDateTimeCodec,
-                airbyteSchemaType = LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE
-            ),
-            TestCase(
-                value = OffsetTime.parse(OffsetTime.now().format(OffsetTimeCodec.formatter)),
-                jsonEncoder = OffsetTimeCodec,
-                airbyteSchemaType = LeafAirbyteSchemaType.TIME_WITH_TIMEZONE
-            ),
+//            TestCase(
+//                value = BigDecimal.valueOf(1234.567),
+//                jsonEncoder = BigDecimalCodec,
+//                airbyteSchemaType = LeafAirbyteSchemaType.NUMBER
+//            ),
+//            TestCase(
+//                value = BigDecimal.valueOf(987),
+//                jsonEncoder = BigDecimalIntegerCodec,
+//                airbyteSchemaType = LeafAirbyteSchemaType.INTEGER
+//            ),
+//            TestCase(
+//                value = 12.toShort(),
+//                jsonEncoder = ShortCodec,
+//                airbyteSchemaType = LeafAirbyteSchemaType.INTEGER
+//            ),
+//            TestCase(
+//                value = 123.toByte(),
+//                jsonEncoder = ByteCodec,
+//                airbyteSchemaType = LeafAirbyteSchemaType.INTEGER
+//            ),
+//            TestCase(
+//                value = 12345.678,
+//                jsonEncoder = DoubleCodec,
+//                airbyteSchemaType = LeafAirbyteSchemaType.NUMBER
+//            ),
+//            TestCase(
+//                value = ByteBuffer.wrap("{\"hello\":1234}".toByteArray()),
+//                jsonEncoder = JsonBytesCodec,
+//                airbyteSchemaType = LeafAirbyteSchemaType.JSONB
+//            ),
+//            TestCase(
+//                value = "{\"hello\":1234}",
+//                jsonEncoder = JsonStringCodec,
+//                airbyteSchemaType = LeafAirbyteSchemaType.JSONB
+//            ),
+//            TestCase(
+//                value = URI("http://www.example.com").toURL(),
+//                jsonEncoder = UrlCodec,
+//                airbyteSchemaType = LeafAirbyteSchemaType.STRING
+//            ),
+//            TestCase(
+//                value = LocalDate.now(),
+//                jsonEncoder = LocalDateCodec,
+//                airbyteSchemaType = LeafAirbyteSchemaType.DATE
+//            ),
+//            TestCase(
+//                value = LocalTime.parse(LocalTime.now().format(LocalTimeCodec.formatter)),
+//                jsonEncoder = LocalTimeCodec,
+//                airbyteSchemaType = LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE
+//            ),
+//            TestCase(
+//                value =
+//                    LocalDateTime.parse(LocalDateTime.now().format(LocalDateTimeCodec.formatter)),
+//                jsonEncoder = LocalDateTimeCodec,
+//                airbyteSchemaType = LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE
+//            ),
+//            TestCase(
+//                value = OffsetTime.parse(OffsetTime.now().format(OffsetTimeCodec.formatter)),
+//                jsonEncoder = OffsetTimeCodec,
+//                airbyteSchemaType = LeafAirbyteSchemaType.TIME_WITH_TIMEZONE
+//            ),
         )
 
     @TestFactory

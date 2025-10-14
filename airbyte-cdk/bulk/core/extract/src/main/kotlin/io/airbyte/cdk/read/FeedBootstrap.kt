@@ -20,7 +20,7 @@ import io.airbyte.cdk.output.sockets.SocketProtobufOutputConsumer
 import io.airbyte.cdk.output.sockets.toJson
 import io.airbyte.cdk.output.sockets.toProtobuf
 import io.airbyte.cdk.output.sockets.valueForProtobufEncoding
-import io.airbyte.cdk.protocol.ProtobufTypeBasedEncoder
+import io.airbyte.cdk.protocol.AirbyteValueProtobufEncoder
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
@@ -322,7 +322,7 @@ sealed class FeedBootstrap<T : Feed>(
                     // This is necessary because in PROTOBUF mode we don't have field names so
                     // the sorted order of fields is used to determine the field position on the
                     // other side.
-                    val encoder = ProtobufTypeBasedEncoder()
+                    val encoder = AirbyteValueProtobufEncoder()
                     stream.schema
                         .sortedBy { it.id }
                         .forEach { field ->
