@@ -38,4 +38,9 @@ class ClickhouseTableOperationsTest : CoreTableOperationsSuite {
     override fun `count table rows`() {
         super.`count table rows`()
     }
+
+    @Test
+    override fun `overwrite tables`() {
+        super.`overwrite tables`()
+    }
 }
