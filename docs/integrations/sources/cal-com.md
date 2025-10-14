@@ -25,6 +25,7 @@ The Cal.com connector enables seamless data synchronization between Cal.com’s 
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.36 | 2025-10-14 | [67839](https://github.com/airbytehq/airbyte/pull/67839) | Update dependencies |
 | 0.0.35 | 2025-10-07 | [67196](https://github.com/airbytehq/airbyte/pull/67196) | Update dependencies |
 | 0.0.34 | 2025-09-30 | [66315](https://github.com/airbytehq/airbyte/pull/66315) | Update dependencies |
 | 0.0.33 | 2025-09-09 | [66029](https://github.com/airbytehq/airbyte/pull/66029) | Update dependencies |
