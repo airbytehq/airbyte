@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
+import io.airbyte.cdk.load.command.Property
 import io.airbyte.cdk.load.command.aws.asMicronautProperties
 import io.airbyte.cdk.load.data.ArrayType
 import io.airbyte.cdk.load.data.FieldType
@@ -18,6 +19,7 @@ import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.icerberg.parquet.IcebergWriteTest
 import io.airbyte.cdk.load.message.InputRecord
 import io.airbyte.cdk.load.message.Meta
+import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.SimpleTableIdGenerator
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.TableIdGenerator
@@ -29,6 +31,7 @@ import kotlin.test.assertContains
 import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Disabled
@@ -39,27 +42,34 @@ import org.junit.jupiter.api.parallel.ExecutionMode
 abstract class S3DataLakeWriteTest(
     configContents: String,
     tableIdGenerator: TableIdGenerator,
+    getCatalog:
+        (io.airbyte.cdk.command.ConfigurationSpecification) -> org.apache.iceberg.catalog.Catalog,
+    cleaner: DestinationCleaner = io.airbyte.cdk.load.test.util.NoopDestinationCleaner,
+    micronautProperties: Map<Property, String> = emptyMap(),
 ) :
     IcebergWriteTest(
         configContents,
         S3DataLakeSpecification::class.java,
-        { spec ->
-            S3DataLakeTestUtil.getCatalog(
-                S3DataLakeTestUtil.getConfig(spec),
-                S3DataLakeTestUtil.getAwsAssumeRoleCredentials(),
-            )
-        },
-        S3DataLakeCleaner,
+        getCatalog,
+        cleaner,
         tableIdGenerator,
         additionalMicronautEnvs = S3DataLakeDestination.additionalMicronautEnvs,
-        micronautProperties =
-            S3DataLakeTestUtil.getAwsAssumeRoleCredentials().asMicronautProperties(),
+        micronautProperties = micronautProperties,
     )
 
 class GlueWriteTest :
     S3DataLakeWriteTest(
-        Files.readString(S3DataLakeTestUtil.GLUE_CONFIG_PATH),
-        GlueTableIdGenerator(null),
+        configContents = Files.readString(S3DataLakeTestUtil.GLUE_CONFIG_PATH),
+        tableIdGenerator = GlueTableIdGenerator(null),
+        getCatalog = { spec ->
+            S3DataLakeTestUtil.getCatalog(
+                S3DataLakeTestUtil.getConfig(spec as S3DataLakeSpecification),
+                S3DataLakeTestUtil.getAwsAssumeRoleCredentials(),
+            )
+        },
+        cleaner = S3DataLakeCleaner,
+        micronautProperties =
+            S3DataLakeTestUtil.getAwsAssumeRoleCredentials().asMicronautProperties(),
     ) {
     @Test
     fun testNameConflicts() {
@@ -174,10 +184,26 @@ class GlueAssumeRoleWriteTest :
     S3DataLakeWriteTest(
         Files.readString(S3DataLakeTestUtil.GLUE_ASSUME_ROLE_CONFIG_PATH),
         GlueTableIdGenerator(null),
+        { spec ->
+            S3DataLakeTestUtil.getCatalog(
+                S3DataLakeTestUtil.getConfig(spec as S3DataLakeSpecification),
+                S3DataLakeTestUtil.getAwsAssumeRoleCredentials(),
+            )
+        },
     )
 
 @Disabled("Tests failing in master")
-class NessieMinioWriteTest : S3DataLakeWriteTest(getConfig(), SimpleTableIdGenerator()) {
+class NessieMinioWriteTest :
+    S3DataLakeWriteTest(
+        configContents = getConfig(),
+        tableIdGenerator = SimpleTableIdGenerator(),
+        getCatalog = { spec ->
+            S3DataLakeTestUtil.getCatalog(
+                S3DataLakeTestUtil.getConfig(spec as S3DataLakeSpecification),
+                S3DataLakeTestUtil.getAwsAssumeRoleCredentials(),
+            )
+        }
+    ) {
 
     companion object {
         private fun getToken(): String {
@@ -244,7 +270,16 @@ class NessieMinioWriteTest : S3DataLakeWriteTest(getConfig(), SimpleTableIdGener
 // so run singlethreaded.
 @Execution(ExecutionMode.SAME_THREAD)
 @Disabled("Tests failing in master")
-class RestWriteTest : S3DataLakeWriteTest(getConfig(), SimpleTableIdGenerator()) {
+class RestWriteTest :
+    S3DataLakeWriteTest(
+        getConfig(),
+        SimpleTableIdGenerator(),
+        { spec ->
+            S3DataLakeTestUtil.getCatalogWithoutAssumeRole(
+                S3DataLakeTestUtil.getConfig(spec as S3DataLakeSpecification)
+            )
+        }
+    ) {
 
     @Test
     @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/11439")
@@ -290,6 +325,41 @@ class RestWriteTest : S3DataLakeWriteTest(getConfig(), SimpleTableIdGenerator())
         fun setup() {
             // Start the testcontainers environment once before any tests run
             RestTestContainers.start()
+        }
+    }
+}
+
+@Execution(ExecutionMode.SAME_THREAD)
+class PolarisWriteTest :
+    S3DataLakeWriteTest(
+        configContents = getConfig(),
+        tableIdGenerator = SimpleTableIdGenerator(),
+        getCatalog = { spec ->
+            S3DataLakeTestUtil.getCatalogWithoutAssumeRole(
+                S3DataLakeTestUtil.getConfig(spec as S3DataLakeSpecification)
+            )
+        }
+    ) {
+
+    @Test
+    @Disabled("https://github.com/airbytehq/airbyte-internal-issues/issues/11439")
+    override fun testFunkyCharacters() {
+        super.testFunkyCharacters()
+    }
+
+    companion object {
+        fun getConfig(): String = PolarisEnvironment.getConfig()
+
+        @JvmStatic
+        @BeforeAll
+        fun setup() {
+            PolarisEnvironment.startServices()
+        }
+
+        @JvmStatic
+        @AfterAll
+        fun stop() {
+            PolarisEnvironment.stopServices()
         }
     }
 }

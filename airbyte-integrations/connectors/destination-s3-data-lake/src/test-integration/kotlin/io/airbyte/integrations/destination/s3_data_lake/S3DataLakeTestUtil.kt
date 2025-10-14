@@ -56,4 +56,12 @@ object S3DataLakeTestUtil {
         val props = s3DataLakeUtil.toCatalogProperties(config)
         return icebergUtil.createCatalog(DEFAULT_CATALOG_NAME, props)
     }
+
+    /** Create catalog without AWS assume role credentials (for REST/Polaris catalogs) */
+    fun getCatalogWithoutAssumeRole(config: S3DataLakeConfiguration): Catalog {
+        val icebergUtil = IcebergUtil(SimpleTableIdGenerator())
+        val s3DataLakeUtil = S3DataLakeUtil(icebergUtil, null)
+        val props = s3DataLakeUtil.toCatalogProperties(config)
+        return icebergUtil.createCatalog(DEFAULT_CATALOG_NAME, props)
+    }
 }
