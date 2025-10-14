@@ -23,5 +23,5 @@ interface CoreTableOperationsClient :
 
     suspend fun insertRecords(table: TableName, records: List<Map<String, AirbyteValue>>) = Unit
 
-    suspend fun readTable(table: TableName): List<Map<String, AirbyteValue>> = listOf()
+    suspend fun readTable(table: TableName): List<Map<String, Any>> = listOf()
 }

@@ -387,16 +387,20 @@ class ClickhouseAirbyteClient(
             .await()
     }
 
-    override suspend fun readTable(table: TableName): List<Map<String, AirbyteValue>> {
+    override suspend fun readTable(table: TableName): List<Map<String, Any>> {
         val qualifiedTableName = "`${table.namespace}`.`${table.name}`"
         val resp = query("SELECT * FROM $qualifiedTableName")
         val schema = client.getTableSchema(qualifiedTableName)
 
         val reader: ClickHouseBinaryFormatReader = client.newBinaryFormatReader(resp, schema)
 
-        val records = mutableListOf<Map<String, AirbyteValue>>()
+        val records = mutableListOf<Map<String, Any>>()
         while (reader.hasNext()) {
-            val record = reader.next().mapValues { AirbyteValue.from(it.value) }
+            // get next record
+            val cursor = reader.next()
+            // create immutable copy
+            val record = cursor.toMap()
+
             records.add(record)
         }
         return records
