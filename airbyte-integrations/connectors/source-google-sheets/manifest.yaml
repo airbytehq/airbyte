@@ -182,10 +182,6 @@ definitions:
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
-              - type: CustomErrorHandler
-                class_name: source_declarative_manifest.components.GridDataErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
               - type: DefaultErrorHandler
                 backoff_strategies:
                   - type: ExponentialBackoffStrategy
@@ -239,6 +235,10 @@ definitions:
         error_handler:
           type: CompositeErrorHandler
           error_handlers:
+            - type: CustomErrorHandler
+              class_name: source_declarative_manifest.components.GridDataErrorHandler
+              backoff_strategies:
+                - type: ExponentialBackoffStrategy
             - type: DefaultErrorHandler
               response_filters:
                 $ref: "#/definitions/response_filters/single_sheet_response_error_filters"
