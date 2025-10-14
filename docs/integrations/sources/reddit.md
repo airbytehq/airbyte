@@ -65,6 +65,7 @@ Hit send to receive `api_key` in the response under `access_token`
 
 | Version          | Date       |Pull Request | Subject        |
 |------------------|------------|--------------|----------------|
+| 0.0.37 | 2025-10-14 | [67872](https://github.com/airbytehq/airbyte/pull/67872) | Update dependencies |
 | 0.0.36 | 2025-10-07 | [67541](https://github.com/airbytehq/airbyte/pull/67541) | Update dependencies |
 | 0.0.35 | 2025-09-30 | [66443](https://github.com/airbytehq/airbyte/pull/66443) | Update dependencies |
 | 0.0.34 | 2025-09-09 | [65716](https://github.com/airbytehq/airbyte/pull/65716) | Update dependencies |
