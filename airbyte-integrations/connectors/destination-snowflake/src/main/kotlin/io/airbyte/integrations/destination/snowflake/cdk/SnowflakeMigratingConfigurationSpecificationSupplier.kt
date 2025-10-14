@@ -52,7 +52,9 @@ internal fun migrationMissingAuthType(json: String): String {
             else CredentialsSpecification.Type.PRIVATE_KEY.authTypeName
         json.replace(
             CREDENTIALS_REGEX,
-            "$CREDENTIALS_PROPERTY:{$AUTH_TYPE_PROPERTY:\"$authType\",$credentials}"
+            Regex.escapeReplacement(
+                "$CREDENTIALS_PROPERTY:{$AUTH_TYPE_PROPERTY:\"$authType\",$credentials}"
+            )
         )
     }
         ?: json
