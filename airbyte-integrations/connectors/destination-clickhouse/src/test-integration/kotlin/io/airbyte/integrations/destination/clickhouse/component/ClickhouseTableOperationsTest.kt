@@ -43,4 +43,9 @@ class ClickhouseTableOperationsTest : CoreTableOperationsSuite {
     override fun `overwrite tables`() {
         super.`overwrite tables`()
     }
+
+    @Test
+    override fun `copy tables`() {
+        super.`copy tables`()
+    }
 }

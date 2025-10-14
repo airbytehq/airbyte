@@ -17,7 +17,6 @@ import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import java.util.UUID
-import kotlin.test.assertNotEquals
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
@@ -129,7 +128,8 @@ interface CoreTableOperationsSuite {
             "More than 1 test record was found in ${testTable.namespace}.${testTable.name}"
         }
 
-        val resultRecords = tableRead.map { rec -> rec.filter { !Meta.COLUMN_NAMES.contains(it.key) } }
+        val resultRecords =
+            tableRead.map { rec -> rec.filter { !Meta.COLUMN_NAMES.contains(it.key) } }
 
         assertEquals(expectedRecords, resultRecords)
 
@@ -227,9 +227,14 @@ interface CoreTableOperationsSuite {
     }
 
     fun `overwrite tables`(
-        inputRecords: List<Map<String, AirbyteValue>>,
+        sourceInputRecords: List<Map<String, AirbyteValue>>,
+        targetInputRecords: List<Map<String, AirbyteValue>>,
         expectedRecords: List<Map<String, AirbyteValue>>,
     ) = runTest {
+        assertNotEquals(sourceInputRecords, targetInputRecords) {
+            "Source and target table input records must be different to properly test overwrite."
+        }
+
         val uniquePostFix = UUID.randomUUID()
         val sourceTable =
             TableName(
@@ -262,12 +267,13 @@ interface CoreTableOperationsSuite {
             "test table: ${sourceTable.namespace}.${sourceTable.name} was not created as expected."
         }
 
-        client.insertRecords(sourceTable, inputRecords)
+        client.insertRecords(sourceTable, sourceInputRecords)
 
-        val sourceTableRead = client.readTable((sourceTable))
-        val sourceTableRecords = sourceTableRead.map { rec -> rec.filter { !Meta.COLUMN_NAMES.contains(it.key) } }
-
-        assertEquals(expectedRecords, sourceTableRecords) { "Expected records were not loaded into the source table." }
+        val insertedIntoSourceCount = client.countTable(sourceTable)?.toInt()
+        val expectedSourceRecordCount = targetInputRecords.size
+        assertEquals(expectedSourceRecordCount, insertedIntoSourceCount) {
+            "Expected records were not loaded into the source table."
+        }
 
         val targetTable =
             TableName(
@@ -301,30 +307,149 @@ interface CoreTableOperationsSuite {
             "test table: ${targetTable.namespace}.${targetTable.name} was not created as expected."
         }
 
-        val targetTableInputRecords = listOf(
-            mapOf("test" to IntegerValue(124)),
-            mapOf("test" to IntegerValue(8724)),
-            mapOf("test" to IntegerValue(1337)),
-        )
-
-        assertNotEquals(inputRecords, targetTableInputRecords) {
-            "Source and target table input records must be different to properly test overwrite."
-        }
-
-        client.insertRecords(targetTable, targetTableInputRecords)
+        client.insertRecords(targetTable, targetInputRecords)
 
         val insertedIntoTargetCount = client.countTable(targetTable)?.toInt()
-        val expectedTargetRecordCount = targetTableInputRecords.size
+        val expectedTargetRecordCount = targetInputRecords.size
         assertEquals(expectedTargetRecordCount, insertedIntoTargetCount) {
-            "Expected count of records were not inserted into target table."
+            "Expected records were not loaded into the target table."
         }
 
         client.overwriteTable(sourceTable, targetTable)
 
         val overwrittenTableRead = client.readTable(targetTable)
-        val overwrittenTableRecords = overwrittenTableRead.map { rec -> rec.filter { !Meta.COLUMN_NAMES.contains(it.key) } }
+        val overwrittenTableRecords =
+            overwrittenTableRead.map { rec -> rec.filter { !Meta.COLUMN_NAMES.contains(it.key) } }
 
-        assertEquals(expectedRecords, overwrittenTableRecords)  { "Expected records were not in the overwritten table." }
+        assertEquals(expectedRecords, overwrittenTableRecords) {
+            "Expected records were not in the overwritten table."
+        }
+
+        assert(!client.tableExists(sourceTable)) {
+            "Source table: ${sourceTable.namespace}.${sourceTable.name} was not dropped as expected."
+        }
+
+        client.dropTable(targetTable)
+
+        assert(!client.tableExists(targetTable)) {
+            "test table: ${targetTable.namespace}.${targetTable.name} was not dropped as expected."
+        }
+    }
+
+    fun `overwrite tables`() =
+        `overwrite tables`(
+            sourceInputRecords = listOf(
+                mapOf("test" to IntegerValue(123)),
+                mapOf("test" to IntegerValue(456)),
+            ),
+            targetInputRecords = listOf(
+                mapOf("test" to IntegerValue(86)),
+                mapOf("test" to IntegerValue(75)),
+                mapOf("test" to IntegerValue(309)),
+            ),
+            expectedRecords = listOf(
+                mapOf("test" to IntegerValue(123)),
+                mapOf("test" to IntegerValue(456)),
+            ),
+        )
+
+    fun `copy tables`(
+        sourceInputRecords: List<Map<String, AirbyteValue>>,
+        targetInputRecords: List<Map<String, AirbyteValue>>,
+        expectedRecords: List<Map<String, AirbyteValue>>,
+    )  = runTest {
+        val columnNameMapping = ColumnNameMapping(mapOf("test" to "test"))
+        val schema = ObjectType(linkedMapOf("test" to FieldType(IntegerType, false)))
+
+        val uniquePostFix = UUID.randomUUID()
+        val sourceTable =
+            TableName(
+                "default",
+                "copy-test-source-table-$uniquePostFix",
+            )
+
+        assert(!client.tableExists(sourceTable)) {
+            "test table: ${sourceTable.namespace}.${sourceTable.name} already exists. Please validate it's deleted before running again."
+        }
+
+        client.createTable(
+            stream =
+                DestinationStream(
+                    unmappedNamespace = sourceTable.namespace,
+                    unmappedName = sourceTable.name,
+                    importType = Append,
+                    generationId = 1,
+                    minimumGenerationId = 0,
+                    syncId = 1,
+                    includeFiles = false,
+                    schema = schema,
+                    namespaceMapper = NamespaceMapper(),
+                ),
+            tableName = sourceTable,
+            columnNameMapping = columnNameMapping,
+            replace = false,
+        )
+        assert(client.tableExists(sourceTable)) {
+            "test table: ${sourceTable.namespace}.${sourceTable.name} was not created as expected."
+        }
+
+        client.insertRecords(sourceTable, sourceInputRecords)
+
+        val insertedIntoSourceCount = client.countTable(sourceTable)?.toInt()
+        val expectedSourceRecordCount = sourceInputRecords.size
+        assertEquals(expectedSourceRecordCount, insertedIntoSourceCount) {
+            "Expected records were not loaded into the source table."
+        }
+
+        val targetTable =
+            TableName(
+                "default",
+                "copy-test-target-table-$uniquePostFix",
+            )
+
+        assert(!client.tableExists(targetTable)) {
+            "test table: ${targetTable.namespace}.${targetTable.name} already exists. Please validate it's deleted before running again."
+        }
+
+        client.createTable(
+            stream =
+                DestinationStream(
+                    unmappedNamespace = targetTable.namespace,
+                    unmappedName = targetTable.name,
+                    importType = Append,
+                    generationId = 1,
+                    minimumGenerationId = 0,
+                    syncId = 1,
+                    includeFiles = false,
+                    schema = schema,
+                    namespaceMapper = NamespaceMapper(),
+                ),
+            tableName = targetTable,
+            columnNameMapping = columnNameMapping,
+            replace = false,
+        )
+
+        assert(client.tableExists(targetTable)) {
+            "test table: ${targetTable.namespace}.${targetTable.name} was not created as expected."
+        }
+
+        client.insertRecords(targetTable, targetInputRecords)
+
+        val insertedIntoTargetCount = client.countTable(targetTable)?.toInt()
+        val expectedTargetRecordCount = targetInputRecords.size
+        assertEquals(expectedTargetRecordCount, insertedIntoTargetCount) {
+            "Expected records were not loaded into the target table."
+        }
+
+        client.copyTable(columnNameMapping, sourceTable, targetTable)
+
+        val copyTableRead = client.readTable(targetTable)
+        val copyTableRecords =
+            copyTableRead.map { rec -> rec.filter { !Meta.COLUMN_NAMES.contains(it.key) } }
+
+        assertEquals(expectedRecords.toSet(), copyTableRecords.toSet()) {
+            "Expected source records were not copied to the target table."
+        }
 
         client.dropTable(sourceTable)
 
@@ -339,20 +464,27 @@ interface CoreTableOperationsSuite {
         }
     }
 
-    fun `overwrite tables`() = `overwrite tables`(
-        listOf(
-            mapOf("test" to IntegerValue(123)),
-            mapOf("test" to IntegerValue(456)),
-        ),
-        listOf(
-            mapOf("test" to IntegerValue(123)),
-            mapOf("test" to IntegerValue(456)),
-        ),
+    fun `copy tables`() =
+        `copy tables`(
+            sourceInputRecords = listOf(
+                mapOf("test" to IntegerValue(123)),
+                mapOf("test" to IntegerValue(456)),
+            ),
+            targetInputRecords = listOf(
+                mapOf("test" to IntegerValue(86)),
+                mapOf("test" to IntegerValue(75)),
+                mapOf("test" to IntegerValue(309)),
+            ),
+            expectedRecords = listOf(
+                mapOf("test" to IntegerValue(123)),
+                mapOf("test" to IntegerValue(456)),
+                mapOf("test" to IntegerValue(86)),
+                mapOf("test" to IntegerValue(75)),
+                mapOf("test" to IntegerValue(309)),
+            ),
     )
 
-    fun `copy tables`() {}
+    fun `upsert tables`() = runTest {}
 
-    fun `upsert tables`() {}
-
-    fun `get generation id`() {}
+    fun `get generation id`() = runTest {}
 }
