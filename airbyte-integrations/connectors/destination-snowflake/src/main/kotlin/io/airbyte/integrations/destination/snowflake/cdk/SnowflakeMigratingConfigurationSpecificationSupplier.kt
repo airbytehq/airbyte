@@ -24,8 +24,8 @@ internal const val AUTH_TYPE_PROPERTY = "\"auth_type\""
 internal const val CREDENTIALS_PROPERTY = "\"credentials\""
 internal const val PASSWORD_PROPERTY = "\"password\""
 
-internal val CREDENTIALS_REGEX = "$CREDENTIALS_PROPERTY\\s*:\\s*\\{\\s*([^}]*)".toRegex()
-internal val PASSWORD_REGEX = "$PASSWORD_PROPERTY\\s*:\\s*\"([^\"}]*)".toRegex()
+internal val CREDENTIALS_REGEX = """$CREDENTIALS_PROPERTY\s*:\s*\{\s*([^}]*)""".toRegex()
+internal val PASSWORD_REGEX = """$PASSWORD_PROPERTY\s*:\s*"([^"}]*)""".toRegex()
 
 private val logger = KotlinLogging.logger {}
 
@@ -52,7 +52,9 @@ internal fun migrationMissingAuthType(json: String): String {
             else CredentialsSpecification.Type.PRIVATE_KEY.authTypeName
         json.replace(
             CREDENTIALS_REGEX,
-            "$CREDENTIALS_PROPERTY:{$AUTH_TYPE_PROPERTY:\"$authType\",$credentials}"
+            Regex.escapeReplacement(
+                "$CREDENTIALS_PROPERTY:{$AUTH_TYPE_PROPERTY:\"$authType\",$credentials}"
+            )
         )
     }
         ?: json
