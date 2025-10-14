@@ -48,8 +48,8 @@ from .streams import (
 )
 
 
-_DEFAULT_CONCURRENCY = 10
-_MAX_CONCURRENCY = 10
+_DEFAULT_CONCURRENCY = 20
+_MAX_CONCURRENCY = 50
 logger = logging.getLogger("airbyte")
 
 
@@ -60,7 +60,6 @@ class AirbyteStopSync(AirbyteTracedException):
 class SourceSalesforce(ConcurrentSourceAdapter):
     DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
     START_DATE_OFFSET_IN_YEARS = 2
-    MAX_WORKERS = 20
     stop_sync_on_stream_failure = True
     message_repository = InMemoryMessageRepository(Level(AirbyteLogFormatter.level_mapping[logger.level]))
 
