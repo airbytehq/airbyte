@@ -634,20 +634,20 @@ definitions:
         - line_items
       cursor_filter_property_field: hs_lastmodifieddate
       required_scopes: crm.objects.deals.read
-      schema_loader:
-        - type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/deals"
-        - $ref: "#/definitions/base_dynamic_schema_loader"
-          schema_transformations:
-            - type: CustomTransformation
-              class_name: source_declarative_manifest.components.NewtoLegacyFieldTransformation
-              field_mapping:
-                hs_date_entered_: "hs_v2_date_entered_"
-                hs_date_exited_: "hs_v2_date_exited_"
-                hs_time_in_: "hs_v2_latest_time_in_"
-            - type: CustomTransformation
-              class_name: source_declarative_manifest.components.HubspotRenamePropertiesTransformation
+    schema_loader:
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/deals"
+      - $ref: "#/definitions/base_dynamic_schema_loader"
+        schema_transformations:
+          - type: CustomTransformation
+            class_name: source_declarative_manifest.components.NewtoLegacyFieldTransformation
+            field_mapping:
+              hs_date_entered_: "hs_v2_date_entered_"
+              hs_date_exited_: "hs_v2_date_exited_"
+              hs_time_in_: "hs_v2_latest_time_in_"
+          - type: CustomTransformation
+            class_name: source_declarative_manifest.components.HubspotRenamePropertiesTransformation
 
   deals_archived_stream:
     primary_key:
@@ -1464,11 +1464,11 @@ definitions:
         - contacts
       cursor_filter_property_field: hs_lastmodifieddate
       required_scopes: crm.objects.contacts.read, crm.objects.companies.read
-      schema_loader:
-        - type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/companies"
-        - $ref: "#/definitions/base_dynamic_schema_loader"
+    schema_loader:
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/companies"
+      - $ref: "#/definitions/base_dynamic_schema_loader"
 
   engagements_calls_stream:
     $ref: "#/definitions/base_crm_search_incremental_stream"
@@ -1482,11 +1482,11 @@ definitions:
         - tickets
       cursor_filter_property_field: hs_lastmodifieddate
       required_scopes: crm.objects.contacts.read
-      schema_loader:
-        - type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/engagements_calls"
-        - $ref: "#/definitions/base_dynamic_schema_loader"
+    schema_loader:
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/engagements_calls"
+      - $ref: "#/definitions/base_dynamic_schema_loader"
 
   engagements_emails_stream:
     $ref: "#/definitions/base_crm_search_incremental_stream"
@@ -1500,11 +1500,11 @@ definitions:
         - tickets
       cursor_filter_property_field: hs_lastmodifieddate
       required_scopes: crm.objects.contacts.read, sales-email-read
-      schema_loader:
-        - type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/engagements_emails"
-        - $ref: "#/definitions/base_dynamic_schema_loader"
+    schema_loader:
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/engagements_emails"
+      - $ref: "#/definitions/base_dynamic_schema_loader"
 
   engagements_meetings_stream:
     $ref: "#/definitions/base_crm_search_incremental_stream"
@@ -1518,11 +1518,11 @@ definitions:
         - tickets
       required_scopes: crm.objects.contacts.read
       cursor_filter_property_field: hs_lastmodifieddate
-      schema_loader:
-        - type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/engagements_meetings"
-        - $ref: "#/definitions/base_dynamic_schema_loader"
+    schema_loader:
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/engagements_meetings"
+      - $ref: "#/definitions/base_dynamic_schema_loader"
 
   engagements_notes_stream:
     $ref: "#/definitions/base_crm_search_incremental_stream"
@@ -1536,11 +1536,11 @@ definitions:
         - tickets
       cursor_filter_property_field: hs_lastmodifieddate
       required_scopes: crm.objects.contacts.read
-      schema_loader:
-        - type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/engagements_notes"
-        - $ref: "#/definitions/base_dynamic_schema_loader"
+    schema_loader:
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/engagements_notes"
+      - $ref: "#/definitions/base_dynamic_schema_loader"
 
   engagements_tasks_stream:
     $ref: "#/definitions/base_crm_search_incremental_stream"
@@ -1554,11 +1554,11 @@ definitions:
         - tickets
       cursor_filter_property_field: hs_lastmodifieddate
       required_scopes: crm.objects.contacts.read
-      schema_loader:
-        - type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/engagements_tasks"
-        - $ref: "#/definitions/base_dynamic_schema_loader"
+    schema_loader:
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/engagements_tasks"
+      - $ref: "#/definitions/base_dynamic_schema_loader"
 
   subscription_changes_stream:
     $ref: "#/definitions/stream_base"
@@ -1794,20 +1794,20 @@ definitions:
         - companies
       cursor_filter_property_field: lastmodifieddate
       required_scopes: crm.objects.contacts.read
-      schema_loader:
-        - type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/contacts"
-        - $ref: "#/definitions/base_dynamic_schema_loader"
-          schema_transformations:
-            - type: CustomTransformation
-              class_name: source_declarative_manifest.components.NewtoLegacyFieldTransformation
-              field_mapping:
-                hs_lifecyclestage_: "hs_v2_date_entered_"
-                hs_date_exited_: "hs_v2_date_exited_"
-                hs_time_in_: "hs_v2_latest_time_in_"
-            - type: CustomTransformation
-              class_name: source_declarative_manifest.components.HubspotRenamePropertiesTransformation
+    schema_loader:
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts"
+      - $ref: "#/definitions/base_dynamic_schema_loader"
+        schema_transformations:
+          - type: CustomTransformation
+            class_name: source_declarative_manifest.components.NewtoLegacyFieldTransformation
+            field_mapping:
+              hs_lifecyclestage_: "hs_v2_date_entered_"
+              hs_date_exited_: "hs_v2_date_exited_"
+              hs_time_in_: "hs_v2_latest_time_in_"
+          - type: CustomTransformation
+            class_name: source_declarative_manifest.components.HubspotRenamePropertiesTransformation
 
   deal_splits_stream:
     $ref: "#/definitions/base_crm_search_incremental_stream"
@@ -1816,11 +1816,11 @@ definitions:
       entity: deal_split
       cursor_filter_property_field: hs_lastmodifieddate
       required_scopes: crm.objects.deals.read
-      schema_loader:
-        - type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/deal_splits"
-        - $ref: "#/definitions/base_dynamic_schema_loader"
+    schema_loader:
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/deal_splits"
+      - $ref: "#/definitions/base_dynamic_schema_loader"
 
   leads_stream:
     $ref: "#/definitions/base_crm_search_incremental_stream"
@@ -1832,11 +1832,11 @@ definitions:
         - contacts
       cursor_filter_property_field: hs_lastmodifieddate
       required_scopes: crm.objects.contacts.read, crm.objects.companies.read, crm.objects.leads.read
-      schema_loader:
-        - type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/leads"
-        - $ref: "#/definitions/base_dynamic_schema_loader"
+    schema_loader:
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/leads"
+      - $ref: "#/definitions/base_dynamic_schema_loader"
 
   tickets_stream:
     $ref: "#/definitions/base_crm_search_incremental_stream"
@@ -1849,11 +1849,11 @@ definitions:
         - deals
       cursor_filter_property_field: hs_lastmodifieddate
       required_scopes: tickets
-      schema_loader:
-        - type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/tickets"
-        - $ref: "#/definitions/base_dynamic_schema_loader"
+    schema_loader:
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tickets"
+      - $ref: "#/definitions/base_dynamic_schema_loader"
 
 streams:
   - "#/definitions/campaigns_stream"
