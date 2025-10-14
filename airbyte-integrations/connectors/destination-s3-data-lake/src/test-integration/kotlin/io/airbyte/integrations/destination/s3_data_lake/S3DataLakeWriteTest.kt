@@ -63,7 +63,7 @@ class GlueWriteTest :
         tableIdGenerator = GlueTableIdGenerator(null),
         getCatalog = { spec ->
             S3DataLakeTestUtil.getCatalog(
-                S3DataLakeTestUtil.getConfig(spec as S3DataLakeSpecification),
+                S3DataLakeTestUtil.getConfig(spec),
                 S3DataLakeTestUtil.getAwsAssumeRoleCredentials(),
             )
         },
@@ -182,14 +182,17 @@ class GlueWriteTest :
 
 class GlueAssumeRoleWriteTest :
     S3DataLakeWriteTest(
-        Files.readString(S3DataLakeTestUtil.GLUE_ASSUME_ROLE_CONFIG_PATH),
-        GlueTableIdGenerator(null),
-        { spec ->
+        configContents = Files.readString(S3DataLakeTestUtil.GLUE_ASSUME_ROLE_CONFIG_PATH),
+        tableIdGenerator = GlueTableIdGenerator(null),
+        getCatalog = { spec ->
             S3DataLakeTestUtil.getCatalog(
-                S3DataLakeTestUtil.getConfig(spec as S3DataLakeSpecification),
+                S3DataLakeTestUtil.getConfig(spec),
                 S3DataLakeTestUtil.getAwsAssumeRoleCredentials(),
             )
         },
+        cleaner = S3DataLakeCleaner,
+        micronautProperties =
+            S3DataLakeTestUtil.getAwsAssumeRoleCredentials().asMicronautProperties(),
     )
 
 @Disabled("Tests failing in master")
