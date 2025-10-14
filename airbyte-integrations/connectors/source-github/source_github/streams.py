@@ -225,9 +225,9 @@ class GithubStream(GithubStreamABC):
         if "reactions" in record and record["reactions"]:
             reactions = record["reactions"]
             if "+1" in reactions:
-                reactions["reaction_plus_one"] = reactions.pop("+1")
+                reactions["plus_one"] = reactions.pop("+1")
             if "-1" in reactions:
-                reactions["reaction_minus_one"] = reactions.pop("-1")
+                reactions["minus_one"] = reactions.pop("-1")
 
         return record
 
