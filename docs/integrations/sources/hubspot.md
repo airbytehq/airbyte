@@ -335,6 +335,7 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.0.6 | 2025-10-14 | [67911](https://github.com/airbytehq/airbyte/pull/67911) | Update dependencies |
 | 6.0.5 | 2025-10-07 | [67400](https://github.com/airbytehq/airbyte/pull/67400) | Update dependencies |
 | 6.0.4 | 2025-09-30 | [66409](https://github.com/airbytehq/airbyte/pull/66409) | Update dependencies |
 | 6.0.3 | 2025-09-25 | [66700](https://github.com/airbytehq/airbyte/pull/66700) | Revert to 6.0.1 |
