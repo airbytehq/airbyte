@@ -6,6 +6,7 @@ package io.airbyte.cdk.load.component
 
 import io.airbyte.cdk.load.CoreTableOperationsClient
 import io.airbyte.cdk.load.command.Append
+import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.data.AirbyteValue
@@ -13,7 +14,10 @@ import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.data.StringType
+import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.message.Meta
+import io.airbyte.cdk.load.orchestration.db.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import java.util.UUID
@@ -64,7 +68,6 @@ interface CoreTableOperationsSuite {
                     generationId = 1,
                     minimumGenerationId = 0,
                     syncId = 1,
-                    includeFiles = false,
                     schema = ObjectType(linkedMapOf()),
                     namespaceMapper = NamespaceMapper(),
                 ),
@@ -108,7 +111,6 @@ interface CoreTableOperationsSuite {
                     generationId = 1,
                     minimumGenerationId = 0,
                     syncId = 1,
-                    includeFiles = false,
                     schema = ObjectType(linkedMapOf("test" to FieldType(IntegerType, false))),
                     namespaceMapper = NamespaceMapper(),
                 ),
@@ -167,7 +169,6 @@ interface CoreTableOperationsSuite {
                     generationId = 1,
                     minimumGenerationId = 0,
                     syncId = 1,
-                    includeFiles = false,
                     schema = ObjectType(linkedMapOf("test" to FieldType(IntegerType, false))),
                     namespaceMapper = NamespaceMapper(),
                 ),
@@ -255,7 +256,6 @@ interface CoreTableOperationsSuite {
                     generationId = 1,
                     minimumGenerationId = 0,
                     syncId = 1,
-                    includeFiles = false,
                     schema = ObjectType(linkedMapOf("test" to FieldType(IntegerType, false))),
                     namespaceMapper = NamespaceMapper(),
                 ),
@@ -294,7 +294,6 @@ interface CoreTableOperationsSuite {
                     generationId = 1,
                     minimumGenerationId = 0,
                     syncId = 1,
-                    includeFiles = false,
                     schema = ObjectType(linkedMapOf("test" to FieldType(IntegerType, false))),
                     namespaceMapper = NamespaceMapper(),
                 ),
@@ -338,26 +337,29 @@ interface CoreTableOperationsSuite {
 
     fun `overwrite tables`() =
         `overwrite tables`(
-            sourceInputRecords = listOf(
-                mapOf("test" to IntegerValue(123)),
-                mapOf("test" to IntegerValue(456)),
-            ),
-            targetInputRecords = listOf(
-                mapOf("test" to IntegerValue(86)),
-                mapOf("test" to IntegerValue(75)),
-                mapOf("test" to IntegerValue(309)),
-            ),
-            expectedRecords = listOf(
-                mapOf("test" to IntegerValue(123)),
-                mapOf("test" to IntegerValue(456)),
-            ),
+            sourceInputRecords =
+                listOf(
+                    mapOf("test" to IntegerValue(123)),
+                    mapOf("test" to IntegerValue(456)),
+                ),
+            targetInputRecords =
+                listOf(
+                    mapOf("test" to IntegerValue(86)),
+                    mapOf("test" to IntegerValue(75)),
+                    mapOf("test" to IntegerValue(309)),
+                ),
+            expectedRecords =
+                listOf(
+                    mapOf("test" to IntegerValue(123)),
+                    mapOf("test" to IntegerValue(456)),
+                ),
         )
 
     fun `copy tables`(
         sourceInputRecords: List<Map<String, AirbyteValue>>,
         targetInputRecords: List<Map<String, AirbyteValue>>,
         expectedRecords: List<Map<String, AirbyteValue>>,
-    )  = runTest {
+    ) = runTest {
         val columnNameMapping = ColumnNameMapping(mapOf("test" to "test"))
         val schema = ObjectType(linkedMapOf("test" to FieldType(IntegerType, false)))
 
@@ -381,7 +383,6 @@ interface CoreTableOperationsSuite {
                     generationId = 1,
                     minimumGenerationId = 0,
                     syncId = 1,
-                    includeFiles = false,
                     schema = schema,
                     namespaceMapper = NamespaceMapper(),
                 ),
@@ -420,7 +421,6 @@ interface CoreTableOperationsSuite {
                     generationId = 1,
                     minimumGenerationId = 0,
                     syncId = 1,
-                    includeFiles = false,
                     schema = schema,
                     namespaceMapper = NamespaceMapper(),
                 ),
@@ -466,25 +466,195 @@ interface CoreTableOperationsSuite {
 
     fun `copy tables`() =
         `copy tables`(
-            sourceInputRecords = listOf(
-                mapOf("test" to IntegerValue(123)),
-                mapOf("test" to IntegerValue(456)),
-            ),
-            targetInputRecords = listOf(
-                mapOf("test" to IntegerValue(86)),
-                mapOf("test" to IntegerValue(75)),
-                mapOf("test" to IntegerValue(309)),
-            ),
-            expectedRecords = listOf(
-                mapOf("test" to IntegerValue(123)),
-                mapOf("test" to IntegerValue(456)),
-                mapOf("test" to IntegerValue(86)),
-                mapOf("test" to IntegerValue(75)),
-                mapOf("test" to IntegerValue(309)),
-            ),
-    )
+            sourceInputRecords =
+                listOf(
+                    mapOf("test" to IntegerValue(123)),
+                    mapOf("test" to IntegerValue(456)),
+                ),
+            targetInputRecords =
+                listOf(
+                    mapOf("test" to IntegerValue(86)),
+                    mapOf("test" to IntegerValue(75)),
+                    mapOf("test" to IntegerValue(309)),
+                ),
+            expectedRecords =
+                listOf(
+                    mapOf("test" to IntegerValue(123)),
+                    mapOf("test" to IntegerValue(456)),
+                    mapOf("test" to IntegerValue(86)),
+                    mapOf("test" to IntegerValue(75)),
+                    mapOf("test" to IntegerValue(309)),
+                ),
+        )
 
-    fun `upsert tables`() = runTest {}
+    fun `upsert tables`(
+        sourceInputRecords: List<Map<String, AirbyteValue>>,
+        targetInputRecords: List<Map<String, AirbyteValue>>,
+        expectedRecords: List<Map<String, AirbyteValue>>,
+    ) = runTest {
+        val columnNameMapping =
+            ColumnNameMapping(
+                mapOf(
+                    "id" to "id",
+                    "test" to "test",
+                    CDC_DELETED_AT_COLUMN to CDC_DELETED_AT_COLUMN,
+                )
+            )
+        val sourceSchema =
+            ObjectType(
+                linkedMapOf(
+                    "id" to FieldType(StringType, false),
+                    "test" to FieldType(IntegerType, false)
+                ),
+            )
+
+        val uniquePostFix = UUID.randomUUID()
+        val sourceTable =
+            TableName(
+                "default",
+                "upsert-test-source-table-$uniquePostFix",
+            )
+        val sourceStream =
+            DestinationStream(
+                unmappedNamespace = sourceTable.namespace,
+                unmappedName = sourceTable.name,
+                importType = Append,
+                generationId = 1,
+                minimumGenerationId = 0,
+                syncId = 1,
+                schema = sourceSchema,
+                namespaceMapper = NamespaceMapper(),
+            )
+
+        assert(!client.tableExists(sourceTable)) {
+            "test table: ${sourceTable.namespace}.${sourceTable.name} already exists. Please validate it's deleted before running again."
+        }
+
+        client.createTable(
+            stream = sourceStream,
+            tableName = sourceTable,
+            columnNameMapping = columnNameMapping,
+            replace = false,
+        )
+        assert(client.tableExists(sourceTable)) {
+            "test table: ${sourceTable.namespace}.${sourceTable.name} was not created as expected."
+        }
+
+        client.insertRecords(sourceTable, sourceInputRecords)
+
+        val insertedIntoSourceCount = client.countTable(sourceTable)?.toInt()
+        val expectedSourceRecordCount = sourceInputRecords.size
+        assertEquals(expectedSourceRecordCount, insertedIntoSourceCount) {
+            "Expected records were not loaded into the source table."
+        }
+
+        val targetSchema =
+            ObjectType(
+                linkedMapOf(
+                    "id" to FieldType(StringType, false),
+                    "test" to FieldType(IntegerType, false),
+                    CDC_DELETED_AT_COLUMN to FieldType(IntegerType, false)
+                ),
+            )
+        val targetTable =
+            TableName(
+                "default",
+                "upsert-test-target-table-$uniquePostFix",
+            )
+        val targetStream =
+            DestinationStream(
+                unmappedNamespace = targetTable.namespace,
+                unmappedName = targetTable.name,
+                importType =
+                    Dedupe(
+                        primaryKey = listOf(listOf("id")),
+                        cursor = listOf("test"),
+                    ),
+                generationId = 1,
+                minimumGenerationId = 0,
+                syncId = 1,
+                schema = targetSchema,
+                namespaceMapper = NamespaceMapper(),
+            )
+
+        assert(!client.tableExists(targetTable)) {
+            "test table: ${targetTable.namespace}.${targetTable.name} already exists. Please validate it's deleted before running again."
+        }
+
+        client.createTable(
+            stream = targetStream,
+            tableName = targetTable,
+            columnNameMapping = columnNameMapping,
+            replace = false,
+        )
+
+        assert(client.tableExists(targetTable)) {
+            "test table: ${targetTable.namespace}.${targetTable.name} was not created as expected."
+        }
+
+        client.insertRecords(targetTable, targetInputRecords)
+
+        val insertedIntoTargetCount = client.countTable(targetTable)?.toInt()
+        val expectedTargetRecordCount = targetInputRecords.size
+        assertEquals(expectedTargetRecordCount, insertedIntoTargetCount) {
+            "Expected records were not loaded into the target table."
+        }
+
+        client.upsertTable(targetStream, columnNameMapping, sourceTable, targetTable)
+
+        val upsertTableRead = client.readTable(targetTable)
+        val upsertTableRecords =
+            upsertTableRead.map { rec -> rec.filter { !Meta.COLUMN_NAMES.contains(it.key) } }
+
+        assertEquals(expectedRecords.toSet(), upsertTableRecords.toSet()) {
+            "Upserted table did not contain expected records."
+        }
+
+        client.dropTable(sourceTable)
+
+        assert(!client.tableExists(sourceTable)) {
+            "test table: ${sourceTable.namespace}.${sourceTable.name} was not dropped as expected."
+        }
+
+        client.dropTable(targetTable)
+
+        assert(!client.tableExists(targetTable)) {
+            "test table: ${targetTable.namespace}.${targetTable.name} was not dropped as expected."
+        }
+    }
+
+    fun `upsert tables`() =
+        `upsert tables`(
+            sourceInputRecords =
+                listOf(
+                    mapOf("id" to StringValue("2"), "test" to IntegerValue(86)),
+                    mapOf(
+                        "id" to StringValue("3"),
+                        "test" to IntegerValue(75),
+                        CDC_DELETED_AT_COLUMN to IntegerValue(1234)
+                    ),
+                    mapOf("id" to StringValue("4"), "test" to IntegerValue(309)),
+                    mapOf("id" to StringValue("5"), "test" to IntegerValue(309)),
+                    mapOf(
+                        "id" to StringValue("5"),
+                        "test" to IntegerValue(309),
+                        CDC_DELETED_AT_COLUMN to IntegerValue(1234)
+                    ),
+                ),
+            targetInputRecords =
+                listOf(
+                    mapOf("id" to StringValue("1"), "test" to IntegerValue(123)),
+                    mapOf("id" to StringValue("2"), "test" to IntegerValue(456)),
+                    mapOf("id" to StringValue("3"), "test" to IntegerValue(789)),
+                    mapOf("id" to StringValue("4"), "test" to IntegerValue(101112)),
+                ),
+            expectedRecords =
+                listOf(
+                    mapOf("id" to StringValue("1"), "test" to IntegerValue(123)),
+                    mapOf("id" to StringValue("2"), "test" to IntegerValue(86)),
+                    mapOf("id" to StringValue("4"), "test" to IntegerValue(309)),
+                ),
+        )
 
     fun `get generation id`() = runTest {}
 }
