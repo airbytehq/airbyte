@@ -202,6 +202,7 @@ No workaround has been identified to manage this issue as of 2025, February.
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.5.3 | 2025-10-09 | [67564](https://github.com/airbytehq/airbyte/pull/67564) | Upgrade to CDK v7. |
 | 5.5.2 | 2025-07-16 | [63336](https://github.com/airbytehq/airbyte/pull/63336) | Promoting release candidate 5.5.2-rc.1 to a main version. |
 | 5.5.2-rc.1 | 2025-06-23 | [60996](https://github.com/airbytehq/airbyte/pull/60996) | Fix to properly manage pagination for `Lead forms` and `Lead form responses` streams                                                                                   |
 | 5.5.1      | 2025-06-18 | [61639](https://github.com/airbytehq/airbyte/pull/61639) | Reduce default concurrency level to 3 and enable configurability via `num_workers` config property                                                                     |
