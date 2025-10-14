@@ -2,22 +2,20 @@ name: PR cannot modify both bulk CDK and connectors
 
 on:
   pull_request:
-    paths:
-      - "airbyte-cdk/bulk/**/*"
-      - "airbyte-integrations/connectors/**/*"
 
 jobs:
   enforce-pr-structure:
     name: Enforce PR structure
     runs-on: ubuntu-24.04
+    if: github.base_ref == 'master' && github.repository == 'airbytehq/airbyte'
     steps:
       - name: Check for changes in bulk CDK
-        uses: tj-actions/changed-files@24d32ffd492484c1d75e0c0b894501ddb9d30d62 # v47
+        uses: tj-actions/changed-files@24d32ffd492484c1d75e0c0b894501ddb9d30d62 # v47.0.0
         id: cdk-changes
         with:
           files: "airbyte-cdk/bulk/**/*"
       - name: Check for changes in connectors
-        uses: tj-actions/changed-files@24d32ffd492484c1d75e0c0b894501ddb9d30d62 # v47
+        uses: tj-actions/changed-files@24d32ffd492484c1d75e0c0b894501ddb9d30d62 # v47.0.0
         id: connector-changes
         with:
           files: "airbyte-integrations/connectors/**/*"
