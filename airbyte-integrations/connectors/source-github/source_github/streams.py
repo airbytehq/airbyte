@@ -222,7 +222,7 @@ class GithubStream(GithubStreamABC):
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
         record["repository"] = stream_slice["repository"]
 
-        if "reactions" in record and record["reactions"]:
+        if "reactions" in record and record["reactions"] is not None:
             reactions = record["reactions"]
             if "+1" in reactions:
                 reactions["plus_one"] = reactions.pop("+1")
