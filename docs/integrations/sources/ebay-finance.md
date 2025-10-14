@@ -28,6 +28,7 @@ Documentation: https://developer.ebay.com/api-docs/sell/finances/overview.html
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.19 | 2025-10-14 | [67779](https://github.com/airbytehq/airbyte/pull/67779) | Update dependencies |
 | 0.0.18 | 2025-10-07 | [67272](https://github.com/airbytehq/airbyte/pull/67272) | Update dependencies |
 | 0.0.17 | 2025-09-30 | [65873](https://github.com/airbytehq/airbyte/pull/65873) | Update dependencies |
 | 0.0.16 | 2025-08-23 | [65278](https://github.com/airbytehq/airbyte/pull/65278) | Update dependencies |
