@@ -208,7 +208,7 @@ class TestExceptionDescriptionByStatusCode(GoogleSheetsBaseTest):
             output = self._read(self._config, catalog=configured_catalog, expecting_exception=True)
 
         expected_base_message = exception_description_by_status_code(status_codes.INTERNAL_SERVER_ERROR, _SPREADSHEET_ID)
-        
+
         # The actual error message includes the retry exhaustion context
         assert "Exhausted available request attempts" in output.errors[0].trace.error.internal_message
         assert expected_base_message in output.errors[0].trace.error.internal_message
