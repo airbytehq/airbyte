@@ -7,10 +7,10 @@
     "total_count": {
       "type": ["null", "integer"]
     },
-    "+1": {
+    "thumbs_up": {
       "type": ["null", "integer"]
     },
-    "-1": {
+    "thumbs_down": {
       "type": ["null", "integer"]
     },
     "laugh": {
