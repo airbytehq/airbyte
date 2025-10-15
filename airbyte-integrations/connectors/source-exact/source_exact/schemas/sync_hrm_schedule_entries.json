@@ -6,117 +6,69 @@
   "properties": {
     "Timestamp": {
       "description": "Timestamp",
-      "type": [
-        "null",
-        "integer"
-      ]
+      "type": ["null", "integer"]
     },
     "Created": {
       "description": "Created date.",
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "Creator": {
       "description": "ID of creator.",
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "CreatorFullName": {
       "description": "Name of creator",
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "Day": {
       "description": "The day in the week. 0 - Monday; 1 - Tuesday; 2 - Wednesday; 3 - Thursday; 4 - Friday; 5 - Saturday; 6 - Sunday",
-      "type": [
-        "null",
-        "integer"
-      ]
+      "type": ["null", "integer"]
     },
     "Division": {
       "description": "Division code",
-      "type": [
-        "null",
-        "integer"
-      ]
+      "type": ["null", "integer"]
     },
     "EndTime": {
       "description": "This is the end time of the schedule entry.",
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "Hours": {
       "description": "The total number of hours for per day. Values is in 'HH:mm' format, eg : 08:00",
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "ID": {
       "description": "Primary key",
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "Modified": {
       "description": "Last modified date.",
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "Modifier": {
       "description": "ID of modifier",
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "ModifierFullName": {
       "description": "Name of modifier",
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "Schedule": {
       "description": "The id of the schedule linked to this schedule entry.",
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "ScheduleActivityType": {
       "description": "The activity of the schedule entry. 0 - Work; 1 - Pause",
-      "type": [
-        "null",
-        "integer"
-      ]
+      "type": ["null", "integer"]
     },
     "StartTime": {
       "description": "This is the start time of the schedule entry.",
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "WeekNumber": {
       "description": "This is the week number.",
-      "type": [
-        "null",
-        "integer"
-      ]
+      "type": ["null", "integer"]
     }
   }
 }
