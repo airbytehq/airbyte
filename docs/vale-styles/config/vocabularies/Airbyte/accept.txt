@@ -61,6 +61,7 @@ SSO
 SQL
 IP[s]
 CDC
+CRM[s]
 
 # Airbyte connectors
 
@@ -87,3 +88,45 @@ Slack
 [Nn]amespaces
 [Ii]nitialisms
 \bCPU(?:s)?\b
+
+# API and technical terms
+
+CLI
+CLIs
+UUIDs
+JWT
+JWTs
+CORS
+SaaS
+config
+rollout
+CRM
+JSON
+jmespath
+Jmespath
+JMESPath
+Cron
+crons
+subdirectory
+subdirectories
+workspace_id
+source_id
+connection_id
+template_id
+workspaceId
+sourceId
+connectionId
+templateId
+sync_on_create
+non_breaking_changes_preference
+Onboarding
+datetime
+workspace's
+
+# Never lint Docusaurus admonitions markup
+:::
+:::note
+:::tip
+:::info
+:::warning
+:::danger

@@ -10,7 +10,7 @@ import io.airbyte.cdk.Operation
 import io.airbyte.cdk.load.check.CheckOperationV2
 import io.airbyte.cdk.load.check.DestinationCheckerV2
 import io.airbyte.cdk.load.config.DataChannelMedium
-import io.airbyte.cdk.load.dataflow.config.MemoryAndParallelismConfig
+import io.airbyte.cdk.load.dataflow.config.AggregatePublishingConfig
 import io.airbyte.cdk.load.orchestration.db.DefaultTempTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
 import io.airbyte.cdk.output.OutputConsumer
@@ -205,22 +205,20 @@ class SnowflakeBeanFactory {
     ) = CheckOperationV2(destinationChecker, outputConsumer)
 
     @Singleton
-    fun getMemoryAndParallelismConfig(
-        dataChannelMedium: DataChannelMedium
-    ): MemoryAndParallelismConfig {
+    fun aggregatePublishingConfig(dataChannelMedium: DataChannelMedium): AggregatePublishingConfig {
         // NOT speed mode
         return if (dataChannelMedium == DataChannelMedium.STDIO) {
-            MemoryAndParallelismConfig(
+            AggregatePublishingConfig(
                 maxRecordsPerAgg = 10_000_000_000_000L,
                 maxEstBytesPerAgg = 350_000_000L,
+                maxEstBytesAllAggregates = 350_000_000L * 5,
             )
         } else {
-            MemoryAndParallelismConfig(
+            AggregatePublishingConfig(
                 maxRecordsPerAgg = 10_000_000_000_000L,
                 maxEstBytesPerAgg = 350_000_000L,
+                maxEstBytesAllAggregates = 350_000_000L * 5,
                 maxBufferedAggregates = 6,
-                maxOpenAggregates = 8,
-                maxConcurrentLifecycleOperations = 10
             )
         }
     }

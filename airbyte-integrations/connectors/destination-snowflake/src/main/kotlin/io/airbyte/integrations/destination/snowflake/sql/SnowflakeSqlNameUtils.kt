@@ -10,7 +10,6 @@ import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import jakarta.inject.Singleton
 
 const val STAGE_NAME_PREFIX = "airbyte_stage_"
-internal const val STAGE_FORMAT_NAME: String = "airbyte_csv_format"
 internal const val QUOTE: String = "\""
 
 fun sqlEscape(part: String) = part.replace("\\", "\\\\").replace("'", "\\'").replace("\"", "\\\"")
@@ -42,9 +41,6 @@ class SnowflakeSqlNameUtils(
             escape = escape,
         )
     }
-
-    fun fullyQualifiedFormatName(namespace: String): String =
-        combineParts(listOf(getDatabaseName(), namespace, STAGE_FORMAT_NAME))
 
     fun combineParts(parts: List<String>, escape: Boolean = false): String =
         parts

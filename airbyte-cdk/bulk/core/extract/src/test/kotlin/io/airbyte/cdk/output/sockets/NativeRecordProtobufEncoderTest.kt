@@ -9,6 +9,7 @@ import io.airbyte.cdk.data.BigDecimalCodec
 import io.airbyte.cdk.data.BinaryCodec
 import io.airbyte.cdk.data.BooleanCodec
 import io.airbyte.cdk.data.ByteCodec
+import io.airbyte.cdk.data.CdcOffsetDateTimeCodec
 import io.airbyte.cdk.data.DoubleCodec
 import io.airbyte.cdk.data.FloatCodec
 import io.airbyte.cdk.data.IntCodec
@@ -83,6 +84,14 @@ class NativeRecordProtobufEncoderTest {
                     ),
                 jsonEncoder = OffsetDateTimeCodec,
                 decoder = { proto -> OffsetDateTime.parse(proto.getData(0).timestampWithTimezone) }
+            ),
+            TestCase(
+                value =
+                    OffsetDateTime.parse(
+                        OffsetDateTime.now().format(OffsetDateTimeCodec.formatter)
+                    ),
+                jsonEncoder = CdcOffsetDateTimeCodec,
+                decoder = { proto -> OffsetDateTime.parse(proto.getData(0).string) }
             ),
             TestCase(
                 value = 123.456f,

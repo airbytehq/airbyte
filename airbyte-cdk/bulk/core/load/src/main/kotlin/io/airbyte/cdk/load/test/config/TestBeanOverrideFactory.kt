@@ -4,8 +4,8 @@
 
 package io.airbyte.cdk.load.test.config
 
+import io.airbyte.cdk.load.dataflow.config.AggregatePublishingConfig
 import io.airbyte.cdk.load.dataflow.config.ConnectorInputStreams
-import io.airbyte.cdk.load.dataflow.config.MemoryAndParallelismConfig
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
@@ -38,7 +38,7 @@ class TestBeanOverrideFactory {
     @Singleton
     @Primary
     fun testConfig() =
-        MemoryAndParallelismConfig(
+        AggregatePublishingConfig(
             // Set this to 1 so we flush aggregates immediately for easier testing.
             maxRecordsPerAgg = 1,
         )

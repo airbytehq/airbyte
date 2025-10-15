@@ -289,15 +289,15 @@ internal class SnowflakeColumnUtilsTest {
             snowflakeColumnUtils.toDialectType(TimestampTypeWithoutTimezone)
         )
         assertEquals(
-            SnowflakeDataType.VARIANT.typeName,
+            SnowflakeDataType.ARRAY.typeName,
             snowflakeColumnUtils.toDialectType(ArrayType(items = FieldType(StringType, false)))
         )
         assertEquals(
-            SnowflakeDataType.VARIANT.typeName,
+            SnowflakeDataType.ARRAY.typeName,
             snowflakeColumnUtils.toDialectType(ArrayTypeWithoutSchema)
         )
         assertEquals(
-            SnowflakeDataType.VARIANT.typeName,
+            SnowflakeDataType.OBJECT.typeName,
             snowflakeColumnUtils.toDialectType(
                 ObjectType(
                     properties = LinkedHashMap(),
@@ -306,11 +306,11 @@ internal class SnowflakeColumnUtilsTest {
             )
         )
         assertEquals(
-            SnowflakeDataType.VARIANT.typeName,
+            SnowflakeDataType.OBJECT.typeName,
             snowflakeColumnUtils.toDialectType(ObjectTypeWithEmptySchema)
         )
         assertEquals(
-            SnowflakeDataType.VARIANT.typeName,
+            SnowflakeDataType.OBJECT.typeName,
             snowflakeColumnUtils.toDialectType(ObjectTypeWithoutSchema)
         )
         assertEquals(
@@ -332,7 +332,7 @@ internal class SnowflakeColumnUtilsTest {
             )
         )
         assertEquals(
-            SnowflakeDataType.VARCHAR.typeName,
+            SnowflakeDataType.VARIANT.typeName,
             snowflakeColumnUtils.toDialectType(UnknownType(schema = mockk<JsonNode>()))
         )
     }
