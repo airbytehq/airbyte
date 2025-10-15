@@ -2,6 +2,8 @@
 
 <!-- TODO: Rename this file to connector-updates.md after this PR is merged -->
 
+Whenever possible, strive to make changes to connectors in a non-breaking way. This allows users to upgrade to the latest version of a connector without any action required on their part. Assume the every breaking changes creates friction for users and should be avoided except when absolutely necessary.
+
 ## Breaking Changes to Connectors
 
 Often times, changes to connectors can be made without impacting the user experience.  However, there are some changes that will require users to take action before they can continue to sync data.  These changes are considered **Breaking Changes** and require:
@@ -20,25 +22,27 @@ A breaking change is any change that will require users to take action before th
 - **Stream or Property Removal** - Data that was previously being synced is no longer going to be synced.
 - **Destination Format / Normalization Change** - The way the destination writes the final data or how normalization cleans that data is changing in a way that requires a full-refresh.
 - **State Changes** - The format of the source’s state has changed, and the full dataset will need to be re-synced
+- **Full Downstream Rewrite** - Very rarely, a change is so sigificant that it requires a full rewrite of downstream SQL transformations or BI dashboards. In these cases, consider forking the connector as a "Gen 2" version instead of making a breaking change that would fully break users' downstream pipelines.
+  - Example: Migration from legacy JSON-only "raw" tables to normalized typed columns in a destination tables. These historic changes were so significant that they would break all downstream SQL transformations and BI dashboards. A "gen-2" approach in these cases gives users the ability to run both "Gen 1" and "Gen 2" in parallel, migrating only after they have had a chance to adapt their code to the new data models.
 
-### Limiting the Impact of Breaking Changes
+### Defining the Scope of Breaking Changes
 
-Some of the changes listed above may not impact all users of the connector. For example, a change to the schema of a specific stream only impacts users who are syncing that stream.
+Some legitimate breaking changes may not impact all users of the connector. For example, a change to the schema of a specific stream only impacts users who are syncing that stream.
 
-The breaking change metadata allows you to specify narrowed scopes that are specifically affected by a breaking change. See the [`breakingChanges` entry](https://docs.airbyte.com/connector-development/connector-metadata-file/) documentation for supported scopes.
+The breaking change metadata allows you to specify narrowed scopes, and specifically _which streams_ are specifically affected by a breaking change. See the [`breakingChanges` entry](https://docs.airbyte.com/connector-development/connector-metadata-file/) documentation for supported scopes. If a user is not using the affected streams and therefor are not affected by a breaking change, they will not see any in-app messaging or emails about the change.
 
-## Migration Guide Requirements
+### Migration Guide Documentation Requirements
 
 Your migration guide must be created as a separate file at `docs/integrations/{sources|destinations}/{connector-name}-migrations.md`. The guide should be detailed and user-focused, addressing the following for each breaking change version:
 
 - **WHAT** - What changed: Specifically, what is fixed or better for the user after this change?
-- **WHY** - Why did we make this change? (API improvements, upstream deprecation, bug fixes, performance improvements)
+- **WHY** - Why did we make this change? (API improvements, upstream deprecation, bug fixes, performance improvements).
 - **WHO** - Which users are affected? Be specific about streams, sync modes, or configuration options that are impacted.
-- **STEPS** - Exact steps users must take to migrate, including when to take them (before/after upgrade, before/after first sync)
+- **STEPS** - Exact steps users must take to migrate, including when to take them (before/after upgrade, before/after first sync).
 
 Your migration guide can be as long as necessary and may include images, code snippets, SQL examples, and compatibility tables to help users understand and execute the migration.
 
-### Examples of Good Migration Guides
+#### Examples of Good Migration Guides
 
 Review these examples to understand the expected format and level of detail:
 
@@ -47,22 +51,23 @@ Review these examples to understand the expected format and level of detail:
 - [Stripe Migration Guide](/integrations/sources/stripe-migrations) - Detailed sync mode and cursor field changes
 - [Snowflake Destination Migration Guide](/integrations/destinations/snowflake-migrations) - Use case-based migration paths
 
-## Breaking Change Metadata Requirements
+### Breaking Change Metadata Requirements
 
 When adding a `breakingChanges` entry to your connector's `metadata.yaml` file, you must provide two critical fields:
 
-### Message Field
+#### Message Field
 
 The `message` field is a short summary shown in-app to all users of the connector. This message should:
 
-- Be concise but informative (users should know if they're affected and what action is needed)
-- Identify which users are affected (e.g., "users syncing the `campaigns` stream")
-- Summarize the action required (detailed steps go in the migration guide)
-- Link to the migration guide for full details
+- Be concise but informative (users should know if they're affected and what action is needed).
+- Identify which users are affected.
+  For example: "users syncing the `campaigns` stream"
+- Summarize the action required (detailed steps go in the migration guide).
+- Link to the migration guide for full details.
 
 The platform uses this message to send automated emails to affected users, so clear communication is critical.
 
-### Upgrade Deadline Field
+#### Upgrade Deadline Field
 
 The `upgradeDeadline` field specifies the date by which users should upgrade (format: `YYYY-MM-DD`). When setting this deadline:
 
@@ -70,7 +75,9 @@ The `upgradeDeadline` field specifies the date by which users should upgrade (fo
   - Source connectors: At least 7 days (2 weeks recommended for simple changes)
   - Destination connectors: At least 1 month (destinations have broader impact on data pipelines)
 
-- **Rationale:** The deadline should provide enough time for users to review the migration guide, test in staging environments, and execute the migration steps. Don't tie the deadline directly to an upstream API deprecation date—users who remain pinned to the old version won't receive future bug fixes and improvements.
+- **Rationale:** The deadline should provide enough time for users to review the migration guide, test in staging environments, and execute the migration steps.
+
+In the case of immediate upstream breaking changes, or an already-removed upstream API endpoint, the deadline can be present-day or even in the past - with the rationale that users are _already_ broken without the fix and therefor need the upgrade applied immediately.
 
 - **Automated notifications:** The platform automatically emails users when a breaking change is released and sends reminders as the deadline approaches.
 
