@@ -71,7 +71,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         val tableName = TableName(namespace = "namespace", name = "name")
         val sql = snowflakeDirectLoadSqlGenerator.countTable(tableName)
         assertEquals(
-            "SELECT COUNT(*) AS ${QUOTE}total${QUOTE} FROM ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}",
+            "SELECT COUNT(*) AS TOTAL FROM ${snowflakeSqlNameUtils.fullyQualifiedName(tableName)}",
             sql
         )
     }
