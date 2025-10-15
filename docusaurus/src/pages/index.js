@@ -109,21 +109,21 @@ export default function Home() {
     },
     {
       title: 'Developers',
-      link: '#',
-      description: 'This is a placeholder section that will be populated with content later.',
+      link: '/platform/api-documentation',
+      description: 'Interact with Airbyte programmatically using our API, Terraform provider, and more.',
       icon: DevelopersIcon,
     },
     {
       title: 'Community and Support',
-      link: '#',
-      description: 'This is a placeholder section that will be populated with content later.',
+      link: '/platform/community/getting-support',
+      description: 'Get help using, and contribute to, Airbyte.',
       icon: CommunityIcon,
     },
   ];
 
   return (
     <Layout
-      title="Airbyte documentation"
+      title=""
       description="Airbyte is an open source data integration and activation platform. It helps you consolidate data from hundreds of sources into your data warehouses, data lakes, and databases."
     >
       <div className={styles.homePage}>
@@ -169,72 +169,6 @@ export default function Home() {
                 </a>
               );
             })}
-          </div>
-        </section>
-
-        {/* Section 3: Why Airbyte */}
-        <section className={styles.whySection}>
-          <h2 className={styles.whyTitle}>Why Airbyte?</h2>
-          <p className={styles.whyIntro}>
-            Teams and organizations need efficient and timely data access to an 
-            ever-growing list of data sources. In-house data pipelines are brittle 
-            and costly to build and maintain. Airbyte's unique open source approach 
-            enables your data stack to adapt as your data needs evolve.
-          </p>
-          <ul className={styles.whyList}>
-            <li>
-              <strong>Wide connector availability:</strong> Airbyte's connector 
-              catalog comes "out-of-the-box" with over 600 pre-built connectors. 
-              These connectors can be used to start replicating data from a source 
-              to a destination in just a few minutes.
-            </li>
-            <li>
-              <strong>Long-tail connector coverage:</strong> You can easily extend 
-              Airbyte's capability to support your custom use cases through Airbyte's{' '}
-              <a href="/platform/connector-development/connector-builder-ui/overview">
-                No-Code Connector Builder
-              </a>.
-            </li>
-            <li>
-              <strong>Robust platform</strong> provides horizontal scaling required 
-              for large-scale data movement operations, available as{' '}
-              <a href="https://airbyte.com/product/airbyte-cloud">Cloud-managed</a> or{' '}
-              <a href="https://airbyte.com/product/airbyte-enterprise">Self-managed</a>.
-            </li>
-            <li>
-              <strong>Accessible User Interfaces</strong> through the UI,{' '}
-              <a href="/platform/using-airbyte/pyairbyte/getting-started"><strong>PyAirbyte</strong></a>{' '}
-              (Python library),{' '}
-              <a href="/platform/api-documentation"><strong>API</strong></a>, and{' '}
-              <a href="/platform/terraform-documentation"><strong>Terraform Provider</strong></a>{' '}
-              to integrate with your preferred tooling and approach to infrastructure management.
-            </li>
-          </ul>
-          <p className={styles.whyFooter}>
-            Airbyte is suitable for a wide range of data integration use cases, 
-            including AI data infrastructure and EL(T) workloads. Airbyte is also{' '}
-            <a href="https://airbyte.com/product/powered-by-airbyte">embeddable</a>{' '}
-            within your own app or platform to power your product.
-          </p>
-          <div className={styles.badges}>
-            <a href="https://GitHub.com/airbytehq/airbyte/stargazers/">
-              <img 
-                src="https://img.shields.io/github/stars/airbytehq/airbyte?style=social&label=Star&maxAge=2592000" 
-                alt="GitHub stars" 
-              />
-            </a>{' '}
-            <a href="https://github.com/airbytehq/airbyte/tree/a9b1c6c0420550ad5069aca66c295223e0d05e27/LICENSE/README.md">
-              <img 
-                src="https://img.shields.io/static/v1?label=license&message=MIT&color=brightgreen" 
-                alt="License" 
-              />
-            </a>{' '}
-            <a href="https://github.com/airbytehq/airbyte/tree/a9b1c6c0420550ad5069aca66c295223e0d05e27/LICENSE/README.md">
-              <img 
-                src="https://img.shields.io/static/v1?label=license&message=ELv2&color=brightgreen" 
-                alt="License" 
-              />
-            </a>
           </div>
         </section>
       </div>

@@ -64,7 +64,7 @@
   border-radius: 12px;
   border: 1px solid var(--ifm-color-primary-lightest);
   background: var(--color-grey-40);
-  transition: all 0.3s ease;
+  transition: all 0.2s ease-out;
   text-decoration: none;
   color: inherit;
   display: flex;
