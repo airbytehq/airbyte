@@ -9,7 +9,7 @@ import io.airbyte.cdk.load.component.TableOperationsFixtures.sortByTestField
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.message.Meta
-import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.cdk.load.table.TableName
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import java.util.UUID
 import kotlinx.coroutines.test.runTest
