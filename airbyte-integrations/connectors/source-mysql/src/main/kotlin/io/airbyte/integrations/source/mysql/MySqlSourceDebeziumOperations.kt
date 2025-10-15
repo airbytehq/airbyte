@@ -111,11 +111,11 @@ class MySqlSourceDebeziumOperations(
                         data.set<JsonNode>(field.id, Jsons.readTree(textNode.textValue()))
                     }
                 }
-
                 LeafAirbyteSchemaType.BINARY -> {
                     val textNode: TextNode? = data[field.id] as? TextNode
                     if (textNode != null) {
-                        val bytes: ByteArray = Base64.decodeBase64(textNode.textValue().toByteArray())
+                        val bytes: ByteArray =
+                            Base64.decodeBase64(textNode.textValue().toByteArray())
                         data.set<JsonNode>(field.id, Jsons.binaryNode(bytes))
                     }
                 }
