@@ -7,7 +7,6 @@
 .heroSection {
   background: var(--ifm-color-primary);
   padding: 4rem 2rem;
-  margin: 0 -2rem;
 }
 
 .heroContainer {
@@ -217,7 +216,6 @@
 @media (max-width: 640px) {
   .heroSection {
     padding: 2rem 1rem;
-    margin: 0 -1rem;
   }
 
   .heroTitle {
