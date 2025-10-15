@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.orchestration.db.TableName
+import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import java.util.UUID
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -35,6 +36,7 @@ import org.junit.jupiter.api.assertDoesNotThrow
  * @see TableOperationsTestHarness
  * @see TableOperationsFixtures
  */
+@MicronautTest(environments = ["component"])
 interface TableOperationsSuite {
     /** The database client instance to test. Must be properly configured and connected. */
     val client: CoreTableOperationsClient
