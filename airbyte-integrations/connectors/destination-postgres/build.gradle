@@ -28,6 +28,8 @@ def junitPlatformVersion = "1.13.4"
 def postgresqlVersion = "42.7.2"
 
 dependencies {
+    implementation 'org.jooq:jooq:3.19.11'
+
     implementation("org.postgresql:postgresql:$postgresqlVersion")
     implementation("com.zaxxer:HikariCP:$hikariCpVersion")
 
