@@ -32,7 +32,7 @@ class DataGenSourceConfigurationSpecification : ConfigurationSpecification() {
     }
 
     @JsonGetter("flavor")
-    @JsonSchemaTitle("Data Generation Flavors")
+    @JsonSchemaTitle("Data Generation Type")
     @JsonSchemaDescription("Different patterns for generating data")
     @JsonSchemaInject(json = """{"default":"incremental","display_type":"radio"}""")
     fun getFlavor(): FlavorSpec = flavorJson ?: flavorInternal
@@ -56,6 +56,7 @@ class DataGenSourceConfigurationSpecification : ConfigurationSpecification() {
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "data_type")
 @JsonSubTypes(
     JsonSubTypes.Type(value = Incremental::class, name = "incremental"),
+    JsonSubTypes.Type(value = Types::class, name = "types"),
 )
 @JsonSchemaTitle("Data Type")
 @JsonSchemaDescription("Configures what kind of data is generated for the source.")
@@ -66,3 +67,9 @@ sealed interface FlavorSpec
     "Generates incrementally increasing numerical data for the source.",
 )
 data object Incremental : FlavorSpec
+
+@JsonSchemaTitle("All Types")
+@JsonSchemaDescription(
+    "Generates one column of each Airbyte data type.",
+)
+data object Types : FlavorSpec
