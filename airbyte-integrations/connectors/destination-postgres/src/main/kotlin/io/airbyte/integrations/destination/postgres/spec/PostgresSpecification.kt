@@ -81,42 +81,58 @@ class PostgresSpecification : ConfigurationSpecification() {
     @get:JsonSchemaInject(json = """{"group": "connection", "order": 6}""")
     val sslMode: SslMode? = null
 
-    @get:JsonSchemaTitle("JDBC URL Parameters (Advanced)")
-    @get:JsonPropertyDescription(
-        """Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (Eg. key1=value1&key2=value2&key3=value3). For more information read about <a href="https://jdbc.postgresql.org/documentation/head/connect.html">JDBC URL parameters</a>."""
-    )
-    @get:JsonProperty("jdbc_url_params")
-    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 7}""")
-    val jdbcUrlParams: String? = null
-
     @get:JsonSchemaTitle("CDC deletion mode")
     @get:JsonPropertyDescription(
         """Whether to execute CDC deletions as hard deletes (i.e. propagate source deletions to the destination), or soft deletes (i.e. leave a tombstone record in the destination). Defaults to hard deletes.""",
     )
     @get:JsonProperty("cdc_deletion_mode", defaultValue = "Hard delete")
     @get:JsonSchemaInject(
-        json = """{"group": "sync_behavior", "order": 8, "always_show": true}""",
+        json = """{"group": "sync_behavior", "order": 7, "always_show": true}""",
     )
     val cdcDeletionMode: CdcDeletionMode? = null
 
-    @get:JsonSchemaTitle(
-        """Legacy raw tables""",
-    )
+    @get:JsonSchemaTitle("JDBC URL Params")
     @get:JsonPropertyDescription(
-        """Write the legacy "raw tables" format, to enable backwards compatibility with older versions of this connector.""",
+        """Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3)."""
     )
-    @get:JsonProperty("disable_type_dedupe")
-    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 9}""")
-    @Suppress("RedundantNullableReturnType")
-    val legacyRawTablesOnly: Boolean? = false
+    @get:JsonProperty("jdbc_url_params")
+    @get:JsonSchemaInject(json = """{"group": "connection", "order": 8}""")
+    val jdbcUrlParams: String? = null
 
     @get:JsonSchemaTitle("Airbyte Internal Schema Name")
     @get:JsonPropertyDescription(
         """Airbyte will use this schema for various internal tables. In legacy raw tables mode, the raw tables will be stored in this schema. Defaults to "airbyte_internal".""",
     )
     @get:JsonProperty("raw_data_schema")
-    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 10}""")
+    @get:JsonSchemaInject(json = """{"group": "connection", "order": 9}""")
     val internalTableSchema: String? = null
+
+    @get:JsonSchemaTitle("Disable Final Tables. (WARNING! Unstable option; Columns in raw table schema might change between versions)")
+    @get:JsonPropertyDescription(
+        """Disable Writing Final Tables. WARNING! The data format in _airbyte_data is likely stable but there are no guarantees that other metadata columns will remain the same in future versions""",
+    )
+    @get:JsonProperty("disable_type_dedupe")
+    @get:JsonSchemaInject(json = """{"group": "connection", "order": 10}""")
+    @Suppress("RedundantNullableReturnType")
+    val legacyRawTablesOnly: Boolean? = false
+
+    @get:JsonSchemaTitle("Drop tables with CASCADE. (WARNING! Risk of unrecoverable data loss)")
+    @get:JsonPropertyDescription(
+        """Drop tables with CASCADE. WARNING! This will delete all data in all dependent objects (views, etc.). Use with caution. This option is intended for usecases which can easily rebuild the dependent objects."""
+    )
+    @get:JsonProperty("drop_cascade")
+    @get:JsonSchemaInject(json = """{"group": "connection", "order": 11}""")
+    @Suppress("RedundantNullableReturnType")
+    val dropCascade: Boolean? = false
+
+    @get:JsonSchemaTitle("Unconstrained numeric columns")
+    @get:JsonPropertyDescription(
+        """Create numeric columns as unconstrained DECIMAL instead of NUMBER(38, 9). This will allow increased precision in numeric values. (this is disabled by default for backwards compatibility, but is recommended to enable)"""
+    )
+    @get:JsonProperty("unconstrained_number")
+    @get:JsonSchemaInject(json = """{"group": "connection", "order": 12}""")
+    @Suppress("RedundantNullableReturnType")
+    val unconstrainedNumber: Boolean? = false
 
     @JsonIgnore
     @ConfigurationBuilder(configurationPrefix = "tunnel_method")
