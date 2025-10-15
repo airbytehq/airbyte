@@ -89,6 +89,14 @@ class SapHanaSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonSchemaInject(json = """{"order":6,"always_show":true,"uniqueItems":true}""")
     var schemas: List<String>? = null
 
+    @JsonProperty("filters")
+    @JsonSchemaTitle("Table Name Filters")
+    @JsonPropertyDescription(
+        "List of filters to be applied to the table names in the stream. Defaults to no exclusions."
+    )
+    @JsonSchemaInject(json = """{"order":7, "always_show":true}""")
+    var filters: List<TableFilter>? = null
+
     @JsonProperty("jdbc_url_params")
     @JsonSchemaTitle("JDBC URL Params")
     @JsonPropertyDescription(
@@ -195,6 +203,30 @@ class SapHanaSourceConfigurationSpecification : ConfigurationSpecification() {
     ) {
         additionalPropertiesMap[name] = value
     }
+}
+
+@JsonSchemaTitle("Table Filter")
+@JsonSchemaDescription("Filter configuration for table selection per schema.")
+@JsonPropertyOrder("schema_name", "table_filters")
+@SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
+class TableFilter {
+    @JsonProperty("schema_name", required = true)
+    @JsonSchemaTitle("Schema Name")
+    @JsonPropertyDescription(
+        "The name of the schema to filter on. " +
+            "Should match a schema defined in \"Schemas\" field above."
+    )
+    @JsonSchemaInject(json = """{"order":1,"always_show":true}""")
+    lateinit var schemaName: String
+
+    @JsonProperty("table_filters")
+    @JsonSchemaTitle("Table Filters")
+    @JsonPropertyDescription(
+        "List of filters to be applied to the table names in the schema. " +
+            "Each filter should be a SQL LIKE pattern."
+    )
+    @JsonSchemaInject(json = """{"order":2,"always_show":true}""")
+    var filters: List<String> = emptyList()
 }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "encryption_method")

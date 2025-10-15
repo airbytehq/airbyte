@@ -39,6 +39,7 @@ data class SapHanaSourceConfiguration(
     override val resourceAcquisitionHeartbeat: Duration = Duration.ofMillis(100L),
     override val checkpointTargetInterval: Duration,
     override val checkPrivileges: Boolean,
+    val filters: List<TableFilter>,
 ) : JdbcSourceConfiguration {
     val cdc: CdcIncrementalConfiguration? = incremental as? CdcIncrementalConfiguration
     override val global: Boolean = false
@@ -150,6 +151,14 @@ class SapHanaSourceConfigurationFactory :
                             },
                     )
             }
+        val configuredSchemas = pojo.schemas?.toSet() ?: setOf(defaultSchema)
+        for (filter in pojo.filters ?: emptyList()) {
+            if (filter.schemaName !in configuredSchemas) {
+                throw ConfigErrorException(
+                    "Filter schema name must be one of the configured schemas."
+                )
+            }
+        }
         return SapHanaSourceConfiguration(
             realHost = realHost,
             realPort = realPort,
@@ -163,6 +172,7 @@ class SapHanaSourceConfigurationFactory :
             maxConcurrency = maxConcurrency,
             checkPrivileges = pojo.checkPrivileges ?: true,
             incremental = incrementalConfiguration,
+            filters = pojo.filters ?: emptyList(),
         )
     }
 }

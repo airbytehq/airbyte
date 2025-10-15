@@ -5,15 +5,19 @@ import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.check.JdbcCheckQueries
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.discover.*
+import io.airbyte.cdk.discover.JdbcMetadataQuerier.ColumnMetadata
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
+import io.airbyte.cdk.jdbc.DefaultJdbcConstants.NamespaceKind
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.read.SelectQueryGenerator
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
+import java.sql.DatabaseMetaData
 import java.sql.ResultSet
 import java.sql.Statement
+import kotlin.use
 
 private val log = KotlinLogging.logger {}
 
@@ -24,20 +28,153 @@ private val log = KotlinLogging.logger {}
  */
 class SapHanaSourceMetadataQuerier(
     val base: JdbcMetadataQuerier,
+    val config: SapHanaSourceConfiguration
 ) : MetadataQuerier by base {
 
     override fun fields(streamID: StreamIdentifier): List<Field> {
         val table: TableName = findTableName(streamID) ?: return listOf()
-        if (table !in base.memoizedColumnMetadata) return listOf()
-        return base.memoizedColumnMetadata[table]!!.map {
+        if (table !in memoizedColumnMetadata) return listOf()
+        return memoizedColumnMetadata[table]!!.map {
             Field(it.label, base.fieldTypeMapper.toFieldType(it))
+        }
+    }
+
+    fun TableName.namespace(): String? =
+        when (base.constants.namespaceKind) {
+            NamespaceKind.CATALOG_AND_SCHEMA,
+            NamespaceKind.CATALOG -> catalog
+            NamespaceKind.SCHEMA -> schema
+        }
+
+    val memoizedColumnMetadata: Map<TableName, List<ColumnMetadata>> by lazy {
+        val joinMap: Map<TableName, TableName> =
+            memoizedTableNames.associateBy { it.copy(type = "") }
+        val results = mutableListOf<Pair<TableName, ColumnMetadata>>()
+        log.info { "Querying column names for catalog discovery." }
+        try {
+            val dbmd: DatabaseMetaData = base.conn.metaData
+            memoizedTableNames
+                .filter { it.namespace() != null }
+                .map { it.catalog to it.schema }
+                .distinct()
+                .forEach { (catalog: String?, schema: String?) ->
+                    dbmd.getPseudoColumns(catalog, schema, null, null).use { rs: ResultSet ->
+                        while (rs.next()) {
+                            val (tableName: TableName, metadata: ColumnMetadata) =
+                                columnMetadataFromResultSet(rs, isPseudoColumn = true)
+                            val joinedTableName: TableName = joinMap[tableName] ?: continue
+                            results.add(joinedTableName to metadata)
+                        }
+                    }
+                    dbmd.getColumns(catalog, schema, null, null).use { rs: ResultSet ->
+                        while (rs.next()) {
+                            val (tableName: TableName, metadata: ColumnMetadata) =
+                                columnMetadataFromResultSet(rs, isPseudoColumn = false)
+                            val joinedTableName: TableName = joinMap[tableName] ?: continue
+                            results.add(joinedTableName to metadata)
+                        }
+                    }
+                }
+            log.info { "Discovered ${results.size} column(s) and pseudo-column(s)." }
+        } catch (e: Exception) {
+            throw RuntimeException("Column name discovery query failed: ${e.message}", e)
+        }
+        return@lazy results.groupBy({ it.first }, { it.second }).mapValues {
+            (_, columnMetadataByTable: List<ColumnMetadata>) ->
+            columnMetadataByTable.filter { it.ordinal == null } +
+                columnMetadataByTable.filter { it.ordinal != null }.sortedBy { it.ordinal }
+        }
+    }
+
+    private fun columnMetadataFromResultSet(
+        rs: ResultSet,
+        isPseudoColumn: Boolean,
+    ): Pair<TableName, ColumnMetadata> {
+        val tableName =
+            TableName(
+                catalog = rs.getString("TABLE_CAT"),
+                schema = rs.getString("TABLE_SCHEM"),
+                name = rs.getString("TABLE_NAME"),
+                type = "",
+            )
+        val type =
+            SystemType(
+                typeName = if (isPseudoColumn) null else rs.getString("TYPE_NAME"),
+                typeCode = rs.getInt("DATA_TYPE"),
+                precision = rs.getInt("COLUMN_SIZE").takeUnless { rs.wasNull() },
+                scale = rs.getInt("DECIMAL_DIGITS").takeUnless { rs.wasNull() },
+            )
+        val metadata =
+            ColumnMetadata(
+                name = rs.getString("COLUMN_NAME"),
+                label = rs.getString("COLUMN_NAME"),
+                type = type,
+                nullable =
+                    when (rs.getString("IS_NULLABLE")?.uppercase()) {
+                        "NO" -> false
+                        "YES" -> true
+                        else -> null
+                    },
+                ordinal = if (isPseudoColumn) null else rs.getInt("ORDINAL_POSITION"),
+            )
+        return tableName to metadata
+    }
+
+    val tablePatterns = config.filters
+
+    val memoizedTableNames: List<TableName> by lazy {
+        log.info { "Querying table names for catalog discovery." }
+        try {
+            val allTables = mutableSetOf<TableName>()
+            val dbmd: DatabaseMetaData = base.conn.metaData
+
+            fun addTablesFromQuery(catalog: String?, schema: String?, pattern: String?) {
+                dbmd.getTables(catalog, schema, pattern, null).use { rs: ResultSet ->
+                    while (rs.next()) {
+                        allTables.add(
+                            TableName(
+                                catalog = rs.getString("TABLE_CAT"),
+                                schema = rs.getString("TABLE_SCHEM"),
+                                name = rs.getString("TABLE_NAME"),
+                                type = rs.getString("TABLE_TYPE") ?: "",
+                            )
+                        )
+                    }
+                }
+            }
+
+            for (namespace in
+                base.config.namespaces + base.config.namespaces.map { it.uppercase() }) {
+                val (catalog: String?, schema: String?) =
+                    when (base.constants.namespaceKind) {
+                        NamespaceKind.CATALOG -> namespace to null
+                        NamespaceKind.SCHEMA -> null to namespace
+                        NamespaceKind.CATALOG_AND_SCHEMA -> namespace to namespace
+                    }
+
+                if (tablePatterns.isEmpty()) {
+                    addTablesFromQuery(catalog, schema, null)
+                } else {
+                    for (pattern in tablePatterns) {
+                        for (filter in pattern.filters) {
+                            addTablesFromQuery(catalog, pattern.schemaName, filter)
+                        }
+                    }
+                }
+            }
+            log.info {
+                "Discovered ${allTables.size} table(s) in namespaces ${base.config.namespaces}."
+            }
+            return@lazy allTables.toList().sortedBy { "${it.namespace()}.${it.name}.${it.type}" }
+        } catch (e: Exception) {
+            throw RuntimeException("Table name discovery query failed: ${e.message}", e)
         }
     }
 
     fun findTableName(
         streamID: StreamIdentifier,
     ): TableName? =
-        base.memoizedTableNames.find {
+        memoizedTableNames.find {
             it.name == streamID.name && (it.schema ?: it.catalog) == streamID.namespace
         }
 
@@ -145,7 +282,7 @@ AND SCHEMA_NAME IN (%s);
                     checkQueries,
                     jdbcConnectionFactory,
                 )
-            return SapHanaSourceMetadataQuerier(base)
+            return SapHanaSourceMetadataQuerier(base, config)
         }
     }
 }
