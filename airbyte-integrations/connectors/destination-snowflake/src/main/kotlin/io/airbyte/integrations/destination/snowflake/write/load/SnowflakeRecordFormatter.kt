@@ -37,6 +37,10 @@ class SnowflakeParquetRecordFormatter(
     private val airbyteColumnNames =
         snowflakeColumnUtils.getFormattedDefaultColumnNames(false).toSet()
 
+    private val metadataCache =
+        Caffeine.newBuilder().maximumSize(airbyteColumnNames.size.toLong() * 2).build<
+            String, Boolean> { k -> airbyteColumnNames.contains(k) }
+
     override fun format(record: Map<String, AirbyteValue>): List<Any?> =
         columns.map { (columnName, _) ->
             /*
@@ -45,7 +49,7 @@ class SnowflakeParquetRecordFormatter(
              * that it can match the constants, which use the lowercase version of the meta
              * column names.
              */
-            if (airbyteColumnNames.contains(columnName)) {
+            if (metadataCache.get(columnName)) {
                 convertValue(record[columnName.lowercase()])
             } else {
                 record.keys
@@ -82,7 +86,7 @@ class SnowflakeSchemaRecordFormatter(
         snowflakeColumnUtils.getFormattedDefaultColumnNames(false).toSet()
 
     private val metadataCache =
-        Caffeine.newBuilder().maximumSize(airbyteColumnNames.size.toLong()).build<
+        Caffeine.newBuilder().maximumSize(airbyteColumnNames.size.toLong() * 2).build<
             String, Boolean> { k -> airbyteColumnNames.contains(k) }
 
     override fun format(record: Map<String, AirbyteValue>): List<Any> =
@@ -130,7 +134,7 @@ class SnowflakeRawRecordFormatter(
         snowflakeColumnUtils.getFormattedDefaultColumnNames(false).toSet()
 
     private val metadataCache =
-        Caffeine.newBuilder().maximumSize(airbyteColumnNames.size.toLong()).build<
+        Caffeine.newBuilder().maximumSize(airbyteColumnNames.size.toLong() * 2).build<
             String, Boolean> { k -> airbyteColumnNames.contains(k) }
 
     override fun format(record: Map<String, AirbyteValue>): List<Any> =

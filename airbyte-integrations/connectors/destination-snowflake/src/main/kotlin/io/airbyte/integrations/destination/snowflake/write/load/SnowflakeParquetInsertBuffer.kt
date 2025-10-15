@@ -76,6 +76,9 @@ class SnowflakeParquetInsertBuffer(
                 logger.info { "Beginning insert into ${tableName.toPrettyString(quote = QUOTE)}" }
                 // Next, put the CSV file into the staging table
                 snowflakeClient.putInStage(tableName, filePath.pathString)
+                logger.info {
+                    "Copying staging data into ${tableName.toPrettyString(quote = QUOTE)}..."
+                }
                 // Finally, copy the data from the staging table to the final table
                 snowflakeClient.copyFromStage(tableName, filePath.fileName.toString())
                 logger.info {
