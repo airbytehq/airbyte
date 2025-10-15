@@ -36,14 +36,15 @@ echo "Copying evergreen docs to version $LATEST_VERSION..."
 
 VERSIONED_DIR="$POE_ROOT/docusaurus/platform_versioned_docs/version-$LATEST_VERSION"
 
-copy_if_exists() {
+copy_and_replace() {
   SOURCE="$POE_ROOT/docs/platform/$1"
   DEST="$VERSIONED_DIR/$1"
 
   if [ -e "$SOURCE" ]; then
-    echo "Copying $1..."
+    echo "Replacing $1..."
     if [ -d "$SOURCE" ]; then
-      # For directories, ensure destination exists and copy contents
+      # For directories, remove old content and copy fresh
+      rm -rf "$DEST"
       mkdir -p "$DEST"
       cp -r "$SOURCE"/* "$DEST"/
     else
@@ -57,8 +58,8 @@ copy_if_exists() {
 }
 
 # Copy evergreen doc paths (relative to docs/platform/)
-copy_if_exists "connector-development/"
-copy_if_exists "contributing-to-airbyte/"
+copy_and_replace "connector-development/"
+copy_and_replace "contributing-to-airbyte/"
 
 echo "Evergreen docs copied successfully to version $LATEST_VERSION"
 '''
