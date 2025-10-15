@@ -21,6 +21,28 @@ A breaking change is any change that requires users to take action before they c
 - **Full Downstream Rewrite** - Very rarely, a change is so sigificant that it requires a full rewrite of downstream SQL transformations or BI dashboards. In these cases, consider forking the connector as a "Gen 2" version instead of making a breaking change that would fully break users' downstream pipelines.
   - Example: Migration from legacy JSON-only "raw" tables to normalized typed columns in a destination tables. These historic changes were so significant that they would break all downstream SQL transformations and BI dashboards. A "gen-2" approach in these cases gives users the ability to run both "Gen 1" and "Gen 2" in parallel, migrating only after they have had a chance to adapt their code to the new data models.
 
+### Avoiding Breaking Changes with Migrations
+
+In some cases, breaking changes can be avoided through automated migrations:
+
+- **Config Migrations** - For low-code connectors, config migrations can automatically transform old configurations to new formats, avoiding the need for users to manually reconfigure. See the [low-code config migration model](https://github.com/airbytehq/airbyte-python-cdk/blob/8158f0d2a07c0480d25581359d54c8f9d30dbb29/airbyte_cdk/sources/declarative/declarative_component_schema.yaml#L4021-L4045) for technical reference.
+  
+- **State Migrations** - For low-code connectors, state migrations can automatically transform old state formats to new formats, avoiding the need for a full refresh. See the [low-code state migration model](https://github.com/airbytehq/airbyte-python-cdk/blob/8158f0d2a07c0480d25581359d54c8f9d30dbb29/airbyte_cdk/sources/declarative/declarative_component_schema.yaml#L1579-L1587) for technical reference.
+
+When considering spec or state changes, evaluate whether a migration can eliminate the need for a breaking change before proceeding with a major version bump.
+
+### Schema Change Considerations: Data Type Compatibility
+
+When changing data types in schemas, consider type compatibility to determine whether the change is truly breaking:
+
+- **Widening that is breaking downstream:** Changes like `float` to `str` or `datetime` to `str` widen the type but may break downstream processes that expect numeric or date values.
+
+- **Widening that is non-breaking:** Changes like `int` to `bigint` or `int` to `double` widen the type in a compatible way that preserves data semantics.
+
+- **Non-compatible type changes:** Changes between fundamentally incompatible types (e.g., `datetime` to `float` or vice versa) are breaking and should be avoided if at all possible, as they change the semantic meaning of the data.
+
+When in doubt, treat type changes as breaking unless you can verify that all downstream use cases will handle the new type correctly.
+
 ## Defining the Scope of Breaking Changes
 
 Some legitimate breaking changes may not impact all users of the connector. For example, a change to the schema of a specific stream only impacts users who are syncing that stream.
