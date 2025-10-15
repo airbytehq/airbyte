@@ -82,18 +82,17 @@ class PostgresDirectLoadSqlGenerator {
         replace: Boolean // I don't really know what to do with this
     ): String {
         val columnDeclarations = columnsAndTypes(stream, columnNameMapping)
-        val dropTableIfExistsStatement = if (replace) "DROP TABLE IF EXISTS ${fullyQualifiedName(tableName)};" else ""
+        val dropTableIfExistsStatement = if (replace) "DROP TABLE IF EXISTS ${getFullyQualifiedName(tableName)};" else ""
         return """
             BEGIN TRANSACTION;
             $dropTableIfExistsStatement
-            CREATE TABLE ${fullyQualifiedName(tableName)} (
-            $columnDeclarations
+            CREATE TABLE ${getFullyQualifiedName(tableName)} (
+                $columnDeclarations
             );
             COMMIT;
             """
             .trimIndent()
             .andLog()
-
     }
 
     private fun columnsAndTypes(
@@ -119,8 +118,8 @@ class PostgresDirectLoadSqlGenerator {
     ): String {
         return """
             BEGIN TRANSACTION;
-            DROP TABLE IF EXISTS ${fullyQualifiedName(targetTableName)};
-            ALTER TABLE ${fullyQualifiedName(sourceTableName)} RENAME TO ${fullyQualifiedName(targetTableName)};
+            DROP TABLE IF EXISTS ${getFullyQualifiedName(targetTableName)};
+            ALTER TABLE ${getFullyQualifiedName(sourceTableName)} RENAME TO ${getFullyQualifiedName(targetTableName)};
             COMMIT;
             """
             .trimIndent()
@@ -134,9 +133,9 @@ class PostgresDirectLoadSqlGenerator {
     ): String {
         val columnNames = getTargetColumnNames(columnNameMapping).joinToString(",")
         return """
-            INSERT INTO ${fullyQualifiedName(targetTableName)} ($columnNames)
+            INSERT INTO ${getFullyQualifiedName(targetTableName)} ($columnNames)
             SELECT $columnNames
-            FROM ${fullyQualifiedName(sourceTableName)};
+            FROM ${getFullyQualifiedName(sourceTableName)};
             """
             .trimIndent()
             .andLog()
@@ -155,10 +154,10 @@ class PostgresDirectLoadSqlGenerator {
     ): String = TODO("PostgresDirectLoadSqlGenerator.upsertTable not yet implemented")
 
     fun dropTable(tableName: TableName): String =
-        "DROP TABLE IF EXISTS ${fullyQualifiedName(tableName)};".andLog()
+        "DROP TABLE IF EXISTS ${getFullyQualifiedName(tableName)};".andLog()
 
     fun countTable(tableName: TableName): String {
-        return "SELECT COUNT(*) AS \"$COUNT_TOTAL_ALIAS\" FROM ${fullyQualifiedName(tableName)};".andLog()
+        return "SELECT COUNT(*) AS \"$COUNT_TOTAL_ALIAS\" FROM ${getFullyQualifiedName(tableName)};".andLog()
     }
 
     fun createNamespace(namespace: String): String {
@@ -166,7 +165,7 @@ class PostgresDirectLoadSqlGenerator {
     }
 
     fun getGenerationId(tableName: TableName): String =
-        "SELECT \"${COLUMN_NAME_AB_GENERATION_ID}\" FROM ${fullyQualifiedName(tableName)} LIMIT 1;".andLog()
+        "SELECT \"${COLUMN_NAME_AB_GENERATION_ID}\" FROM ${getFullyQualifiedName(tableName)} LIMIT 1;".andLog()
 
     fun showColumns(tableName: TableName): String =
         """
@@ -184,8 +183,14 @@ class PostgresDirectLoadSqlGenerator {
         WITH (FORMAT csv)
         """.trimIndent()
 
-    private fun fullyQualifiedName(tableName: TableName): String =
-        "\"${tableName.namespace}\".\"${tableName.name}\""
+    private fun getFullyQualifiedName(tableName: TableName): String =
+        "${getNamespace(tableName)}.${getName(tableName)}"
+
+    private fun getNamespace(tableName: TableName): String =
+        "\"${tableName.namespace}\""
+
+    private fun getName(tableName: TableName): String =
+        "\"${tableName.name}\""
 
     fun AirbyteType.toDialectType(): String =
         when (this) {
