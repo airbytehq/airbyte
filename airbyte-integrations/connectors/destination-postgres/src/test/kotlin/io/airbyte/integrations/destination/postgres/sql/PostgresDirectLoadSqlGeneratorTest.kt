@@ -41,7 +41,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
     }
 
     @Test
-    fun testGenerateCreateTableStatement() {
+    fun testCreateTable() {
         val stream = mockk<DestinationStream> {
             every { schema } returns ObjectType(
                 properties = linkedMapOf(
@@ -92,7 +92,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
         .lines().joinToString("\n") { it.trim() }
 
     @Test
-    fun testGenerateCreateTableStatementNoReplace() {
+    fun testCreateTableNoReplace() {
         val stream = mockk<DestinationStream> {
             every { schema } returns ObjectType(
                 properties = linkedMapOf(
@@ -146,7 +146,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
     }
 
     @Test
-    fun testGenerateDropTable() {
+    fun testDropTable() {
         val tableName = TableName(namespace = "namespace", name = "name")
         val sql = postgresDirectLoadSqlGenerator.dropTable(tableName)
         assertEquals("DROP TABLE IF EXISTS \"namespace\".\"name\";", sql)
