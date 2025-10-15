@@ -14,6 +14,7 @@ import io.airbyte.cdk.read.cdc.NullFallThrough
 import io.airbyte.cdk.read.cdc.PartialConverter
 import io.airbyte.cdk.read.cdc.RelationalColumnCustomConverter
 import io.debezium.spi.converter.RelationalColumn
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
@@ -37,26 +38,55 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
             TimeHandler,
             TimestampHandler
         )
+
+    companion object {
+         //Logs column null-handling behavior.
+        fun logColumnNullHandling(
+            customConverterHandlerName: String,
+            column: RelationalColumn,
+            matches: Boolean
+        ) {
+            val log = KotlinLogging.logger {}
+            if (matches) {
+                if (column.isOptional) {
+                    log.info { "$customConverterHandlerName - Column '${column.name()}' is nullable, in case of zero-dates or NULL values, NULL will pass through" }
+                } else {
+                    log.warn { "$customConverterHandlerName - Column '${column.name()}' is NOT NULL, any NULL values (including zero-dates) will be converted to default epoch" }
+                }
+            }
+        }
+    }
     /**
-     * Handles zero-dates (e.g., '0000-00-00 00:00:00') which MySQL allows in NON-NULLABLE columns
-     * but are invalid dates that JDBC drivers return as NULL. We are now converting those NULL
-     * values to epoch (1970-01-01...) to match default value behavior and satisfy Debezium's
-     * non-nullable schema constraints.
+     * Handling zero-dates (e.g., '0000-00-00 00:00:00'):
+     * Zero-dates arrive from Debezium in two forms:
+     * 1. As 0 (long)/epoch (1970-01-01...): typically for DEFAULT values or TIMESTAMP columns
+     * 2. As NULL: for actual zero-date data in rows, which is handled based on column nullability:
+     *    - NOT NULL columns: NULL is converted to epoch to prevent sync failures
+     *    - Nullable columns: NULL passes through unchanged
      */
     data object DatetimeMillisHandler : RelationalColumnCustomConverter.Handler {
+        private var column: RelationalColumn? = null
 
-        override fun matches(column: RelationalColumn): Boolean =
-            column.typeName().equals("DATETIME", ignoreCase = true) &&
-                column.length().orElse(0) <= 3
+        override fun matches(column: RelationalColumn): Boolean {
+            this.column = column
+            val matches = column.typeName().equals("DATETIME", ignoreCase = true) &&
+                    column.length().orElse(0) <= 3
+            logColumnNullHandling("DatetimeMillisHandler", column, matches)
+            return matches
+        }
 
-        override fun outputSchemaBuilder(): SchemaBuilder = SchemaBuilder.string()
+        override fun outputSchemaBuilder(): SchemaBuilder = SchemaBuilder.string().optional()
 
         override val partialConverters: List<PartialConverter> =
             listOf(
                 PartialConverter {
                     if (it == null) {
-                        val epoch = LocalDateTime.ofInstant(Instant.EPOCH, ZoneOffset.UTC)
-                        Converted(epoch.format(LocalDateTimeCodec.formatter))
+                        if (column?.isOptional == true) {
+                            Converted(null)
+                        } else {
+                            val epoch = LocalDateTime.ofInstant(Instant.EPOCH, ZoneOffset.UTC)
+                            Converted(epoch.format(LocalDateTimeCodec.formatter))
+                        }
                     } else {
                         NoConversion
                     }
@@ -84,18 +114,27 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
     }
 
     data object DatetimeMicrosHandler : RelationalColumnCustomConverter.Handler {
+        private var column: RelationalColumn? = null
 
-        override fun matches(column: RelationalColumn): Boolean =
-            column.typeName().equals("DATETIME", ignoreCase = true) && column.length().orElse(0) > 3
+        override fun matches(column: RelationalColumn): Boolean {
+            this.column = column
+            val matches =  column.typeName().equals("DATETIME", ignoreCase = true) && column.length().orElse(0) > 3
+            logColumnNullHandling("DatetimeMicrosHandler", column, matches)
+            return matches
+        }
 
-        override fun outputSchemaBuilder(): SchemaBuilder = SchemaBuilder.string()
+        override fun outputSchemaBuilder(): SchemaBuilder = SchemaBuilder.string().optional()
 
         override val partialConverters: List<PartialConverter> =
             listOf(
                 PartialConverter {
                     if (it == null) {
-                        val epoch = LocalDateTime.ofInstant(Instant.EPOCH, ZoneOffset.UTC)
-                        Converted(epoch.format(LocalDateTimeCodec.formatter))
+                        if (column?.isOptional == true) {
+                            Converted(null)
+                        } else {
+                            val epoch = LocalDateTime.ofInstant(Instant.EPOCH, ZoneOffset.UTC)
+                            Converted(epoch.format(LocalDateTimeCodec.formatter))
+                        }
                     } else {
                         NoConversion
                     }
@@ -123,18 +162,27 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
     }
 
     data object DateHandler : RelationalColumnCustomConverter.Handler {
+        private var column: RelationalColumn? = null
 
-        override fun matches(column: RelationalColumn): Boolean =
-            column.typeName().equals("DATE", ignoreCase = true)
+        override fun matches(column: RelationalColumn): Boolean {
+            this.column = column
+            val matches =  column.typeName().equals("DATE", ignoreCase = true)
+            logColumnNullHandling("DateHandler", column, matches)
+            return matches
+        }
 
-        override fun outputSchemaBuilder(): SchemaBuilder = SchemaBuilder.string()
+        override fun outputSchemaBuilder(): SchemaBuilder = SchemaBuilder.string().optional()
 
         override val partialConverters: List<PartialConverter> =
             listOf(
                 PartialConverter {
                     if (it == null) {
-                        val epoch = LocalDate.ofEpochDay(0)
-                        Converted(epoch.format(LocalDateCodec.formatter))
+                        if (column?.isOptional == true) {
+                            Converted(null)
+                        } else {
+                            val epoch = LocalDate.ofEpochDay(0)
+                            Converted(epoch.format(LocalDateCodec.formatter))
+                        }
                     } else {
                         NoConversion
                     }
@@ -194,18 +242,27 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
     }
 
     data object TimestampHandler : RelationalColumnCustomConverter.Handler {
+        private var column: RelationalColumn? = null
 
-        override fun matches(column: RelationalColumn): Boolean =
-            column.typeName().equals("TIMESTAMP", ignoreCase = true)
+        override fun matches(column: RelationalColumn): Boolean {
+            this.column = column
+            val matches =  column.typeName().equals("TIMESTAMP", ignoreCase = true)
+            logColumnNullHandling("TimestampHandler", column, matches)
+            return matches
+        }
 
-        override fun outputSchemaBuilder(): SchemaBuilder = SchemaBuilder.string()
+        override fun outputSchemaBuilder(): SchemaBuilder = SchemaBuilder.string().optional()
 
         override val partialConverters: List<PartialConverter> =
             listOf(
                 PartialConverter {
                     if (it == null) {
-                        val epoch = OffsetDateTime.ofInstant(Instant.EPOCH, ZoneOffset.UTC)
-                        Converted(epoch.format(OffsetDateTimeCodec.formatter))
+                        if (column?.isOptional == true) {
+                            Converted(null)
+                        } else {
+                            val epoch = OffsetDateTime.ofInstant(Instant.EPOCH, ZoneOffset.UTC)
+                            Converted(epoch.format(OffsetDateTimeCodec.formatter))
+                        }
                     } else {
                         NoConversion
                     }
