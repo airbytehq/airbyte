@@ -1,6 +1,10 @@
-## Version 0.1.51
+## Version 0.1.52
 
 Update temporal type representation for proto format
+
+## Version 0.1.51
+
+Polaris support in the iceberg configuration.
 
 ## Version 0.1.50
 
