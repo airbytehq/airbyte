@@ -61,6 +61,7 @@ SSO
 SQL
 IP[s]
 CDC
+CRM[s]
 
 # Airbyte connectors
 
