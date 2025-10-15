@@ -136,6 +136,8 @@ const buildAConnector = {
       ],
     },
     "connector-development/local-connector-development",
+    "connector-development/submit-new-connector",
+    "connector-development/connector-breaking-changes",
     "connector-development/connector-specification-reference",
     "connector-development/partner-certified-destinations",
     "operator-guides/using-custom-connectors",
@@ -157,8 +159,6 @@ const contributeToAirbyte = {
   },
   items: [
     "contributing-to-airbyte/issues-and-requests",
-    "contributing-to-airbyte/change-cdk-connector",
-    "contributing-to-airbyte/submit-new-connector",
     "contributing-to-airbyte/developing-locally",
     "contributing-to-airbyte/writing-docs",
     {
