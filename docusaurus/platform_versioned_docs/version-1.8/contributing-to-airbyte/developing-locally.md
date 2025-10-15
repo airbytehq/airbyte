@@ -8,7 +8,7 @@ TypeScript using React.
 ## Submitting Code
 
 If you would like to submit code to Airbyte, please follow the [Pull Request Handbook](resources/pull-requests-handbook.md)
-guide when creating Github Pull Requests. When you are ready to submit code, use the [Submit a New Connector](submit-new-connector.md) document to make
+guide when creating Github Pull Requests. When you are ready to submit code, use the [Submit a New Connector](../connector-development/submit-new-connector.md) document to make
 sure that the process can go as smoothly as possible.
 
 ## Prerequisites
@@ -62,7 +62,7 @@ airbyte-abctl-cron-b48bccb78-jnz7b                       1/1     Running     0  
 airbyte-abctl-pod-sweeper-pod-sweeper-599fd8f56d-kj5t9   1/1     Running     0               4h20m
 airbyte-abctl-server-74465db7fd-gk25q                    1/1     Running     0               4h20m
 airbyte-abctl-temporal-bbb84b56c-jh8x7                   1/1     Running     0               4h33m
-airbyte-abctl-server-745c949464-brpjf                    1/1     Running     0               4h20m
+airbyte-abctl-webapp-745c949464-brpjf                    1/1     Running     0               4h20m
 airbyte-abctl-worker-79c895c7dc-ssqvc                    1/1     Running     0               4h20m
 airbyte-db-0                                             1/1     Running     0               4h34m
 airbyte-minio-0                                          1/1     Running     0               4h34m
@@ -115,30 +115,29 @@ The above connector image is tagged with `dev`. You can change this to use anoth
 
 :::
 
-- In your browser, visit [http://localhost:8000/](http://localhost:8000/)
-- Log in
-- Go to `Settings` (gear icon in lower left corner)
-- Go to `Sources` or `Destinations` (depending on which connector you are testing)
-- Update the version number to use your docker image tag (default is `dev`)
+- In your browser, visit [http://localhost:8000/](http://localhost:8000/).
+- Log in.
+- Click **Workspace settings** > **Sources**/**Destinations**.
+- Click the edit button <svg fill="none" data-icon="pencil" role="img" viewBox="0 0 24 24" class="inline-svg"><path fill="currentColor" d="M22 7.24a1 1 0 0 0-.29-.71l-4.24-4.24a1 1 0 0 0-.71-.29 1 1 0 0 0-.71.29l-2.83 2.83L2.29 16.05a1 1 0 0 0-.29.71V21a1 1 0 0 0 1 1h4.24a1 1 0 0 0 .76-.29l10.87-10.93L21.71 8q.138-.146.22-.33.015-.12 0-.24a.7.7 0 0 0 0-.14zM6.83 20H4v-2.83l9.93-9.93 2.83 2.83zM18.17 8.66l-2.83-2.83 1.42-1.41 2.82 2.82z"></path></svg>.
+- Update the version number to use your docker image tag. The default is `dev`.
 - Click `Change` to save the changes
 
-Now when you run a sync with that connector, it will use your local docker image
-
+Now when you run a sync with that connector, it will use your local docker image.
 
 ### Connector Specification Caching
 
-The Airbyte Server caches connector specifications for performance reasons. If you update the specification of a
-connector, you will need to clear this cache so the new changes are registered. To do this:
+The Airbyte Server caches connector specifications for performance reasons. If you update the specification of a connector, you need to clear this cache so the new changes are registered. To do this:
 
-- In your browser, visit [http://localhost:8000/](http://localhost:8000/)
-- Log in
-- Go to `Settings` (gear icon in lower left corner)
-- Go to `Sources` or `Destinations` (depending on which connector you are testing)
-- Leave the version set to `dev`
-- Click `Change` to save the changes, which will refresh the dev connectors spec
+- In your browser, visit [http://localhost:8000/](http://localhost:8000/).
+- Log in.
+- Click **Workspace settings** > **Sources**/**Destinations**.
+- Click the edit button <svg fill="none" data-icon="pencil" role="img" viewBox="0 0 24 24" class="inline-svg"><path fill="currentColor" d="M22 7.24a1 1 0 0 0-.29-.71l-4.24-4.24a1 1 0 0 0-.71-.29 1 1 0 0 0-.71.29l-2.83 2.83L2.29 16.05a1 1 0 0 0-.29.71V21a1 1 0 0 0 1 1h4.24a1 1 0 0 0 .76-.29l10.87-10.93L21.71 8q.138-.146.22-.33.015-.12 0-.24a.7.7 0 0 0 0-.14zM6.83 20H4v-2.83l9.93-9.93 2.83 2.83zM18.17 8.66l-2.83-2.83 1.42-1.41 2.82 2.82z"></path></svg>.
+- Leave the version set to `dev`.
+- Click `Change` to save the changes, which refreshes the dev connector's spec.
 
 ## Platform Contributions
-1. [Fork](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo) the [ `airbyte-platform`](https://github.com/airbytehq/airbyte-platform) repository.
+
+1. [Fork](https://docs.github.com/en/github/getting-started-with-github/fork-a-repo) the [`airbyte-platform`](https://github.com/airbytehq/airbyte-platform) repository.
 2. Clone the fork on your workstation:
 
 ```bash
@@ -159,7 +158,7 @@ To compile and build the platform, run the following command in your local `airb
 
 This will build all the code and run all the unit tests.
 
-`./gradlew build` creates all the necessary artifacts \(Jars and Docker images\) so that you can run Airbyte locally. Since this builds everything, it can take some time.
+`./gradlew build` creates all the necessary artifacts \(Webapp, Jars, and Docker images\) so that you can run Airbyte locally. Since this builds everything, it can take some time.
 
 
 :::info
@@ -227,9 +226,9 @@ Test containers start Airbyte locally, run the tests, and shutdown Airbyte after
 USE_EXTERNAL_DEPLOYMENT=true ./gradlew :oss:airbyte-tests:acceptanceTests
 ```
 
-## UI Contributions
+## Webapp Contributions
 
-To develop features in the Airbyte UI, you must first bring up an instance of Airbyte on TCP port 8001. To do this
+To develop features in the Airbyte Webapp, you must first bring up an instance of Airbyte on TCP port 8001. To do this
 using `abctl`, first follow the [Quickstart](../using-airbyte/getting-started/oss-quickstart.md) to install `abctl`. Then run the following:
 
 ```bash
@@ -259,7 +258,7 @@ abctl local install --port 8001 --values ./values.yaml
 - Use `nvm` to install the required node version:
 
 ```bash
-cd airbyte-server
+cd airbyte-webapp
 nvm install
 ```
 
@@ -269,7 +268,7 @@ nvm install
 corepack enable && corepack install
 ```
 
-### Running the UI
+### Running the Webapp
 
 - Start up the react app.
 
