@@ -126,7 +126,7 @@ class PostgresDirectLoadSqlGenerator {
         "DROP TABLE IF EXISTS ${fullyQualifiedName(tableName)};".andLog()
 
     fun countTable(tableName: TableName): String {
-        return "SELECT COUNT(*) AS $COUNT_TOTAL_ALIAS FROM ${fullyQualifiedName(tableName)};".andLog()
+        return "SELECT COUNT(*) AS \"$COUNT_TOTAL_ALIAS\" FROM ${fullyQualifiedName(tableName)};".andLog()
     }
 
     fun createNamespace(namespace: String): String {
