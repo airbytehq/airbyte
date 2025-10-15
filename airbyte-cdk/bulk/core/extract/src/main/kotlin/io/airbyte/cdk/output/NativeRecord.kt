@@ -74,16 +74,19 @@ fun NativeRecordPayload.toProtobuf(
                 // Protobuf does not have field names, so we use a sorted order of fields
                 // So for destination to know which fields it is, we order the fields alphabetically
                 // to make sure that the order is consistent.
-                val decodedValueForProto =
-                    this@toProtobuf[field.id]?.let { valueForProtobufEncoding(it) }
-                setData(
-                    index,
-                    encoder.encode(
-                        decodedValueForProto,
-                        field.type.airbyteSchemaType,
-                        valueBuilder.clear()
+                this@toProtobuf[field.id]?.let { fve ->
+                    val decodedValueForProto =
+                        valueForProtobufEncoding(fve)
+                    setData(
+                        index,
+                        encoder.encode(
+                            decodedValueForProto,
+                            field.type.airbyteSchemaType,
+                            valueBuilder.clear()
+                        )
                     )
-                )
+
+                }
             }
     }
 }
