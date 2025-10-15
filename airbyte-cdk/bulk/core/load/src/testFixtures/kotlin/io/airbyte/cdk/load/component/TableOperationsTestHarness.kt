@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.component
 
-import io.airbyte.cdk.load.component.TableOperationsClient
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.TableOperationsFixtures.createAppendStream
 import io.airbyte.cdk.load.data.AirbyteValue

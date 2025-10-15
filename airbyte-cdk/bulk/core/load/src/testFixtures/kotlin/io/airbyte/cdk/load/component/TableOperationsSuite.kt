@@ -4,7 +4,6 @@
 
 package io.airbyte.cdk.load.component
 
-import io.airbyte.cdk.load.component.TableOperationsClient
 import io.airbyte.cdk.load.component.TableOperationsFixtures as Fixtures
 import io.airbyte.cdk.load.component.TableOperationsFixtures.sortByTestField
 import io.airbyte.cdk.load.data.AirbyteValue
@@ -28,9 +27,9 @@ import org.junit.jupiter.api.assertDoesNotThrow
  * - Record insertion and retrieval for testing purposes
  * - Table copying, overwriting, and upserting
  *
- * Implementations should provide a [TableOperationsClient] instance configured for their
- * specific database system. The test methods use a [TableOperationsTestHarness] helper to ensure
- * proper cleanup and verification.
+ * Implementations should provide a [TableOperationsClient] instance configured for their specific
+ * database system. The test methods use a [TableOperationsTestHarness] helper to ensure proper
+ * cleanup and verification.
  *
  * @see TableOperationsClient
  * @see TableOperationsTestHarness

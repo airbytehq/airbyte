@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.component
 
 import io.airbyte.cdk.load.command.DestinationStream
@@ -10,8 +14,8 @@ import io.airbyte.cdk.load.orchestration.db.TableName
  *
  * Provides a standard set of operations for managing database namespaces, tables, and data
  * manipulation across different database implementations. Implementations should handle
- * database-specific SQL generation and execution while maintaining consistent behavior
- * across the interface methods.
+ * database-specific SQL generation and execution while maintaining consistent behavior across the
+ * interface methods.
  */
 interface TableOperationsClient {
 
@@ -69,14 +73,14 @@ interface TableOperationsClient {
     )
 
     /**
-     * TEST ONLY: Inserts records directly into a table for test verification.
-     * Do not use in production code - use appropriate streaming mechanisms instead.
+     * TEST ONLY: Inserts records directly into a table for test verification. Do not use in
+     * production code - use appropriate streaming mechanisms instead.
      */
     suspend fun insertRecords(table: TableName, records: List<Map<String, AirbyteValue>>) = Unit
 
     /**
-     * TEST ONLY: Reads all records from a table for test verification.
-     * Do not use in production code - this loads entire table into memory.
+     * TEST ONLY: Reads all records from a table for test verification. Do not use in production
+     * code - this loads entire table into memory.
      */
     suspend fun readTable(table: TableName): List<Map<String, Any>> = listOf()
 }

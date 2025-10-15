@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.load.component
 
 import io.airbyte.cdk.load.command.DestinationStream
@@ -5,12 +9,12 @@ import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 
 /**
- * Database schema management operations.
+ * Database-specific schema evolution operations.
  *
  * This interface encapsulates schema evolution and synchronization operations. Implementations
  * handle the details of schema migration, including type compatibility, column mapping, constraint
- * management, and database-specific quirks that arise when aligning source stream schemas with
- * destination table structures.
+ * management, and database-specific quirks when aligning source stream schemas with destination
+ * table structures.
  *
  * These operations typically involve:
  * - Schema introspection and comparison
@@ -21,9 +25,10 @@ import io.airbyte.cdk.load.orchestration.db.TableName
  *
  * @see TableOperationsClient for standard SQL-based table operations
  */
-interface TableSchemaClient {
+interface TableSchemaEvolutionClient {
     /**
-     * Ensures the destination table schema matches the expected stream schema through intelligent reconciliation.
+     * Ensures the destination table schema matches the expected stream schema through introspection
+     * and reconciliation.
      *
      * This method performs a comprehensive schema synchronization process:
      * 1. Introspects the current table schema if it exists
@@ -42,8 +47,10 @@ interface TableSchemaClient {
      *
      * @param stream The source stream containing schema definition and sync mode configuration
      * @param tableName The destination table to be synchronized
-     * @param columnNameMapping Mapping between logical column names and physical database column names
-     * @throws io.airbyte.cdk.ConfigErrorException if the table exists but is incompatible with Airbyte's requirements
+     * @param columnNameMapping Mapping between logical column names and physical database column
+     * names
+     * @throws io.airbyte.cdk.ConfigErrorException if the table exists but is incompatible with
+     * Airbyte's requirements
      * @throws IllegalStateException if schema evolution cannot be safely performed
      */
     suspend fun ensureSchemaMatches(
