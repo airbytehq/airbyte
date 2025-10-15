@@ -4,7 +4,7 @@ Here are some helpful tips and reminders for your convenience.
 
 ### Helpful Resources
 
-- [Connector Updates](https://docs.airbyte.com/platform/contributing-to-airbyte/connector-updates) - Breaking changes and version updates guide
+- [Connector Updates](https://docs.airbyte.com/platform/contributing-to-airbyte/change-cdk-connector) - Breaking changes and version updates guide
 - [Developing Connectors Locally](https://docs.airbyte.com/platform/connector-development/local-connector-development)
 - [Managing Connector Secrets](https://docs.airbyte.com/platform/connector-development/local-connector-development#managing-connector-secrets)
 - [On-Demand Live Tests](https://github.com/airbytehq/airbyte/actions/workflows/live_tests.yml)

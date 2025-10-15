@@ -56,7 +56,7 @@ The team will not be able to run integration tests and your pull request will be
 
 Guidelines to common code contributions:
 
-- [Connector Updates](connector-updates.md) - Guide to breaking changes and version updates
+- [Connector Updates](change-cdk-connector.md) - Guide to breaking changes and version updates
 - [Contribute a new connector](submit-new-connector.md)
 
 ## Documentation contributions
