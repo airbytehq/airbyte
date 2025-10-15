@@ -752,10 +752,10 @@
                   "total_count": {
                     "type": "integer"
                   },
-                  thumbs_up": {
+                  "thumbs_up": {
                     "type": "integer"
                   },
-                  thumbs_down": {
+                  "thumbs_down": {
                     "type": "integer"
                   },
                   "laugh": {
@@ -788,10 +788,10 @@
                 "total_count": {
                   "type": "integer"
                 },
-                thumbs_up": {
+                "thumbs_up": {
                   "type": "integer"
                 },
-                thumbs_down": {
+                "thumbs_down": {
                   "type": "integer"
                 },
                 "laugh": {
