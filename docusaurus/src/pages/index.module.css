@@ -48,12 +48,13 @@
 
 /* Section 2: Navigation Links */
 .navSection {
-  padding: 4rem 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
+  padding: 4rem 0;
 }
 
 .navGrid {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 2rem;
@@ -81,6 +82,19 @@
 
 .navIcon {
   margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  background: var(--ifm-color-primary-lightest);
+  border-radius: 12px;
+}
+
+.navIconSvg {
+  fill: var(--ifm-color-primary);
+  width: 32px;
+  height: 32px;
 }
 
 .navTitle {
@@ -202,6 +216,7 @@
   .navGrid {
     grid-template-columns: repeat(2, 1fr);
     gap: 1.5rem;
+    padding: 0 1.5rem;
   }
 
   .heroSection {
@@ -209,7 +224,7 @@
   }
 
   .navSection {
-    padding: 3rem 1.5rem;
+    padding: 3rem 0;
   }
 
   .whySection {
@@ -234,6 +249,7 @@
   .navGrid {
     grid-template-columns: 1fr;
     gap: 1rem;
+    padding: 0 1rem;
   }
 
   .navCard {
@@ -245,7 +261,7 @@
   }
 
   .navSection {
-    padding: 2rem 1rem;
+    padding: 2rem 0;
   }
 
   .whySection {
