@@ -133,11 +133,8 @@ class PostgresDirectLoadSqlGenerator {
         return "CREATE SCHEMA IF NOT EXISTS \"$namespace\";".andLog()
     }
 
-    @Suppress("UNUSED_PARAMETER")
     fun getGenerationId(tableName: TableName): String =
         "SELECT ${COLUMN_NAME_AB_GENERATION_ID} FROM ${fullyQualifiedName(tableName)} LIMIT 1;".andLog()
-
-
 
     fun showColumns(tableName: TableName): String =
         """
