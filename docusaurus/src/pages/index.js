@@ -181,13 +181,13 @@ export default function Home() {
                 alt="GitHub stars" 
               />
             </a>{' '}
-            <a href="https://github.com/airbytehq/airbyte/tree/a9b1c6c0420550ad5069aca66c295223e0d05e27/LICENSE/README.md">
+            <a href="https://docs.airbyte.com/platform/next/developer-guides/licenses/mit-license">
               <img 
                 src="https://img.shields.io/static/v1?label=license&message=MIT&color=brightgreen" 
                 alt="License" 
               />
             </a>{' '}
-            <a href="https://github.com/airbytehq/airbyte/tree/a9b1c6c0420550ad5069aca66c295223e0d05e27/LICENSE/README.md">
+            <a href="https://docs.airbyte.com/platform/next/developer-guides/licenses/elv2-license">
               <img 
                 src="https://img.shields.io/static/v1?label=license&message=ELv2&color=brightgreen" 
                 alt="License" 
