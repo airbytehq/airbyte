@@ -9,7 +9,7 @@ import io.airbyte.cdk.load.client.AirbyteClient
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
-import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNativeOperations
+import io.airbyte.cdk.load.component.TableSchemaClient
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableSqlOperations
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
@@ -38,7 +38,7 @@ class SnowflakeAirbyteClient(
     private val sqlGenerator: SnowflakeDirectLoadSqlGenerator,
     private val snowflakeColumnUtils: SnowflakeColumnUtils,
     private val snowflakeConfiguration: SnowflakeConfiguration,
-) : AirbyteClient, DirectLoadTableSqlOperations, DirectLoadTableNativeOperations {
+) : AirbyteClient, DirectLoadTableSqlOperations, TableSchemaClient {
 
     private val airbyteColumnNames =
         snowflakeColumnUtils.getFormattedDefaultColumnNames(false).toSet()

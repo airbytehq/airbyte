@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.clickhouse.config
 
-import io.airbyte.cdk.load.client.TableOperationsClient
+import io.airbyte.cdk.load.component.TableOperationsClient
 import io.airbyte.cdk.load.orchestration.db.BaseDirectLoadInitialStatusGatherer
 import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
 import jakarta.inject.Singleton

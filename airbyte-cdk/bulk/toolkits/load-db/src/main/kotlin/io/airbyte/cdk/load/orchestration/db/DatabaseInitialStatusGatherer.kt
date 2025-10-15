@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.load.orchestration.db
 
-import io.airbyte.cdk.load.client.TableOperationsClient
+import io.airbyte.cdk.load.component.TableOperationsClient
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadInitialStatus
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableStatus

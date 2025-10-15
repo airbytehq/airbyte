@@ -4,8 +4,9 @@
 
 package io.airbyte.cdk.load.orchestration.db.direct_load_table
 
-import io.airbyte.cdk.load.client.TableOperationsClient
+import io.airbyte.cdk.load.component.TableOperationsClient
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.component.TableSchemaClient
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
@@ -29,7 +30,7 @@ class DirectLoadTableAppendStreamLoader(
     private val realTableName: TableName,
     private val tempTableName: TableName,
     private val columnNameMapping: ColumnNameMapping,
-    private val nativeTableOperations: DirectLoadTableNativeOperations,
+    private val nativeTableOperations: TableSchemaClient,
     private val sqlTableOperations: TableOperationsClient,
     private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
 ) : StreamLoader {
@@ -77,7 +78,7 @@ class DirectLoadTableDedupStreamLoader(
     private val realTableName: TableName,
     private val tempTableName: TableName,
     private val columnNameMapping: ColumnNameMapping,
-    private val nativeTableOperations: DirectLoadTableNativeOperations,
+    private val nativeTableOperations: TableSchemaClient,
     private val sqlTableOperations: TableOperationsClient,
     private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
 ) : StreamLoader {
@@ -129,7 +130,7 @@ class DirectLoadTableAppendTruncateStreamLoader(
     private val realTableName: TableName,
     private val tempTableName: TableName,
     private val columnNameMapping: ColumnNameMapping,
-    private val nativeTableOperations: DirectLoadTableNativeOperations,
+    private val nativeTableOperations: TableSchemaClient,
     private val sqlTableOperations: TableOperationsClient,
     private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
 ) : StreamLoader {
@@ -252,7 +253,7 @@ class DirectLoadTableDedupTruncateStreamLoader(
     private val realTableName: TableName,
     private val tempTableName: TableName,
     private val columnNameMapping: ColumnNameMapping,
-    private val nativeTableOperations: DirectLoadTableNativeOperations,
+    private val nativeTableOperations: TableSchemaClient,
     private val sqlTableOperations: TableOperationsClient,
     private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
     private val tempTableNameGenerator: TempTableNameGenerator,

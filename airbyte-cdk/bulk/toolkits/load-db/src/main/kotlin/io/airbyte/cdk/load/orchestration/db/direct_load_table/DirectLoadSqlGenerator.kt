@@ -32,7 +32,7 @@ interface DirectLoadSqlGenerator {
     /**
      * Copy all records from sourceTable to targetTable. May assume that both tables exist, and have
      * schemas which match the expected schema, i.e.
-     * [DirectLoadTableNativeOperations.ensureSchemaMatches] was invoked on both tables.
+     * [io.airbyte.cdk.load.component.TableSchemaClient.ensureSchemaMatches] was invoked on both tables.
      *
      * MUST NOT assume that the columns are in the same order in both tables.
      */

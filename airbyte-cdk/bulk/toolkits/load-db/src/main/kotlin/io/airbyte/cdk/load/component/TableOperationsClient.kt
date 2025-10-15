@@ -1,4 +1,4 @@
-package io.airbyte.cdk.load.client
+package io.airbyte.cdk.load.component
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteValue
@@ -7,7 +7,7 @@ import io.airbyte.cdk.load.orchestration.db.TableName
 
 /**
  * Client interface for database table operations.
- * 
+ *
  * Provides a standard set of operations for managing database namespaces, tables, and data
  * manipulation across different database implementations. Implementations should handle
  * database-specific SQL generation and execution while maintaining consistent behavior
