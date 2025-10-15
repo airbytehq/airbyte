@@ -75,8 +75,7 @@ fun NativeRecordPayload.toProtobuf(
                 // So for destination to know which fields it is, we order the fields alphabetically
                 // to make sure that the order is consistent.
                 this@toProtobuf[field.id]?.let { fve ->
-                    val decodedValueForProto =
-                        valueForProtobufEncoding(fve)
+                    val decodedValueForProto = valueForProtobufEncoding(fve)
                     setData(
                         index,
                         encoder.encode(
@@ -85,7 +84,6 @@ fun NativeRecordPayload.toProtobuf(
                             valueBuilder.clear()
                         )
                     )
-
                 }
             }
     }
