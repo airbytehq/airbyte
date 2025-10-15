@@ -29,6 +29,7 @@ import io.airbyte.integrations.destination.clickhouse.write.transform.Clickhouse
 import io.airbyte.integrations.destination.clickhouse.write.transform.ClickhouseCoercer.Constants.INT64_MAX
 import io.airbyte.integrations.destination.clickhouse.write.transform.ClickhouseCoercer.Constants.INT64_MIN
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -36,6 +37,8 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneOffset
+
+private val logger = KotlinLogging.logger {}
 
 @Singleton
 class ClickhouseCoercer : ValueCoercer {
@@ -68,44 +71,101 @@ class ClickhouseCoercer : ValueCoercer {
     }
 
     override fun validate(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
+        // TEMP LOG: Show what's coming into validate
+        logger.info { ">>> CLICKHOUSE COERCER VALIDATE >>>Field name: ${value.name}" }
+        logger.info {
+            ">>> CLICKHOUSE COERCER VALIDATE >>>AirbyteType: ${value.type::class.simpleName}"
+        }
+        logger.info {
+            ">>> CLICKHOUSE COERCER VALIDATE >>>AirbyteValue type: ${value.abValue::class.simpleName}"
+        }
+        logger.info {
+            ">>> CLICKHOUSE COERCER VALIDATE >>>AirbyteValue actual value: ${value.abValue}"
+        }
+
         when (val abValue = value.abValue) {
-            is NumberValue ->
+            is NumberValue -> {
+                logger.info {
+                    ">>> CLICKHOUSE COERCER VALIDATE >>>Column: ${value.name} - Validating NumberValue: ${abValue.value}"
+                }
                 if (abValue.value <= DECIMAL128_MIN || abValue.value >= DECIMAL128_MAX) {
+                    logger.info {
+                        ">>> CLICKHOUSE COERCER VALIDATE >>>Column: ${value.name} - NumberValue out of range, nullifying"
+                    }
                     value.nullify(
                         AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
                     )
                 }
-            is IntegerValue ->
+            }
+            is IntegerValue -> {
+                logger.info {
+                    ">>> CLICKHOUSE COERCER VALIDATE >>>Column: ${value.name} - Validating IntegerValue: ${abValue.value}"
+                }
                 if (abValue.value < INT64_MIN || abValue.value > INT64_MAX) {
+                    logger.info {
+                        ">>> CLICKHOUSE COERCER VALIDATE >>>Column: ${value.name} - IntegerValue out of range, nullifying"
+                    }
                     value.nullify(
                         AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
                     )
                 }
+            }
             is DateValue -> {
+                logger.info {
+                    ">>> CLICKHOUSE COERCER VALIDATE >>>Column: ${value.name} - Validating DateValue: ${abValue.value}"
+                }
                 val days = abValue.value.toEpochDay()
+                logger.info {
+                    ">>> CLICKHOUSE COERCER VALIDATE >>>Column: ${value.name} - Date epoch days: $days (min: $DATE32_MIN, max: $DATE32_MAX)"
+                }
                 if (days < DATE32_MIN || days > DATE32_MAX) {
+                    logger.info {
+                        ">>> CLICKHOUSE COERCER VALIDATE >>>Column: ${value.name} - DateValue out of range, nullifying"
+                    }
                     value.nullify(
                         AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
                     )
                 }
             }
             is TimestampWithTimezoneValue -> {
+                logger.info {
+                    ">>> CLICKHOUSE COERCER VALIDATE >>>Column: ${value.name} - Validating TimestampWithTimezoneValue: ${abValue.value}"
+                }
                 val seconds = abValue.value.toEpochSecond()
+                logger.info {
+                    ">>> CLICKHOUSE COERCER VALIDATE >>>Column: ${value.name} - Timestamp epoch seconds: $seconds (min: $DATETIME64_MIN, max: $DATETIME64_MAX)"
+                }
                 if (seconds < DATETIME64_MIN || seconds > DATETIME64_MAX) {
+                    logger.info {
+                        ">>> CLICKHOUSE COERCER VALIDATE >>>Column: ${value.name} - TimestampWithTimezoneValue out of range, nullifying"
+                    }
                     value.nullify(
                         AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
                     )
                 }
             }
             is TimestampWithoutTimezoneValue -> {
+                logger.info {
+                    ">>> CLICKHOUSE COERCER VALIDATE >>>Column: ${value.name} - Validating TimestampWithoutTimezoneValue: ${abValue.value}"
+                }
                 val seconds = abValue.value.toEpochSecond(ZoneOffset.UTC)
+                logger.info {
+                    ">>> CLICKHOUSE COERCER VALIDATE >>>Column: ${value.name} - Timestamp epoch seconds: $seconds (min: $DATETIME64_MIN, max: $DATETIME64_MAX)"
+                }
                 if (seconds < DATETIME64_MIN || seconds > DATETIME64_MAX) {
+                    logger.info {
+                        ">>> CLICKHOUSE COERCER VALIDATE >>>Column: ${value.name} - TimestampWithoutTimezoneValue out of range, nullifying"
+                    }
                     value.nullify(
                         AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
                     )
                 }
             }
-            else -> {}
+            else -> {
+                logger.info {
+                    ">>> CLICKHOUSE COERCER VALIDATE >>>Column: ${value.name} - No validation needed for this type"
+                }
+            }
         }
 
         return value

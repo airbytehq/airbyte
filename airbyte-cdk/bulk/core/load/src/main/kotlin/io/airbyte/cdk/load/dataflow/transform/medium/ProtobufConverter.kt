@@ -48,6 +48,7 @@ import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.protocol.AirbyteValueProtobufDecoder
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteValueProtobuf
+import io.github.oshai.kotlinlogging.KotlinLogging
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.Instant
@@ -58,6 +59,8 @@ import java.time.OffsetTime
 import java.time.ZoneOffset
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Singleton
+
+private val logger = KotlinLogging.logger {}
 
 /**
  * Converter that extracts typed values from protobuf records and converts them to
@@ -103,6 +106,7 @@ class ProtobufConverter(
         msg: DestinationRecordRaw,
         source: DestinationRecordProtobufSource,
     ): Map<String, AirbyteValue> {
+        logger.info { "===========================" }
         val stream = msg.stream
         val fieldAccessors = stream.airbyteValueProxyFieldAccessors
         val data = source.source.record.dataList
@@ -132,7 +136,14 @@ class ProtobufConverter(
             enrichedValue.abValue = airbyteValue
 
             val mappedValue = coercer.map(enrichedValue)
+            logger.info {
+                "Stream: ${stream.unmappedDescriptor.name}, Column: ${accessor.name} - After map(): type=${mappedValue.type::class.simpleName}, value=${mappedValue.abValue::class.simpleName}"
+            }
+
             val validatedValue = coercer.validate(mappedValue)
+            logger.info {
+                "Stream: ${stream.unmappedDescriptor.name}, Column: ${accessor.name} - After validate(): type=${validatedValue.type::class.simpleName}, value=${validatedValue.abValue::class.simpleName}, changes=${validatedValue.changes.size}"
+            }
 
             allParsingFailures.addAll(validatedValue.changes)
 
@@ -148,7 +159,7 @@ class ProtobufConverter(
         }
 
         addMetadataFields(result, msg, source, allParsingFailures)
-
+        logger.info { "===========================" }
         return result
     }
 
@@ -202,25 +213,51 @@ class ProtobufConverter(
         enrichedValue: EnrichedAirbyteValue,
         streamName: String
     ): AirbyteValue {
+        // TEMP LOG: Show incoming value details
+        logger.info { "Stream: $streamName, Column: ${accessor.name}" }
+        logger.info {
+            "Stream: $streamName, Column: ${accessor.name} FieldAccessor AirbyteType: ${accessor.type::class.simpleName}"
+        }
+        logger.info {
+            "Stream: $streamName, Column: ${accessor.name} Proto ValueCase: ${protobufValue?.valueCase}"
+        }
+
         if (
             protobufValue == null || protobufValue.valueCase == AirbyteValueProtobuf.ValueCase.NULL
         ) {
+            logger.info { "Stream: $streamName, Column: ${accessor.name} - Value is NULL" }
             return NullValue
         }
 
         return try {
             // Step 1: Extract raw value from protobuf using the right method based on type
             val rawValue = extractRawValue(protobufValue, accessor, streamName)
+            logger.info {
+                "Stream: $streamName, Column: ${accessor.name} - Raw value extracted: $rawValue (type: ${rawValue?.javaClass?.simpleName})"
+            }
 
             // Step 2: Decide final target type (check for destination override first)
             val targetClass =
                 coercer.representAs(accessor.type) ?: getDefaultTargetClass(accessor.type)
+            logger.info {
+                "Stream: $streamName, Column: ${accessor.name} - Target class: ${targetClass.simpleName}"
+            }
 
             // Step 3: Create AirbyteValue of the target type using the raw value
-            createAirbyteValue(rawValue, targetClass)
+            val result = createAirbyteValue(rawValue, targetClass)
+            logger.info {
+                "Stream: $streamName, Column: ${accessor.name} - Created AirbyteValue: ${result::class.simpleName}"
+            }
+            result
         } catch (e: ProtobufTypeMismatchException) {
+            logger.info {
+                "Stream: $streamName, Column: ${accessor.name} - ProtobufTypeMismatchException: ${e.message}"
+            }
             throw e
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            logger.info {
+                "Stream: $streamName, Column: ${accessor.name} - Exception during extraction: ${e::class.simpleName}: ${e.message}"
+            }
             // Add parsing error to metadata
             enrichedValue.changes.add(
                 Meta.Change(
