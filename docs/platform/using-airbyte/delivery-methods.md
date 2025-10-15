@@ -35,7 +35,7 @@ To ensure your source and destination credentials remain isolated, Airbyte uses 
 
 - Cloud: All Workspaces
 
-- {{product_name_sm_oss}} and {{product_name_sm_enterprise}}: 
+- {{product_name_sm_oss}} and {{product_name_sm_enterprise}}:
 
     - Version 1.2.0 or later to copy files.
 

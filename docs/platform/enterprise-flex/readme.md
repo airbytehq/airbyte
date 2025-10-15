@@ -41,10 +41,9 @@ While these requirements are critical, organizations also have finite time and e
 
 Any Airbyte Cloud environment can be easily upgraded to {{product_name_cloud_enterprise}}. To learn more about upgrading to {{product_name_cloud_enterprise}}, [talk to sales](https://airbyte.com/company/talk-to-sales).
 
-
 ## An example hybrid deployment
 
-Every organization's precise needs differ, so you can implement {{product_name_cloud_enterprise}} in the way that suits you best. In this example, you have three workspaces. 
+Every organization's precise needs differ, so you can implement {{product_name_cloud_enterprise}} in the way that suits you best. In this example, you have three workspaces.
 
 - Workspace 1 contains non-sensitive data and uses Airbyte's fully managed European region.
 
