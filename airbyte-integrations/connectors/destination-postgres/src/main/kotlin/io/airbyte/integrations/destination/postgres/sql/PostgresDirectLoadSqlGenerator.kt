@@ -54,9 +54,10 @@ class PostgresDirectLoadSqlGenerator {
         replace: Boolean // I don't really know what to do with this
     ): String {
         val columnDeclarations = columnsAndTypes(stream, columnNameMapping)
+        val dropTableIfExistsStatement = if (replace) "DROP TABLE IF EXISTS ${fullyQualifiedName(tableName)};" else ""
         return """
             BEGIN TRANSACTION;
-            DROP TABLE IF EXISTS ${fullyQualifiedName(tableName)};
+            $dropTableIfExistsStatement
             CREATE TABLE ${fullyQualifiedName(tableName)} (
             $columnDeclarations
             );
