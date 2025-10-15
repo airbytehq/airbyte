@@ -487,11 +487,6 @@
       "statusCode": 301
     },
     {
-      "source": "/platform/contributing-to-airbyte/connector-updates",
-      "destination": "/platform/connector-development/connector-breaking-changes",
-      "statusCode": 301
-    },
-    {
       "source": "/platform/contributing-to-airbyte/submit-new-connector",
       "destination": "/platform/connector-development/submit-new-connector",
       "statusCode": 301
