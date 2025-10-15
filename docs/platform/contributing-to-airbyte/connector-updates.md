@@ -1,7 +1,5 @@
 # Connector Updates
 
-<!-- TODO: Rename this file to connector-updates.md after this PR is merged -->
-
 ## Breaking Changes to Connectors
 
 Often times, changes to connectors can be made without impacting the user experience.  However, there are some changes that will require users to take action before they can continue to sync data.  These changes are considered **Breaking Changes** and require:
