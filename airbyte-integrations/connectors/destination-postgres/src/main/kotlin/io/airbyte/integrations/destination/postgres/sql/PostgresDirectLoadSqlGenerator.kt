@@ -55,10 +55,12 @@ class PostgresDirectLoadSqlGenerator {
     ): String {
         val columnDeclarations = columnsAndTypes(stream, columnNameMapping)
         return """
+            BEGIN TRANSACTION;
             DROP TABLE IF EXISTS ${fullyQualifiedName(tableName)};
             CREATE TABLE ${fullyQualifiedName(tableName)} (
             $columnDeclarations
             );
+            COMMIT;
             """
             .trimIndent()
             .andLog()
@@ -86,8 +88,10 @@ class PostgresDirectLoadSqlGenerator {
         targetTableName: TableName
     ): String {
         return """
+            BEGIN TRANSACTION;
             DROP TABLE IF EXISTS ${fullyQualifiedName(targetTableName)};
             ALTER TABLE ${fullyQualifiedName(sourceTableName)} RENAME TO ${fullyQualifiedName(targetTableName)};
+            COMMIT;
             """
             .trimIndent()
             .andLog()
