@@ -46,7 +46,7 @@ class TableOperationsTestHarness(private val client: CoreTableOperationsClient) 
         }
     }
 
-    /** Safely drops a table if it exists, logging any errors. */
+    /** Safely drops a table, logging any errors. */
     suspend fun cleanupTable(tableName: TableName) {
         try {
             client.dropTable(tableName)
@@ -55,7 +55,7 @@ class TableOperationsTestHarness(private val client: CoreTableOperationsClient) 
         }
     }
 
-    /** Safely drops a namespace if it exists, logging any errors. */
+    /** Safely drops a namespace, logging any errors. */
     suspend fun cleanupNamespace(namespace: String) {
         try {
             client.dropNamespace(namespace)

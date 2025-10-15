@@ -17,14 +17,35 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.assertDoesNotThrow
 
+/**
+ * Test suite interface for validating core table operations across different database
+ * implementations.
+ *
+ * This interface provides a comprehensive set of tests for database operations including:
+ * - Namespace creation and deletion
+ * - Table creation, deletion, and manipulation
+ * - Record insertion and retrieval for testing purposes
+ * - Table copying, overwriting, and upserting
+ *
+ * Implementations should provide a [CoreTableOperationsClient] instance configured for their
+ * specific database system. The test methods use a [TableOperationsTestHarness] helper to ensure
+ * proper cleanup and verification.
+ *
+ * @see CoreTableOperationsClient
+ * @see TableOperationsTestHarness
+ * @see TableOperationsFixtures
+ */
 interface TableOperationsSuite {
+    /** The database client instance to test. Must be properly configured and connected. */
     val client: CoreTableOperationsClient
 
     private val harness: TableOperationsTestHarness
         get() = TableOperationsTestHarness(client)
 
+    /** Tests basic database connectivity by pinging the database. */
     fun `connect to database`() = runTest { assertDoesNotThrow { client.ping() } }
 
+    /** Tests namespace creation and deletion operations. */
     fun `create and drop namespaces`() = runTest {
         val testNamespace = Fixtures.generateTestNamespace("namespace-test")
         harness.assertNamespaceDoesNotExist(testNamespace)
@@ -42,6 +63,7 @@ interface TableOperationsSuite {
         }
     }
 
+    /** Tests table creation and deletion operations. */
     fun `create and drop tables`() = runTest {
         val testTable = Fixtures.generateTestTableName("table-test-table")
         harness.assertTableDoesNotExist(testTable)
@@ -71,6 +93,12 @@ interface TableOperationsSuite {
         }
     }
 
+    /**
+     * Tests record insertion functionality.
+     *
+     * @param inputRecords Records to insert into the test table
+     * @param expectedRecords Expected records after insertion (may differ in type representation)
+     */
     fun `insert records`(
         inputRecords: List<Map<String, AirbyteValue>>,
         expectedRecords: List<Map<String, Any>>,
@@ -95,12 +123,14 @@ interface TableOperationsSuite {
         }
     }
 
+    /** Tests record insertion with default test data. */
     fun `insert records`() =
         `insert records`(
             inputRecords = Fixtures.SINGLE_TEST_RECORD_INPUT,
             expectedRecords = Fixtures.SINGLE_TEST_RECORD_EXPECTED,
         )
 
+    /** Tests the ability to count rows in a table across multiple insertions. */
     fun `count table rows`() = runTest {
         val testTable = Fixtures.generateTestTableName("count-test-table")
         harness.assertTableDoesNotExist(testTable)
@@ -156,6 +186,7 @@ interface TableOperationsSuite {
         }
     }
 
+    /** Tests retrieval of the generation ID from inserted records. */
     fun `get generation id`() = runTest {
         val testTable = Fixtures.generateTestTableName("gen-id-test-table")
         harness.assertTableDoesNotExist(testTable)
@@ -185,6 +216,13 @@ interface TableOperationsSuite {
         }
     }
 
+    /**
+     * Tests table overwrite functionality where a source table replaces a target table.
+     *
+     * @param sourceInputRecords Records to insert into the source table
+     * @param targetInputRecords Initial records in the target table (will be overwritten)
+     * @param expectedRecords Expected records in the target table after overwrite
+     */
     fun `overwrite tables`(
         sourceInputRecords: List<Map<String, AirbyteValue>>,
         targetInputRecords: List<Map<String, AirbyteValue>>,
@@ -230,6 +268,7 @@ interface TableOperationsSuite {
         }
     }
 
+    /** Tests table overwrite with default test data. */
     fun `overwrite tables`() =
         `overwrite tables`(
             sourceInputRecords = Fixtures.OVERWRITE_SOURCE_RECORDS,
@@ -237,6 +276,14 @@ interface TableOperationsSuite {
             expectedRecords = Fixtures.OVERWRITE_EXPECTED_RECORDS,
         )
 
+    /**
+     * Tests table copy functionality where records from a source table are copied to a target
+     * table.
+     *
+     * @param sourceInputRecords Records in the source table to be copied
+     * @param targetInputRecords Existing records in the target table
+     * @param expectedRecords Expected combined records in the target table after copy
+     */
     fun `copy tables`(
         sourceInputRecords: List<Map<String, AirbyteValue>>,
         targetInputRecords: List<Map<String, AirbyteValue>>,
@@ -274,6 +321,7 @@ interface TableOperationsSuite {
         }
     }
 
+    /** Tests table copy with default test data. */
     fun `copy tables`() =
         `copy tables`(
             sourceInputRecords = Fixtures.OVERWRITE_SOURCE_RECORDS,
@@ -281,6 +329,14 @@ interface TableOperationsSuite {
             expectedRecords = Fixtures.COPY_EXPECTED_RECORDS,
         )
 
+    /**
+     * Tests table upsert functionality with deduplication based on primary key. Records are updated
+     * if they exist, inserted if they don't, and deleted if marked with CDC_DELETED_AT.
+     *
+     * @param sourceInputRecords Records to upsert from the source table
+     * @param targetInputRecords Existing records in the target table
+     * @param expectedRecords Expected records in the target table after upsert
+     */
     fun `upsert tables`(
         sourceInputRecords: List<Map<String, AirbyteValue>>,
         targetInputRecords: List<Map<String, AirbyteValue>>,
@@ -355,6 +411,7 @@ interface TableOperationsSuite {
         }
     }
 
+    /** Tests table upsert with default test data including CDC delete markers. */
     fun `upsert tables`() =
         `upsert tables`(
             sourceInputRecords = Fixtures.UPSERT_SOURCE_RECORDS,
