@@ -75,7 +75,7 @@ class PostgresDirectLoadSqlGenerator {
         return stream.schema
             .asColumns()
             .map { (columnName, columnType) ->
-                val targetColumnName = columnNameMapping[columnName] //can I assume there's always a mapping?
+                val targetColumnName = columnNameMapping[columnName] ?: columnName
                 val typeName = columnType.type.toDialectType()
                 "$targetColumnName $typeName"
             }
