@@ -39,6 +39,7 @@ Using Poetry
 
 ```shell
 poetry run source-exact spec
+poetry run source-exact check
 ```
 
 Or with the current virtual environment activated
@@ -92,3 +93,6 @@ The single and bulk api’s are designed for a different purpose. They provide a
 ## ToDo List
 - [ ] Improve logging so that in the case of a refresh of a token before its expiry date does not only give a 401 but also its message
   - `401 Client Error: Unauthorized for url: https://start.exactonline.nl/api/oauth2/token`
+- [ ] make FinancialGLAccountClassificationMappings and FinancialReceivablesList only full refresh or test the 
+  incremental sync better
+- 
