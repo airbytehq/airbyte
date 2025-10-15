@@ -1,0 +1,33 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "acls",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {"type": ["string"], "description": "Unique identifier for this ACL entry"},
+            "resource_id": {"type": ["string"], "description": "ObjectGUID of the resource object"},
+            "resource_dn": {"type": ["string"], "description": "Distinguished name of the resource"},
+            "resource_type": {"type": ["string"], "description": "Object class of the resource"},
+            "principal_sid": {"type": ["string"], "description": "SID of the principal (user/group/computer)"},
+            "principal_id": {"type": ["string", "null"], "description": "ObjectGUID of the principal object"},
+            "principal_type": {"type": ["string"], "description": "Type of principal (User, Group, Computer, etc.)"},
+            "ace_type": {"type": ["string"], "description": "Access Control Entry type (Allow, Deny, etc.)"},
+            "permissions": {"type": ["array"], "items": {"type": "string"}, "description": "List of permissions granted"},
+            "access_mask": {"type": ["integer"], "description": "Raw access mask value"},
+            "inheritance_flags": {"type": ["array"], "items": {"type": "string"}, "description": "Inheritance flags"},
+            "is_inherited": {"type": ["boolean"], "description": "Whether this ACE is inherited"},
+            "created_at": {"type": ["string", "null"], "description": "Resource creation time"},
+            "modified_at": {"type": ["string", "null"], "description": "Resource last modification time"}
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": false
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

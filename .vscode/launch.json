@@ -609,11 +609,81 @@
             "python": "${workspaceFolder}/airbyte-integrations/connectors/source-aws-iam/.venv/bin/python"
         },
         {
+            "name": "Active Directory: Spec",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory/main.py",
+            "args": ["spec"],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory/.venv/bin/python"
+        },
+        {
+            "name": "Active Directory: Check",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory/main.py",
+            "args": ["check", "--config", "secrets/config.json"],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory/.venv/bin/python"
+        },
+        {
+            "name": "Active Directory: Discover",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory/main.py",
+            "args": ["discover", "--config", "secrets/config.json"],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory/.venv/bin/python"
+        },
+        {
             "name": "Active Directory: Read All Streams",
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory/main.py",
             "args": ["read", "--config", "secrets/config.json", "--catalog", "integration_tests/configured_catalog.json"],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory/.venv/bin/python"
+        },
+        {
+            "name": "Active Directory: Read ACLs Only",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory/main.py",
+            "args": ["read", "--config", "secrets/config.json", "--catalog", "integration_tests/acls_catalog.json"],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory/.venv/bin/python"
+        },
+        {
+            "name": "Active Directory: Read Users Only",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory/main.py",
+            "args": ["read", "--config", "secrets/config.json", "--catalog", "integration_tests/users_catalog.json"],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory/.venv/bin/python"
+        },
+        {
+            "name": "Active Directory: Read Groups Only",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory/main.py",
+            "args": ["read", "--config", "secrets/config.json", "--catalog", "integration_tests/groups_catalog.json"],
+            "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory",
+            "console": "integratedTerminal",
+            "python": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory/.venv/bin/python"
+        },
+        {
+            "name": "Active Directory: Read Computers Only",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory/main.py",
+            "args": ["read", "--config", "secrets/config.json", "--catalog", "integration_tests/computers_catalog.json"],
             "cwd": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory",
             "console": "integratedTerminal",
             "python": "${workspaceFolder}/airbyte-integrations/connectors/source-active-directory/.venv/bin/python"

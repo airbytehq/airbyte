@@ -9,6 +9,8 @@ from bloodhound.ad.authentication import ADAuthentication
 from ldap3 import Connection
 
 from .streams import (
+    ACLs,
+    Computers,
     Domains,
     Forest,
     ForestDomains,
@@ -32,6 +34,8 @@ class SourceActiveDirectory(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         return [
+            ACLs(conn=self._get_ldap_connection(config)),
+            Computers(conn=self._get_ldap_connection(config)),
             Forest(conn=self._get_ldap_connection(config)),
             Domains(conn=self._get_ldap_connection(config)),
             ForestDomains(conn=self._get_ldap_connection(config)),

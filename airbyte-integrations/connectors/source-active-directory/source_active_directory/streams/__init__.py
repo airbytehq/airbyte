@@ -1,3 +1,5 @@
+from .acls import ACLs
+from .computers import Computers
 from .domains import Domains
 from .forest import Forest
 from .forest_domains import ForestDomains
@@ -9,6 +11,8 @@ from .sites import Sites
 from .users import Users
 
 __all__ = [
+    "ACLs",
+    "Computers",
     "Domains",
     "Forest", 
     "ForestDomains",
