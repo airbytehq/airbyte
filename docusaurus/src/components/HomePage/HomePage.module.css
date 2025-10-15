@@ -1,0 +1,263 @@
+.homePage {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Section 1: Hero */
+.heroSection {
+  background: var(--ifm-color-primary);
+  padding: 4rem 2rem;
+  margin: 0 -2rem;
+}
+
+.heroContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  align-items: center;
+}
+
+.heroLeft {
+  color: white;
+}
+
+.heroTitle {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: white;
+}
+
+.heroDescription {
+  font-size: 1.125rem;
+  line-height: 1.7;
+  margin: 0;
+  color: white;
+  opacity: 0.95;
+}
+
+.heroRight {
+  /* Arcade component will render here */
+}
+
+/* Section 2: Navigation Links */
+.navSection {
+  padding: 4rem 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.navGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+
+.navCard {
+  padding: 2rem;
+  border-radius: 12px;
+  border: 1px solid var(--ifm-color-primary-lightest);
+  background: var(--color-grey-40);
+  transition: all 0.3s ease;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+}
+
+.navCard:hover {
+  border-color: var(--ifm-color-primary);
+  box-shadow: 0 4px 12px rgba(97, 94, 255, 0.15);
+  transform: translateY(-2px);
+  text-decoration: none;
+  color: inherit;
+}
+
+.navIcon {
+  margin-bottom: 1rem;
+}
+
+.navTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  color: var(--ifm-color-primary);
+}
+
+.navDescription {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin: 0;
+  color: var(--ifm-font-color-base);
+  opacity: 0.85;
+}
+
+/* Section 3: Why Airbyte */
+.whySection {
+  padding: 4rem 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.whyTitle {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: var(--ifm-font-color-base);
+}
+
+.whyIntro {
+  font-size: 1.125rem;
+  line-height: 1.7;
+  margin-bottom: 2rem;
+  color: var(--ifm-font-color-base);
+}
+
+.whyList {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 2rem;
+}
+
+.whyList li {
+  margin-bottom: 1.5rem;
+  padding-left: 1.5rem;
+  position: relative;
+  line-height: 1.7;
+}
+
+.whyList li::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: var(--ifm-color-primary);
+  font-size: 1.5rem;
+  line-height: 1.4;
+}
+
+.whyList li strong {
+  color: var(--ifm-font-color-base);
+}
+
+.whyList li a {
+  color: var(--ifm-color-primary);
+  text-decoration: underline;
+}
+
+.whyList li a:hover {
+  color: var(--ifm-color-primary-dark);
+}
+
+.whyFooter {
+  font-size: 1rem;
+  line-height: 1.7;
+  margin-bottom: 2rem;
+  color: var(--ifm-font-color-base);
+}
+
+.whyFooter a {
+  color: var(--ifm-color-primary);
+  text-decoration: underline;
+}
+
+.whyFooter a:hover {
+  color: var(--ifm-color-primary-dark);
+}
+
+.badges {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.badges img {
+  height: 20px;
+  border-radius: 0;
+}
+
+/* Responsive Design */
+
+/* Tablet */
+@media (max-width: 996px) {
+  .heroContainer {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .heroTitle {
+    font-size: 2rem;
+  }
+
+  .heroDescription {
+    font-size: 1rem;
+  }
+
+  .navGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+
+  .heroSection {
+    padding: 3rem 1.5rem;
+  }
+
+  .navSection {
+    padding: 3rem 1.5rem;
+  }
+
+  .whySection {
+    padding: 3rem 1.5rem;
+  }
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .heroSection {
+    padding: 2rem 1rem;
+    margin: 0 -1rem;
+  }
+
+  .heroTitle {
+    font-size: 1.75rem;
+  }
+
+  .heroDescription {
+    font-size: 0.95rem;
+  }
+
+  .navGrid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .navCard {
+    padding: 1.5rem;
+  }
+
+  .navTitle {
+    font-size: 1.125rem;
+  }
+
+  .navSection {
+    padding: 2rem 1rem;
+  }
+
+  .whySection {
+    padding: 2rem 1rem;
+  }
+
+  .whyTitle {
+    font-size: 1.5rem;
+  }
+
+  .whyIntro {
+    font-size: 1rem;
+  }
+
+  .whyList li {
+    font-size: 0.95rem;
+  }
+}
