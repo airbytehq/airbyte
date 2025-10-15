@@ -19,6 +19,7 @@ Airbyte has begun rolling out a new Helm chart called Helm chart V2. The instruc
 ## Prerequisites
 
 ### Infrastructure Prerequisites
+
 For a production-ready deployment of {{product_name_sm_enterprise}}, various infrastructure components are required. We recommend deploying to Amazon EKS or Google Kubernetes Engine. The following diagram illustrates a typical Airbyte deployment running on AWS:
 
 ![AWS Architecture Diagram](./assets/self-managed-enterprise-aws.png)
