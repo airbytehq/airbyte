@@ -6,147 +6,87 @@
   "properties": {
     "Timestamp": {
       "description": "Timestamp",
-      "type": [
-        "null",
-        "integer"
-      ]
+      "type": ["null", "integer"]
     },
     "Created": {
       "description": "Created date.",
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "Creator": {
       "description": "ID of creator.",
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "CreatorFullName": {
       "description": "Name of creator",
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "Division": {
       "description": "Division code",
-      "type": [
-        "null",
-        "integer"
-      ]
+      "type": ["null", "integer"]
     },
     "Employee": {
       "description": "Employee ID",
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "EmployeeFullName": {
       "description": "Name of employee",
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "EmployeeHID": {
       "description": "Numeric number of Employee",
-      "type": [
-        "null",
-        "integer"
-      ]
+      "type": ["null", "integer"]
     },
     "EmploymentNumber": {
       "description": "Employment number",
-      "type": [
-        "null",
-        "integer"
-      ]
+      "type": ["null", "integer"]
     },
     "EndDate": {
       "description": "End date of employment",
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "ID": {
       "description": "Primary key",
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "Modified": {
       "description": "Last modified date.",
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "Modifier": {
       "description": "User ID of modifier",
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "ModifierFullName": {
       "description": "Name of modifier",
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "ReasonEnd": {
       "description": "ID of employment ended",
-      "type": [
-        "null",
-        "integer"
-      ]
+      "type": ["null", "integer"]
     },
     "ReasonEndDescription": {
       "description": "Reason of ended flexible employment",
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "ReasonEndFlex": {
       "description": "Reason of ended flexible employment",
-      "type": [
-        "null",
-        "integer"
-      ]
+      "type": ["null", "integer"]
     },
     "ReasonEndFlexDescription": {
       "description": "Other reason for end of employment",
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "StartDate": {
       "description": "Start date of employment",
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date-time"
     },
     "StartDateOrganization": {
       "description": "Start date of the employee in the organization. This fiels is ueds to count the years in service",
-      "type": [
-        "null",
-        "string"
-      ],
+      "type": ["null", "string"],
       "format": "date-time"
     }
   }
