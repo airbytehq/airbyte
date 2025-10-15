@@ -31,7 +31,7 @@ Airbyte is available as a self-managed, hybrid, or fully managed cloud solution.
 
 <CardWithIcon title="{{product_name_cloud_standard}}" description="A cloud solution that provides a fully managed experience for data replication. Focus on moving data while Airbyte manages the infrastructure. Free 30-day trial." ctaText="Sign up" ctaLink="https://cloud.airbyte.com/signup" icon="fa-cloud" />
 
-<CardWithIcon title="{{product_name_cloud_pro}}" description="A cloud solution for organizations looking to scale efficiently. Role based access control, single sign on, and more ensure {{product_name_cloud_pro}}is a robust solution that can grow with your team." ctaText="Talk to Sales" ctaLink="https://airbyte.com/company/talk-to-sales" icon="fa-lock" />
+<CardWithIcon title="{{product_name_cloud_pro}}" description="A cloud solution for organizations looking to scale efficiently. Role based access control, single sign on, and more ensure {{product_name_cloud_pro}} is a robust solution that can grow with your team." ctaText="Talk to Sales" ctaLink="https://airbyte.com/company/talk-to-sales" icon="fa-lock" />
 
 <CardWithIcon title="{{product_name_cloud_enterprise}}" description="An enterprise-grade, hybrid solution with for organizatons seeking the convenience of a fully managed solution with separate data planes for compliance and data sovereignty." ctaText="Learn more" ctaLink="enterprise-flex" icon="fa-lock" />
 

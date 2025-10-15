@@ -8,7 +8,7 @@ Hold up! Have you looked at [our docs](https://docs.airbyte.com/) yet? We recomm
 
 ## {{product_name_sm_oss}} support
 
-Running Airbyte {{product_name_sm_oss}} and have questions that our docs could not clear up? Post your questions on our [Github Discussions](https://github.com/airbytehq/airbyte/discussions?_gl=1*70s0c6*_ga*MTc1OTkyOTYzNi4xNjQxMjQyMjA0*_ga_HDBMVFQGBH*MTY4OTY5MDQyOC4zNDEuMC4xNjg5NjkwNDI4LjAuMC4w) and also join our community Slack to connect with other Airbyte users.
+If you're running Airbyte {{product_name_sm_oss}} and have a question the docs couldn't clear up, post your question as a [Github Discussions](https://github.com/airbytehq/airbyte/discussions?_gl=1*70s0c6*_ga*MTc1OTkyOTYzNi4xNjQxMjQyMjA0*_ga_HDBMVFQGBH*MTY4OTY5MDQyOC4zNDEuMC4xNjg5NjkwNDI4LjAuMC4w) and also join our community Slack to connect with other Airbyte users.
 
 ### Community Slack
 
@@ -40,7 +40,7 @@ Please be sure to sign up for Airbyte with your company email address, as we do 
 
 ## {{product_name_sm_enterprise}} support
 
-If you're running {{product_name_sm_enterprise}}, we're here to help you with upgrading Airbyte versions, debugging connector issues, or troubleshooting schema changes.
+If you're running {{product_name_sm_enterprise}}, Airbyte's support team here to help you with upgrading Airbyte versions, debugging connector issues, or troubleshooting schema changes.
 
 Before opening a support ticket, we recommend consulting [our documentation](https://docs.airbyte.com/) and searching our [Help Center](https://support.airbyte.com/hc/en-us). If your question remains unanswered, please submit a ticket through our Help Center. We suggest creating an [Airbyte Help Center account](https://airbyte1416.zendesk.com/auth/v2/login/signin?return_to=https%3A%2F%2Fsupport.airbyte.com%2Fhc%2Fen-us&theme=hc&locale=en-us&brand_id=15365055240347&auth_origin=15365055240347%2Ctrue%2Ctrue) to access your organization's support requests. Our team is online and availible to assist from 7AM - 7PM Eastern.
 

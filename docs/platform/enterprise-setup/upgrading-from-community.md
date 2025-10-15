@@ -62,7 +62,7 @@ Update your `values.yaml` file as explained in the [{{product_name_sm_enterprise
     </TabItem>
     </Tabs>
 
-2. Once this is complete, you will need to upgrade your ingress to include the new `/auth` path. The following is a skimmed down definition of an ingress resource you could use for {{product_name_sm_enterprise}}:
+2. Once this is complete, you need to upgrade your ingress to include the new `/auth` path. The following is a skimmed down definition of an ingress resource you could use for {{product_name_sm_enterprise}}:
 
 <details>
 <summary>Configuring your Airbyte ingress</summary>

@@ -62,8 +62,7 @@ If you'd like to turn off telemetry data collection, follow the directions below
   including which connectors are working well and which connectors are frequently failing. This helps
   us to prioritize product improvements.
 
-  We _never_ collect any personally identifiable information (PII) or sensitive data. We _don't_ collect IP addresses, hostnames, or any other
-  information that could be used to identify you or your organization.
+  Airbyte _never_ collects any personally identifiable information (PII) or sensitive data. This includes _don't_ collect IP addresses, host names, or any other information that could be used to identify you or your organization.
 
   You can opt-out of anonymous usage reporting by setting the environment variable `DO_NOT_TRACK` to any value.
 

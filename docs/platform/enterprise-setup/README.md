@@ -4,7 +4,7 @@ products: oss-enterprise
 
 # Airbyte {{product_name_sm_enterprise}}
 
-[Airbyte {{product_name_sm_enterprise}}](https://airbyte.com/product/airbyte-enterprise) is the best way to run Airbyte yourself. You get all 600+ pre-built connectors, data never leaves your environment, and {{product_name_sm_enterprise}} introduces several new governance capabilities targeted towards large organizations designed to enhance your data platform’s capabilities and security.
+[Airbyte {{product_name_sm_enterprise}}](https://airbyte.com/product/airbyte-enterprise) is the best way to run Airbyte yourself. You get all 600+ pre-built connectors, data never leaves your environment, and {{product_name_sm_enterprise}} introduces new governance capabilities targeted towards large organizations designed to enhance your data platform’s capabilities and security.
 
 
 | Feature             | Description                                                                                                            |

@@ -36,7 +36,7 @@ Each connector's changelog details its update history. You can find it in the [c
 
 **Major Versions:** A major version will include notable changes that affect your schema or sync success. We will notify you ahead of time to give you a window to prepare for the change. At the end of the window, we will automatically upgrade your connector to ensure you receive the latest updates. Examples of major version changes are shared in our [breaking change documentation](/platform/using-airbyte/schema-change-management#major-connector-version-upgrades).
 
-### Self-Managed plans
+### Self-managed plans
 
 Airbyte recommends using the latest version of Airbyte when updating connections.
 
