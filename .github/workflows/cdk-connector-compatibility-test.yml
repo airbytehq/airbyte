@@ -35,7 +35,7 @@ jobs:
 
       - name: Generate Connector Matrix from Changes
         id: generate-matrix
-        run: echo "connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --local-cdk)" | tee -a $GITHUB_OUTPUT
+        run: echo "connectors_matrix=$(./poe-tasks/get_connector_matrix.py --json-matrix --local-cdk)" | tee -a $GITHUB_OUTPUT
 
     outputs:
       connectors-matrix: ${{ steps.generate-matrix.outputs.connectors_matrix }}

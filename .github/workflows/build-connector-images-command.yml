@@ -69,7 +69,7 @@ jobs:
         id: generate-matrix
         run: |
           # Get the list of modified connectors
-          echo "connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json)" | tee -a $GITHUB_OUTPUT
+          echo "connectors_matrix=$(./poe-tasks/get_connector_matrix.py --json-matrix)" | tee -a $GITHUB_OUTPUT
 
     outputs:
       connectors-matrix: ${{ steps.generate-matrix.outputs.connectors_matrix }}
