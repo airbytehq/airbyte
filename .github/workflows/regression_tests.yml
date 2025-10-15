@@ -138,8 +138,8 @@ jobs:
       - name: Setup Control Version
         if: github.event_name == 'workflow_dispatch'
         run: |
-          if ${{ github.event.inputs.control_version }}; then
-            echo "CONTROL_VERSION=--connector_live_tests.control_version=${{ github.event.inputs.control_version }}" >> $GITHUB_ENV
+          if [ -n "${{ github.event.inputs.control_version }}" ]; then
+            echo "CONTROL_VERSION=--connector_live_tests.control-version=${{ github.event.inputs.control_version }}" >> $GITHUB_ENV
           else
             echo "CONTROL_VERSION=" >> $GITHUB_ENV
           fi
