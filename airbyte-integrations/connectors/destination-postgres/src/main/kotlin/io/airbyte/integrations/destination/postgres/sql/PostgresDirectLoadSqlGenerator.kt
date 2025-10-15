@@ -22,7 +22,10 @@ import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -37,6 +40,31 @@ private val log = KotlinLogging.logger {}
 @Singleton
 class PostgresDirectLoadSqlGenerator {
     companion object {
+        internal val DEFAULT_COLUMNS =
+            listOf(
+                ColumnAndType(
+                    columnName = COLUMN_NAME_AB_RAW_ID,
+                    columnTypeName = SQLDataType.VARCHAR(36).typeName,
+                    nullable = false
+
+                ),
+                ColumnAndType(
+                    columnName = COLUMN_NAME_AB_EXTRACTED_AT,
+                    columnTypeName = SQLDataType.TIMESTAMPWITHTIMEZONE.typeName,
+                    nullable = false
+                ),
+                ColumnAndType(
+                    columnName = COLUMN_NAME_AB_META,
+                    columnTypeName = SQLDataType.JSONB.typeName,
+                    nullable = false
+                ),
+                ColumnAndType(
+                    columnName = COLUMN_NAME_AB_GENERATION_ID,
+                    columnTypeName = SQLDataType.BIGINT.typeName,
+                    nullable = false
+                ),
+            )
+
         /**
          * This extension is here to avoid writing `.also { log.info { it }}` for every returned string
          * we want to log
@@ -174,4 +202,11 @@ class PostgresDirectLoadSqlGenerator {
             is UnionType -> this.chooseType().toDialectType()
             is UnknownType -> SQLDataType.VARCHAR.typeName
         }
+}
+
+data class ColumnAndType(val columnName: String, val columnTypeName: String, val nullable: Boolean = false) {
+    override fun toString(): String {
+        val isNullableSuffix = if (nullable) "" else "NOT NULL"
+        return "$columnName $columnTypeName $isNullableSuffix".trim()
+    }
 }
