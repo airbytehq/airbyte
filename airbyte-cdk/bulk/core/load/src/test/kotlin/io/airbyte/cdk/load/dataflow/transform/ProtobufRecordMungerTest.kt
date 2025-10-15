@@ -205,7 +205,7 @@ class ProtobufRecordMungerTest {
             AirbyteRecordMessage.AirbyteRecordMessageProtobuf.newBuilder()
                 .setStreamName("dummy")
                 .setEmittedAtMs(emittedAtMs)
-                .addAllData(protoValues)
+                .addAllData(protoValues.map { it.build() })
                 .setMeta(metaProto)
                 .build()
 
@@ -509,7 +509,7 @@ class ProtobufRecordMungerTest {
                 encoder.encode(null, LeafAirbyteSchemaType.STRING),
             )
 
-        val oversizedRecord = buildModifiedRecord(oversizedProtoValues)
+        val oversizedRecord = buildModifiedRecord(oversizedProtoValues.map { it.build() })
         every { record.rawData } returns oversizedRecord
 
         val result = munger.transformForDest(record)
@@ -546,7 +546,6 @@ class ProtobufRecordMungerTest {
                         .setOffsetSeconds(7200)
                         .build()
                 )
-                .build()
 
         val invalidTimestampProtoValues =
             mutableListOf(
@@ -574,7 +573,7 @@ class ProtobufRecordMungerTest {
                 encoder.encode(null, LeafAirbyteSchemaType.STRING),
             )
 
-        val invalidRecord = buildModifiedRecord(invalidTimestampProtoValues)
+        val invalidRecord = buildModifiedRecord(invalidTimestampProtoValues.map { it.build() })
         every { record.rawData } returns invalidRecord
 
         val result = munger.transformForDest(record)
@@ -648,7 +647,8 @@ class ProtobufRecordMungerTest {
                 encoder.encode(null, LeafAirbyteSchemaType.STRING),
             )
 
-        val emptyComplexRecord = buildModifiedRecord(emptyComplexTypesProtoValues)
+        val emptyComplexRecord =
+            buildModifiedRecord(emptyComplexTypesProtoValues.map { it.build() })
         every { record.rawData } returns emptyComplexRecord
 
         val result = munger.transformForDest(record)
@@ -665,7 +665,7 @@ class ProtobufRecordMungerTest {
     fun `handles invalid date format with proper error tracking`() {
         // Create an invalid date using an out-of-range value
         val invalidDateValue =
-            AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder().setString("invalid-date").build()
+            AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder().setString("invalid-date")
 
         val invalidDateProtoValues =
             mutableListOf(
@@ -696,7 +696,7 @@ class ProtobufRecordMungerTest {
                 encoder.encode(null, LeafAirbyteSchemaType.STRING),
             )
 
-        val invalidDateRecord = buildModifiedRecord(invalidDateProtoValues)
+        val invalidDateRecord = buildModifiedRecord(invalidDateProtoValues.map { it.build() })
         every { record.rawData } returns invalidDateRecord
 
         val result = munger.transformForDest(record)
