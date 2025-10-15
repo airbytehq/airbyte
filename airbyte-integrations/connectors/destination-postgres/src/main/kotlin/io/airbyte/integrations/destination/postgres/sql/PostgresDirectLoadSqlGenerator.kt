@@ -166,7 +166,7 @@ class PostgresDirectLoadSqlGenerator {
     }
 
     fun getGenerationId(tableName: TableName): String =
-        "SELECT ${COLUMN_NAME_AB_GENERATION_ID} FROM ${fullyQualifiedName(tableName)} LIMIT 1;".andLog()
+        "SELECT \"${COLUMN_NAME_AB_GENERATION_ID}\" FROM ${fullyQualifiedName(tableName)} LIMIT 1;".andLog()
 
     fun showColumns(tableName: TableName): String =
         """
