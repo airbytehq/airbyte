@@ -361,7 +361,7 @@ module.exports = {
                       link: {
                         type: "generated-index",
                         title: "Change Data Capture (CDC)",
-                        description: "Learn about CDC in Airbyte and best practices for configuration",
+                        description: "Learn about CDC in Airbyte and best practices for configuration.",
                       },
                       items: [
                         "understanding-airbyte/cdc",
