@@ -5,6 +5,7 @@
 package io.airbyte.cdk.load.orchestration.db.direct_load_table
 
 import io.airbyte.cdk.SystemErrorException
+import io.airbyte.cdk.load.client.TableOperationsClient
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
@@ -28,7 +29,7 @@ class DirectLoadTableWriter(
     private val stateGatherer: DatabaseInitialStatusGatherer<DirectLoadInitialStatus>,
     private val destinationHandler: DatabaseHandler,
     private val nativeTableOperations: DirectLoadTableNativeOperations,
-    private val sqlTableOperations: DirectLoadTableSqlOperations,
+    private val sqlTableOperations: TableOperationsClient,
     private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
     private val tempTableNameGenerator: TempTableNameGenerator,
 ) : DestinationWriter {

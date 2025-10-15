@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.load.orchestration.db
 
-import io.airbyte.cdk.load.client.AirbyteClient
+import io.airbyte.cdk.load.client.TableOperationsClient
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadInitialStatus
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableStatus
@@ -34,7 +34,7 @@ fun interface DatabaseInitialStatusGatherer<InitialStatus : DatabaseInitialStatu
 }
 
 abstract class BaseDirectLoadInitialStatusGatherer(
-    private val airbyteClient: AirbyteClient,
+    private val tableOperationsClient: TableOperationsClient,
     private val tempTableNameGenerator: TempTableNameGenerator,
 ) : DatabaseInitialStatusGatherer<DirectLoadInitialStatus> {
     override suspend fun gatherInitialStatus(
@@ -53,7 +53,7 @@ abstract class BaseDirectLoadInitialStatusGatherer(
     }
 
     private suspend fun getTableStatus(tableName: TableName): DirectLoadTableStatus? {
-        val numberOfRecords: Long? = airbyteClient.countTable(tableName)
+        val numberOfRecords: Long? = tableOperationsClient.countTable(tableName)
         return when (numberOfRecords) {
             // Missing table
             null -> null

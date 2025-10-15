@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.orchestration.db.direct_load_table
 
+import io.airbyte.cdk.load.client.TableOperationsClient
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
@@ -29,7 +30,7 @@ class DirectLoadTableAppendStreamLoader(
     private val tempTableName: TableName,
     private val columnNameMapping: ColumnNameMapping,
     private val nativeTableOperations: DirectLoadTableNativeOperations,
-    private val sqlTableOperations: DirectLoadTableSqlOperations,
+    private val sqlTableOperations: TableOperationsClient,
     private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
 ) : StreamLoader {
     override suspend fun start() {
@@ -77,7 +78,7 @@ class DirectLoadTableDedupStreamLoader(
     private val tempTableName: TableName,
     private val columnNameMapping: ColumnNameMapping,
     private val nativeTableOperations: DirectLoadTableNativeOperations,
-    private val sqlTableOperations: DirectLoadTableSqlOperations,
+    private val sqlTableOperations: TableOperationsClient,
     private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
 ) : StreamLoader {
     override suspend fun start() {
@@ -129,7 +130,7 @@ class DirectLoadTableAppendTruncateStreamLoader(
     private val tempTableName: TableName,
     private val columnNameMapping: ColumnNameMapping,
     private val nativeTableOperations: DirectLoadTableNativeOperations,
-    private val sqlTableOperations: DirectLoadTableSqlOperations,
+    private val sqlTableOperations: TableOperationsClient,
     private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
 ) : StreamLoader {
     // can't use lateinit because of weird kotlin reasons.
@@ -150,7 +151,7 @@ class DirectLoadTableAppendTruncateStreamLoader(
             if (initialStatus.tempTable.isEmpty) {
                 nativeTableOperations.ensureSchemaMatches(stream, tempTableName, columnNameMapping)
             } else {
-                val generationId = nativeTableOperations.getGenerationId(tempTableName)
+                val generationId = sqlTableOperations.getGenerationId(tempTableName)
                 if (generationId >= stream.minimumGenerationId) {
                     nativeTableOperations.ensureSchemaMatches(
                         stream,
@@ -188,7 +189,7 @@ class DirectLoadTableAppendTruncateStreamLoader(
                 isWritingToTemporaryTable = false
             } else if (
                 initialStatus.realTable.isEmpty ||
-                    nativeTableOperations.getGenerationId(realTableName) >=
+                    sqlTableOperations.getGenerationId(realTableName) >=
                         stream.minimumGenerationId
             ) {
                 nativeTableOperations.ensureSchemaMatches(stream, realTableName, columnNameMapping)
@@ -252,7 +253,7 @@ class DirectLoadTableDedupTruncateStreamLoader(
     private val tempTableName: TableName,
     private val columnNameMapping: ColumnNameMapping,
     private val nativeTableOperations: DirectLoadTableNativeOperations,
-    private val sqlTableOperations: DirectLoadTableSqlOperations,
+    private val sqlTableOperations: TableOperationsClient,
     private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
     private val tempTableNameGenerator: TempTableNameGenerator,
 ) : StreamLoader {
@@ -276,7 +277,7 @@ class DirectLoadTableDedupTruncateStreamLoader(
             if (initialStatus.tempTable.isEmpty) {
                 nativeTableOperations.ensureSchemaMatches(stream, tempTableName, columnNameMapping)
             } else {
-                val generationId = nativeTableOperations.getGenerationId(tempTableName)
+                val generationId = sqlTableOperations.getGenerationId(tempTableName)
                 if (generationId >= stream.minimumGenerationId) {
                     nativeTableOperations.ensureSchemaMatches(
                         stream,
@@ -333,7 +334,7 @@ class DirectLoadTableDedupTruncateStreamLoader(
 
             // Case 2: Real table exists but is empty or has correct generation ID
             initialStatus.realTable.isEmpty ||
-                nativeTableOperations.getGenerationId(realTableName) >=
+                sqlTableOperations.getGenerationId(realTableName) >=
                     stream.minimumGenerationId -> true
 
             // Case 3: Real table exists with data - needs more stringent approach
