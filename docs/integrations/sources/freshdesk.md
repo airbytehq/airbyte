@@ -72,6 +72,8 @@ If you don't use the start date Freshdesk will retrieve only the last 30 days. M
 
 | Version | Date       | Pull Request                                             | Subject                                                                               |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------ |
+| 3.2.0 | 2025-10-14 | [68089](https://github.com/airbytehq/airbyte/pull/68089) | Complete progressive rollout |
+| 3.2.0-rc.2 | 2025-10-09 | [67109](https://github.com/airbytehq/airbyte/pull/67109) | Migrate to CDK v7 |
 | 3.2.0-rc.1 | 2025-03-12 | [54687](https://github.com/airbytehq/airbyte/pull/54687) | Migrate to Manifest-only |
 | 3.1.3 | 2025-02-26 | [54696](https://github.com/airbytehq/airbyte/pull/54696) | Update requests-mock dependency versionb |
 | 3.1.2 | 2025-01-11 | [43887](https://github.com/airbytehq/airbyte/pull/43887) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
