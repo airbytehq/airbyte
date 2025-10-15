@@ -54,7 +54,6 @@
 .navGrid {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 2rem;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 2rem;
@@ -216,7 +215,6 @@
   .navGrid {
     grid-template-columns: repeat(2, 1fr);
     gap: 1.5rem;
-    padding: 0 1.5rem;
   }
 
   .heroSection {
@@ -224,7 +222,7 @@
   }
 
   .navSection {
-    padding: 3rem 0;
+    padding: 3rem 1.5rem;
   }
 
   .whySection {
@@ -249,7 +247,6 @@
   .navGrid {
     grid-template-columns: 1fr;
     gap: 1rem;
-    padding: 0 1rem;
   }
 
   .navCard {
@@ -261,7 +258,7 @@
   }
 
   .navSection {
-    padding: 2rem 0;
+    padding: 2rem 1rem;
   }
 
   .whySection {
