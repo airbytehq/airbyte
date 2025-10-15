@@ -2,127 +2,193 @@
 # Company vocabulary
 #
 
+abctl
 Airbyte
+Airbyte Embedded
 Airbyte's
-Self-Managed Community
-Self-Managed Enterprise
+Airbox
 Cloud
 Cloud Teams
-Enterprise Flex
-abctl
-Airbox
-PyAirbyte
-[Nn]amespace
-Connector Builder
-abctl
-Low-Code CDK
 Connection Timeline
+Connector Builder
 Embedded
-Airbyte Embedded
+Enterprise Flex
+Low-Code CDK
+[Nn]amespace
+PyAirbyte
+Self-Managed Community
+Self-Managed Enterprise
 
 #
-# Common terms Airbyte uses
+# Common jargon, acronyms, and initialisms that don't need definitions
 #
 
-repo
-Vercel
-Docusaurus
-Kubernetes
-Helm
-kind
-Vale
-OpenTelemetry
-Datadog
-[Dd]eduplication
-Python
-MarkDownLint
-markdownlint-cli2
-JavaScript
-ETL
-ELT
-[Dd]ata activation
-ID
-
-# Common acronyms and initialisms that don't need definitions
-
-AWS
-GCP
-REST
-IAM
-CSV
-CSVs
 API
 APIs
-OAuth
-DPath
-UUID
-URL
-SSO
-SQL
-IP[s]
+AWS
 CDC
-
-# Airbyte connectors
-
-Nessie
-S3 Data Lake
-PostgreSQL
-Postgres
-
-# Companies, products, and jargon
-
-Glue
-[Gg]raph[Qq][Ll]
-\bDocker(?:'s)?\b
-npm
-HubSpot
-Zendesk
-Okta
-Entra
-Slack
-
-# Acceptable non-words that shouldn't trigger spellcheck
-
-[Nn]ulled
-[Nn]amespaces
-[Ii]nitialisms
-\bCPU(?:s)?\b
-
-# API and technical terms
-
 CLI
 CLIs
-UUIDs
-JWT
-JWTs
-CORS
-SaaS
 config
-rollout
+connection_id
+connectionId
+CORS
+\bCPU(?:s)?\b
 CRM
-JSON
+Cron
+crons
+CSS
+CSV
+CSVs
+[Dd]ata activation
+Datadog
+datetime
+[Dd]eduplication
+Docusaurus
+DPath
+ELT
+ETL
+GCP
+gRPC
+GUI
+HTML
+HTTP[S]
+IAM
+IaaS
+ID
+IDE
+[Ii]nitialisms
+IP[s]
+JavaScript
 jmespath
 Jmespath
 JMESPath
-Cron
-crons
-subdirectory
-subdirectories
-workspace_id
-source_id
-connection_id
-template_id
-workspaceId
-sourceId
-connectionId
-templateId
-sync_on_create
+JSON
+JWT
+JWTs
+kind
+MarkDownLint
+markdownlint-cli2
+[Nn]amespaces
 non_breaking_changes_preference
+[Nn]ulled
+OAuth
 Onboarding
-datetime
+OpenTelemetry
+PaaS
+Python
+repo
+REST
+rollout
+SaaS
+SDK
+source_id
+sourceId
+SQL
+SSO
+subdirectories
+subdirectory
+sync_on_create
+TCP
+template_id
+templateId
+UDP
+URL
+UUID
+UUIDs
+Vale
+workspace_id
+workspaceId
 workspace's
+XML
+YAML
 
+#
+# Companies and products
+#
+
+Angular
+Ansible
+ASP.NET
+BigQuery
+Bitbucket
+Cassandra
+Confluence
+CouchDB
+Django
+\bDocker(?:'s)?\b
+DynamoDB
+Eclipse
+Elasticsearch
+Entra
+Express
+Firestore
+Flask
+GitHub
+GitLab
+Glue
+[Gg]raph[Qq][Ll]
+HDFS
+Helm
+HubSpot
+Iceberg
+IntelliJ
+Jira
+Kafka
+Keras
+Kubernetes
+Laravel
+MariaDB
+Matplotlib
+MinIO
+MongoDB
+MySQL
+Neo4j
+Nessie
+NetBeans
+Netlify
+Next.js
+Node.js
+npm
+NumPy
+Nuxt.js
+Okta
+OpenAPI
+Packer
+Pandas
+Phoenix
+Postman
+Postgres
+PostgreSQL
+PyCharm
+PyTorch
+RabbitMQ
+Rails
+React
+Redis
+S3
+S3 Data Lake
+Scikit-learn
+Seaborn
+Slack
+Snowflake
+Spring
+SQLite
+Svelte
+Swagger
+Symfony
+Terraform
+TensorFlow
+TimescaleDB
+Vercel
+VSCode
+Vue
+Zendesk
+
+#
 # Never lint Docusaurus admonitions markup
+#
+
 :::
 :::note
 :::tip
