@@ -16,6 +16,7 @@ import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.time.OffsetTime
 import java.time.ZoneOffset
+import java.util.Base64
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -38,14 +39,14 @@ class ProtobufEncoderDecoderRoundTripTest {
         schemaType: io.airbyte.cdk.data.AirbyteSchemaType
     ) {
         val encoded = encoder.encode(value, schemaType)
-        val decoded = decoder.decode(encoded)
+        val decoded = decoder.decode(encoded.build())
         assertEquals(expectedValue, decoded, "Round trip failed for value: $value")
     }
 
     @Test
     fun testNullRoundTrip() {
         val encoded = encoder.encode(null, LeafAirbyteSchemaType.STRING)
-        val decoded = decoder.decode(encoded)
+        val decoded = decoder.decode(encoded.build())
         assertEquals(null, decoded)
     }
 
@@ -83,17 +84,17 @@ class ProtobufEncoderDecoderRoundTripTest {
         // BigInteger values (note: decoded as BigInteger)
         val smallBigInt = BigInteger.valueOf(999L)
         val encoded1 = encoder.encode(smallBigInt, LeafAirbyteSchemaType.INTEGER)
-        val decoded1 = decoder.decode(encoded1)
+        val decoded1 = decoder.decode(encoded1.build())
         assertEquals(smallBigInt, decoded1)
 
         val largeBigInt = BigInteger.valueOf(Long.MAX_VALUE).multiply(BigInteger.valueOf(2))
         val encoded2 = encoder.encode(largeBigInt, LeafAirbyteSchemaType.INTEGER)
-        val decoded2 = decoder.decode(encoded2)
+        val decoded2 = decoder.decode(encoded2.build())
         assertEquals(largeBigInt, decoded2)
 
         val veryLargeBigInt = BigInteger.valueOf(10).pow(100)
         val encoded3 = encoder.encode(veryLargeBigInt, LeafAirbyteSchemaType.INTEGER)
-        val decoded3 = decoder.decode(encoded3)
+        val decoded3 = decoder.decode(encoded3.build())
         assertEquals(veryLargeBigInt, decoded3)
     }
 
@@ -104,7 +105,7 @@ class ProtobufEncoderDecoderRoundTripTest {
             listOf(0.0, 1.5, -1.5, 123.456, -999.999, Double.MAX_VALUE, -Double.MAX_VALUE)
         doubleValues.forEach { value ->
             val encoded = encoder.encode(value, LeafAirbyteSchemaType.NUMBER)
-            val decoded = decoder.decode(encoded) as BigDecimal
+            val decoded = decoder.decode(encoded.build()) as BigDecimal
             assertEquals(BigDecimal.valueOf(value), decoded)
         }
 
@@ -112,7 +113,7 @@ class ProtobufEncoderDecoderRoundTripTest {
         val floatValues = listOf(0.0f, 1.5f, -1.5f, 123.456f)
         floatValues.forEach { value ->
             val encoded = encoder.encode(value, LeafAirbyteSchemaType.NUMBER)
-            val decoded = decoder.decode(encoded) as BigDecimal
+            val decoded = decoder.decode(encoded.build()) as BigDecimal
             assertEquals(BigDecimal.valueOf(value.toDouble()), decoded)
         }
 
@@ -143,7 +144,7 @@ class ProtobufEncoderDecoderRoundTripTest {
         // Test SqlDate conversion
         val sqlDate = SqlDate.valueOf("2025-10-06")
         val encoded = encoder.encode(sqlDate, LeafAirbyteSchemaType.DATE)
-        val decoded = decoder.decode(encoded)
+        val decoded = decoder.decode(encoded.build())
         assertEquals(sqlDate.toLocalDate(), decoded)
     }
 
@@ -163,7 +164,7 @@ class ProtobufEncoderDecoderRoundTripTest {
         // Test SqlTime conversion
         val sqlTime = SqlTime.valueOf("14:30:45")
         val encoded = encoder.encode(sqlTime, LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE)
-        val decoded = decoder.decode(encoded)
+        val decoded = decoder.decode(encoded.build())
         assertEquals(sqlTime.toLocalTime(), decoded)
     }
 
@@ -240,7 +241,7 @@ class ProtobufEncoderDecoderRoundTripTest {
         // Test SqlTimestamp conversion
         val sqlTimestamp = SqlTimestamp.valueOf("2025-10-06 14:30:45.123456789")
         val encoded = encoder.encode(sqlTimestamp, LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE)
-        val decoded = decoder.decode(encoded)
+        val decoded = decoder.decode(encoded.build())
         assertEquals(sqlTimestamp.toLocalDateTime(), decoded)
     }
 
@@ -285,7 +286,7 @@ class ProtobufEncoderDecoderRoundTripTest {
         // Test SqlTimestamp conversion (converts to UTC)
         val sqlTimestamp = SqlTimestamp.valueOf("2025-10-06 14:30:45.123456789")
         val encoded = encoder.encode(sqlTimestamp, LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE)
-        val decoded = decoder.decode(encoded) as OffsetDateTime
+        val decoded = decoder.decode(encoded.build()) as OffsetDateTime
         assertEquals(OffsetDateTime.ofInstant(sqlTimestamp.toInstant(), ZoneOffset.UTC), decoded)
     }
 
@@ -307,7 +308,7 @@ class ProtobufEncoderDecoderRoundTripTest {
         jsonStrings.forEach { json ->
             val bytes = json.toByteArray()
             val encoded = encoder.encode(bytes, LeafAirbyteSchemaType.JSONB)
-            val decoded = decoder.decode(encoded)
+            val decoded = decoder.decode(encoded.build())
             assertEquals(json, decoded)
         }
     }
@@ -316,7 +317,13 @@ class ProtobufEncoderDecoderRoundTripTest {
     fun testBinaryRoundTrip() {
         val binaryStrings = listOf("simple text", "binary data with special chars: \n\t\r", "")
 
-        binaryStrings.forEach { binary -> testRoundTrip(binary, LeafAirbyteSchemaType.BINARY) }
+        binaryStrings.forEach { binary ->
+            testRoundTrip(
+                binary.toByteArray(),
+                Base64.getEncoder().encodeToString(binary.toByteArray()),
+                LeafAirbyteSchemaType.BINARY
+            )
+        }
 
         // Test with byte arrays
         val byteArrays =
@@ -328,8 +335,8 @@ class ProtobufEncoderDecoderRoundTripTest {
 
         byteArrays.forEach { bytes ->
             val encoded = encoder.encode(bytes, LeafAirbyteSchemaType.BINARY)
-            val decoded = decoder.decode(encoded) as String
-            assertEquals(String(bytes, Charsets.UTF_8), decoded)
+            val decoded = decoder.decode(encoded.build()) as String
+            assertEquals(Base64.getEncoder().encodeToString(bytes), decoded)
         }
     }
 
@@ -348,7 +355,7 @@ class ProtobufEncoderDecoderRoundTripTest {
         timezones.forEach { offset ->
             val timestamp = baseTimestamp.withOffsetSameInstant(offset)
             val encoded = encoder.encode(timestamp, LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE)
-            val decoded = decoder.decode(encoded) as OffsetDateTime
+            val decoded = decoder.decode(encoded.build()) as OffsetDateTime
 
             // Should preserve the instant and the offset
             assertEquals(timestamp.toInstant(), decoded.toInstant())
@@ -383,16 +390,16 @@ class ProtobufEncoderDecoderRoundTripTest {
 
         // Encode multiple different types with the same builder
         val encoded1 = encoder.encode(42, LeafAirbyteSchemaType.INTEGER, builder)
-        val decoded1 = decoder.decode(encoded1)
+        val decoded1 = decoder.decode(encoded1.build())
         assertEquals(BigInteger.valueOf(42), decoded1)
 
         val encoded2 = encoder.encode("hello", LeafAirbyteSchemaType.STRING, builder)
-        val decoded2 = decoder.decode(encoded2)
+        val decoded2 = decoder.decode(encoded2.build())
         assertEquals("hello", decoded2)
 
         val encoded3 =
             encoder.encode(LocalDate.of(2025, 10, 6), LeafAirbyteSchemaType.DATE, builder)
-        val decoded3 = decoder.decode(encoded3)
+        val decoded3 = decoder.decode(encoded3.build())
         assertEquals(LocalDate.of(2025, 10, 6), decoded3)
     }
 
