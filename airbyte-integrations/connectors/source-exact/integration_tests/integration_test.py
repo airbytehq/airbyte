@@ -12,6 +12,7 @@ from source_exact.streams import (
     SyncProjectProjects, PayrollActiveEmployments, HRMDepartments, SyncPayrollEmployments, ProjectInvoiceTerms,
     SyncSalesInvoiceSalesInvoices
 )
+from airbyte_cdk.entrypoint import launch
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
@@ -34,6 +35,10 @@ def configured_catalog(config):
     )
 
     return ConfiguredAirbyteCatalog(streams=[crmac_configured])
+
+def test_check_connection(config, configured_catalog):
+    source = SourceExact()
+    launch(source, ["check", "--config", "secrets/config.json"])
 
 
 def test_read_sync_project_projects(config, configured_catalog):

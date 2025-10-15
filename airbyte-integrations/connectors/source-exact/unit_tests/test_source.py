@@ -4,15 +4,23 @@
 
 from unittest.mock import MagicMock
 
+import httpx
 import pytest
+import respx
 from source_exact.source import SourceExact
 
 
-# def test_check_connection_ok(requests_mock):
+# @respx.mock
+# def test_check_connection_ok():
 #     source = SourceExact()
 #     logger_mock, config_mock = MagicMock(), MagicMock()
 #
-#     requests_mock.get("https://start.exactonline.nl/api/v1/current/Me", json={"unit": "test"})
+#     respx.get("https://start.exactonline.nl/api/v1/sync/Financial/TransactionLines").mock(
+#         return_value=httpx.Response(
+#             200
+#             , json={"unit": "test"}
+#             )
+#         )
 #     assert source.check_connection(logger_mock, config_mock) == (True, None)
 
 
