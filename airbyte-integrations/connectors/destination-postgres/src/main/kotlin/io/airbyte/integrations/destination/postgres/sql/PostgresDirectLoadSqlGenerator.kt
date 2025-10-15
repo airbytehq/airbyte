@@ -104,7 +104,7 @@ class PostgresDirectLoadSqlGenerator {
     ): String {
         val columnNames = columnNameMapping.map { (_, targetName) -> targetName }.joinToString(",")
         return """
-            CREATE TABLE ${fullyQualifiedName(targetTableName)} AS
+            INSERT INTO ${fullyQualifiedName(targetTableName)} ($columnNames)
             SELECT $columnNames
             FROM ${fullyQualifiedName(sourceTableName)};
             """
