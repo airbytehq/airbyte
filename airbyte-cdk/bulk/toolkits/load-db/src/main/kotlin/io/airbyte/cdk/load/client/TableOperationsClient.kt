@@ -1,17 +1,13 @@
-/*
- * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
- */
+package io.airbyte.cdk.load.client
 
-package io.airbyte.cdk.load
-
-import io.airbyte.cdk.load.client.AirbyteClient
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNativeOperations
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableSqlOperations
 
-interface CoreTableOperationsClient :
-    AirbyteClient, DirectLoadTableSqlOperations, DirectLoadTableNativeOperations {
+interface TableOperationsClient :
+    DirectLoadTableSqlOperations,
+    DirectLoadTableNativeOperations {
 
     suspend fun ping() = Unit
 
@@ -21,7 +17,9 @@ interface CoreTableOperationsClient :
 
     suspend fun tableExists(table: TableName) = false
 
+    // for testing
     suspend fun insertRecords(table: TableName, records: List<Map<String, AirbyteValue>>) = Unit
 
+    // for testing
     suspend fun readTable(table: TableName): List<Map<String, Any>> = listOf()
 }

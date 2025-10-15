@@ -45,17 +45,20 @@ interface DirectLoadTableSqlOperations {
         replace: Boolean,
     )
 
+    /** replace table — target table becomes source table and source table is dropped */
     suspend fun overwriteTable(
         sourceTableName: TableName,
         targetTableName: TableName,
     )
 
+    /** insert records from source table to target table */
     suspend fun copyTable(
         columnNameMapping: ColumnNameMapping,
         sourceTableName: TableName,
         targetTableName: TableName,
     )
 
+    /** upsert records from source table to target table */
     suspend fun upsertTable(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping,

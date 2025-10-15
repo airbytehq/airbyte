@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.load.component
 
-import io.airbyte.cdk.load.CoreTableOperationsClient
+import io.airbyte.cdk.load.client.TableOperationsClient
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.TableOperationsFixtures.createAppendStream
 import io.airbyte.cdk.load.data.AirbyteValue
@@ -21,7 +21,7 @@ private val log = KotlinLogging.logger {}
  * Helper class that encapsulates common test operations for CoreTableOperationsSuite. Provides
  * utility methods for creating, dropping, and verifying tables with proper cleanup.
  */
-class TableOperationsTestHarness(private val client: CoreTableOperationsClient) {
+class TableOperationsTestHarness(private val client: TableOperationsClient) {
 
     /** Creates a test table with the given configuration and verifies it was created. */
     suspend fun createTestTableAndVerifyExists(

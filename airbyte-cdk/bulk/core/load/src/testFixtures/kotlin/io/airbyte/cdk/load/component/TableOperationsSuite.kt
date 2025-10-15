@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.load.component
 
-import io.airbyte.cdk.load.CoreTableOperationsClient
+import io.airbyte.cdk.load.client.TableOperationsClient
 import io.airbyte.cdk.load.component.TableOperationsFixtures as Fixtures
 import io.airbyte.cdk.load.component.TableOperationsFixtures.sortByTestField
 import io.airbyte.cdk.load.data.AirbyteValue
@@ -28,18 +28,18 @@ import org.junit.jupiter.api.assertDoesNotThrow
  * - Record insertion and retrieval for testing purposes
  * - Table copying, overwriting, and upserting
  *
- * Implementations should provide a [CoreTableOperationsClient] instance configured for their
+ * Implementations should provide a [TableOperationsClient] instance configured for their
  * specific database system. The test methods use a [TableOperationsTestHarness] helper to ensure
  * proper cleanup and verification.
  *
- * @see CoreTableOperationsClient
+ * @see TableOperationsClient
  * @see TableOperationsTestHarness
  * @see TableOperationsFixtures
  */
 @MicronautTest(environments = ["component"])
 interface TableOperationsSuite {
     /** The database client instance to test. Must be properly configured and connected. */
-    val client: CoreTableOperationsClient
+    val client: TableOperationsClient
 
     private val harness: TableOperationsTestHarness
         get() = TableOperationsTestHarness(client)
