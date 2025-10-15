@@ -100,14 +100,15 @@ class PostgresDirectLoadSqlGenerator {
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping
     ): String {
-        return stream.schema
+        val targetColumns = stream.schema
             .asColumns()
             .map { (columnName, columnType) ->
                 val targetColumnName = columnNameMapping[columnName] ?: columnName
                 val typeName = columnType.type.toDialectType()
                 "$targetColumnName $typeName"
             }
-            .joinToString(",\n")
+
+        return (DEFAULT_COLUMNS + targetColumns).joinToString(",\n")
     }
 
     // not sure which one is the one we should be overwriting. I went with deleting target,
@@ -131,7 +132,7 @@ class PostgresDirectLoadSqlGenerator {
         sourceTableName: TableName,
         targetTableName: TableName
     ): String {
-        val columnNames = columnNameMapping.map { (_, targetName) -> targetName }.joinToString(",")
+        val columnNames = getTargetColumnNames(columnNameMapping).joinToString(",")
         return """
             INSERT INTO ${fullyQualifiedName(targetTableName)} ($columnNames)
             SELECT $columnNames
