@@ -6,7 +6,7 @@ type: DeclarativeSource
 check:
   type: CheckStream
   stream_names:
-    - "datasets_schema" # Assuming "datasets" is your primary data stream
+    - "datasets"
 
 definitions:
   # Base Requester with Authentication
@@ -44,25 +44,6 @@ streams:
       type: InlineSchemaLoader
       schema:
         $ref: "#/schemas/datasets" # Reference the schema defined below
-     
-  - type: DeclarativeStream
-    name: datasets_schema # Name of your data stream
-    $parameters:
-      # Dynamic path construction using config properties
-      path: "{{ config['dataset_path'] }}"
-    retriever:
-      type: SimpleRetriever
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path: [] # Assuming the records are at the root of the response, adjust if nested
-      requester:
-        $ref: "#/definitions/base_requester" # Reference the shared requester
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $ref: "#/schemas/datasets_schema" # Reference the schema defined below
 
 spec:
   type: Spec
@@ -166,13 +147,5 @@ schemas:
     additionalProperties: true # IMPORTANT: Set to false if you only want the 'raw_data' column
     properties:
       raw_data: # Define a single property for the entire record as a JSON string
-        type: ["string", "null"]
-        description: "The entire record as a JSON string."
-  datasets_schema:
-    type: object
-    $schema: http://json-schema.org/draft-07/schema#
-    additionalProperties: true 
-    properties:
-      raw_data: 
         type: ["string", "null"]
         description: "The entire record as a JSON string."

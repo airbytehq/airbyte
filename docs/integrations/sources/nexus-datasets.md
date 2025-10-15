@@ -48,9 +48,39 @@ Data set name should be provided aliong with the other details to sync the data.
 - DAPI user id / access key id / secret key
 - Data key (API key)
 
-### Step 3: Set up the source connector in Airbyte
+### Step 2: Set up the source connector in Airbyte
 
-## Configuration
+### For Airbyte Cloud:
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
+3. On the source setup page, select **Nexus Datasets** from the Source type dropdown and enter a name for this connector.
+4. Add **Base URL**
+5. Add **User ID**
+6. Add **Access Key ID**
+7. Add **Secret Key**
+8. Add **API Key**
+9. Add **Dataset Name**
+10. Add **File Type**
+11. Add **Mode**
+12. Click `Set up source`.
+
+### For Airbyte OSS:
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
+3. On the source setup page, select **Nexus Datasets** from the Source type dropdown and enter a name for this connector.
+4. Add **Base URL**
+5. Add **User ID**
+6. Add **Access Key ID**
+7. Add **Secret Key**
+8. Add **API Key**
+9. Add **Dataset Name**
+10. Add **File Type**
+11. Add **Mode**
+12. Click `Set up source`.
+
+### Configuration
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
@@ -63,6 +93,13 @@ Data set name should be provided aliong with the other details to sync the data.
 | `file_type` | `string` | File type. Type of the file to be synced, ex. JSONL / PARQUET / CSV |  |
 | `mode` | `string` | Sync mode. Full or Incremental | Full |
 
+
+## Supported sync modes
+
+The Nexus Datasets source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+
+- Full Refresh
+- Incremental
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
