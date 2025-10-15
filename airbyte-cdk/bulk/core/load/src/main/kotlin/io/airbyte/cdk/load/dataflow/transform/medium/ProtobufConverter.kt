@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.AirbyteValueProxy.FieldAccessor
 import io.airbyte.cdk.load.data.ArrayType
+import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
 import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.BooleanType
 import io.airbyte.cdk.load.data.BooleanValue
@@ -20,7 +21,10 @@ import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberType
 import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
+import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.data.ObjectValue
+import io.airbyte.cdk.load.data.ProtobufTypeMismatchException
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimeTypeWithTimezone
@@ -118,7 +122,13 @@ class ProtobufConverter(
                     airbyteMetaField = null
                 )
 
-            val airbyteValue = extractTypedValue(protobufValue, accessor, enrichedValue)
+            val airbyteValue =
+                extractTypedValue(
+                    protobufValue = protobufValue,
+                    accessor = accessor,
+                    enrichedValue = enrichedValue,
+                    streamName = stream.unmappedDescriptor.name
+                )
             enrichedValue.abValue = airbyteValue
 
             val mappedValue = coercer.map(enrichedValue)
@@ -189,7 +199,8 @@ class ProtobufConverter(
     private fun extractTypedValue(
         protobufValue: AirbyteValueProtobuf?,
         accessor: FieldAccessor,
-        enrichedValue: EnrichedAirbyteValue
+        enrichedValue: EnrichedAirbyteValue,
+        streamName: String
     ): AirbyteValue {
         if (
             protobufValue == null || protobufValue.valueCase == AirbyteValueProtobuf.ValueCase.NULL
@@ -199,7 +210,7 @@ class ProtobufConverter(
 
         return try {
             // Step 1: Extract raw value from protobuf using the right method based on type
-            val rawValue = extractRawValue(protobufValue, accessor)
+            val rawValue = extractRawValue(protobufValue, accessor, streamName)
 
             // Step 2: Decide final target type (check for destination override first)
             val targetClass =
@@ -207,6 +218,8 @@ class ProtobufConverter(
 
             // Step 3: Create AirbyteValue of the target type using the raw value
             createAirbyteValue(rawValue, targetClass)
+        } catch (e: ProtobufTypeMismatchException) {
+            throw e
         } catch (_: Exception) {
             // Add parsing error to metadata
             enrichedValue.changes.add(
@@ -222,8 +235,12 @@ class ProtobufConverter(
 
     private fun extractRawValue(
         protobufValue: AirbyteValueProtobuf,
-        accessor: FieldAccessor
+        accessor: FieldAccessor,
+        streamName: String
     ): Any? {
+        // Validate that the protobuf value type matches the expected AirbyteType
+        validateProtobufType(protobufValue, accessor.type, streamName, accessor.name)
+
         // Use the centralized decoder for all scalar and temporal types
         val decodedValue = decoder.decode(protobufValue)
 
@@ -242,6 +259,78 @@ class ProtobufConverter(
             }
             is UnknownType -> null
             else -> decodedValue
+        }
+    }
+
+    /**
+     * Validates that the protobuf value case matches the expected AirbyteType.
+     *
+     * @throws ProtobufTypeMismatchException if there's a type mismatch
+     */
+    private fun validateProtobufType(
+        value: AirbyteValueProtobuf,
+        expectedType: io.airbyte.cdk.load.data.AirbyteType,
+        streamName: String,
+        columnName: String
+    ) {
+        val valueCase = value.valueCase
+
+        // Null values are always valid
+        if (
+            valueCase == AirbyteValueProtobuf.ValueCase.NULL ||
+                valueCase == AirbyteValueProtobuf.ValueCase.VALUE_NOT_SET ||
+                valueCase == null
+        ) {
+            return
+        }
+
+        // Check if the value case matches the expected type
+        val isValid =
+            when (expectedType) {
+                is StringType -> valueCase == AirbyteValueProtobuf.ValueCase.STRING
+                is BooleanType -> valueCase == AirbyteValueProtobuf.ValueCase.BOOLEAN
+                is IntegerType ->
+                    valueCase == AirbyteValueProtobuf.ValueCase.INTEGER ||
+                        valueCase == AirbyteValueProtobuf.ValueCase.BIG_INTEGER
+                is NumberType ->
+                    valueCase == AirbyteValueProtobuf.ValueCase.NUMBER ||
+                        valueCase == AirbyteValueProtobuf.ValueCase.BIG_DECIMAL
+                is DateType -> valueCase == AirbyteValueProtobuf.ValueCase.DATE
+                is TimeTypeWithTimezone ->
+                    valueCase == AirbyteValueProtobuf.ValueCase.TIME_WITH_TIMEZONE
+                is TimeTypeWithoutTimezone ->
+                    valueCase == AirbyteValueProtobuf.ValueCase.TIME_WITHOUT_TIMEZONE
+                is TimestampTypeWithTimezone ->
+                    valueCase == AirbyteValueProtobuf.ValueCase.TIMESTAMP_WITH_TIMEZONE
+                is TimestampTypeWithoutTimezone ->
+                    valueCase == AirbyteValueProtobuf.ValueCase.TIMESTAMP_WITHOUT_TIMEZONE
+                is ArrayType,
+                is ArrayTypeWithoutSchema,
+                is ObjectType,
+                is ObjectTypeWithEmptySchema,
+                is ObjectTypeWithoutSchema -> valueCase == AirbyteValueProtobuf.ValueCase.JSON
+                is UnionType -> {
+                    // For union types, the value must match at least one of the options
+                    valueCase == AirbyteValueProtobuf.ValueCase.JSON ||
+                        expectedType.options.any { option ->
+                            try {
+                                validateProtobufType(value, option, streamName, columnName)
+                                true
+                            } catch (_: ProtobufTypeMismatchException) {
+                                false
+                            }
+                        }
+                }
+                is UnknownType -> true // Unknown types accept any value
+            }
+
+        if (!isValid) {
+            throw ProtobufTypeMismatchException(
+                streamName = streamName,
+                columnName = columnName,
+                expectedType = expectedType,
+                actualValueCase = valueCase
+            )
         }
     }
 
