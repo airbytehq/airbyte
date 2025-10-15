@@ -6,7 +6,7 @@
 /* Section 1: Hero */
 .heroSection {
   background: var(--ifm-color-primary);
-  padding: 4rem 2rem;
+  padding: 4rem 0;
 }
 
 /* Dark mode hero background */
@@ -17,6 +17,7 @@
 .heroContainer {
   max-width: 1200px;
   margin: 0 auto;
+  padding: 0 2rem;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 3rem;
@@ -54,6 +55,7 @@
 .navGrid {
   max-width: 1200px;
   margin: 0 auto;
+  padding: 0 2rem;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 2rem;
@@ -119,6 +121,7 @@
 .badgesContainer {
   max-width: 1200px;
   margin: 0 auto;
+  padding: 0 2rem;
   display: flex;
   gap: 0.5rem;
   align-items: center;
@@ -221,6 +224,7 @@
   .heroContainer {
     grid-template-columns: 1fr;
     gap: 2rem;
+    padding: 0 1.5rem;
   }
 
   .heroTitle {
@@ -234,14 +238,19 @@
   .navGrid {
     grid-template-columns: repeat(2, 1fr);
     gap: 1.5rem;
+    padding: 0 1.5rem;
+  }
+
+  .badgesContainer {
+    padding: 0 1.5rem;
   }
 
   .heroSection {
-    padding: 3rem 1.5rem;
+    padding: 3rem 0;
   }
 
   .navSection {
-    padding: 3rem 1.5rem;
+    padding: 3rem 0;
   }
 
   .whySection {
@@ -251,8 +260,12 @@
 
 /* Mobile */
 @media (max-width: 640px) {
+  .heroContainer {
+    padding: 0 1rem;
+  }
+
   .heroSection {
-    padding: 2rem 1rem;
+    padding: 2rem 0;
   }
 
   .heroTitle {
@@ -266,6 +279,11 @@
   .navGrid {
     grid-template-columns: 1fr;
     gap: 1rem;
+    padding: 0 1rem;
+  }
+
+  .badgesContainer {
+    padding: 0 1rem;
   }
 
   .navCard {
@@ -277,7 +295,7 @@
   }
 
   .navSection {
-    padding: 2rem 1rem;
+    padding: 2rem 0;
   }
 
   .whySection {
