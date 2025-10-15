@@ -9,6 +9,11 @@
   padding: 4rem 2rem;
 }
 
+/* Dark mode hero background */
+:global(html[data-theme="dark"]) .heroSection {
+  background: var(--color-blue-30);
+}
+
 .heroContainer {
   max-width: 1200px;
   margin: 0 auto;
@@ -82,7 +87,7 @@
   font-size: 1.25rem;
   font-weight: 700;
   margin-bottom: 0.75rem;
-  color: var(--ifm-color-primary);
+  color: var(--ifm-font-color-base);
 }
 
 .navDescription {
