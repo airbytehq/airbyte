@@ -54,10 +54,15 @@ Do not submit a pull request using the master branch from your forked repository
 The team will not be able to run integration tests and your pull request will be closed.
 :::
 
-Guidelines to common code contributions:
+:::tip
+It is generally preferrable to submit pull requests from a personal fork instead of an organization fork. This is because GitHub does not allow maintainers to commit directly to branches in organization forks. If you submit from a personal fork, Airbyte maintainers can often apply suggested fixes directly, which can significantly speed up the review and approval process.
+:::
 
+Guidelines for connector contributions included in the [Connector Development Guide](../connector-development/README.md):
+
+- [Developing Connectors Locally](../connector-development/local-connector-development.md) - Guide to setting up your local environment for connector development
 - [Connector Updates](change-cdk-connector.md) - Guide to breaking changes and version updates
-- [Contribute a new connector](submit-new-connector.md)
+- [Contribute a New Connector](submit-new-connector.md)
 
 ## Documentation contributions
 

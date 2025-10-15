@@ -1,21 +1,28 @@
-# Connector Updates
+# Updating Existing Connectors
 
 <!-- TODO: Rename this file to connector-updates.md after this PR is merged -->
 
-Whenever possible, strive to make changes to connectors in a non-breaking way. This allows users to upgrade to the latest version of a connector without any action required on their part. Assume the every breaking changes creates friction for users and should be avoided except when absolutely necessary.
+## Contribution Process
+
+Before you begin, it is a good idea check if the improvement you want to make or bug you want to fix is already captured in an [existing issue](https://github.com/airbytehq/airbyte/issues?q=is%3Aopen+is%3Aissue+label%3Aarea%2Fconnectors+-label%3Aneeds-triage+label%3Acommunity) or [pull request](https://github.com/airbytehq/airbyte/pulls).
+
+See the [Connector Development Guide](https://docs.airbyte.com/connector-development/) for additional details on developing and testing connectors.
+After coding the necessary changes, open a pull request (PR) against the default branch of the Airbyte repository. Ensure your PR adheres to the [Pull Request Title Convention](./resources/pull-requests-handbook.md#pull-request-title-convention) and includes a clear description of the changes made.
 
 ## Breaking Changes to Connectors
 
-Often times, changes to connectors can be made without impacting the user experience.  However, there are some changes that will require users to take action before they can continue to sync data.  These changes are considered **Breaking Changes** and require:
+Whenever possible, changes to connectors should be implemented in a non-breaking way. This allows users to upgrade to the latest version of a connector without additional action required on their part. Assume that _every_ breaking changes creates friction for users and should be avoided except when absolutely necessary.
+
+When it is not possible to make changes in a non-breaking manner, additional **breaking change requirements** include:
 
 1. A **Major Version** increase. (Or minor in the case of a pre-1.0.0 connector in accordance with Semantic Versioning rules)
 2. A [`breakingChanges` entry](https://docs.airbyte.com/connector-development/connector-metadata-file/) in the `releases` section of the `metadata.yaml` file
 3. A migration guide which details steps that users should take to resolve the change
-4. An Airbyte Engineer to follow the [Connector Breaking Change Release Playbook](https://docs.google.com/document/u/0/d/1VYQggHbL_PN0dDDu7rCyzBLGRtX-R3cpwXaY8QxEgzw/edit) (internal link) before merging the PR.
+4. An Airbyte Engineer to complete the [Connector Breaking Change Release Playbook](https://docs.google.com/document/u/0/d/1VYQggHbL_PN0dDDu7rCyzBLGRtX-R3cpwXaY8QxEgzw/edit) (internal link) before merging the PR.
 
 ### Types of Breaking Changes
 
-A breaking change is any change that will require users to take action before they can continue to sync data. The following are examples of breaking changes:
+A breaking change is any change that requires users to take action before they can continue to sync data. The following are examples of breaking changes:
 
 - **Spec Change** - The configuration required by users of this connector have been changed and syncs will fail until users reconfigure or re-authenticate.  This change is not possible via a Config Migration
 - **Schema Change** - The type of property previously present within a record has changed
