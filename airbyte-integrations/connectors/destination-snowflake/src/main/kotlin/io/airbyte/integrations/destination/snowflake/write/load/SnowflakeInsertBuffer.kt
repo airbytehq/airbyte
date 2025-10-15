@@ -39,7 +39,7 @@ class SnowflakeInsertBuffer(
     val columns: LinkedHashMap<String, String>,
     private val snowflakeClient: SnowflakeAirbyteClient,
     val snowflakeConfiguration: SnowflakeConfiguration,
-    private val snowflakeColumnUtils: SnowflakeColumnUtils,
+    val snowflakeColumnUtils: SnowflakeColumnUtils,
     private val flushLimit: Int = DEFAULT_FLUSH_LIMIT,
 ) {
 
@@ -83,13 +83,18 @@ class SnowflakeInsertBuffer(
                 // to the file AND that any proper end of file markers are written by the close
                 csvWriter?.flush()
                 csvWriter?.close()
-                logger.info { "Beginning insert into ${tableName.toPrettyString(quote = QUOTE)}" }
+                logger.info {
+                    "Beginning insert into ${tableName.toPrettyString(quote = QUOTE)}..."
+                }
                 // Next, put the CSV file into the staging table
                 snowflakeClient.putInStage(tableName, filePath.pathString)
+                logger.info {
+                    "Copying staging data into ${tableName.toPrettyString(quote = QUOTE)}..."
+                }
                 // Finally, copy the data from the staging table to the final table
                 snowflakeClient.copyFromStage(tableName, filePath.fileName.toString())
                 logger.info {
-                    "Finished insert of $recordCount row(s) into ${tableName.toPrettyString(quote = QUOTE)}"
+                    "Finished insert of $recordCount row(s) into ${tableName.toPrettyString(quote = QUOTE)}."
                 }
             } catch (e: Exception) {
                 logger.error(e) { "Unable to flush accumulated data." }
