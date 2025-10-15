@@ -30,7 +30,6 @@ import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
-// we are using this on the cdk so I'm assuming this is the right import for sql data types
 import org.jooq.impl.SQLDataType
 
 internal const val COUNT_TOTAL_ALIAS = "total"
@@ -79,7 +78,7 @@ class PostgresDirectLoadSqlGenerator {
         stream: DestinationStream,
         tableName: TableName,
         columnNameMapping: ColumnNameMapping,
-        replace: Boolean // I don't really know what to do with this
+        replace: Boolean
     ): String {
         val columnDeclarations = columnsAndTypes(stream, columnNameMapping)
         val dropTableIfExistsStatement = if (replace) "DROP TABLE IF EXISTS ${getFullyQualifiedName(tableName)};" else ""
@@ -110,8 +109,6 @@ class PostgresDirectLoadSqlGenerator {
         return (DEFAULT_COLUMNS + targetColumns).joinToString(",\n")
     }
 
-    // not sure which one is the one we should be overwriting. I went with deleting target,
-    // and renaming source
     fun overwriteTable(
         sourceTableName: TableName,
         targetTableName: TableName
