@@ -173,10 +173,10 @@ class PostgresDirectLoadSqlGenerator {
         ORDER BY ordinal_position
         """.trimIndent()
 
-    fun copyFromCsv(tableName: TableName, filePath: String): String =
+    fun copyFromCsv(tableName: TableName): String =
         """
         COPY "${tableName.namespace}"."${tableName.name}"
-        FROM '$filePath'
+        FROM STDIN
         WITH (FORMAT csv)
         """.trimIndent()
 
