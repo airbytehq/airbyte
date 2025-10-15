@@ -11,7 +11,7 @@ Often times, changes to connectors can be made without impacting the user experi
 1. A **Major Version** increase. (Or minor in the case of a pre-1.0.0 connector in accordance with Semantic Versioning rules)
 2. A [`breakingChanges` entry](https://docs.airbyte.com/connector-development/connector-metadata-file/) in the `releases` section of the `metadata.yaml` file
 3. A migration guide which details steps that users should take to resolve the change
-4. An Airbyte Engineer to follow the  [Connector Breaking Change Release Playbook](https://docs.google.com/document/u/0/d/1VYQggHbL_PN0dDDu7rCyzBLGRtX-R3cpwXaY8QxEgzw/edit) before merging.
+4. An Airbyte Engineer to follow the [Connector Breaking Change Release Playbook](https://docs.google.com/document/u/0/d/1VYQggHbL_PN0dDDu7rCyzBLGRtX-R3cpwXaY8QxEgzw/edit) (internal link) before merging the PR.
 
 ### Types of Breaking Changes
 
@@ -77,7 +77,7 @@ The `upgradeDeadline` field specifies the date by which users should upgrade (fo
 
 - **Rationale:** The deadline should provide enough time for users to review the migration guide, test in staging environments, and execute the migration steps.
 
-In the case of immediate upstream breaking changes, or an already-removed upstream API endpoint, the deadline can be present-day or even in the past - with the rationale that users are _already_ broken without the fix and therefor need the upgrade applied immediately.
+- **Exception: Immediate upstream breakage:** In the case of immediate upstream breaking changes, such as an already-removed upstream API endpoint, the deadline can be present-day or even in the past - with the rationale that users' connections are _already_ broken without the fix and therefor need the upgrade applied immediately.
 
 - **Automated notifications:** The platform automatically emails users when a breaking change is released and sends reminders as the deadline approaches.
 
