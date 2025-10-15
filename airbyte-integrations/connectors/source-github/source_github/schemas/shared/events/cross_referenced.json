@@ -792,7 +792,7 @@
                   "type": "integer"
                 },
                 "thumbs_down": {
-                    "type": "integer"
+                  "type": "integer"
                 },
                 "laugh": {
                   "type": "integer"
