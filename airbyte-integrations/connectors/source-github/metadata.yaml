@@ -10,7 +10,11 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
-  dockerImageTag: 1.9.1-rc.1
+  breakingChanges:
+    2.0.0:
+      message: "Reaction fields `+1` and `-1` have been renamed to `thumbs_up` and `thumbs_down` to comply with Avro naming standards. Users must refresh schemas and reset affected streams."
+      upgradeDeadline: "2025-11-15"
+  dockerImageTag: 2.0.0
   dockerRepository: airbyte/source-github
   documentationUrl: https://docs.airbyte.com/integrations/sources/github
   erdUrl: https://dbdocs.io/airbyteio/source-github?view=relationships
