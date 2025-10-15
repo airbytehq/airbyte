@@ -15,7 +15,7 @@ import io.airbyte.cdk.load.table.TableName
  * Provides a standard set of operations for managing database namespaces, tables, and data
  * manipulation across different database implementations. Implementations should handle
  * database-specific SQL generation and execution while maintaining consistent behavior across the
- * interface methods. 
+ * interface methods.
  */
 interface TableOperationsClient {
 
