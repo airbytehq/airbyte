@@ -53,7 +53,7 @@ The breaking change metadata allows you to specify narrowed scopes, and specific
 
 Your migration guide must be created as a separate file at `docs/integrations/{sources|destinations}/{connector-name}-migrations.md`. The guide should be detailed and user-focused, addressing the following for each breaking change version:
 
-- **WHAT** - What changed:? Specifically, what's fixed or better for the user after this change?
+- **WHAT** - What changed? Specifically, what's fixed or better for the user after this change?
 - **WHY** - Why did you make this change? (API improvements, upstream deprecation, bug fixes, performance improvements).
 - **WHO** - Which users does this change affect? Be specific about streams, sync modes, or configuration options that are impacted.
 - **STEPS** - Exact steps users must take to migrate, including when to take them (before/after upgrade, before/after first sync).
