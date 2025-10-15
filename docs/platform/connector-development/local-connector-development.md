@@ -202,3 +202,7 @@ When working on PRs from forks, maintainers can apply `/format-fix` to help expe
 Note:
 
 - Slash commands may only be executed by maintainers, and they run with the context and the permissions from the main repo.
+
+## Breaking Changes
+
+When making breaking changes to a connector, please be sure to follow the [breaking change process](./connector-breaking-changes.md) as outlined in our contribution guidelines.

@@ -55,14 +55,14 @@ The team will not be able to run integration tests and your pull request will be
 :::
 
 :::tip
-It is generally preferrable to submit pull requests from a personal fork instead of an organization fork. This is because GitHub does not allow maintainers to commit directly to branches in organization forks. If you submit from a personal fork, Airbyte maintainers can often apply suggested fixes directly, which can significantly speed up the review and approval process.
+It is generally preferrable to submit pull requests from a personal fork instead of an organization fork. This is because GitHub does not allow maintainers to commit directly to branches in organization forks. If you submit from a personal fork, Airbyte maintainers can apply suggested fixes directly, which can significantly speed up the review and approval process.
 :::
 
 Guidelines for connector contributions included in the [Connector Development Guide](../connector-development/README.md):
 
-- [Developing Connectors Locally](../connector-development/local-connector-development.md) - Guide to setting up your local environment for connector development
-- [Connector Updates](change-cdk-connector.md) - Guide to breaking changes and version updates
-- [Contribute a New Connector](submit-new-connector.md)
+- [Contribute a New Connector](../connector-development/submit-new-connector.md) - Guide to submitting a new connector to Airbyte.
+- [Developing Connectors Locally](../connector-development/local-connector-development.md) - Guide to setting up your local environment for connector development.
+- [Breaking Changes in Connectors](../connector-development/connector-breaking-changes.md) - Guide to breaking changes and version updates.
 
 ## Documentation contributions
 
