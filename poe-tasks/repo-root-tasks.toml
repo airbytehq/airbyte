@@ -24,6 +24,50 @@ pnpm install
 pnpm build
 '''
 
+[tasks.docs-evergreen-copy]
+help = "Copy evergreen docs (connector development, contribution guides) to versioned docs directories."
+shell = '''
+set -e
+
+VERSIONS_FILE="$POE_ROOT/docusaurus/platform_versions.json"
+LATEST_VERSION=$(jq -r '.[0]' "$VERSIONS_FILE")
+
+echo "Copying evergreen docs to version $LATEST_VERSION..."
+
+VERSIONED_DIR="$POE_ROOT/docusaurus/platform_versioned_docs/version-$LATEST_VERSION"
+
+copy_if_exists() {
+  SOURCE="$POE_ROOT/docs/platform/$1"
+  DEST="$VERSIONED_DIR/$1"
+  
+  if [ -e "$SOURCE" ]; then
+    echo "Copying $1..."
+    if [ -d "$SOURCE" ]; then
+      # For directories, ensure destination exists and copy contents
+      mkdir -p "$DEST"
+      cp -r "$SOURCE"/* "$DEST"/
+    else
+      # For files, ensure parent directory exists
+      mkdir -p "$(dirname "$DEST")"
+      cp "$SOURCE" "$DEST"
+    fi
+  else
+    echo "Warning: $SOURCE does not exist, skipping..."
+  fi
+}
+
+# Copy evergreen doc paths (relative to docs/platform/)
+copy_if_exists "connector-development/connector-breaking-changes.md"
+copy_if_exists "connector-development/submit-new-connector.md"
+copy_if_exists "connector-development/README.md"
+copy_if_exists "connector-development/local-connector-development.md"
+copy_if_exists "contributing-to-airbyte/README.md"
+copy_if_exists "contributing-to-airbyte/developing-locally.md"
+copy_if_exists "contributing-to-airbyte/resources/"
+
+echo "Evergreen docs copied successfully to version $LATEST_VERSION"
+'''
+
 [tasks.get-modified-connectors]
 help = """List Airbyte connectors modified. This considers all committed, staged, unstaged, and untracked files."""
 shell = '''
