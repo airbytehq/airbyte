@@ -1,5 +1,6 @@
 ---
 products: enterprise-flex
+sidebar_label: Enterprise Flex
 ---
 
 import Tabs from '@theme/Tabs';

@@ -1,5 +1,6 @@
 ---
 products: oss-enterprise
+sidebar_label: Airbyte Self-Managed Enterprise
 ---
 
 # Airbyte {{product_name_sm_enterprise}}

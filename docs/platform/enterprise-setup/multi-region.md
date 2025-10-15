@@ -1,5 +1,6 @@
 ---
 products: oss-enterprise
+sidebar_label: Multiple region deployments (Self-Managed Enterprise)
 ---
 
 import Tabs from '@theme/Tabs';

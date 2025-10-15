@@ -1,5 +1,6 @@
 ---
 description: Start triggering Airbyte jobs with Apache Airflow in minutes
+sidebar_label: Using the Airbyte Operator to orchestrate Airbyte Core
 products: oss-*
 ---
 
