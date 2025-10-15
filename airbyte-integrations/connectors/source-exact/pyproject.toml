@@ -2,9 +2,13 @@
 requires = ["poetry-core >= 1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
+[project]
+name = "source-exact"
+version = "0.1.0"
+
 [tool.poetry]
 name = "source-exact"
-version = "0.2.20"
+version = "0.1.0"
 description = "Source connector for Exact Online"
 authors = ["Jeroen de Vries <jeroen@maildevries.eu>"]
 license = "MIT"
@@ -23,6 +27,7 @@ pytest = "^8.4.0"
 pytest-mock = "^3.14.1"
 mypy = "^1.16.1"
 types-requests = "^2.32.4.20250611"
+respx = "^0.22.0"
 
 
 [tool.poetry.scripts]

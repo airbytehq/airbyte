@@ -2,7 +2,7 @@ data:
   ab_internal:
     ql: 100
     sl: 100
-  dockerImageTag: "0.2.20"
+  dockerImageTag: "0.1.0"
   dockerRepository: airbyte/source-exact
   connectorType: source
   connectorSubtype: api
