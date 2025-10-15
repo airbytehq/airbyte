@@ -14,7 +14,6 @@ The S3 Data Lake connector requires two things.
     - REST
     - AWS Glue
     - Nessie
-    - Polaris
 
 ## Setup guide
 
@@ -206,42 +205,6 @@ To authenticate with Nessie, do two things.
 1. Set the URI of your Nessie catalog and an access token to authenticate to that catalog.
 
 2. Set the **Warehouse location** option to `s3://<bucket name>/path/within/bucket`.
-
-#### Polaris
-
-To authenticate with Apache Polaris, follow these steps.
-
-1. Set up your Polaris catalog and create a principal with the necessary permissions. Refer to the [Apache Polaris documentation](https://polaris.apache.org/) for detailed setup instructions.
-
-2. When creating a principal in Polaris, you'll receive OAuth credentials (Client ID and Client Secret). Keep these credentials secure.
-
-3. Grant the required privileges to your principal's catalog role. You can either:
-
-   **Option A: Grant the broad `CATALOG_MANAGE_CONTENT` privilege** (recommended for simplicity):
-   - This single privilege allows the connector to manage tables and namespaces in the catalog
-
-   **Option B: Grant specific granular privileges**:
-   - `TABLE_LIST` - List tables in a namespace
-   - `TABLE_CREATE` - Create new tables
-   - `TABLE_DROP` - Delete tables
-   - `TABLE_READ_PROPERTIES` - Read table metadata
-   - `TABLE_WRITE_PROPERTIES` - Update table metadata
-   - `TABLE_WRITE_DATA` - Write data to tables
-   - `NAMESPACE_LIST` - List namespaces
-   - `NAMESPACE_CREATE` - Create new namespaces
-   - `NAMESPACE_READ_PROPERTIES` - Read namespace metadata
-
-4. In the Airbyte connector configuration, provide the following information:
-
-   - **Polaris Server URI**: The base URL of your Polaris server. For example: `http://localhost:8181/api/catalog`
-   - **Catalog Name**: The name of the catalog you created in Polaris (e.g., `quickstart_catalog`)
-   - **Client ID**: The OAuth Client ID provided when creating the principal
-   - **Client Secret**: The OAuth Client Secret provided when creating the principal
-   - **Default namespace**: The namespace to be used for table identifiers when the destination namespace is set to "Destination-defined" or "Source-defined"
-
-5. Set the **Warehouse location** option to `s3://<bucket name>/path/within/bucket`.
-
-6. Ensure that your Polaris catalog has been configured with the appropriate storage credentials to access your S3 bucket.
 
 ## Output schema
 
