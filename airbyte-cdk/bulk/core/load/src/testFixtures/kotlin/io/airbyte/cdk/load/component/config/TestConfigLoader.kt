@@ -23,7 +23,7 @@ object TestConfigLoader {
         factoryClass: Class<V>,
         configPath: String,
     ): T {
-        val configPath = Path(configPath)
+        val configPath = Path("secrets/$configPath")
         val configStr = Files.readString(configPath)
         val spec = Jsons.readValue(configStr, specClass)
         val factory = factoryClass.kotlin.createInstance()

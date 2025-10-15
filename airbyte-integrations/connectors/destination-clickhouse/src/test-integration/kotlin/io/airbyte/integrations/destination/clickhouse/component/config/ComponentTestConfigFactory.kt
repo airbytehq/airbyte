@@ -22,7 +22,7 @@ class ComponentTestConfigFactory {
         return loadTestConfig(
             ClickhouseSpecificationOss::class.java,
             ClickhouseConfigurationFactory::class.java,
-            "secrets/test-instance.json",
+            "test-instance.json",
         )
     }
 }
