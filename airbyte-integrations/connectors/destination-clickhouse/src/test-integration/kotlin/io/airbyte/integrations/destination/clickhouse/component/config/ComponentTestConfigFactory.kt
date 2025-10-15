@@ -15,13 +15,14 @@ import jakarta.inject.Singleton
 
 @Requires(env = ["component"])
 @Factory
-class TestConfigBeanOverrides {
+class ComponentTestConfigFactory {
     @Singleton
     @Primary
     fun config(): ClickhouseConfiguration {
         return loadTestConfig(
             ClickhouseSpecificationOss::class.java,
             ClickhouseConfigurationFactory::class.java,
+            "secrets/test-instance.json",
         )
     }
 }

@@ -21,7 +21,7 @@ object TestConfigLoader {
     > loadTestConfig(
         specClass: Class<U>,
         factoryClass: Class<V>,
-        configPath: String = "secrets/test-instance.json",
+        configPath: String,
     ): T {
         val configPath = Path(configPath)
         val configStr = Files.readString(configPath)
