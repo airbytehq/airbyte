@@ -111,6 +111,25 @@
   opacity: 0.85;
 }
 
+/* GitHub Badges Section */
+.badgesSection {
+  padding: 2rem 0 4rem;
+}
+
+.badgesContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.badgesContainer img {
+  height: 20px;
+  border-radius: 0;
+}
+
 /* Section 3: Why Airbyte */
 .whySection {
   padding: 4rem 2rem;

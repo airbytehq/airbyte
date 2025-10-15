@@ -171,6 +171,30 @@ export default function Home() {
             })}
           </div>
         </section>
+
+        {/* GitHub Badges */}
+        <section className={styles.badgesSection}>
+          <div className={styles.badgesContainer}>
+            <a href="https://GitHub.com/airbytehq/airbyte/stargazers/">
+              <img 
+                src="https://img.shields.io/github/stars/airbytehq/airbyte?style=social&label=Star&maxAge=2592000" 
+                alt="GitHub stars" 
+              />
+            </a>{' '}
+            <a href="https://github.com/airbytehq/airbyte/tree/a9b1c6c0420550ad5069aca66c295223e0d05e27/LICENSE/README.md">
+              <img 
+                src="https://img.shields.io/static/v1?label=license&message=MIT&color=brightgreen" 
+                alt="License" 
+              />
+            </a>{' '}
+            <a href="https://github.com/airbytehq/airbyte/tree/a9b1c6c0420550ad5069aca66c295223e0d05e27/LICENSE/README.md">
+              <img 
+                src="https://img.shields.io/static/v1?label=license&message=ELv2&color=brightgreen" 
+                alt="License" 
+              />
+            </a>
+          </div>
+        </section>
       </div>
     </Layout>
   );
