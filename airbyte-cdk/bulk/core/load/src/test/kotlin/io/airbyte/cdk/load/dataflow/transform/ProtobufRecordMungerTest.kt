@@ -252,6 +252,8 @@ class ProtobufRecordMungerTest {
             every { this@mockk.generationId } returns this@ProtobufRecordMungerTest.generationId
             every { this@mockk.schema } returns dummyType
             every { this@mockk.mappedDescriptor } returns DestinationStream.Descriptor("", "dummy")
+            every { this@mockk.unmappedDescriptor } returns
+                DestinationStream.Descriptor("", "dummy")
             every { this@mockk.unknownColumnChanges } returns
                 dummyType.computeUnknownColumnChanges()
         }
@@ -662,8 +664,8 @@ class ProtobufRecordMungerTest {
     }
 
     @Test
-    fun `handles invalid date format with proper error tracking`() {
-        // Create an invalid date using an out-of-range value
+    fun `throws ProtobufTypeMismatchException when date field uses wrong setter`() {
+        // Create an invalid date using setString() instead of the proper date setter
         val invalidDateValue =
             AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder().setString("invalid-date")
 
@@ -673,7 +675,7 @@ class ProtobufRecordMungerTest {
                 encoder.encode(123L, LeafAirbyteSchemaType.INTEGER),
                 encoder.encode(12.34, LeafAirbyteSchemaType.NUMBER),
                 encoder.encode("hello", LeafAirbyteSchemaType.STRING),
-                invalidDateValue, // Invalid date format
+                invalidDateValue, // Wrong setter used - should use date setter, not setString()
                 encoder.encode(
                     OffsetTime.parse("23:59:59+02:00"),
                     LeafAirbyteSchemaType.TIME_WITH_TIMEZONE
@@ -699,26 +701,17 @@ class ProtobufRecordMungerTest {
         val invalidDateRecord = buildModifiedRecord(invalidDateProtoValues.map { it.build() })
         every { record.rawData } returns invalidDateRecord
 
-        val result = munger.transformForDest(record)
+        // Assert that ProtobufTypeMismatchException is thrown
+        val exception =
+            assertThrows(ProtobufTypeMismatchException::class.java) {
+                munger.transformForDest(record)
+            }
 
-        // Date field should be excluded due to parsing error
-        assertTrue(result.containsKey("mapped_date_col"))
-        assertTrue(result.get("mapped_date_col") is NullValue)
-
-        // Check that error was tracked in meta object
-        val metaValue = result[Meta.COLUMN_NAME_AB_META] as ObjectValue
-        val changesArray = metaValue.values["changes"] as ArrayValue
-        assertTrue(changesArray.values.isNotEmpty())
-
-        // Verify that parsing failure is present in the changes
-        val changes = changesArray.values.filterIsInstance<ObjectValue>()
-        val dateError = changes.find { (it.values["field"] as StringValue).value == "date_col" }
-        assertNotNull(dateError)
-        assertEquals("NULLED", (dateError!!.values["change"] as StringValue).value)
-        assertEquals(
-            "DESTINATION_SERIALIZATION_ERROR",
-            (dateError.values["reason"] as StringValue).value
-        )
+        // Verify the error message contains expected information
+        assertTrue(exception.message!!.contains("stream 'dummy'"))
+        assertTrue(exception.message!!.contains("column 'date_col'"))
+        assertTrue(exception.message!!.contains("Expected AirbyteType: DateType"))
+        assertTrue(exception.message!!.contains("Actual protobuf ValueCase: STRING"))
     }
 
     private fun buildModifiedRecord(
