@@ -172,8 +172,8 @@ class PostgresDirectLoadSqlGenerator {
             ArrayTypeWithoutSchema,
             is ObjectType,
             ObjectTypeWithEmptySchema,
-            ObjectTypeWithoutSchema,
-            is UnionType -> SQLDataType.JSONB.typeName
+            ObjectTypeWithoutSchema -> SQLDataType.JSONB.typeName
+            is UnionType -> this.chooseType().toDialectType()
             is UnknownType -> SQLDataType.VARCHAR.typeName
         }
 }
