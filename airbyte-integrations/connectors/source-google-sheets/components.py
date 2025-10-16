@@ -460,26 +460,22 @@ class GridDataErrorHandler(DefaultErrorHandler):
 
     This handler extends the DefaultErrorHandler by adding special handling for 500 errors
     when includeGridData=true. When a 500 error occurs, it immediately tests if the sheet can be
-    fetched without grid data. If successful, the sheet is skipped (IGNORE). If it still fails,
-    the error is retried using the default backoff strategy (RETRY).
-
-    Also includes all standard response filters:
-    - expected_one_sheet: Fails if response doesn't contain exactly 1 sheet
-    - deduplicate_headers: Ignores (skips) sheets with duplicate headers
-    - rate_limit: Handles 429 rate limit errors
+    fetched without grid data. If successful, the sheet is skipped (IGNORE). If it still fails
+    (either with another non-200 status or a network/HTTP error), the error is retried using the
+    default backoff strategy (RETRY).
     """
 
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
         """
         Interpret the response and determine the appropriate action.
 
-        Applies filters in order:
-        1. expected_one_sheet - Must have exactly 1 sheet in response
-        2. deduplicate_headers - Skip sheets with duplicate headers
-        3. rate_limit - Handle 429 rate limiting
-        4. grid_data_500 - Special handling for 500 errors with grid data
+        Handles 500 errors when includeGridData=true by testing if the sheet can be fetched
+        without grid data to determine if the error is due to corrupt grid data (skip the sheet)
+        or a genuine server error (retry with backoff).
+
+        For all other responses/exceptions, delegates to the parent DefaultErrorHandler.
         """
-        # Only handle Response objects (not exceptions) with our custom filters
+        # Only handle Response objects (not exceptions) with our custom logic
         # For exceptions, delegate to parent immediately
         if not isinstance(response_or_exception, requests.Response):
             return super().interpret_response(response_or_exception)
@@ -487,7 +483,6 @@ class GridDataErrorHandler(DefaultErrorHandler):
         response = response_or_exception
         url = response.request.url
 
-        # Filter 3: grid_data_500
         # Special handling for 500 errors with includeGridData=true
         if response.status_code == 500 and "includeGridData=true" in url:
             # Immediately test without grid data to determine if this is a corrupt grid data issue
@@ -531,14 +526,14 @@ class GridDataErrorHandler(DefaultErrorHandler):
                         error_message="Internal server error encountered. Retrying with backoff.",
                     )
 
-            except Exception as e:
-                # If test request fails with exception, this is likely a genuine server error - retry with backoff
-                logger.info(f"Test request for sheet '{sheet_name}' failed with exception: {e}. Retrying with backoff...")
+            except requests.RequestException as e:
+                # If test request fails with a network/HTTP error, treat it as a transient server error - retry with backoff
+                logger.info(f"Test request for sheet '{sheet_name}' failed with network error: {e}. Retrying with backoff...")
                 return ErrorResolution(
                     response_action=ResponseAction.RETRY,
                     failure_type=FailureType.transient_error,
                     error_message=f"Internal server error encountered: {str(e)}. Retrying with backoff.",
                 )
 
-        # If none of our custom filters matched, delegate to parent's interpret_response for default handling
+        # Return None to pass response to next handler in the composite chain (DefaultErrorHandler)
         return None
