@@ -4,6 +4,7 @@ Here are some helpful tips and reminders for your convenience.
 
 ### Helpful Resources
 
+- [Breaking Changes Guide](https://docs.airbyte.com/platform/connector-development/connector-breaking-changes) - Breaking changes, migration guides, and upgrade deadlines
 - [Developing Connectors Locally](https://docs.airbyte.com/platform/connector-development/local-connector-development)
 - [Managing Connector Secrets](https://docs.airbyte.com/platform/connector-development/local-connector-development#managing-connector-secrets)
 - [On-Demand Live Tests](https://github.com/airbytehq/airbyte/actions/workflows/live_tests.yml)
