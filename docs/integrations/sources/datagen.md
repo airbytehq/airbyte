@@ -46,6 +46,7 @@ Generates one column for each Airbyte data type, including string, integer, numb
 
 | Version | Date       | Pull Request                                             | Subject                            |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------|
+| 0.1.4   | 2025-10-15 | [68131](https://github.com/airbytehq/airbyte/pull/68131) | Increment naming fix               |
 | 0.1.3   | 2025-10-15 | [68129](https://github.com/airbytehq/airbyte/pull/68129) | Increment encoding fix             |
 | 0.1.2   | 2025-10-13 | [67720](https://github.com/airbytehq/airbyte/pull/67720) | Removal of Array type              |
 | 0.1.1   | 2025-10-08 | [67110](https://github.com/airbytehq/airbyte/pull/67110) | Addition of proto types            |
