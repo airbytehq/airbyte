@@ -149,6 +149,31 @@ internal class PostgresDirectLoadSqlGeneratorTest {
     }
 
     @Test
+    fun testGenerateCopyTable() {
+        val columnNameMapping = ColumnNameMapping(
+            mapOf(
+                "sourceId" to "targetId"
+            )
+        )
+        val sourceTableName = TableName(namespace = "namespace", name = "source")
+        val destinationTableName = TableName(namespace = "namespace", name = "target")
+
+        val sql = postgresDirectLoadSqlGenerator.copyTable(
+            columnNameMapping = columnNameMapping,
+            sourceTableName = sourceTableName,
+            targetTableName = destinationTableName
+        )
+
+        val expected = """
+            INSERT INTO "namespace"."target" ("_airbyte_raw_id","_airbyte_extracted_at","_airbyte_meta","_airbyte_generation_id","targetId")
+            SELECT "_airbyte_raw_id","_airbyte_extracted_at","_airbyte_meta","_airbyte_generation_id","targetId"
+            FROM "namespace"."source";
+        """.trimIndent()
+
+        assertEquals(expected, sql)
+    }
+
+    @Test
     fun testDropTable() {
         val tableName = TableName(namespace = "namespace", name = "name")
         val sql = postgresDirectLoadSqlGenerator.dropTable(tableName)
