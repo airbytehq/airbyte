@@ -203,8 +203,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             assertEquals("jsonb", ObjectType(linkedMapOf()).toDialectType())
             assertEquals("jsonb", ObjectTypeWithEmptySchema.toDialectType())
             assertEquals("jsonb", ObjectTypeWithoutSchema.toDialectType())
-
-            assertEquals("varchar", UnknownType(mockk<JsonNode>()).toDialectType())
+            assertEquals("jsonb", UnknownType(mockk<JsonNode>()).toDialectType())
         }
     }
 
