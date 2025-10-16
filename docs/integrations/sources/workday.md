@@ -86,7 +86,6 @@ The Workday connector supports the following REST API streams:
 - Worker Payslips (Incremental)
 - Worker Time Off Entries (Incremental)
 
-
 ## Changelog
 
 <details>
