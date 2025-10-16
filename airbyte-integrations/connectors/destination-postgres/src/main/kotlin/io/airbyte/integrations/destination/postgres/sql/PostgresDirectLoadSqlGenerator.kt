@@ -30,8 +30,6 @@ import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
-import org.jooq.impl.SQLDataType
-import org.postgresql.core.Oid
 
 internal const val COUNT_TOTAL_ALIAS = "total"
 
@@ -44,23 +42,23 @@ class PostgresDirectLoadSqlGenerator {
             listOf(
                 ColumnAndType(
                     columnName = COLUMN_NAME_AB_RAW_ID,
-                    columnTypeName = SQLDataType.VARCHAR(36).typeName,
+                    columnTypeName = PostgresDataType.VARCHAR.typeName,
                     nullable = false
 
                 ),
                 ColumnAndType(
                     columnName = COLUMN_NAME_AB_EXTRACTED_AT,
-                    columnTypeName = SQLDataType.TIMESTAMPWITHTIMEZONE.typeName,
+                    columnTypeName = PostgresDataType.TIMESTAMP_WITH_TIMEZONE.typeName,
                     nullable = false
                 ),
                 ColumnAndType(
                     columnName = COLUMN_NAME_AB_META,
-                    columnTypeName = SQLDataType.JSONB.typeName,
+                    columnTypeName = PostgresDataType.JSONB.typeName,
                     nullable = false
                 ),
                 ColumnAndType(
                     columnName = COLUMN_NAME_AB_GENERATION_ID,
-                    columnTypeName = SQLDataType.BIGINT.typeName,
+                    columnTypeName = PostgresDataType.BIGINT.typeName,
                     nullable = false
                 ),
             )
