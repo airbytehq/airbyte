@@ -22,6 +22,8 @@ data class PostgresConfiguration(
     val cdcDeletionMode: CdcDeletionMode,
     val legacyRawTablesOnly: Boolean?,
     val internalTableSchema: String?,
+    val dropCascade: Boolean?,
+    val unconstrainedNumber: Boolean?,
     val tunnelMethod: SshTunnelMethodConfiguration?,
 ) : DestinationConfiguration()
 
@@ -59,6 +61,8 @@ class PostgresConfigurationFactory :
                 } else {
                     null
                 },
+            dropCascade = spec.dropCascade ?: false,
+            unconstrainedNumber = spec.unconstrainedNumber ?: false,
             tunnelMethod = spec.getTunnelMethodValue()
         )
     }
