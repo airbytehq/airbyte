@@ -12,6 +12,9 @@ set -euo pipefail
 # Example: tools/bin/bulk-cdk-compatibility-test/create-gh-issue.sh destination-dev-null www.myjoburl.com abcdef123456
 
 # default values are specific to how the move team manages issues
+# Getting these ids is not straightforward:
+# - project number: from the project URL `https://github.com/orgs/airbytehq/projects/98`
+# - status field id and oncall option id: using `gh project field-list 98 --owner airbytehq --format json` to explore the project fields and options
 ISSUES_REPOSITORY="${ISSUES_REPOSITORY:-airbytehq/airbyte-internal-issues}"
 PROJECT_NUMBER="${PROJECT_NUMBER:-98}"
 STATUS_FIELD_ID="${STATUS_FIELD_ID:-PVTSSF_lADOA4_XW84Am4WkzgetXZM}"
