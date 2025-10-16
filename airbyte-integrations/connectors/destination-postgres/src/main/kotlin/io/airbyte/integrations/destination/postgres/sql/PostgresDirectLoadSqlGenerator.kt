@@ -43,23 +43,23 @@ class PostgresDirectLoadSqlGenerator {
             listOf(
                 ColumnAndType(
                     columnName = COLUMN_NAME_AB_RAW_ID,
-                    columnTypeName = SQLDataType.VARCHAR(36).typeName,
+                    columnTypeName = PostgresDataType.VARCHAR.typeName,
                     nullable = false
 
                 ),
                 ColumnAndType(
                     columnName = COLUMN_NAME_AB_EXTRACTED_AT,
-                    columnTypeName = SQLDataType.TIMESTAMPWITHTIMEZONE.typeName,
+                    columnTypeName = PostgresDataType.TIMESTAMP_WITH_TIMEZONE.typeName,
                     nullable = false
                 ),
                 ColumnAndType(
                     columnName = COLUMN_NAME_AB_META,
-                    columnTypeName = SQLDataType.JSONB.typeName,
+                    columnTypeName = PostgresDataType.JSONB.typeName,
                     nullable = false
                 ),
                 ColumnAndType(
                     columnName = COLUMN_NAME_AB_GENERATION_ID,
-                    columnTypeName = SQLDataType.BIGINT.typeName,
+                    columnTypeName = PostgresDataType.BIGINT.typeName,
                     nullable = false
                 ),
             )
@@ -103,7 +103,7 @@ class PostgresDirectLoadSqlGenerator {
             .map { (columnName, columnType) ->
                 val targetColumnName = columnNameMapping[columnName] ?: columnName
                 val typeName = columnType.type.toDialectType()
-                "$targetColumnName $typeName"
+                "\"$targetColumnName\" $typeName"
             }
 
         return (DEFAULT_COLUMNS + targetColumns).joinToString(",\n")
@@ -140,7 +140,7 @@ class PostgresDirectLoadSqlGenerator {
     }
 
     private fun getTargetColumnNames(columnNameMapping: ColumnNameMapping): List<String> =
-        DEFAULT_COLUMNS.map { it.columnName } + columnNameMapping.map { (_, targetName) -> targetName }
+        DEFAULT_COLUMNS.map { "\"${it.columnName}\"" } + columnNameMapping.map { (_, targetName) -> "\"${targetName}\"" }
 
     @Suppress("UNUSED_PARAMETER")
     fun upsertTable(
@@ -191,28 +191,28 @@ class PostgresDirectLoadSqlGenerator {
 
     fun AirbyteType.toDialectType(): String =
         when (this) {
-            BooleanType -> SQLDataType.BOOLEAN.typeName
-            DateType -> SQLDataType.DATE.typeName
-            IntegerType -> SQLDataType.BIGINT.typeName
-            NumberType -> SQLDataType.DECIMAL.typeName
-            StringType -> SQLDataType.VARCHAR.typeName
-            TimeTypeWithTimezone -> SQLDataType.TIMEWITHTIMEZONE.typeName
-            TimeTypeWithoutTimezone -> SQLDataType.TIME.typeName
-            TimestampTypeWithTimezone -> SQLDataType.TIMESTAMPWITHTIMEZONE.typeName
-            TimestampTypeWithoutTimezone -> SQLDataType.TIMESTAMP.typeName
+            BooleanType -> PostgresDataType.BOOLEAN.typeName
+            DateType -> PostgresDataType.DATE.typeName
+            IntegerType -> PostgresDataType.BIGINT.typeName
+            NumberType -> PostgresDataType.DECIMAL.typeName
+            StringType -> PostgresDataType.VARCHAR.typeName
+            TimeTypeWithTimezone -> PostgresDataType.TIME_WITH_TIMEZONE.typeName
+            TimeTypeWithoutTimezone -> PostgresDataType.TIME.typeName
+            TimestampTypeWithTimezone -> PostgresDataType.TIMESTAMP_WITH_TIMEZONE.typeName
+            TimestampTypeWithoutTimezone -> PostgresDataType.TIMESTAMP.typeName
             is ArrayType,
             ArrayTypeWithoutSchema,
             is ObjectType,
             ObjectTypeWithEmptySchema,
-            ObjectTypeWithoutSchema -> SQLDataType.JSONB.typeName
+            ObjectTypeWithoutSchema,
+            is UnknownType -> PostgresDataType.JSONB.typeName
             is UnionType -> this.chooseType().toDialectType()
-            is UnknownType -> SQLDataType.VARCHAR.typeName
         }
 }
 
 data class ColumnAndType(val columnName: String, val columnTypeName: String, val nullable: Boolean = false) {
     override fun toString(): String {
         val isNullableSuffix = if (nullable) "" else "NOT NULL"
-        return "$columnName $columnTypeName $isNullableSuffix".trim()
+        return "\"$columnName\" $columnTypeName $isNullableSuffix".trim()
     }
 }

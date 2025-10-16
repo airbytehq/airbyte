@@ -52,8 +52,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
         }
         val columnNameMapping = ColumnNameMapping(
             mapOf(
-                "sourceId" to "targetId",
-                "sourceName" to "targetName"
+                "sourceId" to "targetId"
             )
         )
         val tableName = TableName(namespace = "namespace", name = "name")
@@ -69,27 +68,30 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             BEGIN TRANSACTION;
             DROP TABLE IF EXISTS "namespace"."name";
             CREATE TABLE "namespace"."name" (
-            _airbyte_raw_id varchar NOT NULL,
-            _airbyte_extracted_at timestamp with time zone NOT NULL,
-            _airbyte_meta jsonb NOT NULL,
-            _airbyte_generation_id bigint NOT NULL,
-            targetId varchar,
-            targetName varchar
+            "_airbyte_raw_id" varchar NOT NULL,
+            "_airbyte_extracted_at" timestamp with time zone NOT NULL,
+            "_airbyte_meta" jsonb NOT NULL,
+            "_airbyte_generation_id" bigint NOT NULL,
+            "targetId" varchar,
+            "sourceName" varchar
             );
             COMMIT;
-            """
+            """.trimIndent()
 
-        assertEqualsIgnoreIndentation(expected, sql)
+        assertEqualsIgnoreWhitespace(expected, sql)
     }
 
-    private fun assertEqualsIgnoreIndentation(expected: String, actual: String) {
+    private fun assertEqualsIgnoreWhitespace(expected: String, actual: String) {
         assertEquals(
-            normalizeIndentation(expected),
-            normalizeIndentation(actual))
+            dropWhitespace(expected),
+            dropWhitespace(actual))
     }
 
-    private fun normalizeIndentation(text: String) = text
-        .lines().joinToString("\n") { it.trim() }
+    private fun dropWhitespace(text: String) = text
+        .lines()
+        .map { it.trim()}
+        .filter { it.isNotEmpty() }
+        .joinToString("\n") { it.trim() }
 
     @Test
     fun testCreateTableNoReplace() {
@@ -117,16 +119,16 @@ internal class PostgresDirectLoadSqlGeneratorTest {
         val expected = """
             BEGIN TRANSACTION;
             CREATE TABLE "namespace"."name" (
-            _airbyte_raw_id varchar NOT NULL,
-            _airbyte_extracted_at timestamp with time zone NOT NULL,
-            _airbyte_meta jsonb NOT NULL,
-            _airbyte_generation_id bigint NOT NULL,
-            targetId varchar,
+            "_airbyte_raw_id" varchar NOT NULL,
+            "_airbyte_extracted_at" timestamp with time zone NOT NULL,
+            "_airbyte_meta" jsonb NOT NULL,
+            "_airbyte_generation_id" bigint NOT NULL,
+            "targetId" varchar
             );
             COMMIT;
-            """
+            """.trimIndent()
 
-        assertEqualsIgnoreIndentation(expected, sql)
+        assertEqualsIgnoreWhitespace(expected, sql)
     }
 
     @Test
@@ -140,6 +142,31 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             DROP TABLE IF EXISTS "targetNamespace"."target";
             ALTER TABLE "sourceNamespace"."source" RENAME TO "targetNamespace"."target";
             COMMIT;
+        """.trimIndent()
+
+        assertEquals(expected, sql)
+    }
+
+    @Test
+    fun testGenerateCopyTable() {
+        val columnNameMapping = ColumnNameMapping(
+            mapOf(
+                "sourceId" to "targetId"
+            )
+        )
+        val sourceTableName = TableName(namespace = "namespace", name = "source")
+        val destinationTableName = TableName(namespace = "namespace", name = "target")
+
+        val sql = postgresDirectLoadSqlGenerator.copyTable(
+            columnNameMapping = columnNameMapping,
+            sourceTableName = sourceTableName,
+            targetTableName = destinationTableName
+        )
+
+        val expected = """
+            INSERT INTO "namespace"."target" ("_airbyte_raw_id","_airbyte_extracted_at","_airbyte_meta","_airbyte_generation_id","targetId")
+            SELECT "_airbyte_raw_id","_airbyte_extracted_at","_airbyte_meta","_airbyte_generation_id","targetId"
+            FROM "namespace"."source";
         """.trimIndent()
 
         assertEquals(expected, sql)
@@ -183,7 +210,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
     }
 
     @Test
-    fun testToDialectTypeMappingSimple() {
+    fun testToDialectTypeMapping() {
         with(postgresDirectLoadSqlGenerator) {
             assertEquals("boolean", BooleanType.toDialectType())
             assertEquals("date", DateType.toDialectType())
@@ -200,13 +227,12 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             assertEquals("jsonb", ObjectType(linkedMapOf()).toDialectType())
             assertEquals("jsonb", ObjectTypeWithEmptySchema.toDialectType())
             assertEquals("jsonb", ObjectTypeWithoutSchema.toDialectType())
-
-            assertEquals("varchar", UnknownType(mockk<JsonNode>()).toDialectType())
+            assertEquals("jsonb", UnknownType(mockk<JsonNode>()).toDialectType())
         }
     }
 
     @Test
-    fun testToDialectTypeMappingComplex() {
+    fun testToDialectTypeMappingUnions() {
         with(postgresDirectLoadSqlGenerator) {
             val unionWithStruct = UnionType(
                 options = setOf(
@@ -228,12 +254,12 @@ internal class PostgresDirectLoadSqlGeneratorTest {
     @Test
     fun testColumnAndTypeToString() {
         val notNullColumn = ColumnAndType("column", "varchar", nullable = false)
-        assertEquals("column varchar NOT NULL", notNullColumn.toString())
+        assertEquals("\"column\" varchar NOT NULL", notNullColumn.toString())
     }
 
     @Test
     fun testNullableColumnAndTypeToString() {
         val nullableColumn = ColumnAndType("column", "varchar", nullable = true)
-        assertEquals("column varchar", nullableColumn.toString())
+        assertEquals("\"column\" varchar", nullableColumn.toString())
     }
 }
