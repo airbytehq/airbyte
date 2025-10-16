@@ -1,3 +1,11 @@
+## Version 0.1.51
+
+Polaris support in the iceberg configuration.
+
+## Version 0.1.50
+
+Better handle interleaved streams in aggregate publishing.
+
 ## Version 0.1.49
 
 **Extract CDK**
