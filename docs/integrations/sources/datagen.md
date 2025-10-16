@@ -8,8 +8,6 @@ No prerequisites are required to use this connector. DataGen generates data loca
 
 ## Setup guide
 
-### Set up the DataGen source connector
-
 1. Log in to your Airbyte Cloud or Airbyte Open Source account.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **DataGen** from the Source type dropdown.
@@ -37,7 +35,7 @@ The connector supports two data generation patterns:
 
 Generates a single column named `id` that contains monotonically increasing integers. This mode is useful for testing incremental data loading and verifying that data arrives in the expected order.
 
-### All Types
+### All types
 
 Generates one column for each Airbyte data type, including string, integer, number, boolean, timestamp, date, time, array, and object types. This mode is useful for testing type handling and schema compatibility across different destinations.
 
