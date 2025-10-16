@@ -45,7 +45,7 @@ Once your Airbyte instance is up and running, there's a way to use Airbyte that'
 
 ### User interface
 
-Self-managed and cloud plans come with a carefully-crafted user interface that walks you through setting up connections and automating syncs. This is a great choice if you're not a developer, aren't concerned about version control, or you're just seeing what Airbyte can do for you.
+Self-managed and cloud plans come with a carefully crafted user interface that walks you through setting up connections and automating syncs. This is a great choice if you're not a developer, aren't concerned about version control, or you're just seeing what Airbyte can do for you.
 
 ### API and Python SDK {#api-sdk}
 
