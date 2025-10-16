@@ -31,6 +31,7 @@ import io.airbyte.cdk.load.orchestration.db.TableName
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import org.jooq.impl.SQLDataType
+import org.postgresql.core.Oid
 
 internal const val COUNT_TOTAL_ALIAS = "total"
 
@@ -191,22 +192,22 @@ class PostgresDirectLoadSqlGenerator {
 
     fun AirbyteType.toDialectType(): String =
         when (this) {
-            BooleanType -> SQLDataType.BOOLEAN.typeName
-            DateType -> SQLDataType.DATE.typeName
-            IntegerType -> SQLDataType.BIGINT.typeName
-            NumberType -> SQLDataType.DECIMAL.typeName
-            StringType -> SQLDataType.VARCHAR.typeName
-            TimeTypeWithTimezone -> SQLDataType.TIMEWITHTIMEZONE.typeName
-            TimeTypeWithoutTimezone -> SQLDataType.TIME.typeName
-            TimestampTypeWithTimezone -> SQLDataType.TIMESTAMPWITHTIMEZONE.typeName
-            TimestampTypeWithoutTimezone -> SQLDataType.TIMESTAMP.typeName
+            BooleanType -> PostgresDataType.BOOLEAN.typeName
+            DateType -> PostgresDataType.DATE.typeName
+            IntegerType -> PostgresDataType.BIGINT.typeName
+            NumberType -> PostgresDataType.DECIMAL.typeName
+            StringType -> PostgresDataType.VARCHAR.typeName
+            TimeTypeWithTimezone -> PostgresDataType.TIME_WITH_TIMEZONE.typeName
+            TimeTypeWithoutTimezone -> PostgresDataType.TIME.typeName
+            TimestampTypeWithTimezone -> PostgresDataType.TIMESTAMP_WITH_TIMEZONE.typeName
+            TimestampTypeWithoutTimezone -> PostgresDataType.TIMESTAMP.typeName
             is ArrayType,
             ArrayTypeWithoutSchema,
             is ObjectType,
             ObjectTypeWithEmptySchema,
-            ObjectTypeWithoutSchema -> SQLDataType.JSONB.typeName
+            ObjectTypeWithoutSchema,
+            is UnknownType -> PostgresDataType.JSONB.typeName
             is UnionType -> this.chooseType().toDialectType()
-            is UnknownType -> SQLDataType.VARCHAR.typeName
         }
 }
 
