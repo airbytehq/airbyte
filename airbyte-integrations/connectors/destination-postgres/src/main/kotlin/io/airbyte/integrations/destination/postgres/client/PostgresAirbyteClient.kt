@@ -90,7 +90,7 @@ class PostgresAirbyteClient(
         stream: DestinationStream,
         tableName: TableName,
         columnNameMapping: ColumnNameMapping
-    ) = TODO("PostgresAirbyteClient.ensureSchemaMatches not yet implemented")
+    ) = Unit
 
     override suspend fun getGenerationId(tableName: TableName): Long =
         try {
