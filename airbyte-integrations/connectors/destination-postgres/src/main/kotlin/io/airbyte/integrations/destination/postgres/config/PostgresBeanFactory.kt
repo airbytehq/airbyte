@@ -143,22 +143,6 @@ class PostgresBeanFactory {
                 username = postgresConfiguration.username
                 password = postgresConfiguration.password ?: ""
                 schema = postgresConfiguration.schema
-                // Create airbyte_safe_cast function in pg_temp schema for safe type casting.
-                // Anything in the pg_temp schema is only visible to the connection that created it,
-                // which avoids issues with creating the same function concurrently (e.g. if multiple syncs
-                // run at the same time). Function definition copied from https://dba.stackexchange.com/a/203986
-                connectionInitSql = """
-                    CREATE OR REPLACE FUNCTION pg_temp.airbyte_safe_cast(_in text, INOUT _out ANYELEMENT)
-                      LANGUAGE plpgsql AS
-                    ${'$'}func${'$'}
-                    BEGIN
-                      EXECUTE format('SELECT %L::%s', ${'$'}1, pg_typeof(_out))
-                      INTO  _out;
-                    EXCEPTION WHEN others THEN
-                      -- do nothing: _out already carries default
-                    END
-                    ${'$'}func${'$'};
-                """.trimIndent()
             }
 
         return HikariDataSource(datasourceConfig)

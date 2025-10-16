@@ -132,13 +132,13 @@ object PostgresDataCleaner : DestinationCleaner {
 
 class PostgresAcceptanceTest : BasicFunctionalityIntegrationTest(
     configContents = """{
-        "host": "localhost",
-        "port": 5432,
-        "database": "postgres",
-        "schema": "public",
-        "username": "postgres",
-        "password": "postgres"
-    }""",
+                        "host": "replace_me_host",
+                        "port": replace_me_port,
+                        "database": "replace_me_database",
+                        "schema": "public",
+                        "username": "replace_me_username",
+                        "password": "replace_me_password"
+                    }""",
     configSpecClass = PostgresSpecification::class.java,
     dataDumper = PostgresDataDumper { spec ->
         val configOverrides = buildConfigOverridesForTestContainer()

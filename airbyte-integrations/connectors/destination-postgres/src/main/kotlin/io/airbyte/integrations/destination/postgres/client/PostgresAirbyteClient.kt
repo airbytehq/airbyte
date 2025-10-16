@@ -132,5 +132,5 @@ class PostgresAirbyteClient(
     }
 
     internal fun execute(query: String) =
-        dataSource.connection.use { connection -> connection.createStatement().execute(query) }
+        dataSource.connection.use { connection -> connection.createStatement().use { it.execute(query) }}
 }
