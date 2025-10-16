@@ -76,9 +76,18 @@ class PostgresValueCoercer : ValueCoercer {
                 }
             }
             is StringValue -> {
+                // PostgreSQL doesn't allow null bytes (\u0000) in text fields
+                // Replace them with empty string to prevent COPY errors
+                // Using replace() without regex for optimal performance (O(n) vs O(n*m) with regex)
+                if (abValue.value.contains('\u0000')) {
+                    val sanitizedValue = abValue.value.replace("\u0000", "")
+                    value.abValue = StringValue(sanitizedValue)
+                }
+
                 // Validate string length (conservative check - actual byte size may vary with encoding)
                 // PostgreSQL uses UTF-8, so we check character count * 4 (max bytes per UTF-8 char)
-                if (abValue.value.length * 4 > TEXT_LIMIT_BYTES) {
+                val currentValue = (value.abValue as StringValue).value
+                if (currentValue.length * 4 > TEXT_LIMIT_BYTES) {
                     value.nullify(
                         AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
                     )

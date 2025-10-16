@@ -83,7 +83,14 @@ class PostgresDataDumper(
                     for (i in 1..resultSet.metaData.columnCount) {
                         val columnName = resultSet.metaData.getColumnName(i)
                         if (!Meta.COLUMN_NAMES.contains(columnName)) {
-                            val value = resultSet.getObject(i)
+                            val columnType = resultSet.metaData.getColumnTypeName(i)
+                            val value = when (columnType) {
+                                "timestamptz" -> resultSet.getObject(i, java.time.OffsetDateTime::class.java)
+                                "timestamp" -> resultSet.getObject(i, java.time.LocalDateTime::class.java)
+                                "timetz" -> resultSet.getObject(i, java.time.OffsetTime::class.java)
+                                "time" -> resultSet.getObject(i, java.time.LocalTime::class.java)
+                                else -> resultSet.getObject(i)
+                            }
                             dataMap[columnName] = value?.let {
                                 AirbyteValue.from(convertValue(it))
                             } ?: NullValue
@@ -116,9 +123,17 @@ class PostgresDataDumper(
 
     private fun convertValue(value: Any): Any =
         when (value) {
+            // Date/time types are already converted by JDBC with proper getters above
+            is java.time.OffsetDateTime -> value
+            is java.time.LocalDateTime -> value
+            is java.time.OffsetTime -> value
+            is java.time.LocalTime -> value
+            is java.time.LocalDate -> value
+            // Legacy SQL types (shouldn't occur with our specific getters above, but keep as fallback)
             is java.sql.Date -> value.toLocalDate()
             is java.sql.Time -> value.toLocalTime()
             is java.sql.Timestamp -> value.toLocalDateTime()
+            // JSONB and JSON types
             is PGobject -> {
                 val jsonNode = io.airbyte.commons.json.Jsons.deserialize(value.value!!)
                 io.airbyte.commons.json.Jsons.convertValue(jsonNode, Map::class.java)
