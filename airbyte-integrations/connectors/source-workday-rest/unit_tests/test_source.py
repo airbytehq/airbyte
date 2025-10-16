@@ -4,11 +4,11 @@ import pathlib
 import unittest
 from unittest.mock import MagicMock
 
+from conftest import get_source
+
 from airbyte_cdk.models import Status
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import find_template
-
-from .conftest import get_source
 
 
 def mock_schema_request(http_mocker: HttpMocker, report: str):
@@ -25,37 +25,33 @@ def mock_schema_request(http_mocker: HttpMocker, report: str):
 
 
 class TestSourceWorkday(unittest.TestCase):
-    raas_config = {
+    rest_config = {
         "tenant_id": "test_tenant",
         "host": "test_host",
+        "start_date": "2024-05-01T00:00:00.000Z",
         "credentials": {
-            "username": "test_user",
-            "password": "test_password",
-            "report_ids": ["test/report_1"],
+            "access_token": "test_access_token",
+            "auth_type": "REST",
         },
     }
 
-    @HttpMocker()
-    def test_raas_streams(self, http_mocker: HttpMocker):
-        source = get_source(self.raas_config)
-        mock_schema_request(http_mocker=http_mocker, report="report_1")
-        streams = source.streams(self.raas_config)
-        assert len(streams) == 1
-        assert streams[0].name == self.raas_config["credentials"]["report_ids"][0]
+    def test_rest_streams(self):
+        source = get_source(self.rest_config)
+        streams = source.streams(self.rest_config)
+        assert len(streams) == 11
 
     @HttpMocker()
-    def test_raas_check(self, http_mocker: HttpMocker):
-        source = get_source(self.raas_config)
-        mock_schema_request(http_mocker=http_mocker, report="report_1")
+    def test_rest_check(self, http_mocker: HttpMocker):
+        source = get_source(self.rest_config)
 
         http_mocker.get(
             HttpRequest(
-                url="https://test_host/ccx/service/customreport2/test_tenant/test/report_1?format=json",
+                url="https://test_host/api/common/v1/test_tenant/workers?limit=100",
             ),
             HttpResponse(
-                body=json.dumps(json.dumps(find_template("json/report_1", __file__))),
+                body=json.dumps(json.dumps(find_template("json/workers", __file__))),
                 status_code=200,
             ),
         )
 
-        assert source.check(MagicMock(), self.raas_config).status == Status.SUCCEEDED
+        assert source.check(MagicMock(), self.rest_config).status == Status.SUCCEEDED

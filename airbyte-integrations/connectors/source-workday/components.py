@@ -1,12 +1,15 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Mapping, MutableMapping, Optional
 from urllib.parse import urlencode, urlparse, urlunparse
 from xml.etree import ElementTree
 
 import requests
 
 from airbyte_cdk.models import FailureType
+from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader
+from airbyte_cdk.sources.declarative.transformations.config_transformations.config_transformation import ConfigTransformation
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils import AirbyteTracedException
 
 
@@ -27,6 +30,7 @@ DATE_TIME_TYPES = {
 class ReportXMLSchemaHelper:
     default_string_type = "xsd:string"
     default_report_entry = "Report_EntryType"
+    is_unbounded_key = "_ab_is_unbounded"
 
     def __init__(self, config, report_id):
         self._PROPERTIES = {}
@@ -182,33 +186,69 @@ class ReportXMLSchemaHelper:
 
         schema = self.final_properties()
 
+        for field, field_type in schema.items():
+            """
+            There is a case when workday returns string for fields that declared as unbounded(can have more than 1 value in it).
+            So this part of code finds all such fields and adds an airbyte internal field to their schema 
+            to flag that fields as unbounded and use this flag in schema normalization.
+            """
+            if field_type.get("items", {}).get("properties", {}).get("ID"):
+                schema[field].update({self.is_unbounded_key: True})
         return schema
 
-    def fields_transform_string_array(self):
-        """
-        There is a case when workday returns string for fields that declared as unbounded(can have more than 1 value in it).
-        So this method finds all such fields and creates a transformation object for them.
-        [{'ID': record['{field}']}] if record['field'] is string else record['field']
-        """
 
-        properties = self.get_properties()
-        to_transform = []
+class ReportSchemaLoader(DefaultSchemaLoader):
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        self._parameters = parameters
+        self.default_loader = ReportXMLSchemaHelper(self.config, self._parameters["report_id"])
+        self.schema = {}
 
-        for field, field_type in properties.items():
-            if field_type.get("items", {}).get("properties", {}).get("ID"):
-                to_transform.append(field)
-
-        transformations = []
-        for field in to_transform:
-            t = {
-                "path": [field],
-                "type": "AddedFieldDefinition",
-                "value": "{{ [{ 'ID':"
-                + f" record['{field}']"
-                + " }] "
-                + f"if (record['{field}'] is string) else record['{field}']"
-                + " }}",
+    def get_json_schema(self) -> Mapping[str, Any]:
+        if not self.schema:
+            self.schema = {
+                "$schema": "https://json-schema.org/draft-04/schema#",
+                "type": "object",
+                "properties": self.default_loader.get_properties(),
+                "additionalProperties": True,
             }
-            transformations.append(t)
 
-        return transformations
+        return self.schema
+
+
+class UnboundFieldsNormalization(TypeTransformer):
+    """
+    There is a case when workday returns string for fields that declared as unbounded(can have more than 1 value in it).
+    So this transformation finds all such fields and creates a transformation object for them.
+    [{'ID': record['{field}']}] if record['field'] is string else record['field']
+    """
+
+    def __init__(self, *args, **kwargs):
+        config = TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization
+        super().__init__(config)
+        self.registerCustomTransform(self.get_transform_function())
+
+    def get_transform_function(self):
+        def transform_function(original_value: str, field_schema: Dict[str, Any]) -> Any:
+            if field_schema.get(ReportXMLSchemaHelper.is_unbounded_key, False) and isinstance(original_value, str):
+                transformed_value = [{"ID": original_value}]
+                return transformed_value
+            else:
+                return self.default_convert(original_value, field_schema)
+
+        return transform_function
+
+
+class MigrateReportIDsToListOfDicts(ConfigTransformation):
+    @classmethod
+    def is_list_of_strings(cls, report_ids):
+        return isinstance(report_ids, list) and all(isinstance(report_id, str) for report_id in report_ids)
+
+    def transform(
+        self,
+        config: MutableMapping[str, Any],
+    ) -> None:
+        report_ids = config.get("credentials", {}).get("report_ids")
+        if report_ids and self.is_list_of_strings(report_ids):
+            transformed_report_ids = [{"report_id": report_id} for report_id in report_ids]
+
+            config["report_ids"] = transformed_report_ids

@@ -10,29 +10,23 @@ data:
   remoteRegistries:
     pypi:
       enabled: false
-      packageName: airbyte-source-workday
+      packageName: airbyte-source-workday-rest
   connectorBuildOptions:
     baseImage: docker.io/airbyte/source-declarative-manifest:7.3.0@sha256:7165e772905c42562eb52620e03f37ddff4e101669e4177a272c24b2e17173d4
   connectorSubtype: api
   connectorType: source
-  definitionId: 7b8b9550-331c-46c8-a299-943fb6ae2a72
-  dockerImageTag: 1.0.0
-  dockerRepository: airbyte/source-workday
-  githubIssueLabel: source-workday
-  releases:
-    breakingChanges:
-      1.0.0:
-        message: This release splits Source Workday into two separate connectors - Source Workday (for RaaS streams) and Source Workday REST (for REST streams). The connector you're currently using is deprecating REST streams and will continue to support only RAAS streams. REST streams will be available in the new Source Workday REST.
-        upgradeDeadline: "2025-10-28"
-        migrationDocumentationUrl: https://docs.airbyte.com/integrations/enterprise-connectors/source-workday-migrations
+  definitionId: 8d22fb25-a6e8-40e5-9a8b-0e057cc0bb86
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-workday-rest
+  githubIssueLabel: source-workday-rest
   icon: icon.svg
   license: MIT
   maxSecondsBetweenMessages: 10
-  name: Workday
+  name: Workday REST
   releaseDate: 2021-01-01
   releaseStage: alpha
   supportLevel: certified
-  documentationUrl: https://docs.airbyte.com/integrations/enterprise-connectors/source-workday
+  documentationUrl: https://docs.airbyte.com/integrations/enterprise-connectors/source-workday-rest
   tags:
     - cdk:low-code
     - language:manifest-only
@@ -44,7 +38,7 @@ data:
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:
-        - name: SECRET_SOURCE-WORKDAY_CREDS
+        - name: SECRET_SOURCE-WORKDAY-REST_CREDS
           fileName: config.json
           secretStore:
             type: GSM

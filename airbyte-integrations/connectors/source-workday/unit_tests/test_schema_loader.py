@@ -2,15 +2,12 @@
 
 from unittest.mock import patch
 
-from source_workday.schema_helper import ReportXMLSchemaHelper
-from source_workday.schema_loader import ReportSchemaLoader
 
-
-def test_schema_loader_uses_cached_schema():
-    with patch.object(ReportXMLSchemaHelper, "_get_xml_tree", return_value="xml_tree"):
-        with patch.object(ReportXMLSchemaHelper, "_extract_namespace", return_value={}):
-            with patch.object(ReportXMLSchemaHelper, "get_properties", return_value={}) as mock_get_properties:
-                schema_loader = ReportSchemaLoader(
+def test_schema_loader_uses_cached_schema(components_module):
+    with patch.object(components_module.ReportXMLSchemaHelper, "_get_xml_tree", return_value="xml_tree"):
+        with patch.object(components_module.ReportXMLSchemaHelper, "_extract_namespace", return_value={}):
+            with patch.object(components_module.ReportXMLSchemaHelper, "get_properties", return_value={}) as mock_get_properties:
+                schema_loader = components_module.ReportSchemaLoader(
                     {"tenant_id": "tenant_id", "host": "host"},
                     {"report_id": "report_id"},
                 )

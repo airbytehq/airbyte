@@ -1,0 +1,59 @@
+{
+  "data": [
+    {
+      "subject": {
+        "id": "id",
+        "descriptor": "string",
+        "href": "string"
+      },
+      "initiator": {
+        "id": "id",
+        "descriptor": "string",
+        "href": "string"
+      },
+      "effective": "2024-10-26T07:00:00.000Z",
+      "due": "2024-10-26T07:00:00.000Z",
+      "initiated": "2024-10-26T07:00:00.000Z",
+      "descriptor": "Lorem ipsum dolor sit ame",
+      "id": "1",
+      "href": "1"
+    },
+    {
+      "subject": {
+        "id": "id",
+        "descriptor": "string",
+        "href": "string"
+      },
+      "initiator": {
+        "id": "id",
+        "descriptor": "string",
+        "href": "string"
+      },
+      "effective": "2024-10-26T07:00:00.000Z",
+      "due": "2024-10-26T07:00:00.000Z",
+      "initiated": "2024-10-26T07:00:00.000Z",
+      "descriptor": "Lorem ipsum dolor sit ame",
+      "id": "2",
+      "href": "2"
+    },
+    {
+      "subject": {
+        "id": "id",
+        "descriptor": "string",
+        "href": "string"
+      },
+      "initiator": {
+        "id": "id",
+        "descriptor": "string",
+        "href": "string"
+      },
+      "effective": "2024-10-26T07:00:00.000Z",
+      "due": "2024-10-26T07:00:00.000Z",
+      "initiated": "2024-10-26T07:00:00.000Z",
+      "descriptor": "Lorem ipsum dolor sit ame",
+      "id": "3",
+      "href": "3"
+    }
+  ],
+  "total": 0
+}

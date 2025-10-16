@@ -1,0 +1,195 @@
+version: 4.3.2
+
+type: DeclarativeSource
+
+check:
+  type: CheckDynamicStream
+  stream_count: 1
+
+definitions:
+  reports_template:
+    type: DeclarativeStream
+    #    name is set in the components mapping
+    #    name: report id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        #        path is set in components mapping
+        #        path: report id
+        http_method: GET
+        request_parameters:
+          format: json
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - Report_Entry
+        schema_normalization:
+          type: CustomSchemaNormalization
+          class_name: source_declarative_manifest.components.UnboundFieldsNormalization
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - data
+            value: "{{ record }}"
+    schema_loader:
+      type: CustomSchemaLoader
+      class_name: source_declarative_manifest.components.ReportSchemaLoader
+  #      parameters.report_id is set in components mapping: value - report id
+
+  base_requester:
+    type: HttpRequester
+    url_base: https://{{config.host}}/ccx/service/customreport2/{{config.tenant_id}}/
+    authenticator:
+      type: BasicHttpAuthenticator
+      password: '{{ config["credentials"]["password"] }}'
+      username: '{{ config["credentials"]["username"] }}'
+
+dynamic_streams:
+  - type: DynamicDeclarativeStream
+    stream_template:
+      $ref: "#/definitions/reports_template"
+    components_resolver:
+      type: ConfigComponentsResolver
+      stream_config:
+        type: StreamConfig
+        configs_pointer:
+          - report_ids
+      components_mapping:
+        - type: ComponentMappingDefinition
+          field_path:
+            - name
+          value: "{{ components_values['report_id'] }}"
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            - retriever
+            - requester
+            - path
+          value: "{{ components_values['report_id'] }}"
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            - schema_loader
+            - parameters
+            - report_id
+          value: "{{ components_values['report_id'] }}"
+          create_or_update: true
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - tenant_id
+      - host
+      - credentials
+      - report_ids
+    properties:
+      tenant_id:
+        type: string
+        order: 0
+        title: Workday tenant
+        airbyte_secret: true
+      host:
+        type: string
+        order: 1
+        title: Workday hostname
+      credentials:
+        type: object
+        title: Authentication
+        description: Credentials for connecting to the Workday (RAAS) API.
+        required:
+          - username
+          - password
+        properties:
+          username:
+            type: string
+            order: 0
+            title: Username of your Workday account
+          password:
+            type: string
+            order: 1
+            title: Password of your Workday account
+            airbyte_secret: true
+      report_ids:
+        type: array
+        order: 2
+        title: Report IDs you want to sync.
+        description: Report IDs can be found by clicking the three dots on the right side of the report > Web Service > View URLs > in JSON url copy everything between Workday tenant/ and ?format=json.
+        items:
+          type: object
+          properties:
+            report_id:
+              type: string
+        examples:
+          - "for JSON url https://hostname/ccx/service/customreport2/tenant/report/id?format=json Report ID is report/id."
+      num_workers:
+        type: integer
+        description: >-
+          The number of worker threads to use for the sync.
+        title: Number of concurrent workers
+        minimum: 1
+        maximum: 20
+        default: 10
+        examples:
+          - 1
+          - 2
+          - 3
+    additionalProperties: true
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        description: Migrates username field from top level to credentials object
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "username"]
+                value: "{{ config['username'] }}"
+            condition: "{{ config.get('username', False) }}"
+      - type: ConfigMigration
+        description: Migrates password field from top level to credentials object
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "password"]
+                value: "{{ config['password'] }}"
+            condition: "{{ config.get('password', False) }}"
+      - type: ConfigMigration
+        description: Migrates password field from top level to credentials object
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "report_ids"]
+                value: "{{ config['report_ids'] }}"
+            condition: "{{ config.get('report_ids', False) }}"
+      - type: ConfigMigration
+        description: Extract and transforms report_ids field into list of dicts instead of list of strings
+        transformations:
+          - type: CustomConfigTransformation
+            class_name: source_declarative_manifest.components.MigrateReportIDsToListOfDicts
+metadata:
+  autoImportSchema:
+    Reports: false
+  testedStreams:
+    Reports:
+      hasRecords: true
+      streamHash: 9457f330b59cf7179fbaad9978ed0ae9719e5b5c
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  assist: {}
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 10) }}"
+  max_concurrency: 50

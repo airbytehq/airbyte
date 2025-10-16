@@ -11,7 +11,8 @@
         },
         "type": ["object", "null"]
       },
-      "type": ["array", "null"]
+      "type": ["array", "null"],
+      "_ab_is_unbounded": true
     },
     "Stock_Plan": {
       "type": ["string", "null"]

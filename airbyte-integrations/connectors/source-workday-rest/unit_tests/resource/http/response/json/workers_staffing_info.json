@@ -1,0 +1,224 @@
+{
+  "data": [
+    {
+      "primaryJob": {
+        "businessTitle": "Lorem ipsum dolor sit amet, cum choro singulis consectetuer ut, ubique iisque contentiones ex duo. Quo lorem etiam eu.",
+        "supervisoryOrganization": {
+          "descriptor": "Lorem ipsum dolor sit ame",
+          "id": "string"
+        },
+        "jobType": {
+          "descriptor": "Lorem ipsum dolor sit ame"
+        },
+        "jobProfile": {
+          "descriptor": "Lorem ipsum dolor sit ame",
+          "id": "string"
+        },
+        "location": {
+          "country": {
+            "descriptor": "Lorem ipsum dolor sit ame"
+          },
+          "id": "string",
+          "descriptor": "Lorem ipsum dolor sit ame"
+        },
+        "workSpace": {
+          "locationChain": "Sample Location Chain",
+          "descriptor": "Lorem ipsum dolor sit ame",
+          "id": "string"
+        },
+        "descriptor": "Lorem ipsum dolor sit ame",
+        "id": "string"
+      },
+      "person": {
+        "phone": "Lorem ipsum dolor sit amet, cum choro singulis consectetuer ut, ubique iisque contentiones ex duo. Quo lorem etiam eu.",
+        "email": "Lorem ipsum dolor sit amet, cum choro singulis consectetuer ut, ubique iisque contentiones ex duo. Quo lorem etiam eu.",
+        "id": "string"
+      },
+      "workerId": "Lorem ipsum dolor sit amet, cum choro singulis consectetuer ut, ubique iisque contentiones ex duo. Quo lorem etiam eu.",
+      "workerType": {
+        "id": "^(?:(?:[0-9a-f]{32})|(?:[0-9]+\\$[0-9]+)|(\\S+=\\S+))$",
+        "descriptor": "string",
+        "href": "string"
+      },
+      "additionalJobs": [
+        {
+          "businessTitle": "Lorem ipsum dolor sit amet, cum choro singulis consectetuer ut, ubique iisque contentiones ex duo. Quo lorem etiam eu.",
+          "supervisoryOrganization": {
+            "descriptor": "Lorem ipsum dolor sit ame",
+            "id": "string"
+          },
+          "jobType": {
+            "descriptor": "Lorem ipsum dolor sit ame"
+          },
+          "jobProfile": {
+            "descriptor": "Lorem ipsum dolor sit ame",
+            "id": "string"
+          },
+          "location": {
+            "country": {
+              "descriptor": "Lorem ipsum dolor sit ame"
+            },
+            "id": "string",
+            "descriptor": "Lorem ipsum dolor sit ame"
+          },
+          "workSpace": {
+            "locationChain": "Sample Location Chain",
+            "descriptor": "Lorem ipsum dolor sit ame",
+            "id": "string"
+          },
+          "descriptor": "Lorem ipsum dolor sit ame",
+          "id": "string"
+        }
+      ],
+      "descriptor": "Lorem ipsum dolor sit ame",
+      "id": "1"
+    },
+    {
+      "primaryJob": {
+        "businessTitle": "Lorem ipsum dolor sit amet, cum choro singulis consectetuer ut, ubique iisque contentiones ex duo. Quo lorem etiam eu.",
+        "supervisoryOrganization": {
+          "descriptor": "Lorem ipsum dolor sit ame",
+          "id": "string"
+        },
+        "jobType": {
+          "descriptor": "Lorem ipsum dolor sit ame"
+        },
+        "jobProfile": {
+          "descriptor": "Lorem ipsum dolor sit ame",
+          "id": "string"
+        },
+        "location": {
+          "country": {
+            "descriptor": "Lorem ipsum dolor sit ame"
+          },
+          "id": "string",
+          "descriptor": "Lorem ipsum dolor sit ame"
+        },
+        "workSpace": {
+          "locationChain": "Sample Location Chain",
+          "descriptor": "Lorem ipsum dolor sit ame",
+          "id": "string"
+        },
+        "descriptor": "Lorem ipsum dolor sit ame",
+        "id": "string"
+      },
+      "person": {
+        "phone": "Lorem ipsum dolor sit amet, cum choro singulis consectetuer ut, ubique iisque contentiones ex duo. Quo lorem etiam eu.",
+        "email": "Lorem ipsum dolor sit amet, cum choro singulis consectetuer ut, ubique iisque contentiones ex duo. Quo lorem etiam eu.",
+        "id": "string"
+      },
+      "workerId": "Lorem ipsum dolor sit amet, cum choro singulis consectetuer ut, ubique iisque contentiones ex duo. Quo lorem etiam eu.",
+      "workerType": {
+        "id": "^(?:(?:[0-9a-f]{32})|(?:[0-9]+\\$[0-9]+)|(\\S+=\\S+))$",
+        "descriptor": "string",
+        "href": "string"
+      },
+      "additionalJobs": [
+        {
+          "businessTitle": "Lorem ipsum dolor sit amet, cum choro singulis consectetuer ut, ubique iisque contentiones ex duo. Quo lorem etiam eu.",
+          "supervisoryOrganization": {
+            "descriptor": "Lorem ipsum dolor sit ame",
+            "id": "string"
+          },
+          "jobType": {
+            "descriptor": "Lorem ipsum dolor sit ame"
+          },
+          "jobProfile": {
+            "descriptor": "Lorem ipsum dolor sit ame",
+            "id": "string"
+          },
+          "location": {
+            "country": {
+              "descriptor": "Lorem ipsum dolor sit ame"
+            },
+            "id": "string",
+            "descriptor": "Lorem ipsum dolor sit ame"
+          },
+          "workSpace": {
+            "locationChain": "Sample Location Chain",
+            "descriptor": "Lorem ipsum dolor sit ame",
+            "id": "string"
+          },
+          "descriptor": "Lorem ipsum dolor sit ame",
+          "id": "string"
+        }
+      ],
+      "descriptor": "Lorem ipsum dolor sit ame",
+      "id": "2"
+    },
+    {
+      "primaryJob": {
+        "businessTitle": "Lorem ipsum dolor sit amet, cum choro singulis consectetuer ut, ubique iisque contentiones ex duo. Quo lorem etiam eu.",
+        "supervisoryOrganization": {
+          "descriptor": "Lorem ipsum dolor sit ame",
+          "id": "string"
+        },
+        "jobType": {
+          "descriptor": "Lorem ipsum dolor sit ame"
+        },
+        "jobProfile": {
+          "descriptor": "Lorem ipsum dolor sit ame",
+          "id": "string"
+        },
+        "location": {
+          "country": {
+            "descriptor": "Lorem ipsum dolor sit ame"
+          },
+          "id": "string",
+          "descriptor": "Lorem ipsum dolor sit ame"
+        },
+        "workSpace": {
+          "locationChain": "Sample Location Chain",
+          "descriptor": "Lorem ipsum dolor sit ame",
+          "id": "string"
+        },
+        "descriptor": "Lorem ipsum dolor sit ame",
+        "id": "string"
+      },
+      "person": {
+        "phone": "Lorem ipsum dolor sit amet, cum choro singulis consectetuer ut, ubique iisque contentiones ex duo. Quo lorem etiam eu.",
+        "email": "Lorem ipsum dolor sit amet, cum choro singulis consectetuer ut, ubique iisque contentiones ex duo. Quo lorem etiam eu.",
+        "id": "string"
+      },
+      "workerId": "Lorem ipsum dolor sit amet, cum choro singulis consectetuer ut, ubique iisque contentiones ex duo. Quo lorem etiam eu.",
+      "workerType": {
+        "id": "^(?:(?:[0-9a-f]{32})|(?:[0-9]+\\$[0-9]+)|(\\S+=\\S+))$",
+        "descriptor": "string",
+        "href": "string"
+      },
+      "additionalJobs": [
+        {
+          "businessTitle": "Lorem ipsum dolor sit amet, cum choro singulis consectetuer ut, ubique iisque contentiones ex duo. Quo lorem etiam eu.",
+          "supervisoryOrganization": {
+            "descriptor": "Lorem ipsum dolor sit ame",
+            "id": "string"
+          },
+          "jobType": {
+            "descriptor": "Lorem ipsum dolor sit ame"
+          },
+          "jobProfile": {
+            "descriptor": "Lorem ipsum dolor sit ame",
+            "id": "string"
+          },
+          "location": {
+            "country": {
+              "descriptor": "Lorem ipsum dolor sit ame"
+            },
+            "id": "string",
+            "descriptor": "Lorem ipsum dolor sit ame"
+          },
+          "workSpace": {
+            "locationChain": "Sample Location Chain",
+            "descriptor": "Lorem ipsum dolor sit ame",
+            "id": "string"
+          },
+          "descriptor": "Lorem ipsum dolor sit ame",
+          "id": "string"
+        }
+      ],
+      "descriptor": "Lorem ipsum dolor sit ame",
+      "id": "3"
+    }
+  ],
+  "total": 0
+}

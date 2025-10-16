@@ -9,22 +9,17 @@ class ConfigBuilder:
         self._report_ids = []
         self._access_token = None
 
-    def with_report_id(self, report_id: str) -> "ConfigBuilder":
-        self._report_ids = [{"report_id": report_id}]
-        return self
-
     def with_access_token(self, access_token: str) -> "ConfigBuilder":
         self._access_token = access_token
         return self
 
-    def raas_build(self) -> Dict[str, Any]:
+    def rest_build(self) -> Dict[str, Any]:
         self._config: Dict[str, Any] = {
             "tenant_id": "test_tenant",
             "host": "test_host",
-            "report_ids": self._report_ids,
+            "start_date": "2024-05-01T00:00:00.000Z",
             "credentials": {
-                "username": "test_user",
-                "password": "test_password",
+                "access_token": self._access_token,
             },
         }
 

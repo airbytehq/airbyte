@@ -1,0 +1,30 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "use_global_cursor": true,
+        "date": "2999-10-11T11:45:37.874673Z",
+        "lookback_window": 0,
+        "parent_state": {}
+      },
+      "stream_descriptor": {
+        "name": "workers_payslips"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "use_global_cursor": true,
+        "date": "2999-10-11T11:45:37.874673Z",
+        "lookback_window": 0,
+        "parent_state": {}
+      },
+      "stream_descriptor": {
+        "name": "workers_time_off_entries"
+      }
+    }
+  }
+]

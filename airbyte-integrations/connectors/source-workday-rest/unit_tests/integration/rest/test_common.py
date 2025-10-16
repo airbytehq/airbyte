@@ -3,7 +3,7 @@
 import json
 from typing import Any, Dict
 
-from source_workday.source import SourceWorkday
+from unit_tests.conftest import get_source
 from unit_tests.integration.rest.test_base import TestBase
 
 from airbyte_cdk.models import SyncMode
@@ -24,6 +24,8 @@ class TestWorkersRelatedStreams(TestCommon):
 
     @HttpMocker()
     def test_read(self, http_mocker):
+        http_mocker.clear_all_matchers()
+
         http_mocker.get(
             HttpRequest(url=f"https://test_host/api/{self.space}/v1/test_tenant/{self.workers}?limit=100"),
             HttpResponse(
@@ -39,7 +41,7 @@ class TestWorkersRelatedStreams(TestCommon):
                     status_code=200,
                 ),
             )
-        output = read(SourceWorkday(), self.config(), self.catalog())
+        output = read(get_source(self.config()), self.config(), self.catalog())
         assert len(output.records) == self.output_records_count
 
     @HttpMocker()
@@ -48,6 +50,8 @@ class TestWorkersRelatedStreams(TestCommon):
         records_page_2 = self.create_range_of_records(101, 200)
         records_page_3 = self.create_range_of_records(201, 250)
         total = 250
+
+        http_mocker.clear_all_matchers()
 
         http_mocker.get(
             HttpRequest(url=f"https://test_host/api/{self.space}/v1/test_tenant/{self.workers}?limit=100"),
@@ -86,7 +90,7 @@ class TestWorkersRelatedStreams(TestCommon):
                 ),
             )
 
-        output = read(SourceWorkday(), self.config(), self.catalog())
+        output = read(get_source(self.config()), self.config(), self.catalog())
         assert len(output.records) == total * 3  # 250 records per worker, workers count is 3
 
 
@@ -95,6 +99,8 @@ class TestWorkersRelatedStreamsIncremental(TestWorkersRelatedStreams):
 
     @HttpMocker()
     def test_read_incremental(self, http_mocker):
+        http_mocker.clear_all_matchers()
+
         http_mocker.get(
             HttpRequest(url=f"https://test_host/api/{self.space}/v1/test_tenant/{self.workers}?limit=100"),
             HttpResponse(
@@ -110,12 +116,12 @@ class TestWorkersRelatedStreamsIncremental(TestWorkersRelatedStreams):
                     status_code=200,
                 ),
             )
-
+        state = StateBuilder().with_stream_state(self.stream_name, self.state).build()
         output = read(
-            SourceWorkday(),
+            get_source(self.config(), state),
             self.config(),
             self.catalog(SyncMode.incremental),
-            StateBuilder().with_stream_state(self.stream_name, self.state).build(),
+            state,
         )
         assert len(output.records) == 0
 

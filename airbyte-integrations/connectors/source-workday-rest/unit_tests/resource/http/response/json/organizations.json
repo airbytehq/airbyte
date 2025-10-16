@@ -1,0 +1,20 @@
+{
+  "data": [
+    {
+      "id": "1",
+      "href": "1",
+      "descriptor": "Lorem ipsum dolor sit ame"
+    },
+    {
+      "id": "2",
+      "href": "2",
+      "descriptor": "Lorem ipsum dolor sit ame"
+    },
+    {
+      "id": "3",
+      "href": "3",
+      "descriptor": "Lorem ipsum dolor sit ame"
+    }
+  ],
+  "total": 3
+}

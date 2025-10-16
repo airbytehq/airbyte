@@ -5,7 +5,7 @@ from copy import deepcopy
 from typing import Any, Dict, List
 from unittest import TestCase
 
-from source_workday.source import SourceWorkday
+from unit_tests.conftest import get_source
 from unit_tests.integration.config_builder import ConfigBuilder
 
 from airbyte_cdk.models import SyncMode
@@ -45,7 +45,7 @@ class TestBase(TestCase):
                 status_code=200,
             ),
         )
-        output = read(SourceWorkday(), self.config(), self.catalog())
+        output = read(get_source(self.config()), self.config(), self.catalog())
         assert len(output.records) == self.output_records_count
         # verify auth method
         assert http_mocker._mocker._adapter._matchers[0].last_request.headers["Authorization"] == "Bearer test access token"
@@ -93,5 +93,5 @@ class TestBase(TestCase):
             ),
         )
 
-        output = read(SourceWorkday(), self.config(), self.catalog())
+        output = read(get_source(self.config()), self.config(), self.catalog())
         assert len(output.records) == total

@@ -1,7 +1,0 @@
-{
-  "username": "username",
-  "password": "password",
-  "tenant_id": "tenant",
-  "host": "host",
-  "report_ids": ["test/report_1", "test/report_2"]
-}

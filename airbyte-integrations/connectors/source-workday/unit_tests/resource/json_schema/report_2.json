@@ -11,7 +11,8 @@
         },
         "type": ["object", "null"]
       },
-      "type": ["array", "null"]
+      "type": ["array", "null"],
+      "_ab_is_unbounded": true
     },
     "Job_Family_Groups_for_Job_Profile_group": {
       "items": {

@@ -1,0 +1,89 @@
+{
+  "data": [
+    {
+      "location": {
+        "country": {
+          "descriptor": "Lorem ipsum dolor sit ame"
+        },
+        "id": "string",
+        "descriptor": "Lorem ipsum dolor sit ame"
+      },
+      "businessTitle": "Sample Business Title",
+      "worker": {
+        "descriptor": "Lorem ipsum dolor sit ame",
+        "id": "string"
+      },
+      "supervisoryOrganization": {
+        "descriptor": "Lorem ipsum dolor sit ame",
+        "id": "string"
+      },
+      "nextPayPeriodStartDate": "2020-01-27T16:00:00.000Z",
+      "jobType": {
+        "descriptor": "Lorem ipsum dolor sit ame"
+      },
+      "jobProfile": {
+        "descriptor": "Lorem ipsum dolor sit ame",
+        "id": "string"
+      },
+      "descriptor": "Lorem ipsum dolor sit ame",
+      "id": "1"
+    },
+    {
+      "location": {
+        "country": {
+          "descriptor": "Lorem ipsum dolor sit ame"
+        },
+        "id": "string",
+        "descriptor": "Lorem ipsum dolor sit ame"
+      },
+      "businessTitle": "Sample Business Title",
+      "worker": {
+        "descriptor": "Lorem ipsum dolor sit ame",
+        "id": "string"
+      },
+      "supervisoryOrganization": {
+        "descriptor": "Lorem ipsum dolor sit ame",
+        "id": "string"
+      },
+      "nextPayPeriodStartDate": "2020-01-27T16:00:00.000Z",
+      "jobType": {
+        "descriptor": "Lorem ipsum dolor sit ame"
+      },
+      "jobProfile": {
+        "descriptor": "Lorem ipsum dolor sit ame",
+        "id": "string"
+      },
+      "descriptor": "Lorem ipsum dolor sit ame",
+      "id": "2"
+    },
+    {
+      "location": {
+        "country": {
+          "descriptor": "Lorem ipsum dolor sit ame"
+        },
+        "id": "string",
+        "descriptor": "Lorem ipsum dolor sit ame"
+      },
+      "businessTitle": "Sample Business Title",
+      "worker": {
+        "descriptor": "Lorem ipsum dolor sit ame",
+        "id": "string"
+      },
+      "supervisoryOrganization": {
+        "descriptor": "Lorem ipsum dolor sit ame",
+        "id": "string"
+      },
+      "nextPayPeriodStartDate": "2020-01-27T16:00:00.000Z",
+      "jobType": {
+        "descriptor": "Lorem ipsum dolor sit ame"
+      },
+      "jobProfile": {
+        "descriptor": "Lorem ipsum dolor sit ame",
+        "id": "string"
+      },
+      "descriptor": "Lorem ipsum dolor sit ame",
+      "id": "3"
+    }
+  ],
+  "total": 0
+}

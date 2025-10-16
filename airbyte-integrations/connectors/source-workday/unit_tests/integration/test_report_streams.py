@@ -6,7 +6,7 @@ from unittest import TestCase
 
 import jsonschema
 from config_builder import ConfigBuilder
-from source_workday.source import SourceWorkday
+from unit_tests.conftest import get_source
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
@@ -59,7 +59,7 @@ class TestReports(TestCase):
     def test_read_reports(self, http_mocker: HttpMocker):
         for report in ["report_1", "report_2"]:
             self.mock_requests(http_mocker, report)
-            output = read(SourceWorkday(), self.config(report), self.catalog(report))
+            output = read(get_source(self.config(report)), self.config(report), self.catalog(report))
             assert len(output.records) == 3
 
     @HttpMocker()
@@ -69,7 +69,7 @@ class TestReports(TestCase):
             ("report_2", "Job_Family_Group_for_Job_Family"),
         ]:
             self.mock_requests(http_mocker, report)
-            output = read(SourceWorkday(), self.config(report), self.catalog(report))
+            output = read(get_source(self.config(report)), self.config(report), self.catalog(report))
 
             assert len(output.records) == 3
 
@@ -83,7 +83,7 @@ class TestReports(TestCase):
         for report in ["report_1", "report_2"]:
             self.mock_schema_request(http_mocker, report)
 
-            output = discover(SourceWorkday(), self.config(report))
+            output = discover(get_source(self.config(report)), self.config(report))
             assert output.catalog.catalog
 
             stream_names = [stream.name for stream in output.catalog.catalog.streams]
@@ -99,7 +99,7 @@ class TestReports(TestCase):
             self.mock_requests(http_mocker, report)
             stream_schema = self.get_expected_json_schema(report)
 
-            output = read(SourceWorkday(), self.config(report), self.catalog(report))
+            output = read(get_source(self.config(report)), self.config(report), self.catalog(report))
 
             assert len(output.records) == 3
 

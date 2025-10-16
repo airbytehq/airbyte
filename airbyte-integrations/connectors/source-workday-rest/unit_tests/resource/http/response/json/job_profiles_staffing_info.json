@@ -1,0 +1,20 @@
+{
+  "data": [
+    {
+      "inactive": true,
+      "name": "Lorem ipsum dolor sit amet, cum choro singulis consectetuer ut, ubique iisque contentiones ex duo. Quo lorem etiam eu.",
+      "id": "1"
+    },
+    {
+      "inactive": true,
+      "name": "Lorem ipsum dolor sit amet, cum choro singulis consectetuer ut, ubique iisque contentiones ex duo. Quo lorem etiam eu.",
+      "id": "2"
+    },
+    {
+      "inactive": true,
+      "name": "Lorem ipsum dolor sit amet, cum choro singulis consectetuer ut, ubique iisque contentiones ex duo. Quo lorem etiam eu.",
+      "id": "3"
+    }
+  ],
+  "total": 3
+}
