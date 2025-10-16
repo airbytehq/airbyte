@@ -10,6 +10,10 @@ When you upgrade your Self-Managed instance of Airbyte to a version with a break
 
 ## Self-Managed Community
 
+### 1.8.x to 2.0.x
+
+- If you deploy with abctl, version 2.0 requires abctl version 0.30.2 or later. [Upgrade to version 0.30.2 or later](/platform/operator-guides/upgrading-airbyte#upgrade-abctl) before deploying Airbyte version 2.0.
+
 ### 1.7.x to 1.8.x
 
 - Airbyte no longer publishes a `webapp` image and it's no longer independently deployable. To mitigate this, complete 1.7 ingress update.

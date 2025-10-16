@@ -8,6 +8,7 @@ import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.load.check.CheckIntegrationTest
 import io.airbyte.cdk.load.check.CheckTestConfig
 import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.CONFIG_WITH_AUTH_STAGING
+import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.CONFIG_WITH_AUTH_STAGING_IGNORE_CASING
 import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.getConfig
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeSpecification
 import java.util.concurrent.TimeUnit
@@ -20,6 +21,10 @@ class SnowflakeCheckTest :
             listOf(
                 CheckTestConfig(
                     configContents = getConfig(CONFIG_WITH_AUTH_STAGING),
+                    featureFlags = setOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT),
+                ),
+                CheckTestConfig(
+                    configContents = getConfig(CONFIG_WITH_AUTH_STAGING_IGNORE_CASING),
                     featureFlags = setOf(FeatureFlag.AIRBYTE_CLOUD_DEPLOYMENT),
                 ),
             ),
