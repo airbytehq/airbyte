@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.source.datagen.flavor.increment
 
-import io.airbyte.cdk.data.LongCodec
+import io.airbyte.cdk.data.IntCodec
 import io.airbyte.cdk.output.sockets.FieldValueEncoder
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.integrations.source.datagen.IntegerFieldType
@@ -17,7 +17,7 @@ class IncrementDataGenerator() : DataGenerator {
         val recordData: NativeRecordPayload = mutableMapOf()
 
         recordData["id"] =
-            FieldValueEncoder(incrementedID, IntegerFieldType.jsonEncoder as LongCodec)
+            FieldValueEncoder(incrementedID.toInt(), IntegerFieldType.jsonEncoder as IntCodec)
 
         return recordData
     }
