@@ -124,7 +124,7 @@ class PostgresAirbyteClient(
         dataSource.connection.use { connection ->
             val copyManager = connection.unwrap(org.postgresql.core.BaseConnection::class.java)
                 .getCopyAPI()
-            val sql = sqlGenerator.copyFromCsv(tableName, filePath)
+            val sql = sqlGenerator.copyFromCsv(tableName)
             java.io.FileInputStream(filePath).use { fileInputStream ->
                 copyManager.copyIn(sql, fileInputStream)
             }
@@ -132,5 +132,5 @@ class PostgresAirbyteClient(
     }
 
     internal fun execute(query: String) =
-        dataSource.connection.use { connection -> connection.createStatement().executeQuery(query) }
+        dataSource.connection.use { connection -> connection.createStatement().execute(query) }
 }
