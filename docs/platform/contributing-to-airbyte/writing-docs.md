@@ -218,46 +218,46 @@ Certain Airbyte products reserve some platform features. To avoid confusion and 
 
 To enable badges, include `products` in the Markdown metadata. The following values are possible, and you can combine them as needed.
 
-**Badge display:** all 5 badges always appear in order - {{product_name_sm_oss}}, {{product_name_cloud_standard}}, {{product_name_cloud_pro}}, {{product_name_cloud_enterprise}}, {{product_name_sm_enterprise}}. Available badges appear highlighted, unavailable badges appear grayed out.
+**Badge display:** all 5 badges always appear in order - Core, Standard, Pro, Enterprise Flex, Self-Managed Enterprise. Available badges appear highlighted, unavailable badges appear grayed out.
 
 **Metadata keys:**
 
-- `all`: {{product_name_sm_oss}}, {{product_name_sm_enterprise}}, and {{product_name_cloud_standard}} - doesn't include {{product_name_cloud_pro}}, {{product_name_cloud_enterprise}}, or Embedded
-- `oss-community`: {{product_name_sm_oss}} only
-- `oss-enterprise`: {{product_name_sm_enterprise}} only
-- `cloud`: {{product_name_cloud_standard}} only (also enables {{product_name_cloud_pro}} and {{product_name_cloud_enterprise}} due to Cloud tier inheritance)
-- `cloud-teams`: {{product_name_cloud_pro}} only (also enables {{product_name_cloud_enterprise}} due to Cloud tier inheritance)
-- `enterprise-flex`: {{product_name_cloud_enterprise}} only
+- `all`: Core, Self-Managed Enterprise, and Standard - doesn't include Pro, Enterprise Flex, or Embedded
+- `oss-community`: Core only
+- `oss-enterprise`: Self-Managed Enterprise only
+- `cloud`: Standard only (also enables Pro and Enterprise Flex due to Cloud tier inheritance)
+- `cloud-teams`: Pro only (also enables Enterprise Flex due to Cloud tier inheritance)
+- `enterprise-flex`: Enterprise Flex only
 - `embedded`: Embedded only (hidden if not specified - there is no off state for the Embedded badge)
 
 **Cloud tier inheritance:** higher Cloud plans automatically inherit availability from lower tiers:
 
-- If you specify `cloud`: {{product_name_cloud_standard}}, {{product_name_cloud_pro}}, and {{product_name_cloud_enterprise}} badges all become enabled
-- If you specify `cloud-teams`: {{product_name_cloud_pro}} and {{product_name_cloud_enterprise}} badges become enabled - {{product_name_cloud_standard}} turns off
-- If you specify `enterprise-flex`: Only {{product_name_cloud_enterprise}} badge becomes enabled
+- If you specify `cloud`: Standard, Pro, and Enterprise Flex badges all become enabled
+- If you specify `cloud-teams`: Pro and Enterprise Flex badges become enabled - Standard turns off
+- If you specify `enterprise-flex`: Only Enterprise Flex badge becomes enabled
 
-**Self-managed plans** {{product_name_sm_oss}} and {{product_name_sm_enterprise}} don't inherit from each other.
+**Self-managed plans** Core and Self-Managed Enterprise don't inherit from each other.
 
-In this example, the {{product_name_sm_oss}} badge appears highlighted, and all other badges appear grayed out.
+In this example, the Core badge appears highlighted, and all other badges appear grayed out.
 
 ```markdown
 ---
 products: oss-community
 ---
 
-# This topic is only for {{product_name_sm_oss}}
+# This topic is only for Core
 
 Some text.
 ```
 
-In this example, {{product_name_cloud_pro}}, and {{product_name_cloud_enterprise}} badges appear highlighted due to Cloud tier inheritance, while {{product_name_sm_oss}}, {{product_name_cloud_standard}}, and {{product_name_sm_enterprise}} badges appear grayed out.
+In this example, Pro, and Enterprise Flex badges appear highlighted due to Cloud tier inheritance, while Core, Standard, and Self-Managed Enterprise badges appear grayed out.
 
 ```markdown
 ---
 products: cloud-teams, enterprise-flex, oss-enterprise
 ---
 
-# This topic is for {{product_name_cloud_pro}}, {{product_name_cloud_enterprise}}, and {{product_name_sm_enterprise}}
+# This topic is for Pro, Enterprise Flex, and Self-Managed Enterprise
 
 Some text.
 ```

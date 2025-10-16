@@ -3,7 +3,7 @@ description: Start triggering Airbyte jobs with Apache Airflow in minutes
 products: oss-*
 ---
 
-# Using the Airbyte Operator to orchestrate Airbyte {{product_name_sm_oss}}
+# Using the Airbyte Operator to orchestrate Airbyte Core
 
 Airbyte is an official community provider for the Apache Airflow project. The Airbyte operator allows you to trigger Airbyte self-managed synchronization jobs from Apache Airflow, and this article walks you through configuring your Airflow DAG to do so.
 

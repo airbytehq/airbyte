@@ -6,9 +6,9 @@ sidebar_label: Deploy a data plane with Helm
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Deploy a data plane with Helm in {{product_name_cloud_enterprise}}
+# Deploy a data plane with Helm in Enterprise Flex
 
-Airbyte {{product_name_cloud_enterprise}} customers can use Airbyte's public API to define regions and create independent data planes that operate in those regions. This ensures you're satisfying your data residency and governance requirements with a single Airbyte Cloud deployment, and it can help you reduce data egress costs with cloud providers.
+Airbyte Enterprise Flex customers can use Airbyte's public API to define regions and create independent data planes that operate in those regions. This ensures you're satisfying your data residency and governance requirements with a single Airbyte Cloud deployment, and it can help you reduce data egress costs with cloud providers.
 
 ![Stylized diagram showing a control plane above multiple data planes in different global regions](img/data-planes.png)
 
@@ -61,7 +61,7 @@ For a production-ready deployment of self-managed data planes, you require the f
 </TabItem>
 </Tabs>
 
-A few notes on Kubernetes cluster provisioning for self-managed data planes and Airbyte {{product_name_cloud_enterprise}}:
+A few notes on Kubernetes cluster provisioning for self-managed data planes and Airbyte Enterprise Flex:
 
 - We support Amazon Elastic Kubernetes Service (EKS) on EC2, Google Kubernetes Engine (GKE) on Google Compute Engine (GCE), or Azure Kubernetes Service (AKS) on Azure.
 - While we support GKE Autopilot, we do not support Amazon EKS on Fargate.

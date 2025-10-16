@@ -6,7 +6,7 @@ sidebar_label: Deploy a data plane with Airbox
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Deploy a data plane with Airbox in {{product_name_cloud_enterprise}}
+# Deploy a data plane with Airbox in Enterprise Flex
 
 Airbox is Airbyte's command line tool for managing Airbyte data planes on Kubernetes. It's the ideal way to deploy and manage data planes for teams that have limited Kubernetes expertise or don't want to deploy with Helm.
 
@@ -18,7 +18,7 @@ Before you begin, ensure you satisfy all of these requirements.
 
 ### Subscription and permission requirements
 
-- An active subscription to Airbyte {{product_name_cloud_enterprise}}
+- An active subscription to Airbyte Enterprise Flex
 - You must be an organization Admin to manage data planes
 
 ### Infrastructure requirements
@@ -90,7 +90,7 @@ After you enter your client ID and client secret, configure Airbox to access you
     airbox config init
     ```
 
-2. Select **{{product_name_cloud_enterprise}}** and press <kbd>Enter</kbd>
+2. Select **Enterprise Flex** and press <kbd>Enter</kbd>
 
 ## Part 5: Authenticate with Airbyte
 

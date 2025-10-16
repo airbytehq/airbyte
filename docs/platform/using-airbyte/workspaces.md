@@ -84,4 +84,4 @@ If you have multiple workspaces in the same organization, you can switch between
 
 ## Managing roles
 
-See [Role based access control](../access-management/rbac) to learn more about the different roles available. If you're on the Cloud {{product_name_cloud_standard}} plan, all users are admins.
+See [Role based access control](../access-management/rbac) to learn more about the different roles available. If you're on the Cloud Standard plan, all users are admins.

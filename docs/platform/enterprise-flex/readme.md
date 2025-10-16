@@ -5,9 +5,9 @@ products: enterprise-flex
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# {{product_name_cloud_enterprise}}
+# Enterprise Flex
 
-Airbyte {{product_name_cloud_enterprise}} is a hybrid solution that consists of a fully managed Cloud control plane that supports separate data planes that run in your own infrastructure. It's ideal for organizations with data sovereignty and compliance requirements who need to carefully manage data movement while also minimizing the time and effort needed to self-manage Airbyte.
+Airbyte Enterprise Flex is a hybrid solution that consists of a fully managed Cloud control plane that supports separate data planes that run in your own infrastructure. It's ideal for organizations with data sovereignty and compliance requirements who need to carefully manage data movement while also minimizing the time and effort needed to self-manage Airbyte.
 
 ## Overview
 
@@ -21,7 +21,7 @@ Many organizations collect data in all types of operational systems from users a
 
 While these requirements are critical, organizations also have finite time and expertise. Managing these operational and compliance requirements with more infrastructure often means increased maintenance commitments, higher spend, and greater complexity.
 
-{{product_name_cloud_enterprise}} addresses these needs by offering fully managed Cloud workspaces (a control plane) that connect to separate data planes you manage in your own infrastructure. You can also use fully managed data planes for less sensitive data that doesn't need to remain in your own infrastructure. Each Cloud workspace uses one region and data plane, so a single Airbyte instance with multiple workspaces is an ideal way to segregate data and connections. {{product_name_cloud_enterprise}} also supports other enterprise-grade abilities such as audit logging, external secrets managers, and AWS PrivateLink connectivity in addition to all other features in Cloud {{product_name_cloud_pro}}.
+Enterprise Flex addresses these needs by offering fully managed Cloud workspaces (a control plane) that connect to separate data planes you manage in your own infrastructure. You can also use fully managed data planes for less sensitive data that doesn't need to remain in your own infrastructure. Each Cloud workspace uses one region and data plane, so a single Airbyte instance with multiple workspaces is an ideal way to segregate data and connections. Enterprise Flex also supports other enterprise-grade abilities such as audit logging, external secrets managers, and AWS PrivateLink connectivity in addition to all other features in Cloud Pro.
 
 | Feature             | Description                                                                                                                                                             |
 | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -35,15 +35,15 @@ While these requirements are critical, organizations also have finite time and e
 | AWS PrivateLink     | Connect to data sources or destinations in your VPC securely to Airbyte data planes.                                                                                    |
 | Support with SLAs   | [Priority assistance](https://docs.airbyte.com/operator-guides/contact-support/#airbyte-enterprise-self-hosted-support) with deploying, managing and upgrading Airbyte. |
 
-### {{product_name_cloud_enterprise}} versus {{product_name_cloud_pro}}
+### Enterprise Flex versus Pro
 
-{{product_name_cloud_enterprise}} includes all features that are standard in {{product_name_cloud_pro}} with the additional capabilities of running self-managed data planes, referencing your own secrets manager, and storing audit logs.
+Enterprise Flex includes all features that are standard in Pro with the additional capabilities of running self-managed data planes, referencing your own secrets manager, and storing audit logs.
 
-Any Airbyte Cloud environment can be easily upgraded to {{product_name_cloud_enterprise}}. To learn more about upgrading to {{product_name_cloud_enterprise}}, [talk to sales](https://airbyte.com/company/talk-to-sales).
+Any Airbyte Cloud environment can be easily upgraded to Enterprise Flex. To learn more about upgrading to Enterprise Flex, [talk to sales](https://airbyte.com/company/talk-to-sales).
 
 ## An example hybrid deployment
 
-Every organization's precise needs differ, so you can implement {{product_name_cloud_enterprise}} in the way that suits you best. In this example, you have three workspaces.
+Every organization's precise needs differ, so you can implement Enterprise Flex in the way that suits you best. In this example, you have three workspaces.
 
 - Workspace 1 contains non-sensitive data and uses Airbyte's fully managed European region.
 

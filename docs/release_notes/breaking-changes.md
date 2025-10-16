@@ -8,7 +8,7 @@ Occasionally, new versions of Airbyte introduce breaking changes. This page inve
 
 When you upgrade your Self-Managed instance of Airbyte to a version with a breaking change, you may need to take mitigating action. If you are upgrading multiple versions at once, complete the mitigaton steps for the versions you are skipping as well.
 
-## {{product_name_sm_oss}}
+## Core
 
 ### 1.7.x to 1.8.x
 
@@ -18,7 +18,7 @@ When you upgrade your Self-Managed instance of Airbyte to a version with a break
 
 - Airbyte began removing the `webapp` service and moving its functions to `server`. To mitigate this, [update your ingress](/platform/deploying-airbyte/integrations/ingress-1-7)
 
-## {{product_name_sm_enterprise}}
+## Self-Managed Enterprise
 
 ### 1.7.x to 1.8.x
 

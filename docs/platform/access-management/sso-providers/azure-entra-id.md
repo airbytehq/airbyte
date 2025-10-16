@@ -20,7 +20,7 @@ This guide is for administrators. It assumes you have:
 
 The exact process differs between the Cloud or Self-Managed versions of Airbyte. Steps for both are below.
 
-## Cloud {{product_name_cloud_pro}} with Entra ID OIDC
+## Cloud Pro with Entra ID OIDC
 
 :::warning
 For security purposes, Airbyte disables existing [applications](/platform/enterprise-setup/api-access-config) used to access the Airbyte API once the user who owns the application signs in with SSO for the first time. Replace any Application secrets that were previously in use to ensure your integrations don't break.
@@ -110,7 +110,7 @@ If you successfully set up SSO, but your users can't log into Airbyte, verify th
 
 To prevent a situation where you could lock yourself out of Airbyte, we require that you contact Airbyte's [support team](https://support.airbyte.com) if you need to change or remove SSO in your Cloud organization.
 
-## {{product_name_sm_enterprise}} with Entra ID OIDC
+## Self-Managed Enterprise with Entra ID OIDC
 
 ### Create application
 
@@ -139,18 +139,18 @@ Depending on the default "Admin consent require' value for your organization you
 
 ### Setup information needed
 
-Once your Microsoft Entra ID app is set up, you're ready to deploy Airbyte {{product_name_sm_enterprise}} with SSO. Take note of the following configuration values, as you will need them to configure Airbyte to use your new SSO app integration:
+Once your Microsoft Entra ID app is set up, you're ready to deploy Airbyte Self-Managed Enterprise with SSO. Take note of the following configuration values, as you will need them to configure Airbyte to use your new SSO app integration:
 
     * OpenID Connect metadata document: You'll find this in the list of endpoints found in the **Endpoints** panel, which you can open from the top bar of the **Overview** page. This will be used to populate the `Domain` field in your `values.yaml`.
     * App Integration Name: The name of the Entra ID application created in the first step.
     * Client ID: You'll find this in the **Essentials** section on the **Overview** page of the application you created.
     * Client Secret: The client secret you copied in the previous step.
 
-Use this information to configure the auth details of your `values.yaml` for your {{product_name_sm_enterprise}} deployment. To learn more on deploying {{product_name_sm_enterprise}}, see the [implementation guide](/platform/enterprise-setup/implementation-guide).
+Use this information to configure the auth details of your `values.yaml` for your Self-Managed Enterprise deployment. To learn more on deploying Self-Managed Enterprise, see the [implementation guide](/platform/enterprise-setup/implementation-guide).
 
-## {{product_name_sm_enterprise}} with Entra ID Generic OIDC
+## Self-Managed Enterprise with Entra ID Generic OIDC
 
-To set up single sign on for Airbyte {{product_name_sm_enterprise}}, complete the following steps.
+To set up single sign on for Airbyte Self-Managed Enterprise, complete the following steps.
 
 - [Create an Entra ID application for Airbyte](#sme-entra-id-app)
 - [Create client credentials](#sme-credentials)

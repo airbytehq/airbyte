@@ -2,9 +2,8 @@
 # Company vocabulary
 #
 
-Airbyte
-Airbyte's
-Cloud
+Airbyte('s)?
+[Cc]loud
 abctl
 Airbox
 PyAirbyte
@@ -15,6 +14,13 @@ Low-Code CDK
 Connection Timeline
 Embedded
 Airbyte Embedded
+Sonar
+Core
+Standard
+Plus
+Pro
+Enterprise Flex
+Self-Managed Enterprise
 
 #
 # Common terms Airbyte uses
@@ -119,6 +125,7 @@ datetime
 workspace's
 
 # Never lint Docusaurus admonitions markup
+
 :::
 :::note
 :::tip

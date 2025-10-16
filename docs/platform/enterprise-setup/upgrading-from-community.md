@@ -7,13 +7,13 @@ import TabItem from '@theme/TabItem';
 
 # Existing Instance Upgrades
 
-This page supplements the [{{product_name_sm_enterprise}} implementation guide](./implementation-guide.md). It highlights the steps to take if you are currently using Airbyte {{product_name_sm_oss}}, our free open source offering, and are ready to upgrade to [Airbyte {{product_name_sm_enterprise}}](./README.md).
+This page supplements the [Self-Managed Enterprise implementation guide](./implementation-guide.md). It highlights the steps to take if you are currently using Airbyte Core, our free open source offering, and are ready to upgrade to [Airbyte Self-Managed Enterprise](./README.md).
 
 A valid license key is required to get started with Airbyte Enterprise. [Talk to sales](https://airbyte.com/company/talk-to-sales) to receive your license key.
 
 These instructions are for you if:
 
-- You want your {{product_name_sm_enterprise}} instance to inherit state from your existing deployment.
+- You want your Self-Managed Enterprise instance to inherit state from your existing deployment.
 - You are currently deploying Airbyte on Kubernetes.
 - You are comfortable with an in-place upgrade. This guide does not dual-write to a new Airbyte deployment.
 
@@ -28,13 +28,13 @@ You must first update to the latest Open Source Community release. We assume you
 helm upgrade [RELEASE_NAME] airbyte/airbyte
 ```
 
-### Step 2: Configure {{product_name_sm_enterprise}}
+### Step 2: Configure Self-Managed Enterprise
 
-Update your `values.yaml` file as explained in the [{{product_name_sm_enterprise}} implementation guide](./implementation-guide.md). Avoid making any changes to your external database or log storage configuration at this time.
+Update your `values.yaml` file as explained in the [Self-Managed Enterprise implementation guide](./implementation-guide.md). Avoid making any changes to your external database or log storage configuration at this time.
 
-### Step 3: Deploy {{product_name_sm_enterprise}}
+### Step 3: Deploy Self-Managed Enterprise
 
-1. You can now run the following command to upgrade your instance to {{product_name_sm_enterprise}}. If you previously included additional `values` files on your existing deployment, be sure to add these here as well:
+1. You can now run the following command to upgrade your instance to Self-Managed Enterprise. If you previously included additional `values` files on your existing deployment, be sure to add these here as well:
 
     <Tabs groupId="helm-chart-version">
     <TabItem value='helm-1' label='Helm chart V1' default>
@@ -62,7 +62,7 @@ Update your `values.yaml` file as explained in the [{{product_name_sm_enterprise
     </TabItem>
     </Tabs>
 
-2. Once this is complete, you need to upgrade your ingress to include the new `/auth` path. The following is a skimmed down definition of an ingress resource you could use for {{product_name_sm_enterprise}}:
+2. Once this is complete, you need to upgrade your ingress to include the new `/auth` path. The following is a skimmed down definition of an ingress resource you could use for Self-Managed Enterprise:
 
 <details>
 <summary>Configuring your Airbyte ingress</summary>

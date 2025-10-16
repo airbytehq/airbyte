@@ -8,9 +8,9 @@ import ContainerProviders from '@site/static/_docker_image_registries.md';
 
 # Implementation Guide
 
-Once you [have a license key](https://airbyte.com/company/talk-to-sales), you can deploy [{{product_name_sm_enterprise}}](./README.md) using the following instructions.
+Once you [have a license key](https://airbyte.com/company/talk-to-sales), you can deploy [Self-Managed Enterprise](./README.md) using the following instructions.
 
-Airbyte {{product_name_sm_enterprise}} must be deployed using Kubernetes. This is to enable Airbyte's best performance and scale. The core Airbyte components (`server`, `workload-launcher`) run as deployments. The `workload-launcher` is responsible for managing connector-related pods (`check`, `discover`, `read`, `write`, `orchestrator`).
+Airbyte Self-Managed Enterprise must be deployed using Kubernetes. This is to enable Airbyte's best performance and scale. The core Airbyte components (`server`, `workload-launcher`) run as deployments. The `workload-launcher` is responsible for managing connector-related pods (`check`, `discover`, `read`, `write`, `orchestrator`).
 
 :::note
 Airbyte has begun rolling out a new Helm chart called Helm chart V2. The instructions on this page describe both V1 and V2 requirements. Airbyte recommends using Helm chart V2 from the start. The new chart will become mandatory in the future and you can avoid having to upgrade later.
@@ -20,11 +20,11 @@ Airbyte has begun rolling out a new Helm chart called Helm chart V2. The instruc
 
 ### Infrastructure Prerequisites
 
-For a production-ready deployment of {{product_name_sm_enterprise}}, the following infrastructure components are required. Deploy to Amazon EKS or Google Kubernetes Engine. The following diagram illustrates a typical Airbyte deployment running on AWS:
+For a production-ready deployment of Self-Managed Enterprise, the following infrastructure components are required. Deploy to Amazon EKS or Google Kubernetes Engine. The following diagram illustrates a typical Airbyte deployment running on AWS:
 
 ![AWS Architecture Diagram](./assets/self-managed-enterprise-aws.png)
 
-Prior to deploying {{product_name_sm_enterprise}}, Airbyte recommends having each of the following infrastructure components ready to go. When possible, it's easiest to have all components running in the same [VPC](https://docs.aws.amazon.com/eks/latest/userguide/network_reqs.html). The provided recommendations are for customers deploying to AWS:
+Prior to deploying Self-Managed Enterprise, Airbyte recommends having each of the following infrastructure components ready to go. When possible, it's easiest to have all components running in the same [VPC](https://docs.aws.amazon.com/eks/latest/userguide/network_reqs.html). The provided recommendations are for customers deploying to AWS:
 
 | Component                | Recommendation                                                                                                                                                            |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -34,7 +34,7 @@ Prior to deploying {{product_name_sm_enterprise}}, Airbyte recommends having eac
 | Dedicated Database       | [Amazon RDS Postgres](#configuring-the-airbyte-database) with at least one read replica.                                                                                  |
 | External Secrets Manager | [Amazon Secrets Manager](/platform/operator-guides/configuring-airbyte#secrets) for storing connector secrets.                                                                     |
 
-A few notes on Kubernetes cluster provisioning for Airbyte {{product_name_sm_enterprise}}:
+A few notes on Kubernetes cluster provisioning for Airbyte Self-Managed Enterprise:
 
 - Airbyte supports Amazon Elastic Kubernetes Service (EKS) on EC2, Google Kubernetes Engine (GKE) on Google Compute Engine (GCE), and Azure Kubernetes Service (AKS).
 - Airbyte recommends running Airbyte on memory-optimized instances, such as M7i / M7g instance types.
@@ -81,7 +81,7 @@ kubectl create namespace airbyte
 
 ### Configure Kubernetes Secrets
 
-Sensitive credentials such as AWS access keys are required to be made available in Kubernetes Secrets during deployment. The Kubernetes secret store and secret keys are referenced in your `values.yaml` file. Ensure all required secrets are configured before deploying Airbyte {{product_name_sm_enterprise}}.
+Sensitive credentials such as AWS access keys are required to be made available in Kubernetes Secrets during deployment. The Kubernetes secret store and secret keys are referenced in your `values.yaml` file. Ensure all required secrets are configured before deploying Airbyte Self-Managed Enterprise.
 
 You may apply your Kubernetes secrets by applying the example manifests below to your cluster, or using `kubectl` directly. If your Kubernetes cluster already has permissions to make requests to an external entity via an instance profile, credentials are not required. For example, if your Amazon EKS cluster has been assigned a sufficient AWS IAM role to make requests to AWS S3, you do not need to specify access keys.
 
@@ -224,7 +224,7 @@ Follow these instructions to add the Airbyte helm repository:
 
 1. Inside your `airbyte` directory, create an empty `values.yaml` file.
 
-2. Paste the following into your newly created `values.yaml` file. This is required to deploy Airbyte {{product_name_sm_enterprise}}:
+2. Paste the following into your newly created `values.yaml` file. This is required to deploy Airbyte Self-Managed Enterprise:
 
     ```yaml title="values.yaml"
     global:
@@ -390,11 +390,11 @@ global:
 
 </details>
 
-The following subsections help you customize your deployment to use an external database, log storage, dedicated ingress, and more. To skip this and deploy a minimal, local version of {{product_name_sm_enterprise}}, [jump to Step 3](#step-3-deploy-self-managed-enterprise).
+The following subsections help you customize your deployment to use an external database, log storage, dedicated ingress, and more. To skip this and deploy a minimal, local version of Self-Managed Enterprise, [jump to Step 3](#step-3-deploy-self-managed-enterprise).
 
 #### Configuring the Airbyte Database
 
-For {{product_name_sm_enterprise}} deployments, you must use a dedicated database instance for better reliability and backups, such as AWS RDS or GCP Cloud SQL. Don't use the default internal Postgres database, `airbyte/db`, that Airbyte spins up within the Kubernetes cluster.
+For Self-Managed Enterprise deployments, you must use a dedicated database instance for better reliability and backups, such as AWS RDS or GCP Cloud SQL. Don't use the default internal Postgres database, `airbyte/db`, that Airbyte spins up within the Kubernetes cluster.
 
 We assume in the following that you've already configured a Postgres instance:
 
@@ -476,7 +476,7 @@ global:
 
 #### Configuring External Logging
 
-For {{product_name_sm_enterprise}} deployments, spin up standalone log storage for additional reliability using tools such as S3 and GCS. Don't use the default internal Minio storage, `airbyte/minio`. It's then a common practice to configure additional log forwarding from external log storage into your observability tool.
+For Self-Managed Enterprise deployments, spin up standalone log storage for additional reliability using tools such as S3 and GCS. Don't use the default internal Minio storage, `airbyte/minio`. It's then a common practice to configure additional log forwarding from external log storage into your observability tool.
 
 <details>
 <summary>External log storage setup steps</summary>
@@ -941,9 +941,9 @@ global:
 
 You may configure ingress using a load balancer or an API Gateway. We do not currently support most service meshes (such as Istio). If you are having networking issues after fully deploying Airbyte, please verify that firewalls or lacking permissions are not interfering with pod-pod communication. Please also verify that deployed pods have the right permissions to make requests to your external database.
 
-### Step 3: Deploy {{product_name_sm_enterprise}}
+### Step 3: Deploy Self-Managed Enterprise
 
-Install Airbyte {{product_name_sm_enterprise}} on helm using the following command:
+Install Airbyte Self-Managed Enterprise on helm using the following command:
 
 <Tabs groupId="helm-chart-version">
 <TabItem value='helm-1' label='Helm chart V1' default>
@@ -968,14 +968,14 @@ helm install airbyte-enterprise airbyte-v2/airbyte \
 </TabItem>
 </Tabs>
 
-To uninstall {{product_name_sm_enterprise}}, run `helm uninstall airbyte-enterprise`.
+To uninstall Self-Managed Enterprise, run `helm uninstall airbyte-enterprise`.
 
-## Updating {{product_name_sm_enterprise}}
+## Updating Self-Managed Enterprise
 
-Upgrade Airbyte {{product_name_sm_enterprise}} by:
+Upgrade Airbyte Self-Managed Enterprise by:
 
 1. Running `helm repo update`. This pulls an up-to-date version of our helm charts, which is tied to a version of the Airbyte platform.
-2. Re-installing Airbyte {{product_name_sm_enterprise}}:
+2. Re-installing Airbyte Self-Managed Enterprise:
 
     <Tabs groupId="helm-chart-version">
     <TabItem value='helm-1' label='Helm chart V1' default>

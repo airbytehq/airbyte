@@ -7,7 +7,7 @@ import TabItem from '@theme/TabItem';
 
 # Scaling Airbyte After Installation
 
-Once you've completed the initial installation of Airbyte {{product_name_sm_enterprise}}, the next crucial step is scaling your setup as needed to ensure optimal performance and reliability as your data integration needs grow. This guide walks you through best practices and strategies for scaling Airbyte in an enterprise environment.
+Once you've completed the initial installation of Airbyte Self-Managed Enterprise, the next crucial step is scaling your setup as needed to ensure optimal performance and reliability as your data integration needs grow. This guide walks you through best practices and strategies for scaling Airbyte in an enterprise environment.
 
 ## Concurrent Syncs
 
@@ -95,7 +95,7 @@ worker:
 To reduce the blast radius of an underprovisioned Airbyte deployment, place 'static' workloads (`server`, etc.) on one Kubernetes node group, while placing job-related workloads (connector pods) on a different Kubernetes node group. This ensures that UI or API availability is unlikely to be impacted by the number of concurrent syncs.
 
 <details>
-<summary>Configure Airbyte {{product_name_sm_enterprise}} to run in two node groups</summary>
+<summary>Configure Airbyte Self-Managed Enterprise to run in two node groups</summary>
 
 <Tabs groupId="helm-chart-version">
 <TabItem value='helm-1' label='Helm chart V1' default>
@@ -245,7 +245,7 @@ For business-critical applications of Airbyte, you may want to configure a Disas
 
 1. Airbyte strongly recommends configuring an external database, external log storage and external connector secret management.
 
-2. Airbyte strongly recommends that your DR cluster is also an instance of {{product_name_sm_enterprise}}, kept at the same version as your prod instance.
+2. Airbyte strongly recommends that your DR cluster is also an instance of Self-Managed Enterprise, kept at the same version as your prod instance.
 
 ## DEBUG Logs
 

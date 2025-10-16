@@ -2,9 +2,9 @@
 products: oss-enterprise
 ---
 
-# Airbyte {{product_name_sm_enterprise}}
+# Airbyte Self-Managed Enterprise
 
-[Airbyte {{product_name_sm_enterprise}}](https://airbyte.com/product/airbyte-enterprise) is the best way to run Airbyte yourself. You get all 600+ pre-built connectors, data never leaves your environment, and {{product_name_sm_enterprise}} introduces new governance capabilities targeted towards large organizations designed to enhance your data platform’s capabilities and security.
+[Airbyte Self-Managed Enterprise](https://airbyte.com/product/airbyte-enterprise) is the best way to run Airbyte yourself. You get all 600+ pre-built connectors, data never leaves your environment, and Self-Managed Enterprise introduces new governance capabilities targeted towards large organizations designed to enhance your data platform’s capabilities and security.
 
 | Feature             | Description                                                                                                            |
 |---------------------|------------------------------------------------------------------------------------------------------------------------|
@@ -15,9 +15,9 @@ products: oss-enterprise
 | Column Hashing      | Protect sensitive information by hashing personally identifiable information (PII) as it moves through your pipelines. |
 | Support with SLAs   | [Priority assistance](https://docs.airbyte.com/operator-guides/contact-support/#airbyte-enterprise-self-hosted-support) with deploying, managing and upgrading Airbyte.                                                    |
 
-A valid license key is required to get started with Airbyte {{product_name_sm_enterprise}}. [Talk to sales](https://airbyte.com/company/talk-to-sales) to receive your license key. The following pages outline how to:
+A valid license key is required to get started with Airbyte Self-Managed Enterprise. [Talk to sales](https://airbyte.com/company/talk-to-sales) to receive your license key. The following pages outline how to:
 
 1. [Deploy Airbyte Enterprise using Kubernetes](./implementation-guide.md)
-2. [Configure Okta for Single Sign-On (SSO) with Airbyte Self-Managed {{product_name_sm_enterprise}}](/platform/access-management/sso)
+2. [Configure Okta for Single Sign-On (SSO) with Airbyte Self-Managed Self-Managed Enterprise](/platform/access-management/sso)
 
 ![AWS Architecture Diagram](./assets/self-managed-enterprise-aws.png)

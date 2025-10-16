@@ -9,7 +9,7 @@ import { faWindows } from "@fortawesome/free-brands-svg-icons";
 
 # Quickstart
 
-This quickstart guides you through deploying a local instance of Airbyte {{product_name_sm_oss}}, Airbyte's open source product. Setup only takes a few minutes, and you can start moving data immediately.
+This quickstart guides you through deploying a local instance of Airbyte Core, Airbyte's open source product. Setup only takes a few minutes, and you can start moving data immediately.
 
 ## Overview
 

@@ -6,9 +6,9 @@ sidebar_label: Get started
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Get started with {{product_name_cloud_enterprise}}
+# Get started with Enterprise Flex
 
-Any Airbyte Cloud environment can upgrade to {{product_name_cloud_enterprise}}. To learn more about upgrading, [talk to sales](https://airbyte.com/company/talk-to-sales).
+Any Airbyte Cloud environment can upgrade to Enterprise Flex. To learn more about upgrading, [talk to sales](https://airbyte.com/company/talk-to-sales).
 
 You'll likely use a combination of managed and self-managed data planes. Since Airbyte sets up managed data planes for you, they're preferable when they're an option. Limit the use of self-managed data planes only to those connections that require your self-managed infrastructure.
 
@@ -33,9 +33,9 @@ Managed data planes need no additional infrastructure. Begin adding sources, des
 
 ## Self-managed data planes
 
-The following diagram illustrates a typical {{product_name_cloud_enterprise}} deployment running a self-managed data plane.
+The following diagram illustrates a typical Enterprise Flex deployment running a self-managed data plane.
 
-![Airbyte {{product_name_cloud_enterprise}} Architecture Diagram](./img/enterprise-flex-architecture.png)
+![Airbyte Enterprise Flex Architecture Diagram](./img/enterprise-flex-architecture.png)
 
 You can deploy a self-managed data plane in Airbyte two ways.
 
