@@ -2,12 +2,10 @@
 products: all
 ---
 
-# CDC best practices guide
-
-## Overview
+# CDC best practices
 
 This guide provides best practices for configuring and using Change Data Capture (CDC) with Airbyte. While configuration
-explanations are included on our source pages, this guide focuses on how to optimize these settings based on your data
+explanations are included in the docs for each connector, this guide focuses on how to optimize these settings based on your data
 size, activity patterns, and sync requirements.
 
 :::note
@@ -15,18 +13,17 @@ This guide assumes basic familiarity with CDC concepts. For an introduction to h
 [CDC documentation](./cdc).
 :::
 
-## Configuration best practices
+## Source configuration
 
 <details>
-<summary><strong>Initial Waiting Time (Advanced)</strong></summary>
+<summary><strong>Initial Waiting Time </strong></summary>
 
 **What it does:**
 
 - **During the snapshot phase:** Sets the time limit for building the schema structure and capturing baseline data
-- **During CDC incremental:** Determines how long Airbyte waits for new change events, helping to capture delayed
-- changes before timing out
+- **During CDC incremental:** Determines how long Airbyte waits for new change events, helping to capture delayed changes before timing out
 
-**Configuration range:** varies by source (check your source configuration page)
+**Configuration range:** varies by source (check your source configuration page).
 
 **Best practices:**
 
@@ -46,7 +43,7 @@ For high-activity databases with many schemas/tables, you may still need to incr
 </details>
 
 <details>
-<summary><strong>Invalid CDC Position Behavior (Advanced)</strong></summary>
+<summary><strong>Invalid CDC Position Behavior </strong></summary>
 
 **What it does:**
 
@@ -55,12 +52,12 @@ between syncs).
 
 **Available options:**
 
-| Method       | Re-sync Data (Automatic Recovery) | Fail Sync (Manual Intervention) |
-|--------------|-----------------------------------|----------------------------------|
-| **Behavior** | Automatically triggers a full refresh, re-snapshotting the entire database when CDC position is lost | Stops the sync and marks it as failed. No automatic action is taken |
-| **Pros**     | • Fully automated<br/>• Ensures data consistency | • Allows investigation and controlled resolution<br/>• Prevents unexpected resource consumption and costs |
-| **Cons**     | • Time-consuming for large datasets<br/>• Resource-intensive<br/>• Can lead to unexpected costs (compute, database load, writes, transfer) | • Requires manual restart after resolving the issue<br/>• Potential data gaps until resolved |
-| **Best for** | Small datasets, development environments | Production environments, large databases |
+| Method       | Re-sync Data (Automatic Recovery)                                                                                                          | Fail Sync (Manual Intervention)                                                                           |
+|--------------|--------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------|
+| **Behavior** | Automatically triggers a full refresh, re-snapshotting the entire database when CDC position is lost.                                      | Stops the sync and marks it as failed. No automatic action is taken.                                      |
+| **Pros**     | • Fully automated<br/>• Ensures data consistency                                                                                           | • Allows investigation and controlled resolution<br/>• Prevents unexpected resource consumption and costs |
+| **Cons**     | • Time-consuming for large datasets<br/>• Resource-intensive<br/>• Can lead to unexpected costs (compute, database load, writes, transfer) | • Requires manual restart after resolving the issue<br/>• Potential data gaps until resolved              |
+| **Best for** | Small datasets, development environments                                                                                                   | Production environments, large databases                                                                  |
 
 **Recommended approach:**
 
@@ -74,12 +71,11 @@ between syncs).
 </details>
 
 <details>
-<summary><strong> Queue Size (Advanced)</strong></summary>
+<summary><strong> Queue Size </strong></summary>
 
 **What it does:**
 
-Controls the internal buffer size for change events. Determines how many CDC records can be queued in memory before
-processing.
+Controls the internal buffer size for change events. Determines how many CDC records can be queued in memory before processing.
 
 **Impact:**
 
@@ -89,7 +85,7 @@ processing.
 **Best practice:**
 
 :::danger Critical
-Keep this at the default value (10,000). Improper sizing significantly impacts memory consumption, sync efficiency, and
+Keep this at the default value (10,000). Improper sizing impacts memory consumption, sync efficiency, and
 system stability. Only modify this parameter if you have a specific technical reason or have been instructed to do so
 by Airbyte support.
 :::
@@ -97,7 +93,7 @@ by Airbyte support.
 </details>
 
 <details>
-<summary><strong>Initial Load Timeout (Advanced)</strong></summary>
+<summary><strong>Initial Load Timeout </strong></summary>
 
 **What it does:**
 
@@ -107,11 +103,11 @@ hours.**
 
 **Best practices:**
 
-| Database Size | Recommended Timeout | Notes |
-|---------------|---------------------|-------|
-| Small to medium | 8 hours (default) | Sufficient for most databases |
-| Large databases | 12-24 hours | Allows a complete snapshot before CDC streaming |
-| Very large databases | 24 hours | Adjust based on observed snapshot duration |
+| Database Size                  | Recommended Timeout | Notes |
+|--------------------------------|---------------------|-------|
+| Small to medium                | 8 hours (default) | Sufficient for most databases |
+| Large databases                | 12-24 hours | Allows a complete snapshot before CDC streaming |
+| Very large databases (> 50 GB) | 24 hours | Adjust based on observed snapshot duration |
 
 :::tip
 Monitor your first sync's snapshot duration to determine if you need to adjust this value.
@@ -155,13 +151,13 @@ buffer against unexpected delays or maintenance windows.
 :::
 </details>
 
-## Database-Level CDC configuration
+## Database-level CDC configuration
 
 <details>
 <summary><strong> WAL Retention Period </strong></summary>
 
-The WAL retention period determines how long transaction logs are stored before recycling. This is configured at the
-database level, not in Airbyte.
+The WAL retention period determines how long transaction logs are stored before recycling. This is configured in your
+database, not in Airbyte.
 
 **Recommended configuration:**
 
