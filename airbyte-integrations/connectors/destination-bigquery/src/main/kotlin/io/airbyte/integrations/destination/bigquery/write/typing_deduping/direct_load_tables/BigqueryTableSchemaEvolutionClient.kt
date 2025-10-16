@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables
 
 import com.google.cloud.bigquery.BigQuery
-import com.google.cloud.bigquery.QueryJobConfiguration
 import com.google.cloud.bigquery.StandardSQLTypeName
 import com.google.cloud.bigquery.StandardTableDefinition
 import com.google.cloud.bigquery.TableDefinition
@@ -36,7 +35,7 @@ import org.apache.commons.codec.digest.DigestUtils
 private val logger = KotlinLogging.logger {}
 
 @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", "kotlin coroutines")
-class BigqueryDirectLoadNativeTableOperations(
+class BigqueryTableSchemaEvolutionClient(
     private val bigquery: BigQuery,
     private val sqlOperations: TableOperationsClient,
     private val databaseHandler: BigQueryDatabaseHandler,

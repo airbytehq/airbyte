@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables
 
 import com.google.cloud.bigquery.BigQuery
@@ -21,7 +25,7 @@ class BigqueryTableOperationsClient(
     private val generator: DirectLoadSqlGenerator,
     private val handler: DatabaseHandler,
     private val bigquery: BigQuery,
-): TableOperationsClient {
+) : TableOperationsClient {
     override suspend fun createTable(
         stream: DestinationStream,
         tableName: TableName,
