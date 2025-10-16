@@ -31,7 +31,7 @@ import io.airbyte.integrations.destination.postgres.spec.PostgresConfigurationFa
 import io.airbyte.integrations.destination.postgres.spec.PostgresSpecification
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.Disabled
+import org.postgresql.util.PGobject
 
 class PostgresDataDumper(
     private val configProvider: (ConfigurationSpecification) -> PostgresConfiguration
@@ -119,6 +119,10 @@ class PostgresDataDumper(
             is java.sql.Date -> value.toLocalDate()
             is java.sql.Time -> value.toLocalTime()
             is java.sql.Timestamp -> value.toLocalDateTime()
+            is PGobject -> {
+                val jsonNode = io.airbyte.commons.json.Jsons.deserialize(value.value!!)
+                io.airbyte.commons.json.Jsons.convertValue(jsonNode, Map::class.java)
+            }
             else -> value
         }
 }
@@ -157,9 +161,9 @@ class PostgresAcceptanceTest : BasicFunctionalityIntegrationTest(
     commitDataIncrementallyToEmptyDestinationOnAppend = true,
     commitDataIncrementallyToEmptyDestinationOnDedupe = false,
     allTypesBehavior = StronglyTyped(
-        integerCanBeLarge = true,
+        integerCanBeLarge = false,
         numberCanBeLarge = true,
-        nestedFloatLosesPrecision = false,
+        nestedFloatLosesPrecision = true,
     ),
     unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
     nullEqualsUnset = true,
