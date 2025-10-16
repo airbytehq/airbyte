@@ -52,8 +52,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
         }
         val columnNameMapping = ColumnNameMapping(
             mapOf(
-                "sourceId" to "targetId",
-                "sourceName" to "targetName"
+                "sourceId" to "targetId"
             )
         )
         val tableName = TableName(namespace = "namespace", name = "name")
@@ -74,7 +73,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             "_airbyte_meta" jsonb NOT NULL,
             "_airbyte_generation_id" bigint NOT NULL,
             "targetId" varchar,
-            "targetName" varchar
+            "sourceName" varchar
             );
             COMMIT;
             """.trimIndent()
