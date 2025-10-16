@@ -8,12 +8,16 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
 import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.ObjectValue
+import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
+import io.airbyte.cdk.load.test.util.ExpectedRecordMapper
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
@@ -32,6 +36,31 @@ import io.airbyte.integrations.destination.postgres.spec.PostgresSpecification
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import org.junit.jupiter.api.BeforeAll
 import org.postgresql.util.PGobject
+
+/**
+ * PostgreSQL normalizes timestamptz values to UTC and doesn't preserve the original timezone offset.
+ * This mapper converts expected timestamp_with_timezone values to UTC for comparison.
+ */
+object PostgresTimestampNormalizationMapper : ExpectedRecordMapper {
+    override fun mapRecord(expectedRecord: OutputRecord, schema: AirbyteType): OutputRecord {
+        val mappedData = normalizeTimestampsToUtc(expectedRecord.data)
+        return expectedRecord.copy(data = mappedData as ObjectValue)
+    }
+
+    private fun normalizeTimestampsToUtc(value: AirbyteValue): AirbyteValue =
+        when (value) {
+            is TimestampWithTimezoneValue ->
+                TimestampWithTimezoneValue(value.value.withOffsetSameInstant(java.time.ZoneOffset.UTC))
+            is ArrayValue -> ArrayValue(value.values.map { normalizeTimestampsToUtc(it) })
+            is ObjectValue ->
+                ObjectValue(
+                    value.values.mapValuesTo(linkedMapOf()) { (_, v) ->
+                        normalizeTimestampsToUtc(v)
+                    }
+                )
+            else -> value
+        }
+}
 
 class PostgresDataDumper(
     private val configProvider: (ConfigurationSpecification) -> PostgresConfiguration
@@ -179,10 +208,12 @@ class PostgresAcceptanceTest : BasicFunctionalityIntegrationTest(
         integerCanBeLarge = false,
         numberCanBeLarge = true,
         nestedFloatLosesPrecision = true,
+        stripsNullBytes = true,
     ),
     unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
     nullEqualsUnset = true,
     configUpdater = PostgresConfigUpdater(),
+    recordMangler = PostgresTimestampNormalizationMapper,
 ) {
     companion object {
         @JvmStatic
