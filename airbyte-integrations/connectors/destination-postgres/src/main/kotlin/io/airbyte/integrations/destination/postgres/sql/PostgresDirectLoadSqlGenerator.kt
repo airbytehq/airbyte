@@ -30,7 +30,6 @@ import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableName
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
-import org.jooq.impl.SQLDataType
 
 internal const val COUNT_TOTAL_ALIAS = "total"
 
