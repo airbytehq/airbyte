@@ -93,6 +93,7 @@ interface TableOperationsSuite {
             }
         } finally {
             harness.cleanupTable(testTable)
+            harness.cleanupNamespace(testNamespace)
         }
     }
 
@@ -126,6 +127,7 @@ interface TableOperationsSuite {
             assertEquals(expectedRecords, resultRecords)
         } finally {
             harness.cleanupTable(testTable)
+            harness.cleanupNamespace(testNamespace)
         }
     }
 
@@ -192,6 +194,7 @@ interface TableOperationsSuite {
             assertEquals(records1.size + records2.size + records3.size, count3?.toInt())
         } finally {
             harness.cleanupTable(testTable)
+            harness.cleanupNamespace(testNamespace)
         }
     }
 
@@ -225,6 +228,7 @@ interface TableOperationsSuite {
             assertEquals(17, result) { "Actual generation id differed from expected." }
         } finally {
             harness.cleanupTable(testTable)
+            harness.cleanupNamespace(testNamespace)
         }
     }
 
@@ -287,6 +291,7 @@ interface TableOperationsSuite {
         } finally {
             harness.cleanupTable(sourceTable)
             harness.cleanupTable(targetTable)
+            harness.cleanupNamespace(testNamespace)
         }
     }
 
@@ -348,6 +353,7 @@ interface TableOperationsSuite {
         } finally {
             harness.cleanupTable(sourceTable)
             harness.cleanupTable(targetTable)
+            harness.cleanupNamespace(testNamespace)
         }
     }
 
@@ -434,6 +440,7 @@ interface TableOperationsSuite {
         } finally {
             harness.cleanupTable(sourceTable)
             harness.cleanupTable(targetTable)
+            harness.cleanupNamespace(testNamespace)
         }
     }
 
