@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 0f1a0659-0239-48a7-bf34-072a5bf2713a
-  dockerImageTag: 0.0.13
+  dockerImageTag: 0.0.14
   dockerRepository: airbyte/source-churnkey
   githubIssueLabel: source-churnkey
   icon: icon.svg
