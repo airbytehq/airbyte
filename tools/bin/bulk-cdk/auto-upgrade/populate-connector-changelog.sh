@@ -3,8 +3,8 @@
 set -euo pipefail
 
 # Adds a new changelog entry for the given connector.
-# Usage: tools/bin/bulk-cdk-auto-upgrade/populate-connector-changelog.sh <connector> <new_connector_version> <pr_number> <changelog_text>
-# E.g.: tools/bin/bulk-cdk-auto-upgrade/populate-connector-changelog.sh destination-dev-null 1.2.3 1234 'upgrade foo'
+# Usage: tools/bin/bulk-cdk/auto-upgrade/populate-connector-changelog.sh <connector> <new_connector_version> <pr_number> <changelog_text>
+# E.g.: tools/bin/bulk-cdk/auto-upgrade/populate-connector-changelog.sh destination-dev-null 1.2.3 1234 'upgrade foo'
 
 connector_id="$1"
 new_version="$2"
