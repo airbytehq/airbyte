@@ -213,6 +213,6 @@ class PostgresDirectLoadSqlGenerator {
 data class ColumnAndType(val columnName: String, val columnTypeName: String, val nullable: Boolean = false) {
     override fun toString(): String {
         val isNullableSuffix = if (nullable) "" else "NOT NULL"
-        return "$columnName $columnTypeName $isNullableSuffix".trim()
+        return "\"$columnName\" $columnTypeName $isNullableSuffix".trim()
     }
 }
