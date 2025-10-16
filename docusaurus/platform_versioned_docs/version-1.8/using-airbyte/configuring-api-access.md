@@ -62,10 +62,10 @@ You can also use the `client_id` and `client_secret` to retrive an access token 
 
   </TabItem>
   <TabItem value="self-managed" label="Self-Managed">
-    Self-Managed users should replace `<YOUR_WEBAPP_URL>` below with the URL used to access the Airbyte UI
+    Self-Managed users should replace `<YOUR_AIRBYTE_URL>` below with the URL used to access the Airbyte UI
 
     ```yml
-    POST <YOUR_WEBAPP_URL>/api/v1/applications/token
+    POST <YOUR_AIRBYTE_URL>/api/v1/applications/token
     ```
 
     Ensure the following JSON Body is attached to the request, populated with your `client_id` and `client_secret`:

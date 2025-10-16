@@ -6,7 +6,7 @@ const sectionHeader = (title) => ({
 
 const buildAConnector = {
   type: "category",
-  label: "Building Connectors",
+  label: "Build connectors",
   link: {
     type: "doc",
     id: "connector-development/README",
@@ -136,8 +136,11 @@ const buildAConnector = {
       ],
     },
     "connector-development/local-connector-development",
+    "connector-development/submit-new-connector",
+    "connector-development/connector-breaking-changes",
     "connector-development/connector-specification-reference",
     "connector-development/partner-certified-destinations",
+    "operator-guides/using-custom-connectors",
     "connector-development/debugging-docker",
     "connector-development/writing-connector-docs",
     "connector-development/schema-reference",
@@ -156,8 +159,6 @@ const contributeToAirbyte = {
   },
   items: [
     "contributing-to-airbyte/issues-and-requests",
-    "contributing-to-airbyte/change-cdk-connector",
-    "contributing-to-airbyte/submit-new-connector",
     "contributing-to-airbyte/developing-locally",
     "contributing-to-airbyte/writing-docs",
     {
@@ -249,7 +250,6 @@ const understandingAirbyte = {
     "understanding-airbyte/beginners-guide-to-catalog",
     "understanding-airbyte/supported-data-types",
     "understanding-airbyte/secrets",
-    "understanding-airbyte/cdc",
     "understanding-airbyte/resumability",
     "understanding-airbyte/json-avro-conversion",
     "understanding-airbyte/schemaless-sources-and-destinations",
@@ -269,7 +269,7 @@ module.exports = {
         id: "readme",
       },
       items: [
-        sectionHeader("Getting Started"),
+        sectionHeader("Get started"),
 
         {
           type: "doc",
@@ -284,10 +284,10 @@ module.exports = {
           type: "doc",
           id: "using-airbyte/getting-started/academy",
         },
-        sectionHeader("Moving and Managing Data"),
+        sectionHeader("Move and manage data"),
         {
           type: "category",
-          label: "Moving data",
+          label: "Move data",
           link: {
             type: "doc",
             id: "move-data/readme",
@@ -355,6 +355,19 @@ module.exports = {
                     "using-airbyte/core-concepts/sync-modes/full-refresh-append",
                     "using-airbyte/core-concepts/sync-modes/full-refresh-overwrite",
                     "using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped",
+                    {
+                      type: "category",
+                      label: "Change Data Capture (CDC)",
+                      link: {
+                        type: "generated-index",
+                        title: "Change Data Capture (CDC)",
+                        description: "Learn about CDC in Airbyte and best practices for configuration.",
+                      },
+                      items: [
+                        "understanding-airbyte/cdc",
+                        "understanding-airbyte/cdc-best-practices",
+                      ],
+                    },
                   ],
                 },
               ],
@@ -370,11 +383,80 @@ module.exports = {
                 "move-data/rejected-records"
               ],
             },
-            "using-airbyte/sync-files-and-records"
+            "using-airbyte/sync-files-and-records",
           ],
-        },        
-        buildAConnector,
-        sectionHeader("Managing Airbyte"),
+        },
+        {
+          type: "category",
+          label: "Organizations and workspaces",
+          link: {
+            type: "doc",
+            id: "organizations-workspaces/readme",
+          },
+          items: [
+            {
+              type: "category",
+              label: "Organizations",
+              link: {
+                type: "doc",
+                id: "organizations-workspaces/organizations/readme",
+              },
+              items: [
+                "organizations-workspaces/organizations/switch-organizations",
+                "cloud/managing-airbyte-cloud/manage-credits",
+              ],
+            },
+            {
+              type: "category",
+              label: "Workspaces",
+              link: {
+                type: "doc",
+                id: "organizations-workspaces/workspaces/readme",
+              },
+              items: [
+                "using-airbyte/workspaces",
+                "cloud/managing-airbyte-cloud/manage-data-residency",
+                "cloud/managing-airbyte-cloud/manage-airbyte-cloud-notifications",
+              ],
+            },
+            {
+              type: "category",
+              label: "Access management",
+              items: [
+                {
+                  type: "category",
+                  label: "Single Sign-On (SSO)",
+                  link: {
+                    type: "doc",
+                    id: "access-management/sso",
+                  },
+                  items: [
+                    {
+                      type: "autogenerated",
+                      dirName: "access-management/sso-providers",
+                    },
+                  ],
+                },
+                {
+                  type: "category",
+                  label: "Role-Based Access Control (RBAC)",
+                  link: {
+                    type: "doc",
+                    id: "access-management/rbac",
+                  },
+                  items: [
+                    {
+                      type: "doc",
+                      id: "access-management/role-mapping",
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },   
+        buildAConnector,     
+        sectionHeader("Deploy and upgrade Airbyte"),
         deployAirbyte,
         {
           type: "category",
@@ -403,7 +485,8 @@ module.exports = {
           },
           items: [
             "enterprise-flex/getting-started",
-            "enterprise-flex/data-plane"
+            "enterprise-flex/data-plane",
+            "enterprise-flex/data-plane-util",
           ],
         },
         {
@@ -425,41 +508,6 @@ module.exports = {
           items: [
             "operator-guides/configuring-connector-resources",
             "operator-guides/telemetry",
-          ],
-        },
-
-        {
-          type: "category",
-          label: "Access Management",
-          items: [
-            {
-              type: "category",
-              label: "Single Sign-On (SSO)",
-              link: {
-                type: "doc",
-                id: "access-management/sso",
-              },
-              items: [
-                {
-                  type: "autogenerated",
-                  dirName: "access-management/sso-providers",
-                },
-              ],
-            },
-            {
-              type: "category",
-              label: "Role-Based Access Control (RBAC)",
-              link: {
-                type: "doc",
-                id: "access-management/rbac",
-              },
-              items: [
-                {
-                  type: "doc",
-                  id: "access-management/role-mapping",
-                },
-              ],
-            },
           ],
         },
         {
@@ -510,18 +558,7 @@ module.exports = {
             "operator-guides/using-orchestra-task",
           ],
         },
-        {
-          type: "category",
-          label: "Account Management",
-          items: [
-            "cloud/managing-airbyte-cloud/manage-data-residency",
-            "using-airbyte/workspaces",
-            "cloud/managing-airbyte-cloud/manage-airbyte-cloud-notifications",
-            "cloud/managing-airbyte-cloud/manage-credits",
-            "operator-guides/using-custom-connectors",
-          ],
-        },
-        sectionHeader("Developer Guides"),
+        sectionHeader("Developer guides"),
         {
           type: "doc",
           id: "api-documentation",
@@ -554,7 +591,7 @@ module.exports = {
         contributeToAirbyte,
         "community/getting-support",
         "community/code-of-conduct",
-        sectionHeader("Product Updates"),
+        sectionHeader("Product updates"),
         {
           type: "link",
           label: "Roadmap",
