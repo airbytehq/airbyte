@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.postgres.write.transform
 
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.IntegerValue
+import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
@@ -51,7 +52,12 @@ class PostgresValueCoercer : ValueCoercer {
     override fun map(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
         value.abValue =
             if (value.type is UnionType || value.type is UnknownType) {
-                StringValue(value.abValue.serializeToString())
+                // Don't serialize null values - keep them as NullValue
+                if (value.abValue is NullValue) {
+                    value.abValue
+                } else {
+                    StringValue(value.abValue.serializeToString())
+                }
             } else {
                 value.abValue
             }
