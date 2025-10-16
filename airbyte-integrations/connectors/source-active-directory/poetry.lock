@@ -1024,6 +1024,21 @@ requests-toolbelt = ">=1.0.0,<2.0.0"
 langsmith-pyo3 = ["langsmith-pyo3 (>=0.1.0rc2,<0.2.0)"]
 
 [[package]]
+name = "ldap3"
+version = "2.9.1"
+description = "A strictly RFC 4510 conforming LDAP V3 pure Python client library"
+optional = false
+python-versions = "*"
+groups = ["main"]
+files = [
+    {file = "ldap3-2.9.1-py2.py3-none-any.whl", hash = "sha256:5869596fc4948797020d3f03b7939da938778a0f9e2009f7a072ccf92b8e8d70"},
+    {file = "ldap3-2.9.1.tar.gz", hash = "sha256:f3e7fc4718e3f09dda568b57100095e0ce58633bcabbed8667ce3f8fbaa4229f"},
+]
+
+[package.dependencies]
+pyasn1 = ">=0.4.6"
+
+[[package]]
 name = "markdown-it-py"
 version = "3.0.0"
 description = "Python port of markdown-it. Markdown parsing, done right!"
@@ -2647,4 +2662,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10,<3.12"
-content-hash = "331f1d9c577dda19a1bbfec0c2f5a32ea501395e78f8a00026756cc19e70c26a"
+content-hash = "3f48ef2ba6dcda53be208f127cc4382de55aad4cafa09115639cd3a41e01d0d5"
