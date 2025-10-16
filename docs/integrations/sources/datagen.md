@@ -13,7 +13,7 @@ No prerequisites are required to use this connector. DataGen generates data loca
 3. On the Set up the source page, select **DataGen** from the Source type dropdown.
 4. Enter a name for your DataGen source.
 5. Configure the data generation settings:
-   - **Data Generation Type**: Choose between **Incremental** or **All Types**.
+   - **Data Generation Type**: Choose either **Incremental** or **All Types**.
    - **Max Record**: Specify the total number of records to generate (minimum 1, maximum 100 billion). Default is 100.
    - **Max Concurrency** (optional): Set the maximum number of concurrent data generators. Leave empty to let Airbyte optimize performance automatically.
 6. Click **Set up source**.
@@ -33,11 +33,11 @@ The connector supports two data generation patterns:
 
 ### Incremental
 
-Generates a single column named `id` that contains monotonically increasing integers. This mode is useful for testing incremental data loading and verifying that data arrives in the expected order.
+Generates a stream named `increment` with a single column named `id` that contains monotonically increasing integers. This mode is useful for testing incremental data loading and verifying that data arrives in the expected order.
 
 ### All types
 
-Generates one column for each Airbyte data type, including string, integer, number, boolean, timestamp, date, time, array, and object types. This mode is useful for testing type handling and schema compatibility across different destinations.
+Generates a stream named `all types` with columns for various Airbyte data types, including id, string, boolean, number, big integer, big decimal, date, time (with and without time zones), timestamp (with and without time zones), and JSON. This mode is useful for testing type handling and schema compatibility across different destinations.
 
 ## Changelog
 
