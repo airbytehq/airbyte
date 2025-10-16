@@ -1,3 +1,9 @@
+## Version 0.1.52
+
+**Load CDK**
+
+Refactor database operations interfaces and establish comprehensive TableOperationsSuite component test suite.
+
 ## Version 0.1.51
 
 Polaris support in the iceberg configuration.
