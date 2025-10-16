@@ -2,11 +2,10 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
-import copy
 import json
 import logging
 import re
-import time
+import threading
 from dataclasses import dataclass
 from itertools import groupby
 from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
@@ -26,6 +25,8 @@ from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+
+from .google_ads import GoogleAds
 
 
 logger = logging.getLogger("airbyte")
@@ -794,15 +795,37 @@ class CustomGAQuerySchemaLoader(SchemaLoader):
     Custom schema loader for custom query streams. Parses the user-provided query to extract the fields and then queries the Google Ads API for each field to retreive field metadata.
     """
 
-    requester: HttpRequester
     config: Config
 
     query: str = ""
     cursor_field: Union[str, InterpolatedString] = ""
 
+    _google_ads_client: Optional[GoogleAds] = None
+    _client_lock = threading.Lock()
+
     def __post_init__(self):
         self._cursor_field = InterpolatedString.create(self.cursor_field, parameters={}) if self.cursor_field else None
         self._validate_query(self.query)
+
+    @classmethod
+    def google_ads_client(cls, config: Config) -> GoogleAds:
+        """
+        Lazily creates a single GoogleAds client shared by all instances of this class.
+        First call wins (its config is used).
+        """
+        if cls._google_ads_client is None:
+            with cls._client_lock:
+                if cls._google_ads_client is None:
+                    cls._google_ads_client = GoogleAds(credentials=cls.get_credentials(config))
+        return cls._google_ads_client
+
+    @staticmethod
+    def get_credentials(config: Mapping[str, Any]) -> MutableMapping[str, Any]:
+        credentials = config["credentials"]
+        # use_proto_plus is set to True, because setting to False returned wrong value types, which breaks the backward compatibility.
+        # For more info read the related PR's description: https://github.com/airbytehq/airbyte/pull/9996
+        credentials.update(use_proto_plus=True)
+        return credentials
 
     def get_json_schema(self) -> Dict[str, Any]:
         local_json_schema = {
@@ -812,95 +835,31 @@ class CustomGAQuerySchemaLoader(SchemaLoader):
             "additionalProperties": True,
         }
 
-        for field in self._get_list_of_fields():
-            field_metadata_response_json = self._get_field_metadata(field)
-            field_value = self._build_field_value(field, field_metadata_response_json)
+        fields = self._get_list_of_fields()
+        fields_metadata = self.google_ads_client(self.config).get_fields_metadata(fields)
+
+        for field, field_metadata in fields_metadata.items():
+            field_value = self._build_field_value(field, field_metadata)
             local_json_schema["properties"][field] = field_value
 
         return local_json_schema
 
-    def _build_field_value(self, field: str, response_json: Dict[str, Any]) -> Any:
-        field_value = {"type": [GOOGLE_ADS_DATATYPE_MAPPING.get(response_json["dataType"], response_json["dataType"]), "null"]}
+    def _build_field_value(self, field: str, field_metadata) -> Any:
+        # Data type return in enum format: "GoogleAdsFieldDataType.<data_type>"
+        google_data_type = field_metadata.data_type.name
+        field_value = {"type": [GOOGLE_ADS_DATATYPE_MAPPING.get(google_data_type, "string"), "null"]}
 
-        if response_json["dataType"] == "DATE" and field in DATE_TYPES:
+        # Google Ads doesn't differentiate between DATE and DATETIME, so we need to manually check for fields with known type
+        if google_data_type == "DATE" and field in DATE_TYPES:
             field_value["format"] = "date"
 
-        if response_json["dataType"] == "ENUM":
-            field_value["enum"] = [value for value in response_json["enumValues"]]
+        if google_data_type == "ENUM":
+            field_value = {"type": "string", "enum": list(field_metadata.enum_values)}
 
-        if response_json["isRepeated"]:
+        if field_metadata.is_repeated:
             field_value = {"type": ["null", "array"], "items": field_value}
 
         return field_value
-
-    def _get_field_metadata(self, field: str) -> Dict[str, Any]:
-        url = f"https://googleads.googleapis.com/v20/googleAdsFields/{field}"
-
-        max_tries = 5
-        base_backoff_time = 5  # Start with 5 seconds for exponential backoff
-
-        last_exception = None
-
-        for attempt in range(max_tries):
-            headers = self._get_request_headers()
-
-            try:
-                logger.debug(f"`GET` request for field metadata for {field}, url: {url}, attempt: {attempt + 1}/{max_tries}")
-                response = requests.get(
-                    url=url,
-                    headers=headers,
-                )
-
-                response.raise_for_status()
-                response_json = response.json()
-                logger.debug(f"Metadata response for {field}: {response_json}")
-
-                error = response_json.get("error")
-                if error:
-                    failure_type = FailureType.transient_error if error["code"] >= 500 else FailureType.config_error
-                    raise AirbyteTracedException(
-                        failure_type=failure_type,
-                        internal_message=f"Failed to get field metadata for {field}, error: {error}",
-                        message=f"The provided field is invalid: Status: '{error.get('status')}', Message: '{error.get('message')}', Field: '{field}'",
-                    )
-
-                return response_json
-
-            except requests.HTTPError as e:
-                last_exception = e
-
-                if (
-                    last_exception.response.status_code >= 400
-                    and last_exception.response.status_code < 500
-                    and last_exception.response.status_code != 429
-                ) or attempt == max_tries - 1:
-                    break
-
-                # exponential backoff
-                backoff_time = base_backoff_time * (2**attempt)
-                logger.debug(
-                    f"Request failed on attempt {attempt + 1} with status code {last_exception.response.status_code}, retrying in {backoff_time} seconds"
-                )
-                time.sleep(backoff_time)
-
-        if last_exception.response.status_code == 429:
-            raise AirbyteTracedException(
-                failure_type=FailureType.transient_error,
-                message="The maximum number of requests on the Google Ads API has been reached. See https://developers.google.com/google-ads/api/docs/access-levels#access_levels_2 for more information",
-                internal_message=str(last_exception),
-            )
-        elif last_exception.response.status_code >= 400 and last_exception.response.status_code < 500:
-            raise AirbyteTracedException(
-                failure_type=FailureType.config_error,
-                message="The provided field is invalid. Please refer to the Google Ads API documentation for the correct syntax: https://developers.google.com/google-ads/api/fields/v20/overview and test validate your query using the Google Ads Query Builder: https://developers.google.com/google-ads/api/fields/v20/query_validator",
-                internal_message=f"The provided field is invalid: Error: {str(last_exception)}",
-            )
-        else:
-            raise AirbyteTracedException(
-                failure_type=FailureType.transient_error,
-                message="The Google Ads API is temporarily unavailable.",
-                internal_message=f"The Google Ads API is temporarily unavailable: Error: {str(last_exception)}",
-            )
 
     def _get_list_of_fields(self) -> List[str]:
         """
@@ -920,15 +879,6 @@ class CustomGAQuerySchemaLoader(SchemaLoader):
             fields.append(cursor_field)
 
         return fields
-
-    def _get_request_headers(self) -> Mapping[str, Any]:
-        headers = {}
-        auth_headers = self.requester.authenticator.get_auth_header()
-        if auth_headers:
-            headers.update(auth_headers)
-
-        headers["developer-token"] = self.config["credentials"]["developer_token"]
-        return headers
 
     def _validate_query(self, query: str):
         try:
