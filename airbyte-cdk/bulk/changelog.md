@@ -1,3 +1,9 @@
+## Version 0.1.52
+
+**Extract CDK**
+
+* **Changed:** Timeout in case of no event comes back from dbz.
+
 ## Version 0.1.51
 
 Polaris support in the iceberg configuration.
