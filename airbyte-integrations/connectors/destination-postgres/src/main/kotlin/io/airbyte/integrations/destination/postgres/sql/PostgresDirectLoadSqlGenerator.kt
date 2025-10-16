@@ -104,7 +104,7 @@ class PostgresDirectLoadSqlGenerator {
             .map { (columnName, columnType) ->
                 val targetColumnName = columnNameMapping[columnName] ?: columnName
                 val typeName = columnType.type.toDialectType()
-                "$targetColumnName $typeName"
+                "\"$targetColumnName\" $typeName"
             }
 
         return (DEFAULT_COLUMNS + targetColumns).joinToString(",\n")
