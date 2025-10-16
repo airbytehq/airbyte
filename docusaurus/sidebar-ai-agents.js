@@ -41,7 +41,13 @@ export default {
             "embedded/api/configuring-sources",
           ]
         },
-
+        {
+          type: "category",
+          label: "Operator MCP",
+          items: [
+            "embedded/operator-mcp/README",
+          ]
+        },
           ]
         },
         {
