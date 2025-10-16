@@ -69,12 +69,12 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             BEGIN TRANSACTION;
             DROP TABLE IF EXISTS "namespace"."name";
             CREATE TABLE "namespace"."name" (
-            _airbyte_raw_id varchar NOT NULL,
-            _airbyte_extracted_at timestamp with time zone NOT NULL,
-            _airbyte_meta jsonb NOT NULL,
-            _airbyte_generation_id bigint NOT NULL,
-            targetId varchar,
-            targetName varchar
+            "_airbyte_raw_id" varchar NOT NULL,
+            "_airbyte_extracted_at" timestamp with time zone NOT NULL,
+            "_airbyte_meta" jsonb NOT NULL,
+            "_airbyte_generation_id" bigint NOT NULL,
+            "targetId" varchar,
+            "targetName" varchar
             );
             COMMIT;
             """
@@ -117,11 +117,11 @@ internal class PostgresDirectLoadSqlGeneratorTest {
         val expected = """
             BEGIN TRANSACTION;
             CREATE TABLE "namespace"."name" (
-            _airbyte_raw_id varchar NOT NULL,
-            _airbyte_extracted_at timestamp with time zone NOT NULL,
-            _airbyte_meta jsonb NOT NULL,
-            _airbyte_generation_id bigint NOT NULL,
-            targetId varchar,
+            "_airbyte_raw_id" varchar NOT NULL,
+            "_airbyte_extracted_at" timestamp with time zone NOT NULL,
+            "_airbyte_meta" jsonb NOT NULL,
+            "_airbyte_generation_id" bigint NOT NULL,
+            "targetId" varchar
             );
             COMMIT;
             """
@@ -228,12 +228,12 @@ internal class PostgresDirectLoadSqlGeneratorTest {
     @Test
     fun testColumnAndTypeToString() {
         val notNullColumn = ColumnAndType("column", "varchar", nullable = false)
-        assertEquals("column varchar NOT NULL", notNullColumn.toString())
+        assertEquals("\"column\" varchar NOT NULL", notNullColumn.toString())
     }
 
     @Test
     fun testNullableColumnAndTypeToString() {
         val nullableColumn = ColumnAndType("column", "varchar", nullable = true)
-        assertEquals("column varchar", nullableColumn.toString())
+        assertEquals("\"column\" varchar", nullableColumn.toString())
     }
 }
