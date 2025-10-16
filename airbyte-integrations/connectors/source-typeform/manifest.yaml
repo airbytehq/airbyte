@@ -984,6 +984,7 @@ streams:
         http_method: GET
         request_parameters:
           sort: "{{ 'submitted_at,asc' if not next_page_token else '' }}"
+          response_type: started,partial,completed
         request_headers: {}
         error_handler:
           type: CompositeErrorHandler
