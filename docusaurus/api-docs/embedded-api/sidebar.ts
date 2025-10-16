@@ -234,9 +234,39 @@ const sidebar: SidebarsConfig = {
         },
         {
           type: "doc",
+          id: "update-integrations-sources-id-catalog",
+          label: "Patch Source Catalog",
+          className: "api-method patch",
+        },
+        {
+          type: "doc",
+          id: "create-integrations-sources-id-catalog-query",
+          label: "Query Source Catalog",
+          className: "api-method post",
+        },
+        {
+          type: "doc",
           id: "get-integrations-sources-id-discover",
           label: "Get Source Catalog",
           className: "api-method get",
+        },
+        {
+          type: "doc",
+          id: "create-integrations-sources-id-streams",
+          label: "Add Source Stream",
+          className: "api-method post",
+        },
+        {
+          type: "doc",
+          id: "update-integrations-sources-id-streams-stream-name",
+          label: "Patch Source Stream",
+          className: "api-method patch",
+        },
+        {
+          type: "doc",
+          id: "delete-integrations-sources-id-streams-stream-name",
+          label: "Delete Source Stream",
+          className: "api-method delete",
         },
       ],
     },
@@ -362,6 +392,26 @@ const sidebar: SidebarsConfig = {
     },
     {
       type: "category",
+      label: "Applications",
+      collapsible: false,
+      collapsed: false,
+      items: [
+        {
+          type: "doc",
+          id: "create-account-applications-token",
+          label: "Generate Application Token",
+          className: "api-method post",
+        },
+        {
+          type: "doc",
+          id: "create-internal-account-applications",
+          label: "Get Or Create Application",
+          className: "api-method post",
+        },
+      ],
+    },
+    {
+      type: "category",
       label: "Agents - Chat",
       collapsible: false,
       collapsed: false,
@@ -385,6 +435,20 @@ const sidebar: SidebarsConfig = {
           id: "get-agents-chat-history-thread-id",
           label: "Chat history by thread ID",
           className: "api-method get",
+        },
+      ],
+    },
+    {
+      type: "category",
+      label: "Chat - Schema",
+      collapsible: false,
+      collapsed: false,
+      items: [
+        {
+          type: "doc",
+          id: "create-agents-chat-schema-source-id",
+          label: "Post Schema Chat",
+          className: "api-method post",
         },
       ],
     },
@@ -428,6 +492,12 @@ const sidebar: SidebarsConfig = {
       collapsible: false,
       collapsed: false,
       items: [
+        {
+          type: "doc",
+          id: "list-integrations-definitions-sources",
+          label: "Source Definitions Get",
+          className: "api-method get",
+        },
         {
           type: "doc",
           id: "get-integrations-definitions-sources-id",
@@ -526,26 +596,6 @@ const sidebar: SidebarsConfig = {
     },
     {
       type: "category",
-      label: "Applications",
-      collapsible: false,
-      collapsed: false,
-      items: [
-        {
-          type: "doc",
-          id: "create-internal-account-applications",
-          label: "Get Or Create Application",
-          className: "api-method post",
-        },
-        {
-          type: "doc",
-          id: "create-internal-account-applications-token",
-          label: "Generate Application Token",
-          className: "api-method post",
-        },
-      ],
-    },
-    {
-      type: "category",
       label: "Organizations",
       collapsible: false,
       collapsed: false,
@@ -564,9 +614,39 @@ const sidebar: SidebarsConfig = {
         },
         {
           type: "doc",
+          id: "get-internal-account-organizations-organization-id",
+          label: "Get Organization",
+          className: "api-method get",
+        },
+        {
+          type: "doc",
+          id: "get-internal-account-organizations-organization-id-info",
+          label: "Get Organization Info",
+          className: "api-method get",
+        },
+        {
+          type: "doc",
+          id: "get-internal-account-organizations-organization-id-invoices",
+          label: "List Invoices",
+          className: "api-method get",
+        },
+        {
+          type: "doc",
+          id: "get-internal-account-organizations-organization-id-payment-information",
+          label: "Get Payment Information",
+          className: "api-method get",
+        },
+        {
+          type: "doc",
           id: "create-internal-account-organizations-organization-id-signup",
           label: "Organization Signup",
           className: "api-method post",
+        },
+        {
+          type: "doc",
+          id: "get-internal-account-organizations-organization-id-subscription",
+          label: "Get Organization Subscription",
+          className: "api-method get",
         },
       ],
     },

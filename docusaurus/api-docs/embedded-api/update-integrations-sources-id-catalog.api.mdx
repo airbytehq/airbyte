@@ -1,12 +1,12 @@
 ---
-id: get-integrations-sources-id-discover
-title: "Get Source Catalog"
-description: "**Requires an Access Token as the bearer token.**"
-sidebar_label: "Get Source Catalog"
+id: update-integrations-sources-id-catalog
+title: "Patch Source Catalog"
+description: "Patch the source's cached catalog. This allows updating global configurations such as selected streams."
+sidebar_label: "Patch Source Catalog"
 hide_title: true
 hide_table_of_contents: true
-api: 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
-sidebar_class_name: "get api-method"
+api: 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
+sidebar_class_name: "patch api-method"
 info_path: embedded-api///sonar
 custom_edit_url: null
 ---
@@ -22,13 +22,13 @@ import Heading from "@theme/Heading";
 <Heading
   as={"h1"}
   className={"openapi__heading"}
-  children={"Get Source Catalog"}
+  children={"Patch Source Catalog"}
 >
 </Heading>
 
 <MethodEndpoint
-  method={"get"}
-  path={"/api/v1/integrations/sources/{id}/discover"}
+  method={"patch"}
+  path={"/api/v1/integrations/sources/{id}/catalog"}
   context={"endpoint"}
 >
   
@@ -36,9 +36,7 @@ import Heading from "@theme/Heading";
 
 
 
-**Requires an Access Token as the bearer token.**
-
-Get a source connector streams with fields.
+Patch the source's cached catalog. This allows updating global configurations such as selected streams.
 
 <Heading
   id={"request"}
@@ -49,14 +47,14 @@ Get a source connector streams with fields.
 </Heading>
 
 <ParamsDetails
-  parameters={[{"name":"id","in":"path","required":true,"schema":{"type":"string","format":"uuid","title":"Id"}},{"name":"use_cache","in":"query","required":false,"schema":{"type":"boolean","description":"Whether to use the cached catalog if available. Defaults to true. If false, results will not be cached.","default":true,"title":"Use Cache"},"description":"Whether to use the cached catalog if available. Defaults to true. If false, results will not be cached."},{"name":"selected","in":"query","required":false,"schema":{"type":"boolean","description":"Whether to only return streams marked as selected in the catalog.","default":false,"title":"Selected"},"description":"Whether to only return streams marked as selected in the catalog."},{"name":"x-organization-id","in":"header","required":false,"schema":{"type":"string","format":"uuid","description":"Select the working organization. Necessary since users can belong to multiple organizations.","title":"X-Organization-Id"},"description":"Select the working organization. Necessary since users can belong to multiple organizations."}]}
+  parameters={[{"name":"id","in":"path","required":true,"schema":{"type":"string","format":"uuid","title":"Id"}},{"name":"x-organization-id","in":"header","required":false,"schema":{"type":"string","format":"uuid","description":"Select the working organization. Necessary since users can belong to multiple organizations.","title":"X-Organization-Id"},"description":"Select the working organization. Necessary since users can belong to multiple organizations."}]}
 >
   
 </ParamsDetails>
 
 <RequestSchema
   title={"Body"}
-  body={undefined}
+  body={{"required":true,"content":{"application/json":{"schema":{"properties":{"patch_ops":{"items":{"properties":{"op":{"type":"string","title":"Op"},"path":{"type":"string","title":"Path"},"value":{"anyOf":[{},{"type":"null"}],"title":"Value"}},"type":"object","required":["op","path"],"title":"PatchOp"},"type":"array","title":"Patch Ops","description":"List of JSON Patch (RFC 6902) operations to apply to the stream."}},"type":"object","required":["patch_ops"],"title":"SourceStreamPatchRequest"}}}}}
 >
   
 </RequestSchema>
