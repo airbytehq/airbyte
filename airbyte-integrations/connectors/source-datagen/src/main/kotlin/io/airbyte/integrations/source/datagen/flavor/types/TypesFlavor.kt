@@ -5,7 +5,6 @@
 package io.airbyte.integrations.source.datagen.flavor.types
 
 import io.airbyte.cdk.discover.Field
-import io.airbyte.integrations.source.datagen.ArrayFieldType
 import io.airbyte.integrations.source.datagen.BigDecimalFieldType
 import io.airbyte.integrations.source.datagen.BigIntegerFieldType
 import io.airbyte.integrations.source.datagen.BooleanFieldType
@@ -60,7 +59,6 @@ data object TypesFlavor : Flavor {
                         TimestampWithoutTimeZoneFieldType
                     ),
                     Field(FieldNames.JSON, JsonFieldType),
-                    Field(FieldNames.ARRAY, ArrayFieldType(IntegerFieldType)),
                 )
         )
     override val primaryKeys = mapOf(typesTableName to listOf(listOf((FieldNames.ID))))

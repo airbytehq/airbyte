@@ -93,22 +93,9 @@ const config = {
       "classic",
       /** @type {import('@docusaurus/preset-classic').Options} */
       ({
-        docs: {
-          routeBasePath: "/",
-          sidebarCollapsible: true,
-          sidebarPath: require.resolve("./sidebar.js"),
-          editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
-          path: "../docs/home",
-          beforeDefaultRemarkPlugins: [specDecoration, connectorList], // use before-default plugins so TOC rendering picks up inserted headings
-          remarkPlugins: [
-            docsHeaderDecoration,
-            enterpriseDocsHeaderInformation,
-            productInformation,
-            docMetaTags,
-            addButtonToTitle,
-          ],
-        },
+        docs: false, // Disable default docs plugin since we're using a custom page for home
         blog: false,
+        pages: {}, // Enable pages plugin for standalone pages
         theme: {
           customCss: require.resolve("./src/css/custom.css"),
         },

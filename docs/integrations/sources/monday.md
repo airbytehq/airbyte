@@ -77,6 +77,7 @@ The Monday connector should not run into Monday API limitations under normal usa
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.4.10 | 2025-10-14 | [67840](https://github.com/airbytehq/airbyte/pull/67840) | Update dependencies |
 | 2.4.9 | 2025-10-07 | [67393](https://github.com/airbytehq/airbyte/pull/67393) | Update dependencies |
 | 2.4.8 | 2025-09-30 | [66938](https://github.com/airbytehq/airbyte/pull/66938) | Surface HTTP 200 Error Messages |
 | 2.4.7 | 2025-09-30 | [66336](https://github.com/airbytehq/airbyte/pull/66336) | Update dependencies |

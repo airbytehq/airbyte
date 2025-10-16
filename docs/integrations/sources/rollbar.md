@@ -36,6 +36,7 @@ Follow [this guide](https://docs.rollbar.com/reference/getting-started-1#authent
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.36 | 2025-10-14 | [67912](https://github.com/airbytehq/airbyte/pull/67912) | Update dependencies |
 | 0.0.35 | 2025-10-07 | [67233](https://github.com/airbytehq/airbyte/pull/67233) | Update dependencies |
 | 0.0.34 | 2025-09-30 | [66862](https://github.com/airbytehq/airbyte/pull/66862) | Update dependencies |
 | 0.0.33 | 2025-09-23 | [66626](https://github.com/airbytehq/airbyte/pull/66626) | Update dependencies |
