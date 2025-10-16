@@ -2246,10 +2246,36 @@ spec:
               - credentials
               - client_secret
 
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    # 1) CRM Search: special cap, separate from the global burst
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 5         # 5 req/second
+          interval: PT1S
+        - limit: 300       # 300 req/min (same ceiling)
+          interval: PT1M
+      matchers:
+        - method: POST
+          url_path_pattern: "^/crm/v3/objects/[^/]+/search$"
+
+    # 2) General: public app burst = 110 per 10s per installed account
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 10
+          interval: PT1S
+        - limit: 100
+          interval: PT10S
+      matchers: [ ]
+
+  status_codes_for_ratelimit_hit: [429]
+
 # HubSpot account is limited to 110 requests every 10 seconds https://developers.hubspot.com/docs/guides/apps/api-usage/usage-details#rate-limits
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 3) }}"
+  default_concurrency: "{{ config.get('num_workers', 5) }}"
   max_concurrency: 40
 
 schemas:
