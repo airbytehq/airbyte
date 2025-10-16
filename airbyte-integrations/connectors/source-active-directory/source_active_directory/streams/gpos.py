@@ -1,5 +1,3 @@
-import os
-
 from typing import Any, Iterable, Mapping, Optional
 
 from ldap3 import SUBTREE

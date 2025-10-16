@@ -10,6 +10,11 @@ from .base import ActiveDirectoryStream
 class ACLs(ActiveDirectoryStream):
     """Stream for extracting Access Control Lists (ACLs) from Active Directory objects."""
     
+    def __init__(self, conn):
+        """Initialize the ACLs stream with SID to objectGUID cache."""
+        super().__init__(conn)
+        self._sid_to_guid_cache: dict[str, str] = {}
+    
     @property
     def name(self) -> str:
         return "acls"
@@ -50,18 +55,20 @@ class ACLs(ActiveDirectoryStream):
         """Read ACLs from Active Directory security descriptors."""
         
         try:
+            # We'll build the SID cache as we scan objects, since we're already retrieving their SIDs
+            self.logger.info("Starting comprehensive ACL scan for all object types with corresponding streams...")
+            
             # Define the search base - typically the domain DN
             search_base = self._conn.server.info.other.get('defaultNamingContext', [''])[0]
             
-            # LDAP filter to get all objects with security descriptors
-            # We'll focus on common object types that have meaningful ACLs
-            search_filter = "(|(objectClass=user)(objectClass=group)(objectClass=computer)(objectClass=organizationalUnit)(objectClass=container))"
+            search_filter = "(objectClass=*)"
             
             # Attributes to retrieve for each object
             attributes = [
                 'objectGUID',           # Unique identifier
                 'distinguishedName',    # DN
                 'objectClass',          # Object type
+                'objectSid',            # Security identifier
                 'nTSecurityDescriptor', # Security descriptor
                 'whenCreated',          # Creation time
                 'whenChanged',          # Last modified time
@@ -79,8 +86,20 @@ class ACLs(ActiveDirectoryStream):
                 self.logger.error(f"LDAP search failed: {self._conn.result}")
                 return
             
-            # Process each object entry
-            for entry in self._conn.entries:
+            # First pass: Build SID cache from all scanned objects
+            self.logger.info("First pass: Building SID cache from scanned objects...")
+            all_entries = list(self._conn.entries)  # Store entries for second pass
+            
+            self._populate_sid_cache(all_entries)
+
+            self.logger.info(f"SID cache built with {len(self._sid_to_guid_cache)} entries")
+            self.logger.info(f"Total objects found: {len(all_entries)}")
+            
+            # Second pass: Process ACLs and extract owner/group SIDs from security descriptors
+            self.logger.info("Second pass: Processing ACLs...")
+            
+            # Process each object entry for ACLs
+            for entry in all_entries:
                 # Extract basic object information
                 object_guid = entry.objectGUID
                 if not object_guid:
@@ -102,12 +121,23 @@ class ACLs(ActiveDirectoryStream):
                 try:
                     # Parse the security descriptor
                     security_descriptor = entry.nTSecurityDescriptor.raw_values[0]
-                    acl_entries = self._parse_security_descriptor(security_descriptor)
+                    acl_entries, owner_sid, group_sid = self._parse_security_descriptor(security_descriptor)
+                    
+                    # Add owner and group SIDs to cache if we can resolve them quickly
+                    if owner_sid and owner_sid not in self._sid_to_guid_cache:
+                        owner_guid = self._quick_resolve_sid(owner_sid)
+                        if owner_guid:
+                            self._sid_to_guid_cache[owner_sid] = owner_guid
+                    
+                    if group_sid and group_sid not in self._sid_to_guid_cache:
+                        group_guid = self._quick_resolve_sid(group_sid)
+                        if group_guid:
+                            self._sid_to_guid_cache[group_sid] = group_guid
                     
                     # Generate ACL records for each ACE
                     for ace_info in acl_entries:
-                        # Resolve principal SID to object GUID
-                        principal_object_id = self._resolve_sid_to_object_id(ace_info['principal_sid'])
+                        # Get principal object ID from cache
+                        principal_object_id = self._sid_to_guid_cache.get(ace_info['principal_sid'])
 
                         acl_record = {
                             "id": f"{resource_id}_{ace_info['ace_index']}_{ace_info['principal_sid']}",
@@ -136,10 +166,51 @@ class ACLs(ActiveDirectoryStream):
             self.logger.error(f"Error during ACL scan: {str(e)}")
             raise
     
+    def _populate_sid_cache(self, entries: List[Any]) -> None:
+        """Populate the SID to objectGUID cache from a list of LDAP entries."""
+        for entry in entries:
+            if hasattr(entry, 'objectGUID') and hasattr(entry, 'objectSid'):
+                try:
+                    object_guid = entry.objectGUID
+                    object_sid = entry.objectSid
+                    
+                    if object_guid and object_sid:
+                        sid_string = self._convert_binary_sid_to_string(object_sid.raw_values[0])
+                        if sid_string:
+                            resource_id = self._strip_guid_parents(str(object_guid.value))
+                            self._sid_to_guid_cache[sid_string] = resource_id
+                except Exception as e:
+                    self.logger.debug(f"Error adding SID to cache: {str(e)}")
+                    continue
+            
     def _get_primary_object_class(self, object_classes: List[str]) -> str:
         """Determine the primary object class from a list of object classes."""
-        # Priority order for determining primary class
-        priority_classes = ['user', 'group', 'computer', 'organizationalUnit', 'container', 'domain']
+        # Priority order for determining primary class - matches our available streams
+        priority_classes = [
+            # Core identity objects (highest priority)
+            'user', 'group', 'computer', 'contact',
+            
+            # Organizational structure
+            'organizationalUnit', 'container', 'domain', 'domainDNS',
+            
+            # Group Policy objects
+            'groupPolicyContainer',
+            
+            # Network topology
+            'site', 'subnet', 'siteLink',
+            
+            # Service accounts and special principals
+            'msDS-GroupManagedServiceAccount', 'foreignSecurityPrincipal',
+            
+            # Infrastructure objects
+            'configuration', 'crossRef', 'serviceConnectionPoint',
+            
+            # Security and certificates
+            'trustedDomain', 'ntAuthStore', 'pKICertificateTemplate',
+            
+            # Fallback for common containers
+            'organizationalPerson', 'person', 'top'
+        ]
         
         for priority_class in priority_classes:
             if priority_class in object_classes:
@@ -148,15 +219,15 @@ class ACLs(ActiveDirectoryStream):
         # Return the last (most specific) class if no priority match
         return object_classes[-1] if object_classes else 'unknown'
     
-    def _parse_security_descriptor(self, security_descriptor_bytes: bytes) -> List[Dict[str, Any]]:
-        """Parse a binary security descriptor to extract ACL information."""
+    def _parse_security_descriptor(self, security_descriptor_bytes: bytes) -> tuple[List[Dict[str, Any]], Optional[str], Optional[str]]:
+        """Parse a binary security descriptor to extract ACL information and owner/group SIDs."""
         try:
             # Security descriptor structure according to Microsoft documentation
             # https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-dtyp/7d4dac05-9cef-4563-a058-f108abecce1d
             
             if len(security_descriptor_bytes) < 20:
                 self.logger.warning("Security descriptor too short")
-                return []
+                return [], None, None
             
             # Parse security descriptor header
             revision = security_descriptor_bytes[0]
@@ -169,6 +240,22 @@ class ACLs(ActiveDirectoryStream):
             dacl_offset = struct.unpack('<L', security_descriptor_bytes[16:20])[0]
             
             acl_entries = []
+            owner_sid = None
+            group_sid = None
+            
+            # Parse owner SID if present
+            if owner_offset > 0 and owner_offset < len(security_descriptor_bytes):
+                try:
+                    owner_sid = self._parse_sid_at_offset(security_descriptor_bytes, owner_offset)
+                except Exception as e:
+                    self.logger.debug(f"Error parsing owner SID: {str(e)}")
+            
+            # Parse group SID if present
+            if group_offset > 0 and group_offset < len(security_descriptor_bytes):
+                try:
+                    group_sid = self._parse_sid_at_offset(security_descriptor_bytes, group_offset)
+                except Exception as e:
+                    self.logger.debug(f"Error parsing group SID: {str(e)}")
             
             # Parse DACL (Discretionary Access Control List) if present
             if dacl_offset > 0 and dacl_offset < len(security_descriptor_bytes):
@@ -180,11 +267,11 @@ class ACLs(ActiveDirectoryStream):
                 sacl_entries = self._parse_acl(security_descriptor_bytes, sacl_offset, "SACL")
                 acl_entries.extend(sacl_entries)
             
-            return acl_entries
+            return acl_entries, owner_sid, group_sid
             
         except Exception as e:
             self.logger.warning(f"Error parsing security descriptor: {str(e)}")
-            return []
+            return [], None, None
     
     def _parse_acl(self, sd_bytes: bytes, acl_offset: int, acl_type: str) -> List[Dict[str, Any]]:
         """Parse an Access Control List (ACL) from the security descriptor."""
@@ -412,35 +499,172 @@ class ACLs(ActiveDirectoryStream):
         # Well-known SIDs
         well_known_sids = {
             "S-1-0": "NULL",
-            "S-1-1": "WORLD",
+            "S-1-1": "WORLD", 
             "S-1-2": "LOCAL",
             "S-1-3": "CREATOR",
             "S-1-4": "NON_UNIQUE",
             "S-1-5": "NT_AUTHORITY",
         }
         
+        # Check for well-known domain RIDs
+        domain_rids = {
+            "-500": "BUILTIN_ADMIN",
+            "-501": "BUILTIN_GUEST", 
+            "-502": "KRBTGT",
+            "-512": "DOMAIN_ADMINS",
+            "-513": "DOMAIN_USERS",
+            "-514": "DOMAIN_GUESTS", 
+            "-515": "DOMAIN_COMPUTERS",
+            "-516": "DOMAIN_CONTROLLERS",
+            "-517": "CERT_PUBLISHERS",
+            "-518": "SCHEMA_ADMINS",
+            "-519": "ENTERPRISE_ADMINS",
+            "-520": "GROUP_POLICY_CREATOR_OWNERS",
+            "-521": "READONLY_DOMAIN_CONTROLLERS",
+            "-522": "CLONEABLE_DOMAIN_CONTROLLERS",
+            "-525": "PROTECTED_USERS",
+            "-526": "KEY_ADMINS",
+            "-527": "ENTERPRISE_KEY_ADMINS",
+        }
+        
+        # Check for specific NT AUTHORITY SIDs
+        nt_authority_sids = {
+            "S-1-5-1": "DIALUP",
+            "S-1-5-2": "NETWORK", 
+            "S-1-5-3": "BATCH",
+            "S-1-5-4": "INTERACTIVE",
+            "S-1-5-6": "SERVICE",
+            "S-1-5-7": "ANONYMOUS",
+            "S-1-5-8": "PROXY",
+            "S-1-5-9": "ENTERPRISE_DOMAIN_CONTROLLERS",
+            "S-1-5-10": "PRINCIPAL_SELF",
+            "S-1-5-11": "AUTHENTICATED_USERS",
+            "S-1-5-12": "RESTRICTED_CODE",
+            "S-1-5-13": "TERMINAL_SERVER_USERS",
+            "S-1-5-14": "REMOTE_INTERACTIVE_LOGON",
+            "S-1-5-15": "THIS_ORGANIZATION",
+            "S-1-5-17": "IUSR",
+            "S-1-5-18": "LOCAL_SYSTEM",
+            "S-1-5-19": "LOCAL_SERVICE",
+            "S-1-5-20": "NETWORK_SERVICE",
+            "S-1-5-32": "BUILTIN",
+        }
+        
+        # Check exact matches first
+        if sid in nt_authority_sids:
+            return nt_authority_sids[sid]
+        
+        # Check for domain RIDs
+        if sid.startswith("S-1-5-21-"):
+            for rid_suffix, principal_type in domain_rids.items():
+                if sid.endswith(rid_suffix):
+                    return principal_type
+            # Generic domain principal
+            return "DOMAIN_PRINCIPAL"
+        
+        # Check for BUILTIN domain (S-1-5-32)
+        if sid.startswith("S-1-5-32-"):
+            builtin_rids = {
+                "-544": "BUILTIN_ADMINISTRATORS",
+                "-545": "BUILTIN_USERS", 
+                "-546": "BUILTIN_GUESTS",
+                "-547": "BUILTIN_POWER_USERS",
+                "-548": "BUILTIN_ACCOUNT_OPERATORS",
+                "-549": "BUILTIN_SERVER_OPERATORS",
+                "-550": "BUILTIN_PRINT_OPERATORS",
+                "-551": "BUILTIN_BACKUP_OPERATORS",
+                "-552": "BUILTIN_REPLICATOR",
+                "-554": "BUILTIN_PRE_WINDOWS_2000_COMPATIBLE_ACCESS",
+                "-555": "BUILTIN_REMOTE_DESKTOP_USERS",
+                "-556": "BUILTIN_NETWORK_CONFIGURATION_OPERATORS",
+                "-557": "BUILTIN_INCOMING_FOREST_TRUST_BUILDERS",
+                "-558": "BUILTIN_PERFORMANCE_MONITOR_USERS",
+                "-559": "BUILTIN_PERFORMANCE_LOG_USERS",
+                "-560": "BUILTIN_WINDOWS_AUTHORIZATION_ACCESS_GROUP",
+                "-561": "BUILTIN_TERMINAL_SERVER_LICENSE_SERVERS",
+                "-562": "BUILTIN_DISTRIBUTED_COM_USERS",
+                "-568": "BUILTIN_IIS_USERS",
+                "-569": "BUILTIN_CRYPTOGRAPHIC_OPERATORS",
+                "-573": "BUILTIN_EVENT_LOG_READERS",
+                "-574": "BUILTIN_CERTIFICATE_SERVICE_DCOM_ACCESS",
+            }
+            for rid_suffix, principal_type in builtin_rids.items():
+                if sid.endswith(rid_suffix):
+                    return principal_type
+            return "BUILTIN_GROUP"
+        
+        # Check for well-known SID prefixes
         for prefix, type_name in well_known_sids.items():
             if sid.startswith(prefix):
-                if sid.startswith("S-1-5-21-") and sid.endswith("-500"):
-                    return "BUILTIN_ADMIN"
-                elif sid.startswith("S-1-5-21-") and sid.endswith("-501"):
-                    return "BUILTIN_GUEST"
-                elif sid.startswith("S-1-5-21-") and sid.endswith("-512"):
-                    return "DOMAIN_ADMINS"
-                elif sid.startswith("S-1-5-21-") and sid.endswith("-513"):
-                    return "DOMAIN_USERS"
-                elif sid.startswith("S-1-5-21-") and sid.endswith("-515"):
-                    return "DOMAIN_COMPUTERS"
-                elif sid.startswith("S-1-5-21-"):
-                    # Domain SID - could be user, group, or computer
-                    # We'd need to query AD to determine the exact type
-                    return "DOMAIN_PRINCIPAL"
                 return type_name
         
         return "PRINCIPAL"
     
-    def _resolve_sid_to_object_id(self, sid: str) -> Optional[str]:
-        """Resolve a SID to the corresponding object's GUID."""
+    def _categorize_object_type(self, object_type: str) -> str:
+        """Categorize object types into logical groups for reporting."""
+        identity_objects = ['user', 'group', 'computer', 'contact', 'msDS-GroupManagedServiceAccount']
+        organizational_objects = ['organizationalUnit', 'container', 'domain', 'domainDNS'] 
+        policy_objects = ['groupPolicyContainer']
+        network_objects = ['site', 'subnet', 'siteLink']
+        infrastructure_objects = ['configuration', 'crossRef', 'serviceConnectionPoint', 'trustedDomain']
+        security_objects = ['ntAuthStore', 'pKICertificateTemplate', 'foreignSecurityPrincipal']
+        
+        if object_type in identity_objects:
+            return "Identity"
+        elif object_type in organizational_objects:
+            return "Organizational"
+        elif object_type in policy_objects:
+            return "Group Policy"
+        elif object_type in network_objects:
+            return "Network"
+        elif object_type in infrastructure_objects:
+            return "Infrastructure"
+        elif object_type in security_objects:
+            return "Security"
+        else:
+            return "Other"
+    
+    def _get_stream_mapping(self) -> dict:
+        """Return mapping of object types to their corresponding streams."""
+        return {
+            'user': 'Users',
+            'group': 'Groups', 
+            'computer': 'Computers',
+            'organizationalUnit': 'OrganizationalUnits',
+            'groupPolicyContainer': 'GPOs',
+            'site': 'Sites',
+            'domain': 'Domains',
+            'domainDNS': 'Domains',
+            'crossRef': 'ForestDomains',
+            'contact': 'Users (extended)',
+            'container': 'OrganizationalUnits (extended)',
+            'msDS-GroupManagedServiceAccount': 'Users (extended)',
+            'foreignSecurityPrincipal': 'Groups (extended)',
+            'serviceConnectionPoint': 'Infrastructure',
+            'trustedDomain': 'Domains (extended)',
+            'subnet': 'Sites (extended)',
+            'siteLink': 'Sites (extended)',
+            'ntAuthStore': 'Security',
+            'pKICertificateTemplate': 'Security',
+            'configuration': 'Infrastructure',
+        }
+    
+    def _parse_sid_at_offset(self, sd_bytes: bytes, offset: int) -> Optional[str]:
+        """Parse a SID at a specific offset in the security descriptor."""
+        try:
+            if offset >= len(sd_bytes):
+                return None
+            
+            # SID structure starts at the offset
+            sid_bytes = sd_bytes[offset:]
+            return self._parse_sid(sid_bytes)
+            
+        except Exception as e:
+            self.logger.debug(f"Error parsing SID at offset {offset}: {str(e)}")
+            return None
+    
+    def _quick_resolve_sid(self, sid: str) -> Optional[str]:
+        """Quick resolution for SIDs not in cache (typically owner/group SIDs)."""
         if not sid:
             return None
         
@@ -449,19 +673,18 @@ class ACLs(ActiveDirectoryStream):
             search_base = self._conn.server.info.other.get('defaultNamingContext', [''])[0]
             
             # LDAP filter to find the object by SID
-            # The objectSid attribute stores the binary SID
             search_filter = f"(objectSid={sid})"
             
             # We only need the objectGUID
             attributes = ['objectGUID']
             
-            # Perform the LDAP search
+            # Perform a quick lookup
             success = self._conn.search(
                 search_base=search_base,
                 search_filter=search_filter,
                 search_scope=SUBTREE,
                 attributes=attributes,
-                size_limit=1  # We only expect one result
+                size_limit=1
             )
             
             if success and self._conn.entries:
@@ -469,38 +692,41 @@ class ACLs(ActiveDirectoryStream):
                 if hasattr(entry, 'objectGUID') and entry.objectGUID:
                     return self._strip_guid_parents(str(entry.objectGUID))
             
-            # If direct search fails, try alternative approach for well-known SIDs
-            # Some well-known SIDs might not be found in the domain DN
-            if sid.startswith("S-1-5-") and not sid.startswith("S-1-5-21-"):
-                # This is likely a built-in account/group
-                # Try searching in the built-in container
-                builtin_search_bases = [
-                    f"CN=Builtin,{search_base}",
-                    f"CN=Users,{search_base}",
-                    search_base  # Fallback to domain root
-                ]
-                
-                for base in builtin_search_bases:
-                    try:
-                        success = self._conn.search(
-                            search_base=base,
-                            search_filter=search_filter,
-                            search_scope=SUBTREE,
-                            attributes=attributes,
-                            size_limit=1
-                        )
-                        
-                        if success and self._conn.entries:
-                            entry = self._conn.entries[0]
-                            if hasattr(entry, 'objectGUID') and entry.objectGUID:
-                                return self._strip_guid_parents(str(entry.objectGUID))
-                    except Exception:
-                        continue
-            
-            # Log debug info for unresolved SIDs
-            self.logger.debug(f"Could not resolve SID to object GUID: {sid}")
             return None
             
         except Exception as e:
-            self.logger.debug(f"Error resolving SID {sid} to object GUID: {str(e)}")
+            self.logger.debug(f"Error resolving SID {sid}: {str(e)}")
+            return None
+    
+    def _convert_binary_sid_to_string(self, binary_sid: bytes) -> Optional[str]:
+        """Convert binary SID from objectSid attribute to string format."""
+        try:
+            if len(binary_sid) < 8:
+                return None
+            
+            revision = binary_sid[0]
+            sub_authority_count = binary_sid[1]
+            
+            if len(binary_sid) < 8 + (sub_authority_count * 4):
+                return None
+            
+            # Parse identifier authority (6 bytes, big-endian)
+            identifier_authority = struct.unpack('>Q', b'\x00\x00' + binary_sid[2:8])[0]
+            
+            # Parse sub-authorities (4 bytes each, little-endian)
+            sub_authorities = []
+            for i in range(sub_authority_count):
+                offset = 8 + (i * 4)
+                sub_authority = struct.unpack('<L', binary_sid[offset:offset + 4])[0]
+                sub_authorities.append(str(sub_authority))
+            
+            # Format as standard SID string
+            sid_string = f"S-{revision}-{identifier_authority}"
+            if sub_authorities:
+                sid_string += "-" + "-".join(sub_authorities)
+            
+            return sid_string
+            
+        except Exception as e:
+            self.logger.debug(f"Error converting binary SID to string: {str(e)}")
             return None
