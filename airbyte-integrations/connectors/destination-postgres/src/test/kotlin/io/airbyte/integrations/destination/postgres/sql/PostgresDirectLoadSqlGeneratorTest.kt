@@ -77,19 +77,22 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             "targetName" varchar
             );
             COMMIT;
-            """
+            """.trimIndent()
 
-        assertEqualsIgnoreIndentation(expected, sql)
+        assertEqualsIgnoreWhitespace(expected, sql)
     }
 
-    private fun assertEqualsIgnoreIndentation(expected: String, actual: String) {
+    private fun assertEqualsIgnoreWhitespace(expected: String, actual: String) {
         assertEquals(
-            normalizeIndentation(expected),
-            normalizeIndentation(actual))
+            dropWhitespace(expected),
+            dropWhitespace(actual))
     }
 
-    private fun normalizeIndentation(text: String) = text
-        .lines().joinToString("\n") { it.trim() }
+    private fun dropWhitespace(text: String) = text
+        .lines()
+        .map { it.trim()}
+        .filter { it.isNotEmpty() }
+        .joinToString("\n") { it.trim() }
 
     @Test
     fun testCreateTableNoReplace() {
@@ -124,9 +127,9 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             "targetId" varchar
             );
             COMMIT;
-            """
+            """.trimIndent()
 
-        assertEqualsIgnoreIndentation(expected, sql)
+        assertEqualsIgnoreWhitespace(expected, sql)
     }
 
     @Test
