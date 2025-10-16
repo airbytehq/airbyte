@@ -1,12 +1,43 @@
 # DataGen
 
-Airbyte's certified DataGen connector offers the following features:
+The DataGen source connector generates synthetic data for testing and development purposes. This connector is designed for end-to-end testing of data destinations and for testing Airbyte configurations in speed mode without requiring access to an external data source.
 
-This source generates fake data for testing destinations in speed mode.
-Currently supported DataGen types:
+## Prerequisites
 
-- Incremental: Has one column 'id' that contains monotonically increasing integers.
-- All Types: Produces one column per Airbyte data type.
+No prerequisites are required to use this connector. DataGen generates data locally and does not connect to any external systems.
+
+## Setup guide
+
+1. Log in to your Airbyte Cloud or Airbyte Open Source account.
+2. Click **Sources** and then click **+ New source**.
+3. On the Set up the source page, select **DataGen** from the Source type dropdown.
+4. Enter a name for your DataGen source.
+5. Configure the data generation settings:
+   - **Data Generation Type**: Choose between **Incremental** or **All Types**.
+   - **Max Record**: Specify the total number of records to generate (minimum 1, maximum 100 billion). Default is 100.
+   - **Max Concurrency** (optional): Set the maximum number of concurrent data generators. Leave empty to let Airbyte optimize performance automatically.
+6. Click **Set up source**.
+
+## Supported sync modes
+
+The DataGen source connector supports the following sync mode:
+
+| Feature           | Supported? |
+|:------------------|:-----------|
+| Full Refresh Sync | Yes        |
+| Incremental Sync  | No         |
+
+## Supported data generation types
+
+The connector supports two data generation patterns:
+
+### Incremental
+
+Generates a single column named `id` that contains monotonically increasing integers. This mode is useful for testing incremental data loading and verifying that data arrives in the expected order.
+
+### All types
+
+Generates one column for each Airbyte data type, including string, integer, number, boolean, timestamp, date, time, array, and object types. This mode is useful for testing type handling and schema compatibility across different destinations.
 
 ## Changelog
 
