@@ -476,7 +476,7 @@ global:
 
 #### Configuring External Logging
 
-For Self-Managed Enterprise deployments, spin up standalone log storage for additional reliability using tools such as S3 and GCS. Don't use the default internal Minio storage, `airbyte/minio`. It's then a common practice to configure additional log forwarding from external log storage into your observability tool.
+For Self-Managed Enterprise deployments, spin up standalone log storage for additional reliability using tools such as S3 and GCS. Don't use the default internal MinIO storage, `airbyte/minio`. It's then a common practice to configure additional log forwarding from external log storage into your observability tool.
 
 <details>
 <summary>External log storage setup steps</summary>
