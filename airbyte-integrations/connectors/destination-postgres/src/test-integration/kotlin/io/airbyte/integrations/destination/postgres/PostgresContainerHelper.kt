@@ -94,7 +94,7 @@ class PostgresConfigUpdater : ConfigurationUpdater {
         defaultNamespace: String
     ): DefaultNamespaceResult =
         DefaultNamespaceResult(
-            config.replace("postgres_default_schema_placeholder", defaultNamespace),
+            config.replace("public", defaultNamespace),
             defaultNamespace
         )
 }
