@@ -54,6 +54,16 @@ class TableOperationsTestHarness(private val client: TableOperationsClient) {
         }
     }
 
+    /** Creates a test namespace and verifies it was created. */
+    suspend fun createTestNamespaceVerifyExists(testNamespace: String) {
+        assertNamespaceDoesNotExist(testNamespace)
+
+        client.createNamespace(testNamespace)
+        assert(client.namespaceExists(testNamespace)) {
+            "test namespace: $testNamespace was not created as expected."
+        }
+    }
+
     /** Safely drops a namespace, logging any errors. */
     suspend fun cleanupNamespace(namespace: String) {
         try {

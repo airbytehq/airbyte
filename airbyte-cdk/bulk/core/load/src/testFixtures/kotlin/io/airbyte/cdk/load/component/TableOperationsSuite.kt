@@ -9,9 +9,7 @@ import io.airbyte.cdk.load.component.TableOperationsFixtures.sortByTestField
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.message.Meta
-import io.airbyte.cdk.load.table.TableName
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
-import java.util.UUID
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
@@ -66,10 +64,14 @@ interface TableOperationsSuite {
 
     /** Tests table creation and deletion operations. */
     fun `create and drop tables`() = runTest {
-        val testTable = Fixtures.generateTestTableName("table-test-table")
+        val testNamespace = Fixtures.generateTestNamespace("table-test-namespace")
+        harness.createTestNamespaceVerifyExists(testNamespace)
+
+        val testTable = Fixtures.generateTestTableName("table-test-table", testNamespace)
         harness.assertTableDoesNotExist(testTable)
 
         try {
+
             client.createTable(
                 tableName = testTable,
                 columnNameMapping = Fixtures.TEST_MAPPING,
@@ -104,7 +106,10 @@ interface TableOperationsSuite {
         inputRecords: List<Map<String, AirbyteValue>>,
         expectedRecords: List<Map<String, Any>>,
     ) = runTest {
-        val testTable = Fixtures.generateTestTableName("insert-test-table")
+        val testNamespace = Fixtures.generateTestNamespace("insert-test-namespace")
+        harness.createTestNamespaceVerifyExists(testNamespace)
+
+        val testTable = Fixtures.generateTestTableName("insert-test-table", testNamespace)
         harness.assertTableDoesNotExist(testTable)
 
         try {
@@ -133,7 +138,10 @@ interface TableOperationsSuite {
 
     /** Tests the ability to count rows in a table across multiple insertions. */
     fun `count table rows`() = runTest {
-        val testTable = Fixtures.generateTestTableName("count-test-table")
+        val testNamespace = Fixtures.generateTestNamespace("count-test-namespace")
+        harness.createTestNamespaceVerifyExists(testNamespace)
+
+        val testTable = Fixtures.generateTestTableName("count-test-table", testNamespace)
         harness.assertTableDoesNotExist(testTable)
 
         try {
@@ -189,7 +197,10 @@ interface TableOperationsSuite {
 
     /** Tests retrieval of the generation ID from inserted records. */
     fun `get generation id`() = runTest {
-        val testTable = Fixtures.generateTestTableName("gen-id-test-table")
+        val testNamespace = Fixtures.generateTestNamespace("gen-id-test-namespace")
+        harness.createTestNamespaceVerifyExists(testNamespace)
+
+        val testTable = Fixtures.generateTestTableName("gen-id-test-table", testNamespace)
         harness.assertTableDoesNotExist(testTable)
 
         try {
@@ -233,20 +244,30 @@ interface TableOperationsSuite {
             "Source and target table input records must be different to properly test overwrite."
         }
 
-        val sourceTable = Fixtures.generateTestTableName("overwrite-test-source-table")
-        val targetTable = Fixtures.generateTestTableName("overwrite-test-target-table")
+        val testNamespace = Fixtures.generateTestNamespace("overwrite-test-namespace")
+        harness.createTestNamespaceVerifyExists(testNamespace)
+
+        val sourceTable =
+            Fixtures.generateTestTableName("overwrite-test-source-table", testNamespace)
+        val targetTable =
+            Fixtures.generateTestTableName("overwrite-test-target-table", testNamespace)
 
         harness.assertTableDoesNotExist(sourceTable)
         harness.assertTableDoesNotExist(targetTable)
 
-        val schema = Fixtures.TEST_INTEGER_SCHEMA
-        val columnNameMapping = Fixtures.TEST_MAPPING
-
         try {
-            harness.createTestTableAndVerifyExists(sourceTable, schema, columnNameMapping)
+            harness.createTestTableAndVerifyExists(
+                sourceTable,
+                Fixtures.TEST_INTEGER_SCHEMA,
+                Fixtures.TEST_MAPPING
+            )
             harness.insertAndVerifyRecordCount(sourceTable, sourceInputRecords)
 
-            harness.createTestTableAndVerifyExists(targetTable, schema, columnNameMapping)
+            harness.createTestTableAndVerifyExists(
+                targetTable,
+                Fixtures.TEST_INTEGER_SCHEMA,
+                Fixtures.TEST_MAPPING
+            )
             harness.insertAndVerifyRecordCount(targetTable, targetInputRecords)
 
             client.overwriteTable(sourceTable, targetTable)
@@ -290,23 +311,31 @@ interface TableOperationsSuite {
         targetInputRecords: List<Map<String, AirbyteValue>>,
         expectedRecords: List<Map<String, Any>>,
     ) = runTest {
-        val columnNameMapping = Fixtures.TEST_MAPPING
-        val schema = Fixtures.TEST_INTEGER_SCHEMA
+        val testNamespace = Fixtures.generateTestNamespace("overwrite-test-namespace")
+        harness.createTestNamespaceVerifyExists(testNamespace)
 
-        val sourceTable = Fixtures.generateTestTableName("copy-test-source-table")
-        val targetTable = Fixtures.generateTestTableName("copy-test-target-table")
+        val sourceTable = Fixtures.generateTestTableName("copy-test-source-table", testNamespace)
+        val targetTable = Fixtures.generateTestTableName("copy-test-target-table", testNamespace)
 
         harness.assertTableDoesNotExist(sourceTable)
         harness.assertTableDoesNotExist(targetTable)
 
         try {
-            harness.createTestTableAndVerifyExists(sourceTable, schema, columnNameMapping)
+            harness.createTestTableAndVerifyExists(
+                sourceTable,
+                Fixtures.TEST_INTEGER_SCHEMA,
+                Fixtures.TEST_MAPPING
+            )
             harness.insertAndVerifyRecordCount(sourceTable, sourceInputRecords)
 
-            harness.createTestTableAndVerifyExists(targetTable, schema, columnNameMapping)
+            harness.createTestTableAndVerifyExists(
+                targetTable,
+                Fixtures.TEST_INTEGER_SCHEMA,
+                Fixtures.TEST_MAPPING
+            )
             harness.insertAndVerifyRecordCount(targetTable, targetInputRecords)
 
-            client.copyTable(columnNameMapping, sourceTable, targetTable)
+            client.copyTable(Fixtures.TEST_MAPPING, sourceTable, targetTable)
 
             val copyTableRecords = harness.readTableWithoutMetaColumns(targetTable)
 
@@ -343,15 +372,10 @@ interface TableOperationsSuite {
         targetInputRecords: List<Map<String, AirbyteValue>>,
         expectedRecords: List<Map<String, Any>>,
     ) = runTest {
-        val columnNameMapping = Fixtures.ID_TEST_WITH_CDC_MAPPING
-        val sourceSchema = Fixtures.ID_AND_TEST_SCHEMA
+        val testNamespace = Fixtures.generateTestNamespace("upsert-test-namespace")
+        harness.createTestNamespaceVerifyExists(testNamespace)
 
-        val uniquePostFix = UUID.randomUUID()
-        val sourceTable =
-            TableName(
-                Fixtures.DEFAULT_NAMESPACE,
-                "upsert-test-source-table-$uniquePostFix",
-            )
+        val sourceTable = Fixtures.generateTestTableName("upsert-test-source-table", testNamespace)
 
         harness.assertTableDoesNotExist(sourceTable)
 
@@ -359,14 +383,10 @@ interface TableOperationsSuite {
             Fixtures.createAppendStream(
                 namespace = sourceTable.namespace,
                 name = sourceTable.name,
-                schema = sourceSchema,
+                schema = Fixtures.ID_AND_TEST_SCHEMA,
             )
-        val targetSchema = Fixtures.ID_TEST_WITH_CDC_SCHEMA
-        val targetTable =
-            TableName(
-                Fixtures.DEFAULT_NAMESPACE,
-                "upsert-test-target-table-$uniquePostFix",
-            )
+
+        val targetTable = Fixtures.generateTestTableName("upsert-test-target-table", testNamespace)
 
         harness.assertTableDoesNotExist(targetTable)
 
@@ -374,7 +394,7 @@ interface TableOperationsSuite {
             Fixtures.createDedupeStream(
                 namespace = targetTable.namespace,
                 name = targetTable.name,
-                schema = targetSchema,
+                schema = Fixtures.ID_TEST_WITH_CDC_SCHEMA,
                 primaryKey = listOf(listOf(Fixtures.ID_FIELD)),
                 cursor = listOf(Fixtures.TEST_FIELD),
             )
@@ -382,21 +402,26 @@ interface TableOperationsSuite {
         try {
             harness.createTestTableAndVerifyExists(
                 tableName = sourceTable,
-                columnNameMapping = columnNameMapping,
-                schema = sourceSchema,
+                columnNameMapping = Fixtures.ID_TEST_WITH_CDC_MAPPING,
+                schema = Fixtures.ID_AND_TEST_SCHEMA,
                 stream = sourceStream,
             )
             harness.insertAndVerifyRecordCount(sourceTable, sourceInputRecords)
 
             harness.createTestTableAndVerifyExists(
                 tableName = targetTable,
-                columnNameMapping = columnNameMapping,
-                schema = targetSchema,
+                columnNameMapping = Fixtures.ID_TEST_WITH_CDC_MAPPING,
+                schema = Fixtures.ID_TEST_WITH_CDC_SCHEMA,
                 stream = targetStream,
             )
             harness.insertAndVerifyRecordCount(targetTable, targetInputRecords)
 
-            client.upsertTable(targetStream, columnNameMapping, sourceTable, targetTable)
+            client.upsertTable(
+                targetStream,
+                Fixtures.ID_TEST_WITH_CDC_MAPPING,
+                sourceTable,
+                targetTable
+            )
 
             val upsertTableRecords = harness.readTableWithoutMetaColumns(targetTable)
 

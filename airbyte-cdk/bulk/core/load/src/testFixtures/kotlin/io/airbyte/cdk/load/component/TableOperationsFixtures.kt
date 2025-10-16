@@ -25,9 +25,6 @@ import java.util.UUID
  * schemas, column mappings, and field definitions.
  */
 object TableOperationsFixtures {
-    // Common namespace
-    const val DEFAULT_NAMESPACE = "default"
-
     // Common field names
     const val TEST_FIELD = "test"
     const val ID_FIELD = "id"
@@ -133,7 +130,7 @@ object TableOperationsFixtures {
     // Generate unique test table and test namespaces
     fun generateTestTableName(
         prefix: String,
-        namespace: String = DEFAULT_NAMESPACE,
+        namespace: String,
     ): TableName {
         return TableName(namespace, "$prefix-${UUID.randomUUID()}")
     }
