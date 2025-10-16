@@ -211,7 +211,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
     }
 
     @Test
-    fun testToDialectTypeMappingSimple() {
+    fun testToDialectTypeMapping() {
         with(postgresDirectLoadSqlGenerator) {
             assertEquals("boolean", BooleanType.toDialectType())
             assertEquals("date", DateType.toDialectType())
@@ -233,7 +233,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
     }
 
     @Test
-    fun testToDialectTypeMappingComplex() {
+    fun testToDialectTypeMappingUnions() {
         with(postgresDirectLoadSqlGenerator) {
             val unionWithStruct = UnionType(
                 options = setOf(
