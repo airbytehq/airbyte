@@ -14,15 +14,16 @@ import com.google.common.annotations.VisibleForTesting
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.component.TableOperationsClient
+import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
 import io.airbyte.cdk.load.message.Meta
-import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.Sql
-import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.AlterTableReport
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.ColumnAdd
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.ColumnChange
-import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNativeOperations
+import io.airbyte.cdk.load.table.ColumnNameMapping
+import io.airbyte.cdk.load.table.TableName
 import io.airbyte.cdk.util.CollectionUtils.containsAllIgnoreCase
 import io.airbyte.cdk.util.containsIgnoreCase
 import io.airbyte.cdk.util.findIgnoreCase
@@ -37,11 +38,11 @@ private val logger = KotlinLogging.logger {}
 @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", "kotlin coroutines")
 class BigqueryDirectLoadNativeTableOperations(
     private val bigquery: BigQuery,
-    private val sqlOperations: BigqueryDirectLoadSqlTableOperations,
+    private val sqlOperations: TableOperationsClient,
     private val databaseHandler: BigQueryDatabaseHandler,
     private val projectId: String,
     private val tempTableNameGenerator: TempTableNameGenerator,
-) : DirectLoadTableNativeOperations {
+) : TableSchemaEvolutionClient {
     override suspend fun ensureSchemaMatches(
         stream: DestinationStream,
         tableName: TableName,
@@ -88,21 +89,6 @@ class BigqueryDirectLoadNativeTableOperations(
                 "Encountered an error while modifying the schema for stream ${stream.mappedDescriptor.toPrettyString()}. If this error persists, you may need to manually modify the table's schema."
             }
             throw e
-        }
-    }
-
-    override suspend fun getGenerationId(tableName: TableName): Long {
-        val result =
-            bigquery.query(
-                QueryJobConfiguration.of(
-                    "SELECT _airbyte_generation_id FROM `${tableName.namespace}`.`${tableName.name}` LIMIT 1",
-                ),
-            )
-        val value = result.iterateAll().first().get(Meta.COLUMN_NAME_AB_GENERATION_ID)
-        return if (value.isNull) {
-            0
-        } else {
-            value.longValue
         }
     }
 
