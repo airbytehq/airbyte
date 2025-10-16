@@ -165,7 +165,19 @@ class PostgresDataDumper(
             // JSONB and JSON types
             is PGobject -> {
                 val jsonNode = io.airbyte.commons.json.Jsons.deserialize(value.value!!)
-                io.airbyte.commons.json.Jsons.convertValue(jsonNode, Map::class.java)
+                // JSONB can contain objects, arrays, or primitives (strings, numbers, booleans, null)
+                // Try to convert to Map if it's an object, otherwise return the primitive value
+                when {
+                    jsonNode.isObject -> io.airbyte.commons.json.Jsons.convertValue(jsonNode, Map::class.java) as Any
+                    jsonNode.isArray -> io.airbyte.commons.json.Jsons.convertValue(jsonNode, List::class.java) as Any
+                    jsonNode.isTextual -> jsonNode.asText() ?: ""
+                    jsonNode.isNumber -> when {
+                        jsonNode.isIntegralNumber -> jsonNode.asLong() as Any
+                        else -> jsonNode.asDouble() as Any
+                    }
+                    jsonNode.isBoolean -> jsonNode.asBoolean() as Any
+                    else -> jsonNode.toString()
+                }
             }
             else -> value
         }
@@ -195,7 +207,7 @@ class PostgresAcceptanceTest : BasicFunctionalityIntegrationTest(
     destinationCleaner = PostgresDataCleaner,
     isStreamSchemaRetroactive = true,
     dedupBehavior = DedupBehavior(DedupBehavior.CdcDeletionMode.HARD_DELETE),
-    stringifySchemalessObjects = true,
+    stringifySchemalessObjects = false,
     schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
     schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
     unionBehavior = UnionBehavior.PASS_THROUGH,

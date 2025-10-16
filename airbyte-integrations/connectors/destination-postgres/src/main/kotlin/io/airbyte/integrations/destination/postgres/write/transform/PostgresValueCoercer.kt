@@ -11,6 +11,7 @@ import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.data.UnionType
+import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
 import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
@@ -49,7 +50,7 @@ internal const val TIMESTAMP_MAX_EPOCH_SECONDS = 9223371331200L
 class PostgresValueCoercer : ValueCoercer {
     override fun map(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
         value.abValue =
-            if (value.type is UnionType) {
+            if (value.type is UnionType || value.type is UnknownType) {
                 StringValue(value.abValue.serializeToString())
             } else {
                 value.abValue
