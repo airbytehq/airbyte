@@ -2,6 +2,10 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
 # Asana Migration Guide
 
+## Upgrading to 2.0.0
+
+This release introduces an additional credential config option using OAuth.
+
 ## Upgrading to 1.0.0
 
 We're continuously striving to enhance the quality and reliability of our connectors at Airbyte.
