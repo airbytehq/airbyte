@@ -393,43 +393,16 @@ const config = {
           },
           {
             type: 'dropdown',
-            label: 'Developers and AI',
+            label: 'AI agents',
+            to: '/ai-agents',
             position: 'left',
             items: [
-              {
-                to: "/platform/using-airbyte/configuring-api-access",
-                label: "Get an access token",
-              },
-              {
-                type: 'html',
-                value: '<hr />',
-              },
-              {
-                to: '/platform/api-documentation',
-                label: 'Airbyte developer guides',
-              },
-              {
-                to: 'https://reference.airbyte.com',
-                html: 'Airbyte API reference <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"><path d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"/></svg>',
-              },
-              {
-                type: 'html',
-                value: '<hr />',
-              },
-              {
-                type: "docSidebar",
-                docsPluginId: "ai-agents",
-                sidebarId: "ai-agents",
-                label: "AI agents",
-              },
-
               {
                 type: "docSidebar",
                 docsPluginId: "embedded-api",
                 sidebarId: "defaultSidebar",
                 label: "Embedded and Sonar API reference",
               },
-              // ... more items
             ],
           },
           {
