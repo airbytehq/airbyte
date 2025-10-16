@@ -139,7 +139,7 @@ class PostgresDirectLoadSqlGenerator {
     }
 
     private fun getTargetColumnNames(columnNameMapping: ColumnNameMapping): List<String> =
-        DEFAULT_COLUMNS.map { it.columnName } + columnNameMapping.map { (_, targetName) -> targetName }
+        DEFAULT_COLUMNS.map { "\"${it.columnName}\"" } + columnNameMapping.map { (_, targetName) -> "\"${targetName}\"" }
 
     @Suppress("UNUSED_PARAMETER")
     fun upsertTable(
