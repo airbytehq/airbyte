@@ -22,8 +22,8 @@ data:
   connectorIPCOptions:
     dataChannel:
       version: "0.0.1"
-      supportedSerialization: ["JSONL"]
-      supportedTransport: ["STDIO"]
+      supportedSerialization: ["JSONL", "PROTOBUF"]
+      supportedTransport: ["SOCKET", "STDIO"]
   registryOverrides:
     cloud:
       enabled: true
