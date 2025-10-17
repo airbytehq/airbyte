@@ -172,14 +172,13 @@ class PostgresDirectLoadSqlGenerator {
     fun getGenerationId(tableName: TableName): String =
         "SELECT \"${COLUMN_NAME_AB_GENERATION_ID}\" FROM ${getFullyQualifiedName(tableName)} LIMIT 1;".andLog()
 
-    fun showColumns(tableName: TableName): String =
+    fun getTableSchema(tableName: TableName): String =
         """
-        SELECT column_name
+        SELECT column_name, data_type
         FROM information_schema.columns
         WHERE table_schema = '${tableName.namespace}'
-          AND table_name = '${tableName.name}'
-        ORDER BY ordinal_position
-        """.trimIndent()
+        AND table_name = '${tableName.name}';
+        """.trimIndent().andLog()
 
     fun copyFromCsv(tableName: TableName): String =
         """
