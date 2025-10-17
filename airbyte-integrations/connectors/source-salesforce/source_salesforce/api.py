@@ -365,11 +365,11 @@ class Salesforce:
         schema = {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "additionalProperties": True, "properties": {}}
         for field in response["fields"]:
             schema["properties"][field["name"]] = self.field_to_property_schema(field)  # type: ignore[index]
-        
+
         # Cache field metadata for later use in replication key selection
         if stream_name:
             self._fields_metadata_cache[stream_name] = response["fields"]
-        
+
         return schema
 
     def generate_schemas(self, stream_objects: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -407,13 +407,13 @@ class Salesforce:
 
         pk = "Id" if "Id" in fields_list else None
         replication_key = None
-        
+
         # Check if we have cached field metadata for filterable field detection
         fields_metadata = self._fields_metadata_cache.get(stream_name, [])
         if fields_metadata:
             filterable_fields = {field["name"] for field in fields_metadata if field.get("filterable", False)}
             replication_key = next((candidate for candidate in REPLICATION_KEY_CANDIDATES if candidate in filterable_fields), None)
-        
+
         # Fallback to original logic if no filterable field found or no metadata available
         if not replication_key:
             replication_key = next((candidate for candidate in REPLICATION_KEY_CANDIDATES if candidate in fields_list), None)
