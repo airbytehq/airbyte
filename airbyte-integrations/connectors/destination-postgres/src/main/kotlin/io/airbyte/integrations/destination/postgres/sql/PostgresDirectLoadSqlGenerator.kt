@@ -40,23 +40,23 @@ class PostgresDirectLoadSqlGenerator {
     companion object {
         internal val DEFAULT_COLUMNS =
             listOf(
-                ColumnAndType(
+                Column(
                     columnName = COLUMN_NAME_AB_RAW_ID,
                     columnTypeName = PostgresDataType.VARCHAR.typeName,
                     nullable = false
 
                 ),
-                ColumnAndType(
+                Column(
                     columnName = COLUMN_NAME_AB_EXTRACTED_AT,
                     columnTypeName = PostgresDataType.TIMESTAMP_WITH_TIMEZONE.typeName,
                     nullable = false
                 ),
-                ColumnAndType(
+                Column(
                     columnName = COLUMN_NAME_AB_META,
                     columnTypeName = PostgresDataType.JSONB.typeName,
                     nullable = false
                 ),
-                ColumnAndType(
+                Column(
                     columnName = COLUMN_NAME_AB_GENERATION_ID,
                     columnTypeName = PostgresDataType.BIGINT.typeName,
                     nullable = false
@@ -209,7 +209,7 @@ class PostgresDirectLoadSqlGenerator {
         }
 }
 
-data class ColumnAndType(val columnName: String, val columnTypeName: String, val nullable: Boolean = false) {
+data class Column(val columnName: String, val columnTypeName: String, val nullable: Boolean = true) {
     override fun toString(): String {
         val isNullableSuffix = if (nullable) "" else "NOT NULL"
         return "\"$columnName\" $columnTypeName $isNullableSuffix".trim()
