@@ -261,6 +261,7 @@ Now that you have set up the Salesforce source connector, check out the followin
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.7.13 | 2025-09-20 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Fix incorrect `replication_key` by checking for `filterable` fields|
 | 2.7.12 | 2025-09-10 | [66136](https://github.com/airbytehq/airbyte/pull/66136) | Update to CDK v7 |
 | 2.7.11 | 2025-05-14 | [60271](https://github.com/airbytehq/airbyte/pull/60271) | Define suggested streams |
 | 2.7.10 | 2025-05-10 | [60100](https://github.com/airbytehq/airbyte/pull/60100) | Update dependencies |
