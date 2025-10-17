@@ -79,7 +79,7 @@ class PostgresDirectLoadSqlGenerator {
         columnNameMapping: ColumnNameMapping,
         replace: Boolean
     ): String {
-        val columnDeclarations = columnsAndTypes(stream, columnNameMapping)
+        val columnDeclarations = columnsAndTypes(stream, columnNameMapping).joinToString(",\n")
         val dropTableIfExistsStatement = if (replace) "DROP TABLE IF EXISTS ${getFullyQualifiedName(tableName)};" else ""
         return """
             BEGIN TRANSACTION;
@@ -93,19 +93,23 @@ class PostgresDirectLoadSqlGenerator {
             .andLog()
     }
 
-    private fun columnsAndTypes(
+    fun columnsAndTypes(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping
-    ): String {
+    ): List<Column> {
         val targetColumns = stream.schema
             .asColumns()
             .map { (columnName, columnType) ->
                 val targetColumnName = columnNameMapping[columnName] ?: columnName
                 val typeName = columnType.type.toDialectType()
-                "\"$targetColumnName\" $typeName"
+                Column(
+                    columnName = targetColumnName,
+                    columnTypeName = typeName,
+                )
             }
+            .toList()
 
-        return (DEFAULT_COLUMNS + targetColumns).joinToString(",\n")
+        return (DEFAULT_COLUMNS + targetColumns)
     }
 
     fun overwriteTable(
