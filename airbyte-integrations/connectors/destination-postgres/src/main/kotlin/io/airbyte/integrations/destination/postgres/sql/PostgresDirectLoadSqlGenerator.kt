@@ -196,6 +196,9 @@ class PostgresDirectLoadSqlGenerator {
     private fun getName(tableName: TableName): String =
         "\"${tableName.name}\""
 
+    private fun getName(column: Column): String =
+        "\"${column.columnName}\""
+
     fun AirbyteType.toDialectType(): String =
         when (this) {
             BooleanType -> PostgresDataType.BOOLEAN.typeName
