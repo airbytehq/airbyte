@@ -14,7 +14,7 @@ We have detected that your PR is from an **organization fork** rather than a per
 **How to Fix:**
 1. Fork the Airbyte repository under your personal GitHub account (not your organization).
 2. Push your branch to your personal fork.
-3. Create a new PR from your personal .
+3. Create a new PR from your personal fork.
 
 This will allow Airbyte maintainers to push any necessary fixes directly to your branch, significantly speeding up the review process.
 {{ end }}
