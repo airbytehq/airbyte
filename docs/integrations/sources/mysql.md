@@ -230,6 +230,7 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.50.10     | 2025-10-17 | [#67711](https://github.com/airbytehq/airbyte/issues/67711) | Fix CDC replication error where null primary keys were incorrectly skipped during record deserialization                                        |
 | 3.50.9      | 2025-10-06  | [67151](https://github.com/airbytehq/airbyte/pull/66515)   | Fix CDC decorating fields encoding to Protobuf                                                                                                  |
 | 3.50.8      | 2025-09-18 | [66515](https://github.com/airbytehq/airbyte/pull/66515)   | Fix division by zero in partition creation when sampling produces no split boundaries.                                                          |
 | 3.50.7      | 2025-09-10 | [66179](https://github.com/airbytehq/airbyte/pull/66179)   | Bump to the latest CDK fixing protobuf encoding of certain column types                                                                         |
