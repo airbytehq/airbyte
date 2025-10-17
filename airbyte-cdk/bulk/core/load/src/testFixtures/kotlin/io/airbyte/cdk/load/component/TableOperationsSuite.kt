@@ -5,10 +5,20 @@
 package io.airbyte.cdk.load.component
 
 import io.airbyte.cdk.load.component.TableOperationsFixtures as Fixtures
+import io.airbyte.cdk.load.component.TableOperationsFixtures.insertRecords
+import io.airbyte.cdk.load.component.TableOperationsFixtures.reverseColumnNameMapping
 import io.airbyte.cdk.load.component.TableOperationsFixtures.sortByTestField
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.IntegerValue
+import io.airbyte.cdk.load.data.ObjectValue
+import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.message.Meta
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
+import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -155,9 +165,33 @@ interface TableOperationsSuite {
 
             val records1 =
                 listOf(
-                    mapOf("test" to IntegerValue(42)),
-                    mapOf("test" to IntegerValue(42)),
-                    mapOf("test" to IntegerValue(42)),
+                    mapOf(
+                        COLUMN_NAME_AB_RAW_ID to
+                            StringValue("246f1ff1-eae9-4eeb-b02b-9ffecfc46fc1"),
+                        COLUMN_NAME_AB_EXTRACTED_AT to
+                            TimestampWithTimezoneValue("2025-01-22T00:00:00Z"),
+                        COLUMN_NAME_AB_META to ObjectValue(linkedMapOf()),
+                        COLUMN_NAME_AB_GENERATION_ID to IntegerValue(1),
+                        "test" to IntegerValue(42),
+                    ),
+                    mapOf(
+                        COLUMN_NAME_AB_RAW_ID to
+                            StringValue("c9f1272d-df1f-4a3f-95d0-3a704676d743"),
+                        COLUMN_NAME_AB_EXTRACTED_AT to
+                            TimestampWithTimezoneValue("2025-01-22T00:00:00Z"),
+                        COLUMN_NAME_AB_META to ObjectValue(linkedMapOf()),
+                        COLUMN_NAME_AB_GENERATION_ID to IntegerValue(1),
+                        "test" to IntegerValue(42),
+                    ),
+                    mapOf(
+                        COLUMN_NAME_AB_RAW_ID to
+                            StringValue("0dafda3b-d465-4f34-baf2-85f1887cbb95"),
+                        COLUMN_NAME_AB_EXTRACTED_AT to
+                            TimestampWithTimezoneValue("2025-01-22T00:00:00Z"),
+                        COLUMN_NAME_AB_META to ObjectValue(linkedMapOf()),
+                        COLUMN_NAME_AB_GENERATION_ID to IntegerValue(1),
+                        "test" to IntegerValue(42),
+                    ),
                 )
 
             client.insertRecords(testTable, records1)
@@ -168,7 +202,15 @@ interface TableOperationsSuite {
 
             val records2 =
                 listOf(
-                    mapOf("test" to IntegerValue(42)),
+                    mapOf(
+                        COLUMN_NAME_AB_RAW_ID to
+                            StringValue("ed1fdd92-06ac-465d-ab87-2f0fe1f09f30"),
+                        COLUMN_NAME_AB_EXTRACTED_AT to
+                            TimestampWithTimezoneValue("2025-01-22T00:00:00Z"),
+                        COLUMN_NAME_AB_META to ObjectValue(linkedMapOf()),
+                        COLUMN_NAME_AB_GENERATION_ID to IntegerValue(1),
+                        "test" to IntegerValue(42),
+                    ),
                 )
 
             client.insertRecords(testTable, records2)
@@ -179,12 +221,60 @@ interface TableOperationsSuite {
 
             val records3 =
                 listOf(
-                    mapOf("test" to IntegerValue(42)),
-                    mapOf("test" to IntegerValue(42)),
-                    mapOf("test" to IntegerValue(42)),
-                    mapOf("test" to IntegerValue(42)),
-                    mapOf("test" to IntegerValue(42)),
-                    mapOf("test" to IntegerValue(42)),
+                    mapOf(
+                        COLUMN_NAME_AB_RAW_ID to
+                            StringValue("609ffd26-c8b4-40bb-8020-5b825fc2e585"),
+                        COLUMN_NAME_AB_EXTRACTED_AT to
+                            TimestampWithTimezoneValue("2025-01-22T00:00:00Z"),
+                        COLUMN_NAME_AB_META to ObjectValue(linkedMapOf()),
+                        COLUMN_NAME_AB_GENERATION_ID to IntegerValue(1),
+                        "test" to IntegerValue(42),
+                    ),
+                    mapOf(
+                        COLUMN_NAME_AB_RAW_ID to
+                            StringValue("073a10e8-7a9d-40eb-b268-f0f9110b8ba7"),
+                        COLUMN_NAME_AB_EXTRACTED_AT to
+                            TimestampWithTimezoneValue("2025-01-22T00:00:00Z"),
+                        COLUMN_NAME_AB_META to ObjectValue(linkedMapOf()),
+                        COLUMN_NAME_AB_GENERATION_ID to IntegerValue(1),
+                        "test" to IntegerValue(42),
+                    ),
+                    mapOf(
+                        COLUMN_NAME_AB_RAW_ID to
+                            StringValue("9ddb052c-3658-46be-9dd2-d81fdde895ea"),
+                        COLUMN_NAME_AB_EXTRACTED_AT to
+                            TimestampWithTimezoneValue("2025-01-22T00:00:00Z"),
+                        COLUMN_NAME_AB_META to ObjectValue(linkedMapOf()),
+                        COLUMN_NAME_AB_GENERATION_ID to IntegerValue(1),
+                        "test" to IntegerValue(42),
+                    ),
+                    mapOf(
+                        COLUMN_NAME_AB_RAW_ID to
+                            StringValue("18425373-bb70-4f53-8cac-59f2eba398e6"),
+                        COLUMN_NAME_AB_EXTRACTED_AT to
+                            TimestampWithTimezoneValue("2025-01-22T00:00:00Z"),
+                        COLUMN_NAME_AB_META to ObjectValue(linkedMapOf()),
+                        COLUMN_NAME_AB_GENERATION_ID to IntegerValue(1),
+                        "test" to IntegerValue(42),
+                    ),
+                    mapOf(
+                        COLUMN_NAME_AB_RAW_ID to
+                            StringValue("6081dceb-21ef-46be-bcf4-85b3d719d64es"),
+                        COLUMN_NAME_AB_EXTRACTED_AT to
+                            TimestampWithTimezoneValue("2025-01-22T00:00:00Z"),
+                        COLUMN_NAME_AB_META to ObjectValue(linkedMapOf()),
+                        COLUMN_NAME_AB_GENERATION_ID to IntegerValue(1),
+                        "test" to IntegerValue(42),
+                    ),
+                    mapOf(
+                        COLUMN_NAME_AB_RAW_ID to
+                            StringValue("71eb9718-c6a0-4c8b-875e-cf2de7d98f52"),
+                        COLUMN_NAME_AB_EXTRACTED_AT to
+                            TimestampWithTimezoneValue("2025-01-22T00:00:00Z"),
+                        COLUMN_NAME_AB_META to ObjectValue(linkedMapOf()),
+                        COLUMN_NAME_AB_GENERATION_ID to IntegerValue(1),
+                        "test" to IntegerValue(42),
+                    ),
                 )
 
             client.insertRecords(testTable, records3)
@@ -217,8 +307,13 @@ interface TableOperationsSuite {
             val inputRecords =
                 listOf(
                     mapOf(
+                        COLUMN_NAME_AB_RAW_ID to
+                            StringValue("59ed9e9f-3197-4be5-9ef6-7caf9cc7ee04"),
+                        COLUMN_NAME_AB_EXTRACTED_AT to
+                            TimestampWithTimezoneValue("2025-01-22T00:00:00Z"),
+                        COLUMN_NAME_AB_META to ObjectValue(linkedMapOf()),
+                        COLUMN_NAME_AB_GENERATION_ID to IntegerValue(genId),
                         Fixtures.TEST_FIELD to IntegerValue(42),
-                        Meta.COLUMN_NAME_AB_GENERATION_ID to IntegerValue(genId),
                     ),
                 )
             client.insertRecords(testTable, inputRecords)

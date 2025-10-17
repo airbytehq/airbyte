@@ -13,8 +13,14 @@ import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.IntegerType
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TableName
@@ -63,21 +69,59 @@ object TableOperationsFixtures {
 
     // Common test cases
     val SINGLE_TEST_RECORD_INPUT: List<Map<String, AirbyteValue>> =
-        listOf(mapOf(TEST_FIELD to IntegerValue(42)))
+        listOf(
+            mapOf(
+                COLUMN_NAME_AB_RAW_ID to StringValue("07332f85-f41c-4cfe-971d-dcdc1e797c2d"),
+                COLUMN_NAME_AB_EXTRACTED_AT to TimestampWithTimezoneValue("2025-01-23T00:00:00Z"),
+                COLUMN_NAME_AB_META to ObjectValue(linkedMapOf()),
+                COLUMN_NAME_AB_GENERATION_ID to IntegerValue(1),
+                TEST_FIELD to IntegerValue(42),
+            )
+        )
 
     val SINGLE_TEST_RECORD_EXPECTED: List<Map<String, Any>> = listOf(mapOf(TEST_FIELD to 42L))
 
     val OVERWRITE_SOURCE_RECORDS: List<Map<String, AirbyteValue>> =
         listOf(
-            mapOf(TEST_FIELD to IntegerValue(123)),
-            mapOf(TEST_FIELD to IntegerValue(456)),
+            mapOf(
+                COLUMN_NAME_AB_RAW_ID to StringValue("ebdcf97c-5521-4852-ba55-2928b25443b6"),
+                COLUMN_NAME_AB_EXTRACTED_AT to TimestampWithTimezoneValue("2025-01-23T00:00:00Z"),
+                COLUMN_NAME_AB_META to ObjectValue(linkedMapOf()),
+                COLUMN_NAME_AB_GENERATION_ID to IntegerValue(1),
+                TEST_FIELD to IntegerValue(123),
+            ),
+            mapOf(
+                COLUMN_NAME_AB_RAW_ID to StringValue("8cbdd2d3-c351-4180-86b7-84e05f12b65f"),
+                COLUMN_NAME_AB_EXTRACTED_AT to TimestampWithTimezoneValue("2025-01-23T00:00:00Z"),
+                COLUMN_NAME_AB_META to ObjectValue(linkedMapOf()),
+                COLUMN_NAME_AB_GENERATION_ID to IntegerValue(1),
+                TEST_FIELD to IntegerValue(456),
+            ),
         )
 
     val OVERWRITE_TARGET_RECORDS: List<Map<String, AirbyteValue>> =
         listOf(
-            mapOf(TEST_FIELD to IntegerValue(86)),
-            mapOf(TEST_FIELD to IntegerValue(75)),
-            mapOf(TEST_FIELD to IntegerValue(309)),
+            mapOf(
+                COLUMN_NAME_AB_RAW_ID to StringValue("258fab3d-ba01-4a2d-9f51-2e0313ad485d"),
+                COLUMN_NAME_AB_EXTRACTED_AT to TimestampWithTimezoneValue("2025-01-22T00:00:00Z"),
+                COLUMN_NAME_AB_META to ObjectValue(linkedMapOf()),
+                COLUMN_NAME_AB_GENERATION_ID to IntegerValue(1),
+                TEST_FIELD to IntegerValue(86),
+            ),
+            mapOf(
+                COLUMN_NAME_AB_RAW_ID to StringValue("887bf227-24b0-4b8b-bb51-ea450bb4215b"),
+                COLUMN_NAME_AB_EXTRACTED_AT to TimestampWithTimezoneValue("2025-01-22T00:00:00Z"),
+                COLUMN_NAME_AB_META to ObjectValue(linkedMapOf()),
+                COLUMN_NAME_AB_GENERATION_ID to IntegerValue(1),
+                TEST_FIELD to IntegerValue(75),
+            ),
+            mapOf(
+                COLUMN_NAME_AB_RAW_ID to StringValue("b9043b04-bcec-4999-a2e1-11d7051e5725"),
+                COLUMN_NAME_AB_EXTRACTED_AT to TimestampWithTimezoneValue("2025-01-22T00:00:00Z"),
+                COLUMN_NAME_AB_META to ObjectValue(linkedMapOf()),
+                COLUMN_NAME_AB_GENERATION_ID to IntegerValue(1),
+                TEST_FIELD to IntegerValue(309),
+            ),
         )
 
     val OVERWRITE_EXPECTED_RECORDS: List<Map<String, Any>> =
@@ -97,15 +141,44 @@ object TableOperationsFixtures {
 
     val UPSERT_SOURCE_RECORDS: List<Map<String, AirbyteValue>> =
         listOf(
-            mapOf(ID_FIELD to StringValue("2"), TEST_FIELD to IntegerValue(86)),
             mapOf(
+                COLUMN_NAME_AB_RAW_ID to StringValue("5499cdef-1411-4c7e-987c-b22fe1284a49"),
+                COLUMN_NAME_AB_EXTRACTED_AT to TimestampWithTimezoneValue("2025-01-23T00:00:00Z"),
+                COLUMN_NAME_AB_META to ObjectValue(linkedMapOf()),
+                COLUMN_NAME_AB_GENERATION_ID to IntegerValue(1),
+                ID_FIELD to StringValue("2"),
+                TEST_FIELD to IntegerValue(86),
+            ),
+            mapOf(
+                COLUMN_NAME_AB_RAW_ID to StringValue("295eb05d-da91-4cf5-8d26-a2bf8b6e8ef7"),
+                COLUMN_NAME_AB_EXTRACTED_AT to TimestampWithTimezoneValue("2025-01-23T00:00:00Z"),
+                COLUMN_NAME_AB_META to ObjectValue(linkedMapOf()),
+                COLUMN_NAME_AB_GENERATION_ID to IntegerValue(1),
                 ID_FIELD to StringValue("3"),
                 TEST_FIELD to IntegerValue(75),
                 CDC_DELETED_AT_COLUMN to IntegerValue(1234),
             ),
-            mapOf(ID_FIELD to StringValue("4"), TEST_FIELD to IntegerValue(309)),
-            mapOf(ID_FIELD to StringValue("5"), TEST_FIELD to IntegerValue(309)),
             mapOf(
+                COLUMN_NAME_AB_RAW_ID to StringValue("9110dcf0-2171-4daa-a934-695163950d98"),
+                COLUMN_NAME_AB_EXTRACTED_AT to TimestampWithTimezoneValue("2025-01-23T00:00:00Z"),
+                COLUMN_NAME_AB_META to ObjectValue(linkedMapOf()),
+                COLUMN_NAME_AB_GENERATION_ID to IntegerValue(1),
+                ID_FIELD to StringValue("4"),
+                TEST_FIELD to IntegerValue(309),
+            ),
+            mapOf(
+                COLUMN_NAME_AB_RAW_ID to StringValue("35295b83-302f-49c3-af0f-cf093bc46def"),
+                COLUMN_NAME_AB_EXTRACTED_AT to TimestampWithTimezoneValue("2025-01-23T00:00:00Z"),
+                COLUMN_NAME_AB_META to ObjectValue(linkedMapOf()),
+                COLUMN_NAME_AB_GENERATION_ID to IntegerValue(1),
+                ID_FIELD to StringValue("5"),
+                TEST_FIELD to IntegerValue(309),
+            ),
+            mapOf(
+                COLUMN_NAME_AB_RAW_ID to StringValue("5773cf6f-f8b7-48f2-8f23-728a4a4eb56d"),
+                COLUMN_NAME_AB_EXTRACTED_AT to TimestampWithTimezoneValue("2025-01-23T00:00:00Z"),
+                COLUMN_NAME_AB_META to ObjectValue(linkedMapOf()),
+                COLUMN_NAME_AB_GENERATION_ID to IntegerValue(1),
                 ID_FIELD to StringValue("5"),
                 TEST_FIELD to IntegerValue(309),
                 CDC_DELETED_AT_COLUMN to IntegerValue(1234),
@@ -114,10 +187,38 @@ object TableOperationsFixtures {
 
     val UPSERT_TARGET_RECORDS: List<Map<String, AirbyteValue>> =
         listOf(
-            mapOf(ID_FIELD to StringValue("1"), TEST_FIELD to IntegerValue(123)),
-            mapOf(ID_FIELD to StringValue("2"), TEST_FIELD to IntegerValue(456)),
-            mapOf(ID_FIELD to StringValue("3"), TEST_FIELD to IntegerValue(789)),
-            mapOf(ID_FIELD to StringValue("4"), TEST_FIELD to IntegerValue(101112)),
+            mapOf(
+                COLUMN_NAME_AB_RAW_ID to StringValue("6317026e-12f9-4713-976e-ce43901bd7ce"),
+                COLUMN_NAME_AB_EXTRACTED_AT to TimestampWithTimezoneValue("2025-01-22T00:00:00Z"),
+                COLUMN_NAME_AB_META to ObjectValue(linkedMapOf()),
+                COLUMN_NAME_AB_GENERATION_ID to IntegerValue(1),
+                ID_FIELD to StringValue("1"),
+                TEST_FIELD to IntegerValue(123),
+            ),
+            mapOf(
+                COLUMN_NAME_AB_RAW_ID to StringValue("46159e3a-9bf9-42d9-8bb7-9f47d37bd663"),
+                COLUMN_NAME_AB_EXTRACTED_AT to TimestampWithTimezoneValue("2025-01-22T00:00:00Z"),
+                COLUMN_NAME_AB_META to ObjectValue(linkedMapOf()),
+                COLUMN_NAME_AB_GENERATION_ID to IntegerValue(1),
+                ID_FIELD to StringValue("2"),
+                TEST_FIELD to IntegerValue(456),
+            ),
+            mapOf(
+                COLUMN_NAME_AB_RAW_ID to StringValue("0c9770d2-d68d-4525-9bf2-d462527e25ab"),
+                COLUMN_NAME_AB_EXTRACTED_AT to TimestampWithTimezoneValue("2025-01-22T00:00:00Z"),
+                COLUMN_NAME_AB_META to ObjectValue(linkedMapOf()),
+                COLUMN_NAME_AB_GENERATION_ID to IntegerValue(1),
+                ID_FIELD to StringValue("3"),
+                TEST_FIELD to IntegerValue(789),
+            ),
+            mapOf(
+                COLUMN_NAME_AB_RAW_ID to StringValue("02e22e03-587f-4d30-9718-994357407b65"),
+                COLUMN_NAME_AB_EXTRACTED_AT to TimestampWithTimezoneValue("2025-01-22T00:00:00Z"),
+                COLUMN_NAME_AB_META to ObjectValue(linkedMapOf()),
+                COLUMN_NAME_AB_GENERATION_ID to IntegerValue(1),
+                ID_FIELD to StringValue("4"),
+                TEST_FIELD to IntegerValue(101112),
+            ),
         )
 
     val UPSERT_EXPECTED_RECORDS: List<Map<String, Any>> =
