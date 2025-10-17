@@ -64,6 +64,9 @@ object PostgresContainerHelper {
  */
 class PostgresConfigUpdater : ConfigurationUpdater {
     override fun update(config: String): String {
+        // Ensure the container is started before accessing its configuration
+        PostgresContainerHelper.start()
+
         var updatedConfig = config
 
         // If not running the connector in docker, we must use the mapped port to connect to the
