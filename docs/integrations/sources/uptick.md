@@ -30,12 +30,12 @@ Extract data from Uptick - The new standard in fire inspection software.
 | billingcards | id | DefaultPaginator | ✅ |  ✅  |
 | purchaseorderbills | id | DefaultPaginator | ✅ |  ✅  |
 | purchaseorderdockets | id | DefaultPaginator | ✅ |  ✅  |
-| invoicelineitems | id | DefaultPaginator | ✅ |  ✅  |
+| invoicelineitems | id | DefaultPaginator | ✅ |  ❌  |
 | users | id | DefaultPaginator | ✅ |  ✅  |
 | servicegroups | id | DefaultPaginator | ✅ |  ✅  |
 | costcentres | id | DefaultPaginator | ✅ |  ✅  |
-| purchaseorderlineitems | id | DefaultPaginator | ✅ |  ✅  |
-| purchaseorderbilllineitems | id | DefaultPaginator | ✅ |  ✅  |
+| purchaseorderlineitems | id | DefaultPaginator | ✅ |  ❌  |
+| purchaseorderbilllineitems | id | DefaultPaginator | ✅ |  ❌  |
 | accreditationtypes | id | DefaultPaginator | ✅ |  ✅  |
 | accreditations | id | DefaultPaginator | ✅ |  ✅  |
 | branches | id | DefaultPaginator | ✅ |  ✅  |
@@ -56,6 +56,7 @@ Extract data from Uptick - The new standard in fire inspection software.
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.3.5 | 2025-10-17 | [67585](https://github.com/airbytehq/airbyte/pull/67585) | Remove projectsectiontask and add more incremental sync streams |
 | 0.3.4 | 2025-10-14 | [67855](https://github.com/airbytehq/airbyte/pull/67855) | Update dependencies |
 | 0.3.3 | 2025-10-07 | [67515](https://github.com/airbytehq/airbyte/pull/67515) | Update dependencies |
 | 0.3.2 | 2025-10-03 | [67020](https://github.com/airbytehq/airbyte/pull/67020) | Remove start_date, include more task fields |
