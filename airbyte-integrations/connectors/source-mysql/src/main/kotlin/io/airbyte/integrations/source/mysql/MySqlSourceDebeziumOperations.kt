@@ -99,6 +99,10 @@ class MySqlSourceDebeziumOperations(
         // Turn string representations of numbers into BigDecimals.
 
         val resultRow: NativeRecordPayload = mutableMapOf()
+        // Extract primary key field IDs to ensure they're always included in the payload,
+        // even when null, to prevent "All the defined primary keys are null" validation errors.
+        val primaryKeyFields = stream.configuredPrimaryKey?.map { it.id }?.toSet() ?: emptySet()
+
         for (field in stream.schema) {
             when (field.type.airbyteSchemaType) {
                 LeafAirbyteSchemaType.INTEGER,
@@ -119,8 +123,14 @@ class MySqlSourceDebeziumOperations(
                     /* no-op */
                 }
             }
-            data[field.id] ?: continue
-            when (data[field.id]) {
+            // Always include primary key fields, even if null, to avoid validation errors
+            val fieldValue = data[field.id]
+            if (fieldValue == null && !primaryKeyFields.contains(field.id)) {
+                continue
+            }
+
+            when (fieldValue) {
+                null,
                 is NullNode -> {
                     resultRow[field.id] = FieldValueEncoder(null, NullCodec)
                 }
@@ -128,16 +138,16 @@ class MySqlSourceDebeziumOperations(
                     val codec: JsonCodec<*> =
                         when (field.type) {
                             FloatFieldType ->
-                                if (data[field.id] is FloatNode) FloatCodec else DoubleCodec
+                                if (fieldValue is FloatNode) FloatCodec else DoubleCodec
                             BytesFieldType,
                             BinaryStreamFieldType ->
-                                if (data[field.id].isBinary) BinaryCodec else TextCodec
+                                if (fieldValue.isBinary) BinaryCodec else TextCodec
                             else -> field.type.jsonEncoder as JsonCodec<*>
                         }
                     @Suppress("UNCHECKED_CAST")
                     resultRow[field.id] =
                         FieldValueEncoder(
-                            codec.decode(data[field.id]),
+                            codec.decode(fieldValue),
                             codec as JsonCodec<Any>,
                         )
                 }
