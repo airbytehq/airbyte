@@ -1,0 +1,73 @@
+---
+id: delete-embedded-sources-id
+title: "Delete Source"
+description: "**Requires a Scoped Token as the bearer token.**"
+sidebar_label: "Delete Source"
+hide_title: true
+hide_table_of_contents: true
+api: eJztWFlvGzcQ/isDPjSJsZJ8xNe+OY2DGkibIHaAApZhj8hZiQmX3JBc2aqw/70Y7uryUTRB0yc/2ZLm5jec+TgXEcdB5JfitByRUqTEVSYUBel1FbWzIhdbW5/oW609BUA4l64iBRfuK1nAAHFCMCL05CHyd/2traEd2rdkKBKgBbrTIWo7BrIK6kAegqu9pL7IhKvII3s5UyIXKulcUxfIdSsXrrUSmQgka6/jTOSXc/HbxcXHN8mpyC+vmqtMVOixpEg+JAGLJYlcJE3NOVQYJyITvk1EiTz6mjIR5IRKFPlcxFnFGiF6bcciE4XzJUaRi7pOVqKOhgXOlGiabOnhruf8GK3+K6XRWzmcECryGy4LNOG7fG4ewzkZkjEV/Nb5r1zSdd99+IMkhYB+BkFbSanYASRaGJFxdgzRQVmbqCtDG6qhv5bgn70P6xlxvv9rJHyankLlbKDAVdrd3uY/90KoJbsoagOfOmGRCelsJBtZHKvKaJmMDr4E1pmvVb7yDL2oWw9afS8Csg6s6hrjP+oqjNSLuqQ1A21vKDiJDKWFrht9IRk3AHMpOhgsXV2trJyn7mhtLUvQNGzx9WMVe4MK2DSF+OOVKvlYx5TU7OxDkZptM3luju4bWxuTznMR8++depMJ8t75tvqRyvDQVaHJqB919C4pN9l/HfC1dOqHjZ2yBfiVLTx27guxk0onSbGSQe9xJu5ZCgkaBdYmplvwX5h8gJO9hzh55/xIK0X2GSXPKEko2d19iJLPtvIuXfIjQ0A28mh+BswzYJpM7D82fs5sJG/RQCA/JQ8p72fEPCMmQaakOHErDiCydmHPxQArPZjuDBakYNCRgsFcqybRAkZTu/TX3vDiHWOVDwbGSTQTl5adTSSeaD+aRYJzZ9HDycezVJsFvzhnwLUHv84ylsVk86Jb4vlzy31SHbUtXJJcbmgWGeKhLkv0s5XrF4HdgqfoNU0pgMKI4Hg7nqApwBUwc7UHWYfoSl6d0SooiFQAHXl5Tj/jmO9dmXbwwrjbtMZv5jq0FxNKzrjPUNsAe8CZBHZCVlVO2xjyoe3Bzf1a3+Qs0ePlvVeg5DWfLUUH0pnEAKQnxTGgCf0NE4FTv8mhJXjOr1yxekFRTtqkC+/KpZf2q+6E4SVWOsAvoLyeUngFtzpOmHNoz8kUelx7Uk+HoG2kccsuw00OaEwiLI9HVKLFMS3tdlyEiexZBB3Ak3RlSVaRYvFQkdTFLBksnDHulovTUj7QNjlLR8RoWWzdXOWbm5sZlmZoH7CsfIMHvQjArCMppBhutTFANtSeIE6wJV9ejydxQ49jrQMpKJxfprzwz5FJDNSGlgqumdKXfOCeAfEEJxvas4RIcNbMYIJTAmc3hTIGZgqyuwm4TClQZykDFyfkb3WgFJDkyJJwgdr0h7xqche3mN3uH/e3RSbuesaNU0OtGjvkg4FUtl95p/q3NAo6Uq/QhkJfunJwsL1P2zsjubtfHNLOMR7t0uHrw6OjwcHe3j7uHSs8kscHIzzc39/dHu3sH1y/d2PXD9NxauDKhVhimjsdve+eMVqudb+75qvh9RPfSLp7J9JdHFQGteXrOFVk3l2SlwIrzSXcEZlYNC/fO20jiUzkOj3rpOswvxTz+QgDffamafjrbzXx7XR5lYkpes0bXbpPlU7b3erl4snsX3bJq1fwVMSLAWJ5fEzR1PxJZOIrzdqHmuaqyRavJt/n/Wc/jDyWThv2Y68/y9x4ArdiJ1JSFdd+e7Dp8ARazsC3p+9PL05FJrDm412Onm7UZIt/1ob+Zlnn81YiAbBpllVO4ONCN83f0aDm0Q==
+sidebar_class_name: "delete api-method"
+info_path: embedded-api///sonar
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Delete Source"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"delete"}
+  path={"/api/v1/embedded/sources/{id}"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+**Requires a Scoped Token as the bearer token.**
+
+Delete an existing end user source.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"name":"id","in":"path","required":true,"schema":{"type":"string","format":"uuid","title":"Id"}},{"name":"x-organization-id","in":"header","required":false,"schema":{"type":"string","format":"uuid","description":"Select the working organization. Necessary since users can belong to multiple organizations.","title":"X-Organization-Id"},"description":"Select the working organization. Necessary since users can belong to multiple organizations."}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={undefined}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"properties":{"id":{"type":"string","format":"uuid","title":"Id"},"deleted_at":{"type":"string","format":"date-time","title":"Deleted At"}},"type":"object","required":["id","deleted_at"],"title":"SourceDeleteResponse"}}}},"400":{"description":"Bad request","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"403":{"description":"Forbidden","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"422":{"description":"Unprocessable entity","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"500":{"description":"Internal server error","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}}}}
+>
+  
+</StatusCodes>
+
+
+      
