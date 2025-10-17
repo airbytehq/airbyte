@@ -285,5 +285,20 @@ object TableOperationsFixtures {
             namespaceMapper = NamespaceMapper(),
         )
 
-    fun List<Map<String, Any>>.sortByTestField() = this.sortedBy { it["test"] as Long }
+    fun <V> List<Map<String, V>>.sortByTestField() = this.sortedBy { it["test"] as Long }
+
+    fun <V> List<Map<String, V>>.applyColumnNameMapping(mapping: ColumnNameMapping) =
+        map { record ->
+            record.mapKeys { (k, _) -> mapping[k] ?: k }
+        }
+    fun <V> List<Map<String, V>>.reverseColumnNameMapping(mapping: ColumnNameMapping) =
+        map { record ->
+            record.mapKeys { (k, _) -> mapping.originalName(k) ?: k }
+        }
+
+    suspend fun TableOperationsClient.insertRecords(
+        table: TableName,
+        records: List<Map<String, AirbyteValue>>,
+        columnNameMapping: ColumnNameMapping,
+    ) = insertRecords(table, records.applyColumnNameMapping(columnNameMapping))
 }
