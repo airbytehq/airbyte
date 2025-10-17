@@ -47,11 +47,12 @@ import org.junit.jupiter.api.assertDoesNotThrow
 interface TableOperationsSuite {
     /** The database client instance to test. Must be properly configured and connected. */
     val client: TableOperationsClient
-    val airbyteMetaColumns: Set<String>
-        get() = Meta.COLUMN_NAMES
+    // since ColumnNameMapping doesn't include the airbyte columns...
+    val airbyteMetaColumnMapping: Map<String, String>
+        get() = Meta.COLUMN_NAMES.associateWith { it }
 
     private val harness: TableOperationsTestHarness
-        get() = TableOperationsTestHarness(client, airbyteMetaColumns)
+        get() = TableOperationsTestHarness(client, airbyteMetaColumnMapping)
 
     /** Tests basic database connectivity by pinging the database. */
     fun `connect to database`() = runTest { assertDoesNotThrow { client.ping() } }
@@ -550,11 +551,14 @@ interface TableOperationsSuite {
 
             client.upsertTable(targetStream, columnNameMapping, sourceTable, targetTable)
 
-            val upsertTableRecords = harness.readTableWithoutMetaColumns(targetTable)
+            val upsertTableRecords = client.readTable(targetTable)
 
             assertEquals(
                 expectedRecords.sortByTestField(),
-                upsertTableRecords.reverseColumnNameMapping(columnNameMapping).sortByTestField(),
+                upsertTableRecords
+                    .reverseColumnNameMapping(columnNameMapping)
+                    .reverseColumnNameMapping(airbyteMetaColumnMapping)
+                    .sortByTestField(),
             ) {
                 "Upserted table did not contain expected records."
             }

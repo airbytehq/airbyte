@@ -24,6 +24,7 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TableName
+import io.airbyte.cdk.util.invert
 import java.util.UUID
 
 /**
@@ -221,6 +222,7 @@ object TableOperationsFixtures {
             // id=3 has an incoming record with nonnull deleted_at, so this record should be
             // deleted.
             // TODO what about destinations with CDC soft deletes?
+            // https://github.com/airbytehq/airbyte-internal-issues/issues/14911
             mapOf(
                 COLUMN_NAME_AB_RAW_ID to StringValue("0c9770d2-d68d-4525-9bf2-d462527e25ab"),
                 COLUMN_NAME_AB_EXTRACTED_AT to TimestampWithTimezoneValue("2025-01-22T00:00:00Z"),
@@ -336,6 +338,10 @@ object TableOperationsFixtures {
     fun <V> List<Map<String, V>>.reverseColumnNameMapping(mapping: ColumnNameMapping) =
         map { record ->
             record.mapKeys { (k, _) -> mapping.originalName(k) ?: k }
+        }
+    fun <V> List<Map<String, V>>.reverseColumnNameMapping(mapping: Map<String, String>) =
+        map { record ->
+            record.mapKeys { (k, _) -> mapping.invert()[k] ?: k }
         }
 
     suspend fun TableOperationsClient.insertRecords(

@@ -22,7 +22,7 @@ private val log = KotlinLogging.logger {}
  */
 class TableOperationsTestHarness(
     private val client: TableOperationsClient,
-    private val airbyteMetaColumns: Set<String>,
+    private val airbyteMetaColumnMapping: Map<String, String>,
 ) {
 
     /** Creates a test table with the given configuration and verifies it was created. */
@@ -107,6 +107,8 @@ class TableOperationsTestHarness(
     /** Reads records from a table, filtering out Meta columns. */
     suspend fun readTableWithoutMetaColumns(tableName: TableName): List<Map<String, Any>> {
         val tableRead = client.readTable(tableName)
-        return tableRead.map { rec -> rec.filter { !airbyteMetaColumns.contains(it.key) } }
+        return tableRead.map { rec ->
+            rec.filter { !airbyteMetaColumnMapping.containsValue(it.key) }
+        }
     }
 }
