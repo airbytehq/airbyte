@@ -1,6 +1,12 @@
-## Version 0.1.52
+## Version 0.1.53
 
 Update temporal type representation for proto format
+
+## Version 0.1.52
+
+**Load CDK**
+
+Refactor database operations interfaces and establish comprehensive TableOperationsSuite component test suite.
 
 ## Version 0.1.51
 
