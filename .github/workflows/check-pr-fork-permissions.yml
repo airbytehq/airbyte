@@ -1,4 +1,4 @@
-name: Check PR Fork Permissions
+name: PR Fork Permission Check
 
 # This workflow checks if a PR is from an organization fork or doesn't allow maintainer edits.
 # These conditions prevent maintainers from pushing fixes directly to the PR branch.
@@ -12,7 +12,7 @@ on:
 
 jobs:
   check-fork-permissions:
-    name: Check Fork Permissions
+    name: PR Permissions Check
     permissions:
       contents: read
       pull-requests: write
@@ -20,10 +20,12 @@ jobs:
     # Only run for PRs from forks (not internal PRs)
     if: github.event.pull_request.head.repo.fork == true
     steps:
-      - name: Checkout repository
+      - name: Checkout Repo
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        # TODO: Explicitly check out _our_ main repo and `master` branch, not the PR fork.
+        # Security requirement for `pull_request_target` events.
 
-      - name: Check if PR is from organization fork or lacks maintainer permission
+      - name: Examine PR Fork Permissions
         id: check
         run: |
           # Get PR details from GitHub context
@@ -51,7 +53,7 @@ jobs:
           echo "is_org_fork=$IS_ORG_FORK" >> $GITHUB_OUTPUT
           echo "missing_maintainer_edit=$MISSING_MAINTAINER_EDIT" >> $GITHUB_OUTPUT
 
-      - name: Render comment template
+      - name: Render Comment Template
         if: steps.check.outputs.is_org_fork == 'true' || steps.check.outputs.missing_maintainer_edit == 'true'
         id: template
         uses: chuhlomin/render-template@f828bb5c72a3e3af89cb79808cea490166c6f1ce # v1.4
@@ -63,14 +65,14 @@ jobs:
             repo_name: ${{ github.event.pull_request.head.repo.full_name }}
             pr_author: ${{ github.event.pull_request.user.login }}
 
-      - name: Post comment to PR
+      - name: Post Comment to PR (Issues Detected)
         if: steps.check.outputs.is_org_fork == 'true' || steps.check.outputs.missing_maintainer_edit == 'true'
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body: ${{ steps.template.outputs.result }}
 
-      - name: Fail check if issues detected
+      - name: Check Failure (Issues Detected)
         if: steps.check.outputs.is_org_fork == 'true' || steps.check.outputs.missing_maintainer_edit == 'true'
         run: |
           echo "❌ PR has fork permission issues that need to be resolved"
