@@ -148,7 +148,7 @@ The [Good Docs Project](https://www.thegooddocsproject.dev/) maintains a collect
 | --------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
 | Concept         | Explain a concept, context, or background information about a product or its features.              | [Template](https://gitlab.com/tgdp/templates/-/tree/main/concept)         |
 | How-to          | A concise set of numbered steps to do one task with the product.                                    | [Template](https://gitlab.com/tgdp/templates/-/tree/main/how-to)          |
-| Tutorial        | Instructions to set up an example project intended for hands-on learning.        | [Template](https://gitlab.com/tgdp/templates/-/tree/main/tutorial)        |
+| Tutorial        | Instructions to set up an example project intended for hands-on learning.                           | [Template](https://gitlab.com/tgdp/templates/-/tree/main/tutorial)        |
 | Troubleshooting | Common problems experienced by users, an explanation of the causes, and steps to resolve the issue. | [Template](https://gitlab.com/tgdp/templates/-/tree/main/troubleshooting) |
 | Reference       | Specific, in-depth details about a particular topic.                                                | [Template](https://gitlab.com/tgdp/templates/-/tree/main/reference)       |
 | Release note    | Communicate new features, improvements, bug fixes, and known issues about a product.                | [Template](https://gitlab.com/tgdp/templates/-/tree/main/release-notes)   |
@@ -218,22 +218,22 @@ Certain Airbyte products reserve some platform features. To avoid confusion and 
 
 To enable badges, include `products` in the Markdown metadata. The following values are possible, and you can combine them as needed.
 
-**Badge display:** all 5 badges always appear in order - Core, Standard, Pro, Enterprise Flex, Self-Managed Enterprise. Available badges appear highlighted, unavailable badges appear grayed out.
+**Badge display:** all 6 badges always appear in order - Core, Standard, Plus, Pro, Enterprise Flex, Self-Managed Enterprise. Available badges appear highlighted, unavailable badges appear grayed out.
 
 **Metadata keys:**
 
-- `all`: Core, Self-Managed Enterprise, and Standard - doesn't include Pro, Enterprise Flex, or Embedded
+- `all`: Core, Self-Managed Enterprise, Standard, and Plus - doesn't include Pro, Enterprise Flex, or Embedded
 - `oss-community`: Core only
 - `oss-enterprise`: Self-Managed Enterprise only
-- `cloud`: Standard only (also enables Pro and Enterprise Flex due to Cloud tier inheritance)
+- `cloud`: Standard and Plus (also enables Pro and Enterprise Flex due to Cloud tier inheritance)
 - `cloud-teams`: Pro only (also enables Enterprise Flex due to Cloud tier inheritance)
 - `enterprise-flex`: Enterprise Flex only
 - `embedded`: Embedded only (hidden if not specified - there is no off state for the Embedded badge)
 
 **Cloud tier inheritance:** higher Cloud plans automatically inherit availability from lower tiers:
 
-- If you specify `cloud`: Standard, Pro, and Enterprise Flex badges all become enabled
-- If you specify `cloud-teams`: Pro and Enterprise Flex badges become enabled - Standard turns off
+- If you specify `cloud`: Standard, Plus, Pro, and Enterprise Flex badges all become enabled
+- If you specify `cloud-teams`: Pro and Enterprise Flex badges become enabled - Standard and Plus turn off
 - If you specify `enterprise-flex`: Only Enterprise Flex badge becomes enabled
 
 **Self-managed plans** Core and Self-Managed Enterprise don't inherit from each other.
@@ -250,7 +250,7 @@ products: oss-community
 Some text.
 ```
 
-In this example, Pro, and Enterprise Flex badges appear highlighted due to Cloud tier inheritance, while Core, Standard, and Self-Managed Enterprise badges appear grayed out.
+In this example, Pro, and Enterprise Flex badges appear highlighted due to Cloud tier inheritance, while Core, Standard, Plus, and Self-Managed Enterprise badges appear grayed out.
 
 ```markdown
 ---
@@ -408,18 +408,17 @@ You can run Vale in a command line tool or you can install an extension for most
    ```
 
 2. Lint your content. You can lint a single file or an entire directory and its subdirectories.
-
    - To lint a file, type the relative path to the file.
 
-      ```bash
-      vale ../docs/myfolder/myfile.md
-      ```
+     ```bash
+     vale ../docs/myfolder/myfile.md
+     ```
 
    - To lint a folder, type the relative path to that folder and end with a slash.
 
-      ```bash
-      vale ../docs/myfolder/
-      ```
+     ```bash
+     vale ../docs/myfolder/
+     ```
 
    - For more command-line tool help, see [Vale's docs](https://vale.sh/docs/cli).
 
@@ -445,29 +444,29 @@ brew install markdownlint-cli2
 
 To lint files:
 
-   - To lint a single file:
+- To lint a single file:
 
-      ```bash
-      markdownlint-cli2 "./docs/myfolder/myfile.md"
-      ```
+  ```bash
+  markdownlint-cli2 "./docs/myfolder/myfile.md"
+  ```
 
-   - To lint a single directory but not its subdirectories:
+- To lint a single directory but not its subdirectories:
 
-      ```bash
-      markdownlint-cli2 "./docs/myfolder/*.md"
-      ```
+  ```bash
+  markdownlint-cli2 "./docs/myfolder/*.md"
+  ```
 
-   - To lint a directory and its subdirectories recursively:
+- To lint a directory and its subdirectories recursively:
 
-      ```bash
-      markdownlint-cli2 "./docs/folder/**/*.md"
-      ```
+  ```bash
+  markdownlint-cli2 "./docs/folder/**/*.md"
+  ```
 
-   - To auto-fix issues, add a `--fix` modifier. MarkDownLint can fix most issues on its own, but it might not fix them all.
+- To auto-fix issues, add a `--fix` modifier. MarkDownLint can fix most issues on its own, but it might not fix them all.
 
-      ```bash
-      markdownlint-cli2 --fix "../docs/myfolder/*.md"
-      ```
+  ```bash
+  markdownlint-cli2 --fix "../docs/myfolder/*.md"
+  ```
 
 For full usage details, see the tool's [GitHub readme](https://github.com/DavidAnson/markdownlint-cli2?tab=readme-ov-file#use).
 
@@ -525,19 +524,17 @@ When you release a new major version of Airbyte like 2.0 or 2.1, generate a docu
 
 2. Open a terminal, change to the docusaurus folder, and run the command to generate a version. `<version>` can be a number like `2.0` or anything else you like. Be consistent with Airbyte and other versions on the docs site. Whatever string you enter here later appears in the docs UI.
 
-      ```bash
-      cd docusaurus
-      pnpm run docusaurus docs:version:platform <version>
-      ```
+   ```bash
+   cd docusaurus
+   pnpm run docusaurus docs:version:platform <version>
+   ```
 
-      Docusaurus automatically does three things at this point. It:
-
-      - Defines the existence of that version in the `/docusaurus/platform_versions.json` file
-      - Creates a physical copy of the versioned platform docs in `/docusaurus/platform_versioned_docs`
-      - Creates a physical copy of the versioned platform sidebar in `/docusaurus/platform_versioned_sidebars`
+   Docusaurus automatically does three things at this point. It:
+   - Defines the existence of that version in the `/docusaurus/platform_versions.json` file
+   - Creates a physical copy of the versioned platform docs in `/docusaurus/platform_versioned_docs`
+   - Creates a physical copy of the versioned platform sidebar in `/docusaurus/platform_versioned_sidebars`
 
 3. Test your build locally to make sure everything looks as expected. Verify:
-
    - The docs site builds locally
    - Your local Docusaurus build doesn't report new broken links
    - The version selector in the navigation contains your new version
