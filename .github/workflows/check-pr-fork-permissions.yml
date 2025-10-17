@@ -74,3 +74,9 @@ jobs:
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body: ${{ steps.template.outputs.result }}
+
+      - name: Fail check if issues detected
+        if: steps.check.outputs.is_org_fork == 'true' || steps.check.outputs.missing_maintainer_edit == 'true'
+        run: |
+          echo "❌ PR has fork permission issues that need to be resolved"
+          exit 1
