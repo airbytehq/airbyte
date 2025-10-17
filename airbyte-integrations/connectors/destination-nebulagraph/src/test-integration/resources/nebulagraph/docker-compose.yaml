@@ -1,0 +1,88 @@
+version: "3.8"
+
+services:
+  metad:
+    image: vesoft/nebula-metad:v3.8.0
+    # restart: unless-stopped
+    environment:
+      USER: root
+      TZ: UTC
+    command:
+      - --meta_server_addrs=metad:9559
+      - --local_ip=metad
+      - --ws_ip=metad
+      - --port=9559
+      - --data_path=/data/meta
+      - --log_dir=/logs
+      - --v=0
+    volumes:
+      - meta:/data/meta
+      - meta_logs:/logs
+
+  storaged:
+    image: vesoft/nebula-storaged:v3.8.0
+    # restart: unless-stopped
+    depends_on:
+      - metad
+    environment:
+      USER: root
+      TZ: UTC
+    command:
+      - --meta_server_addrs=metad:9559
+      - --local_ip=storaged
+      - --ws_ip=storaged
+      - --port=9779
+      - --data_path=/data/storage
+      - --log_dir=/logs
+      - --v=0
+    volumes:
+      - storage:/data/storage
+      - storage_logs:/logs
+
+  graphd:
+    image: vesoft/nebula-graphd:v3.8.0
+    # restart: unless-stopped
+    depends_on:
+      - metad
+      - storaged
+    ports:
+      - "9669:9669"
+    environment:
+      USER: root
+      TZ: UTC
+    command:
+      - --meta_server_addrs=metad:9559
+      - --local_ip=graphd
+      - --ws_ip=graphd
+      - --port=9669
+      - --log_dir=/logs
+      - --v=0
+    volumes:
+      - graph_logs:/logs
+
+  # Helper sidecar to activate (register) the storaged host in Meta.
+  # NebulaGraph does not auto-register storage nodes; you must run
+  #   ADD HOSTS "storaged":9779
+  # This container loops until the command succeeds or retry limit hit.
+  storage-activator:
+    image: vesoft/nebula-console:v3.8.0
+    depends_on:
+      - graphd
+    entrypoint: ""
+    environment:
+      ACTIVATOR_RETRY: 60
+    command:
+      - sh
+      - -c
+      - |
+        for i in `seq 1 $${ACTIVATOR_RETRY}`; do
+          nebula-console -addr graphd -port 9669 -u root -p nebula -e 'ADD HOSTS "storaged":9779' 1>/dev/null 2>&1 && echo "✔ Storage activated" && break || echo "⏳ Attempt $$i/$${ACTIVATOR_RETRY} to ADD HOSTS...";
+          sleep 2;
+        done; tail -f /dev/null
+
+volumes:
+  meta: {}
+  meta_logs: {}
+  storage: {}
+  storage_logs: {}
+  graph_logs: {}
