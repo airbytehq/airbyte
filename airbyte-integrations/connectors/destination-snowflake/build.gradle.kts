@@ -7,7 +7,7 @@ plugins {
 
 airbyteBulkConnector {
     core = "load"
-    toolkits = listOf("load-db")
+    toolkits = listOf("load-db", "load-avro")
 }
 
 tasks.withType<JavaCompile>().configureEach {
@@ -45,6 +45,9 @@ dependencies {
     implementation("com.google.guava:guava:32.1.1-jre")
     implementation("de.siegmar:fastcsv:4.0.0")
     implementation("io.micronaut.cache:micronaut-cache-caffeine:4.3.1")
+    implementation("org.apache.parquet:parquet-avro:1.16.0")
+    implementation("org.apache.avro:avro:1.12.0")
+    implementation("org.xerial.snappy:snappy-java:1.1.10.8")
 
     testImplementation("io.mockk:mockk:1.14.5")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
