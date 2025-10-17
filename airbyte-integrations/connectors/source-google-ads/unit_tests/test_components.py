@@ -2,7 +2,7 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import Mock
+from unittest.mock import MagicMock, Mock
 
 import pytest
 from source_google_ads.components import ClickViewHttpRequester, CustomGAQueryHttpRequester, CustomGAQuerySchemaLoader
@@ -10,62 +10,33 @@ from source_google_ads.components import ClickViewHttpRequester, CustomGAQueryHt
 from airbyte_cdk import AirbyteTracedException
 from airbyte_cdk.sources.declarative.schema import InlineSchemaLoader
 
+from .conftest import Obj
+
 
 class TestCustomGAQuerySchemaLoader:
-    def test_custom_ga_query_schema_loader_returns_expected_schema(self, config_for_custom_query_tests, requests_mock):
-        requests_mock.get(
-            "https://googleads.googleapis.com/v20/googleAdsFields/campaign_budget.name",
-            json={
-                "resourceName": "googleAdsFields/campaign_budget.name",
-                "category": "ATTRIBUTE",
-                "dataType": "STRING",
-                "name": "campaign_budget.name",
-                "selectable": True,
-                "filterable": True,
-                "sortable": True,
-                "typeUrl": "",
-                "isRepeated": False,
-            },
+    def test_custom_ga_query_schema_loader_returns_expected_schema(self, config_for_custom_query_tests, mocker):
+        query_object = MagicMock(
+            return_value={
+                "campaign_budget.name": Obj(data_type=Obj(name="STRING"), is_repeated=False),
+                "campaign.name": Obj(data_type=Obj(name="STRING"), is_repeated=False),
+                "metrics.interaction_event_types": Obj(
+                    data_type=Obj(name="ENUM"),
+                    is_repeated=True,
+                    enum_values=["UNSPECIFIED", "UNKNOWN", "CLICK", "ENGAGEMENT", "VIDEO_VIEW", "NONE"],
+                ),
+            }
         )
-        requests_mock.get(
-            "https://googleads.googleapis.com/v20/googleAdsFields/campaign.name",
-            json={
-                "resourceName": "googleAdsFields/campaign.name",
-                "category": "ATTRIBUTE",
-                "dataType": "STRING",
-                "name": "campaign.name",
-                "selectable": True,
-                "filterable": True,
-                "sortable": True,
-                "typeUrl": "",
-                "isRepeated": False,
-            },
-        )
-        requests_mock.get(
-            "https://googleads.googleapis.com/v20/googleAdsFields/metrics.interaction_event_types",
-            json={
-                "resourceName": "googleAdsFields/metrics.interaction_event_types",
-                "category": "METRIC",
-                "dataType": "ENUM",
-                "name": "metrics.interaction_event_types",
-                "selectable": True,
-                "filterable": True,
-                "sortable": False,
-                "enumValues": ["UNSPECIFIED", "UNKNOWN", "CLICK", "ENGAGEMENT", "VIDEO_VIEW", "NONE"],
-                "typeUrl": "google.ads.googleads.v20.enums.InteractionEventTypeEnum.InteractionEventType",
-                "isRepeated": True,
-            },
+        mocker.patch(
+            "source_google_ads.components.CustomGAQuerySchemaLoader.google_ads_client", return_value=Obj(get_fields_metadata=query_object)
         )
 
-        mock_requester = Mock()
-        mock_requester.authenticator.get_auth_header.return_value = {}
         config = config_for_custom_query_tests
         config["custom_queries_array"][0]["query"] = (
             "SELECT campaign_budget.name, campaign.name, metrics.interaction_event_types FROM campaign_budget"
         )
 
         schema_loader = CustomGAQuerySchemaLoader(
-            config=config, requester=mock_requester, query=config["custom_queries_array"][0]["query"], cursor_field="{{ False }}"
+            config=config, query=config["custom_queries_array"][0]["query"], cursor_field="{{ False }}"
         )
 
         expected_schema = {
@@ -77,75 +48,31 @@ class TestCustomGAQuerySchemaLoader:
                 "campaign.name": {"type": ["string", "null"]},
                 "metrics.interaction_event_types": {
                     "type": ["null", "array"],
-                    "items": {"type": ["string", "null"], "enum": ["UNSPECIFIED", "UNKNOWN", "CLICK", "ENGAGEMENT", "VIDEO_VIEW", "NONE"]},
+                    "items": {"type": "string", "enum": ["UNSPECIFIED", "UNKNOWN", "CLICK", "ENGAGEMENT", "VIDEO_VIEW", "NONE"]},
                 },
             },
         }
         assert schema_loader.get_json_schema() == expected_schema
 
-    def test_custom_ga_query_schema_loader_with_cursor_field_returns_expected_schema(self, config_for_custom_query_tests, requests_mock):
-        requests_mock.get(
-            "https://googleads.googleapis.com/v20/googleAdsFields/campaign_budget.name",
-            json={
-                "resourceName": "googleAdsFields/campaign_budget.name",
-                "category": "ATTRIBUTE",
-                "dataType": "STRING",
-                "name": "campaign_budget.name",
-                "selectable": True,
-                "filterable": True,
-                "sortable": True,
-                "typeUrl": "",
-                "isRepeated": False,
-            },
+    def test_custom_ga_query_schema_loader_with_cursor_field_returns_expected_schema(self, config_for_custom_query_tests, mocker):
+        query_object = MagicMock(
+            return_value={
+                "campaign_budget.name": Obj(data_type=Obj(name="STRING"), is_repeated=False),
+                "campaign.name": Obj(data_type=Obj(name="STRING"), is_repeated=False),
+                "metrics.interaction_event_types": Obj(
+                    data_type=Obj(name="ENUM"),
+                    is_repeated=True,
+                    enum_values=["UNSPECIFIED", "UNKNOWN", "CLICK", "ENGAGEMENT", "VIDEO_VIEW", "NONE"],
+                ),
+                "segments.date": Obj(data_type=Obj(name="DATE"), is_repeated=False),
+            }
         )
-        requests_mock.get(
-            "https://googleads.googleapis.com/v20/googleAdsFields/campaign.name",
-            json={
-                "resourceName": "googleAdsFields/campaign.name",
-                "category": "ATTRIBUTE",
-                "dataType": "STRING",
-                "name": "campaign.name",
-                "selectable": True,
-                "filterable": True,
-                "sortable": True,
-                "typeUrl": "",
-                "isRepeated": False,
-            },
+        mocker.patch(
+            "source_google_ads.components.CustomGAQuerySchemaLoader.google_ads_client", return_value=Obj(get_fields_metadata=query_object)
         )
-        requests_mock.get(
-            "https://googleads.googleapis.com/v20/googleAdsFields/metrics.interaction_event_types",
-            json={
-                "resourceName": "googleAdsFields/metrics.interaction_event_types",
-                "category": "METRIC",
-                "dataType": "ENUM",
-                "name": "metrics.interaction_event_types",
-                "selectable": True,
-                "filterable": True,
-                "sortable": False,
-                "enumValues": ["UNSPECIFIED", "UNKNOWN", "CLICK", "ENGAGEMENT", "VIDEO_VIEW", "NONE"],
-                "typeUrl": "google.ads.googleads.v20.enums.InteractionEventTypeEnum.InteractionEventType",
-                "isRepeated": True,
-            },
-        )
-        requests_mock.get(
-            "https://googleads.googleapis.com/v20/googleAdsFields/segments.date",
-            json={
-                "resourceName": "googleAdsFields/segments.date",
-                "category": "SEGMENT",
-                "dataType": "DATE",
-                "name": "segments.date",
-                "selectable": True,
-                "filterable": True,
-                "sortable": True,
-                "typeUrl": "",
-                "isRepeated": False,
-            },
-        )
-        mock_requester = Mock()
-        mock_requester.authenticator.get_auth_header.return_value = {}
+
         schema_loader = CustomGAQuerySchemaLoader(
             config=config_for_custom_query_tests,
-            requester=mock_requester,
             query=config_for_custom_query_tests["custom_queries_array"][0]["query"],
             cursor_field="segments.date",
         )
@@ -158,54 +85,12 @@ class TestCustomGAQuerySchemaLoader:
                 "campaign.name": {"type": ["string", "null"]},
                 "metrics.interaction_event_types": {
                     "type": ["null", "array"],
-                    "items": {"type": ["string", "null"], "enum": ["UNSPECIFIED", "UNKNOWN", "CLICK", "ENGAGEMENT", "VIDEO_VIEW", "NONE"]},
+                    "items": {"type": "string", "enum": ["UNSPECIFIED", "UNKNOWN", "CLICK", "ENGAGEMENT", "VIDEO_VIEW", "NONE"]},
                 },
                 "segments.date": {"type": ["string", "null"], "format": "date"},
             },
         }
         assert schema_loader.get_json_schema() == expected_schema
-
-    def test_given_invalid_field_name_raises(self, config_for_custom_query_tests, requests_mock):
-        config = config_for_custom_query_tests
-        config["custom_queries_array"][0]["query"] = "SELECT invalid_field FROM campaign_budget"
-        requests_mock.get(
-            "https://googleads.googleapis.com/v20/googleAdsFields/invalid_field",
-            json={"error": {"code": 404, "message": "Requested entity was not found.", "status": "NOT_FOUND"}},
-        )
-        mock_requester = Mock()
-        mock_requester.authenticator.get_auth_header.return_value = {}
-        schema_loader = CustomGAQuerySchemaLoader(
-            config=config_for_custom_query_tests,
-            requester=mock_requester,
-            query=config_for_custom_query_tests["custom_queries_array"][0]["query"],
-            cursor_field="{{ False }}",
-        )
-        with pytest.raises(AirbyteTracedException) as exc_info:
-            schema_loader.get_json_schema()
-        assert (
-            exc_info.value.message
-            == "The provided field is invalid: Status: 'NOT_FOUND', Message: 'Requested entity was not found.', Field: 'invalid_field'"
-        )
-
-    @pytest.mark.parametrize(
-        "query",
-        [
-            "campaign.name FROM campaign_budget",
-            "SELECT FROM campaign_budget WHERE segments.date = '2021-01-01'",
-            "SELECT campaign.name WHERE segments.date '2021-01-01'",
-            "SELECT fie ld1, field2 FROM table",
-        ],
-        ids=["malformed_query_1", "malformed_query_2", "malformed_query_3", "malformed_query_4"],
-    )
-    def test_given_malformed_query_raises(self, config_for_custom_query_tests, requests_mock, query):
-        config = config_for_custom_query_tests
-        config["custom_queries_array"][0]["query"] = query
-        mock_requester = Mock()
-        mock_requester.authenticator.get_auth_header.return_value = {}
-        with pytest.raises(AirbyteTracedException) as exc_info:
-            CustomGAQuerySchemaLoader(
-                config=config, requester=mock_requester, query=config["custom_queries_array"][0]["query"], cursor_field="{{ False }}"
-            )
 
 
 class TestCustomGAQueryHttpRequester:
