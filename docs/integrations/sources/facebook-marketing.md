@@ -177,7 +177,7 @@ To ensure reliable performance, you'll need to request "Advanced Access."
 </FieldAnchor>
 
 <FieldAnchor field="default_ads_insights_action_breakdowns">
-8. (Optional) If needed, you can change default action breakdowns for Built-in Ads Insights stream. Remove all if you need to make it empty list or change default values.
+8. (Optional) **Action breakdowns for the Built-in Ads Insight stream**: Configure how action data is segmented in the default Ads Insights stream. The default values (`action_type`, `action_target_id`, `action_destination`) provide detailed breakdowns but may not match Facebook UI totals. To get aggregated metrics that match Facebook's interface, remove all values to create an empty list.
 </FieldAnchor>
 
 <FieldAnchor field="custom_insights">
@@ -348,6 +348,16 @@ This response indicates that the Facebook Graph API requires you to reduce the f
 2. **Select the Source**: Click on the source that is having issues with synchronization.
 3. **Toggle Fields**: Unselect (toggle off) the fields you do not require. This action will ensure that these fields are not requested from the Graph API.
 </HideInUI>
+
+### Resolving Metric Discrepancies in Ads Insights
+
+If your Ads Insights data doesn't match Facebook's UI, this is often due to action breakdowns segmenting the data differently than Facebook's default reporting view. To resolve this:
+
+1. **Set Action Breakdowns to Empty**: In the connector configuration, set "Action breakdowns for the Built-in Ads Insight stream" to an empty list (remove all values).
+2. **Refresh Schema**: After updating the configuration, refresh your connection schema to apply the changes.
+3. **Re-sync Data**: Perform a full refresh sync to get aggregated metrics that typically match Facebook's default reporting view.
+
+If the issue persists, verify you're using connector version 3.5.11 or later, which includes the fix for this issue.
 
 ## Changelog
 
