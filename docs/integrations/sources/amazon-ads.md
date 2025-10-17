@@ -159,6 +159,7 @@ Information about expected report generation waiting time can be found [here](ht
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 7.3.6 | 2025-10-14 | [66708](https://github.com/airbytehq/airbyte/pull/66708) | Update `reportDate` to use `date` value for incremental report streams |
 | 7.3.5 | 2025-09-30 | [66760](https://github.com/airbytehq/airbyte/pull/66760) | Update dependencies |
 | 7.3.4 | 2025-09-08 | [65992](https://github.com/airbytehq/airbyte/pull/65992) | Update to CDK v7 |
 | 7.3.3 | 2025-09-09 | [66032](https://github.com/airbytehq/airbyte/pull/66032) | Update dependencies |
@@ -274,6 +275,5 @@ Information about expected report generation waiting time can be found [here](ht
 | 0.1.2      | 2021-10-01 | [6367](https://github.com/airbytehq/airbyte/pull/6461)   | Add option to pull data for different regions. Add option to choose profiles we want to pull data. Add lookback                                                        |
 | 0.1.1      | 2021-09-22 | [6367](https://github.com/airbytehq/airbyte/pull/6367)   | Add seller and vendor filters to profiles stream                                                                                                                       |
 | 0.1.0      | 2021-08-13 | [5023](https://github.com/airbytehq/airbyte/pull/5023)   | Initial version                                                                                                                                                        |
->>>>>>> master
 
 </details>

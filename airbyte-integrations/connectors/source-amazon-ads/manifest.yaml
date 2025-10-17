@@ -3200,7 +3200,7 @@ definitions:
     - type: AddFields
       fields:
         - path: ["reportDate"]
-          value: "{{ stream_interval.end_time }}"
+          value: "{{ stream_interval.end_time if not record.get('reportDate') else record.get('reportDate') }}"
     - type: AddFields
       fields:
         - path: ["profileId"]
