@@ -72,6 +72,7 @@ The Uptick connector syncs data from the following streams, organized by functio
 - **branches** - Business locations and organizational units
 
 ### Stream Details
+
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
 | tasks | id | DefaultPaginator | ✅ |  ✅  |
