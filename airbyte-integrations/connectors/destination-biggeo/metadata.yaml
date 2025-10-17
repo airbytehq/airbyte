@@ -33,7 +33,7 @@ data:
         resourceRequirements:
           memory_limit: 1Gi
           memory_request: 512Mi
-  documentationUrl: https://docs.biggeo.io/integrations/destinations/biggeo
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/biggeo
   tags:
     - language:python
     - cdk:python

@@ -25,6 +25,10 @@ data:
   releaseStage: alpha
   releaseDate: 2024-01-01
   supportLevel: community
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-biggeo
   tags:
     - language:python
     - cdk:python
