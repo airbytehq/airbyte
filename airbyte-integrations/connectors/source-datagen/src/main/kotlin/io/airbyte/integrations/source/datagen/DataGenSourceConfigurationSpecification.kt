@@ -34,7 +34,7 @@ class DataGenSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonGetter("flavor")
     @JsonSchemaTitle("Data Generation Type")
     @JsonSchemaDescription("Different patterns for generating data")
-    @JsonSchemaInject(json = """{"default":"incremental","display_type":"radio"}""")
+    @JsonSchemaInject(json = """{"default":"increment","display_type":"radio"}""")
     fun getFlavor(): FlavorSpec = flavorJson ?: flavorInternal
 
     @JsonProperty("concurrency")
@@ -55,7 +55,7 @@ class DataGenSourceConfigurationSpecification : ConfigurationSpecification() {
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "data_type")
 @JsonSubTypes(
-    JsonSubTypes.Type(value = Incremental::class, name = "incremental"),
+    JsonSubTypes.Type(value = Incremental::class, name = "increment"),
     JsonSubTypes.Type(value = Types::class, name = "types"),
 )
 @JsonSchemaTitle("Data Type")
