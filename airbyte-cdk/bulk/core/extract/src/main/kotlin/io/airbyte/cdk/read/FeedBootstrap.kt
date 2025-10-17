@@ -15,13 +15,12 @@ import io.airbyte.cdk.output.DataChannelMedium
 import io.airbyte.cdk.output.OutputConsumer
 import io.airbyte.cdk.output.StandardOutputConsumer
 import io.airbyte.cdk.output.sockets.NativeRecordPayload
-import io.airbyte.cdk.output.sockets.ProtoEncoder
 import io.airbyte.cdk.output.sockets.SocketJsonOutputConsumer
 import io.airbyte.cdk.output.sockets.SocketProtobufOutputConsumer
-import io.airbyte.cdk.output.sockets.nullProtoEncoder
 import io.airbyte.cdk.output.sockets.toJson
 import io.airbyte.cdk.output.sockets.toProtobuf
-import io.airbyte.cdk.output.sockets.toProtobufEncoder
+import io.airbyte.cdk.output.sockets.valueForProtobufEncoding
+import io.airbyte.cdk.protocol.AirbyteValueProtobufEncoder
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.protocol.models.v0.AirbyteMessage
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage
@@ -320,26 +319,23 @@ sealed class FeedBootstrap<T : Feed>(
 
                     // Unlike STDIO mode, in socket mode we always include all scehma fields
                     // Including decorating field even when it has NULL value.
-                    // This is necessary beacuse in PROTOBUF mode we don't have field names so
+                    // This is necessary because in PROTOBUF mode we don't have field names so
                     // the sorted order of fields is used to determine the field position on the
                     // other side.
+                    val encoder = AirbyteValueProtobufEncoder()
                     stream.schema
                         .sortedBy { it.id }
                         .forEach { field ->
-                            builder.addData(
-                                when {
-                                    decoratingFields.keys.contains(field.id) -> {
-                                        @Suppress("UNCHECKED_CAST")
-                                        (decoratingFields[field.id]!!
-                                                .jsonEncoder
-                                                .toProtobufEncoder() as ProtoEncoder<Any>)
-                                            .encode(
-                                                valueVBuilder.clear(),
-                                                decoratingFields[field.id]!!.fieldValue!!
-                                            )
-                                    }
-                                    else -> nullProtoEncoder.encode(valueVBuilder.clear(), true)
+                            val decodedValueForProto =
+                                decoratingFields[field.id]?.let { fve ->
+                                    valueForProtobufEncoding(fve)
                                 }
+                            builder.addData(
+                                encoder.encode(
+                                    decodedValueForProto,
+                                    field.type.airbyteSchemaType,
+                                    valueVBuilder.clear()
+                                )
                             )
                         }
                 }

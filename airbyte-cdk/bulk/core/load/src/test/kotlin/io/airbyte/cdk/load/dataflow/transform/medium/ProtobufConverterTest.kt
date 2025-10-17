@@ -4,7 +4,7 @@
 
 package io.airbyte.cdk.load.dataflow.transform.medium
 
-import com.google.protobuf.ByteString
+import io.airbyte.cdk.data.LeafAirbyteSchemaType
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.*
 import io.airbyte.cdk.load.data.AirbyteValueProxy.FieldAccessor
@@ -13,6 +13,7 @@ import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
 import io.airbyte.cdk.load.message.DestinationRecordProtobufSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.Meta
+import io.airbyte.cdk.protocol.AirbyteValueProtobufEncoder
 import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.protobuf.AirbyteMessage.AirbyteMessageProtobuf
@@ -24,11 +25,19 @@ import io.mockk.mockk
 import io.mockk.verify
 import java.math.BigDecimal
 import java.math.BigInteger
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.OffsetDateTime
+import java.time.OffsetTime
+import java.time.ZoneOffset
 import java.util.UUID
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
 class ProtobufConverterTest {
+
+    private val encoder = AirbyteValueProtobufEncoder()
 
     private fun createMockCoercerPassThrough(): ValueCoercer =
         mockk<ValueCoercer> {
@@ -48,48 +57,37 @@ class ProtobufConverterTest {
         every { this@mockk.index } returns idx
     }
 
-    private fun vBoolean(b: Boolean) =
-        AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder().setBoolean(b).build()
+    private fun vBoolean(b: Boolean) = encoder.encode(b, LeafAirbyteSchemaType.BOOLEAN)
 
-    private fun vInteger(i: Long) =
-        AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder().setInteger(i).build()
+    private fun vInteger(i: Long) = encoder.encode(i, LeafAirbyteSchemaType.INTEGER)
 
     private fun vBigInteger(str: String) =
-        AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder().setBigInteger(str).build()
+        encoder.encode(BigInteger(str), LeafAirbyteSchemaType.INTEGER)
 
-    private fun vNumber(d: Double) =
-        AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder().setNumber(d).build()
+    private fun vNumber(d: Double) = encoder.encode(d, LeafAirbyteSchemaType.NUMBER)
 
     private fun vBigDecimal(str: String) =
-        AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder().setBigDecimal(str).build()
+        encoder.encode(BigDecimal(str), LeafAirbyteSchemaType.NUMBER)
 
-    private fun vString(s: String) =
-        AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder().setString(s).build()
+    private fun vString(s: String) = encoder.encode(s, LeafAirbyteSchemaType.STRING)
 
-    private fun vDate(iso: String) =
-        AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder().setDate(iso).build()
+    private fun vDate(date: LocalDate) = encoder.encode(date, LeafAirbyteSchemaType.DATE)
 
-    private fun vTimeTz(s: String) =
-        AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder().setTimeWithTimezone(s).build()
+    private fun vTimeTz(time: OffsetTime) =
+        encoder.encode(time, LeafAirbyteSchemaType.TIME_WITH_TIMEZONE)
 
-    private fun vTimeNoTz(s: String) =
-        AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder().setTimeWithoutTimezone(s).build()
+    private fun vTimeNoTz(time: LocalTime) =
+        encoder.encode(time, LeafAirbyteSchemaType.TIME_WITHOUT_TIMEZONE)
 
-    private fun vTsTz(s: String) =
-        AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder().setTimestampWithTimezone(s).build()
+    private fun vTsTz(ts: OffsetDateTime) =
+        encoder.encode(ts, LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE)
 
-    private fun vTsNoTz(s: String) =
-        AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
-            .setTimestampWithoutTimezone(s)
-            .build()
+    private fun vTsNoTz(ts: LocalDateTime) =
+        encoder.encode(ts, LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE)
 
-    private fun vJson(json: String) =
-        AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder()
-            .setJson(ByteString.copyFrom(json.toByteArray()))
-            .build()
+    private fun vJson(json: String) = encoder.encode(json, LeafAirbyteSchemaType.JSONB)
 
-    private fun vNull() =
-        AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder().setIsNull(true).build()
+    private fun vNull() = encoder.encode(null, LeafAirbyteSchemaType.STRING)
 
     /** Build a real DestinationRecordProtobufSource without mocking the value class. */
     private fun buildProtoSource(
@@ -141,6 +139,8 @@ class ProtobufConverterTest {
                 every { this@mockk.syncId } returns syncId
                 every { unknownColumnChanges } returns unknownChanges
                 every { mappedDescriptor } returns DestinationStream.Descriptor("namespace", "name")
+                every { unmappedDescriptor } returns
+                    DestinationStream.Descriptor("namespace", "name")
             }
         return mockk<DestinationRecordRaw> {
             every { stream } returns destinationStream
@@ -183,11 +183,16 @@ class ProtobufConverterTest {
                 vInteger(123),
                 vNumber(45.67),
                 vBigDecimal("999.12345"),
-                vDate("2025-06-17"),
-                vTimeTz("23:59:59+02:00"),
-                vTimeNoTz("23:59:59"),
-                vTsTz("2025-06-17T23:59:59+02:00"),
-                vTsNoTz("2025-06-17T23:59:59"),
+                vDate(LocalDate.parse("2025-06-17")),
+                vTimeTz(OffsetTime.of(LocalTime.parse("23:59:59"), ZoneOffset.ofHours(2))),
+                vTimeNoTz(LocalTime.parse("23:59:59")),
+                vTsTz(
+                    OffsetDateTime.of(
+                        LocalDateTime.parse("2025-06-17T23:59:59"),
+                        ZoneOffset.ofHours(2)
+                    )
+                ),
+                vTsNoTz(LocalDateTime.parse("2025-06-17T23:59:59")),
                 vJson("""["a","b"]"""),
                 vJson("""{"k":"v"}"""),
                 vJson("""{"u":1}"""),
@@ -195,7 +200,7 @@ class ProtobufConverterTest {
             )
 
         val msg = mockMsgWithStream(accessors)
-        val source = buildProtoSource(protoValues)
+        val source = buildProtoSource(protoValues.map { it.build() })
 
         val result = converter.convert(msg, source)
 
@@ -279,7 +284,7 @@ class ProtobufConverterTest {
             )
 
         val msg = mockMsgWithStream(accessors)
-        val source = buildProtoSource(protoValues)
+        val source = buildProtoSource(protoValues.map { it.build() })
 
         val result = converter.convert(msg, source)
 
@@ -310,7 +315,7 @@ class ProtobufConverterTest {
         val protoValues = listOf(vNull())
 
         val msg = mockMsgWithStream(accessors)
-        val source = buildProtoSource(protoValues)
+        val source = buildProtoSource(protoValues.map { it.build() })
 
         val result = converter.convert(msg, source)
         assertTrue(result.containsKey("null_field"))
@@ -332,10 +337,10 @@ class ProtobufConverterTest {
         val converter = ProtobufConverter(columnNameMapper, valueCoercer)
 
         val accessors = arrayOf(fa("time_field", TimeTypeWithoutTimezone, 0))
-        val protoValues = listOf(vTimeNoTz("12:34:56"))
+        val protoValues = listOf(vTimeNoTz(LocalTime.parse("12:34:56")))
 
         val msg = mockMsgWithStream(accessors)
-        val source = buildProtoSource(protoValues)
+        val source = buildProtoSource(protoValues.map { it.build() })
 
         val result = converter.convert(msg, source)
 
@@ -385,7 +390,7 @@ class ProtobufConverterTest {
         val protoValues = listOf(vString("hello"), vString("this_is_too_long"))
 
         val msg = mockMsgWithStream(accessors)
-        val source = buildProtoSource(protoValues)
+        val source = buildProtoSource(protoValues.map { it.build() })
 
         val result = converter.convert(msg, source)
 
@@ -412,7 +417,7 @@ class ProtobufConverterTest {
         val protoValues = listOf(vString("test"))
 
         val msg = mockMsgWithStream(accessors)
-        val source = buildProtoSource(protoValues)
+        val source = buildProtoSource(protoValues.map { it.build() })
 
         val result = converter.convert(msg, source)
 
@@ -428,7 +433,10 @@ class ProtobufConverterTest {
         val converter = ProtobufConverter(columnNameMapper, valueCoercer)
 
         val accessors = arrayOf(fa("invalid_int", IntegerType, 0))
-        val protoValues = listOf(vBigInteger("not-a-number"))
+
+        val invalidBigInteger =
+            AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder().setBigInteger("boom!").build()
+        val protoValues = listOf(invalidBigInteger)
 
         val msg = mockMsgWithStream(accessors)
         val source = buildProtoSource(protoValues)
@@ -467,7 +475,10 @@ class ProtobufConverterTest {
                 )
             )
 
-        val protoValues = listOf(vString("hello"), vBigInteger("boom!"))
+        val invalidBigInteger =
+            AirbyteRecordMessage.AirbyteValueProtobuf.newBuilder().setBigInteger("boom!")
+
+        val protoValues = listOf(vString("hello"), invalidBigInteger)
 
         val unknownColumnChanges =
             listOf(
@@ -479,7 +490,8 @@ class ProtobufConverterTest {
             )
 
         val msg = mockMsgWithStream(accessors, unknownChanges = unknownColumnChanges)
-        val source = buildProtoSource(protoValues, metaChanges = sourceSideChanges)
+        val source =
+            buildProtoSource(protoValues.map { it.build() }, metaChanges = sourceSideChanges)
 
         val result = converter.convert(msg, source)
 
