@@ -40,16 +40,11 @@ jobs:
           if [ "$OWNER_TYPE" = "Organization" ]; then
             IS_ORG_FORK="true"
             echo "✗ PR is from an organization fork"
-          else
-            echo "✓ PR is from a personal fork"
-          fi
-
-          # Check if maintainer edits are allowed
-          if [ "$MAINTAINER_CAN_MODIFY" = "false" ]; then
+          elif [ "$MAINTAINER_CAN_MODIFY" = "false" ]; then
             MISSING_MAINTAINER_EDIT="true"
             echo "✗ PR does not allow maintainer edits"
           else
-            echo "✓ PR allows maintainer edits"
+            echo "✓ PR allows maintainer edits and is from a personal fork"
           fi
 
           # Set outputs
