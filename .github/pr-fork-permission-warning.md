@@ -9,7 +9,7 @@ Specific details of the issue detected in your PR:
 {{ if eq .is_org_fork "true" }}
 ### 🏢 Organization Fork Detected
 
-We have detected that your PR is from an **organization fork** rather than a personal fork. GitHub does not allow maintainers to commit directly to branches in organization forks. [TK-link: GitHub Docs on Forks and Maintainer Edits]
+We have detected that your PR is from an **organization fork** rather than a personal fork. GitHub does not allow maintainers to commit directly to branches in organization forks. [Learn more about allowing changes to a pull request branch created from a fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/allowing-changes-to-a-pull-request-branch-created-from-a-fork).
 
 **How to Fix:**
 1. Fork the Airbyte repository under your personal GitHub account (not your organization).
