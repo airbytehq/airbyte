@@ -47,6 +47,16 @@ LOOSE_TYPES = [
     "calculated",
 ]
 
+# Replication key field candidates in priority order
+# These fields are commonly used for incremental sync, ordered by preference
+REPLICATION_KEY_CANDIDATES = [
+    "SystemModstamp",
+    "LastModifiedDate",
+    "ChangedDate",  # Common in history/audit objects like ActivityFieldHistory
+    "CreatedDate",
+    "LoginTime",
+]
+
 # The following objects have certain WHERE clause restrictions so we exclude them.
 QUERY_RESTRICTED_SALESFORCE_OBJECTS = [
     "Announcement",
@@ -196,6 +206,7 @@ UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS = [
 ]
 
 UNSUPPORTED_FILTERING_STREAMS = [
+    "ActivityFieldHistory",
     "ApiEvent",
     "BulkApiResultEventStore",
     "ContentDocumentLink",
@@ -269,6 +280,8 @@ class Salesforce:
         if self.is_sandbox:
             self.logger.info("using SANDBOX of Salesforce")
         self.start_date = start_date
+        # Cache for field metadata to support filterable field detection
+        self._fields_metadata_cache = {}
 
     def _get_standard_headers(self) -> Mapping[str, str]:
         return {"Authorization": "Bearer {}".format(self.access_token)}
@@ -352,6 +365,11 @@ class Salesforce:
         schema = {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "additionalProperties": True, "properties": {}}
         for field in response["fields"]:
             schema["properties"][field["name"]] = self.field_to_property_schema(field)  # type: ignore[index]
+        
+        # Cache field metadata for later use in replication key selection
+        if stream_name:
+            self._fields_metadata_cache[stream_name] = response["fields"]
+        
         return schema
 
     def generate_schemas(self, stream_objects: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -384,20 +402,21 @@ class Salesforce:
                     stream_schemas[stream_name] = schema
         return stream_schemas
 
-    @staticmethod
-    def get_pk_and_replication_key(json_schema: Mapping[str, Any]) -> Tuple[Optional[str], Optional[str]]:
+    def get_pk_and_replication_key(self, stream_name: str, json_schema: Mapping[str, Any]) -> Tuple[Optional[str], Optional[str]]:
         fields_list = json_schema.get("properties", {}).keys()
 
         pk = "Id" if "Id" in fields_list else None
         replication_key = None
-        if "SystemModstamp" in fields_list:
-            replication_key = "SystemModstamp"
-        elif "LastModifiedDate" in fields_list:
-            replication_key = "LastModifiedDate"
-        elif "CreatedDate" in fields_list:
-            replication_key = "CreatedDate"
-        elif "LoginTime" in fields_list:
-            replication_key = "LoginTime"
+        
+        # Check if we have cached field metadata for filterable field detection
+        fields_metadata = self._fields_metadata_cache.get(stream_name, [])
+        if fields_metadata:
+            filterable_fields = {field["name"] for field in fields_metadata if field.get("filterable", False)}
+            replication_key = next((candidate for candidate in REPLICATION_KEY_CANDIDATES if candidate in filterable_fields), None)
+        
+        # Fallback to original logic if no filterable field found or no metadata available
+        if not replication_key:
+            replication_key = next((candidate for candidate in REPLICATION_KEY_CANDIDATES if candidate in fields_list), None)
 
         return pk, replication_key
 
