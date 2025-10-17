@@ -56,17 +56,8 @@ jobs:
           echo "is_org_fork=$IS_ORG_FORK" >> $GITHUB_OUTPUT
           echo "missing_maintainer_edit=$MISSING_MAINTAINER_EDIT" >> $GITHUB_OUTPUT
 
-          # Determine if we should post a comment
-          if [ "$IS_ORG_FORK" = "true" ] || [ "$MISSING_MAINTAINER_EDIT" = "true" ]; then
-            echo "should_comment=true" >> $GITHUB_OUTPUT
-            echo "Action required: Will post a comment to the PR"
-          else
-            echo "should_comment=false" >> $GITHUB_OUTPUT
-            echo "No action required: PR configuration is correct"
-          fi
-
       - name: Render comment template
-        if: steps.check.outputs.should_comment == 'true'
+        if: steps.check.outputs.is_org_fork == 'true' || steps.check.outputs.missing_maintainer_edit == 'true'
         id: template
         uses: chuhlomin/render-template@f828bb5c72a3e3af89cb79808cea490166c6f1ce # v1.4
         with:
@@ -78,7 +69,7 @@ jobs:
             pr_author: ${{ github.event.pull_request.user.login }}
 
       - name: Post comment to PR
-        if: steps.check.outputs.should_comment == 'true'
+        if: steps.check.outputs.is_org_fork == 'true' || steps.check.outputs.missing_maintainer_edit == 'true'
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         with:
           issue-number: ${{ github.event.pull_request.number }}
