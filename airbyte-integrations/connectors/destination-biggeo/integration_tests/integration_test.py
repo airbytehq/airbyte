@@ -3,9 +3,12 @@
 """Integration tests for BigGeo destination connector."""
 
 import json
-import pytest
+from logging import getLogger
 from pathlib import Path
+
+import pytest
 from destination_biggeo.destination import DestinationBiggeo
+
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
@@ -18,7 +21,6 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from logging import getLogger
 
 
 logger = getLogger("airbyte")

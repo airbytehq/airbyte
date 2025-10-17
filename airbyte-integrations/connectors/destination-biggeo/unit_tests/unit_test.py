@@ -1,8 +1,10 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
-import pytest
 from unittest.mock import MagicMock, patch
+
+import pytest
 from destination_biggeo.destination import DestinationBiggeo
+
 from airbyte_cdk.models import Status
 
 

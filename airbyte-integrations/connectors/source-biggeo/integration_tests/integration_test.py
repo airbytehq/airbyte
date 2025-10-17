@@ -3,10 +3,11 @@
 """Integration tests for BigGeo source connector."""
 
 import json
-import pytest
-from pathlib import Path
-from source_biggeo.source import SourceBiggeo
 from logging import getLogger
+from pathlib import Path
+
+import pytest
+from source_biggeo.source import SourceBiggeo
 
 
 logger = getLogger("airbyte")

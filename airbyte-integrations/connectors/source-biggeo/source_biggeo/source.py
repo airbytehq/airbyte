@@ -7,6 +7,7 @@ from typing import Any, Iterable, List, Mapping, Tuple
 from urllib.parse import urljoin
 
 import requests
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 

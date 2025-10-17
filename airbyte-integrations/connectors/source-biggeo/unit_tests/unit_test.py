@@ -2,9 +2,10 @@
 
 """Unit tests for BigGeo source connector."""
 
-import pytest
 from unittest.mock import MagicMock, patch
-from source_biggeo.source import SourceBiggeo, BigGeoStream
+
+import pytest
+from source_biggeo.source import BigGeoStream, SourceBiggeo
 
 
 @pytest.fixture
