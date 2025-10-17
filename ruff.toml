@@ -1,3 +1,5 @@
+# Dummy commit
+
 target-version = "py310"
 line-length = 140
 extend-exclude = ["docs", "test", "tests"]
