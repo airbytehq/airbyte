@@ -26,3 +26,13 @@ class SourceSFTPBulk(FileBasedSource):
             state=state,
             cursor_cls=DefaultFileBasedCursor,
         )
+
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> tuple[bool, Optional[Any]]:
+        """
+        WARNING: This is a temporary workaround where we effectively skip the check operation because the memory
+        of the footprint for very large file stores.
+        :param logger:
+        :param config:
+        :return:
+        """
+        return True, None
