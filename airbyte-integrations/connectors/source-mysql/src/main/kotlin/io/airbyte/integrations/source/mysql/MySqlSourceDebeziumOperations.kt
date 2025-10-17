@@ -100,7 +100,7 @@ class MySqlSourceDebeziumOperations(
 
         val resultRow: NativeRecordPayload = mutableMapOf()
         val primaryKeyFields = stream.configuredPrimaryKey?.map { it.id }?.toSet() ?: emptySet()
-        
+
         for (field in stream.schema) {
             when (field.type.airbyteSchemaType) {
                 LeafAirbyteSchemaType.INTEGER,
@@ -126,9 +126,10 @@ class MySqlSourceDebeziumOperations(
             if (fieldValue == null && !primaryKeyFields.contains(field.id)) {
                 continue
             }
-            
+
             when (fieldValue) {
-                null, is NullNode -> {
+                null,
+                is NullNode -> {
                     resultRow[field.id] = FieldValueEncoder(null, NullCodec)
                 }
                 else -> {
