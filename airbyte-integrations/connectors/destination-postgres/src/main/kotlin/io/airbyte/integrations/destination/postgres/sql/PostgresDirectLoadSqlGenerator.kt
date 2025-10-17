@@ -30,6 +30,7 @@ import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TableName
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
+import kotlin.collections.forEach
 
 internal const val COUNT_TOTAL_ALIAS = "total"
 
@@ -186,6 +187,30 @@ class PostgresDirectLoadSqlGenerator {
         FROM STDIN
         WITH (FORMAT csv)
         """.trimIndent()
+
+    //should all alters happen in one same tx? probably
+    fun matchSchemas(
+        tableName: TableName,
+        columnsToAdd: Set<Column>,
+        columnsToRemove: Set<Column>,
+        columnsToModify: Set<Column>,
+    ): Set<String> {
+        val clauses = mutableSetOf<String>()
+        val fullyQualifiedTableName = getFullyQualifiedName(tableName)
+        columnsToAdd.forEach {
+            clauses.add(
+                "ALTER TABLE $fullyQualifiedTableName ADD COLUMN ${getName(it)} ${it.columnTypeName};".andLog()
+            )
+        }
+        columnsToRemove.forEach {
+            clauses.add("ALTER TABLE $fullyQualifiedTableName DROP COLUMN ${getName(it)};".andLog())
+        }
+
+        columnsToModify.forEach {
+            clauses.add("ALTER TABLE $fullyQualifiedTableName ALTER COLUMN ${getName(it)} SET DATA TYPE ${it.columnTypeName};".andLog())
+        }
+        return clauses
+    }
 
     private fun getFullyQualifiedName(tableName: TableName): String =
         "${getNamespace(tableName)}.${getName(tableName)}"
