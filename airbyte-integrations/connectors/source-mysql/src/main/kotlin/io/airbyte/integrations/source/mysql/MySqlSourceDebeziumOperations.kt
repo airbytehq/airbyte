@@ -99,6 +99,8 @@ class MySqlSourceDebeziumOperations(
         // Turn string representations of numbers into BigDecimals.
 
         val resultRow: NativeRecordPayload = mutableMapOf()
+        // Extract primary key field IDs to ensure they're always included in the payload,
+        // even when null, to prevent "All the defined primary keys are null" validation errors.
         val primaryKeyFields = stream.configuredPrimaryKey?.map { it.id }?.toSet() ?: emptySet()
 
         for (field in stream.schema) {
