@@ -61,8 +61,8 @@ jobs:
         with:
           template: .github/pr-fork-permission-warning.md
           vars: |
-            is_org_fork: ${{ steps.check.outputs.is_org_fork }}
-            missing_maintainer_edit: ${{ steps.check.outputs.missing_maintainer_edit }}
+            is_org_fork: "${{ steps.check.outputs.is_org_fork }}"
+            missing_maintainer_edit: "${{ steps.check.outputs.missing_maintainer_edit }}"
             repo_name: ${{ github.event.pull_request.head.repo.full_name }}
             pr_author: ${{ github.event.pull_request.user.login }}
 
