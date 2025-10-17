@@ -29,13 +29,13 @@ jobs:
           # Get PR details from GitHub context
           IS_ORG_FORK="false"
           MISSING_MAINTAINER_EDIT="false"
-          
+
           OWNER_TYPE="${{ github.event.pull_request.head.repo.owner.type }}"
           MAINTAINER_CAN_MODIFY="${{ github.event.pull_request.maintainer_can_modify }}"
-          
+
           echo "Owner type: $OWNER_TYPE"
           echo "Maintainer can modify: $MAINTAINER_CAN_MODIFY"
-          
+
           # Check if fork is from an organization
           if [ "$OWNER_TYPE" = "Organization" ]; then
             IS_ORG_FORK="true"
@@ -43,7 +43,7 @@ jobs:
           else
             echo "✓ PR is from a personal fork"
           fi
-          
+
           # Check if maintainer edits are allowed
           if [ "$MAINTAINER_CAN_MODIFY" = "false" ]; then
             MISSING_MAINTAINER_EDIT="true"
@@ -51,11 +51,11 @@ jobs:
           else
             echo "✓ PR allows maintainer edits"
           fi
-          
+
           # Set outputs
           echo "is_org_fork=$IS_ORG_FORK" >> $GITHUB_OUTPUT
           echo "missing_maintainer_edit=$MISSING_MAINTAINER_EDIT" >> $GITHUB_OUTPUT
-          
+
           # Determine if we should post a comment
           if [ "$IS_ORG_FORK" = "true" ] || [ "$MISSING_MAINTAINER_EDIT" = "true" ]; then
             echo "should_comment=true" >> $GITHUB_OUTPUT
