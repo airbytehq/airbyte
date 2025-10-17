@@ -38,6 +38,11 @@ class SnowflakeSchemaRecordFormatter(
                 record[columnName.lowercase()].toCsvValue()
             } else {
                 record.keys
+                    // The columns retrieved from Snowflake do not have any escaping applied.
+                    // Therefore, re-apply the compatible name escaping to the name of the
+                    // columns retrieved from Snowflake.  The record keys should already have
+                    // been escaped by the CDK before arriving at the aggregate, so no need
+                    // to escape again here.
                     .find { it == columnName.toSnowflakeCompatibleName() }
                     ?.let {
                         if ("VARIANT" == columnType) {
@@ -45,7 +50,7 @@ class SnowflakeSchemaRecordFormatter(
                             // json-serialize.
                             record[it].serializeToString()
                         } else {
-                            // Otherwise, use the normal toCsvValue (e.g. if the value is a string,
+                            // Otherwise, use the normal toCsvValue (e.g., if the value is a string,
                             // just put it directly into the CSV).
                             // Under the hood, objects/arrays are still json-serialized here.
                             record[it].toCsvValue()
