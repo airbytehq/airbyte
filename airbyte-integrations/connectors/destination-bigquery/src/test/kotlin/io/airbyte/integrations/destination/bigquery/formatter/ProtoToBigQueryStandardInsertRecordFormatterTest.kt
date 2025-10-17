@@ -27,7 +27,7 @@ import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.message.DestinationRecordProtobufSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.cdk.load.message.DestinationRecordSource
-import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
+import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.protocol.models.Jsons
 import io.airbyte.protocol.protobuf.AirbyteMessage
