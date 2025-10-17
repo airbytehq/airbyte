@@ -56,11 +56,15 @@ class PostgresBeanFactory {
     }
 
     /**
+     * Helper data class to hold resolved host and port
+     */
+    data class ResolvedEndpoint(val host: String, val port: Int)
+
+    /**
      * Helper to resolve the endpoint (either direct or through SSH tunnel)
      */
     @Singleton
-    @Named("resolvedHost")
-    fun resolvedHost(config: PostgresConfiguration): String {
+    fun resolvedEndpoint(config: PostgresConfiguration): ResolvedEndpoint {
         return when (val ssh = config.tunnelMethod) {
             is SshKeyAuthTunnelMethod,
             is SshPasswordAuthTunnelMethod -> {
@@ -68,27 +72,10 @@ class PostgresBeanFactory {
                 val sshConnectionOptions: SshConnectionOptions =
                     SshConnectionOptions.fromAdditionalProperties(emptyMap())
                 val tunnel = createTunnelSession(remote, ssh, sshConnectionOptions)
-                tunnel.address.hostName
+                ResolvedEndpoint(tunnel.address.hostName, tunnel.address.port)
             }
             is SshNoTunnelMethod,
-            null -> config.host
-        }
-    }
-
-    @Singleton
-    @Named("resolvedPort")
-    fun resolvedPort(config: PostgresConfiguration): Int {
-        return when (val ssh = config.tunnelMethod) {
-            is SshKeyAuthTunnelMethod,
-            is SshPasswordAuthTunnelMethod -> {
-                val remote = SshdSocketAddress(config.host, config.port)
-                val sshConnectionOptions: SshConnectionOptions =
-                    SshConnectionOptions.fromAdditionalProperties(emptyMap())
-                val tunnel = createTunnelSession(remote, ssh, sshConnectionOptions)
-                tunnel.address.port
-            }
-            is SshNoTunnelMethod,
-            null -> config.port
+            null -> ResolvedEndpoint(config.host, config.port)
         }
     }
 
@@ -121,13 +108,12 @@ class PostgresBeanFactory {
     @Requires(property = Operation.PROPERTY, notEquals = "spec")
     fun postgresDataSource(
         postgresConfiguration: PostgresConfiguration,
-        @Named("resolvedHost") resolvedHost: String,
-        @Named("resolvedPort") resolvedPort: Int,
+        resolvedEndpoint: ResolvedEndpoint,
     ): HikariDataSource {
         val sslModeParam = postgresConfiguration.sslMode?.mode?.let { "?sslmode=$it" } ?: ""
         val jdbcUrlParams = postgresConfiguration.jdbcUrlParams?.let { "&$it" } ?: ""
         val postgresJdbcUrl =
-            "jdbc:postgresql://$resolvedHost:$resolvedPort/${postgresConfiguration.database}$sslModeParam$jdbcUrlParams"
+            "jdbc:postgresql://${resolvedEndpoint.host}:${resolvedEndpoint.port}/${postgresConfiguration.database}$sslModeParam$jdbcUrlParams"
 
         val datasourceConfig =
             HikariConfig().apply {

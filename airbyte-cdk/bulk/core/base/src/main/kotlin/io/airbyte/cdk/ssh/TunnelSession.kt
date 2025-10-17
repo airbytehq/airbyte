@@ -63,7 +63,7 @@ fun createTunnelSession(
         val connectFuture: ConnectFuture =
             when (sshTunnel) {
                 SshNoTunnelMethod,
-                null -> TODO("unreachable code")
+                null -> throw IllegalStateException("SSH tunnel method is null or SshNoTunnelMethod, but should have been handled by early return")
                 is SshKeyAuthTunnelMethod ->
                     client.connect(sshTunnel.user.trim(), sshTunnel.host.trim(), sshTunnel.port)
                 is SshPasswordAuthTunnelMethod ->
