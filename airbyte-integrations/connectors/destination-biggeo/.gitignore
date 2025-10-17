@@ -64,6 +64,3 @@ Thumbs.db
 
 # Airbyte specific
 .symlinks
-
-# Poetry
-poetry.lock

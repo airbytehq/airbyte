@@ -23,11 +23,7 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
-  releases:
-    breakingChanges:
-      0.1.0:
-        message: Initial release of BigGeo source connector
-        upgradeDeadline: "2024-12-31"
+  releaseDate: 2024-01-01
   supportLevel: community
   tags:
     - language:python
