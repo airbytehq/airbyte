@@ -9,7 +9,7 @@ import dpath.util
 from pydantic.v1 import AnyUrl, BaseModel, Field
 
 from airbyte_cdk import OneOfOptionConfig
-from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
+from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec, DeliverRawFiles, DeliverRecords
 
 
 class Oauth2(BaseModel):
@@ -105,6 +105,17 @@ class SourceAzureBlobStorageSpec(AbstractFileBasedSpec):
         "command line) to use Microsoft native from example.",
         examples=["blob.core.windows.net"],
         order=11,
+    )
+
+    delivery_method: Union[DeliverRecords, DeliverRawFiles] = Field(
+        title="Delivery Method",
+        discriminator="delivery_type",
+        type="object",
+        order=7,
+        display_type="radio",
+        group="advanced",
+        default="use_records_transfer",
+        airbyte_hidden=True,
     )
 
     @classmethod
