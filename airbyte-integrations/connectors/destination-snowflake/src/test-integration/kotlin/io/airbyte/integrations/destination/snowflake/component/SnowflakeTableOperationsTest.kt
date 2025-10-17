@@ -77,4 +77,14 @@ class SnowflakeTableOperationsTest(override val client: SnowflakeAirbyteClient) 
     override fun `get generation id`() {
         super.`get generation id`(columnNameMapping = testMapping)
     }
+
+    @Test
+    override fun `upsert tables`() {
+        super.`upsert tables`(
+            sourceInputRecords = TableOperationsFixtures.UPSERT_SOURCE_RECORDS,
+            targetInputRecords = TableOperationsFixtures.UPSERT_TARGET_RECORDS,
+            expectedRecords = TableOperationsFixtures.UPSERT_EXPECTED_RECORDS,
+            columnNameMapping = idTestWithCdcMapping,
+        )
+    }
 }
