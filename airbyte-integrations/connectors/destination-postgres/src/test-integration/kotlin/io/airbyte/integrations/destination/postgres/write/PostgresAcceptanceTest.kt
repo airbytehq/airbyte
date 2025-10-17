@@ -65,6 +65,23 @@ object PostgresTimestampNormalizationMapper : ExpectedRecordMapper {
 class PostgresDataDumper(
     private val configProvider: (ConfigurationSpecification) -> PostgresConfiguration
 ) : DestinationDataDumper {
+    private fun sanitizeColumnName(name: String): String {
+        // Replicate the sanitization logic used by TableCatalog
+        // First normalize Unicode characters (e.g., é -> e)
+        var sanitized = java.text.Normalizer.normalize(name, java.text.Normalizer.Form.NFD)
+            .replace(Regex("\\p{M}"), "") // Remove diacritical marks
+
+        // Replace all non-alphanumeric characters (except underscore) with underscore
+        sanitized = sanitized.replace(Regex("[^a-zA-Z0-9_]"), "_")
+
+        // Add underscore prefix if starts with a digit
+        if (sanitized.isNotEmpty() && sanitized[0].isDigit()) {
+            sanitized = "_$sanitized"
+        }
+
+        return sanitized
+    }
+
     override fun dumpRecords(
         spec: ConfigurationSpecification,
         stream: DestinationStream
@@ -76,6 +93,13 @@ class PostgresDataDumper(
             resolvedHost = config.host,
             resolvedPort = config.port
         )
+
+        // Build reverse mapping from sanitized column names back to original names
+        val reverseMapping = mutableMapOf<String, String>()
+        (stream.schema as? io.airbyte.cdk.load.data.ObjectType)?.properties?.keys?.forEach { originalName ->
+            val sanitizedName = sanitizeColumnName(originalName)
+            reverseMapping[sanitizedName] = originalName
+        }
 
         val output = mutableListOf<OutputRecord>()
 
@@ -110,8 +134,11 @@ class PostgresDataDumper(
                 while (resultSet.next()) {
                     val dataMap = linkedMapOf<String, AirbyteValue>()
                     for (i in 1..resultSet.metaData.columnCount) {
-                        val columnName = resultSet.metaData.getColumnName(i)
-                        if (!Meta.COLUMN_NAMES.contains(columnName)) {
+                        val sanitizedColumnName = resultSet.metaData.getColumnName(i)
+                        if (!Meta.COLUMN_NAMES.contains(sanitizedColumnName)) {
+                            // Reverse-map to get the original column name
+                            val originalColumnName = reverseMapping[sanitizedColumnName] ?: sanitizedColumnName
+
                             val columnType = resultSet.metaData.getColumnTypeName(i)
                             val value = when (columnType) {
                                 "timestamptz" -> resultSet.getObject(i, java.time.OffsetDateTime::class.java)
@@ -120,7 +147,7 @@ class PostgresDataDumper(
                                 "time" -> resultSet.getObject(i, java.time.LocalTime::class.java)
                                 else -> resultSet.getObject(i)
                             }
-                            dataMap[columnName] = value?.let {
+                            dataMap[originalColumnName] = value?.let {
                                 AirbyteValue.from(convertValue(it))
                             } ?: NullValue
                         }
