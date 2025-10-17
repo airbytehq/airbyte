@@ -515,7 +515,7 @@ interface TableOperationsSuite {
             Fixtures.createAppendStream(
                 namespace = sourceTable.namespace,
                 name = sourceTable.name,
-                schema = Fixtures.ID_AND_TEST_SCHEMA,
+                schema = Fixtures.ID_TEST_WITH_CDC_SCHEMA,
             )
 
         val targetTable = Fixtures.generateTestTableName("upsert-test-target-table", testNamespace)
