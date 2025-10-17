@@ -95,9 +95,8 @@ set global slave_net_timeout = 120;
 set global thread_pool_idle_timeout = 120;
 ```
 
-:::note `slave_net_timeout` was renamed to `replica_net_timeout` in MySQL 8.0.26. Use the appropriate variable depending on your MySQL version. 
+:::note `slave_net_timeout` was renamed to `replica_net_timeout` in MySQL 8.0.26. Use the appropriate variable depending on your MySQL version.
 :::
-
 
 ### (Advanced) Enable GTIDs
 
