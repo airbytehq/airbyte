@@ -102,7 +102,7 @@ class MySqlSourceOperations :
             )
         recordData[MySqlSourceCdcMetaFields.CDC_LOG_POS.id] =
             FieldValueEncoder(
-                0,
+                0.toDouble(),
                 MySqlSourceCdcMetaFields.CDC_LOG_POS.type.jsonEncoder as JsonEncoder<Any>
             )
         if (globalStateValue == null) {
@@ -118,7 +118,7 @@ class MySqlSourceOperations :
             )
         recordData[MySqlSourceCdcMetaFields.CDC_LOG_POS.id] =
             FieldValueEncoder(
-                position.position,
+                position.position.toDouble(),
                 MySqlSourceCdcMetaFields.CDC_LOG_POS.type.jsonEncoder as JsonEncoder<Any>
             )
     }
