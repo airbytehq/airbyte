@@ -11,15 +11,12 @@ import orjson
 
 from airbyte_cdk import AirbyteEntrypoint, Source, create_connector_config_control_message
 from airbyte_cdk.models import AirbyteMessageSerializer
-from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
 
 
 logger = logging.getLogger("airbyte_logger")
 
 
 class MigrateConfig(ABC):
-    message_repository: MessageRepository = InMemoryMessageRepository()
-
     @classmethod
     @abstractmethod
     def should_migrate(cls, config: Mapping[str, Any]) -> bool: ...
