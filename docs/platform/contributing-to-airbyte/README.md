@@ -55,9 +55,9 @@ The team will not be able to run integration tests and your pull request will be
 :::
 
 :::tip
-**Fork permissions are required for all pull requests.** When creating your PR, you must check the box to "Allow edits from maintainers" so that Airbyte maintainers can apply formatting fixes, dependency updates, and other changes directly to your branch. This significantly speeds up the review and approval process.
+**Fork permissions are required for all pull requests.** When creating your PR, you must check the box to "Allow edits from maintainers" so that Airbyte maintainers can apply formatting fixes, dependency updates, and other changes directly to your branch. This speeds up the review and approval process.
 
-It is generally preferable to submit pull requests from a personal fork instead of an organization fork. This is because GitHub does not allow maintainers to commit directly to branches in organization forks. If you fork the repository under an organization (e.g., `my-company/airbyte`), GitHub will not present the option to allow maintainer edits. In this case, you will need to recreate your PR from a personal fork (e.g., `your-username/airbyte`) to enable this feature.
+It is generally preferable to submit pull requests from a personal fork instead of an organization fork. This is because GitHub does not allow maintainers to commit directly to branches in organization forks. If you fork the repository under an organization (for example, `my-company/airbyte`), GitHub does not present the option to allow maintainer edits. In this case, you need to recreate your PR from a personal fork (for example, `your-username/airbyte`) to enable this feature.
 :::
 
 Guidelines for connector contributions included in the [Connector Development Guide](../connector-development/README.md):
