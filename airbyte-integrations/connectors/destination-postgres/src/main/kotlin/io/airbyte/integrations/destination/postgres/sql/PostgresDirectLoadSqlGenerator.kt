@@ -115,7 +115,7 @@ class PostgresDirectLoadSqlGenerator {
         return """
             BEGIN TRANSACTION;
             DROP TABLE IF EXISTS ${getFullyQualifiedName(targetTableName)};
-            ALTER TABLE ${getFullyQualifiedName(sourceTableName)} RENAME TO ${getFullyQualifiedName(targetTableName)};
+            ALTER TABLE ${getFullyQualifiedName(sourceTableName)} RENAME TO ${getName(targetTableName)};
             COMMIT;
             """
             .trimIndent()
@@ -204,8 +204,8 @@ class PostgresDirectLoadSqlGenerator {
             is ObjectType,
             ObjectTypeWithEmptySchema,
             ObjectTypeWithoutSchema,
-            is UnknownType -> PostgresDataType.JSONB.typeName
-            is UnionType -> this.chooseType().toDialectType()
+            is UnknownType,
+            is UnionType -> PostgresDataType.JSONB.typeName
         }
 }
 
