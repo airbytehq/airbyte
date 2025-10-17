@@ -12,7 +12,6 @@ import io.airbyte.cdk.load.check.DestinationCheckerSync
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.orchestration.db.DefaultTempTableNameGenerator
-import io.airbyte.cdk.load.orchestration.db.direct_load_table.DefaultDirectLoadTableSqlOperations
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableExecutionConfig
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableWriter
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.NoopTypingDedupingSqlGenerator
@@ -33,9 +32,9 @@ import io.airbyte.integrations.destination.bigquery.write.bulk_loader.BigqueryBu
 import io.airbyte.integrations.destination.bigquery.write.bulk_loader.BigqueryConfiguredForBulkLoad
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.BigQueryDatabaseHandler
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadDatabaseInitialStatusGatherer
-import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadNativeTableOperations
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadSqlGenerator
-import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadSqlTableOperations
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryTableOperationsClient
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryTableSchemaEvolutionClient
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.legacy_raw_tables.BigqueryRawTableOperations
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.legacy_raw_tables.BigqueryTypingDedupingDatabaseInitialStatusGatherer
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -121,15 +120,13 @@ class BigqueryBeansFactory {
                 streamStateStore = streamStateStore,
             )
         } else {
-            val sqlTableOperations =
-                BigqueryDirectLoadSqlTableOperations(
-                    DefaultDirectLoadTableSqlOperations(
-                        BigqueryDirectLoadSqlGenerator(
-                            projectId = config.projectId,
-                            cdcDeletionMode = config.cdcDeletionMode,
-                        ),
-                        destinationHandler,
+            val tableOperations =
+                BigqueryTableOperationsClient(
+                    BigqueryDirectLoadSqlGenerator(
+                        projectId = config.projectId,
+                        cdcDeletionMode = config.cdcDeletionMode,
                     ),
+                    destinationHandler,
                     bigquery,
                 )
             // force smart cast
@@ -147,15 +144,15 @@ class BigqueryBeansFactory {
                         tempTableNameGenerator
                     ),
                 destinationHandler = destinationHandler,
-                nativeTableOperations =
-                    BigqueryDirectLoadNativeTableOperations(
+                schemaEvolutionClient =
+                    BigqueryTableSchemaEvolutionClient(
                         bigquery,
-                        sqlTableOperations,
+                        tableOperations,
                         destinationHandler,
                         projectId = config.projectId,
                         tempTableNameGenerator,
                     ),
-                sqlTableOperations = sqlTableOperations,
+                tableOperationsClient = tableOperations,
                 streamStateStore = streamStateStore,
                 tempTableNameGenerator,
             )
