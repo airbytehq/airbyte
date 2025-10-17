@@ -11,7 +11,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.Array
 import io.airbyte.integrations.base.destination.typing_deduping.Sql.Companion.concat
 import io.airbyte.integrations.base.destination.typing_deduping.Sql.Companion.of
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId.Companion.concatenateRawTableName
-import io.airbyte.protocol.models.AirbyteRecordMessageMetaChange
+import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import java.util.*
 import java.util.function.Function
 import java.util.stream.Collectors
