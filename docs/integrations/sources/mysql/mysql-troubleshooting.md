@@ -90,7 +90,7 @@ SET GLOBAL thread_pool_idle_timeout = 120;
 
 **For MySQL versions before 8.0.26:**
 
-```sql 
+```sql
 SET GLOBAL slave_net_timeout = 120;
 SET GLOBAL thread_pool_idle_timeout = 120;
 ```
