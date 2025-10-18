@@ -4,7 +4,7 @@ products: oss-enterprise
 
 # Update service account for 1.6
 
-Airbyte version 1.6 introduced a breaking change for service account permissions. If you're a Self-Managed Enterprise customer upgrading from 1.5.1 or earlier to 1.6 or later, follow the directions in this article before you upgrade to 1.6. If you're a Self-Managed Community user, this information isn't relevant to you. [Learn more about service accounts](https://kubernetes.io/docs/concepts/security/service-accounts/).
+Airbyte version 1.6 introduced a breaking change for service account permissions. If you're a Self-Managed Enterprise customer upgrading from 1.5.1 or earlier to 1.6 or later, follow the directions in this article before you upgrade to 1.6. If you're a Core user, this information isn't relevant to you. [Learn more about service accounts](https://kubernetes.io/docs/concepts/security/service-accounts/).
 
 ## Upgrading without updating service account permissions
 

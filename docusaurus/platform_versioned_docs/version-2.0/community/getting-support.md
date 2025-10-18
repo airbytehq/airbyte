@@ -6,9 +6,9 @@ products: all
 
 Hold up! Have you looked at [our docs](https://docs.airbyte.com/) yet? We recommend searching the wealth of knowledge in our documentation as many times the answer you are looking for is there!
 
-## Airbyte Open Source Support
+## Core support
 
-Running Airbyte Open Source and have questions that our docs could not clear up? Post your questions on our [Github Discussions](https://github.com/airbytehq/airbyte/discussions?_gl=1*70s0c6*_ga*MTc1OTkyOTYzNi4xNjQxMjQyMjA0*_ga_HDBMVFQGBH*MTY4OTY5MDQyOC4zNDEuMC4xNjg5NjkwNDI4LjAuMC4w) and also join our community Slack to connect with other Airbyte users.
+If you're running Airbyte Core and have a question the docs couldn't clear up, post your question as a [Github Discussions](https://github.com/airbytehq/airbyte/discussions?_gl=1*70s0c6*_ga*MTc1OTkyOTYzNi4xNjQxMjQyMjA0*_ga_HDBMVFQGBH*MTY4OTY5MDQyOC4zNDEuMC4xNjg5NjkwNDI4LjAuMC4w) and also join our community Slack to connect with other Airbyte users.
 
 ### Community Slack
 
@@ -22,7 +22,7 @@ If you require personalized support, reach out to our sales team to inquire abou
 
 We are driving our community support from our [forum](https://github.com/airbytehq/airbyte/discussions) on GitHub.
 
-## Airbyte Cloud Support
+## Cloud support (Standard, Pro, Enterprise Flex)
 
 If you have questions about connector setup, error resolution, or want to report a bug, Airbyte Support is available to assist you. We recommend checking [our documentation](https://docs.airbyte.com/) and searching our [Help Center](https://support.airbyte.com/hc/en-us) before opening a support ticket.
 
@@ -38,9 +38,9 @@ To stay updated on Airbyte's future plans, take a look at [our roadmap](https://
 
 Please be sure to sign up for Airbyte with your company email address, as we do not support personal accounts.
 
-## Airbyte Enterprise (self-hosted) Support
+## Self-Managed Enterprise support
 
-If you're running Airbyte Open Source with Airbyte Enterprise or have an OSS support package, we're here to help you with upgrading Airbyte versions, debugging connector issues, or troubleshooting schema changes.
+If you're running Self-Managed Enterprise, Airbyte's support team here to help you with upgrading Airbyte versions, debugging connector issues, or troubleshooting schema changes.
 
 Before opening a support ticket, we recommend consulting [our documentation](https://docs.airbyte.com/) and searching our [Help Center](https://support.airbyte.com/hc/en-us). If your question remains unanswered, please submit a ticket through our Help Center. We suggest creating an [Airbyte Help Center account](https://airbyte1416.zendesk.com/auth/v2/login/signin?return_to=https%3A%2F%2Fsupport.airbyte.com%2Fhc%2Fen-us&theme=hc&locale=en-us&brand_id=15365055240347&auth_origin=15365055240347%2Ctrue%2Ctrue) to access your organization's support requests. Our team is online and availible to assist from 7AM - 7PM Eastern.
 

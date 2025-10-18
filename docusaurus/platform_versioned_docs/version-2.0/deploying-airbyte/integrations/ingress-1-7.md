@@ -7,7 +7,7 @@ import TabItem from '@theme/TabItem';
 
 # Update ingress for version 1.7 and later
 
-Airbyte version 1.7 introduced a breaking change for ingress to the Connector Builder. If you're a Self-Managed Community user or Self-Managed Enterprise customer, and you're upgrading to version 1.7.0 or later, complete these steps when you upgrade. If you don't, the Connector Builder gives you 403 Forbidden errors and you can't test streams or use the Connector Builder UI.
+Airbyte version 1.7 introduced a breaking change for ingress to the Connector Builder. If you're a Core user or Self-Managed Enterprise customer, and you're upgrading to version 1.7.0 or later, complete these steps when you upgrade. If you don't, the Connector Builder gives you 403 Forbidden errors and you can't test streams or use the Connector Builder UI.
 
 ## What changed
 
