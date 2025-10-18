@@ -51,7 +51,7 @@ When enabled, Custom Components bring the full flexibility of the Low-Code CDK i
 Custom Components are currently considered **UNSAFE** and **EXPERIMENTAL**. Airbyte doesn't provide any sandboxing guarantees. This feature could execute arbitrary code in your Airbyte environment. Enable it at your own risk.
 :::
 
-Airbyte disables Custom Components by default due to their experimental nature and security implications. Administrators can enable this feature in Self-Managed Community and Self-Managed Enterprise deployments using one of the following methods:
+Airbyte disables Custom Components by default due to their experimental nature and security implications. Administrators can enable this feature in Core and Self-Managed Enterprise deployments using one of the following methods:
 
 ### Using abctl
 

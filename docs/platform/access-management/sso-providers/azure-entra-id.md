@@ -20,7 +20,7 @@ This guide is for administrators. It assumes you have:
 
 The exact process differs between the Cloud or Self-Managed versions of Airbyte. Steps for both are below.
 
-## Cloud Teams with Entra ID OIDC
+## Cloud Pro with Entra ID OIDC
 
 :::warning
 For security purposes, Airbyte disables existing [applications](/platform/enterprise-setup/api-access-config) used to access the Airbyte API once the user who owns the application signs in with SSO for the first time. Replace any Application secrets that were previously in use to ensure your integrations don't break.
@@ -114,7 +114,7 @@ To prevent a situation where you could lock yourself out of Airbyte, we require 
 
 ### Create application
 
-You will need to create a new Entra ID application for Airbyte. Log into the [Azure Portal](https://portal.azure.com/) and search for the Entra ID service.
+You need to create a new Entra ID application for Airbyte. Log into the [Azure Portal](https://portal.azure.com/) and search for the Entra ID service.
 
 From the overview page of Entra ID, press **Add** > **App registration** on the top of the screen. The name you select is your app integration name. Once chosen, **choose who can use the application, typically set to "Accounts in this organization directory only" for specific access,** and configure a **Redirect URI** of type **Web** with the following value:
 
@@ -141,12 +141,12 @@ Depending on the default "Admin consent require' value for your organization you
 
 Once your Microsoft Entra ID app is set up, you're ready to deploy Airbyte Self-Managed Enterprise with SSO. Take note of the following configuration values, as you will need them to configure Airbyte to use your new SSO app integration:
 
-    * OpenID Connect metadata document: You'll find this in the list of endpoints found in the **Endpoints** panel, which you can open from the top bar of the **Overview** page. This will be used to populate the `Domain` field in your `airbyte.yml`.
+    * OpenID Connect metadata document: You'll find this in the list of endpoints found in the **Endpoints** panel, which you can open from the top bar of the **Overview** page. This will be used to populate the `Domain` field in your `values.yaml`.
     * App Integration Name: The name of the Entra ID application created in the first step.
     * Client ID: You'll find this in the **Essentials** section on the **Overview** page of the application you created.
     * Client Secret: The client secret you copied in the previous step.
 
-Use this information to configure the auth details of your `airbyte.yml` for your Self-Managed Enterprise deployment. To learn more on deploying Self-Managed Enterprise, see our [implementation guide](/platform/enterprise-setup/implementation-guide).
+Use this information to configure the auth details of your `values.yaml` for your Self-Managed Enterprise deployment. To learn more on deploying Self-Managed Enterprise, see the [implementation guide](/platform/enterprise-setup/implementation-guide).
 
 ## Self-Managed Enterprise with Entra ID Generic OIDC
 

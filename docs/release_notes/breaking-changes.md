@@ -8,7 +8,7 @@ Occasionally, new versions of Airbyte introduce breaking changes. This page inve
 
 When you upgrade your Self-Managed instance of Airbyte to a version with a breaking change, you may need to take mitigating action. If you are upgrading multiple versions at once, complete the mitigaton steps for the versions you are skipping as well.
 
-## Self-Managed Community
+## Core
 
 ### 1.8.x to 2.0.x
 

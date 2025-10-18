@@ -20,11 +20,11 @@ Airbyte has begun rolling out a new Helm chart called Helm chart V2. The instruc
 
 ### Infrastructure Prerequisites
 
-For a production-ready deployment of Self-Managed Enterprise, various infrastructure components are required. We recommend deploying to Amazon EKS or Google Kubernetes Engine. The following diagram illustrates a typical Airbyte deployment running on AWS:
+For a production-ready deployment of Self-Managed Enterprise, the following infrastructure components are required. Deploy to Amazon EKS or Google Kubernetes Engine. The following diagram illustrates a typical Airbyte deployment running on AWS:
 
 ![AWS Architecture Diagram](./assets/self-managed-enterprise-aws.png)
 
-Prior to deploying Self-Managed Enterprise, we recommend having each of the following infrastructure components ready to go. When possible, it's easiest to have all components running in the same [VPC](https://docs.aws.amazon.com/eks/latest/userguide/network_reqs.html). The provided recommendations are for customers deploying to AWS:
+Prior to deploying Self-Managed Enterprise, Airbyte recommends having each of the following infrastructure components ready to go. When possible, it's easiest to have all components running in the same [VPC](https://docs.aws.amazon.com/eks/latest/userguide/network_reqs.html). The provided recommendations are for customers deploying to AWS:
 
 | Component                | Recommendation                                                                                                                                                            |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -36,10 +36,10 @@ Prior to deploying Self-Managed Enterprise, we recommend having each of the foll
 
 A few notes on Kubernetes cluster provisioning for Airbyte Self-Managed Enterprise:
 
-- We support Amazon Elastic Kubernetes Service (EKS) on EC2, Google Kubernetes Engine (GKE) on Google Compute Engine (GCE), and Azure Kubernetes Service (AKS).
-- We recommend running Airbyte on memory-optimized instances, such as M7i / M7g instance types.
-- While we support GKE Autopilot, we do not support Amazon EKS on Fargate.
-- We recommend running Airbyte on instances with at least 2 cores and 8 gigabytes of RAM.
+- Airbyte supports Amazon Elastic Kubernetes Service (EKS) on EC2, Google Kubernetes Engine (GKE) on Google Compute Engine (GCE), and Azure Kubernetes Service (AKS).
+- Airbyte recommends running Airbyte on memory-optimized instances, such as M7i / M7g instance types.
+- While Airbyte supports GKE Autopilot, it doesn't support Amazon EKS on Fargate.
+- You should run Airbyte on instances with at least 2 cores and 8 gigabytes of RAM.
 
 We require you to install and configure the following Kubernetes tooling:
 
@@ -394,7 +394,7 @@ The following subsections help you customize your deployment to use an external 
 
 #### Configuring the Airbyte Database
 
-For Self-Managed Enterprise deployments, we recommend using a dedicated database instance for better reliability, and backups (such as AWS RDS or GCP Cloud SQL) instead of the default internal Postgres database (`airbyte/db`) that Airbyte spins up within the Kubernetes cluster.
+For Self-Managed Enterprise deployments, you must use a dedicated database instance for better reliability and backups, such as AWS RDS or GCP Cloud SQL. Don't use the default internal Postgres database, `airbyte/db`, that Airbyte spins up within the Kubernetes cluster.
 
 We assume in the following that you've already configured a Postgres instance:
 
@@ -476,7 +476,7 @@ global:
 
 #### Configuring External Logging
 
-For Self-Managed Enterprise deployments, we recommend spinning up standalone log storage for additional reliability using tools such as S3 and GCS instead of against using the default internal Minio storage (`airbyte/minio`). It's then a common practice to configure additional log forwarding from external log storage into your observability tool.
+For Self-Managed Enterprise deployments, spin up standalone log storage for additional reliability using tools such as S3 and GCS. Don't use the default internal MinIO storage, `airbyte/minio`. It's then a common practice to configure additional log forwarding from external log storage into your observability tool.
 
 <details>
 <summary>External log storage setup steps</summary>
