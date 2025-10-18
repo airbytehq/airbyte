@@ -81,10 +81,23 @@ When a sync runs for the first time using CDC, Airbyte performs an initial consi
 
 If seeing `EventDataDeserializationException` errors intermittently with root cause `EOFException` or `SocketException`, you may need to extend the following _MySql server_ timeout values by running:
 
+**For MySQL 8.0.26 and later:**
+
+```sql
+SET GLOBAL replica_net_timeout = 120;
+SET GLOBAL thread_pool_idle_timeout = 120;
 ```
-set global slave_net_timeout = 120;
-set global thread_pool_idle_timeout = 120;
+
+**For MySQL versions before 8.0.26:**
+
+```sql
+SET GLOBAL slave_net_timeout = 120;
+SET GLOBAL thread_pool_idle_timeout = 120;
 ```
+
+:::note
+`slave_net_timeout` was renamed to `replica_net_timeout` in MySQL 8.0.26. Use the appropriate variable depending on your MySQL version.
+:::
 
 ### (Advanced) Enable GTIDs
 
