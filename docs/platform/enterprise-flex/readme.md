@@ -37,7 +37,7 @@ Enterprise Flex addresses these needs by offering fully managed Cloud workspaces
 
 ### Enterprise Flex versus Pro
 
-Enterprise Flex includes all features that are standard in Pro with the additional capabilities of running self-managed data planes, referencing your own secrets manager, and storing audit logs.
+Enterprise Flex includes all features that are standard in Pro with the additional capabilities of running self-managed data planes, referencing your own secrets manager, PrivateLink support, and storing audit logs.
 
 Any Airbyte Cloud environment can be easily upgraded to Enterprise Flex. To learn more about upgrading to Enterprise Flex, [talk to sales](https://airbyte.com/company/talk-to-sales).
 
