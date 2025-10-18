@@ -83,19 +83,20 @@ If seeing `EventDataDeserializationException` errors intermittently with root ca
 
 **For MySQL 8.0.26 and later:**
 
-```
+```sql
 SET GLOBAL replica_net_timeout = 120;
 SET GLOBAL thread_pool_idle_timeout = 120;
 ```
 
 **For MySQL versions before 8.0.26:**
 
-```
-set global slave_net_timeout = 120;
-set global thread_pool_idle_timeout = 120;
+```sql 
+SET GLOBAL slave_net_timeout = 120;
+SET GLOBAL thread_pool_idle_timeout = 120;
 ```
 
-:::note `slave_net_timeout` was renamed to `replica_net_timeout` in MySQL 8.0.26. Use the appropriate variable depending on your MySQL version.
+:::note 
+`slave_net_timeout` was renamed to `replica_net_timeout` in MySQL 8.0.26. Use the appropriate variable depending on your MySQL version.
 :::
 
 ### (Advanced) Enable GTIDs
