@@ -35,8 +35,8 @@ def test_should_retry(requests_mock, stream_name, extra_mocks):
         requests_mock.get(**extra_mock)
 
     records = []
-    for stream_slice in stream.stream_slices(sync_mode=SyncMode.full_refresh):
-        records.extend(list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)))
+    for partition in stream.generate_partitions():
+        records.extend(list(partition.read()))
     assert records == []
     assert requests_mock.call_count == len(extra_mocks) + 1
 
@@ -152,8 +152,8 @@ def test_transform(requests_mock, stream_name, response_mocks, expected_record):
     for url, json in response_mocks:
         requests_mock.get(url, json=json)
 
-    for stream_slice in stream.stream_slices(sync_mode=SyncMode.full_refresh):
-        for record in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
+    for partition in stream.generate_partitions():
+        for record in partition.read():
             assert dict(record) == expected_record
 
 
@@ -168,7 +168,7 @@ def test_stream_slices_child_stream(requests_mock):
     )
     stream_state = {"13082000": {"" "created_at": "2021-03-10T23:58:1213"}}
 
-    slices = list(commits.stream_slices(sync_mode=SyncMode.full_refresh, stream_state=stream_state))
+    slices = list(map(lambda partition: partition.to_slice(), commits.generate_partitions()))
     assert slices
 
 
@@ -176,4 +176,4 @@ def test_request_params():
     source = get_source(config=CONFIG)
     migrated_config = source.configure(config=CONFIG, temp_dir="/not/a/real/path")
     commits = get_stream_by_name(source=source, stream_name="commits", config=migrated_config)
-    assert commits.retriever.requester.get_request_params() == {"with_stats": "true"}
+    assert commits._stream_partition_generator._partition_factory._retriever.requester.get_request_params() == {"with_stats": "true"}

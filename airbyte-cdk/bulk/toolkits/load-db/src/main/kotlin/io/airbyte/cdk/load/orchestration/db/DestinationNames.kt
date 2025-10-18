@@ -5,8 +5,9 @@
 package io.airbyte.cdk.load.orchestration.db
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.orchestration.db.TableNames.Companion.TMP_TABLE_SUFFIX
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingUtil
+import io.airbyte.cdk.load.table.TableName
+import io.airbyte.cdk.load.table.TableSuffixes.TMP_TABLE_SUFFIX
 import org.apache.commons.codec.digest.DigestUtils
 
 data class TableNames(
@@ -25,20 +26,6 @@ data class TableNames(
 
     fun toPrettyString() =
         "Raw table: ${rawTableName?.toPrettyString()}; Final table: ${finalTableName?.toPrettyString()}"
-
-    companion object {
-        const val NO_SUFFIX = ""
-        // TODO comment explaining this
-        const val TMP_TABLE_SUFFIX = "_airbyte_tmp"
-        const val SOFT_RESET_SUFFIX = "_ab_soft_reset"
-    }
-}
-
-data class TableName(val namespace: String, val name: String) {
-    fun toPrettyString(quote: String = "", suffix: String = "") =
-        "$quote$namespace$quote.$quote$name$suffix$quote"
-
-    fun asOldStyleTempTable() = copy(name = name + TMP_TABLE_SUFFIX)
 }
 
 fun interface TempTableNameGenerator {
@@ -97,14 +84,6 @@ open class DefaultTempTableNameGenerator(
     }
 }
 
-/**
- * map from the column name as declared in the schema, to the column name that we'll create in the
- * final (typed) table.
- */
-@JvmInline
-value class ColumnNameMapping(private val columnNameMapping: Map<String, String>) :
-    Map<String, String> by columnNameMapping
-
 sealed interface TableNameGenerator {
     fun getTableName(streamDescriptor: DestinationStream.Descriptor): TableName
 }
@@ -128,5 +107,3 @@ fun interface ColumnNameGenerator {
     data class ColumnName(val displayName: String, val canonicalName: String)
     fun getColumnName(column: String): ColumnName
 }
-
-const val CDC_DELETED_AT_COLUMN = "_ab_cdc_deleted_at"

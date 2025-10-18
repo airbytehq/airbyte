@@ -54,8 +54,14 @@ def _entry_should_be_on_gcs(metadata_model: ConnectorMetadataDefinitionV0) -> bo
         bool: True if the metadata entry should be on GCS, False otherwise.
     """
     if metadata_model.data.supportLevel and metadata_model.data.supportLevel.__root__ == "archived":
+        logger.info(
+            f"Skipping. Connector `{metadata_model.data.dockerRepository}` is archived or does not have a support level. Support level: {metadata_model.data.supportLevel.__root__}"
+        )
         return False
     if "-rc" in metadata_model.data.dockerImageTag:
+        logger.info(
+            f"Skipping. Connector `{metadata_model.data.dockerRepository}` is a release candidate. Docker image tag: {metadata_model.data.dockerImageTag}"
+        )
         return False
     return True
 
@@ -88,6 +94,10 @@ def _get_github_metadata_download_urls() -> list[str]:
             last_modified_at = commits[0].commit.author.date
             if not _is_younger_than_grace_period(last_modified_at):
                 metadata_download_urls.append(file_content.download_url)
+            else:
+                logger.info(
+                    f"Skipping. Metadata file on Github `{file_content.path}` was modified more recently than the grace period. Last modified at: {last_modified_at}"
+                )
     logger.debug(f"Found {len(metadata_download_urls)} download URLs")
 
     return metadata_download_urls
@@ -114,7 +124,7 @@ def _get_and_parse_metadata_files(metadata_download_urls: list[str]) -> list[Con
             connector_metadata = ConnectorMetadataDefinitionV0.parse_obj(metadata_dict)
             connector_metadata_list.append(connector_metadata)
         except Exception as e:
-            logger.debug(f"Skipping. Failed to parse metadata for metadata at path: {metadata_download_url}. Exception: {e}")
+            logger.info(f"Skipping. Failed to parse metadata for metadata at path: {metadata_download_url}. Exception: {e}")
             continue
     logger.debug(f"Parsed {len(connector_metadata_list)} metadata files")
     return connector_metadata_list
@@ -243,8 +253,8 @@ def generate_and_publish_stale_metadata_report(bucket_name: str) -> tuple[bool, 
     Returns:
         tuple[bool, Optional[str]]: A tuple containing a boolean indicating whether the report was published and an optional error message.
     """
-    latest_metadata_versions_on_github = _get_latest_metadata_versions_on_github()
     latest_metadata_entries_on_gcs = _get_latest_metadata_entries_on_gcs(bucket_name)
+    latest_metadata_versions_on_github = _get_latest_metadata_versions_on_github()
     stale_metadata_report = _generate_stale_metadata_report(latest_metadata_versions_on_github, latest_metadata_entries_on_gcs)
     report_published, error_message = _publish_stale_metadata_report(
         stale_metadata_report, len(latest_metadata_versions_on_github), len(latest_metadata_entries_on_gcs)

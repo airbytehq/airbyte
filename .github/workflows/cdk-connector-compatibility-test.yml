@@ -1,0 +1,142 @@
+name: CDK Connector Compatibility Test
+
+on:
+  pull_request:
+    paths:
+      - "airbyte-cdk/bulk/**/*"
+  schedule:
+    - cron: "0 12 * * *"
+  workflow_call:
+
+jobs:
+  generate-matrix:
+    name: Generate Connector Matrix
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
+        with:
+          submodules: true # Needed for when airbyte-enterprise calls this workflow
+
+      - name: Install yq
+        run: sudo snap install yq
+
+      - name: Generate Connector Matrix
+        id: generate-matrix
+        run: echo "connectors_matrix=$(tools/bin/bulk-cdk/get-certified-connectors.sh)" | tee -a $GITHUB_OUTPUT
+
+    outputs:
+      connectors-matrix: ${{ steps.generate-matrix.outputs.connectors_matrix }}
+
+  connectors-test:
+    name: Test ${{ matrix.connector }} Connector
+    needs: [generate-matrix]
+    runs-on: linux-24.04-large
+    env:
+      GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
+      GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID || vars.GCP_PROJECT_ID }}
+      DD_TAGS: "connector.name:${{ matrix.connector }}"
+
+    strategy:
+      matrix:
+        connector: ${{ fromJson(needs.generate-matrix.outputs.connectors-matrix) }}
+      max-parallel: 5 # Limit number of parallel jobs
+      fail-fast: false # Don't stop on first failure
+    steps:
+      - name: Checkout Airbyte
+        if: matrix.connector
+        id: checkout
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        with:
+          submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
+
+      # Java deps
+      - uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
+        if: matrix.connector
+        with:
+          distribution: zulu
+          java-version: 21
+          cache: gradle
+
+      # The default behaviour is read-only on PR branches and read/write on master.
+      # See https://github.com/gradle/actions/blob/main/docs/setup-gradle.md#using-the-cache-read-only.
+      - uses: gradle/actions/setup-gradle@748248ddd2a24f49513d8f472f81c3a07d4d50e1 # v4.4.4
+        if: matrix.connector
+        with:
+          gradle-version: "8.14"
+
+      - name: Install the latest version of uv
+        if: matrix.connector
+        uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
+
+      - name: Install Poe
+        if: matrix.connector
+        run: |
+          # Install Poe so we can run the connector tasks:
+          uv tool install poethepoet
+
+      - name: Install connector dependencies
+        if: matrix.connector
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: poe install
+
+      - name: Fetch connector secrets
+        # This will be skipped if the repo or fork does not set GCP_PROJECT_ID, or if it is set to an empty value.
+        # Later integration tests will likely fail in this case, but we at least let them run.
+        if: matrix.connector && (vars.GCP_PROJECT_ID != '')
+        run: |
+          airbyte-cdk secrets fetch ${{ matrix.connector }}
+
+      - name: Run CDK upgrade # Run tests against local CDK version
+        if: matrix.connector
+        run: ./gradlew upgradeCdk --cdkVersion=local
+
+      - name: Run Unit Tests
+        id: run-unit-tests
+        if: matrix.connector
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: poe test-unit-tests
+
+      - name: Run Integration Tests
+        id: run-integration-tests
+        if: matrix.connector
+        working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
+        run: poe test-integration-tests
+
+      - name: Check if move team should be notified
+        id: check-move-notify
+        if: always()
+        run: |
+          echo "should-notify=${{
+            github.event_name == 'schedule' &&
+            startsWith(matrix.connector, 'destination-') &&
+            (steps.run-unit-tests.outcome == 'failure' || steps.run-integration-tests.outcome == 'failure')
+          }}" >> $GITHUB_OUTPUT
+
+      - name: Slack Notification on Failure
+        if: always() && steps.check-move-notify.outputs.should-notify == 'true'
+        uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
+        with:
+          token: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+          method: chat.postMessage
+          payload: |
+            channel: C09H56MT8J2
+            text: "`${{ matrix.connector }}` connector tests failed when using local CDK! <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|View Test Logs>"
+
+      - name: Authenticate as GitHub App
+        if: always() && steps.check-move-notify.outputs.should-notify == 'true'
+        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2
+        id: app-token
+        with:
+          owner: "airbytehq"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
+      - name: Create Github Issue on Failure
+        if: always() && steps.check-move-notify.outputs.should-notify == 'true'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: tools/bin/bulk-cdk-compatibility-test/create-gh-issue.sh \
+          ${{ matrix.connector }} \
+          "https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}" \
+          ${{ github.sha }}

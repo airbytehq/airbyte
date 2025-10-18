@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Uploads the metadata (+SBOM+spec cache) to GCS.
-# Usage: ./poe-tasks/upload-connector-metadata.sh --name destination-bigquery [--pre-release] [--main-release]
+# Usage: ./poe-tasks/upload-connector-metadata.sh --name destination-bigquery --release-type <pre-release|main-release>
 # You must have three environment variables set (GCS_CREDENTIALS, METADATA_SERVICE_GCS_CREDENTIALS, SPEC_CACHE_GCS_CREDENTIALS),
 # each containing a JSON-formatted GCP service account key.
 # SPEC_CACHE_GCS_CREDENTIALS needs write access to `gs://$spec_cache_bucket/specs`.
@@ -27,14 +27,16 @@ if ! test "$GCS_CREDENTIALS"; then
   exit 1
 fi
 
-spec_cache_bucket="dev-airbyte-cloud-connector-metadata-service"
-metadata_bucket="dev-airbyte-cloud-connector-metadata-service"
+spec_cache_bucket="io-airbyte-cloud-spec-cache"
+metadata_bucket="prod-airbyte-cloud-connector-metadata-service"
 
 syft_docker_image="anchore/syft:v1.6.0"
 sbom_extension="spdx.json"
 
 meta="${CONNECTORS_DIR}/${connector}/metadata.yaml"
-doc="$(connector_docs_path $connector)"
+# isEnterprise flag is usually only set on enterprise connectors,
+is_enterprise=$(yq -r '.data.ab_internal.isEnterprise // false' "$meta")
+doc="$(connector_docs_path $connector $is_enterprise)"
 
 docker_repository=$(yq -r '.data.dockerRepository' "$meta")
 if test -z "$docker_repository" || test "$docker_repository" = "null"; then
@@ -113,4 +115,10 @@ else
   metadata_upload_prerelease_flag="--prerelease $docker_tag"
 fi
 # Under the hood, this reads the GCS_CREDENTIALS environment variable
-poetry run --directory $METADATA_SERVICE_PATH metadata_service upload "$meta" "$DOCS_ROOT/" "$metadata_bucket" $metadata_upload_prerelease_flag
+# Note: --directory works here because publish_connectors.yml installs poetry 1.x.
+# If we upgrade to 2.x, this needs to be `--project $METADATA_SERVICE_PATH`.
+# TODO: remove the `--disable-dockerhub-checks` flag once we stop supporting strict-encrypt connectors
+#   | For strict-encrypt connectors the dockerhub checks enforce that both {connector}:{version} and {connector}-strict-encrypt:{version}
+#   | Docker images must be published prior to metadata upload. With our current connector publishing process, these images are
+#   | published in parallel and will not necessarily exist before metadata upload.
+poetry run --directory $METADATA_SERVICE_PATH metadata_service upload --disable-dockerhub-checks "$meta" "$doc" "$metadata_bucket" $metadata_upload_prerelease_flag

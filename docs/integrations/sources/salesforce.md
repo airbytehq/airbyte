@@ -30,7 +30,7 @@ Follow the instructions below to create a Minimum Access standard profile and as
 
 While you can set up the Salesforce connector using any Salesforce user with read permission, we recommend creating a dedicated user with the Minimum Access standard profile for Airbyte. This allows you to granularly control the data Airbyte can read.
 
-Using Permission Sets, you should grant this user read access to the data you want Airbyte to have access to. Learn more about Permission sets by referring to [Salesforce's documentation](https://help.salesforce.com/s/articleView?id=sf.perm_sets_overview.htm&type=5).
+Using Permission Sets, you should grant this user read access to the data you want Airbyte to have access to. Learn more about Permission sets by referring to [Salesforce's documentation](https://help.salesforce.com/s/articleView?id=sf.perm_sets_overview.htm&type=5). If you want to sync permissions data from Salesforce, you also need the [permissions necessary to sync security-related data](#permissions-to-sync-permissions).
 
 [Log in to Salesforce](https://login.salesforce.com/) with an admin account.
 
@@ -38,8 +38,8 @@ Using Permission Sets, you should grant this user read access to the data you wa
 -  On the top right of the screen, click the gear icon and then click **Setup**.
 -  In the left navigation bar, under Administration, click **Users** > **Users**. Create a new User, entering details for the user's first name, last name, alias, and email. Filling in the email field will auto-populate the username field and nickname.
       - Leave `role` unspecified
-      - Select `Salesforce Platform` for the User License
-      - Select `Standard Platform User` for Profile.
+      - Select `Salesforce` for the User License
+      - Select `Standard User` for Profile.
       - Decide whether to generate a new password and notify the user.
       - Select `save`
 #### 2. Create a new Permission Set:
@@ -53,6 +53,11 @@ Using Permission Sets, you should grant this user read access to the data you wa
    - Select “Edit” and check the "Read" permission and uncheck all other permissions (Create, Edit, Delete, etc.).
    - Click `Save`
    - Continue to add read permissions for any objects you want Airbyte to have access to.
+- To grant access to uninstalled connected apps, you need to enable additional permission.
+   - Click "System Permissions"
+   - Select “Edit”
+   - If [API Access Control](https://help.salesforce.com/s/articleView?id=xcloud.security_api_access_control_about.htm&language=en_US&type=5) is enabled, need to check the "Use Any API Client" permission. If API Access Control isn't enabled, need to check “Approve Uninstalled Connected Apps” permission.
+   - Click `Save`
 #### 3. Assign the Permission Set to the new User
 - From the Permission Sets page, click "Manage Assignments" next to the read-only permission set you just created.
 - Click "Add Assignments."
@@ -140,6 +145,46 @@ Airbyte allows exporting all available Salesforce objects dynamically based on:
 - If the authenticated Salesforce user has the Role and Permissions to read and fetch objects. This would be set as part of the Permission Set you assign to the Airbyte user. See [Step 1](#step-1-optional-recommended-create-a-dedicated-salesforce-user) for more information.
 - If the Salesforce object has the queryable property set to true. Airbyte can only fetch objects which are queryable. If you don’t see an object available via Airbyte, and it is queryable, check if it is API-accessible to the Salesforce user you authenticated with.
 
+## Syncing Permissions Data from Salesforce
+
+The Salesforce connector can be used to sync security-related objects that can be synced to understand user permissions, roles, and access patterns within your Salesforce organization.
+
+Common use cases for syncing Salesforce permission data include:
+
+- **Permission Replication**: Leverage permissions from the Salesforce source to guide application of permissions downstream.
+- **Security Auditing**: Generate reports on user access rights and permission assignments.
+
+### Available Security-Related Streams
+
+The following streams contain security and permission-related data:
+
+- **[`User`](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_user.htm)** - Core user accounts with security-related fields including profiles, roles, and user permissions. Contains information about user status, login history, and assigned licenses.
+- **[`ActivePermSetLicenseMetric`](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_activepermsetlicensemetric.htm)** - Tracks permission set license usage metrics including assigned user counts, active user counts, and total available licenses.
+- **[`ActiveProfileMetric`](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_activeprofilemetric.htm)** - Provides metrics about user profile usage including user license associations and assignment counts.
+
+For comprehensive information about Salesforce security objects, refer to the [Salesforce Object Reference](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_concepts.htm) documentation.
+
+### How Salesforce Permission Syncing Works
+
+Salesforce provides some security-related data through its standard object model:
+
+1. **Dynamic Object Discovery**: The connector automatically discovers available Salesforce objects (sobjects) based on the authenticated user's permissions.
+2. **Permission-Based Access**: Which security objects are available depends on the permissions granted to the Salesforce user used for authentication and your Salesforce environment configuration.
+3. **Standard Object Syncing**: Available security-related objects are synced as regular Salesforce objects through the same sync mechanisms as other business data.
+
+:::note
+Security-related object availability varies by Salesforce environment (production vs sandbox) and user permissions. Security objects can be large datasets in organizations with many users, so monitor your Salesforce API limits accordingly.
+:::
+
+### Permissions Needed to Sync Permissions Data {#permissions-to-sync-permissions}
+
+To sync security-related data from Salesforce, the authenticated Salesforce user must have appropriate permissions to read security objects. Consider granting these permissions through a dedicated permission set:
+
+   - "View All Users" - Required to access comprehensive User data.
+   - Standard read permissions for the specific objects you want to sync.
+
+For more information about Salesforce security and permissions, refer to the official Salesforce documentation on [User Permissions](https://help.salesforce.com/s/articleView?id=sf.admin_userperms.htm&type=5) and [Permission Sets](https://help.salesforce.com/s/articleView?id=sf.perm_sets_overview.htm&type=5).
+
 ## Limitations & Troubleshooting
 
 <details>
@@ -216,6 +261,8 @@ Now that you have set up the Salesforce source connector, check out the followin
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.7.13 | 2025-10-14 | [60432](https://github.com/airbytehq/airbyte/pull/60432) | Update dependencies |
+| 2.7.12 | 2025-09-10 | [66136](https://github.com/airbytehq/airbyte/pull/66136) | Update to CDK v7 |
 | 2.7.11 | 2025-05-14 | [60271](https://github.com/airbytehq/airbyte/pull/60271) | Define suggested streams |
 | 2.7.10 | 2025-05-10 | [60100](https://github.com/airbytehq/airbyte/pull/60100) | Update dependencies |
 | 2.7.9 | 2025-05-04 | [59644](https://github.com/airbytehq/airbyte/pull/59644) | Update dependencies |
@@ -233,7 +280,7 @@ Now that you have set up the Salesforce source connector, check out the followin
 | 2.6.5-rc.1 | 2025-02-18 | [53229](https://github.com/airbytehq/airbyte/pull/53229) | Upgrade to API v62.0                                                                                                                                                   |
 | 2.6.4      | 2025-01-11 | [48635](https://github.com/airbytehq/airbyte/pull/48635) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 2.6.3      | 2024-11-05 | [46835](https://github.com/airbytehq/airbyte/pull/46835) | Update dependencies                                                                                                                                                    |
-| 2.6.2      | 2024-10-10 | [](https://github.com/airbytehq/airbyte/pull/) | Bump minimum CDK to 5.10.2                                                                                                                                             |
+| 2.6.2      | 2024-10-10 | [](https://github.com/airbytehq/airbyte/pull/)           | Bump minimum CDK to 5.10.2                                                                                                                                             |
 | 2.6.1      | 2024-10-05 | [46436](https://github.com/airbytehq/airbyte/pull/46436) | Update dependencies, including CDK fix in v5.10.2                                                                                                                      |
 | 2.6.0      | 2024-10-02 | [45678](https://github.com/airbytehq/airbyte/pull/45678) | Have bulk streams use CDK components                                                                                                                                   |
 | 2.5.34     | 2024-09-28 | [46187](https://github.com/airbytehq/airbyte/pull/46187) | Update dependencies                                                                                                                                                    |

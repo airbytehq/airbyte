@@ -32,8 +32,8 @@ class StateHistogramStore {
         return expectedCount == flushedCount
     }
 
-    fun remove(key: StateKey) {
-        expected.remove(key)
+    fun remove(key: StateKey): Long? {
         key.partitionKeys.forEach { flushed.remove(it) }
+        return expected.remove(key)
     }
 }

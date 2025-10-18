@@ -7,8 +7,6 @@ import os
 from unittest.mock import Mock, patch
 
 import pytest
-from google.cloud import storage
-from google.oauth2 import service_account
 
 from metadata_service.constants import REGISTRIES_FOLDER
 from metadata_service.models.generated import ConnectorRegistryV0
@@ -303,16 +301,6 @@ class TestPersistRegistryToJson:
         registry.json.return_value = '{"sources": [], "destinations": []}'
         return registry
 
-    @pytest.fixture
-    def mock_gcs_credentials(self):
-        """Mock GCS credentials environment variable."""
-        return {
-            "type": "service_account",
-            "project_id": "test-project",
-            "private_key": "-----BEGIN PRIVATE KEY-----\ntest-key\n-----END PRIVATE KEY-----\n",
-            "client_email": "test@test-project.iam.gserviceaccount.com",
-        }
-
     @pytest.mark.parametrize(
         "registry_type,expected_filename,description",
         [
@@ -320,11 +308,9 @@ class TestPersistRegistryToJson:
             ("oss", "oss_registry.json", "oss registry"),
         ],
     )
-    def test_persist_registry_success(self, mock_registry, mock_gcs_credentials, registry_type, expected_filename, description):
+    def test_persist_registry_success(self, mock_registry, registry_type, expected_filename, description):
         """Test successful registry persistence to GCS."""
         with (
-            patch.dict(os.environ, {"GCS_DEV_CREDENTIALS": json.dumps(mock_gcs_credentials)}),
-            patch("metadata_service.registry.service_account.Credentials.from_service_account_info") as mock_creds,
             patch("metadata_service.registry.storage.Client") as mock_client_class,
         ):
             mock_client = Mock()
@@ -336,7 +322,7 @@ class TestPersistRegistryToJson:
             mock_blob = Mock()
             mock_bucket.blob.return_value = mock_blob
 
-            _persist_registry(mock_registry, registry_type, Mock())
+            _persist_registry(mock_registry, registry_type, mock_bucket)
 
             mock_bucket.blob.assert_called_once_with(f"{REGISTRIES_FOLDER}/{expected_filename}")
             mock_blob.upload_from_string.assert_called_once()

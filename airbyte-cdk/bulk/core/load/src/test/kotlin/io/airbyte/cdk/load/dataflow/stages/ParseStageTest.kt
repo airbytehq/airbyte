@@ -8,9 +8,9 @@ import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.data.StringValue
-import io.airbyte.cdk.load.dataflow.DataFlowStageIO
-import io.airbyte.cdk.load.dataflow.DataMunger
+import io.airbyte.cdk.load.dataflow.pipeline.DataFlowStageIO
 import io.airbyte.cdk.load.dataflow.state.PartitionKey
+import io.airbyte.cdk.load.dataflow.transform.RecordMunger
 import io.airbyte.cdk.load.message.DestinationRecordJsonSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import io.airbyte.protocol.models.v0.AirbyteMessage
@@ -32,7 +32,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 
 @ExtendWith(MockKExtension::class)
 class ParseStageTest {
-    @MockK private lateinit var munger: DataMunger
+    @MockK private lateinit var munger: RecordMunger
 
     private lateinit var stage: ParseStage
     private lateinit var stream: DestinationStream

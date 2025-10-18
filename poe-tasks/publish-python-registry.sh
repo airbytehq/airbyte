@@ -16,9 +16,9 @@ Must be run from the root of the Airbyte repository with Poetry installed
 
 Options:
     -n, --name CONNECTOR_NAME     Connector name (required)
-    -t, --token TOKEN             PyPI token (required)
+    -t, --token TOKEN             PyPI token (optional, specify this or set PYTHON_REGISTRY_TOKEN environment variable)
     -v, --version VERSION         Override version (optional)
-    --pre-release                 Publish as a pre-release (uses a dev version derived from the current timestamp)
+    --release-type TYPE           Release type (optional): 'pre-release' or 'main-release' (default is 'pre-release')
     --test-registry               Use the test PyPI registry (default is production registry)
     -h, --help                    Show this help message
 
@@ -27,7 +27,7 @@ Environment Variables:
 
 Examples:
     $0 --name source-faker --token \$PYPI_TOKEN
-    $0 --name source-faker --token \$PYPI_TOKEN --pre-release
+    $0 --name source-faker --token \$PYPI_TOKEN --release-type main-release
 EOF
 }
 
@@ -54,7 +54,7 @@ TEST_REGISTRY_UPLOAD_URL="https://test.pypi.org/legacy/"
 TEST_REGISTRY_CHECK_URL="https://test.pypi.org/pypi"
 TEST_REGISTRY_PACKAGE_URL="https://test.pypi.org/project"
 
-PRE_RELEASE=false
+RELEASE_TYPE="pre-release"
 CONNECTOR_NAME=""
 PYPI_TOKEN=""
 VERSION_OVERRIDE=""
@@ -74,9 +74,9 @@ while [[ $# -gt 0 ]]; do
             VERSION_OVERRIDE="$2"
             shift 2
             ;;
-        --pre-release)
-            PRE_RELEASE=true
-            shift
+        --release-type)
+            RELEASE_TYPE="$2"
+            shift 2
             ;;
         --test-registry)
             REGISTRY_UPLOAD_URL="$TEST_REGISTRY_UPLOAD_URL"
@@ -104,6 +104,12 @@ if [[ -z "$CONNECTOR_NAME" ]]; then
     exit 1
 fi
 
+if [[ "$RELEASE_TYPE" != "pre-release" && "$RELEASE_TYPE" != "main-release" ]]; then
+    echo "Error: Invalid release type '$RELEASE_TYPE'. Valid options are 'pre-release' or 'main-release'." >&2
+    usage >&2
+    exit 1
+fi
+    
 # Use environment variables as fallback
 if [[ -z "$PYPI_TOKEN" && -n "${PYTHON_REGISTRY_TOKEN:-}" ]]; then
     PYPI_TOKEN="$PYTHON_REGISTRY_TOKEN"
@@ -150,7 +156,7 @@ BASE_VERSION=$(poe -qq get-version)
 # Determine version to use
 if [[ -n "$VERSION_OVERRIDE" ]]; then
     VERSION="$VERSION_OVERRIDE"
-elif [[ "$PRE_RELEASE" == "true" ]]; then
+elif [[ "$RELEASE_TYPE" == "pre-release" ]]; then
     # Add current timestamp for pre-release.
     # we can't use the git revision because not all python registries allow local version identifiers. 
     # Public version identifiers must conform to PEP 440 and only allow digits.
@@ -162,6 +168,7 @@ fi
 
 echo "Package name: $PACKAGE_NAME"
 echo "Version: $VERSION"
+echo "Release type: $RELEASE_TYPE"
 echo
 
 # Check if package already exists
@@ -195,9 +202,6 @@ if [[ -f "pyproject.toml" ]]; then
         pyproject.toml
 
     echo "✅ Temporary override package name to '$PACKAGE_NAME' and version to '$VERSION' in pyproject.toml"
-
-    # Install dependencies
-    poetry install --all-extras
 
     # Configure Poetry for PyPI publishing
     poetry config repositories.mypypi "$REGISTRY_UPLOAD_URL"
