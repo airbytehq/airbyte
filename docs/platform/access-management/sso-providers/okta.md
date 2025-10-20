@@ -22,15 +22,11 @@ The exact process differs between the Cloud or Self-Managed versions of Airbyte.
 
 ## Cloud Pro with Okta OIDC
 
-Follow the steps below to set up single sign on with Okta.
-
 :::warning
 For security purposes, when a user who owns [applications](/platform/enterprise-setup/api-access-config) logs in with SSO for the first time, Airbyte disables their existing applications. Those users must replace any application secrets that were previously in use to ensure API and Terraform integrations don't break.
 :::
 
 ### Set up SSO for the first time
-
-Follow these steps to set up SSO in Airbyte Cloud.
 
 #### Create a new Okta application
 
@@ -52,6 +48,8 @@ Follow these steps to set up SSO in Airbyte Cloud.
 
     - **Sign-in redirect URIs**: `https://cloud.airbyte.com/auth/realms/<your-company-identifier>/broker/default/endpoint`
 
+        Replace `<your-company-identifier>` with a unique identifier for your organization. This is often your organization name or domain (for example, `airbyte`). You'll use this same identifier when configuring SSO in Airbyte.
+
     - **Sign-out redirect URIs**: `https://cloud.airbyte.com/auth/realms/<your-company-identifier>/broker/default/endpoint/logout_response`
 
     - **Trusted origins**: Leave empty.
@@ -62,21 +60,11 @@ Follow these steps to set up SSO in Airbyte Cloud.
 
 4. Click **Save**.
 
-#### Configure SSO in Airbyte
+#### Configure and test SSO in Airbyte
 
 1. In Airbyte, click **Organization settings** > **General**.
 
-    :::info
-    Currently, this portion of the setup can only be done by an Airbyte employee. Contact Support to proceed.
-    :::
-
 2. Click **Set up SSO**, then input the following information.
-
-    - **Email domain**: The full email domain of users who sign in to Okta. For example, `airbyte.io`.
-
-      :::note
-      If you use multiple email domains, only enter one domain here. Contact Airbyte's [support team](https://support.airbyte.com) to have them add additional domains after you're done.
-      :::
 
     - **Client ID**: In Okta's administrator panel, **Applications** > **Applications** > **Airbyte** > **General** tab > **Client ID**.
 
@@ -84,33 +72,49 @@ Follow these steps to set up SSO in Airbyte Cloud.
 
     - **Discovery URL**: Your OpenID Connect (OIDC) metadata endpoint. It's similar to `https://<yourOktaDomain>/.well-known/openid-configuration`.
 
-    - **SSO subdomain**: Your company identifier, which Airbyte users use to access Airbyte.
+    - **Company identifier**: The unique identifier you used in the redirect URI in Okta. For example, `airbyte`.
 
-      - It must be a unique.
+3. Click **Save** to save your configuration as a draft.
 
-      - It must be consistent with the company identifier you used in the redirect URI you defined in Okta.
+4. Click **Test SSO configuration** to verify your settings. A new window opens where you can sign in with your Okta credentials.
 
-      - It's often your organization name or domain. For example, `airbyte`.
-
-3. Click **Save changes**.
-
-4. Test SSO to make sure people can access Airbyte. **Stay logged in so you don't lock yourself out** and ask a colleague to complete the following steps.
-
-    1. Sign out of Airbyte.
-
-    2. On the Airbyte login page, click **Continue with SSO**, enter your company identifier, and click **Continue with SSO**. The Okta sign in page appears.
-
-    3. Sign into Okta. Okta then forwards you back to Airbyte, which logs you in.
-
-    :::note
-    If you were already logged into your company’s IdP somewhere else, you might not see a login screen. In this case, Airbyte forwards you directly to Airbyte's logged-in area.
+    :::tip
+    Keep your current Airbyte session open while testing so you don't lock yourself out if something goes wrong.
     :::
 
-If you successfully set up SSO, but your users can't log into Airbyte, verify that they have access to the Airbyte application you created in Okta.
+5. Sign into Okta in the test window. If the test succeeds, you'll see a success message.
+
+6. After a successful test, enter your **Email domain** (for example, `airbyte.io`) and click **Activate SSO**.
+
+    :::note
+    If you use multiple email domains, only enter one domain here. Contact Airbyte's [support team](https://support.airbyte.com) to have them add additional domains after activation.
+    :::
+
+Once SSO is activated, users with your email domain must sign in using SSO. If you successfully set up SSO but your users can't log into Airbyte, verify that they have access to the Airbyte application you created in Okta.
 
 ### Update or delete SSO configurations
 
-To prevent a situation where you could lock yourself out of Airbyte, we require that you contact Airbyte's [support team](https://support.airbyte.com) if you need to change or remove SSO in your Cloud organization.
+Organization admins can update or delete SSO configurations at any time.
+
+#### Update SSO credentials
+
+If your client secret expires or you need to update your SSO configuration:
+
+1. In Airbyte, click **Organization settings** > **General**.
+
+2. Update the **Client ID** or **Client secret** as needed.
+
+3. Click **Save** to save your changes.
+
+4. Click **Test SSO configuration** to verify the updated credentials work correctly.
+
+:::tip
+Organization admins can always log in using their email and password (instead of SSO) to update SSO settings, even if SSO is broken. This ensures you can fix configuration issues without contacting support.
+:::
+
+#### Delete SSO configuration
+
+To remove SSO from your organization, contact Airbyte's [support team](https://support.airbyte.com).
 
 ## Self-Managed Enterprise with Okta OIDC
 

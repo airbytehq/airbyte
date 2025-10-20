@@ -26,8 +26,6 @@ The exact process differs between the Cloud or Self-Managed versions of Airbyte.
 For security purposes, Airbyte disables existing [applications](/platform/enterprise-setup/api-access-config) used to access the Airbyte API once the user who owns the application signs in with SSO for the first time. Replace any Application secrets that were previously in use to ensure your integrations don't break.
 :::
 
-Before you can proceed, you require your **Company Identifier** so you can properly fill in these values. Your contact at Airbyte gives this to you.
-
 ### Set up SSO in Airbyte for the first time
 
 #### Create an application in Entra ID
@@ -41,6 +39,8 @@ Create a new [Entra ID application](https://learn.microsoft.com/en-us/entra/iden
 3. Specify any name you want (for example, "Airbyte").
 
 4. Configure a **Redirect URI** with the type **Web** and the following value: `https://cloud.airbyte.com/auth/realms/<your-company-identifier>/broker/default/endpoint`
+
+    Replace `<your-company-identifier>` with a unique identifier for your organization. This is often your organization name or domain (for example, `airbyte`). You'll use this same identifier when configuring SSO in Airbyte.
 
 5. Click **Register** to create the application.
 
@@ -60,21 +60,11 @@ Create client credentials so Airbyte can talk to your application.
 
 4. Copy the **Value** (the client secret itself) immediately after you create it. You won't be able to view this later.
 
-#### Configure SSO in Airbyte
+#### Configure and test SSO in Airbyte
 
 1. In Airbyte, click **Organization settings** > **General**.
 
-    :::info
-    Currently, this portion of the setup requires an Airbyte employee. Contact Support to proceed.
-    :::
-
 2. Click **Set up SSO**, then input the following information.
-
-    - **Email domain**: The full email domain of users who sign in to Entra ID. For example, `airbyte.io`.
-
-        :::note
-      If you use multiple email domains, only enter one domain here. Contact Airbyte's [support team](https://support.airbyte.com) to have them add additional domains after you're done.
-      :::
 
     - **Client ID**: Find this in the Essentials section of your Entra ID application's homepage.
 
@@ -82,33 +72,49 @@ Create client credentials so Airbyte can talk to your application.
 
     - **Discovery URL**: Your OpenID Connect metadata endpoint. The format is similar to `https://login.microsoftonline.com/{tenant_id}/v2.0/.well-known/openid-configuration`.
 
-    - **SSO subdomain**: Your company identifier, which users enter to access Airbyte.
+    - **Company identifier**: The unique identifier you used in the redirect URI in Entra ID. For example, `airbyte`.
 
-      - It must be a unique.
+3. Click **Save** to save your configuration as a draft.
 
-      - It must be consistent with the company identifier you used in the redirect URI you defined in Entra ID.
+4. Click **Test SSO configuration** to verify your settings. A new window opens where you can sign in with your Entra ID credentials.
 
-      - It's often your organization name or domain. For example, `airbyte`.
-
-3. Click **Save changes**.
-
-4. Test SSO to make sure people can access Airbyte. **Stay logged in so you don't lock yourself out** and ask a colleague to complete the following steps.
-
-    1. Sign out of Airbyte.
-
-    2. On the Airbyte login page, click **Continue with SSO**, enter your company identifier, and click **Continue with SSO**. The Entra ID sign in page appears.
-
-    3. Sign into Entra ID. Entra ID then forwards you back to Airbyte, which logs you in.
-
-    :::note
-    If you were already logged into your company’s IdP somewhere else, you might not see a login screen. In this case, Airbyte forwards you directly to Airbyte's logged-in area.
+    :::tip
+    Keep your current Airbyte session open while testing so you don't lock yourself out if something goes wrong.
     :::
 
-If you successfully set up SSO, but your users can't log into Airbyte, verify that they have access to the Airbyte application you created in Entra ID.
+5. Sign into Entra ID in the test window. If the test succeeds, you'll see a success message.
+
+6. After a successful test, enter your **Email domain** (for example, `airbyte.io`) and click **Activate SSO**.
+
+    :::note
+    If you use multiple email domains, only enter one domain here. Contact Airbyte's [support team](https://support.airbyte.com) to have them add additional domains after activation.
+    :::
+
+Once SSO is activated, users with your email domain must sign in using SSO. If you successfully set up SSO but your users can't log into Airbyte, verify that they have access to the Airbyte application you created in Entra ID.
 
 ### Update or delete SSO configurations
 
-To prevent a situation where you could lock yourself out of Airbyte, we require that you contact Airbyte's [support team](https://support.airbyte.com) if you need to change or remove SSO in your Cloud organization.
+Organization admins can update or delete SSO configurations at any time.
+
+#### Update SSO credentials
+
+If your client secret expires or you need to update your SSO configuration:
+
+1. In Airbyte, click **Organization settings** > **General**.
+
+2. Update the **Client ID** or **Client secret** as needed.
+
+3. Click **Save** to save your changes.
+
+4. Click **Test SSO configuration** to verify the updated credentials work correctly.
+
+:::tip
+Organization admins can always log in using their email and password (instead of SSO) to update SSO settings, even if SSO is broken. This ensures you can fix configuration issues without contacting support.
+:::
+
+#### Delete SSO configuration
+
+To remove SSO from your organization, contact Airbyte's [support team](https://support.airbyte.com).
 
 ## Self-Managed Enterprise with Entra ID OIDC
 
