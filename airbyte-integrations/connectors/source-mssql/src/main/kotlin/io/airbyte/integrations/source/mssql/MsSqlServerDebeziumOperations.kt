@@ -213,11 +213,14 @@ class MsSqlServerDebeziumOperations(
         offset: DebeziumOffset,
         schemaHistory: DebeziumSchemaHistory?
     ): JsonNode {
+        // Sanitize offset before saving to state to fix heartbeat corruption
+        val sanitizedOffset = sanitizeOffset(offset)
+
         val stateNode: ObjectNode = Jsons.objectNode()
         // Serialize offset.
         val offsetNode: JsonNode =
             Jsons.objectNode().apply {
-                for ((k, v) in offset.wrapped) {
+                for ((k, v) in sanitizedOffset.wrapped) {
                     put(Jsons.writeValueAsString(k), Jsons.writeValueAsString(v))
                 }
             }
@@ -353,7 +356,83 @@ class MsSqlServerDebeziumOperations(
                 DebeziumSchemaHistory(schemaHistoryList)
             }
 
+        // Store the loaded offset for heartbeat sanitization comparison
+        lastLoadedOffset = offset
+
         return ValidDebeziumWarmStartState(offset, schemaHistory)
+    }
+
+    // Track the last loaded offset to detect heartbeat corruption
+    @Volatile private var lastLoadedOffset: DebeziumOffset? = null
+
+    /**
+     * Sanitizes the offset before saving to state to fix heartbeat-induced corruption. SQL Server
+     * heartbeats reset event_serial_no to 0 and change_lsn to NULL, causing duplicate record
+     * emission on subsequent syncs.
+     *
+     * Compares the current offset (read from Debezium) against the offset that was loaded at the
+     * start of the sync.
+     */
+    private fun sanitizeOffset(currentOffset: DebeziumOffset): DebeziumOffset {
+        val startingOffset = lastLoadedOffset ?: return currentOffset
+
+        if (startingOffset.wrapped.size != 1 || currentOffset.wrapped.size != 1) {
+            return currentOffset
+        }
+
+        val offsetKey = currentOffset.wrapped.keys.first()
+        val startValue =
+            startingOffset.wrapped.values.first() as? ObjectNode ?: return currentOffset
+        val currentValue =
+            currentOffset.wrapped.values.first() as? ObjectNode ?: return currentOffset
+
+        val startLsn = startValue["commit_lsn"]?.asText()
+        val currentLsn = currentValue["commit_lsn"]?.asText()
+
+        // If LSN has progressed, the current offset is valid
+        if (startLsn == null || currentLsn == null || startLsn != currentLsn) {
+            return currentOffset
+        }
+
+        // LSN hasn't progressed - check for heartbeat regression
+        val startEventSerialNo = startValue["event_serial_no"]?.asInt()
+        val currentEventSerialNo = currentValue["event_serial_no"]?.asInt()
+        val startChangeLsn = startValue["change_lsn"]
+        val currentChangeLsn = currentValue["change_lsn"]
+
+        val eventSerialNoRegressed =
+            startEventSerialNo != null &&
+                startEventSerialNo > 0 &&
+                (currentEventSerialNo == null || currentEventSerialNo == 0)
+
+        // Check if change_lsn has regressed to NULL (either JSON null or string "NULL")
+        val changeLsnRegressed =
+            startChangeLsn != null &&
+                !startChangeLsn.isNull &&
+                (currentChangeLsn == null ||
+                    currentChangeLsn.isNull ||
+                    (currentChangeLsn.isTextual && currentChangeLsn.asText() == "NULL"))
+
+        if (!eventSerialNoRegressed && !changeLsnRegressed) {
+            return currentOffset
+        }
+
+        // Heartbeat has corrupted the offset - restore starting values
+        log.info {
+            "Detected heartbeat offset regression at LSN $currentLsn. " +
+                "Preserving event_serial_no=$startEventSerialNo and change_lsn=${startChangeLsn?.asText()} " +
+                "from starting offset (current had event_serial_no=$currentEventSerialNo, change_lsn=${currentChangeLsn?.asText()})"
+        }
+
+        val sanitizedValue = currentValue.deepCopy()
+        if (eventSerialNoRegressed && startEventSerialNo != null) {
+            sanitizedValue.put("event_serial_no", startEventSerialNo)
+        }
+        if (changeLsnRegressed && !startChangeLsn.isNull) {
+            sanitizedValue.set<JsonNode>("change_lsn", startChangeLsn)
+        }
+
+        return DebeziumOffset(mapOf(offsetKey to sanitizedValue))
     }
 
     /**
