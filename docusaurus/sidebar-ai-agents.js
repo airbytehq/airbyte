@@ -45,9 +45,30 @@ export default {
           ]
         },
         {
-          type: "doc",
-          id: "pyairbyte-mcp/README",
-          label: "PyAirbyte MCP",
+          type: "category",
+          label: "MCP Servers",
+          items: [
+            {
+              type: "doc",
+              id: "pyairbyte-mcp/README",
+              label: "PyAirbyte MCP",
+            },
+            {
+              type: "doc",
+              id: "pyairbyte-fast-coder-mcp/README",
+              label: "PyAirbyte Fast-Coder MCP",
+            },
+            {
+              type: "doc",
+              id: "connector-builder-mcp/README",
+              label: "Connector Builder MCP",
+            },
+            {
+              type: "doc",
+              id: "embedded/operator-mcp/README",
+              label: "Embedded Operator MCP",
+            }
+          ]
         }
       ]
     }

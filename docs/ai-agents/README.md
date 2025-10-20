@@ -6,7 +6,11 @@ products: embedded
 Airbyte provides multiple tools to help you build data applications.
 
 - **Airbyte Embedded Widget**: App development teams who have signed up for Airbyte Embedded and are looking to get started onboarding customers using the Embedded Widget can follow the get started guide at the bottom of this page, which will step you through a complete sample onboarding app.
-- **MCP Server**: App developers looking to utilize PyAirbyte to generate pipelines in code can follow the steps below to utilize the PyAirbyte MCP server. 
+- **MCP Servers**: Airbyte provides multiple MCP (Model Context Protocol) servers for different use cases:
+  - **PyAirbyte MCP**: Local MCP server for managing Airbyte connectors through AI assistants
+  - **PyAirbyte Fast-Coder MCP**: Remote MCP server for rapid pipeline code generation
+  - **Connector Builder MCP**: AI-assisted connector development (coming soon)
+  - **Embedded Operator MCP**: Manage embedded configurations and pipelines
 - **Authentication Proxies**: Connect safely to 3rd party APIs using Airbyte's Authentication Proxies.
 
 
@@ -29,9 +33,25 @@ Airbyte Embedded creates isolated workspaces for each of your customers, allowin
 Once your Organization is enabled via Airbyte Embedded, you can begin onboarding customers via the Embedded Widget. You can download the code for the onboarding app [via GitHub](https://github.com/airbytehq/embedded-demoapp).
 
 
-## PyAirbyte MCP
+## MCP Servers
 
-[The PyAirbyte remote MCP server](./pyairbyte-mcp/README.md) provides the ability for application developers to generate a data pipeline in Python using a single prompt. It is currently designed to work within Cursor, with broader support coming in the near future.
+Airbyte provides multiple MCP (Model Context Protocol) servers to enable AI-assisted data integration workflows:
+
+### PyAirbyte MCP
+
+[The PyAirbyte MCP server](./pyairbyte-mcp/README.md) is a local MCP server that provides a standardized interface for managing Airbyte connectors through MCP-compatible clients. It allows you to list connectors, validate configurations, and run sync operations using the MCP protocol. This is the recommended MCP server for most use cases.
+
+### PyAirbyte Fast-Coder MCP
+
+[The PyAirbyte Fast-Coder MCP](./pyairbyte-fast-coder-mcp/README.md) is a remote MCP server that provides the ability for application developers to generate a data pipeline in Python using a single prompt. It is currently designed to work within Cursor, with broader support coming in the near future.
+
+### Connector Builder MCP
+
+[The Connector Builder MCP server](./connector-builder-mcp/README.md) (coming soon) will provide AI-assisted capabilities for building and testing Airbyte connectors using the Model Context Protocol.
+
+### Embedded Operator MCP
+
+[The Embedded Operator MCP](./embedded/operator-mcp/README.md) is a remote MCP server providing tools that enable managing embedded configurations and the resulting pipelines. Users can create connection and source templates, securely create sources, query API and File Storage sources, monitor connections and jobs, and more.
 
 ## Proxy Requests
 
