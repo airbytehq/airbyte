@@ -1,5 +1,5 @@
 # https://hub.docker.com/_/python/tags?name=3.11.13-slim-bookworm
-ARG BASE_IMAGE=docker.io/python:3.13.9-slim-bookworm@sha256:ee6c0814498e24cc54424475b9611edb99072250b2b30f9fb83d9256a1469b7a
+ARG BASE_IMAGE=docker.io/python:3.12.12-slim-bookworm@sha256:4a8e0824201e50fc44ee8d208a2b3e44f33e00448907e524066fca5a96eb5567
 FROM ${BASE_IMAGE}
 
 # Set the timezone to UTC
