@@ -182,11 +182,11 @@ All streams will be indexed/stored into a table with the same name. The table wi
 - embedding (vector) - the embedding of the chunk, stored as a list of floats
 
 
-## Limitations & Troubleshooting
+## Limitations & troubleshooting
 
 ### psycopg2.OperationalError could not translate host name <x>@<hostname> to address
 
-Given your password contains the character `@`, it is likely that the connection string will not be created properly given it is a reserved character. If it is the case, we suggest replacing `@` to `%40` (the equivalent UTF-8 character) in order for the authentication to properly work. 
+Given your password contains the character `@`, it is likely that the connection string will not be created properly given it is a reserved character. If it is the case, we suggest replacing `@` to `%40` (the equivalent UTF-8 character) in order for the authentication to properly work.
 
 ## Changelog
 
