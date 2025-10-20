@@ -31,12 +31,14 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
 import java.time.LocalDateTime
 import java.util.*
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Consumer
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -56,6 +58,7 @@ class CdcPartitionReader<T : Comparable<T>>(
 ) : UnlimitedTimePartitionReader {
     private val log = KotlinLogging.logger {}
     private val acquiredResources = AtomicReference<Map<ResourceType, AcquiredResource>>()
+    private val engineShuttingDown: AtomicBoolean = AtomicBoolean(false)
     private lateinit var stateFilesAccessor: DebeziumStateFilesAccessor
     private lateinit var decoratedProperties: Properties
     private lateinit var engine: DebeziumEngine<ChangeEvent<String?, String?>>
@@ -126,30 +129,11 @@ class CdcPartitionReader<T : Comparable<T>>(
 
     override fun releaseResources() {
         if (::outputMessageRouter.isInitialized) {
-            try {
-                outputMessageRouter.close()
-            } catch (e: java.nio.channels.ClosedChannelException) {
-                // Socket may have already been closed by destination after EOF
-                log.debug { "Socket channel already closed during cleanup: ${e.message}" }
-            } catch (e: Exception) {
-                // Log other unexpected exceptions but continue cleanup
-                log.warn(e) { "Exception during outputMessageRouter cleanup: ${e.message}" }
-            }
+            outputMessageRouter.close()
         }
 
-        try {
-            stateFilesAccessor.close()
-        } catch (e: Exception) {
-            log.warn(e) { "Exception during stateFilesAccessor cleanup: ${e.message}" }
-        }
-
-        acquiredResources.getAndSet(null)?.forEach {
-            try {
-                it.value.close()
-            } catch (e: Exception) {
-                log.warn(e) { "Exception during resource cleanup: ${e.message}" }
-            }
-        }
+        stateFilesAccessor.close()
+        acquiredResources.getAndSet(null)?.forEach { it.value.close() }
     }
 
     override suspend fun run() {
@@ -238,6 +222,10 @@ class CdcPartitionReader<T : Comparable<T>>(
             }
 
         override fun accept(changeEvent: ChangeEvent<String?, String?>) {
+            if (engineShuttingDown.get()) {
+                // If we're already shutting down, don't process any more events.
+                return
+            }
             val event = DebeziumEvent(changeEvent)
             val eventType: EventType = emitRecord(event)
             // Update counters.
@@ -252,9 +240,9 @@ class CdcPartitionReader<T : Comparable<T>>(
             // At this point, if we haven't returned already, we need to close down the engine.
             log.info { "Shutting down Debezium engine: ${closeReason.message}." }
             // TODO : send close analytics message
-            // Launch engine.close() asynchronously but without an independent Job()
-            // This maintains the parent-child relationship, preventing premature socket closure
-            runBlocking { launch(Dispatchers.IO) { engine.close() } }
+            engineShuttingDown.set(true)
+            runBlocking { launch(Dispatchers.IO + Job()) { engine.close() } }
+
         }
 
         private fun emitRecord(event: DebeziumEvent): EventType {
