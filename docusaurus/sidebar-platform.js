@@ -136,6 +136,8 @@ const buildAConnector = {
       ],
     },
     "connector-development/local-connector-development",
+    "connector-development/submit-new-connector",
+    "connector-development/connector-breaking-changes",
     "connector-development/connector-specification-reference",
     "connector-development/partner-certified-destinations",
     "operator-guides/using-custom-connectors",
@@ -157,8 +159,6 @@ const contributeToAirbyte = {
   },
   items: [
     "contributing-to-airbyte/issues-and-requests",
-    "contributing-to-airbyte/change-cdk-connector",
-    "contributing-to-airbyte/submit-new-connector",
     "contributing-to-airbyte/developing-locally",
     "contributing-to-airbyte/writing-docs",
     {
@@ -250,7 +250,6 @@ const understandingAirbyte = {
     "understanding-airbyte/beginners-guide-to-catalog",
     "understanding-airbyte/supported-data-types",
     "understanding-airbyte/secrets",
-    "understanding-airbyte/cdc",
     "understanding-airbyte/resumability",
     "understanding-airbyte/json-avro-conversion",
     "understanding-airbyte/schemaless-sources-and-destinations",
@@ -356,6 +355,19 @@ module.exports = {
                     "using-airbyte/core-concepts/sync-modes/full-refresh-append",
                     "using-airbyte/core-concepts/sync-modes/full-refresh-overwrite",
                     "using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped",
+                    {
+                      type: "category",
+                      label: "Change Data Capture (CDC)",
+                      link: {
+                        type: "generated-index",
+                        title: "Change Data Capture (CDC)",
+                        description: "Learn about CDC in Airbyte and best practices for configuration.",
+                      },
+                      items: [
+                        "understanding-airbyte/cdc",
+                        "understanding-airbyte/cdc-best-practices",
+                      ],
+                    },
                   ],
                 },
               ],
