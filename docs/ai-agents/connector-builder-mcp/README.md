@@ -24,5 +24,6 @@ This MCP server is under active development. Check back for updates on:
 - [Model Context Protocol Documentation](https://modelcontextprotocol.io/)
 
 For questions and updates:
+
 - [Airbyte GitHub Discussions](https://github.com/airbytehq/airbyte/discussions)
 - [Airbyte Community Slack](https://airbyte.com/community)
