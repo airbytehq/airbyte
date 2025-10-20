@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TableName
+import io.airbyte.integrations.destination.postgres.sql.Column
 import io.airbyte.integrations.destination.postgres.sql.PostgresDirectLoadSqlGenerator
 import io.mockk.Runs
 import io.mockk.every
@@ -385,7 +386,118 @@ internal class PostgresAirbyteClientTest {
 
         val columns = client.describeTable(tableName)
         assertEquals(listOf(column1, column2), columns)
-        verify(exactly = 1) { sqlGenerator.getTableSchema(tableName) }
         verify(exactly = 1) { mockConnection.close() }
+    }
+
+    @Test
+    fun testGetColumnsFromDb() {
+        val tableName = TableName(namespace = "test_namespace", name = "test_table")
+        val resultSet = mockk<ResultSet>()
+        every { resultSet.next() } returns true andThen true andThen true andThen false
+        val defaultColumnName = "default_column_name"
+        every { resultSet.getString("column_name") } returns
+            "col1" andThen
+            defaultColumnName andThen
+            "col2"
+        every { resultSet.getString("data_type") } returns
+            "varchar" andThen
+            "bigint"
+
+        val statement =
+            mockk<Statement> {
+                every { executeQuery(MOCK_SQL_QUERY) } returns resultSet
+                every { close() } just Runs
+            }
+
+        val connection = mockk<Connection>()
+        every { connection.createStatement() } returns statement
+        every { connection.close() } just Runs
+
+        every { dataSource.connection } returns connection
+        every { sqlGenerator.getTableSchema(tableName) } returns MOCK_SQL_QUERY
+        every { sqlGenerator.getDefaultColumnNames() } returns
+            listOf(defaultColumnName)
+
+        val result = client.getColumnsFromDb(tableName)
+
+        val expectedColumns =
+            setOf(
+                Column("col1", "varchar"),
+                Column("col2", "bigint")
+            )
+
+        assertEquals(expectedColumns, result)
+    }
+
+    @Test
+    fun testGetColumnsFromStream() {
+        val defaultColumnName = "default_column_name"
+        every { sqlGenerator.getDefaultColumnNames() } returns
+            listOf(defaultColumnName)
+
+        val stream = mockk<DestinationStream>()
+        val columnNameMapping = mockk<ColumnNameMapping>(relaxed = true)
+
+        every { sqlGenerator.columnsAndTypes(stream, columnNameMapping) } returns
+            listOf(
+                Column(defaultColumnName, "varchar", false),
+                Column("col1", "text", false)
+            )
+
+        val result = client.getColumnsFromStream(stream, columnNameMapping)
+
+        val expectedColumns =
+            setOf(
+                Column("col1", "text", false),
+            )
+
+        assertEquals(expectedColumns, result)
+    }
+
+    @Test
+    fun testGenerateSchemaChanges() {
+        val column1 = Column("col1", "text")
+        val column2 = Column("col2", "integer")
+        val column2Modified = Column("col2", "varchar")
+        val newColumn = Column("col3", "boolean")
+        val columnsInDb =
+            setOf(
+                column1,
+                column2
+            )
+        val columnsInStream =
+            setOf(
+                column2Modified,
+                newColumn
+            )
+
+        val (added, deleted, modified) = client.generateSchemaChanges(columnsInDb, columnsInStream)
+
+        assertEquals(1, added.size)
+        assertEquals(newColumn.columnName, added.first().columnName)
+        assertEquals(newColumn.columnTypeName, added.first().columnTypeName)
+
+        assertEquals(1, deleted.size)
+        assertEquals(column1.columnName, deleted.first().columnName)
+        assertEquals(column1.columnTypeName, deleted.first().columnTypeName)
+
+        assertEquals(1, modified.size)
+        assertEquals(column2Modified.columnName, modified.first().columnName)
+        assertEquals(column2Modified.columnTypeName, modified.first().columnTypeName)
+    }
+
+    @Test
+    fun testGenerateSchemaChangesNoChanges() {
+        val columns =
+            setOf(
+                Column("col1", "text"),
+                Column("col2", "integer")
+            )
+
+        val (added, deleted, modified) = client.generateSchemaChanges(columns, columns)
+
+        assertEquals(0, added.size)
+        assertEquals(0, deleted.size)
+        assertEquals(0, modified.size)
     }
 }
