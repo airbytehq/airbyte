@@ -48,10 +48,6 @@ class SnowflakeDirectLoadSqlGenerator(
         return "CREATE SCHEMA IF NOT EXISTS ${snowflakeSqlNameUtils.fullyQualifiedNamespace(namespace)}".andLog()
     }
 
-    fun dropNamespace(namespace: String): String {
-        return "DROP SCHEMA IF EXISTS ${snowflakeSqlNameUtils.fullyQualifiedNamespace(namespace)}".andLog()
-    }
-
     fun createTable(
         stream: DestinationStream,
         tableName: TableName,

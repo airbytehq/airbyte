@@ -14,8 +14,10 @@ import org.junit.jupiter.api.parallel.Execution
 import org.junit.jupiter.api.parallel.ExecutionMode
 
 @Execution(ExecutionMode.CONCURRENT)
-class SnowflakeTableOperationsTest(override val client: SnowflakeAirbyteClient) :
-    TableOperationsSuite {
+class SnowflakeTableOperationsTest(
+    override val client: SnowflakeAirbyteClient,
+    override val testClient: SnowflakeTestTableOperationsClient,
+) : TableOperationsSuite {
     override val airbyteMetaColumnMapping = Meta.COLUMN_NAMES.associateWith { it.uppercase() }
 
     private fun ColumnNameMapping.transformColumns() =
