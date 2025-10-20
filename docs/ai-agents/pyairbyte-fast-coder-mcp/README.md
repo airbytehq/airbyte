@@ -4,7 +4,7 @@ products: embedded
 
 # PyAirbyte Fast-Coder MCP
 
-The PyAirbyte Fast-Coder MCP is a remote MCP server that provides the ability for application developers to generate a data pipeline in Python using a single prompt. It is currently designed to work within Cursor, with broader support coming in the near future.
+The PyAirbyte Fast-Coder MCP is a remote MCP server that provides the ability for data engineers to generate a data pipeline in Python using a single prompt. It is currently designed to work within Cursor, with broader support coming in the near future.
 
 To add the PyAirbyte MCP open Cursor and navigate to Settings > Tools & Integrations, and tap New MCP Sever. Add the following json snippet. This file tells Cursor which remote MCP servers to connect to and what credentials to pass along.
 

@@ -8,10 +8,10 @@ Airbyte provides multiple tools to help you build data applications.
 
 - **Airbyte Embedded Widget**: App development teams who have signed up for Airbyte Embedded and are looking to get started onboarding customers using the Embedded Widget can follow the get started guide at the bottom of this page, which will step you through a complete sample onboarding app.
 - **MCP Servers**: Airbyte provides multiple MCP (Model Context Protocol) servers for different use cases:
-  - **PyAirbyte MCP**: Local MCP server for managing Airbyte connectors through AI assistants
-  - **PyAirbyte Fast-Coder MCP**: Remote MCP server for rapid pipeline code generation
-  - **Connector Builder MCP**: AI-assisted connector development (coming soon)
-  - **Embedded Operator MCP**: Manage embedded configurations and pipelines
+  - [**PyAirbyte MCP**](#pyairbyte-mcp): Local MCP server for managing Airbyte connectors through AI assistants
+  - [**PyAirbyte Fast-Coder MCP**](#pyairbyte-fast-coder-mcp): Remote MCP server for rapid pipeline code generation
+  - [**Connector Builder MCP**](#connector-builder-mcp): AI-assisted connector development (coming soon)
+  - [**Embedded Operator MCP**](#embedded-operator-mcp): Manage embedded configurations and pipelines
 - **Authentication Proxies**: Connect safely to 3rd party APIs using Airbyte's Authentication Proxies.
 
 ## Prerequisites
@@ -42,7 +42,7 @@ Airbyte provides multiple MCP (Model Context Protocol) servers to enable AI-assi
 
 ### PyAirbyte Fast-Coder MCP
 
-[The PyAirbyte Fast-Coder MCP](./pyairbyte-fast-coder-mcp/README.md) is a remote MCP server that provides the ability for application developers to generate a data pipeline in Python using a single prompt. It is currently designed to work within Cursor, with broader support coming in the near future.
+[The PyAirbyte Fast-Coder MCP](./pyairbyte-fast-coder-mcp/README.md) is a remote MCP server that provides the ability for data engineers to generate a data pipeline in Python using a single prompt. It is currently designed to work within Cursor, with broader support coming in the near future.
 
 ### Connector Builder MCP
 
