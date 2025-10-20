@@ -1,3 +1,7 @@
+## Version 0.1.52
+
+Automatically add `_airbyte_` columns to stream schema in load CDK.
+
 ## Version 0.1.51
 
 Polaris support in the iceberg configuration.
