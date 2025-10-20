@@ -70,11 +70,11 @@ object TableOperationsFixtures {
     // Common test cases
     val SINGLE_TEST_RECORD_INPUT: List<Map<String, AirbyteValue>> =
         listOf(
-            mapOf(
-                COLUMN_NAME_AB_RAW_ID to StringValue("07332f85-f41c-4cfe-971d-dcdc1e797c2d"),
-                COLUMN_NAME_AB_EXTRACTED_AT to TimestampWithTimezoneValue("2025-01-23T00:00:00Z"),
-                COLUMN_NAME_AB_META to ObjectValue(linkedMapOf()),
-                COLUMN_NAME_AB_GENERATION_ID to IntegerValue(1),
+            inputRecord(
+                "07332f85-f41c-4cfe-971d-dcdc1e797c2d",
+                "2025-01-23T00:00:00Z",
+                linkedMapOf(),
+                generationId = 1,
                 TEST_FIELD to IntegerValue(42),
             )
         )
@@ -245,27 +245,27 @@ object TableOperationsFixtures {
 
     val UPSERT_EXPECTED_RECORDS: List<Map<String, Any>> =
         listOf(
-            mapOf(
-                COLUMN_NAME_AB_RAW_ID to "6317026e-12f9-4713-976e-ce43901bd7ce",
-                COLUMN_NAME_AB_EXTRACTED_AT to "2025-01-22T00:00:00Z",
-                COLUMN_NAME_AB_META to linkedMapOf<String, Any>(),
-                COLUMN_NAME_AB_GENERATION_ID to 1L,
+            outputRecord(
+                "6317026e-12f9-4713-976e-ce43901bd7ce",
+                "2025-01-22T00:00:00Z",
+                linkedMapOf(),
+                generationId = 1L,
                 ID_FIELD to "1",
                 TEST_FIELD to 1L,
             ),
-            mapOf(
-                COLUMN_NAME_AB_RAW_ID to "5499cdef-1411-4c7e-987c-b22fe1284a49",
-                COLUMN_NAME_AB_EXTRACTED_AT to "2025-01-23T00:00:00Z",
-                COLUMN_NAME_AB_META to linkedMapOf<String, Any>(),
-                COLUMN_NAME_AB_GENERATION_ID to 1L,
+            outputRecord(
+                "5499cdef-1411-4c7e-987c-b22fe1284a49",
+                "2025-01-23T00:00:00Z",
+                linkedMapOf(),
+                1L,
                 ID_FIELD to "2",
                 TEST_FIELD to 1001L,
             ),
-            mapOf(
-                COLUMN_NAME_AB_RAW_ID to "9110dcf0-2171-4daa-a934-695163950d98",
-                COLUMN_NAME_AB_EXTRACTED_AT to "2025-01-23T00:00:00Z",
-                COLUMN_NAME_AB_META to linkedMapOf<String, Any>(),
-                COLUMN_NAME_AB_GENERATION_ID to 1L,
+            outputRecord(
+                "9110dcf0-2171-4daa-a934-695163950d98",
+                "2025-01-23T00:00:00Z",
+                linkedMapOf(),
+                1L,
                 ID_FIELD to "4",
                 TEST_FIELD to 4L,
             ),
@@ -360,6 +360,21 @@ object TableOperationsFixtures {
             COLUMN_NAME_AB_EXTRACTED_AT to TimestampWithTimezoneValue(extractedAt),
             COLUMN_NAME_AB_META to ObjectValue(meta),
             COLUMN_NAME_AB_GENERATION_ID to IntegerValue(generationId),
+            *pairs,
+        )
+
+    fun outputRecord(
+        rawId: String,
+        extractedAt: String,
+        meta: LinkedHashMap<String, Any>,
+        generationId: Long,
+        vararg pairs: Pair<String, Any>
+    ) =
+        mapOf(
+            COLUMN_NAME_AB_RAW_ID to rawId,
+            COLUMN_NAME_AB_EXTRACTED_AT to extractedAt,
+            COLUMN_NAME_AB_META to meta,
+            COLUMN_NAME_AB_GENERATION_ID to generationId,
             *pairs,
         )
 }
