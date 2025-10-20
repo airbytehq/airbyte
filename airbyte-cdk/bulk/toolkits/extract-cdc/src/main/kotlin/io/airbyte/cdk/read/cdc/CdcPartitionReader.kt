@@ -204,8 +204,7 @@ class CdcPartitionReader<T : Comparable<T>>(
         )
     }
 
-    inner class EventConsumer(
-    ) : Consumer<ChangeEvent<String?, String?>> {
+    inner class EventConsumer() : Consumer<ChangeEvent<String?, String?>> {
 
         private var lastHeartbeatPosition: T? = null
         private var lastHeartbeatTime: LocalDateTime? = null
@@ -238,7 +237,6 @@ class CdcPartitionReader<T : Comparable<T>>(
             // TODO : send close analytics message
             engineShuttingDown.set(true)
             runBlocking { launch(Dispatchers.IO + Job()) { engine.close() } }
-
         }
 
         private fun emitRecord(event: DebeziumEvent): EventType {
