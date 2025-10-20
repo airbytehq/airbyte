@@ -139,7 +139,10 @@ interface TableOperationsSuite {
 
             val resultRecords = harness.readTableWithoutMetaColumns(testTable)
 
-            assertEquals(expectedRecords, resultRecords.reverseColumnNameMapping(columnNameMapping))
+            assertEquals(
+                expectedRecords,
+                resultRecords.reverseColumnNameMapping(columnNameMapping, airbyteMetaColumnMapping)
+            )
         } finally {
             harness.cleanupTable(testTable)
             harness.cleanupNamespace(testNamespace)
@@ -400,7 +403,7 @@ interface TableOperationsSuite {
             assertEquals(
                 expectedRecords.sortByTestField(),
                 overwrittenTableRecords
-                    .reverseColumnNameMapping(columnNameMapping)
+                    .reverseColumnNameMapping(columnNameMapping, airbyteMetaColumnMapping)
                     .sortByTestField(),
             ) {
                 "Expected records were not in the overwritten table."
@@ -470,7 +473,9 @@ interface TableOperationsSuite {
 
             assertEquals(
                 expectedRecords.sortByTestField(),
-                copyTableRecords.reverseColumnNameMapping(columnNameMapping).sortByTestField(),
+                copyTableRecords
+                    .reverseColumnNameMapping(columnNameMapping, airbyteMetaColumnMapping)
+                    .sortByTestField(),
             ) {
                 "Expected source records were not copied to the target table."
             }
@@ -556,8 +561,7 @@ interface TableOperationsSuite {
             assertEquals(
                 expectedRecords.sortByTestField(),
                 upsertTableRecords
-                    .reverseColumnNameMapping(columnNameMapping)
-                    .reverseColumnNameMapping(airbyteMetaColumnMapping)
+                    .reverseColumnNameMapping(columnNameMapping, airbyteMetaColumnMapping)
                     .sortByTestField(),
             ) {
                 "Upserted table did not contain expected records."
