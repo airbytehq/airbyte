@@ -346,10 +346,10 @@ class SnowflakeAirbyteClient(
                                         val value =
                                             resultSet.getTimestamp(i)
                                                 as SnowflakeTimestampWithTimezone?
-                                        if (value != null) {
+                                        value?.let {
                                             val formattedTimestamp =
                                                 DateTimeFormatter.ISO_DATE_TIME.format(
-                                                    value.toZonedDateTime().toOffsetDateTime()
+                                                    it.toZonedDateTime().toOffsetDateTime()
                                                 )
                                             row[columnName] = formattedTimestamp
                                         }
@@ -357,12 +357,10 @@ class SnowflakeAirbyteClient(
                                     "VARIANT",
                                     "OBJECT",
                                     "ARRAY" -> {
-                                        val stringValue: String? = resultSet.getString(i)
-                                        if (stringValue != null) {
+                                        resultSet.getString(i)?.let {
                                             // Automatically convert values to their native type.
                                             // (map, list, etc.)
-                                            val parsedValue =
-                                                Jsons.readValue(stringValue, Any::class.java)
+                                            val parsedValue = Jsons.readValue(it, Any::class.java)
                                             // but handle some annoying edge cases
                                             val actualValue =
                                                 when (parsedValue) {
@@ -373,10 +371,7 @@ class SnowflakeAirbyteClient(
                                         }
                                     }
                                     else -> {
-                                        val value = resultSet.getObject(i)
-                                        if (value != null) {
-                                            row[columnName] = value
-                                        }
+                                        resultSet.getObject(i)?.let { row[columnName] = it }
                                     }
                                 }
                             }
