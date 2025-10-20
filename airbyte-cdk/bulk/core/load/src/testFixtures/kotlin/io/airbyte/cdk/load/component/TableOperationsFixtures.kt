@@ -24,7 +24,6 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TableName
-import io.airbyte.cdk.util.invert
 import java.util.UUID
 
 /**
@@ -335,14 +334,13 @@ object TableOperationsFixtures {
         map { record ->
             record.mapKeys { (k, _) -> mapping[k] ?: k }
         }
-    fun <V> List<Map<String, V>>.reverseColumnNameMapping(mapping: ColumnNameMapping) =
-        map { record ->
-            record.mapKeys { (k, _) -> mapping.originalName(k) ?: k }
-        }
-    fun <V> List<Map<String, V>>.reverseColumnNameMapping(mapping: Map<String, String>) =
-        map { record ->
-            record.mapKeys { (k, _) -> mapping.invert()[k] ?: k }
-        }
+    fun <V> List<Map<String, V>>.reverseColumnNameMapping(
+        columnNameMapping: ColumnNameMapping,
+        airbyteMetaColumnMapping: Map<String, String>
+    ): List<Map<String, V>> {
+        val totalMapping = ColumnNameMapping(columnNameMapping + airbyteMetaColumnMapping)
+        return map { record -> record.mapKeys { (k, _) -> totalMapping.originalName(k) ?: k } }
+    }
 
     suspend fun TableOperationsClient.insertRecords(
         table: TableName,
