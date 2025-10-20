@@ -59,7 +59,7 @@ Upgrade by updating your `values.yaml` file and redeploying Airbyte. If you're n
 
 ## Upgrading Airbyte deployed with abctl
 
-`abctl` streamlines the way you manage a local installation of Airbyte OSS. 
+`abctl` streamlines the way you manage a local installation of Airbyte Core.
 
 Run `abctl local install` to upgrade to the latest version of Airbyte. If you'd like to ensure you're running the latest version of Airbyte, you can check the value of the Helm Chart's app version by running `abctl local status`.
 

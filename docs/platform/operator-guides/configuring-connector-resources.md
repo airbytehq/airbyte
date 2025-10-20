@@ -66,7 +66,7 @@ You can use SQL to configure connector definitions, affecting all connectors of 
 
 ## Configuring Connector-Specific Requirements
 
-Self-Managed Enterprise customers can configure resource allocation through the "Connector resource allocation" dropdown in the Settings tab for each connector. You can also configure this with the API. This option isn't available for Self-Managed Community users.
+Self-Managed Enterprise customers can configure resource allocation through the "Connector resource allocation" dropdown in the Settings tab for each connector. You can also configure this with the API. This option isn't available for Core users.
 
 The available profiles depend on the connector type. Specific resource requirements and options vary by connector. As a general rule, resource allocations look something like this.
 
