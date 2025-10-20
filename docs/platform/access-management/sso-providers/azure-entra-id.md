@@ -84,7 +84,7 @@ Create client credentials so Airbyte can talk to your application.
     If you use multiple email domains, only enter one domain here. After activation, [contact support](https://support.airbyte.com) to have them add additional domains for you.
     :::
 
-Once you activate SSO, users with your email domain must sign in using SSO. 
+Once you activate SSO, users with your email domain must sign in using SSO.
 
 #### If users can't log in
 
