@@ -217,7 +217,7 @@ importers:
         specifier: ^3.7.0
         version: 3.7.0(@algolia/client-search@4.22.0)(@docusaurus/faster@3.8.1(@docusaurus/types@3.7.0(@swc/core@1.12.7)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)))(@mdx-js/react@3.0.0(@types/react@18.2.46)(react@18.2.0))(@rspack/core@1.4.1)(@swc/core@1.12.7)(@types/react@18.2.46)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(search-insights@2.13.0)(typescript@5.3.3)
       '@docusaurus/remark-plugin-npm2yarn':
-        specifier: ^3.9.1
+        specifier: ^3.7.0
         version: 3.9.1
       '@docusaurus/theme-classic':
         specifier: ^3.7.0
