@@ -32,7 +32,6 @@ Airbyte Embedded creates isolated workspaces for each of your customers, allowin
 
 Once your Organization is enabled via Airbyte Embedded, you can begin onboarding customers via the Embedded Widget. You can download the code for the onboarding app [via GitHub](https://github.com/airbytehq/embedded-demoapp).
 
-
 ## MCP Servers
 
 Airbyte provides multiple MCP (Model Context Protocol) servers to enable AI-assisted data integration workflows:
