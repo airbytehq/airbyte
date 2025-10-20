@@ -48,6 +48,7 @@ AIRBYTE_CLOUD_WORKSPACE_ID=your_workspace_id
 ```
 
 Note:
+
 1. You can add more environment variables to this file as needed for different connectors. To start, you only need to create the file and pass it to the MCP server.
 2. Ensure that this file is kept secure, as it contains sensitive information. Your LLM *should never* be given direct access to this file or its contents.
 3. The MCP tools will give your LLM the ability to view *which* variables are available, but it does not give access to their values.
