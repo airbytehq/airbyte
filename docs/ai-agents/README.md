@@ -14,7 +14,6 @@ Airbyte provides multiple tools to help you build data applications.
   - **Embedded Operator MCP**: Manage embedded configurations and pipelines
 - **Authentication Proxies**: Connect safely to 3rd party APIs using Airbyte's Authentication Proxies.
 
-
 ## Prerequisites
 
 Before using any Airbyte developer tools, ensure you have:
