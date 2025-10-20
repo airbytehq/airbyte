@@ -20,6 +20,7 @@ import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.json.toAirbyteValue
 import io.airbyte.cdk.load.data.toAirbyteValues
@@ -74,7 +75,7 @@ data class Meta(
 ) {
     enum class AirbyteMetaFields(val fieldName: String, val type: AirbyteType) {
         RAW_ID(COLUMN_NAME_AB_RAW_ID, StringType),
-        EXTRACTED_AT(COLUMN_NAME_AB_EXTRACTED_AT, IntegerType),
+        EXTRACTED_AT(COLUMN_NAME_AB_EXTRACTED_AT, TimestampTypeWithTimezone),
         META(
             COLUMN_NAME_AB_META,
             ObjectType(
@@ -159,7 +160,9 @@ data class Meta(
                     // and others represent it as a timestamp string.
                     // Handle both cases here.
                     try {
-                        IntegerValue(BigInteger(value))
+                        TimestampWithTimezoneValue(
+                            Instant.ofEpochMilli(value.toLong()).atOffset(ZoneOffset.UTC)
+                        )
                     } catch (_: Exception) {
                         TimestampWithTimezoneValue(
                             OffsetDateTime.parse(

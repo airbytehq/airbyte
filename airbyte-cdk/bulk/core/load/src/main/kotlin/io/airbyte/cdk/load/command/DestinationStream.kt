@@ -6,12 +6,15 @@ package io.airbyte.cdk.load.command
 
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.AirbyteValueProxy
+import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
 import io.airbyte.cdk.load.data.collectUnknownPaths
 import io.airbyte.cdk.load.data.json.AirbyteTypeToJsonSchema
 import io.airbyte.cdk.load.data.json.JsonSchemaToAirbyteType
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.Meta
+import io.airbyte.cdk.load.message.Meta.AirbyteMetaFields
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.models.v0.AirbyteStream
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
@@ -204,7 +207,7 @@ class DestinationStreamFactory(
             generationId = stream.generationId,
             minimumGenerationId = stream.minimumGenerationId,
             syncId = stream.syncId,
-            schema = jsonSchemaToAirbyteType.convert(stream.stream.jsonSchema),
+            schema = decorateSchema(jsonSchemaToAirbyteType.convert(stream.stream.jsonSchema)),
             isFileBased = stream.stream.isFileBased ?: false,
             includeFiles = stream.includeFiles ?: false,
             destinationObjectName = stream.destinationObjectName,
@@ -214,6 +217,53 @@ class DestinationStreamFactory(
                 }
         )
     }
+
+    /**
+     * Adds Airbyte metadata columns to the schema to ensure that destinations can properly create
+     * any typed/named resources in the destination.
+     *
+     * @param schema the schema to decorate
+     * @return the decorated schema
+     */
+    private fun decorateSchema(schema: AirbyteType): AirbyteType =
+        if (schema is ObjectType) {
+            addAirbyteColumnsToSchemaProperties(schema.properties)
+            schema
+        } else if (schema is ObjectTypeWithEmptySchema) {
+            ObjectType(
+                properties = addAirbyteColumnsToSchemaProperties(linkedMapOf()),
+                additionalProperties = false,
+                required = emptyList(),
+            )
+        } else {
+            schema
+        }
+
+    /**
+     * Adds Airbyte metadata columns to the provided schema properties, if possible.
+     *
+     * @param properties the existing schema properties to decorate
+     * @return the decorated schema properties
+     */
+    private fun addAirbyteColumnsToSchemaProperties(properties: LinkedHashMap<String, FieldType>) =
+        properties.apply {
+            put(
+                AirbyteMetaFields.RAW_ID.fieldName,
+                FieldType(type = AirbyteMetaFields.RAW_ID.type, nullable = false)
+            )
+            put(
+                AirbyteMetaFields.EXTRACTED_AT.fieldName,
+                FieldType(type = AirbyteMetaFields.EXTRACTED_AT.type, nullable = false)
+            )
+            put(
+                AirbyteMetaFields.META.fieldName,
+                FieldType(type = AirbyteMetaFields.META.type, nullable = false)
+            )
+            put(
+                AirbyteMetaFields.GENERATION_ID.fieldName,
+                FieldType(type = AirbyteMetaFields.GENERATION_ID.type, nullable = true)
+            )
+        }
 }
 
 private fun fromCompositeNestedKeyToCompositeKey(
