@@ -78,10 +78,6 @@ Create client credentials so Airbyte can talk to your application.
 
 4. Click **Test SSO configuration** to verify your settings. A new window opens where you can sign in with your Entra ID credentials.
 
-    :::tip
-    Keep your current Airbyte session open while testing so you don't lock yourself out if something goes wrong.
-    :::
-
 5. Sign into Entra ID in the test window. If the test succeeds, you'll see a success message.
 
 6. After a successful test, enter your **Email domain** (for example, `airbyte.io`) and click **Activate SSO**.
