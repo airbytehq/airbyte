@@ -89,23 +89,26 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
     def _get_iam_s3_client(self, client_kv_args: dict) -> BaseClient:
         """
         Creates an S3 client using AWS Security Token Service (STS) with assumed role credentials. This method handles
-        the authentication process by assuming an IAM role, optionally using an external ID for enhanced security.
-        The obtained credentials are set to auto-refresh upon expiration, ensuring uninterrupted access to the S3 service.
+        the authentication process by assuming an IAM role, using the `external_id` from the config if provided, otherwise
+        falling back to the `AWS_ASSUME_ROLE_EXTERNAL_ID` environment variable. The obtained credentials are set to auto-refresh
+        upon expiration, ensuring uninterrupted access to the S3 service.
 
         :param client_kv_args: A dictionary of key-value pairs for the boto3 S3 client constructor.
         :return: An instance of a boto3 S3 client with the assumed role credentials.
 
         The method assumes a role specified in the `self.config.role_arn` and creates a session with the S3 service.
-        If `AWS_ASSUME_ROLE_EXTERNAL_ID` environment variable is set, it will be used during the role assumption for additional security.
+        For enhanced security, if `self.config.role_arn` is provided in the config or via the `AWS_ASSUME_ROLE_EXTERNAL_ID` environment variable,
+        it will be used during the role assumption.
         """
 
         def refresh():
             client = boto3.client("sts")
-            if AWS_EXTERNAL_ID:
+            external_id = self.config.external_id or AWS_EXTERNAL_ID
+            if external_id:
                 role = client.assume_role(
                     RoleArn=self.config.role_arn,
                     RoleSessionName="airbyte-source-s3",
-                    ExternalId=AWS_EXTERNAL_ID,
+                    ExternalId=external_id,
                 )
             else:
                 role = client.assume_role(
