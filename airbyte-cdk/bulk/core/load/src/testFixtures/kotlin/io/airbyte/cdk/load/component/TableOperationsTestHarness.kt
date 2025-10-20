@@ -22,6 +22,7 @@ private val log = KotlinLogging.logger {}
  */
 class TableOperationsTestHarness(
     private val client: TableOperationsClient,
+    private val testClient: TestTableOperationsClient,
     private val airbyteMetaColumnMapping: Map<String, String>,
 ) {
 
@@ -70,7 +71,7 @@ class TableOperationsTestHarness(
     /** Safely drops a namespace, logging any errors. */
     suspend fun cleanupNamespace(namespace: String) {
         try {
-            client.dropNamespace(namespace)
+            testClient.dropNamespace(namespace)
         } catch (e: Exception) {
             log.warn(e) { "Failed cleaning up test resource: $namespace" }
         }
@@ -96,7 +97,7 @@ class TableOperationsTestHarness(
         records: List<Map<String, AirbyteValue>>,
         columnNameMapping: ColumnNameMapping,
     ) {
-        client.insertRecords(tableName, records, columnNameMapping)
+        testClient.insertRecords(tableName, records, columnNameMapping)
         val actualCount = client.countTable(tableName)?.toInt()
 
         assertEquals(records.size, actualCount) {
@@ -106,7 +107,7 @@ class TableOperationsTestHarness(
 
     /** Reads records from a table, filtering out Meta columns. */
     suspend fun readTableWithoutMetaColumns(tableName: TableName): List<Map<String, Any>> {
-        val tableRead = client.readTable(tableName)
+        val tableRead = testClient.readTable(tableName)
         return tableRead.map { rec ->
             rec.filter { !airbyteMetaColumnMapping.containsValue(it.key) }
         }

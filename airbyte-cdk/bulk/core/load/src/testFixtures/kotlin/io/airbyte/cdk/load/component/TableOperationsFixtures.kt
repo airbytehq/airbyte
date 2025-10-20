@@ -344,7 +344,7 @@ object TableOperationsFixtures {
             record.mapKeys { (k, _) -> mapping.invert()[k] ?: k }
         }
 
-    suspend fun TableOperationsClient.insertRecords(
+    suspend fun TestTableOperationsClient.insertRecords(
         table: TableName,
         records: List<Map<String, AirbyteValue>>,
         columnNameMapping: ColumnNameMapping,
