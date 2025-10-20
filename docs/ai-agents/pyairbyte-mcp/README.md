@@ -103,5 +103,6 @@ Helpful prompts to try:
 - [MCP Python SDK](https://github.com/modelcontextprotocol/python-sdk)
 
 For issues and questions:
+
 - [PyAirbyte GitHub Issues](https://github.com/airbytehq/pyairbyte/issues)
 - [PyAirbyte Discussions](https://github.com/airbytehq/pyairbyte/discussions)
