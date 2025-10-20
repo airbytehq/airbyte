@@ -23,7 +23,6 @@ inputs:
   push-latest:
     description: "if pushing the image, to a remote registry, also push it with the latest tag"
     required: false
-    default: "false"
   dry-run:
     description: "Dry run mode (build but do not push)"
     required: false
