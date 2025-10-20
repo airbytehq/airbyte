@@ -34,10 +34,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Consumer
-import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -73,7 +71,7 @@ class CdcPartitionReader<T : Comparable<T>>(
     internal val numSourceRecordsWithoutPosition = AtomicLong()
     internal val numEventValuesWithoutPosition = AtomicLong()
 
-    protected var partitionId: String = generatePartitionId(4)
+    private var partitionId: String = generatePartitionId(4)
 
     interface AcquiredResource : AutoCloseable {
         val resource: Resource.Acquired?
@@ -151,7 +149,7 @@ class CdcPartitionReader<T : Comparable<T>>(
                 .using(decoratedProperties)
                 .using(ConnectorCallback())
                 .using(CompletionCallback())
-                .notifying(EventConsumer(currentCoroutineContext()))
+                .notifying(EventConsumer())
                 .build()
         val debeziumVersion: String = DebeziumEngine::class.java.getPackage().implementationVersion
         log.info { "Running Debezium engine version $debeziumVersion." }
@@ -207,7 +205,6 @@ class CdcPartitionReader<T : Comparable<T>>(
     }
 
     inner class EventConsumer(
-        private val coroutineContext: CoroutineContext,
     ) : Consumer<ChangeEvent<String?, String?>> {
 
         private var lastHeartbeatPosition: T? = null
