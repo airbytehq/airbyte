@@ -27,7 +27,7 @@ Airbyte's [Workday](https://workday.com) enterprise source connector currently o
 - Workday username and password - A user account that has the necessary permissions to access the reports you want to sync.
 - Report IDs - Each report in Workday has a unique Report ID.
 
-## Setup Guide
+## Setup guide
 
 1. Log into your Airbyte Cloud account.
 2. Click Sources and then click **+ New source**.
@@ -44,7 +44,7 @@ The Workday source connector supports the following [sync modes](https://docs.ai
 
 - Full Refresh
 
-## Supported Streams
+## Supported streams
 
 The Workday connector supports dynamic streams based on report ids provided in the source set up.
 

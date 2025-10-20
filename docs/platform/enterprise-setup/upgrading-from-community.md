@@ -7,7 +7,7 @@ import TabItem from '@theme/TabItem';
 
 # Existing Instance Upgrades
 
-This page supplements the [Self-Managed Enterprise implementation guide](./implementation-guide.md). It highlights the steps to take if you are currently using Airbyte Self-Managed Community, our free open source offering, and are ready to upgrade to [Airbyte Self-Managed Enterprise](./README.md).
+This page supplements the [Self-Managed Enterprise implementation guide](./implementation-guide.md). It highlights the steps to take if you are currently using Airbyte Core, our free open source offering, and are ready to upgrade to [Airbyte Self-Managed Enterprise](./README.md).
 
 A valid license key is required to get started with Airbyte Enterprise. [Talk to sales](https://airbyte.com/company/talk-to-sales) to receive your license key.
 
@@ -62,7 +62,7 @@ Update your `values.yaml` file as explained in the [Self-Managed Enterprise impl
     </TabItem>
     </Tabs>
 
-2. Once this is complete, you will need to upgrade your ingress to include the new `/auth` path. The following is a skimmed down definition of an ingress resource you could use for Self-Managed Enterprise:
+2. Once this is complete, you need to upgrade your ingress to include the new `/auth` path. The following is a skimmed down definition of an ingress resource you could use for Self-Managed Enterprise:
 
 <details>
 <summary>Configuring your Airbyte ingress</summary>
