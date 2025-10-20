@@ -82,11 +82,42 @@
         "always_show": true,
         "uniqueItems": true
       },
+      "table_filters": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": true,
+          "title": "Table Filter",
+          "description": "Filter configuration for table selection per schema.",
+          "properties": {
+            "schema_name": {
+              "type": "string",
+              "title": "Schema Name",
+              "description": "The name of the schema to filter on. Should match a schema defined in \"Schemas\" field above.",
+              "order": 1,
+              "always_show": true
+            },
+            "table_name_patterns": {
+              "type": "array",
+              "items": { "type": "string" },
+              "title": "Table Filter Patterns",
+              "description": "List of filters to be applied to the table names in the schema. Should be a SQL LIKE pattern.",
+              "order": 2,
+              "always_show": true
+            }
+          },
+          "required": ["schema_name", "table_name_patterns"]
+        },
+        "description": "List of filters to be applied to the table names in the stream. Defaults to no exclusions.",
+        "title": "Table Name Filters",
+        "order": 7,
+        "always_show": true
+      },
       "jdbc_url_params": {
         "type": "string",
         "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).",
         "title": "JDBC URL Params",
-        "order": 7
+        "order": 8
       },
       "encryption": {
         "oneOf": [
@@ -156,7 +187,7 @@
         ],
         "description": "The encryption method with is used when communicating with the database.",
         "title": "Encryption",
-        "order": 8,
+        "order": 9,
         "type": "object"
       },
       "tunnel_method": {
@@ -275,7 +306,7 @@
         ],
         "description": "Whether to initiate an SSH tunnel before connecting to the database, and if so, which kind of authentication to use.",
         "title": "SSH Tunnel Method",
-        "order": 9,
+        "order": 10,
         "type": "object"
       },
       "cursor": {
@@ -340,7 +371,7 @@
         ],
         "description": "Configures how data is extracted from the database.",
         "title": "Update Method",
-        "order": 10,
+        "order": 11,
         "display_type": "radio",
         "type": "object"
       },
@@ -349,21 +380,21 @@
         "default": 300,
         "description": "How often (in seconds) a stream should checkpoint, when possible.",
         "title": "Checkpoint Target Time Interval",
-        "order": 11
+        "order": 12
       },
       "concurrency": {
         "type": "integer",
         "default": 1,
         "description": "Maximum number of concurrent queries to the database.",
         "title": "Concurrency",
-        "order": 12
+        "order": 13
       },
       "check_privileges": {
         "type": "boolean",
         "default": true,
         "description": "When this feature is enabled, during schema discovery the connector will query each table or view individually to check access privileges and inaccessible tables, views, or columns therein will be removed. In large schemas, this might cause schema discovery to take too long, in which case it might be advisable to disable this feature.",
         "title": "Check Table and Column Access Privileges",
-        "order": 13
+        "order": 14
       }
     },
     "required": [

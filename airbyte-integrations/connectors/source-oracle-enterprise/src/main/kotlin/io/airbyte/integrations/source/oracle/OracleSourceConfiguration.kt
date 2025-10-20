@@ -39,6 +39,7 @@ data class OracleSourceConfiguration(
     override val checkpointTargetInterval: Duration,
     override val checkPrivileges: Boolean,
     override val debeziumHeartbeatInterval: Duration = Duration.ofSeconds(10),
+    val filters: List<TableFilter>,
 ) : JdbcSourceConfiguration, CdcSourceConfiguration {
     val cdc: CdcIncrementalConfiguration? = incremental as? CdcIncrementalConfiguration
 
@@ -158,6 +159,14 @@ class OracleSourceConfigurationFactory :
                             Duration.ofSeconds(inc.debeziumShutdownTimeoutSeconds!!.toLong()),
                     )
             }
+        val configuredSchemas = pojo.schemas?.toSet() ?: setOf(defaultSchema)
+        for (filter in pojo.filters ?: emptyList()) {
+            if (filter.schemaName !in configuredSchemas) {
+                throw ConfigErrorException(
+                    "Filter schema name must be one of the configured schemas."
+                )
+            }
+        }
         return OracleSourceConfiguration(
             realHost = realHost,
             realPort = realPort,
@@ -171,6 +180,7 @@ class OracleSourceConfigurationFactory :
             checkpointTargetInterval = checkpointTargetInterval,
             maxConcurrency = maxConcurrency,
             checkPrivileges = pojo.checkPrivileges ?: true,
+            filters = pojo.filters ?: emptyList(),
         )
     }
 

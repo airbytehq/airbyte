@@ -110,6 +110,14 @@ class OracleSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonSchemaInject(json = """{"order":6,"always_show":true,"uniqueItems":true}""")
     var schemas: List<String>? = null
 
+    @JsonProperty("table_filters")
+    @JsonSchemaTitle("Table Name Filters")
+    @JsonPropertyDescription(
+        "List of filters to be applied to the table names in the stream. Defaults to no exclusions."
+    )
+    @JsonSchemaInject(json = """{"order":7, "always_show":true}""")
+    var filters: List<TableFilter>? = null
+
     @JsonProperty("jdbc_url_params")
     @JsonSchemaTitle("JDBC URL Params")
     @JsonPropertyDescription(
@@ -117,7 +125,7 @@ class OracleSourceConfigurationSpecification : ConfigurationSpecification() {
             "formatted as 'key=value' pairs separated by the symbol '&'. " +
             "(example: key1=value1&key2=value2&key3=value3).",
     )
-    @JsonSchemaInject(json = """{"order":7}""")
+    @JsonSchemaInject(json = """{"order":8}""")
     var jdbcUrlParams: String? = null
 
     @JsonIgnore
@@ -136,7 +144,7 @@ class OracleSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonPropertyDescription(
         "The encryption method with is used when communicating with the database.",
     )
-    @JsonSchemaInject(json = """{"order":8}""")
+    @JsonSchemaInject(json = """{"order":9}""")
     fun getEncryptionValue(): Encryption = encryptionJson ?: encryption.asEncryption()
 
     @JsonIgnore
@@ -156,7 +164,7 @@ class OracleSourceConfigurationSpecification : ConfigurationSpecification() {
         "Whether to initiate an SSH tunnel before connecting to the database, " +
             "and if so, which kind of authentication to use.",
     )
-    @JsonSchemaInject(json = """{"order":9}""")
+    @JsonSchemaInject(json = """{"order":10}""")
     fun getTunnelMethodValue(): SshTunnelMethodConfiguration =
         tunnelMethodJson ?: tunnelMethod.asSshTunnelMethod()
 
@@ -176,27 +184,27 @@ class OracleSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonGetter("cursor")
     @JsonSchemaTitle("Update Method")
     @JsonPropertyDescription("Configures how data is extracted from the database.")
-    @JsonSchemaInject(json = """{"order":10,"display_type":"radio"}""")
+    @JsonSchemaInject(json = """{"order":11,"display_type":"radio"}""")
     fun getIncrementalConfigurationSpecificationValue(): IncrementalConfigurationSpecification =
         cursorJson ?: cursor.asIncrementalConfigurationSpecification()
 
     @JsonProperty("checkpoint_target_interval_seconds")
     @JsonSchemaTitle("Checkpoint Target Time Interval")
-    @JsonSchemaInject(json = """{"order":11}""")
+    @JsonSchemaInject(json = """{"order":12}""")
     @JsonSchemaDefault("300")
     @JsonPropertyDescription("How often (in seconds) a stream should checkpoint, when possible.")
     var checkpointTargetIntervalSeconds: Int? = 300
 
     @JsonProperty("concurrency")
     @JsonSchemaTitle("Concurrency")
-    @JsonSchemaInject(json = """{"order":12}""")
+    @JsonSchemaInject(json = """{"order":13}""")
     @JsonSchemaDefault("1")
     @JsonPropertyDescription("Maximum number of concurrent queries to the database.")
     var concurrency: Int? = 1
 
     @JsonProperty("check_privileges")
     @JsonSchemaTitle("Check Table and Column Access Privileges")
-    @JsonSchemaInject(json = """{"order":13}""")
+    @JsonSchemaInject(json = """{"order":14}""")
     @JsonSchemaDefault("true")
     @JsonPropertyDescription(
         "When this feature is enabled, during schema discovery the connector " +
@@ -256,6 +264,30 @@ class MicronautPropertiesFriendlyConnectionData {
             "sid" -> Sid().also { it.sid = sid!! }
             else -> throw ConfigErrorException("invalid value $connectionType")
         }
+}
+
+@JsonSchemaTitle("Table Filter")
+@JsonSchemaDescription("Filter configuration for table selection per schema.")
+@SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
+@JsonPropertyOrder("schema_name", "table_name_patterns")
+class TableFilter {
+    @JsonProperty("schema_name")
+    @JsonSchemaTitle("Schema Name")
+    @JsonPropertyDescription(
+        "The name of the schema to filter on. " +
+            "Should match a schema defined in \"Schemas\" field above."
+    )
+    @JsonSchemaInject(json = """{"order":1,"always_show":true}""")
+    lateinit var schemaName: String
+
+    @JsonProperty("table_name_patterns")
+    @JsonSchemaTitle("Table Filter Patterns")
+    @JsonPropertyDescription(
+        "List of filters to be applied to the table names in the schema. " +
+            "Should be a SQL LIKE pattern."
+    )
+    @JsonSchemaInject(json = """{"order":2,"always_show":true}""")
+    var patterns: List<String> = emptyList()
 }
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "encryption_method")
