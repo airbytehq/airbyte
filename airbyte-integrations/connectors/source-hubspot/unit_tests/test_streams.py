@@ -3,8 +3,8 @@
 #
 
 import json
-from datetime import datetime
 
+import freezegun
 import pytest
 
 from airbyte_cdk.models import (
@@ -19,10 +19,9 @@ from airbyte_cdk.models import (
 from airbyte_cdk.sources.types import Record
 from airbyte_cdk.test.entrypoint_wrapper import discover, read
 from airbyte_cdk.test.state_builder import StateBuilder
-from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
 
 from .conftest import find_stream, get_source, mock_dynamic_schema_requests_with_skip, read_from_stream
-from .utils import read_full_refresh, read_incremental
+from .utils import run_read
 
 
 def test_updated_at_field_non_exist_handler(requests_mock, config, fake_properties_list, custom_object_schema):
@@ -44,10 +43,10 @@ def test_updated_at_field_non_exist_handler(requests_mock, config, fake_properti
 
     requests_mock.register_uri("POST", "https://api.hubapi.com/crm/v3/lists/search", responses)
 
-    stream_slices = list(stream.retriever.stream_slicer.stream_slices())
-    assert len(stream_slices) == 1
+    partitions = list(stream._stream_partition_generator.generate())
+    assert len(partitions) == 1
 
-    records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slices[0]))
+    records = list(partitions[0].read())
     assert len(records) == 1
     assert records[0]["updatedAt"] == created_at
 
@@ -88,7 +87,9 @@ def test_streams_read(stream_class, endpoint, cursor_value, requests_mock, fake_
     mock_dynamic_schema_requests_with_skip(requests_mock, [])
     stream = find_stream(stream_class, config)
     data_field = (
-        stream.retriever.record_selector.extractor.field_path[0] if len(stream.retriever.record_selector.extractor.field_path) > 0 else None
+        stream._stream_partition_generator._partition_factory._retriever.record_selector.extractor.field_path[0]
+        if len(stream._stream_partition_generator._partition_factory._retriever.record_selector.extractor.field_path) > 0
+        else None
     )
     list_entities = [
         {
@@ -153,7 +154,11 @@ def test_streams_read(stream_class, endpoint, cursor_value, requests_mock, fake_
         stream_slice = {}
         if is_form_submission:
             stream_slice = {"form_id": ["test_id"]}
-        stream_url = stream.retriever.requester.url_base + "/" + stream.retriever.requester.get_path(stream_slice=stream_slice)
+        stream_url = (
+            stream._stream_partition_generator._partition_factory._retriever.requester.url_base
+            + "/"
+            + stream._stream_partition_generator._partition_factory._retriever.requester.get_path(stream_slice=stream_slice)
+        )
     else:
         stream_url = stream.url + "/test_id" if is_form_submission else stream.url
     stream._sync_mode = None
@@ -168,7 +173,7 @@ def test_streams_read(stream_class, endpoint, cursor_value, requests_mock, fake_
     requests_mock.register_uri("GET", "/contacts/v1/contact/vids/batch/", read_batch_contact_v1_response)
     requests_mock.register_uri("POST", "/crm/v3/lists/search", responses)
 
-    records = read_full_refresh(stream)
+    records = run_read(stream)
     assert records
 
 
@@ -196,7 +201,7 @@ def test_stream_read_with_legacy_field_transformation(
 ):
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
     stream = find_stream(stream_class, config)
-    data_field = stream.retriever.record_selector.extractor.field_path[0]
+    data_field = stream._stream_partition_generator._partition_factory._retriever.record_selector.extractor.field_path[0]
     responses = [
         {
             "json": {
@@ -230,13 +235,17 @@ def test_stream_read_with_legacy_field_transformation(
     stream._sync_mode = SyncMode.full_refresh
 
     if isinstance(stream_class, str):
-        stream_url = stream.retriever.requester.url_base + "/" + stream.retriever.requester.get_path()
+        stream_url = (
+            stream._stream_partition_generator._partition_factory._retriever.requester.url_base
+            + "/"
+            + stream._stream_partition_generator._partition_factory._retriever.requester.get_path()
+        )
     else:
         stream_url = stream.url
     requests_mock.register_uri("GET", stream_url, responses)
     requests_mock.register_uri("GET", f"/properties/v2/{endpoint}/properties", properties_response)
 
-    records = read_full_refresh(stream)
+    records = run_read(stream)
     assert records
     expected_record = {
         "id": "test_id",
@@ -282,7 +291,7 @@ def test_crm_search_streams_with_no_associations(sync_mode, requests_mock, fake_
         stream = find_stream("deal_splits", config, [stream_state])
     else:
         stream = find_stream("deal_splits", config)
-    data_field = stream.retriever.record_selector.extractor.field_path[0]
+    data_field = stream._stream_partition_generator._partition_factory._retriever.record_selector.extractor.field_path[0]
 
     cursor_value = {"updatedAt": "2022-02-25T16:43:11Z"}
     responses = [
@@ -317,12 +326,76 @@ def test_crm_search_streams_with_no_associations(sync_mode, requests_mock, fake_
     stream._sync_mode = sync_mode
     requests_mock.register_uri("POST", endpoint_path, responses)
     requests_mock.register_uri("GET", properties_path, properties_response)
-    if sync_mode == SyncMode.incremental:
-        records, state = read_incremental(stream, stream_state=stream_state.stream.stream_state.__dict__)
-        assert state
-    else:
-        records = read_full_refresh(stream)
+    records = run_read(stream)
     assert records
+    if sync_mode == SyncMode.incremental:
+        state = stream.cursor.state
+        assert state == {"updatedAt": "2022-02-25T16:43:11.000000Z"}
+
+
+@freezegun.freeze_time("2022-02-25T17:00:00Z")
+def test_crm_search_streams_requests_contain_custom_properties(requests_mock, fake_properties_list, config):
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
+    stream_state = AirbyteStateMessage(
+        type=AirbyteStateType.STREAM,
+        stream=AirbyteStreamState(
+            stream_descriptor=StreamDescriptor(name="deal_splits"), stream_state=AirbyteStateBlob(updatedAt="2021-01-01T00:00:00.000000Z")
+        ),
+    )
+
+    stream = find_stream("deal_splits", config, [stream_state])
+
+    data_field = stream._stream_partition_generator._partition_factory._retriever.record_selector.extractor.field_path[0]
+
+    cursor_value = {"updatedAt": "2022-02-25T16:43:11Z"}
+    responses = [
+        {
+            "json": {
+                data_field: [
+                    {
+                        "id": "test_id",
+                        "created": "2022-02-25T16:43:11Z",
+                    }
+                    | cursor_value
+                ],
+            }
+        }
+    ]
+
+    # Validates that the json request body contains all the custom properties that are injected via the
+    # `fetch_properties_from_endpoint` component definition so that they are included in the API response
+    def match_request_body(request):
+        return request.json() == {
+            "limit": 200,
+            "sorts": [{"propertyName": "hs_object_id", "direction": "ASCENDING"}],
+            "filters": [
+                {"propertyName": "hs_lastmodifieddate", "operator": "GTE", "value": 1610236800000},
+                {"propertyName": "hs_lastmodifieddate", "operator": "LTE", "value": 1645808400000},
+                {"propertyName": "hs_object_id", "operator": "GTE", "value": 0},
+            ],
+            "properties": fake_properties_list,
+            "after": 0,
+        }
+
+    endpoint_path = "/crm/v3/objects/deal_split/search"
+    requests_mock.register_uri("POST", endpoint_path, responses, additional_matcher=match_request_body)
+    properties_path = f"/properties/v2/deal_split/properties"
+    properties_response = [
+        {
+            "json": [
+                {"name": property_name, "type": "string", "updatedAt": 1571085954360, "createdAt": 1565059306048}
+                for property_name in fake_properties_list
+            ],
+            "status_code": 200,
+        }
+    ]
+    stream._sync_mode = SyncMode.incremental
+    requests_mock.register_uri("GET", properties_path, properties_response)
+    records = run_read(stream)
+
+    assert records
+    state = stream.cursor.state
+    assert state == {"updatedAt": "2022-02-25T16:43:11.000000Z"}
 
 
 @pytest.mark.parametrize(
@@ -351,7 +424,7 @@ def test_common_error_retry(error_response, requests_mock, config, fake_properti
     ]
 
     stream = find_stream("companies", config)
-    data_field = stream.retriever.record_selector.extractor.field_path[0]
+    data_field = stream._stream_partition_generator._partition_factory._retriever.record_selector.extractor.field_path[0]
 
     response = {
         data_field: [
@@ -365,10 +438,14 @@ def test_common_error_retry(error_response, requests_mock, config, fake_properti
     }
     requests_mock.register_uri("GET", "/properties/v2/company/properties", responses)
     stream._sync_mode = SyncMode.full_refresh
-    stream_url = stream.retriever.requester.url_base + "/" + stream.retriever.requester.get_path()
+    stream_url = (
+        stream._stream_partition_generator._partition_factory._retriever.requester.url_base
+        + "/"
+        + stream._stream_partition_generator._partition_factory._retriever.requester.get_path()
+    )
     stream._sync_mode = None
     requests_mock.register_uri("GET", stream_url, [{"json": response}])
-    records = read_full_refresh(stream)
+    records = run_read(stream)
 
     expected_record = response[data_field][0]
     record = records[0].data if isinstance(records[0], Record) else records[0]
@@ -461,7 +538,7 @@ def test_get_custom_objects_metadata_success(
     custom_stream_json_schema = [s.json_schema for s in streams.catalog.catalog.streams if s.name == "animals"][0]
 
     assert custom_stream_json_schema == expected_custom_object_json_schema
-    assert custom_stream.retriever._parameters["entity"] == "p19936848_Animal"
+    assert custom_stream._stream_partition_generator._partition_factory._retriever._parameters["entity"] == "p19936848_Animal"
 
 
 @pytest.mark.parametrize(
@@ -519,7 +596,7 @@ def test_cast_record_fields_if_needed(
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
 
     stream = find_stream(stream_class, config)
-    data_field = stream.retriever.record_selector.extractor.field_path[0]
+    data_field = stream._stream_partition_generator._partition_factory._retriever.record_selector.extractor.field_path[0]
 
     responses = [
         {
@@ -541,7 +618,11 @@ def test_cast_record_fields_if_needed(
 
     stream._sync_mode = SyncMode.full_refresh
     if isinstance(stream_class, str):
-        stream_url = stream.retriever.requester.url_base + "/" + stream.retriever.requester.get_path()
+        stream_url = (
+            stream._stream_partition_generator._partition_factory._retriever.requester.url_base
+            + "/"
+            + stream._stream_partition_generator._partition_factory._retriever.requester.get_path()
+        )
     else:
         stream_url = stream.url
     stream._sync_mode = None

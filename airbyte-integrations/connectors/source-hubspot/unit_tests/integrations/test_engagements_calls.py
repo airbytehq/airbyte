@@ -68,7 +68,7 @@ class TestEngagementCallsStream(HubspotTestCase):
             http_mocker,
             with_oauth=True,
             with_dynamic_schemas=True,
-            entities=OBJECTS_WITH_DYNAMIC_SCHEMA,
+            entities=["calls"],
         )
         self.mock_response(http_mocker, self.request(), self.response())
         self.read_from_stream(self.oauth_config(), self.STREAM_NAME, SyncMode.full_refresh)
@@ -79,7 +79,7 @@ class TestEngagementCallsStream(HubspotTestCase):
             http_mocker,
             with_oauth=True,
             with_dynamic_schemas=True,
-            entities=OBJECTS_WITH_DYNAMIC_SCHEMA,
+            entities=["calls"],
         )
         self.mock_response(http_mocker, self.request(), self.response())
         output = self.read_from_stream(self.oauth_config(), self.STREAM_NAME, SyncMode.full_refresh)
@@ -87,14 +87,14 @@ class TestEngagementCallsStream(HubspotTestCase):
 
     @HttpMocker()
     def test_given_one_page_when_read_stream_private_token_then_return_records(self, http_mocker: HttpMocker):
-        self._set_up_requests(http_mocker)
+        self._set_up_requests(http_mocker, with_dynamic_schemas=True, entities=["calls"])
         self.mock_response(http_mocker, self.request(), self.response())
         output = self.read_from_stream(self.private_token_config(self.ACCESS_TOKEN), self.STREAM_NAME, SyncMode.full_refresh)
         assert len(output.records) == 1
 
     @HttpMocker()
     def test_given_two_pages_when_read_then_return_records(self, http_mocker: HttpMocker):
-        self._set_up_requests(http_mocker)
+        self._set_up_requests(http_mocker, with_dynamic_schemas=True, entities=["calls"])
         self.mock_response(http_mocker, self.request(), self.response(with_pagination=True))
         self.mock_response(http_mocker, self.request(page_token=self.response_builder.pagination_strategy.NEXT_PAGE_TOKEN), self.response())
         output = self.read_from_stream(self.private_token_config(self.ACCESS_TOKEN), self.STREAM_NAME, SyncMode.full_refresh)
@@ -102,7 +102,7 @@ class TestEngagementCallsStream(HubspotTestCase):
 
     @HttpMocker()
     def test_given_error_response_when_read_analytics_then_get_trace_message(self, http_mocker: HttpMocker):
-        self._set_up_requests(http_mocker)
+        self._set_up_requests(http_mocker, with_dynamic_schemas=True, entities=["calls"])
         self.mock_response(http_mocker, self.request(), HttpResponse(status_code=500, body="{}"))
         with mock.patch("time.sleep"):
             output = self.read_from_stream(self.private_token_config(self.ACCESS_TOKEN), self.STREAM_NAME, SyncMode.full_refresh)
@@ -112,7 +112,7 @@ class TestEngagementCallsStream(HubspotTestCase):
 
     @HttpMocker()
     def test_given_500_then_200_when_read_then_return_records(self, http_mocker: HttpMocker):
-        self._set_up_requests(http_mocker)
+        self._set_up_requests(http_mocker, with_dynamic_schemas=True, entities=["calls"])
         self.mock_response(http_mocker, self.request(), [HttpResponse(status_code=500, body="{}"), self.response()])
         with mock.patch("time.sleep"):
             output = self.read_from_stream(self.private_token_config(self.ACCESS_TOKEN), self.STREAM_NAME, SyncMode.full_refresh)
@@ -128,7 +128,7 @@ class TestEngagementCallsStream(HubspotTestCase):
 
     @HttpMocker()
     def test_given_unauthorized_error_when_read_then_stop_sync(self, http_mocker: HttpMocker):
-        self._set_up_requests(http_mocker)
+        self._set_up_requests(http_mocker, with_dynamic_schemas=True, entities=["calls"])
         self.mock_response(http_mocker, self.request(), HttpResponse(status_code=http.HTTPStatus.UNAUTHORIZED, body="{}"))
         with mock.patch("time.sleep"):
             output = self.read_from_stream(self.private_token_config(self.ACCESS_TOKEN), self.STREAM_NAME, SyncMode.full_refresh)
@@ -138,7 +138,7 @@ class TestEngagementCallsStream(HubspotTestCase):
 
     @HttpMocker()
     def test_given_one_page_when_read_then_get_records_with_flattened_properties(self, http_mocker: HttpMocker):
-        self._set_up_requests(http_mocker)
+        self._set_up_requests(http_mocker, with_dynamic_schemas=True, entities=["calls"])
         self.mock_response(http_mocker, self.request(), self.response())
         output = self.read_from_stream(self.private_token_config(self.ACCESS_TOKEN), self.STREAM_NAME, SyncMode.full_refresh)
         record = output.records[0].record.data
@@ -148,7 +148,7 @@ class TestEngagementCallsStream(HubspotTestCase):
 
     @HttpMocker()
     def test_given_incremental_sync_when_read_then_state_message_produced_and_state_match_latest_record(self, http_mocker: HttpMocker):
-        self._set_up_requests(http_mocker)
+        self._set_up_requests(http_mocker, with_dynamic_schemas=True, entities=["calls"])
         self.mock_response(http_mocker, self.request(), self.response())
         output = self.read_from_stream(self.private_token_config(self.ACCESS_TOKEN), self.STREAM_NAME, SyncMode.incremental)
         assert len(output.state_messages) == 2
