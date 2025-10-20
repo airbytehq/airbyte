@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.postgres.client
 
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TableName
 import io.airbyte.integrations.destination.postgres.sql.PostgresDirectLoadSqlGenerator
@@ -46,7 +47,7 @@ internal class PostgresAirbyteClientTest {
         val tableName = TableName(namespace = "namespace", name = "name")
         val resultSet =
             mockk<ResultSet> {
-                every { next() } returns true andThen false
+                every { next() } returns true
                 every { getLong(COUNT_TOTAL_ALIAS) } returns 42L
             }
         val statement =
@@ -61,6 +62,7 @@ internal class PostgresAirbyteClientTest {
             }
 
         every { dataSource.connection } returns mockConnection
+        every { sqlGenerator.countTable(tableName) } returns MOCK_SQL_QUERY
 
         runBlocking {
             val result = client.countTable(tableName)
@@ -276,5 +278,114 @@ internal class PostgresAirbyteClientTest {
             verify(exactly = 1) { statement.execute(MOCK_SQL_QUERY) }
             verify(exactly = 1) { mockConnection.close() }
         }
+    }
+
+    @Test
+    fun testGetGenerationId() {
+        val generationId = 123L
+        val tableName = TableName(namespace = "namespace", name = "name")
+        val resultSet =
+            mockk<ResultSet> {
+                every { next() } returns true
+                every { getLong(COLUMN_NAME_AB_GENERATION_ID) } returns generationId
+            }
+        val statement =
+            mockk<Statement> {
+                every { executeQuery(any()) } returns resultSet
+                every { close() } just Runs
+            }
+        val mockConnection =
+            mockk<Connection> {
+                every { close() } just Runs
+                every { createStatement() } returns statement
+            }
+
+        every { dataSource.connection } returns mockConnection
+        every { sqlGenerator.getGenerationId(tableName) } returns MOCK_SQL_QUERY
+
+        runBlocking {
+            val result = client.getGenerationId(tableName)
+            assertEquals(generationId, result)
+            verify(exactly = 1) { mockConnection.close() }
+        }
+    }
+
+    @Test
+    fun testGetGenerationIdNoResult() {
+        val tableName = TableName(namespace = "namespace", name = "name")
+        val resultSet =
+            mockk<ResultSet> {
+                every { next() } returns false
+            }
+        val statement =
+            mockk<Statement> {
+                every { executeQuery(any()) } returns resultSet
+                every { close() } just Runs
+            }
+        val mockConnection =
+            mockk<Connection> {
+                every { close() } just Runs
+                every { createStatement() } returns statement
+            }
+
+        every { dataSource.connection } returns mockConnection
+        every { sqlGenerator.getGenerationId(tableName) } returns MOCK_SQL_QUERY
+
+        runBlocking {
+            val result = client.getGenerationId(tableName)
+            assertEquals(0, result)
+            verify(exactly = 1) { mockConnection.close() }
+        }
+    }
+
+    @Test
+    fun testGetGenerationIdError() {
+        val tableName = TableName(namespace = "namespace", name = "name")
+        val statement =
+            mockk<Statement> { every { executeQuery(any()) } throws SQLException("error") }
+        val mockConnection =
+            mockk<Connection> {
+                every { close() } just Runs
+                every { createStatement() } returns statement
+            }
+
+        every { dataSource.connection } returns mockConnection
+        every { sqlGenerator.getGenerationId(tableName) } returns MOCK_SQL_QUERY
+
+        runBlocking {
+            val result = client.getGenerationId(tableName)
+            assertEquals(0L, result)
+            verify(exactly = 1) { mockConnection.close() }
+        }
+    }
+
+    @Test
+    fun testDescribeTable() {
+        val tableName = TableName(namespace = "namespace", name = "name")
+        val column1 = "column1"
+        val column2 = "column2"
+        val resultSet =
+            mockk<ResultSet> {
+                every { next() } returns true andThen true andThen false
+                every { getString("column_name") } returns column1 andThen column2
+            }
+        val statement =
+            mockk<Statement> {
+                every { executeQuery(any()) } returns resultSet
+                every { close() } just Runs
+            }
+        val mockConnection =
+            mockk<Connection> {
+                every { close() } just Runs
+                every { createStatement() } returns statement
+            }
+
+        every { dataSource.connection } returns mockConnection
+        every { sqlGenerator.getTableSchema(tableName) } returns MOCK_SQL_QUERY
+
+        val columns = client.describeTable(tableName)
+        assertEquals(listOf(column1, column2), columns)
+        verify(exactly = 1) { sqlGenerator.getTableSchema(tableName) }
+        verify(exactly = 1) { mockConnection.close() }
     }
 }
