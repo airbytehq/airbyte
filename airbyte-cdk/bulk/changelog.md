@@ -1,6 +1,14 @@
-## Version 0.1.52
+## Version 0.1.53
+
+**Load CDK**
 
 Automatically add `_airbyte_` columns to stream schema in load CDK.
+
+## Version 0.1.52
+
+**Load CDK**
+
+Refactor database operations interfaces and establish comprehensive TableOperationsSuite component test suite.
 
 ## Version 0.1.51
 
