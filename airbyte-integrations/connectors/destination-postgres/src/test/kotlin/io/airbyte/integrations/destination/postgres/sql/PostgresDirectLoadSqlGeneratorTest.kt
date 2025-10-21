@@ -259,13 +259,13 @@ internal class PostgresDirectLoadSqlGeneratorTest {
 
     @Test
     fun testColumnAndTypeToString() {
-        val notNullColumn = ColumnAndType("column", "varchar", nullable = false)
+        val notNullColumn = Column("column", "varchar", nullable = false)
         assertEquals("\"column\" varchar NOT NULL", notNullColumn.toString())
     }
 
     @Test
     fun testNullableColumnAndTypeToString() {
-        val nullableColumn = ColumnAndType("column", "varchar", nullable = true)
+        val nullableColumn = Column("column", "varchar", nullable = true)
         assertEquals("\"column\" varchar", nullableColumn.toString())
     }
 }
