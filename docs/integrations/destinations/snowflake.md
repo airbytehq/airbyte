@@ -251,6 +251,7 @@ desired namespace.
 
 | Version         | Date       | Pull Request                                                        | Subject                                                                                                                                                                                |
 |:----------------|:-----------|:--------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.16          | 2025-10-21 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD)                | Wrap Snowflake permission errors as ConfigErrorException for better error handling |
 | 4.0.15          | 2025-10-21 | [67153](https://github.com/airbytehq/airbyte/pull/67153)            | Implement new proto schema implementation |
 | 4.0.14          | 2025-10-16 | [68148](https://github.com/airbytehq/airbyte/pull/68148)            | No user-facing changes. Internal code reorganization.                                                                                                                                  |
 | 4.0.13          | 2025-10-15 | [68106](https://github.com/airbytehq/airbyte/pull/68106)            | Revert cache change to fix performance issue.                                                                                                                                          |
