@@ -97,6 +97,7 @@ The connector implements retry logic with exponential backoff for rate limiting 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.6.53 | 2025-10-21 | [68545](https://github.com/airbytehq/airbyte/pull/68545) | Update dependencies |
 | 0.6.52 | 2025-10-14 | [67947](https://github.com/airbytehq/airbyte/pull/67947) | Update dependencies |
 | 0.6.51 | 2025-10-10 | [67602](https://github.com/airbytehq/airbyte/pull/67602) | Fix array schema definitions |
 | 0.6.50 | 2025-10-07 | [67361](https://github.com/airbytehq/airbyte/pull/67361) | Update dependencies |
