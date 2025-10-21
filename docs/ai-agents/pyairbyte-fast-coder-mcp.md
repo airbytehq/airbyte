@@ -2,9 +2,13 @@
 products: embedded
 ---
 
-# Overview
+# PyAirbyte Fast-Coder MCP (Deprecated)
 
-The PyAirbyte remote MCP server provides the ability for application developers to generate a data pipeline in Python using a single prompt. It is currently designed to work within Cursor, and broader support in the near future.
+::warning
+The PyAirbyte Fast-Coder MCP has been deprecated and is no longer actively maintained. If you would like to see continued development on this tool, please let us know by adding feedback on the related GitHub Discussion.
+::
+
+The PyAirbyte Fast-Coder MCP is a remote MCP server that provides the ability for data engineers to generate a data pipeline in Python using a single prompt. It is currently designed to work within Cursor, with broader support coming in the near future.
 
 To add the PyAirbyte MCP open Cursor and navigate to Settings > Tools & Integrations, and tap New MCP Sever. Add the following json snippet. This file tells Cursor which remote MCP servers to connect to and what credentials to pass along.
 
@@ -33,7 +37,7 @@ Within your Cursor project, start a new chat. In the input box, type the followi
 create a data pipeline from source-faker to destination-snowflake
 ```
 
-The MCP server will process your prompt and respond by generating all the necessary Python code to extract data from `faker` and load it into `Snowflake`. We suggest you prefix your source and destination with `source-` and `destination-` to ensure specificity when the MCP server performs a embedded source on the Airbyte Connector registry. Connectors for sources and destinations may have the same name, but different configuration parameters.
+The MCP server will process your prompt and respond by generating all the necessary Python code to extract data from `faker` and load it into `Snowflake`. We suggest you prefix your source and destination with `source-` and `destination-` to ensure specificity when the MCP server performs a search on the Airbyte Connector registry. Connectors for sources and destinations may have the same name, but different configuration parameters.
 
 In a few moments, your pipeline will be created, typically in a file called `pyairbyte_pipeline.py`. In addition, the MCP server will generate complete instructions on how to use the server and configure required parameters using a  `.env` file that includes environment variables you’ll need to fill in.
 
