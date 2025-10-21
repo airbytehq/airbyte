@@ -1,4 +1,5 @@
 # Table Filtering Implementation Plan for Airbyte CDK
+TODO: REMOVE BEFORE MERGE
 
 ## Overview
 
@@ -6,13 +7,15 @@ This document outlines the approach for implementing table filtering in the Airb
 
 ## Background
 
-### Existing Implementations
+### Connector Architecture
 
-**Enterprise Sources (with `schemas` config):**
-- PostgreSQL, MSSQL, Oracle, Redshift - all have a `schemas` array config
-- MongoDB - has a `databases` array config
-- These already filter at the namespace level (schema/catalog/database)
-- Table filtering can be layered on top of this existing filtering
+**Modern Connectors (Kotlin-based):**
+- Use Kotlin classes extending `ConfigurationSpecification`
+- JSON schema is auto-generated from class annotations
+- Examples: MySQL, Snowflake, ClickHouse
+- Located in: `src/main/kotlin/.../Specification.kt`
+
+### Existing Implementations
 
 **Sources WITHOUT namespace filtering:**
 - CockroachDB, DB2, MySQL (potentially), and others
@@ -93,12 +96,114 @@ data class TableFilter(
 - Empty pattern list = include all tables in that namespace
 - Made it a data class for immutability and better Kotlin semantics
 
-### 2. Add to SourceConfiguration Interface
+### 2. Create JdbcSourceConfigurationSpecification Base Class
 
-**Location:** `/Users/sophie.c/airbyte/airbyte-cdk/bulk/core/extract/src/main/kotlin/io/airbyte/cdk/command/SourceConfiguration.kt`
+**Location:** `/Users/sophie.c/airbyte/airbyte-cdk/bulk/toolkits/extract-jdbc/src/main/kotlin/io/airbyte/cdk/command/JdbcSourceConfigurationSpecification.kt`
+
+Create an optional base class for JDBC sources with common database properties:
 
 ```kotlin
-interface SourceConfiguration : Configuration, SshTunnelConfiguration {
+package io.airbyte.cdk.command
+
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonPropertyDescription
+import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDefault
+import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaInject
+import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
+
+/**
+ * Base ConfigurationSpecification for JDBC sources with common properties.
+ *
+ * Connector-specific implementations should extend this class and add
+ * their unique properties (like replication methods, SSL modes, etc.).
+ */
+@SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
+abstract class JdbcSourceConfigurationSpecification : ConfigurationSpecification() {
+
+    @JsonProperty("host")
+    @JsonSchemaTitle("Host")
+    @JsonPropertyDescription("Hostname of the database.")
+    @JsonSchemaInject(json = """{"order":0,"always_show":true}""")
+    lateinit var host: String
+
+    @JsonProperty("port")
+    @JsonSchemaTitle("Port")
+    @JsonPropertyDescription("Port of the database.")
+    @JsonSchemaInject(json = """{"order":1}""")
+    abstract var port: Int // Abstract to allow different defaults per connector
+
+    @JsonProperty("database")
+    @JsonSchemaTitle("Database")
+    @JsonPropertyDescription("Name of the database.")
+    @JsonSchemaInject(json = """{"order":2,"always_show":true}""")
+    lateinit var database: String
+
+    @JsonProperty("schemas")
+    @JsonSchemaTitle("Schemas")
+    @JsonPropertyDescription(
+        "The list of schemas to sync from. " +
+        "If not specified, all accessible schemas will be synced. " +
+        "The exact meaning depends on the database (schema names, database names, etc.)."
+    )
+    @JsonSchemaInject(json = """{"order":3,"always_show":true}""")
+    var schemas: List<String>? = null
+
+    @JsonProperty("username")
+    @JsonSchemaTitle("Username")
+    @JsonPropertyDescription("Username to access the database.")
+    @JsonSchemaInject(json = """{"order":4,"always_show":true}""")
+    lateinit var username: String
+
+    @JsonProperty("password")
+    @JsonSchemaTitle("Password")
+    @JsonPropertyDescription("Password associated with the username.")
+    @JsonSchemaInject(json = """{"order":5,"always_show":true,"airbyte_secret":true}""")
+    var password: String? = null
+
+    @JsonProperty("jdbc_url_params")
+    @JsonSchemaTitle("JDBC URL Parameters (Advanced)")
+    @JsonPropertyDescription(
+        "Additional properties to pass to the JDBC URL string when connecting to the database " +
+        "formatted as 'key=value' pairs separated by the symbol '&'. " +
+        "(example: key1=value1&key2=value2&key3=value3)."
+    )
+    @JsonSchemaInject(json = """{"order":6}""")
+    var jdbcUrlParams: String? = null
+
+    @JsonProperty("table_filters")
+    @JsonSchemaTitle("Table Filters (Advanced)")
+    @JsonPropertyDescription(
+        "Optional filters to include only specific tables from specific schemas. " +
+        "Works in combination with the 'Schemas' config above."
+    )
+    @JsonSchemaInject(json = """{"order":7}""")
+    var tableFilters: List<TableFilter>? = null
+
+    @JsonProperty("check_privileges")
+    @JsonSchemaTitle("Check Table and Column Access Privileges")
+    @JsonSchemaInject(json = """{"order":8}""")
+    @JsonSchemaDefault("true")
+    @JsonPropertyDescription(
+        "When enabled, the connector will query each table individually to check access privileges. " +
+        "In large schemas, this might slow down schema discovery."
+    )
+    var checkPrivileges: Boolean? = true
+}
+```
+
+**Key Benefits:**
+- All common JDBC properties in one place
+- Connectors extend this class and add only their unique properties
+- Consistent ordering and descriptions across all JDBC connectors
+- `port` is abstract to allow different default values (3306 for MySQL, 5432 for Postgres, etc.)
+
+### 3. Add to JdbcSourceConfiguration Interface
+
+**Location:** `/Users/sophie.c/airbyte/airbyte-cdk/bulk/toolkits/extract-jdbc/src/main/kotlin/io/airbyte/cdk/command/JdbcSourceConfiguration.kt`
+
+```kotlin
+interface JdbcSourceConfiguration : SourceConfiguration {
     // ... existing properties ...
 
     /**
@@ -108,20 +213,23 @@ interface SourceConfiguration : Configuration, SshTunnelConfiguration {
      * If specified, only tables matching the patterns within the specified namespaces
      * will be included in discovery.
      *
-     * This is intended for sources that don't have namespace-level filtering
-     * (e.g., sources without a "schemas" or "databases" config).
+     * This works in combination with namespace filtering (namespaces config):
+     * 1. First, namespaces are filtered (if namespaces config is set)
+     * 2. Then, tables within those namespaces are filtered (if tableFilters is set)
      */
     val tableFilters: List<TableFilter>? get() = null
 }
 ```
 
 **Why this approach:**
+- Scoped to JDBC sources only (not all sources need table filtering)
+- Works naturally with existing `namespaces` property in JdbcSourceConfiguration
 - Default `null` means opt-in behavior
 - Connectors that don't need it won't show it in their spec
 - Connectors that want it can override in their ConfigurationSpecification class
 - No need to modify every existing connector
 
-### 3. Implement Filtering in JdbcMetadataQuerier
+### 4. Implement Filtering in JdbcMetadataQuerier
 
 **Location:** `/Users/sophie.c/airbyte/airbyte-cdk/bulk/toolkits/extract-jdbc/src/main/kotlin/io/airbyte/cdk/discover/JdbcMetadataQuerier.kt`
 
@@ -198,192 +306,80 @@ private fun applyTableFilters(tables: List<TableName>): List<TableName> {
         }
     }
 }
-
-/**
- * Converts a SQL LIKE pattern to a Regex pattern.
- * % becomes .*, _ becomes ., and other regex special chars are escaped.
- */
-private fun sqlLikeToRegex(likePattern: String): Regex {
-    val regexPattern = likePattern
-        .replace("\\", "\\\\")  // Escape backslashes first
-        .replace(".", "\\.")     // Escape dots
-        .replace("*", "\\*")     // Escape asterisks
-        .replace("+", "\\+")     // Escape plus
-        .replace("?", "\\?")     // Escape question marks
-        .replace("(", "\\(")     // Escape parentheses
-        .replace(")", "\\)")
-        .replace("[", "\\[")     // Escape brackets
-        .replace("]", "\\]")
-        .replace("{", "\\{")     // Escape braces
-        .replace("}", "\\}")
-        .replace("^", "\\^")     // Escape caret
-        .replace("$", "\\$")     // Escape dollar
-        .replace("|", "\\|")     // Escape pipe
-        .replace("%", ".*")      // SQL % to regex .*
-        .replace("_", ".")       // SQL _ to regex .
-
-    return Regex("^$regexPattern$", RegexOption.IGNORE_CASE)
-}
-```
-
-### 4. Optional: Add Fallback Filtering in DiscoverOperation
-
-**Location:** `/Users/sophie.c/airbyte/airbyte-cdk/bulk/core/extract/src/main/kotlin/io/airbyte/cdk/discover/DiscoverOperation.kt`
-
-For non-JDBC sources that might benefit from table filtering, we can add a fallback filter in the discover operation itself:
-
-```kotlin
-override fun execute() {
-    val airbyteStreams = mutableListOf<AirbyteStream>()
-    metadataQuerierFactory.session(config).use { metadataQuerier: MetadataQuerier ->
-        val namespaces: List<String?> =
-            listOf<String?>(null) + metadataQuerier.streamNamespaces()
-        for (namespace in namespaces) {
-            for (streamID in metadataQuerier.streamNames(namespace)) {
-                // Apply table filtering if not already handled by the querier
-                if (!shouldIncludeStream(streamID)) {
-                    log.info { "Skipping stream '${streamID.name}' in '${namespace ?: ""}' due to table filter configuration." }
-                    continue
-                }
-
-                val fields: List<Field> = metadataQuerier.fields(streamID)
-                if (fields.isEmpty()) {
-                    log.info {
-                        "Ignoring stream '${streamID.name}' in '${namespace ?: ""}' because no fields were discovered."
-                    }
-                    continue
-                }
-                val primaryKey: List<List<String>> = metadataQuerier.primaryKey(streamID)
-                val discoveredStream = DiscoveredStream(streamID, fields, primaryKey)
-                val airbyteStream: AirbyteStream =
-                    airbyteStreamFactory.create(config, discoveredStream)
-                airbyteStreams.add(airbyteStream)
-            }
-        }
-    }
-    outputConsumer.accept(AirbyteCatalog().withStreams(airbyteStreams))
-}
-
-private fun shouldIncludeStream(streamID: StreamIdentifier): Boolean {
-    val filters = config.tableFilters
-    if (filters.isNullOrEmpty()) {
-        return true
-    }
-
-    val namespace = streamID.namespace ?: return true
-    val patternsForNamespace = filters.filter { it.namespace == namespace }
-
-    if (patternsForNamespace.isEmpty()) {
-        return false
-    }
-
-    // If no patterns specified, include all tables in this namespace
-    if (patternsForNamespace.all { it.tableNamePatterns.isEmpty() }) {
-        return true
-    }
-
-    // Check if stream name matches any pattern
-    val allPatterns = patternsForNamespace.flatMap { it.tableNamePatterns }
-    return allPatterns.any { pattern ->
-        sqlLikeToRegex(pattern).matches(streamID.name)
-    }
-}
 ```
 
 ## How Connectors Will Use This
 
-### Connectors WITHOUT existing namespace filtering (e.g., CockroachDB, DB2)
+### For Modern Kotlin-Based Connectors (e.g., MySQL, Snowflake)
 
-Add the `tableFilters` property to their ConfigurationSpecification:
+Connectors can now **extend the base class** instead of duplicating common properties:
+
+#### Step 1: Extend JdbcSourceConfigurationSpecification
 
 ```kotlin
 @Singleton
 @ConfigurationProperties(CONNECTOR_CONFIG_PREFIX)
-class CockroachDbSourceConfigurationSpecification : ConfigurationSpecification() {
-    // ... existing properties ...
+class MySqlSourceConfigurationSpecification : JdbcSourceConfigurationSpecification() {
 
-    @JsonProperty("table_filters")
-    @JsonSchemaTitle("Table Filters")
-    @JsonPropertyDescription("Optional filters to include only specific tables from specific namespaces.")
+    // Override port with MySQL-specific default
+    @JsonProperty("port")
+    @JsonSchemaDefault("3306")
+    override var port: Int = 3306
+
+    // Add MySQL-specific properties only
+    @JsonProperty("ssl_mode")
+    @JsonSchemaTitle("SSL Mode")
+    @JsonPropertyDescription("SSL connection mode for MySQL")
     @JsonSchemaInject(json = """{"order":10}""")
-    var tableFilters: List<TableFilter>? = null
+    var sslMode: SslMode? = null
+
+    @JsonProperty("replication_method")
+    @JsonSchemaTitle("Replication Method")
+    @JsonPropertyDescription("Method for reading data (Standard or CDC)")
+    @JsonSchemaInject(json = """{"order":11}""")
+    var replicationMethod: ReplicationMethod? = null
+
+    // ... other MySQL-specific properties ...
 }
 ```
 
-Then in their Configuration implementation:
+**Benefits:**
+- No need to redeclare `host`, `database`, `username`, `password`, etc.
+- `schemas` and `table_filters` are automatically included from base class
+- Only add connector-specific properties (SSL mode, replication method, etc.)
+- Consistent property ordering across all JDBC connectors
+
+#### Step 2: Override in SourceConfiguration Implementation
 
 ```kotlin
-class CockroachDbSourceConfiguration : SourceConfiguration {
+class MySqlSourceConfiguration(
+    val pojo: MySqlSourceConfigurationSpecification
+) : JdbcSourceConfiguration {
     // ... other overrides ...
 
+    // Map schemas to namespaces (already defined in base class)
+    override val namespaces: Set<String>
+        get() = pojo.schemas?.toSet() ?: emptySet()
+
+    // Map table_filters (already defined in base class)
     override val tableFilters: List<TableFilter>?
         get() = pojo.tableFilters
 }
 ```
 
-### Connectors WITH existing namespace filtering (e.g., PostgreSQL, MSSQL)
-
-**Don't need to do anything!** Their existing `schemas` config provides namespace-level filtering, which is sufficient for most use cases. If they want table-level filtering as well, they can optionally add it following the same pattern above.
-
-## User Experience
-
-### Configuration Example
-
-```json
-{
-  "host": "localhost",
-  "port": 5432,
-  "database": "mydb",
-  "username": "user",
-  "password": "pass",
-  "table_filters": [
-    {
-      "namespace": "public",
-      "table_name_patterns": ["user_%", "account_%"]
-    },
-    {
-      "namespace": "analytics",
-      "table_name_patterns": ["fact_%", "dim_%"]
-    },
-    {
-      "namespace": "staging",
-      "table_name_patterns": []
-    }
-  ]
-}
-```
-
-This configuration would:
-- From `public` schema: include only tables starting with `user_` or `account_`
-- From `analytics` schema: include only tables starting with `fact_` or `dim_`
-- From `staging` schema: include ALL tables (empty patterns list)
-- All other schemas would be excluded
-
-### Pattern Matching Examples
-
-| Pattern | Matches | Doesn't Match |
-|---------|---------|---------------|
-| `user_%` | `user_accounts`, `user_preferences` | `users`, `account_user` |
-| `%_temp` | `data_temp`, `staging_temp` | `temp`, `temporary` |
-| `prod_%_table` | `prod_user_table`, `prod_order_table` | `prod_users`, `table_prod` |
-| `test_` | `test_` (exact match) | `test_data`, `testing` |
-| `%` | Everything | Nothing |
-
 ## Implementation Steps
 
 1. **Create TableFilter class** in the CDK command package
-2. **Add tableFilters property** to SourceConfiguration interface with default null
-3. **Implement filtering logic** in JdbcMetadataQuerier.memoizedTableNames
-4. **Add helper method** `sqlLikeToRegex` for pattern matching
-5. **(Optional)** Add fallback filtering in DiscoverOperation for non-JDBC sources
-6. **Test with a connector** that doesn't have namespace filtering (e.g., CockroachDB or DB2)
-7. **Document the feature** in CDK documentation
+2. **Create JdbcSourceConfigurationSpecification base class** with common JDBC properties
+3. **Add tableFilters property** to JdbcSourceConfiguration interface with default null
+4. **Implement filtering logic** in JdbcMetadataQuerier.memoizedTableNames
+5. **Test with a connector** that doesn't have namespace filtering (e.g., CockroachDB or DB2)
+6. **Document the feature** in CDK documentation
 
 ## Testing Strategy
 
 ### Unit Tests
 
-1. Test `sqlLikeToRegex` helper with various SQL LIKE patterns
 2. Test `applyTableFilters` with different filter configurations
 3. Test edge cases: null filters, empty filters, empty patterns
 
@@ -395,21 +391,6 @@ This configuration would:
 4. Test with no filters (should return all tables)
 5. Test with empty pattern list (should include all tables in that namespace)
 
-## Backward Compatibility
-
-- **Fully backward compatible** - existing connectors continue to work without changes
-- Default value is `null`, so no filtering is applied unless explicitly configured
-- Connectors with existing `schemas` config are unaffected
-- No breaking changes to existing APIs or interfaces
-
-## Future Enhancements
-
-1. **Exclude patterns**: Add support for exclusion patterns (e.g., "include all EXCEPT temp tables")
-2. **Regex patterns**: Add support for full regex in addition to SQL LIKE patterns
-3. **Column filtering**: Extend to support column-level filtering within tables
-4. **UI improvements**: Better UI for configuring complex filtering rules in Airbyte Cloud/OSS
-5. **Performance optimization**: Cache compiled regex patterns for better performance
-
 ## Questions & Decisions
 
 ### Resolved:
@@ -419,8 +400,6 @@ This configuration would:
 - ✅ Support SQL LIKE patterns (%, _) for familiarity with SQL users
 
 ### To Decide:
-- Should we also filter in DiscoverOperation as a fallback for non-JDBC sources?
-- Should we support case-sensitive vs case-insensitive matching as a config option?
 - Should empty patterns list mean "include all" or "include none"? (Proposal: "include all")
 
 ## Compatibility with Enterprise Sources
