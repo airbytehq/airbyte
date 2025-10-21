@@ -45,19 +45,7 @@ class PostgresAirbyteClient(
         }
 
     override suspend fun createNamespace(namespace: String) {
-        try {
-            execute(sqlGenerator.createNamespace(namespace))
-        } catch (e: org.postgresql.util.PSQLException) {
-            // Handle race condition when multiple connections try to create the same schema
-            // PostgreSQL's CREATE SCHEMA IF NOT EXISTS can still fail with unique constraint violation
-            // if two sessions try to create it simultaneously
-            if (e.message?.contains("pg_namespace_nspname_index") == true ||
-                e.message?.contains("already exists") == true) {
-                log.debug(e) { "Schema $namespace already exists (race condition), ignoring error" }
-            } else {
-                throw e
-            }
-        }
+        execute(sqlGenerator.createNamespace(namespace))
     }
 
     override suspend fun createTable(

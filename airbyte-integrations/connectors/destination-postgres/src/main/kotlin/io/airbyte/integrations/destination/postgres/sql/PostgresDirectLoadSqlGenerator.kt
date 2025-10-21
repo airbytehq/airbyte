@@ -28,7 +28,6 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TableName
-import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 
@@ -37,9 +36,7 @@ internal const val COUNT_TOTAL_ALIAS = "total"
 private val log = KotlinLogging.logger {}
 
 @Singleton
-class PostgresDirectLoadSqlGenerator(
-    private val columnUtils: PostgresColumnUtils
-) {
+class PostgresDirectLoadSqlGenerator {
     companion object {
         internal val DEFAULT_COLUMNS =
             listOf(
@@ -100,8 +97,15 @@ class PostgresDirectLoadSqlGenerator(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping
     ): String {
-        val columns = columnUtils.columnsAndTypes(stream.schema.asColumns(), columnNameMapping)
-        return columns.joinToString(",\n")
+        val targetColumns = stream.schema
+            .asColumns()
+            .map { (columnName, columnType) ->
+                val targetColumnName = columnNameMapping[columnName] ?: columnName
+                val typeName = columnType.type.toDialectType()
+                "\"$targetColumnName\" $typeName"
+            }
+
+        return (DEFAULT_COLUMNS + targetColumns).joinToString(",\n")
     }
 
     fun overwriteTable(
@@ -135,7 +139,7 @@ class PostgresDirectLoadSqlGenerator(
     }
 
     private fun getTargetColumnNames(columnNameMapping: ColumnNameMapping): List<String> =
-        columnUtils.formattedDefaultColumns().map { "\"${it.columnName}\"" } + columnNameMapping.map { (_, targetName) -> "\"${targetName}\"" }
+        DEFAULT_COLUMNS.map { "\"${it.columnName}\"" } + columnNameMapping.map { (_, targetName) -> "\"${targetName}\"" }
 
     @Suppress("UNUSED_PARAMETER")
     fun upsertTable(
