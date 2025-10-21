@@ -1,5 +1,5 @@
 # Amazon Seller Partner
-| 4.9.0 | 2025-10-21 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Re-add brand analytics reports to Cloud (GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT, GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT, GET_BRAND_ANALYTICS_REPEAT_PURCHASE_REPORT, GET_BRAND_ANALYTICS_ALTERNATE_PURCHASE_REPORT, GET_BRAND_ANALYTICS_ITEM_COMPARISON_REPORT, GET_SALES_AND_TRAFFIC_REPORT, GET_VENDOR_SALES_REPORT, GET_VENDOR_INVENTORY_REPORT) |
+
 
 <HideInUI>
 
@@ -194,7 +194,7 @@ Information about rate limits you may find [here](https://developer-docs.amazon.
 ## Data type map
 
 | Integration Type         | Airbyte Type |
---|
+|:-------------------------|:-------------|
 | `string`                 | `string`     |
 | `int`, `float`, `number` | `number`     |
 | `date`                   | `date`       |
@@ -246,8 +246,8 @@ Create a separate connection for streams which usually fail with error above "Fa
   <summary>Expand to review</summary>
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.9.0 | 2025-10-21 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Re-add brand analytics reports to Cloud (GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT, GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT, GET_BRAND_ANALYTICS_REPEAT_PURCHASE_REPORT, GET_BRAND_ANALYTICS_ALTERNATE_PURCHASE_REPORT, GET_BRAND_ANALYTICS_ITEM_COMPARISON_REPORT, GET_SALES_AND_TRAFFIC_REPORT, GET_VENDOR_SALES_REPORT, GET_VENDOR_INVENTORY_REPORT) |
+|:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.9.0 | 2025-10-21 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Re-add Brand Analytics reports |
 | 4.8.2 | 2025-09-17 | [66485](https://github.com/airbytehq/airbyte/pull/66485) | Upgrade to CDK v7 |
 | 4.8.1 | 2025-08-16 | [65047](https://github.com/airbytehq/airbyte/pull/65047) | Update dependencies |
 | 4.8.0 | 2025-07-29 | [53225](https://github.com/airbytehq/airbyte/pull/) | Add VendorOrdersStatus stream |
@@ -363,5 +363,4 @@ Create a separate connection for streams which usually fail with error above "Fa
 | 0.2.0      | 2021-08-06 | [#4863](https://github.com/airbytehq/airbyte/pull/4863)   | Rebuild source with `airbyte-cdk`                                                                                                                                                   |
 | 0.1.3      | 2021-06-23 | [#4288](https://github.com/airbytehq/airbyte/pull/4288)   | Bugfix failing `connection check`                                                                                                                                                   |
 | 0.1.2      | 2021-06-15 | [#4108](https://github.com/airbytehq/airbyte/pull/4108)   | Fixed: Sync fails with timeout when create report is CANCELLED`                                                                                                                     |
-
 </details>
