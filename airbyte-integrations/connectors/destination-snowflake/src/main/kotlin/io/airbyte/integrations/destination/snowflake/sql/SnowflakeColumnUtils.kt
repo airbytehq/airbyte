@@ -124,7 +124,7 @@ class SnowflakeColumnUtils(
         columnNameMapping: ColumnNameMapping,
         quote: Boolean = true,
     ): List<String> =
-        if (snowflakeConfiguration.legacyRawTablesOnly == true) {
+        if (snowflakeConfiguration.legacyRawTablesOnly) {
             getFormattedDefaultColumnNames(quote)
         } else {
             getFormattedDefaultColumnNames(quote) +
@@ -138,7 +138,7 @@ class SnowflakeColumnUtils(
         columns: Map<String, FieldType>,
         columnNameMapping: ColumnNameMapping
     ): List<ColumnAndType> =
-        if (snowflakeConfiguration.legacyRawTablesOnly == true) {
+        if (snowflakeConfiguration.legacyRawTablesOnly) {
             formattedDefaultColumns()
         } else {
             formattedDefaultColumns() +
@@ -147,7 +147,7 @@ class SnowflakeColumnUtils(
                     val typeName = toDialectType(type.type)
                     ColumnAndType(
                         columnName = columnName,
-                        columnType = typeName,
+                        columnType = if (type.nullable) typeName else "$typeName $NOT_NULL",
                     )
                 }
         }

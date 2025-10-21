@@ -44,7 +44,7 @@ class SnowflakeChecker(
                 Meta.AirbyteMetaFields.META.fieldName to
                     AirbyteValue.from(emptyMap<String, String>()),
                 Meta.AirbyteMetaFields.GENERATION_ID.fieldName to AirbyteValue.from(0),
-                CHECK_COLUMN_NAME to AirbyteValue.from("test-value")
+                CHECK_COLUMN_NAME.toSnowflakeCompatibleName() to AirbyteValue.from("test-value")
             )
         val outputSchema = snowflakeConfiguration.schema.toSnowflakeCompatibleName()
         val tableName =

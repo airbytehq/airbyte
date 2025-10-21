@@ -228,7 +228,7 @@ internal class SnowflakeColumnUtilsTest {
             )
         assertEquals(DEFAULT_COLUMNS.size + 1, columns.size)
         assertEquals(
-            SnowflakeDataType.VARCHAR.typeName,
+            "${SnowflakeDataType.VARCHAR.typeName} $NOT_NULL",
             columns.find { it.columnName == columnName }?.columnType
         )
     }
@@ -248,7 +248,7 @@ internal class SnowflakeColumnUtilsTest {
             )
         assertEquals(DEFAULT_COLUMNS.size + 1, columns.size)
         assertEquals(
-            SnowflakeDataType.VARCHAR.typeName,
+            "${SnowflakeDataType.VARCHAR.typeName} $NOT_NULL",
             columns.find { it.columnName == mappedColumnName }?.columnType
         )
     }
