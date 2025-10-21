@@ -490,6 +490,21 @@
       "source": "/platform/contributing-to-airbyte/submit-new-connector",
       "destination": "/platform/connector-development/submit-new-connector",
       "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/pyairbyte-mcp/README",
+      "destination": "/ai-agents/pyairbyte-mcp",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/pyairbyte-fast-coder-mcp/README",
+      "destination": "/ai-agents/pyairbyte-fast-coder-mcp",
+      "statusCode": 301
+    },
+    {
+      "source": "/ai-agents/connector-builder-mcp/README",
+      "destination": "/ai-agents/connector-builder-mcp",
+      "statusCode": 301
     }
   ]
 }

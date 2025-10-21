@@ -50,17 +50,17 @@ export default {
           items: [
             {
               type: "doc",
-              id: "pyairbyte-mcp/README",
+              id: "pyairbyte-mcp",
               label: "PyAirbyte MCP",
             },
             {
               type: "doc",
-              id: "pyairbyte-fast-coder-mcp/README",
+              id: "pyairbyte-fast-coder-mcp",
               label: "PyAirbyte Fast-Coder MCP",
             },
             {
               type: "doc",
-              id: "connector-builder-mcp/README",
+              id: "connector-builder-mcp",
               label: "Connector Builder MCP",
             },
             {

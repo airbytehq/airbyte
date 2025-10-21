@@ -46,7 +46,7 @@ Airbyte provides multiple MCP (Model Context Protocol) servers to enable AI-assi
 
 ### Embedded Operator MCP
 
-[The Embedded Operator MCP](./embedded/operator-mcp.md) is a remote MCP server providing tools that enable managing embedded configurations and the resulting pipelines. Users can create connection and source templates, securely create sources, query API and File Storage sources, monitor connections and jobs, and more.
+[The Embedded Operator MCP](./embedded/operator-mcp/README.md) is a remote MCP server providing tools that enable managing embedded configurations and the resulting pipelines. Users can create connection and source templates, securely create sources, query API and File Storage sources, monitor connections and jobs, and more.
 
 ### PyAirbyte Fast-Coder MCP
 
