@@ -31,11 +31,12 @@ import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.data.json.toAirbyteValue
 import io.airbyte.cdk.load.message.Meta
+import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingUtil
 import io.airbyte.cdk.load.test.util.DestinationDataDumper
 import io.airbyte.cdk.load.test.util.OutputRecord
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.integrations.destination.postgres.config.PostgresBeanFactory
-import io.airbyte.integrations.destination.postgres.db.PostgresFinalTableNameGenerator
+import io.airbyte.integrations.destination.postgres.db.toPostgresCompatibleName
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -223,7 +224,6 @@ class PostgresRawDataDumper(
         val output = mutableListOf<OutputRecord>()
 
         val config = configProvider(spec)
-        val tableNameGenerator = PostgresFinalTableNameGenerator(config)
         val dataSource = PostgresBeanFactory().postgresDataSource(
             postgresConfiguration = config,
             resolvedHost = config.host,
@@ -233,15 +233,25 @@ class PostgresRawDataDumper(
         dataSource.use { ds ->
             ds.connection.use { connection ->
                 val statement = connection.createStatement()
-                val tableName = tableNameGenerator.getTableName(stream.mappedDescriptor)
-                val quotedTableName = "\"${tableName.namespace}\".\"${tableName.name}\""
+
+                // For raw tables with disable_type_dedupe, construct the raw table name
+                // Raw tables follow the pattern: {namespace}_raw__stream_{name}
+                val sourceNamespace = stream.unmappedDescriptor.namespace ?: config.schema
+                val sourceName = stream.unmappedDescriptor.name
+
+                // The internal schema (airbyte_internal) is used for raw tables
+                // Use "airbyte_internal" as the default if internalTableSchema is not set
+                val rawNamespace = config.internalTableSchema ?: "airbyte_internal"
+                val rawName = TypingDedupingUtil.concatenateRawTableName(sourceNamespace, sourceName)
+                    .toPostgresCompatibleName()
+                val quotedTableName = "\"$rawNamespace\".\"$rawName\""
 
                 // Check if table exists first
                 val tableExistsQuery = """
                     SELECT COUNT(*) AS table_count
                     FROM information_schema.tables
-                    WHERE table_schema = '${tableName.namespace}'
-                    AND table_name = '${tableName.name}'
+                    WHERE table_schema = '$rawNamespace'
+                    AND table_name = '$rawName'
                 """.trimIndent()
 
                 val existsResultSet = statement.executeQuery(tableExistsQuery)

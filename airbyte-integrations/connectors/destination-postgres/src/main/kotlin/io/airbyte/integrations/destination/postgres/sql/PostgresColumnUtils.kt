@@ -44,22 +44,22 @@ class PostgresColumnUtils(
          */
         internal val DEFAULT_COLUMNS =
             listOf(
-                ColumnAndType(
+                Column(
                     columnName = COLUMN_NAME_AB_RAW_ID,
                     columnTypeName = "${PostgresDataType.VARCHAR.typeName} $NOT_NULL",
                     nullable = false
                 ),
-                ColumnAndType(
+                Column(
                     columnName = COLUMN_NAME_AB_EXTRACTED_AT,
                     columnTypeName = "${PostgresDataType.TIMESTAMP_WITH_TIMEZONE.typeName} $NOT_NULL",
                     nullable = false
                 ),
-                ColumnAndType(
+                Column(
                     columnName = COLUMN_NAME_AB_META,
                     columnTypeName = "${PostgresDataType.JSONB.typeName} $NOT_NULL",
                     nullable = false
                 ),
-                ColumnAndType(
+                Column(
                     columnName = COLUMN_NAME_AB_GENERATION_ID,
                     columnTypeName = PostgresDataType.BIGINT.typeName,
                     nullable = false
@@ -71,12 +71,12 @@ class PostgresColumnUtils(
          */
         internal val RAW_COLUMNS =
             listOf(
-                ColumnAndType(
+                Column(
                     columnName = COLUMN_NAME_AB_LOADED_AT,
                     columnTypeName = PostgresDataType.TIMESTAMP_WITH_TIMEZONE.typeName,
                     nullable = true
                 ),
-                ColumnAndType(
+                Column(
                     columnName = COLUMN_NAME_DATA,
                     columnTypeName = "${PostgresDataType.JSONB.typeName} $NOT_NULL",
                     nullable = false
@@ -89,7 +89,7 @@ class PostgresColumnUtils(
      * - Raw table mode: includes _airbyte_data column for storing raw JSON
      * - Typed table mode: excludes _airbyte_data, schema columns stored separately
      */
-    internal fun defaultColumns(): List<ColumnAndType> =
+    internal fun defaultColumns(): List<Column> =
         if (postgresConfiguration.legacyRawTablesOnly == true) {
             DEFAULT_COLUMNS + RAW_COLUMNS
         } else {
@@ -99,7 +99,7 @@ class PostgresColumnUtils(
     /**
      * Returns formatted default columns for SQL generation.
      */
-    fun formattedDefaultColumns(): List<ColumnAndType> = defaultColumns()
+    fun formattedDefaultColumns(): List<Column> = defaultColumns()
 
     /**
      * Returns the list of columns and their types for table creation.
@@ -109,7 +109,7 @@ class PostgresColumnUtils(
     fun columnsAndTypes(
         columns: Map<String, FieldType>,
         columnNameMapping: ColumnNameMapping
-    ): List<ColumnAndType> =
+    ): List<Column> =
         if (postgresConfiguration.legacyRawTablesOnly == true) {
             // RAW TABLE MODE: Only return default columns (no user columns)
             formattedDefaultColumns()
@@ -119,7 +119,7 @@ class PostgresColumnUtils(
                 columns.map { (fieldName, type) ->
                     val columnName = columnNameMapping[fieldName] ?: fieldName
                     val typeName = toDialectType(type.type)
-                    ColumnAndType(
+                    Column(
                         columnName = columnName,
                         columnTypeName = typeName,
                         nullable = type.nullable
