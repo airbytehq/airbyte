@@ -3,6 +3,7 @@ import struct
 from typing import Any, Iterable, Mapping, Optional, List, Dict
 
 from ldap3 import SUBTREE
+from ldap3.protocol.microsoft import security_descriptor_control
 
 from .base import ActiveDirectoryStream
 
@@ -74,12 +75,16 @@ class ACLs(ActiveDirectoryStream):
                 'whenChanged',          # Last modified time
             ]
             
+
+            sd_control = security_descriptor_control(sdflags=7)  # 1+2+4
+
             # Perform the LDAP search
             success = self._conn.search(
                 search_base=search_base,
                 search_filter=search_filter,
                 search_scope=SUBTREE,
-                attributes=attributes
+                attributes=attributes,
+                controls=sd_control
             )
             
             if not success:
