@@ -7,7 +7,7 @@ data:
       - linkedin.com
       - api.linkedin.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.3.2@sha256:0b877038dabe96789528febda5d7fc7cd1a1547ea92717f19aacde5752cfe572
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.3.9.post3.dev18667450571
   connectorSubtype: api
   connectorType: source
   definitionId: 137ece28-5434-455c-8f34-69dc3782f451
