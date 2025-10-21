@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "prepare-sidebar": "node src/scripts/prepare-sidebar-data.js",
-    "gen-embedded-api-docs": "docusaurus clean-api-docs all && docusaurus gen-api-docs all",
+    "gen-embedded-api-docs": "pnpm exec docusaurus clean-api-docs all && pnpm exec docusaurus gen-api-docs all",
     "prepare-embedded-api": "pnpm run gen-embedded-api-docs && node src/scripts/embedded-api/prepare-embedded-api-spec.js && pnpm prettier --write src/data/embedded_api_spec.json",
     "prebuild": "pnpm run prepare-sidebar && pnpm run prepare-embedded-api",
     "prestart": "pnpm run prepare-sidebar && pnpm run prepare-embedded-api",
