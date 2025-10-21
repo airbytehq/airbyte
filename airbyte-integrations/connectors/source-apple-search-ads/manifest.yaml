@@ -404,6 +404,7 @@ definitions:
           datetime_format: "%Y-%m-%d"
         step: P1D
         cursor_granularity: P1D
+        global_substream_cursor: true
       transformations:
         - type: AddFields
           fields:
@@ -524,6 +525,7 @@ definitions:
           datetime_format: "%Y-%m-%d"
         step: P1D
         cursor_granularity: P1D
+        global_substream_cursor: true
       transformations:
         - type: AddFields
           fields:
