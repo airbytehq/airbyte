@@ -10,12 +10,13 @@ from urllib.parse import urlencode
 import pytest
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models.airbyte_protocol import Status as ConnectionStatus
 from airbyte_cdk.test.entrypoint_wrapper import discover
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
 from .conftest import find_stream, get_source, mock_dynamic_schema_requests_with_skip, read_from_stream
-from .utils import read_full_refresh, read_incremental
+from .utils import run_read
 
 
 NUMBER_OF_PROPERTIES = 2000
@@ -45,24 +46,24 @@ def test_check_connection_ok(requests_mock, config):
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
     requests_mock.register_uri("GET", "/properties/v2/contact/properties", responses)
     requests_mock.register_uri("GET", "/crm/v3/objects/contact", {})
-    ok, error_msg = get_source(config).check_connection(logger, config=config)
+    connection_status = get_source(config).check(logger, config=config)
 
-    assert ok
-    assert not error_msg
+    assert connection_status.status == ConnectionStatus.SUCCEEDED
+    assert not connection_status.message
 
 
 def test_check_connection_empty_config(caplog):
     config = {}
-    get_source(config).check_connection(logger, config=config)
+    get_source(config).check(logger, config=config)
     assert "KeyError: ['credentials', 'credentials_title']" in caplog.records[0].message
     assert caplog.records[0].levelname == "ERROR"
 
 
 def test_check_connection_exception(config):
-    ok, error_msg = get_source(config).check_connection(logger, config=config)
+    connection_status = get_source(config).check(logger, config=config)
 
-    assert not ok
-    assert error_msg
+    assert connection_status.status == ConnectionStatus.FAILED
+    assert connection_status.message
 
 
 def test_check_connection_bad_request_exception(requests_mock, config_invalid_client_id):
@@ -70,9 +71,9 @@ def test_check_connection_bad_request_exception(requests_mock, config_invalid_cl
         {"json": {"message": "invalid client_id"}, "status_code": 400},
     ]
     requests_mock.register_uri("POST", "/oauth/v1/token", responses)
-    ok, error_msg = get_source(config_invalid_client_id).check_connection(logger, config=config_invalid_client_id)
-    assert not ok
-    assert error_msg
+    connection_status = get_source(config_invalid_client_id).check(logger, config=config_invalid_client_id)
+    assert connection_status.status == ConnectionStatus.FAILED
+    assert connection_status.message
 
 
 def test_streams(requests_mock, config):
@@ -95,9 +96,9 @@ def test_streams_forbidden_returns_default_streams(requests_mock, config):
 
 def test_check_credential_title_exception(config):
     config["credentials"].pop("credentials_title")
-    ok, message = get_source(config).check_connection(logger, config=config)
-    assert ok == False
-    assert "`authenticator_selection_path` is not found in the config" in message
+    connection_status = get_source(config).check(logger, config=config)
+    assert connection_status.status == ConnectionStatus.FAILED
+    assert "`authenticator_selection_path` is not found in the config" in connection_status.message
 
 
 def test_streams_ok_with_one_custom_stream(requests_mock, config, mock_dynamic_schema_requests):
@@ -133,10 +134,10 @@ def test_check_connection_backoff_on_limit_reached(requests_mock, config):
     requests_mock.register_uri("GET", "/properties/v2/contact/properties", prop_response)
     requests_mock.register_uri("GET", "/crm/v3/objects/contact", responses)
     source = get_source(config)
-    alive, error = source.check_connection(logger=logger, config=config)
+    connection_status = source.check(logger=logger, config=config)
 
-    assert alive
-    assert not error
+    assert connection_status.status == ConnectionStatus.SUCCEEDED
+    assert not connection_status.message
 
 
 def test_check_connection_backoff_on_server_error(requests_mock, config):
@@ -160,10 +161,10 @@ def test_check_connection_backoff_on_server_error(requests_mock, config):
     requests_mock.register_uri("GET", "/properties/v2/contact/properties", prop_response)
     requests_mock.register_uri("GET", "/crm/v3/objects/contact", responses)
     source = get_source(config)
-    alive, error = source.check_connection(logger=logger, config=config)
+    connection_status = source.check(logger=logger, config=config)
 
-    assert alive
-    assert not error
+    assert connection_status.status == ConnectionStatus.SUCCEEDED
+    assert not connection_status.message
 
 
 def test_stream_forbidden(requests_mock, config, mock_dynamic_schema_requests):
@@ -242,7 +243,11 @@ class TestSplittingPropertiesFunctionality:
         record_ids_paginated = [list(map(str, range(100))), list(map(str, range(100, 150, 1)))]
 
         test_stream._sync_mode = SyncMode.full_refresh
-        test_stream_url = test_stream.retriever.requester.url_base + "/" + test_stream.retriever.requester.get_path()
+        test_stream_url = (
+            test_stream._stream_partition_generator._partition_factory._retriever.requester.url_base
+            + "/"
+            + test_stream._stream_partition_generator._partition_factory._retriever.requester.get_path()
+        )
         properties_slices = (fake_properties_list[:686], fake_properties_list[686:1351], fake_properties_list[1351:])
         after_id = None
         for id_list in record_ids_paginated:
@@ -315,8 +320,8 @@ class TestSplittingPropertiesFunctionality:
                 "properties": ",".join(property_slice),
                 "limit": 100,
             }
-            base_url = test_stream.retriever.requester.url_base
-            path = test_stream.retriever.requester.get_path()
+            base_url = test_stream._stream_partition_generator._partition_factory._retriever.requester.url_base
+            path = test_stream._stream_partition_generator._partition_factory._retriever.requester.get_path()
             url = f"{base_url}/{path}?{urlencode(params)}"
             requests_mock.register_uri(
                 "GET",
@@ -411,8 +416,8 @@ def test_search_based_stream_should_not_attempt_to_get_more_than_10k_records(
         .build()
     )
 
-    base_url = test_stream.retriever.requester.url_base
-    path = test_stream.retriever.requester.get_path()
+    base_url = test_stream._stream_partition_generator._partition_factory._retriever.requester.url_base
+    path = test_stream._stream_partition_generator._partition_factory._retriever.requester.get_path()
     test_stream_url = f"{base_url}/{path}/search"
     requests_mock.register_uri("POST", test_stream_url, responses)
     requests_mock.register_uri("GET", "/properties/v2/company/properties", properties_response)
@@ -492,8 +497,8 @@ def test_search_based_incremental_stream_should_sort_by_id(requests_mock, config
             "status_code": 200,
         }
     ]
-    base_url = test_stream.retriever.requester.url_base
-    path = test_stream.retriever.requester.get_path()
+    base_url = test_stream._stream_partition_generator._partition_factory._retriever.requester.url_base
+    path = test_stream._stream_partition_generator._partition_factory._retriever.requester.get_path()
     test_stream_url = f"{base_url}/{path}/search"
     # Mocking Request
     requests_mock.register_uri("POST", test_stream_url, responses)
@@ -596,12 +601,12 @@ def test_engagements_stream_pagination_works(requests_mock, config):
     # Create test_stream instance for full refresh.
     test_stream = find_stream("engagements", config)
 
-    records = read_full_refresh(test_stream)
+    records = run_read(test_stream)
     # The stream should handle pagination correctly and output 600 records.
     assert len(records) == 600
 
     test_stream = find_stream("engagements", config)
-    records, _ = read_incremental(test_stream, {})
+    records = run_read(test_stream)
     # The stream should handle pagination correctly and output 250 records.
     assert len(records) == 100
 
@@ -784,7 +789,7 @@ def test_pagination_marketing_emails_stream(requests_mock, config):
     # includes statistics directly in the main response
     test_stream = find_stream("marketing_emails", config)
 
-    records = read_full_refresh(test_stream)
+    records = run_read(test_stream)
     # The stream should handle pagination correctly and output 600 records.
     assert len(records) == 600
 

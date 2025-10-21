@@ -600,7 +600,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 assertEquals(
                     mapOf(
                         CHECKPOINT_ID_NAME to "partition_1",
-                        CheckpointMessage.COMMITTED_BYTES_COUNT to 57,
+                        CheckpointMessage.COMMITTED_BYTES_COUNT to 56,
                         CHECKPOINT_INDEX_NAME to 1,
                         CheckpointMessage.COMMITTED_RECORDS_COUNT to 1,
                     ),
@@ -636,7 +636,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 assertEquals(
                     mapOf(
                         CHECKPOINT_ID_NAME to "partition_2",
-                        CheckpointMessage.COMMITTED_BYTES_COUNT to 171,
+                        CheckpointMessage.COMMITTED_BYTES_COUNT to 168,
                         CHECKPOINT_INDEX_NAME to 2,
                         CheckpointMessage.COMMITTED_RECORDS_COUNT to 3,
                     ),
@@ -657,7 +657,7 @@ abstract class BasicFunctionalityIntegrationTest(
     }
 
     @Test
-    fun testCDCStateTypes() {
+    open fun testCDCStateTypes() {
         if (
             dataChannelMedium != DataChannelMedium.SOCKET ||
                 dataChannelFormat != DataChannelFormat.PROTOBUF
@@ -957,7 +957,7 @@ abstract class BasicFunctionalityIntegrationTest(
 
                 assertEquals(
                     mapOf(
-                        CheckpointMessage.COMMITTED_BYTES_COUNT to 57,
+                        CheckpointMessage.COMMITTED_BYTES_COUNT to 56,
                         CheckpointMessage.COMMITTED_RECORDS_COUNT to 1,
                     ),
                     it[firstStream]!!.additionalProperties,
@@ -970,7 +970,7 @@ abstract class BasicFunctionalityIntegrationTest(
 
                 assertEquals(
                     mapOf(
-                        CheckpointMessage.COMMITTED_BYTES_COUNT to 122,
+                        CheckpointMessage.COMMITTED_BYTES_COUNT to 120,
                         CheckpointMessage.COMMITTED_RECORDS_COUNT to 2,
                     ),
                     it[secondStream]!!.additionalProperties,
@@ -983,7 +983,7 @@ abstract class BasicFunctionalityIntegrationTest(
 
                 assertEquals(
                     mapOf(
-                        CheckpointMessage.COMMITTED_BYTES_COUNT to 63,
+                        CheckpointMessage.COMMITTED_BYTES_COUNT to 62,
                         CheckpointMessage.COMMITTED_RECORDS_COUNT to 1,
                     ),
                     it[thirdStream]!!.additionalProperties,
@@ -994,7 +994,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 assertEquals(
                     mapOf(
                         CHECKPOINT_ID_NAME to "outer_partition",
-                        CheckpointMessage.COMMITTED_BYTES_COUNT to 242,
+                        CheckpointMessage.COMMITTED_BYTES_COUNT to 238,
                         CHECKPOINT_INDEX_NAME to 1,
                         CheckpointMessage.COMMITTED_RECORDS_COUNT to 4,
                     ),
@@ -1033,7 +1033,7 @@ abstract class BasicFunctionalityIntegrationTest(
 
                 assertEquals(
                     mapOf(
-                        CheckpointMessage.COMMITTED_BYTES_COUNT to 114,
+                        CheckpointMessage.COMMITTED_BYTES_COUNT to 112,
                         CheckpointMessage.COMMITTED_RECORDS_COUNT to 2,
                     ),
                     it[firstStream]!!.additionalProperties,
@@ -1046,7 +1046,7 @@ abstract class BasicFunctionalityIntegrationTest(
 
                 assertEquals(
                     mapOf(
-                        CheckpointMessage.COMMITTED_BYTES_COUNT to 181,
+                        CheckpointMessage.COMMITTED_BYTES_COUNT to 178,
                         CheckpointMessage.COMMITTED_RECORDS_COUNT to 3,
                     ),
                     it[secondStream]!!.additionalProperties,
@@ -1059,7 +1059,7 @@ abstract class BasicFunctionalityIntegrationTest(
 
                 assertEquals(
                     mapOf(
-                        CheckpointMessage.COMMITTED_BYTES_COUNT to 122,
+                        CheckpointMessage.COMMITTED_BYTES_COUNT to 120,
                         CheckpointMessage.COMMITTED_RECORDS_COUNT to 2,
                     ),
                     it[thirdStream]!!.additionalProperties,
@@ -1070,7 +1070,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 assertEquals(
                     mapOf(
                         CHECKPOINT_ID_NAME to "outer_partition_2",
-                        CheckpointMessage.COMMITTED_BYTES_COUNT to 417,
+                        CheckpointMessage.COMMITTED_BYTES_COUNT to 410,
                         CHECKPOINT_INDEX_NAME to 2,
                         CheckpointMessage.COMMITTED_RECORDS_COUNT to 7,
                     ),
@@ -1109,7 +1109,7 @@ abstract class BasicFunctionalityIntegrationTest(
 
                 assertEquals(
                     mapOf(
-                        CheckpointMessage.COMMITTED_BYTES_COUNT to 177,
+                        CheckpointMessage.COMMITTED_BYTES_COUNT to 174,
                         CheckpointMessage.COMMITTED_RECORDS_COUNT to 3,
                     ),
                     it[firstStream]!!.additionalProperties,
@@ -1122,7 +1122,7 @@ abstract class BasicFunctionalityIntegrationTest(
 
                 assertEquals(
                     mapOf(
-                        CheckpointMessage.COMMITTED_BYTES_COUNT to 246,
+                        CheckpointMessage.COMMITTED_BYTES_COUNT to 242,
                         CheckpointMessage.COMMITTED_RECORDS_COUNT to 4,
                     ),
                     it[secondStream]!!.additionalProperties,
@@ -1135,7 +1135,7 @@ abstract class BasicFunctionalityIntegrationTest(
 
                 assertEquals(
                     mapOf(
-                        CheckpointMessage.COMMITTED_BYTES_COUNT to 188,
+                        CheckpointMessage.COMMITTED_BYTES_COUNT to 184,
                         CheckpointMessage.COMMITTED_RECORDS_COUNT to 3,
                     ),
                     it[thirdStream]!!.additionalProperties,
@@ -1146,7 +1146,7 @@ abstract class BasicFunctionalityIntegrationTest(
                 assertEquals(
                     mapOf(
                         CHECKPOINT_ID_NAME to "outer_partition_3",
-                        CheckpointMessage.COMMITTED_BYTES_COUNT to 611,
+                        CheckpointMessage.COMMITTED_BYTES_COUNT to 600,
                         CHECKPOINT_INDEX_NAME to 3,
                         CheckpointMessage.COMMITTED_RECORDS_COUNT to 10,
                     ),
@@ -1214,7 +1214,7 @@ abstract class BasicFunctionalityIntegrationTest(
 
         // Only used for speed mode (unnecessary to test if dest does not support speed)
         val expectedBytes =
-            if (testSpeedModeStatsEmission) expectedBytesForMediumAndFormat(214L, 234L, 59L)
+            if (testSpeedModeStatsEmission) expectedBytesForMediumAndFormat(214L, 234L, 56L)
             else null
 
         assertAll(
@@ -3571,6 +3571,25 @@ abstract class BasicFunctionalityIntegrationTest(
                         .filter {
                             it != "number" || dataChannelFormat != DataChannelFormat.PROTOBUF
                         }
+                        // With protobuf, temporal types are encoded as proper types (not strings),
+                        // so it's impossible to send invalid values like "foo"
+                        .filter { it != "date" || dataChannelFormat != DataChannelFormat.PROTOBUF }
+                        .filter {
+                            it != "time_with_timezone" ||
+                                dataChannelFormat != DataChannelFormat.PROTOBUF
+                        }
+                        .filter {
+                            it != "time_without_timezone" ||
+                                dataChannelFormat != DataChannelFormat.PROTOBUF
+                        }
+                        .filter {
+                            it != "timestamp_with_timezone" ||
+                                dataChannelFormat != DataChannelFormat.PROTOBUF
+                        }
+                        .filter {
+                            it != "timestamp_without_timezone" ||
+                                dataChannelFormat != DataChannelFormat.PROTOBUF
+                        }
                         .map { key ->
                             val change =
                                 Change(
@@ -3604,14 +3623,25 @@ abstract class BasicFunctionalityIntegrationTest(
                 bigNumberChanges = emptyList()
                 badValuesData =
                     // note that the values have different types than what's declared in the schema
-                    mapOf(
-                        "id" to 5,
-                        "timestamp_with_timezone" to "foo",
-                        "timestamp_without_timezone" to "foo",
-                        "time_with_timezone" to "foo",
-                        "time_without_timezone" to "foo",
-                        "date" to "foo",
-                    ) +
+                    // With protobuf, temporal types can't be sent as strings, so exclude them
+                    (mapOf("id" to 5) +
+                        if (dataChannelFormat != DataChannelFormat.PROTOBUF) {
+                            mapOf(
+                                "timestamp_with_timezone" to "foo",
+                                "timestamp_without_timezone" to "foo",
+                                "time_with_timezone" to "foo",
+                                "time_without_timezone" to "foo",
+                                "date" to "foo",
+                            )
+                        } else {
+                            mapOf(
+                                "timestamp_with_timezone" to null,
+                                "timestamp_without_timezone" to null,
+                                "time_with_timezone" to null,
+                                "time_without_timezone" to null,
+                                "date" to null,
+                            )
+                        }) +
                         if (mismatchedTypesUnrepresentable) emptyMap()
                         else
                             mapOf(
