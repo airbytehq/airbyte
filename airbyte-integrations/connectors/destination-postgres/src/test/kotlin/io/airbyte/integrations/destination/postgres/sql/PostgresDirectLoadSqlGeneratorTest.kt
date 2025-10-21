@@ -25,6 +25,7 @@ import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TableName
+import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -34,10 +35,15 @@ import org.junit.jupiter.api.Test
 internal class PostgresDirectLoadSqlGeneratorTest {
 
     private lateinit var postgresDirectLoadSqlGenerator: PostgresDirectLoadSqlGenerator
+    private lateinit var columnUtils: PostgresColumnUtils
 
     @BeforeEach
     fun setUp() {
-        postgresDirectLoadSqlGenerator = PostgresDirectLoadSqlGenerator()
+        val mockConfig = mockk<PostgresConfiguration> {
+            every { legacyRawTablesOnly } returns false
+        }
+        columnUtils = PostgresColumnUtils(mockConfig)
+        postgresDirectLoadSqlGenerator = PostgresDirectLoadSqlGenerator(columnUtils)
     }
 
     @Test

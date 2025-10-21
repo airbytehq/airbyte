@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.postgres.write
 
 import io.airbyte.cdk.load.write.BasicFunctionalityIntegrationTest
-import io.airbyte.cdk.load.write.DedupBehavior
 import io.airbyte.cdk.load.write.SchematizedNestedValueBehavior
 import io.airbyte.cdk.load.write.StronglyTyped
 import io.airbyte.cdk.load.write.UnionBehavior
@@ -16,23 +15,24 @@ import io.airbyte.integrations.destination.postgres.spec.PostgresConfigurationFa
 import io.airbyte.integrations.destination.postgres.spec.PostgresSpecification
 import org.junit.jupiter.api.BeforeAll
 
-class PostgresAcceptanceTest : BasicFunctionalityIntegrationTest(
+class PostgresRawAcceptanceTest : BasicFunctionalityIntegrationTest(
     configContents = """{
                         "host": "replace_me_host",
                         "port": replace_me_port,
                         "database": "replace_me_database",
                         "schema": "public",
                         "username": "replace_me_username",
-                        "password": "replace_me_password"
+                        "password": "replace_me_password",
+                        "disable_type_dedupe": true
                     }""",
     configSpecClass = PostgresSpecification::class.java,
-    dataDumper = PostgresDataDumper { spec ->
+    dataDumper = PostgresRawDataDumper { spec ->
         val configOverrides = buildConfigOverridesForTestContainer()
         PostgresConfigurationFactory().makeWithOverrides(spec as PostgresSpecification, configOverrides)
     },
     destinationCleaner = PostgresDataCleaner,
-    isStreamSchemaRetroactive = true,
-    dedupBehavior = DedupBehavior(DedupBehavior.CdcDeletionMode.HARD_DELETE),
+    isStreamSchemaRetroactive = false,
+    dedupBehavior = null,
     stringifySchemalessObjects = false,
     schematizedObjectBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
     schematizedArrayBehavior = SchematizedNestedValueBehavior.PASS_THROUGH,
@@ -50,9 +50,9 @@ class PostgresAcceptanceTest : BasicFunctionalityIntegrationTest(
         stripsNullBytes = true,
     ),
     unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
-    nullEqualsUnset = true,
+    nullEqualsUnset = false,
     configUpdater = PostgresConfigUpdater(),
-    recordMangler = PostgresTimestampNormalizationMapper,
+    recordMangler = PostgresExpectedRawRecordMapper,
 ) {
     companion object {
         @JvmStatic
@@ -60,5 +60,10 @@ class PostgresAcceptanceTest : BasicFunctionalityIntegrationTest(
         fun beforeAll() {
             PostgresContainerHelper.start()
         }
+    }
+
+    @org.junit.jupiter.api.Test
+    override fun testBasicWrite() {
+        super.testBasicWrite()
     }
 }
