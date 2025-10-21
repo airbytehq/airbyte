@@ -7,7 +7,7 @@ products: embedded
 Airbyte provides multiple tools to help you build data applications.
 
 - **Airbyte Embedded Widget**: App development teams who have signed up for Airbyte Embedded and are looking to get started onboarding customers using the Embedded Widget can follow the get started guide at the bottom of this page, which will step you through a complete sample onboarding app.
-- **Authentication Proxies**: Connect safely to 3rd party APIs using Airbyte's Authentication Proxies.
+- **Authentication Proxies**: Connect safely to third party APIs using Airbyte's Authentication Proxies.
 - **MCP Servers**: Airbyte provides multiple MCP (Model Context Protocol) servers for different use cases:
   - [**PyAirbyte MCP**](#pyairbyte-mcp): Local MCP server for managing Airbyte connectors through AI assistants.
   - [**Connector Builder MCP**](#connector-builder-mcp): AI-assisted connector development - _**coming soon!**_
