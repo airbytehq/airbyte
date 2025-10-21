@@ -10,7 +10,6 @@ import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.output.DataChannelMedium.SOCKET
 import io.airbyte.cdk.output.DataChannelMedium.STDIO
 import io.airbyte.cdk.output.OutputMessageRouter
-import io.airbyte.cdk.output.sockets.NativeRecordPayload
 import io.airbyte.cdk.read.GlobalFeedBootstrap
 import io.airbyte.cdk.read.PartitionReadCheckpoint
 import io.airbyte.cdk.read.PartitionReader
@@ -31,11 +30,10 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
 import java.time.LocalDateTime
 import java.util.*
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Consumer
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.coroutineContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -57,6 +55,7 @@ class CdcPartitionReader<T : Comparable<T>>(
 ) : UnlimitedTimePartitionReader {
     private val log = KotlinLogging.logger {}
     private val acquiredResources = AtomicReference<Map<ResourceType, AcquiredResource>>()
+    private val engineShuttingDown: AtomicBoolean = AtomicBoolean(false)
     private lateinit var stateFilesAccessor: DebeziumStateFilesAccessor
     private lateinit var decoratedProperties: Properties
     private lateinit var engine: DebeziumEngine<ChangeEvent<String?, String?>>
@@ -72,14 +71,13 @@ class CdcPartitionReader<T : Comparable<T>>(
     internal val numSourceRecordsWithoutPosition = AtomicLong()
     internal val numEventValuesWithoutPosition = AtomicLong()
 
-    protected var partitionId: String = generatePartitionId(4)
-    private lateinit var acceptors: Map<StreamIdentifier, (NativeRecordPayload) -> Unit>
+    private var partitionId: String = generatePartitionId(4)
     interface AcquiredResource : AutoCloseable {
         val resource: Resource.Acquired?
     }
 
     override fun tryAcquireResources(): PartitionReader.TryAcquireResourcesStatus {
-        fun _tryAcquireResources(
+        fun innerAcquireResources(
             resourcesType: List<ResourceType>
         ): Map<ResourceType, AcquiredResource>? {
             val resources: Map<ResourceType, Resource.Acquired>? =
@@ -88,9 +86,9 @@ class CdcPartitionReader<T : Comparable<T>>(
                 ?.map {
                     it.key to
                         object : AcquiredResource {
-                            override val resource: Resource.Acquired? = it.value
+                            override val resource: Resource.Acquired = it.value
                             override fun close() {
-                                resource?.close()
+                                resource.close()
                             }
                         }
                 }
@@ -103,7 +101,7 @@ class CdcPartitionReader<T : Comparable<T>>(
                 STDIO -> listOf(RESOURCE_DB_CONNECTION)
             }
         val resources: Map<ResourceType, AcquiredResource> =
-            _tryAcquireResources(resourceType)
+            innerAcquireResources(resourceType)
                 ?: return PartitionReader.TryAcquireResourcesStatus.RETRY_LATER
 
         acquiredResources.set(resources)
@@ -150,7 +148,7 @@ class CdcPartitionReader<T : Comparable<T>>(
                 .using(decoratedProperties)
                 .using(ConnectorCallback())
                 .using(CompletionCallback())
-                .notifying(EventConsumer(coroutineContext))
+                .notifying(EventConsumer())
                 .build()
         val debeziumVersion: String = DebeziumEngine::class.java.getPackage().implementationVersion
         log.info { "Running Debezium engine version $debeziumVersion." }
@@ -205,9 +203,7 @@ class CdcPartitionReader<T : Comparable<T>>(
         )
     }
 
-    inner class EventConsumer(
-        private val coroutineContext: CoroutineContext,
-    ) : Consumer<ChangeEvent<String?, String?>> {
+    inner class EventConsumer() : Consumer<ChangeEvent<String?, String?>> {
 
         private var lastHeartbeatPosition: T? = null
         private var lastHeartbeatTime: LocalDateTime? = null
@@ -220,6 +216,10 @@ class CdcPartitionReader<T : Comparable<T>>(
             }
 
         override fun accept(changeEvent: ChangeEvent<String?, String?>) {
+            if (engineShuttingDown.get()) {
+                // If we're already shutting down, don't process any more events.
+                return
+            }
             val event = DebeziumEvent(changeEvent)
             val eventType: EventType = emitRecord(event)
             // Update counters.
@@ -234,6 +234,7 @@ class CdcPartitionReader<T : Comparable<T>>(
             // At this point, if we haven't returned already, we need to close down the engine.
             log.info { "Shutting down Debezium engine: ${closeReason.message}." }
             // TODO : send close analytics message
+            engineShuttingDown.set(true)
             runBlocking() { launch(Dispatchers.IO + Job()) { engine.close() } }
         }
 

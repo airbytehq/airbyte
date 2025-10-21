@@ -1,3 +1,9 @@
+## Version 0.1.53
+
+**Extract CDK**
+
+* **Changed:** Handle debezium engine shutdown properly with socket.
+
 ## Version 0.1.52
 
 **Load CDK**
