@@ -14,9 +14,6 @@ const connectorList = require("./src/remark/connectorList");
 const specDecoration = require("./src/remark/specDecoration");
 const docMetaTags = require("./src/remark/docMetaTags");
 const addButtonToTitle = require("./src/remark/addButtonToTitle");
-const fs = require("fs");
-
-const { SPEC_CACHE_PATH, API_SIDEBAR_PATH } = require("./src/scripts/embedded-api/constants");
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
@@ -185,100 +182,6 @@ const config = {
           productInformation,
           docMetaTags,
         ],
-      },
-    ],
-    [
-      "@docusaurus/plugin-content-docs",
-      {
-        id: "embedded-api",
-        path: "api-docs/embedded-api",
-        routeBasePath: "/embedded-api/",
-        docItemComponent: "@theme/ApiItem",
-        async sidebarItemsGenerator() {
-          // We only want to include visible endpoints on the sidebar. We need to filter out endpoints with tags
-          // that are not included in the spec. Even if we didn't need to filter out elements the OpenAPI plugin generates a sidebar.ts
-          // file that exports a nested object, but Docusaurus expects just the array of sidebar items, so we need to extracts the actual sidebar
-          // items from the generated file structure.
-
-          try {
-            const specPath = SPEC_CACHE_PATH; 
-
-            if (!fs.existsSync(specPath)) {
-              console.warn(
-                "Embedded API spec file not found, using empty sidebar",
-              );
-              return [];
-            }
-
-            const data = JSON.parse(fs.readFileSync(specPath, "utf8"));
-            console.log("Loaded embedded API spec from cache");
-
-            // Load the freshly generated sidebar (not the cached one from module load)
-            const sidebarPath = API_SIDEBAR_PATH;
-            let freshSidebar = [];
-
-            if (fs.existsSync(sidebarPath)) {
-              try {
-                const sidebarModule = require("./api-docs/embedded-api/sidebar.ts");
-                freshSidebar = sidebarModule.default || sidebarModule;
-                console.log("Loaded fresh sidebar from generated files");
-              } catch (sidebarError) {
-                console.warn(
-                  "Could not load fresh sidebar, using empty array:",
-                  sidebarError.message,
-                );
-                freshSidebar = [];
-              }
-            } else {
-              console.warn(
-                "Generated sidebar file not found, using empty array",
-              );
-              freshSidebar = [];
-            }
-
-            const allowedTags = data.tags?.map((tag) => tag["name"]) || [];
-
-            // Use freshly loaded sidebar items from the generated file
-            const sidebarItems = Array.isArray(freshSidebar)
-              ? freshSidebar
-              : [];
-
-            const filteredItems = sidebarItems.filter((item) => {
-              if (item.type !== "category") {
-                return true;
-              }
-
-              return allowedTags.includes(item.label);
-            });
-
-            return filteredItems;
-          } catch (error) {
-            console.warn(
-              "Error loading embedded API spec from cache:",
-              error.message,
-            );
-            return [];
-          }
-        },
-      },
-    ],
-    [
-      "docusaurus-plugin-openapi-docs",
-      {
-        id: "embedded-api",
-        docsPluginId: "embedded-api",
-        config: {
-          embedded: {
-            specPath: "src/data/embedded_api_spec.json",
-            outputDir: "api-docs/embedded-api",
-            sidebarOptions: {
-              groupPathsBy: "tag",
-              categoryLinkSource: "tag",
-              sidebarCollapsed: false,
-              sidebarCollapsible: false,
-            },
-          },
-        },
       },
     ],
     require.resolve("./src/plugins/enterpriseConnectors"),
