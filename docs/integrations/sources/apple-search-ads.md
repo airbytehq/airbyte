@@ -26,12 +26,6 @@ This page contains the setup guide and reference information for the Apple Ads s
 10. For **Exponential Backoff Factor**, enter a value between 1 and 20 to control the delay between retry attempts when rate limits are encountered. The default is 5. Increase this value when syncing large amounts of data to reduce the chance of synchronization failures.
 11. Click **Set up source**.
 
-## Breaking changes
-
-::: warning
-Version 1.0.0 introduces a breaking change to the `adgroups_report_daily` and `keywords_report_daily` streams. If you are upgrading from an earlier version, you must clear and resync these streams. For detailed migration instructions, see the [Apple Ads Migration Guide](/integrations/sources/apple-search-ads-migrations).
-:::
-
 ## Supported sync modes
 
 The Apple Ads source connector supports the following [sync modes](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/):
