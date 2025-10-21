@@ -14,6 +14,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.time.Duration;
 import java.util.Properties;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.codehaus.plexus.util.StringUtils;
 
@@ -94,6 +95,7 @@ public class MssqlCdcHelper {
     props.setProperty("snapshot.isolation.mode", "read_committed");
 
     props.setProperty("schema.include.list", getSchema(catalog));
+    props.setProperty("table.include.list", getTableIncludeList(catalog));
     props.setProperty("database.names", config.get(JdbcUtils.DATABASE_KEY).asText());
 
     final String msgKeyColumns = getMessageKeyColumnValue(catalog);
@@ -155,6 +157,29 @@ public class MssqlCdcHelper {
         .map(AirbyteStream::getNamespace)
         // debezium needs commas escaped to split properly
         .map(x -> StringUtils.escape(x, new char[] {','}, "\\,"))
+        .collect(Collectors.joining(","));
+  }
+
+  /**
+   * Returns a comma-separated list of fully-qualified table identifiers (schema.table) for Debezium's
+   * table.include.list property. This ensures only explicitly selected tables are captured by CDC,
+   * not all CDC-enabled tables in the schema.
+   *
+   * @param catalog the configured airbyte catalog
+   * @return a comma-separated list of schema.table identifiers with proper escaping for Debezium
+   */
+  @VisibleForTesting
+  static String getTableIncludeList(final ConfiguredAirbyteCatalog catalog) {
+    return catalog.getStreams().stream()
+        .filter(s -> s.getSyncMode() == SyncMode.INCREMENTAL)
+        .map(ConfiguredAirbyteStream::getStream)
+        .map(stream -> {
+          final String schema = stream.getNamespace();
+          final String table = stream.getName();
+          final String fullTableId = schema + "." + table;
+          // Use Pattern.quote to escape special regex characters, then escape commas for Debezium
+          return StringUtils.escape(Pattern.quote(fullTableId), new char[] {','}, "\\,");
+        })
         .collect(Collectors.joining(","));
   }
 

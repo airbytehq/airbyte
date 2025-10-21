@@ -5,13 +5,14 @@
 package io.airbyte.integrations.destination.snowflake.client
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
-import io.airbyte.cdk.load.client.AirbyteClient
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
-import io.airbyte.cdk.load.orchestration.db.TableName
-import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableNativeOperations
-import io.airbyte.cdk.load.orchestration.db.direct_load_table.DirectLoadTableSqlOperations
+import io.airbyte.cdk.load.component.TableOperationsClient
+import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
+import io.airbyte.cdk.load.table.ColumnNameMapping
+import io.airbyte.cdk.load.table.TableName
+import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
+import io.airbyte.integrations.destination.snowflake.db.escapeJsonIdentifier
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.COUNT_TOTAL_ALIAS
@@ -25,6 +26,7 @@ import javax.sql.DataSource
 import net.snowflake.client.jdbc.SnowflakeSQLException
 
 internal const val DESCRIBE_TABLE_COLUMN_NAME_FIELD = "column_name"
+internal const val DESCRIBE_TABLE_COLUMN_TYPE_FIELD = "data_type"
 
 private val log = KotlinLogging.logger {}
 
@@ -35,7 +37,7 @@ class SnowflakeAirbyteClient(
     private val sqlGenerator: SnowflakeDirectLoadSqlGenerator,
     private val snowflakeColumnUtils: SnowflakeColumnUtils,
     private val snowflakeConfiguration: SnowflakeConfiguration,
-) : AirbyteClient, DirectLoadTableSqlOperations, DirectLoadTableNativeOperations {
+) : TableOperationsClient, TableSchemaEvolutionClient {
 
     private val airbyteColumnNames =
         snowflakeColumnUtils.getFormattedDefaultColumnNames(false).toSet()
@@ -96,9 +98,6 @@ class SnowflakeAirbyteClient(
             // Create the schema only if it doesn't exist
             execute(sqlGenerator.createNamespace(namespace))
         }
-
-        // Create the CSV file format in the schema if it does not exist
-        execute(sqlGenerator.createFileFormat(namespace))
     }
 
     override suspend fun createTable(
@@ -204,7 +203,7 @@ class SnowflakeAirbyteClient(
                 val columnsInDb: MutableSet<ColumnDefinition> = mutableSetOf()
 
                 while (rs.next()) {
-                    val columnName = rs.getString("name").toSnowflakeCompatibleName()
+                    val columnName = escapeJsonIdentifier(rs.getString("name"))
 
                     // Filter out airbyte columns
                     if (airbyteColumnNames.contains(columnName)) {
@@ -302,14 +301,26 @@ class SnowflakeAirbyteClient(
         execute(sqlGenerator.copyFromStage(tableName, filename))
     }
 
-    fun describeTable(tableName: TableName): List<String> =
+    fun describeTable(tableName: TableName): LinkedHashMap<String, String> =
         dataSource.connection.use { connection ->
             val statement = connection.createStatement()
             return statement.use {
                 val resultSet = it.executeQuery(sqlGenerator.showColumns(tableName))
-                val columns = mutableListOf<String>()
+                val columns = linkedMapOf<String, String>()
                 while (resultSet.next()) {
-                    columns.add(resultSet.getString(DESCRIBE_TABLE_COLUMN_NAME_FIELD))
+                    val columnName = resultSet.getString(DESCRIBE_TABLE_COLUMN_NAME_FIELD)
+                    // this is... incredibly annoying. The resultset will give us a string like
+                    // `{"type":"VARIANT","nullable":true}`.
+                    // So we need to parse that JSON, and then fetch the actual thing we care about.
+                    // Also, some of the type names aren't the ones we're familiar with (e.g.
+                    // `FIXED` for numeric columns),
+                    // so the output here is not particularly ergonomic.
+                    val columnType =
+                        resultSet
+                            .getString(DESCRIBE_TABLE_COLUMN_TYPE_FIELD)
+                            .deserializeToNode()["type"]
+                            .asText()
+                    columns[columnName] = columnType
                 }
                 columns
             }

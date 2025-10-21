@@ -43,6 +43,7 @@ Steps:
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.0.39 | 2025-10-14 | [67878](https://github.com/airbytehq/airbyte/pull/67878) | Update dependencies |
 | 0.0.38 | 2025-10-07 | [67397](https://github.com/airbytehq/airbyte/pull/67397) | Update dependencies |
 | 0.0.37 | 2025-09-30 | [66403](https://github.com/airbytehq/airbyte/pull/66403) | Update dependencies |
 | 0.0.36 | 2025-09-09 | [65901](https://github.com/airbytehq/airbyte/pull/65901) | Update dependencies |

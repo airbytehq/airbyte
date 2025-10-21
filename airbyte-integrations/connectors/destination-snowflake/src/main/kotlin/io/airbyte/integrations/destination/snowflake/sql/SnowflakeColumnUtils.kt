@@ -29,7 +29,7 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_LOADED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_DATA
-import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
+import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.integrations.destination.snowflake.db.SnowflakeColumnNameGenerator
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
@@ -164,22 +164,27 @@ class SnowflakeColumnUtils(
 
     fun toDialectType(type: AirbyteType): String =
         when (type) {
+            // Simple types
             BooleanType -> SnowflakeDataType.BOOLEAN.typeName
-            DateType -> SnowflakeDataType.DATE.typeName
             IntegerType -> SnowflakeDataType.NUMBER.typeName
             NumberType -> SnowflakeDataType.FLOAT.typeName
             StringType -> SnowflakeDataType.VARCHAR.typeName
+
+            // Temporal types
+            DateType -> SnowflakeDataType.DATE.typeName
             TimeTypeWithTimezone -> SnowflakeDataType.VARCHAR.typeName
             TimeTypeWithoutTimezone -> SnowflakeDataType.TIME.typeName
             TimestampTypeWithTimezone -> SnowflakeDataType.TIMESTAMP_TZ.typeName
             TimestampTypeWithoutTimezone -> SnowflakeDataType.TIMESTAMP_NTZ.typeName
+
+            // Semistructured types
             is ArrayType,
-            ArrayTypeWithoutSchema,
+            ArrayTypeWithoutSchema -> SnowflakeDataType.ARRAY.typeName
             is ObjectType,
             ObjectTypeWithEmptySchema,
-            ObjectTypeWithoutSchema,
+            ObjectTypeWithoutSchema -> SnowflakeDataType.OBJECT.typeName
             is UnionType -> SnowflakeDataType.VARIANT.typeName
-            is UnknownType -> SnowflakeDataType.VARCHAR.typeName
+            is UnknownType -> SnowflakeDataType.VARIANT.typeName
         }
 }
 

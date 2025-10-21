@@ -23,9 +23,9 @@ import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_DATA
-import io.airbyte.cdk.load.orchestration.db.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.orchestration.db.ColumnNameGenerator
-import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
+import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
+import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.integrations.destination.snowflake.db.SnowflakeColumnNameGenerator
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
@@ -289,15 +289,15 @@ internal class SnowflakeColumnUtilsTest {
             snowflakeColumnUtils.toDialectType(TimestampTypeWithoutTimezone)
         )
         assertEquals(
-            SnowflakeDataType.VARIANT.typeName,
+            SnowflakeDataType.ARRAY.typeName,
             snowflakeColumnUtils.toDialectType(ArrayType(items = FieldType(StringType, false)))
         )
         assertEquals(
-            SnowflakeDataType.VARIANT.typeName,
+            SnowflakeDataType.ARRAY.typeName,
             snowflakeColumnUtils.toDialectType(ArrayTypeWithoutSchema)
         )
         assertEquals(
-            SnowflakeDataType.VARIANT.typeName,
+            SnowflakeDataType.OBJECT.typeName,
             snowflakeColumnUtils.toDialectType(
                 ObjectType(
                     properties = LinkedHashMap(),
@@ -306,11 +306,11 @@ internal class SnowflakeColumnUtilsTest {
             )
         )
         assertEquals(
-            SnowflakeDataType.VARIANT.typeName,
+            SnowflakeDataType.OBJECT.typeName,
             snowflakeColumnUtils.toDialectType(ObjectTypeWithEmptySchema)
         )
         assertEquals(
-            SnowflakeDataType.VARIANT.typeName,
+            SnowflakeDataType.OBJECT.typeName,
             snowflakeColumnUtils.toDialectType(ObjectTypeWithoutSchema)
         )
         assertEquals(
@@ -332,7 +332,7 @@ internal class SnowflakeColumnUtilsTest {
             )
         )
         assertEquals(
-            SnowflakeDataType.VARCHAR.typeName,
+            SnowflakeDataType.VARIANT.typeName,
             snowflakeColumnUtils.toDialectType(UnknownType(schema = mockk<JsonNode>()))
         )
     }

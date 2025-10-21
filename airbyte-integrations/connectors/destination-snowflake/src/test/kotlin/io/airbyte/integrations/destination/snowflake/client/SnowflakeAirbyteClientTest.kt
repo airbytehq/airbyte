@@ -12,8 +12,8 @@ import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
-import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
-import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.cdk.load.table.ColumnNameMapping
+import io.airbyte.cdk.load.table.TableName
 import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
@@ -182,10 +182,9 @@ internal class SnowflakeAirbyteClientTest {
         runBlocking {
             client.createNamespace(namespace)
             verify(exactly = 1) { sqlGenerator.createNamespace(namespace) }
-            verify(exactly = 1) { sqlGenerator.createFileFormat(namespace) }
             verify(exactly = 1) { preparedStatement.close() }
-            verify(exactly = 2) { statement.close() }
-            verify(exactly = 3) { mockConnection.close() }
+            verify(exactly = 1) { statement.close() }
+            verify(exactly = 2) { mockConnection.close() }
         }
     }
 
@@ -201,25 +200,15 @@ internal class SnowflakeAirbyteClientTest {
                 every { close() } just Runs
             }
 
-        // Mock for file format creation
-        val createResultSet = mockk<ResultSet>(relaxed = true)
-
         val preparedStatement =
             mockk<PreparedStatement>(relaxed = true) {
                 every { executeQuery() } returns schemaCheckResultSet
                 every { close() } just Runs
             }
 
-        val statement =
-            mockk<Statement> {
-                every { executeQuery(any()) } returns createResultSet
-                every { close() } just Runs
-            }
-
         val mockConnection =
             mockk<Connection> {
                 every { close() } just Runs
-                every { createStatement() } returns statement
                 every { prepareStatement(any()) } returns preparedStatement
             }
 
@@ -230,10 +219,8 @@ internal class SnowflakeAirbyteClientTest {
             verify(exactly = 0) {
                 sqlGenerator.createNamespace(namespace)
             } // Should NOT create schema
-            verify(exactly = 1) { sqlGenerator.createFileFormat(namespace) }
             verify(exactly = 1) { preparedStatement.close() }
-            verify(exactly = 1) { statement.close() }
-            verify(exactly = 2) { mockConnection.close() } // Only 2 closes: check + format
+            verify(exactly = 1) { mockConnection.close() } // Only 2 closes: check + format
         }
     }
 
@@ -520,13 +507,19 @@ internal class SnowflakeAirbyteClientTest {
     fun testDescribeTable() {
         val tableName = TableName(namespace = "namespace", name = "name")
         val column1 = "column1"
+        val column1Type = """{"type":"VARIANT","nullable":false}"""
         val column2 = "column2"
+        val column2Type =
+            """{"type":"TEXT","length":16777216,"byteLength":16777216,"nullable":false,"fixed":false}"""
         val resultSet =
             mockk<ResultSet> {
                 every { next() } returns true andThen true andThen false
                 every { getString(DESCRIBE_TABLE_COLUMN_NAME_FIELD) } returns
                     column1 andThen
                     column2
+                every { getString(DESCRIBE_TABLE_COLUMN_TYPE_FIELD) } returns
+                    column1Type andThen
+                    column2Type
             }
         val statement =
             mockk<Statement> {
@@ -538,7 +531,7 @@ internal class SnowflakeAirbyteClientTest {
                 every { close() } just Runs
                 every { createStatement() } returns statement
             }
-        val expectedColumns = listOf(column1, column2)
+        val expectedColumns = linkedMapOf(column1 to "VARIANT", column2 to "TEXT")
 
         every { dataSource.connection } returns mockConnection
 
@@ -727,7 +720,7 @@ internal class SnowflakeAirbyteClientTest {
             try {
                 client.countTable(tableName)
                 assert(false) { "Expected error for closed connection" }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 // Expected - connection was closed
             }
         }

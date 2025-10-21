@@ -6,11 +6,11 @@ data:
     hosts:
       - api.hubapi.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.3.1@sha256:04afd30e90f276dae049019427cd519c126203e92a9993de262ff29f73bd8955
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.3.7@sha256:7832dad42cabf1fb0c0c3f5239f256d3e4eca6191d3c8d0bff3b5b708dac46d4
   connectorSubtype: api
   connectorType: source
   definitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
-  dockerImageTag: 6.0.5
+  dockerImageTag: 6.0.7-rc.1
   dockerRepository: airbyte/source-hubspot
   documentationUrl: https://docs.airbyte.com/integrations/sources/hubspot
   resourceRequirements:
@@ -41,7 +41,7 @@ data:
   releaseStage: generally_available
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
     breakingChanges:
       6.0.0:
         message: >-
