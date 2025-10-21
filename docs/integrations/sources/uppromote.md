@@ -21,6 +21,7 @@ The Uppromote Connector for Airbyte enables seamless data integration between Up
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.39 | 2025-10-14 | [67854](https://github.com/airbytehq/airbyte/pull/67854) | Update dependencies |
 | 0.0.38 | 2025-10-07 | [67505](https://github.com/airbytehq/airbyte/pull/67505) | Update dependencies |
 | 0.0.37 | 2025-09-30 | [66837](https://github.com/airbytehq/airbyte/pull/66837) | Update dependencies |
 | 0.0.36 | 2025-09-23 | [66604](https://github.com/airbytehq/airbyte/pull/66604) | Update dependencies |

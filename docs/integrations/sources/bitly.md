@@ -33,6 +33,7 @@ Generate API Key [here](https://app.bitly.com/settings/api/) or go to Settings â
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
+| 0.0.30 | 2025-10-14 | [67835](https://github.com/airbytehq/airbyte/pull/67835) | Update dependencies |
 | 0.0.29 | 2025-10-07 | [67206](https://github.com/airbytehq/airbyte/pull/67206) | Update dependencies |
 | 0.0.28 | 2025-09-30 | [65637](https://github.com/airbytehq/airbyte/pull/65637) | Update dependencies |
 | 0.0.27 | 2025-08-09 | [64648](https://github.com/airbytehq/airbyte/pull/64648) | Update dependencies |

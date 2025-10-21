@@ -47,6 +47,7 @@ Valid Spotify Ad Account ID
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.13 | 2025-10-14 | [67737](https://github.com/airbytehq/airbyte/pull/67737) | Update dependencies |
 | 0.0.12 | 2025-10-07 | [67450](https://github.com/airbytehq/airbyte/pull/67450) | Update dependencies |
 | 0.0.11 | 2025-09-30 | [66896](https://github.com/airbytehq/airbyte/pull/66896) | Update dependencies |
 | 0.0.10 | 2025-09-23 | [66270](https://github.com/airbytehq/airbyte/pull/66270) | Update dependencies |

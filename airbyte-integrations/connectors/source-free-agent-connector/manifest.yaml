@@ -1,4 +1,4 @@
-version: 4.6.2
+version: 6.48.15
 
 type: DeclarativeSource
 
@@ -42,8 +42,8 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: page
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
             field_name: per_page
@@ -53,6 +53,8 @@ definitions:
             page_size: 100
             start_from_page: 1
             inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -86,8 +88,8 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: page
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
             field_name: per_page
@@ -97,6 +99,8 @@ definitions:
             page_size: 100
             start_from_page: 1
             inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -130,8 +134,8 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: page
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
             field_name: per_page
@@ -141,6 +145,8 @@ definitions:
             page_size: 100
             start_from_page: 1
             inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -174,8 +180,8 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: page
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
             field_name: per_page
@@ -185,6 +191,8 @@ definitions:
             page_size: 100
             start_from_page: 1
             inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -218,8 +226,8 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: page
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
             field_name: per_page
@@ -229,6 +237,8 @@ definitions:
             page_size: 100
             start_from_page: 1
             inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -256,6 +266,8 @@ definitions:
             field_path:
               - balance_sheet
           schema_normalization: Default
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -285,6 +297,8 @@ definitions:
             field_path:
               - bank_accounts
           schema_normalization: Default
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -318,8 +332,8 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: page
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
             field_name: per_page
@@ -341,6 +355,8 @@ definitions:
               partition_field: bank_account
               stream:
                 $ref: "#/definitions/streams/Bank Accounts"
+        decoder:
+          type: JsonDecoder
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: dated_on
@@ -390,8 +406,8 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: page
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
             field_name: per_page
@@ -413,6 +429,8 @@ definitions:
               partition_field: bank_account
               stream:
                 $ref: "#/definitions/streams/Bank Accounts"
+        decoder:
+          type: JsonDecoder
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_at
@@ -464,8 +482,8 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: page
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
             field_name: per_page
@@ -475,6 +493,8 @@ definitions:
             page_size: 100
             start_from_page: 1
             inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_at
@@ -518,6 +538,8 @@ definitions:
             field_path:
               - timeline_items
           schema_normalization: Default
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -553,8 +575,8 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: page
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
             field_name: per_page
@@ -564,6 +586,8 @@ definitions:
             page_size: 100
             start_from_page: 1
             inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -597,8 +621,8 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: page
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
             field_name: per_page
@@ -608,6 +632,8 @@ definitions:
             page_size: 100
             start_from_page: 1
             inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -639,8 +665,8 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: page
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
             field_name: per_page
@@ -650,6 +676,8 @@ definitions:
             page_size: 100
             start_from_page: 1
             inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_at
@@ -700,8 +728,8 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: page
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
             field_name: per_page
@@ -711,6 +739,8 @@ definitions:
             page_size: 100
             start_from_page: 1
             inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -762,8 +792,8 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: page
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
             field_name: per_page
@@ -773,6 +803,8 @@ definitions:
             page_size: 100
             start_from_page: 1
             inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_at
@@ -823,8 +855,8 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: page
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
             field_name: per_page
@@ -834,6 +866,8 @@ definitions:
             page_size: 100
             start_from_page: 1
             inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -883,8 +917,8 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: page
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
             field_name: per_page
@@ -893,6 +927,8 @@ definitions:
             type: PageIncrement
             page_size: 100
             start_from_page: 1
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -926,8 +962,8 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: page
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
             field_name: per_page
@@ -937,6 +973,8 @@ definitions:
             page_size: 100
             start_from_page: 1
             inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -973,8 +1011,8 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: page
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
             field_name: per_page
@@ -983,7 +1021,9 @@ definitions:
             type: PageIncrement
             page_size: 100
             start_from_page: 1
-            inject_on_first_request: true
+            inject_on_first_request: false
+        decoder:
+          type: JsonDecoder
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -1033,8 +1073,8 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: page
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
             field_name: per_page
@@ -1044,6 +1084,8 @@ definitions:
             page_size: 100
             start_from_page: 1
             inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1075,8 +1117,8 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: page
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
             field_name: per_page
@@ -1098,6 +1140,8 @@ definitions:
               partition_field: parent_url
               stream:
                 $ref: "#/definitions/streams/Contacts"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1137,6 +1181,18 @@ definitions:
               partition_field: accounting_ends_on
               stream:
                 $ref: "#/definitions/streams/Annual Accounting Periods"
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - path
+              value: >-
+                {{
+                record['url'].replace('https://api.freeagent.com/v2/payroll','')
+                }}
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1166,6 +1222,8 @@ definitions:
             field_path:
               - company
           schema_normalization: Default
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1194,6 +1252,8 @@ definitions:
               - company
               - annual_accounting_periods
           schema_normalization: Default
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1205,22 +1265,20 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: >-
-            /payroll/{{ format_datetime(stream_partition.accounting_ends_on,
-            '%Y') }}/{{ stream_partition.accounting_period }}
+          path: /payroll{{  stream_partition.path }}
           http_method: GET
           error_handler:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
                 response_filters:
                   - type: HttpResponseFilter
                     action: IGNORE
                     http_codes:
                       - 404
-                backoff_strategies:
-                  - type: WaitTimeFromHeader
-                    header: Retry-After
         record_selector:
           type: RecordSelector
           extractor:
@@ -1229,29 +1287,14 @@ definitions:
               - period
               - payslips
           schema_normalization: Default
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: page
-          page_size_option:
-            type: RequestOption
-            field_name: per_page
-            inject_into: request_parameter
-          pagination_strategy:
-            type: PageIncrement
-            page_size: 100
-            start_from_page: 1
-            inject_on_first_request: true
         partition_router:
           - type: SubstreamPartitionRouter
             parent_stream_configs:
               - type: ParentStreamConfig
-                parent_key: ends_on
-                partition_field: accounting_ends_on
+                parent_key: path
+                partition_field: path
                 stream:
-                  $ref: "#/definitions/streams/Annual Accounting Periods"
+                  $ref: "#/definitions/streams/Payroll Periods"
           - type: SubstreamPartitionRouter
             parent_stream_configs:
               - type: ParentStreamConfig
@@ -1259,6 +1302,8 @@ definitions:
                 partition_field: accounting_period
                 stream:
                   $ref: "#/definitions/streams/Payroll Periods"
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1292,8 +1337,8 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: page
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
             field_name: per_page
@@ -1303,6 +1348,8 @@ definitions:
             page_size: 100
             start_from_page: 1
             inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1330,6 +1377,8 @@ definitions:
             field_path:
               - profit_and_loss_summary
           schema_normalization: Default
+        decoder:
+          type: JsonDecoder
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1366,8 +1415,8 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: page
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
             field_name: per_page
@@ -1377,6 +1426,8 @@ definitions:
             page_size: 100
             start_from_page: 1
             inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -1425,8 +1476,8 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: page
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
             field_name: per_page
@@ -1436,6 +1487,8 @@ definitions:
             page_size: 100
             start_from_page: 1
             inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: updated_at
@@ -1485,8 +1538,8 @@ definitions:
           type: DefaultPaginator
           page_token_option:
             type: RequestOption
-            inject_into: request_parameter
             field_name: page
+            inject_into: request_parameter
           page_size_option:
             type: RequestOption
             field_name: per_page
@@ -1496,6 +1549,8 @@ definitions:
             page_size: 100
             start_from_page: 1
             inject_on_first_request: true
+        decoder:
+          type: JsonDecoder
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created_at
@@ -1516,17 +1571,73 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/Timeslips"
+    Project Notes:
+      type: DeclarativeStream
+      name: Project Notes
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /notes
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                backoff_strategies:
+                  - type: WaitTimeFromHeader
+                    header: Retry-After
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - notes
+          schema_normalization: Default
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            field_name: page
+            inject_into: request_parameter
+          page_size_option:
+            type: RequestOption
+            field_name: per_page
+            inject_into: request_parameter
+          pagination_strategy:
+            type: PageIncrement
+            page_size: 100
+            start_from_page: 1
+            inject_on_first_request: true
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: url
+              request_option:
+                type: RequestOption
+                field_name: project
+                inject_into: request_parameter
+              partition_field: parent_url
+              stream:
+                $ref: "#/definitions/streams/Projects"
+        decoder:
+          type: JsonDecoder
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/Project Notes"
   base_requester:
     type: HttpRequester
     url_base: https://api.freeagent.com/v2
     authenticator:
       type: OAuthAuthenticator
-      client_id: '{{ config["client_id"] }}'
-      grant_type: refresh_token
-      client_secret: '{{ config["client_secret"] }}'
-      refresh_token: '{{ config["client_refresh_token_2"] }}'
+      client_id: "{{ config[\"client_id\"] }}"
+      client_secret: "{{ config[\"client_secret\"] }}"
+      refresh_token: "{{ config[\"client_refresh_token_2\"] }}"
       refresh_request_body: {}
       token_refresh_endpoint: https://api.freeagent.com/v2/token_endpoint
+      grant_type: refresh_token
 
 streams:
   - $ref: "#/definitions/streams/Users"
@@ -1560,6 +1671,7 @@ streams:
   - $ref: "#/definitions/streams/Projects"
   - $ref: "#/definitions/streams/Tasks"
   - $ref: "#/definitions/streams/Timeslips"
+  - $ref: "#/definitions/streams/Project Notes"
 
 spec:
   type: Spec
@@ -1631,69 +1743,232 @@ metadata:
     Projects: false
     Tasks: false
     Timeslips: false
+    Project Notes: false
   testedStreams:
     Users:
-      streamHash: b2ed01bc81d7aa703aecd15b7c9df54e128891a3
+      streamHash: 04c6a2a7e2f2acf431a2d7bc55134080e925f6fe
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Admin Expenses Categories:
-      streamHash: a4bd7b54e20336786c17e2a2bf44f749fd003d72
+      streamHash: 396beac69771add5dd20018fbd0b3d3d0198ad7e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Cost of Sales Categories:
-      streamHash: ce2cbce0e81a89e746d51e533721cc12d2ec6b88
+      streamHash: 4f55069fdc30a59c278b89c2c4500948252d587a
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Income Categories:
-      streamHash: 2dc5364888bab653cddd1a4c96fa8adf2b6cdff1
+      streamHash: 62a458161203fcc939411d5d2be91915bf1e923f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     General Categories:
-      streamHash: 517dc45bdba59a7390f09374a57ea15dc14904e3
+      streamHash: 1d7e4788373c11d2046a2a5a4c9eb6a4af7db1fe
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Balance Sheet:
-      streamHash: 19b32df6adcb2469dc9b637519fa36269d1c3c5f
+      streamHash: 84fe251e3bdc6f1c4525a86b738cc52d8e5d26c7
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Bank Accounts:
-      streamHash: e668888465cb8477abd1ea53a3816958bce3185b
+      streamHash: 78218e18f40506c6ca85cc75590fdc3a118c91dc
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Bank Transaction Explanations:
-      streamHash: 8ad05c2dbee21144a91a6598ef5cd0c5babaef3e
+      streamHash: 9c67f8cd37766c2f878c0fc1245f9bf4a5eb7db6
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Bank Transactions:
-      streamHash: 414533633fd2c077edc89877b06dbba5c408a8b4
+      streamHash: 1dc3285e17e0dbc1c22d13f16849ebd2fcb5b3bf
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Bills:
-      streamHash: 3f7e6218b9aec08e5ea6ccb8e6073724ef9ca43e
+      streamHash: 1f383afd3dde9a8f9f71a71020ae0d488697cbc1
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Company Tax Timeline:
-      streamHash: e613d37e9e9d4db6c098cf3ee5b0bba604b9db04
+      streamHash: 7cf962ff41264923b7d7b4e296f974c8130563a7
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Contacts:
-      streamHash: ae776aa6fd28dd348301c5c85dcd2c6c72e3a669
+      streamHash: 20f2980abb55b688daaf235227d5691d5b557d1e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Corporation Tax Returns:
-      streamHash: c9251747790e2d3ae1debabb31ed5fda41c5d2ad
+      streamHash: 723c4a17afc6a9feb1a0dcddc84aa118ab0aeb52
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Credit Note Reconciliations:
-      streamHash: 056d33b5530c358d60c200d187cd2ed37106a013
+      streamHash: 1f4c6704ea95421d2853fdf3ad015e404ffd1134
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Credit Notes:
-      streamHash: 3cbb25b17c7b292ce5d4d31333115f91eb3bae73
+      streamHash: 20c33c759d45e6bf11710518c545c9083b9e7a60
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Estimates:
-      streamHash: 212ba1d75b45a0f180fbee6c2527bdef2d0385da
+      streamHash: d819d2493a0d4999b89ea8d4753a33e94d18fd69
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Expenses:
-      streamHash: ab6ebc059a315018165d3e30165db2908811b9f1
+      streamHash: 901fdad11e45d2348b645a87014a4b6903ee7e25
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Final Accounts Reports:
-      streamHash: 5a067b5a1d8008015e7fba55c44ae3db4980f17d
+      streamHash: 763cb3ac3a1513b15c8d57fcd23a138e5f11cdad
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Hire Purchases:
-      streamHash: 7c8e60adca6908a2ed724f0e142571853fb303e4
+      streamHash: d1d6d6660429fc54803a0d73661ab8aa3e5dd6cf
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Invoices:
-      streamHash: c5ff855332ac6a3b659610b67e943d3aea9e8c42
+      streamHash: 2a076adf548033968a73aa17276d1d627ac8e67f
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Journal Sets:
-      streamHash: 75e26d0a59cb4871cc22b2d212aeb978c6ff2177
+      streamHash: 1be09f381aece8f6aa5219a06625d3c99076a4d5
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Contact Notes:
-      streamHash: 02c182777f3f672cdf937f6a531d08788c2e91c6
+      streamHash: bd6e62d2b78a08469e1e04fbda3631d7ef6e79ed
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Payroll Periods:
-      streamHash: a0a01d10c7c69cd662d66f0d502fb4c6c9b37366
+      streamHash: 9df632ced9e8c608df8b0bfb173b5b7a4e2b8ca8
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Company:
-      streamHash: d621e493532ea8938d8205479c3bcb2a7409da20
+      streamHash: 86635c853a3e90a16e39273ae988baa0afe112c5
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Annual Accounting Periods:
-      streamHash: 834619423f4fdbc049457e0746bf6b36213c458f
+      streamHash: 5d092d4d5306bcb5ef585aa8bf2cfbf79c51ad6c
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Payslips:
-      streamHash: 9b279d254bb4b302c33cf8f03d24cc5fce8cb4a2
+      streamHash: baf17b02b34a81d169e4780163aa02362cafa225
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Price List Items:
-      streamHash: 3c8faf7c3ca33482a2ff8455e06332d4cd706175
+      streamHash: 360c55194447e6ab3230e455e364892c4cca644e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Profit & Loss Summary:
-      streamHash: f1f4463c3f78a3c1aa630b313b38c7763edd8657
+      streamHash: 5c428912cb3ebcf5925951200c59d0618ae5e481
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Projects:
-      streamHash: 042996fbff5c878d50e99777d6079b6b7397eb44
+      streamHash: 8f023d628a98b31b7b15ab1e030815698db1d9c4
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Tasks:
-      streamHash: e8e21deacfe632c8db7a91e0d32ac22e60da87e7
+      streamHash: 54879cc09ad132b15a78c327d9eb8adfe58c5d91
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
     Timeslips:
-      streamHash: 08669163af414ccd388486d887bc684a53269f85
+      streamHash: 86cd6e79d12751b42a88f9487b53574e3efbc06e
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
+    Project Notes:
+      streamHash: a0388757b3f25e3d1bfa72e138396233e3a0710b
+      hasResponse: true
+      responsesAreSuccessful: true
+      hasRecords: true
+      primaryKeysArePresent: true
+      primaryKeysAreUnique: true
   assist: {}
 
 schemas:
@@ -4240,6 +4515,10 @@ schemas:
         type:
           - number
           - "null"
+      employee_pension_salary_sacrifice:
+        type:
+          - string
+          - "null"
       employer_ni:
         type:
           - number
@@ -4272,6 +4551,10 @@ schemas:
         type:
           - number
           - "null"
+      other_salary_sacrifice_deductions:
+        type:
+          - string
+          - "null"
       overtime:
         type:
           - number
@@ -4291,6 +4574,10 @@ schemas:
       statutory_maternity_pay:
         type:
           - number
+          - "null"
+      statutory_neonatal_care_pay:
+        type:
+          - string
           - "null"
       statutory_parental_bereavement_pay:
         type:
@@ -4732,3 +5019,34 @@ schemas:
     required:
       - url
       - created_at
+  Project Notes:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      author:
+        type:
+          - string
+          - "null"
+      created_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      note:
+        type:
+          - string
+          - "null"
+      parent_url:
+        type:
+          - string
+          - "null"
+      updated_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      url:
+        type:
+          - string
+          - "null"

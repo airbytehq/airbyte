@@ -149,6 +149,7 @@ None!
 
 | Version | Date       | Pull Request                                             | Subject                  |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------|
+| 0.0.45 | 2025-10-14 | [67921](https://github.com/airbytehq/airbyte/pull/67921) | Update dependencies |
 | 0.0.44 | 2025-10-07 | [67413](https://github.com/airbytehq/airbyte/pull/67413) | Update dependencies |
 | 0.0.43 | 2025-09-30 | [66824](https://github.com/airbytehq/airbyte/pull/66824) | Update dependencies |
 | 0.0.42 | 2025-07-12 | [63159](https://github.com/airbytehq/airbyte/pull/63159) | Update dependencies |

@@ -4,7 +4,9 @@ This page contains the setup guide and reference information for the Iterable so
 
 ## Prerequisites
 
-To set up the Iterable source connector, you'll need the Iterable [`Server-side` API Key with `standard` permissions](https://support.iterable.com/hc/en-us/articles/360043464871-API-Keys-).
+To set up the Iterable source connector, you need:
+
+- An Iterable [`Server-side` API Key with `Standard` permissions](https://support.iterable.com/hc/en-us/articles/360043464871-API-Keys-). Mobile and Browser API keys are not supported.
 
 ## Set up the Iterable connector in Airbyte
 
@@ -72,9 +74,21 @@ The Iterable source connector supports the following [sync modes](https://docs.a
 - [CustomEvent](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental\)
 - [HostedUnsubscribeClick](https://api.iterable.com/api/docs#export_exportDataJson) \(Incremental\)
 
-## Additional notes
+## Performance and data retrieval
 
-[List Users](https://api.iterable.com/api/docs#lists_getLists_0) Stream when meeting `500 - Generic Error` will skip a broken slice and keep going with the next one. This is related to unexpected failures when trying to get users list for specific list ids. See #[24968](https://github.com/airbytehq/airbyte/issues/24968) issue for more details.
+### Incremental sync behavior
+
+Streams that support incremental sync use the following approaches:
+
+- **Users stream**: Splits data retrieval into 90-day intervals to manage large data volumes efficiently. The stream uses the `profileUpdatedAt` field as the cursor for incremental syncs.
+- **Event streams** (Email, Push, SMS, In-App, Web Push, Inbox events): Use adaptive date range slicing to handle varying data volumes. The connector automatically adjusts slice sizes based on API response times and handles connection timeouts gracefully.
+- **Templates stream**: Supports incremental sync using the `updatedAt` field as the cursor.
+
+### Error handling
+
+The List Users stream handles `500 - Generic Error` responses gracefully by skipping the affected list and continuing to process remaining lists. This behavior prevents individual list errors from blocking the entire sync and is related to intermittent API failures when retrieving users for specific list IDs.
+
+The connector implements retry logic with exponential backoff for rate limiting (HTTP 429) and server errors (HTTP 500-599), with up to 10 retries and delays ranging from 20 to 400 seconds.
 
 ## Changelog
 
@@ -83,6 +97,7 @@ The Iterable source connector supports the following [sync modes](https://docs.a
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.6.52 | 2025-10-14 | [67947](https://github.com/airbytehq/airbyte/pull/67947) | Update dependencies |
 | 0.6.51 | 2025-10-10 | [67602](https://github.com/airbytehq/airbyte/pull/67602) | Fix array schema definitions |
 | 0.6.50 | 2025-10-07 | [67361](https://github.com/airbytehq/airbyte/pull/67361) | Update dependencies |
 | 0.6.49 | 2025-09-30 | [66798](https://github.com/airbytehq/airbyte/pull/66798) | Update dependencies |
