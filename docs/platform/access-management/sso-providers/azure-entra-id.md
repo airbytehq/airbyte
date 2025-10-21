@@ -92,7 +92,9 @@ If you successfully set up SSO but your users can't log into Airbyte, verify tha
 
 ### Update SSO credentials
 
-Organization admins can log in using your email and password (instead of SSO) to update SSO settings. If your client secret expires or you need to update your SSO configuration, follow these steps.
+To update SSO for your organization, [contact support](https://support.airbyte.com).
+
+<!-- Organization admins can log in using your email and password (instead of SSO) to update SSO settings. If your client secret expires or you need to update your SSO configuration, follow these steps.
 
 1. In Airbyte, click **Organization settings** > **General**.
 
@@ -102,7 +104,7 @@ Organization admins can log in using your email and password (instead of SSO) to
 
 4. Click **Test your connection** to verify the updated credentials work correctly.
 
-5. Click **Activate SSO**.
+5. Click **Activate SSO**. -->
 
 ### Delete SSO configuration
 

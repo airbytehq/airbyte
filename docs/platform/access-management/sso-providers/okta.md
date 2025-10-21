@@ -100,19 +100,19 @@ Organization admins can update or delete SSO configurations at any time.
 
 ### Update SSO credentials
 
-If your client secret expires or you need to update your SSO configuration:
+To update SSO for your organization, [contact support](https://support.airbyte.com).
+
+<!-- Organization admins can log in using your email and password (instead of SSO) to update SSO settings. If your client secret expires or you need to update your SSO configuration, follow these steps.
 
 1. In Airbyte, click **Organization settings** > **General**.
 
-2. Update the **Client ID** or **Client secret** as needed.
+2. Click **Set up SSO** > **Re-test your connection**.
 
-3. Click **Save** to save your changes.
+3. Update the form fields as needed.
 
-4. Click **Test SSO configuration** to verify the updated credentials work correctly.
+4. Click **Test your connection** to verify the updated credentials work correctly.
 
-:::tip
-Organization admins can always log in using their email and password (instead of SSO) to update SSO settings, even if SSO is broken. This ensures you can fix configuration issues without contacting support.
-:::
+5. Click **Activate SSO**. -->
 
 #### Delete SSO configuration
 
