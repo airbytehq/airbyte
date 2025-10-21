@@ -14,7 +14,6 @@ Airbyte provides multiple tools to help you build data applications.
   - [**Embedded Operator MCP**](#embedded-operator-mcp): Manage embedded configurations and pipelines.
   - [**PyAirbyte Fast-Coder MCP**](#pyairbyte-fast-coder-mcp) _(deprecated)_: Remote MCP server for rapid pipeline code generation.
 
-
 ## Prerequisites
 
 Before using any Airbyte developer tools, ensure you have:
