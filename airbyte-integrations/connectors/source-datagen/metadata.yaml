@@ -5,7 +5,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: f14d5125-dc0d-4f6c-abe5-acde821a2203
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.5
   dockerRepository: airbyte/source-datagen
   documentationUrl: https://docs.airbyte.com/integrations/sources/datagen
   githubIssueLabel: source-datagen
