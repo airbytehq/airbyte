@@ -5,6 +5,7 @@ import "dotenv/config.js";
 const { themes } = require("prism-react-renderer");
 const lightCodeTheme = themes.github;
 const darkCodeTheme = themes.dracula;
+const npm2yarn = require("@docusaurus/remark-plugin-npm2yarn");
 
 const docsHeaderDecoration = require("./src/remark/docsHeaderDecoration");
 const enterpriseDocsHeaderInformation = require("./src/remark/enterpriseDocsHeaderInformation");
@@ -13,6 +14,9 @@ const connectorList = require("./src/remark/connectorList");
 const specDecoration = require("./src/remark/specDecoration");
 const docMetaTags = require("./src/remark/docMetaTags");
 const addButtonToTitle = require("./src/remark/addButtonToTitle");
+const fs = require("fs");
+
+const { SPEC_CACHE_PATH, API_SIDEBAR_PATH } = require("./src/scripts/embedded-api/constants");
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
@@ -21,14 +25,6 @@ const config = {
   },
   markdown: {
     mermaid: true,
-    preprocessor: ({filePath, fileContent}) => {
-      return fileContent
-        .replace(/\{\{product_name_sm_oss\}\}/g, 'Core')
-        .replace(/\{\{product_name_sm_enterprise\}\}/g, 'Self-Managed Enterprise')
-        .replace(/\{\{product_name_cloud_standard\}\}/g, 'Standard')
-        .replace(/\{\{product_name_cloud_pro\}\}/g, 'Pro')
-        .replace(/\{\{product_name_cloud_enterprise\}\}/g, 'Enterprise Flex');
-    },
   },
   themes: [
     "@docusaurus/theme-mermaid",
@@ -81,7 +77,7 @@ const config = {
             attributes: {
               name: "segment-script",
             },
-            innerHTML: `  
+            innerHTML: `
         !function(){var i="analytics",analytics=window[i]=window[i]||[];if(!analytics.initialize)if(analytics.invoked)window.console&&console.error&&console.error("Segment snippet included twice.");else{analytics.invoked=!0;analytics.methods=["trackSubmit","trackClick","trackLink","trackForm","pageview","identify","reset","group","track","ready","alias","debug","page","screen","once","off","on","addSourceMiddleware","addIntegrationMiddleware","setAnonymousId","addDestinationMiddleware","register"];analytics.factory=function(e){return function(){if(window[i].initialized)return window[i][e].apply(window[i],arguments);var n=Array.prototype.slice.call(arguments);if(["track","screen","alias","group","page","identify"].indexOf(e)>-1){var c=document.querySelector("link[rel='canonical']");n.push({__t:"bpc",c:c&&c.getAttribute("href")||void 0,p:location.pathname,u:location.href,s:location.search,t:document.title,r:document.referrer})}n.unshift(e);analytics.push(n);return analytics}};for(var n=0;n<analytics.methods.length;n++){var key=analytics.methods[n];analytics[key]=analytics.factory(key)}analytics.load=function(key,n){var t=document.createElement("script");t.type="text/javascript";t.async=!0;t.setAttribute("data-global-segment-analytics-key",i);t.src="https://cdn.segment.com/analytics.js/v1/" + key + "/analytics.min.js";var r=document.getElementsByTagName("script")[0];r.parentNode.insertBefore(t,r);analytics._loadOptions=n};analytics._writeKey="${process.env.SEGMENT_WRITE_KEY}";;analytics.SNIPPET_VERSION="5.2.0";
         analytics.load("${process.env.SEGMENT_WRITE_KEY}");
         analytics.page();
@@ -100,22 +96,9 @@ const config = {
       "classic",
       /** @type {import('@docusaurus/preset-classic').Options} */
       ({
-        docs: {
-          routeBasePath: "/",
-          sidebarCollapsible: true,
-          sidebarPath: require.resolve("./sidebar.js"),
-          editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
-          path: "../docs/home",
-          beforeDefaultRemarkPlugins: [specDecoration, connectorList], // use before-default plugins so TOC rendering picks up inserted headings
-          remarkPlugins: [
-            docsHeaderDecoration,
-            enterpriseDocsHeaderInformation,
-            productInformation,
-            docMetaTags,
-            addButtonToTitle,
-          ],
-        },
+        docs: false, // Disable default docs plugin since we're using a custom page for home
         blog: false,
+        pages: {}, // Enable pages plugin for standalone pages
         theme: {
           customCss: require.resolve("./src/css/custom.css"),
         },
@@ -164,6 +147,7 @@ const config = {
           productInformation,
           docMetaTags,
           addButtonToTitle,
+          [npm2yarn, { sync: true }],
         ],
       },
     ],
@@ -201,6 +185,100 @@ const config = {
           productInformation,
           docMetaTags,
         ],
+      },
+    ],
+    [
+      "@docusaurus/plugin-content-docs",
+      {
+        id: "embedded-api",
+        path: "api-docs/embedded-api",
+        routeBasePath: "/embedded-api/",
+        docItemComponent: "@theme/ApiItem",
+        async sidebarItemsGenerator() {
+          // We only want to include visible endpoints on the sidebar. We need to filter out endpoints with tags
+          // that are not included in the spec. Even if we didn't need to filter out elements the OpenAPI plugin generates a sidebar.ts
+          // file that exports a nested object, but Docusaurus expects just the array of sidebar items, so we need to extracts the actual sidebar
+          // items from the generated file structure.
+
+          try {
+            const specPath = SPEC_CACHE_PATH; 
+
+            if (!fs.existsSync(specPath)) {
+              console.warn(
+                "Embedded API spec file not found, using empty sidebar",
+              );
+              return [];
+            }
+
+            const data = JSON.parse(fs.readFileSync(specPath, "utf8"));
+            console.log("Loaded embedded API spec from cache");
+
+            // Load the freshly generated sidebar (not the cached one from module load)
+            const sidebarPath = API_SIDEBAR_PATH;
+            let freshSidebar = [];
+
+            if (fs.existsSync(sidebarPath)) {
+              try {
+                const sidebarModule = require("./api-docs/embedded-api/sidebar.ts");
+                freshSidebar = sidebarModule.default || sidebarModule;
+                console.log("Loaded fresh sidebar from generated files");
+              } catch (sidebarError) {
+                console.warn(
+                  "Could not load fresh sidebar, using empty array:",
+                  sidebarError.message,
+                );
+                freshSidebar = [];
+              }
+            } else {
+              console.warn(
+                "Generated sidebar file not found, using empty array",
+              );
+              freshSidebar = [];
+            }
+
+            const allowedTags = data.tags?.map((tag) => tag["name"]) || [];
+
+            // Use freshly loaded sidebar items from the generated file
+            const sidebarItems = Array.isArray(freshSidebar)
+              ? freshSidebar
+              : [];
+
+            const filteredItems = sidebarItems.filter((item) => {
+              if (item.type !== "category") {
+                return true;
+              }
+
+              return allowedTags.includes(item.label);
+            });
+
+            return filteredItems;
+          } catch (error) {
+            console.warn(
+              "Error loading embedded API spec from cache:",
+              error.message,
+            );
+            return [];
+          }
+        },
+      },
+    ],
+    [
+      "docusaurus-plugin-openapi-docs",
+      {
+        id: "embedded-api",
+        docsPluginId: "embedded-api",
+        config: {
+          embedded: {
+            specPath: "src/data/embedded_api_spec.json",
+            outputDir: "api-docs/embedded-api",
+            sidebarOptions: {
+              groupPathsBy: "tag",
+              categoryLinkSource: "tag",
+              sidebarCollapsed: false,
+              sidebarCollapsible: false,
+            },
+          },
+        },
       },
     ],
     require.resolve("./src/plugins/enterpriseConnectors"),
@@ -294,7 +372,7 @@ const config = {
       announcementBar: {
         id: "try_airbyte_cloud",
         content:
-          '<a target="_blank" rel="noopener noreferrer" href="https://cloud.airbyte.io/signup?utm_campaign=22Q1_AirbyteCloudSignUpCampaign_Trial&utm_source=Docs&utm_content=NavBar">Try Airbyte Cloud</a>! Free for 14 days, no credit card needed.',
+          '<a target="_blank" rel="noopener noreferrer" href="https://cloud.airbyte.io/signup?utm_campaign=22Q1_AirbyteCloudSignUpCampaign_Trial&utm_source=Docs&utm_content=NavBar">Try Airbyte Cloud</a>! Free for 30 days, no credit card needed.',
         backgroundColor: "#615eff",
         textColor: "#ffffff",
         isCloseable: true,

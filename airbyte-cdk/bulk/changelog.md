@@ -1,3 +1,53 @@
+## Version 0.1.54
+
+Update temporal type representation for proto format
+
+## Version 0.1.53
+
+**Extract CDK**
+
+* **Changed:** Handle debezium engine shutdown properly with socket.
+
+## Version 0.1.52
+
+**Load CDK**
+
+Refactor database operations interfaces and establish comprehensive TableOperationsSuite component test suite.
+
+## Version 0.1.51
+
+Polaris support in the iceberg configuration.
+
+## Version 0.1.50
+
+Better handle interleaved streams in aggregate publishing.
+
+## Version 0.1.49
+
+**Extract CDK**
+
+* **Changed:** Support nano sec to preserve precision in TimeAccessor.
+
+## Version 0.1.48
+
+**Extract CDK**
+
+* **Changed:** Enable heart beat timeout for CDC sync.
+
+## Version 0.1.47
+
+**Extract CDK**
+
+* **Changed:** Correct encoding of CDC_UPDATED_AT and CDC_DELETED_AT fields in protobuf records.
+
+## Version 0.1.46
+
+Noop: Move stream lifecyle dispatchers to bean factory.
+
+## Version 0.1.45
+
+Noop release. 0.1.44 suspected to have a bad publish.
+
 ## Version 0.1.44
 
 Dataflow Load CDK: Set dest stats equal to source stats.
@@ -60,7 +110,7 @@ Extract CDK: Pass WhereNode to FromSample node so we can apply filters to the sa
 
 ## Version 0.1.30
 
-Add Low-code API destination support for statically defined discover operations 
+Add Low-code API destination support for statically defined discover operations
 
 ## Version 0.1.29
 

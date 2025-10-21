@@ -55,6 +55,10 @@ Supported Data Streams:
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.9 | 2025-10-21 | [68413](https://github.com/airbytehq/airbyte/pull/68413) | Update dependencies |
+| 0.0.8 | 2025-10-14 | [67838](https://github.com/airbytehq/airbyte/pull/67838) | Update dependencies |
+| 0.0.7 | 2025-10-07 | [67376](https://github.com/airbytehq/airbyte/pull/67376) | Update dependencies |
+| 0.0.6 | 2025-09-30 | [66340](https://github.com/airbytehq/airbyte/pull/66340) | Update dependencies |
 | 0.0.5 | 2025-09-09 | [65802](https://github.com/airbytehq/airbyte/pull/65802) | Update dependencies |
 | 0.0.4 | 2025-08-23 | [65179](https://github.com/airbytehq/airbyte/pull/65179) | Update dependencies |
 | 0.0.3 | 2025-08-16 | [64965](https://github.com/airbytehq/airbyte/pull/64965) | Update dependencies |

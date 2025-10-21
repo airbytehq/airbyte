@@ -50,19 +50,19 @@ jobs:
       url: https://${{ github.event.inputs.repository-root == 'docker.io/airbyte' && 'hub.docker.com/r/airbyte' || github.event.inputs.repository-root }}/${{ github.event.inputs.connector-type }}-connector-base
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
           fetch-depth: 1
 
       - name: Log in to DockerHub
-        uses: docker/login-action@v3
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
         if: ${{ github.event.inputs.repository-root == 'docker.io/airbyte' }}
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
       - name: Log in to GHCR
-        uses: docker/login-action@v3
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
         if: ${{ github.event.inputs.repository-root == 'ghcr.io/airbytehq' }}
         with:
           registry: ghcr.io/airbytehq
@@ -70,7 +70,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
 
       - name: Set and debug variables
         id: vars
@@ -87,7 +87,7 @@ jobs:
 
       - name: Build Base Image
         id: docker-build-base
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
         with:
           file: ${{ steps.vars.outputs.DOCKERFILE }}
           platforms: linux/amd64,linux/arm64
@@ -95,7 +95,7 @@ jobs:
           push: false
 
       - name: Run Vulnerability Scan
-        uses: anchore/scan-action@v6
+        uses: anchore/scan-action@1638637db639e0ade3258b51db49a9a137574c3e # v6.5.1
         with:
           image: "${{ steps.vars.outputs.FULL_IMAGE_REF }}"
           output-format: "table"
@@ -108,7 +108,7 @@ jobs:
         # https://docs.docker.com/build/ci/github-actions/test-before-push/
         id: docker-image-publish
         if: ${{ github.event.inputs.dry-run == 'false' }}
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
         with:
           platforms: linux/amd64,linux/arm64
           file: ${{ steps.vars.outputs.DOCKERFILE }}

@@ -21,6 +21,8 @@ import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Change
+import java.math.BigDecimal
+import java.math.BigInteger
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -135,8 +137,7 @@ internal class SnowflakeValueCoercerTest {
 
     @Test
     fun testInvalidInteger() {
-        val integerValue =
-            IntegerValue("1${"0".repeat(INTEGER_PRECISION_LIMIT + 1)}".toBigInteger())
+        val integerValue = IntegerValue(INT_MAX.plus(BigInteger.ONE))
         val airbyteValue =
             EnrichedAirbyteValue(
                 abValue = integerValue,
@@ -526,6 +527,289 @@ internal class SnowflakeValueCoercerTest {
 
         val result = coercer.validate(airbyteValue)
         // Should pass as long as total size is within limits
+        assertEquals(airbyteValue, result)
+    }
+
+    @Test
+    fun testStringJustUnderSizeLimit() {
+        val largeString = StringValue("a".repeat(VARCHAR_LIMIT_BYTES))
+        val airbyteValue =
+            EnrichedAirbyteValue(
+                abValue = largeString,
+                type = StringType,
+                name = "large_string",
+                changes = mutableListOf(),
+                airbyteMetaField = null,
+            )
+
+        val result = coercer.validate(airbyteValue)
+        assertEquals(airbyteValue, result)
+    }
+
+    @Test
+    fun testStringAtExactSizeLimit() {
+        // Test string at exactly the 16777216 character limit
+        val exactLimitString = StringValue("a".repeat(VARCHAR_LIMIT_BYTES + 1))
+        val airbyteValue =
+            EnrichedAirbyteValue(
+                abValue = exactLimitString,
+                type = StringType,
+                name = "exact_limit_string",
+                changes = mutableListOf(),
+                airbyteMetaField = null,
+            )
+
+        // This should still be valid as each 'a' is 1 byte
+        val result = coercer.validate(airbyteValue)
+        assertEquals(airbyteValue, result)
+    }
+
+    @Test
+    fun testVariantJustUnderSizeLimit() {
+        // Test ObjectValue just under the VARIANT_LIMIT_BYTES limit
+        // When serialized to JSON, the format will be {"field":"aaa...aaa"}
+        // The overhead for {"field":""} is 12 bytes, so we need VARIANT_LIMIT_BYTES - 12 characters
+        // in the value
+        val stringLength = VARIANT_LIMIT_BYTES - 12
+        val largeObject =
+            ObjectValue(
+                LinkedHashMap<String, AirbyteValue>().apply {
+                    put("field", StringValue("a".repeat(stringLength)))
+                }
+            )
+        val airbyteValue =
+            EnrichedAirbyteValue(
+                abValue = largeObject,
+                type =
+                    ObjectType(
+                        properties = LinkedHashMap(),
+                        additionalProperties = true,
+                        required = emptyList()
+                    ),
+                name = "large_variant",
+                changes = mutableListOf(),
+                airbyteMetaField = null,
+            )
+
+        val result = coercer.validate(airbyteValue)
+        assertEquals(airbyteValue, result)
+    }
+
+    @Test
+    fun testVariantAtExactSizeLimit() {
+        // Test ObjectValue at exactly the VARIANT_LIMIT_BYTES + 1 byte limit
+        // When serialized to JSON, the format will be {"field":"aaa...aaa"}
+        // The overhead for {"field":""} is 12 bytes, so we need VARIANT_LIMIT_BYTES + 1 - 12
+        // characters in the value
+        val stringLength = VARIANT_LIMIT_BYTES + 1 - 12
+        val objectValue =
+            ObjectValue(
+                LinkedHashMap<String, AirbyteValue>().apply {
+                    put("field", StringValue("a".repeat(stringLength)))
+                }
+            )
+        val airbyteValue =
+            EnrichedAirbyteValue(
+                abValue = objectValue,
+                type =
+                    ObjectType(
+                        properties = LinkedHashMap(),
+                        additionalProperties = true,
+                        required = emptyList()
+                    ),
+                name = "exact_limit_variant",
+                changes = mutableListOf(),
+                airbyteMetaField = null,
+            )
+
+        // This should still be valid as each 'a' is 1 byte and total is at the limit
+        val result = coercer.validate(airbyteValue)
+        assertEquals(airbyteValue, result)
+    }
+
+    @Test
+    fun testFloatAtExactBoundary() {
+        // Test float at exact boundary values defined in FLOAT_RANGE
+        val exactMaxFloat = NumberValue(FLOAT_MAX)
+        val exactMinFloat = NumberValue(FLOAT_MIN)
+
+        val maxValue =
+            EnrichedAirbyteValue(
+                abValue = exactMaxFloat,
+                type = NumberType,
+                name = "exact_max_float",
+                changes = mutableListOf(),
+                airbyteMetaField = null,
+            )
+
+        val minValue =
+            EnrichedAirbyteValue(
+                abValue = exactMinFloat,
+                type = NumberType,
+                name = "exact_min_float",
+                changes = mutableListOf(),
+                airbyteMetaField = null,
+            )
+
+        assertEquals(maxValue, coercer.validate(maxValue))
+        assertEquals(minValue, coercer.validate(minValue))
+    }
+
+    @Test
+    fun testFloatJustOutsideBoundary() {
+        // Test float just outside the boundary
+        val justOverMax = NumberValue(FLOAT_MAX.add(BigDecimal.ONE))
+        val justUnderMin = NumberValue(FLOAT_MIN.subtract(BigDecimal.ONE))
+
+        val overMaxValue =
+            EnrichedAirbyteValue(
+                abValue = justOverMax,
+                type = NumberType,
+                name = "over_max_float",
+                changes = mutableListOf(),
+                airbyteMetaField = null,
+            )
+
+        val underMinValue =
+            EnrichedAirbyteValue(
+                abValue = justUnderMin,
+                type = NumberType,
+                name = "under_min_float",
+                changes = mutableListOf(),
+                airbyteMetaField = null,
+            )
+
+        val overResult = coercer.validate(overMaxValue)
+        val underResult = coercer.validate(underMinValue)
+
+        assertEquals(NullValue, overResult.abValue)
+        assertEquals(NullValue, underResult.abValue)
+    }
+
+    @Test
+    fun testIntegerAtExactBoundary() {
+        // Test integers at exact boundary values
+        val exactMaxInt = IntegerValue(INT_MAX)
+        val exactMinInt = IntegerValue(INT_MIN)
+
+        val maxValue =
+            EnrichedAirbyteValue(
+                abValue = exactMaxInt,
+                type = IntegerType,
+                name = "exact_max_int",
+                changes = mutableListOf(),
+                airbyteMetaField = null,
+            )
+
+        val minValue =
+            EnrichedAirbyteValue(
+                abValue = exactMinInt,
+                type = IntegerType,
+                name = "exact_min_int",
+                changes = mutableListOf(),
+                airbyteMetaField = null,
+            )
+
+        assertEquals(maxValue, coercer.validate(maxValue))
+        assertEquals(minValue, coercer.validate(minValue))
+    }
+
+    @Test
+    fun testIntegerJustOutsideBoundary() {
+        // Test integers just outside the boundary
+        val justOverMax = IntegerValue(INT_MAX.add(BigInteger.ONE))
+        val justUnderMin = IntegerValue(INT_MIN.subtract(BigInteger.ONE))
+
+        val overMaxValue =
+            EnrichedAirbyteValue(
+                abValue = justOverMax,
+                type = IntegerType,
+                name = "over_max_int",
+                changes = mutableListOf(),
+                airbyteMetaField = null,
+            )
+
+        val underMinValue =
+            EnrichedAirbyteValue(
+                abValue = justUnderMin,
+                type = IntegerType,
+                name = "under_min_int",
+                changes = mutableListOf(),
+                airbyteMetaField = null,
+            )
+
+        val overResult = coercer.validate(overMaxValue)
+        val underResult = coercer.validate(underMinValue)
+
+        assertEquals(NullValue, overResult.abValue)
+        assertEquals(NullValue, underResult.abValue)
+    }
+
+    @Test
+    fun testNullValue() {
+        // Test that null values pass through without changes
+        val nullValue = NullValue
+        val airbyteValue =
+            EnrichedAirbyteValue(
+                abValue = nullValue,
+                type = StringType,
+                name = "null_value",
+                changes = mutableListOf(),
+                airbyteMetaField = null,
+            )
+
+        val result = coercer.validate(airbyteValue)
+        assertEquals(nullValue, result.abValue)
+    }
+
+    @Test
+    fun testStringWithMultiByteCharactersNearLimit() {
+        // Test string with multi-byte UTF-8 characters
+        // Each emoji is 4 bytes, so we need fewer characters to hit the limit
+        val multiByteCount = MAX_UTF_8_VARCHAR_LENGTH_UNDER_LIMIT
+        val emojiString = StringValue("🎉".repeat(multiByteCount))
+
+        val airbyteValue =
+            EnrichedAirbyteValue(
+                abValue = emojiString,
+                type = StringType,
+                name = "emoji_string",
+                changes = mutableListOf(),
+                airbyteMetaField = null,
+            )
+
+        val result = coercer.validate(airbyteValue)
+        assertEquals(airbyteValue, result)
+    }
+
+    @Test
+    fun testVariantWithMultiByteCharactersNearLimit() {
+        // Test ObjectValue with multi-byte UTF-8 characters
+        // Each emoji is 4 bytes, so we need fewer characters to hit the limit
+        // JSON overhead for {"field":""} is 12 bytes, so we account for that
+        val multiByteCount = (VARIANT_LIMIT_BYTES - 12) / 4
+        val emojiObject =
+            ObjectValue(
+                LinkedHashMap<String, AirbyteValue>().apply {
+                    put("field", StringValue("🎉".repeat(multiByteCount)))
+                }
+            )
+
+        val airbyteValue =
+            EnrichedAirbyteValue(
+                abValue = emojiObject,
+                type =
+                    ObjectType(
+                        properties = LinkedHashMap(),
+                        additionalProperties = true,
+                        required = emptyList()
+                    ),
+                name = "emoji_variant",
+                changes = mutableListOf(),
+                airbyteMetaField = null,
+            )
+
+        val result = coercer.validate(airbyteValue)
         assertEquals(airbyteValue, result)
     }
 }

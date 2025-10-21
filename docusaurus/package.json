@@ -4,8 +4,10 @@
   "private": true,
   "scripts": {
     "prepare-sidebar": "node src/scripts/prepare-sidebar-data.js",
-    "prebuild": "pnpm run prepare-sidebar",
-    "prestart": "pnpm run prepare-sidebar",
+    "gen-embedded-api-docs": "pnpm exec docusaurus clean-api-docs all && pnpm exec docusaurus gen-api-docs all",
+    "prepare-embedded-api": "pnpm run gen-embedded-api-docs && node src/scripts/embedded-api/prepare-embedded-api-spec.js && pnpm prettier --write src/data/embedded_api_spec.json",
+    "prebuild": "pnpm run prepare-sidebar && pnpm run prepare-embedded-api",
+    "prestart": "pnpm run prepare-sidebar && pnpm run prepare-embedded-api",
     "docusaurus": "docusaurus",
     "start": "node src/scripts/fetchSchema.js && docusaurus start --port 3005",
     "build": "node src/scripts/fetchSchema.js && docusaurus build",
@@ -85,7 +87,9 @@
     "@docusaurus/plugin-debug": "^3.7.0",
     "@docusaurus/plugin-sitemap": "^3.7.0",
     "@docusaurus/preset-classic": "^3.7.0",
+    "@docusaurus/remark-plugin-npm2yarn": "^3.7.0",
     "@docusaurus/theme-classic": "^3.7.0",
+    "@docusaurus/theme-common": "^3.7.0",
     "@docusaurus/theme-mermaid": "^3.7.0",
     "@docusaurus/theme-search-algolia": "^3.7.0",
     "@docusaurus/types": "^3.7.0",
@@ -99,7 +103,10 @@
     "@markprompt/react": "^0.62.1",
     "@mdx-js/react": "^3.0.0",
     "@saucelabs/theme-github-codeblock": "^0.3.0",
+    "@seriousme/openapi-schema-validator": "^2.5.0",
     "@signalwire/docusaurus-plugin-llms-txt": "^1.0.1",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
     "async": "2.6.4",
     "autoprefixer": "10.4.16",
     "classnames": "^2.3.2",
@@ -163,5 +170,6 @@
   },
   "devDependencies": {
     "prettier": "3.5.3"
-  }
+  },
+  "packageManager": "pnpm@9.4.0+sha1.9217c800d4ab947a7aee520242a7b70d64fc7638"
 }

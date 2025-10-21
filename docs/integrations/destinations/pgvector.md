@@ -182,6 +182,12 @@ All streams will be indexed/stored into a table with the same name. The table wi
 - embedding (vector) - the embedding of the chunk, stored as a list of floats
 
 
+## Limitations & troubleshooting
+
+### psycopg2.OperationalError could not translate host name something@hostname to address
+
+Given your password contains the character `@`, it is likely that the connection string will not be created properly given it is a reserved character. If it is the case, we suggest replacing `@` to `%40` (the equivalent UTF-8 character) in order for the authentication to properly work.
+
 ## Changelog
 
 <details>
@@ -189,6 +195,9 @@ All streams will be indexed/stored into a table with the same name. The table wi
 
 | Version | Date       | Pull Request                                                  | Subject                                                                                                                                              |
 |:--------| :--------- |:--------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.1.8 | 2025-10-21 | [68347](https://github.com/airbytehq/airbyte/pull/68347) | Update dependencies |
+| 0.1.7 | 2025-10-14 | [67996](https://github.com/airbytehq/airbyte/pull/67996) | Update dependencies |
+| 0.1.6 | 2025-10-07 | [67175](https://github.com/airbytehq/airbyte/pull/67175) | Update dependencies |
 | 0.1.5 | 2025-09-30 | [65045](https://github.com/airbytehq/airbyte/pull/65045) | Update dependencies |
 | 0.1.4 | 2025-07-05 | [61623](https://github.com/airbytehq/airbyte/pull/61623) | Update dependencies |
 | 0.1.3 | 2025-05-17 | [51728](https://github.com/airbytehq/airbyte/pull/51728) | Update dependencies |

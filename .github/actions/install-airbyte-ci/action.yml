@@ -18,7 +18,7 @@ runs:
   using: "composite"
   steps:
     - name: Get changed files
-      uses: tj-actions/changed-files@v44
+      uses: tj-actions/changed-files@2d756ea4c53f7f6b397767d8723b3a10a9f35bf2 # v44.0.0
       # When the PR is from a fork, we always install from binary, so we don't need to check for changes
       if: inputs.is_fork == 'false'
       id: changes
@@ -57,7 +57,7 @@ runs:
 
     - name: Install Python 3.11
       id: install-python-3-11
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@7f4fc3e22c37d6ff65e88745f38bd3157c663f7c # v4.9.1
       if: steps.determine-install-mode.outputs.install-mode == 'source'
       with:
         python-version: "3.11"
@@ -68,7 +68,7 @@ runs:
 
     - name: Install the latest version of uv
       if: steps.determine-install-mode.outputs.install-mode == 'source'
-      uses: astral-sh/setup-uv@v6
+      uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
     - name: Install Airbyte CI from source
       id: install-airbyte-ci-source
       if: steps.determine-install-mode.outputs.install-mode == 'source'
@@ -78,7 +78,7 @@ runs:
 
     - name: Upload uv logs as artifacts on failure
       if: failure()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       with:
         name: uv-logs
         path: /opt/uv/logs/
@@ -86,7 +86,7 @@ runs:
     - name: Upload pipx logs as artifacts on failure
       # E.g. /opt/pipx/logs/cmd_2025-05-01_16.46.50_1_pip_errors.log
       if: failure()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       with:
         name: pipx-logs
         path: /opt/pipx/logs/

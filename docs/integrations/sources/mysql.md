@@ -91,10 +91,10 @@ To fill out the required information:
 
 <!-- env:cloud -->
 
-#### Step 4: (Airbyte Cloud Only) Allow inbound traffic from Airbyte IPs.
+#### Step 4: (Airbyte Cloud Only) Allow inbound traffic from Airbyte IPs
 
 If you are on Airbyte Cloud, you will always need to modify your database configuration to allow inbound traffic from Airbyte IPs. You can find a list of all IPs that need to be allowlisted in
-our [Airbyte Security docs](../../platform/operating-airbyte/security#network-security-1).
+our [Airbyte Security docs](../../platform/operating-airbyte/ip-allowlist).
 
 Now, click `Set up source` in the Airbyte UI. Airbyte will now test connecting to your database. Once this succeeds, you've configured an Airbyte MySQL source!
 
@@ -230,7 +230,9 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.50.8      | 2025-09-18 | [66515](https://github.com/airbytehq/airbyte/pull/66515)   | Fix division by zero in partition creation when sampling produces no split boundaries.                                                                                               |
+| 3.51.0      | 2025-10-15 | [68094](https://github.com/airbytehq/airbyte/pull/66515)        | Bump to the latest CDK for improved Protobuf encoding in socket mode.                                                                           |
+| 3.50.9      | 2025-10-06 | [67151](https://github.com/airbytehq/airbyte/pull/66515)   | Fix CDC decorating fields encoding to Protobuf                                                                                                  |
+| 3.50.8      | 2025-09-18 | [66515](https://github.com/airbytehq/airbyte/pull/66515)   | Fix division by zero in partition creation when sampling produces no split boundaries.                                                          |
 | 3.50.7      | 2025-09-10 | [66179](https://github.com/airbytehq/airbyte/pull/66179)   | Bump to the latest CDK fixing protobuf encoding of certain column types                                                                         |
 | 3.50.6      | 2025-08-08 | [64569](https://github.com/airbytehq/airbyte/pull/64569)   | Moved db version logging from connector to new CDK version                                                                                      |
 | 3.50.5      | 2025-07-30 | [63377](https://github.com/airbytehq/airbyte/pull/63377)   | Global state compatibility in speed mode                                                                                                        |

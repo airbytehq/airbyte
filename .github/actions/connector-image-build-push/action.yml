@@ -20,10 +20,9 @@ inputs:
     description: "Override the image tag (optional). If not provided, the tag will be derived from the connector metadata.yaml."
     required: false
     default: ""
-  push-latest:
-    description: "if pushing the image, to a remote registry, also push it with the latest tag"
+  push-latest-tag:
+    description: "Override the default behavior and if publishing an image, determine whether to tag it with latest in addition to the version tag. If not provided, the action will determine based on release-type."
     required: false
-    default: "false"
   dry-run:
     description: "Dry run mode (build but do not push)"
     required: false
@@ -75,7 +74,7 @@ runs:
   using: "composite"
   steps:
     - name: Install the latest version of uv
-      uses: astral-sh/setup-uv@v6
+      uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e # v6.8.0
 
     - name: Install Poe and yq
       shell: bash
@@ -131,6 +130,9 @@ runs:
 
         # Check if this is a release candidate
         IS_RELEASE_CANDIDATE=$(poe -qq get-version | grep -q 'rc' && echo "true" || echo "false")
+        if [[ "$IS_RELEASE_CANDIDATE" == "true" ]]; then
+          echo "ℹ️ Detected release candidate version: $CONNECTOR_VERSION"
+        fi
 
         # Determine the image tags to use 
         if [[ "${{ inputs.tag-override }}" ]]; then
@@ -146,18 +148,18 @@ runs:
         fi
 
         # Determine whether to push with latest tag
-        if [[ "${{ inputs.push-latest }}" == "true" || "${{ inputs.push-latest }}" == "false" ]]; then
+        if [[ "${{ inputs.push-latest-tag }}" == "true" || "${{ inputs.push-latest-tag }}" == "false" ]]; then
           # Use explicit input value
-          PUSH_LATEST="${{ inputs.push-latest }}"
-          echo "🏷 Using explicit push-latest setting: $PUSH_LATEST"
+          PUSH_LATEST_TAG="${{ inputs.push-latest-tag }}"
+          echo "🏷 Using explicit push-latest-tag setting: $PUSH_LATEST_TAG"
         else
           # Auto-determine based on release-type and release candidate status
-          if [[ "${{ inputs.release-type }}" == "pre-release" || "$IS_RELEASE_CANDIDATE" == "true" ]]; then
-            PUSH_LATEST="false"
-            echo "🏷 Skipping latest tag for pre-release or release candidate build"
-          else
-            PUSH_LATEST="true"
+          if [[ "${{ inputs.release-type }}" == "main-release" && "$IS_RELEASE_CANDIDATE" == "false" ]]; then
+            PUSH_LATEST_TAG="true"
             echo "🏷 Will push with latest tag for main release"
+          else
+            PUSH_LATEST_TAG="false"
+            echo "🏷 Skipping latest tag for pre-release or release candidate build"
           fi
         fi
 
@@ -187,7 +189,7 @@ runs:
 
         # Get all tags to use for image pushing
         DOCKER_TAGS="${FULL_IMAGE_NAME}"
-        if [[ "$PUSH_LATEST" == "true" ]]; then
+        if [[ "$PUSH_LATEST_TAG" == "true" ]]; then
           DOCKER_TAGS="${DOCKER_TAGS},${{ inputs.registry }}/${CONNECTOR_NAME}:latest"
         fi
 
@@ -199,7 +201,7 @@ runs:
         echo "  Registry: ${{ inputs.registry }}"
         echo "  Full Image Name: $FULL_IMAGE_NAME"
         echo "  Release Type: ${{ inputs.release-type }}"
-        echo "  Push Latest: $PUSH_LATEST"
+        echo "  Push Latest Tag: $PUSH_LATEST_TAG"
         echo "  Dry Run: ${{ inputs.dry-run }}"
         echo "  Force Publish: ${{ inputs.force-publish }}" 
 
@@ -301,18 +303,18 @@ runs:
 
     - name: Login to Docker Hub
       if: ${{ steps.check-exists.outputs.do-publish == 'true' && inputs.docker-hub-username != '' && inputs.docker-hub-password != '' }}
-      uses: docker/login-action@v3
+      uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
       with:
         username: ${{ inputs.docker-hub-username }}
         password: ${{ inputs.docker-hub-password }}
 
     - name: Set up Docker Buildx
       if: ${{ steps.check-exists.outputs.do-build == 'true' }}
-      uses: docker/setup-buildx-action@v3
+      uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
 
     - name: Build connector image for testing
       if: ${{ steps.check-exists.outputs.do-build == 'true' }}
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5.4.0
       with:
         context: ${{ steps.vars.outputs.connector-dir }}
         file: docker-images/Dockerfile.${{ steps.vars.outputs.connector-type }}-connector
@@ -334,7 +336,7 @@ runs:
 
     - name: Build and push connector image (multi-arch)
       if: ${{ steps.check-exists.outputs.do-build == 'true' }}
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5.4.0
       with:
         context: ${{ steps.vars.outputs.connector-dir }}
         file: docker-images/Dockerfile.${{ steps.vars.outputs.connector-type }}-connector
@@ -347,7 +349,7 @@ runs:
 
     - name: Run Image Vulnerability Scan
       if: ${{ steps.check-exists.outputs.do-build == 'true' }}
-      uses: anchore/scan-action@v6
+      uses: anchore/scan-action@1638637db639e0ade3258b51db49a9a137574c3e # v6.5.1
       with:
         image: "${{ steps.vars.outputs.connector-image-name }}"
         output-format: "table"

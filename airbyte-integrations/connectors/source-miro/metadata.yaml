@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-miro
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.0.1@sha256:ff1e701c8f913cf24a0220f62c8e64cc1c3011ba0a636985f4db47fdab1391b6
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.3.9@sha256:467a90d7721f4e0ca0065e6b2d257abfb371fdeafbc64c8ce63c039270aba0f0
   connectorSubtype: api
   connectorType: source
   definitionId: f8276ae8-4ada-4ae5-819c-b1836aa78135
-  dockerImageTag: 0.0.35
+  dockerImageTag: 0.0.39
   dockerRepository: airbyte/source-miro
   githubIssueLabel: source-miro
   icon: icon.svg
