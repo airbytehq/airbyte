@@ -1453,6 +1453,8 @@ definitions:
           prefix: properties_
     incremental_sync:
       $ref: "#/definitions/incremental_sync"
+      step: P30D
+      cursor_granularity: PT1S
       is_client_side_incremental: true
 
   companies_stream:
