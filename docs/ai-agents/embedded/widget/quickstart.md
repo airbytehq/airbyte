@@ -50,7 +50,7 @@ curl -X POST https://api.airbyte.ai/api/v1/account/applications/token \
 **2. Add a way to request a widget token:** a widget token is a string that contains an encoded version of both a JWT and the URL the widget uses to open. To request a widget token, make a request like the following:
 
 ```bash title="Request a widget token"
-curl -X POST https://api.airbyte.ai/api/v1/embedded/widget_token \
+curl -X POST https://api.airbyte.ai/api/v1/embedded/widget-token \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_APPLICATION_TOKEN" \
   -d '{
