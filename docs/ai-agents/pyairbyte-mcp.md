@@ -79,6 +79,7 @@ Then, create a file named `server_config.json` (or the file name required by you
 ```
 
 Note:
+
 - Replace `/path/to/my/.mcp/airbyte_mcp.env` with the absolute path to your dotenv file created in Step 1.
 
 ### Step 3: Testing the MCP Server Connection
