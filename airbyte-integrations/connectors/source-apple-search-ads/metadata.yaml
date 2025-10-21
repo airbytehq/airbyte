@@ -24,7 +24,7 @@ data:
     breakingChanges:
       1.0.0:
         message: This release introduces changes to incremental sync of `adgroups_daily_reports` and `keywords_daily_reports` streams, changing stream's state from per-partition state to usage of a global state cursor. This will decrease the time of read for the streams. To migrate the Source Apple Ads to the new version, users will need to clear the affected streams. For more info please follow the process in migration guide.
-        upgradeDeadline: "2025-10-31"
+        upgradeDeadline: "2025-11-04"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
