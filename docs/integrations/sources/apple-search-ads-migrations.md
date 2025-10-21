@@ -5,6 +5,7 @@
 This release introduces changes to incremental sync of `adgroups_report_daily` and `keywords_report_daily` streams, changing the stream state from per-partition state to a global state cursor. This change decreases the sync time for these streams.
 
 ### Affected streams
+
 - `adgroups_report_daily`
 - `keywords_report_daily`
 
