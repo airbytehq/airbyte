@@ -266,18 +266,81 @@ class PostgresRawDataDumper(
 
                 val resultSet = statement.executeQuery("SELECT * FROM $quotedTableName")
 
-                while (resultSet.next()) {
-                    // Get JSONB data - PostgreSQL returns it as a PGobject
-                    val dataObject = resultSet.getObject(Meta.COLUMN_NAME_DATA)
-                    val dataJson = when (dataObject) {
-                        is org.postgresql.util.PGobject -> dataObject.value
-                        else -> dataObject?.toString() ?: "{}"
+                // Check if the table has the _airbyte_data column (legacy raw table mode)
+                // or individual typed columns (typed table mode)
+                val hasDataColumn = try {
+                    resultSet.metaData.getColumnCount() > 0 &&
+                    (1..resultSet.metaData.getColumnCount()).any {
+                        resultSet.metaData.getColumnName(it) == Meta.COLUMN_NAME_DATA
                     }
+                } catch (e: Exception) {
+                    false
+                }
 
-                    // Parse JSON to AirbyteValue, then coerce it to match the schema
-                    val rawData = dataJson
-                        ?.deserializeToNode()
-                        ?.toAirbyteValue() ?: NullValue
+                while (resultSet.next()) {
+                    val rawData = if (hasDataColumn) {
+                        // Legacy raw table mode: read from _airbyte_data JSONB column
+                        val dataObject = resultSet.getObject(Meta.COLUMN_NAME_DATA)
+                        val dataJson = when (dataObject) {
+                            is org.postgresql.util.PGobject -> dataObject.value
+                            else -> dataObject?.toString() ?: "{}"
+                        }
+
+                        // Parse JSON to AirbyteValue, then coerce it to match the schema
+                        dataJson
+                            ?.deserializeToNode()
+                            ?.toAirbyteValue() ?: NullValue
+                    } else {
+                        // Typed table mode: read from individual columns and reconstruct the object
+                        val properties = linkedMapOf<String, AirbyteValue>()
+
+                        if (stream.schema is ObjectType) {
+                            val objectSchema = stream.schema as ObjectType
+
+                            // Build a map of lowercase column names to actual column names from the result set
+                            val columnMap = mutableMapOf<String, String>()
+                            for (i in 1..resultSet.metaData.getColumnCount()) {
+                                val actualColumnName = resultSet.metaData.getColumnName(i)
+                                columnMap[actualColumnName.lowercase()] = actualColumnName
+                            }
+
+                            for ((fieldName, fieldType) in objectSchema.properties) {
+                                try {
+                                    // Try to find the actual column name (case-insensitive lookup)
+                                    val actualColumnName = columnMap[fieldName.lowercase()] ?: fieldName
+                                    val columnValue = resultSet.getObject(actualColumnName)
+                                    properties[fieldName] = when (columnValue) {
+                                        null -> NullValue
+                                        is org.postgresql.util.PGobject -> {
+                                            // JSONB columns (for arrays, objects, unknown types)
+                                            columnValue.value?.deserializeToNode()?.toAirbyteValue() ?: NullValue
+                                        }
+                                        else -> {
+                                            // Primitive types - convert directly
+                                            when (fieldType.type) {
+                                                is io.airbyte.cdk.load.data.IntegerType ->
+                                                    io.airbyte.cdk.load.data.IntegerValue((columnValue as Number).toLong())
+                                                is io.airbyte.cdk.load.data.NumberType ->
+                                                    io.airbyte.cdk.load.data.NumberValue(
+                                                        (columnValue as java.math.BigDecimal).toDouble().toBigDecimal()
+                                                    )
+                                                is io.airbyte.cdk.load.data.BooleanType ->
+                                                    io.airbyte.cdk.load.data.BooleanValue(columnValue as Boolean)
+                                                is io.airbyte.cdk.load.data.StringType ->
+                                                    StringValue(columnValue.toString())
+                                                else -> StringValue(columnValue.toString())
+                                            }
+                                        }
+                                    }
+                                } catch (e: Exception) {
+                                    // Column doesn't exist or error reading it, set to null
+                                    properties[fieldName] = NullValue
+                                }
+                            }
+                        }
+
+                        ObjectValue(properties)
+                    }
 
                     val coercedData = coerceValue(rawData, stream.schema)
 
