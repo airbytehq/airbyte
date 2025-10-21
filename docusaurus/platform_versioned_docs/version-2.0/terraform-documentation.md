@@ -7,7 +7,7 @@ import TabItem from '@theme/TabItem';
 
 # Terraform provider
 
-Follow this tutorial to learn how to use Airbyte's Terraform Provider. 
+Follow this tutorial to learn how to use Airbyte's Terraform Provider.
 
 [Terraform](https://www.terraform.io/), developed by HashiCorp, is an Infrastructure as Code (IaC) tool that empowers you to define and provision infrastructure using a declarative configuration language. If you use Terraform to manage your infrastructure, you can use Airbyte's Terraform provider to automate and version control your Airbyte configuration as code. Airbyte's Terraform provider is built off [Airbyte's API](https://reference.airbyte.com).
 
@@ -15,7 +15,7 @@ If you don't need a tutorial, go straight to the [Terraform docs](https://regist
 
 ## Limitations and considerations
 
-The Airbyte Terraform provider supports connectors that are available in **both** Self-Managed Community and Cloud. It doesn't support connectors that are only available in Self-Managed Community.
+The Airbyte Terraform provider supports connectors that are available in **both** self-managed and cloud plans. It doesn't support connectors that are only available in self-managed plans.
 
 ## Requirements before you begin
 
