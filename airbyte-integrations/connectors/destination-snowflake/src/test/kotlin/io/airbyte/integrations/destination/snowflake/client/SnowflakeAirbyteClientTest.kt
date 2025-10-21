@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.snowflake.client
 
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
 import io.airbyte.cdk.load.command.Overwrite
@@ -37,8 +38,10 @@ import javax.sql.DataSource
 import kotlinx.coroutines.runBlocking
 import net.snowflake.client.jdbc.SnowflakeSQLException
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 internal class SnowflakeAirbyteClientTest {
 
@@ -748,6 +751,107 @@ internal class SnowflakeAirbyteClientTest {
         } catch (e: SnowflakeSQLException) {
             assertEquals(390114, e.errorCode) // NETWORK_ERROR
             // In production, this would typically trigger a retry
+        }
+    }
+
+    @Test
+    fun testExecuteWithNoPrivilegesError() {
+        val connection = mockk<Connection>()
+        val statement = mockk<Statement>()
+        val sql = "CREATE TABLE test_table (id INT)"
+
+        every { dataSource.connection } returns connection
+        every { connection.createStatement() } returns statement
+        every { statement.close() } just Runs
+
+        // Simulate permission error matching the user's case
+        every { statement.executeQuery(sql) } throws
+            SnowflakeSQLException(
+                "SQL compilation error:\n" +
+                    "Table 'APXT_REDLINING__CONTRACT_AGREEMENT__HISTORY' already exists, " +
+                    "but current role has no privileges on it. " +
+                    "If this is unexpected and you cannot resolve this problem, " +
+                    "contact your system administrator. " +
+                    "ACCOUNTADMIN role may be required to manage the privileges on the object."
+            )
+        every { connection.close() } just Runs
+
+        val exception =
+            assertThrows<ConfigErrorException> { client.execute(sql) }
+
+        // Verify the error message was wrapped as ConfigErrorException with original message
+        assertTrue(exception.message!!.contains("current role has no privileges on it"))
+        // Verify the cause is the original SnowflakeSQLException
+        assertTrue(exception.cause is SnowflakeSQLException)
+    }
+
+    @Test
+    fun testExecuteWithNonPermissionError() {
+        val connection = mockk<Connection>()
+        val statement = mockk<Statement>()
+        val sql = "SELECT * FROM nonexistent_table"
+
+        every { dataSource.connection } returns connection
+        every { connection.createStatement() } returns statement
+        every { statement.close() } just Runs
+
+        // Simulate non-permission error (e.g., table not found)
+        every { statement.executeQuery(sql) } throws
+            SnowflakeSQLException("Table 'NONEXISTENT_TABLE' does not exist")
+        every { connection.close() } just Runs
+
+        // Non-permission errors should be thrown as-is, not wrapped
+        val exception =
+            assertThrows<SnowflakeSQLException> { client.execute(sql) }
+
+        assertEquals("Table 'NONEXISTENT_TABLE' does not exist", exception.message)
+    }
+
+    @Test
+    fun testCreateNamespaceWithPermissionError() {
+        val namespace = "test_namespace"
+        val sql = "CREATE SCHEMA test_namespace"
+
+        every { sqlGenerator.createNamespace(namespace) } returns sql
+
+        // Mock for schema check - returns false (schema doesn't exist)
+        val schemaCheckResultSet =
+            mockk<ResultSet> {
+                every { next() } returns true
+                every { getBoolean("SCHEMA_EXISTS") } returns false
+                every { close() } just Runs
+            }
+
+        val preparedStatement =
+            mockk<PreparedStatement>(relaxed = true) {
+                every { executeQuery() } returns schemaCheckResultSet
+                every { close() } just Runs
+            }
+
+        val statement =
+            mockk<Statement> {
+                every { executeQuery(any()) } throws
+                    SnowflakeSQLException(
+                        "Schema 'TEST_NAMESPACE' already exists, but current role has no privileges on it"
+                    )
+                every { close() } just Runs
+            }
+
+        val connection =
+            mockk<Connection> {
+                every { createStatement() } returns statement
+                every { prepareStatement(any()) } returns preparedStatement
+                every { close() } just Runs
+            }
+
+        every { dataSource.connection } returns connection
+
+        runBlocking {
+            val exception =
+                assertThrows<ConfigErrorException> { client.createNamespace(namespace) }
+
+            assertTrue(exception.message!!.contains("current role has no privileges on it"))
+            assertTrue(exception.cause is SnowflakeSQLException)
         }
     }
 }
