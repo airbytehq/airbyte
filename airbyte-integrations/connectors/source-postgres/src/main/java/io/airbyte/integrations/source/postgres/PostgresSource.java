@@ -559,7 +559,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     if (isCdc(sourceConfig) && isAnyStreamIncrementalSyncMode(catalog)) {
       LOGGER.info("Using ctid + CDC");
       return cdcCtidIteratorsCombined(database, catalog, tableNameToTable, stateManager, emittedAt, getQuoteString(),
-          (CtidGlobalStateManager) ctidStateManager, savedOffsetAfterReplicationSlotLSN);
+          (CtidGlobalStateManager) ctidStateManager, savedOffsetAfterReplicationSlotLSN, getCdcInitializationLsn());
     }
 
     if (isAnyStreamIncrementalSyncMode(catalog) && isXmin(sourceConfig)) {
@@ -791,10 +791,34 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
   private CtidStateManager ctidStateManager = null;
   private boolean savedOffsetAfterReplicationSlotLSN = false;
+  private Long cdcInitializationLsn = null;
+  private JdbcDatabase cdcInitializationDatabase = null;
   private List<ConfiguredAirbyteStream> finalListOfStreamsToBeSyncedViaCtid;
 
   private StreamsCategorised<CursorBasedStreams> cursorBasedStreamsCategorised;
   private StreamsCategorised<XminStreams> xminStreamsCategorised;
+
+  /**
+   * Lazily fetches and caches the current WAL LSN for CDC operations. This ensures the same LSN is
+   * used consistently across all CDC initialization operations (checking saved offset, constructing
+   * state, setting target position).
+   *
+   * @return the cached WAL LSN
+   */
+  private long getCdcInitializationLsn() {
+    if (cdcInitializationLsn == null) {
+      if (cdcInitializationDatabase == null) {
+        throw new IllegalStateException("CDC initialization database not set. Call initializeForStateManager first.");
+      }
+      try {
+        cdcInitializationLsn = io.airbyte.cdk.db.PostgresUtils.getLsn(cdcInitializationDatabase).asLong();
+        LOGGER.info("Fetched WAL LSN for CDC initialization: {}", cdcInitializationLsn);
+      } catch (java.sql.SQLException e) {
+        throw new RuntimeException("Failed to fetch current WAL LSN for CDC initialization", e);
+      }
+    }
+    return cdcInitializationLsn;
+  }
 
   private void recategoriseStreamsForXmin(final JdbcDatabase database,
                                           final ConfiguredAirbyteCatalog catalog,
@@ -883,9 +907,14 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     var sourceConfig = database.getSourceConfig();
 
     if (isCdc(sourceConfig)) {
+      // Store database reference for lazy LSN fetching
+      cdcInitializationDatabase = database;
+
       savedOffsetAfterReplicationSlotLSN =
-          getSavedOffsetAfterReplicationSlotLSN(database, catalog, stateManager, getReplicationSlot(database, sourceConfig).get(0));
-      ctidStateManager = getCtidInitialLoadGlobalStateManager(database, catalog, stateManager, getQuoteString(), savedOffsetAfterReplicationSlotLSN);
+          getSavedOffsetAfterReplicationSlotLSN(database, catalog, stateManager, getReplicationSlot(database, sourceConfig).get(0),
+              getCdcInitializationLsn());
+      ctidStateManager = getCtidInitialLoadGlobalStateManager(database, catalog, stateManager, getQuoteString(), savedOffsetAfterReplicationSlotLSN,
+          getCdcInitializationLsn());
     } else {
       if (isXmin(sourceConfig)) {
         recategoriseStreamsForXmin(database, catalog, stateManager, /* incrementalOnly= */false);

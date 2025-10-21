@@ -219,11 +219,16 @@ public class PostgresDebeziumStateUtil implements DebeziumStateUtil {
   /**
    * Method to construct initial Debezium state which can be passed onto Debezium engine to make it
    * process WAL from a specific LSN and skip snapshot phase
+   *
+   * @param database the database
+   * @param dbName the database name
+   * @param lsn the LSN to use (must be provided to ensure consistency across CDC operations)
+   * @return the initial Debezium state
    */
-  public JsonNode constructInitialDebeziumState(final JdbcDatabase database, final String dbName) {
+  public JsonNode constructInitialDebeziumState(final JdbcDatabase database, final String dbName, final long lsn) {
     if (initialState.get() == null) {
       try {
-        final JsonNode asJson = format(currentXLogLocation(database), currentTransactionId(database), dbName, Instant.now());
+        final JsonNode asJson = format(lsn, currentTransactionId(database), dbName, Instant.now());
         initialState.set(asJson);
       } catch (SQLException e) {
         throw new RuntimeException(e);

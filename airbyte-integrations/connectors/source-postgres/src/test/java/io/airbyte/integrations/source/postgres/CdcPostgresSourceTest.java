@@ -500,7 +500,11 @@ public class CdcPostgresSourceTest extends CdcSourceTest<PostgresSource, Postgre
                 config().get(JdbcUtils.PORT_KEY).asInt(),
                 config().get(JdbcUtils.DATABASE_KEY).asText())));
 
-    return PostgresCdcTargetPosition.targetPosition(database);
+    try {
+      return PostgresCdcTargetPosition.targetPosition(io.airbyte.cdk.db.PostgresUtils.getLsn(database).asLong());
+    } catch (java.sql.SQLException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override

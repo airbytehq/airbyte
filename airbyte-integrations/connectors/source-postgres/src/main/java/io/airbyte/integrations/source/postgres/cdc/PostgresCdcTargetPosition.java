@@ -9,13 +9,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.cdk.db.PgLsn;
-import io.airbyte.cdk.db.PostgresUtils;
-import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.debezium.CdcTargetPosition;
 import io.airbyte.cdk.integrations.debezium.internals.ChangeEventWithMetadata;
 import io.airbyte.cdk.integrations.debezium.internals.SnapshotMetadata;
 import io.airbyte.commons.json.Jsons;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -46,14 +43,16 @@ public class PostgresCdcTargetPosition implements CdcTargetPosition<Long> {
     return Objects.hash(targetLsn.asLong());
   }
 
-  public static PostgresCdcTargetPosition targetPosition(final JdbcDatabase database) {
-    try {
-      final PgLsn lsn = PostgresUtils.getLsn(database);
-      LOGGER.info("identified target lsn: " + lsn);
-      return new PostgresCdcTargetPosition(lsn);
-    } catch (final SQLException e) {
-      throw new RuntimeException(e);
-    }
+  /**
+   * Creates a target position using a pre-fetched LSN
+   *
+   * @param lsn the LSN to use (must be provided to ensure consistency across CDC operations)
+   * @return the target position
+   */
+  public static PostgresCdcTargetPosition targetPosition(final long lsn) {
+    final PgLsn pgLsn = PgLsn.fromLong(lsn);
+    LOGGER.info("identified target lsn: " + pgLsn);
+    return new PostgresCdcTargetPosition(pgLsn);
   }
 
   @Override

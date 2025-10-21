@@ -224,7 +224,7 @@ public class PostgresDebeziumStateUtilTest {
   }
 
   @Test
-  public void debeziumInitialStateConstructTest() {
+  public void debeziumInitialStateConstructTest() throws SQLException {
     final DockerImageName myImage = DockerImageName.parse("debezium/postgres:13-alpine").asCompatibleSubstituteFor("postgres");
     final String dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
     try (final PostgreSQLContainer<?> container = new PostgreSQLContainer<>(myImage)) {
@@ -249,7 +249,8 @@ public class PostgresDebeziumStateUtilTest {
               databaseConfig.get(JdbcUtils.JDBC_URL_KEY)));
 
       final PostgresDebeziumStateUtil postgresDebeziumStateUtil = new PostgresDebeziumStateUtil();
-      final JsonNode debeziumState = postgresDebeziumStateUtil.constructInitialDebeziumState(database, dbName);
+      final long currentLsn = PostgresUtils.getLsn(database).asLong();
+      final JsonNode debeziumState = postgresDebeziumStateUtil.constructInitialDebeziumState(database, dbName, currentLsn);
       final Map<String, String> stateAsMap = Jsons.object(debeziumState, Map.class);
       Assertions.assertEquals(1, stateAsMap.size());
       Assertions.assertTrue(stateAsMap.containsKey("[\"" + dbName + "\",{\"server\":\"" + dbName + "\"}]"));

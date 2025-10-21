@@ -70,10 +70,11 @@ public class PostgresCdcCtidInitializer {
   public static boolean getSavedOffsetAfterReplicationSlotLSN(final JdbcDatabase database,
                                                               final ConfiguredAirbyteCatalog catalog,
                                                               final StateManager stateManager,
-                                                              final JsonNode replicationSlot) {
+                                                              final JsonNode replicationSlot,
+                                                              final long currentLsn) {
     final PostgresDebeziumStateUtil postgresDebeziumStateUtil = new PostgresDebeziumStateUtil();
 
-    final CdcState defaultCdcState = getDefaultCdcState(postgresDebeziumStateUtil, database);
+    final CdcState defaultCdcState = getDefaultCdcState(postgresDebeziumStateUtil, database, currentLsn);
 
     final JsonNode state =
         (stateManager.getCdcStateManager().getCdcState() == null || stateManager.getCdcStateManager().getCdcState().getState() == null)
@@ -98,7 +99,8 @@ public class PostgresCdcCtidInitializer {
                                                                             final ConfiguredAirbyteCatalog catalog,
                                                                             final StateManager stateManager,
                                                                             final String quoteString,
-                                                                            final boolean savedOffsetAfterReplicationSlotLSN) {
+                                                                            final boolean savedOffsetAfterReplicationSlotLSN,
+                                                                            final long currentLsn) {
     final PostgresDebeziumStateUtil postgresDebeziumStateUtil = new PostgresDebeziumStateUtil();
 
     final CtidStreams ctidStreams = PostgresCdcCtidUtils.streamsToSyncViaCtid(stateManager.getCdcStateManager(), catalog,
@@ -119,7 +121,7 @@ public class PostgresCdcCtidInitializer {
     final FileNodeHandler fileNodeHandler = PostgresQueryUtils.fileNodeForStreams(database,
         finalListOfStreamsToBeSyncedViaCtid,
         quoteString);
-    final CdcState defaultCdcState = getDefaultCdcState(postgresDebeziumStateUtil, database);
+    final CdcState defaultCdcState = getDefaultCdcState(postgresDebeziumStateUtil, database, currentLsn);
 
     final CtidGlobalStateManager ctidStateManager =
         new CtidGlobalStateManager(ctidStreams, fileNodeHandler, stateManager, catalog, savedOffsetAfterReplicationSlotLSN, defaultCdcState);
@@ -127,10 +129,20 @@ public class PostgresCdcCtidInitializer {
 
   }
 
-  private static CdcState getDefaultCdcState(final PostgresDebeziumStateUtil postgresDebeziumStateUtil, final JdbcDatabase database) {
+  /**
+   * Constructs a default CDC state using a pre-fetched LSN
+   *
+   * @param postgresDebeziumStateUtil the state utility
+   * @param database the database
+   * @param lsn the LSN to use (must be provided to ensure consistency across CDC operations)
+   * @return the CDC state
+   */
+  private static CdcState getDefaultCdcState(final PostgresDebeziumStateUtil postgresDebeziumStateUtil,
+                                             final JdbcDatabase database,
+                                             final long lsn) {
     var sourceConfig = database.getSourceConfig();
     final JsonNode initialDebeziumState = postgresDebeziumStateUtil.constructInitialDebeziumState(database,
-        sourceConfig.get(JdbcUtils.DATABASE_KEY).asText());
+        sourceConfig.get(JdbcUtils.DATABASE_KEY).asText(), lsn);
     return new CdcState().withState(initialDebeziumState);
   }
 
@@ -141,7 +153,8 @@ public class PostgresCdcCtidInitializer {
                                                                                      final Instant emittedAt,
                                                                                      final String quoteString,
                                                                                      final CtidGlobalStateManager ctidStateManager,
-                                                                                     final boolean savedOffsetAfterReplicationSlotLSN) {
+                                                                                     final boolean savedOffsetAfterReplicationSlotLSN,
+                                                                                     final long currentLsn) {
     final JsonNode sourceConfig = database.getSourceConfig();
     final Duration firstRecordWaitTime = PostgresUtils.getFirstRecordWaitTime(sourceConfig);
     final Duration initialLoadTimeout = InitialLoadTimeoutUtil.getInitialLoadTimeout(sourceConfig);
@@ -158,7 +171,7 @@ public class PostgresCdcCtidInitializer {
     final PostgresDebeziumStateUtil postgresDebeziumStateUtil = new PostgresDebeziumStateUtil();
 
     final JsonNode initialDebeziumState = postgresDebeziumStateUtil.constructInitialDebeziumState(database,
-        sourceConfig.get(JdbcUtils.DATABASE_KEY).asText());
+        sourceConfig.get(JdbcUtils.DATABASE_KEY).asText(), currentLsn);
 
     final JsonNode state =
         (stateManager.getCdcStateManager().getCdcState() == null || stateManager.getCdcStateManager().getCdcState().getState() == null)
@@ -249,8 +262,8 @@ public class PostgresCdcCtidInitializer {
       LOGGER.info("No streams will be synced via ctid");
     }
 
-    // Gets the target position.
-    final var targetPosition = PostgresCdcTargetPosition.targetPosition(database);
+    // Gets the target position using the pre-fetched LSN to ensure consistency.
+    final var targetPosition = PostgresCdcTargetPosition.targetPosition(currentLsn);
     // Attempt to advance LSN past the target position. For versions of Postgres before PG15, this
     // ensures that there is an event that debezium will
     // receive that is after the target LSN.
@@ -351,20 +364,6 @@ public class PostgresCdcCtidInitializer {
                   .collect(Collectors.toList()),
               AirbyteTraceMessageUtility::emitStreamStatusTrace));
     }
-  }
-
-  public static CdcState getCdcState(final JdbcDatabase database,
-                                     final StateManager stateManager) {
-
-    final JsonNode sourceConfig = database.getSourceConfig();
-    final PostgresDebeziumStateUtil postgresDebeziumStateUtil = new PostgresDebeziumStateUtil();
-
-    final JsonNode initialDebeziumState = postgresDebeziumStateUtil.constructInitialDebeziumState(database,
-        sourceConfig.get(JdbcUtils.DATABASE_KEY).asText());
-
-    return (stateManager.getCdcStateManager().getCdcState() == null
-        || stateManager.getCdcStateManager().getCdcState().getState() == null) ? new CdcState().withState(initialDebeziumState)
-            : stateManager.getCdcStateManager().getCdcState();
   }
 
   private static boolean isStreamPartiallyOrFullyCompleted(ConfiguredAirbyteStream stream,
