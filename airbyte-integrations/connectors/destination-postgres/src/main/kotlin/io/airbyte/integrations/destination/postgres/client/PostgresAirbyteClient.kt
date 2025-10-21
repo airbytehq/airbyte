@@ -163,8 +163,13 @@ class PostgresAirbyteClient(
             // System columns are filtered out in getColumnsFromDb, so return empty set here
             return emptySet()
         }
+        val properties = when (val schema = stream.schema) {
+            is ObjectType -> schema.properties
+            is io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema -> emptyMap()
+            else -> emptyMap()
+        }
         val defaultColumnNames = postgresColumnUtils.defaultColumns().map { it.columnName }
-        return postgresColumnUtils.columnsAndTypes((stream.schema as ObjectType).properties, columnNameMapping)
+        return postgresColumnUtils.columnsAndTypes(properties, columnNameMapping)
             .filter { columnAndType -> columnAndType.columnName !in defaultColumnNames }
             .toSet()
     }

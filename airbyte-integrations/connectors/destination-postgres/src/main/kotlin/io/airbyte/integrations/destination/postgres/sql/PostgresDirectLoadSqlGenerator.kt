@@ -80,7 +80,12 @@ class PostgresDirectLoadSqlGenerator(val postgresColumnUtils: PostgresColumnUtil
         columnNameMapping: ColumnNameMapping,
         replace: Boolean
     ): String {
-        val columnDeclarations = postgresColumnUtils.columnsAndTypes((stream.schema as ObjectType).properties, columnNameMapping).joinToString(",\n")
+        val properties = when (val schema = stream.schema) {
+            is ObjectType -> schema.properties
+            is ObjectTypeWithEmptySchema -> emptyMap()
+            else -> emptyMap()
+        }
+        val columnDeclarations = postgresColumnUtils.columnsAndTypes(properties, columnNameMapping).joinToString(",\n")
         val dropTableIfExistsStatement = if (replace) "DROP TABLE IF EXISTS ${getFullyQualifiedName(tableName)};" else ""
         return """
             BEGIN TRANSACTION;
