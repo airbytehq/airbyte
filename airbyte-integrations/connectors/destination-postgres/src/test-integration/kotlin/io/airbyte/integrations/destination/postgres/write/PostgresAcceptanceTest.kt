@@ -71,10 +71,11 @@ class PostgresDataDumper(
     ): List<OutputRecord> {
         val config = configProvider(spec)
         val tableNameGenerator = PostgresFinalTableNameGenerator(config)
-        val dataSource = PostgresBeanFactory().postgresDataSource(
+        val beanFactory = PostgresBeanFactory()
+        val resolvedEndpoint = beanFactory.resolvedEndpoint(config)
+        val dataSource = beanFactory.postgresDataSource(
             postgresConfiguration = config,
-            resolvedHost = config.host,
-            resolvedPort = config.port
+            resolvedEndpoint = resolvedEndpoint
         )
 
         val output = mutableListOf<OutputRecord>()
