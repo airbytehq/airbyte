@@ -1,0 +1,8 @@
+# This directory contains generated API documentation files
+# Generated during the build process from OpenAPI specifications
+# Only keep .gitignore and README.txt in version control
+
+# Ignore all files except .gitignore and README.txt
+*
+!.gitignore
+!README.txt
