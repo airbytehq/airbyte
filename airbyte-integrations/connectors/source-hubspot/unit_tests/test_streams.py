@@ -284,22 +284,19 @@ def test_stream_read_with_legacy_field_transformation(
 @pytest.mark.parametrize("sync_mode", [SyncMode.full_refresh, SyncMode.incremental])
 def test_crm_search_streams_with_no_associations(sync_mode, requests_mock, fake_properties_list, config):
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
-    stream_state = [
-        AirbyteStateMessage(
-            type=AirbyteStateType.STREAM,
-            stream=AirbyteStreamState(
-                stream_descriptor=StreamDescriptor(name="deal_splits"),
-                stream_state=AirbyteStateBlob(updatedAt="2021-01-01T00:00:00.000000Z"),
-            ),
-        )
-    ]
+    stream_state = AirbyteStateMessage(
+        type=AirbyteStateType.STREAM,
+        stream=AirbyteStreamState(
+            stream_descriptor=StreamDescriptor(name="deal_splits"),
+            stream_state=AirbyteStateBlob(updatedAt="2021-01-01T00:00:00.000000Z"),
+        ),
+    )
 
     if sync_mode == SyncMode.incremental:
         stream = find_stream("deal_splits", config, [stream_state])
     else:
         stream = find_stream("deal_splits", config)
     data_field = stream._stream_partition_generator._partition_factory._retriever.record_selector.extractor.field_path[0]
-
 
     cursor_value = {"updatedAt": "2022-02-25T16:43:11Z"}
     responses = [

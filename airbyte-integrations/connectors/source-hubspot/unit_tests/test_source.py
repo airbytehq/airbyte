@@ -10,7 +10,6 @@ from urllib.parse import urlencode
 import mock
 import pytest
 
-from airbyte_cdk.models import Status, SyncMode
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.models.airbyte_protocol import Status as ConnectionStatus
 from airbyte_cdk.test.entrypoint_wrapper import discover
