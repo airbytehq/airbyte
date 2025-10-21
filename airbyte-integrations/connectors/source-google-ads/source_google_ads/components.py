@@ -6,9 +6,9 @@ import json
 import logging
 import re
 import threading
-from dataclasses import dataclass
+from dataclasses import InitVar, dataclass
 from itertools import groupby
-from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Generator, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import anyascii
 import requests
@@ -25,6 +25,8 @@ from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
+
 
 from .google_ads import GoogleAds
 
@@ -284,6 +286,10 @@ class GoogleAdsHttpRequester(HttpRequester):
     """
 
     schema_loader: InlineSchemaLoader = None
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        super().__post_init__(parameters)
+        self.stream_response = True
 
     def get_request_body_json(
         self,
@@ -889,3 +895,148 @@ class CustomGAQuerySchemaLoader(SchemaLoader):
                 internal_message=f"The provided query is invalid: {query}. Please refer to the Google Ads API documentation for the correct syntax: https://developers.google.com/google-ads/api/fields/v20/overview and test validate your query using the Google Ads Query Builder: https://developers.google.com/google-ads/api/fields/v20/query_validator",
                 message=f"The provided query is invalid: {query}. Please refer to the Google Ads API documentation for the correct syntax: https://developers.google.com/google-ads/api/fields/v20/overview and test validate your query using the Google Ads Query Builder: https://developers.google.com/google-ads/api/fields/v20/query_validator",
             )
+
+
+@dataclass
+class RowsStreamingDecoder(Decoder):
+    parameters: InitVar[Mapping[str, Any]]
+
+    def is_stream_response(self) -> bool:
+        return True
+
+    def decode(
+        self, response: requests.Response
+    ) -> Generator[MutableMapping[str, Any], None, None]:
+        for row in self._iter_rows_from_bytes(response.iter_content(chunk_size=65536)):
+            yield {"results": [row]}
+
+    def _iter_rows_from_bytes(self, byte_iter: Iterable[bytes], encoding: str = "utf-8") -> Generator[Dict[str, Any], None, None]:
+        """
+        Incrementally scan the searchStream response and yield each object from the
+        top-level "results" array as soon as that object is complete, without waiting
+        for the enclosing message object to finish.
+
+        This is a character-level state machine:
+          - Handles split chunks and concatenated JSON objects
+          - Tracks strings/escapes so braces inside strings don't confuse depth
+          - Detects the `"results": [` array and streams its items one-by-one
+        """
+        # Global scanning state
+        depth = 0
+        in_str = False
+        esc = False
+
+        # Detect the "results" array
+        last_string = None  # last completed JSON string token
+        awaiting_results_array = False
+        results_array_depth = None  # the depth level of the '[' that starts the array
+
+        # Per-item buffering state
+        collecting_item = False
+        item_buf = []  # characters of the current item
+        item_depth = 0  # nesting within the item (starts at 1 when we see '{')
+
+        # Temp buffer for current string token
+        str_buf = []
+
+        def finish_item():
+            nonlocal item_buf, collecting_item, item_depth
+            obj_text = "".join(item_buf).strip()
+            item_buf = []
+            collecting_item = False
+            item_depth = 0
+            if obj_text:
+                return json.loads(obj_text)
+
+        for chunk in byte_iter:
+            text = chunk.decode(encoding, errors="replace")
+            for ch in text:
+
+                # Always feed characters to item buffer if we're inside an item
+                if collecting_item:
+                    item_buf.append(ch)
+
+                # --- String handling (so braces inside strings are ignored) ---
+                if in_str:
+                    if esc:
+                        esc = False
+                        continue
+                    if ch == "\\":
+                        esc = True
+                        continue
+                    if ch == '"':
+                        # string ended
+                        in_str = False
+                        last_string = "".join(str_buf)
+                        str_buf = []
+                    else:
+                        str_buf.append(ch)
+                    continue
+
+                if ch == '"':
+                    in_str = True
+                    str_buf = []
+                    # If we are collecting an item, we already appended the quote to item_buf above
+                    continue
+
+                # --- Structural characters outside strings ---
+                if ch in "{[":
+                    depth += 1
+
+                    # Detect the start of the "results" array: we just saw '[' after key "results": ...
+                    if ch == "[" and awaiting_results_array and results_array_depth is None:
+                        results_array_depth = depth  # this '[' depth
+                        awaiting_results_array = False
+
+                    # Detect the start of an item object directly inside "results"
+                    if (
+                            ch == "{"
+                            and results_array_depth is not None
+                            and not collecting_item
+                            and depth == results_array_depth + 1
+                    ):
+                        collecting_item = True
+                        item_buf = ["{"]  # start buffer anew
+                        item_depth = 1
+                    elif collecting_item and ch in "{[":
+                        # Nested structure inside item
+                        item_depth += 1
+
+                    continue
+
+                if ch in "}]":
+                    # If we're collecting an item, adjust its own nesting counter
+                    if collecting_item:
+                        item_depth -= 1
+                        if item_depth == 0:
+                            # Item just finished -> emit it immediately
+                            item = finish_item()
+                            if item is not None:
+                                yield item
+                            # Note: we do NOT 'continue' here; we still need to update global depth below
+
+                    depth -= 1
+
+                    # If we closed the results array, reset array tracking
+                    if (
+                            ch == "]"
+                            and results_array_depth is not None
+                            and depth < results_array_depth
+                    ):
+                        results_array_depth = None
+                    continue
+
+                # Detect `"results":` key just seen (outside strings)
+                if ch == ":" and last_string == "results" and results_array_depth is None:
+                    awaiting_results_array = True
+                    # don't 'continue'; normal flow is fine
+
+                # Commas/whitespace are irrelevant; any other chars just pass through
+
+        # End of stream: if we somehow have a finished item without seeing the closing bracket
+        # (rare, but be defensive), try to flush.
+        if collecting_item and item_depth == 0:
+            item = finish_item()
+            if item is not None:
+                yield item
+

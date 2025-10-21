@@ -38,7 +38,7 @@ definitions:
         $ref: "#/schemas"
     authenticator:
       $ref: "#/definitions/authenticator"
-    url_base: "https://googleads.googleapis.com/v20/{{ stream_partition['customer_id'] }}/googleAds:search"
+    url_base: "https://googleads.googleapis.com/v20/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
     http_method: POST
     error_handler:
       $ref: "#/definitions/base_error_handler"
@@ -56,7 +56,7 @@ definitions:
         action: IGNORE
         http_codes:
           - 403
-        error_message_contains: "The customer account can\\'t be accessed because it is not yet enabled or has been deactivated."
+#        error_message_contains: "The customer account can\\'t be accessed because it is not yet enabled or has been deactivated."
 
   base_selector:
     type: RecordSelector
@@ -98,6 +98,11 @@ definitions:
     type: DeclarativeStream
     retriever:
       $ref: "#/definitions/base_retriever"
+      paginator:
+        type: NoPagination
+      decoder:
+        type: CustomDecoder
+        class_name: "source_google_ads.components.RowsStreamingDecoder"
       requester:
         $ref: "#/definitions/stream_requester"
       record_selector:
@@ -131,6 +136,11 @@ definitions:
       $ref: "#/definitions/base_retriever"
       requester:
         $ref: "#/definitions/stream_requester"
+      paginator:
+        type: NoPagination
+      decoder:
+        type: CustomDecoder
+        class_name: "source_google_ads.components.RowsStreamingDecoder"
       record_selector:
         extractor:
           type: DpathExtractor
@@ -659,6 +669,8 @@ definitions:
           $ref: "#/definitions/base_error_handler"
       paginator:
         $ref: "#/definitions/cursor_paginator"
+      decoder:
+        type: JsonDecoder
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: segments.date
