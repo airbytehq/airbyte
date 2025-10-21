@@ -1,6 +1,6 @@
 ---
 sidebar_label: Entra ID
-products: cloud, oss-enterprise
+products: cloud-teams, oss-enterprise
 ---
 
 import Tabs from "@theme/Tabs";
