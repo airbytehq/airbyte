@@ -98,6 +98,7 @@ class PostgresDirectLoadSqlGenerator {
                 $columnDeclarations
             );
             $setPrimaryKeysStatement
+            CREATE INDEX ON ${getFullyQualifiedName(tableName)} ("$COLUMN_NAME_AB_EXTRACTED_AT");
             COMMIT;
             """
             .trimIndent()
