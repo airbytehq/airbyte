@@ -22,8 +22,8 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_cdk.models import Type as MessageType
+from airbyte_cdk.utils import AirbyteTracedException
 
 
 logger = logging.getLogger("airbyte")
