@@ -84,8 +84,9 @@ For security purposes, when a user who owns [applications](/platform/enterprise-
 
 4. Enter your **Email domain** (for example, `airbyte.io`) and click **Activate SSO**.
 
-    :::note
-    If you use multiple email domains, only enter one domain here. After activation, [contact support](https://support.airbyte.com) to have them add additional domains for you.
+    :::note Limitations and restrictions on domains
+    - If you use multiple email domains, only enter one domain here. After activation, [contact support](https://support.airbyte.com) to have them add additional domains for you.
+    - You can't claim an email domain if someone using that domain exists in another organization. For example, if your email domain is `example.com`, but someone with an `example.com` email uses Airbyte for another organization, you can't enable SSO for that domain. This also means SSO is unavailable for common public email domains like `gmail.com`.
     :::
 
 Once you activate SSO, users with your email domain must sign in using SSO.
