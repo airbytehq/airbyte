@@ -83,6 +83,7 @@ The connector is restricted by Zendesk's [requests limitation](https://developer
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.2.23 | 2025-10-22 | [67607](https://github.com/airbytehq/airbyte/pull/67607) | Handle 404 errors for deleted records in all streams |
 | 1.2.22 | 2025-10-21 | [68440](https://github.com/airbytehq/airbyte/pull/68440) | Update dependencies |
 | 1.2.21 | 2025-10-14 | [68020](https://github.com/airbytehq/airbyte/pull/68020) | Update dependencies |
 | 1.2.20 | 2025-10-07 | [67238](https://github.com/airbytehq/airbyte/pull/67238) | Update dependencies |
