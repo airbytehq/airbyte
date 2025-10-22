@@ -56,6 +56,10 @@ Create client credentials so Airbyte can talk to your application.
 
 3. Click **New client secret**. Specify any description you want and any expiry date you want.
 
+    :::tip
+    Choose an expiry date at least 12 months in the future, if you can. When a client secret expires, you need to give Airbyte the new one or people won't be able to log in.
+    :::
+
 4. Copy the **Value** (the client secret itself) immediately after you create it. You won't be able to view this later.
 
 ### Part 3: Configure and test SSO in Airbyte
@@ -72,7 +76,7 @@ Create client credentials so Airbyte can talk to your application.
 
     - **Discovery URL**: Your OpenID Connect metadata endpoint. The format is similar to `https://login.microsoftonline.com/{tenant_id}/v2.0/.well-known/openid-configuration`.
 
-3. Click **Test your connection** to verify your settings. Airbyte forwards you to your identity provider and logs in with the Entra ID credentials you provided.
+3. Click **Test your connection** to verify your settings. Airbyte forwards you to your identity provider. Log in to test that your credentials work.
 
     - If the test is successful, you return to Airbyte and see a "Test Successful" message.
 

@@ -76,7 +76,7 @@ For security purposes, when a user who owns [applications](/platform/enterprise-
 
     - **Discovery URL**: Your OpenID Connect (OIDC) metadata endpoint. It's similar to `https://<yourOktaDomain>/.well-known/openid-configuration`.
 
-3. Click **Test your connection** to verify your settings. Airbyte forwards you to your identity provider and logs in with the Okta credentials you provided.
+3. Click **Test your connection** to verify your settings. Airbyte forwards you to your identity provider. Log in to test that your credentials work.
 
     - If the test is successful, you return to Airbyte and see a "Test Successful" message.
 
@@ -93,10 +93,6 @@ Once you activate SSO, users with your email domain must sign in using SSO.
 #### If users can't log in
 
 If you successfully set up SSO but your users can't log into Airbyte, verify that they have access to the Airbyte application you created in Okta.
-
-### Update or delete SSO configurations
-
-Organization admins can update or delete SSO configurations at any time.
 
 ### Update SSO credentials
 
