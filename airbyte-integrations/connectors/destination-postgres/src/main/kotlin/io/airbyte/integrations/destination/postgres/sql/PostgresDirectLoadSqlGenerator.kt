@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.postgres.sql
 
+import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.ArrayType
@@ -78,16 +79,25 @@ class PostgresDirectLoadSqlGenerator {
         stream: DestinationStream,
         tableName: TableName,
         columnNameMapping: ColumnNameMapping,
-        replace: Boolean
+        replace: Boolean,
+        isFinalTable: Boolean
     ): String {
         val columnDeclarations = columnsAndTypes(stream, columnNameMapping).joinToString(",\n")
         val dropTableIfExistsStatement = if (replace) "DROP TABLE IF EXISTS ${getFullyQualifiedName(tableName)};" else ""
+        val setPrimaryKeysStatement = if (extractPks(stream, columnNameMapping).isNotEmpty()) {
+            val primaryKeys = extractPks(stream, columnNameMapping).joinToString(", ")
+            if(isFinalTable) "ALTER TABLE ${getFullyQualifiedName(tableName)} ADD PRIMARY KEY ($primaryKeys);"
+            else "CREATE INDEX ON ${getFullyQualifiedName(tableName)} ($primaryKeys);"
+        } else {
+            ""
+        }
         return """
             BEGIN TRANSACTION;
             $dropTableIfExistsStatement
             CREATE TABLE ${getFullyQualifiedName(tableName)} (
                 $columnDeclarations
             );
+            $setPrimaryKeysStatement
             COMMIT;
             """
             .trimIndent()
@@ -101,7 +111,7 @@ class PostgresDirectLoadSqlGenerator {
         val targetColumns = stream.schema
             .asColumns()
             .map { (columnName, columnType) ->
-                val targetColumnName = columnNameMapping[columnName] ?: columnName
+                val targetColumnName = getTargetColumnName(columnName, columnNameMapping)
                 val typeName = columnType.type.toDialectType()
                 Column(
                     columnName = targetColumnName,
@@ -146,17 +156,158 @@ class PostgresDirectLoadSqlGenerator {
     private fun getTargetColumnNames(columnNameMapping: ColumnNameMapping): List<String> =
         getDefaultColumnNames() + columnNameMapping.map { (_, targetName) -> "\"${targetName}\"" }
 
+    private fun getTargetColumnName(streamColumnName : String, columnNameMapping: ColumnNameMapping): String =
+        columnNameMapping[streamColumnName] ?: streamColumnName
+
+
     //TODO: this is out of place, move to its own column class
     fun getDefaultColumnNames(): List<String> =
         DEFAULT_COLUMNS.map { "\"${it.columnName}\"" }
 
-    @Suppress("UNUSED_PARAMETER")
+    /***
+     *   - Validates that a primary key exists (required for ON CONFLICT)
+     *   - Builds a list of primary key columns for the conflict clause
+     *   - Calls selectDedupedRecords to get the deduplicated source data
+     *   - Creates UPDATE assignments using EXCLUDED.column_name syntax
+     *   - Adds a WHERE clause to only update when the new record is newer (based on cursor + extraction timestamp)
+     *   - Generates the final INSERT ... ON CONFLICT statement
+     *
+     *
+     */
     fun upsertTable(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping,
         sourceTableName: TableName,
         targetTableName: TableName
-    ): String = TODO("PostgresDirectLoadSqlGenerator.upsertTable not yet implemented")
+    ): String {
+        val importType = stream.importType as Dedupe
+
+        // Validate primary key exists
+        if (importType.primaryKey.isEmpty()) {
+            throw IllegalArgumentException("Cannot perform upsert without primary key")
+        }
+
+        // Build primary key column list
+        val primaryKeyTargetColumns =
+            importType.primaryKey.map { fieldPath ->
+                val primaryKeyColumnName = fieldPath.first() //only at the root level for Postgres
+                val targetColumnName = getTargetColumnName(primaryKeyColumnName, columnNameMapping)
+                "\"$targetColumnName\""
+            }
+
+        // Get deduped records from source
+        val selectSourceRecords = selectDedupedRecords(primaryKeyTargetColumns, importType.cursor, sourceTableName, columnNameMapping)
+
+        // Build all column names (default + user columns)
+        val allColumnNames = getTargetColumnNames(columnNameMapping)
+
+        // Build column assignments for UPDATE
+        val updateAssignments =
+            allColumnNames.joinToString(",\n") { columnName ->
+                "$columnName = EXCLUDED.$columnName"
+            }
+
+        // Build cursor comparison for determining which record is newer
+        val whereClause =
+            if (importType.cursor.isNotEmpty()) {
+                val cursorFieldName = importType.cursor.first()
+                val cursorColumn = columnNameMapping[cursorFieldName] ?: cursorFieldName
+                val quotedCursorColumn = "\"$cursorColumn\""
+                val extractedAtColumn = "\"$COLUMN_NAME_AB_EXTRACTED_AT\""
+                """
+                WHERE (
+                  ${getFullyQualifiedName(targetTableName)}.$quotedCursorColumn < EXCLUDED.$quotedCursorColumn 
+                  OR (${getFullyQualifiedName(targetTableName)}.$quotedCursorColumn = EXCLUDED.$quotedCursorColumn AND ${getFullyQualifiedName(targetTableName)}.$extractedAtColumn < EXCLUDED.$extractedAtColumn)
+                  OR (${getFullyQualifiedName(targetTableName)}.$quotedCursorColumn IS NULL AND EXCLUDED.$quotedCursorColumn IS NOT NULL)
+                  OR (${getFullyQualifiedName(targetTableName)}.$quotedCursorColumn IS NULL AND EXCLUDED.$quotedCursorColumn IS NULL AND ${getFullyQualifiedName(targetTableName)}.$extractedAtColumn < EXCLUDED.$extractedAtColumn)
+                )
+                """.trimIndent()
+            } else {
+                // No cursor - use extraction timestamp only
+                val extractedAtColumn = "\"$COLUMN_NAME_AB_EXTRACTED_AT\""
+                "WHERE ${getFullyQualifiedName(targetTableName)}.$extractedAtColumn < EXCLUDED.$extractedAtColumn"
+            }
+
+        // Build the INSERT ... ON CONFLICT statement
+        val upsertStatement =
+            """
+            INSERT INTO ${getFullyQualifiedName(targetTableName)} (
+              ${allColumnNames.joinToString(",\n  ")}
+            )
+            $selectSourceRecords
+            ON CONFLICT (${primaryKeyTargetColumns.joinToString(", ")})
+            DO UPDATE SET
+              $updateAssignments
+            $whereClause;
+            """.trimIndent()
+
+        return upsertStatement.andLog()
+    }
+
+    private fun extractPks(stream: DestinationStream, columnNameMapping: ColumnNameMapping): Set<String> {
+        when (stream.importType) {
+            is Dedupe -> return extractPks((stream.importType as Dedupe), columnNameMapping)
+            else -> return setOf()
+        }
+    }
+
+    private fun extractPks(
+        importType: Dedupe,
+        columnNameMapping: ColumnNameMapping
+    ): Set<String> {
+        return importType.primaryKey.map { fieldPath ->
+            val primaryKeyColumnName = fieldPath.first() //only at the root level for Postgres
+            val targetColumnName = getTargetColumnName(primaryKeyColumnName, columnNameMapping)
+            "\"$targetColumnName\""
+        }.toSet()
+    }
+
+
+    // this looks good!
+
+    /**
+     * Generates a SQL SELECT statement that extracts and deduplicates records from the source
+     * table. Uses ROW_NUMBER() window function to select the most recent record per primary key.
+     *
+     *
+     *   - Uses ROW_NUMBER() window function to partition by primary key
+     *   - Orders by cursor (if present) and extraction timestamp
+     *   - Returns only the most recent record for each primary key (row_number = 1)
+     *
+     */
+    private fun selectDedupedRecords(
+        primaryKeyTargetColumns: List<String>,
+        cursor: List<String> = emptyList(), //TODO: pass it in already mapped to target column names.
+        sourceTableName: TableName,
+        columnNameMapping: ColumnNameMapping,
+
+        ): String {
+        val allColumnNames = getTargetColumnNames(columnNameMapping)
+
+
+        // Build cursor order clause for sorting within each partition
+        val cursorOrderClause =
+            if (cursor.isNotEmpty()) {
+                val cursorFieldName = cursor.first()
+                val columnName = getTargetColumnName(cursorFieldName, columnNameMapping)
+                "\"$columnName\" DESC NULLS LAST,"
+            } else {
+                ""
+            }
+
+        return """
+            SELECT ${allColumnNames.joinToString(", ")}
+            FROM (
+              SELECT *,
+                ROW_NUMBER() OVER (
+                  PARTITION BY ${primaryKeyTargetColumns.joinToString( ", " )}
+                  ORDER BY $cursorOrderClause "$COLUMN_NAME_AB_EXTRACTED_AT" DESC
+                ) AS row_number
+              FROM ${getFullyQualifiedName(sourceTableName)}
+            ) AS deduplicated
+            WHERE row_number = 1
+        """.trimIndent()
+    }
 
     fun dropTable(tableName: TableName): String =
         "DROP TABLE IF EXISTS ${getFullyQualifiedName(tableName)};".andLog()

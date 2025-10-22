@@ -54,9 +54,10 @@ class PostgresAirbyteClient(
         stream: DestinationStream,
         tableName: TableName,
         columnNameMapping: ColumnNameMapping,
-        replace: Boolean
+        replace: Boolean,
+        isFinalTable: Boolean,
     ) {
-        execute(sqlGenerator.createTable(stream, tableName, columnNameMapping, replace))
+        execute(sqlGenerator.createTable(stream, tableName, columnNameMapping, replace, isFinalTable))
     }
 
     override suspend fun overwriteTable(

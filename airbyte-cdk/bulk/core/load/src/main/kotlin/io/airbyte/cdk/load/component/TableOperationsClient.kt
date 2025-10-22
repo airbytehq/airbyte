@@ -37,6 +37,7 @@ interface TableOperationsClient {
         tableName: TableName,
         columnNameMapping: ColumnNameMapping,
         replace: Boolean,
+        isFinalTable: Boolean = true
     )
 
     /** Checks if a table exists. */
