@@ -1,0 +1,71 @@
+---
+id: get-internal-account-organizations-organization-id
+title: "Get Organization"
+description: "Get Organization"
+sidebar_label: "Get Organization"
+hide_title: true
+hide_table_of_contents: true
+api: eJztWFtv2zYU/isEH9YWkC0nmXPRW7peFmBrizYFBthGTJNHEluKVEnKrmfovw+Hkh3LVtE1W9/ylFA+d348PB831LPM0WRC39qMafk389JoR2cRNSXYsLoRNKEZ+DupPVjN1B3j3FTa35l9nc7qTgoaUQe8stKvaTLZ0N9vb989B2bB0mQyq2cRLZllBXiwLghoVgBN6LEZqWlCS+ZzGlELXyppQdDE2woi6ngOBaPJhvp1ierOW6kzGtHU2IJ5mtCqClYEOG5liWZp0kmX3Lwg3hAL3kpYwpBG1Euv4EhM0PqH7NTRLquvg/28Bvd55cAE2E5mKVPuP6T2ARRwT3wOZGXsZ6kzsu97SN4AB+eYXRMnNQdSObCOcKbJApTRGSZRVMrLUkFH1e2X5q/Bfu6DvuL81EgQQRZcabQDh1U6HY3wz0EIFUcXaaXI+1aYRpQb7UF7FGdlqSQPRuNPDnU2e5UvLR4DLxsP+xHgqfj+zvThSIZK7dt6EzBybK1PO+CpjigUTKqQgF6/TcMB6qoj+NovulIq1Gtr8GVQrutoK2EWn4D7Dgonh+n2xDzrj/EFeCbVrt51jZ5+7due50wQdAnOP3xbCsRQBg8txp+tOhbVWmODTemhcMeuUglKPNTRq6BcR/93wHfciAcbe4kWyG9ooQ8PW7HrUgZJei/DrGVremDJhXaUskr50Ob/hckjnJwd4+SVsQspBOhHlDyiJKDk9PQYJR91aU24URYKCGiPs8cjYB4BU0d03Hf93LQTLXFgl2BJyPsRMY+ICZDpYuU1eLI/5FAsn89Ny45o1FCUhMaslPHyJN7SpbilS3FngI03B0SnDoQJYdjQocoqpAfel0kcK8OZyk2YkrphXUu7WHsgH4xmlly/uwlF3TKvD4jUBjH7/Gu3C2ietlQD14tGALOXOjVBsq1ScICyVVEwu753/cSh2x3tcUQwz4jBGT5nKiUmJWtTWcIr502BAz7TgqQAwhHpccQPP7MMGzYPTCFVZhXIRjfXqb7NITjDA8qkduSMYCYOnYAWpZHau2SqB2S+3QYoFiAEiHmCEgOkGIOUcSQjaMkbwo0KPIVbEBgDU27YMeEw9XlCGkps7L0rVE/B87xJOrWm2HlpPjlTWQ6OPGWldOQXIqxcgntGVtLnyIykxWRSmVUWxLdDQDBlDR9384QwpQKt6o+oYJplsLPbMqapnuobT6QjFrgpCtACBIq7ErhM18FgapQyKyxOQ0yJ1MFZ2CJEy3ZcxyrP5/M1K9RUH3HBpMPWnjiCfCgohBhWUikC2lUWiM9ZQxGtzHLf0cNYKweCpMbuUt76x8g4c9CEFgouHWGkwA23CIhvMMepvgmIJEarNcnZEojRXaEIgRmCbFsIlikEajRExPgc7Eo6CAFxjCwIp0yq4RQ7A57iBrOj4dVwRCP6daBMFg7U/cF2SRxzoYelNWK4goWTHgapVOCG3BTx+WgMo5MFPx2nF3ByxS5P4eLXi8vL+PzsbMzOrgS75FfnC3YxHp+OFifj87s/TGaGbpmFA1wa5wsWLqz2EaKnhXUO2K4tePjq41IxqbHNhoA3bXubUFZKzPAkvGA0LY5GtG1yBywRu3By+KIzi2hoZcmEbjYL5uCjVXWNn79UgJ1lMovoklmJY1zohUKGke7+beQg7N19TZ++bwnsM/K9J56+VLc3isb7ZMlUhSsa0c+w7nmaqmd1tH3A+bEwf/YbTV9uTQ59D1G7RPF+bsSuOYfS7/12NAfhNbO7AF+/vEUMVIiQHYrayyTa/rM3D3QLvNk0ErfmM+i63tXb4xqrXNf/AP+4Mks=
+sidebar_class_name: "get api-method"
+info_path: embedded-api///sonar
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Get Organization"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/api/v1/internal/account/organizations/{organization_id}"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Get Organization
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"name":"organization_id","in":"path","required":true,"schema":{"type":"string","format":"uuid","description":"Organization ID to retrieve.","title":"Organization Id"},"description":"Organization ID to retrieve."},{"name":"x-organization-id","in":"header","required":false,"schema":{"type":"string","format":"uuid","description":"Select the working organization. Necessary since users can belong to multiple organizations.","title":"X-Organization-Id"},"description":"Select the working organization. Necessary since users can belong to multiple organizations."}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={undefined}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"properties":{"organizationId":{"type":"string","format":"uuid","title":"Organizationid"},"organizationName":{"type":"string","title":"Organizationname"},"email":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Email"}},"type":"object","required":["organizationId","organizationName"],"title":"OrganizationDetailResponse"}}}},"400":{"description":"Bad request","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"403":{"description":"Forbidden","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"422":{"description":"Unprocessable entity","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"500":{"description":"Internal server error","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}}}}
+>
+  
+</StatusCodes>
+
+
+      

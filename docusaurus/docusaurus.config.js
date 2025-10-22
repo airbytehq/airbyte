@@ -87,8 +87,8 @@ const config = {
       : []),
   ],
   i18n: {
-    defaultLocale: 'en',
-    locales: ['en'],
+    defaultLocale: "en",
+    locales: ["en"],
   },
   // The preset is the "main" docs instance, though in reality, most content does not live under this preset. See the plugins array below, which defines the behavior of each docs instance.
   presets: [
@@ -201,7 +201,7 @@ const config = {
           // items from the generated file structure.
 
           try {
-            const specPath = SPEC_CACHE_PATH; 
+            const specPath = SPEC_CACHE_PATH;
 
             if (!fs.existsSync(specPath)) {
               console.warn(
@@ -289,8 +289,10 @@ const config = {
         siteDescription:
           "Airbyte is an open source platform designed for building and managing data pipelines, offering extensive connector options to facilitate data movement from various sources to destinations efficiently and effectively.",
         depth: 4,
+        runOnPostBuild: true,
         content: {
           includePages: true,
+          excludeRoutes: ["./api-docs/embedded-api/**"],
         },
       },
     ],
