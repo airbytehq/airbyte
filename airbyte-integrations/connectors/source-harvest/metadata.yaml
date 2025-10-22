@@ -57,6 +57,22 @@ data:
                 "project_assignments",
               ]
   releaseStage: generally_available
+  suggestedStreams:
+    streams:
+      - time_entries
+      - projects
+      - clients
+      - users
+      - roles
+      - tasks
+      - contacts
+      - task_assignments
+      - time_projects
+      - user_assignments
+      - company
+      - invoices
+      - project_assignments
+      - time_tasks
   supportLevel: certified
   tags:
     - language:manifest-only

@@ -33,6 +33,17 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
+  suggestedStreams:
+    streams:
+      - blocks
+      - invalid_emails
+      - bounces
+      - spam_reports
+      - global_suppressions
+      - singlesends
+      - singlesend_stats
+      - suppression_groups
+      - campaigns
   supportLevel: certified
   tags:
     - language:manifest-only

@@ -47,6 +47,10 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
+  suggestedStreams:
+    streams:
+      - items
+      - boards
   supportLevel: certified
   tags:
     - language:manifest-only

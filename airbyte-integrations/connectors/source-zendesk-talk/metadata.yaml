@@ -41,6 +41,10 @@ data:
           stream schema, this migration constitutes a breaking change. After updating,
           please reset your source  before resuming syncs. For more information, see
           our migration documentation for source Zendesk Talk.
+  suggestedStreams:
+    streams:
+      - calls
+      - call_legs
   tags:
     - language:manifest-only
     - cdk:low-code

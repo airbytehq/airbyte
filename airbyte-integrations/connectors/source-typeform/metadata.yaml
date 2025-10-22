@@ -39,6 +39,10 @@ data:
           mode for this stream, you will need to reset affected connections after
           upgrading to prevent sync failures.
         upgradeDeadline: "2023-09-25"
+  suggestedStreams:
+    streams:
+      - responses
+      - forms
   supportLevel: certified
   tags:
     - cdk:low-code

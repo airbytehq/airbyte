@@ -32,6 +32,12 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
+  suggestedStreams:
+    streams:
+      - issues
+      - events
+      - projects
+      - releases
   supportLevel: certified
   tags:
     - cdk:low-code

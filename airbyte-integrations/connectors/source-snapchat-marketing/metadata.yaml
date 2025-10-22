@@ -58,6 +58,11 @@ data:
               - "campaigns_stats_daily"
               - "campaigns_stats_lifetime"
   documentationUrl: https://docs.airbyte.com/integrations/sources/snapchat-marketing
+  suggestedStreams:
+    streams:
+      - campaigns
+      - adsquads
+      - ads
   tags:
     - language:manifest-only
     - cdk:low-code
