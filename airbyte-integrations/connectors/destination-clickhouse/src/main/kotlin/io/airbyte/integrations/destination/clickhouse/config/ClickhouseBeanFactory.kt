@@ -21,6 +21,7 @@ import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseSpecificati
 import io.micronaut.context.annotation.Factory
 import jakarta.inject.Named
 import jakarta.inject.Singleton
+import java.time.temporal.ChronoUnit
 import org.apache.sshd.common.util.net.SshdSocketAddress
 
 @Factory
@@ -59,6 +60,7 @@ class ClickhouseBeanFactory {
                 .setPassword(config.password)
                 .compressClientRequest(true)
                 .setClientName("airbyte-v2")
+                .setConnectTimeout(5, ChronoUnit.MINUTES)
 
         if (config.enableJson) {
             builder

@@ -9,7 +9,7 @@ import de.siegmar.fastcsv.writer.CsvWriter
 import de.siegmar.fastcsv.writer.LineDelimiter
 import de.siegmar.fastcsv.writer.QuoteStrategies
 import io.airbyte.cdk.load.data.AirbyteValue
-import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.cdk.load.table.TableName
 import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.QUOTE
@@ -30,7 +30,7 @@ internal const val CSV_QUOTE_CHARACTER = '"'
 internal val CSV_LINE_DELIMITER = LineDelimiter.LF
 internal const val DEFAULT_FLUSH_LIMIT = 1000
 internal const val FILE_PREFIX = "snowflake"
-internal const val FILE_SUFFIX = ".csv"
+internal const val FILE_SUFFIX = ".gz"
 
 private const val CSV_WRITER_BUFFER_SIZE = 1024 * 1024 // 1 MB
 
