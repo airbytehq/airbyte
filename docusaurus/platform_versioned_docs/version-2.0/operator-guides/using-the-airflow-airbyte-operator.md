@@ -3,16 +3,13 @@ description: Start triggering Airbyte jobs with Apache Airflow in minutes
 products: oss-*
 ---
 
-# Using the Airbyte Operator to orchestrate Airbyte OSS
+# Using the Airbyte Operator to orchestrate Airbyte Core
 
-Airbyte is an official community provider for the Apache Airflow project. The Airbyte operator allows you to trigger Airbyte OSS synchronization jobs from Apache Airflow, and this article will walk through configuring your Airflow DAG to do so.
+Airbyte is an official community provider for the Apache Airflow project. The Airbyte operator allows you to trigger Airbyte self-managed synchronization jobs from Apache Airflow, and this article walks you through configuring your Airflow DAG to do so.
 
 :::note
-
-For [historic reasons](https://github.com/airbytehq/airbyte/issues/836), the Airbyte operator is designed to work with the internal [Config API](https://airbyte-public-api-docs.s3.us-east-2.amazonaws.com/rapidoc-api-docs.html) rather than the newer [Airbyte API](https://reference.airbyte.com/reference/start) and is therefore not intended or designed for orchstrating Airbyte Cloud. As an alternative, it is possible to make use of [Airflow's HTTP operators](https://airflow.apache.org/docs/apache-airflow-providers-http/stable/operators.html) with both Airbyte OSS and Airbyte Cloud. This approach is described in [Using the new Airbyte API to orchestrate Airbyte Cloud with Airflow](https://airbyte.com/blog/orchestrating-airbyte-api-airbyte-cloud-airflow).
-
+For [historic reasons](https://github.com/airbytehq/airbyte/issues/836), the Airbyte operator is designed to work with the internal [Config API](https://airbyte-public-api-docs.s3.us-east-2.amazonaws.com/rapidoc-api-docs.html) rather than the newer [Airbyte API](https://reference.airbyte.com/reference/start) and is therefore not intended or designed for orchestrating Airbyte Cloud. As an alternative, it is possible to make use of [Airflow's HTTP operators](https://airflow.apache.org/docs/apache-airflow-providers-http/stable/operators.html) with both Airbyte self-managed and Cloud. This approach is described in [Using the new Airbyte API to orchestrate Airbyte Cloud with Airflow](https://airbyte.com/blog/orchestrating-airbyte-api-airbyte-cloud-airflow).
 :::
-
 
 The Airbyte Provider documentation on Airflow project can be found [here](https://airflow.apache.org/docs/apache-airflow-providers-airbyte/stable/index.html).
 

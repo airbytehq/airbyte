@@ -20,7 +20,7 @@ This guide is for administrators. It assumes you have:
 
 The exact process differs between the Cloud or Self-Managed versions of Airbyte. Steps for both are below.
 
-## Cloud Teams with Okta OIDC
+## Cloud Pro with Okta OIDC
 
 Follow the steps below to set up single sign on with Okta.
 
