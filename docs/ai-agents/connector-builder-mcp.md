@@ -16,3 +16,7 @@ This MCP server is under active development. Check back for updates.
 ## Early Access Preview
 
 If you are an active Airbyte customer interested in early access to the **Connector Builder MCP** server, please reach out to your sales representative to request early access.
+
+## Official Documentation
+
+For the latest information and updates, visit the [Connector Builder MCP GitHub Repository](https://github.com/airbytehq/connector-builder-mcp).
