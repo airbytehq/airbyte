@@ -612,42 +612,19 @@ definitions:
         $ref: "#/schemas/email_subscriptions"
 
   deals_stream:
-    type: StateDelegatingStream
-    full_refresh_stream:
-      $ref: "#/definitions/base_crm_search_full_refresh_stream"
-      transformations:
-        - type: AddFields
-          fields:
-            - path: ["updatedAt"]
-              value: "{{ record.get('updatedAt') or record['createdAt'] }}"
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.HubspotFlattenAssociationsTransformation
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.NewtoLegacyFieldTransformation
-          field_mapping:
-            hs_date_entered_: "hs_v2_date_entered_"
-            hs_date_exited_: "hs_v2_date_exited_"
-            hs_time_in_: "hs_v2_latest_time_in_"
-        - type: DpathFlattenFields
-          field_path:
-            - properties
-          key_transformation:
-            type: KeyTransformation
-            prefix: properties_
-    incremental_stream:
-      $ref: "#/definitions/base_crm_search_incremental_stream"
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.NewtoLegacyFieldTransformation
-          field_mapping:
-            hs_date_entered_: "hs_v2_date_entered_"
-            hs_date_exited_: "hs_v2_date_exited_"
-            hs_time_in_: "hs_v2_latest_time_in_"
-        - type: DpathFlattenFields
-          field_path: ["properties"]
-          key_transformation:
-            type: KeyTransformation
-            prefix: properties_
+    $ref: "#/definitions/base_crm_search_incremental_stream"
+    transformations:
+      - type: CustomTransformation
+        class_name: source_declarative_manifest.components.NewtoLegacyFieldTransformation
+        field_mapping:
+          hs_date_entered_: "hs_v2_date_entered_"
+          hs_date_exited_: "hs_v2_date_exited_"
+          hs_time_in_: "hs_v2_latest_time_in_"
+      - type: DpathFlattenFields
+        field_path: ["properties"]
+        key_transformation:
+          type: KeyTransformation
+          prefix: properties_
     $parameters:
       name: deals
       entity: deal
@@ -657,20 +634,20 @@ definitions:
         - line_items
       cursor_filter_property_field: hs_lastmodifieddate
       required_scopes: crm.objects.deals.read
-      schema_loader:
-        - type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/deals"
-        - $ref: "#/definitions/base_dynamic_schema_loader"
-          schema_transformations:
-            - type: CustomTransformation
-              class_name: source_declarative_manifest.components.NewtoLegacyFieldTransformation
-              field_mapping:
-                hs_date_entered_: "hs_v2_date_entered_"
-                hs_date_exited_: "hs_v2_date_exited_"
-                hs_time_in_: "hs_v2_latest_time_in_"
-            - type: CustomTransformation
-              class_name: source_declarative_manifest.components.HubspotRenamePropertiesTransformation
+    schema_loader:
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/deals"
+      - $ref: "#/definitions/base_dynamic_schema_loader"
+        schema_transformations:
+          - type: CustomTransformation
+            class_name: source_declarative_manifest.components.NewtoLegacyFieldTransformation
+            field_mapping:
+              hs_date_entered_: "hs_v2_date_entered_"
+              hs_date_exited_: "hs_v2_date_exited_"
+              hs_time_in_: "hs_v2_latest_time_in_"
+          - type: CustomTransformation
+            class_name: source_declarative_manifest.components.HubspotRenamePropertiesTransformation
 
   deals_archived_stream:
     primary_key:
@@ -1406,67 +1383,6 @@ definitions:
         cursor_field: lastUpdated
         cursor_format: "%ms"
 
-  base_crm_search_full_refresh_stream:
-    primary_key:
-      - id
-    $ref: "#/definitions/stream_base"
-    retriever:
-      $ref: "#/definitions/base_retriever"
-      requester:
-        $ref: "#/definitions/base_requester"
-        path: "/crm/v3/objects/{{ parameters['entity'] }}"
-        request_parameters:
-          archived: "false"
-          associations: "{{ parameters['associations'] }}"
-          properties:
-            type: QueryProperties
-            property_list:
-              type: PropertiesFromEndpoint
-              property_field_path:
-                - name
-              retriever:
-                type: SimpleRetriever
-                requester:
-                  $ref: "#/definitions/base_requester"
-                  path: "/properties/v2/{{ parameters['entity'] }}/properties"
-                decoder:
-                  type: JsonDecoder
-                record_selector:
-                  type: RecordSelector
-                  extractor:
-                    type: DpathExtractor
-                    field_path: []
-            property_chunking:
-              type: PropertyChunking
-              property_limit_type: characters
-              property_limit: 15000
-              record_merge_strategy:
-                type: GroupByKeyMergeStrategy
-                key: id
-      paginator:
-        $ref: "#/definitions/cursor_paginator"
-      record_selector:
-        $ref: "#/definitions/base_selector"
-        schema_normalization:
-          type: CustomSchemaNormalization
-          class_name: source_declarative_manifest.components.EntitySchemaNormalization
-    transformations:
-      - type: AddFields
-        fields:
-          - path: ["updatedAt"]
-            value: "{{ record.get('updatedAt') or record['createdAt'] }}"
-      - type: CustomTransformation
-        class_name: source_declarative_manifest.components.HubspotFlattenAssociationsTransformation
-      - type: DpathFlattenFields
-        field_path:
-          - properties
-        key_transformation:
-          type: KeyTransformation
-          prefix: properties_
-    incremental_sync:
-      $ref: "#/definitions/incremental_sync"
-      is_client_side_incremental: true
-
   base_crm_search_incremental_stream:
     primary_key:
       - id
@@ -1540,9 +1456,7 @@ definitions:
       is_client_side_incremental: true
 
   companies_stream:
-    type: StateDelegatingStream
-    full_refresh_stream: "#/definitions/base_crm_search_full_refresh_stream"
-    incremental_stream: "#/definitions/base_crm_search_incremental_stream"
+    $ref: "#/definitions/base_crm_search_incremental_stream"
     $parameters:
       name: companies
       entity: company
@@ -1550,16 +1464,14 @@ definitions:
         - contacts
       cursor_filter_property_field: hs_lastmodifieddate
       required_scopes: crm.objects.contacts.read, crm.objects.companies.read
-      schema_loader:
-        - type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/companies"
-        - $ref: "#/definitions/base_dynamic_schema_loader"
+    schema_loader:
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/companies"
+      - $ref: "#/definitions/base_dynamic_schema_loader"
 
   engagements_calls_stream:
-    type: StateDelegatingStream
-    full_refresh_stream: "#/definitions/base_crm_search_full_refresh_stream"
-    incremental_stream: "#/definitions/base_crm_search_incremental_stream"
+    $ref: "#/definitions/base_crm_search_incremental_stream"
     $parameters:
       name: engagements_calls
       entity: calls
@@ -1570,16 +1482,14 @@ definitions:
         - tickets
       cursor_filter_property_field: hs_lastmodifieddate
       required_scopes: crm.objects.contacts.read
-      schema_loader:
-        - type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/engagements_calls"
-        - $ref: "#/definitions/base_dynamic_schema_loader"
+    schema_loader:
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/engagements_calls"
+      - $ref: "#/definitions/base_dynamic_schema_loader"
 
   engagements_emails_stream:
-    type: StateDelegatingStream
-    full_refresh_stream: "#/definitions/base_crm_search_full_refresh_stream"
-    incremental_stream: "#/definitions/base_crm_search_incremental_stream"
+    $ref: "#/definitions/base_crm_search_incremental_stream"
     $parameters:
       name: engagements_emails
       entity: emails
@@ -1590,16 +1500,14 @@ definitions:
         - tickets
       cursor_filter_property_field: hs_lastmodifieddate
       required_scopes: crm.objects.contacts.read, sales-email-read
-      schema_loader:
-        - type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/engagements_emails"
-        - $ref: "#/definitions/base_dynamic_schema_loader"
+    schema_loader:
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/engagements_emails"
+      - $ref: "#/definitions/base_dynamic_schema_loader"
 
   engagements_meetings_stream:
-    type: StateDelegatingStream
-    full_refresh_stream: "#/definitions/base_crm_search_full_refresh_stream"
-    incremental_stream: "#/definitions/base_crm_search_incremental_stream"
+    $ref: "#/definitions/base_crm_search_incremental_stream"
     $parameters:
       name: engagements_meetings
       entity: meetings
@@ -1610,16 +1518,14 @@ definitions:
         - tickets
       required_scopes: crm.objects.contacts.read
       cursor_filter_property_field: hs_lastmodifieddate
-      schema_loader:
-        - type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/engagements_meetings"
-        - $ref: "#/definitions/base_dynamic_schema_loader"
+    schema_loader:
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/engagements_meetings"
+      - $ref: "#/definitions/base_dynamic_schema_loader"
 
   engagements_notes_stream:
-    type: StateDelegatingStream
-    full_refresh_stream: "#/definitions/base_crm_search_full_refresh_stream"
-    incremental_stream: "#/definitions/base_crm_search_incremental_stream"
+    $ref: "#/definitions/base_crm_search_incremental_stream"
     $parameters:
       name: engagements_notes
       entity: notes
@@ -1630,16 +1536,14 @@ definitions:
         - tickets
       cursor_filter_property_field: hs_lastmodifieddate
       required_scopes: crm.objects.contacts.read
-      schema_loader:
-        - type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/engagements_notes"
-        - $ref: "#/definitions/base_dynamic_schema_loader"
+    schema_loader:
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/engagements_notes"
+      - $ref: "#/definitions/base_dynamic_schema_loader"
 
   engagements_tasks_stream:
-    type: StateDelegatingStream
-    full_refresh_stream: "#/definitions/base_crm_search_full_refresh_stream"
-    incremental_stream: "#/definitions/base_crm_search_incremental_stream"
+    $ref: "#/definitions/base_crm_search_incremental_stream"
     $parameters:
       name: engagements_tasks
       entity: tasks
@@ -1650,11 +1554,11 @@ definitions:
         - tickets
       cursor_filter_property_field: hs_lastmodifieddate
       required_scopes: crm.objects.contacts.read
-      schema_loader:
-        - type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/engagements_tasks"
-        - $ref: "#/definitions/base_dynamic_schema_loader"
+    schema_loader:
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/engagements_tasks"
+      - $ref: "#/definitions/base_dynamic_schema_loader"
 
   subscription_changes_stream:
     $ref: "#/definitions/stream_base"
@@ -1869,42 +1773,19 @@ definitions:
           $ref: "#/schemas/line_items"
 
   contacts_stream:
-    type: StateDelegatingStream
-    full_refresh_stream:
-      $ref: "#/definitions/base_crm_search_full_refresh_stream"
-      transformations:
-        - type: AddFields
-          fields:
-            - path: ["updatedAt"]
-              value: "{{ record.get('updatedAt') or record['createdAt'] }}"
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.HubspotFlattenAssociationsTransformation
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.NewtoLegacyFieldTransformation
-          field_mapping:
-            hs_lifecyclestage_: "hs_v2_date_entered_"
-            hs_date_exited_: "hs_v2_date_exited_"
-            hs_time_in_: "hs_v2_latest_time_in_"
-        - type: DpathFlattenFields
-          field_path:
-            - properties
-          key_transformation:
-            type: KeyTransformation
-            prefix: properties_
-    incremental_stream:
-      $ref: "#/definitions/base_crm_search_incremental_stream"
-      transformations:
-        - type: CustomTransformation
-          class_name: source_declarative_manifest.components.NewtoLegacyFieldTransformation
-          field_mapping:
-            hs_lifecyclestage_: "hs_v2_date_entered_"
-            hs_date_exited_: "hs_v2_date_exited_"
-            hs_time_in_: "hs_v2_latest_time_in_"
-        - type: DpathFlattenFields
-          field_path: ["properties"]
-          key_transformation:
-            type: KeyTransformation
-            prefix: properties_
+    $ref: "#/definitions/base_crm_search_incremental_stream"
+    transformations:
+      - type: CustomTransformation
+        class_name: source_declarative_manifest.components.NewtoLegacyFieldTransformation
+        field_mapping:
+          hs_lifecyclestage_: "hs_v2_date_entered_"
+          hs_date_exited_: "hs_v2_date_exited_"
+          hs_time_in_: "hs_v2_latest_time_in_"
+      - type: DpathFlattenFields
+        field_path: ["properties"]
+        key_transformation:
+          type: KeyTransformation
+          prefix: properties_
     $parameters:
       name: contacts
       entity: contact
@@ -1913,40 +1794,36 @@ definitions:
         - companies
       cursor_filter_property_field: lastmodifieddate
       required_scopes: crm.objects.contacts.read
-      schema_loader:
-        - type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/contacts"
-        - $ref: "#/definitions/base_dynamic_schema_loader"
-          schema_transformations:
-            - type: CustomTransformation
-              class_name: source_declarative_manifest.components.NewtoLegacyFieldTransformation
-              field_mapping:
-                hs_lifecyclestage_: "hs_v2_date_entered_"
-                hs_date_exited_: "hs_v2_date_exited_"
-                hs_time_in_: "hs_v2_latest_time_in_"
-            - type: CustomTransformation
-              class_name: source_declarative_manifest.components.HubspotRenamePropertiesTransformation
+    schema_loader:
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/contacts"
+      - $ref: "#/definitions/base_dynamic_schema_loader"
+        schema_transformations:
+          - type: CustomTransformation
+            class_name: source_declarative_manifest.components.NewtoLegacyFieldTransformation
+            field_mapping:
+              hs_lifecyclestage_: "hs_v2_date_entered_"
+              hs_date_exited_: "hs_v2_date_exited_"
+              hs_time_in_: "hs_v2_latest_time_in_"
+          - type: CustomTransformation
+            class_name: source_declarative_manifest.components.HubspotRenamePropertiesTransformation
 
   deal_splits_stream:
-    type: StateDelegatingStream
-    full_refresh_stream: "#/definitions/base_crm_search_full_refresh_stream"
-    incremental_stream: "#/definitions/base_crm_search_incremental_stream"
+    $ref: "#/definitions/base_crm_search_incremental_stream"
     $parameters:
       name: deal_splits
       entity: deal_split
       cursor_filter_property_field: hs_lastmodifieddate
       required_scopes: crm.objects.deals.read
-      schema_loader:
-        - type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/deal_splits"
-        - $ref: "#/definitions/base_dynamic_schema_loader"
+    schema_loader:
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/deal_splits"
+      - $ref: "#/definitions/base_dynamic_schema_loader"
 
   leads_stream:
-    type: StateDelegatingStream
-    full_refresh_stream: "#/definitions/base_crm_search_full_refresh_stream"
-    incremental_stream: "#/definitions/base_crm_search_incremental_stream"
+    $ref: "#/definitions/base_crm_search_incremental_stream"
     $parameters:
       name: leads
       entity: leads
@@ -1955,16 +1832,14 @@ definitions:
         - contacts
       cursor_filter_property_field: hs_lastmodifieddate
       required_scopes: crm.objects.contacts.read, crm.objects.companies.read, crm.objects.leads.read
-      schema_loader:
-        - type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/leads"
-        - $ref: "#/definitions/base_dynamic_schema_loader"
+    schema_loader:
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/leads"
+      - $ref: "#/definitions/base_dynamic_schema_loader"
 
   tickets_stream:
-    type: StateDelegatingStream
-    full_refresh_stream: "#/definitions/base_crm_search_full_refresh_stream"
-    incremental_stream: "#/definitions/base_crm_search_incremental_stream"
+    $ref: "#/definitions/base_crm_search_incremental_stream"
     $parameters:
       name: tickets
       entity: ticket
@@ -1974,11 +1849,11 @@ definitions:
         - deals
       cursor_filter_property_field: hs_lastmodifieddate
       required_scopes: tickets
-      schema_loader:
-        - type: InlineSchemaLoader
-          schema:
-            $ref: "#/schemas/tickets"
-        - $ref: "#/definitions/base_dynamic_schema_loader"
+    schema_loader:
+      - type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tickets"
+      - $ref: "#/definitions/base_dynamic_schema_loader"
 
 streams:
   - "#/definitions/campaigns_stream"
