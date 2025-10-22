@@ -53,9 +53,9 @@ The breaking change metadata allows you to specify narrowed scopes, and specific
 
 Your migration guide must be created as a separate file at `docs/integrations/{sources|destinations}/{connector-name}-migrations.md`. The guide should be detailed and user-focused, addressing the following for each breaking change version:
 
-- **WHAT** - What changed: Specifically, what is fixed or better for the user after this change?
-- **WHY** - Why did we make this change? (API improvements, upstream deprecation, bug fixes, performance improvements).
-- **WHO** - Which users are affected? Be specific about streams, sync modes, or configuration options that are impacted.
+- **WHAT** - What changed? Specifically, what's fixed or better for the user after this change?
+- **WHY** - Why did you make this change? (API improvements, upstream deprecation, bug fixes, performance improvements).
+- **WHO** - Which users does this change affect? Be specific about streams, sync modes, or configuration options that are impacted.
 - **STEPS** - Exact steps users must take to migrate, including when to take them (before/after upgrade, before/after first sync).
 
 Your migration guide can be as long as necessary and may include images, code snippets, SQL examples, and compatibility tables to help users understand and execute the migration.
@@ -68,6 +68,42 @@ Review these examples to understand the expected format and level of detail:
 - [Google Ads Migration Guide](/integrations/sources/google-ads-migrations) - Table-based field change documentation
 - [Stripe Migration Guide](/integrations/sources/stripe-migrations) - Detailed sync mode and cursor field changes
 - [Snowflake Destination Migration Guide](/integrations/destinations/snowflake-migrations) - Use case-based migration paths
+
+### Reusable Migration Content
+
+It's desirable for a migration guide to instruct your reader how to plan for, execute, and clean up after an upgrade. This information is applicable to most upgrades for most connectors, and you shouldn't normally need to document it. A reusable content snippet exists at `docusaurus/static/_migration_guides_upgrade_guide.md`. It contains generic upgrade information shared by every connector, and you can import it into your migration guide seamlessly.
+
+This avoids duplicating content, increases the likelihood that documentation remains up-to-date, and makes it easier to author your migration guide. The only migration content you should author in a bespoke fashion should focus on the specifics of this connector and connector version.
+
+#### How to use the snippet
+
+1. Import the reusable content into your doc as a React component.
+
+    ```js title="mydoc.md"
+    import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
+    ```
+
+2. Display it.
+
+    ```js title="mydoc.md"
+    <MigrationGuide />
+    ```
+
+#### Example usage
+
+```md title="asana-migrations.md"
+import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
+
+# Asana Migration Guide
+
+## Upgrading to 1.0.0
+
+Here are the details of this breaking change that are specific to Asana.
+
+## Connector upgrade guide
+
+<MigrationGuide />
+```
 
 ## Breaking Change Metadata Requirements
 
