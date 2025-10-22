@@ -8,7 +8,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 2a2552ca-9f78-4c1c-9eb7-4d0dc66d72df
-  dockerImageTag: 0.5.20
+  dockerImageTag: 0.5.21
   dockerRepository: airbyte/source-woocommerce
   documentationUrl: https://docs.airbyte.com/integrations/sources/woocommerce
   githubIssueLabel: source-woocommerce
@@ -29,6 +29,9 @@ data:
   releases:
     rolloutConfiguration:
       enableProgressiveRollout: false
+  suggestedStreams:
+    streams:
+      - orders
   supportLevel: certified
   tags:
     - language:manifest-only

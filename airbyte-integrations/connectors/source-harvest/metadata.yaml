@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: fe2b4084-3386-4d3b-9ad6-308f61a6f1e6
-  dockerImageTag: 1.2.20
+  dockerImageTag: 1.2.21
   dockerRepository: airbyte/source-harvest
   documentationUrl: https://docs.airbyte.com/integrations/sources/harvest
   githubIssueLabel: source-harvest
@@ -57,6 +57,22 @@ data:
                 "project_assignments",
               ]
   releaseStage: generally_available
+  suggestedStreams:
+    streams:
+      - time_entries
+      - projects
+      - clients
+      - users
+      - roles
+      - tasks
+      - contacts
+      - task_assignments
+      - time_projects
+      - user_assignments
+      - company
+      - invoices
+      - project_assignments
+      - time_tasks
   supportLevel: certified
   tags:
     - language:manifest-only
