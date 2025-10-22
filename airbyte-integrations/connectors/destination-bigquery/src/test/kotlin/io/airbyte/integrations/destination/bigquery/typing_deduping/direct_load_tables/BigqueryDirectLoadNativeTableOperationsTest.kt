@@ -21,14 +21,14 @@ import io.airbyte.cdk.load.data.NumberType
 import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.data.UnionType
-import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.DefaultTempTableNameGenerator
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.ColumnAdd
 import io.airbyte.cdk.load.orchestration.db.direct_load_table.ColumnChange
-import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadNativeTableOperations
-import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadNativeTableOperations.Companion.clusteringMatches
-import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadNativeTableOperations.Companion.partitioningMatches
+import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryDirectLoadSqlGenerator.Companion.toDialectType
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryTableSchemaEvolutionClient
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryTableSchemaEvolutionClient.Companion.clusteringMatches
+import io.airbyte.integrations.destination.bigquery.write.typing_deduping.direct_load_tables.BigqueryTableSchemaEvolutionClient.Companion.partitioningMatches
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
@@ -74,7 +74,7 @@ class BigqueryDirectLoadNativeTableOperationsTest {
         Mockito.`when`(existingTable.schema!!.fields)
             .thenReturn(FieldList.of(Field.of("a2", StandardSQLTypeName.INT64)))
         val alterTableReport =
-            BigqueryDirectLoadNativeTableOperations(
+            BigqueryTableSchemaEvolutionClient(
                     Mockito.mock(),
                     Mockito.mock(),
                     Mockito.mock(),
@@ -131,7 +131,7 @@ class BigqueryDirectLoadNativeTableOperationsTest {
                 )
             )
         val alterTableReport =
-            BigqueryDirectLoadNativeTableOperations(
+            BigqueryTableSchemaEvolutionClient(
                     Mockito.mock(),
                     Mockito.mock(),
                     Mockito.mock(),
