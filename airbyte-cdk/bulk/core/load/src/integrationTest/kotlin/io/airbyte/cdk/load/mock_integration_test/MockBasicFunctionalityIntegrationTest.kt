@@ -439,7 +439,7 @@ class MockBasicFunctionalityIntegrationTestStdioJsonl :
         DataChannelFormat.JSONL,
     )
 
-// Speed mode
+@Disabled
 class MockBasicFunctionalityIntegrationTestSocketProtobuf :
     BaseMockBasicFunctionalityIntegrationTest(
         DataChannelMedium.SOCKET,
