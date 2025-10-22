@@ -89,13 +89,13 @@ class SapHanaTableFilterTest {
         val tableFilter1 =
             TableFilter().apply {
                 schemaName = "SCHEMA_1"
-                filters = listOf("CUSTOMERS")
+                patterns = listOf("CUSTOMERS")
             }
 
         val tableFilter2 =
             TableFilter().apply {
                 schemaName = "SCHEMA_2"
-                filters = listOf("ORDERS")
+                patterns = listOf("ORDERS")
             }
 
         val configPojo =
@@ -131,7 +131,7 @@ class SapHanaTableFilterTest {
         val tableFilter =
             TableFilter().apply {
                 schemaName = "NONEXISTENT_SCHEMA"
-                filters = listOf("ORDERS", "CUSTOMERS")
+                patterns = listOf("ORDERS", "CUSTOMERS")
             }
 
         val configPojo =
@@ -147,5 +147,151 @@ class SapHanaTableFilterTest {
         assertThrows(ConfigErrorException::class.java) {
             SapHanaSourceConfigurationFactory().makeWithoutExceptionHandling(configPojo)
         }
+    }
+
+    @Test
+    fun testMixedFiltersAndNoFilters() {
+        // Test that schemas without filters get all tables, while schemas with filters are filtered
+        val tableFilter =
+            TableFilter().apply {
+                schemaName = "SCHEMA_1"
+                patterns = listOf("CUSTOMERS")
+            }
+
+        val configPojo =
+            SapHanaSourceConfigurationSpecification().apply {
+                port = db.port
+                host = db.host
+                schemas = schemaNames
+                username = db.username
+                password = db.password
+                filters = listOf(tableFilter) // Only SCHEMA_1 has filters
+            }
+
+        val config: SapHanaSourceConfiguration =
+            SapHanaSourceConfigurationFactory().makeWithoutExceptionHandling(configPojo)
+
+        val querier = hanaQuerierFactory.session(config) as SapHanaSourceMetadataQuerier
+
+        // SCHEMA_1 should only have CUSTOMERS (filtered)
+        val schema1Tables =
+            querier.memoizedTableNames.filter { it.schema == "SCHEMA_1" }.map { it.name }.toSet()
+
+        assertEquals(setOf("CUSTOMERS"), schema1Tables)
+
+        // SCHEMA_2 should have all tables (no filter)
+        val schema2Tables =
+            querier.memoizedTableNames.filter { it.schema == "SCHEMA_2" }.map { it.name }.toSet()
+
+        assertEquals(tableNames.toSet(), schema2Tables)
+    }
+
+    @Test
+    fun testMultiplePatternsForSingleSchema() {
+        // Test that multiple patterns for a single schema are combined correctly
+        val tableFilter =
+            TableFilter().apply {
+                schemaName = "SCHEMA_1"
+                patterns = listOf("CUSTOMERS", "ORDERS")
+            }
+
+        val configPojo =
+            SapHanaSourceConfigurationSpecification().apply {
+                port = db.port
+                host = db.host
+                schemas = schemaNames
+                username = db.username
+                password = db.password
+                filters = listOf(tableFilter)
+            }
+
+        val config: SapHanaSourceConfiguration =
+            SapHanaSourceConfigurationFactory().makeWithoutExceptionHandling(configPojo)
+
+        val querier = hanaQuerierFactory.session(config) as SapHanaSourceMetadataQuerier
+
+        // Verify tableFiltersBySchema map is built correctly
+        assertEquals(listOf("CUSTOMERS", "ORDERS"), querier.tableFiltersBySchema["SCHEMA_1"])
+        assertEquals(null, querier.tableFiltersBySchema["SCHEMA_2"])
+
+        // SCHEMA_1 should have both CUSTOMERS and ORDERS
+        val schema1Tables =
+            querier.memoizedTableNames.filter { it.schema == "SCHEMA_1" }.map { it.name }.toSet()
+
+        assertEquals(setOf("CUSTOMERS", "ORDERS"), schema1Tables)
+    }
+
+    @Test
+    fun testMultipleFiltersForSingleSchema() {
+        // Test that multiple filter objects for the same schema are combined correctly
+        val tableFilter1 =
+            TableFilter().apply {
+                schemaName = "SCHEMA_1"
+                patterns = listOf("CUSTOMERS")
+            }
+
+        val tableFilter2 =
+            TableFilter().apply {
+                schemaName = "SCHEMA_1"
+                patterns = listOf("ORDERS")
+            }
+
+        val configPojo =
+            SapHanaSourceConfigurationSpecification().apply {
+                port = db.port
+                host = db.host
+                schemas = schemaNames
+                username = db.username
+                password = db.password
+                filters = listOf(tableFilter1, tableFilter2)
+            }
+
+        val config: SapHanaSourceConfiguration =
+            SapHanaSourceConfigurationFactory().makeWithoutExceptionHandling(configPojo)
+
+        val querier = hanaQuerierFactory.session(config) as SapHanaSourceMetadataQuerier
+
+        // Verify tableFiltersBySchema map combines patterns from both filter objects
+        assertEquals(listOf("CUSTOMERS", "ORDERS"), querier.tableFiltersBySchema["SCHEMA_1"])
+
+        // SCHEMA_1 should have both CUSTOMERS and ORDERS
+        val schema1Tables =
+            querier.memoizedTableNames.filter { it.schema == "SCHEMA_1" }.map { it.name }.toSet()
+
+        assertEquals(setOf("CUSTOMERS", "ORDERS"), schema1Tables)
+    }
+
+    @Test
+    fun testEmptyPatternsListBehavior() {
+        // Test that a filter with empty patterns list is treated as no filter
+        val tableFilter =
+            TableFilter().apply {
+                schemaName = "SCHEMA_1"
+                patterns = emptyList()
+            }
+
+        val configPojo =
+            SapHanaSourceConfigurationSpecification().apply {
+                port = db.port
+                host = db.host
+                schemas = schemaNames
+                username = db.username
+                password = db.password
+                filters = listOf(tableFilter)
+            }
+
+        val config: SapHanaSourceConfiguration =
+            SapHanaSourceConfigurationFactory().makeWithoutExceptionHandling(configPojo)
+
+        val querier = hanaQuerierFactory.session(config) as SapHanaSourceMetadataQuerier
+
+        // Verify tableFiltersBySchema map has empty list for SCHEMA_1
+        assertEquals(emptyList<String>(), querier.tableFiltersBySchema["SCHEMA_1"])
+
+        // SCHEMA_1 should have all tables (empty filter list treated as no filter)
+        val schema1Tables =
+            querier.memoizedTableNames.filter { it.schema == "SCHEMA_1" }.map { it.name }.toSet()
+
+        assertEquals(tableNames.toSet(), schema1Tables)
     }
 }

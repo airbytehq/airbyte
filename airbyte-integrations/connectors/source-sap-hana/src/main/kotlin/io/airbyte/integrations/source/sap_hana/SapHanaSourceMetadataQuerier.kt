@@ -28,7 +28,7 @@ private val log = KotlinLogging.logger {}
  */
 class SapHanaSourceMetadataQuerier(
     val base: JdbcMetadataQuerier,
-    val config: SapHanaSourceConfiguration
+    config: SapHanaSourceConfiguration
 ) : MetadataQuerier by base {
 
     override fun fields(streamID: StreamIdentifier): List<Field> {
@@ -120,7 +120,10 @@ class SapHanaSourceMetadataQuerier(
         return tableName to metadata
     }
 
-    val tablePatterns = config.filters
+    val tableFiltersBySchema: Map<String, List<String>> =
+        config.filters
+            .groupBy { it.schemaName }
+            .mapValues { (_, filters) -> filters.flatMap { it.patterns } }
 
     val memoizedTableNames: List<TableName> by lazy {
         log.info { "Querying table names for catalog discovery." }
@@ -152,14 +155,13 @@ class SapHanaSourceMetadataQuerier(
                         NamespaceKind.CATALOG_AND_SCHEMA -> namespace to namespace
                     }
 
-                if (tablePatterns.isEmpty()) {
-                    addTablesFromQuery(catalog, schema, null)
-                } else {
-                    for (pattern in tablePatterns) {
-                        for (filter in pattern.filters) {
-                            addTablesFromQuery(catalog, pattern.schemaName, filter)
-                        }
+                val patterns = tableFiltersBySchema[namespace]
+                if (patterns != null && patterns.isNotEmpty()) {
+                    for (pattern in patterns) {
+                        addTablesFromQuery(catalog, schema, pattern)
                     }
+                } else {
+                    addTablesFromQuery(catalog, schema, null)
                 }
             }
             log.info {

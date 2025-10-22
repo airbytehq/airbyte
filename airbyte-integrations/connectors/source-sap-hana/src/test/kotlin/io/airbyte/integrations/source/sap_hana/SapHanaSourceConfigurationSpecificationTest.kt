@@ -27,11 +27,6 @@ class SapHanaSourceConfigurationSpecificationTest {
     @Property(name = "airbyte.connector.config.username", value = "FOO")
     @Property(name = "airbyte.connector.config.password", value = "BAR")
     @Property(name = "airbyte.connector.config.schemas", value = "FOO,SYSTEM")
-    @Property(
-        name = "airbyte.connector.config.connection_data.connection_type",
-        value = "service_name",
-    )
-    @Property(name = "airbyte.connector.config.connection_data.service_name", value = "FREEPDB1")
     @Property(name = "airbyte.connector.config.encryption.encryption_method", value = "client_nne")
     @Property(name = "airbyte.connector.config.encryption.encryption_algorithm", value = "3DES168")
     @Property(
@@ -90,6 +85,39 @@ class SapHanaSourceConfigurationSpecificationTest {
         Assertions.assertEquals(60, pojo.checkpointTargetIntervalSeconds)
         Assertions.assertEquals(2, pojo.concurrency)
     }
+
+    @Test
+    @Property(name = "airbyte.connector.config.host", value = "localhost")
+    @Property(name = "airbyte.connector.config.port", value = "443")
+    @Property(name = "airbyte.connector.config.database", value = "TENANT1")
+    @Property(name = "airbyte.connector.config.username", value = "TESTUSER")
+    @Property(name = "airbyte.connector.config.password", value = "TESTPASS")
+    fun testDatabaseParameter() {
+        val pojo: SapHanaSourceConfigurationSpecification = supplier.get()
+        Assertions.assertEquals("TENANT1", pojo.database)
+        val config: SapHanaSourceConfiguration =
+            SapHanaSourceConfigurationFactory().makeWithoutExceptionHandling(pojo)
+        Assertions.assertTrue(
+            config.jdbcUrlFmt.contains("databaseName=TENANT1"),
+            "JDBC URL should contain databaseName parameter: ${config.jdbcUrlFmt}",
+        )
+    }
+
+    @Test
+    @Property(name = "airbyte.connector.config.host", value = "localhost")
+    @Property(name = "airbyte.connector.config.port", value = "443")
+    @Property(name = "airbyte.connector.config.username", value = "TESTUSER")
+    @Property(name = "airbyte.connector.config.password", value = "TESTPASS")
+    fun testNoDatabaseParameter() {
+        val pojo: SapHanaSourceConfigurationSpecification = supplier.get()
+        Assertions.assertNull(pojo.database)
+        val config: SapHanaSourceConfiguration =
+            SapHanaSourceConfigurationFactory().makeWithoutExceptionHandling(pojo)
+        Assertions.assertFalse(
+            config.jdbcUrlFmt.contains("databaseName"),
+            "JDBC URL should not contain databaseName parameter: ${config.jdbcUrlFmt}",
+        )
+    }
 }
 
 const val CONFIG_JSON =
@@ -97,10 +125,6 @@ const val CONFIG_JSON =
 {
   "host": "localhost",
   "port": 12345,
-  "connection_data": {
-    "connection_type": "service_name",
-    "service_name": "FREEPDB1"
-  },
   "username": "FOO",
   "password": "BAR",
   "schemas": [

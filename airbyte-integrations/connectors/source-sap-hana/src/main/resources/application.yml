@@ -66,9 +66,8 @@ airbyte:
         # SQLException's vendor error code [1]. The vendor error code is printed in the exception
         # message, and is not to be confused with the SQLState [2] which is also in the message.
         #
-        # In the case of Oracle DB, which applies here, the vendor code is the numerical part
-        # of ORA-????? error codes. The accompanying error messages are typically succinct and
-        # well-written, so the rules here do not overwrite them and merely classify them.
+        # SAP HANA uses vendor-specific error codes. The accompanying error messages are typically
+        # descriptive, so the rules here classify them without overwriting the original messages.
         #
         # [0] https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/bulk/toolkits/extract-jdbc/src/main/kotlin/io/airbyte/cdk/output/JdbcExceptionClassifier.kt
         # [1] https://docs.oracle.com/javase/8/docs/api/java/sql/SQLException.html#getErrorCode--
@@ -76,35 +75,27 @@ airbyte:
         #
         rules:
           ## JDBC RULE TEMPLATE
-          # code: Required, SQLException vendor error code, i.e. ORA-????? numbers.
+          # code: Required, SQLException vendor error code.
           # error: Required, one of (transient|config|system).
           # output: Optional, user-facing error message; the exception message is used instead when this is not defined.
-          #         Note that the Oracle SQLException error messages are usually hard to improve upon,
-          #         which is why this field is rarely if ever set in this connector's ruleset.
           # reference-links: Optional, list of URLs appended to user-facing message after newline.
-          #                  Note that the Oracle SQLException error messages already contain an URL,
-          #                  which is why, again, this field is rarely if ever set in this connector's ruleset.
 
-          - code: 12154
-            # Cannot connect to database
-            # https://docs.oracle.com/en/error-help/db/ora-12154
+          - code: 10
+            # Invalid username or password
             error: config
             group: Connection Error
 
-          - code: 1017
-            # invalid credential or not authorized; logon denied
-            # https://docs.oracle.com/en/error-help/db/ora-01017
+          - code: 414
+            # Connection failed (invalid server, network error, etc.)
             error: config
             group: Connection Error
 
-          - code: 1000
-            # maximum open cursors for session exceeded
-            # https://docs.oracle.com/en/error-help/db/ora-01000
-            error: config
-            group: Resource Error
-
-          - code: 3113
-            # end-of-file on communication channel
-            # https://docs.oracle.com/en/error-help/db/ora-03113
+          - code: 129
+            # Transaction rolled back by lock wait timeout or deadlock
             error: transient
-            group: Connection Error
+            group: Transaction Error
+
+          - code: 146
+            # Resource in use or locked, retry later
+            error: transient
+            group: Resource Error

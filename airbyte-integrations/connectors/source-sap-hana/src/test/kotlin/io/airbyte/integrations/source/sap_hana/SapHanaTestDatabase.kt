@@ -11,14 +11,20 @@ class SapHanaTestDatabase(
     val host: String,
     val port: Int,
     val username: String,
-    val password: String
+    val password: String,
+    val database: String? = null
 ) {
     var connection: Connection? = null
         private set
 
     @Throws(SQLException::class)
     fun connect() {
-        val url = "jdbc:sap://$host:$port"
+        val url =
+            if (database != null && database.isNotBlank()) {
+                "jdbc:sap://$host:$port/?databaseName=$database"
+            } else {
+                "jdbc:sap://$host:$port"
+            }
         connection = DriverManager.getConnection(url, username, password)
     }
 

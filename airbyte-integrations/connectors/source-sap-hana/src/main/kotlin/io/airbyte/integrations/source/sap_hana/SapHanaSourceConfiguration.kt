@@ -102,7 +102,7 @@ class SapHanaSourceConfigurationFactory :
             val cert: Certificate = cf.generateCertificate(certDer.inputStream())
             val keyStore = KeyStore.getInstance(KeyStore.getDefaultType())
             keyStore.load(null, null) // Initialize the KeyStore
-            keyStore.setCertificateEntry("rds-root", cert)
+            keyStore.setCertificateEntry("sap-hana-cert", cert)
             val keyStorePass: String = UUID.randomUUID().toString()
             val keyStoreFile: File = Files.createTempFile("clientkeystore_", ".jks").toFile()
             keyStoreFile.deleteOnExit()
@@ -116,10 +116,13 @@ class SapHanaSourceConfigurationFactory :
             // val algorithm: String = encryption.encryptionAlgorithm
             // TODO: use this field.
         }
-        // val protocol: String = if (encryption is SslCertificate) "TCPS" else "TCP"
         // Build JDBC URL
-        // val address = "(ADDRESS=(PROTOCOL=$protocol)(HOST=%s)(PORT=%d))"
-        val jdbcUrlFmt = "jdbc:sap://%s:%s"
+        val jdbcUrlFmt =
+            if (pojo.database != null && pojo.database!!.isNotBlank()) {
+                "jdbc:sap://%s:%s/?databaseName=${pojo.database}"
+            } else {
+                "jdbc:sap://%s:%s"
+            }
 
         val defaultSchema: String = pojo.username.uppercase()
         val sshOpts = SshConnectionOptions.fromAdditionalProperties(pojo.getAdditionalProperties())
