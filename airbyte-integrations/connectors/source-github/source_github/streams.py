@@ -221,6 +221,14 @@ class GithubStream(GithubStreamABC):
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
         record["repository"] = stream_slice["repository"]
+
+        if "reactions" in record and record["reactions"]:
+            reactions = record["reactions"]
+            if "+1" in reactions:
+                reactions["plus_one"] = reactions.pop("+1")
+            if "-1" in reactions:
+                reactions["minus_one"] = reactions.pop("-1")
+
         return record
 
     def parse_response(
