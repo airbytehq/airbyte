@@ -776,8 +776,7 @@ internal class SnowflakeAirbyteClientTest {
             )
         every { connection.close() } just Runs
 
-        val exception =
-            assertThrows<ConfigErrorException> { client.execute(sql) }
+        val exception = assertThrows<ConfigErrorException> { client.execute(sql) }
 
         // Verify the error message was wrapped as ConfigErrorException with original message
         assertTrue(exception.message!!.contains("current role has no privileges on it"))
@@ -801,8 +800,7 @@ internal class SnowflakeAirbyteClientTest {
         every { connection.close() } just Runs
 
         // Non-permission errors should be thrown as-is, not wrapped
-        val exception =
-            assertThrows<SnowflakeSQLException> { client.execute(sql) }
+        val exception = assertThrows<SnowflakeSQLException> { client.execute(sql) }
 
         assertEquals("Table 'NONEXISTENT_TABLE' does not exist", exception.message)
     }
@@ -847,8 +845,7 @@ internal class SnowflakeAirbyteClientTest {
         every { dataSource.connection } returns connection
 
         runBlocking {
-            val exception =
-                assertThrows<ConfigErrorException> { client.createNamespace(namespace) }
+            val exception = assertThrows<ConfigErrorException> { client.createNamespace(namespace) }
 
             assertTrue(exception.message!!.contains("current role has no privileges on it"))
             assertTrue(exception.cause is SnowflakeSQLException)
