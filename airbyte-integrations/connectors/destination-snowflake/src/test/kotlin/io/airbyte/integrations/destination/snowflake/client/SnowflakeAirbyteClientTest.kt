@@ -12,8 +12,8 @@ import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
-import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
-import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.cdk.load.table.ColumnNameMapping
+import io.airbyte.cdk.load.table.TableName
 import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration

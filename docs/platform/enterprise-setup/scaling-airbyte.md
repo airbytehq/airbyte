@@ -7,7 +7,7 @@ import TabItem from '@theme/TabItem';
 
 # Scaling Airbyte After Installation
 
-Once you've completed the initial installation of Airbyte Self-Managed Enterprise, the next crucial step is scaling your setup as needed to ensure optimal performance and reliability as your data integration needs grow. This guide will walk you through best practices and strategies for scaling Airbyte in an enterprise environment.
+Once you've completed the initial installation of Airbyte Self-Managed Enterprise, the next crucial step is scaling your setup as needed to ensure optimal performance and reliability as your data integration needs grow. This guide walks you through best practices and strategies for scaling Airbyte in an enterprise environment.
 
 ## Concurrent Syncs
 
@@ -243,9 +243,9 @@ Furthermore, you may want to implement a primary-replica setup for the database 
 
 For business-critical applications of Airbyte, you may want to configure a Disaster Recovery (DR) cluster for Airbyte. We do not support assisting customers with DR deployments at this time. However, we offer a few high level suggestions:
 
-1. We strongly recommend configuring an external database, external log storage and external connector secret management.
+1. Airbyte strongly recommends configuring an external database, external log storage and external connector secret management.
 
-2. We strongly recommend that your DR cluster is also an instance of Self-Managed Enterprise, kept at the same version as your prod instance.
+2. Airbyte strongly recommends that your DR cluster is also an instance of Self-Managed Enterprise, kept at the same version as your prod instance.
 
 ## DEBUG Logs
 

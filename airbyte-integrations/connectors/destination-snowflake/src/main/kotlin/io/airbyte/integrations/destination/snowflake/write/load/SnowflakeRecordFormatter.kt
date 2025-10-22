@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.snowflake.write.load
 
-import com.github.benmanes.caffeine.cache.Caffeine
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.StringValue
@@ -27,10 +26,6 @@ class SnowflakeSchemaRecordFormatter(
     private val airbyteColumnNames =
         snowflakeColumnUtils.getFormattedDefaultColumnNames(false).toSet()
 
-    private val metadataCache =
-        Caffeine.newBuilder().maximumSize(airbyteColumnNames.size.toLong()).build<
-            String, Boolean> { k -> airbyteColumnNames.contains(k) }
-
     override fun format(record: Map<String, AirbyteValue>): List<Any> =
         columns.map { (columnName, columnType) ->
             /*
@@ -39,7 +34,7 @@ class SnowflakeSchemaRecordFormatter(
              * that it can match the constants, which use the lowercase version of the meta
              * column names.
              */
-            if (metadataCache.get(columnName)) {
+            if (airbyteColumnNames.contains(columnName)) {
                 record[columnName.lowercase()].toCsvValue()
             } else {
                 record.keys
@@ -75,10 +70,6 @@ class SnowflakeRawRecordFormatter(
     private val airbyteColumnNames =
         snowflakeColumnUtils.getFormattedDefaultColumnNames(false).toSet()
 
-    private val metadataCache =
-        Caffeine.newBuilder().maximumSize(airbyteColumnNames.size.toLong()).build<
-            String, Boolean> { k -> airbyteColumnNames.contains(k) }
-
     override fun format(record: Map<String, AirbyteValue>): List<Any> =
         toOutputRecord(record.toMutableMap())
 
@@ -87,7 +78,7 @@ class SnowflakeRawRecordFormatter(
         // Copy the Airbyte metadata columns to the raw output, removing each
         // one from the record to avoid duplicates in the "data" field
         columns
-            .filter { metadataCache.get(it) && it != Meta.COLUMN_NAME_DATA }
+            .filter { airbyteColumnNames.contains(it) && it != Meta.COLUMN_NAME_DATA }
             .forEach { column -> safeAddToOutput(column, record, outputRecord) }
         // Do not output null values in the JSON raw output
         val filteredRecord = record.filter { (_, v) -> v !is NullValue }
