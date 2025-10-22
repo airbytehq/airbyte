@@ -147,7 +147,7 @@ class SourceSalesforce(ConcurrentSourceAdapter):
 
     def prepare_stream(self, stream_name: str, json_schema, sobject_options, sf_object, authenticator, config):
         """Choose proper stream class: syncMode(full_refresh/incremental), API type(Rest/Bulk), SubStream"""
-        pk, replication_key = sf_object.get_pk_and_replication_key(stream_name, json_schema)
+        pk, replication_key = sf_object.get_pk_and_replication_key(json_schema)
         stream_kwargs = {
             "stream_name": stream_name,
             "schema": json_schema,
