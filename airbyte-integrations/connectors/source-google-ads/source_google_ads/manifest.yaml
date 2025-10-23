@@ -38,7 +38,7 @@ definitions:
         $ref: "#/schemas"
     authenticator:
       $ref: "#/definitions/authenticator"
-    url_base: "https://googleads.googleapis.com/v20/{{ stream_partition['customer_id'] }}/googleAds:search"
+    url_base: "https://googleads.googleapis.com/v20/{{ stream_partition['customer_id'] }}/googleAds:searchStream"
     http_method: POST
     error_handler:
       $ref: "#/definitions/base_error_handler"
@@ -56,7 +56,7 @@ definitions:
         action: IGNORE
         http_codes:
           - 403
-        error_message_contains: "The customer account can\\'t be accessed because it is not yet enabled or has been deactivated."
+#        error_message_contains: "The customer account can\\'t be accessed because it is not yet enabled or has been deactivated."
 
   base_selector:
     type: RecordSelector
@@ -482,6 +482,13 @@ definitions:
 
   ad_group_ad_stream:
     $ref: "#/definitions/incremental_stream_base"
+    retriever:
+      $ref: "#/definitions/incremental_stream_base/retriever"
+      paginator:
+        type: NoPagination
+      decoder:
+        type: CustomDecoder
+        class_name: "source_google_ads.components.RowsStreamingDecoder"
     name: ad_group_ad
     primary_key:
       - ad_group.id
