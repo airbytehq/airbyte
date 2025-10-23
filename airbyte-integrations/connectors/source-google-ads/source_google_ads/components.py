@@ -6,7 +6,7 @@ import json
 import logging
 import re
 import threading
-from dataclasses import InitVar, dataclass
+from dataclasses import InitVar, dataclass, field
 from itertools import groupby
 from typing import Any, Callable, Dict, Generator, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
@@ -14,6 +14,7 @@ import anyascii
 import requests
 
 from airbyte_cdk import AirbyteTracedException, FailureType, InterpolatedString
+from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
@@ -25,8 +26,6 @@ from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
-from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
-
 
 from .google_ads import GoogleAds
 
@@ -898,143 +897,141 @@ class CustomGAQuerySchemaLoader(SchemaLoader):
 
 
 @dataclass
+class StringParseState:
+    inside_string: bool = False
+    escape_next: bool = False
+    char_buffer: List[str] = field(default_factory=list)
+    last_read_key: Optional[str] = None
+
+
+@dataclass
+class ResultsArrayState:
+    within_results_array: bool = False
+    results_nesting_depth: int = 0
+    pending_results_colon: bool = False
+
+
+@dataclass
+class RowParseState:
+    collecting_row: bool = False
+    row_buffer: List[str] = field(default_factory=list)
+    row_nesting_depth: int = 0
+
+
+@dataclass
 class RowsStreamingDecoder(Decoder):
     parameters: InitVar[Mapping[str, Any]]
 
     def is_stream_response(self) -> bool:
         return True
 
-    def decode(
-        self, response: requests.Response
-    ) -> Generator[MutableMapping[str, Any], None, None]:
-        for row in self._iter_rows_from_bytes(response.iter_content(chunk_size=128)):
+    def decode(self, response: requests.Response) -> Generator[MutableMapping[str, Any], None, None]:
+        for row in self._parse_rows_from_stream(response.iter_content(chunk_size=65536)):
             yield {"results": [row]}
 
-    def _iter_rows_from_bytes(self, byte_iter: Iterable[bytes], encoding: str = "utf-8") -> Generator[Dict[str, Any], None, None]:
-        """
-        Incrementally scan the searchStream response and yield each object from the
-        top-level "results" array as soon as that object is complete, without waiting
-        for the enclosing message object to finish.
-
-        This is a character-level state machine:
-          - Handles split chunks and concatenated JSON objects
-          - Tracks strings/escapes so braces inside strings don't confuse depth
-          - Detects the `"results": [` array and streams its items one-by-one
-        """
-        # Global scanning state
-        depth = 0
-        in_str = False
-        esc = False
-
-        # Detect the "results" array
-        last_string = None  # last completed JSON string token
-        awaiting_results_array = False
-        results_array_depth = None  # the depth level of the '[' that starts the array
-
-        # Per-item buffering state
-        collecting_item = False
-        item_buf = []  # characters of the current item
-        item_depth = 0  # nesting within the item (starts at 1 when we see '{')
-
-        # Temp buffer for current string token
-        str_buf = []
-
-        def finish_item():
-            nonlocal item_buf, collecting_item, item_depth
-            obj_text = "".join(item_buf).strip()
-            item_buf = []
-            collecting_item = False
-            item_depth = 0
-            if obj_text:
-                return json.loads(obj_text)
+    def _parse_rows_from_stream(self, byte_iter: Iterable[bytes], encoding: str = "utf-8") -> Generator[Dict[str, Any], None, None]:
+        string_state = StringParseState()
+        results_state = ResultsArrayState()
+        row_state = RowParseState()
 
         for chunk in byte_iter:
-            text = chunk.decode(encoding, errors="replace")
-            for ch in text:
+            for ch in chunk.decode(encoding, errors="replace"):
+                # Every structural char may be part of a row, so always append if collecting
+                self._append_to_current_row_if_any(ch, row_state)
 
-                # Always feed characters to item buffer if we're inside an item
-                if collecting_item:
-                    item_buf.append(ch)
-
-                # --- String handling (so braces inside strings are ignored) ---
-                if in_str:
-                    if esc:
-                        esc = False
-                        continue
-                    if ch == "\\":
-                        esc = True
-                        continue
-                    if ch == '"':
-                        # string ended
-                        in_str = False
-                        last_string = "".join(str_buf)
-                        str_buf = []
-                    else:
-                        str_buf.append(ch)
+                # Handle strings state
+                if self._update_string_state(ch, string_state):
                     continue
 
-                if ch == '"':
-                    in_str = True
-                    str_buf = []
-                    # If we are collecting an item, we already appended the quote to item_buf above
+                # Detect entering results array
+                if not results_state.within_results_array:
+                    self._detect_results_array(ch, string_state, results_state)
                     continue
 
-                # --- Structural characters outside strings ---
-                if ch in "{[":
-                    depth += 1
+                # We are inside results → parse rows
+                row = self._parse_row_structure(ch, results_state, row_state)
+                if row is not None:
+                    yield row
 
-                    # Detect the start of the "results" array: we just saw '[' after key "results": ...
-                    if ch == "[" and awaiting_results_array and results_array_depth is None:
-                        results_array_depth = depth  # this '[' depth
-                        awaiting_results_array = False
+    def _update_string_state(self, ch: str, s: StringParseState) -> bool:
+        """Return True if ch was handled as part of string parsing."""
+        if s.inside_string:
+            if s.escape_next:
+                s.escape_next = False
+                return True
+            if ch == "\\":
+                s.escape_next = True
+                return True
+            if ch == '"':
+                s.inside_string = False
+                s.last_read_key = "".join(s.char_buffer)
+                s.char_buffer.clear()
+                return True
+            s.char_buffer.append(ch)
+            return True
 
-                    # Detect the start of an item object directly inside "results"
-                    if (
-                            ch == "{"
-                            and results_array_depth is not None
-                            and not collecting_item
-                            and depth == results_array_depth + 1
-                    ):
-                        collecting_item = True
-                        item_buf = ["{"]  # start buffer anew
-                        item_depth = 1
-                    elif collecting_item and ch in "{[":
-                        # Nested structure inside item
-                        item_depth += 1
+        if ch == '"':
+            s.inside_string = True
+            s.char_buffer.clear()
+            return True
 
-                    continue
+        return False
 
-                if ch in "}]":
-                    # If we're collecting an item, adjust its own nesting counter
-                    if collecting_item:
-                        item_depth -= 1
-                        if item_depth == 0:
-                            # Item just finished -> emit it immediately
-                            item = finish_item()
-                            if item is not None:
-                                yield item
-                            # Note: we do NOT 'continue' here; we still need to update global depth below
+    def _detect_results_array(self, ch: str, s: StringParseState, r: ResultsArrayState) -> None:
+        if ch == ":" and s.last_read_key == "results":
+            r.pending_results_colon = True
+        elif ch == "[" and r.pending_results_colon:
+            r.within_results_array = True
+            r.results_nesting_depth = 1
+            r.pending_results_colon = False
 
-                    depth -= 1
+    def _parse_row_structure(self, ch: str, r: ResultsArrayState, i: RowParseState) -> Optional[Dict[str, Any]]:
+        if ch == "{":
+            if i.collecting_row:
+                i.row_nesting_depth += 1
+            else:
+                self._start_row(i)
+            return None
 
-                    # If we closed the results array, reset array tracking
-                    if (
-                            ch == "]"
-                            and results_array_depth is not None
-                            and depth < results_array_depth
-                    ):
-                        results_array_depth = None
-                    continue
+        if ch == "}":
+            if i.collecting_row:
+                i.row_nesting_depth -= 1
+                if i.row_nesting_depth == 0:
+                    return self._finish_row(i)
+            return None
 
-                # Detect `"results":` key just seen (outside strings)
-                if ch == ":" and last_string == "results" and results_array_depth is None:
-                    awaiting_results_array = True
+        if ch == "[":
+            if i.collecting_row:
+                i.row_nesting_depth += 1
+            else:
+                r.results_nesting_depth += 1
+            return None
 
-                # Commas/whitespace are irrelevant; any other chars just pass through
+        if ch == "]":
+            if i.collecting_row:
+                i.row_nesting_depth -= 1
+            else:
+                r.results_nesting_depth -= 1
+                if r.results_nesting_depth == 0:
+                    r.within_results_array = False
 
-        # End of stream: if we somehow have a finished item without seeing the closing bracket
-        # (rare, but be defensive), try to flush.
-        if collecting_item and item_depth == 0:
-            item = finish_item()
-            if item is not None:
-                yield item
+        return None
+
+    @staticmethod
+    def _append_to_current_row_if_any(ch: str, i: RowParseState):
+        if i.collecting_row:
+            i.row_buffer.append(ch)
+
+    @staticmethod
+    def _start_row(i: RowParseState):
+        i.collecting_row = True
+        i.row_buffer = ["{"]
+        i.row_nesting_depth = 1
+
+    @staticmethod
+    def _finish_row(i: RowParseState) -> Optional[Dict[str, Any]]:
+        text = "".join(i.row_buffer).strip()
+        i.collecting_row = False
+        i.row_buffer.clear()
+        i.row_nesting_depth = 0
+        return json.loads(text) if text else None

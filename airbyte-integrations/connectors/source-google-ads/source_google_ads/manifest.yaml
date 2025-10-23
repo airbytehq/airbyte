@@ -56,7 +56,7 @@ definitions:
         action: IGNORE
         http_codes:
           - 403
-#        error_message_contains: "The customer account can\\'t be accessed because it is not yet enabled or has been deactivated."
+  #        error_message_contains: "The customer account can\\'t be accessed because it is not yet enabled or has been deactivated."
 
   base_selector:
     type: RecordSelector

@@ -2,11 +2,10 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import MagicMock, Mock
 import json
 from dataclasses import dataclass
 from typing import List
-
+from unittest.mock import MagicMock, Mock
 
 from source_google_ads.components import ClickViewHttpRequester, CustomGAQueryHttpRequester, CustomGAQuerySchemaLoader, RowsStreamingDecoder
 
@@ -197,8 +196,6 @@ class TestRowsStreamingDecoder:
     def _decode_all(decoder: RowsStreamingDecoder, resp: "_FakeResponse"):
         return list(decoder.decode(resp))
 
-    # --- Tests ---------------------------------------------------------------
-
     def test_is_stream_response_true(self):
         d = RowsStreamingDecoder(parameters={})
         assert d.is_stream_response() is True
@@ -213,7 +210,6 @@ class TestRowsStreamingDecoder:
             "fieldMask": "campaign.id,campaign.name",
         }
         raw = json.dumps(msg).encode("utf-8")
-        print(raw)
 
         resp = self._FakeResponse(chunks=[raw])
         d = RowsStreamingDecoder(parameters={})
@@ -236,12 +232,12 @@ class TestRowsStreamingDecoder:
 
         # Split deliberately in awkward places (inside keys/values)
         chunks = [
-            s[:23].encode(),   # '{"results": [{"segments":'
-            s[23:40].encode(), # ' {"date": "2025-10-01"'
-            s[40:63].encode(), # '}, "metrics": {"clicks": '
-            s[63:65].encode(), # '1'
-            s[65:88].encode(), # '}}, {"segments": {"date"'
-            s[88:110].encode(),# ': "2025-10-02"}, "metric'
+            s[:23].encode(),  # '{"results": [{"segments":'
+            s[23:40].encode(),  # ' {"date": "2025-10-01"'
+            s[40:63].encode(),  # '}, "metrics": {"clicks": '
+            s[63:65].encode(),  # '1'
+            s[65:88].encode(),  # '}}, {"segments": {"date"'
+            s[88:110].encode(),  # ': "2025-10-02"}, "metric'
             s[110:].encode(),  # 's": {"clicks": 2}}]}'
         ]
 
@@ -272,7 +268,7 @@ class TestRowsStreamingDecoder:
 
     def test_braces_inside_strings_do_not_confuse_depth(self):
         """Braces and brackets inside string values must not break item boundary tracking."""
-        tricky_text = 'note: has braces { like this } and [also arrays]'
+        tricky_text = "note: has braces { like this } and [also arrays]"
         msg = {
             "results": [
                 {"ad": {"id": "42"}, "desc": tricky_text},
@@ -352,8 +348,8 @@ class TestRowsStreamingDecoder:
         Also covers escaped quotes and backslashes inside the same strings,
         with splits across chunk boundaries.
         """
-        tricky1 = r'line with [brackets] and {braces} and escaped quote \" and backslash \\'
-        tricky2 = r'second line with [more] {stuff} \" \\ and , commas'
+        tricky1 = r"line with [brackets] and {braces} and escaped quote \" and backslash \\"
+        tricky2 = r"second line with closing brackets ]} \} \] \" \\ and , commas"
 
         msg = {
             "results": [
