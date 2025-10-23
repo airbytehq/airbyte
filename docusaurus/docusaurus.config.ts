@@ -1,12 +1,11 @@
-// @ts-check
-// Note: type annotations allow type checking and IDEs autocompletion
 import "dotenv/config.js";
+import type { Config } from "@docusaurus/types";
+import { themes as prismThemes } from "prism-react-renderer";
+import type { Options as ClassicPresetOptions } from "@docusaurus/preset-classic";
+import fs from "fs";
+import { PluginOptions as LLmPluginOptions } from "@signalwire/docusaurus-plugin-llms-txt";
 
-const { themes } = require("prism-react-renderer");
-const lightCodeTheme = themes.github;
-const darkCodeTheme = themes.dracula;
-const npm2yarn = require("@docusaurus/remark-plugin-npm2yarn");
-
+// Import remark plugins
 const docsHeaderDecoration = require("./src/remark/docsHeaderDecoration");
 const enterpriseDocsHeaderInformation = require("./src/remark/enterpriseDocsHeaderInformation");
 const productInformation = require("./src/remark/productInformation");
@@ -14,14 +13,25 @@ const connectorList = require("./src/remark/connectorList");
 const specDecoration = require("./src/remark/specDecoration");
 const docMetaTags = require("./src/remark/docMetaTags");
 const addButtonToTitle = require("./src/remark/addButtonToTitle");
-const fs = require("fs");
+const npm2yarn = require("@docusaurus/remark-plugin-npm2yarn");
 
-const { SPEC_CACHE_PATH, API_SIDEBAR_PATH } = require("./src/scripts/embedded-api/constants");
+// Import constants
+const {
+  SPEC_CACHE_PATH,
+  API_SIDEBAR_PATH,
+} = require("./src/scripts/embedded-api/constants");
 
-/** @type {import('@docusaurus/types').Config} */
-const config = {
+const lightCodeTheme = prismThemes.github;
+const darkCodeTheme = prismThemes.dracula;
+
+const config: Config = {
   future: {
-    experimental_faster: true,
+    experimental_faster: {
+      rspackBundler: true,
+      rspackPersistentCache: true,
+      swcJsMinimizer: true,
+      swcJsLoader: true,
+    },
   },
   markdown: {
     mermaid: true,
@@ -87,22 +97,21 @@ const config = {
       : []),
   ],
   i18n: {
-    defaultLocale: 'en',
-    locales: ['en'],
+    defaultLocale: "en",
+    locales: ["en"],
   },
   // The preset is the "main" docs instance, though in reality, most content does not live under this preset. See the plugins array below, which defines the behavior of each docs instance.
   presets: [
     [
       "classic",
-      /** @type {import('@docusaurus/preset-classic').Options} */
-      ({
+      {
         docs: false, // Disable default docs plugin since we're using a custom page for home
         blog: false,
         pages: {}, // Enable pages plugin for standalone pages
         theme: {
           customCss: require.resolve("./src/css/custom.css"),
         },
-      }),
+      } satisfies ClassicPresetOptions,
     ],
   ],
   plugins: [
@@ -201,7 +210,7 @@ const config = {
           // items from the generated file structure.
 
           try {
-            const specPath = SPEC_CACHE_PATH; 
+            const specPath = SPEC_CACHE_PATH;
 
             if (!fs.existsSync(specPath)) {
               console.warn(
@@ -215,14 +224,14 @@ const config = {
 
             // Load the freshly generated sidebar (not the cached one from module load)
             const sidebarPath = API_SIDEBAR_PATH;
-            let freshSidebar = [];
+            let freshSidebar: any[] = [];
 
             if (fs.existsSync(sidebarPath)) {
               try {
                 const sidebarModule = require("./api-docs/embedded-api/sidebar.ts");
                 freshSidebar = sidebarModule.default || sidebarModule;
                 console.log("Loaded fresh sidebar from generated files");
-              } catch (sidebarError) {
+              } catch (sidebarError: any) {
                 console.warn(
                   "Could not load fresh sidebar, using empty array:",
                   sidebarError.message,
@@ -236,14 +245,14 @@ const config = {
               freshSidebar = [];
             }
 
-            const allowedTags = data.tags?.map((tag) => tag["name"]) || [];
+            const allowedTags = data.tags?.map((tag: any) => tag["name"]) || [];
 
             // Use freshly loaded sidebar items from the generated file
             const sidebarItems = Array.isArray(freshSidebar)
               ? freshSidebar
               : [];
 
-            const filteredItems = sidebarItems.filter((item) => {
+            const filteredItems = sidebarItems.filter((item: any) => {
               if (item.type !== "category") {
                 return true;
               }
@@ -252,7 +261,7 @@ const config = {
             });
 
             return filteredItems;
-          } catch (error) {
+          } catch (error: any) {
             console.warn(
               "Error loading embedded API spec from cache:",
               error.message,
@@ -292,7 +301,7 @@ const config = {
         content: {
           includePages: true,
         },
-      },
+      } satisfies LLmPluginOptions,
     ],
     () => ({
       name: "Yaml loader",
@@ -326,127 +335,122 @@ const config = {
     require.resolve("./src/scripts/fontAwesomeIcons.js"),
   ],
 
-  themeConfig:
-    /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
-    ({
-      colorMode: {
-        disableSwitch: false,
+  themeConfig: {
+    colorMode: {
+      disableSwitch: false,
+    },
+    mermaid: {
+      theme: {
+        light: "base",
+        dark: "base",
       },
-      mermaid: {
-        theme: {
-          light: 'base',  // "base" theme is fully customizable
-          dark: 'base'
+      options: {
+        themeVariables: {
+          primaryColor: "#5F5CFF",
+          primaryTextColor: "#FFFFFF",
+          primaryBorderColor: "#1A194D",
+          secondaryColor: "#FF6A4D",
+          tertiaryColor: "#E8EAF6",
+          tertiaryTextColor: "#000000",
+          tertiaryBorderColor: "#E8EAF6",
+          background: "#FFFFFF",
+          clusterBkg: "#F5F5F5",
+          fontFamily: "var(--ifm-font-family-base)",
         },
-        options: {
-          themeVariables: {
-            primaryColor: '#5F5CFF',        // Airbyte blue
-            primaryTextColor: '#FFFFFF',    // white labels on colored shapes
-            primaryBorderColor: '#1A194D',  // slightly darker for contrast
-            secondaryColor: '#FF6A4D',      // accent orange
-            // secondaryTextColor: '#FF6A4D',      // accent orange
-            // secondaryBorderColor: '#FF6A4D',      // accent orange
-            tertiaryColor: '#E8EAF6',        // light neutral fill
-            tertiaryTextColor: '#000000',    // black labels on light shapes
-            tertiaryBorderColor: '#E8EAF6',    // light neutral border
-            background: '#FFFFFF',
-            clusterBkg: '#F5F5F5',
-            fontFamily: 'var(--ifm-font-family-base)',
-          },
-          flowchart: {
-            rankSpacing: 100,   // vertical space
-            subGraphTitleMargin: 10, // space within subgraph border for title
-            nodeSpacing: 100,   // horizontal space
-          },
+        flowchart: {
+          rankSpacing: 100,
+          subGraphTitleMargin: 10,
+          nodeSpacing: 100,
         },
       },
-      docs: {
-        sidebar: {
-          autoCollapseCategories: true,
+    },
+    docs: {
+      sidebar: {
+        autoCollapseCategories: true,
+      },
+    },
+    algolia: {
+      appId: "OYKDBC51MU",
+      apiKey: "15c487fd9f7722282efd8fcb76746fce",
+      indexName: "airbyte",
+    },
+    announcementBar: {
+      id: "try_airbyte_cloud",
+      content:
+        '<a target="_blank" rel="noopener noreferrer" href="https://cloud.airbyte.io/signup?utm_campaign=22Q1_AirbyteCloudSignUpCampaign_Trial&utm_source=Docs&utm_content=NavBar">Try Airbyte Cloud</a>! Free for 30 days, no credit card needed.',
+      backgroundColor: "#615eff",
+      textColor: "#ffffff",
+      isCloseable: true,
+    },
+    navbar: {
+      title: "Docs",
+      logo: {
+        alt: "Simple, secure and extensible data integration",
+        src: "img/logo-dark.png",
+        srcDark: "img/logo-light.png",
+        height: 40,
+      },
+      items: [
+        {
+          type: "docSidebar",
+          position: "left",
+          docsPluginId: "platform",
+          sidebarId: "platform",
+          label: "Platform",
         },
-      },
-      algolia: {
-        appId: "OYKDBC51MU",
-        apiKey: "15c487fd9f7722282efd8fcb76746fce", // Public API key: it is safe to commit it
-        indexName: "airbyte",
-      },
-      announcementBar: {
-        id: "try_airbyte_cloud",
-        content:
-          '<a target="_blank" rel="noopener noreferrer" href="https://cloud.airbyte.io/signup?utm_campaign=22Q1_AirbyteCloudSignUpCampaign_Trial&utm_source=Docs&utm_content=NavBar">Try Airbyte Cloud</a>! Free for 30 days, no credit card needed.',
-        backgroundColor: "#615eff",
-        textColor: "#ffffff",
-        isCloseable: true,
-      },
-      navbar: {
-        title: "Docs",
-        logo: {
-          alt: "Simple, secure and extensible data integration",
-          src: "img/logo-dark.png",
-          srcDark: "img/logo-light.png",
-          height: 40,
+        {
+          type: "docSidebar",
+          position: "left",
+          docsPluginId: "connectors",
+          sidebarId: "connectors",
+          label: "Connectors",
         },
-        items: [
-          {
-            type: "docSidebar",
-            position: "left",
-            docsPluginId: "platform",
-            sidebarId: "platform",
-            label: "Platform",
-          },
-          {
-            type: "docSidebar",
-            position: "left",
-            docsPluginId: "connectors",
-            sidebarId: "connectors",
-            label: "Connectors",
-          },
-          {
-            type: "docSidebar",
-            position: "left",
-            docsPluginId: "release_notes",
-            sidebarId: "releaseNotes",
-            label: "Release notes",
-          },
-          {
-            type: "docSidebar",
-            position: "left",
-            docsPluginId: "ai-agents",
-            sidebarId: "ai-agents",
-            label: "AI Agents",
-          },
-          {
-            href: "https://support.airbyte.com/",
-            label: "Support",
-          },
-
-          {
-            href: "https://status.airbyte.com",
-            label: "Status",
-            className: "cloudStatusLink",
-          },
-          // --- Right side ---
-          // Platform docs version selector
-          {
-            type: "docsVersionDropdown",
-            position: "right",
-            docsPluginId: "platform",
-            label: "Version",
-            dropdownActiveClassDisabled: true, // do not style the dropdown as active when viewing platform docs
-          },
-          {
-            href: "https://github.com/airbytehq",
-            position: "right",
-            "aria-label": "Airbyte on GitHub",
-            className: "header-github-link",
-          },
-        ],
-      },
-      prism: {
-        theme: lightCodeTheme,
-        darkTheme: darkCodeTheme,
-        additionalLanguages: ["bash", "diff", "json", "hcl"],
-      },
-    }),
+        {
+          type: "docSidebar",
+          position: "left",
+          docsPluginId: "release_notes",
+          sidebarId: "releaseNotes",
+          label: "Release notes",
+        },
+        {
+          type: "docSidebar",
+          position: "left",
+          docsPluginId: "ai-agents",
+          sidebarId: "ai-agents",
+          label: "AI Agents",
+        },
+        {
+          href: "https://support.airbyte.com/",
+          label: "Support",
+        },
+        {
+          href: "https://status.airbyte.com",
+          label: "Status",
+          className: "cloudStatusLink",
+        },
+        // --- Right side ---
+        // Platform docs version selector
+        {
+          type: "docsVersionDropdown",
+          position: "right",
+          docsPluginId: "platform",
+          label: "Version",
+          dropdownActiveClassDisabled: true,
+        },
+        {
+          href: "https://github.com/airbytehq",
+          position: "right",
+          "aria-label": "Airbyte on GitHub",
+          className: "header-github-link",
+        },
+      ],
+    },
+    prism: {
+      theme: lightCodeTheme,
+      darkTheme: darkCodeTheme,
+      additionalLanguages: ["bash", "diff", "json", "hcl"],
+    },
+  },
 };
 
-module.exports = config;
+export default config;
