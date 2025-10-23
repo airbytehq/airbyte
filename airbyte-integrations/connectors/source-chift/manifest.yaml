@@ -9,6 +9,8 @@ check:
   type: CheckStream
   stream_names:
     - consumers
+    - connections
+    - syncs
 
 definitions:
   streams:
