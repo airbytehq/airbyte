@@ -7,11 +7,14 @@ package io.airbyte.integrations.source.mssql
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.*
 import io.airbyte.cdk.jdbc.SSLCertificateUtils
+import io.airbyte.cdk.output.DataChannelMedium
+import io.airbyte.cdk.output.sockets.DATA_CHANNEL_PROPERTY_PREFIX
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshNoTunnelMethod
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
+import io.micronaut.context.annotation.Value
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import java.net.URLDecoder
@@ -75,11 +78,17 @@ enum class InvalidCdcCursorPositionBehavior {
 @Singleton
 class MsSqlServerSourceConfigurationFactory
 @Inject
-constructor(val featureFlags: Set<FeatureFlag>) :
+constructor(
+    val featureFlags: Set<FeatureFlag>,
+    @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.medium}")
+    val dataChannelMedium: String = DataChannelMedium.STDIO.name,
+    @Value("\${${DATA_CHANNEL_PROPERTY_PREFIX}.socket-paths}")
+    val socketPaths: List<String> = emptyList(),
+) :
     SourceConfigurationFactory<
         MsSqlServerSourceConfigurationSpecification, MsSqlServerSourceConfiguration> {
 
-    constructor() : this(emptySet())
+    constructor() : this(emptySet(), DataChannelMedium.STDIO.name, emptyList())
 
     override fun makeWithoutExceptionHandling(
         pojo: MsSqlServerSourceConfigurationSpecification,
@@ -223,7 +232,20 @@ constructor(val featureFlags: Set<FeatureFlag>) :
             throw ConfigErrorException("Checkpoint Target Interval should be positive")
         }
 
-        val maxConcurrency: Int = pojo.concurrency ?: 1
+        var maxConcurrency: Int? = pojo.concurrency
+
+        log.info { "maxConcurrency: $maxConcurrency. socket paths: ${socketPaths.size}" }
+
+        // If maxConcurrency is set, we use it.
+        // Otherwise, we use the number of socket paths provided for speed mode
+        // Or 1 for legacy mode
+        maxConcurrency =
+            when (DataChannelMedium.valueOf(dataChannelMedium)) {
+                DataChannelMedium.STDIO -> maxConcurrency ?: 1
+                DataChannelMedium.SOCKET -> maxConcurrency ?: socketPaths.size
+            }
+        log.info { "Effective concurrency: $maxConcurrency" }
+
         if (maxConcurrency <= 0) {
             throw ConfigErrorException("Concurrency setting should be positive")
         }
