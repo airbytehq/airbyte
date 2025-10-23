@@ -107,5 +107,5 @@ If a job is running out-of-memory, simply navigate to the Job in the UI, and loo
 2024-10-28 23:58:10 platform > Launching replication pod: replication-job-20154943-attempt-0 with containers:
 2024-10-28 23:58:10 platform > [source] image: airbyte/source-sftp:1.2.0-dev.54744ff04b resources: ResourceRequirements(claims=[], limits={memory=2Gi, ephemeral-storage=5G, cpu=1}, requests={memory=1Gi, ephemeral-storage=5G, cpu=0.5}, additionalProperties={})
 2024-10-28 23:58:10 platform > [destination] image: airbyte/destination-s3:1.4.0-dev.6b9d2e4595 resources: ResourceRequirements(claims=[], limits={memory=2Gi, cpu=1}, requests={memory=2Gi, cpu=0.5}, additionalProperties={})
-2024-10-28 23:58:10 platform > [orchestrator] image: airbyte/container-orchestrator:build-256f73c6c2-20488-master resources: ResourceRequirements(claims=[], limits={memory=2Gi, cpu=1}, requests={memory=2Gi, cpu=1}, additionalProperties={})
+2024-10-28 23:58:10 platform > [orchestrator] image: airbyte/container-orchestrator:build-256f73c6c2-20488-main resources: ResourceRequirements(claims=[], limits={memory=2Gi, cpu=1}, requests={memory=2Gi, cpu=1}, additionalProperties={})
 ```

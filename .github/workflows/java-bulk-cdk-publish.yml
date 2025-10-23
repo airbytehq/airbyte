@@ -4,7 +4,7 @@ name: Publish Bulk CDK
 on:
   push:
     branches:
-      - master
+      - main
     paths:
       - "airbyte-cdk/bulk/**"
   workflow_dispatch:

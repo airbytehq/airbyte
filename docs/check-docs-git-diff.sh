@@ -38,7 +38,7 @@ if echo "$latest_commit_message" | grep -Eq "\[(up-to-date|auto-publish)\]"; the
 fi
 
 REMOTE=origin
-DEFAULT_BRANCH=master
+DEFAULT_BRANCH=main
 COMPARE_TO_REF="${REMOTE}/${DEFAULT_BRANCH}"
 if [ "$LATEST_COMMIT_ONLY" == 'true' ]; then
     # We only want to compare the latest commit against the previous one:

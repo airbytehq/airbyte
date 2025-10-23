@@ -111,7 +111,7 @@ The `filename_extractor` supports Jinja templating with access to record data, a
 
 ## Usage example
 
-Here's how the [Zendesk Support connector](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-zendesk-support/source_zendesk_support/manifest.yaml) uses file syncing for article attachments.
+Here's how the [Zendesk Support connector](https://github.com/airbytehq/airbyte/blob/main/airbyte-integrations/connectors/source-zendesk-support/source_zendesk_support/manifest.yaml) uses file syncing for article attachments.
 
 ```yaml title="manifest.yaml"
 streams:

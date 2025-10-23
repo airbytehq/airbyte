@@ -67,7 +67,7 @@ def github_connectors_metadata_files(resource_context: InitResourceContext) -> L
     resource_context.log.info(f"retrieving github metadata files")
 
     github_connector_repo = resource_context.resources.github_connector_repo
-    repo_file_tree = github_connector_repo.get_git_tree("master", recursive=True).tree
+    repo_file_tree = github_connector_repo.get_git_tree("main", recursive=True).tree
     metadata_file_paths = [
         {
             "path": github_file.path,

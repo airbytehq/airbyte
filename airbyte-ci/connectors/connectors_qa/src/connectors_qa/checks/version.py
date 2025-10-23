@@ -36,17 +36,17 @@ class CheckVersionIncrement(Check):
 
     def _should_run(self) -> bool:
         # Always run
-        # TODO: don't run if only files changed are in the bypass list or running in the context of the master branch
+        # TODO: don't run if only files changed are in the bypass list or running in the context of the main branch
         return True
 
     def _get_master_metadata(self, connector: Connector) -> Dict[str, Any] | None:
-        """Get the metadata from the master branch or None if unable to retrieve."""
+        """Get the metadata from the main branch or None if unable to retrieve."""
         # TODO: test out if this works on the private airbyte-enterprise repo - consider using git-based approach
-        github_url_prefix = "https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-integrations/connectors"
+        github_url_prefix = "https://raw.githubusercontent.com/airbytehq/airbyte/main/airbyte-integrations/connectors"
         master_metadata_url = f"{github_url_prefix}/{connector.technical_name}/{consts.METADATA_FILE_NAME}"
         response = requests.get(master_metadata_url)
 
-        # New connectors will not have a metadata file in master
+        # New connectors will not have a metadata file in main
         if not response.ok:
             return None
         return yaml.safe_load(response.text)["data"]
@@ -55,7 +55,7 @@ class CheckVersionIncrement(Check):
         return semver.Version.parse(str(metadata["dockerImageTag"]))
 
     def _get_master_connector_version(self, connector: Connector) -> semver.Version:
-        """Get the version from the master branch."""
+        """Get the version from the main branch."""
         master_metadata = self._get_master_metadata(connector)
         if not master_metadata:
             return semver.Version.parse("0.0.0")

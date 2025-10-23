@@ -25,7 +25,7 @@ from simpleeval import simple_eval
 
 console = Console()
 
-DIFFED_BRANCH = os.environ.get("DIFFED_BRANCH", "origin/master")
+DIFFED_BRANCH = os.environ.get("DIFFED_BRANCH", "origin/main")
 OSS_CATALOG_URL = "https://connectors.airbyte.com/files/registries/v0/oss_registry.json"
 CLOUD_CATALOG_URL = "https://connectors.airbyte.com/files/registries/v0/cloud_registry.json"
 BASE_AIRBYTE_DOCS_URL = "https://docs.airbyte.com"
@@ -90,7 +90,7 @@ def get_connector_name_from_path(path):
 
 
 def get_changed_metadata(diff_regex: Optional[str] = None) -> Set[str]:
-    """Retrieve the set of connectors for which the metadata file was changed in the current branch (compared to master).
+    """Retrieve the set of connectors for which the metadata file was changed in the current branch (compared to main).
 
     Args:
         diff_regex (str): Find the edited files that contain the following regex in their change.
@@ -102,7 +102,7 @@ def get_changed_metadata(diff_regex: Optional[str] = None) -> Set[str]:
 
 
 def get_changed_file(file_name: str, diff_regex: Optional[str] = None) -> Set[str]:
-    """Retrieve the set of connectors for which the given file was changed in the current branch (compared to master).
+    """Retrieve the set of connectors for which the given file was changed in the current branch (compared to main).
 
     Args:
         diff_regex (str): Find the edited files that contain the following regex in their change.
@@ -724,7 +724,7 @@ class Connector:
 def get_changed_connectors(
     modified_files: Optional[Set[Union[str, Path]]] = None, source: bool = True, destination: bool = True, third_party: bool = True
 ) -> Set[Connector]:
-    """Retrieve a set of Connectors that were changed in the current branch (compared to master)."""
+    """Retrieve a set of Connectors that were changed in the current branch (compared to main)."""
     if modified_files is None:
         airbyte_repo = git.Repo(search_parent_directories=True)
         modified_files = airbyte_repo.git.diff("--name-only", DIFFED_BRANCH).split("\n")

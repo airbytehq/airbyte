@@ -58,7 +58,7 @@ jobs:
           java-version: 21
           cache: gradle
 
-      # The default behaviour is read-only on PR branches and read/write on master.
+      # The default behaviour is read-only on PR branches and read/write on main.
       # See https://github.com/gradle/actions/blob/main/docs/setup-gradle.md#using-the-cache-read-only.
       - uses: gradle/actions/setup-gradle@748248ddd2a24f49513d8f472f81c3a07d4d50e1 # v4.4.4
         if: matrix.connector

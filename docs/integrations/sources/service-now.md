@@ -14,7 +14,7 @@ Airbyte’s incubating ServiceNow enterprise source connector currently offers F
 1. Enter your ServiceNow environment as the Base URL.
 2. Enter the username and password for a ServiceNow user account that has access to all tables that you want to include in the connection.
 
-![ServiceNow Connector setup with credentials](https://raw.githubusercontent.com/airbytehq/airbyte/refs/heads/master/docs/enterprise-setup/assets/enterprise-connectors/service-now-setup.png)
+![ServiceNow Connector setup with credentials](https://raw.githubusercontent.com/airbytehq/airbyte/refs/heads/main/docs/enterprise-setup/assets/enterprise-connectors/service-now-setup.png)
 
 ## Supported streams
 

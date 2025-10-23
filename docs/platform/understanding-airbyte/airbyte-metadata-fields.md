@@ -23,7 +23,7 @@ This field contains additional information about the record. Airbyte writes it a
 - A `changes` field, which records any modifications that Airbyte performed on the record. For example, if a record contained a value which didn't match the stream's schema, the destination connector could write `null` to the destination and add an entry to the `changes` list.
 
 Each entry in the `changes` list is itself an object. The
-[Airbyte protocol](https://github.com/airbytehq/airbyte-protocol/blob/master/protocol-models/src/main/resources/airbyte_protocol/airbyte_protocol.yaml#L88) defines the schema for these objects, as the `AirbyteRecordMessageMetaChange` struct.
+[Airbyte protocol](https://github.com/airbytehq/airbyte-protocol/blob/main/protocol-models/src/main/resources/airbyte_protocol/airbyte_protocol.yaml#L88) defines the schema for these objects, as the `AirbyteRecordMessageMetaChange` struct.
 
 For example, if you saw this value in `_airbyte_meta`:
 

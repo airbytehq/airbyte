@@ -5,7 +5,7 @@ import TabItem from "@theme/TabItem";
 
 Everyone is welcome to contribute to Airbyte's documentation.
 
-Airbyte's documentation is in the [Airbyte repository](https://github.com/airbytehq/airbyte/tree/master/docs) on GitHub. It's published at [docs.airbyte.com](https://docs.airbyte.com/) using [Vercel](https://vercel.com). Connector docs are also rendered within Airbyte itself when setting up new connectors. The docs are built on [Docusaurus](https://docusaurus.io/). Content is written in [Markdown](https://guides.github.com/features/mastering-markdown/) and all topics are in the `/docs` folder. Configuration files and previously-released versions of platform docs are in the `/docusaurus` folder.
+Airbyte's documentation is in the [Airbyte repository](https://github.com/airbytehq/airbyte/tree/main/docs) on GitHub. It's published at [docs.airbyte.com](https://docs.airbyte.com/) using [Vercel](https://vercel.com). Connector docs are also rendered within Airbyte itself when setting up new connectors. The docs are built on [Docusaurus](https://docusaurus.io/). Content is written in [Markdown](https://guides.github.com/features/mastering-markdown/) and all topics are in the `/docs` folder. Configuration files and previously-released versions of platform docs are in the `/docusaurus` folder.
 
 ## Open source contributions welcome
 
@@ -306,15 +306,15 @@ If you're adding a new file, removing a file, or moving things around, update th
 
 Each instance in the docs has its own sidebar. Make sure you add topics to the sidebar appropriate to your change.
 
-- Add platform docs in `/docs/platform` and add an entry for them to [`docusaurus/sidebar-platform.js`](https://github.com/airbytehq/airbyte/blob/master/docusaurus/sidebar-platform.js).
-- Add connector docs in `/docs/integrations`. Docusaurus automatically adds files in this directory to [`docusaurus/sidebar-connectors.js`](https://github.com/airbytehq/airbyte/blob/master/docusaurus/sidebar-connectors.js), so you don't need to do anything else.
-- Add release notes in `/docs/release_notes` and add an entry for them to [`docusaurus/sidebar-release_notes.js`](https://github.com/airbytehq/airbyte/blob/master/docusaurus/sidebar-release_notes.js).
+- Add platform docs in `/docs/platform` and add an entry for them to [`docusaurus/sidebar-platform.js`](https://github.com/airbytehq/airbyte/blob/main/docusaurus/sidebar-platform.js).
+- Add connector docs in `/docs/integrations`. Docusaurus automatically adds files in this directory to [`docusaurus/sidebar-connectors.js`](https://github.com/airbytehq/airbyte/blob/main/docusaurus/sidebar-connectors.js), so you don't need to do anything else.
+- Add release notes in `/docs/release_notes` and add an entry for them to [`docusaurus/sidebar-release_notes.js`](https://github.com/airbytehq/airbyte/blob/main/docusaurus/sidebar-release_notes.js).
 
 ### Add a redirect
 
 If you're moving or renaming a page, you should add a redirect to its new location. If you're deleting a page, you should add a redirect to the most relevant new file, like a replacement topic or a parent page.
 
-Vercel manages redirects. To add or change a redirect, open the [`docusaurus/vercel.json`](https://github.com/airbytehq/airbyte/blob/master/docusaurus/vercel.json) file and add an entry from the old path to the new path. Vercel.json supports complex redirects using wildcards and regular expressions, if necessary. For help, see [Configuring projects with vercel.json](https://vercel.com/docs/project-configuration#redirects).
+Vercel manages redirects. To add or change a redirect, open the [`docusaurus/vercel.json`](https://github.com/airbytehq/airbyte/blob/main/docusaurus/vercel.json) file and add an entry from the old path to the new path. Vercel.json supports complex redirects using wildcards and regular expressions, if necessary. For help, see [Configuring projects with vercel.json](https://vercel.com/docs/project-configuration#redirects).
 
 You can test redirects on the test build Vercel generates after you submit a pull request.
 
@@ -346,7 +346,7 @@ Vale and MarkDownLint are newly implemented. They might still generate false pos
 
 ### Linters in CI
 
-Both Vale and MarkDownLint run automatically on pull requests through the [Reviewdog workflow](https://github.com/airbytehq/airbyte/blob/master/.github/workflows/reviewdog.yml). When you open or update a pull request that modifies documentation in `docs/**/*.md`, the workflow:
+Both Vale and MarkDownLint run automatically on pull requests through the [Reviewdog workflow](https://github.com/airbytehq/airbyte/blob/main/.github/workflows/reviewdog.yml). When you open or update a pull request that modifies documentation in `docs/**/*.md`, the workflow:
 
 - Runs Vale with a minimum alert level of **warning** (errors and warnings are reported, suggestions are not)
 - Runs MarkDownLint to check for structural issues
@@ -489,7 +489,7 @@ See [the GitHub project](https://github.com/DavidAnson/markdownlint?tab=readme-o
 
 ## Create a pull request
 
-When you're ready to submit your work, create a pull request into `master`.
+When you're ready to submit your work, create a pull request into `main`.
 
 ### Review and approval
 
@@ -507,7 +507,7 @@ Before Airbyte accepts your contribution, you need to sign the Contributor Licen
 
 ## Deploy the documentation site
 
-When someone merges documentation changes into the `master` branch, Vercel deploys updated docs automatically. This takes 5-10 minutes and needs no human intervention.
+When someone merges documentation changes into the `main` branch, Vercel deploys updated docs automatically. This takes 5-10 minutes and needs no human intervention.
 
 ## Release and manage documentation versions {#doc-versions}
 
@@ -521,7 +521,7 @@ When you release a new version of Airbyte, make a new docs version of the docs t
 
 When you release a new major version of Airbyte like 2.0 or 2.1, generate a documentation version for it. This process generates a "frozen" set of the docs based on their state at that point in time. Once the version exists, you _can_ still update those docs, but changes you make don't carry forward to future versions.
 
-1. In GitHub, create a new branch off `master`.
+1. In GitHub, create a new branch off `main`.
 
 2. Open a terminal, change to the docusaurus folder, and run the command to generate a version. `<version>` can be a number like `2.0` or anything else you like. Be consistent with Airbyte and other versions on the docs site. Whatever string you enter here later appears in the docs UI.
 
@@ -542,7 +542,7 @@ When you release a new major version of Airbyte like 2.0 or 2.1, generate a docu
    - Your local Docusaurus build doesn't report new broken links
    - The version selector in the navigation contains your new version
 
-4. Create a pull request, get an approval, wait for CI checks to pass, and merge your changes into `master`.
+4. Create a pull request, get an approval, wait for CI checks to pass, and merge your changes into `main`.
 
 ### Create a new minor version
 

@@ -38,7 +38,7 @@ from pipelines.models.artifacts import Artifact
 from pipelines.models.secrets import Secret
 from pipelines.models.steps import STEP_PARAMS, MountPath, Step, StepResult, StepStatus
 
-GITHUB_URL_PREFIX_FOR_CONNECTORS = f"{AIRBYTE_GITHUBUSERCONTENT_URL_PREFIX}/master/airbyte-integrations/connectors"
+GITHUB_URL_PREFIX_FOR_CONNECTORS = f"{AIRBYTE_GITHUBUSERCONTENT_URL_PREFIX}/main/airbyte-integrations/connectors"
 
 
 class VersionCheck(Step, ABC):
@@ -58,7 +58,7 @@ class VersionCheck(Step, ABC):
     def master_metadata(self) -> Optional[dict]:
         response = requests.get(self.github_master_metadata_url)
 
-        # New connectors will not have a metadata file in master
+        # New connectors will not have a metadata file in main
         if not response.ok:
             return None
         return yaml.safe_load(response.text)
@@ -90,7 +90,7 @@ class VersionCheck(Step, ABC):
         if not self.should_run:
             return StepResult(step=self, status=StepStatus.SKIPPED, stdout="No modified files required a version bump.")
         if self.context.ci_context == CIContext.MASTER:
-            return StepResult(step=self, status=StepStatus.SKIPPED, stdout="Version check are not running in master context.")
+            return StepResult(step=self, status=StepStatus.SKIPPED, stdout="Version check are not running in main context.")
         try:
             return self.validate()
         except (requests.HTTPError, ValueError, TypeError) as e:
@@ -357,7 +357,7 @@ class AcceptanceTests(Step):
         return cat_container.with_unix_socket("/var/run/docker.sock", self.context.dagger_client.host().unix_socket("/var/run/docker.sock"))
 
     def get_is_hard_failure(self) -> bool:
-        """When a connector is not certified or the CI context is master, we consider the acceptance tests as hard failures:
+        """When a connector is not certified or the CI context is main, we consider the acceptance tests as hard failures:
         The overall status of the pipeline will be FAILURE if the acceptance tests fail.
         For marketplace connectors we defer to the IncrementalAcceptanceTests step to determine if the acceptance tests are hard failures:
         If a new test is failing compared to the released version of the connector.
@@ -430,12 +430,12 @@ class IncrementalAcceptanceTests(Step):
     def _get_master_metadata(self) -> Dict[str, Any]:
         metadata_response = requests.get(f"{GITHUB_URL_PREFIX_FOR_CONNECTORS}/{self.context.connector.technical_name}/metadata.yaml")
         if not metadata_response.ok:
-            raise FileNotFoundError(f"Could not fetch metadata file for {self.context.connector.technical_name} on master.")
+            raise FileNotFoundError(f"Could not fetch metadata file for {self.context.connector.technical_name} on main.")
         return yaml.safe_load(metadata_response.text)
 
     async def get_result_log_on_master(self, master_metadata: dict) -> Artifact:
         """Runs acceptance test on the released image of the connector and returns the report log.
-        The released image version is fetched from the master metadata file of the connector.
+        The released image version is fetched from the main metadata file of the connector.
         We're not using the online connector registry here as some connectors might not be released to OSS nor Airbyte Cloud.
         Thanks to Dagger caching subsequent runs of this step will be cached if the released image did not change.
 
@@ -471,7 +471,7 @@ class IncrementalAcceptanceTests(Step):
             return StepResult(
                 step=self,
                 status=StepStatus.SKIPPED,
-                stdout="The connector does not have a metadata file on master. Skipping incremental acceptance tests.",
+                stdout="The connector does not have a metadata file on main. Skipping incremental acceptance tests.",
                 exc_info=exc,
             )
 

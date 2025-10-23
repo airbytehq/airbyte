@@ -3,7 +3,7 @@
 touch ".gitignore"
 git add ".gitignore"
 git commit -m "Initial commit"
-git push origin master
+git push origin main
 
 for (( i = 0; i < 5; i++ )); do
     git branch "feature/branch_$i"

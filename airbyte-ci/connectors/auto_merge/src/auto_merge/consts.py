@@ -5,7 +5,7 @@ from __future__ import annotations
 AIRBYTE_REPO = "airbytehq/airbyte"
 AUTO_MERGE_LABEL = "auto-merge"
 AUTO_MERGE_BYPASS_CI_CHECKS_LABEL = "auto-merge/bypass-ci-checks"
-BASE_BRANCH = "master"
+BASE_BRANCH = "main"
 CONNECTOR_PATH_PREFIXES = {
     "airbyte-integrations/connectors",
     "docs/integrations/sources",

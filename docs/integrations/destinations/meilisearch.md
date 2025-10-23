@@ -38,7 +38,7 @@ can be reached. If running on a localhost by default it will be on `http://local
 that you must include the protocol. The second piece of information is the API key. If no API key is
 set for your MeiliSearch instance, then this field can be left blank. If it is set, you can find the
 value for your API by following these
-[instructions](https://docs.meilisearch.com/reference/features/authentication.html#master-key). in
+[instructions](https://docs.meilisearch.com/reference/features/authentication.html#main-key). in
 the MeiliSearch docs.
 
 ## Changelog

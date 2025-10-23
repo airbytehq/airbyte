@@ -216,7 +216,7 @@ def _publish_stale_metadata_report(
 
     Args:
         stale_metadata_report (pd.DataFrame): A DataFrame containing the stale metadata.
-        latest_metadata_versions_on_github_count (int): The number of metadata files on our master branch.
+        latest_metadata_versions_on_github_count (int): The number of metadata files on our main branch.
         latest_metadata_versions_on_gcs_count (int): The number of latest metadata files hosted in GCS.
     Returns:
         tuple[bool, Optional[str]]: A tuple containing a boolean indicating whether the report was published and an error message.
@@ -232,8 +232,8 @@ def _publish_stale_metadata_report(
     if not any_stale:
         message = textwrap.dedent(
             f"""
-        Analyzed {latest_metadata_versions_on_github_count} metadata files on our master branch and {latest_metadata_versions_on_gcs_count} latest metadata files hosted in GCS.
-        All dockerImageTag value on master match the latest metadata files on GCS.
+        Analyzed {latest_metadata_versions_on_github_count} metadata files on our main branch and {latest_metadata_versions_on_gcs_count} latest metadata files hosted in GCS.
+        All dockerImageTag value on main match the latest metadata files on GCS.
         No stale metadata: GCS metadata are up to date with metadata hosted on GCS.
         """
         )

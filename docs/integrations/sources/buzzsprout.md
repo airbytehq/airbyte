@@ -2,12 +2,12 @@
 This page contains the setup guide and reference information for the [Buzzsprout](https://www.buzzsprout.com/) source connector.
 
 ## Documentation reference:
-Visit `https://github.com/buzzsprout/buzzsprout-api/tree/master/sections` for API documentation
+Visit `https://github.com/buzzsprout/buzzsprout-api/tree/main/sections` for API documentation
 
 ## Authentication setup
 `Source-buzzsprout` uses API keys and podcast id for its authentication,
 Visit `https://www.buzzsprout.com/my/profile/api` for getting api key and podcast id
-Visit `https://github.com/buzzsprout/buzzsprout-api/tree/master?tab=readme-ov-file#authentication` for knowing more about authentication.
+Visit `https://github.com/buzzsprout/buzzsprout-api/tree/main?tab=readme-ov-file#authentication` for knowing more about authentication.
 
 ## Configuration
 

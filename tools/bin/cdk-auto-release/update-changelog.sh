@@ -216,25 +216,25 @@ insert_changelog_row() {
 
 # --- Git Helper Functions ---
 
-# Function to fetch updates from the master branch
+# Function to fetch updates from the main branch
 # Usage: fetch_updates
 fetch_updates() {
-    log_info "Fetching updates from origin/master..."
-    if ! git fetch origin master; then
-        error_exit "Failed to fetch from origin master."
+    log_info "Fetching updates from origin/main..."
+    if ! git fetch origin main; then
+        error_exit "Failed to fetch from origin main."
     fi
 }
 
-# Function to find the merge base between HEAD and origin/master
+# Function to find the merge base between HEAD and origin/main
 # Usage: find_merge_base
 # Returns: The merge base commit hash or exits on error
 find_merge_base() {
     local merge_base
-    log_info "Finding merge base between HEAD and origin/master..."
-    merge_base=$(git merge-base HEAD origin/master)
+    log_info "Finding merge base between HEAD and origin/main..."
+    merge_base=$(git merge-base HEAD origin/main)
 
     if [ -z "$merge_base" ]; then
-      error_exit "Could not find a common ancestor between HEAD and origin/master."
+      error_exit "Could not find a common ancestor between HEAD and origin/main."
     fi
 
     log_info "Merge base commit: $merge_base"

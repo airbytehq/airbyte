@@ -99,7 +99,7 @@ approaches CDC.
 - Change data capture cannot be enabled on tables with a clustered columnstore index. \(It can be
   enabled on tables with a _non-clustered_ columnstore index\).
 - The SQL Server CDC feature processes changes that occur in user-created tables only. You cannot
-  enable CDC on the SQL Server master database.
+  enable CDC on the SQL Server main database.
 - Using variables with partition switching on databases or tables with change data capture \(CDC\)
   is not supported for the `ALTER TABLE` ... `SWITCH TO` ... `PARTITION` ... statement.
 - CDC incremental syncing is only available for tables with at least one primary key. Tables without primary keys can still be replicated by CDC but only in Full Refresh mode.
@@ -208,7 +208,7 @@ For further detail, see the
     updated by the Agent in the source database.
 
     ```text
-    USE master;
+    USE main;
     GRANT VIEW SERVER STATE TO {user name};
     ```
 
@@ -355,7 +355,7 @@ to the Airbyte connector configuration screen, so it may log in to the bastion.
 
 MSSQL data types are mapped to the following data types when synchronizing data. You can check the
 test values examples
-[here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mssql/src/test-integration/java/io/airbyte/integrations/source/mssql/MssqlSourceDatatypeTest.java).
+[here](https://github.com/airbytehq/airbyte/blob/main/airbyte-integrations/connectors/source-mssql/src/test-integration/java/io/airbyte/integrations/source/mssql/MssqlSourceDatatypeTest.java).
 If you can't find the data type you are looking for or have any problems feel free to add a new
 test!
 

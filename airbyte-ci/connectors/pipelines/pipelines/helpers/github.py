@@ -29,7 +29,7 @@ AIRBYTE_GITHUB_REPO = os.environ.get("AIRBYTE_GITHUB_REPO", DEFAULT_AIRBYTE_GITH
 AIRBYTE_GITHUBUSERCONTENT_URL_PREFIX = f"https://raw.githubusercontent.com/{AIRBYTE_GITHUB_REPO}"
 AIRBYTE_GITHUB_REPO_URL_PREFIX = f"https://github.com/{AIRBYTE_GITHUB_REPO}"
 AIRBYTE_GITHUB_REPO_URL = f"{AIRBYTE_GITHUB_REPO_URL_PREFIX}.git"
-BASE_BRANCH = "master"
+BASE_BRANCH = "main"
 
 
 def safe_log(logger: Optional[Logger], message: str, level: str = "info") -> None:

@@ -223,7 +223,7 @@ To enable a test suite, add the suite name to the `connectorTestSuitesOptions` l
 
 #####  Default paths and conventions
  
-The [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) tool will automatically locate specific test types based on established conventions and will automatically store secret files (when needed) in the established secrets directory - which should be already excluded from accidental git commits.
+The [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/main/airbyte-ci/connectors/pipelines/README.md) tool will automatically locate specific test types based on established conventions and will automatically store secret files (when needed) in the established secrets directory - which should be already excluded from accidental git commits.
 
 **Python connectors**
 Tests are discovered by Pytest and are expected to be located in:

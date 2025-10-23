@@ -37,7 +37,7 @@ def github_url(docker_repo_name: str, github_connector_folders: List[str]) -> st
 
     connector_name = docker_repo_name.replace("airbyte/", "")
     if connector_name in github_connector_folders:
-        return f"https://github.com/{CONNECTOR_REPO_NAME}/blob/master/airbyte-integrations/connectors/{connector_name}"
+        return f"https://github.com/{CONNECTOR_REPO_NAME}/blob/main/airbyte-integrations/connectors/{connector_name}"
     else:
         return None
 
@@ -48,7 +48,7 @@ def icon_url(row: pd.DataFrame) -> str:
         return None
 
     github_icon_base = (
-        f"https://raw.githubusercontent.com/{CONNECTOR_REPO_NAME}/master/airbyte-config-oss/init-oss/src/main/resources/icons"
+        f"https://raw.githubusercontent.com/{CONNECTOR_REPO_NAME}/main/airbyte-config-oss/init-oss/src/main/resources/icons"
     )
     return f"{github_icon_base}/{icon_file_name}"
 

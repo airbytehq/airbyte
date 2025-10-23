@@ -94,9 +94,9 @@ For a deep dive into each of the components, refer to [Understanding the YAML fi
 
 For examples of production-ready config-based connectors, refer to:
 
-- [Greenhouse](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-greenhouse/source_greenhouse/manifest.yaml)
-- [Sendgrid](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-sendgrid/source_sendgrid/manifest.yaml)
-- [Sentry](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-sentry/source_sentry/manifest.yaml)
+- [Greenhouse](https://github.com/airbytehq/airbyte/tree/main/airbyte-integrations/connectors/source-greenhouse/source_greenhouse/manifest.yaml)
+- [Sendgrid](https://github.com/airbytehq/airbyte/blob/main/airbyte-integrations/connectors/source-sendgrid/source_sendgrid/manifest.yaml)
+- [Sentry](https://github.com/airbytehq/airbyte/blob/main/airbyte-integrations/connectors/source-sentry/source_sentry/manifest.yaml)
 
 ## Reference
 

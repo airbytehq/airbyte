@@ -23,7 +23,7 @@ def get_current_git_branch() -> str:  # noqa D103
 
 
 async def get_modified_files_in_branch_remote(
-    current_git_repo_url: str, current_git_branch: str, current_git_revision: str, diffed_branch: str = "master", retries: int = 3
+    current_git_repo_url: str, current_git_branch: str, current_git_revision: str, diffed_branch: str = "main", retries: int = 3
 ) -> Set[str]:
     """Use git diff to spot the modified files on the remote branch."""
     try:
@@ -45,7 +45,7 @@ async def get_modified_files_in_branch_remote(
     return set(modified_files.split("\n"))
 
 
-def get_modified_files_local(current_git_revision: str, diffed: str = "master") -> Set[str]:
+def get_modified_files_local(current_git_revision: str, diffed: str = "main") -> Set[str]:
     """Use git diff and git status to spot the modified files in the local repo."""
     airbyte_repo = git.Repo()
     modified_files = airbyte_repo.git.diff(f"--diff-filter={DIFF_FILTER}", "--name-only", f"{diffed}...{current_git_revision}").split("\n")
@@ -116,14 +116,14 @@ async def get_modified_files(
     git_repo_url: str = AIRBYTE_GITHUB_REPO_URL,
 ) -> Set[str]:
     """Get the list of modified files in the current git branch.
-    If the current branch is master, it will return the list of modified files in the head commit.
-    The head commit on master should be the merge commit of the latest merged pull request as we squash commits on merge.
-    Pipelines like "publish on merge" are triggered on each new commit on master.
+    If the current branch is main, it will return the list of modified files in the head commit.
+    The head commit on main should be the merge commit of the latest merged pull request as we squash commits on merge.
+    Pipelines like "publish on merge" are triggered on each new commit on main.
 
     If the CI context is a pull request, it will return the list of modified files in the pull request, without using git diff.
-    If the current branch is not master, it will return the list of modified files in the current branch.
+    If the current branch is not main, it will return the list of modified files in the current branch.
     This latest case is the one we encounter when running the pipeline locally, on a local branch, or manually on GHA with a workflow dispatch event.
     """
-    if ci_context is CIContext.MASTER or (ci_context is CIContext.MANUAL and git_branch == "master"):
+    if ci_context is CIContext.MASTER or (ci_context is CIContext.MANUAL and git_branch == "main"):
         return await get_modified_files_in_commit(git_branch, git_revision, is_local)
     return await get_modified_files_in_branch(git_repo_url, git_branch, git_revision, diffed_branch, is_local)

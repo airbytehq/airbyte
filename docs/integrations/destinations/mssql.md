@@ -111,7 +111,7 @@ Follow these steps to configure MSSQL with Azure Blob Storage for bulk uploads.
 See the official [Microsoft documentation](https://learn.microsoft.com/en-us/sql/t-sql/statements/create-external-data-source-transact-sql?view=sql-server-2017&tabs=dedicated#e-create-an-external-data-source-for-bulk-operations-retrieving-data-from-azure-storage) for more details. Below is a simplified overview:
 
 1. **(Optional) Create a Master Encryption Key**
-   If your environment requires a master key to store credentials securely, create one:
+   If your environment requires a main key to store credentials securely, create one:
    ```sql
    CREATE MASTER KEY ENCRYPTION BY PASSWORD = '<your_password>';
    ```

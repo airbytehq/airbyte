@@ -29,13 +29,13 @@ The Okta source connector supports the following [sync modes](https://docs.airby
 
 ## Supported Streams
 
-- [Billing Rates](https://github.com/hubplanner/API/blob/master/Sections/billingrate.md)
-- [Bookings](https://github.com/hubplanner/API/blob/master/Sections/bookings.md)
-- [Clients](https://github.com/hubplanner/API/blob/master/Sections/clients.md)
-- [Events](https://github.com/hubplanner/API/blob/master/Sections/events.md)
-- [Holidays](https://github.com/hubplanner/API/blob/master/Sections/holidays.md)
-- [Projects](https://github.com/hubplanner/API/blob/master/Sections/project.md)
-- [Resources](https://github.com/hubplanner/API/blob/master/Sections/resource.md)
+- [Billing Rates](https://github.com/hubplanner/API/blob/main/Sections/billingrate.md)
+- [Bookings](https://github.com/hubplanner/API/blob/main/Sections/bookings.md)
+- [Clients](https://github.com/hubplanner/API/blob/main/Sections/clients.md)
+- [Events](https://github.com/hubplanner/API/blob/main/Sections/events.md)
+- [Holidays](https://github.com/hubplanner/API/blob/main/Sections/holidays.md)
+- [Projects](https://github.com/hubplanner/API/blob/main/Sections/project.md)
+- [Resources](https://github.com/hubplanner/API/blob/main/Sections/resource.md)
 
 ## Changelog
 

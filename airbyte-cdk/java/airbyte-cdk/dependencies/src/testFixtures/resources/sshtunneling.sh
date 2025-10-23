@@ -33,7 +33,7 @@ function openssh() {
     trap 'rm -f "$tmpkeyfile"' EXIT
     tmpkeyfile=$(mktemp /tmp/xyzfile.XXXXXXXXXXX) || return 1
     cat $1 | jq -r '.tunnel_map.ssh_key | gsub("\\\\n"; "\n")' > $tmpkeyfile
-    # -f=background  -N=no remote command  -M=master mode  StrictHostKeyChecking=no auto-adds host
+    # -f=background  -N=no remote command  -M=main mode  StrictHostKeyChecking=no auto-adds host
         echo "Running: ssh -f -N -M -o StrictHostKeyChecking=no -S {control socket} -i {key file} -l ${tunnel_username} -L ${tunnel_local_port}:${tunnel_db_host}:${tunnel_db_port} -p ${tunnel_port} ${tunnel_host}"
         ssh -f -N -M -o StrictHostKeyChecking=no -S $tmpcontrolsocket -i $tmpkeyfile -l ${tunnel_username} -L ${tunnel_local_port}:${tunnel_db_host}:${tunnel_db_port} -p ${tunnel_port} ${tunnel_host} &&
     sshopen="yes" &&

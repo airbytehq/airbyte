@@ -3,7 +3,7 @@ name: Publish Connectors
 on:
   push:
     branches:
-      - master
+      - main
     paths:
       - "airbyte-integrations/connectors/**/metadata.yaml"
   workflow_call:
@@ -56,17 +56,17 @@ jobs:
         shell: bash
         # When invoked manually, we run on the connectors specified in the input.
         run: echo connectors-to-publish=$(./poe-tasks/parse-connector-name-args.sh ${{ inputs.connectors }}) | tee -a $GITHUB_OUTPUT
-      - name: List connectors to publish [On merge to master]
-        id: list-connectors-master
+      - name: List connectors to publish [On merge to main]
+        id: list-connectors-main
         if: github.event_name == 'push'
         shell: bash
-        # When merging to master, we run on connectors that have changed since the previous commit.
+        # When merging to main, we run on connectors that have changed since the previous commit.
         run: echo connectors-to-publish=$(./poe-tasks/get-modified-connectors.sh --prev-commit --json) | tee -a $GITHUB_OUTPUT
       - name: Resolve release type
         id: resolve-release-type
         shell: bash
         run: |
-          # If workflow is triggered on merge to master, do a main release.
+          # If workflow is triggered on merge to main, do a main release.
           # If workflow is triggered manually, use the input release type.
           if [[ "${{ github.event_name }}" == "push" ]]; then
             echo "release-type=main-release" | tee -a $GITHUB_OUTPUT
@@ -77,7 +77,7 @@ jobs:
         id: resolve-publish-java-tars
         shell: bash
         run: |
-          # If workflow is triggered on merge to master, we can assume
+          # If workflow is triggered on merge to main, we can assume
           # the workflow is running in the open-source repo and we always want to publish.
           if [[ "${{ inputs.publish-java-tars }}" == "" ]]; then
             echo "publish-java-tars=true" | tee -a $GITHUB_OUTPUT
@@ -86,10 +86,10 @@ jobs:
             echo "publish-java-tars=${{ inputs.publish-java-tars }}" | tee -a $GITHUB_OUTPUT
           fi
     outputs:
-      # Exactly one of the manual/master steps will run, so just OR them together.
-      connectors-to-publish: ${{ steps.list-connectors-manual.outputs.connectors-to-publish || steps.list-connectors-master.outputs.connectors-to-publish }}
+      # Exactly one of the manual/main steps will run, so just OR them together.
+      connectors-to-publish: ${{ steps.list-connectors-manual.outputs.connectors-to-publish || steps.list-connectors-main.outputs.connectors-to-publish }}
       release-type: ${{ steps.resolve-release-type.outputs.release-type }}
-      # publishing java tars is not optional if triggered by push to master (in the non-enterprise repo).
+      # publishing java tars is not optional if triggered by push to main (in the non-enterprise repo).
       publish-java-tars: ${{ steps.resolve-publish-java-tars.outputs.publish-java-tars }}
   publish_connectors:
     name: Publish connectors
@@ -184,7 +184,7 @@ jobs:
           PYTHON_REGISTRY_TOKEN: ${{ secrets.PYPI_TOKEN }}
 
       - name: Upload Python Dependencies to GCS
-        id: upload-python-dependencies-master
+        id: upload-python-dependencies-main
         if: steps.connector-metadata.outputs.connector-language == 'python'
         shell: bash
         env:
@@ -343,7 +343,7 @@ jobs:
     runs-on: ubuntu-24.04
     needs:
       - publish_connector_registry_entries
-    if: ${{ always() && contains(needs.*.result, 'failure') && github.ref == 'refs/heads/master' }}
+    if: ${{ always() && contains(needs.*.result, 'failure') && github.ref == 'refs/heads/main' }}
     steps:
       - name: Checkout Airbyte
         # v4
@@ -375,7 +375,7 @@ jobs:
     runs-on: ubuntu-24.04
     needs:
       - publish_connector_registry_entries
-    if: ${{ always() && contains(needs.*.result, 'failure') && github.ref == 'refs/heads/master' }}
+    if: ${{ always() && contains(needs.*.result, 'failure') && github.ref == 'refs/heads/main' }}
     steps:
       - name: Checkout Airbyte
         # v4

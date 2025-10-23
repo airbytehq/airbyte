@@ -929,4 +929,4 @@ For example, if the currently persisted config file is `{"api_key": 123, start_d
 
 ## Acknowledgements
 
-We'd like to note that we were initially inspired by Singer.io's [specification](https://github.com/singer-io/getting-started/blob/master/docs/SPEC.md#singer-specification) and would like to acknowledge that some of their design choices helped us bootstrap our project. We've since made a lot of modernizations to our protocol and specification, but don't want to forget the tools that helped us get started.
+We'd like to note that we were initially inspired by Singer.io's [specification](https://github.com/singer-io/getting-started/blob/main/docs/SPEC.md#singer-specification) and would like to acknowledge that some of their design choices helped us bootstrap our project. We've since made a lot of modernizations to our protocol and specification, but don't want to forget the tools that helped us get started.

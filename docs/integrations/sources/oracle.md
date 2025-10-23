@@ -109,7 +109,7 @@ This produces the private key in pem format, and the public key remains in the s
 
 ## Data Type Mapping
 
-Oracle data types are mapped to the following data types when synchronizing data. You can check the test values examples [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-oracle/src/test-integration/java/io/airbyte/integrations/source/oracle/OracleSourceDatatypeTest.java). If you can't find the data type you are looking for or have any problems feel free to add a new test!
+Oracle data types are mapped to the following data types when synchronizing data. You can check the test values examples [here](https://github.com/airbytehq/airbyte/blob/main/airbyte-integrations/connectors/source-oracle/src/test-integration/java/io/airbyte/integrations/source/oracle/OracleSourceDatatypeTest.java). If you can't find the data type you are looking for or have any problems feel free to add a new test!
 
 **Note**: The connector automatically handles LONG and LONG RAW columns by setting the Oracle JDBC property `oracle.jdbc.useFetchSizeWithLongColumn=true`. Oracle recommends avoiding LONG and LONG RAW columns in favor of LOB types (CLOB, BLOB) for new applications.
 

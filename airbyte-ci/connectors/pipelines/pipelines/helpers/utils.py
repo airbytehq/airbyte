@@ -206,7 +206,7 @@ def get_current_epoch_time() -> int:  # noqa D103
 
 def slugify(value: object, allow_unicode: bool = False) -> str:
     """
-    Taken from https://github.com/django/django/blob/master/django/utils/text.py.
+    Taken from https://github.com/django/django/blob/main/django/utils/text.py.
 
     Convert to ASCII if 'allow_unicode' is False. Convert spaces or repeated
     dashes to single dashes. Remove characters that aren't alphanumerics,

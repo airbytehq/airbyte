@@ -26,14 +26,14 @@ jobs:
         id: airbyte-ci-connectors-list-scheduled
         uses: ./.github/actions/run-airbyte-ci
         with:
-          context: "master"
+          context: "main"
           subcommand: 'connectors --language=python --language=low-code --language=manifest-only  --metadata-query="\"-rc.\" not in data.dockerImageTag and \"source-declarative-manifest\" not in data.dockerRepository" list --output=selected_connectors.json'
       - name: Run airbyte-ci connectors list [MANUAL TRIGGER]
         if: github.event_name == 'workflow_dispatch'
         id: airbyte-ci-connectors-list-workflow-dispatch
         uses: ./.github/actions/run-airbyte-ci
         with:
-          context: "master"
+          context: "main"
           subcommand: 'connectors ${{ github.event.inputs.connectors-options }} --metadata-query="\"-rc.\" not in data.dockerImageTag and \"source-declarative-manifest\" not in data.dockerRepository" list --output=selected_connectors.json'
       # We generate a dynamic matrix from the list of selected connectors.
       # A matrix is required in this situation because the number of connectors is large and running them all in a single job would exceed the maximum job time limit of 6 hours.
@@ -70,7 +70,7 @@ jobs:
         id: airbyte-ci-connectors-up-to-date-workflow-dispatch
         uses: ./.github/actions/run-airbyte-ci
         with:
-          context: "master"
+          context: "main"
           dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_CACHE_3 }}
           docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}

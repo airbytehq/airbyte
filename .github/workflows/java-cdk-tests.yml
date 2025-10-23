@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - master
+      - main
   pull_request:
     types:
       - opened
@@ -106,7 +106,7 @@ jobs:
           CI: true
         with:
           job-id: gradle-check
-          read-only: ${{ github.ref != 'refs/heads/master' }}
+          read-only: ${{ github.ref != 'refs/heads/main' }}
           gradle-distribution-sha-256-sum-warning: false
           concurrent: true
           # TODO: be able to remove the skipSlowTests property

@@ -27,7 +27,7 @@ The following technologies are required to build Airbyte locally.
 4. `Docker`
 5. `Jq`
 
-If you are looking to build connectors, you should also follow the installation instructions for [airbyte-ci](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md).
+If you are looking to build connectors, you should also follow the installation instructions for [airbyte-ci](https://github.com/airbytehq/airbyte/blob/main/airbyte-ci/connectors/pipelines/README.md).
 
 ### Using abctl for Airbyte development
 

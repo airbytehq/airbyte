@@ -8,7 +8,7 @@ on:
         default: "dev"
   push:
     branches:
-      - master
+      - main
     paths:
       - "airbyte-ci/connectors/metadata_service/**"
 jobs:
@@ -18,13 +18,13 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2.7.0
-      - name: Deploy the metadata orchestrator [On merge to master]
+      - name: Deploy the metadata orchestrator [On merge to main]
         id: metadata-orchestrator-deploy-orchestrator-pipeline-prod
         if: github.event_name == 'push'
         uses: ./.github/actions/run-airbyte-ci
         with:
           subcommand: "metadata deploy orchestrator"
-          context: "master"
+          context: "main"
           # dagger_cloud_token: ${{ secrets.DAGGER_CLOUD_TOKEN_2 }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}

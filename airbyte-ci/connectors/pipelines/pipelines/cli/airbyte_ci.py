@@ -155,7 +155,7 @@ def is_current_process_wrapped_by_dagger_run() -> bool:
 @click.option(
     "--diffed-branch",
     help="Branch to which the git diff will happen to detect new or modified connectors",
-    default="master",
+    default="main",
     type=str,
 )
 @click.option("--gha-workflow-run-id", help="[CI Only] The run id of the GitHub action workflow", default=None, type=str)
