@@ -90,9 +90,11 @@ jobs:
         uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
         with:
           file: ${{ steps.vars.outputs.DOCKERFILE }}
-          platforms: linux/amd64,linux/arm64
           tags: ${{ steps.vars.outputs.FULL_IMAGE_REF }}
           push: false
+          load: true
+          # Note: Docker does not support loading multi-arch images out of the box, so we are building just the local arch here to use for testing in subsequent CI steps.
+          # When publishing, we build and push a multi-arch image
 
       - name: Run Vulnerability Scan
         uses: anchore/scan-action@1638637db639e0ade3258b51db49a9a137574c3e # v6.5.1
