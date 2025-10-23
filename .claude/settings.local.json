@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(pnpm update:*)"
+      "Bash(pnpm update:*)",
+      "Bash(gh pr create:*)"
     ],
     "deny": [],
     "ask": []
