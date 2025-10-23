@@ -2809,10 +2809,10 @@ api_budget:
           url_path_pattern: "orders/v0/orders/[^/]+/orderItems(\\?.*)?$" # matches /orderItems
     # API Budget for reports: https://developer-docs.amazon.com/sp-api/docs/reports-api-rate-limits#reports-v2021-06-30
     - type: MovingWindowCallRatePolicy
-      # https://developer-docs.amazon.com/sp-api/reference/createreport
+      # https://github.com/amzn/selling-partner-api-models/discussions/3726
       rates:
-        - limit: 1 # 0.0167 calls per second = around 1 request per minute
-          interval: PT1M
+        - limit: 1
+          interval: PT30M
       matchers:
         - method: POST
           url_path_pattern: "reports/2021-06-30/reports"
