@@ -257,7 +257,6 @@ spec:
         title: Athlete ID
         examples:
           - 17831421
-          - "17831421"
         order: 3
       start_date:
         type: string
