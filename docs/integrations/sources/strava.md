@@ -132,7 +132,8 @@ More information about Strava rate limits and adjustments to those limits can be
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 0.4.0 | 2025-10-23 | [*PR_NUMBER_PLACEHOLDER*](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Adds new streams: clubs, routes, gear, segments |
+| 0.4.0 | 2025-10-23 | [68609](https://github.com/airbytehq/airbyte/pull/*PR_NUMBER_PLACEHOLDER*) | Adds new streams: clubs, routes, gear, segments |
+| 0.3.34 | 2025-10-21 | [68515](https://github.com/airbytehq/airbyte/pull/68515) | Update dependencies |
 | 0.3.33 | 2025-10-14 | [67918](https://github.com/airbytehq/airbyte/pull/67918) | Update dependencies |
 | 0.3.32 | 2025-10-07 | [67456](https://github.com/airbytehq/airbyte/pull/67456) | Update dependencies |
 | 0.3.31 | 2025-09-30 | [66893](https://github.com/airbytehq/airbyte/pull/66893) | Update dependencies |

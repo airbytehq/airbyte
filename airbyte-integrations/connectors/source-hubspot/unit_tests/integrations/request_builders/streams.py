@@ -1,6 +1,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-from typing import Any, Dict, Iterable, List, Tuple
+import json
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 from airbyte_cdk.test.mock_http import HttpRequest
 
@@ -32,59 +33,109 @@ class WebAnalyticsRequestBuilder(AbstractRequestBuilder):
         return HttpRequest(url=self.URL, query_params=self._query_params, headers=self.headers, body=self._request_body)
 
 
-class CRMStreamRequestBuilder(AbstractRequestBuilder):
-    URL = "https://api.hubapi.com/crm/v3/objects/{resource}"
+class CRMSearchRequestBuilder(AbstractRequestBuilder):
+    URL = "https://api.hubapi.com/crm/v3/objects/{resource}/search"
 
     def __init__(self):
-        self._resource = None
-        self._associations = ""
-        self._dt_range = ""
-        self._properties = ""
-        self._after = None
-        self._search = False
+        self._resource: Optional[str] = None
+        self._properties: Iterable[str] = ()
+        self._cursor_field: str = "hs_lastmodifieddate"
+        self._start_ms: Optional[int] = None
+        self._end_ms: Optional[int] = None
+        self._after: Optional[str] = 0
+        self._id_floor: int = 0
+        self._limit: int = 200
 
-    def for_entity(self, entity):
+    def for_entity(self, entity: str) -> "CRMSearchRequestBuilder":
         self._resource = entity
         return self
 
-    def with_dt_range(self, start_date: Tuple, end_date: Tuple):
-        self._dt_range = "&".join(["{}={}".format(*start_date), "{}={}".format(*end_date)])
+    def with_properties(self, properties: Iterable[str]) -> "CRMSearchRequestBuilder":
+        self._properties = properties
         return self
 
-    def with_page_token(self, next_page_token: Dict):
-        self._after = "&".join([f"{str(key)}={str(val)}" for key, val in next_page_token.items()])
+    def with_cursor_range_ms(self, cursor_field: str, start_ms: int, end_ms: int) -> "CRMSearchRequestBuilder":
+        self._cursor_field = cursor_field
+        self._start_ms = start_ms
+        self._end_ms = end_ms
         return self
 
-    def with_associations(self, associations: Iterable[str]):
-        self._associations = "&".join([f"associations={a}" for a in associations])
+    def with_page_token(self, next_page_token: Dict[str, Any]) -> "CRMSearchRequestBuilder":
+        """
+        Accepts either:
+          {"after": "..."} or {"next_page_token": {"after": "...", "id": "123"}}
+        """
+        token = next_page_token.get("next_page_token", next_page_token)
+        if "after" in token:
+            self._after = token["after"]
+        if "id" in token:
+            try:
+                self._id_floor = int(token["id"])
+            except Exception:
+                # keep default 0 if not an int
+                pass
         return self
 
-    def with_properties(self, properties: Iterable[str]):
-        self._properties = "properties=" + ",".join(properties)
-        return self
+    def build(self) -> HttpRequest:
+        filters = [
+            {
+                "propertyName": self._cursor_field,
+                "operator": "GTE",
+                "value": self._start_ms,
+            },
+            {
+                "propertyName": self._cursor_field,
+                "operator": "LTE",
+                "value": self._end_ms,
+            },
+            {
+                "propertyName": "hs_object_id",
+                "operator": "GTE",
+                "value": self._id_floor,
+            },
+        ]
 
-    @property
-    def _limit(self):
-        return "limit=100"
+        body = {
+            "limit": self._limit,
+            "sorts": [{"propertyName": "hs_object_id", "direction": "ASCENDING"}],
+            "filters": filters,
+            "properties": list(self._properties),
+            "after": self._after,
+        }
 
-    @property
-    def _archived(self):
-        return "archived=false"
-
-    @property
-    def _query_params(self):
-        return [self._archived, self._associations, self._limit, self._after, self._dt_range, self._properties]
-
-    def build(self):
-        q = "&".join(filter(None, self._query_params))
         url = self.URL.format(resource=self._resource)
-        return HttpRequest(url, query_params=q)
+        return HttpRequest(url=url, body=json.dumps(body))
 
 
-class IncrementalCRMStreamRequestBuilder(CRMStreamRequestBuilder):
-    @property
-    def _query_params(self):
-        return [self._limit, self._after, self._dt_range, self._archived, self._associations, self._properties]
+class AssociationsBatchReadRequestBuilder(AbstractRequestBuilder):
+    """
+    Builds: POST https://api.hubapi.com/crm/v4/associations/{parent}/{association}/batch/read
+    Body:   {"inputs":[{"id":"<record-id>"}, ...]}
+    """
+
+    URL = "https://api.hubapi.com/crm/v4/associations/{parent}/{association}/batch/read"
+
+    def __init__(self):
+        self._parent: Optional[str] = None
+        self._association: Optional[str] = None
+        self._ids: List[str] = []
+
+    def for_parent(self, parent: str) -> "AssociationsBatchReadRequestBuilder":
+        self._parent = parent
+        return self
+
+    def for_association(self, association: str) -> "AssociationsBatchReadRequestBuilder":
+        self._association = association
+        return self
+
+    def with_ids(self, ids: Iterable[str]) -> "AssociationsBatchReadRequestBuilder":
+        self._ids = [str(i) for i in ids]
+        return self
+
+    def build(self) -> HttpRequest:
+        url = self.URL.format(parent=self._parent, association=self._association)
+        body = json.dumps({"inputs": [{"id": i} for i in self._ids]})
+        return HttpRequest(url=url, body=body)
 
 
 class OwnersArchivedStreamRequestBuilder(AbstractRequestBuilder):
