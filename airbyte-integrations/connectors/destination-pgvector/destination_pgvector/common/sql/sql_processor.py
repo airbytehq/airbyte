@@ -17,7 +17,6 @@ import ulid
 from airbyte import exceptions as exc
 from airbyte._util.name_normalizers import LowerCaseNormalizer
 from airbyte.constants import AB_EXTRACTED_AT_COLUMN, AB_META_COLUMN, AB_RAW_ID_COLUMN, DEBUG_MODE
-from airbyte.progress import progress
 from airbyte.strategies import WriteStrategy
 from airbyte.types import SQLTypeConverter
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
@@ -33,7 +32,7 @@ if TYPE_CHECKING:
     from collections.abc import Generator
 
     from airbyte._batch_handles import BatchHandle
-    from airbyte._processors.file.base import FileWriterBase
+    from airbyte._writers.file_writers import FileWriterBase
     from airbyte.secrets.base import SecretString
     from airbyte_cdk.models import AirbyteRecordMessage, AirbyteStateMessage
     from sqlalchemy.engine import Connection, Engine
@@ -508,8 +507,6 @@ class SqlProcessorBase(RecordProcessorBase):
             finally:
                 self._drop_temp_table(temp_table_name, if_exists=True)
 
-        progress.log_stream_finalized(stream_name)
-
         # Return the batch handles as measure of work completed.
         return batches_to_finalize
 
@@ -536,10 +533,8 @@ class SqlProcessorBase(RecordProcessorBase):
         ].copy()
         self._pending_state_messages[stream_name].clear()
 
-        progress.log_batches_finalizing(stream_name, len(batches_to_finalize))
         yield batches_to_finalize
         self._finalize_state_messages(state_messages_to_finalize)
-        progress.log_batches_finalized(stream_name, len(batches_to_finalize))
 
         for batch_handle in batches_to_finalize:
             batch_handle.finalized = True

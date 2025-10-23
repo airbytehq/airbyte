@@ -4,7 +4,7 @@
 
 
 from airbyte_cdk.destinations.vector_db_based.config import VectorDBConfigModel
-from pydantic import BaseModel, Field
+from pydantic.v1 import BaseModel, Field
 
 
 class PasswordBasedAuthorizationModel(BaseModel):

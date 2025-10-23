@@ -10,7 +10,7 @@ from typing import Any
 
 import dpath
 import sqlalchemy
-from airbyte._processors.file.jsonl import JsonlWriter
+from airbyte._writers.jsonl import JsonlWriter
 from airbyte.secrets import SecretString
 from airbyte_cdk.destinations.vector_db_based import embedder
 from airbyte_cdk.destinations.vector_db_based.document_processor import (
