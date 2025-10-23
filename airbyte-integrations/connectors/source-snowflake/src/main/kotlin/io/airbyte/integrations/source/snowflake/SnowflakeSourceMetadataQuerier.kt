@@ -13,6 +13,7 @@ import io.airbyte.cdk.discover.JdbcMetadataQuerier.PrimaryKeyRow
 import io.airbyte.cdk.discover.MetadataQuerier
 import io.airbyte.cdk.discover.SystemType
 import io.airbyte.cdk.discover.TableName
+import io.airbyte.cdk.discover.JdbcMetadataQuerier.applyTableFiltersInMemory
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants.NamespaceKind
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
@@ -250,7 +251,14 @@ class SnowflakeSourceMetadataQuerier(
                 }
             }
             log.info { "Discovered ${allTables.size} tables and views." }
-            return@lazy allTables.toList()
+
+            // Apply table filtering if configured
+            val filteredTables = applyTableFiltersInMemory(
+                allTables.toList(),
+                base.config.tableFilters
+            ) { it.schema }
+
+            return@lazy filteredTables
         } catch (e: Exception) {
             throw RuntimeException("Table name discovery query failed: ${e.message}", e)
         }

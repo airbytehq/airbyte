@@ -25,23 +25,23 @@ abstract class JdbcSourceConfigurationSpecification : ConfigurationSpecification
     @JsonSchemaInject(json = """{"order":0,"always_show":true}""")
     lateinit var host: String
 
-    @JsonProperty("database")
-    @JsonSchemaTitle("Database")
-    @JsonPropertyDescription("Name of the database.")
-    @JsonSchemaInject(json = """{"order":2,"always_show":true}""")
-    lateinit var database: String
-
     @JsonProperty("username")
     @JsonSchemaTitle("Username")
-    @JsonPropertyDescription("Username to access the database.")
-    @JsonSchemaInject(json = """{"order":3,"always_show":true}""")
+    @JsonPropertyDescription("The username which is used to access the database.")
+    @JsonSchemaInject(json = """{"order":2,"always_show":true}""")
     lateinit var username: String
 
     @JsonProperty("password")
     @JsonSchemaTitle("Password")
-    @JsonPropertyDescription("Password associated with the username.")
-    @JsonSchemaInject(json = """{"order":4,"always_show":true,"airbyte_secret":true}""")
+    @JsonPropertyDescription("The password associated with the username.")
+    @JsonSchemaInject(json = """{"order":3,"always_show":true,"airbyte_secret":true}""")
     var password: String? = null
+
+    @JsonProperty("database")
+    @JsonSchemaTitle("Database")
+    @JsonPropertyDescription("The database name.")
+    @JsonSchemaInject(json = """{"order":4,"always_show":true}""")
+    lateinit var database: String
 
     @JsonProperty("schemas")
     @JsonSchemaTitle("Schemas")
@@ -63,7 +63,7 @@ abstract class JdbcSourceConfigurationSpecification : ConfigurationSpecification
     var tableFilters: List<TableFilter>? = emptyList()
 
     @JsonProperty("jdbc_url_params")
-    @JsonSchemaTitle("JDBC URL Parameters (Advanced)")
+    @JsonSchemaTitle("JDBC URL Parame")
     @JsonPropertyDescription(
         "Additional properties to pass to the JDBC URL string when connecting to the database " +
                 "formatted as 'key=value' pairs separated by the symbol '&'. " +
@@ -77,8 +77,11 @@ abstract class JdbcSourceConfigurationSpecification : ConfigurationSpecification
     @JsonSchemaInject(json = """{"order":4,"group":"optional"}""")
     @JsonSchemaDefault("true")
     @JsonPropertyDescription(
-        "When enabled, the connector will query each table individually to check access privileges. " +
-                "In large schemas, this might slow down schema discovery."
+        "When this feature is enabled, during schema discovery the connector " +
+            "will query each table or view individually to check access privileges " +
+            "and inaccessible tables, views, or columns therein will be removed. " +
+            "In large schemas, this might cause schema discovery to take too long, " +
+            "in which case it might be advisable to disable this feature.",
     )
     var checkPrivileges: Boolean? = true
 }

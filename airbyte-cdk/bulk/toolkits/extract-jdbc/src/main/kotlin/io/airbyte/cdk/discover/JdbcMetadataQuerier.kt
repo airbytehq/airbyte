@@ -4,6 +4,7 @@ package io.airbyte.cdk.discover
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.check.JdbcCheckQueries
 import io.airbyte.cdk.command.JdbcSourceConfiguration
+import io.airbyte.cdk.command.TableFilter
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants.NamespaceKind
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
@@ -402,4 +403,55 @@ class JdbcMetadataQuerier(
         val nullable: Boolean? = null,
         val ordinal: Int? = null,
     )
+
+    companion object {
+        @JvmStatic
+        fun applyTableFiltersInMemory(
+            tables: List<TableName>,
+            filters: List<TableFilter>?,
+            getNamespace: (TableName) -> String?
+        ): List<TableName> {
+            if (filters.isNullOrEmpty()) {
+                return tables
+            }
+
+            val filtersBySchema = filters.groupBy { it.schemaName.uppercase() }
+
+            return tables.filter { table ->
+                val namespace = getNamespace(table)?.uppercase() ?: return@filter true
+                val patternsForSchema = filtersBySchema[namespace] ?: return@filter false
+
+                if (patternsForSchema.all { it.patterns.isEmpty() }) {
+                    return@filter true
+                }
+
+                val allPatterns = patternsForSchema.flatMap { it.patterns }
+                allPatterns.any { pattern -> sqlLikeToRegex(pattern).matches(table.name) }
+            }
+        }
+
+        @JvmStatic
+        fun sqlLikeToRegex(pattern: String): Regex {
+            val regexPattern =
+                pattern
+                    .replace("\\", "\\\\")
+                    .replace(".", "\\.")
+                    .replace("^", "\\^")
+                    .replace("$", "\\$")
+                    .replace("*", "\\*")
+                    .replace("+", "\\+")
+                    .replace("?", "\\?")
+                    .replace("[", "\\[")
+                    .replace("]", "\\]")
+                    .replace("{", "\\{")
+                    .replace("}", "\\}")
+                    .replace("(", "\\(")
+                    .replace(")", "\\)")
+                    .replace("|", "\\|")
+                    .replace("%", ".*")
+                    .replace("_", ".")
+            return Regex("^$regexPattern$", RegexOption.IGNORE_CASE)
+        }
+    }
+
 }

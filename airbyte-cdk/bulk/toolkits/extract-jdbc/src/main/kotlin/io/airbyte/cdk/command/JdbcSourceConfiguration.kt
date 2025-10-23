@@ -25,6 +25,7 @@ interface JdbcSourceConfiguration : SourceConfiguration {
 
     /** Optional table filtering configuration for fine-grained table selection. */
     val tableFilters: List<TableFilter>
+        get() = emptyList()
 
     /**
      * Micronaut factory which glues [ConfigurationSpecificationSupplier] and
