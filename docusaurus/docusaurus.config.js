@@ -292,7 +292,7 @@ const config = {
         runOnPostBuild: true,
         content: {
           includePages: true,
-          excludeRoutes: ["./api-docs/embedded-api/**"],
+          excludeRoutes: ["api-docs/embedded-api/**"],
         },
       },
     ],
