@@ -1,7 +1,7 @@
 const { isEnterpriseConnectorDocsPage } = require("./utils");
 const { toAttributes } = require("../helpers/objects");
 const visit = require("unist-util-visit").visit;
-const { catalog } = require("../connector_registry");
+const { catalog } = require("../scripts/connector_registry");
 
 const getEnterpriseConnectorVersion = async (dockerRepository) => {
   if (!dockerRepository) {

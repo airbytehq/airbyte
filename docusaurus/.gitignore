@@ -8,7 +8,7 @@
 .docusaurus
 .cache-loader
 src/data/declarative_component_schema.yaml
-src/data/connector_registry_slim.json
+src/data/connector_registry_full.json
 
 # Misc
 .DS_Store
@@ -24,3 +24,4 @@ yarn-debug.log*
 yarn-error.log*
 
 CLAUDE.local.md
+.claude/settings.local.json

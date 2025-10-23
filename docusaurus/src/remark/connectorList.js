@@ -1,5 +1,5 @@
 const visit = require("unist-util-visit").visit;
-const { catalog, isPypiConnector } = require("../connector_registry");
+const { catalog, isPypiConnector } = require("../scripts/connector_registry");
 
 const plugin = () => {
   const transformer = async (ast, vfile) => {

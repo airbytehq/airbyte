@@ -1,20 +1,25 @@
 /**
- * This script fetches the connector registry data and processes it before
- * the build process starts. It ensures the data is available for the sidebar
- * to use even on the first build.
+ * This script fetches the connector registry data and caches only the properties
+ * needed by the build process before the build starts.
+ *
+ * The cache is used by:
+ * - connector_registry.js during MDX compilation for SpecSchema components
+ *   Needs: dockerRepository_oss, spec_oss.connectionSpecification
+ * - sidebar-connectors.js for building the sidebar navigation
+ *   Needs: docUrl, supportLevel
+ *
+ * This avoids network timeouts during the build process by fetching data once upfront.
+ * The cache file is cleaned up after the build completes (see cleanup-cache.js).
  */
 const fs = require("fs");
 const https = require("https");
 const path = require("path");
-const REGISTRY_CACHE_PATH = path.join(
-  __dirname,
-  "..",
-  "data",
-  "connector_registry_slim.json",
-);
 
+const DATA_DIR = path.join(__dirname, "..", "data");
+const REGISTRY_CACHE_PATH = path.join(DATA_DIR, "connector_registry_full.json");
 const REGISTRY_URL =
   "https://connectors.airbyte.com/files/generated_reports/connector_registry_report.json";
+
 
 function fetchConnectorRegistry() {
   return new Promise((resolve, reject) => {
@@ -50,52 +55,41 @@ function fetchConnectorRegistry() {
   });
 }
 
-function processRegistryData(registry) {
-  return registry
-    .map((connector) => {
-      const name = connector.name_oss || connector.name_cloud || "";
-      if (name) {
-        return {
-          id: name
-            .toLowerCase()
-            .replace(/\s+/g, "-")
-            .replace(/[^a-z0-9-]/g, ""),
-          type: connector.connector_type?.toLowerCase() || "unknown",
-          supportLevel:
-            connector.supportLevel_cloud ||
-            connector.supportLevel_oss ||
-            "community",
-          docUrl:
-            connector.documentationUrl_cloud ||
-            connector.documentationUrl_oss ||
-            "",
-        };
-      }
-    })
-    .filter(Boolean);
+function extractMinimalRegistryData(fullRegistry) {
+  return fullRegistry.map((connector) => ({
+    // Properties used by sidebar-connectors.js
+    docUrl: connector.documentationUrl_cloud || connector.documentationUrl_oss || "",
+    supportLevel: connector.supportLevel_cloud || connector.supportLevel_oss || "community",
+    // Properties used by connector_registry.js
+    dockerRepository_oss: connector.dockerRepository_oss || "",
+    spec_oss: connector.spec_oss ? {
+      connectionSpecification: connector.spec_oss.connectionSpecification,
+    } : null,
+  }));
 }
 
 async function main() {
   try {
-    const registry = await fetchConnectorRegistry();
+    const fullRegistry = await fetchConnectorRegistry();
 
-    const processedRegistry = processRegistryData(registry);
+    // Extract only the properties we need for the build
+    const minimalRegistry = extractMinimalRegistryData(fullRegistry);
 
-    const dir = path.dirname(REGISTRY_CACHE_PATH);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
+    // Ensure data directory exists
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
     }
 
+    // Save the minimal registry cache for use during build
     fs.writeFileSync(
       REGISTRY_CACHE_PATH,
-      JSON.stringify(processedRegistry, null, 2),
+      JSON.stringify(minimalRegistry, null, 2),
     );
-
     console.log(
-      `Connector registry data processed and saved to ${REGISTRY_CACHE_PATH}`,
+      `Connector registry cached (${minimalRegistry.length} connectors) to ${REGISTRY_CACHE_PATH}`,
     );
   } catch (error) {
-    console.error("Error preparing sidebar data:", error);
+    console.error("Error preparing registry cache:", error);
     process.exit(1);
   }
 }

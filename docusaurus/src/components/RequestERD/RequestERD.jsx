@@ -4,7 +4,7 @@ import { EmailModal } from "./EmailModal";
 import styles from "./RequestERD.module.css";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-const { getRegistryEntry } = require("../../remark/utils");
+const { getRegistryEntry } = require("../../helpers/registryUtils");
 const { getFromPaths } = require("../../helpers/objects");
 
 export const RequestERD = () => {

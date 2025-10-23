@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import erdBG from "../../static/img/erd-bg-cta.jpg";
 import styles from "./EntityRelationshipDiagram.module.css";
-const { getRegistryEntry } = require("../remark/utils");
+const { getRegistryEntry } = require("../helpers/registryUtils");
 const { getFromPaths } = require("../helpers/objects");
 
 export const EntityRelationshipDiagram = ({}) => {

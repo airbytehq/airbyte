@@ -1,4 +1,4 @@
-const { catalog } = require("../connector_registry");
+const { catalog } = require("../scripts/connector_registry");
 
 // the migration guide and troubleshooting guide are not connectors, but also not in a sub-folder, e.g. /integrations/sources/mssql-migrations
 const connectorPageAlternativeEndings = ["-migrations", "-troubleshooting"];

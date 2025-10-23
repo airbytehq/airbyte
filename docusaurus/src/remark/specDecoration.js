@@ -1,5 +1,5 @@
 const visit = require("unist-util-visit").visit;
-const { catalog } = require("../connector_registry");
+const { catalog } = require("../scripts/connector_registry");
 const { isDocsPage, getRegistryEntry } = require("./utils");
 
 const plugin = () => {

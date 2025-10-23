@@ -366,6 +366,94 @@
         }
       }
     },
+    "/api/v1/agents/chat/schema/{source_id}/state": {
+      "get": {
+        "tags": ["Chat - Schema"],
+        "summary": "Get Schema Chat State",
+        "operationId": "get_agents_chat_schema_source_id_state",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "source_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Source Id"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Select the working organization. Necessary since users can belong to multiple organizations.",
+              "title": "X-Organization-Id"
+            },
+            "description": "Select the working organization. Necessary since users can belong to multiple organizations."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchemaChatAgentState"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/agents/discovery": {
       "post": {
         "tags": ["Agents - Discovery"],
@@ -378,6 +466,18 @@
           }
         ],
         "parameters": [
+          {
+            "name": "annotate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Whether to annotate the discovered catalogs using the catalog annotator agent",
+              "default": false,
+              "title": "Annotate"
+            },
+            "description": "Whether to annotate the discovered catalogs using the catalog annotator agent"
+          },
           {
             "name": "x-organization-id",
             "in": "header",
@@ -466,6 +566,18 @@
               "format": "uuid",
               "title": "Source Definition Id"
             }
+          },
+          {
+            "name": "annotate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Whether to annotate the discovered catalog using the catalog annotator agent",
+              "default": false,
+              "title": "Annotate"
+            },
+            "description": "Whether to annotate the discovered catalog using the catalog annotator agent"
           },
           {
             "name": "x-organization-id",
@@ -3730,7 +3842,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SourceDiscoverResponse"
+                  "$ref": "#/components/schemas/SourceCatalogPatchResponse"
                 }
               }
             }
@@ -7038,6 +7150,85 @@
         }
       }
     },
+    "/api/v1/internal/account/signup-if-new-user": {
+      "post": {
+        "tags": ["Account"],
+        "summary": "Signup",
+        "description": "Sign up an organization for PAYG billing and provisioning.\nSets up Orb billing, Stigg subscription, and payment status synchronously.\nReturns immediately with success or failure.\n\nThis endpoint is idempotent - if signup is already completed, returns existing subscription data\nwithout attempting to re-provision services.",
+        "operationId": "create_internal_account_signup_if_new_user",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Select the working organization. Necessary since users can belong to multiple organizations.",
+              "title": "X-Organization-Id"
+            },
+            "description": "Select the working organization. Necessary since users can belong to multiple organizations."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrganizationSignupResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/internal/health/check": {
       "get": {
         "tags": ["Health"],
@@ -9752,6 +9943,7 @@
           "get_source_definition",
           "list_source_templates",
           "get_source_template",
+          "get_source_definition_catalog",
           "run_source_template_creator",
           "create_source_template",
           "query_source_catalog",
@@ -11248,6 +11440,12 @@
             "format": "uri",
             "title": "Return Url",
             "description": "The URL to redirect to after the customer portal session"
+          },
+          "flow": {
+            "type": "string",
+            "enum": ["payment_method", "portal"],
+            "title": "Flow",
+            "default": "portal"
           }
         },
         "type": "object",
@@ -11267,6 +11465,11 @@
         "required": ["url"],
         "title": "CustomerPortalResponse",
         "description": "Response schema for customer portal link."
+      },
+      "DataCategory": {
+        "type": "string",
+        "enum": ["person", "transaction", "event", "object", "file"],
+        "title": "DataCategory"
       },
       "DestinationDefinitionListItem": {
         "properties": {
@@ -12415,10 +12618,28 @@
               }
             ],
             "title": "Error Message"
+          },
+          "organization_name": {
+            "type": "string",
+            "title": "Organization Name"
+          },
+          "first_workspace_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "First Workspace Id"
+          },
+          "onboarding_status": {
+            "$ref": "#/components/schemas/OnboardingStatusEnum"
           }
         },
         "type": "object",
-        "required": ["organization_id", "provisioning_state"],
+        "required": [
+          "organization_id",
+          "provisioning_state",
+          "organization_name",
+          "first_workspace_id",
+          "onboarding_status"
+        ],
         "title": "OrganizationSignupResponse",
         "description": "Response schema for organization signup endpoint."
       },
@@ -12755,6 +12976,61 @@
         "type": "object",
         "title": "RevokeSourceOauthResponse"
       },
+      "SchemaChatAgentState": {
+        "properties": {
+          "state": {
+            "$ref": "#/components/schemas/SchemaChatAgentStateType"
+          },
+          "source_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Source Id"
+          },
+          "source_definition_name": {
+            "type": "string",
+            "title": "Source Definition Name"
+          },
+          "schema_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SonarCatalogSchemaType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "catalog": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SonarCatalogOutput"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "thread_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Thread Id"
+          }
+        },
+        "type": "object",
+        "required": ["state", "source_id", "source_definition_name"],
+        "title": "SchemaChatAgentState"
+      },
+      "SchemaChatAgentStateType": {
+        "type": "string",
+        "enum": ["unsupported_source", "first_session", "returning"],
+        "title": "SchemaChatAgentStateType"
+      },
       "ScopedTokenCreateRequest": {
         "properties": {
           "workspace_name": {
@@ -12834,6 +13110,11 @@
               }
             ],
             "title": "Selected Streams"
+          },
+          "annotated": {
+            "type": "boolean",
+            "title": "Annotated",
+            "default": false
           }
         },
         "type": "object",
@@ -12861,6 +13142,11 @@
               }
             ],
             "title": "Selected Streams"
+          },
+          "annotated": {
+            "type": "boolean",
+            "title": "Annotated",
+            "default": false
           }
         },
         "type": "object",
@@ -12894,6 +13180,16 @@
               }
             ],
             "title": "Description"
+          },
+          "data_category": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DataCategory"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "suggested": {
             "type": "boolean",
@@ -13016,6 +13312,16 @@
         },
         "type": "object",
         "title": "SonarStream"
+      },
+      "SourceCatalogPatchResponse": {
+        "properties": {
+          "catalog": {
+            "$ref": "#/components/schemas/SonarCatalogOutput"
+          }
+        },
+        "type": "object",
+        "required": ["catalog"],
+        "title": "SourceCatalogPatchResponse"
       },
       "SourceCatalogQueryRequest": {
         "properties": {
