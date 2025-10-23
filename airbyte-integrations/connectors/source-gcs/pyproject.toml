@@ -16,7 +16,7 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_gcs"
 
 [tool.poetry.dependencies]
-python = "^3.10,<3.12"
+python = ">=3.10,<3.15"
 pytz = "==2024.2"
 google-cloud-storage = "==2.12.0"
 smart-open = {extras = ["gcs"], version = "==5.1.0"}
