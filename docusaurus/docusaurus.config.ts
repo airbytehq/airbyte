@@ -35,6 +35,9 @@ const config: Config = {
   },
   markdown: {
     mermaid: true,
+    hooks: {
+      onBrokenMarkdownLinks: "throw",
+    },
   },
   themes: [
     "@docusaurus/theme-mermaid",
@@ -49,7 +52,7 @@ const config: Config = {
   // anything else should match the repo name
   baseUrl: "/",
   onBrokenLinks: "throw",
-  onBrokenMarkdownLinks: "throw",
+
   favicon: "img/favicon.png",
   organizationName: "airbytehq", // Usually your GitHub org/user name.
   projectName: "airbyte", // Usually your repo name.
@@ -300,6 +303,7 @@ const config: Config = {
         depth: 4,
         content: {
           includePages: true,
+          excludeRoutes: ["./api-docs/**"],
         },
       } satisfies LLmPluginOptions,
     ],
