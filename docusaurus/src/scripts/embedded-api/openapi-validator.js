@@ -55,7 +55,6 @@ async function validateOpenAPISpec(spec) {
     const version = validator.version;
     
     console.log(`✅ OpenAPI spec validation passed!`);
-    console.log(`📋 OpenAPI version: ${version}`);
     
     // Perform additional custom validations for our specific use case
     try {
