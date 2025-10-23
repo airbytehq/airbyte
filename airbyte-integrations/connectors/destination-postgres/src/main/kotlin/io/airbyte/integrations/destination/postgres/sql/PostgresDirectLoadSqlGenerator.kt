@@ -27,8 +27,11 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
+import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TableName
+import io.airbyte.integrations.destination.postgres.spec.CdcDeletionMode
+import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import kotlin.collections.forEach
@@ -38,7 +41,9 @@ internal const val COUNT_TOTAL_ALIAS = "total"
 private val log = KotlinLogging.logger {}
 
 @Singleton
-class PostgresDirectLoadSqlGenerator {
+class PostgresDirectLoadSqlGenerator(
+    private val postgresConfiguration: PostgresConfiguration
+) {
     companion object {
         internal val DEFAULT_COLUMNS =
             listOf(
@@ -209,33 +214,41 @@ class PostgresDirectLoadSqlGenerator {
             }
 
         // Build cursor comparison for determining which record is newer
-        val whereClause =
-            if (importType.cursor.isNotEmpty()) {
-                val cursorFieldName = importType.cursor.first()
-                val cursorColumn = columnNameMapping[cursorFieldName] ?: cursorFieldName
-                val quotedCursorColumn = "\"$cursorColumn\""
-                val extractedAtColumn = "\"$COLUMN_NAME_AB_EXTRACTED_AT\""
-                """
-                WHERE (
-                  ${getFullyQualifiedName(targetTableName)}.$quotedCursorColumn < EXCLUDED.$quotedCursorColumn 
-                  OR (${getFullyQualifiedName(targetTableName)}.$quotedCursorColumn = EXCLUDED.$quotedCursorColumn AND ${getFullyQualifiedName(targetTableName)}.$extractedAtColumn < EXCLUDED.$extractedAtColumn)
-                  OR (${getFullyQualifiedName(targetTableName)}.$quotedCursorColumn IS NULL AND EXCLUDED.$quotedCursorColumn IS NOT NULL)
-                  OR (${getFullyQualifiedName(targetTableName)}.$quotedCursorColumn IS NULL AND EXCLUDED.$quotedCursorColumn IS NULL AND ${getFullyQualifiedName(targetTableName)}.$extractedAtColumn < EXCLUDED.$extractedAtColumn)
-                )
-                """.trimIndent()
-            } else {
-                // No cursor - use extraction timestamp only
-                val extractedAtColumn = "\"$COLUMN_NAME_AB_EXTRACTED_AT\""
-                "WHERE ${getFullyQualifiedName(targetTableName)}.$extractedAtColumn < EXCLUDED.$extractedAtColumn"
-            }
+        val cursorComparison = buildCursorComparison(importType.cursor, columnNameMapping, targetTableName)
+        val whereClause = "WHERE $cursorComparison"
+
+        // Handle CDC deletions based on mode
+        val cdcDeleteStatement = if (
+            stream.schema.asColumns().containsKey(CDC_DELETED_AT_COLUMN) &&
+            postgresConfiguration.cdcDeletionMode == CdcDeletionMode.HARD_DELETE
+        ) {
+            cdcDelete(
+                dedupTableAlias = "deduped_source",
+                targetTableName = targetTableName,
+                columnNameMapping = columnNameMapping,
+                primaryKeyTargetColumns = primaryKeyTargetColumns,
+                cursor = importType.cursor
+            )
+        } else {
+            ""
+        }
 
         // Build the INSERT ... ON CONFLICT statement
         val upsertStatement =
             """
+            WITH deduped_source AS (
+              $selectSourceRecords
+            ),
+             
+            deleted AS (${cdcDeleteStatement})
+                
             INSERT INTO ${getFullyQualifiedName(targetTableName)} (
               ${allColumnNames.joinToString(",\n  ")}
             )
-            $selectSourceRecords
+            SELECT
+              ${allColumnNames.joinToString(",\n  ")}
+            FROM deduped_source
+            WHERE "$CDC_DELETED_AT_COLUMN" IS NULL
             ON CONFLICT (${primaryKeyTargetColumns.joinToString(", ")})
             DO UPDATE SET
               $updateAssignments
@@ -309,6 +322,68 @@ class PostgresDirectLoadSqlGenerator {
             WHERE row_number = 1
         """.trimIndent()
     }
+
+
+    /**
+     * Builds a WHERE clause that compares cursor values to determine if the new record is newer.
+     * Returns true if the new record should replace the existing one based on:
+     * - Cursor value comparison (if cursor exists)
+     * - Extraction timestamp comparison (as tiebreaker or primary when no cursor)
+     * - NULL handling for cursor values
+     */
+    private fun buildCursorComparison(
+        cursor: List<String>,
+        columnNameMapping: ColumnNameMapping,
+        targetTableName: TableName,
+        newRecordAlias: String = "EXCLUDED"
+    ): String {
+        return if (cursor.isNotEmpty()) {
+            val cursorFieldName = cursor.first()
+            val cursorColumn = columnNameMapping[cursorFieldName] ?: cursorFieldName
+            val quotedCursorColumn = "\"$cursorColumn\""
+            val extractedAtColumn = "\"$COLUMN_NAME_AB_EXTRACTED_AT\""
+            """
+                  ${getFullyQualifiedName(targetTableName)}.$quotedCursorColumn < $newRecordAlias.$quotedCursorColumn
+                  OR (${getFullyQualifiedName(targetTableName)}.$quotedCursorColumn = $newRecordAlias.$quotedCursorColumn AND ${getFullyQualifiedName(targetTableName)}.$extractedAtColumn < $newRecordAlias.$extractedAtColumn)
+                  OR (${getFullyQualifiedName(targetTableName)}.$quotedCursorColumn IS NULL AND $newRecordAlias.$quotedCursorColumn IS NOT NULL)
+                  OR (${getFullyQualifiedName(targetTableName)}.$quotedCursorColumn IS NULL AND $newRecordAlias.$quotedCursorColumn IS NULL AND ${getFullyQualifiedName(targetTableName)}.$extractedAtColumn < $newRecordAlias.$extractedAtColumn)
+                """.trimIndent()
+        } else {
+            // No cursor - use extraction timestamp only
+            val extractedAtColumn = "\"$COLUMN_NAME_AB_EXTRACTED_AT\""
+            "${getFullyQualifiedName(targetTableName)}.$extractedAtColumn < $newRecordAlias.$extractedAtColumn"
+        }
+    }
+
+    /**
+     * Generates a DELETE statement for CDC hard deletes.
+     * Deletes records from the target table that have been marked for deletion in the source table.
+     * Uses primary key matching and cursor comparison to ensure only newer deletions are applied.
+     */
+    private fun cdcDelete(
+        dedupTableAlias: String,
+        targetTableName: TableName,
+        columnNameMapping: ColumnNameMapping,
+        primaryKeyTargetColumns: List<String>,
+        cursor: List<String>
+    ): String {
+        // Build primary key matching condition
+        val pkMatches = primaryKeyTargetColumns.joinToString(" AND ") { pk ->
+            "${getFullyQualifiedName(targetTableName)}.$pk = $dedupTableAlias.$pk"
+        }
+
+        // Build cursor comparison to ensure we only delete if the deletion is newer
+        val cursorComparison = buildCursorComparison(cursor, columnNameMapping, targetTableName, dedupTableAlias)
+
+        return """
+            DELETE FROM ${getFullyQualifiedName(targetTableName)}
+            USING $dedupTableAlias
+            WHERE $pkMatches
+                AND $dedupTableAlias."$CDC_DELETED_AT_COLUMN" IS NOT NULL
+                AND ($cursorComparison)
+        """.trimIndent().andLog()
+    }
+
 
     fun dropTable(tableName: TableName): String =
         "DROP TABLE IF EXISTS ${getFullyQualifiedName(tableName)};".andLog()
