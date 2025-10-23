@@ -4,6 +4,7 @@ import { getSupportLevelDisplay } from "../connector_registry";
 import { Callout } from "./Callout";
 import { Chip } from "./Chip";
 import styles from "./HeaderDecoration.module.css";
+import { CopyPageButton } from './CopyPageButton/CopyPageButton';
 
 // Extend Day.js with the relativeTime plugin
 dayjs.extend(relativeTime);
