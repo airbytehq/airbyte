@@ -33,7 +33,7 @@ jobs:
           fetch-depth: 0
       - uses: errata-ai/vale-action@d89dee975228ae261d22c15adcd03578634d429c # Pinned to V2.1.1
         with:
-          vale_flags: --config=docusaurus/vale.ini --minAlertLevel=warning # Location of Vale's config file and min alert level for CI (local linters will still see suggestions)
+          vale_flags: --config=docusaurus/vale-ci.ini --minAlertLevel=warning # CI-specific config that disables certain rules (see vale-ci.ini vs vale.ini)
           files: docs/ # Folder in which to lint
           filter_mode: added # Only lint things that have changed
           fail_on_error: false # Don't fail if the linter finds issues (compliance is optional)
