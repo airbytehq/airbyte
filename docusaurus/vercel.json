@@ -1,4 +1,11 @@
 {
+  "buildCommand": "pnpm build",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "env": {
+    "DOCUSAURUS_MINIFY": "swc",
+    "NODE_ENV": "production",
+    "NODE_OPTIONS": "--max-old-space-size=3072"
+  },
   "trailingSlash": false,
   "redirects": [
     {
