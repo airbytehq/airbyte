@@ -2,10 +2,10 @@
 
 ## Upgrading to 1.0.0
 
-This release introduces changes to incremental sync of `adgroups_daily_reports` and `keywords_daily_reports` streams, changing stream's state from per-partition state to usage of a global state cursor. 
-This will decrease the time of read for these streams. 
+This release introduces changes to incremental sync of `adgroups_report_daily` and `keywords_report_daily` streams, changing the stream state from per-partition state to a global state cursor. This change decreases the sync time for these streams.
 
 ### Affected streams
+
 - `adgroups_report_daily`
 - `keywords_report_daily`
 
