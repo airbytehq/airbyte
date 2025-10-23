@@ -283,20 +283,20 @@ const config = {
     ],
     require.resolve("./src/plugins/enterpriseConnectors"),
     //disable for now as it's causing issues with the api docs 
-    // [
-    //   "@signalwire/docusaurus-plugin-llms-txt",
-    //   {
-    //     siteTitle: "docs.airbyte.com llms.txt",
-    //     siteDescription:
-    //       "Airbyte is an open source platform designed for building and managing data pipelines, offering extensive connector options to facilitate data movement from various sources to destinations efficiently and effectively.",
-    //     depth: 4,
-    //     runOnPostBuild: true,
-    //     content: {
-    //       includePages: true,
-    //       excludeRoutes: ["api-docs/embedded-api/**"],
-    //     },
-    //   },
-    // ],
+    [
+      "@signalwire/docusaurus-plugin-llms-txt",
+      {
+        siteTitle: "docs.airbyte.com llms.txt",
+        siteDescription:
+          "Airbyte is an open source platform designed for building and managing data pipelines, offering extensive connector options to facilitate data movement from various sources to destinations efficiently and effectively.",
+        depth: 4,
+        runOnPostBuild: true,
+        content: {
+          includePages: true,
+          excludeRoutes: ["api-docs/embedded-api/**"],
+        },
+      },
+    ],
     () => ({
       name: "Yaml loader",
       configureWebpack() {

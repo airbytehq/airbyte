@@ -369,7 +369,7 @@ export const HeaderDecoration = ({
           isArchived={isArchived}
           enterpriseConnector={enterpriseConnector}
         />
-        {/* <CopyPageButton /> */}
+        <CopyPageButton />
       </div>
       <ConnectorMetadataCallout
         isCloud={isCloud}
