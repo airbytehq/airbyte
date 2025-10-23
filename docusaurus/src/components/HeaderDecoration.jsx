@@ -1,10 +1,8 @@
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import React from "react";
 import { getSupportLevelDisplay } from "../connector_registry";
 import { Callout } from "./Callout";
 import { Chip } from "./Chip";
-import { CopyPageButton } from "./CopyPageButton/CopyPageButton";
 import styles from "./HeaderDecoration.module.css";
 
 // Extend Day.js with the relativeTime plugin
@@ -371,7 +369,7 @@ export const HeaderDecoration = ({
           isArchived={isArchived}
           enterpriseConnector={enterpriseConnector}
         />
-        <CopyPageButton />
+        {/* <CopyPageButton /> */}
       </div>
       <ConnectorMetadataCallout
         isCloud={isCloud}
