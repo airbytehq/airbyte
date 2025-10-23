@@ -17,17 +17,15 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "destination_pgvector"
 
 [tool.poetry.dependencies.airbyte-cdk]
-# Using local CDK with langchain upgrade
-path = "../../../../airbyte-python-cdk"
-develop = true
+# Using CDK branch with langchain upgrade (PR #810)
+git = "https://github.com/airbytehq/airbyte-python-cdk.git"
+branch = "devin/1761176353-bump-langchain"
 extras = ["vector-db-based"]
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.13"
 
-# Temporarily commented out to allow local CDK development
-# Will be restored once CDK PR is merged
-# airbyte = "^0.31.11"
+airbyte = "^0.31.11"
 sqlalchemy = "<2.0"
 pgvector = "0.3.2"
 jaraco-functools = "^4.1.0"
