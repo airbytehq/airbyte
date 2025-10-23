@@ -218,19 +218,25 @@ class PostgresDirectLoadSqlGenerator(
         val whereClause = "WHERE $cursorComparison"
 
         // Handle CDC deletions based on mode
-        val cdcDeleteStatement = if (
+        val cdcDeleteClause: String
+        val cdcSkipInsertClause: String
+        if (
             stream.schema.asColumns().containsKey(CDC_DELETED_AT_COLUMN) &&
             postgresConfiguration.cdcDeletionMode == CdcDeletionMode.HARD_DELETE
         ) {
-            cdcDelete(
+            val deleteStatement = cdcDelete(
                 dedupTableAlias = "deduped_source",
                 targetTableName = targetTableName,
                 columnNameMapping = columnNameMapping,
                 primaryKeyTargetColumns = primaryKeyTargetColumns,
                 cursor = importType.cursor
             )
+
+            cdcDeleteClause = ",deleted AS ( $deleteStatement )"
+            cdcSkipInsertClause = "WHERE \"$CDC_DELETED_AT_COLUMN\" IS NULL"
         } else {
-            ""
+            cdcDeleteClause = ""
+            cdcSkipInsertClause = ""
         }
 
         // Build the INSERT ... ON CONFLICT statement
@@ -238,9 +244,9 @@ class PostgresDirectLoadSqlGenerator(
             """
             WITH deduped_source AS (
               $selectSourceRecords
-            ),
+            )
              
-            deleted AS (${cdcDeleteStatement})
+            $cdcDeleteClause
                 
             INSERT INTO ${getFullyQualifiedName(targetTableName)} (
               ${allColumnNames.joinToString(",\n  ")}
@@ -248,7 +254,7 @@ class PostgresDirectLoadSqlGenerator(
             SELECT
               ${allColumnNames.joinToString(",\n  ")}
             FROM deduped_source
-            WHERE "$CDC_DELETED_AT_COLUMN" IS NULL
+            $cdcSkipInsertClause
             ON CONFLICT (${primaryKeyTargetColumns.joinToString(", ")})
             DO UPDATE SET
               $updateAssignments
