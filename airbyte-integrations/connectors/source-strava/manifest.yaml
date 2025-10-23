@@ -5,19 +5,43 @@ type: DeclarativeSource
 check:
   type: CheckStream
   stream_names:
-    - athlete_stats
+    - athlete
 
 definitions:
   streams:
+    athlete:
+      type: DeclarativeStream
+      name: athlete
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url: https://www.strava.com/api/v3/athlete
+          http_method: GET
+          authenticator:
+            $ref: "#/definitions/base_requester/authenticator"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/athlete"
     athlete_stats:
       type: DeclarativeStream
       name: athlete_stats
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
-          path: athletes/{{ config.athlete_id }}/stats
+          type: HttpRequester
+          url: https://www.strava.com/api/v3/athletes/{{ config.athlete_id }}/stats
           http_method: GET
+          authenticator:
+            $ref: "#/definitions/base_requester/authenticator"
         record_selector:
           type: RecordSelector
           extractor:
@@ -35,9 +59,11 @@ definitions:
       retriever:
         type: SimpleRetriever
         requester:
-          $ref: "#/definitions/base_requester"
-          path: athlete/activities
+          type: HttpRequester
+          url: https://www.strava.com/api/v3/athlete/activities
           http_method: GET
+          authenticator:
+            $ref: "#/definitions/base_requester/authenticator"
         record_selector:
           type: RecordSelector
           extractor:
@@ -76,9 +102,97 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/activities"
+    clubs:
+      type: DeclarativeStream
+      name: clubs
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url: https://www.strava.com/api/v3/athlete/clubs
+          http_method: GET
+          authenticator:
+            $ref: "#/definitions/base_requester/authenticator"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/clubs"
+    routes:
+      type: DeclarativeStream
+      name: routes
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url: https://www.strava.com/api/v3/athlete/routes
+          http_method: GET
+          authenticator:
+            $ref: "#/definitions/base_requester/authenticator"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/routes"
+    gear:
+      type: DeclarativeStream
+      name: gear
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url: https://www.strava.com/api/v3/athlete
+          http_method: GET
+          authenticator:
+            $ref: "#/definitions/base_requester/authenticator"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: ["bikes", "shoes"]
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/gear"
+    segments:
+      type: DeclarativeStream
+      name: segments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url: https://www.strava.com/api/v3/segments/starred
+          http_method: GET
+          authenticator:
+            $ref: "#/definitions/base_requester/authenticator"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path: []
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/segments"
   base_requester:
     type: HttpRequester
-    url_base: https://www.strava.com/api/v3/
+    url: https://www.strava.com/api/v3/
     authenticator:
       type: OAuthAuthenticator
       client_id: "{{ config['client_id'] }}"
@@ -91,8 +205,13 @@ definitions:
         - activity:read_all
 
 streams:
+  - $ref: "#/definitions/streams/athlete"
   - $ref: "#/definitions/streams/athlete_stats"
   - $ref: "#/definitions/streams/activities"
+  - $ref: "#/definitions/streams/clubs"
+  - $ref: "#/definitions/streams/routes"
+  - $ref: "#/definitions/streams/gear"
+  - $ref: "#/definitions/streams/segments"
 
 spec:
   type: Spec
@@ -136,8 +255,8 @@ spec:
         type: integer
         description: The Athlete ID of your Strava developer application.
         title: Athlete ID
-        pattern: ^[0-9_\-]+$
         examples:
+          - 17831421
           - "17831421"
         order: 3
       start_date:
@@ -159,10 +278,118 @@ spec:
 
 metadata:
   autoImportSchema:
+    athlete: false
     athlete_stats: false
     activities: false
+    clubs: false
+    routes: false
+    gear: false
+    segments: false
 
 schemas:
+  athlete:
+    type: object
+    $schema: https://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: integer
+        description: The unique identifier of the athlete
+      username:
+        type:
+          - "null"
+          - string
+        description: The athlete's username
+      firstname:
+        type:
+          - "null"
+          - string
+        description: The athlete's first name
+      lastname:
+        type:
+          - "null"
+          - string
+        description: The athlete's last name
+      bio:
+        type:
+          - "null"
+          - string
+        description: The athlete's bio
+      city:
+        type:
+          - "null"
+          - string
+        description: The athlete's city
+      state:
+        type:
+          - "null"
+          - string
+        description: The athlete's state
+      country:
+        type:
+          - "null"
+          - string
+        description: The athlete's country
+      sex:
+        type:
+          - "null"
+          - string
+        description: The athlete's sex (M/F)
+      premium:
+        type:
+          - "null"
+          - boolean
+        description: Whether the athlete has premium membership
+      summit:
+        type:
+          - "null"
+          - boolean
+        description: Whether the athlete has summit membership
+      created_at:
+        type:
+          - "null"
+          - string
+        description: The date and time when the athlete account was created
+      updated_at:
+        type:
+          - "null"
+          - string
+        description: The date and time when the athlete profile was last updated
+      badge_type_id:
+        type:
+          - "null"
+          - integer
+        description: The athlete's badge type ID
+      weight:
+        type:
+          - "null"
+          - number
+        description: The athlete's weight
+      profile_medium:
+        type:
+          - "null"
+          - string
+        description: URL to the athlete's medium profile picture
+      profile:
+        type:
+          - "null"
+          - string
+        description: URL to the athlete's profile picture
+      friend:
+        type:
+          - "null"
+          - string
+        description: The athlete's friend status
+      follower:
+        type:
+          - "null"
+          - string
+        description: The athlete's follower status
+      resource_state:
+        type:
+          - "null"
+          - integer
+        description: Resource state of the athlete
   athlete_stats:
     type:
       - "null"
@@ -827,3 +1054,313 @@ schemas:
           - "null"
           - integer
         description: Type of workout (if applicable)
+  clubs:
+    type: object
+    $schema: https://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: integer
+        description: Unique identifier for the club
+      name:
+        type:
+          - "null"
+          - string
+        description: Name of the club
+      description:
+        type:
+          - "null"
+          - string
+        description: Description of the club
+      profile_medium:
+        type:
+          - "null"
+          - string
+        description: URL to the club's medium profile image
+      profile:
+        type:
+          - "null"
+          - string
+        description: URL to the club's profile image
+      cover_photo:
+        type:
+          - "null"
+          - string
+        description: URL to the club's cover photo
+      cover_photo_small:
+        type:
+          - "null"
+          - string
+        description: URL to the club's small cover photo
+      sport_type:
+        type:
+          - "null"
+          - string
+        description: Primary sport type of the club
+      city:
+        type:
+          - "null"
+          - string
+        description: City where the club is located
+      state:
+        type:
+          - "null"
+          - string
+        description: State where the club is located
+      country:
+        type:
+          - "null"
+          - string
+        description: Country where the club is located
+      private:
+        type:
+          - "null"
+          - boolean
+        description: Whether the club is private
+      member_count:
+        type:
+          - "null"
+          - integer
+        description: Total number of club members
+      featured:
+        type:
+          - "null"
+          - boolean
+        description: Whether the club is featured
+      verified:
+        type:
+          - "null"
+          - boolean
+        description: Whether the club is verified
+      url:
+        type:
+          - "null"
+          - string
+        description: Club's website URL
+  routes:
+    type: object
+    $schema: https://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: integer
+        description: Unique identifier for the route
+      name:
+        type:
+          - "null"
+          - string
+        description: Name of the route
+      description:
+        type:
+          - "null"
+          - string
+        description: Description of the route
+      distance:
+        type:
+          - "null"
+          - number
+        description: Total distance of the route in meters
+      elevation_gain:
+        type:
+          - "null"
+          - number
+        description: Total elevation gain of the route in meters
+      map:
+        type: object
+        description: Map information for the route
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+            description: Map ID
+          polyline:
+            type:
+              - "null"
+              - string
+            description: Encoded polyline for the route
+          summary_polyline:
+            type:
+              - "null"
+              - string
+            description: Summary polyline for the route
+      type:
+        type:
+          - "null"
+          - integer
+        description: Type of route (1=ride, 2=run)
+      sub_type:
+        type:
+          - "null"
+          - integer
+        description: Sub-type of route
+      created_at:
+        type:
+          - "null"
+          - string
+        description: Date and time when the route was created
+      updated_at:
+        type:
+          - "null"
+          - string
+        description: Date and time when the route was last updated
+      private:
+        type:
+          - "null"
+          - boolean
+        description: Whether the route is private
+      starred:
+        type:
+          - "null"
+          - boolean
+        description: Whether the route is starred by the athlete
+      timestamp:
+        type:
+          - "null"
+          - integer
+        description: Unix timestamp of route creation
+  gear:
+    type: object
+    $schema: https://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: string
+        description: Unique identifier for the gear
+      name:
+        type:
+          - "null"
+          - string
+        description: Name of the gear
+      primary:
+        type:
+          - "null"
+          - boolean
+        description: Whether this is the primary gear
+      distance:
+        type:
+          - "null"
+          - number
+        description: Total distance covered with this gear
+      brand_name:
+        type:
+          - "null"
+          - string
+        description: Brand name of the gear
+      model_name:
+        type:
+          - "null"
+          - string
+        description: Model name of the gear
+      description:
+        type:
+          - "null"
+          - string
+        description: Description of the gear
+      resource_state:
+        type:
+          - "null"
+          - integer
+        description: Resource state of the gear
+      retired:
+        type:
+          - "null"
+          - boolean
+        description: Whether the gear is retired
+  segments:
+    type: object
+    $schema: https://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type: integer
+        description: Unique identifier for the segment
+      name:
+        type:
+          - "null"
+          - string
+        description: Name of the segment
+      activity_type:
+        type:
+          - "null"
+          - string
+        description: Type of activity for the segment
+      distance:
+        type:
+          - "null"
+          - number
+        description: Distance of the segment in meters
+      average_grade:
+        type:
+          - "null"
+          - number
+        description: Average grade of the segment as a percentage
+      maximum_grade:
+        type:
+          - "null"
+          - number
+        description: Maximum grade of the segment as a percentage
+      elevation_high:
+        type:
+          - "null"
+          - number
+        description: Highest elevation point of the segment
+      elevation_low:
+        type:
+          - "null"
+          - number
+        description: Lowest elevation point of the segment
+      start_latlng:
+        type:
+          - "null"
+          - array
+        description: Starting latitude and longitude coordinates
+        items:
+          type:
+            - "null"
+            - number
+      end_latlng:
+        type:
+          - "null"
+          - array
+        description: Ending latitude and longitude coordinates
+        items:
+          type:
+            - "null"
+            - number
+      climb_category:
+        type:
+          - "null"
+          - integer
+        description: Climb category (0=uncategorized, 5=HC, 4=Cat4, 3=Cat3, 2=Cat2, 1=Cat1)
+      city:
+        type:
+          - "null"
+          - string
+        description: City where the segment is located
+      state:
+        type:
+          - "null"
+          - string
+        description: State where the segment is located
+      country:
+        type:
+          - "null"
+          - string
+        description: Country where the segment is located
+      private:
+        type:
+          - "null"
+          - boolean
+        description: Whether the segment is private
+      hazardous:
+        type:
+          - "null"
+          - boolean
+        description: Whether the segment is marked as hazardous
+      starred:
+        type:
+          - "null"
+          - boolean
+        description: Whether the segment is starred by the athlete

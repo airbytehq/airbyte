@@ -2,15 +2,24 @@
   "streams": [
     {
       "stream": {
+        "name": "athlete",
+        "json_schema": {
+          "$schema": "https://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
         "name": "athlete_stats",
         "json_schema": {
           "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
-          "properties": {
-            "athlete_id": {
-              "type": "integer"
-            }
-          }
+          "properties": {}
         },
         "supported_sync_modes": ["full_refresh"]
       },
@@ -23,16 +32,64 @@
         "json_schema": {
           "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
-          "properties": {
-            "start_date": {
-              "type": "string"
-            }
-          }
+          "properties": {}
         },
         "supported_sync_modes": ["full_refresh", "incremental"]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "clubs",
+        "json_schema": {
+          "$schema": "https://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "routes",
+        "json_schema": {
+          "$schema": "https://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "gear",
+        "json_schema": {
+          "$schema": "https://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "segments",
+        "json_schema": {
+          "$schema": "https://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     }
   ]
 }
