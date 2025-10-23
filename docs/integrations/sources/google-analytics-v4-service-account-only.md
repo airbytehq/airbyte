@@ -18,5 +18,3 @@ Google has discontinued Universal Analytics in favor of Google Analytics 4. Airb
 | 0.0.1   | 2024-01-29 | [34323](https://github.com/airbytehq/airbyte/pull/34323) | Initial Release                          |
 
 </details>
-
-</HideInUI>
