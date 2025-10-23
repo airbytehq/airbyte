@@ -10,13 +10,14 @@ from urllib.parse import urlencode
 import mock
 import pytest
 
-from airbyte_cdk.models import Status, SyncMode
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models.airbyte_protocol import Status as ConnectionStatus
 from airbyte_cdk.test.entrypoint_wrapper import discover
 from airbyte_cdk.test.state_builder import StateBuilder
 from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
 from .conftest import find_stream, get_source, mock_dynamic_schema_requests_with_skip, read_from_stream
-from .utils import read_full_refresh, read_incremental
+from .utils import run_read
 
 
 NUMBER_OF_PROPERTIES = 2000
@@ -46,26 +47,24 @@ def test_check_connection_ok(requests_mock, config):
     requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={}, status_code=200)
     requests_mock.register_uri("GET", "/properties/v2/contact/properties", responses)
     requests_mock.register_uri("POST", "/crm/v3/objects/contact/search", {})
-    check_result = get_source(config).check(logger, config=config)
-    ok, error_msg = check_result.status, check_result.message
+    connection_status = get_source(config).check(logger, config=config)
 
-    assert ok == Status.SUCCEEDED
-    assert not error_msg
+    assert connection_status.status == ConnectionStatus.SUCCEEDED
+    assert not connection_status.message
 
 
 def test_check_connection_empty_config(caplog):
     config = {}
-    check_result = get_source(config).check(logger, config=config)
+    get_source(config).check(logger, config=config)
     assert "KeyError: ['credentials', 'credentials_title']" in caplog.records[0].message
     assert caplog.records[0].levelname == "ERROR"
 
 
 def test_check_connection_exception(config):
-    check_result = get_source(config).check(logger, config=config)
-    ok, error_msg = check_result.status, check_result.message
+    connection_status = get_source(config).check(logger, config=config)
 
-    assert ok == Status.FAILED
-    assert error_msg
+    assert connection_status.status == ConnectionStatus.FAILED
+    assert connection_status.message
 
 
 def test_check_connection_bad_request_exception(requests_mock, config_invalid_client_id):
@@ -73,10 +72,9 @@ def test_check_connection_bad_request_exception(requests_mock, config_invalid_cl
         {"json": {"message": "invalid client_id"}, "status_code": 400},
     ]
     requests_mock.register_uri("POST", "/oauth/v1/token", responses)
-    check_result = get_source(config_invalid_client_id).check(logger, config=config_invalid_client_id)
-    ok, error_msg = check_result.status, check_result.message
-    assert ok == Status.FAILED
-    assert error_msg
+    connection_status = get_source(config_invalid_client_id).check(logger, config=config_invalid_client_id)
+    assert connection_status.status == ConnectionStatus.FAILED
+    assert connection_status.message
 
 
 def test_streams(requests_mock, config):
@@ -99,10 +97,9 @@ def test_streams_forbidden_returns_default_streams(requests_mock, config):
 
 def test_check_credential_title_exception(config):
     config["credentials"].pop("credentials_title")
-    check_result = get_source(config).check(logger, config=config)
-    ok, error_msg = check_result.status, check_result.message
-    assert ok == Status.FAILED
-    assert "`authenticator_selection_path` is not found in the config" in error_msg
+    connection_status = get_source(config).check(logger, config=config)
+    assert connection_status.status == ConnectionStatus.FAILED
+    assert "`authenticator_selection_path` is not found in the config" in connection_status.message
 
 
 def test_streams_ok_with_one_custom_stream(requests_mock, config, mock_dynamic_schema_requests):
@@ -138,11 +135,10 @@ def test_check_connection_backoff_on_limit_reached(requests_mock, config):
     requests_mock.register_uri("GET", "/properties/v2/contact/properties", prop_response)
     requests_mock.register_uri("POST", "/crm/v3/objects/contact/search", responses)
     source = get_source(config)
-    check_result = source.check(logger=logger, config=config)
-    ok, error_msg = check_result.status, check_result.message
+    connection_status = source.check(logger=logger, config=config)
 
-    assert ok == Status.SUCCEEDED
-    assert not error_msg
+    assert connection_status.status == ConnectionStatus.SUCCEEDED
+    assert not connection_status.message
 
 
 def test_check_connection_backoff_on_server_error(requests_mock, config):
@@ -166,11 +162,10 @@ def test_check_connection_backoff_on_server_error(requests_mock, config):
     requests_mock.register_uri("GET", "/properties/v2/contact/properties", prop_response)
     requests_mock.register_uri("POST", "/crm/v3/objects/contact/search", responses)
     source = get_source(config)
-    check_result = source.check(logger=logger, config=config)
-    ok, error_msg = check_result.status, check_result.message
+    connection_status = source.check(logger=logger, config=config)
 
-    assert ok == Status.SUCCEEDED
-    assert not error_msg
+    assert connection_status.status == ConnectionStatus.SUCCEEDED
+    assert not connection_status.message
 
 
 def test_stream_forbidden(requests_mock, config, mock_dynamic_schema_requests):
@@ -463,13 +458,16 @@ def test_engagements_stream_pagination_works(requests_mock, config):
     )
 
     # Create test_stream instance for full refresh.
-    output = read_from_stream(config, "engagements", SyncMode.full_refresh)
-    # The stream should handle pagination correctly and output 600 records.
-    assert len(output.records) == 600
+    test_stream = find_stream("engagements", config)
 
-    output = read_from_stream(config, "engagements", SyncMode.incremental, {})
+    records = run_read(test_stream)
+    # The stream should handle pagination correctly and output 600 records.
+    assert len(records) == 600
+
+    test_stream = find_stream("engagements", config)
+    records = run_read(test_stream)
     # The stream should handle pagination correctly and output 250 records.
-    assert len(output.records) == 100
+    assert len(records) == 100
 
 
 def test_engagements_stream_since_old_date(mock_dynamic_schema_requests, requests_mock, fake_properties_list, config):
@@ -648,13 +646,15 @@ def test_pagination_marketing_emails_stream(requests_mock, config):
 
     # No longer need separate statistics endpoint mocks since includeStats=true
     # includes statistics directly in the main response
-    records = read_from_stream(config, "marketing_emails", SyncMode.full_refresh).records
+    test_stream = find_stream("marketing_emails", config)
+
+    records = run_read(test_stream)
     # The stream should handle pagination correctly and output 600 records.
     assert len(records) == 600
 
     # Verify that statistics data is included directly in the email records
     # (using includeStats=true parameter includes statistics in the main response)
-    sample_record = records[5].record.data
+    sample_record = records[5]
 
     # Assert that statistics fields are present in the record (from includeStats=true)
     assert sample_record["delivered"] == 100, "Statistics 'delivered' field should be included with includeStats=true"

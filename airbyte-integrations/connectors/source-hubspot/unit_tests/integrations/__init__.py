@@ -146,7 +146,7 @@ class HubspotTestCase:
 
     @classmethod
     def mock_dynamic_schema_requests(cls, http_mocker: HttpMocker, entities: Optional[List[str]] = None):
-        entities = entities or OBJECTS_WITH_DYNAMIC_SCHEMA
+        entities = entities if entities is not None else OBJECTS_WITH_DYNAMIC_SCHEMA
 
         # figure out which entities are already mocked
         existing = set()
