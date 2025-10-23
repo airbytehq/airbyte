@@ -1455,7 +1455,7 @@ definitions:
       $ref: "#/definitions/incremental_sync"
       step: P30D
       cursor_granularity: PT1S
-      is_client_side_incremental: true
+      is_client_side_incremental: false
 
   companies_stream:
     $ref: "#/definitions/base_crm_search_incremental_stream"
