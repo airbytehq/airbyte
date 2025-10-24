@@ -12,6 +12,7 @@ import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TableName
 import io.airbyte.integrations.destination.postgres.sql.Column
 import io.airbyte.integrations.destination.postgres.sql.PostgresDirectLoadSqlGenerator
+import io.airbyte.integrations.destination.postgres.sql.PostgresDirectLoadSqlGenerator.Companion.COUNT_TOTAL_ALIAS
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.sql.ResultSet
@@ -19,7 +20,6 @@ import javax.sql.DataSource
 
 private val log = KotlinLogging.logger {}
 
-internal const val COUNT_TOTAL_ALIAS = "total"
 
 @Singleton
 class PostgresAirbyteClient(
@@ -54,7 +54,7 @@ class PostgresAirbyteClient(
         stream: DestinationStream,
         tableName: TableName,
         columnNameMapping: ColumnNameMapping,
-        replace: Boolean
+        replace: Boolean,
     ) {
         execute(sqlGenerator.createTable(stream, tableName, columnNameMapping, replace))
     }
