@@ -243,6 +243,7 @@ Add external log storage
 global:
   storage:
     type: s3
+    secretName: airbyte-config-secrets  # Name of your Kubernetes secret
     bucket:
       log: airbyte-bucket
       state: airbyte-bucket
@@ -301,6 +302,7 @@ global:
 global:
   storage:
     type: azure
+    secretName: airbyte-config-secrets  # Name of your Kubernetes secret
     bucket:
       log: airbyte-bucket
       state: airbyte-bucket
