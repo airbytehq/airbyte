@@ -49,8 +49,8 @@ git fetch --quiet "$REMOTE" "$DEFAULT_BRANCH"
 
 # 2) set up ignore patterns
 ignore_patterns=(
-  'airbyte-integrations/connectors/[^/]+/.coveragerc'
-  'airbyte-integrations/connectors/[^/]+/poe_tasks.toml'
+  '.coveragerc'
+  'poe_tasks.toml'
   'airbyte-integrations/connectors/[^/]+/README.md'
 )
 # join with | into a grouped regex
@@ -89,7 +89,7 @@ return_empty_json() {
 }
 
 # 5) drop ignored files
-filtered=$(printf '%s\n' "$all_changes" | grep -v -E "${ignore_globs}")
+filtered=$(printf '%s\n' "$all_changes" | grep -v -E "(/${ignore_globs}|^${ignore_globs})")
 if [ -z "$filtered" ]; then
   echo "⚠️ Warning: No files remaining after filtering. Returning empty connector list." >&2
   return_empty_json
