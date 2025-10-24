@@ -67,6 +67,15 @@ function extractMinimalRegistryData(fullRegistry) {
     documentationUrl_oss: connector.documentationUrl_oss || "",
     // Properties used by remark/connectorList.js (isPypiConnector)
     remoteRegistries_oss: connector.remoteRegistries_oss || {},
+    // Properties used by remark/docsHeaderDecoration.js for HeaderDecoration component
+    dockerImageTag_oss: connector.dockerImageTag_oss || "",
+    github_url: connector.github_url || "",
+    issue_url: connector.issue_url || "",
+    definitionId: connector.definitionId || "",
+    packageInfo_oss: connector.packageInfo_oss || null,
+    packageInfo_cloud: connector.packageInfo_cloud || null,
+    generated_oss: connector.generated_oss || null,
+    generated_cloud: connector.generated_cloud || null,
   }));
 }
 
