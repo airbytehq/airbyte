@@ -145,7 +145,7 @@ definitions:
             field_name: limit
           pagination_strategy:
             type: CursorPagination
-            page_size: 100
+            page_size: 1000
             cursor_value: '{{ response.get("next_page", {}) }}'
             stop_condition: '{{ response.get("count", {}) == 0 }}'
       name: agent_timeline
