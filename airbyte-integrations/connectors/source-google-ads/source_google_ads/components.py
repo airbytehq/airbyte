@@ -899,139 +899,179 @@ class CustomGAQuerySchemaLoader(SchemaLoader):
 @dataclass
 class StringParseState:
     inside_string: bool = False
-    escape_next: bool = False
-    char_buffer: List[str] = field(default_factory=list)
-    last_read_key: Optional[str] = None
+    escape_next_character: bool = False
+    collected_string_chars: List[str] = field(default_factory=list)
+    last_parsed_key: Optional[str] = None
+
+
+@dataclass
+class TopLevelObjectState:
+    depth: int = 0
 
 
 @dataclass
 class ResultsArrayState:
-    within_results_array: bool = False
-    results_nesting_depth: int = 0
-    pending_results_colon: bool = False
+    inside_results_array: bool = False
+    array_nesting_depth: int = 0
+    expecting_results_array_start: bool = False
 
 
 @dataclass
-class RowParseState:
-    collecting_row: bool = False
-    row_buffer: List[str] = field(default_factory=list)
-    row_nesting_depth: int = 0
+class RecordParseState:
+    inside_record: bool = False
+    record_text_buffer: List[str] = field(default_factory=list)
+    record_nesting_depth: int = 0
 
 
 @dataclass
-class RowsStreamingDecoder(Decoder):
+class GoogleAdsStreamingDecoder(Decoder):
     parameters: InitVar[Mapping[str, Any]]
 
     def is_stream_response(self) -> bool:
         return True
 
     def decode(self, response: requests.Response) -> Generator[MutableMapping[str, Any], None, None]:
-        for row in self._parse_rows_from_stream(response.iter_content(chunk_size=65536)):
-            yield {"results": [row]}
+        records_batch: List[Dict[str, Any]] = []
+        for record in self._parse_records_from_stream(response.iter_content(chunk_size=65536)):
+            records_batch.append(record)
+            if len(records_batch) >= 100:
+                yield {"results": records_batch}
+                records_batch = []
 
-    def _parse_rows_from_stream(self, byte_iter: Iterable[bytes], encoding: str = "utf-8") -> Generator[Dict[str, Any], None, None]:
+        if records_batch:
+            yield {"results": records_batch}
+
+    def _parse_records_from_stream(self, byte_iter: Iterable[bytes], encoding: str = "utf-8") -> Generator[Dict[str, Any], None, None]:
         string_state = StringParseState()
         results_state = ResultsArrayState()
-        row_state = RowParseState()
+        record_state = RecordParseState()
+        top_level_state = TopLevelObjectState()
 
         for chunk in byte_iter:
-            for ch in chunk.decode(encoding, errors="replace"):
-                # Every structural char may be part of a row, so always append if collecting
-                self._append_to_current_row_if_any(ch, row_state)
+            for char in chunk.decode(encoding, errors="replace"):
+                self._append_to_current_record_if_any(char, record_state)
 
-                # Handle strings state
-                if self._update_string_state(ch, string_state):
+                if self._update_string_state(char, string_state):
                     continue
 
-                # Detect entering results array
-                if not results_state.within_results_array:
-                    self._detect_results_array(ch, string_state, results_state)
+                # Track outer braces only outside results array
+                if not results_state.inside_results_array:
+                    if char == "{":
+                        top_level_state.depth += 1
+                    elif char == "}":
+                        top_level_state.depth = max(0, top_level_state.depth - 1)
+
+                if not results_state.inside_results_array:
+                    self._detect_results_array(char, string_state, results_state)
                     continue
 
-                # We are inside results → parse rows
-                row = self._parse_row_structure(ch, results_state, row_state)
-                if row is not None:
-                    yield row
+                record = self._parse_record_structure(char, results_state, record_state)
+                if record is not None:
+                    yield record
 
-    def _update_string_state(self, ch: str, s: StringParseState) -> bool:
-        """Return True if ch was handled as part of string parsing."""
-        if s.inside_string:
-            if s.escape_next:
-                s.escape_next = False
+        # EOF validation
+        if (
+            string_state.inside_string
+            or record_state.inside_record
+            or record_state.record_nesting_depth != 0
+            or results_state.inside_results_array
+            or results_state.array_nesting_depth != 0
+            or top_level_state.depth != 0
+        ):
+            raise AirbyteTracedException(
+                message="Response JSON stream ended prematurely and is incomplete.",
+                internal_message=(
+                    "Detected truncated JSON stream: one or more structural elements "
+                    "were not fully closed before the response ended. "
+                    f"State snapshots — string: {string_state}, "
+                    f"record: {record_state}, "
+                    f"results: {results_state}, "
+                    f"top_level: {top_level_state}"
+                ),
+                failure_type=FailureType.system_error,
+            )
+
+    def _update_string_state(self, char: str, state: StringParseState) -> bool:
+        """Return True if char was handled as part of string parsing."""
+        if state.inside_string:
+            if state.escape_next_character:
+                state.escape_next_character = False
                 return True
-            if ch == "\\":
-                s.escape_next = True
+            if char == "\\":
+                state.escape_next_character = True
                 return True
-            if ch == '"':
-                s.inside_string = False
-                s.last_read_key = "".join(s.char_buffer)
-                s.char_buffer.clear()
+            if char == '"':
+                state.inside_string = False
+                state.last_parsed_key = "".join(state.collected_string_chars)
+                state.collected_string_chars.clear()
                 return True
-            s.char_buffer.append(ch)
+            state.collected_string_chars.append(char)
             return True
 
-        if ch == '"':
-            s.inside_string = True
-            s.char_buffer.clear()
+        if char == '"':
+            state.inside_string = True
+            state.collected_string_chars.clear()
             return True
 
         return False
 
-    def _detect_results_array(self, ch: str, s: StringParseState, r: ResultsArrayState) -> None:
-        if ch == ":" and s.last_read_key == "results":
-            r.pending_results_colon = True
-        elif ch == "[" and r.pending_results_colon:
-            r.within_results_array = True
-            r.results_nesting_depth = 1
-            r.pending_results_colon = False
+    def _detect_results_array(self, char: str, string_state: StringParseState, results_state: ResultsArrayState) -> None:
+        if char == ":" and string_state.last_parsed_key == "results":
+            results_state.expecting_results_array_start = True
+        elif char == "[" and results_state.expecting_results_array_start:
+            results_state.inside_results_array = True
+            results_state.array_nesting_depth = 1
+            results_state.expecting_results_array_start = False
 
-    def _parse_row_structure(self, ch: str, r: ResultsArrayState, i: RowParseState) -> Optional[Dict[str, Any]]:
-        if ch == "{":
-            if i.collecting_row:
-                i.row_nesting_depth += 1
+    def _parse_record_structure(
+        self, char: str, results_state: ResultsArrayState, record_state: RecordParseState
+    ) -> Optional[Dict[str, Any]]:
+        if char == "{":
+            if record_state.inside_record:
+                record_state.record_nesting_depth += 1
             else:
-                self._start_row(i)
+                self._start_record(record_state)
             return None
 
-        if ch == "}":
-            if i.collecting_row:
-                i.row_nesting_depth -= 1
-                if i.row_nesting_depth == 0:
-                    return self._finish_row(i)
+        if char == "}":
+            if record_state.inside_record:
+                record_state.record_nesting_depth -= 1
+                if record_state.record_nesting_depth == 0:
+                    return self._finish_record(record_state)
             return None
 
-        if ch == "[":
-            if i.collecting_row:
-                i.row_nesting_depth += 1
+        if char == "[":
+            if record_state.inside_record:
+                record_state.record_nesting_depth += 1
             else:
-                r.results_nesting_depth += 1
+                results_state.array_nesting_depth += 1
             return None
 
-        if ch == "]":
-            if i.collecting_row:
-                i.row_nesting_depth -= 1
+        if char == "]":
+            if record_state.inside_record:
+                record_state.record_nesting_depth -= 1
             else:
-                r.results_nesting_depth -= 1
-                if r.results_nesting_depth == 0:
-                    r.within_results_array = False
+                results_state.array_nesting_depth -= 1
+                if results_state.array_nesting_depth == 0:
+                    results_state.inside_results_array = False
 
         return None
 
     @staticmethod
-    def _append_to_current_row_if_any(ch: str, i: RowParseState):
-        if i.collecting_row:
-            i.row_buffer.append(ch)
+    def _append_to_current_record_if_any(char: str, record_state: RecordParseState):
+        if record_state.inside_record:
+            record_state.record_text_buffer.append(char)
 
     @staticmethod
-    def _start_row(i: RowParseState):
-        i.collecting_row = True
-        i.row_buffer = ["{"]
-        i.row_nesting_depth = 1
+    def _start_record(record_state: RecordParseState):
+        record_state.inside_record = True
+        record_state.record_text_buffer = ["{"]
+        record_state.record_nesting_depth = 1
 
     @staticmethod
-    def _finish_row(i: RowParseState) -> Optional[Dict[str, Any]]:
-        text = "".join(i.row_buffer).strip()
-        i.collecting_row = False
-        i.row_buffer.clear()
-        i.row_nesting_depth = 0
+    def _finish_record(record_state: RecordParseState) -> Optional[Dict[str, Any]]:
+        text = "".join(record_state.record_text_buffer).strip()
+        record_state.inside_record = False
+        record_state.record_text_buffer.clear()
+        record_state.record_nesting_depth = 0
         return json.loads(text) if text else None

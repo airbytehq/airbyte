@@ -72,7 +72,7 @@ def test_query_shopping_performance_view_stream(customers, config, requests_mock
 
     request_history = requests_mock.register_uri(
         "POST",
-        "https://googleads.googleapis.com/v20/customers/123/googleAds:search",
+        "https://googleads.googleapis.com/v20/customers/123/googleAds:searchStream",
         shopping_performance_view_response,
     )
 
@@ -209,7 +209,7 @@ def test_custom_query_stream(customers, config_for_custom_query_tests, requests_
 
     request_history = requests_mock.register_uri(
         "POST",
-        "https://googleads.googleapis.com/v20/customers/123/googleAds:search",
+        "https://googleads.googleapis.com/v20/customers/123/googleAds:searchStream",
         custom_query_response,
     )
 
