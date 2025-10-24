@@ -6,12 +6,12 @@ from __future__ import annotations
 import abc
 import contextlib
 import enum
+import json
 from contextlib import contextmanager
 from functools import cached_property
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional, cast, final
 
-import pandas as pd
 import sqlalchemy
 import ulid
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
@@ -19,7 +19,6 @@ from airbyte_cdk.sql import exceptions as exc
 from airbyte_cdk.sql._util.name_normalizers import LowerCaseNormalizer
 from airbyte_cdk.sql.constants import AB_EXTRACTED_AT_COLUMN, AB_META_COLUMN, AB_RAW_ID_COLUMN, DEBUG_MODE
 from airbyte_cdk.sql.types import SQLTypeConverter
-from pandas import Index
 from pydantic.v1 import BaseModel
 from sqlalchemy import Column, Table, and_, create_engine, insert, null, select, text, update
 from sqlalchemy.sql.elements import TextClause
@@ -584,38 +583,58 @@ class SqlProcessorBase(RecordProcessorBase):
         to improve performance.
         """
         temp_table_name = self._create_table_for_loading(stream_name, batch_id)
+        
+        if not self._table_exists(temp_table_name):
+            raise exc.PyAirbyteInternalError(
+                message="Table does not exist after creation.",
+                context={
+                    "temp_table_name": temp_table_name,
+                },
+            )
+        
+        sql_column_definitions: dict[str, TypeEngine] = self._get_sql_column_definitions(
+            stream_name
+        )
+        
+        # Normalize column names to match what we expect
+        normalized_columns = {
+            self.normalizer.normalize(col): col 
+            for col in sql_column_definitions.keys()
+        }
+        
         for file_path in files:
-            dataframe = pd.read_json(file_path, lines=True)
-
-            sql_column_definitions: dict[str, TypeEngine] = self._get_sql_column_definitions(
-                stream_name
-            )
-
-            # Remove fields that are not in the schema
-            for col_name in dataframe.columns:
-                if col_name not in sql_column_definitions:
-                    dataframe = dataframe.drop(columns=col_name)
-
-            # Pandas will auto-create the table if it doesn't exist, which we don't want.
-            if not self._table_exists(temp_table_name):
-                raise exc.PyAirbyteInternalError(
-                    message="Table does not exist after creation.",
-                    context={
-                        "temp_table_name": temp_table_name,
-                    },
-                )
-
-            # Normalize all column names to lower case.
-            dataframe.columns = Index([self.normalizer.normalize(col) for col in dataframe.columns])
-
-            # Write the data to the table
-            dataframe.to_sql(
-                temp_table_name,
-                self.get_sql_engine(),
-                schema=self.sql_config.schema_name,
-                if_exists="append",
-                index=False,
-            )
+            with open(file_path, "r") as f:
+                for line in f:
+                    if not line.strip():
+                        continue
+                    
+                    record = json.loads(line)
+                    
+                    normalized_record = {}
+                    for col_name, value in record.items():
+                        normalized_col = self.normalizer.normalize(col_name)
+                        if normalized_col in normalized_columns:
+                            if isinstance(value, (dict, list)):
+                                normalized_record[normalized_col] = json.dumps(value)
+                            else:
+                                normalized_record[normalized_col] = value
+                    
+                    if not normalized_record:
+                        continue
+                    
+                    # Build INSERT statement
+                    columns = list(normalized_record.keys())
+                    placeholders = [f":{col}" for col in columns]
+                    
+                    insert_sql = text(
+                        f"INSERT INTO {self._fully_qualified(temp_table_name)} "
+                        f"({', '.join(columns)}) "
+                        f"VALUES ({', '.join(placeholders)})"
+                    )
+                    
+                    with self.get_sql_connection() as conn:
+                        conn.execute(insert_sql, normalized_record)
+        
         return temp_table_name
 
     def _add_column_to_table(
