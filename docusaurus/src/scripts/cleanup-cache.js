@@ -4,18 +4,15 @@
  * committed to git since it's regenerated on each build.
  */
 const fs = require("fs");
-const path = require("path");
-
-const DATA_DIR = path.join(__dirname, "..", "data");
-const REGISTRY_FULL_CACHE_PATH = path.join(DATA_DIR, "connector_registry_full.json");
+const { REGISTRY_CACHE_PATH } = require("./constants");
 
 function cleanupCache() {
-  if (fs.existsSync(REGISTRY_FULL_CACHE_PATH)) {
+  if (fs.existsSync(REGISTRY_CACHE_PATH)) {
     try {
-      fs.unlinkSync(REGISTRY_FULL_CACHE_PATH);
-      console.log(`Cleaned up cache file: ${REGISTRY_FULL_CACHE_PATH}`);
+      fs.unlinkSync(REGISTRY_CACHE_PATH);
+      console.log(`Cleaned up cache file: ${REGISTRY_CACHE_PATH}`);
     } catch (error) {
-      console.warn(`Failed to clean up ${REGISTRY_FULL_CACHE_PATH}:`, error.message);
+      console.warn(`Failed to clean up ${REGISTRY_CACHE_PATH}:`, error.message);
     }
   }
 }

@@ -13,12 +13,7 @@
  */
 const fs = require("fs");
 const https = require("https");
-const path = require("path");
-
-const DATA_DIR = path.join(__dirname, "..", "data");
-const REGISTRY_CACHE_PATH = path.join(DATA_DIR, "connector_registry_full.json");
-const REGISTRY_URL =
-  "https://connectors.airbyte.com/files/generated_reports/connector_registry_report.json";
+const { DATA_DIR, REGISTRY_CACHE_PATH, REGISTRY_URL } = require("./constants");
 
 
 function fetchConnectorRegistry() {

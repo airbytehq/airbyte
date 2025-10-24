@@ -1,17 +1,11 @@
 const fs = require("fs");
 const path = require("path");
-
-const REGISTRY_CACHE_PATH = path.join(
-  __dirname,
-  "src",
-  "data",
-  "connector_registry_full.json",
-);
-
-const connectorsDocsRoot = "../docs/integrations";
-const sourcesDocs = `${connectorsDocsRoot}/sources`;
-const destinationDocs = `${connectorsDocsRoot}/destinations`;
-const enterpriseConnectorDocs = `${connectorsDocsRoot}/enterprise-connectors`;
+const {
+  REGISTRY_CACHE_PATH,
+  SOURCES_DOCS,
+  DESTINATIONS_DOCS,
+  ENTERPRISE_CONNECTORS_DOCS,
+} = require("./src/scripts/constants");
 
 function getFilenamesInDir(prefix, dir, excludes) {
   return fs
@@ -248,7 +242,7 @@ const sourceMssql = {
   ],
 };
 function getSourceConnectors(registry) {
-  const sources = getFilenamesInDir("sources/", sourcesDocs, [
+  const sources = getFilenamesInDir("sources/", SOURCES_DOCS, [
     "readme",
     "postgres",
     "mongodb-v2",
@@ -264,7 +258,7 @@ function getSourceConnectors(registry) {
   ];
   const enterpriseSources = getFilenamesInDir(
     "enterprise-connectors/",
-    enterpriseConnectorDocs,
+    ENTERPRISE_CONNECTORS_DOCS,
     ["readme"],
   );
   const enterpriseSourcesWithSupportLevel = enterpriseSources
@@ -352,7 +346,7 @@ const destinationMsSql = {
 
 function getDestinationConnectors(registry) {
   const specialDestinationConnectors = [destinationS3, destinationPostgres];
-  const destinations = getFilenamesInDir("destinations/", destinationDocs, [
+  const destinations = getFilenamesInDir("destinations/", DESTINATIONS_DOCS, [
     "s3",
     "postgres",
     "mssql",
@@ -365,7 +359,7 @@ function getDestinationConnectors(registry) {
 
   const enterpriseDestinations = getFilenamesInDir(
     "enterprise-connectors/",
-    enterpriseConnectorDocs,
+    ENTERPRISE_CONNECTORS_DOCS,
     ["readme"],
   );
   const enterpriseDestinationsWithSupportLevel = enterpriseDestinations

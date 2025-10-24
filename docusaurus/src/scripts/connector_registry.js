@@ -1,7 +1,5 @@
 const memoize = require("lodash/memoize");
-
-const REGISTRY_URL =
-  "https://connectors.airbyte.com/files/generated_reports/connector_registry_report.json";
+const { REGISTRY_URL } = require("./constants");
 
 const fetchLatestVersionOfPyPackage = memoize(async (packageName) => {
   const json = await fetch(`https://pypi.org/pypi/${packageName}/json`).then(
