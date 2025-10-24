@@ -71,6 +71,7 @@ Nessie
 S3 Data Lake
 PostgreSQL
 Postgres
+NetSuite
 
 # Companies, products, and jargon
 
