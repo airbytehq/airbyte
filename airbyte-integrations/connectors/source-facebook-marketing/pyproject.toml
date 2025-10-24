@@ -18,7 +18,7 @@ include = "source_facebook_marketing"
 [tool.poetry.dependencies]
 python = "^3.10,<3.14"
 airbyte-cdk = "^7"
-facebook-business = "^23.0.0"
+facebook-business = "23.0.1"
 cached-property = "^2"
 
 [tool.poetry.scripts]
