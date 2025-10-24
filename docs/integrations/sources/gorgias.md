@@ -43,7 +43,7 @@ Visit `https://developers.gorgias.com/reference/introduction` for API documentat
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
-| 0.1.28 | 2025-10-12 | [67718] (https://github.com/airbytehq/airbyte/pull/67718) | Fix incremental sync behavior. Prevent full refreshes on incremental syncs |
+| 0.1.29 | 2025-10-23 | [67718] (https://github.com/airbytehq/airbyte/pull/67718) | Fix incremental sync behavior. Prevent full refreshes on incremental syncs |
 | 0.1.28 | 2025-10-21 | [68243](https://github.com/airbytehq/airbyte/pull/68243) | Update dependencies |
 | 0.1.27 | 2025-10-14 | [67919](https://github.com/airbytehq/airbyte/pull/67919) | Update dependencies |
 | 0.1.26 | 2025-10-07 | [67412](https://github.com/airbytehq/airbyte/pull/67412) | Update dependencies |
