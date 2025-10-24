@@ -36,8 +36,11 @@ To find details such as host, port, Account ID and role go on Netsuite home page
 Note: the role controls what is visible and not to the connector. At a minimum the "SuiteAnalytics Connect" permission is required to connect to SuiteAnalytics over JDBC, as described in [Netsuite SuiteAnalytics documentations](https://docs.oracle.com/en/cloud/saas/netsuite/ns-online-help/section_4102771016.html#To-set-up-SuiteAnalytics-Connect-permissions-using-Manage-Roles%3A)
 
 ### Authentication Methods
+
 Source Netsuite supports all authentication methods in SuiteAnalytics connect: username and password, Token Based Authentication (TBA) and OAuth 2.0 based authentication.
+
 #### Username and Password
+
 Fill in the username and password of the Netsuite user account.
 Ensure that the Role ID is assigned to this user (this can be done in the Netsuite UI by navigating to Setup > Users/Roles > Manage Users and selecting the user). The role must have sufficient permissions to access all the tables you want to replicate.
 
