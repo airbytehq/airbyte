@@ -145,9 +145,9 @@ definitions:
             field_name: limit
           pagination_strategy:
             type: CursorPagination
-            page_size: 1000
-            cursor_value: '{{ response.get("end_time", {}) }}'
-            stop_condition: "{{ last_page_size < 1_000 }}"
+            page_size: 100
+            cursor_value: '{{ response.get("next_page", {}) }}'
+            stop_condition: '{{ response.get("count", {}) == 0 }}'
       name: agent_timeline
       primary_key:
         - id
@@ -283,8 +283,8 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             page_size: 1000
-            cursor_value: '{{ response.get("end_time", {}) }}'
-            stop_condition: "{{ last_page_size < 1_000 }}"
+            cursor_value: '{{ response.get("next_page", {}) }}'
+            stop_condition: '{{ response.get("count", {}) == 0 }}'
       name: chats
       primary_key:
         - id
