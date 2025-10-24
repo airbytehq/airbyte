@@ -8,9 +8,8 @@ from logging import Logger
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Optional
 
-from airbyte.secrets import SecretString
-from airbyte.strategies import WriteStrategy
 from airbyte_cdk.destinations import Destination
+from airbyte_cdk.sql.secrets import SecretString
 from airbyte_cdk.models import (
     AirbyteConnectionStatus,
     AirbyteMessage,
@@ -22,6 +21,7 @@ from airbyte_cdk.models import (
 
 from destination_pgvector import pgvector_processor
 from destination_pgvector.common.catalog.catalog_providers import CatalogProvider
+from destination_pgvector.common.sql.write_strategy import WriteStrategy
 from destination_pgvector.config import ConfigModel
 
 BATCH_SIZE = 150

@@ -24,10 +24,10 @@ extras = ["vector-db-based"]
 [tool.poetry.dependencies]
 python = "^3.10,<3.13"
 
-airbyte = "^0.31.11"
 sqlalchemy = "<2.0"
 pgvector = "0.3.2"
 jaraco-functools = "^4.1.0"
+ulid-py = "^1.1.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"

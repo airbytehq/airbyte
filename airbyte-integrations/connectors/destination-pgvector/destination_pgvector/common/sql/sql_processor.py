@@ -14,27 +14,25 @@ from typing import TYPE_CHECKING, Optional, cast, final
 import pandas as pd
 import sqlalchemy
 import ulid
-from airbyte import exceptions as exc
-from airbyte._util.name_normalizers import LowerCaseNormalizer
-from airbyte.constants import AB_EXTRACTED_AT_COLUMN, AB_META_COLUMN, AB_RAW_ID_COLUMN, DEBUG_MODE
-from airbyte.strategies import WriteStrategy
-from airbyte.types import SQLTypeConverter
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
+from airbyte_cdk.sql import exceptions as exc
+from airbyte_cdk.sql._util.name_normalizers import LowerCaseNormalizer
+from airbyte_cdk.sql.constants import AB_EXTRACTED_AT_COLUMN, AB_META_COLUMN, AB_RAW_ID_COLUMN, DEBUG_MODE
+from airbyte_cdk.sql.types import SQLTypeConverter
 from pandas import Index
-from pydantic import BaseModel
+from pydantic.v1 import BaseModel
 from sqlalchemy import Column, Table, and_, create_engine, insert, null, select, text, update
 from sqlalchemy.sql.elements import TextClause
 
 from destination_pgvector.common.destinations.record_processor import RecordProcessorBase
+from destination_pgvector.common.sql.write_strategy import WriteStrategy
 from destination_pgvector.common.state.state_writers import StdOutStateWriter
 
 if TYPE_CHECKING:
     from collections.abc import Generator
 
-    from airbyte._batch_handles import BatchHandle
-    from airbyte._writers.file_writers import FileWriterBase
-    from airbyte.secrets.base import SecretString
     from airbyte_cdk.models import AirbyteRecordMessage, AirbyteStateMessage
+    from airbyte_cdk.sql.secrets import SecretString
     from sqlalchemy.engine import Connection, Engine
     from sqlalchemy.engine.cursor import CursorResult
     from sqlalchemy.engine.reflection import Inspector
@@ -42,7 +40,9 @@ if TYPE_CHECKING:
     from sqlalchemy.sql.type_api import TypeEngine
 
     from destination_pgvector.common.catalog.catalog_providers import CatalogProvider
+    from destination_pgvector.common.destinations.record_processor import BatchHandle
     from destination_pgvector.common.state.state_writers import StateWriterBase
+    from destination_pgvector.jsonl_writer import JsonlWriter as FileWriterBase
 
 
 class RecordDedupeMode(enum.Enum):

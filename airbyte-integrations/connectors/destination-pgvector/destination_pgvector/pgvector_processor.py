@@ -10,9 +10,8 @@ from typing import Any
 
 import dpath
 import sqlalchemy
-from airbyte._writers.jsonl import JsonlWriter
-from airbyte.secrets import SecretString
 from airbyte_cdk.destinations.vector_db_based import embedder
+from airbyte_cdk.sql.secrets import SecretString
 from airbyte_cdk.destinations.vector_db_based.document_processor import (
     DocumentProcessor as DocumentSplitter,
 )
@@ -33,6 +32,7 @@ from destination_pgvector.globals import (
     EMBEDDING_COLUMN,
     METADATA_COLUMN,
 )
+from destination_pgvector.jsonl_writer import JsonlWriter
 
 
 class PostgresConfig(SqlConfig):
