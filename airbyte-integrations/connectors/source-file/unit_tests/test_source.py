@@ -21,6 +21,8 @@ from airbyte_cdk.models import (
     Status,
     SyncMode,
     Type,
+)
+from airbyte_cdk.models import (
     Type as MessageType,
 )
 from airbyte_cdk.models import Type as MessageType
