@@ -16,7 +16,7 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_salesforce"
 
 [tool.poetry.dependencies]
-python = ">=3.10,<3.14"
+python = "^3.10,<3.14"
 airbyte-cdk = "^7.0.1"
 pendulum = "^3.0.0"
 
