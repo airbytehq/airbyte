@@ -21,7 +21,6 @@ google-ads = "==27.0.0"
 protobuf = ">=5.26.1,<7.0.0"
 pendulum = "^3.0.0"
 airbyte-cdk = "^7.0.0"
-numpy = ">=2.0"
 
 [tool.poetry.scripts]
 source-google-ads = "source_google_ads.run:run"
