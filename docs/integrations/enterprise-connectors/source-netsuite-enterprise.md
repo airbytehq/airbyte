@@ -45,6 +45,7 @@ Fill in the username and password of the NetSuite user account.
 Ensure that the Role ID is assigned to this user (this can be done in the NetSuite UI by navigating to Setup > Users/Roles > Manage Users and selecting the user). The role must have sufficient permissions to access all the tables you want to replicate.
 
 #### Token Based Authentication (TBA)
+
 Airbyte requires the following details in order to set up TBA:
 - **Client ID (Consumer Key)**
 - **Client Secret (Consumer Secret)**
@@ -52,6 +53,7 @@ Airbyte requires the following details in order to set up TBA:
 - **Token Secret**
 
 The values are generated on netsuite as follows:
+
 1. Confirm the following features are enabled in NetSuite (Setup > Company > Enable Features > SuiteCloud)
    - Client SuiteScript
    - Server SuiteScript
@@ -68,12 +70,14 @@ The values are generated on netsuite as follows:
 5. Confirm NetSuite is accessible by clicking the "Test and save" button.
 
 #### OAuth 2.0 Based Authentication
+
 Airbyte requires the following details in order to set up OAuth 2.0 Based Authentication:
 - **Client ID (Consumer Key)**
 - **Certificate ID**
 - **Private Key**
 
 The process of setting up OAuth 2.0 for NetSuite SuiteAnalytics Connect is as follows:
+
 1. Confirm the following features are enabled in NetSuite (Setup > Company > Enable Features > SuiteCloud)
     - Client SuiteScript
     - Server SuiteScript
@@ -87,9 +91,11 @@ The process of setting up OAuth 2.0 for NetSuite SuiteAnalytics Connect is as fo
     - Select or create the role you want to use for the token. **This would typically be the "Data Warehouse Integrator" role**.
 4. Generate or upload the public key of a public/private key pair to NetSuite (Setup > Integration > Manage Authentication > OAuth 2.0 Client Credentials Setup)
     - In case you need to generate a new key pair, the following OpenSSL command can be used:
+
       ```bash
             openssl req -new -x509 -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 -pkeyopt ec_param_enc:named_curve -nodes -days 365 -out public.pem -keyout private.pem
       ```
+
       Airbyte supports all key types supported by NetSuite.
     - Upload the public key to NetSuite and save the Certificate ID.
 5. On the Airbyte source-netsuite's config page fill-in the Consumer key, Certificate ID and the role ID for the role the token was created or selected in step 3.
