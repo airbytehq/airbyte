@@ -176,7 +176,7 @@ To see connector limitations, or troubleshoot your MySQL connector, see more [in
 
 ## Data Type Mapping
 
-MySQL data types are mapped to the following data types when synchronizing data. You can check test example values [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mysql/src/test-integration/java/io/airbyte/integrations/io/airbyte/integration_tests/sources/MySqlSourceDatatypeTest.java). If you can't find the data type you are looking for, feel free to add a new test.
+MySQL data types are mapped to the following data types when synchronizing data. You can check test example values [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mysql/src/test/kotlin/io/airbyte/integrations/source/mysql/MySqlSourceDatatypeIntegrationTest.kt). If you can't find the data type you are looking for, feel free to add a new test.
 If you do not see a type in this list, assume that it is coerced into a string. We are happy to take feedback on preferred mappings.
 
 Any database or table encoding combination of charset and collation is supported. Charset setting however will not be carried over to destination and data will be encoded with whatever is configured by the destination. Please note that byte arrays are not yet supported.
