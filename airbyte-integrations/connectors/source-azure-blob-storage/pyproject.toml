@@ -16,7 +16,7 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "source_azure_blob_storage"
 
 [tool.poetry.dependencies]
-python = ">=3.11,<3.14"
+python = "^3.11,<3.14"
 pytz = "^2024.1"
 airbyte-cdk = {extras = ["file-based"], version = "^7.0.0"}
 
