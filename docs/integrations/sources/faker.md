@@ -3,7 +3,7 @@
 ## Sync overview
 
 The Sample Data source generates sample data using the python
-[`mimesis`](https://mimesis.name/en/master/) package.
+[`mimesis`](https://mimesis.name/en/main/) package.
 
 ### Output schema
 

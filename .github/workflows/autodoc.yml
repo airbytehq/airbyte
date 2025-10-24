@@ -1,11 +1,11 @@
 # Autodoc Workflow
 #
 # This workflow automatically triggers documentation updates for community-supported connectors
-# when changes are pushed to master. It uses Devin AI to review connector changes and
+# when changes are pushed to main. It uses Devin AI to review connector changes and
 # update the corresponding user documentation to ensure it stays current with code changes.
 #
 # Workflow triggers:
-# - Only on pushes to master branch
+# - Only on pushes to main branch
 # - Excludes bot-authored pushes to prevent automation loops
 # - Only processes community-supported connectors
 
@@ -14,7 +14,7 @@ name: Autodoc
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   update-connector-documentation:
@@ -103,7 +103,7 @@ jobs:
       - name: Start AI documentation update session
         if: steps.check-support-level.outputs.metadata_file == 'true' && steps.check-support-level.outputs.community_support == 'true'
         env:
-          PROMPT_TEXT: "The commit to review is ${{ github.sha }}. This commit was pushed to master and may contain connector changes that need documentation updates."
+          PROMPT_TEXT: "The commit to review is ${{ github.sha }}. This commit was pushed to main and may contain connector changes that need documentation updates."
         uses: aaronsteers/devin-action@0d74d6d9ff1b16ada5966dc31af53a9d155759f4 # Pinned to specific commit for security
         with:
           devin-token: ${{ secrets.DEVIN_AI_API_KEY }}

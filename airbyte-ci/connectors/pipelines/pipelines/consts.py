@@ -75,7 +75,7 @@ class CIContext(str, Enum):
 
     MANUAL = "manual"
     PULL_REQUEST = "pull_request"
-    MASTER = "master"
+    MASTER = "main"
 
     def __str__(self) -> str:
         return self.value

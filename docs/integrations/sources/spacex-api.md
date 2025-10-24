@@ -4,7 +4,7 @@ This page contains the setup guide and reference information for the [SpaceX-API
 
 ## Prerequisites
 
-No prerequisites, but a dummy api_key is required as it enhances security in future build. Please check the available routes at [SpaceX Routes](https://github.com/r-spacex/SpaceX-API/tree/master/routes).
+No prerequisites, but a dummy api_key is required as it enhances security in future build. Please check the available routes at [SpaceX Routes](https://github.com/r-spacex/SpaceX-API/tree/main/routes).
 
 ## Setup guide
 
@@ -66,7 +66,7 @@ The SpaceX-API source connector supports the following [sync modes](https://docs
 
 ## Performance considerations
 
-The SpaceX API has both v4 and v5 for [launches](https://github.com/r-spacex/SpaceX-API/tree/master/docs/launches). The connector as default uses V4 as it has minimal bugs.
+The SpaceX API has both v4 and v5 for [launches](https://github.com/r-spacex/SpaceX-API/tree/main/docs/launches). The connector as default uses V4 as it has minimal bugs.
 
 ## Changelog
 

@@ -75,7 +75,7 @@ jobs:
             --data '{
               "state": "success",
               "context": "Regression Tests on ${{ github.event.inputs.connector-name }}",
-              "target_url": "https://github.com/airbytehq/airbyte/tree/master/airbyte-ci/connectors/live-tests"
+              "target_url": "https://github.com/airbytehq/airbyte/tree/main/airbyte-ci/connectors/live-tests"
             }')
           if [ $response -ne 201 ]; then
             echo "Failed to approve regression tests for ${{ github.event.inputs.connector-name }}. HTTP status code: $response"
@@ -97,7 +97,7 @@ jobs:
             --data '{
               "state": "success",
               "context": "Regression Test Results Reviewed and Approved",
-              "target_url": "https://github.com/airbytehq/airbyte/tree/master/airbyte-ci/connectors/live-tests"
+              "target_url": "https://github.com/airbytehq/airbyte/tree/main/airbyte-ci/connectors/live-tests"
             }')
           if [ $response -ne 201 ]; then
             echo "Failed to update regression test approval status check. HTTP status code: $response"

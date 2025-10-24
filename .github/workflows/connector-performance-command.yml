@@ -17,7 +17,7 @@ on:
         description: "The git ref to check out from the specified repository."
         type: string
         required: false
-        default: master
+        default: main
       uuid:
         description: "Custom UUID of workflow run. Used because GitHub dispatches endpoint does not return workflow run id."
         type: string
@@ -56,7 +56,7 @@ on:
       gitref:
         description: "The git ref to check out from the specified repository."
         required: false
-        default: master
+        default: main
       comment-id:
         description: "The comment-id of the slash command. Used to update the comment with the status."
         required: false

@@ -71,7 +71,7 @@ Repositories with the wrong name or repositories that do not exist or have the w
 
 - The **Start Date** does not apply to the streams below and all data will be synced for these streams: `assignees`, `branches`, `collaborators`, `issue_labels`, `organizations`, `pull_request_commits`, `pull_request_stats`, `repositories`, `tags`, `teams`, `users`
 
-8. **Branch (Optional)** - List of GitHub repository branches to pull commits from, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled. (e.g. `airbytehq/airbyte/master airbytehq/airbyte/my-branch`).
+8. **Branch (Optional)** - List of GitHub repository branches to pull commits from, e.g. `airbytehq/airbyte/main`. If no branches are specified for a repository, the default branch will be pulled. (e.g. `airbytehq/airbyte/main airbytehq/airbyte/my-branch`).
 
 ### For Airbyte Open Source:
 

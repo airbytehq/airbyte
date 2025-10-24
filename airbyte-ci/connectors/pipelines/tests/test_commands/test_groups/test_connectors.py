@@ -309,7 +309,7 @@ def click_context_obj(in_memory_secret_store):
         "ci_git_user": None,
         "ci_github_access_token": None,
         "docker_hub_username": "foo",
-        "diffed_branch": "master",
+        "diffed_branch": "main",
         "git_repo_url": "https://github.com/airbytehq/airbyte",
         "docker_hub_password": "bar",
         "secret_stores": {"in_memory": in_memory_secret_store},

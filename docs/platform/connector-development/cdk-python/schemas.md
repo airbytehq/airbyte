@@ -14,11 +14,11 @@ Important note: any objects referenced via `$ref` should be placed in the `share
 
 ### Generating schemas from OpenAPI definitions
 
-If you are implementing a connector to pull data from an API which publishes an [OpenAPI/Swagger spec](https://swagger.io/specification/), you can use a tool we've provided for generating JSON schemas from the OpenAPI definition file. Detailed information can be found [here](https://github.com/airbytehq/airbyte/tree/master/tools/openapi2jsonschema/).
+If you are implementing a connector to pull data from an API which publishes an [OpenAPI/Swagger spec](https://swagger.io/specification/), you can use a tool we've provided for generating JSON schemas from the OpenAPI definition file. Detailed information can be found [here](https://github.com/airbytehq/airbyte/tree/main/tools/openapi2jsonschema/).
 
 ### Generating schemas using the output of your connector's read command
 
-We also provide a tool for generating schemas using a connector's `read` command output. Detailed information can be found [here](https://github.com/airbytehq/airbyte/tree/master/tools/schema_generator/).
+We also provide a tool for generating schemas using a connector's `read` command output. Detailed information can be found [here](https://github.com/airbytehq/airbyte/tree/main/tools/schema_generator/).
 
 ### Backwards Compatibility
 

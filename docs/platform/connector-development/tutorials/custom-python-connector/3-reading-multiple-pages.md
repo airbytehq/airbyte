@@ -60,7 +60,7 @@ Again, we'll start by writing a failing test for fetching multiple pages of reco
 
 These tests now have a lot of duplications because we keep pasting the same response templates. You
 can look at the
-[source-stripe connector for an example of how this can be DRY'd](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/unit_tests/integration/test_cards.py).
+[source-stripe connector for an example of how this can be DRY'd](https://github.com/airbytehq/airbyte/blob/main/airbyte-integrations/connectors/source-stripe/unit_tests/integration/test_cards.py).
 
 The test should fail because the request wasn't matched:
 

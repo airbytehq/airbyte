@@ -6,7 +6,7 @@
 set -euo pipefail
 
 # 0) Collect arguments
-DEFAULT_BRANCH="master"
+DEFAULT_BRANCH="main"
 JAVA=false
 NO_JAVA=false
 JSON=false
@@ -59,7 +59,7 @@ ignore_globs="($(IFS='|'; echo "${ignore_patterns[*]}"))$"
 # 3) collect all file changes
 if $PREV_COMMIT; then
   # Compare only the last commit; diff-tree is faster and more precise.
-  # Intended for master, where we diff the current squashed commit against the previous squashed commit.
+  # Intended for main, where we diff the current squashed commit against the previous squashed commit.
   committed=$(git diff-tree --no-commit-id -r --name-only HEAD)
   staged=""
   unstaged=""

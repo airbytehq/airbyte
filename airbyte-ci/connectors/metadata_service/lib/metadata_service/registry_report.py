@@ -45,7 +45,7 @@ def _github_url(docker_repo_name: str, github_connector_folders: List[str]) -> s
 
     connector_name = docker_repo_name.replace("airbyte/", "")
     if connector_name in github_connector_folders:
-        return f"https://github.com/{GITHUB_REPO_NAME}/blob/master/airbyte-integrations/connectors/{connector_name}"
+        return f"https://github.com/{GITHUB_REPO_NAME}/blob/main/airbyte-integrations/connectors/{connector_name}"
     else:
         return None
 

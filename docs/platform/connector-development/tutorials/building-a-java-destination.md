@@ -176,7 +176,7 @@ Note the two different error trace methods.
 Each destination contains a specification written in JsonSchema that describes its inputs. Defining
 the specification is a good place to start when developing your destination. Check out the
 documentation [here](https://json-schema.org/) to learn the syntax. Here's
-[an example](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-postgres/src/main/resources/spec.json)
+[an example](https://github.com/airbytehq/airbyte/blob/main/airbyte-integrations/connectors/destination-postgres/src/main/resources/spec.json)
 of what the `spec.json` looks like for the postgres destination.
 
 Your generated template should have the spec file in
@@ -208,7 +208,7 @@ While developing, we recommend storing any credentials in `secrets/config.json`.
 directory in the Airbyte repo is gitignored by default.
 
 Implement the `check` method in the generated file `<Name>Destination.java`. Here's an
-[example implementation](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-bigquery/src/main/java/io/airbyte/integrations/destination/bigquery/BigQueryDestination.java#L94)
+[example implementation](https://github.com/airbytehq/airbyte/blob/main/airbyte-integrations/connectors/destination-bigquery/src/main/java/io/airbyte/integrations/destination/bigquery/BigQueryDestination.java#L94)
 from the BigQuery destination.
 
 Verify that the method is working by placing your config in `secrets/config.json` then running:
@@ -239,10 +239,10 @@ To implement the `write` Airbyte operation, implement the `getConsumer` method i
 `<Name>Destination.java` file. Here are some example implementations from different destination
 conectors:
 
-- [BigQuery](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-bigquery/src/main/java/io/airbyte/integrations/destination/bigquery/BigQueryDestination.java#L188)
-- [Google Pubsub](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-pubsub/src/main/java/io/airbyte/integrations/destination/pubsub/PubsubDestination.java#L98)
-- [Local CSV](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-csv/src/main/java/io/airbyte/integrations/destination/csv/CsvDestination.java#L90)
-- [Postgres](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/destination-postgres/src/main/java/io/airbyte/integrations/destination/postgres/PostgresDestination.java)
+- [BigQuery](https://github.com/airbytehq/airbyte/blob/main/airbyte-integrations/connectors/destination-bigquery/src/main/java/io/airbyte/integrations/destination/bigquery/BigQueryDestination.java#L188)
+- [Google Pubsub](https://github.com/airbytehq/airbyte/blob/main/airbyte-integrations/connectors/destination-pubsub/src/main/java/io/airbyte/integrations/destination/pubsub/PubsubDestination.java#L98)
+- [Local CSV](https://github.com/airbytehq/airbyte/blob/main/airbyte-integrations/connectors/destination-csv/src/main/java/io/airbyte/integrations/destination/csv/CsvDestination.java#L90)
+- [Postgres](https://github.com/airbytehq/airbyte/blob/main/airbyte-integrations/connectors/destination-postgres/src/main/java/io/airbyte/integrations/destination/postgres/PostgresDestination.java)
 
 :::info
 
@@ -261,7 +261,7 @@ For a brief overview on the Airbyte catalog check out
 The Acceptance Tests are a set of tests that run against all destinations. These tests are run in
 the Airbyte CI to prevent regressions and verify a baseline of functionality. The test cases are
 contained and documented in the
-[following file](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/bases/standard-destination-test/src/main/java/io/airbyte/integrations/standardtest/destination/DestinationAcceptanceTest.java).
+[following file](https://github.com/airbytehq/airbyte/blob/main/airbyte-integrations/bases/standard-destination-test/src/main/java/io/airbyte/integrations/standardtest/destination/DestinationAcceptanceTest.java).
 
 To setup acceptance Tests for your connector, follow the `TODO`s in the generated file
 `<name>DestinationAcceptanceTest.java`. Once setup, you can run the tests using
