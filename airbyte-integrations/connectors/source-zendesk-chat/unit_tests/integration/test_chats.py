@@ -64,7 +64,7 @@ def _response() -> HttpResponseBuilder:
     return create_response_builder(
         response_template=_response_template(),
         records_path=FieldPath(_STREAM_NAME),
-        pagination_strategy=ZendeskChatPaginationStrategy("chats", _NEXT_PAGE_URL)
+        pagination_strategy=ZendeskChatPaginationStrategy("chats", _NEXT_PAGE_URL),
     )
 
 
@@ -83,7 +83,9 @@ class ChatsTest(TestCase):
     @HttpMocker()
     def test_when_read_then_extract_records(self, http_mocker: HttpMocker) -> None:
         http_mocker.get(
-            HttpRequest(f"https://{_SUBDOMAIN}.zendesk.com/api/v2/chat/incremental/chats?fields=chats%28%2A%29&limit=1000&start_time={int(_START_DATETIME.timestamp())}"),
+            HttpRequest(
+                f"https://{_SUBDOMAIN}.zendesk.com/api/v2/chat/incremental/chats?fields=chats%28%2A%29&limit=1000&start_time={int(_START_DATETIME.timestamp())}"
+            ),
             _response().with_record(_record()).with_record(_record()).build(),
         )
         output = read(ConfigBuilder().start_date(_START_DATETIME).subdomain(_SUBDOMAIN), StateBuilder())
@@ -95,7 +97,9 @@ class ChatsTest(TestCase):
         for i in range(0, 1000):
             response_with_1000_records.with_record(_record())
         http_mocker.get(
-            HttpRequest(f"https://{_SUBDOMAIN}.zendesk.com/api/v2/chat/incremental/chats?fields=chats%28%2A%29&limit=1000&start_time={int(_START_DATETIME.timestamp())}"),
+            HttpRequest(
+                f"https://{_SUBDOMAIN}.zendesk.com/api/v2/chat/incremental/chats?fields=chats%28%2A%29&limit=1000&start_time={int(_START_DATETIME.timestamp())}"
+            ),
             response_with_1000_records.with_pagination().build(),
         )
         http_mocker.get(

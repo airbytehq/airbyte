@@ -9,10 +9,7 @@ class ConfigBuilder:
         self._config = {
             "subdomain": "d3v-airbyte",
             "start_date": "2015-10-01T00:00:00Z",
-            "credentials": {
-                "credentials": "access_token",
-                "access_token": "any_acces_token"
-            }
+            "credentials": {"credentials": "access_token", "access_token": "any_acces_token"},
         }
 
     def access_token(self, access_token: str) -> "ConfigBuilder":
