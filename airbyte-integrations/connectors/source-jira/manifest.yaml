@@ -10121,6 +10121,9 @@ definitions:
             readOnly: true
           value:
             description: The value of the property. Required on create and update.
+            type:
+            - 'null'
+            - string
           isdefault:
             description: Indicates if the property is the default property.
             type:
