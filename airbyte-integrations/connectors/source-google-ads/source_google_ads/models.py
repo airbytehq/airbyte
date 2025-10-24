@@ -3,7 +3,7 @@
 #
 
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Iterable, List, Mapping
 
 from pendulum import local_timezone, timezone
@@ -13,7 +13,7 @@ from pendulum.tz.timezone import Timezone
 @dataclass
 class CustomerModel:
     id: str
-    time_zone: timezone = local_timezone()
+    time_zone: timezone = field(default_factory=local_timezone)
     is_manager_account: bool = False
     login_customer_id: str = None
 
