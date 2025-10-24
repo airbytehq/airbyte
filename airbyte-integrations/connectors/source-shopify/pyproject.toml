@@ -17,10 +17,10 @@ include = "source_shopify"
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.14"
-airbyte-cdk = ">=7.0.0,<8.0"
+airbyte-cdk = "^7.0.0"
 sgqlc = "==16.3"
 graphql-query = "^1"
-pendulum = ">=3.0,<4.0"
+pendulum = "^3.0"
 
 [tool.poetry.scripts]
 source-shopify = "source_shopify.run:run"
