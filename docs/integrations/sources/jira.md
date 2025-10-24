@@ -169,6 +169,7 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:-----------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.3.6 | 2025-10-24 | [68478](https://github.com/airbytehq/airbyte/pull/TBA) | Add type definition for issue_properties value field |
 | 4.3.5 | 2025-10-21 | [68478](https://github.com/airbytehq/airbyte/pull/68478) | Update dependencies |
 | 4.3.4 | 2025-10-14 | [67962](https://github.com/airbytehq/airbyte/pull/67962) | Update dependencies |
 | 4.3.3 | 2025-10-07 | [67375](https://github.com/airbytehq/airbyte/pull/67375) | Update dependencies |

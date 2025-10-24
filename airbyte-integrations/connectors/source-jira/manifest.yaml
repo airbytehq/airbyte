@@ -10121,6 +10121,14 @@ definitions:
             readOnly: true
           value:
             description: The value of the property. Required on create and update.
+            type:
+            - 'null'
+            - string
+            - number
+            - integer
+            - boolean
+            - object
+            - array
           isdefault:
             description: Indicates if the property is the default property.
             type:
