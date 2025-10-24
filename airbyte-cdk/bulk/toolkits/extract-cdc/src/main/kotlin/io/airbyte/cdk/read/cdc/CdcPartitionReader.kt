@@ -34,8 +34,10 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Consumer
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -71,7 +73,13 @@ class CdcPartitionReader<T : Comparable<T>>(
     internal val numSourceRecordsWithoutPosition = AtomicLong()
     internal val numEventValuesWithoutPosition = AtomicLong()
 
+    // Track last event time for watchdog timeout monitoring
+    private val lastEventTime = AtomicReference(LocalDateTime.now())
+    private var watchdogJob: Job? = null
+    @Volatile private var watchdogShouldStop = false
+
     private var partitionId: String = generatePartitionId(4)
+
     interface AcquiredResource : AutoCloseable {
         val resource: Resource.Acquired?
     }
@@ -156,12 +164,29 @@ class CdcPartitionReader<T : Comparable<T>>(
         val thread = Thread(engine, "debezium-engine")
         thread.setUncaughtExceptionHandler { _, e: Throwable -> engineException.set(e) }
         thread.start()
+
+        // Start watchdog coroutine if timeout is configured
+        val timeoutDuration =
+            debeziumProperties[AIRBYTE_HEARTBEAT_TIMEOUT_SECONDS]?.let {
+                Duration.ofSeconds(it.toLongOrNull() ?: 0L).takeIf { duration ->
+                    duration.seconds > 0
+                }
+            }
+        if (timeoutDuration != null) {
+            watchdogShouldStop = false
+            lastEventTime.set(LocalDateTime.now())
+            watchdogJob = CoroutineScope(Dispatchers.IO).launch { startWatchdog(timeoutDuration) }
+        }
+
         try {
             withContext(Dispatchers.IO) { thread.join() }
         } catch (e: Throwable) {
             // This catches any exceptions thrown by join()
             // but also by the kotlin coroutine dispatcher, like TimeoutCancellationException.
             engineException.compareAndSet(null, e)
+        } finally {
+            watchdogShouldStop = true
+            watchdogJob?.cancel()
         }
         // Print a nice log message and re-throw any exception.
         val exception: Throwable? = engineException.get()
@@ -203,6 +228,36 @@ class CdcPartitionReader<T : Comparable<T>>(
         )
     }
 
+    /**
+     * Watchdog coroutine that monitors for timeout when no events are received from Debezium. This
+     * is necessary because Debezium may not emit any events (including heartbeats) when the
+     * database has no changes, causing the sync to hang indefinitely.
+     *
+     * The watchdog waits for exactly the timeout duration, then checks once. If any event is
+     * received during that time, the watchdog is cancelled by the event consumer.
+     */
+    private suspend fun startWatchdog(timeoutDuration: Duration) {
+        log.info { "Starting watchdog with timeout of ${timeoutDuration.seconds} seconds" }
+        delay(timeoutDuration.toMillis())
+
+        // If we reach here, no event was received within the timeout period
+        // Check if we should still proceed (engine might have closed for other reasons)
+        if (watchdogShouldStop || closeReasonReference.get() != null) {
+            log.info { "Watchdog woke up but engine already stopped" }
+            return
+        }
+
+        log.info {
+            "Watchdog timeout: no events received for ${timeoutDuration.toMinutes()} minutes. " +
+                "Records emitted: ${numEmittedRecords.get()}. Shutting down Debezium engine."
+        }
+
+        if (closeReasonReference.compareAndSet(null, CloseReason.WATCHDOG_TIMEOUT)) {
+            engineShuttingDown.set(true)
+            runBlocking { launch(Dispatchers.IO + Job()) { engine.close() } }
+        }
+    }
+
     inner class EventConsumer() : Consumer<ChangeEvent<String?, String?>> {
 
         private var lastHeartbeatPosition: T? = null
@@ -216,10 +271,18 @@ class CdcPartitionReader<T : Comparable<T>>(
             }
 
         override fun accept(changeEvent: ChangeEvent<String?, String?>) {
+            // Stop watchdog once we receive any event - connection is working
+            if (watchdogJob != null && !watchdogShouldStop) {
+                log.info { "Received first event from Debezium, stopping watchdog" }
+                watchdogShouldStop = true
+                watchdogJob?.cancel()
+            }
+
             if (engineShuttingDown.get()) {
                 // If we're already shutting down, don't process any more events.
                 return
             }
+
             val event = DebeziumEvent(changeEvent)
             val eventType: EventType = emitRecord(event)
             // Update counters.
@@ -435,6 +498,9 @@ class CdcPartitionReader<T : Comparable<T>>(
         ),
         HEARTBEAT_NOT_PROGRESSING(
             "heartbeat position has not progressed for an extended period, indicating database is idle"
+        ),
+        WATCHDOG_TIMEOUT(
+            "no events received from Debezium within the configured timeout period, indicating database is idle or connection is stuck"
         ),
     }
 }
