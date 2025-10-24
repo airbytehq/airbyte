@@ -227,7 +227,6 @@ If you're using external log storage, implement it. If you aren't, skip this ste
 ```yaml
 global:
   storage:
-    secretName: ""
     type: minio # default storage is minio. Set to s3, gcs, or azure, according to what you use.
 
     bucket:
@@ -246,10 +245,17 @@ global:
       secretAccessKey: ""
 
     # GCS
+    # Option 1: Provide credentials directly in values.yaml (credentials will be stored in Kubernetes secret)
     gcs:
       projectId: <project-id>
-      credentialsJson:  <base64-encoded>
+      credentialsJson: <raw-json-content>  # Provide the raw JSON service account key (not base64-encoded)
       credentialsJsonPath: /secrets/gcs-log-creds/gcp.json
+
+    # Option 2: Use an external Kubernetes secret you've already created
+    # storageSecretName: <your-existing-secret-name>  # Uncomment and set this to use your own secret
+    # gcs:
+    #   projectId: <project-id>
+    #   credentialsJsonPath: /secrets/gcs-log-creds/gcp.json
 
     # Azure
     azure:
