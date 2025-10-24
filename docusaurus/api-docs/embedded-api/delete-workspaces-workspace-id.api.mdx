@@ -1,0 +1,72 @@
+---
+id: delete-workspaces-workspace-id
+title: "Delete Workspace"
+description: "Delete a workspace in both Coral and Sonar (soft delete in Sonar)."
+sidebar_label: "Delete Workspace"
+hide_title: true
+hide_table_of_contents: true
+api: eJztWFtv2zYU/isEH9YWkC9J6lz0lrYpZqBbizbFBiRBckweWWwoUiUpu56h/z4cSpbt2BnWYhv2kCdb0uG5fiTPd5Y8wNTz9Ir/Zt29L0Gg5zcJl+iFU2VQ1vCUv0GNARmw+UqIKcMmNuTstXWgGRjJPlkDjj33NgtMNguUad6+6F+by1x5Nldarz6GHDf0Zc4WG8oKcPdMBQa+FZedsj5PuC3RATk3ljzljcRtp8yv/94qyRPuUVROhQVPr5b858vLD68QHDqeXt3UNwkvwUGBAZ2PAgYK5Cl/oENRIkoIOU+4w6+Vcih5GlyFCfcixwJ4uuRhUdJaH5wyU57wzLoCAk95VUUtQQVNAl222Vjyuk46q9961k3BqD9ieL216RxBotsynoH232V9u6qfUKMIXR2UmbJN2332Kwr0HtyCeWUEssqj80yAYRPU1kxZsKyodFClxq2lvr8R6u+995sRUbz/qSdUYYe+tMajpywdDof088CFSpCJrNLsYyvMEy6sCWgCiUNZaiWi0sEXT2uWG5kvHUEyqMaCkt+DhfFuaT4b9bVCpiSaoDKFjtkspme1GTpwNsmML28h/KVZCQF7QRW4YftNq+887PhwqQr0AYqSzXM0D7brfL0xCb4ro3byBUXYAukVb6HX+XizZxs0fnSZr2tS+nJfoV6BZKQdffjxAhWEpinGZWbxPov7fjtxtCfbN6bSOsJo5fYv7fI64eicdU3RAxZ+11SmUMsfNfQ2Lq6Tf9rhW2HlDyu7IA3sNWnYV/qV2HmpoiRfy4BzsOAPNPmIjgwqHeKB/DdU7uDkaBcnb62bKCnRPKHkCSURJYeHuyj5bEpn490y0cjotA2LJ8A8AYbER/uun7EJ6Axo5tHN0LEY9xNinhATIVNgyO2akvCkYQwpH0CpBrODwZqjDJabBKOOLIUQ1XCQymnq+UMo08FAWwE6t363RztXbrII2HKv8w/jmJ8V3flEoGuKv0l6uoSSet7yB3qeNAIUiDKZjZJtwNEAyVZFAW6xNv3Mk1nmMDiFM/RMQgBmqTHPQWfUty5s5ZiofLAFde1E7zJE6YnfBdt8himdvSJ2mJm288ggtmMlConRGO01UMazI0aReDKCRpZWmeDTa9Njd6t8YzFBKVHepSTRI97Qy0AQwyBNwTJhdSQfwmHstkH7/pYKT6HfpazhnNatTdHyDIPIm6AjhV1ZaV55WzmBnj2HUnn2E5NOzdC/YHMVcuqolaNgMjWtHMrHXVAm4LQhvP4uZaB1bMf3e1SAgSl2elsadG2uzTgw5ZlDYYsCjURJ4r5EobJFVJhZre2cktOwTeLcZCyWiNCy6rwpy3d3dwso9LXZIXjpFgV75hkRnrgg+hCHAGh85WgIAA3vc2qah6115GvlUbLMui7klX3yTIDHxrWYcOUZsIIKHtnSI3Tw2owjIpk1esFymCGzZlsoIWC2k4p4GlCaoqPWYMJsyNHNlW8mGII8i8IZKN2/pnaTdnGD2WH/rD/kCf/W03YaN9R6Y/t0MBDS9EtnZX+OE68C9jKl0feFLQbHwxEODybicJSd4MEZnB7iycuT09PB8dHRCI7OJJyKs+MJnIxGh8PJwej49p2d2r6fTeMGLq0PBcS7p50stEOcjnI93GDL9R32/xv4tCdWwG9hUGpQhg7zmMtle8RecSgVJf+AJ+vZDZ3p6dYk5ybh8ShNr/hyOQGPn52ua3r9tUI62a5uEj4Dp6gjjGexVLE7XA9cHk3b848t7X3BHvN5dQEZun5moCt64gm/x8XDmVN9Uyersc/3+fFvT3b2BdYEsG981UVJd3kjdi4ElmHj207PRPdYd5u+uXh3cXnBEw4Vlbq7wNoLK1n92WgfthO8XDYSl/YeTV13+Q70TImu6z8BBURNvw==
+sidebar_class_name: "delete api-method"
+info_path: embedded-api///sonar
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Delete Workspace"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"delete"}
+  path={"/api/v1/workspaces/{workspace_id}"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Delete a workspace in both Coral and Sonar (soft delete in Sonar).
+This will delete the workspace from Coral and mark it as deleted in Sonar.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"name":"workspace_id","in":"path","required":true,"schema":{"type":"string","format":"uuid","title":"Workspace Id"}},{"name":"x-organization-id","in":"header","required":false,"schema":{"type":"string","format":"uuid","description":"Select the working organization. Necessary since users can belong to multiple organizations.","title":"X-Organization-Id"},"description":"Select the working organization. Necessary since users can belong to multiple organizations."}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={undefined}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"Successful Response","content":{"application/json":{"schema":{"properties":{"id":{"type":"string","format":"uuid","title":"Id","description":"Unique identifier of the deleted workspace"},"deleted_at":{"type":"string","format":"date-time","title":"Deleted At","description":"Timestamp when the workspace was deleted"}},"type":"object","required":["id","deleted_at"],"title":"WorkspaceDeleteResponse"}}}},"400":{"description":"Bad request","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"403":{"description":"Forbidden","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"422":{"description":"Unprocessable entity","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}},"500":{"description":"Internal server error","content":{"application/json":{"schema":{"properties":{"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"errors":{"items":{"properties":{"field":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Field"},"message":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Message"},"error_code":{"anyOf":[{"type":"string"},{"type":"null"}],"title":"Error Code"}},"type":"object","title":"ApiError"},"type":"array","title":"Errors","default":[]}},"type":"object","title":"ApiErrorResponse"}}}}}}
+>
+  
+</StatusCodes>
+
+
+      

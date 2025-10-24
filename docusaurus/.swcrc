@@ -1,0 +1,9 @@
+{
+  "minify": true,
+  "jscTarget": "es2020",
+  "compress": {
+    "unused": true,
+    "dead_code": true
+  },
+  "mangle": true
+}
