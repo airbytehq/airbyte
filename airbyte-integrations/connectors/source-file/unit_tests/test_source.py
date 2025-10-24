@@ -5,6 +5,7 @@
 import json
 import logging
 from copy import deepcopy
+from dataclasses import asdict
 
 import jsonschema
 import pytest
@@ -21,9 +22,9 @@ from airbyte_cdk.models import (
     Status,
     SyncMode,
     Type,
+    Type as MessageType,
 )
 from airbyte_cdk.utils import AirbyteTracedException
-from airbyte_protocol.models.airbyte_protocol import Type as MessageType
 
 
 logger = logging.getLogger("airbyte")
@@ -172,7 +173,7 @@ def test_discover_dropbox_link(source, config_dropbox_link):
 
 def test_discover(source, config, client):
     catalog = source.discover(logger=logger, config=config)
-    catalog = AirbyteMessage(type=Type.CATALOG, catalog=catalog).dict(exclude_unset=True)
+    catalog = asdict(AirbyteMessage(type=Type.CATALOG, catalog=catalog))
     schemas = [stream["json_schema"] for stream in catalog["catalog"]["streams"]]
     for schema in schemas:
         jsonschema.Draft7Validator.check_schema(schema)
@@ -227,8 +228,8 @@ def test_pandas_header_none(absolute_path, test_files):
     records = source.read(logger=logger, config=deepcopy(config), catalog=catalog)
     records = [r.record.data for r in records if r.type == MessageType.RECORD]
     assert records == [
-        {"0": "text11", "1": "text12"},
-        {"0": "text21", "1": "text22"},
+        {0: "text11", 1: "text12"},
+        {0: "text21", 1: "text22"},
     ]
 
 
