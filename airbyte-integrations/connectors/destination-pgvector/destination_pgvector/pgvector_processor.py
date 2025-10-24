@@ -11,7 +11,6 @@ from typing import Any
 import dpath
 import sqlalchemy
 from airbyte_cdk.destinations.vector_db_based import embedder
-from airbyte_cdk.sql.secrets import SecretString
 from airbyte_cdk.destinations.vector_db_based.document_processor import (
     DocumentProcessor as DocumentSplitter,
 )
@@ -19,6 +18,7 @@ from airbyte_cdk.destinations.vector_db_based.document_processor import (
     ProcessingConfigModel as DocumentSplitterConfig,
 )
 from airbyte_cdk.models import AirbyteRecordMessage
+from airbyte_cdk.sql.secrets import SecretString
 from overrides import overrides
 from pgvector.sqlalchemy import Vector
 from typing_extensions import Protocol

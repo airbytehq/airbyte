@@ -9,7 +9,6 @@ from pathlib import Path
 from typing import Any, Iterable, Mapping, Optional
 
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.sql.secrets import SecretString
 from airbyte_cdk.models import (
     AirbyteConnectionStatus,
     AirbyteMessage,
@@ -18,6 +17,7 @@ from airbyte_cdk.models import (
     DestinationSyncMode,
     Status,
 )
+from airbyte_cdk.sql.secrets import SecretString
 
 from destination_pgvector import pgvector_processor
 from destination_pgvector.common.catalog.catalog_providers import CatalogProvider
