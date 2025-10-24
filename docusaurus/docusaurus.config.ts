@@ -31,10 +31,13 @@ const darkCodeTheme = prismThemes.dracula;
 const config: Config = {
   future: {
     experimental_faster: {
+      swcJsLoader: true,
+      swcJsMinimizer: true,
+      swcHtmlMinimizer: true,
+      lightningCssMinimizer: true,
+      mdxCrossCompilerCache: true,
       rspackBundler: true,
       rspackPersistentCache: true,
-      swcJsMinimizer: true,
-      swcJsLoader: true,
     },
   },
   markdown: {
@@ -122,14 +125,6 @@ const config: Config = {
     ],
   ],
   plugins: [
-    // [
-    //   "rsdoctor",
-    //   {
-    //     rsdoctorOptions: {
-    //       mode: "lite",
-    //     },
-    //   },
-    // ],
     // This plugin controls "platform" docs, which are versioned
     [
       "@docusaurus/plugin-content-docs",
@@ -138,7 +133,13 @@ const config: Config = {
         path: "../docs/platform",
         routeBasePath: "/platform",
         sidebarPath: "./sidebar-platform.js",
-        editUrl: ({ version, docPath }) => {
+        editUrl: ({
+          version,
+          docPath,
+        }: {
+          version: string;
+          docPath: string;
+        }) => {
           if (version === "current") {
             // For the "next" (unreleased) version
             return `https://github.com/airbytehq/airbyte/edit/master/docs/platform/${docPath}`;

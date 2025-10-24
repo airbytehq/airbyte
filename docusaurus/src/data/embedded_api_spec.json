@@ -6971,95 +6971,6 @@
         }
       }
     },
-    "/api/v1/internal/account/organizations/{organization_id}/signup": {
-      "post": {
-        "tags": ["Organizations"],
-        "summary": "Organization Signup",
-        "description": "Sign up an organization with synchronous provisioning.\nSets up Orb billing, Stigg subscription, and payment status in a single request.\nReturns immediately with subscription details.",
-        "operationId": "create_internal_account_organizations_organization_id_signup",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "organization_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "title": "Organization Id"
-            }
-          },
-          {
-            "name": "x-organization-id",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "description": "Select the working organization. Necessary since users can belong to multiple organizations.",
-              "title": "X-Organization-Id"
-            },
-            "description": "Select the working organization. Necessary since users can belong to multiple organizations."
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OrganizationSignupResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable entity",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/v1/internal/account/organizations/{organization_id}/subscription": {
       "get": {
         "tags": ["Organizations"],
@@ -7103,85 +7014,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/OrganizationSubscriptionResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable entity",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/internal/account/signup-if-new-user": {
-      "post": {
-        "tags": ["Account"],
-        "summary": "Signup",
-        "description": "Sign up an organization for PAYG billing and provisioning.\nSets up Orb billing, Stigg subscription, and payment status synchronously.\nReturns immediately with success or failure.\n\nThis endpoint is idempotent - if signup is already completed, returns existing subscription data\nwithout attempting to re-provision services.",
-        "operationId": "create_internal_account_signup_if_new_user",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "x-organization-id",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "description": "Select the working organization. Necessary since users can belong to multiple organizations.",
-              "title": "X-Organization-Id"
-            },
-            "description": "Select the working organization. Necessary since users can belong to multiple organizations."
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OrganizationSignupResponse"
                 }
               }
             }
@@ -12575,74 +12407,6 @@
         "required": ["organizationId", "organizationName", "sso"],
         "title": "OrganizationInfoResponse"
       },
-      "OrganizationSignupResponse": {
-        "properties": {
-          "organization_id": {
-            "type": "string",
-            "format": "uuid",
-            "title": "Organization Id"
-          },
-          "provisioning_state": {
-            "type": "string",
-            "title": "Provisioning State"
-          },
-          "orb_subscription_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Orb Subscription Id"
-          },
-          "stigg_subscription_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Stigg Subscription Id"
-          },
-          "error_message": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Error Message"
-          },
-          "organization_name": {
-            "type": "string",
-            "title": "Organization Name"
-          },
-          "first_workspace_id": {
-            "type": "string",
-            "format": "uuid",
-            "title": "First Workspace Id"
-          },
-          "onboarding_status": {
-            "$ref": "#/components/schemas/OnboardingStatusEnum"
-          }
-        },
-        "type": "object",
-        "required": [
-          "organization_id",
-          "provisioning_state",
-          "organization_name",
-          "first_workspace_id",
-          "onboarding_status"
-        ],
-        "title": "OrganizationSignupResponse",
-        "description": "Response schema for organization signup endpoint."
-      },
       "OrganizationSubscriptionCreditBlock": {
         "properties": {
           "amount": {
@@ -13110,11 +12874,6 @@
               }
             ],
             "title": "Selected Streams"
-          },
-          "annotated": {
-            "type": "boolean",
-            "title": "Annotated",
-            "default": false
           }
         },
         "type": "object",
@@ -13142,11 +12901,6 @@
               }
             ],
             "title": "Selected Streams"
-          },
-          "annotated": {
-            "type": "boolean",
-            "title": "Annotated",
-            "default": false
           }
         },
         "type": "object",
@@ -13608,7 +13362,14 @@
             ]
           },
           "catalog_type": {
-            "$ref": "#/components/schemas/SonarCatalogSchemaType"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SonarCatalogSchemaType"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "query_result": {
             "anyOf": [
@@ -13621,7 +13382,7 @@
           }
         },
         "type": "object",
-        "required": ["id", "name", "source_definition_id", "catalog_type"],
+        "required": ["id", "name", "source_definition_id"],
         "title": "SourceDefinitionCatalogGetResponse"
       },
       "SourceDefinitionListResponse": {
