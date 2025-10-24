@@ -1,10 +1,10 @@
 import { useLocation } from "@docusaurus/router";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { EmailModal } from "./EmailModal";
 import styles from "./RequestERD.module.css";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-const { getRegistryEntry } = require("../../helpers/registryUtils");
+const { getRegistryEntry } = require("../../helpers/clientRegistryUtils");
 const { getFromPaths } = require("../../helpers/objects");
 
 export const RequestERD = () => {

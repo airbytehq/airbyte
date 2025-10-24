@@ -1,5 +1,5 @@
 const visit = require("unist-util-visit").visit;
-const { catalog } = require("../scripts/connector_registry");
+const { fetchRegistry } = require("../scripts/fetch-registry");
 const { isDocsPage, getRegistryEntry } = require("./utils");
 
 const plugin = () => {
@@ -11,7 +11,7 @@ const plugin = () => {
 };
 
 async function injectSpecSchema(ast) {
-  const registry = await catalog;
+  const registry = await fetchRegistry();
   visit(ast, "mdxJsxFlowElement", (node) => {
     if (node.name !== "SpecSchema" && node.name !== "PyAirbyteExample") return;
 

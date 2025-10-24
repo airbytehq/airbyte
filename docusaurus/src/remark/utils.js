@@ -1,4 +1,4 @@
-const { catalog } = require("../scripts/connector_registry");
+const { fetchRegistry } = require("../scripts/fetch-registry");
 
 // the migration guide and troubleshooting guide are not connectors, but also not in a sub-folder, e.g. /integrations/sources/mssql-migrations
 const connectorPageAlternativeEndings = ["-migrations", "-troubleshooting"];
@@ -65,7 +65,7 @@ const getRegistryEntry = async (vfile) => {
     "",
   )}-${connectorName}`;
 
-  const registry = await catalog;
+  const registry = await fetchRegistry();
 
   let registryEntry = registry.find(
     (r) => r.dockerRepository_oss === dockerRepository,

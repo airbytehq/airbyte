@@ -1,5 +1,4 @@
 const memoize = require("lodash/memoize");
-const { REGISTRY_URL } = require("./constants");
 
 const fetchLatestVersionOfPyPackage = memoize(async (packageName) => {
   const json = await fetch(`https://pypi.org/pypi/${packageName}/json`).then(
@@ -7,14 +6,6 @@ const fetchLatestVersionOfPyPackage = memoize(async (packageName) => {
   );
   return json.info.version;
 });
-
-const fetchCatalog = async () => {
-  console.log("Fetching connector registry...");
-  const json = await fetch(REGISTRY_URL).then((resp) => resp.json());
-  console.log(`fetched ${json.length} connectors from registry`);
-
-  return json;
-};
 
 const getLatestPythonCDKVersion = async () =>
   fetchLatestVersionOfPyPackage("airbyte-cdk");
@@ -57,8 +48,6 @@ function getSupportLevelDisplay(rawSupportLevel) {
 }
 
 module.exports = {
-  REGISTRY_URL,
-  catalog: fetchCatalog(),
   isPypiConnector: (connector) => {
     return Boolean(connector.remoteRegistries_oss?.pypi?.enabled);
   },
