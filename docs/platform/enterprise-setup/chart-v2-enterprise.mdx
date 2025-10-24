@@ -236,45 +236,84 @@ postgresql:
 Add external log storage
 </summary>
 
+<Tabs groupId="storage-type">
+<TabItem value='s3' label='AWS S3' default>
+
 ```yaml title="values.yaml"
 global:
   storage:
-    type: minio # default storage is minio. Set to s3, gcs, or azure, according to what you use.
-
+    type: s3
     bucket:
       log: airbyte-bucket
       state: airbyte-bucket
       workloadOutput: airbyte-bucket
       activityPayload: airbyte-bucket
-
-    # Set ONE OF the following storage types, according to your specification above
-
-    # S3
     s3:
       region: "" ## e.g. us-east-1
       authenticationType: credentials ## Use "credentials" or "instanceProfile"
       accessKeyId: ""
       secretAccessKey: ""
+```
 
-    # GCS
-    # Option 1: Provide credentials directly in values.yaml (credentials will be stored in Kubernetes secret)
+</TabItem>
+<TabItem value='gcs' label='Google Cloud Storage'>
+
+**Option 1: Provide credentials directly in values.yaml**
+
+```yaml title="values.yaml"
+global:
+  storage:
+    type: gcs
+    bucket:
+      log: airbyte-bucket
+      state: airbyte-bucket
+      workloadOutput: airbyte-bucket
+      activityPayload: airbyte-bucket
     gcs:
       projectId: <project-id>
       credentialsJson: <raw-json-content>  # Provide the raw JSON service account key (not base64-encoded)
       credentialsJsonPath: /secrets/gcs-log-creds/gcp.json
+```
 
-    # Option 2: Use an external Kubernetes secret you've already created
-    # storageSecretName: <your-existing-secret-name>  # Uncomment and set this to use your own secret
-    # gcs:
-    #   projectId: <project-id>
-    #   credentialsJsonPath: /secrets/gcs-log-creds/gcp.json
+**Option 2: Use an external Kubernetes secret**
 
-    # Azure
+If you've already created a Kubernetes secret with your GCS credentials:
+
+```yaml title="values.yaml"
+global:
+  storage:
+    type: gcs
+    storageSecretName: <your-existing-secret-name>  # Name of your existing Kubernetes secret
+    bucket:
+      log: airbyte-bucket
+      state: airbyte-bucket
+      workloadOutput: airbyte-bucket
+      activityPayload: airbyte-bucket
+    gcs:
+      projectId: <project-id>
+      credentialsJsonPath: /secrets/gcs-log-creds/gcp.json
+```
+
+</TabItem>
+<TabItem value='azure' label='Azure Blob Storage'>
+
+```yaml title="values.yaml"
+global:
+  storage:
+    type: azure
+    bucket:
+      log: airbyte-bucket
+      state: airbyte-bucket
+      workloadOutput: airbyte-bucket
+      activityPayload: airbyte-bucket
     azure:
       # one of the following: connectionString, connectionStringSecretKey
       connectionString: <azure storage connection string>
       connectionStringSecretKey: <secret coordinate containing an existing connection-string secret>
 ```
+
+</TabItem>
+</Tabs>
 
 </details>
 

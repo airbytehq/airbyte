@@ -136,7 +136,7 @@ Ensure you've already created a Kubernetes secret containing the credentials blo
 global:
   storage:
     type: "GCS"
-    secretName: airbyte-config-secrets
+    storageSecretName: airbyte-config-secrets  # Use storageSecretName (not secretName) for GCS external secrets
     bucket: # GCS bucket names that you've created. We recommend storing the following all in one bucket.
       log: airbyte-bucket
       state: airbyte-bucket
