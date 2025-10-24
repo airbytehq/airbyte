@@ -190,12 +190,12 @@ Any database or table encoding combination of charset and collation is supported
 | `bit(>1)`                                 | base64 binary string   |                                                                                                                |
 | `boolean`                                 | boolean                |                                                                                                                |
 | `tinyint(1)`                              | boolean                |                                                                                                                |
-| `tinyint(>1)`                             | number                 |                                                                                                                |
-| `tinyint(>=1) unsigned`                   | number                 |                                                                                                                |
-| `smallint`                                | number                 |                                                                                                                |
-| `mediumint`                               | number                 |                                                                                                                |
-| `int`                                     | number                 |                                                                                                                |
-| `bigint`                                  | number                 |                                                                                                                |
+| `tinyint(>1)`                             | integer                |                                                                                                                |
+| `tinyint(>=1) unsigned`                   | integer                |                                                                                                                |
+| `smallint`                                | integer                |                                                                                                                |
+| `mediumint`                               | integer                |                                                                                                                |
+| `int`                                     | integer                |                                                                                                                |
+| `bigint`                                  | integer                |                                                                                                                |
 | `float`                                   | number                 |                                                                                                                |
 | `double`                                  | number                 |                                                                                                                |
 | `decimal`                                 | number                 |                                                                                                                |
@@ -204,7 +204,7 @@ Any database or table encoding combination of charset and collation is supported
 | `date`                                    | string                 | ISO 8601 date string. ZERO-DATE value will be converted to NULL. If column is mandatory, convert to EPOCH.     |
 | `datetime`, `timestamp`                   | string                 | ISO 8601 datetime string. ZERO-DATE value will be converted to NULL. If column is mandatory, convert to EPOCH. |
 | `time`                                    | string                 | ISO 8601 time string. Values are in range between 00:00:00 and 23:59:59.                                       |
-| `year`                                    | year string            | [Doc](https://dev.mysql.com/doc/refman/8.0/en/year.html)                                                       |
+| `year`                                    | integer                | [Doc](https://dev.mysql.com/doc/refman/8.0/en/year.html)                                                       |
 | `char`, `varchar` with non-binary charset | string                 |                                                                                                                |
 | `tinyblob`                                | base64 binary string   |                                                                                                                |
 | `blob`                                    | base64 binary string   |                                                                                                                |
