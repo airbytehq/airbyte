@@ -101,7 +101,6 @@ class DirectLoadTableDedupStreamLoader(
                 tempTableName,
                 columnNameMapping,
                 replace = true,
-                false
             )
         }
 
@@ -184,7 +183,6 @@ class DirectLoadTableAppendTruncateStreamLoader(
                         tempTableName,
                         columnNameMapping,
                         replace = true,
-                        false
                     )
                 }
             }
@@ -221,7 +219,6 @@ class DirectLoadTableAppendTruncateStreamLoader(
                     tempTableName,
                     columnNameMapping,
                     replace = true,
-                    false
                 )
                 isWritingToTemporaryTable = true
             }
@@ -312,7 +309,6 @@ class DirectLoadTableDedupTruncateStreamLoader(
                         tempTableName,
                         columnNameMapping,
                         replace = true,
-                        false
                     )
                 }
             }
@@ -326,7 +322,6 @@ class DirectLoadTableDedupTruncateStreamLoader(
                 tempTableName,
                 columnNameMapping,
                 replace = true,
-                false
             )
             shouldCheckRealTableGeneration = true
         }
@@ -399,7 +394,7 @@ class DirectLoadTableDedupTruncateStreamLoader(
         val tempTempTable = tempTableNameGenerator.generate(tempTableName)
 
         // Create temporary table for intermediate operations
-        tableOperationsClient.createTable(stream, tempTempTable, columnNameMapping, replace = true, false)
+        tableOperationsClient.createTable(stream, tempTempTable, columnNameMapping, replace = true)
 
         // Upsert from temp to temp-temp table
         tableOperationsClient.upsertTable(
