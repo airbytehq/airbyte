@@ -161,7 +161,7 @@ This source can sync data for the [Shopify REST API](https://shopify.dev/api/adm
 - [Order Refunds](https://shopify.dev/api/admin-rest/2024-04/resources/refund#top)
 - [Order Risks (GraphQL)](https://shopify.dev/api/admin-rest/2024-04/resources/order-risk#top)
 - [Pages](https://shopify.dev/api/admin-rest/2024-04/resources/page#top)
-- [Price Rules](https://shopify.dev/api/admin-rest/2024-04/resources/pricerule#top)
+- [Price Rules](https://shopify.dev/docs/api/admin-rest/2025-04/resources/pricerule)
 - [Products (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/queries/products)
 - [Product Images (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/objects/Image)
 - [Product Variants (GraphQL)](https://shopify.dev/docs/api/admin-graphql/2024-04/queries/productVariant)
