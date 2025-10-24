@@ -5,11 +5,11 @@
 package io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
 import io.airbyte.cdk.load.orchestration.db.TableNames
-import io.airbyte.cdk.load.orchestration.db.TableNames.Companion.NO_SUFFIX
-import io.airbyte.cdk.load.orchestration.db.TableNames.Companion.TMP_TABLE_SUFFIX
 import io.airbyte.cdk.load.state.StreamProcessingFailed
+import io.airbyte.cdk.load.table.ColumnNameMapping
+import io.airbyte.cdk.load.table.TableSuffixes.NO_SUFFIX
+import io.airbyte.cdk.load.table.TableSuffixes.TMP_TABLE_SUFFIX
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.github.oshai.kotlinlogging.KotlinLogging
