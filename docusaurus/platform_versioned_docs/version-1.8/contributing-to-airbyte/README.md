@@ -25,7 +25,8 @@ Airbyte evaluates contributions outside this scope on a case-by-case basis. Reac
 Contributions to Airbyte connectors may take some time to review, as they can affect many users. To assist us during code review, include as much information as possible in your pull request, including examples, use cases, documentation links, and more.
 
 :::warning
-Airbyte is revamping its core Java destinations codebase. We're not reviewing/accepting new Java connectors at this time.
+Airbyte is undergoing a major revamp of the shared core Java destinations codebase, with plans to release a new CDK in April 2025.
+We are actively working on improving usability, speed (through asynchronous loading), and implementing [Typing and Deduplication](/platform/using-airbyte/core-concepts/typing-deduping) (Destinations V2). We're not actively reviewing/accepting new Java connectors for now.
 :::
 
 ### Contributions we don't accept
