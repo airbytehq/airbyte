@@ -100,7 +100,7 @@ def is_prerelease_version(version_str) -> bool:
     if not version_str:
         return True
 
-    version_pattern = r"^[~^>=<]*\d+\.\d+\.\d+([a-zA-Z0-9\-\.]*)?$"
+    version_pattern = r"^[~^>=<]*\d+(?:\.\d+)?(?:\.\d+)?([a-zA-Z0-9\-\.]*)?$"
     is_prod_version = bool(re.match(version_pattern, version_str.strip()))
     return not is_prod_version
 
