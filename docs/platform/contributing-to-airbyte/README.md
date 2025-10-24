@@ -2,6 +2,7 @@
 description: "We love contributions to Airbyte, big or small."
 ---
 
+<!-- Updated 2025-10-23 -->
 # Contributing to Airbyte
 
 Thank you for your interest in contributing! Contributions are very welcome. We appreciate first time contributors and we are happy help you get started. Join our [community Slack](https://slack.airbyte.io) and feel free to reach out with questions in [`#dev-and-contribuions` channel](https://airbytehq.slack.com/archives/C054V9JFTC6).
@@ -83,4 +84,3 @@ Feel free to submit a pull request in this repo, if you have something to add ev
 ## Engage with the Community
 
 Another crucial way to contribute is by reporting bugs and helping other users in the community. You're welcome to join the [Community Slack](https://slack.airbyte.io). Refer to our [Issues and Feature Requests](issues-and-requests.md) guide to learn about the best ways to report bugs.
-
