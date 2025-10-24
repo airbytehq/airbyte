@@ -1688,7 +1688,7 @@ api_budget:
       rates:
         # As mentioned, there are no published rate limits, setting an initial max of 5 req per 10 seconds.
         # We can adjust this as needed.
-        - limit: 5
+        - limit: 6
           interval: PT10S
       matchers:
         - method: GET
