@@ -608,14 +608,13 @@ class SqlProcessorBase(RecordProcessorBase):
             # Normalize all column names to lower case.
             dataframe.columns = Index([self.normalizer.normalize(col) for col in dataframe.columns])
 
-            # Write the data to the table.
+            # Write the data to the table
             dataframe.to_sql(
                 temp_table_name,
-                self.get_sql_alchemy_url(),
+                self.get_sql_engine(),
                 schema=self.sql_config.schema_name,
                 if_exists="append",
                 index=False,
-                dtype=sql_column_definitions,
             )
         return temp_table_name
 
