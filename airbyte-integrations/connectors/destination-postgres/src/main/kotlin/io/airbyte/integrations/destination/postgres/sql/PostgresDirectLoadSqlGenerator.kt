@@ -83,7 +83,7 @@ class PostgresDirectLoadSqlGenerator {
         columnNameMapping: ColumnNameMapping,
         replace: Boolean
     ): String {
-        val columnDeclarations = columnsAndTypes(stream, columnNameMapping).joinToString(",\n")
+        val columnDeclarations = columnsAndTypes(stream, columnNameMapping).joinToString(",\n") {it.toSQLString() }
         val dropTableIfExistsStatement = if (replace) "DROP TABLE IF EXISTS ${getFullyQualifiedName(tableName)};" else ""
         val createIndexesStatement = createIndexes(stream, tableName, columnNameMapping)
         return """
@@ -145,13 +145,9 @@ class PostgresDirectLoadSqlGenerator {
         cursor: List<String>,
         columnNameMapping: ColumnNameMapping
     ): String? {
-        if (cursor.isEmpty()) {
-            return null
-        }
-
-        val cursorFieldName = cursor.first()
-        val cursorColumn = getTargetColumnName(cursorFieldName, columnNameMapping)
-        return "\"$cursorColumn\""
+        return cursor
+            .firstOrNull()
+            ?.let { columnName -> getTargetColumnNameSafe(columnName, columnNameMapping) }
     }
 
     private fun getCursorColumnName(stream: DestinationStream, columnNameMapping: ColumnNameMapping): String? {
@@ -225,17 +221,53 @@ class PostgresDirectLoadSqlGenerator {
     private fun getTargetColumnName(streamColumnName : String, columnNameMapping: ColumnNameMapping): String =
         columnNameMapping[streamColumnName] ?: streamColumnName
 
-    //TODO: this is out of place, move to its own column class
+    private fun getTargetColumnNameSafe(streamColumnName: String, columnNameMapping: ColumnNameMapping): String {
+        return "\"${getTargetColumnName(streamColumnName, columnNameMapping)}\""
+    }
+
     fun getDefaultColumnNames(): List<String> =
         DEFAULT_COLUMNS.map { "\"${it.columnName}\"" }
 
-    @Suppress("UNUSED_PARAMETER")
     fun upsertTable(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping,
         sourceTableName: TableName,
         targetTableName: TableName
-    ): String = TODO("PostgresDirectLoadSqlGenerator.upsertTable not yet implemented")
+    ): String {
+        val importType = stream.importType as Dedupe
+
+        if (importType.primaryKey.isEmpty()) {
+            throw IllegalArgumentException("Cannot perform upsert without primary key")
+        }
+
+        val primaryKeyTargetColumns = getPrimaryKeysColumnNames(importType, columnNameMapping)
+        val cursorTargetColumn = getCursorColumnName(importType.cursor, columnNameMapping)
+        val allTargetColumns = getTargetColumnNames(columnNameMapping)
+
+        val selectDedupedRecords = selectDedupedRecords(primaryKeyTargetColumns, cursorTargetColumn, allTargetColumns, sourceTableName)
+    }
+
+    private fun selectDedupedRecords(
+        primaryKeyTargetColumns: Set<String>,
+        cursorTargetColumn: String?,
+        allTargetColumns: List<String>,
+        sourceTableName: TableName
+        ): String {
+        val cursorOrderClause = cursorTargetColumn?.let { "$it DESC NULLS LAST," } ?: ""
+
+        return """
+            SELECT ${allTargetColumns.joinToString(", ")}
+            FROM (
+              SELECT *,
+                ROW_NUMBER() OVER (
+                  PARTITION BY ${primaryKeyTargetColumns.joinToString( ", " )}
+                  ORDER BY $cursorOrderClause "$COLUMN_NAME_AB_EXTRACTED_AT" DESC
+                ) AS row_number
+              FROM ${getFullyQualifiedName(sourceTableName)}
+            ) AS deduplicated
+            WHERE row_number = 1
+        """.trimIndent()
+    }
 
     fun dropTable(tableName: TableName): String =
         "DROP TABLE IF EXISTS ${getFullyQualifiedName(tableName)};".andLog()
@@ -321,11 +353,11 @@ class PostgresDirectLoadSqlGenerator {
             is UnknownType,
             is UnionType -> PostgresDataType.JSONB.typeName
         }
-}
 
-data class Column(val columnName: String, val columnTypeName: String, val nullable: Boolean = true) {
-    override fun toString(): String {
+    fun Column.toSQLString(): String {
         val isNullableSuffix = if (nullable) "" else "NOT NULL"
         return "\"$columnName\" $columnTypeName $isNullableSuffix".trim()
     }
 }
+
+data class Column(val columnName: String, val columnTypeName: String, val nullable: Boolean = true)
