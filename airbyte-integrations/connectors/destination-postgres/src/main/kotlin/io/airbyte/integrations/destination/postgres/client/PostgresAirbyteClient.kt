@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TableName
+import io.airbyte.integrations.destination.postgres.sql.COUNT_TOTAL_ALIAS
 import io.airbyte.integrations.destination.postgres.sql.Column
 import io.airbyte.integrations.destination.postgres.sql.PostgresDirectLoadSqlGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -19,7 +20,6 @@ import javax.sql.DataSource
 
 private val log = KotlinLogging.logger {}
 
-internal const val COUNT_TOTAL_ALIAS = "total"
 
 @Singleton
 class PostgresAirbyteClient(
