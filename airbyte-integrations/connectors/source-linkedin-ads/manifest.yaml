@@ -1683,7 +1683,7 @@ concurrency_level:
 
 api_budget:
   type: HTTPAPIBudget
-  policy:
+  policies:
     - type: MovingWindowCallRatePolicy
       rates:
         # As mentioned, there are no published rate limits, setting an initial max of 5 req per 10 seconds.
