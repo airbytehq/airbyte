@@ -4,6 +4,8 @@ description: Our Community Code of Conduct
 
 # Code of Conduct
 
+If you're interacting in Slack, codebases, mailing lists, events, or any other Airbyte activity, you must follow the Code of Conduct. Please review it before getting started.
+
 ## Our Pledge
 
 In the interest of fostering an open and welcoming environment, we as contributors and maintainers pledge to make participation in our project and our community a harassment-free experience for everyone, regardless of age, body size, disability, ethnicity, sex characteristics, gender identity and expression, level of experience, education, socio-economic status, nationality, personal appearance, race, religion, or sexual identity and orientation.
