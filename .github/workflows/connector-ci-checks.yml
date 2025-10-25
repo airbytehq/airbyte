@@ -123,6 +123,7 @@ jobs:
 
   jvm-connectors-test:
     needs: [generate-matrix]
+    if: ${{ needs.generate-matrix.outputs.jvm-connectors-matrix != '' }}
     runs-on: ${{ needs.generate-matrix.outputs.jvm-runner-type }} # Custom runner, defined in GitHub org settings
     env:
       GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
@@ -215,6 +216,7 @@ jobs:
 
   non-jvm-connectors-test:
     needs: [generate-matrix]
+    if: ${{ needs.generate-matrix.outputs.non-jvm-connectors-matrix != '' }}
     runs-on: ubuntu-24.04
     env:
       GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
@@ -322,7 +324,7 @@ jobs:
   connectors-lint:
     needs: [generate-matrix]
     runs-on: ubuntu-24.04
-    if: ${{ needs.generate-matrix.outputs.connectors-matrix }}
+    if: ${{ needs.generate-matrix.outputs.connectors-matrix != '' }}
     strategy:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.connectors-matrix) }}
       max-parallel: 10 # Limit number of parallel jobs
@@ -410,7 +412,7 @@ jobs:
         continue-on-error: true
 
   pre-release-checks:
-    if: github.event.pull_request.draft == false
+    if: github.event.pull_request.draft == false && needs.generate-matrix.outputs.connectors-matrix != ''
     needs: [generate-matrix]
     strategy:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.connectors-matrix) }}
@@ -474,9 +476,18 @@ jobs:
       - name: Evaluate Status
         id: evaluate-status
         run: |
-          if [[ "${{ needs.jvm-connectors-test.result }}" == "success" &&
-                "${{ needs.non-jvm-connectors-test.result }}" == "success" &&
-                "${{ needs.connectors-lint.result }}" == "success" ]]; then
+          # When no connectors are modified, all matrix jobs are skipped via their if conditions. (important-comment)
+          # GitHub Actions reports such skipped jobs as "failure" to dependent jobs, so we check (important-comment)
+          # if matrices are empty first to handle this case explicitly. (important-comment)
+          if [[ -z '${{ needs.generate-matrix.outputs.jvm-connectors-matrix }}' &&
+                -z '${{ needs.generate-matrix.outputs.non-jvm-connectors-matrix }}' &&
+                -z '${{ needs.generate-matrix.outputs.connectors-matrix }}' ]]; then
+            echo "No connectors modified, all checks passed"
+            echo "result=success" | tee -a $GITHUB_OUTPUT
+          elif [[ "${{ needs.jvm-connectors-test.result }}" =~ ^(success|skipped)$ &&
+                  "${{ needs.non-jvm-connectors-test.result }}" =~ ^(success|skipped)$ &&
+                  "${{ needs.connectors-lint.result }}" =~ ^(success|skipped)$ &&
+                  "${{ needs.pre-release-checks.result }}" =~ ^(success|skipped)$ ]]; then
             echo "result=success" | tee -a $GITHUB_OUTPUT
           else
             echo "result=failure" | tee -a $GITHUB_OUTPUT
