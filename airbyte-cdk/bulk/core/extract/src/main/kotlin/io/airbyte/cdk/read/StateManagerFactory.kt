@@ -91,10 +91,15 @@ class StateManagerFactory(
                             // Because socket protobuf mode is using a sorted list of fields
                             // Without including field id's we need to always send the full
                             // set of fields as in the schema so sorting is maintained.
-                            DataChannelMedium.SOCKET ->
-                                stream.copy(
-                                    schema = stream.schema + metaFieldDecorator.globalMetaFields
-                                )
+                            DataChannelMedium.SOCKET -> {
+                                if (stream.configuredPrimaryKey?.isNotEmpty() == true) {
+                                    stream.copy(
+                                        schema = stream.schema + metaFieldDecorator.globalMetaFields
+                                    )
+                                } else {
+                                    stream
+                                }
+                            }
                             DataChannelMedium.STDIO -> stream
                         }
                 }
