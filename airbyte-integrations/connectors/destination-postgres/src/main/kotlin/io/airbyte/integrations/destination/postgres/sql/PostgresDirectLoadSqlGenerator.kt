@@ -27,8 +27,11 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
+import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TableName
+import io.airbyte.integrations.destination.postgres.spec.CdcDeletionMode
+import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import kotlin.collections.forEach
@@ -38,7 +41,9 @@ internal const val COUNT_TOTAL_ALIAS = "total"
 private val log = KotlinLogging.logger {}
 
 @Singleton
-class PostgresDirectLoadSqlGenerator {
+class PostgresDirectLoadSqlGenerator(
+    private val postgresConfiguration: PostgresConfiguration
+) {
     companion object {
         private const val CURSOR_INDEX_PREFIX = "idx_cursor_"
         private const val PRIMARY_KEY_INDEX_PREFIX = "idx_pk_"
@@ -244,10 +249,68 @@ class PostgresDirectLoadSqlGenerator {
         val cursorTargetColumn = getCursorColumnName(importType.cursor, columnNameMapping)
         val allTargetColumns = getTargetColumnNames(columnNameMapping)
 
-        val selectDedupedRecords = selectDedupedRecords(primaryKeyTargetColumns, cursorTargetColumn, allTargetColumns, sourceTableName)
+        val selectDeduped = selectDeduped(primaryKeyTargetColumns, cursorTargetColumn, allTargetColumns, sourceTableName)
+
+        val cdcHardDeleteEnabled =  stream.schema.asColumns().containsKey(CDC_DELETED_AT_COLUMN) &&
+            postgresConfiguration.cdcDeletionMode == CdcDeletionMode.HARD_DELETE
+
+        val cdcDeleteClause: String
+        if (cdcHardDeleteEnabled) {
+            val deleteStatement = cdcDelete(
+                "deduped_source",
+                cursorTargetColumn,
+                targetTableName,
+                primaryKeyTargetColumns
+            )
+            cdcDeleteClause = "deleted AS ( $deleteStatement ),"
+        } else {
+            cdcDeleteClause = ""
+        }
     }
 
-    private fun selectDedupedRecords(
+    private fun cdcDelete(
+        dedupTableAlias: String,
+        cursorTargetColumn: String?,
+        targetTableName: TableName,
+        primaryKeyTargetColumns: Set<String>
+    ): String {
+        val primaryKeysMatchingCondition = primaryKeyTargetColumns.joinToString(" AND ") { pk ->
+            "${getFullyQualifiedName(targetTableName)}.$pk = $dedupTableAlias.$pk"
+        }
+
+        // ensure we only delete if the deletion is newer
+        val cursorComparison = buildCursorComparison(cursorTargetColumn, targetTableName, dedupTableAlias)
+
+        return """
+            DELETE FROM ${getFullyQualifiedName(targetTableName)}
+            USING $dedupTableAlias
+            WHERE $primaryKeysMatchingCondition
+                AND $dedupTableAlias."$CDC_DELETED_AT_COLUMN" IS NOT NULL
+                AND ($cursorComparison)
+        """.trimIndent()
+    }
+
+    private fun buildCursorComparison(
+        cursorTargetColumn: String?,
+        targetTableName: TableName,
+        dedupTableAlias: String
+    ): String {
+        return if (cursorTargetColumn != null) {
+            val extractedAtColumn = getExtractedAtColumnName()
+            """
+                  ${getFullyQualifiedName(targetTableName)}.$cursorTargetColumn < $dedupTableAlias.$cursorTargetColumn
+                  OR (${getFullyQualifiedName(targetTableName)}.$cursorTargetColumn = $dedupTableAlias.$cursorTargetColumn AND ${getFullyQualifiedName(targetTableName)}.$extractedAtColumn < $dedupTableAlias.$extractedAtColumn)
+                  OR (${getFullyQualifiedName(targetTableName)}.$cursorTargetColumn IS NULL AND $dedupTableAlias.$cursorTargetColumn IS NOT NULL)
+                  OR (${getFullyQualifiedName(targetTableName)}.$cursorTargetColumn IS NULL AND $dedupTableAlias.$cursorTargetColumn IS NULL AND ${getFullyQualifiedName(targetTableName)}.$extractedAtColumn < $dedupTableAlias.$extractedAtColumn)
+                """.trimIndent()
+        } else {
+            // No cursor - use extraction timestamp only
+            val extractedAtColumn = getExtractedAtColumnName()
+            "${getFullyQualifiedName(targetTableName)}.$extractedAtColumn < $dedupTableAlias.$extractedAtColumn"
+        }
+    }
+
+    private fun selectDeduped(
         primaryKeyTargetColumns: Set<String>,
         cursorTargetColumn: String?,
         allTargetColumns: List<String>,
