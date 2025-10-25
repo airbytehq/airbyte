@@ -12,6 +12,24 @@ data:
     pypi:
       enabled: false
       packageName: airbyte-source-mercado-ads
+  releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: false
+    breakingChanges:
+      1.0.0:
+      message: "Effective August 18th, breaking changes were introduced to the Brand Ads endpoints and schemas. Subsequently, on September 4th, similar breaking changes were implemented for Product Ads."
+      scopedImpact:
+        - scopeType: stream
+          impactedScopes:
+            - "brand_campaigns"
+            - "brand_campaigns_metrics"
+            - "brand_items"
+            - "brand_keywords"
+            - "brand_keywords_metrics"
+            - "product_campaigns"
+            - "product_campaigns_metrics"
+            - "product_items"
+            - "product_items_metrics"
   connectorBuildOptions:
     baseImage: docker.io/airbyte/source-declarative-manifest:6.60.16@sha256:b8126848437ec5a6cff05fb4796fd775450b83e57925674d856a1838a390a28c
   connectorSubtype: api
