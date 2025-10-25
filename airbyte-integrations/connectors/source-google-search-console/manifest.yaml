@@ -405,7 +405,7 @@ definitions:
         type: MinMaxDatetime
         datetime: "{{ config.get('end_date', today_utc()) }}"
         datetime_format: "%Y-%m-%d"
-      step: P3D
+      : P3D
       cursor_granularity: P1D
     state_migrations:
       - type: CustomStateMigration
@@ -1316,7 +1316,7 @@ dynamic_streams:
           type: MinMaxDatetime
           datetime: "{{ config.get('end_date', today_utc()) }}"
           datetime_format: "%Y-%m-%d"
-        step: P3D
+        step: P1D
         cursor_granularity: P1D
       transformations:
         - type: AddFields
