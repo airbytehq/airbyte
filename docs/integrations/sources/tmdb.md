@@ -96,6 +96,12 @@ TMDb's [API reference](https://developers.themoviedb.org/3/getting-started/intro
 
 | Version | Date       | Pull Request                                             | Subject        |
 | :------ | :--------- | :------------------------------------------------------- | :------------- |
+| 1.1.32 | 2025-10-21 | [68538](https://github.com/airbytehq/airbyte/pull/68538) | Update dependencies |
+| 1.1.31 | 2025-10-14 | [67891](https://github.com/airbytehq/airbyte/pull/67891) | Update dependencies |
+| 1.1.30 | 2025-10-07 | [67507](https://github.com/airbytehq/airbyte/pull/67507) | Update dependencies |
+| 1.1.29 | 2025-09-30 | [66831](https://github.com/airbytehq/airbyte/pull/66831) | Update dependencies |
+| 1.1.28 | 2025-09-23 | [66600](https://github.com/airbytehq/airbyte/pull/66600) | Update dependencies |
+| 1.1.27 | 2025-09-09 | [65704](https://github.com/airbytehq/airbyte/pull/65704) | Update dependencies |
 | 1.1.26 | 2025-08-24 | [65486](https://github.com/airbytehq/airbyte/pull/65486) | Update dependencies |
 | 1.1.25 | 2025-08-09 | [64858](https://github.com/airbytehq/airbyte/pull/64858) | Update dependencies |
 | 1.1.24 | 2025-07-19 | [61464](https://github.com/airbytehq/airbyte/pull/61464) | Update dependencies |

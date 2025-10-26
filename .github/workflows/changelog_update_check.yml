@@ -1,0 +1,28 @@
+name: Changelog Update Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  changelog-check:
+    name: Check Changelog Updated
+    runs-on: ubuntu-24.04
+    steps:
+      - name: CDK Changes
+        id: cdk-changes
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 #v3.0.2
+        with:
+          filters: |
+            version:
+              - 'airbyte-cdk/bulk/version.properties'
+            changelog:
+              - 'airbyte-cdk/bulk/changelog.md'
+
+      - name: Ensure Changelog Updated
+        if: steps.cdk-changes.outputs.version == 'true'
+        run: |
+          if [ "${{ steps.cdk-changes.outputs.changelog }}" != "true" ]; then
+            echo "ERROR: The changelog must be updated when the version.properties file is changed."
+            exit 1
+          fi

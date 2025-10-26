@@ -6,7 +6,7 @@ products: cloud
 
 Understanding the following limitations will help you more effectively manage Airbyte Cloud.
 
-- Max number of workspaces per user: 3\*
+- Max number of workspaces per user: 1\*
 - Max number of instances of the same source connector: 10\*
 - Max number of destinations in a workspace: 20\*
 - Max number of streams that can be returned by a source in a discover call: 1K
@@ -17,7 +17,7 @@ Understanding the following limitations will help you more effectively manage Ai
 ---
 
 \* Limits on workspaces, sources, and destinations do not apply to customers of
-Airbyte Teams. To learn more
+Airbyte Pro and Enterprise Flex. To learn more
 [contact us](https://airbyte.com/talk-to-sales)!
 
 \*\* The effective maximum size of the record may vary based per destination. Some destinations may

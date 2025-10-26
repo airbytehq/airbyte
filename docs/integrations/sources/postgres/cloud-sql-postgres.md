@@ -1,14 +1,14 @@
 # Cloud SQL for PostgreSQL
 
-Airbyte's certified Postgres connector offers the following features:
+Airbyte's certified Postgres connector offers the following features.
 
 - Multiple methods of keeping your data fresh, including [Change Data Capture (CDC)](/platform/understanding-airbyte/cdc) and replication using the [xmin system column](/integrations/sources/postgres#xmin).
-- All available [sync modes](/platform/using-airbyte/core-concepts/sync-modes), providing flexibility in how data is delivered to your destination.
+
+- All available [sync modes](/platform/using-airbyte/core-concepts/sync-modes), providing flexibility in how Airbyte delivers data to your destination.
+
 - Reliable replication at any table size with [checkpointing](/platform/understanding-airbyte/airbyte-protocol/#state--checkpointing) and chunking of database reads.
 
-![Airbyte Postgres Connection](assets/airbyte_postgres_source.png)
-
-## Quick Start
+## Quick start
 
 ![Cloud SQL for PostgreSQL](./assets/airbyte_cloud_sql_postgres_db.png)
 
@@ -20,29 +20,27 @@ Here is an outline of the minimum required steps to configure a connection to Po
 
 Once this is complete, you will be able to select Postgres as a source for replicating data.
 
-#### Step 1: Create a dedicated read-only Postgres user
+### Step 1: Create a dedicated read-only Postgres user
 
 These steps create a dedicated read-only user for replicating data. Alternatively, you can use an existing Postgres user in your database. To create a user, first [connect to your database](https://cloud.google.com/sql/docs/postgres/connect-overview#external-connection-methods). If you are getting started, you can use [Cloud Shell to connect directly from the UI](https://cloud.google.com/sql/docs/postgres/connect-instance-cloud-shell).
 
 The following commands will create a new user:
 
-```roomsql
+```sql
 CREATE USER <user_name> PASSWORD 'your_password_here';
 ```
 
 Now, provide this user with read-only access to relevant schemas and tables. Re-run this command for each schema you expect to replicate data from (e.g. `public`):
 
-```roomsql
+```sql
 GRANT USAGE ON SCHEMA <schema_name> TO <user_name>;
 GRANT SELECT ON ALL TABLES IN SCHEMA <schema_name> TO <user_name>;
 ALTER DEFAULT PRIVILEGES IN SCHEMA <schema_name> GRANT SELECT ON TABLES TO <user_name>;
 ```
 
-#### Step 2: Create a new Postgres source in Airbyte UI
+### Step 2: Create a new Postgres source in Airbyte UI
 
-From your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account, select `Sources` from the left navigation bar, search for `Postgres`, then create a new Postgres source.
-
-![Create an Airbyte source](https://github.com/airbytehq/airbyte/blob/c078e8ed6703020a584d9362efa5665fbe8db77f/docs/integrations/sources/postgres/assets/airbyte_source_selection.png?raw=true)
+In Airbyte, click **Sources** from the left navigation bar, search for `Postgres`, then create a new Postgres source.
 
 To fill out the required information:
 
@@ -55,23 +53,21 @@ To fill out the required information:
 
 <!-- env:cloud -->
 
-#### Step 3: (Airbyte Cloud Only) Allow inbound traffic from Airbyte IPs.
+### Step 3: (Airbyte Cloud Only) Allow inbound traffic from Airbyte IPs
 
 If you are on Airbyte Cloud, you will always need to modify your database configuration to allow inbound traffic from Airbyte IPs. To allowlist IPs in Cloud SQL:
 
 1. In your Google Cloud SQL database dashboard, select `Connections` from the left menu. Then, select `Add Network` under the `Connectivity` section.
 
-![Add a Network](./assets/airbyte_cloud_sql_postgres_add_network.png)
+   ![Add a Network](./assets/airbyte_cloud_sql_postgres_add_network.png)
 
-2. Add a new network, and enter the Airbyte's IPs, which you can find in our [Airbyte Security documentation](../../../platform/operating-airbyte/security#network-security-1).
+2. Add a new network, and enter the Airbyte's IPs, which you can find in our [Airbyte Security documentation](../../../platform/operating-airbyte/ip-allowlist).
 
 Now, click `Set up source` in the Airbyte UI. Airbyte will now test connecting to your database. Once this succeeds, you've configured an Airbyte Postgres source!
 
 <!-- /env:cloud -->
 
-## Advanced Configuration
-
-### Setup using CDC
+## Advanced: Setup using CDC
 
 Airbyte uses [logical replication](https://www.postgresql.org/docs/10/logical-replication.html) of the Postgres write-ahead log (WAL) to incrementally capture deletes using a replication plugin:
 
@@ -84,7 +80,7 @@ We recommend configuring your Postgres source with CDC when:
 - You have a very large database (500 GB or more).
 - Your table has a primary key but doesn't have a reasonable cursor field for incremental syncing (`updated_at`).
 
-These are the additional steps required (after following the [quick start](#quick-start)) to configure your Postgres source using CDC:
+These are the additional steps required after [following the quick start](#quick-start) to configure your Postgres source using CDC:
 
 1. Provide additional `REPLICATION` permissions to read-only user
 2. Enable logical replication on your Postgres database
@@ -92,56 +88,58 @@ These are the additional steps required (after following the [quick start](#quic
 4. Create publication and replication identities for each Postgres table
 5. Enable CDC replication in the Airbyte UI
 
-#### Step 1: Prepopulate your Postgres source configuration
+### Step 1: Prepopulate your Postgres source configuration
 
 We recommend following the steps in the [quick start](#quick-start) section to confirm that Airbyte can connect to your Postgres database prior to configuring CDC settings.
 
 For CDC, you may connect to primary/master databases. To use a replica as source, which is available starting from Postgres 16.1, and provided additional configurations have been enabled on the database instance (please visit [Postgres official documentation](https://www.postgresql.org/docs/current/warm-standby.html#CASCADING-REPLICATION)), the most recent required connector's version is 3.6.21.
 
-
-#### Step 2: Provide additional permissions to read-only user
+### Step 2: Provide additional permissions to read-only user
 
 To configure CDC for the Postgres source connector, grant `REPLICATION` permissions to the user created in [step 1 of the quick start](#step-1-create-a-dedicated-read-only-postgres-user):
 
-```
+```sql
 ALTER USER <user_name> REPLICATION;
 ```
 
-#### Step 3: Enable logical replication on your Postgres database
+### Step 3: Enable logical replication on your Postgres database
 
 To enable logical replication on Cloud SQL for Postgres, set the `cloudsql.logical_decoding` flag to on. You can find the `Flags` section in the `Edit Configuration` view of your database:
 
 ![Enable Logical Decoding](./assets/airbyte_cloud_sql_postgres_logical_replication_flag.png)
 
-#### Step 4: Create a replication slot on your Postgres database
+### Step 4: Create a replication slot on your Postgres database
 
 Airbyte requires a replication slot configured only for its use. Only one source should be configured that uses this replication slot.
 
 For this step, Airbyte requires use of the pgoutput plugin. To create a replication slot called `airbyte_slot` using pgoutput, provide the instance superuser (default `postgres`) with `REPLICATION` permissions, and run the following:
 
-```
+```sql
 ALTER user postgres with REPLICATION;
 SELECT pg_create_logical_replication_slot('airbyte_slot', 'pgoutput');
 ```
 
 The output of this command will include the name of the replication slot to fill into the Airbyte source setup page.
 
-#### Step 5: Create publication and replication identities for each Postgres table
+### Step 5: Create publication and replication identities for each Postgres table
 
 For each table you want to replicate with CDC, follow the steps below:
 
 1. Add the replication identity (the method of distinguishing between rows) for each table you want to replicate:
 
-```
-ALTER TABLE tbl1 REPLICA IDENTITY DEFAULT;
-```
+   ```sql
+   ALTER TABLE tbl1 REPLICA IDENTITY DEFAULT;
+   ```
 
-In rare cases, if your tables use data types that support [TOAST](https://www.postgresql.org/docs/current/storage-toast.html) or have very large field values, consider instead using replica identity type full: `
-ALTER TABLE tbl1 REPLICA IDENTITY FULL;`.
+   In rare cases, if your tables use data types that support [TOAST](https://www.postgresql.org/docs/current/storage-toast.html) or have very large field values, consider instead using replica identity type full:
+
+   ```sql
+   ALTER TABLE tbl1 REPLICA IDENTITY FULL;
+   ```
 
 2. Create the Postgres publication. You should include all tables you want to replicate as part of the publication:
 
-```
+```sql
 CREATE PUBLICATION airbyte_publication FOR TABLE tbl1, tbl2, tbl3;`
 ```
 
@@ -151,7 +149,7 @@ The publication name is customizable. Refer to the [Postgres docs](https://www.p
 The Airbyte UI currently allows selecting any tables for CDC. If a table is selected that is not part of the publication, it will not be replicated even though it is selected. If a table is part of the publication but does not have a replication identity, that replication identity will be created automatically on the first run if the Airbyte user has the necessary permissions.
 :::
 
-#### Step 6: Enable CDC replication in Airbyte UI
+### Step 6: Enable CDC replication in Airbyte UI
 
 In your Postgres source, change the replication mode to `Logical Replication (CDC)`, and enter the replication slot and publication you just created.
 
@@ -166,3 +164,7 @@ See [these instructions](https://docs.airbyte.com/integrations/sources/postgres#
 ## Limitations & Troubleshooting
 
 To see connector limitations, or troubleshoot your Postgres connector, see more [in our Postgres troubleshooting guide](https://docs.airbyte.com/integrations/sources/postgres/postgres-troubleshooting).
+
+## Changelog
+
+See [Postgres](../postgres.md).

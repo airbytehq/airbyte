@@ -6,8 +6,8 @@ package io.airbyte.integrations.destination.clickhouse.client
 
 import com.github.vertical_blank.sqlformatter.SqlFormatter
 import com.github.vertical_blank.sqlformatter.languages.Dialect
-import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
-import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.cdk.load.table.ColumnNameMapping
+import io.airbyte.cdk.load.table.TableName
 import io.airbyte.integrations.destination.clickhouse.model.AlterationSummary
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration
 import io.mockk.mockk
@@ -174,8 +174,8 @@ class ClickhouseSqlGeneratorTest {
                         hasDedupChange = false,
                     ),
                     listOf(
-                        " ADD COLUMN `new_column` Nullable(Int32)",
-                        " MODIFY COLUMN `existing_column` Nullable(String)",
+                        " ADD COLUMN `new_column` Int32",
+                        " MODIFY COLUMN `existing_column` String",
                         " DROP COLUMN `old_column`"
                     )
                 ),
@@ -186,7 +186,7 @@ class ClickhouseSqlGeneratorTest {
                         deleted = setOf(),
                         hasDedupChange = false,
                     ),
-                    listOf(" ADD COLUMN `new_column` Nullable(Int32)")
+                    listOf(" ADD COLUMN `new_column` Int32")
                 ),
                 Arguments.of(
                     AlterationSummary(
@@ -195,7 +195,7 @@ class ClickhouseSqlGeneratorTest {
                         deleted = setOf(),
                         hasDedupChange = false,
                     ),
-                    listOf(" MODIFY COLUMN `existing_column` Nullable(String)")
+                    listOf(" MODIFY COLUMN `existing_column` String")
                 ),
                 Arguments.of(
                     AlterationSummary(
@@ -214,10 +214,10 @@ class ClickhouseSqlGeneratorTest {
                         hasDedupChange = false,
                     ),
                     listOf(
-                        " ADD COLUMN `col1` Nullable(Int32)",
-                        " ADD COLUMN `col2` Nullable(String)",
-                        " MODIFY COLUMN `col3` Nullable(String)",
-                        " MODIFY COLUMN `col4` Nullable(Int64)",
+                        " ADD COLUMN `col1` Int32",
+                        " ADD COLUMN `col2` String",
+                        " MODIFY COLUMN `col3` String",
+                        " MODIFY COLUMN `col4` Int64",
                         " DROP COLUMN `col5`",
                         " DROP COLUMN `col6`"
                     )

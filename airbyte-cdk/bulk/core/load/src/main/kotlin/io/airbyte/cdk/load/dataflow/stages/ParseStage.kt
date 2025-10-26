@@ -6,15 +6,15 @@ package io.airbyte.cdk.load.dataflow.stages
 
 import io.airbyte.cdk.load.dataflow.pipeline.DataFlowStage
 import io.airbyte.cdk.load.dataflow.pipeline.DataFlowStageIO
-import io.airbyte.cdk.load.dataflow.transform.DataMunger
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
+import io.airbyte.cdk.load.dataflow.transform.RecordMunger
 import jakarta.inject.Named
 import jakarta.inject.Singleton
 
 @Named("parse")
 @Singleton
 class ParseStage(
-    val munger: DataMunger,
+    private val munger: RecordMunger,
 ) : DataFlowStage {
     override suspend fun apply(input: DataFlowStageIO): DataFlowStageIO {
         val raw = input.raw!!

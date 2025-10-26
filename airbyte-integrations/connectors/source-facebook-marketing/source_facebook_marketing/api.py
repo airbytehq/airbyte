@@ -5,10 +5,10 @@
 import json
 import logging
 from dataclasses import dataclass
+from datetime import timedelta
 from time import sleep
 
 import backoff
-import pendulum
 from facebook_business import FacebookAdsApi
 from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.api import FacebookResponse
@@ -30,8 +30,8 @@ backoff_policy = retry_pattern(backoff.expo, FacebookRequestError, max_tries=5, 
 class MyFacebookAdsApi(FacebookAdsApi):
     """Custom Facebook API class to intercept all API calls and handle call rate limits"""
 
-    MAX_RATE, MAX_PAUSE_INTERVAL = (95, pendulum.duration(minutes=10))
-    MIN_RATE, MIN_PAUSE_INTERVAL = (85, pendulum.duration(minutes=2))
+    MAX_RATE, MAX_PAUSE_INTERVAL = (95, timedelta(minutes=10))
+    MIN_RATE, MIN_PAUSE_INTERVAL = (85, timedelta(minutes=2))
 
     # see `_should_restore_page_size` method docstring for more info.
     # attribute to handle the reduced request limit
@@ -56,7 +56,7 @@ class MyFacebookAdsApi(FacebookAdsApi):
     @staticmethod
     def _parse_call_rate_header(headers):
         usage = 0
-        pause_interval = pendulum.duration()
+        pause_interval = timedelta()
 
         usage_header_business = headers.get("x-business-use-case-usage")
         usage_header_app = headers.get("x-app-usage")
@@ -87,7 +87,7 @@ class MyFacebookAdsApi(FacebookAdsApi):
                 )
                 pause_interval = max(
                     pause_interval,
-                    pendulum.duration(minutes=usage_limits.get("estimated_time_to_regain_access", 0)),
+                    timedelta(minutes=usage_limits.get("estimated_time_to_regain_access", 0)),
                 )
 
         return usage, pause_interval

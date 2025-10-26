@@ -24,6 +24,11 @@ The Airbyte connector for [Formbricks](https://www.formbricks.com/) enables seam
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.36 | 2025-10-21 | [68472](https://github.com/airbytehq/airbyte/pull/68472) | Update dependencies |
+| 0.0.35 | 2025-10-14 | [68053](https://github.com/airbytehq/airbyte/pull/68053) | Update dependencies |
+| 0.0.34 | 2025-10-07 | [67295](https://github.com/airbytehq/airbyte/pull/67295) | Update dependencies |
+| 0.0.33 | 2025-09-30 | [66781](https://github.com/airbytehq/airbyte/pull/66781) | Update dependencies |
+| 0.0.32 | 2025-09-24 | [65851](https://github.com/airbytehq/airbyte/pull/65851) | Update dependencies |
 | 0.0.31 | 2025-08-23 | [65304](https://github.com/airbytehq/airbyte/pull/65304) | Update dependencies |
 | 0.0.30 | 2025-08-09 | [64784](https://github.com/airbytehq/airbyte/pull/64784) | Update dependencies |
 | 0.0.29 | 2025-07-26 | [63956](https://github.com/airbytehq/airbyte/pull/63956) | Update dependencies |

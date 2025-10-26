@@ -15,7 +15,7 @@ To access the Airbyte UI, you will need to manually attach an ingress configurat
 The following is a simplified definition of an ingress resource you could use for your Airbyte instance:
 
 :::tip
-Set appropriate backend timeout values for the Airbyte webapp ingress. Timeout values that are too short can lead to 504 errors in the webapp when creating new sources or destinations.
+Set appropriate backend timeout values for the Airbyte UI ingress. Timeout values that are too short can lead to 504 errors in the UI when creating new sources or destinations.
 :::
 
 <Tabs>
@@ -36,6 +36,16 @@ spec:
     - host: airbyte.example.com # replace with your host
       http:
         paths:
+          # BEGIN: Self-Managed Enterprise only - Do not include if you are an open source user
+          - backend:
+              service:
+                # format is ${RELEASE_NAME}-airbyte-keycloak-svc 
+                name: airbyte-airbyte-keycloak-svc 
+                port: 
+                  number: 8180 
+            path: /auth
+            pathType: Prefix
+          # END: Self-Managed Enterprise only
           - backend:
               service:
                 # format is ${RELEASE_NAME}-airbyte-connector-builder-server-svc
@@ -93,6 +103,15 @@ spec:
     - host: airbyte.example.com # replace with your host
       http:
         paths:
+          # BEGIN: Self-Managed Enterprise only - Do not include if you are an open source user
+          - backend:
+              service:
+                name: airbyte-airbyte-keycloak-svc
+                port:
+                  number: 8180
+            path: /auth
+            pathType: Prefix
+          # END: Self-Managed Enterprise only
           - backend:
               service:
                 name: airbyte-airbyte-connector-builder-server-svc

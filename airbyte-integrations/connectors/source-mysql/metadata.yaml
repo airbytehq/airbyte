@@ -9,7 +9,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
-  dockerImageTag: 3.50.6
+  dockerImageTag: 3.51.0
   dockerRepository: airbyte/source-mysql
   documentationUrl: https://docs.airbyte.com/integrations/sources/mysql
   githubIssueLabel: source-mysql
@@ -21,7 +21,7 @@ data:
     baseImage: docker.io/airbyte/java-connector-base:2.0.1@sha256:ec89bd1a89e825514dd2fc8730ba299a3ae1544580a078df0e35c5202c2085b3
   connectorIPCOptions:
     dataChannel:
-      version: "0.0.1"
+      version: "0.0.2"
       supportedSerialization: ["JSONL", "PROTOBUF"]
       supportedTransport: ["SOCKET", "STDIO"]
   registryOverrides:

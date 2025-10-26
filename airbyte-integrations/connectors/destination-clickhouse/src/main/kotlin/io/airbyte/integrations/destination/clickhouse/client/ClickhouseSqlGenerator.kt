@@ -28,19 +28,21 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
-import io.airbyte.cdk.load.orchestration.db.CDC_DELETED_AT_COLUMN
-import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
-import io.airbyte.cdk.load.orchestration.db.TableName
+import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
+import io.airbyte.cdk.load.table.ColumnNameMapping
+import io.airbyte.cdk.load.table.TableName
 import io.airbyte.integrations.destination.clickhouse.client.ClickhouseSqlGenerator.Companion.DATETIME_WITH_PRECISION
 import io.airbyte.integrations.destination.clickhouse.client.ClickhouseSqlGenerator.Companion.DECIMAL_WITH_PRECISION_AND_SCALE
 import io.airbyte.integrations.destination.clickhouse.model.AlterationSummary
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 
 @Singleton
 class ClickhouseSqlGenerator(
     val clickhouseConfiguration: ClickhouseConfiguration,
 ) {
+    private val log = KotlinLogging.logger {}
 
     /**
      * This extension is here to avoid writing `.also { log.info { it }}` for every returned string
@@ -49,6 +51,11 @@ class ClickhouseSqlGenerator(
     private fun String.andLog(): String {
         log.info { this }
         return this
+    }
+
+    private fun isValidVersionColumnType(airbyteType: AirbyteType): Boolean {
+        // Must be of an integer type or of type Date/DateTime/DateTime64
+        return VALID_VERSION_COLUMN_TYPES.any { it.isInstance(airbyteType) }
     }
 
     fun createNamespace(namespace: String): String {
@@ -67,7 +74,45 @@ class ClickhouseSqlGenerator(
                 else -> listOf()
             }
 
-        val columnDeclarations = columnsAndTypes(stream, columnNameMapping, pks)
+        // For ReplacingMergeTree, we need to make the cursor column non-nullable if it's used as
+        // version column. We'll also determine here if we need to fall back to extracted_at.
+        var useCursorAsVersionColumn = false
+        val nonNullableColumns =
+            mutableSetOf<String>().apply {
+                addAll(pks) // Primary keys are always non-nullable
+                if (stream.importType is Dedupe) {
+                    val dedupeType = stream.importType as Dedupe
+                    if (dedupeType.cursor.isNotEmpty()) {
+                        val cursorFieldName = dedupeType.cursor.first()
+                        val cursorColumnName = columnNameMapping[cursorFieldName] ?: cursorFieldName
+
+                        // Check if the cursor column type is valid for ClickHouse
+                        // ReplacingMergeTree
+                        val cursorColumnType = stream.schema.asColumns()[cursorFieldName]?.type
+                        if (
+                            cursorColumnType != null && isValidVersionColumnType(cursorColumnType)
+                        ) {
+                            // Cursor column is valid, use it as version column
+                            add(cursorColumnName) // Make cursor column non-nullable too
+                            useCursorAsVersionColumn = true
+                        } else {
+                            // Cursor column is invalid, we'll fall back to _airbyte_extracted_at
+                            log.warn {
+                                "Cursor column '$cursorFieldName' for stream '${stream.mappedDescriptor}' has type '${cursorColumnType?.let { it::class.simpleName }}' which is not valid for use as a version column in ClickHouse ReplacingMergeTree. " +
+                                    "Falling back to using _airbyte_extracted_at as version column. Valid types are: Integer, Date, Timestamp."
+                            }
+                            useCursorAsVersionColumn = false
+                        }
+                    }
+                    // If no cursor is specified or cursor is invalid, we'll use
+                    // _airbyte_extracted_at
+                    // as version column, which is already non-nullable by default (defined in
+                    // CREATE TABLE statement)
+                }
+            }
+
+        val columnDeclarations =
+            columnsAndTypes(stream, columnNameMapping, nonNullableColumns.toList())
 
         val forceCreateTable = if (replace) "OR REPLACE" else ""
 
@@ -79,7 +124,23 @@ class ClickhouseSqlGenerator(
 
         val engine =
             when (stream.importType) {
-                is Dedupe -> "ReplacingMergeTree()"
+                is Dedupe -> {
+                    val dedupeType = stream.importType as Dedupe
+                    // Use cursor column as version column for ReplacingMergeTree if available and
+                    // valid
+                    val versionColumn =
+                        if (dedupeType.cursor.isNotEmpty() && useCursorAsVersionColumn) {
+                            val cursorFieldName = dedupeType.cursor.first()
+                            val cursorColumnName =
+                                columnNameMapping[cursorFieldName] ?: cursorFieldName
+                            "`$cursorColumnName`"
+                        } else {
+                            // Fallback to _airbyte_extracted_at if no cursor is specified or cursor
+                            // is invalid
+                            COLUMN_NAME_AB_EXTRACTED_AT
+                        }
+                    "ReplacingMergeTree($versionColumn)"
+                }
                 else -> "MergeTree()"
             }
 
@@ -93,10 +154,10 @@ class ClickhouseSqlGenerator(
             )
             ENGINE = ${engine}
             ORDER BY (${if (pks.isEmpty()) {
-                "$COLUMN_NAME_AB_RAW_ID"
-            } else {
-                pksAsString
-            }})
+            "$COLUMN_NAME_AB_RAW_ID"
+        } else {
+            pksAsString
+        }})
             """
             .trimIndent()
             .andLog()
@@ -338,17 +399,17 @@ class ClickhouseSqlGenerator(
     private fun columnsAndTypes(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping,
-        pks: List<String>,
+        nonNullableColumns: List<String>,
     ): String {
         return stream.schema
             .asColumns()
             .map { (fieldName, type) ->
                 val columnName = columnNameMapping[fieldName]!!
                 val typeName = type.type.toDialectType(clickhouseConfiguration.enableJson)
-                "`$columnName` ${if (pks.contains(columnName))
-                    "$typeName" 
-                else 
-                        "Nullable($typeName)"
+                "`$columnName` ${if (nonNullableColumns.contains(columnName))
+                    "$typeName"
+                else
+                    "Nullable($typeName)"
                 }"
             }
             .joinToString(",\n")
@@ -360,10 +421,10 @@ class ClickhouseSqlGenerator(
                 .append("ALTER TABLE `${tableName.namespace}`.`${tableName.name}`")
                 .appendLine()
         alterationSummary.added.forEach { (columnName, columnType) ->
-            builder.append(" ADD COLUMN `$columnName` ${columnType.sqlNullable()},")
+            builder.append(" ADD COLUMN `$columnName` $columnType,")
         }
         alterationSummary.modified.forEach { (columnName, columnType) ->
-            builder.append(" MODIFY COLUMN `$columnName` ${columnType.sqlNullable()},")
+            builder.append(" MODIFY COLUMN `$columnName` $columnType,")
         }
         alterationSummary.deleted.forEach { columnName ->
             builder.append(" DROP COLUMN `$columnName`,")
@@ -372,13 +433,21 @@ class ClickhouseSqlGenerator(
         return builder.dropLast(1).toString().andLog()
     }
 
-    private fun String.sqlNullable(): String = "Nullable($this)"
-
     companion object {
         const val DATETIME_WITH_PRECISION = "DateTime64(3)"
-        const val DECIMAL_WITH_PRECISION_AND_SCALE = "DECIMAL128(9)"
+        const val DECIMAL_WITH_PRECISION_AND_SCALE = "Decimal(38, 9)"
+
+        private val VALID_VERSION_COLUMN_TYPES =
+            setOf(
+                IntegerType::class,
+                DateType::class,
+                TimestampTypeWithTimezone::class,
+                TimestampTypeWithoutTimezone::class,
+            )
     }
 }
+
+fun String.sqlNullable(): String = "Nullable($this)"
 
 fun AirbyteType.toDialectType(enableJson: Boolean): String =
     when (this) {

@@ -38,7 +38,12 @@ Refer `https://docs.appfigures.com/api/reference/v2/authentication` for more det
   <summary>Expand to review</summary>
 
 | Version | Date | Pull Request | Subject |
-| ------------------ | ------------ | -- | ---------------- |
+|---------| ----------- | -- | ---------------- |
+| 0.0.29 | 2025-10-21 | [68356](https://github.com/airbytehq/airbyte/pull/68356) | Update dependencies |
+| 0.0.28 | 2025-10-14 | [67998](https://github.com/airbytehq/airbyte/pull/67998) | Update dependencies |
+| 0.0.27 | 2025-10-07 | [67168](https://github.com/airbytehq/airbyte/pull/67168) | Update dependencies |
+| 0.0.26 | 2025-09-30 | [66278](https://github.com/airbytehq/airbyte/pull/66278) | Update dependencies |
+| 0.0.25 | 2025-09-05 | [65966](https://github.com/airbytehq/airbyte/pull/65966) | Update to CDK v7.0.0 |
 | 0.0.24 | 2025-08-09 | [64440](https://github.com/airbytehq/airbyte/pull/64440) | Update dependencies |
 | 0.0.23 | 2025-07-12 | [60615](https://github.com/airbytehq/airbyte/pull/60615) | Update dependencies |
 | 0.0.22 | 2025-05-10 | [59310](https://github.com/airbytehq/airbyte/pull/59310) | Update dependencies |

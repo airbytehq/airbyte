@@ -12,6 +12,8 @@ import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.command.ValidatedJsonUtils
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.config.DataChannelFormat
+import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.message.Meta
@@ -48,7 +50,25 @@ class ClickhouseDirectLoadWriterWithJson :
         SchematizedNestedValueBehavior.PASS_THROUGH,
         false,
     ) {
+    /**
+     * The way clickhouse handle json makes this test unfit JSON keeps a schema of the JSONs
+     * inserted. If a previous row has a JSON with a column A, It is expected that the subsequent
+     * row, will have the column A. This test includes test case for schemaless type which aren't
+     * behaving like the other warehouses
+     */
+    @Disabled("Unfit for clickhouse with Json") override fun testContainerTypes() {}
+}
 
+class ClickhouseDirectLoadWriterWithJsonProto :
+    ClickhouseAcceptanceTest(
+        Utils.getConfigPath("valid_connection.json"),
+        SchematizedNestedValueBehavior.PASS_THROUGH,
+        false,
+        isStreamSchemaRetroactiveForUnknownTypeToString = false,
+        dataChannelFormat = DataChannelFormat.PROTOBUF,
+        dataChannelMedium = DataChannelMedium.SOCKET,
+        unknownTypesBehavior = UnknownTypesBehavior.NULL,
+    ) {
     /**
      * The way clickhouse handle json makes this test unfit JSON keeps a schema of the JSONs
      * inserted. If a previous row has a JSON with a column A, It is expected that the subsequent
@@ -63,6 +83,17 @@ class ClickhouseDirectLoadWriterWithoutJson :
         Utils.getConfigPath("valid_connection_no_json.json"),
         SchematizedNestedValueBehavior.STRINGIFY,
         true,
+    )
+
+class ClickhouseDirectLoadWriterWithoutJsonProto :
+    ClickhouseAcceptanceTest(
+        Utils.getConfigPath("valid_connection_no_json.json"),
+        SchematizedNestedValueBehavior.STRINGIFY,
+        true,
+        isStreamSchemaRetroactiveForUnknownTypeToString = false,
+        dataChannelFormat = DataChannelFormat.PROTOBUF,
+        dataChannelMedium = DataChannelMedium.SOCKET,
+        unknownTypesBehavior = UnknownTypesBehavior.NULL,
     )
 
 @Disabled("Requires local bastion and CH instance to pass")
@@ -81,7 +112,11 @@ class ClickhouseDirectLoadWriterWithoutJsonSshTunnel :
 abstract class ClickhouseAcceptanceTest(
     configPath: Path,
     schematizedObjectBehavior: SchematizedNestedValueBehavior,
-    stringifySchemalessObjects: Boolean
+    stringifySchemalessObjects: Boolean,
+    unknownTypesBehavior: UnknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
+    isStreamSchemaRetroactiveForUnknownTypeToString: Boolean = true,
+    dataChannelFormat: DataChannelFormat = DataChannelFormat.JSONL,
+    dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
 ) :
     BasicFunctionalityIntegrationTest(
         configContents = Files.readString(configPath),
@@ -112,11 +147,14 @@ abstract class ClickhouseAcceptanceTest(
                 numberCanBeLarge = false,
                 nestedFloatLosesPrecision = false,
             ),
-        unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
+        unknownTypesBehavior = unknownTypesBehavior,
+        isStreamSchemaRetroactiveForUnknownTypeToString =
+            isStreamSchemaRetroactiveForUnknownTypeToString,
         nullEqualsUnset = true,
         configUpdater = ClickhouseConfigUpdater(),
         dedupChangeUsesDefault = true,
-        testSpeedModeStatsEmission = false,
+        dataChannelFormat = dataChannelFormat,
+        dataChannelMedium = dataChannelMedium
     ) {
     companion object {
         @JvmStatic

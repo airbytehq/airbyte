@@ -15,9 +15,9 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.FieldType
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.message.Meta
-import io.airbyte.cdk.load.orchestration.db.ColumnNameMapping
-import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
+import io.airbyte.cdk.load.table.ColumnNameMapping
+import io.airbyte.cdk.load.table.TableName
 import io.airbyte.integrations.destination.clickhouse.config.ClickhouseFinalTableNameGenerator
 import io.airbyte.integrations.destination.clickhouse.model.AlterationSummary
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration
@@ -80,12 +80,14 @@ class ClickhouseAirbyteClientTest {
 
     private fun getMockColumn(
         columnName: String,
-        columnType: ClickHouseDataType
+        columnType: ClickHouseDataType,
+        isNullable: Boolean = false,
     ): ClickHouseColumn {
         val mColumn = mockk<ClickHouseColumn>()
 
         every { mColumn.columnName } returns columnName
         every { mColumn.dataType } returns columnType
+        every { mColumn.isNullable } returns isNullable
 
         return mColumn
     }
@@ -94,10 +96,18 @@ class ClickhouseAirbyteClientTest {
     fun `test no changes`() {
         val tableColumns =
             listOf(
-                getMockColumn(columnName = COL1, columnType = ClickHouseDataType.String),
-                getMockColumn(columnName = COL2, columnType = ClickHouseDataType.Int32)
+                getMockColumn(
+                    columnName = COL1,
+                    columnType = ClickHouseDataType.String,
+                    isNullable = true
+                ),
+                getMockColumn(
+                    columnName = COL2,
+                    columnType = ClickHouseDataType.Int32,
+                    isNullable = true
+                )
             )
-        val catalogColumns = mapOf(COL1 to STRING_TYPE, COL2 to INT_TYPE)
+        val catalogColumns = mapOf(COL1 to "Nullable($STRING_TYPE)", COL2 to "Nullable($INT_TYPE)")
         val expected =
             AlterationSummary(
                 added = emptyMap(),
@@ -143,14 +153,23 @@ class ClickhouseAirbyteClientTest {
     fun `test modified columns`() {
         val tableColumns =
             listOf(
-                getMockColumn(columnName = COL1, columnType = ClickHouseDataType.String),
-                getMockColumn(columnName = COL2, columnType = ClickHouseDataType.Int32)
+                getMockColumn(
+                    columnName = COL1,
+                    columnType = ClickHouseDataType.String,
+                    isNullable = true
+                ),
+                getMockColumn(
+                    columnName = COL2,
+                    columnType = ClickHouseDataType.Int32,
+                    isNullable = true
+                )
             )
-        val catalogColumns = mapOf(COL1 to STRING_TYPE, COL2 to STRING_TYPE)
+        val catalogColumns =
+            mapOf(COL1 to "Nullable($STRING_TYPE)", COL2 to "Nullable($STRING_TYPE)")
         val expected =
             AlterationSummary(
                 added = emptyMap(), // No added columns
-                modified = mapOf(COL2 to STRING_TYPE),
+                modified = mapOf(COL2 to STRING_TYPE.sqlNullable()),
                 deleted = emptySet(),
                 hasDedupChange = false,
             )
@@ -168,8 +187,14 @@ class ClickhouseAirbyteClientTest {
     @Test
     fun `test deleted columns`() {
         val tableColumns =
-            listOf(getMockColumn(columnName = COL1, columnType = ClickHouseDataType.String))
-        val catalogColumns = mapOf(COL1 to STRING_TYPE)
+            listOf(
+                getMockColumn(
+                    columnName = COL1,
+                    columnType = ClickHouseDataType.String,
+                    isNullable = true
+                )
+            )
+        val catalogColumns = mapOf(COL1 to "Nullable($STRING_TYPE)")
         val expected =
             AlterationSummary(
                 added = emptyMap(),
@@ -256,11 +281,17 @@ class ClickhouseAirbyteClientTest {
                 getMockColumn(columnName = COL3, columnType = ClickHouseDataType.Int32)
             )
         val catalogColumns =
-            mapOf(COL1 to STRING_TYPE, COL2 to STRING_TYPE, COL3 to STRING_TYPE, COL4 to FLOAT_TYPE)
+            mapOf(
+                COL1 to "Nullable($STRING_TYPE)",
+                COL2 to "Nullable($STRING_TYPE)",
+                COL3 to "Nullable($STRING_TYPE)",
+                COL4 to "Nullable($FLOAT_TYPE)"
+            )
         val expected =
             AlterationSummary( // Added col2 and col4, modified col3
-                added = mapOf(COL2 to STRING_TYPE, COL4 to FLOAT_TYPE),
-                modified = mapOf(COL3 to STRING_TYPE),
+                added = mapOf(COL2 to "Nullable($STRING_TYPE)", COL4 to "Nullable($FLOAT_TYPE)"),
+                modified =
+                    mapOf(COL1 to "Nullable($STRING_TYPE)", COL3 to "Nullable($STRING_TYPE)"),
                 deleted = emptySet(),
                 hasDedupChange = false,
             )
@@ -299,14 +330,22 @@ class ClickhouseAirbyteClientTest {
 
         val tableColumns3 =
             listOf(
-                getMockColumn(columnName = COL1, columnType = ClickHouseDataType.String),
-                getMockColumn(columnName = COL3, columnType = ClickHouseDataType.Int32)
+                getMockColumn(
+                    columnName = COL1,
+                    columnType = ClickHouseDataType.String,
+                    isNullable = true
+                ),
+                getMockColumn(
+                    columnName = COL3,
+                    columnType = ClickHouseDataType.Int32,
+                    isNullable = true
+                )
             )
         val catalogColumns3 = mapOf(COL1 to STRING_TYPE, COL2 to STRING_TYPE, COL3 to INT_TYPE)
         val expected3 =
             AlterationSummary( // Added col2
                 added = mapOf(COL2 to STRING_TYPE),
-                modified = emptyMap(),
+                modified = mapOf(COL1 to STRING_TYPE, COL3 to INT_TYPE),
                 deleted = emptySet(),
                 hasDedupChange = false,
             )
@@ -322,20 +361,32 @@ class ClickhouseAirbyteClientTest {
 
         val tableColumns4 =
             listOf(
-                getMockColumn(columnName = "col1", columnType = ClickHouseDataType.String),
-                getMockColumn(columnName = COL3, columnType = ClickHouseDataType.Int32),
-                getMockColumn(columnName = COL5, columnType = ClickHouseDataType.DateTime64)
+                getMockColumn(
+                    columnName = "col1",
+                    columnType = ClickHouseDataType.String,
+                    isNullable = true
+                ),
+                getMockColumn(
+                    columnName = COL3,
+                    columnType = ClickHouseDataType.Int32,
+                    isNullable = true
+                ),
+                getMockColumn(
+                    columnName = COL5,
+                    columnType = ClickHouseDataType.DateTime64,
+                    isNullable = true
+                )
             )
         val catalogColumns4 =
             mapOf(
-                COL1 to STRING_TYPE,
-                COL2 to STRING_TYPE,
-                COL3 to INT_TYPE,
-                COL5 to "DateTime64(3)"
+                COL1 to "Nullable($STRING_TYPE)",
+                COL2 to "Nullable($STRING_TYPE)",
+                COL3 to "Nullable($INT_TYPE)",
+                COL5 to "Nullable(DateTime64(3))"
             )
         val expected4 =
             AlterationSummary( // Added col2
-                added = mapOf(COL2 to STRING_TYPE),
+                added = mapOf(COL2 to STRING_TYPE.sqlNullable()),
                 modified = emptyMap(),
                 deleted = emptySet(),
                 hasDedupChange = false,
@@ -531,9 +582,9 @@ class ClickhouseAirbyteClientTest {
 
         val expected =
             mapOf(
-                "field_1" to "String",
+                "field_1" to "Nullable(String)",
             )
-        val actual = clickhouseAirbyteClient.getAirbyteSchemaWithClickhouseType(stream)
+        val actual = clickhouseAirbyteClient.getAirbyteSchemaWithClickhouseType(stream, listOf())
         Assertions.assertEquals(expected, actual)
     }
 

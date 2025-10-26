@@ -38,8 +38,8 @@ Using Permission Sets, you should grant this user read access to the data you wa
 -  On the top right of the screen, click the gear icon and then click **Setup**.
 -  In the left navigation bar, under Administration, click **Users** > **Users**. Create a new User, entering details for the user's first name, last name, alias, and email. Filling in the email field will auto-populate the username field and nickname.
       - Leave `role` unspecified
-      - Select `Salesforce Platform` for the User License
-      - Select `Standard Platform User` for Profile.
+      - Select `Salesforce` for the User License
+      - Select `Standard User` for Profile.
       - Decide whether to generate a new password and notify the user.
       - Select `save`
 #### 2. Create a new Permission Set:
@@ -53,6 +53,11 @@ Using Permission Sets, you should grant this user read access to the data you wa
    - Select “Edit” and check the "Read" permission and uncheck all other permissions (Create, Edit, Delete, etc.).
    - Click `Save`
    - Continue to add read permissions for any objects you want Airbyte to have access to.
+- To grant access to uninstalled connected apps, you need to enable additional permission.
+   - Click "System Permissions"
+   - Select “Edit”
+   - If [API Access Control](https://help.salesforce.com/s/articleView?id=xcloud.security_api_access_control_about.htm&language=en_US&type=5) is enabled, need to check the "Use Any API Client" permission. If API Access Control isn't enabled, need to check “Approve Uninstalled Connected Apps” permission.
+   - Click `Save`
 #### 3. Assign the Permission Set to the new User
 - From the Permission Sets page, click "Manage Assignments" next to the read-only permission set you just created.
 - Click "Add Assignments."
@@ -256,6 +261,10 @@ Now that you have set up the Salesforce source connector, check out the followin
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.7.15 | 2025-10-22 | [68166](https://github.com/airbytehq/airbyte/pull/68166) | Add `ActivityFieldHistory` to `UNSUPPORTED_FILTERING_STREAMS` to fix missing records|
+| 2.7.14 | 2025-10-21 | [68455](https://github.com/airbytehq/airbyte/pull/68455) | Update dependencies |
+| 2.7.13 | 2025-10-14 | [60432](https://github.com/airbytehq/airbyte/pull/60432) | Update dependencies |
+| 2.7.12 | 2025-09-10 | [66136](https://github.com/airbytehq/airbyte/pull/66136) | Update to CDK v7 |
 | 2.7.11 | 2025-05-14 | [60271](https://github.com/airbytehq/airbyte/pull/60271) | Define suggested streams |
 | 2.7.10 | 2025-05-10 | [60100](https://github.com/airbytehq/airbyte/pull/60100) | Update dependencies |
 | 2.7.9 | 2025-05-04 | [59644](https://github.com/airbytehq/airbyte/pull/59644) | Update dependencies |
@@ -273,7 +282,7 @@ Now that you have set up the Salesforce source connector, check out the followin
 | 2.6.5-rc.1 | 2025-02-18 | [53229](https://github.com/airbytehq/airbyte/pull/53229) | Upgrade to API v62.0                                                                                                                                                   |
 | 2.6.4      | 2025-01-11 | [48635](https://github.com/airbytehq/airbyte/pull/48635) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
 | 2.6.3      | 2024-11-05 | [46835](https://github.com/airbytehq/airbyte/pull/46835) | Update dependencies                                                                                                                                                    |
-| 2.6.2      | 2024-10-10 | [](https://github.com/airbytehq/airbyte/pull/) | Bump minimum CDK to 5.10.2                                                                                                                                             |
+| 2.6.2      | 2024-10-10 | [](https://github.com/airbytehq/airbyte/pull/)           | Bump minimum CDK to 5.10.2                                                                                                                                             |
 | 2.6.1      | 2024-10-05 | [46436](https://github.com/airbytehq/airbyte/pull/46436) | Update dependencies, including CDK fix in v5.10.2                                                                                                                      |
 | 2.6.0      | 2024-10-02 | [45678](https://github.com/airbytehq/airbyte/pull/45678) | Have bulk streams use CDK components                                                                                                                                   |
 | 2.5.34     | 2024-09-28 | [46187](https://github.com/airbytehq/airbyte/pull/46187) | Update dependencies                                                                                                                                                    |

@@ -1,4 +1,14 @@
 data:
+  resourceRequirements:
+    jobSpecific:
+      - jobType: check_connection
+        resourceRequirements:
+          memory_limit: 4096Mi
+          memory_request: 4096Mi
+      - jobType: discover_schema
+        resourceRequirements:
+          memory_limit: 4096Mi
+          memory_request: 4096Mi
   ab_internal:
     ql: 200
     sl: 300
@@ -7,7 +17,7 @@ data:
   connectorSubtype: file
   connectorType: source
   definitionId: 31e3242f-dee7-4cdc-a4b8-8e06c5458517
-  dockerImageTag: 1.8.2
+  dockerImageTag: 1.8.7
   dockerRepository: airbyte/source-sftp-bulk
   documentationUrl: https://docs.airbyte.com/integrations/sources/sftp-bulk
   githubIssueLabel: source-sftp-bulk

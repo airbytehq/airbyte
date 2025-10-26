@@ -89,6 +89,13 @@ The connector is restricted by normal Sendgrid [requests limitation](https://doc
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                           |
 |:--------|:-----------| :------------------------------------------------------- |:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.3.17 | 2025-10-22 | [68591](https://github.com/airbytehq/airbyte/pull/68591) | Add `suggestedStreams` |
+| 1.3.16 | 2025-10-21 | [68410](https://github.com/airbytehq/airbyte/pull/68410) | Update dependencies |
+| 1.3.15 | 2025-10-14 | [67931](https://github.com/airbytehq/airbyte/pull/67931) | Update dependencies |
+| 1.3.14 | 2025-10-07 | [67227](https://github.com/airbytehq/airbyte/pull/67227) | Update dependencies |
+| 1.3.13 | 2025-09-30 | [66871](https://github.com/airbytehq/airbyte/pull/66871) | Update dependencies |
+| 1.3.12 | 2025-09-23 | [62286](https://github.com/airbytehq/airbyte/pull/62286) | Update dependencies |
+| 1.3.11 | 2025-09-11 | [66078](https://github.com/airbytehq/airbyte/pull/66078) | Update to CDK v7 |
 | 1.3.10 | 2025-06-21 | [61826](https://github.com/airbytehq/airbyte/pull/61826) | Update dependencies |
 | 1.3.9 | 2025-06-14 | [61314](https://github.com/airbytehq/airbyte/pull/61314) | Update dependencies |
 | 1.3.8 | 2025-05-25 | [60199](https://github.com/airbytehq/airbyte/pull/60199) | Update dependencies |

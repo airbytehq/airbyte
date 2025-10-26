@@ -321,7 +321,7 @@ data object TimeAccessor : JdbcAccessor<LocalTime> {
     override fun get(
         rs: ResultSet,
         colIdx: Int,
-    ): LocalTime? = rs.getTime(colIdx)?.takeUnless { rs.wasNull() }?.toLocalTime()
+    ): LocalTime? = rs.getObject(colIdx, LocalTime::class.java)?.takeUnless { rs.wasNull() }
 
     override fun set(
         stmt: PreparedStatement,

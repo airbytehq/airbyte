@@ -19,13 +19,23 @@ All sync modes are supported.
 | Incremental - Append + Deduped | Yes                  | Leverages `ReplacingMergeTree` |
 | Namespaces                     | Yes                  |                                |
 
+### Deduplication
+
+For optimal deduplication in Incremental - Append + Deduped sync mode, use a cursor column with one of these types:
+
+- Integer types (Int64, etc.)
+- Date
+- Timestamp (DateTime64)
+
+If you use a different cursor column type (such as String), the connector will fall back to using the `_airbyte_extracted_at` timestamp for deduplication ordering. This fallback may not accurately reflect your source data's natural ordering, and you'll see a warning in the sync logs.
+
 ### Output Schema
 
 Each stream will be output into its own table in ClickHouse in either the configured default database (`default`) or a database corresponding to the specified namespace on the stream.
 
 Airbyte types will be converted to ClickHouse types as follows:
 
-- Decimal types are NUMBER128(9) — 9 digit precision
+- Decimal types are Decimal(38, 9) — 38 digit precision with 9 decimal places
 - Timestamp are DateTime64(3) — millisecond precision
 - Object types are JSON **if JSON is enabled in the actor config**; otherwise they are converted to String
 - Integers are Int64
@@ -94,6 +104,15 @@ You can also use a pre-existing user but we highly recommend creating a dedicate
 
 | Version    | Date       | Pull Request                                               | Subject                                                                        |
 |:-----------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 2.1.7      | 2025-10-21 | [67153](https://github.com/airbytehq/airbyte/pull/67153)   | Implement new proto schema implementation |
+| 2.1.6      | 2025-10-16 | [68144](https://github.com/airbytehq/airbyte/pull/68144)   | Implement TableOperationsSuite component tests.                                |
+| 2.1.5      | 2025-10-09 | [67598](https://github.com/airbytehq/airbyte/pull/67598)   | Improve handling of heavily interleaved streams.                               |
+| 2.1.4      | 2025-09-29 | [66743](https://github.com/airbytehq/airbyte/pull/66743)   | Activate speed mode.                                                           |
+| 2.1.3      | 2025-09-29 | [66743](https://github.com/airbytehq/airbyte/pull/66743)   | Promoting release candidate 2.1.3-rc.1 to a main version.                      |
+| 2.1.3-rc.1 | 2025-09-25 | [66699](https://github.com/airbytehq/airbyte/pull/66699)   | Prepare for speed mode. Fix interleaved stream state handling.                 |
+| 2.1.2      | 2025-09-09 | [66143](https://github.com/airbytehq/airbyte/pull/66143)   | Improve schema propagation.                                                    |
+| 2.1.1      | 2025-09-09 | [66134](https://github.com/airbytehq/airbyte/pull/66134)   | Update the type we are setting for the number type to `Decimal(38, 9)`.        |
+| 2.1.0      | 2025-09-03 | [65929](https://github.com/airbytehq/airbyte/pull/65929)   | Promoting release candidate 2.1.0-rc.2 to a main version.                      |
 | 2.1.0-rc.2 | 2025-08-29 | [\#65626](https://github.com/airbytehq/airbyte/pull/65626) | Pick up CDK fix for rare array OOB exception.                                  |
 | 2.1.0-rc.1 | 2025-08-21 | [\#65144](https://github.com/airbytehq/airbyte/pull/65144) | Migrate to dataflow model.                                                     |
 | 2.0.13     | 2025-08-20 | [\#65125](https://github.com/airbytehq/airbyte/pull/65125) | Update docs permissioning advice.                                              |

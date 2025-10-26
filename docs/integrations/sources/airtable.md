@@ -137,6 +137,8 @@ See information about rate limits [here](https://airtable.com/developers/web/api
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                 |
 |:-----------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------|
+| 4.6.12 | 2025-10-14 | [65633](https://github.com/airbytehq/airbyte/pull/65633) | Update dependencies |
+| 4.6.11 | 2025-09-08 | [65991](https://github.com/airbytehq/airbyte/pull/65991) | Update to CDK v7.0.0 |
 | 4.6.10 | 2025-08-23 | [65352](https://github.com/airbytehq/airbyte/pull/65352) | Update dependencies |
 | 4.6.9 | 2025-08-09 | [64651](https://github.com/airbytehq/airbyte/pull/64651) | Update dependencies |
 | 4.6.8 | 2025-08-02 | [64436](https://github.com/airbytehq/airbyte/pull/64436) | Update dependencies |

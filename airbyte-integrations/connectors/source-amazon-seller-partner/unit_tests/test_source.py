@@ -9,8 +9,8 @@ from datetime import datetime, timedelta
 import pytest
 from freezegun import freeze_time
 
-from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
-from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, Status, SyncMode
+from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 
 from .conftest import get_source
 
@@ -76,6 +76,7 @@ def connector_config_without_start_date():
     }
 
 
+@freeze_time("2017-02-25T00:00:00Z")
 def test_check_connection_with_orders_stop_iteration(requests_mock, connector_config_with_report_options):
     requests_mock.register_uri(
         "POST",
@@ -91,9 +92,12 @@ def test_check_connection_with_orders_stop_iteration(requests_mock, connector_co
     )
     config = dict(connector_config_with_report_options)
     source = get_source(config, config_path=None)
-    assert source.check_connection(logger, source._config) == (True, None)
+    result = source.check(logger, source._config)
+    assert result.status == Status.SUCCEEDED
+    assert result.message is None
 
 
+@freeze_time("2017-02-25T00:00:00Z")
 def test_check_connection_with_orders(requests_mock, connector_config_with_report_options):
     requests_mock.register_uri(
         "POST",
@@ -108,7 +112,9 @@ def test_check_connection_with_orders(requests_mock, connector_config_with_repor
         json={"payload": {"Orders": [{"LastUpdateDate": "2024-06-02T00:00:00Z"}]}},
     )
     source = get_source(connector_config_with_report_options)
-    assert source.check_connection(logger, source._config) == (True, None)
+    result = source.check(logger, source._config)
+    assert result.status == Status.SUCCEEDED
+    assert result.message is None
 
 
 # TODO: Renable this test once this type of validation is supported
@@ -130,7 +136,7 @@ def test_check_connection_with_orders(requests_mock, connector_config_with_repor
 
 def test_streams(connector_config_without_start_date):
     for stream in get_source(connector_config_without_start_date).streams(connector_config_without_start_date):
-        assert isinstance(stream, Stream)
+        assert isinstance(stream, DefaultStream)
 
 
 def test_streams_count(connector_config_without_start_date, monkeypatch):
@@ -375,7 +381,7 @@ def test_stream_slice_dates(config, expected_start_base, expected_end_base, stre
         expected_end = expected_end_base
 
     # Generate and verify stream slices
-    slices = list(stream.stream_slices(sync_mode=SyncMode.full_refresh, stream_state={}))
+    slices = list(map(lambda partition: partition.to_slice(), stream.generate_partitions()))
     assert len(slices) > 0, f"No slices generated for stream '{stream_name}'"
     first_slice = slices[0]
     last_slice = slices[-1]

@@ -65,7 +65,8 @@ class HubSpotOperationRepository(
                         )
                 ),
                 DynamicOperationProvider(
-                    objectsSupplier = StaticDestinationObjectProvider(listOf("COMPANY", "DEAL")),
+                    objectsSupplier =
+                        StaticDestinationObjectProvider(listOf("COMPANY", "DEAL", "PRODUCT")),
                     operationAssembler =
                         DestinationOperationAssembler(
                             propertiesPath = PROPERTIES_PATH,

@@ -28,6 +28,11 @@ Docs:https://open.fda.gov/apis/
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.38 | 2025-10-21 | [68287](https://github.com/airbytehq/airbyte/pull/68287) | Update dependencies |
+| 0.0.37 | 2025-10-14 | [67747](https://github.com/airbytehq/airbyte/pull/67747) | Update dependencies |
+| 0.0.36 | 2025-10-07 | [67334](https://github.com/airbytehq/airbyte/pull/67334) | Update dependencies |
+| 0.0.35 | 2025-09-30 | [66385](https://github.com/airbytehq/airbyte/pull/66385) | Update dependencies |
+| 0.0.34 | 2025-09-09 | [65788](https://github.com/airbytehq/airbyte/pull/65788) | Update dependencies |
 | 0.0.33 | 2025-08-23 | [65231](https://github.com/airbytehq/airbyte/pull/65231) | Update dependencies |
 | 0.0.32 | 2025-08-09 | [64703](https://github.com/airbytehq/airbyte/pull/64703) | Update dependencies |
 | 0.0.31 | 2025-08-02 | [64180](https://github.com/airbytehq/airbyte/pull/64180) | Update dependencies |

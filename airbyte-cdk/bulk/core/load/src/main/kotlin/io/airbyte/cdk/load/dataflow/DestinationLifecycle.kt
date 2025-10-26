@@ -5,15 +5,14 @@
 package io.airbyte.cdk.load.dataflow
 
 import io.airbyte.cdk.load.command.DestinationCatalog
-import io.airbyte.cdk.load.dataflow.config.MemoryAndParallelismConfig
 import io.airbyte.cdk.load.dataflow.finalization.StreamCompletionTracker
-import io.airbyte.cdk.load.dataflow.pipeline.DataFlowPipeline
+import io.airbyte.cdk.load.dataflow.pipeline.PipelineRunner
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import io.github.oshai.kotlinlogging.KotlinLogging
+import jakarta.inject.Named
 import jakarta.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -23,9 +22,10 @@ import kotlinx.coroutines.runBlocking
 class DestinationLifecycle(
     private val destinationInitializer: DestinationWriter,
     private val destinationCatalog: DestinationCatalog,
-    private val pipeline: DataFlowPipeline,
+    private val pipeline: PipelineRunner,
     private val completionTracker: StreamCompletionTracker,
-    private val memoryAndParallelismConfig: MemoryAndParallelismConfig,
+    @Named("streamInitDispatcher") private val streamInitDispatcher: CoroutineDispatcher,
+    @Named("streamFinalizeDispatcher") private val streamFinalizeDispatcher: CoroutineDispatcher,
 ) {
     private val log = KotlinLogging.logger {}
 
@@ -56,16 +56,11 @@ class DestinationLifecycle(
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun initializeIndividualStreams(): List<StreamLoader> {
-        val initDispatcher: CoroutineDispatcher =
-            Dispatchers.Default.limitedParallelism(
-                memoryAndParallelismConfig.maxConcurrentLifecycleOperations
-            )
-
         return runBlocking {
             val result =
                 destinationCatalog.streams
                     .map {
-                        async(initDispatcher) {
+                        async(streamInitDispatcher) {
                             log.info {
                                 "Starting stream loader for stream ${it.mappedDescriptor.namespace}:${it.mappedDescriptor.name}"
                             }
@@ -91,15 +86,10 @@ class DestinationLifecycle(
             }
         }
 
-        val finalizeDispatcher: CoroutineDispatcher =
-            Dispatchers.Default.limitedParallelism(
-                memoryAndParallelismConfig.maxConcurrentLifecycleOperations
-            )
-
         runBlocking {
             streamLoaders
                 .map {
-                    async(finalizeDispatcher) {
+                    async(streamFinalizeDispatcher) {
                         log.info {
                             "Finalizing stream ${it.stream.mappedDescriptor.namespace}:${it.stream.mappedDescriptor.name}"
                         }

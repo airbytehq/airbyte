@@ -17,7 +17,6 @@ from .models import CustomerModel
 from .streams import (
     CustomerClient,
 )
-from .utils import logger
 
 
 class SourceGoogleAds(YamlDeclarativeSource):
@@ -91,15 +90,5 @@ class SourceGoogleAds(YamlDeclarativeSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         config = self._validate_and_transform(config)
-        google_api = GoogleAds(credentials=self.get_credentials(config))
-
-        customers = self.get_customers(google_api, config)
-        logger.info(f"Found {len(customers)} customers: {[customer.id for customer in customers]}")
-
-        non_manager_accounts = [customer for customer in customers if not customer.is_manager_account]
-        default_config = dict(api=google_api, customers=customers)
-        incremental_config = self.get_incremental_stream_config(google_api, config, customers)
-        non_manager_incremental_config = self.get_incremental_stream_config(google_api, config, non_manager_accounts)
-
         streams = super().streams(config=config)
         return streams
