@@ -47,6 +47,7 @@ class PostgresDirectLoadSqlGenerator(
     companion object {
         private const val CURSOR_INDEX_PREFIX = "idx_cursor_"
         private const val PRIMARY_KEY_INDEX_PREFIX = "idx_pk_"
+        private const val DEDUPED_TABLE_ALIAS = "deduped_source"
         internal val DEFAULT_COLUMNS =
             listOf(
                 Column(
@@ -249,23 +250,61 @@ class PostgresDirectLoadSqlGenerator(
         val cursorTargetColumn = getCursorColumnName(importType.cursor, columnNameMapping)
         val allTargetColumns = getTargetColumnNames(columnNameMapping)
 
-        val selectDeduped = selectDeduped(primaryKeyTargetColumns, cursorTargetColumn, allTargetColumns, sourceTableName)
+        val selectDedupedQuery = selectDeduped(primaryKeyTargetColumns, cursorTargetColumn, allTargetColumns, sourceTableName)
 
         val cdcHardDeleteEnabled =  stream.schema.asColumns().containsKey(CDC_DELETED_AT_COLUMN) &&
             postgresConfiguration.cdcDeletionMode == CdcDeletionMode.HARD_DELETE
 
-        val cdcDeleteClause: String
+        val cdcDeleteQuery: String
         if (cdcHardDeleteEnabled) {
             val deleteStatement = cdcDelete(
-                "deduped_source",
+                DEDUPED_TABLE_ALIAS,
                 cursorTargetColumn,
                 targetTableName,
                 primaryKeyTargetColumns
             )
-            cdcDeleteClause = "deleted AS ( $deleteStatement ),"
+            cdcDeleteQuery = "deleted AS ( $deleteStatement ),"
         } else {
-            cdcDeleteClause = ""
+            cdcDeleteQuery = ""
         }
+
+        val updateExistingRowsQuery = updateExistingRows(
+            dedupTableAlias = DEDUPED_TABLE_ALIAS,
+            targetTableName = targetTableName,
+            allTargetColumns = allTargetColumns,
+            primaryKeyTargetColumns = primaryKeyTargetColumns,
+            cursorTargetColumn = cursorTargetColumn,
+            cdcHardDeleteEnabled = cdcHardDeleteEnabled
+        )
+    }
+
+    private fun updateExistingRows(dedupTableAlias: String,
+                                   targetTableName: TableName,
+                                   allTargetColumns: List<String>,
+                                   primaryKeyTargetColumns: Set<String>,
+                                   cursorTargetColumn: String?,
+                                   cdcHardDeleteEnabled: Boolean): String {
+        val primaryKeysMatches = primaryKeyTargetColumns.joinToString(" AND ") { pk ->
+            "${getFullyQualifiedName(targetTableName)}.$pk = $dedupTableAlias.$pk"
+        }
+
+        val cursorComparison = buildCursorComparison(cursorTargetColumn, targetTableName, dedupTableAlias)
+
+        val updateAssignments =
+            allTargetColumns.joinToString(",\n") { columnName ->
+                "$columnName = $dedupTableAlias.$columnName"
+            }
+
+        val skipCdcDeletedClause = if(cdcHardDeleteEnabled) "AND $dedupTableAlias.\"$CDC_DELETED_AT_COLUMN\" IS NULL" else ""
+        return """
+             UPDATE ${getFullyQualifiedName(targetTableName)}
+             SET 
+                $updateAssignments
+             FROM $dedupTableAlias
+                WHERE $primaryKeysMatches
+                    $skipCdcDeletedClause
+                    AND ($cursorComparison)
+        """.trimIndent()
     }
 
     private fun cdcDelete(
@@ -324,7 +363,7 @@ class PostgresDirectLoadSqlGenerator(
               SELECT *,
                 ROW_NUMBER() OVER (
                   PARTITION BY ${primaryKeyTargetColumns.joinToString( ", " )}
-                  ORDER BY $cursorOrderClause "$COLUMN_NAME_AB_EXTRACTED_AT" DESC
+                  ORDER BY $cursorOrderClause ${getExtractedAtColumnName()} DESC
                 ) AS row_number
               FROM ${getFullyQualifiedName(sourceTableName)}
             ) AS deduplicated
