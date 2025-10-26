@@ -286,6 +286,20 @@ class PostgresDirectLoadSqlGenerator(
             primaryKeyTargetColumns = primaryKeyTargetColumns,
             cdcHardDeleteEnabled = cdcHardDeleteEnabled
         )
+
+        return """
+            WITH $DEDUPED_TABLE_ALIAS AS (
+              $selectDedupedQuery
+            ),
+
+            $cdcDeleteQuery
+
+            updates AS (
+              $updateExistingRowsQuery
+            )
+
+            $insertNewRowsQuery
+            """.trimIndent().andLog()
     }
 
     private fun insertNewRows(
