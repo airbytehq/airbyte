@@ -172,6 +172,9 @@ class PostgresDirectLoadSqlGenerator(
     private fun getExtractedAtColumnName(): String =
         "\"$COLUMN_NAME_AB_EXTRACTED_AT\""
 
+    private fun getDeletedAtColumnName(): String =
+        "\"$CDC_DELETED_AT_COLUMN\""
+
     fun columnsAndTypes(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping
@@ -218,7 +221,6 @@ class PostgresDirectLoadSqlGenerator(
             """
             .trimIndent()
             .andLog()
-
     }
 
     private fun getTargetColumnNames(columnNameMapping: ColumnNameMapping): List<String> =
@@ -276,6 +278,44 @@ class PostgresDirectLoadSqlGenerator(
             cursorTargetColumn = cursorTargetColumn,
             cdcHardDeleteEnabled = cdcHardDeleteEnabled
         )
+
+        val insertNewRowsQuery = insertNewRows(
+            dedupTableAlias = "deduped_source",
+            targetTableName = targetTableName,
+            allTargetColumns = allTargetColumns,
+            primaryKeyTargetColumns = primaryKeyTargetColumns,
+            cdcHardDeleteEnabled = cdcHardDeleteEnabled
+        )
+    }
+
+    private fun insertNewRows(
+        dedupTableAlias: String,
+        targetTableName: TableName,
+        allTargetColumns: List<String>,
+        primaryKeyTargetColumns: Set<String>,
+        cdcHardDeleteEnabled: Boolean
+    ): String {
+        val pkConditions = primaryKeyTargetColumns.joinToString(" AND ") { pk ->
+            "${getFullyQualifiedName(targetTableName)}.$pk = $dedupTableAlias.$pk"
+        }
+
+        val skipCdcDeletedClause = if(cdcHardDeleteEnabled) "AND $dedupTableAlias.${getDeletedAtColumnName()} IS NULL" else ""
+
+        return """
+            INSERT INTO ${getFullyQualifiedName(targetTableName)} (
+              ${allTargetColumns.joinToString(",\n  ")}
+            )
+            SELECT
+              ${allTargetColumns.joinToString(",\n  ") }
+            FROM $dedupTableAlias
+            WHERE
+              NOT EXISTS (
+                SELECT 1
+                FROM ${getFullyQualifiedName(targetTableName)}
+                WHERE $pkConditions
+              )
+              $skipCdcDeletedClause
+        """.trimIndent()
     }
 
     private fun updateExistingRows(dedupTableAlias: String,
@@ -295,7 +335,7 @@ class PostgresDirectLoadSqlGenerator(
                 "$columnName = $dedupTableAlias.$columnName"
             }
 
-        val skipCdcDeletedClause = if(cdcHardDeleteEnabled) "AND $dedupTableAlias.\"$CDC_DELETED_AT_COLUMN\" IS NULL" else ""
+        val skipCdcDeletedClause = if(cdcHardDeleteEnabled) "AND $dedupTableAlias.${getDeletedAtColumnName()} IS NULL" else ""
         return """
              UPDATE ${getFullyQualifiedName(targetTableName)}
              SET 
@@ -324,7 +364,7 @@ class PostgresDirectLoadSqlGenerator(
             DELETE FROM ${getFullyQualifiedName(targetTableName)}
             USING $dedupTableAlias
             WHERE $primaryKeysMatchingCondition
-                AND $dedupTableAlias."$CDC_DELETED_AT_COLUMN" IS NOT NULL
+                AND $dedupTableAlias.${getDeletedAtColumnName()} IS NOT NULL
                 AND ($cursorComparison)
         """.trimIndent()
     }
