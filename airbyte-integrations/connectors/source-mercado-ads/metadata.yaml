@@ -35,7 +35,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: ada19dae-81e5-4241-8e64-a9b2680b1b35
-  dockerImageTag: 0.1.0
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-mercado-ads
   githubIssueLabel: source-mercado-ads
   icon: icon.svg
