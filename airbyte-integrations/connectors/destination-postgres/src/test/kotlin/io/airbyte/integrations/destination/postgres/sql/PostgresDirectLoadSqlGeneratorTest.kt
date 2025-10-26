@@ -25,6 +25,7 @@ import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TableName
+import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -34,10 +35,11 @@ import org.junit.jupiter.api.Test
 internal class PostgresDirectLoadSqlGeneratorTest {
 
     private lateinit var postgresDirectLoadSqlGenerator: PostgresDirectLoadSqlGenerator
+    private val postgresConfiguration: PostgresConfiguration = mockk()
 
     @BeforeEach
     fun setUp() {
-        postgresDirectLoadSqlGenerator = PostgresDirectLoadSqlGenerator()
+        postgresDirectLoadSqlGenerator = PostgresDirectLoadSqlGenerator(postgresConfiguration)
     }
 
     @Test
@@ -133,14 +135,14 @@ internal class PostgresDirectLoadSqlGeneratorTest {
 
     @Test
     fun testOverwriteTable() {
-        val sourceTableName = TableName(namespace = "sourceNamespace", name = "source")
-        val targetTableName = TableName(namespace = "targetNamespace", name = "target")
+        val sourceTableName = TableName(namespace = "namespace", name = "source")
+        val targetTableName = TableName(namespace = "namespace", name = "target")
         val sql = postgresDirectLoadSqlGenerator.overwriteTable(sourceTableName, targetTableName)
 
         val expected = """
             BEGIN TRANSACTION;
-            DROP TABLE IF EXISTS "targetNamespace"."target";
-            ALTER TABLE "sourceNamespace"."source" RENAME TO "targetNamespace"."target";
+            DROP TABLE IF EXISTS "namespace"."target";
+            ALTER TABLE "namespace"."source" RENAME TO "target";
             COMMIT;
         """.trimIndent()
 
@@ -253,13 +255,17 @@ internal class PostgresDirectLoadSqlGeneratorTest {
 
     @Test
     fun testColumnAndTypeToString() {
-        val notNullColumn = Column("column", "varchar", nullable = false)
-        assertEquals("\"column\" varchar NOT NULL", notNullColumn.toString())
+        with(postgresDirectLoadSqlGenerator) {
+            val column = Column("column", "varchar", nullable = false)
+            assertEquals("\"column\" varchar NOT NULL", column.toSQLString())
+        }
     }
 
     @Test
     fun testNullableColumnAndTypeToString() {
-        val nullableColumn = Column("column", "varchar", nullable = true)
-        assertEquals("\"column\" varchar", nullableColumn.toString())
+        with(postgresDirectLoadSqlGenerator) {
+            val nullableColumn = Column("column", "varchar", nullable = true)
+            assertEquals("\"column\" varchar", nullableColumn.toSQLString())
+        }
     }
 }
