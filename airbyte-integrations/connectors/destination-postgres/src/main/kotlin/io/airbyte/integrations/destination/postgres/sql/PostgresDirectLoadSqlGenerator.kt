@@ -37,7 +37,7 @@ internal const val COUNT_TOTAL_ALIAS = "total"
 private val log = KotlinLogging.logger {}
 
 @Singleton
-class PostgresDirectLoadSqlGenerator {
+class PostgresDirectLoadSqlGenerator(val postgresColumnUtils: PostgresColumnUtils) {
     companion object {
         internal val DEFAULT_COLUMNS =
             listOf(
@@ -80,7 +80,12 @@ class PostgresDirectLoadSqlGenerator {
         columnNameMapping: ColumnNameMapping,
         replace: Boolean
     ): String {
-        val columnDeclarations = columnsAndTypes(stream, columnNameMapping).joinToString(",\n")
+        val properties = when (val schema = stream.schema) {
+            is ObjectType -> schema.properties
+            is ObjectTypeWithEmptySchema -> emptyMap()
+            else -> emptyMap()
+        }
+        val columnDeclarations = postgresColumnUtils.columnsAndTypes(properties, columnNameMapping).joinToString(",\n")
         val dropTableIfExistsStatement = if (replace) "DROP TABLE IF EXISTS ${getFullyQualifiedName(tableName)};" else ""
         return """
             BEGIN TRANSACTION;
@@ -94,24 +99,6 @@ class PostgresDirectLoadSqlGenerator {
             .andLog()
     }
 
-    fun columnsAndTypes(
-        stream: DestinationStream,
-        columnNameMapping: ColumnNameMapping
-    ): List<Column> {
-        val targetColumns = stream.schema
-            .asColumns()
-            .map { (columnName, columnType) ->
-                val targetColumnName = columnNameMapping[columnName] ?: columnName
-                val typeName = columnType.type.toDialectType()
-                Column(
-                    columnName = targetColumnName,
-                    columnTypeName = typeName,
-                )
-            }
-            .toList()
-
-        return (DEFAULT_COLUMNS + targetColumns)
-    }
 
     fun overwriteTable(
         sourceTableName: TableName,
@@ -144,11 +131,7 @@ class PostgresDirectLoadSqlGenerator {
     }
 
     private fun getTargetColumnNames(columnNameMapping: ColumnNameMapping): List<String> =
-        getDefaultColumnNames() + columnNameMapping.map { (_, targetName) -> "\"${targetName}\"" }
-
-    //TODO: this is out of place, move to its own column class
-    fun getDefaultColumnNames(): List<String> =
-        DEFAULT_COLUMNS.map { "\"${it.columnName}\"" }
+        postgresColumnUtils.defaultColumns().map { "\"${it.columnName}\"" } + columnNameMapping.map { (_, targetName) -> "\"${targetName}\"" }
 
     @Suppress("UNUSED_PARAMETER")
     fun upsertTable(

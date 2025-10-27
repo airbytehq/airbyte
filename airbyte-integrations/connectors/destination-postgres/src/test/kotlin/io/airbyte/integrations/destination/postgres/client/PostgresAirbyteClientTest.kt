@@ -5,10 +5,14 @@
 package io.airbyte.integrations.destination.postgres.client
 
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.data.FieldType
+import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TableName
+import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import io.airbyte.integrations.destination.postgres.sql.Column
+import io.airbyte.integrations.destination.postgres.sql.PostgresColumnUtils
 import io.airbyte.integrations.destination.postgres.sql.PostgresDirectLoadSqlGenerator
 import io.mockk.Runs
 import io.mockk.every
@@ -19,6 +23,7 @@ import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.SQLException
 import java.sql.Statement
+import java.util.LinkedHashMap
 import javax.sql.DataSource
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -31,6 +36,8 @@ internal class PostgresAirbyteClientTest {
     private lateinit var client: PostgresAirbyteClient
     private lateinit var dataSource: DataSource
     private lateinit var sqlGenerator: PostgresDirectLoadSqlGenerator
+    private lateinit var postgresColumnUtils: PostgresColumnUtils
+    private lateinit var postgresConfiguration: PostgresConfiguration
 
     companion object {
         private const val MOCK_SQL_QUERY = "MOCK_SQL_QUERY"
@@ -40,7 +47,9 @@ internal class PostgresAirbyteClientTest {
     fun setup() {
         dataSource = mockk()
         sqlGenerator = mockk()
-        client = PostgresAirbyteClient(dataSource, sqlGenerator)
+        postgresColumnUtils = mockk()
+        postgresConfiguration = mockk()
+        client = PostgresAirbyteClient(dataSource, sqlGenerator, postgresColumnUtils, postgresConfiguration)
     }
 
     @Test
@@ -415,8 +424,8 @@ internal class PostgresAirbyteClientTest {
 
         every { dataSource.connection } returns connection
         every { sqlGenerator.getTableSchema(tableName) } returns MOCK_SQL_QUERY
-        every { sqlGenerator.getDefaultColumnNames() } returns
-            listOf(defaultColumnName)
+        every { postgresColumnUtils.defaultColumns() } returns
+            listOf(Column(defaultColumnName, "varchar"))
 
         val result = client.getColumnsFromDb(tableName)
 
@@ -432,13 +441,20 @@ internal class PostgresAirbyteClientTest {
     @Test
     fun testGetColumnsFromStream() {
         val defaultColumnName = "default_column_name"
-        every { sqlGenerator.getDefaultColumnNames() } returns
-            listOf(defaultColumnName)
+        every { postgresColumnUtils.defaultColumns() } returns
+            listOf(Column(defaultColumnName, "varchar", false))
+        every { postgresConfiguration.legacyRawTablesOnly } returns false
+
+        val properties = LinkedHashMap<String, FieldType>()
+        val objectType = mockk<ObjectType>()
+        every { objectType.properties } returns properties
 
         val stream = mockk<DestinationStream>()
+        every { stream.schema } returns objectType
+
         val columnNameMapping = mockk<ColumnNameMapping>(relaxed = true)
 
-        every { sqlGenerator.columnsAndTypes(stream, columnNameMapping) } returns
+        every { postgresColumnUtils.columnsAndTypes(properties, columnNameMapping) } returns
             listOf(
                 Column(defaultColumnName, "varchar", false),
                 Column("col1", "text", false)
@@ -452,6 +468,19 @@ internal class PostgresAirbyteClientTest {
             )
 
         assertEquals(expectedColumns, result)
+    }
+
+    @Test
+    fun testGetColumnsFromStreamRawTableMode() {
+        every { postgresConfiguration.legacyRawTablesOnly } returns true
+
+        val stream = mockk<DestinationStream>()
+        val columnNameMapping = mockk<ColumnNameMapping>(relaxed = true)
+
+        val result = client.getColumnsFromStream(stream, columnNameMapping)
+
+        // In raw table mode, there are no user columns to track
+        assertEquals(emptySet<Column>(), result)
     }
 
     @Test
