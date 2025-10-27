@@ -47,4 +47,22 @@ class StateStore(
     }
 
     fun hasStates(): Boolean = states.isNotEmpty()
+
+    /** Log some information about why state messages cannot be flushed. */
+    // implementation-wise, this is largely just mirroring getNextComplete(),
+    // except it logs things instead of actually doing anything.
+    fun logStateInfo() {
+        val message = StringBuilder("State diagnostic information:")
+        val key = states.firstKey()
+        message.append("\nFirst state key: $key")
+        if (key.id != stateSequence.get()) {
+            message.append("\nKey ID did not match state sequence ($stateSequence.get()")
+        } else if (!histogramStore.isComplete(key)) {
+            message.append(
+                "\nhistogram store says key is incomplete: ${histogramStore.whyIsStateIncomplete(key)}"
+            )
+        }
+        log.info { message }
+        return
+    }
 }
