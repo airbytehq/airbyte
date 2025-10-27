@@ -219,7 +219,7 @@ def test_get_customers(config, mocker, customer_status_filter, expected_ids, sen
 
     mock_config = {"customer_status_filter": customer_status_filter, "customer_ids": ["123", "456", "789"]}
 
-    source = SourceGoogleAds(config, None, None)
+    source = SourceGoogleAds(None, config, None)
 
     customers = source.get_customers(mock_google_api, mock_config)
 
