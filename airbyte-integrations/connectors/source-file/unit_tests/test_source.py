@@ -23,9 +23,7 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from airbyte_cdk.models import (
-    Type as MessageType,
-)
+from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.utils import AirbyteTracedException
 
 
@@ -175,8 +173,8 @@ def test_discover_dropbox_link(source, config_dropbox_link):
 
 def test_discover(source, config, client):
     catalog = source.discover(logger=logger, config=config)
-    catalog = asdict(AirbyteMessage(type=Type.CATALOG, catalog=catalog))
-    schemas = [stream["json_schema"] for stream in catalog["catalog"]["streams"]]
+    catalog = AirbyteMessage(type=Type.CATALOG, catalog=catalog)
+    schemas = [stream.json_schema for stream in catalog.catalog.streams]
     for schema in schemas:
         jsonschema.Draft7Validator.check_schema(schema)
 

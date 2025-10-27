@@ -3,7 +3,7 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "0.6.0"
+version = "0.7.0"
 name = "source-file"
 description = "Source implementation for File"
 authors = ["Airbyte <contact@airbyte.io>"]
@@ -20,10 +20,10 @@ python = "^3.10,<3.14"
 html5lib = "==1.1"
 beautifulsoup4 = "==4.11.1"
 openpyxl = "==3.1.0"
-google-cloud-storage = ">=2.18.0"
+google-cloud-storage = "==2.5.0"
 pandas = "2.2.3"
-numpy = ">=2.0.0"
-airbyte-cdk = {extras = ["file-based"], version = "^7.0.0"}
+numpy = "<2"
+airbyte-cdk = "^7.0.0"
 paramiko = "==2.11.0"
 xlrd = "==2.0.1"
 boto3 = ">=1.35.0"
