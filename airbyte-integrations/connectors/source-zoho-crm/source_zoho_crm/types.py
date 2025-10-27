@@ -111,7 +111,7 @@ class FieldMeta(FromDictMixin):
     data_type: str
     system_mandatory: bool
     display_label: str
-    pick_list_values: Optional[List[ZohoPickListItem]] = None
+    pick_list_values: Optional[List[ZohoPickListItem]]
     decimal_place: Optional[int] = None
     length: Optional[int] = None
     auto_number: Optional[AutoNumberDict] = AutoNumberDict(prefix="", suffix="")
