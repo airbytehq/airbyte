@@ -153,7 +153,7 @@ class PostgresDirectLoadSqlGenerator(
     ): String? {
         return cursor
             .firstOrNull()
-            ?.let { columnName -> getTargetColumnNameSafe(columnName, columnNameMapping) }
+            ?.let { columnName -> getQuotedTargetColumnName(columnName, columnNameMapping) }
     }
 
     private fun getCursorColumnName(stream: DestinationStream, columnNameMapping: ColumnNameMapping): String? {
@@ -224,7 +224,7 @@ class PostgresDirectLoadSqlGenerator(
     }
 
     private fun getTargetColumnNames(stream: DestinationStream, columnNameMapping: ColumnNameMapping): List<String> {
-        return columnsAndTypes(stream, columnNameMapping).map { getTargetColumnNameSafe(it.columnName, columnNameMapping) }
+        return columnsAndTypes(stream, columnNameMapping).map { getQuotedTargetColumnName(it.columnName, columnNameMapping) }
     }
 
     private fun getTargetColumnNames(columnNameMapping: ColumnNameMapping): List<String> =
@@ -233,7 +233,7 @@ class PostgresDirectLoadSqlGenerator(
     private fun getTargetColumnName(streamColumnName : String, columnNameMapping: ColumnNameMapping): String =
         columnNameMapping[streamColumnName] ?: streamColumnName
 
-    private fun getTargetColumnNameSafe(streamColumnName: String, columnNameMapping: ColumnNameMapping): String {
+    private fun getQuotedTargetColumnName(streamColumnName: String, columnNameMapping: ColumnNameMapping): String {
         return "\"${getTargetColumnName(streamColumnName, columnNameMapping)}\""
     }
 
