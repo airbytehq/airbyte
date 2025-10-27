@@ -261,22 +261,13 @@ class PostgresDirectLoadSqlGenerator(
         val cdcHardDeleteEnabled =  stream.schema.asColumns().containsKey(CDC_DELETED_AT_COLUMN) &&
             postgresConfiguration.cdcDeletionMode == CdcDeletionMode.HARD_DELETE
 
-        val cdcDeleteQuery: String
-        if (cdcHardDeleteEnabled) {
-            val deleteStatement = cdcDelete(
-                DEDUPED_TABLE_ALIAS,
-                cursorTargetColumn,
-                targetTableName,
-                primaryKeyTargetColumns
-            )
-            cdcDeleteQuery = """
-               deleted AS (
-               $deleteStatement
-               ),
-            """.trimIndent()
-        } else {
-            cdcDeleteQuery = ""
-        }
+        val cdcDeleteQuery = cdcDelete(
+            DEDUPED_TABLE_ALIAS,
+            cursorTargetColumn,
+            targetTableName,
+            primaryKeyTargetColumns,
+            cdcHardDeleteEnabled
+        )
 
         val updateExistingRowsQuery = updateExistingRows(
             DEDUPED_TABLE_ALIAS,
@@ -373,8 +364,13 @@ class PostgresDirectLoadSqlGenerator(
         dedupTableAlias: String,
         cursorTargetColumn: String?,
         targetTableName: TableName,
-        primaryKeyTargetColumns: List<String>
+        primaryKeyTargetColumns: List<String>,
+        cdcHardDeleteEnabled: Boolean
     ): String {
+        if (!cdcHardDeleteEnabled) {
+            return ""
+        }
+
         val primaryKeysMatchingCondition = primaryKeyTargetColumns.joinToString(" AND ") { pk ->
             "${getFullyQualifiedName(targetTableName)}.$pk = $dedupTableAlias.$pk"
         }
@@ -382,12 +378,18 @@ class PostgresDirectLoadSqlGenerator(
         // ensure we only delete if the deletion is newer
         val cursorComparison = buildCursorComparison(cursorTargetColumn, targetTableName, dedupTableAlias)
 
-        return """
+        val deleteStatement = """
             DELETE FROM ${getFullyQualifiedName(targetTableName)}
             USING $dedupTableAlias
             WHERE $primaryKeysMatchingCondition
                 AND $dedupTableAlias.${getDeletedAtColumnName()} IS NOT NULL
                 AND ($cursorComparison)
+        """.trimIndent()
+
+        return """
+            deleted AS (
+            $deleteStatement
+            ),
         """.trimIndent()
     }
 

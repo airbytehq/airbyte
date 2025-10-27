@@ -327,98 +327,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
     }
 
     @Test
-    fun testUpsertTableWithNoCdcDelete() {
-        every { postgresConfiguration.cdcDeletionMode } returns CdcDeletionMode.SOFT_DELETE
-
-        val stream = mockk<DestinationStream> {
-            every { schema } returns ObjectType(
-                properties = linkedMapOf(
-                    "id" to FieldType(IntegerType, nullable = false),
-                    "name" to FieldType(StringType, nullable = true),
-                    "updatedAt" to FieldType(TimestampTypeWithTimezone, nullable = true)
-                )
-            )
-            every { importType } returns Dedupe(
-                primaryKey = listOf(listOf("id")),
-                cursor = listOf("updatedAt")
-            )
-        }
-
-        val columnNameMapping = ColumnNameMapping(emptyMap())
-        val sourceTableName = TableName(namespace = "test_schema", name = "staging_table")
-        val targetTableName = TableName(namespace = "test_schema", name = "final_table")
-
-        val sql = postgresDirectLoadSqlGenerator.upsertTable(
-            stream = stream,
-            columnNameMapping = columnNameMapping,
-            sourceTableName = sourceTableName,
-            targetTableName = targetTableName
-        )
-
-        val expected = """
-            WITH deduped_source AS (
-            SELECT "_airbyte_raw_id", "_airbyte_extracted_at", "_airbyte_meta", "_airbyte_generation_id", "id", "name", "updatedAt"
-            FROM (
-            SELECT *,
-            ROW_NUMBER() OVER (
-            PARTITION BY "id"
-            ORDER BY
-            "updatedAt" DESC NULLS LAST, "_airbyte_extracted_at" DESC
-            ) AS row_number
-            FROM "test_schema"."staging_table"
-            ) AS deduplicated
-            WHERE row_number = 1
-            ),
-
-            updates AS (
-            UPDATE "test_schema"."final_table"
-            SET
-            "_airbyte_raw_id" = deduped_source."_airbyte_raw_id",
-            "_airbyte_extracted_at" = deduped_source."_airbyte_extracted_at",
-            "_airbyte_meta" = deduped_source."_airbyte_meta",
-            "_airbyte_generation_id" = deduped_source."_airbyte_generation_id",
-            "id" = deduped_source."id",
-            "name" = deduped_source."name",
-            "updatedAt" = deduped_source."updatedAt"
-            FROM deduped_source
-            WHERE "test_schema"."final_table"."id" = deduped_source."id"
-            AND ("test_schema"."final_table"."updatedAt" < deduped_source."updatedAt"
-            OR ("test_schema"."final_table"."updatedAt" = deduped_source."updatedAt" AND "test_schema"."final_table"."_airbyte_extracted_at" < deduped_source."_airbyte_extracted_at")
-            OR ("test_schema"."final_table"."updatedAt" IS NULL AND deduped_source."updatedAt" IS NOT NULL)
-            OR ("test_schema"."final_table"."updatedAt" IS NULL AND deduped_source."updatedAt" IS NULL AND "test_schema"."final_table"."_airbyte_extracted_at" < deduped_source."_airbyte_extracted_at"))
-            )
-
-            INSERT INTO "test_schema"."final_table" (
-            "_airbyte_raw_id",
-            "_airbyte_extracted_at",
-            "_airbyte_meta",
-            "_airbyte_generation_id",
-            "id",
-            "name",
-            "updatedAt"
-            )
-            SELECT
-            "_airbyte_raw_id",
-            "_airbyte_extracted_at",
-            "_airbyte_meta",
-            "_airbyte_generation_id",
-            "id",
-            "name",
-            "updatedAt"
-            FROM deduped_source
-            WHERE
-            NOT EXISTS (
-            SELECT 1
-            FROM "test_schema"."final_table"
-            WHERE "test_schema"."final_table"."id" = deduped_source."id"
-            )
-            """.trimIndent()
-
-        assertEqualsIgnoreWhitespace(expected, sql)
-    }
-
-    @Test
-    fun testUpsertTableWithCdcDelete() {
+    fun testUpsertTable() {
         every { postgresConfiguration.cdcDeletionMode } returns CdcDeletionMode.HARD_DELETE
 
         val stream = mockk<DestinationStream> {
@@ -622,10 +531,12 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             dedupTableAlias,
             cursorColumn,
             targetTable,
-            primaryKeyColumns
+            primaryKeyColumns,
+            true
         )
 
         val expected = """
+            deleted AS (
             DELETE FROM "test_schema"."final_table"
             USING deduped_source
             WHERE "test_schema"."final_table".id = deduped_source.id
@@ -634,6 +545,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             OR ("test_schema"."final_table".updatedAt = deduped_source.updatedAt AND "test_schema"."final_table"."_airbyte_extracted_at" < deduped_source."_airbyte_extracted_at")
             OR ("test_schema"."final_table".updatedAt IS NULL AND deduped_source.updatedAt IS NOT NULL)
             OR ("test_schema"."final_table".updatedAt IS NULL AND deduped_source.updatedAt IS NULL AND "test_schema"."final_table"."_airbyte_extracted_at" < deduped_source."_airbyte_extracted_at"))
+            ),
             """.trimIndent()
 
         assertEqualsIgnoreWhitespace(expected, sql)
@@ -649,18 +561,38 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             dedupTableAlias,
             null,
             targetTable,
-            primaryKeyColumns
+            primaryKeyColumns,
+            true
         )
 
         val expected = """
+            deleted AS (
             DELETE FROM "test_schema"."final_table"
             USING deduped_source
             WHERE "test_schema"."final_table".id = deduped_source.id
             AND deduped_source."_ab_cdc_deleted_at" IS NOT NULL
             AND ("test_schema"."final_table"."_airbyte_extracted_at" < deduped_source."_airbyte_extracted_at")
+            ),
             """.trimIndent()
 
         assertEqualsIgnoreWhitespace(expected, sql)
+    }
+
+    @Test
+    fun testCdcDeleteDisabled() {
+        val dedupTableAlias = "deduped_source"
+        val targetTable = TableName(namespace = "test_schema", name = "final_table")
+        val primaryKeyColumns = listOf("id")
+
+        val sql = postgresDirectLoadSqlGenerator.cdcDelete(
+            dedupTableAlias,
+            "updatedAt",
+            targetTable,
+            primaryKeyColumns,
+            false
+        )
+
+        assertEquals("", sql)
     }
 
     @Test
