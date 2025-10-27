@@ -48,6 +48,8 @@ class PostgresDirectLoadSqlGenerator(
         private const val CURSOR_INDEX_PREFIX = "idx_cursor_"
         private const val PRIMARY_KEY_INDEX_PREFIX = "idx_pk_"
         private const val DEDUPED_TABLE_ALIAS = "deduped_source"
+        private val EXTRACTED_AT_COLUMN_NAME = "\"$COLUMN_NAME_AB_EXTRACTED_AT\""
+        private val DELETED_AT_COLUMN_NAME = "\"$CDC_DELETED_AT_COLUMN\""
         internal val DEFAULT_COLUMNS =
             listOf(
                 Column(
@@ -128,7 +130,7 @@ class PostgresDirectLoadSqlGenerator(
             "CREATE INDEX ${getCursorIndexName(tableName)} ON ${getFullyQualifiedName(tableName)} ($cursorColumnName);"
         } ?: ""
 
-        val extractedAtIndexStatement = "CREATE INDEX ON ${getFullyQualifiedName(tableName)} (${getExtractedAtColumnName()});"
+        val extractedAtIndexStatement = "CREATE INDEX ON ${getFullyQualifiedName(tableName)} ($EXTRACTED_AT_COLUMN_NAME);"
 
         return """
             $primaryKeyIndexStatement
@@ -176,12 +178,6 @@ class PostgresDirectLoadSqlGenerator(
 
     private fun getCursorIndexName(tableName: TableName): String =
         "\"${CURSOR_INDEX_PREFIX + tableName.name}\""
-
-    private fun getExtractedAtColumnName(): String =
-        "\"$COLUMN_NAME_AB_EXTRACTED_AT\""
-
-    private fun getDeletedAtColumnName(): String =
-        "\"$CDC_DELETED_AT_COLUMN\""
 
     fun columnsAndTypes(
         stream: DestinationStream,
@@ -338,7 +334,7 @@ class PostgresDirectLoadSqlGenerator(
             "${getFullyQualifiedName(targetTableName)}.$primaryKey = $dedupTableAlias.$primaryKey"
         }
 
-        val skipCdcDeletedClause = if(cdcHardDeleteEnabled) "AND $dedupTableAlias.${getDeletedAtColumnName()} IS NULL" else ""
+        val skipCdcDeletedClause = if(cdcHardDeleteEnabled) "AND $dedupTableAlias.$DELETED_AT_COLUMN_NAME IS NULL" else ""
 
         return """
             INSERT INTO ${getFullyQualifiedName(targetTableName)} (
@@ -380,7 +376,7 @@ class PostgresDirectLoadSqlGenerator(
                 "$columnName = $dedupTableAlias.$columnName"
             }
 
-        val skipCdcDeletedClause = if(cdcHardDeleteEnabled) "AND $dedupTableAlias.${getDeletedAtColumnName()} IS NULL" else ""
+        val skipCdcDeletedClause = if(cdcHardDeleteEnabled) "AND $dedupTableAlias.$DELETED_AT_COLUMN_NAME IS NULL" else ""
         return """
              UPDATE ${getFullyQualifiedName(targetTableName)}
              SET 
@@ -420,7 +416,7 @@ class PostgresDirectLoadSqlGenerator(
             DELETE FROM ${getFullyQualifiedName(targetTableName)}
             USING $dedupTableAlias
             WHERE $primaryKeysMatchingCondition
-                AND $dedupTableAlias.${getDeletedAtColumnName()} IS NOT NULL
+                AND $dedupTableAlias.$DELETED_AT_COLUMN_NAME IS NOT NULL
                 AND ($cursorComparison)
         """.trimIndent()
 
@@ -443,7 +439,7 @@ class PostgresDirectLoadSqlGenerator(
         dedupTableAlias: String
     ): String {
         return if (cursorTargetColumn != null) {
-            val extractedAtColumn = getExtractedAtColumnName()
+            val extractedAtColumn = EXTRACTED_AT_COLUMN_NAME
             """
                   ${getFullyQualifiedName(targetTableName)}.$cursorTargetColumn < $dedupTableAlias.$cursorTargetColumn
                   OR (${getFullyQualifiedName(targetTableName)}.$cursorTargetColumn = $dedupTableAlias.$cursorTargetColumn AND ${getFullyQualifiedName(targetTableName)}.$extractedAtColumn < $dedupTableAlias.$extractedAtColumn)
@@ -452,7 +448,7 @@ class PostgresDirectLoadSqlGenerator(
                 """.trimIndent()
         } else {
             // No cursor - use extraction timestamp only
-            val extractedAtColumn = getExtractedAtColumnName()
+            val extractedAtColumn = EXTRACTED_AT_COLUMN_NAME
             "${getFullyQualifiedName(targetTableName)}.$extractedAtColumn < $dedupTableAlias.$extractedAtColumn"
         }
     }
@@ -477,8 +473,8 @@ class PostgresDirectLoadSqlGenerator(
               SELECT *,
                 ROW_NUMBER() OVER (
                   PARTITION BY ${primaryKeyTargetColumns.joinToString( ", " )}
-                  ORDER BY 
-                    $cursorOrderClause ${getExtractedAtColumnName()} DESC
+                  ORDER BY
+                    $cursorOrderClause $EXTRACTED_AT_COLUMN_NAME DESC
                 ) AS row_number
               FROM ${getFullyQualifiedName(sourceTableName)}
             ) AS deduplicated
