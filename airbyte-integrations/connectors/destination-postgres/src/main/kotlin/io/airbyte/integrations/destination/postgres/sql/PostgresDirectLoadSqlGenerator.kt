@@ -240,6 +240,18 @@ class PostgresDirectLoadSqlGenerator(
     fun getDefaultColumnNames(): List<String> =
         DEFAULT_COLUMNS.map { "\"${it.columnName}\"" }
 
+    /**
+     * Generates an SQL statement that upserts (merge) data from a source staging table into a target table.
+     *
+     * The generated SQL performs the following operations in a single statement:
+     * 1. **Deduplication CTE**: Deduplicates the source data based on primary keys
+     * 2. **CDC Delete CTE**: If CDC hard delete is enabled and the stream contains CDC deleted records,
+     *    this CTE deletes rows from the target table.
+     * 3. **Update CTE**: Updates existing rows in the target table with newer data from the source
+     * 4. **Insert Statement**: Inserts new rows from the source that don't exist in the target table.
+     *
+     * @throws IllegalArgumentException if the stream's import type does not contain a primary key.
+     */
     fun upsertTable(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping,
