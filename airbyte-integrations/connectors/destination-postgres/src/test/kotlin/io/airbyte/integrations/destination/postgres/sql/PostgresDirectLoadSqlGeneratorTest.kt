@@ -249,7 +249,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
                 options = setOf(StringType, IntegerType),
                 isLegacyUnion = true
             )
-            assertEquals("varchar", unionWithBasicTypes.toDialectType())
+            assertEquals("jsonb", unionWithBasicTypes.toDialectType())
         }
     }
 
