@@ -26,6 +26,7 @@ import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordForm
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
 import io.airbyte.integrations.destination.bigquery.spec.GcsFilePostProcessing
 import io.airbyte.integrations.destination.bigquery.spec.GcsStagingConfiguration
+import io.airbyte.integrations.destination.bigquery.toPrettyString
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.toTableId
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Requires
@@ -71,18 +72,18 @@ class BigQueryBulkLoader(
             BigQueryUtils.waitForJobFinish(loadJob)
         } catch (e: Exception) {
             throw RuntimeException(
-                "Failed to load CSV data from $gcsUri to table ${tableId.dataset}.${tableId.table}",
+                "Failed to load CSV data from $gcsUri to table ${tableId.toPrettyString()}",
                 e
             )
         }
 
         val stats = loadJob.reload().getStatistics<JobStatistics.LoadStatistics>()
         logger.info {
-            "Finished loading data into table ${tableId.dataset}.${tableId.table}. ${stats.outputRows} rows loaded; ${stats.badRecords} bad records."
+            "Finished loading data into table ${tableId.toPrettyString()}. ${stats.outputRows} rows loaded; ${stats.badRecords} bad records."
         }
         if (stats.badRecords > 0) {
             logger.warn {
-                "${tableId.dataset}.${tableId.table}: Nonzero bad records detected: ${stats.badRecords}"
+                "${tableId.toPrettyString()}: Nonzero bad records detected: ${stats.badRecords}"
             }
         }
 

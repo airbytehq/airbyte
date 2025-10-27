@@ -31,6 +31,7 @@ import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordForm
 import io.airbyte.integrations.destination.bigquery.formatter.ProtoToBigQueryStandardInsertRecordFormatter
 import io.airbyte.integrations.destination.bigquery.spec.BatchedStandardInsertConfiguration
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
+import io.airbyte.integrations.destination.bigquery.toPrettyString
 import io.airbyte.integrations.destination.bigquery.write.standard_insert.BigqueryBatchStandardInsertsLoaderFactory.Companion.CONFIG_ERROR_MSG
 import io.airbyte.integrations.destination.bigquery.write.standard_insert.BigqueryBatchStandardInsertsLoaderFactory.Companion.HTTP_STATUS_CODE_FORBIDDEN
 import io.airbyte.integrations.destination.bigquery.write.standard_insert.BigqueryBatchStandardInsertsLoaderFactory.Companion.HTTP_STATUS_CODE_NOT_FOUND
@@ -97,11 +98,11 @@ class BigqueryBatchStandardInsertsLoader(
         BigQueryUtils.waitForJobFinish(writer.job)
         val stats = writer.job.reload().getStatistics<JobStatistics.LoadStatistics>()
         logger.info {
-            "Finished loading data into table ${writeChannelConfiguration.destinationTable.dataset}.${writeChannelConfiguration.destinationTable.table}. ${stats.outputRows} rows loaded; ${stats.badRecords} bad records."
+            "Finished loading data into table ${writeChannelConfiguration.destinationTable.toPrettyString()}. ${stats.outputRows} rows loaded; ${stats.badRecords} bad records."
         }
         if (stats.badRecords > 0) {
             logger.warn {
-                "${writeChannelConfiguration.destinationTable.dataset}.${writeChannelConfiguration.destinationTable.table}: Nonzero bad records detected: ${stats.badRecords}"
+                "${writeChannelConfiguration.destinationTable.toPrettyString()}: Nonzero bad records detected: ${stats.badRecords}"
             }
         }
     }
