@@ -114,9 +114,7 @@ class FieldMeta(FromDictMixin):
     pick_list_values: Optional[List[ZohoPickListItem]] = None
     decimal_place: Optional[int] = None
     length: Optional[int] = None
-    auto_number: Optional[AutoNumberDict] = dataclasses.field(
-        default_factory=lambda: AutoNumberDict(prefix="", suffix="")
-    )
+    auto_number: Optional[AutoNumberDict] = dataclasses.field(default_factory=lambda: AutoNumberDict(prefix="", suffix=""))
 
     def _default_type_kwargs(self) -> Dict[str, str]:
         return {"title": self.display_label}
