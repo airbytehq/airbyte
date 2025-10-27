@@ -18,6 +18,7 @@ data:
     breakingChanges:
       1.0.0:
         message: "Effective August 18th, breaking changes were introduced to the Brand Ads endpoints and schemas. Subsequently, on September 4th, similar breaking changes were implemented for Product Ads."
+        upgradeDeadline: "2025-11-10"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
