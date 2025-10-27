@@ -129,22 +129,22 @@ class PostgresDirectLoadSqlGenerator(
         """.trimIndent()
     }
 
-    private fun getPrimaryKeysColumnNames(stream: DestinationStream, columnNameMapping: ColumnNameMapping): Set<String> {
+    private fun getPrimaryKeysColumnNames(stream: DestinationStream, columnNameMapping: ColumnNameMapping): List<String> {
         return when (stream.importType) {
             is Dedupe -> getPrimaryKeysColumnNames(stream.importType as Dedupe, columnNameMapping)
-            else -> setOf()
+            else -> listOf()
         }
     }
 
     private fun getPrimaryKeysColumnNames(
         importType: Dedupe,
         columnNameMapping: ColumnNameMapping
-    ): Set<String> {
+    ): List<String> {
         return importType.primaryKey.map { fieldPath ->
             val primaryKeyColumnName = fieldPath.first() //only at the root level for Postgres
             val targetColumnName = getTargetColumnName(primaryKeyColumnName, columnNameMapping)
             "\"$targetColumnName\""
-        }.toSet()
+        }.toList()
     }
 
     private fun getCursorColumnName(
@@ -223,6 +223,10 @@ class PostgresDirectLoadSqlGenerator(
             .andLog()
     }
 
+    private fun getTargetColumnNames(stream: DestinationStream, columnNameMapping: ColumnNameMapping): List<String> {
+        return columnsAndTypes(stream, columnNameMapping).map { getTargetColumnNameSafe(it.columnName, columnNameMapping) }
+    }
+
     private fun getTargetColumnNames(columnNameMapping: ColumnNameMapping): List<String> =
         getDefaultColumnNames() + columnNameMapping.map { (_, targetName) -> "\"${targetName}\"" }
 
@@ -250,7 +254,7 @@ class PostgresDirectLoadSqlGenerator(
 
         val primaryKeyTargetColumns = getPrimaryKeysColumnNames(importType, columnNameMapping)
         val cursorTargetColumn = getCursorColumnName(importType.cursor, columnNameMapping)
-        val allTargetColumns = getTargetColumnNames(columnNameMapping)
+        val allTargetColumns = getTargetColumnNames(stream, columnNameMapping)
 
         val selectDedupedQuery = selectDeduped(primaryKeyTargetColumns, cursorTargetColumn, allTargetColumns, sourceTableName)
 
@@ -265,26 +269,30 @@ class PostgresDirectLoadSqlGenerator(
                 targetTableName,
                 primaryKeyTargetColumns
             )
-            cdcDeleteQuery = "deleted AS ( $deleteStatement ),"
+            cdcDeleteQuery = """
+               deleted AS (
+               $deleteStatement
+               ),
+            """.trimIndent()
         } else {
             cdcDeleteQuery = ""
         }
 
         val updateExistingRowsQuery = updateExistingRows(
-            dedupTableAlias = DEDUPED_TABLE_ALIAS,
-            targetTableName = targetTableName,
-            allTargetColumns = allTargetColumns,
-            primaryKeyTargetColumns = primaryKeyTargetColumns,
-            cursorTargetColumn = cursorTargetColumn,
-            cdcHardDeleteEnabled = cdcHardDeleteEnabled
+            DEDUPED_TABLE_ALIAS,
+            targetTableName,
+            allTargetColumns,
+            primaryKeyTargetColumns,
+            cursorTargetColumn,
+            cdcHardDeleteEnabled
         )
 
         val insertNewRowsQuery = insertNewRows(
-            dedupTableAlias = "deduped_source",
-            targetTableName = targetTableName,
-            allTargetColumns = allTargetColumns,
-            primaryKeyTargetColumns = primaryKeyTargetColumns,
-            cdcHardDeleteEnabled = cdcHardDeleteEnabled
+            DEDUPED_TABLE_ALIAS,
+            targetTableName,
+            allTargetColumns,
+            primaryKeyTargetColumns,
+            cdcHardDeleteEnabled
         )
 
         return """
@@ -302,11 +310,11 @@ class PostgresDirectLoadSqlGenerator(
             """.trimIndent().andLog()
     }
 
-    private fun insertNewRows(
+    internal fun insertNewRows(
         dedupTableAlias: String,
         targetTableName: TableName,
         allTargetColumns: List<String>,
-        primaryKeyTargetColumns: Set<String>,
+        primaryKeyTargetColumns: List<String>,
         cdcHardDeleteEnabled: Boolean
     ): String {
         val pkConditions = primaryKeyTargetColumns.joinToString(" AND ") { pk ->
@@ -332,10 +340,10 @@ class PostgresDirectLoadSqlGenerator(
         """.trimIndent()
     }
 
-    private fun updateExistingRows(dedupTableAlias: String,
+    internal fun updateExistingRows(dedupTableAlias: String,
                                    targetTableName: TableName,
                                    allTargetColumns: List<String>,
-                                   primaryKeyTargetColumns: Set<String>,
+                                   primaryKeyTargetColumns: List<String>,
                                    cursorTargetColumn: String?,
                                    cdcHardDeleteEnabled: Boolean): String {
         val primaryKeysMatches = primaryKeyTargetColumns.joinToString(" AND ") { pk ->
@@ -361,11 +369,11 @@ class PostgresDirectLoadSqlGenerator(
         """.trimIndent()
     }
 
-    private fun cdcDelete(
+    internal fun cdcDelete(
         dedupTableAlias: String,
         cursorTargetColumn: String?,
         targetTableName: TableName,
-        primaryKeyTargetColumns: Set<String>
+        primaryKeyTargetColumns: List<String>
     ): String {
         val primaryKeysMatchingCondition = primaryKeyTargetColumns.joinToString(" AND ") { pk ->
             "${getFullyQualifiedName(targetTableName)}.$pk = $dedupTableAlias.$pk"
@@ -403,8 +411,8 @@ class PostgresDirectLoadSqlGenerator(
         }
     }
 
-    private fun selectDeduped(
-        primaryKeyTargetColumns: Set<String>,
+    internal fun selectDeduped(
+        primaryKeyTargetColumns: List<String>,
         cursorTargetColumn: String?,
         allTargetColumns: List<String>,
         sourceTableName: TableName
@@ -417,7 +425,8 @@ class PostgresDirectLoadSqlGenerator(
               SELECT *,
                 ROW_NUMBER() OVER (
                   PARTITION BY ${primaryKeyTargetColumns.joinToString( ", " )}
-                  ORDER BY $cursorOrderClause ${getExtractedAtColumnName()} DESC
+                  ORDER BY 
+                    $cursorOrderClause ${getExtractedAtColumnName()} DESC
                 ) AS row_number
               FROM ${getFullyQualifiedName(sourceTableName)}
             ) AS deduplicated
