@@ -5,6 +5,8 @@
 package io.airbyte.integrations.destination.postgres.sql
 
 import com.fasterxml.jackson.databind.JsonNode
+import io.airbyte.cdk.load.command.Append
+import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.ArrayType
 import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
@@ -51,6 +53,8 @@ internal class PostgresDirectLoadSqlGeneratorTest {
                     "sourceName" to FieldType(StringType, nullable = false)
                 )
             )
+
+            every { importType } returns Append
         }
         val columnNameMapping = ColumnNameMapping(
             mapOf(
@@ -77,6 +81,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             "targetId" varchar,
             "sourceName" varchar
             );
+            CREATE INDEX ON "namespace"."name" ("_airbyte_extracted_at");
             COMMIT;
             """.trimIndent()
 
@@ -103,6 +108,8 @@ internal class PostgresDirectLoadSqlGeneratorTest {
                     "sourceId" to FieldType(StringType, nullable = false),
                 )
             )
+
+            every { importType } returns Append
         }
         val columnNameMapping = ColumnNameMapping(
             mapOf(
@@ -127,6 +134,53 @@ internal class PostgresDirectLoadSqlGeneratorTest {
             "_airbyte_generation_id" bigint NOT NULL,
             "targetId" varchar
             );
+            CREATE INDEX ON "namespace"."name" ("_airbyte_extracted_at");
+            COMMIT;
+            """.trimIndent()
+
+        assertEqualsIgnoreWhitespace(expected, sql)
+    }
+
+    @Test
+    fun testCreateTableWithPrimaryKeysAndCursor() {
+        val stream = mockk<DestinationStream> {
+            every { schema } returns ObjectType(
+                properties = linkedMapOf(
+                    "id" to FieldType(IntegerType, nullable = false),
+                    "name" to FieldType(StringType, nullable = true),
+                    "updatedAt" to FieldType(TimestampTypeWithTimezone, nullable = true)
+                )
+            )
+            every { importType } returns Dedupe(
+                primaryKey = listOf(listOf("id")),
+                cursor = listOf("updatedAt")
+            )
+        }
+        val columnNameMapping = ColumnNameMapping(emptyMap())
+        val tableName = TableName(namespace = "test_schema", name = "test_table")
+
+        val sql = postgresDirectLoadSqlGenerator.createTable(
+            stream = stream,
+            tableName = tableName,
+            columnNameMapping = columnNameMapping,
+            replace = true
+        )
+
+        val expected = """
+            BEGIN TRANSACTION;
+            DROP TABLE IF EXISTS "test_schema"."test_table";
+            CREATE TABLE "test_schema"."test_table" (
+            "_airbyte_raw_id" varchar NOT NULL,
+            "_airbyte_extracted_at" timestamp with time zone NOT NULL,
+            "_airbyte_meta" jsonb NOT NULL,
+            "_airbyte_generation_id" bigint NOT NULL,
+            "id" bigint,
+            "name" varchar,
+            "updatedAt" timestamp with time zone
+            );
+            CREATE INDEX "idx_pk_test_table" ON "test_schema"."test_table" ("id");
+            CREATE INDEX "idx_cursor_test_table" ON "test_schema"."test_table" ("updatedAt");
+            CREATE INDEX ON "test_schema"."test_table" ("_airbyte_extracted_at");
             COMMIT;
             """.trimIndent()
 
