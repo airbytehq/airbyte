@@ -1,7 +1,7 @@
 # See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-youtube-analytics:dev
-acceptance-tests:
+acceptance_tests:
   spec:
     tests:
       - spec_path: "source_youtube_analytics/spec.json"
@@ -22,24 +22,37 @@ acceptance-tests:
         configured_catalog_path: "integration_tests/configured_catalog.json"
         timeout_seconds: 1200
         empty_streams:
-          - channel_annotations_a2
-          - channel_cards_a2
-          - channel_demographics_a1
-          - channel_end_screens_a2
-          - channel_sharing_service_a2
-          - channel_province_a3
-          - playlist_basic_a2
-          - playlist_combined_a2
-          - playlist_device_os_a2
-          - playlist_playback_location_a2
-          - playlist_province_a2
-          - playlist_traffic_source_a2
+          - name: channel_annotations_a2
+            bypass_reason: no data in test account
+          - name: channel_cards_a2
+            bypass_reason: no data in test account
+          - name: channel_demographics_a1
+            bypass_reason: no data in test account
+          - name: channel_end_screens_a2
+            bypass_reason: no data in test account
+          - name: channel_sharing_service_a2
+            bypass_reason: no data in test account
+          - name: channel_province_a3
+            bypass_reason: no data in test account
+          - name: playlist_basic_a2
+            bypass_reason: no data in test account
+          - name: playlist_combined_a2
+            bypass_reason: no data in test account
+          - name: playlist_device_os_a2
+            bypass_reason: no data in test account
+          - name: playlist_playback_location_a2
+            bypass_reason: no data in test account
+          - name: playlist_province_a2
+            bypass_reason: no data in test account
+          - name: playlist_traffic_source_a2
+            bypass_reason: no data in test account
         fail_on_extra_columns: false
   incremental:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        future_state_path: "integration_tests/abnormal_state.json"
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"
         timeout_seconds: 7200
   full_refresh:
     tests:
