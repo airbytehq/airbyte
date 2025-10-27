@@ -113,7 +113,8 @@ For more information on this topic, please refer to [this Google article](https:
 8. (Optional) For **End Date**, you may optionally provide a date in the format `YYYY-MM-DD`. Any data created between the defined Start Date and End Date will be replicated. Leaving this field blank will replicate all data created on or after the Start Date to the present.
 9. (Optional) For **Custom Reports**, you may optionally provide an array of JSON objects representing any custom reports you wish to query the API with. Refer to the [Custom reports](#custom-reports) section below for more information on formulating these reports.
 10. (Optional) For **Data Freshness**, you may choose whether to include "fresh" data that has not been finalized by Google, and may be subject to change. Please note that if you are using Incremental sync mode, we highly recommend leaving this option to its default value of `final`. Refer to the [Data Freshness](#data-freshness) section below for more information on this parameter.
-11. Click **Set up source** and wait for the tests to complete.
+11. (Optional) For **Requests Per Minute**, you may configure the maximum number of requests per minute for Search Analytics API calls. The default value (60) matches most Google Cloud projects' initial quota. If you have billing enabled or have requested a quota increase from Google, you can set this higher (up to 1200). Check your Google Cloud Console quotas to see your actual limit. Refer to the [Rate Limiting](#rate-limiting) section below for more information.
+12. Click **Set up source** and wait for the tests to complete.
 
 <HideInUI>
 
@@ -213,6 +214,19 @@ Expand to see details about Google Search Console connector limitations and trou
 
 This connector attempts to back off gracefully when it hits Reports API's rate limits. To find more information about limits, see [Usage Limits](https://developers.google.com/webmaster-tools/limits) documentation.
 
+**Important Note on Quota Limits**: While Google's public documentation states that the Search Console API allows up to 1,200 requests per minute, most Google Cloud projects start with a lower default quota of 60 requests per minute. This is especially common for new or unbilled projects. The connector defaults to this more conservative limit to prevent quota exceeded errors.
+
+To check your actual quota limits:
+1. Go to your [Google Cloud Console](https://console.cloud.google.com/)
+2. Navigate to APIs & Services > Quotas
+3. Search for "Search Console API" 
+4. Look for "Requests per minute per user" to see your current limit
+
+If you need higher limits, you can:
+- Enable billing on your Google Cloud project
+- Submit a quota increase request through the Google Cloud Console
+- Configure the **Requests Per Minute** setting in the connector to match your actual quota
+
 #### Data retention
 
 Google Search Console only retains data for websites from the last 16 months. Any data prior to this cutoff point will not be accessible. [Please see this article for more information](https://seotesting.com/google-search-console/how-long-does-gsc-keep-my-data/#:~:text=Google%20Search%20Console%20holds%20relevant,October%2C%202022%2C%20until%20today.).
@@ -230,6 +244,7 @@ Google Search Console only retains data for websites from the last 16 months. An
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.10.15 | 2025-10-27 | [XXXXX](https://github.com/airbytehq/airbyte/pull/XXXXX) | Add optional config for API Requests Per Minute to avoid ratelimit errors. |
 | 1.10.14 | 2025-10-21 | [68231](https://github.com/airbytehq/airbyte/pull/68231) | Update dependencies |
 | 1.10.13 | 2025-10-14 | [68004](https://github.com/airbytehq/airbyte/pull/68004) | Update dependencies |
 | 1.10.12 | 2025-10-07 | [67263](https://github.com/airbytehq/airbyte/pull/67263) | Update dependencies |

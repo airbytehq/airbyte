@@ -202,6 +202,18 @@ spec:
           errors.
         default: false
         order: 8
+      requests_per_minute:
+        type: integer
+        title: API Requests Per Minute
+        minimum: 1
+        maximum: 1200
+        default: 60
+        examples:
+        - 60
+        - 300
+        - 1200
+        description: The maximum number of requests per minute for Search Analytics API calls. The default (60) matches most Google Cloud projects' initial quota. If you have billing enabled or have requested a quota increase, you can set this higher (up to 1200). Check your Google Cloud Console quotas to see your actual limit.
+        order: 9
   advanced_auth:
     auth_flow_type: oauth2.0
     predicate_key:
@@ -1378,20 +1390,34 @@ dynamic_streams:
 # Google Search Console has three layers of quotas that dictate rate limiting at the
 # user making requests, site being requested, and developer console key used.
 # https://developers.google.com/webmaster-tools/limits#qps-quota
-# - Per Site Quota: 1,200 req/min (20 req/sec)
-# - Per User Quota: 1,200 req/min (20 req/sec)
+# - Per Site Quota: 1,200 req/min (20 req/sec) - documented maximum
+# - Per User Quota: 1,200 req/min (20 req/sec) - documented maximum
 # - Per Project Quota: 30,000,000 req/day (350 req/sec) / 40,000 req/min (60 req/sec)
 #
-# The most likely upper bound is based on the user quota since it is the lowest and the
-# same authenticated user account may hit multiple site urls.
+# Note: Actual quotas are often lower than documented limits. Most new/unbilled projects
+# start with 60 req/min. Check your Google Cloud Console quotas for actual limits.
 api_budget:
   type: HTTPAPIBudget
   policies:
+    # Search Analytics streams use configurable rate limit (default 60 RPM)
     - type: MovingWindowCallRatePolicy
       rates:
-        - limit: 1200
+        - limit: "{{ config.get('requests_per_minute', 60) }}"
           interval: PT1M
       matchers: []
+    # Sites and sitemaps streams have different rate limits
+    # https://developers.google.com/webmaster-tools/limits#all-other-resources
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 20
+          interval: PT1S
+        - limit: 200
+          interval: PT1M
+      matchers:
+        - type: StreamMatcher
+          stream_names:
+            - sites
+            - sitemaps
 
 concurrency_level:
   type: ConcurrencyLevel
