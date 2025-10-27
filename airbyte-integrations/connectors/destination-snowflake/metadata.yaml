@@ -5,7 +5,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 424892c4-daac-4491-b35d-c6688ba547ba
-  dockerImageTag: 4.0.10
+  dockerImageTag: 4.0.17
   dockerRepository: airbyte/destination-snowflake
   documentationUrl: https://docs.airbyte.com/integrations/destinations/snowflake
   githubIssueLabel: destination-snowflake
@@ -14,7 +14,7 @@ data:
   name: Snowflake
   connectorIPCOptions:
     dataChannel:
-      version: "0.0.1"
+      version: "0.0.2"
       supportedSerialization: ["JSONL", "PROTOBUF"]
       supportedTransport: ["SOCKET", "STDIO"]
   connectorBuildOptions:
