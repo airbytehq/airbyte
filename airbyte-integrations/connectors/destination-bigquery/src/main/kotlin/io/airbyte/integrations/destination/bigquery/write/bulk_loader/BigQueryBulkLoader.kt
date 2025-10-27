@@ -27,11 +27,14 @@ import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
 import io.airbyte.integrations.destination.bigquery.spec.GcsFilePostProcessing
 import io.airbyte.integrations.destination.bigquery.spec.GcsStagingConfiguration
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.toTableId
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.condition.Condition
 import io.micronaut.context.condition.ConditionContext
 import jakarta.inject.Named
 import jakarta.inject.Singleton
+
+private val logger = KotlinLogging.logger {}
 
 class BigQueryBulkLoader(
     private val storageClient: GcsClient,
@@ -71,6 +74,16 @@ class BigQueryBulkLoader(
                 "Failed to load CSV data from $gcsUri to table ${tableId.dataset}.${tableId.table}",
                 e
             )
+        }
+
+        val stats = loadJob.reload().getStatistics<JobStatistics.LoadStatistics>()
+        logger.info {
+            "Finished loading data into table ${tableId.dataset}.${tableId.table}. ${stats.outputRows} rows loaded; ${stats.badRecords} bad records."
+        }
+        if (stats.badRecords > 0) {
+            logger.warn {
+                "${tableId.dataset}.${tableId.table}: Nonzero bad records detected: ${stats.badRecords}"
+            }
         }
 
         val loadingMethodPostProcessing =
