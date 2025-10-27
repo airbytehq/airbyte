@@ -2,11 +2,12 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
+import io
 import json
 import logging
 import re
 import threading
-from dataclasses import InitVar, dataclass, field
+from dataclasses import dataclass, field
 from itertools import groupby
 from typing import Any, Callable, Dict, Generator, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
@@ -14,6 +15,7 @@ import anyascii
 import requests
 
 from airbyte_cdk import AirbyteTracedException, FailureType, InterpolatedString
+from airbyte_cdk.sources.declarative.decoders.composite_raw_decoder import JsonParser
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.extractors.record_filter import RecordFilter
@@ -925,14 +927,32 @@ class RecordParseState:
 
 @dataclass
 class GoogleAdsStreamingDecoder(Decoder):
-    parameters: InitVar[Mapping[str, Any]]
+    """
+    JSON streaming decoder optimized for Google Ads API responses.
+
+    Uses a fast JSON parse when the full payload fits within MAX_DIRECT_DECODE_BYTES;
+    otherwise streams records incrementally from the `results` array.
+    Ensures truncated or structurally invalid JSON is detected and reported.
+    """
+
+    CHUNK_SIZE = 5 * 1024 * 1024  # 5 MB
+    # Fast-path threshold: if whole body ≤ 20 MB, decode with json.loads
+    MAX_DIRECT_DECODE_BYTES = 20 * 1024 * 1024  # 20 MB
+
+    def __post_init__(self):
+        self.parser = JsonParser()
 
     def is_stream_response(self) -> bool:
         return True
 
     def decode(self, response: requests.Response) -> Generator[MutableMapping[str, Any], None, None]:
+        data, complete = self._buffer_up_to_limit(response)
+        if complete:
+            yield from self.parser.parse(io.BytesIO(data))
+            return
+
         records_batch: List[Dict[str, Any]] = []
-        for record in self._parse_records_from_stream(response.iter_content(chunk_size=65536)):
+        for record in self._parse_records_from_stream(data):
             records_batch.append(record)
             if len(records_batch) >= 100:
                 yield {"results": records_batch}
@@ -940,6 +960,21 @@ class GoogleAdsStreamingDecoder(Decoder):
 
         if records_batch:
             yield {"results": records_batch}
+
+    def _buffer_up_to_limit(self, response: requests.Response) -> Tuple[Union[bytes, Iterable[bytes]], bool]:
+        buf = bytearray()
+        response_stream = response.iter_content(chunk_size=self.CHUNK_SIZE)
+
+        while chunk := next(response_stream, None):
+            buf.extend(chunk)
+            if len(buf) > self.MAX_DIRECT_DECODE_BYTES:
+                return (self._chain_prefix_and_stream(bytes(buf), response_stream), False)
+        return (bytes(buf), True)
+
+    @staticmethod
+    def _chain_prefix_and_stream(prefix: bytes, rest_stream: Iterable[bytes]) -> Iterable[bytes]:
+        yield prefix
+        yield from rest_stream
 
     def _parse_records_from_stream(self, byte_iter: Iterable[bytes], encoding: str = "utf-8") -> Generator[Dict[str, Any], None, None]:
         string_state = StringParseState()
@@ -981,12 +1016,7 @@ class GoogleAdsStreamingDecoder(Decoder):
             raise AirbyteTracedException(
                 message="Response JSON stream ended prematurely and is incomplete.",
                 internal_message=(
-                    "Detected truncated JSON stream: one or more structural elements "
-                    "were not fully closed before the response ended. "
-                    f"State snapshots — string: {string_state}, "
-                    f"record: {record_state}, "
-                    f"results: {results_state}, "
-                    f"top_level: {top_level_state}"
+                    "Detected truncated JSON stream: one or more structural elements were not fully closed before the response ended."
                 ),
                 failure_type=FailureType.system_error,
             )

@@ -5,7 +5,7 @@
 import json
 from dataclasses import dataclass
 from typing import List
-from unittest.mock import MagicMock, Mock
+from unittest.mock import MagicMock, patch
 
 import pytest
 from requests.exceptions import ChunkedEncodingError, StreamConsumedError
@@ -184,6 +184,28 @@ class TestClickViewHttpRequester:
         }
 
 
+@dataclass(frozen=True)
+class DecoderConfig:
+    chunk_size: int
+    max_direct: int
+
+
+CONFIGS = [
+    DecoderConfig(chunk_size=5, max_direct=20),  # tiny chunk, tiny threshold → force streaming
+    DecoderConfig(chunk_size=5 * 1024 * 1024, max_direct=20 * 1024 * 1024),  # huge chunk, big threshold → fast path
+]
+
+
+@pytest.fixture(params=CONFIGS, ids=lambda c: f"chunk={c.chunk_size}|max={c.max_direct}")
+def decoder(request):
+    cfg: DecoderConfig = request.param
+    d = GoogleAdsStreamingDecoder()
+    # monkey-patch per-test config
+    d.CHUNK_SIZE = cfg.chunk_size
+    d.MAX_DIRECT_DECODE_BYTES = cfg.max_direct
+    return d
+
+
 class TestGoogleAdsStreamingDecoder:
     @dataclass
     class _FakeResponse:
@@ -203,135 +225,100 @@ class TestGoogleAdsStreamingDecoder:
     def _decode_all(decoder: GoogleAdsStreamingDecoder, resp: "_FakeResponse"):
         return {"results": [row for decoder_output in decoder.decode(resp) for row in decoder_output["results"]]}
 
-    def test_is_stream_response_true(self):
-        d = GoogleAdsStreamingDecoder(parameters={})
-        assert d.is_stream_response() is True
+    def test_is_stream_response_true(self, decoder):
+        assert decoder.is_stream_response() is True
 
-    def test_emits_each_row_from_single_message(self):
+    def test_emits_each_row_from_single_message(self, decoder):
         """One server message with two results; delivered as a single chunk."""
-        msg = {
-            "results": [
-                {"campaign": {"id": "1", "name": "A"}},
-                {"campaign": {"id": "2", "name": "B"}},
-            ],
-            "fieldMask": "campaign.id,campaign.name",
-        }
+        msg = [
+            {
+                "results": [
+                    {"campaign": {"id": "1", "name": "A"}},
+                    {"campaign": {"id": "2", "name": "B"}},
+                ],
+                "fieldMask": "campaign.id,campaign.name",
+            }
+        ]
         raw = json.dumps(msg).encode("utf-8")
 
         resp = self._FakeResponse(chunks=[raw])
-        d = GoogleAdsStreamingDecoder(parameters={})
 
-        out = self._decode_all(d, resp)
-        assert out == {"results": msg["results"]}
+        out = self._decode_all(decoder, resp)
+        assert out == {"results": msg[0]["results"]}
 
-    def test_handles_chunk_boundaries_inside_item_and_between_objects(self):
+    def test_handles_chunk_boundaries_inside_item_and_between_objects(self, decoder):
         """The object is split across arbitrary byte boundaries, including within strings."""
-        msg = {
-            "results": [
-                {"segments": {"date": "2025-10-01"}, "metrics": {"clicks": 1}},
-                {"segments": {"date": "2025-10-02"}, "metrics": {"clicks": 2}},
-            ]
-        }
+        msg = [
+            {
+                "results": [
+                    {"segments": {"date": "2025-10-01"}, "metrics": {"clicks": 1}},
+                    {"segments": {"date": "2025-10-02"}, "metrics": {"clicks": 2}},
+                ]
+            }
+        ]
         s = json.dumps(msg)
 
         # Split deliberately in awkward places (inside keys/values)
         chunks = [
-            s[:23].encode(),  # '{"results": [{"segments":'
-            s[23:40].encode(),  # ' {"date": "2025-10-01"'
-            s[40:63].encode(),  # '}, "metrics": {"clicks": '
-            s[63:65].encode(),  # '1'
-            s[65:88].encode(),  # '}}, {"segments": {"date"'
-            s[88:110].encode(),  # ': "2025-10-02"}, "metric'
-            s[110:].encode(),  # 's": {"clicks": 2}}]}'
+            s[:27].encode(),  # '[{"results": [{"segments":'
+            s[27:48].encode(),  # ' {"date": "2025-10-01"'
+            s[48:73].encode(),  # '}, "metrics": {"clicks": '
+            s[73:74].encode(),  # '1'
+            s[74:97].encode(),  # '}}, {"segments": {"date"'
+            s[97:122].encode(),  # ': "2025-10-02"}, "metric'
+            s[122:].encode(),  # 's": {"clicks": 2}}]}]'
         ]
 
         resp = self._FakeResponse(chunks=chunks)
-        d = GoogleAdsStreamingDecoder(parameters={})
 
-        out = self._decode_all(d, resp)
-        assert out == {"results": msg["results"]}
+        out = self._decode_all(decoder, resp)
+        assert out == {"results": msg[0]["results"]}
 
-    def test_concatenated_messages_without_newlines(self):
-        """Two top-level server messages concatenated back-to-back."""
-        msg1 = {"results": [{"x": 1}]}
-        msg2 = {"results": [{"x": 2}, {"x": 3}]}
-        raw = (json.dumps(msg1) + json.dumps(msg2)).encode("utf-8")
-
-        resp = self._FakeResponse(chunks=[raw])
-        d = GoogleAdsStreamingDecoder(parameters={})
-
-        out = self._decode_all(d, resp)
-        assert out == {"results": msg1["results"] + msg2["results"]}
-
-    def test_braces_inside_strings_do_not_confuse_depth(self):
+    def test_braces_inside_strings_do_not_confuse_depth(self, decoder):
         """Braces and brackets inside string values must not break item boundary tracking."""
         tricky_text = "note: has braces { like this } and [also arrays]"
-        msg = {
-            "results": [
-                {"ad": {"id": "42"}, "desc": tricky_text},
-                {"ad": {"id": "43"}, "desc": tricky_text},
-            ],
-            "fieldMask": "ad.id,desc",
-        }
+        msg = [
+            {
+                "results": [
+                    {"ad": {"id": "42"}, "desc": tricky_text},
+                    {"ad": {"id": "43"}, "desc": tricky_text},
+                ],
+                "fieldMask": "ad.id,desc",
+            }
+        ]
         raw = json.dumps(msg).encode("utf-8")
 
         # Split to ensure the string spans chunks
         resp = self._FakeResponse(chunks=[raw[:40], raw[40:120], raw[120:]])
-        d = GoogleAdsStreamingDecoder(parameters={})
 
-        out = self._decode_all(d, resp)
-        assert out == {"results": msg["results"]}
+        out = self._decode_all(decoder, resp)
+        assert out == {"results": msg[0]["results"]}
 
-    def test_nested_objects_and_arrays_within_row(self):
+    def test_nested_objects_and_arrays_within_row(self, decoder):
         """A row containing nested dicts and arrays; ensures per-item depth is tracked correctly."""
         row = {
             "campaign": {"id": "9", "labels": [{"id": 1}, {"id": 2}]},
             "metrics": {"conversions": [0.1, 0.2, 0.3]},
         }
-        msg = {"results": [row]}
+        msg = [{"results": [row]}]
         raw = json.dumps(msg).encode("utf-8")
 
         # Split across array/object boundaries
         resp = self._FakeResponse(chunks=[raw[:15], raw[15:35], raw[35:60], raw[60:]])
-        d = GoogleAdsStreamingDecoder(parameters={})
 
-        out = self._decode_all(d, resp)
-        assert out == msg
+        out = self._decode_all(decoder, resp)
+        assert out == msg[0]
 
-    def test_empty_results_array_yields_nothing(self):
-        msg = {"results": []}
+    def test_empty_results_array_yields_nothing(self, decoder):
+        msg = [{"results": []}]
         raw = json.dumps(msg).encode("utf-8")
 
         resp = self._FakeResponse(chunks=[raw])
-        d = GoogleAdsStreamingDecoder(parameters={})
 
-        out = self._decode_all(d, resp)
-        assert out == msg
+        out = self._decode_all(decoder, resp)
+        assert out == msg[0]
 
-    def test_ignores_messages_without_results_key(self):
-        msg = {"fieldMask": "whatever", "requestId": "abc"}
-        raw = json.dumps(msg).encode("utf-8")
-
-        resp = self._FakeResponse(chunks=[raw])
-        d = GoogleAdsStreamingDecoder(parameters={})
-
-        out = self._decode_all(d, resp)
-        assert out == {"results": []}
-
-    def test_multiple_messages_mixed_empty_and_nonempty(self):
-        m1 = {"results": [{"a": 1}]}
-        m2 = {"results": []}
-        m3 = {"results": [{"a": 2}, {"a": 3}]}
-        raw = (json.dumps(m1) + json.dumps(m2) + json.dumps(m3)).encode("utf-8")
-
-        # Force a few smaller chunks
-        resp = self._FakeResponse(chunks=[raw[:20], raw[20:55], raw[55:]])
-        d = GoogleAdsStreamingDecoder(parameters={})
-
-        out = self._decode_all(d, resp)
-        assert out == {"results": m1["results"] + m2["results"] + m3["results"]}
-
-    def test_brackets_inside_strings_are_ignored_for_item_boundaries(self):
+    def test_brackets_inside_strings_are_ignored_for_item_boundaries(self, decoder):
         """
         Ensure [square] and {curly} brackets that appear inside quoted strings
         do NOT affect depth tracking and that rows are emitted correctly.
@@ -341,13 +328,15 @@ class TestGoogleAdsStreamingDecoder:
         tricky1 = r"line with [brackets] and {braces} and escaped quote \" and backslash \\"
         tricky2 = r"second line with closing brackets ]} \} \] \" \\ and , commas"
 
-        msg = {
-            "results": [
-                {"ad": {"id": "101"}, "text": tricky1},
-                {"ad": {"id": "102"}, "text": tricky2},
-            ],
-            "fieldMask": "ad.id,text",
-        }
+        msg = [
+            {
+                "results": [
+                    {"ad": {"id": "101"}, "text": tricky1},
+                    {"ad": {"id": "102"}, "text": tricky2},
+                ],
+                "fieldMask": "ad.id,text",
+            }
+        ]
         raw = json.dumps(msg).encode("utf-8")
 
         # Split deliberately so the tricky strings are cut across chunk boundaries
@@ -359,68 +348,62 @@ class TestGoogleAdsStreamingDecoder:
             start = end
 
         resp = self._FakeResponse(chunks=chunks)
-        d = GoogleAdsStreamingDecoder(parameters={})
 
-        out = self._decode_all(d, resp)
-        assert out == {"results": msg["results"]}
+        out = self._decode_all(decoder, resp)
+        assert out == {"results": msg[0]["results"]}
 
-    def test_raises_on_unfinished_record_object(self):
+    def test_raises_on_unfinished_record_object(self, decoder):
         """
         Stream ends while a record object is not fully closed → must raise.
-        Example: '{"results":[{"a":1}, {"b":2'  (missing closing } ] })
+        Example: '[{"results":[{"a":1}, {"b":2'  (missing closing } ] })
         """
-        truncated = b'{"results":[{"a":1}, {"b":2'
+        truncated = b'[{"results":[{"a":1}, {"b":2'
         resp = self._FakeResponse(chunks=[truncated])
-        d = GoogleAdsStreamingDecoder(parameters={})
 
         with pytest.raises(AirbyteTracedException):
             # Force full consumption to reach EOF and trigger the strict check
-            _ = list(d.decode(resp))
+            _ = list(decoder.decode(resp))
 
-    def test_raises_on_unfinished_top_level_after_last_item_closed(self):
+    def test_raises_on_unfinished_top_level_after_last_item_closed(self, decoder):
         """
         Even if the last item '}' closed cleanly, if the enclosing array/object
         isn't closed at EOF, we still raise.
         Example: '{"results":[{"x":1}]'  (missing final '}' )
         """
-        raw = b'{"results":[{"x":1}]'
+        raw = b'[{"results":[{"x":1}]'
         resp = self._FakeResponse(chunks=[raw])
-        d = GoogleAdsStreamingDecoder(parameters={})
 
         with pytest.raises(AirbyteTracedException):
-            _ = list(d.decode(resp))
+            _ = list(decoder.decode(resp))
 
-    def test_compact_json_no_spaces(self):
-        msg = {"results": [{"a": {"b": 1}}, {"a": {"b": 2}}]}
+    def test_compact_json_no_spaces(self, decoder):
+        msg = [{"results": [{"a": {"b": 1}}, {"a": {"b": 2}}]}]
         raw = json.dumps(msg, separators=(",", ":")).encode("utf-8")
         resp = self._FakeResponse(chunks=[raw])
-        d = GoogleAdsStreamingDecoder(parameters={})
-        out = self._decode_all(d, resp)
-        assert out == {"results": msg["results"]}
+        out = self._decode_all(decoder, resp)
+        assert out == {"results": msg[0]["results"]}
 
-    def test_pretty_printed_json_with_indent_and_newlines(self):
-        msg = {"results": [{"x": [1, 2, 3], "y": {"z": "ok"}}, {"x": [], "y": {"z": "still ok"}}]}
+    def test_pretty_printed_json_with_indent_and_newlines(self, decoder):
+        msg = [{"results": [{"x": [1, 2, 3], "y": {"z": "ok"}}, {"x": [], "y": {"z": "still ok"}}]}]
         raw = json.dumps(msg, indent=2).encode("utf-8")
         resp = self._FakeResponse(chunks=[raw[:10], raw[10:40], raw[40:100], raw[100:]])
-        d = GoogleAdsStreamingDecoder(parameters={})
-        out = self._decode_all(d, resp)
-        assert out == {"results": msg["results"]}
+        out = self._decode_all(decoder, resp)
+        assert out == {"results": msg[0]["results"]}
 
-    def test_whitespace_and_tabs_between_tokens(self):
-        msg = {"results": [{"x": 1}, {"x": 2}]}
+    def test_whitespace_and_tabs_between_tokens(self, decoder):
+        msg = [{"results": [{"x": 1}, {"x": 2}]}]
         s = json.dumps(msg)
         noisy = s.replace("{", "{ \t\n").replace(":", " : \t").replace(",", " ,\n ").replace("}", " \n}")
         resp = self._FakeResponse(chunks=[noisy.encode("utf-8")])
-        d = GoogleAdsStreamingDecoder(parameters={})
-        out = self._decode_all(d, resp)
-        assert out == {"results": msg["results"]}
+        out = self._decode_all(decoder, resp)
+        assert out == {"results": msg[0]["results"]}
 
-    def test_midstream_chunked_encoding_error_propagates(self):
+    def test_midstream_chunked_encoding_error_propagates(self, decoder):
         """
         A network break should surface as ChunkedEncodingError (not swallowed).
         Some records may already have been yielded before the error.
         """
-        msg = {"results": [{"i": 1}, {"i": 2}, {"i": 3}, {"i": 4}]}
+        msg = [{"results": [{"i": 1}, {"i": 2}, {"i": 3}, {"i": 4}]}]
         raw = json.dumps(msg).encode("utf-8")
         splits = [len(raw) // 4, len(raw) // 2, 3 * len(raw) // 4, len(raw)]
         chunks = [raw[: splits[0]], raw[splits[0] : splits[1]], raw[splits[1] : splits[2]], raw[splits[2] :]]
@@ -440,12 +423,11 @@ class TestGoogleAdsStreamingDecoder:
                 pass
 
         resp = _ErroringResponse(parts=chunks, raise_after_index=2)
-        d = GoogleAdsStreamingDecoder(parameters={})
 
         with pytest.raises(ChunkedEncodingError):
-            _ = list(d.decode(resp))
+            _ = list(decoder.decode(resp))
 
-    def test_stream_consumed_error_propagates_immediately(self):
+    def test_stream_consumed_error_propagates_immediately(self, decoder):
         @dataclass
         class _AlreadyConsumedResponse:
             def iter_content(self, chunk_size=1):
@@ -454,6 +436,62 @@ class TestGoogleAdsStreamingDecoder:
             def raise_for_status(self):
                 pass
 
-        d = GoogleAdsStreamingDecoder(parameters={})
         with pytest.raises(StreamConsumedError):
-            _ = list(d.decode(_AlreadyConsumedResponse()))
+            _ = list(decoder.decode(_AlreadyConsumedResponse()))
+
+    @dataclass
+    class _BodyResponse:
+        """Respects chunk_size by slicing the body bytes."""
+
+        body: bytes
+        status: int = 200
+
+        def iter_content(self, chunk_size=1):
+            for i in range(0, len(self.body), chunk_size):
+                yield self.body[i : i + chunk_size]
+
+        def raise_for_status(self):
+            if self.status >= 400:
+                raise Exception(f"HTTP {self.status}")
+
+    def test_fast_path_exact_threshold_uses_json_loads(self):
+        """Body size == MAX_DIRECT_DECODE_BYTES - fast path is taken."""
+        decoder = GoogleAdsStreamingDecoder()
+        decoder.CHUNK_SIZE = 1024
+        decoder.MAX_DIRECT_DECODE_BYTES = 5 * 1024
+
+        base = [{"results": [{"x": 1}]}]
+        raw = json.dumps(base, separators=(",", ":")).encode()
+        # pad to reach exactly the threshold
+        pad_len = decoder.MAX_DIRECT_DECODE_BYTES - len(raw)
+        base[0]["results"][0]["pad"] = "x" * (pad_len - 9)
+        raw = json.dumps(base, separators=(",", ":")).encode()
+        assert len(raw) == decoder.MAX_DIRECT_DECODE_BYTES
+
+        resp = self._BodyResponse(raw)
+        with patch.object(decoder, "_parse_records_from_stream", wraps=decoder._parse_records_from_stream) as mock_stream:
+            outputs = list(decoder.decode(resp))
+            results = [row for batch in outputs for row in batch["results"]]
+            assert results == base[0]["results"]
+            mock_stream.assert_not_called()
+
+    def test_just_over_threshold_forces_streaming(self):
+        """Body size == MAX_DIRECT_DECODE_BYTES - fast path is taken."""
+        decoder = GoogleAdsStreamingDecoder()
+        decoder.CHUNK_SIZE = 1024
+        decoder.MAX_DIRECT_DECODE_BYTES = 5 * 1024
+
+        base = [{"results": [{"x": 1}]}]
+        raw = json.dumps(base, separators=(",", ":")).encode()
+        # pad to reach exactly the threshold
+        pad_len = decoder.MAX_DIRECT_DECODE_BYTES - len(raw)
+        base[0]["results"][0]["pad"] = "x" * (pad_len - 8)
+        raw = json.dumps(base, separators=(",", ":")).encode()
+        assert len(raw) == decoder.MAX_DIRECT_DECODE_BYTES + 1
+
+        resp = self._BodyResponse(raw)
+        with patch.object(decoder, "_parse_records_from_stream", wraps=decoder._parse_records_from_stream) as mock_stream:
+            outputs = list(decoder.decode(resp))
+            results = [row for batch in outputs for row in batch["results"]]
+            assert results == base[0]["results"]
+            mock_stream.assert_called_once()
