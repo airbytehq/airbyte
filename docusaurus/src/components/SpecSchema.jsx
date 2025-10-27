@@ -1,4 +1,3 @@
-import React from "react";
 import styles from "./SpecSchema.module.css";
 import sanitizeHtml from "sanitize-html";
 import { Disclosure } from "@headlessui/react";
@@ -20,12 +19,12 @@ function JSONSchemaViewer(props) {
   return (
     <div>
       <Heading as="h3">Config fields reference</Heading>
-      <div class={styles.grid}>
-        <div class={className(styles.headerItem, styles.tableHeader)}>
+      <div className={styles.grid}>
+        <div className={className(styles.headerItem, styles.tableHeader)}>
           Field
         </div>
-        <div class={className(styles.headerItem, styles.tableHeader)}>Type</div>
-        <div class={className(styles.headerItem, styles.tableHeader)}>
+        <div className={className(styles.headerItem, styles.tableHeader)}>Type</div>
+        <div className={className(styles.headerItem, styles.tableHeader)}>
           Property name
         </div>
         <JSONSchemaObject schema={props.schema} />
