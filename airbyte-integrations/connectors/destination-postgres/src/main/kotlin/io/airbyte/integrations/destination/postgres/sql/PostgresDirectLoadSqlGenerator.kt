@@ -105,6 +105,14 @@ class PostgresDirectLoadSqlGenerator(
             .andLog()
     }
 
+    /**
+     * Generates index creation statements for a table based on the stream's configuration.
+     *
+     * Creates up to three indexes:
+     * - Primary key index (if dedupe stream with primary keys)
+     * - Cursor index (if dedupe stream with cursor field)
+     * - Extracted_at index (always created for all streams)
+     */
     private fun createIndexes(
         stream: DestinationStream,
         tableName: TableName,
@@ -313,6 +321,12 @@ class PostgresDirectLoadSqlGenerator(
             """.trimIndent().andLog()
     }
 
+    /**
+     * Generates an INSERT statement that adds new rows from the deduplicated source that don't exist in the target.
+     *
+     * Uses NOT EXISTS to check for existing records by primary key. If CDC hard delete is enabled,
+     * filters out records marked as deleted.
+     */
     internal fun insertNewRows(
         dedupTableAlias: String,
         targetTableName: TableName,
@@ -343,6 +357,12 @@ class PostgresDirectLoadSqlGenerator(
         """.trimIndent()
     }
 
+    /**
+     * Generates an UPDATE statement that updates existing rows in the target with newer data from the source.
+     *
+     * Rows are matched by primary key and only updated if the source data is newer (determined by cursor
+     * or extracted_at comparison). If CDC hard delete is enabled, skips records marked as deleted.
+     */
     internal fun updateExistingRows(dedupTableAlias: String,
                                    targetTableName: TableName,
                                    allTargetColumns: List<String>,
@@ -372,6 +392,12 @@ class PostgresDirectLoadSqlGenerator(
         """.trimIndent()
     }
 
+    /**
+     * Generates a CDC hard delete statement wrapped in a CTE, or returns empty string if disabled.
+     *
+     * Deletes rows from the target table where the source has a CDC deletion marker and the deletion
+     * is newer than the target record (based on cursor or extracted_at).
+     */
     internal fun cdcDelete(
         dedupTableAlias: String,
         cursorTargetColumn: String?,
@@ -405,6 +431,12 @@ class PostgresDirectLoadSqlGenerator(
         """.trimIndent()
     }
 
+    /**
+     * Builds a SQL comparison expression to determine if source data is newer than target data.
+     *
+     * If a cursor exists, compares cursor values with extracted_at as tiebreaker and NULL handling.
+     * If no cursor, compares only extracted_at timestamps.
+     */
     private fun buildCursorComparison(
         cursorTargetColumn: String?,
         targetTableName: TableName,
@@ -425,6 +457,12 @@ class PostgresDirectLoadSqlGenerator(
         }
     }
 
+    /**
+     * Generates a SELECT query that deduplicates source data using ROW_NUMBER() window function.
+     *
+     * Partitions by primary key and orders by cursor (if present) then extracted_at, keeping only
+     * the most recent record for each unique primary key.
+     */
     internal fun selectDeduped(
         primaryKeyTargetColumns: List<String>,
         cursorTargetColumn: String?,
