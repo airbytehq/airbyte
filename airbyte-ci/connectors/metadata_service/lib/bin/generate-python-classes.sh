@@ -30,3 +30,7 @@ for f in "$YAML_DIR"/*.yaml; do
     --enum-field-as-literal all \
     --disable-timestamp
 done
+
+echo ""
+echo "Generating bundled JSON schema..."
+./bin/bundle-json-schemas.sh
