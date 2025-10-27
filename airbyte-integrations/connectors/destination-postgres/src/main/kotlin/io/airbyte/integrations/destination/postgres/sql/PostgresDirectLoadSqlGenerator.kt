@@ -320,8 +320,8 @@ class PostgresDirectLoadSqlGenerator(
         primaryKeyTargetColumns: List<String>,
         cdcHardDeleteEnabled: Boolean
     ): String {
-        val pkConditions = primaryKeyTargetColumns.joinToString(" AND ") { pk ->
-            "${getFullyQualifiedName(targetTableName)}.$pk = $dedupTableAlias.$pk"
+        val primaryKeysConditions = primaryKeyTargetColumns.joinToString(" AND ") { primaryKey ->
+            "${getFullyQualifiedName(targetTableName)}.$primaryKey = $dedupTableAlias.$primaryKey"
         }
 
         val skipCdcDeletedClause = if(cdcHardDeleteEnabled) "AND $dedupTableAlias.${getDeletedAtColumnName()} IS NULL" else ""
@@ -337,7 +337,7 @@ class PostgresDirectLoadSqlGenerator(
               NOT EXISTS (
                 SELECT 1
                 FROM ${getFullyQualifiedName(targetTableName)}
-                WHERE $pkConditions
+                WHERE $primaryKeysConditions
               )
               $skipCdcDeletedClause
         """.trimIndent()
@@ -349,8 +349,8 @@ class PostgresDirectLoadSqlGenerator(
                                    primaryKeyTargetColumns: List<String>,
                                    cursorTargetColumn: String?,
                                    cdcHardDeleteEnabled: Boolean): String {
-        val primaryKeysMatches = primaryKeyTargetColumns.joinToString(" AND ") { pk ->
-            "${getFullyQualifiedName(targetTableName)}.$pk = $dedupTableAlias.$pk"
+        val primaryKeysMatches = primaryKeyTargetColumns.joinToString(" AND ") { primaryKey ->
+            "${getFullyQualifiedName(targetTableName)}.$primaryKey = $dedupTableAlias.$primaryKey"
         }
 
         val cursorComparison = buildCursorComparison(cursorTargetColumn, targetTableName, dedupTableAlias)
@@ -383,8 +383,8 @@ class PostgresDirectLoadSqlGenerator(
             return ""
         }
 
-        val primaryKeysMatchingCondition = primaryKeyTargetColumns.joinToString(" AND ") { pk ->
-            "${getFullyQualifiedName(targetTableName)}.$pk = $dedupTableAlias.$pk"
+        val primaryKeysMatchingCondition = primaryKeyTargetColumns.joinToString(" AND ") { primaryKey ->
+            "${getFullyQualifiedName(targetTableName)}.$primaryKey = $dedupTableAlias.$primaryKey"
         }
 
         // ensure we only delete if the deletion is newer
