@@ -15,13 +15,16 @@ import dateparser
 import requests
 import xmltodict
 
-from airbyte_cdk import InterpolatedString
+from airbyte_cdk import HttpMethod, HttpRequester, InterpolatedString, LimiterSession, NoAuth
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.wait_time_from_header_backoff_strategy import (
     WaitTimeFromHeaderBackoffStrategy,
 )
+from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
 from airbyte_cdk.sources.declarative.validators.validation_strategy import ValidationStrategy
+from airbyte_cdk.sources.streams.http import HttpClient
+from airbyte_cdk.sources.types import EmptyString
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils.datetime_helpers import AirbyteDateTime, ab_datetime_now, ab_datetime_parse
 
@@ -390,3 +393,69 @@ class ValidateReportOptionsListOptionNameUniqueness(ValidationStrategy):
                             f"Option names (`option_name`) should be unique across all options in `options_list`. Duplicate value: {option['option_name']}"
                         )
                     option_names.append(option["option_name"])
+
+
+class CreationLimiterSession(LimiterSession):
+    def send(self, request: requests.PreparedRequest, **kwargs: Any) -> requests.Response:
+        """Send a request with rate-limiting."""
+        self._api_budget.acquire_call(request)
+        """
+        Refresh access token if after waiting it was expired.
+        Especially, needed for GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL report 
+        due to waiting limit time for create report operation is 1 request per 30 minutes.
+        """
+        if self.auth.token_has_expired():
+            updated_token = self.auth.get_auth_header()
+            request.headers.update(updated_token)
+
+        response = super().send(request, **kwargs)
+        self._api_budget.update_from_response(request, response)
+        return response
+
+
+class CreationHttpClient(HttpClient):
+    def _request_session(self) -> requests.Session:
+        return CreationLimiterSession(api_budget=self._api_budget)
+
+
+@dataclass
+class CreationCustomRequester(HttpRequester):
+    request_headers: Optional[str] = None
+    request_body_json: Optional[Mapping[str, Any]] = None
+    api_budget: Optional[Mapping[str, Any]] = None
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        self._url = InterpolatedString.create(self.url if self.url else EmptyString, parameters=parameters)
+        # deprecated
+        self._url_base = InterpolatedString.create(self.url_base if self.url_base else EmptyString, parameters=parameters)
+        # deprecated
+        self._path = InterpolatedString.create(self.path if self.path else EmptyString, parameters=parameters)
+        if self.request_options_provider is None:
+            self._request_options_provider = InterpolatedRequestOptionsProvider(
+                config=self.config, request_headers=self.request_headers, request_body_json=self.request_body_json, parameters=parameters
+            )
+        elif isinstance(self.request_options_provider, dict):
+            self._request_options_provider = InterpolatedRequestOptionsProvider(config=self.config, **self.request_options_provider)
+        else:
+            self._request_options_provider = self.request_options_provider
+        self._authenticator = self.authenticator or NoAuth(parameters=parameters)
+        self._http_method = HttpMethod[self.http_method] if isinstance(self.http_method, str) else self.http_method
+        self.error_handler = self.error_handler
+        self._parameters = parameters
+
+        if self.error_handler is not None and hasattr(self.error_handler, "backoff_strategies"):
+            backoff_strategies = self.error_handler.backoff_strategies  # type: ignore
+        else:
+            backoff_strategies = None
+
+        self._http_client = CreationHttpClient(
+            name=self.name,
+            logger=self.logger,
+            error_handler=self.error_handler,
+            api_budget=self.api_budget,
+            authenticator=self._authenticator,
+            use_cache=self.use_cache,
+            backoff_strategy=backoff_strategies,
+            disable_retries=self.disable_retries,
+            message_repository=self.message_repository,
+        )

@@ -1140,6 +1140,18 @@ definitions:
         $ref: "#/definitions/basic_async_retriever"
         creation_requester:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
+          api_budget:
+            type: HTTPAPIBudget
+            policies:
+              # API Budget for reports: https://developer-docs.amazon.com/sp-api/docs/reports-api-rate-limits#reports-v2021-06-30
+              - type: MovingWindowCallRatePolicy
+                # https://github.com/amzn/selling-partner-api-models/discussions/3726
+                rates:
+                  - limit: 1
+                    interval: PT30M
+                matchers:
+                  - method: POST
+                    url_path_pattern: "reports/2021-06-30/reports"
           request_body_json:
             reportType: GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL
             marketplaceIds: '{{ [config["marketplace_id"]] }}'
@@ -2668,7 +2680,20 @@ definitions:
       field_path:
         - processingStatus
     creation_requester:
-      type: HttpRequester
+      type: CustomRequester
+      class_name: source_declarative_manifest.components.CreationCustomRequester
+      api_budget:
+        type: HTTPAPIBudget
+        policies:
+          # API Budget for reports: https://developer-docs.amazon.com/sp-api/docs/reports-api-rate-limits#reports-v2021-06-30
+          - type: MovingWindowCallRatePolicy
+            # https://developer-docs.amazon.com/sp-api/reference/createreport
+            rates:
+              - limit: 1
+                interval: PT1M
+            matchers:
+              - method: POST
+                url_path_pattern: "reports/2021-06-30/reports"
       path: reports/2021-06-30/reports
       url_base: "{{ config['endpoint'] }}"
       authenticator: "#/definitions/authenticator"
@@ -2808,14 +2833,6 @@ api_budget:
         - method: GET
           url_path_pattern: "orders/v0/orders/[^/]+/orderItems(\\?.*)?$" # matches /orderItems
     # API Budget for reports: https://developer-docs.amazon.com/sp-api/docs/reports-api-rate-limits#reports-v2021-06-30
-    - type: MovingWindowCallRatePolicy
-      # https://github.com/amzn/selling-partner-api-models/discussions/3726
-      rates:
-        - limit: 1
-          interval: PT30M
-      matchers:
-        - method: POST
-          url_path_pattern: "reports/2021-06-30/reports"
     - type: MovingWindowCallRatePolicy
       # https://developer-docs.amazon.com/sp-api/reference/getreport
       rates:
