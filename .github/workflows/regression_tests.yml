@@ -149,6 +149,7 @@ jobs:
       # forks if the user installs the app into their fork. Until we document this as a clear
       # path, we will have to keep using the PAT.
       - name: Run Regression Tests [WORKFLOW DISPATCH]
+        id: run_regression_tests
         if: github.event_name == 'workflow_dispatch' # TODO: consider using the matrix strategy (https://docs.github.com/en/actions/using-jobs/using-a-matrix-for-your-jobs). See https://github.com/airbytehq/airbyte/pull/37659#discussion_r1583380234 for details.
         uses: ./.github/actions/run-airbyte-ci
         with:
@@ -165,3 +166,35 @@ jobs:
           s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           subcommand: connectors ${{ env.USE_LOCAL_CDK_FLAG }} --name ${{ github.event.inputs.connector_name }} test --only-step connector_live_tests --connector_live_tests.test-suite=regression --connector_live_tests.connection-id=${{ github.event.inputs.connection_id }} --connector_live_tests.pr-url=${{ github.event.inputs.pr_url }} ${{ env.READ_WITH_STATE_FLAG }} ${{ env.DISABLE_PROXY_FLAG }} ${{ env.STREAM_PARAMS }} ${{ env.CONNECTION_SUBSET }} ${{ env.CONTROL_VERSION }} --global-status-check-context="Regression Tests" --global-status-check-description='Running regression tests'
+
+      - name: Install live-tests dependencies for LLM evaluation
+        if: always() && github.event_name == 'workflow_dispatch'
+        working-directory: airbyte-ci/connectors/live-tests
+        run: poetry install
+
+      - name: Evaluate Regression Test Report with LLM
+        if: always() && github.event_name == 'workflow_dispatch'
+        working-directory: airbyte-ci/connectors/live-tests
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          # Find the most recent report.html file in /tmp/regression_tests_artifacts/
+          REPORT_PATH=$(find /tmp/regression_tests_artifacts -name "report.html" -type f -printf '%T@ %p\n' | sort -n | tail -1 | cut -f2- -d" ")
+          
+          if [ -z "$REPORT_PATH" ]; then
+            echo "Error: No report.html found in /tmp/regression_tests_artifacts/"
+            echo "## ⚠️ LLM Evaluation Skipped" >> $GITHUB_STEP_SUMMARY
+            echo "No regression test report found. The tests may have failed to generate a report." >> $GITHUB_STEP_SUMMARY
+            exit 0
+          fi
+          
+          echo "Found report at: $REPORT_PATH"
+          echo "Running LLM evaluation..."
+          
+          # Run the evaluation script
+          poetry run python src/live_tests/regression_tests/llm_evaluation/evaluate_report.py \
+            --report-path "$REPORT_PATH" \
+            --output-json /tmp/llm_evaluation_result.json || true
+          
+          # The script exits with code 1 if evaluation fails, but we don't want to fail the workflow
+          # The evaluation result is already written to GITHUB_STEP_SUMMARY
