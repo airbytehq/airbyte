@@ -32,7 +32,7 @@ definitions:
           http_codes:
             - 404
           error_message: >-
-            No data available for the requested date range. This is expected when querying accounts/subaccounts with different data availability periods.
+              Received a 404 (Not Found) response. Possible reasons: (1) The resource has never existed (incorrect SID), (2) The resource existed but has been deleted, (3) The resource is a Verification SID that has been "soft deleted". Skipping this slice—data may be available in later slices or for other accounts/subaccounts. See Twilio 404 docs: https://www.twilio.com/docs/api/errors/20404
 
   base_stream:
     type: DeclarativeStream
