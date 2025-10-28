@@ -230,7 +230,7 @@ Any database or table encoding combination of charset and collation is supported
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.51.0      | 2025-10-24  | [68652](https://github.com/airbytehq/airbyte/pull/68652)        | Bump CDK version to the latest to resolve issue with database Views in CDC mode.                                                                   |
+| 3.51.1      | 2025-10-24  | [68652](https://github.com/airbytehq/airbyte/pull/68652)        | Bump CDK version to the latest to resolve issue with database Views in CDC mode.                                                                   |
 | 3.51.0      | 2025-10-15 | [68094](https://github.com/airbytehq/airbyte/pull/66515)        | Bump to the latest CDK for improved Protobuf encoding in socket mode.                                                                           |
 | 3.50.9      | 2025-10-06 | [67151](https://github.com/airbytehq/airbyte/pull/66515)   | Fix CDC decorating fields encoding to Protobuf                                                                                                  |
 | 3.50.8      | 2025-09-18 | [66515](https://github.com/airbytehq/airbyte/pull/66515)   | Fix division by zero in partition creation when sampling produces no split boundaries.                                                          |
