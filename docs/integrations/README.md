@@ -18,7 +18,7 @@ Each connector has one of the following support levels. Review [Connector suppor
 
 - **Airbyte**: maintained by Airbyte.
 
-- **Enterprise**: special, premium connectors available to Enterprise and Teams customers **for an additional cost**. To learn more about enterprise connectors, [talk to Sales](https://airbyte.com/company/talk-to-sales).
+- **Enterprise**: special, premium connectors available to Enterprise and Pro customers **for an additional cost**. To learn more about enterprise connectors, [talk to Sales](https://airbyte.com/company/talk-to-sales).
 
 - **Marketplace**: maintained by the open source community.
 

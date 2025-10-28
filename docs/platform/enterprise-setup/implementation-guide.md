@@ -20,11 +20,11 @@ Airbyte has begun rolling out a new Helm chart called Helm chart V2. The instruc
 
 ### Infrastructure Prerequisites
 
-For a production-ready deployment of Self-Managed Enterprise, various infrastructure components are required. We recommend deploying to Amazon EKS or Google Kubernetes Engine. The following diagram illustrates a typical Airbyte deployment running on AWS:
+For a production-ready deployment of Self-Managed Enterprise, the following infrastructure components are required. Deploy to Amazon EKS or Google Kubernetes Engine. The following diagram illustrates a typical Airbyte deployment running on AWS:
 
 ![AWS Architecture Diagram](./assets/self-managed-enterprise-aws.png)
 
-Prior to deploying Self-Managed Enterprise, we recommend having each of the following infrastructure components ready to go. When possible, it's easiest to have all components running in the same [VPC](https://docs.aws.amazon.com/eks/latest/userguide/network_reqs.html). The provided recommendations are for customers deploying to AWS:
+Prior to deploying Self-Managed Enterprise, Airbyte recommends having each of the following infrastructure components ready to go. When possible, it's easiest to have all components running in the same [VPC](https://docs.aws.amazon.com/eks/latest/userguide/network_reqs.html). The provided recommendations are for customers deploying to AWS:
 
 | Component                | Recommendation                                                                                                                                                            |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -36,10 +36,10 @@ Prior to deploying Self-Managed Enterprise, we recommend having each of the foll
 
 A few notes on Kubernetes cluster provisioning for Airbyte Self-Managed Enterprise:
 
-- We support Amazon Elastic Kubernetes Service (EKS) on EC2, Google Kubernetes Engine (GKE) on Google Compute Engine (GCE), and Azure Kubernetes Service (AKS).
-- We recommend running Airbyte on memory-optimized instances, such as M7i / M7g instance types.
-- While we support GKE Autopilot, we do not support Amazon EKS on Fargate.
-- We recommend running Airbyte on instances with at least 2 cores and 8 gigabytes of RAM.
+- Airbyte supports Amazon Elastic Kubernetes Service (EKS) on EC2, Google Kubernetes Engine (GKE) on Google Compute Engine (GCE), and Azure Kubernetes Service (AKS).
+- Airbyte recommends running Airbyte on memory-optimized instances, such as M7i / M7g instance types.
+- While Airbyte supports GKE Autopilot, it doesn't support Amazon EKS on Fargate.
+- You should run Airbyte on instances with at least 2 cores and 8 gigabytes of RAM.
 
 We require you to install and configure the following Kubernetes tooling:
 
@@ -394,7 +394,7 @@ The following subsections help you customize your deployment to use an external 
 
 #### Configuring the Airbyte Database
 
-For Self-Managed Enterprise deployments, we recommend using a dedicated database instance for better reliability, and backups (such as AWS RDS or GCP Cloud SQL) instead of the default internal Postgres database (`airbyte/db`) that Airbyte spins up within the Kubernetes cluster.
+For Self-Managed Enterprise deployments, you must use a dedicated database instance for better reliability and backups, such as AWS RDS or GCP Cloud SQL. Don't use the default internal Postgres database, `airbyte/db`, that Airbyte spins up within the Kubernetes cluster.
 
 We assume in the following that you've already configured a Postgres instance:
 
@@ -476,7 +476,7 @@ global:
 
 #### Configuring External Logging
 
-For Self-Managed Enterprise deployments, we recommend spinning up standalone log storage for additional reliability using tools such as S3 and GCS instead of against using the default internal Minio storage (`airbyte/minio`). It's then a common practice to configure additional log forwarding from external log storage into your observability tool.
+For Self-Managed Enterprise deployments, spin up standalone log storage for additional reliability using tools such as S3 and GCS. Don't use the default internal MinIO storage, `airbyte/minio`. It's then a common practice to configure additional log forwarding from external log storage into your observability tool.
 
 <details>
 <summary>External log storage setup steps</summary>
@@ -957,13 +957,46 @@ helm install airbyte-enterprise airbyte/airbyte \
 </TabItem>
 <TabItem value='helm-2' label='Helm chart V2' default>
 
-```bash
-helm install airbyte-enterprise airbyte-v2/airbyte \
-  --namespace airbyte-v2 \       # Target Kubernetes namespace
-  --values ./values.yaml \       # Custom configuration values
-  --version 2.0.3 \              # Helm chart version to use
-  --set global.image.tag=1.7.0   # Airbyte version to use
-```
+1. Identify the Helm chart version that corresponds to the platform version you want to run. Most Helm chart versions are designed to work with one Airbyte version, and they don't necessarily have the same version number.
+
+    ```bash
+    helm search repo airbyte-v2 --versions
+    ```
+
+    You should see something like this:
+
+    ```text
+    NAME                            CHART VERSION   APP VERSION     DESCRIPTION
+    airbyte-v2/airbyte              2.0.18          2.0.0           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.17          1.8.5           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.16          1.8.4           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.15          1.8.4           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.14          1.8.4           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.13          1.8.3           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.12          1.8.2           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.11          1.8.2           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.10          1.8.1           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.9           1.8.0           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.8           1.8.0           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.7           1.7.1           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.6           1.7.1           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.5           1.7.0           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.4           1.6.3           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.3           1.6.2           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.2           1.6.2           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.1           1.6.1           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.0           1.6.0           Helm chart to deploy airbyte
+    airbyte-v2/airbyte-data-plane   2.0.0           2.0.0           A Helm chart for installing an Airbyte Data Plane.
+    ```
+
+2. Install Airbyte into your Helm chart V2 namespace. In this example, you install Airbyte version 2.0.
+
+    ```bash
+    helm install airbyte airbyte-v2/airbyte \
+      --namespace airbyte-v2 \       # Target Kubernetes namespace
+      --values ./values.yaml \       # Custom configuration values
+      --version 2.0.18               # Helm chart version to use
+    ```
 
 </TabItem>
 </Tabs>
@@ -990,11 +1023,10 @@ Upgrade Airbyte Self-Managed Enterprise by:
     <TabItem value='helm-2' label='Helm chart V2' default>
 
     ```bash
-    helm upgrade airbyte-enterprise airbyte-v2/airbyte \
+    helm upgrade airbyte airbyte-v2/airbyte \
       --namespace airbyte-v2 \       # Target Kubernetes namespace
       --values ./values.yaml \       # Custom configuration values
-      --version 2.0.3 \              # Helm chart version to use
-      --set global.image.tag=1.7.0   # Airbyte version to use
+      --version 2.x.x                # Helm chart version to use
     ```
 
     </TabItem>
@@ -1022,8 +1054,7 @@ After specifying your own configuration, run the following command:
     helm upgrade airbyte-enterprise airbyte-v2/airbyte \
       --namespace airbyte-v2 \       # Target Kubernetes namespace
       --values ./values.yaml \       # Custom configuration values
-      --version 2.0.3 \              # Helm chart version to use
-      --set global.image.tag=1.7.0   # Airbyte version to use
+      --version 2.x.x                # Helm chart version to use
     ```
 
     </TabItem>
