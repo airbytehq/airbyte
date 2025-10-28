@@ -9,9 +9,13 @@ import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.TableOperationsClient
 import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
+import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.dataflow.state.PartitionKey
+import io.airbyte.cdk.load.dataflow.transform.RecordDTO
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TableName
 import io.airbyte.cdk.load.util.deserializeToNode
+import io.airbyte.integrations.destination.snowflake.dataflow.SnowflakeAggregate
 import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
 import io.airbyte.integrations.destination.snowflake.db.escapeJsonIdentifier
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
@@ -20,6 +24,7 @@ import io.airbyte.integrations.destination.snowflake.sql.COUNT_TOTAL_ALIAS
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlGenerator
 import io.airbyte.integrations.destination.snowflake.sql.andLog
+import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeInsertBuffer
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.sql.ResultSet
@@ -64,37 +69,47 @@ class SnowflakeAirbyteClient(
             null
         }
 
+    /**
+     * TEST ONLY. We have a much more performant implementation in
+     * [io.airbyte.integrations.destination.snowflake.db.SnowflakeDirectLoadDatabaseInitialStatusGatherer]
+     * .
+     */
+    override suspend fun tableExists(table: TableName) = countTable(table) != null
+
+    override suspend fun namespaceExists(namespace: String): Boolean {
+        return dataSource.connection.use { connection ->
+            val databaseName = snowflakeConfiguration.database.toSnowflakeCompatibleName()
+            val statement =
+                connection.prepareStatement(
+                    """
+                        SELECT COUNT(*) > 0 AS SCHEMA_EXISTS
+                        FROM "$databaseName".INFORMATION_SCHEMA.SCHEMATA
+                        WHERE SCHEMA_NAME = ?
+                    """.andLog()
+                )
+
+            // When querying information_schema, snowflake needs the "true" schema name,
+            // so we unescape it here.
+            val unescapedNamespace = namespace.replace("\"\"", "\"")
+            statement.setString(1, unescapedNamespace)
+
+            statement.use {
+                val resultSet = it.executeQuery()
+                resultSet.use { rs ->
+                    if (rs.next()) {
+                        rs.getBoolean("SCHEMA_EXISTS")
+                    } else {
+                        false
+                    }
+                }
+            }
+        }
+    }
+
     override suspend fun createNamespace(namespace: String) {
         try {
             // Check if the schema exists first
-            val schemaExistsResult =
-                dataSource.connection.use { connection ->
-                    val databaseName = snowflakeConfiguration.database.toSnowflakeCompatibleName()
-                    val statement =
-                        connection.prepareStatement(
-                            """
-                            SELECT COUNT(*) > 0 AS SCHEMA_EXISTS
-                            FROM "$databaseName".INFORMATION_SCHEMA.SCHEMATA
-                            WHERE SCHEMA_NAME = ?
-                        """.andLog()
-                        )
-
-                    // When querying information_schema, snowflake needs the "true" schema name,
-                    // so we unescape it here.
-                    val unescapedNamespace = namespace.replace("\"\"", "\"")
-                    statement.setString(1, unescapedNamespace)
-
-                    statement.use {
-                        val resultSet = it.executeQuery()
-                        resultSet.use { rs ->
-                            if (rs.next()) {
-                                rs.getBoolean("SCHEMA_EXISTS")
-                            } else {
-                                false
-                            }
-                        }
-                    }
-                }
+            val schemaExistsResult = namespaceExists(namespace)
 
             if (!schemaExistsResult) {
                 // Create the schema only if it doesn't exist
@@ -103,6 +118,10 @@ class SnowflakeAirbyteClient(
         } catch (e: SnowflakeSQLException) {
             handleSnowflakePermissionError(e)
         }
+    }
+
+    override suspend fun dropNamespace(namespace: String) {
+        execute(sqlGenerator.dropNamespace(namespace))
     }
 
     override suspend fun createTable(
@@ -300,6 +319,49 @@ class SnowflakeAirbyteClient(
             // Return 0 if we can't get the generation ID (similar to ClickHouse approach)
             0L
         }
+
+    override suspend fun insertRecords(table: TableName, records: List<Map<String, AirbyteValue>>) {
+        val a =
+            SnowflakeAggregate(
+                SnowflakeInsertBuffer(
+                    table,
+                    describeTable(table),
+                    this,
+                    snowflakeConfiguration,
+                    snowflakeColumnUtils,
+                )
+            )
+        records.forEach { a.accept(RecordDTO(it, PartitionKey(""), 0, 0)) }
+        a.flush()
+    }
+
+    override suspend fun readTable(table: TableName): List<Map<String, Any>> {
+        dataSource.connection.use { connection ->
+            connection.createStatement().use { statement ->
+                statement
+                    .executeQuery("""SELECT * FROM "${table.namespace}"."${table.name}";""")
+                    .use { resultSet ->
+                        val metaData = resultSet.metaData
+                        val columnCount = metaData.columnCount
+                        val result = mutableListOf<Map<String, Any>>()
+
+                        while (resultSet.next()) {
+                            val row = mutableMapOf<String, Any>()
+                            for (i in 1..columnCount) {
+                                val columnName = metaData.getColumnName(i)
+                                val value = resultSet.getObject(i)
+                                if (value != null) {
+                                    row[columnName] = value
+                                }
+                            }
+                            result.add(row)
+                        }
+
+                        return result
+                    }
+            }
+        }
+    }
 
     fun createSnowflakeStage(tableName: TableName) {
         execute(sqlGenerator.createSnowflakeStage(tableName))

@@ -303,6 +303,5 @@ helm upgrade -i \
 --values ./values.yaml \
 airbyte \
 airbyte-v2/airbyte \
---version 2.0.3 \
---set global.image.tag=1.7.0
+--version 2.x.x
 ```
