@@ -68,7 +68,7 @@ python cdc_setup_db2.py \
   --schema <SOURCE_SCHEMA>
 ```
 
-**Options:**
+##### Options
 
 - `--schema`: Process all tables in a specific schema
 - `--tables`: Process only specific tables (requires `--schema`)
@@ -77,7 +77,7 @@ python cdc_setup_db2.py \
 - `--recreate-triggers`: Drop and recreate existing triggers
 - `--dry-run`: Preview changes without executing them
 
-**Example: Set up CDC for all tables in a schema**
+##### Example: Set up CDC for all tables in a schema
 
 ```bash
 python cdc_setup_db2.py \
@@ -89,7 +89,7 @@ python cdc_setup_db2.py \
   --schema SALES
 ```
 
-**Example: Set up CDC for specific tables**
+##### Example: Set up CDC for specific tables
 
 ```bash
 python cdc_setup_db2.py \
