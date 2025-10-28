@@ -5,6 +5,7 @@ import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.command.SourceConfigurationFactory
+import io.airbyte.cdk.command.TableFilter
 import io.airbyte.cdk.ssh.SshConnectionOptions
 import io.airbyte.cdk.ssh.SshNoTunnelMethod
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
@@ -32,6 +33,7 @@ data class SnowflakeSourceConfiguration(
     override val jdbcProperties: Map<String, String>,
     override val namespaces: Set<String> = emptySet(),
     val schema: String? = null,
+    override val tableFilters: List<TableFilter>,
     val incremental: IncrementalConfiguration,
     override val maxConcurrency: Int,
     override val resourceAcquisitionHeartbeat: Duration = Duration.ofMillis(100L),
@@ -114,6 +116,12 @@ class SnowflakeSourceConfigurationFactory :
 
         val jdbcUrlFmt = "jdbc:snowflake://%s"
 
+        val tableFilters = pojo.tableFilters ?: emptyList()
+
+        pojo.schema?.let { schema ->
+            JdbcSourceConfiguration.validateTableFilters(setOf(schema), tableFilters)
+        }
+
         val checkpointTargetInterval: Duration =
             Duration.ofSeconds(pojo.checkpointTargetIntervalSeconds?.toLong() ?: 0)
         if (!checkpointTargetInterval.isPositive) {
@@ -131,6 +139,7 @@ class SnowflakeSourceConfigurationFactory :
             jdbcProperties = jdbcProperties,
             namespaces = setOf(pojo.database),
             schema = pojo.schema,
+            tableFilters = tableFilters,
             incremental = incrementalConfiguration,
             checkpointTargetInterval = checkpointTargetInterval,
             maxConcurrency = maxConcurrency,

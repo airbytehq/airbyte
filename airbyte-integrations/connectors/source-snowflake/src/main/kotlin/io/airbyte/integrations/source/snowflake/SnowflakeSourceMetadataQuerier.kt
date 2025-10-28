@@ -13,17 +13,10 @@ import io.airbyte.cdk.discover.JdbcMetadataQuerier.PrimaryKeyRow
 import io.airbyte.cdk.discover.MetadataQuerier
 import io.airbyte.cdk.discover.SystemType
 import io.airbyte.cdk.discover.TableName
-import io.airbyte.cdk.discover.JdbcMetadataQuerier.applyTableFiltersInMemory
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants.NamespaceKind
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
-import io.airbyte.cdk.jdbc.NullFieldType
-import io.airbyte.cdk.read.From
-import io.airbyte.cdk.read.Limit
-import io.airbyte.cdk.read.SelectColumns
 import io.airbyte.cdk.read.SelectQueryGenerator
-import io.airbyte.cdk.read.SelectQuerySpec
-import io.airbyte.cdk.read.optimize
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
@@ -135,7 +128,7 @@ class SnowflakeSourceMetadataQuerier(
             return columnMetadata
         }
         val resultsFromSelectMany: List<ColumnMetadata>? =
-            queryColumnMetadata(base.conn, selectLimit0(table, columnMetadata.map { it.name }))
+            queryColumnMetadata(base.conn, base.selectLimit0(table, columnMetadata.map { it.name }))
         if (resultsFromSelectMany != null) {
             return resultsFromSelectMany
         }
@@ -143,24 +136,8 @@ class SnowflakeSourceMetadataQuerier(
             "Not all columns of $table might be accessible, trying each column individually."
         }
         return columnMetadata.flatMap {
-            queryColumnMetadata(base.conn, selectLimit0(table, listOf(it.name))) ?: listOf()
+            queryColumnMetadata(base.conn, base.selectLimit0(table, listOf(it.name))) ?: listOf()
         }
-    }
-
-    /**
-     * Generates SQL query used to discover [ColumnMetadata] and to verify table access permissions.
-     */
-    fun selectLimit0(
-        table: TableName,
-        columnIDs: List<String>,
-    ): String {
-        val querySpec =
-            SelectQuerySpec(
-                SelectColumns(columnIDs.map { Field(it, NullFieldType) }),
-                From(table.name, table.namespace()),
-                limit = Limit(0),
-            )
-        return base.selectQueryGenerator.generate(querySpec.optimize()).sql
     }
 
     private fun queryColumnMetadata(
@@ -176,17 +153,17 @@ class SnowflakeSourceMetadataQuerier(
                     return (1..meta.columnCount).map {
                         val type =
                             SystemType(
-                                typeName = swallow { meta.getColumnTypeName(it) },
+                                typeName = base.swallow { meta.getColumnTypeName(it) },
                                 typeCode = meta.getColumnType(it),
-                                precision = swallow { meta.getPrecision(it) },
-                                scale = swallow { meta.getScale(it) },
+                                precision = base.swallow { meta.getPrecision(it) },
+                                scale = base.swallow { meta.getScale(it) },
                             )
                         ColumnMetadata(
                             name = meta.getColumnName(it),
                             label = meta.getColumnLabel(it),
                             type = type,
                             nullable =
-                                when (swallow { meta.isNullable(it) }) {
+                                when (base.swallow { meta.isNullable(it) }) {
                                     ResultSetMetaData.columnNoNulls -> false
                                     ResultSetMetaData.columnNullable -> true
                                     else -> null
@@ -198,15 +175,6 @@ class SnowflakeSourceMetadataQuerier(
                 throw RuntimeException("Column name discovery query failed: ${e.message}", e)
             }
         }
-    }
-
-    fun <T> swallow(supplier: () -> T): T? {
-        try {
-            return supplier()
-        } catch (e: Exception) {
-            log.debug(e) { "Metadata query triggered exception, ignoring value" }
-        }
-        return null
     }
 
     override fun streamNamespaces(): List<String> =
@@ -224,17 +192,16 @@ class SnowflakeSourceMetadataQuerier(
     ): TableName? =
         memoizedTableNames.find { it.name == streamID.name && it.schema == streamID.namespace }
 
+    val tableFilters = base.config.tableFilters
+
     val memoizedTableNames: List<TableName> by lazy {
+        log.info { "Querying table names for catalog discovery." }
         try {
             val allTables = mutableSetOf<TableName>()
             val dbmd: DatabaseMetaData = base.conn.metaData
 
-            log.info { "Querying table names for Snowflake source." }
-            for (namespace in
-                base.config.namespaces + base.config.namespaces.map { it.uppercase() }) {
-                // Query all schemas in the current database
-                dbmd.getTables(namespace, schema, null, arrayOf("TABLE", "VIEW")).use {
-                    rs: ResultSet ->
+            fun addTablesFromQuery(catalog: String?, schema: String?, pattern: String?) {
+                dbmd.getTables(catalog, schema, pattern, null).use { rs: ResultSet ->
                     while (rs.next()) {
                         val tableName =
                             TableName(
@@ -250,15 +217,34 @@ class SnowflakeSourceMetadataQuerier(
                     }
                 }
             }
-            log.info { "Discovered ${allTables.size} tables and views." }
 
-            // Apply table filtering if configured
-            val filteredTables = applyTableFiltersInMemory(
-                allTables.toList(),
-                base.config.tableFilters
-            ) { it.schema }
+            for (namespace in base.config.namespaces + base.config.namespaces.map { it.uppercase() }) {
+                val (catalog: String?, schema: String?) =
+                    when (base.constants.namespaceKind) {
+                        NamespaceKind.CATALOG -> namespace to null
+                        NamespaceKind.SCHEMA -> null to namespace
+                        NamespaceKind.CATALOG_AND_SCHEMA -> namespace to this.schema
+                    }
 
-            return@lazy filteredTables
+                if (tableFilters.isEmpty()) {
+                    addTablesFromQuery(catalog, schema, null)
+                } else {
+                    val filtersForSchema =
+                        tableFilters.filter { it.schemaName.equals(schema, ignoreCase = true) }
+
+                    if (filtersForSchema.isEmpty()) {
+                        addTablesFromQuery(catalog, schema, null)
+                    } else {
+                        for (filter in filtersForSchema) {
+                            for (pattern in filter.patterns) {
+                                addTablesFromQuery(catalog, filter.schemaName, pattern)
+                            }
+                        }
+                    }
+                }
+            }
+            log.info { "Discovered ${allTables.size} table(s) in namespaces ${base.config.namespaces}." }
+            return@lazy allTables.toList().sortedBy { "${it.namespace()}.${it.name}.${it.type}" }
         } catch (e: Exception) {
             throw RuntimeException("Table name discovery query failed: ${e.message}", e)
         }
