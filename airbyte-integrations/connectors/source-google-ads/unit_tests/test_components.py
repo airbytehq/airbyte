@@ -184,26 +184,15 @@ class TestClickViewHttpRequester:
         }
 
 
-@dataclass(frozen=True)
-class DecoderConfig:
-    chunk_size: int
-    max_direct: int
-
-
 CONFIGS = [
-    DecoderConfig(chunk_size=5, max_direct=20),  # tiny chunk, tiny threshold → force streaming
-    DecoderConfig(chunk_size=5 * 1024 * 1024, max_direct=20 * 1024 * 1024),  # huge chunk, big threshold → fast path
+    GoogleAdsStreamingDecoder(chunk_size=5, max_direct_decode_bytes=10),  # tiny chunk, tiny threshold → force streaming
+    GoogleAdsStreamingDecoder(),  # huge chunk, big threshold → fast path
 ]
 
 
-@pytest.fixture(params=CONFIGS, ids=lambda c: f"chunk={c.chunk_size}|max={c.max_direct}")
+@pytest.fixture(params=CONFIGS, ids=lambda c: str(c))
 def decoder(request):
-    cfg: DecoderConfig = request.param
-    d = GoogleAdsStreamingDecoder()
-    # monkey-patch per-test config
-    d.CHUNK_SIZE = cfg.chunk_size
-    d.MAX_DIRECT_DECODE_BYTES = cfg.max_direct
-    return d
+    return request.param
 
 
 class TestGoogleAdsStreamingDecoder:
@@ -454,19 +443,19 @@ class TestGoogleAdsStreamingDecoder:
             if self.status >= 400:
                 raise Exception(f"HTTP {self.status}")
 
-    def test_fast_path_exact_threshold_uses_json_loads(self):
-        """Body size == MAX_DIRECT_DECODE_BYTES - fast path is taken."""
+    def test_fast_path_under_threshold_uses_json_loads(self):
+        """Body size == max_direct_decode_bytes - 1 - fast path is taken."""
         decoder = GoogleAdsStreamingDecoder()
-        decoder.CHUNK_SIZE = 1024
-        decoder.MAX_DIRECT_DECODE_BYTES = 5 * 1024
+        decoder.chunk_size = 1024
+        decoder.max_direct_decode_bytes = 5 * 1024
 
         base = [{"results": [{"x": 1}]}]
         raw = json.dumps(base, separators=(",", ":")).encode()
         # pad to reach exactly the threshold
-        pad_len = decoder.MAX_DIRECT_DECODE_BYTES - len(raw)
-        base[0]["results"][0]["pad"] = "x" * (pad_len - 9)
+        pad_len = decoder.max_direct_decode_bytes - len(raw)
+        base[0]["results"][0]["pad"] = "x" * (pad_len - 10)
         raw = json.dumps(base, separators=(",", ":")).encode()
-        assert len(raw) == decoder.MAX_DIRECT_DECODE_BYTES
+        assert len(raw) == decoder.max_direct_decode_bytes - 1
 
         resp = self._BodyResponse(raw)
         with patch.object(decoder, "_parse_records_from_stream", wraps=decoder._parse_records_from_stream) as mock_stream:
@@ -475,19 +464,17 @@ class TestGoogleAdsStreamingDecoder:
             assert results == base[0]["results"]
             mock_stream.assert_not_called()
 
-    def test_just_over_threshold_forces_streaming(self):
-        """Body size == MAX_DIRECT_DECODE_BYTES - fast path is taken."""
-        decoder = GoogleAdsStreamingDecoder()
-        decoder.CHUNK_SIZE = 1024
-        decoder.MAX_DIRECT_DECODE_BYTES = 5 * 1024
+    def test_exact_threshold_forces_streaming(self):
+        """Body size == max_direct_decode_bytes - fast path is taken."""
+        decoder = GoogleAdsStreamingDecoder(chunk_size=1024, max_direct_decode_bytes=5 * 1024)
 
         base = [{"results": [{"x": 1}]}]
         raw = json.dumps(base, separators=(",", ":")).encode()
         # pad to reach exactly the threshold
-        pad_len = decoder.MAX_DIRECT_DECODE_BYTES - len(raw)
-        base[0]["results"][0]["pad"] = "x" * (pad_len - 8)
+        pad_len = decoder.max_direct_decode_bytes - len(raw)
+        base[0]["results"][0]["pad"] = "x" * (pad_len - 9)
         raw = json.dumps(base, separators=(",", ":")).encode()
-        assert len(raw) == decoder.MAX_DIRECT_DECODE_BYTES + 1
+        assert len(raw) == decoder.max_direct_decode_bytes
 
         resp = self._BodyResponse(raw)
         with patch.object(decoder, "_parse_records_from_stream", wraps=decoder._parse_records_from_stream) as mock_stream:

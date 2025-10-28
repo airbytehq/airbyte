@@ -930,14 +930,14 @@ class GoogleAdsStreamingDecoder(Decoder):
     """
     JSON streaming decoder optimized for Google Ads API responses.
 
-    Uses a fast JSON parse when the full payload fits within MAX_DIRECT_DECODE_BYTES;
+    Uses a fast JSON parse when the full payload fits within max_direct_decode_bytes;
     otherwise streams records incrementally from the `results` array.
     Ensures truncated or structurally invalid JSON is detected and reported.
     """
 
-    CHUNK_SIZE = 5 * 1024 * 1024  # 5 MB
-    # Fast-path threshold: if whole body ≤ 20 MB, decode with json.loads
-    MAX_DIRECT_DECODE_BYTES = 20 * 1024 * 1024  # 20 MB
+    chunk_size: int = 5 * 1024 * 1024  # 5 MB
+    # Fast-path threshold: if whole body < 20 MB, decode with json.loads
+    max_direct_decode_bytes: int = 20 * 1024 * 1024  # 20 MB
 
     def __post_init__(self):
         self.parser = JsonParser()
@@ -963,11 +963,11 @@ class GoogleAdsStreamingDecoder(Decoder):
 
     def _buffer_up_to_limit(self, response: requests.Response) -> Tuple[Union[bytes, Iterable[bytes]], bool]:
         buf = bytearray()
-        response_stream = response.iter_content(chunk_size=self.CHUNK_SIZE)
+        response_stream = response.iter_content(chunk_size=self.chunk_size)
 
         while chunk := next(response_stream, None):
             buf.extend(chunk)
-            if len(buf) > self.MAX_DIRECT_DECODE_BYTES:
+            if len(buf) >= self.max_direct_decode_bytes:
                 return (self._chain_prefix_and_stream(bytes(buf), response_stream), False)
         return (bytes(buf), True)
 
