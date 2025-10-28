@@ -14,6 +14,7 @@ import json
 import os
 import sys
 from pathlib import Path
+from typing import Any
 
 from bs4 import BeautifulSoup
 from openai import OpenAI
@@ -76,7 +77,7 @@ def load_report_text(html_path: Path) -> str:
     return report_text
 
 
-def evaluate_with_llm(report_text: str, prompt: str | None = None) -> dict[str, any]:
+def evaluate_with_llm(report_text: str, prompt: str | None = None) -> dict[str, Any]:
     """
     Use OpenAI LLM to evaluate the regression test report.
 
@@ -116,7 +117,7 @@ def evaluate_with_llm(report_text: str, prompt: str | None = None) -> dict[str, 
         }
 
 
-def write_github_summary(evaluation: dict[str, any]) -> None:
+def write_github_summary(evaluation: dict[str, Any]) -> None:
     """
     Write the evaluation summary to GITHUB_STEP_SUMMARY.
 
