@@ -116,7 +116,6 @@ class MockGoogleAdsFailsOneDate(MockGoogleAds):
         return mock_response_fails_one_date()
 
 
-@patch.object(SourceGoogleAds, "get_customers", return_value=[])
 def test_read_records_unauthenticated(mocker, customers, config):
     credentials = config["credentials"]
     api = GoogleAds(credentials=credentials)
