@@ -1,3 +1,7 @@
+## Version 0.1.59
+
+fix upsert test
+
 ## Version 0.1.58
 
 load cdk: log unflushed state diagnostic info
