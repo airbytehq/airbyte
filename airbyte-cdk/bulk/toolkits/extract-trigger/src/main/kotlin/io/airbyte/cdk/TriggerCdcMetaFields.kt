@@ -15,6 +15,9 @@ import kotlin.text.lowercase
 enum class TriggerCdcMetaFields(
     override val type: FieldType,
 ) : MetaField {
+    // TODO: For speed mode, this should be changed to CdcOffsetDateTimeStringMetaFieldType.
+    //  For json, this works because dates are string in json.
+    //  For protobuf, this causes a bug since the type will cause it to convert differently.
     CHANGE_TIME(CdcStringMetaFieldType);
 
     override val id: String
