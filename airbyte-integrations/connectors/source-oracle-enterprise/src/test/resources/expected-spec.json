@@ -88,12 +88,12 @@
           "type": "object",
           "additionalProperties": true,
           "title": "Table Filter",
-          "description": "Filter configuration for table selection per schema.",
+          "description": "Inclusion filter configuration for table selection per schema.",
           "properties": {
             "schema_name": {
               "type": "string",
               "title": "Schema Name",
-              "description": "The name of the schema to filter on. Should match a schema defined in \"Schemas\" field above.",
+              "description": "The name of the schema to apply this filter to. Should match a schema defined in \"Schemas\" field above.",
               "order": 1,
               "always_show": true
             },
@@ -101,14 +101,14 @@
               "type": "array",
               "items": { "type": "string" },
               "title": "Table Filter Patterns",
-              "description": "List of filters to be applied to the table names in the schema. Should be a SQL LIKE pattern.",
+              "description": "List of table name patterns to include from this schema. Should be a SQL LIKE pattern.",
               "order": 2,
               "always_show": true
             }
           },
           "required": ["schema_name", "table_name_patterns"]
         },
-        "description": "List of filters to be applied to the table names in the stream. Defaults to no exclusions.",
+        "description": "Inclusion filters for table selection per schema. If no filters are specified for a schema, all tables in that schema will be synced.",
         "title": "Table Name Filters",
         "order": 7,
         "always_show": true

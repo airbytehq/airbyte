@@ -387,9 +387,19 @@ class OracleSourceMetadataQuerier(
                 if (tableFilters.isEmpty()) {
                     addTablesFromQuery(catalog, schema, null)
                 } else {
-                    for (filter in tableFilters) {
-                        for (pattern in filter.patterns) {
-                            addTablesFromQuery(catalog, filter.schemaName, pattern)
+                    // Check if there are filters for this specific schema
+                    val filtersForSchema =
+                        tableFilters.filter { it.schemaName.equals(schema, ignoreCase = true) }
+
+                    if (filtersForSchema.isEmpty()) {
+                        // No filters for this schema, get all tables
+                        addTablesFromQuery(catalog, schema, null)
+                    } else {
+                        // Apply the filters for this schema
+                        for (filter in filtersForSchema) {
+                            for (pattern in filter.patterns) {
+                                addTablesFromQuery(catalog, filter.schemaName, pattern)
+                            }
                         }
                     }
                 }

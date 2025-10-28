@@ -113,7 +113,8 @@ class OracleSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonProperty("table_filters")
     @JsonSchemaTitle("Table Name Filters")
     @JsonPropertyDescription(
-        "List of filters to be applied to the table names in the stream. Defaults to no exclusions."
+        "Inclusion filters for table selection per schema. " +
+            "If no filters are specified for a schema, all tables in that schema will be synced."
     )
     @JsonSchemaInject(json = """{"order":7, "always_show":true}""")
     var filters: List<TableFilter>? = null
@@ -267,14 +268,14 @@ class MicronautPropertiesFriendlyConnectionData {
 }
 
 @JsonSchemaTitle("Table Filter")
-@JsonSchemaDescription("Filter configuration for table selection per schema.")
+@JsonSchemaDescription("Inclusion filter configuration for table selection per schema.")
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
 @JsonPropertyOrder("schema_name", "table_name_patterns")
 class TableFilter {
     @JsonProperty("schema_name")
     @JsonSchemaTitle("Schema Name")
     @JsonPropertyDescription(
-        "The name of the schema to filter on. " +
+        "The name of the schema to apply this filter to. " +
             "Should match a schema defined in \"Schemas\" field above."
     )
     @JsonSchemaInject(json = """{"order":1,"always_show":true}""")
@@ -283,7 +284,7 @@ class TableFilter {
     @JsonProperty("table_name_patterns")
     @JsonSchemaTitle("Table Filter Patterns")
     @JsonPropertyDescription(
-        "List of filters to be applied to the table names in the schema. " +
+        "List of table name patterns to include from this schema. " +
             "Should be a SQL LIKE pattern."
     )
     @JsonSchemaInject(json = """{"order":2,"always_show":true}""")

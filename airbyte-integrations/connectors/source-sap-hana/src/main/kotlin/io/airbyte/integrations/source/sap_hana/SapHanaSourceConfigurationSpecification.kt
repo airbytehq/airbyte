@@ -100,7 +100,8 @@ class SapHanaSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonProperty("filters")
     @JsonSchemaTitle("Table Name Filters")
     @JsonPropertyDescription(
-        "List of filters to be applied to the table names in the stream. Defaults to no exclusions."
+        "Inclusion filters for table selection per schema. " +
+            "If no filters are specified for a schema, all tables in that schema will be synced."
     )
     @JsonSchemaInject(json = """{"order":7}""")
     var filters: List<TableFilter>? = null
@@ -214,14 +215,14 @@ class SapHanaSourceConfigurationSpecification : ConfigurationSpecification() {
 }
 
 @JsonSchemaTitle("Table Filter")
-@JsonSchemaDescription("Filter configuration for table selection per schema.")
+@JsonSchemaDescription("Inclusion filter configuration for table selection per schema.")
 @JsonPropertyOrder("schema_name", "table_name_patterns")
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
 class TableFilter {
     @JsonProperty("schema_name", required = true)
     @JsonSchemaTitle("Schema Name")
     @JsonPropertyDescription(
-        "The name of the schema to filter on. " +
+        "The name of the schema to apply this filter to. " +
             "Should match a schema defined in \"Schemas\" field above."
     )
     @JsonSchemaInject(json = """{"order":1,"always_show":true}""")
@@ -230,7 +231,7 @@ class TableFilter {
     @JsonProperty("table_name_patterns")
     @JsonSchemaTitle("Table Filter Patterns")
     @JsonPropertyDescription(
-        "List of filters to be applied to the table names in the schema. " +
+        "List of table name patterns to include from this schema. " +
             "Each filter should be a SQL LIKE pattern."
     )
     @JsonSchemaInject(json = """{"order":2,"always_show":true}""")
