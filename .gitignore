@@ -59,9 +59,6 @@ coverage.xml
 .pytest_cache/
 cover/
 
-# Node.js
-node_modules/
-
 # dbt
 profiles.yml
 

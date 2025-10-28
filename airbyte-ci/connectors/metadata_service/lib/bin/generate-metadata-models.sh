@@ -33,4 +33,4 @@ done
 
 echo ""
 echo "Generating bundled JSON schema..."
-node bin/bundle-schemas.js
+python bin/bundle-schemas.py
