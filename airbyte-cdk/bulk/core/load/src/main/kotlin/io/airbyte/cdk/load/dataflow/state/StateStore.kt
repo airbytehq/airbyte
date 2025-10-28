@@ -54,7 +54,8 @@ class StateStore(
     fun logStateInfo() {
         val message = StringBuilder("State diagnostic information:")
         val key = states.firstKey()
-        message.append("\nFirst state key: $key")
+        val state = states.get(key)
+        message.append("\nFirst state key: $key (full state message: $state)")
         if (key.id != stateSequence.get()) {
             message.append("\nKey ID did not match state sequence ($stateSequence.get()")
         } else if (!histogramStore.isComplete(key)) {
