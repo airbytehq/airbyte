@@ -112,11 +112,11 @@ After running the setup script, configure your Db2 Enterprise source in Airbyte:
 
 ### CDC behavior
 
-**Initial sync:** 
+**Initial sync:**
 
 The first sync performs a full snapshot of your source tables, reading all existing data. This phase is limited by the initial load timeout setting.
 
-**Subsequent syncs:** 
+**Subsequent syncs:**
 
 After the initial snapshot completes, the connector switches to incremental mode and reads only changes from the CDC tracking tables.
 
@@ -132,7 +132,7 @@ After the initial snapshot completes, the connector switches to incremental mode
 - `_ab_cdc_deleted_at`: Timestamp when the record was deleted (null for non-deleted records)
 - `_ab_trigger_change_time`: Timestamp from the trigger table used as the cursor
 
-**Automatic cleanup:** 
+**Automatic cleanup:**
 
 To prevent tracking tables from growing indefinitely, the connector automatically deletes processed change records during each sync. Only records older than the current checkpoint are removed.
 
