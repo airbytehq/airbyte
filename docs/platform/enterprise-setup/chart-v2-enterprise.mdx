@@ -12,7 +12,7 @@ import HelmSyntaxConversion from '@site/static/_helm-chart-2-syntax-changes.md';
 Airbyte has upgraded its Helm chart to a new version called "V2." Upgrading to Helm chart V2 is currently optional. At some future date the V2 Helm chart will become the standard, so we advise that you upgrade your existing deployment to use the new chart before the transition. If you're a new Airbyte customer, you can skip the upgrade altogether and start with the new chart.
 
 :::important Open Source Users
-Follow the [Self-Managed Community guide](../deploying-airbyte/chart-v2-community) instead.
+Follow the [Core guide](../deploying-airbyte/chart-v2-community) instead.
 :::
 
 ## Why you should upgrade
@@ -71,7 +71,7 @@ kubectl create namespace airbyte-v2
 
 ### Add and index the repo
 
-Helm chart V2 uses a separate repo than V1 did. In your command line tool, add this repo and index it.
+Helm chart V2 uses a different repo URL (`/charts`) than V1 did (`/helm-charts`). In your command line tool, add this repo and index it.
 
 ```bash
 helm repo add airbyte-v2 https://airbytehq.github.io/charts
@@ -412,14 +412,43 @@ workloadLauncher:
 
 ### Deploy Airbyte {#deploy-airbyte}
 
-Here is an example of how to deploy version 1.7.0 of Airbyte using the latest Helm chart V2 values. Normally, in V1, the Helm chart version is identical to the Airbyte version. Since using this chart version is optional, the Helm chart and Airbyte have different, but compatible, versions.
+1. Identify the Helm chart version that corresponds to the platform version you want to run. Most Helm chart versions are designed to work with one Airbyte version, and they don't necessarily have the same version number.
 
-```bash
-helm install airbyte-enterprise airbyte-v2/airbyte \
-  --namespace airbyte-v2 \       # Target Kubernetes namespace
-  --values ./values.yaml \       # Custom configuration values
-  --version 2.0.3 \              # Helm chart version to use
-  --set global.image.tag=1.7.0   # Airbyte version to use
-```
+    ```bash
+    helm search repo airbyte-v2 --versions
+    ```
 
-<!-- I am realizing the decoupling the chart from the platform may create weird scenarios where it's unclear which version/chart combination to use. -->
+    You should see something like this:
+
+    ```text
+    NAME                            CHART VERSION   APP VERSION     DESCRIPTION
+    airbyte-v2/airbyte              2.0.18          2.0.0           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.17          1.8.5           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.16          1.8.4           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.15          1.8.4           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.14          1.8.4           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.13          1.8.3           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.12          1.8.2           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.11          1.8.2           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.10          1.8.1           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.9           1.8.0           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.8           1.8.0           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.7           1.7.1           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.6           1.7.1           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.5           1.7.0           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.4           1.6.3           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.3           1.6.2           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.2           1.6.2           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.1           1.6.1           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.0           1.6.0           Helm chart to deploy airbyte
+    airbyte-v2/airbyte-data-plane   2.0.0           2.0.0           A Helm chart for installing an Airbyte Data Plane.
+    ```
+
+2. Install Airbyte into your Helm chart V2 namespace. In this example, you install Airbyte version 2.0.
+
+    ```bash
+    helm install airbyte airbyte-v2/airbyte \
+      --namespace airbyte-v2 \       # Target Kubernetes namespace
+      --values ./values.yaml \       # Custom configuration values
+      --version 2.0.18               # Helm chart version to use
+    ```
