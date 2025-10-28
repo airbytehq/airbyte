@@ -1,3 +1,9 @@
+## Version 0.1.55
+
+**Extract CDK**
+
+* **Changed:** Timeout in case of no event comes back from dbz.
+
 ## Version 0.1.54
 
 Update temporal type representation for proto format
