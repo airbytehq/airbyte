@@ -210,6 +210,8 @@ tutorials:
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                                           |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.11      | 2025-10-27 | [68671](https://github.com/airbytehq/airbyte/pull/68671) | Log record count per load job. |
+| 3.0.10      | 2025-10-21 | [67153](https://github.com/airbytehq/airbyte/pull/67153) | Implement new proto schema implementation |
 | 3.0.9       | 2025-10-16 | [68152](https://github.com/airbytehq/airbyte/pull/68152) | Update to new TableOperationsClient interface.                                                                                                                                    |
 | 3.0.8       | 2025-10-05 | [67078](https://github.com/airbytehq/airbyte/pull/67078) | Remove memory limit for sync jobs to improve performance and resource utilization.                                                                                                |
 | 3.0.7       | 2025-09-02 | [65905](https://github.com/airbytehq/airbyte/pull/65905) | Promoting release candidate 3.0.7-rc.1 to a main version.                                                                                                                         |
