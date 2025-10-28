@@ -43,7 +43,7 @@ class JdbcDeleteQuerier(private val jdbcConnectionFactory: JdbcConnectionFactory
             stmt = conn.prepareStatement(sql)
 
             // Execute the delete statement and return the count of affected rows
-            val rowsAffected = stmt.executeUpdate()
+            val rowsAffected: Int = stmt.executeUpdate()
             log.info { "Delete query affected $rowsAffected rows" }
             return rowsAffected
         } finally {
