@@ -86,8 +86,8 @@ abstract class TriggerPartitionReader<P : JdbcPartition<*>>(
     }
 
     fun out(row: SelectQuerier.ResultRow) {
-        val db2StreamState = streamState as TriggerStreamState
-        if (db2StreamState.isReadingFromTriggerTable) {
+        val triggerStreamState = streamState as TriggerStreamState
+        if (triggerStreamState.isReadingFromTriggerTable) {
             val decoratedPayload = decorateTriggerBasedCdcRecord(row)
             outputRoute(decoratedPayload, emptyMap())
         } else {
