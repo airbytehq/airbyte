@@ -33,4 +33,4 @@ done
 
 echo ""
 echo "Generating bundled JSON schema..."
-./bin/bundle-json-schemas.sh
+node bin/bundle-schemas.js

@@ -20,6 +20,11 @@ async function bundleSchemas() {
     console.log(`   Entry schema: ${ENTRY_SCHEMA}`);
     console.log(`   Output: ${BUNDLE_OUTPUT}`);
 
+    if (!fs.existsSync(YAML_DIR)) {
+      console.error(`❌ Error: The yaml directory does not exist: ${YAML_DIR}`);
+      process.exit(1);
+    }
+
     if (!fs.existsSync(OUTPUT_DIR)) {
       fs.mkdirSync(OUTPUT_DIR, { recursive: true });
     }
