@@ -395,6 +395,14 @@ sealed interface IncrementalConfigurationSpecification
 data object StandardReplicationMethodConfigurationSpecification :
     IncrementalConfigurationSpecification
 
+@JsonSchemaTitle("Detect Changes with Xmin System Column")
+@JsonSchemaDescription(
+    "<i>Recommended</i> - Incrementally reads new inserts and updates via Postgres " +
+        "<a href=\"https://docs.airbyte.com/integrations/sources/postgres/#xmin\">" +
+        "Xmin system column</a>. Suitable for databases that have low transaction pressure."
+)
+data object XminReplicationMethodConfigurationSpecification : IncrementalConfigurationSpecification
+
 @JsonSchemaTitle("Read Changes using Change Data Capture (CDC)")
 @JsonSchemaDescription(
     "<i>Recommended</i> - " +
