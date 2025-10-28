@@ -77,7 +77,7 @@ python cdc_setup_db2.py \
 - `--recreate-triggers`: Drop and recreate existing triggers
 - `--dry-run`: Preview changes without executing them
 
-##### Example: Set up CDC for all tables in a schema
+##### Example: set up CDC for all tables in a schema
 
 ```bash
 python cdc_setup_db2.py \
@@ -89,7 +89,7 @@ python cdc_setup_db2.py \
   --schema SALES
 ```
 
-##### Example: Set up CDC for specific tables
+##### Example: set up CDC for specific tables
 
 ```bash
 python cdc_setup_db2.py \
