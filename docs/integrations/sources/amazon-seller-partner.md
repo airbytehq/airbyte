@@ -249,7 +249,7 @@ Create a separate connection for streams which usually fail with error above "Fa
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.8.3      | 2025-10-28 |  | Increase `maxSecondsBetweenMessages` to 14400    |
+| 4.8.3      | 2025-10-28 | [68678](https://github.com/airbytehq/airbyte/pull/68678)  | Increase `maxSecondsBetweenMessages` to 14400                                                                                                                                       |
 | 4.8.2 | 2025-09-17 | [66485](https://github.com/airbytehq/airbyte/pull/66485) | Upgrade to CDK v7 |
 | 4.8.1 | 2025-08-16 | [65047](https://github.com/airbytehq/airbyte/pull/65047) | Update dependencies |
 | 4.8.0 | 2025-07-29 | [53225](https://github.com/airbytehq/airbyte/pull/) | Add VendorOrdersStatus stream |
