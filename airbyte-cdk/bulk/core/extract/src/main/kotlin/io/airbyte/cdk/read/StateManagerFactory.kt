@@ -88,59 +88,50 @@ class StateManagerFactory(
     ): StateManager {
         val decoratedStreams: List<Stream> =
             undecoratedStreams.map { stream: Stream ->
-                    when (stream.configuredSyncMode) {
-                        ConfiguredSyncMode.INCREMENTAL ->
-                            stream.copy(schema = stream.schema + metaFieldDecorator.globalMetaFields)
-                        ConfiguredSyncMode.FULL_REFRESH ->
-                            when (DataChannelMedium.valueOf(dataChannelMedium)
-                                to DataChannelFormat.valueOf(dataChannelFormat))
-                            {
-                                // Socket protobuf protobuf mode is using a sorted list of fields
-                                // Without including field id's.
-                                // We need to always match the full in catlog schema to maintain sorting.
-                                // Output here needs to match Discover's JdbcAirbyteStreamFactory
-                                SOCKET to PROTOBUF -> if (stream.configuredPrimaryKey?.isNotEmpty() == true) {
-                                    stream.copy(
-                                        schema = stream.schema + metaFieldDecorator.globalMetaFields,
-                                    )
-                                } else {
-                                    stream
-                                }
-                                // While Socket json doesn't strictly need to maintain any sorting order
-                                // We still want to include the meta fields if there is a primary key
-                                // For debugging sockets purposes - so proto and json records are the same.
-                                SOCKET to JSONL -> if (stream.configuredPrimaryKey?.isNotEmpty() == true) {
-                                    stream.copy(
-                                        schema = stream.schema + metaFieldDecorator.globalMetaFields,
-                                    )
-                                } else {
-                                    stream
-                                }
-
-                                // stdio protobuf mode not supported
-                                /*DataChannelMedium.STDIO to PROTOBUF ->  */
-
-                                // Legacy stdio json mode doesn't need metafields decorations in full refresh
-                                DataChannelMedium.STDIO to JSONL -> stream
-
-                                else -> stream
-                            }
-
-                        /*when (DataChannelMedium.valueOf(dataChannelMedium)) {
-                            // Because socket protobuf mode is using a sorted list of fields
-                            // Without including field id's we need to always send the full
-                            // set of fields as in the schema so sorting is maintained.
-                            DataChannelMedium.SOCKET -> {
+                when (stream.configuredSyncMode) {
+                    ConfiguredSyncMode.INCREMENTAL ->
+                        stream.copy(schema = stream.schema + metaFieldDecorator.globalMetaFields)
+                    ConfiguredSyncMode.FULL_REFRESH ->
+                        when (
+                            DataChannelMedium.valueOf(dataChannelMedium) to
+                                DataChannelFormat.valueOf(dataChannelFormat)
+                        ) {
+                            // Socket protobuf protobuf mode is using a sorted list of fields
+                            // Without including field id's.
+                            // We need to always match the full in catlog schema to maintain
+                            // sorting.
+                            // Output here needs to match Discover's JdbcAirbyteStreamFactory
+                            SOCKET to PROTOBUF ->
                                 if (stream.configuredPrimaryKey?.isNotEmpty() == true) {
                                     stream.copy(
-                                        schema = stream.schema + metaFieldDecorator.globalMetaFields
+                                        schema =
+                                            stream.schema + metaFieldDecorator.globalMetaFields,
                                     )
                                 } else {
                                     stream
                                 }
-                            }
-                            DataChannelMedium.STDIO -> stream
-                        }*/
+                            // While Socket json doesn't strictly need to maintain any sorting order
+                            // We still want to include the meta fields if there is a primary key
+                            // For debugging sockets purposes - so proto and json records are the
+                            // same.
+                            SOCKET to JSONL ->
+                                if (stream.configuredPrimaryKey?.isNotEmpty() == true) {
+                                    stream.copy(
+                                        schema =
+                                            stream.schema + metaFieldDecorator.globalMetaFields,
+                                    )
+                                } else {
+                                    stream
+                                }
+
+                            // stdio protobuf mode not supported
+                            /*DataChannelMedium.STDIO to PROTOBUF ->  */
+
+                            // Legacy stdio json mode doesn't need metafields decorations in full
+                            // refresh
+                            DataChannelMedium.STDIO to JSONL -> stream
+                            else -> stream
+                        }
                 }
             }
         val globalStreams: List<Stream> =
