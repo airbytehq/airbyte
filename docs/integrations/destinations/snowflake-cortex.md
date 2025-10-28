@@ -84,6 +84,7 @@ To get started, sign up for [Snowflake](https://www.snowflake.com/en/). Ensure y
 
 | Version | Date       | Pull Request                                                  | Subject                                                                                                                                              |
 |:--------| :--------- |:--------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.2.27 | 2025-10-21 | [68344](https://github.com/airbytehq/airbyte/pull/68344) | Update dependencies |
 | 0.2.26 | 2025-10-14 | [63066](https://github.com/airbytehq/airbyte/pull/63066) | Update dependencies |
 | 0.2.25 | 2025-05-17 | [51743](https://github.com/airbytehq/airbyte/pull/51743) | Update dependencies |
 | 0.2.24 | 2025-03-01 | [54735](https://github.com/airbytehq/airbyte/pull/54735) | Bump snowflake-connector-python from 3.12.2 to 3.13.1 in /airbyte-integrations/connectors/destination-snowflake-cortex |
