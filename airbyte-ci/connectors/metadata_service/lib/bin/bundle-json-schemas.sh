@@ -36,7 +36,11 @@ mkdir -p "$OUTPUT_DIR"
 
 if [ ! -d "node_modules" ]; then
   echo "📦 Installing Node.js dependencies..."
-  npm install --silent
+  if [ -f "package-lock.json" ]; then
+    npm ci --silent
+  else
+    npm install --silent
+  fi
 fi
 
 echo "📦 Bundling JSON schemas using @apidevtools/json-schema-ref-parser..."
