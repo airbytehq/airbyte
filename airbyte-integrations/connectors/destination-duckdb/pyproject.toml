@@ -3,7 +3,7 @@ name = "destination-duckdb"
 version = "0.5.1"
 description = "Destination implementation for Duckdb."
 authors = ["Simon Späti, Airbyte"]
-license = "MIT"
+license = "ELv2"
 readme = "README.md"
 
 [tool.poetry.dependencies]
