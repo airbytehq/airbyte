@@ -41,8 +41,7 @@ Upgrade by updating your `values.yaml` file and redeploying Airbyte. If you're n
    helm upgrade airbyte airbyte-v2/airbyte \
    --namespace airbyte-v2 \       # Target Kubernetes namespace
    --values ./values.yaml \       # Custom configuration values
-   --version 2.0.3 \              # Helm chart version to use
-   --set global.image.tag=1.7.0   # Airbyte version to use
+   --version 2.x.x                # Helm chart version to use
    ```
 
    </TabItem>
@@ -59,7 +58,7 @@ Upgrade by updating your `values.yaml` file and redeploying Airbyte. If you're n
 
 ## Upgrading Airbyte deployed with abctl
 
-`abctl` streamlines the way you manage a local installation of Airbyte OSS. 
+`abctl` streamlines the way you manage a local installation of Airbyte Core.
 
 Run `abctl local install` to upgrade to the latest version of Airbyte. If you'd like to ensure you're running the latest version of Airbyte, you can check the value of the Helm Chart's app version by running `abctl local status`.
 

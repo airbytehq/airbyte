@@ -1,3 +1,29 @@
+## Version 0.1.57
+
+**Extract CDK**
+
+* **Changed:** Remove unnecesarry metafield decoration from database views streams in CDC mode.
+
+## Version 0.1.56
+
+load cdk: improve component tests
+
+## Version 0.1.55
+
+**Extract CDK**
+
+* **Changed:** Timeout in case of no event comes back from dbz.
+
+## Version 0.1.54
+
+Update temporal type representation for proto format
+
+## Version 0.1.53
+
+**Extract CDK**
+
+* **Changed:** Handle debezium engine shutdown properly with socket.
+
 ## Version 0.1.52
 
 **Load CDK**

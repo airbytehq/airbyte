@@ -26,9 +26,9 @@ class AirbyteValueProxyTest {
             "integerField": 1234567890123456789,
             "numberField": 1234567890123456789.123456789,
             "dateField": "2023-10-01",
-            "timeWithTimezoneField": "12:34:56+00:00",
+            "timeWithTimezoneField": "12:34:56Z",
             "timeWithoutTimezoneField": "12:34:56",
-            "timestampWithTimezoneField": "2023-10-01T12:34:56+00:00",
+            "timestampWithTimezoneField": "2023-10-01T12:34:56Z",
             "timestampWithoutTimezoneField": "2023-10-01T12:34:56",
             "objectField": {"key": "value"},
             "arrayField": [1, 2, 3],
@@ -137,7 +137,7 @@ class AirbyteValueProxyTest {
                 data.add(protoField)
             }
 
-            val proxy = AirbyteValueProtobufProxy(data)
+            @Suppress("DEPRECATION") val proxy = AirbyteValueProtobufProxy(data)
             validate(objectTree, proxy)
         }
     }
