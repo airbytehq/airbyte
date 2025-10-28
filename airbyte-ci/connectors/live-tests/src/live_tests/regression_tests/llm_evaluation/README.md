@@ -1,6 +1,6 @@
 # LLM-Based Regression Test Evaluation
 
-This module provides automated evaluation of connector regression test reports using OpenAI's LLM (GPT-4o). The evaluation analyzes test results, metrics, and differences between control and target connector versions to make an intelligent pass/fail judgment.
+This module provides automated evaluation of connector regression test reports using LLM models via OpenAI-compatible APIs. The evaluation analyzes test results, metrics, and differences between control and target connector versions to make an intelligent pass/fail judgment.
 
 ## Overview
 
@@ -8,7 +8,7 @@ The LLM evaluation step runs automatically after regression tests complete in Gi
 
 1. **Extracts data** from the HTML regression test report
 2. **Analyzes** test results, stream coverage, record counts, and message metrics
-3. **Evaluates** using OpenAI GPT-4o with a configurable prompt
+3. **Evaluates** using an LLM (GitHub Models or OpenAI) with a configurable prompt
 4. **Generates** a comprehensive summary with pass/fail judgment
 5. **Outputs** the summary to `GITHUB_STEP_SUMMARY` for display in the GitHub Actions UI
 
@@ -67,8 +67,43 @@ poetry run python src/live_tests/regression_tests/llm_evaluation/evaluate_report
 
 ### Environment Variables
 
-- `OPENAI_API_KEY` (required): OpenAI API key for GPT-4o access
+- `OPENAI_API_KEY` (required): API key for LLM access (OpenAI API key or GitHub token for GitHub Models)
+- `OPENAI_BASE_URL` (optional): Base URL for OpenAI-compatible API (e.g., `https://models.github.ai/inference` for GitHub Models)
+- `EVAL_MODEL` (optional): Model name to use (defaults to `gpt-4o`, use `openai/gpt-4o` for GitHub Models)
 - `GITHUB_STEP_SUMMARY` (optional): Path to GitHub Actions step summary file
+
+### Using GitHub Models (Default in CI)
+
+The workflow is configured to use GitHub Models API by default, which provides free LLM access in GitHub Actions:
+
+```yaml
+env:
+  OPENAI_API_KEY: ${{ github.token }}
+  OPENAI_BASE_URL: https://models.github.ai/inference
+  EVAL_MODEL: openai/gpt-4o
+```
+
+Required workflow permissions:
+```yaml
+permissions:
+  contents: read
+  models: read
+```
+
+### Using OpenAI API
+
+To use OpenAI's API instead of GitHub Models:
+
+1. Set `OPENAI_API_KEY` secret in GitHub repository settings with your OpenAI API key
+2. Remove or comment out `OPENAI_BASE_URL` in the workflow
+3. Set `EVAL_MODEL` to `gpt-4o` (without the `openai/` prefix)
+
+For local testing with OpenAI:
+```bash
+export OPENAI_API_KEY="your-openai-api-key"
+export EVAL_MODEL="gpt-4o"
+# Don't set OPENAI_BASE_URL
+```
 
 ### Command-Line Arguments
 
@@ -147,26 +182,27 @@ No action required. The connector is ready for release.
 ### Components
 
 1. **`evaluate_report.py`**: Main script with three key functions:
-   - `extract_report_data()`: Parses HTML report using BeautifulSoup
-   - `evaluate_with_llm()`: Calls OpenAI API for evaluation
+   - `load_report_text()`: Converts HTML report to clean text using BeautifulSoup
+   - `evaluate_with_llm()`: Calls OpenAI-compatible API for evaluation
    - `write_github_summary()`: Formats and writes markdown output
 
-2. **Data Extraction**: Uses BeautifulSoup to parse HTML and extract:
-   - Context (connector, versions, tester)
-   - Stream coverage metrics
-   - Test results with pass/fail status
-   - Message count differences
-   - Record count differences per stream
+2. **Data Extraction**: Uses BeautifulSoup to:
+   - Parse HTML report and extract text content
+   - Remove script and style elements
+   - Truncate to 200K characters if needed
 
 3. **LLM Integration**: Uses OpenAI Python SDK to:
-   - Send structured report data to GPT-4o
+   - Support both OpenAI API and GitHub Models API
+   - Send full report text to the LLM for analysis
    - Request JSON-formatted evaluation response
    - Handle API errors with fallback logic
+   - Retry without response_format if not supported
 
 4. **Output Generation**: Creates markdown summary with:
    - Visual indicators (emojis)
-   - Structured sections
-   - Detailed statistics and reasoning
+   - Pass/fail status and severity
+   - Detailed reasoning and recommendations
+   - Model information footer
 
 ### Error Handling
 
@@ -204,8 +240,9 @@ If you see "LLM Evaluation Skipped" in the GitHub Actions summary:
 ### API Key Errors
 
 If you see "OPENAI_API_KEY environment variable not set":
-- Ensure the `OPENAI_API_KEY` secret is configured in GitHub repository settings
-- Verify the secret is passed to the workflow step in `regression_tests.yml`
+- For GitHub Models (default): Ensure the workflow has `models: read` permission
+- For OpenAI API: Ensure the `OPENAI_API_KEY` secret is configured in GitHub repository settings
+- Verify the secret/token is passed to the workflow step in `regression_tests.yml`
 
 ### Evaluation Failures
 

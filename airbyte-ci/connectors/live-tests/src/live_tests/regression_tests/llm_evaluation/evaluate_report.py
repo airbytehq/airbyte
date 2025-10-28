@@ -81,6 +81,12 @@ def evaluate_with_llm(report_text: str, prompt: str | None = None) -> dict[str, 
     """
     Use OpenAI LLM to evaluate the regression test report.
 
+    Supports both OpenAI API and GitHub Models API (OpenAI-compatible).
+    Configure via environment variables:
+    - OPENAI_API_KEY: API key (or GitHub token for GitHub Models)
+    - OPENAI_BASE_URL: Optional base URL (e.g., https://models.github.ai/inference for GitHub Models)
+    - EVAL_MODEL: Model name (defaults to gpt-4o)
+
     Args:
         report_text: Full text of the report
         prompt: Optional custom evaluation prompt (defaults to EVAL_PROMPT)
@@ -88,14 +94,24 @@ def evaluate_with_llm(report_text: str, prompt: str | None = None) -> dict[str, 
     Returns:
         Dictionary containing evaluation results with 'pass', 'summary', 'reasoning', 'severity', and 'recommendations' keys
     """
-    client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+    api_key = os.environ.get("OPENAI_API_KEY")
+    base_url = os.environ.get("OPENAI_BASE_URL")
+    model = os.environ.get("EVAL_MODEL", "gpt-4o")
+
+    if base_url:
+        client = OpenAI(api_key=api_key, base_url=base_url)
+        print(f"Using custom base URL: {base_url}")
+    else:
+        client = OpenAI(api_key=api_key)
+
+    print(f"Using model: {model}")
 
     if prompt is None:
         prompt = EVAL_PROMPT
 
     try:
         response = client.chat.completions.create(
-            model="gpt-4o",
+            model=model,
             messages=[
                 {"role": "system", "content": prompt},
                 {"role": "user", "content": f"Report:\n\n{report_text}"},
@@ -107,6 +123,26 @@ def evaluate_with_llm(report_text: str, prompt: str | None = None) -> dict[str, 
         evaluation = json.loads(response.choices[0].message.content)
         return evaluation
     except Exception as e:
+        error_msg = str(e).lower()
+        if "response_format" in error_msg or "json_object" in error_msg:
+            print(f"Warning: JSON response format not supported, retrying without it: {e}")
+            try:
+                response = client.chat.completions.create(
+                    model=model,
+                    messages=[
+                        {"role": "system", "content": prompt},
+                        {"role": "user", "content": f"Report:\n\n{report_text}"},
+                    ],
+                    temperature=0.3,
+                )
+                content = response.choices[0].message.content
+                evaluation = json.loads(content)
+                return evaluation
+            except Exception as retry_error:
+                print(f"Retry also failed: {retry_error}")
+                e = retry_error
+
+        # Fallback to keyword-based evaluation
         has_failures = "failed" in report_text.lower() or "error" in report_text.lower()
         return {
             "pass": not has_failures,
@@ -117,12 +153,13 @@ def evaluate_with_llm(report_text: str, prompt: str | None = None) -> dict[str, 
         }
 
 
-def write_github_summary(evaluation: dict[str, Any]) -> None:
+def write_github_summary(evaluation: dict[str, Any], model: str | None = None) -> None:
     """
     Write the evaluation summary to GITHUB_STEP_SUMMARY.
 
     Args:
         evaluation: LLM evaluation results
+        model: Model name used for evaluation (optional)
     """
     summary_file = os.environ.get("GITHUB_STEP_SUMMARY")
     if not summary_file:
@@ -131,6 +168,8 @@ def write_github_summary(evaluation: dict[str, Any]) -> None:
 
     status_emoji = "✅" if evaluation["pass"] else "❌"
     severity_emoji = {"critical": "🔴", "major": "🟠", "minor": "🟡", "none": "🟢"}.get(evaluation.get("severity", "none"), "⚪")
+
+    model_info = f"model: {model}" if model else "OpenAI-compatible API"
 
     markdown = f"""# {status_emoji} Regression Test Evaluation: {"PASS" if evaluation['pass'] else "FAIL"}
 
@@ -142,7 +181,7 @@ def write_github_summary(evaluation: dict[str, Any]) -> None:
 {evaluation.get('recommendations', 'No specific recommendations.')}
 
 ---
-*This evaluation was generated using OpenAI GPT-4o*
+*This evaluation was generated using {model_info}*
 """
 
     with open(summary_file, "a", encoding="utf-8") as f:
@@ -184,7 +223,8 @@ def main():
     print(f"\nEvaluation Result: {'PASS' if evaluation['pass'] else 'FAIL'}")
     print(f"Summary: {evaluation['summary']}")
 
-    write_github_summary(evaluation)
+    model = os.environ.get("EVAL_MODEL", "gpt-4o")
+    write_github_summary(evaluation, model)
 
     if args.output_json:
         output_data = {"evaluation": evaluation}
