@@ -4,7 +4,7 @@ enterprise-connector: true
 ---
 # Source Db2
 
-The Enterprise Db2 source connector reads data from your Db2 database. When CDC is not enabled, the connector operates in a read-only fashion. When CDC is enabled, the connector creates database triggers and tracking tables to capture changes.
+The Enterprise Db2 source connector reads data from your Db2 database. To use CDC, your database must have triggers and tracking tables provisioned in advance by your DBA. During CDC syncs, the connector reads from these tracking tables and deletes processed change rows.
 
 ## Features
 
@@ -44,67 +44,17 @@ Unlike log-based CDC systems (such as IBM InfoSphere Change Data Capture), this 
 4. During sync, the connector reads changes from the tracking tables and replicates them to your destination
 5. After processing, the connector automatically deletes old change records to prevent unbounded growth
 
-### CDC setup requirements
+### CDC prerequisites
 
-Before you can use CDC with the Db2 Enterprise connector, you must run a Python setup script to create the necessary triggers and tracking tables.
+Work with your DBA to provision the following in your Db2 instance before enabling CDC:
 
-#### Prerequisites
-
-- Python 3.7 or later
-- The `ibm_db_dbi` Python package
-- Database user with permissions to create tables in the `_ab_cdc` schema and create triggers on source tables
-
-#### Running the CDC setup script
-
-The setup script is located in the connector's repository at `python/trigger/cdc_setup_db2.py`. Run it using the following command:
-
-```bash
-python cdc_setup_db2.py \
-  --database <DATABASE> \
-  --host <HOST> \
-  --port <PORT> \
-  --user <USER> \
-  --password <PASSWORD> \
-  --schema <SOURCE_SCHEMA>
-```
-
-##### Options
-
-- `--schema`: Process all tables in a specific schema
-- `--tables`: Process only specific tables (requires `--schema`)
-- `--input-file`: Process tables listed in a CSV or JSON file
-- `--cdc-schema`: Custom schema for CDC tracking tables (default: `_ab_cdc`)
-- `--recreate-triggers`: Drop and recreate existing triggers
-- `--dry-run`: Preview changes without executing them
-
-##### Example: set up CDC for all tables in a schema
-
-```bash
-python cdc_setup_db2.py \
-  --database MYDB \
-  --host db2.example.com \
-  --port 50000 \
-  --user airbyte_user \
-  --password secret123 \
-  --schema SALES
-```
-
-##### Example: set up CDC for specific tables
-
-```bash
-python cdc_setup_db2.py \
-  --database MYDB \
-  --host db2.example.com \
-  --port 50000 \
-  --user airbyte_user \
-  --password secret123 \
-  --schema SALES \
-  --tables ORDERS CUSTOMERS PRODUCTS
-```
+- Tracking tables in the `_ab_cdc` schema (or your chosen CDC schema)
+- Three triggers (INSERT, UPDATE, DELETE) on each source table you plan to replicate
+- Ensure the connector's runtime user has the required runtime permissions (see Important considerations below)
 
 ### Configuring CDC in Airbyte
 
-After running the setup script, configure your Db2 Enterprise source in Airbyte:
+After the CDC infrastructure is provisioned, configure your Db2 Enterprise source in Airbyte:
 
 1. In the connector configuration, select "Read Changes using Change Data Capture (CDC)" as the cursor method
 2. Set the "Initial Load Timeout in Hours" (default: 8 hours) - this controls how long the initial snapshot phase can run before switching to incremental CDC mode
@@ -138,13 +88,16 @@ To prevent tracking tables from growing indefinitely, the connector automaticall
 
 ### Important considerations
 
-- **Database permissions for CDC:** The trigger-based CDC approach requires write permissions on your database to create triggers and tracking tables. The database user credentials you enter in the Airbyte connector configuration must have the following permissions:
+- **Setup-time permissions (one-time):** To provision the CDC infrastructure, a privileged database user (typically a DBA) needs:
   - `CREATE TABLE` privilege in the `_ab_cdc` schema (or your custom CDC schema)
-  - `CREATE TRIGGER` privilege on all source tables you want to replicate with CDC
-  - These permissions are granted by your database administrator using DB2's `GRANT` statements
+  - `CREATE TRIGGER` privilege on each source table that will participate in CDC
+  - This setup user can be different from the runtime connector user
+- **Runtime permissions (ongoing):** The database user configured in the Airbyte connector needs:
+  - `SELECT` on all source tables being replicated
+  - `SELECT` and `DELETE` on the CDC tracking tables (used to read and clean up processed change rows)
 - Triggers add a small performance overhead to INSERT, UPDATE, and DELETE operations on source tables
 - The `_ab_cdc` schema and tracking tables must not be modified manually
-- If you drop and recreate a source table, you must rerun the CDC setup script for that table
+- If you drop and recreate a source table, you must recreate the CDC triggers and tracking table for that table
 - CDC is not compatible with IBM InfoSphere Change Data Capture - this connector uses its own trigger-based implementation
 
 ## Data type mapping
