@@ -2205,7 +2205,7 @@ spec:
         title: Number of concurrent workers
         minimum: 1
         maximum: 40
-        default: 3
+        default: 10
         examples: [ 1, 2, 3 ]
         description: The number of worker threads to use for the sync.
   advanced_auth:
