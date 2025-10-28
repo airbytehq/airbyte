@@ -1,3 +1,9 @@
+## Version 0.1.57
+
+**Extract CDK**
+
+* **Changed:** Remove unnecesarry metafield decoration from database views streams in CDC mode.
+
 ## Version 0.1.56
 
 load cdk: improve component tests
