@@ -376,7 +376,7 @@ class SnowflakeAirbyteClient(
                                             // but handle some annoying edge cases
                                             val actualValue =
                                                 when (parsedValue) {
-                                                    is Integer -> parsedValue.toLong()
+                                                    is Int -> parsedValue.toLong()
                                                     else -> parsedValue
                                                 }
                                             row[columnName] = actualValue
