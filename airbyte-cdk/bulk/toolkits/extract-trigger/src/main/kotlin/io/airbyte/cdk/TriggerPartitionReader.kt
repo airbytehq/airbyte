@@ -23,6 +23,7 @@ import io.airbyte.cdk.read.PartitionReader
 import io.airbyte.cdk.read.ResourceType
 import io.airbyte.cdk.read.SelectQuerier
 import io.airbyte.cdk.read.Stream
+import io.airbyte.cdk.read.UnlimitedTimePartitionReader
 import io.airbyte.protocol.models.v0.AirbyteStateMessage
 import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
 import java.time.Duration
@@ -36,7 +37,7 @@ import java.util.concurrent.atomic.AtomicReference
 abstract class TriggerPartitionReader<P : JdbcPartition<*>>(
     val partition: P,
     protected val config: TriggerTableConfig,
-) : PartitionReader {
+) : UnlimitedTimePartitionReader {
     private val nullValueEncoder = FieldValueEncoder(null, NullCodec)
 
     lateinit var outputMessageRouter: OutputMessageRouter
