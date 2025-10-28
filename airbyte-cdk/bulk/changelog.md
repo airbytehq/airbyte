@@ -1,3 +1,7 @@
+## Version 0.1.56
+
+load cdk: improve component tests
+
 ## Version 0.1.55
 
 **Extract CDK**
