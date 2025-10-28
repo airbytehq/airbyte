@@ -36,22 +36,22 @@ object TableOperationsFixtures {
     const val ID_FIELD = "id"
 
     // Common schemas
-    val TEST_INTEGER_SCHEMA = ObjectType(linkedMapOf(TEST_FIELD to FieldType(IntegerType, false)))
+    val TEST_INTEGER_SCHEMA = ObjectType(linkedMapOf(TEST_FIELD to FieldType(IntegerType, true)))
 
     val ID_AND_TEST_SCHEMA =
         ObjectType(
             linkedMapOf(
-                ID_FIELD to FieldType(StringType, false),
-                TEST_FIELD to FieldType(IntegerType, false),
+                ID_FIELD to FieldType(StringType, true),
+                TEST_FIELD to FieldType(IntegerType, true),
             ),
         )
 
     val ID_TEST_WITH_CDC_SCHEMA =
         ObjectType(
             linkedMapOf(
-                ID_FIELD to FieldType(StringType, false),
-                TEST_FIELD to FieldType(IntegerType, false),
-                CDC_DELETED_AT_COLUMN to FieldType(IntegerType, false),
+                ID_FIELD to FieldType(StringType, true),
+                TEST_FIELD to FieldType(IntegerType, true),
+                CDC_DELETED_AT_COLUMN to FieldType(IntegerType, true),
             ),
         )
 
