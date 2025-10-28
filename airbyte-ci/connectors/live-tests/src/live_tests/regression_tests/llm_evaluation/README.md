@@ -1,6 +1,6 @@
 # LLM-Based Regression Test Evaluation
 
-This module provides automated evaluation of connector regression test reports using LLM models via OpenAI-compatible APIs. The evaluation analyzes test results, metrics, and differences between control and target connector versions to make an intelligent pass/fail judgment.
+This module provides automated evaluation of connector regression test reports using LLM models via Ollama (local) or OpenAI-compatible APIs. The evaluation analyzes test results, metrics, and differences between control and target connector versions to make an intelligent pass/fail judgment.
 
 ## Overview
 
@@ -8,7 +8,7 @@ The LLM evaluation step runs automatically after regression tests complete in Gi
 
 1. **Extracts data** from the HTML regression test report
 2. **Analyzes** test results, stream coverage, record counts, and message metrics
-3. **Evaluates** using an LLM (GitHub Models or OpenAI) with a configurable prompt
+3. **Evaluates** using an LLM (Ollama local model or OpenAI API) with a configurable prompt
 4. **Generates** a comprehensive summary with pass/fail judgment
 5. **Outputs** the summary to `GITHUB_STEP_SUMMARY` for display in the GitHub Actions UI
 
@@ -67,42 +67,75 @@ poetry run python src/live_tests/regression_tests/llm_evaluation/evaluate_report
 
 ### Environment Variables
 
-- `OPENAI_API_KEY` (required): API key for LLM access (OpenAI API key or GitHub token for GitHub Models)
-- `OPENAI_BASE_URL` (optional): Base URL for OpenAI-compatible API (e.g., `https://models.github.ai/inference` for GitHub Models)
-- `EVAL_MODEL` (optional): Model name to use (defaults to `gpt-4o`, use `openai/gpt-4o` for GitHub Models)
+- `OPENAI_API_KEY` (required): API key for LLM access (use `ollama` for Ollama, or OpenAI API key)
+- `OPENAI_BASE_URL` (optional): Base URL for OpenAI-compatible API (e.g., `http://127.0.0.1:11434/v1` for Ollama)
+- `EVAL_MODEL` (optional): Model name to use (defaults to `gpt-4o`, use `llama3.2:3b` for Ollama)
 - `GITHUB_STEP_SUMMARY` (optional): Path to GitHub Actions step summary file
 
-### Using GitHub Models (Default in CI)
+### Using Ollama (Default in CI)
 
-The workflow is configured to use GitHub Models API by default, which provides free LLM access in GitHub Actions:
+The workflow is configured to use Ollama by default, which provides free local LLM evaluation in GitHub Actions:
 
 ```yaml
-env:
-  OPENAI_API_KEY: ${{ github.token }}
-  OPENAI_BASE_URL: https://models.github.ai/inference
-  EVAL_MODEL: openai/gpt-4o
+- name: Install and Start Ollama
+  run: |
+    curl -fsSL https://ollama.com/install.sh | sh
+    ollama serve &
+    sleep 5
+    ollama pull llama3.2:3b
+
+- name: Evaluate Regression Test Report with LLM
+  env:
+    OPENAI_API_KEY: ollama
+    OPENAI_BASE_URL: http://127.0.0.1:11434/v1
+    EVAL_MODEL: llama3.2:3b
 ```
 
-Required workflow permissions:
-```yaml
-permissions:
-  contents: read
-  models: read
-```
+**Model Selection:**
+- `llama3.2:3b` - Fast, CPU-friendly, good quality (recommended for CI)
+- `llama3.2:1b` - Faster but lower quality
+- `phi4:14b` - Higher quality but slower and requires more memory
 
 ### Using OpenAI API
 
-To use OpenAI's API instead of GitHub Models:
+To use OpenAI's API instead of Ollama:
 
 1. Set `OPENAI_API_KEY` secret in GitHub repository settings with your OpenAI API key
 2. Remove or comment out `OPENAI_BASE_URL` in the workflow
-3. Set `EVAL_MODEL` to `gpt-4o` (without the `openai/` prefix)
+3. Set `EVAL_MODEL` to `gpt-4o`
+4. Remove the Ollama installation step
 
 For local testing with OpenAI:
 ```bash
 export OPENAI_API_KEY="your-openai-api-key"
 export EVAL_MODEL="gpt-4o"
 # Don't set OPENAI_BASE_URL
+```
+
+### Local Testing with Ollama
+
+To test locally with Ollama:
+
+```bash
+# Install Ollama
+curl -fsSL https://ollama.com/install.sh | sh
+
+# Start Ollama server
+ollama serve &
+
+# Pull model
+ollama pull llama3.2:3b
+
+# Set environment variables
+export OPENAI_API_KEY=ollama
+export OPENAI_BASE_URL=http://127.0.0.1:11434/v1
+export EVAL_MODEL=llama3.2:3b
+
+# Run evaluation
+cd airbyte-ci/connectors/live-tests
+poetry run python src/live_tests/regression_tests/llm_evaluation/evaluate_report.py \
+  --report-path /path/to/report.html \
+  --output-json /path/to/output.json
 ```
 
 ### Command-Line Arguments
@@ -240,9 +273,17 @@ If you see "LLM Evaluation Skipped" in the GitHub Actions summary:
 ### API Key Errors
 
 If you see "OPENAI_API_KEY environment variable not set":
-- For GitHub Models (default): Ensure the workflow has `models: read` permission
+- For Ollama (default): Ensure `OPENAI_API_KEY` is set to `ollama` in the workflow
 - For OpenAI API: Ensure the `OPENAI_API_KEY` secret is configured in GitHub repository settings
-- Verify the secret/token is passed to the workflow step in `regression_tests.yml`
+- Verify the API key is passed to the workflow step in `regression_tests.yml`
+
+### Ollama Connection Errors
+
+If you see connection errors to Ollama:
+- Ensure Ollama server is running: `ollama serve &`
+- Verify the model is pulled: `ollama pull llama3.2:3b`
+- Check the base URL is correct: `http://127.0.0.1:11434/v1`
+- Wait a few seconds after starting Ollama before running evaluation
 
 ### Evaluation Failures
 
