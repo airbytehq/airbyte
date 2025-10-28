@@ -4,6 +4,8 @@ enterprise-connector: true
 ---
 # Source Db2
 
+The Enterprise Db2 source connector reads data from your Db2 database. When CDC is not enabled, the connector operates in a read-only fashion. When CDC is enabled, the connector creates database triggers and tracking tables to capture changes.
+
 ## Features
 
 | Feature                       | Supported | Notes |
@@ -15,8 +17,6 @@ enterprise-connector: true
 | SSL Support                   | No        |       |
 | SSH Tunnel Connection         | No        |       |
 | Namespaces                    | Yes       |       |
-
-The Enterprise Db2 source connector reads data from your Db2 database. When CDC is not enabled, the connector operates in a read-only fashion. When CDC is enabled, the connector creates database triggers and tracking tables to capture changes.
 
 ## Getting Started
 
@@ -112,9 +112,13 @@ After running the setup script, configure your Db2 Enterprise source in Airbyte:
 
 ### CDC behavior
 
-**Initial sync:** The first sync performs a full snapshot of your source tables, reading all existing data. This phase is limited by the initial load timeout setting.
+**Initial sync:** 
 
-**Subsequent syncs:** After the initial snapshot completes, the connector switches to incremental mode and reads only changes from the CDC tracking tables.
+The first sync performs a full snapshot of your source tables, reading all existing data. This phase is limited by the initial load timeout setting.
+
+**Subsequent syncs:** 
+
+After the initial snapshot completes, the connector switches to incremental mode and reads only changes from the CDC tracking tables.
 
 **Change tracking:** The connector tracks three types of operations:
 
@@ -128,11 +132,16 @@ After running the setup script, configure your Db2 Enterprise source in Airbyte:
 - `_ab_cdc_deleted_at`: Timestamp when the record was deleted (null for non-deleted records)
 - `_ab_trigger_change_time`: Timestamp from the trigger table used as the cursor
 
-**Automatic cleanup:** To prevent tracking tables from growing indefinitely, the connector automatically deletes processed change records during each sync. Only records older than the current checkpoint are removed.
+**Automatic cleanup:** 
+
+To prevent tracking tables from growing indefinitely, the connector automatically deletes processed change records during each sync. Only records older than the current checkpoint are removed.
 
 ### Important considerations
 
-- The trigger-based CDC approach requires write permissions on your database to create triggers and tracking tables
+- **Database permissions for CDC:** The trigger-based CDC approach requires write permissions on your database to create triggers and tracking tables. The database user credentials you enter in the Airbyte connector configuration must have the following permissions:
+  - `CREATE TABLE` privilege in the `_ab_cdc` schema (or your custom CDC schema)
+  - `CREATE TRIGGER` privilege on all source tables you want to replicate with CDC
+  - These permissions are granted by your database administrator using DB2's `GRANT` statements
 - Triggers add a small performance overhead to INSERT, UPDATE, and DELETE operations on source tables
 - The `_ab_cdc` schema and tracking tables must not be modified manually
 - If you drop and recreate a source table, you must rerun the CDC setup script for that table
