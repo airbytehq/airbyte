@@ -219,25 +219,42 @@ class SnowflakeSourceMetadataQuerier(
             }
 
             for (namespace in base.config.namespaces + base.config.namespaces.map { it.uppercase() }) {
-                val (catalog: String?, schema: String?) =
-                    when (base.constants.namespaceKind) {
-                        NamespaceKind.CATALOG -> namespace to null
-                        NamespaceKind.SCHEMA -> null to namespace
-                        NamespaceKind.CATALOG_AND_SCHEMA -> namespace to this.schema
+                if (tableFilters.isEmpty()) {
+                    addTablesFromQuery(namespace, this.schema, null)
+                } else {
+                    val filtersForSchema = if (this.schema == null) {
+                        tableFilters
+                    } else {
+                        tableFilters.filter { it.schemaName.equals(this.schema, ignoreCase = true) }
                     }
 
-                if (tableFilters.isEmpty()) {
-                    addTablesFromQuery(catalog, schema, null)
-                } else {
-                    val filtersForSchema =
-                        tableFilters.filter { it.schemaName.equals(schema, ignoreCase = true) }
-
                     if (filtersForSchema.isEmpty()) {
-                        addTablesFromQuery(catalog, schema, null)
+                        addTablesFromQuery(namespace, this.schema, null)
                     } else {
+                        // Apply filters to specified schemas
                         for (filter in filtersForSchema) {
                             for (pattern in filter.patterns) {
-                                addTablesFromQuery(catalog, filter.schemaName, pattern)
+                                addTablesFromQuery(namespace, filter.schemaName, pattern)
+                            }
+                        }
+
+                        // If schema is null, also discover all tables from unfiltered schemas
+                        if (this.schema == null) {
+                            val filteredSchemaNames = filtersForSchema.map { it.schemaName.uppercase() }.toSet()
+                            dbmd.getTables(namespace, null, null, null).use { rs: ResultSet ->
+                                while (rs.next()) {
+                                    val tableName = TableName(
+                                        catalog = rs.getString("TABLE_CAT"),
+                                        schema = rs.getString("TABLE_SCHEM"),
+                                        name = rs.getString("TABLE_NAME"),
+                                        type = rs.getString("TABLE_TYPE") ?: "",
+                                    )
+                                    // Only add if schema is not in the filtered list
+                                    if (!filteredSchemaNames.contains(tableName.schema?.uppercase()) &&
+                                        !EXCLUDED_NAMESPACES.contains(tableName.schema?.uppercase())) {
+                                        allTables.add(tableName)
+                                    }
+                                }
                             }
                         }
                     }

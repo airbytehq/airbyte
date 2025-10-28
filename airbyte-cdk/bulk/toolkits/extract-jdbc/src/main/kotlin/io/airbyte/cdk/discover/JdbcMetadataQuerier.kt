@@ -4,7 +4,6 @@ package io.airbyte.cdk.discover
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.check.JdbcCheckQueries
 import io.airbyte.cdk.command.JdbcSourceConfiguration
-import io.airbyte.cdk.command.TableFilter
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants.NamespaceKind
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory

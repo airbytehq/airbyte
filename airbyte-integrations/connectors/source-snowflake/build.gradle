@@ -28,6 +28,7 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation 'com.fasterxml.jackson.core:jackson-databind'
     testImplementation 'com.fasterxml.jackson.module:jackson-module-kotlin'
+    testImplementation 'io.mockk:mockk:1.12.0'
 }
 
 tasks.withType(Test).configureEach {

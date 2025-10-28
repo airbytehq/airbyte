@@ -54,6 +54,7 @@ interface JdbcSourceConfiguration : SourceConfiguration {
             tableFilters: List<TableFilter>
         ) {
             if (tableFilters.isEmpty()) return
+            if (configuredSchemas.isEmpty()) return
 
             val configuredSchemasUpper = configuredSchemas.map { it.uppercase() }.toSet()
             val filterSchemas = tableFilters.map { it.schemaName.uppercase() }.toSet()
