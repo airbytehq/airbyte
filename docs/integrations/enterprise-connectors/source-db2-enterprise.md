@@ -71,7 +71,7 @@ You can use the provided Python script to automate the creation of CDC tracking 
 - Test in a non-production environment first
 - The setup user needs setup-time permissions: `CREATE TABLE` privilege in the CDC schema and `CREATE TRIGGER` privilege on source tables
 - The connector's runtime user needs different permissions: `SELECT` on source tables and `SELECT`/`DELETE` on tracking tables (setup and runtime users can be different)
-- **Security warning:** The script prints the DB connection string to stdout, including credentials. Consider removing or commenting out the connection string print statement before running in environments where logs are retained
+- **Security warning:** The script prints the DB connection string to `stdout`, including credentials. Consider removing or commenting out the connection string print statement before running in environments where logs are retained
 
 #### Script files
 
@@ -422,7 +422,7 @@ After your Db2 server has been configured for CDC, create your Db2 Enterprise so
 
 **Initial sync:**
 
-The first sync performs a full snapshot of your source tables, reading all existing data. This phase is limited by the initial load timeout setting.
+the first sync performs a full snapshot of your source tables, reading all existing data. This phase is limited by the initial load timeout setting.
 
 **Subsequent syncs:**
 
@@ -434,7 +434,7 @@ After the initial snapshot completes, the connector switches to incremental mode
 - UPDATE: Modifications to existing records
 - DELETE: Records removed from source tables
 
-**CDC metadata fields:** When using CDC, the connector adds the following metadata fields to each record:
+**CDC metadata fields:** when using CDC, the connector adds the following metadata fields to each record:
 
 - `_ab_cdc_updated_at`: Timestamp when the change occurred
 - `_ab_cdc_deleted_at`: Timestamp when the record was deleted (null for non-deleted records)
@@ -448,7 +448,7 @@ To prevent tracking tables from growing indefinitely, the connector automaticall
 
 - **Setup-time permissions (one-time):** To provision the CDC infrastructure, a privileged database user (typically a DBA) needs:
   - `CREATE TABLE` privilege in the `_ab_cdc` schema (or your custom CDC schema)
-  - `CREATE TRIGGER` privilege on each source table that will participate in CDC
+  - `CREATE TRIGGER` privilege on each source table that participates in CDC
   - This setup user can be different from the runtime connector user
 - **Runtime permissions (ongoing):** The database user configured in the Airbyte connector needs:
   - `SELECT` on all source tables being replicated
