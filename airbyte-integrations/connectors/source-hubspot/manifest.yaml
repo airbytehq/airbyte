@@ -1455,7 +1455,6 @@ definitions:
       $ref: "#/definitions/incremental_sync"
       step: P30D
       cursor_granularity: PT1S
-      is_client_side_incremental: false
 
   companies_stream:
     $ref: "#/definitions/base_crm_search_incremental_stream"
@@ -2262,7 +2261,6 @@ api_budget:
       matchers:
         - method: POST
           url_path_pattern: "^/crm/v3/objects/[^/]+/search$"
-
     # 2) General: public app burst = 110 per 10s per installed account
     - type: MovingWindowCallRatePolicy
       rates:
@@ -2271,7 +2269,6 @@ api_budget:
         - limit: 100
           interval: PT10S
       matchers: [ ]
-
   status_codes_for_ratelimit_hit: [429]
 
 # HubSpot account is limited to 110 requests every 10 seconds https://developers.hubspot.com/docs/guides/apps/api-usage/usage-details#rate-limits
