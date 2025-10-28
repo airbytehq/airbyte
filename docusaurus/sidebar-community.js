@@ -26,6 +26,21 @@ const contributeToAirbyte = {
   ],
 };
 
+const licenses = {
+  type: "category",
+  label: "Licenses",
+  link: {
+    type: "doc",
+    id: "licenses/README",
+  },
+  items: [
+    "licenses/license-faq",
+    "licenses/elv2-license",
+    "licenses/mit-license",
+    "licenses/examples",
+  ],
+};
+
 module.exports = {
   community: [
     {
@@ -36,6 +51,7 @@ module.exports = {
         "getting-support",
         contributeToAirbyte,
         "code-of-conduct",
+        licenses,
         {
           type: "link",
           label: "Roadmap",

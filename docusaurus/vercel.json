@@ -298,12 +298,12 @@
     },
     {
       "source": "/project-overview/licenses",
-      "destination": "/platform/developer-guides/licenses",
+      "destination": "/community/licenses",
       "statusCode": 301
     },
     {
       "source": "/project-overview/licenses/",
-      "destination": "/platform/developer-guides/licenses",
+      "destination": "/community/licenses",
       "statusCode": 301
     },
     {
@@ -313,7 +313,7 @@
     },
     {
       "source": "/project-overview/licenses/:path*",
-      "destination": "/platform/developer-guides/licenses/:path*",
+      "destination": "/community/licenses/:path*",
       "statusCode": 301
     },
     {
@@ -378,12 +378,12 @@
     },
     {
       "source": "/developer-guides",
-      "destination": "/platform/developer-guides/licenses",
+      "destination": "/community/licenses",
       "statusCode": 301
     },
     {
       "source": "/developer-guides/",
-      "destination": "/platform/developer-guides/licenses",
+      "destination": "/community/licenses",
       "statusCode": 301
     },
     {
@@ -509,6 +509,21 @@
     {
       "source": "/platform/contributing-to-airbyte/:path*",
       "destination": "/community/contributing-to-airbyte/:path*",
+      "statusCode": 301
+    },
+    {
+      "source": "/platform/developer-guides/licenses",
+      "destination": "/community/licenses",
+      "statusCode": 301
+    },
+    {
+      "source": "/platform/developer-guides/licenses/",
+      "destination": "/community/licenses",
+      "statusCode": 301
+    },
+    {
+      "source": "/platform/developer-guides/licenses/:path*",
+      "destination": "/community/licenses/:path*",
       "statusCode": 301
     }
   ]

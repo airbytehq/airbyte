@@ -551,20 +551,6 @@ module.exports = {
           id: "using-airbyte/pyairbyte/getting-started",
         },
         understandingAirbyte,
-        {
-          type: "category",
-          label: "Licenses",
-          link: {
-            type: "doc",
-            id: "developer-guides/licenses/README",
-          },
-          items: [
-            "developer-guides/licenses/license-faq",
-            "developer-guides/licenses/elv2-license",
-            "developer-guides/licenses/mit-license",
-            "developer-guides/licenses/examples",
-          ],
-        },
       ],
     },
   ],
