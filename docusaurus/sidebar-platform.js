@@ -565,7 +565,6 @@ module.exports = {
             "developer-guides/licenses/examples",
           ],
         },
-        sectionHeader("Product updates"),
       ],
     },
   ],
