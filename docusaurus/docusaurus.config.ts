@@ -215,6 +215,24 @@ const config: Config = {
         ],
       },
     ],
+    // This plugin controls Community docs, which are not versioned
+    [
+      "@docusaurus/plugin-content-docs",
+      {
+        id: "community",
+        path: "../docs/community",
+        routeBasePath: "/community",
+        sidebarPath: "./sidebar-community.js",
+        editUrl: "https://github.com/airbytehq/airbyte/blob/master/docs",
+        remarkPlugins: [
+          plugins.docsHeaderDecoration,
+          plugins.enterpriseDocsHeaderInformation,
+          plugins.productInformation,
+          plugins.docMetaTags,
+          plugins.addButtonToTitle,
+        ],
+      },
+    ],
     [
       "@docusaurus/plugin-content-docs",
       {
@@ -440,8 +458,11 @@ const config: Config = {
           label: "AI Agents",
         },
         {
-          href: "https://support.airbyte.com/",
-          label: "Support",
+          type: "docSidebar",
+          position: "left",
+          docsPluginId: "community",
+          sidebarId: "community",
+          label: "Community & Support",
         },
         {
           href: "https://status.airbyte.com",

@@ -93,12 +93,12 @@
     },
     {
       "source": "/project-overview/code-of-conduct",
-      "destination": "/platform/community/code-of-conduct",
+      "destination": "/community/code-of-conduct",
       "statusCode": 301
     },
     {
       "source": "/project-overview/slack-code-of-conduct",
-      "destination": "/platform/community/code-of-conduct",
+      "destination": "/community/code-of-conduct",
       "statusCode": 301
     },
     {
@@ -218,12 +218,12 @@
     },
     {
       "source": "/troubleshooting",
-      "destination": "/platform/community/getting-support",
+      "destination": "/community/getting-support",
       "statusCode": 301
     },
     {
       "source": "/operator-guides/contact-support",
-      "destination": "/platform/community/getting-support",
+      "destination": "/community/getting-support",
       "statusCode": 301
     },
     {
@@ -342,11 +342,6 @@
       "statusCode": 301
     },
     {
-      "source": "/community/:path*",
-      "destination": "/platform/community/:path*",
-      "statusCode": 301
-    },
-    {
       "source": "/connector-development",
       "destination": "/platform/connector-development",
       "statusCode": 301
@@ -363,17 +358,17 @@
     },
     {
       "source": "/contributing-to-airbyte",
-      "destination": "/platform/contributing-to-airbyte",
+      "destination": "/community/contributing-to-airbyte",
       "statusCode": 301
     },
     {
       "source": "/contributing-to-airbyte/",
-      "destination": "/platform/contributing-to-airbyte",
+      "destination": "/community/contributing-to-airbyte",
       "statusCode": 301
     },
     {
       "source": "/contributing-to-airbyte/:path*",
-      "destination": "/platform/contributing-to-airbyte/:path*",
+      "destination": "/community/contributing-to-airbyte/:path*",
       "statusCode": 301
     },
     {
@@ -489,6 +484,31 @@
     {
       "source": "/platform/contributing-to-airbyte/submit-new-connector",
       "destination": "/platform/connector-development/submit-new-connector",
+      "statusCode": 301
+    },
+    {
+      "source": "/platform/community/getting-support",
+      "destination": "/community/getting-support",
+      "statusCode": 301
+    },
+    {
+      "source": "/platform/community/code-of-conduct",
+      "destination": "/community/code-of-conduct",
+      "statusCode": 301
+    },
+    {
+      "source": "/platform/contributing-to-airbyte",
+      "destination": "/community/contributing-to-airbyte",
+      "statusCode": 301
+    },
+    {
+      "source": "/platform/contributing-to-airbyte/",
+      "destination": "/community/contributing-to-airbyte",
+      "statusCode": 301
+    },
+    {
+      "source": "/platform/contributing-to-airbyte/:path*",
+      "destination": "/community/contributing-to-airbyte/:path*",
       "statusCode": 301
     }
   ]

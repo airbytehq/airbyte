@@ -53,7 +53,7 @@ _Applies to connector with any support level_
 _Applies to connector with 300 internal support level_
 _Applies to connector with any Airbyte usage level_
 
-The user facing connector documentation should follow the guidelines defined in the [standard template](../../../airbyte-ci/connectors/connectors_qa/src/connectors_qa/checks/documentation/templates/template.md.j2).
+The user facing connector documentation should follow the guidelines defined in the [standard template](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/connectors_qa/src/connectors_qa/checks/documentation/templates/template.md.j2).
 
 This check expects the following order of headers in the documentation:
 
@@ -142,7 +142,7 @@ _Applies to connector with any support level_
 _Applies to connector with 300 internal support level_
 _Applies to connector with any Airbyte usage level_
 
-The user facing connector documentation should follow the guidelines defined in the [standard template](../../../airbyte-ci/connectors/connectors_qa/src/connectors_qa/checks/documentation/templates/template.md.j2).
+The user facing connector documentation should follow the guidelines defined in the [standard template](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/connectors_qa/src/connectors_qa/checks/documentation/templates/template.md.j2).
 
 Check verifies that CONNECTOR_NAME_FROM_METADATA header section content follows standard template:
 
@@ -165,7 +165,7 @@ _Applies to connector with any support level_
 _Applies to connector with 300 internal support level_
 _Applies to connector with any Airbyte usage level_
 
-The user facing connector documentation should follow the guidelines defined in the [standard template](../../../airbyte-ci/connectors/connectors_qa/src/connectors_qa/checks/documentation/templates/template.md.j2).
+The user facing connector documentation should follow the guidelines defined in the [standard template](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/connectors_qa/src/connectors_qa/checks/documentation/templates/template.md.j2).
 
 Check verifies that For Airbyte Cloud: header section content follows standard template:
 
@@ -186,7 +186,7 @@ _Applies to connector with any support level_
 _Applies to connector with 300 internal support level_
 _Applies to connector with any Airbyte usage level_
 
-The user facing connector documentation should follow the guidelines defined in the [standard template](../../../airbyte-ci/connectors/connectors_qa/src/connectors_qa/checks/documentation/templates/template.md.j2).
+The user facing connector documentation should follow the guidelines defined in the [standard template](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/connectors_qa/src/connectors_qa/checks/documentation/templates/template.md.j2).
 
 Check verifies that For Airbyte Open Source: header section content follows standard template:
 
@@ -204,7 +204,7 @@ _Applies to connector with any support level_
 _Applies to connector with 300 internal support level_
 _Applies to connector with any Airbyte usage level_
 
-The user facing connector documentation should follow the guidelines defined in the [standard template](../../../airbyte-ci/connectors/connectors_qa/src/connectors_qa/checks/documentation/templates/template.md.j2).
+The user facing connector documentation should follow the guidelines defined in the [standard template](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/connectors_qa/src/connectors_qa/checks/documentation/templates/template.md.j2).
 
 Check verifies that Supported sync modes header section content follows standard template:
 
@@ -223,7 +223,7 @@ _Applies to connector with any support level_
 _Applies to connector with 300 internal support level_
 _Applies to connector with any Airbyte usage level_
 
-The user facing connector documentation should follow the guidelines defined in the [standard template](../../../airbyte-ci/connectors/connectors_qa/src/connectors_qa/checks/documentation/templates/template.md.j2).
+The user facing connector documentation should follow the guidelines defined in the [standard template](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/connectors_qa/src/connectors_qa/checks/documentation/templates/template.md.j2).
 
 Check verifies that Tutorials header section content follows standard template:
 
@@ -242,7 +242,7 @@ _Applies to connector with any support level_
 _Applies to connector with 300 internal support level_
 _Applies to connector with any Airbyte usage level_
 
-The user facing connector documentation should follow the guidelines defined in the [standard template](../../../airbyte-ci/connectors/connectors_qa/src/connectors_qa/checks/documentation/templates/template.md.j2).
+The user facing connector documentation should follow the guidelines defined in the [standard template](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/connectors_qa/src/connectors_qa/checks/documentation/templates/template.md.j2).
 
 Check verifies that Changelog header section content follows standard template:
 
@@ -354,7 +354,7 @@ _Applies to connector with any support level_
 _Applies to connector with any internal support level_
 _Applies to connector with any Airbyte usage level_
 
-Connector version must follow the Semantic Versioning scheme. This is to ensure that all connectors follow a consistent versioning scheme. Refer to our [Semantic Versioning for Connectors](https://docs.airbyte.com/community/contributing-to-airbyte/resources/pull-requests-handbook#semantic-versioning-for-connectors) for more details.
+Connector version must follow the Semantic Versioning scheme. This is to ensure that all connectors follow a consistent versioning scheme. Refer to our [Semantic Versioning for Connectors](https://docs.airbyte.com/contributing-to-airbyte/#semantic-versioning-for-connectors) for more details.
 
 ### Connector version in metadata.yaml and pyproject.toml file must match
 
@@ -432,15 +432,3 @@ _Applies to connector with any internal support level_
 _Applies to connector with medium, high Airbyte usage level_
 
 Medium to High Use Connectors must enable acceptance tests via the `connectorTestSuitesOptions.suite:acceptanceTests` in their respective metadata.yaml file to ensure that the connector is working as expected.
-
-## 🔢 Version
-
-### Connector Version Increment Check
-
-_Applies to the following connector types: source, destination_
-_Applies to the following connector languages: java, low-code, python, manifest-only_
-_Applies to connector with any support level_
-_Applies to connector with any internal support level_
-_Applies to connector with any Airbyte usage level_
-
-Validates that the connector version was incremented if files were modified.

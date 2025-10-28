@@ -150,28 +150,6 @@ const buildAConnector = {
   ],
 };
 
-const contributeToAirbyte = {
-  type: "category",
-  label: "Contribute to Airbyte",
-  link: {
-    type: "doc",
-    id: "contributing-to-airbyte/README",
-  },
-  items: [
-    "contributing-to-airbyte/issues-and-requests",
-    "contributing-to-airbyte/developing-locally",
-    "contributing-to-airbyte/writing-docs",
-    {
-      type: "category",
-      label: "Resources",
-      items: [
-        "contributing-to-airbyte/resources/pull-requests-handbook",
-        "contributing-to-airbyte/resources/qa-checks",
-      ],
-    },
-  ],
-};
-
 const deployAirbyte = {
   type: "category",
   label: "Deploy Airbyte",
@@ -587,16 +565,7 @@ module.exports = {
             "developer-guides/licenses/examples",
           ],
         },
-        sectionHeader("Community"),
-        contributeToAirbyte,
-        "community/getting-support",
-        "community/code-of-conduct",
         sectionHeader("Product updates"),
-        {
-          type: "link",
-          label: "Roadmap",
-          href: "https://go.airbyte.com/roadmap",
-        },
       ],
     },
   ],

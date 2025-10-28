@@ -19,15 +19,15 @@ The token must be a (classic) token with repo scope enabled. Follow these direct
 2. In the left sidebar, click `Developer settings`.
 3. In the left sidebar, under  Personal access tokens, click `Tokens (classic)`.
 
-![Select Tokens Classic](../contributing-to-airbyte/assets/token-classic.png)
+![Select Tokens Classic](/community/contributing-to-airbyte/assets/token-classic.png)
 
 4. Select Generate new token, then click `Generate new token (classic)`.
 
-![Generate Tokens Classic](../contributing-to-airbyte/assets/token-classic-select.png)
+![Generate Tokens Classic](/community/contributing-to-airbyte/assets/token-classic-select.png)
 
 5. Add the `workflow` scope. Click `Generate Token`.
 
-![Generate Tokens Classic](../contributing-to-airbyte/assets/token-classic-scope.png)
+![Generate Tokens Classic](/community/contributing-to-airbyte/assets/token-classic-scope.png)
 
 6. Make sure to copy your personal access token. You won’t be able to see it again! Paste the personal access token to the Airbyte UI, and click "Contribute" to contribute the connector.
 
@@ -47,7 +47,7 @@ This will enable our team to make sure your contribution does not overlap with e
 
 1. Make sure your connector passes `airbyte-ci connectors test` tests. [Here's a guide on how to run them](../connector-development/testing-connectors/README.md).
 2. Make sure you include the README, documentation, and an icon for your connector. Without them, one of the CI checks will fail.
-3. Follow the [pull request convention](../contributing-to-airbyte/resources/pull-requests-handbook.md#pull-request-title-convention)
+3. Follow the [pull request convention](/community/contributing-to-airbyte/resources/pull-requests-handbook#pull-request-title-convention)
 4. Wait for a review from a community maintainer or our team. We generally look for the following criteria:
    - Does this PR cover authentication, pagination, and incremental syncs where applicable?
   - ‌Does the PR add reasonable list of streams?
