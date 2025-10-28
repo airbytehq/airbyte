@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.gcs_data_lake
+package io.airbyte.integrations.destination.gcs_data_lake.write
 
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationCatalog
@@ -13,14 +13,15 @@ import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.StreamStateStore
-import io.airbyte.integrations.destination.gcs_data_lake.io.GcsDataLakeUtil
+import io.airbyte.integrations.destination.gcs_data_lake.catalog.GcsDataLakeCatalogUtil
+import io.airbyte.integrations.destination.gcs_data_lake.spec.GcsDataLakeConfiguration
 import javax.inject.Singleton
 import org.apache.iceberg.catalog.TableIdentifier
 
 @Singleton
 class GcsDataLakeWriter(
     private val icebergConfiguration: GcsDataLakeConfiguration,
-    private val gcsDataLakeUtil: GcsDataLakeUtil,
+    private val gcsDataLakeCatalogUtil: GcsDataLakeCatalogUtil,
     private val icebergUtil: IcebergUtil,
     private val icebergTableSynchronizer: IcebergTableSynchronizer,
     private val catalog: DestinationCatalog,
@@ -65,10 +66,10 @@ class GcsDataLakeWriter(
             icebergConfiguration,
             stream,
             icebergTableSynchronizer,
-            gcsDataLakeUtil,
+            gcsDataLakeCatalogUtil,
             icebergUtil,
-            stagingBranchName = DEFAULT_STAGING_BRANCH,
-            mainBranchName = icebergConfiguration.icebergCatalogConfiguration.mainBranchName,
+            stagingBranchName = io.airbyte.integrations.destination.gcs_data_lake.spec.DEFAULT_STAGING_BRANCH,
+            mainBranchName = icebergConfiguration.mainBranchName,
             streamStateStore = streamStateStore,
         )
     }
