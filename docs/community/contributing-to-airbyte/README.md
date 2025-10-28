@@ -62,11 +62,11 @@ Do not submit a pull request using the default branch of your forked repository.
 
 ## Connector contributions
 
-Guidelines for connector contributions included in the [Connector Development Guide](../connector-development/README.md):
+Guidelines for connector contributions included in the [Connector Development Guide](/platform/connector-development):
 
-- [Contribute a New Connector](../connector-development/submit-new-connector.md) - Guide to submitting a new connector to Airbyte.
-- [Developing Connectors Locally](../connector-development/local-connector-development.md) - Guide to setting up your local environment for connector development.
-- [Breaking Changes in Connectors](../connector-development/connector-breaking-changes.md) - Guide to breaking changes and version updates.
+- [Contribute a New Connector](/platform/connector-development/submit-new-connector) - Guide to submitting a new connector to Airbyte.
+- [Developing Connectors Locally](/platform/connector-development/local-connector-development) - Guide to setting up your local environment for connector development.
+- [Breaking Changes in Connectors](/platform/connector-development/connector-breaking-changes) - Guide to breaking changes and version updates.
 
 ## Documentation contributions
 

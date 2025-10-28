@@ -32,7 +32,7 @@ If you are looking to build connectors, you should also follow the installation 
 ### Using abctl for Airbyte development
 
 The guides in this document explain how to develop Connectors and the Airbyte Platform with `abctl`. You should
-follow the [Quickstart](../using-airbyte/getting-started/oss-quickstart.md) instructions to install `abctl`.
+follow the [Quickstart](/platform/using-airbyte/getting-started/oss-quickstart) instructions to install `abctl`.
 
 [Kubernetes in Docker](https://kind.sigs.k8s.io/) (`kind`) is used by `abctl` to create a local Kubernetes cluster as a docker container.
 Once the `kind` cluster has been created, `abctl` then uses [Helm](https://helm.sh/) along with the [Airbyte Chart](https://github.com/airbytehq/airbyte-platform/tree/main/charts)
@@ -229,7 +229,7 @@ USE_EXTERNAL_DEPLOYMENT=true ./gradlew :oss:airbyte-tests:acceptanceTests
 ## Webapp Contributions
 
 To develop features in the Airbyte Webapp, you must first bring up an instance of Airbyte on TCP port 8001. To do this
-using `abctl`, first follow the [Quickstart](../using-airbyte/getting-started/oss-quickstart.md) to install `abctl`. Then run the following:
+using `abctl`, first follow the [Quickstart](/platform/using-airbyte/getting-started/oss-quickstart) to install `abctl`. Then run the following:
 
 ```bash
 abctl local install --port 8001

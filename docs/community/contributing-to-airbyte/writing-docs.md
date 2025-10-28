@@ -214,7 +214,7 @@ Details panels are a great way to render content that's not relevant to everyone
 
 ### Product badges
 
-Certain Airbyte products reserve some platform features. To avoid confusion and indicate which products a topic applies to, pages can display badges in a prominent location under the title. [This page is an example](../using-airbyte/getting-started/oss-quickstart).
+Certain Airbyte products reserve some platform features. To avoid confusion and indicate which products a topic applies to, pages can display badges in a prominent location under the title. [This page is an example](/platform/using-airbyte/getting-started/oss-quickstart).
 
 To enable badges, include `products` in the Markdown metadata. The following values are possible, and you can combine them as needed.
 
