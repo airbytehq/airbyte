@@ -48,6 +48,7 @@ Unlike log-based CDC systems (such as IBM InfoSphere Change Data Capture), this 
 
 Work with your DBA to provision the following in your Db2 instance before enabling CDC:
 
+- The CDC schema (default `_ab_cdc`) must already exist
 - Tracking tables in the `_ab_cdc` schema (or your chosen CDC schema)
 - Three triggers (INSERT, UPDATE, DELETE) on each source table you plan to replicate
 - Ensure the connector's runtime user has the required runtime permissions (see Important considerations below)
@@ -60,15 +61,14 @@ You can use the provided Python script to automate the creation of CDC tracking 
 
 - Python 3.7 or later
 - pip (Python package installer)
-- Network access to your DB2 host and port
 - Install dependencies from requirements.txt (installs ibm_db==3.2.6)
+- Network access to your DB2 host and port
 
 #### Safety and permissions
 
 **Important notes before running the script:**
 
 - Test in a non-production environment first
-- Run with `--dry-run` initially to verify the actions the script will take
 - The setup user needs setup-time permissions: `CREATE TABLE` privilege in the CDC schema and `CREATE TRIGGER` privilege on source tables
 - The connector's runtime user needs different permissions: `SELECT` on source tables and `SELECT`/`DELETE` on tracking tables (setup and runtime users can be different)
 - **Security warning:** The script prints the DB connection string to stdout, including credentials. Consider removing or commenting out the connection string print statement before running in environments where logs are retained
@@ -88,7 +88,7 @@ ibm_db==3.2.6
 <summary>cdc_setup_db2.py</summary>
 
 ```python
-# Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 
 import argparse
 import csv
@@ -324,7 +324,6 @@ def main():
     parser.add_argument("--user", required=True)
     parser.add_argument("--password", required=True)
     parser.add_argument("--cdc-schema", default="_ab_cdc")
-    parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--recreate-triggers", default=False)
     args = parser.parse_args()
     print(args)
@@ -383,7 +382,6 @@ if __name__ == "__main__":
 - `--password`: Database password (required)
 - `--cdc-schema`: Custom schema for CDC tracking tables (default: `_ab_cdc`)
 - `--recreate-triggers`: Drop and recreate existing triggers
-- `--dry-run`: Preview changes without executing them
 
 #### Usage examples
 
@@ -414,7 +412,7 @@ python cdc_setup_db2.py \
 
 ### Configuring CDC in Airbyte
 
-After the CDC infrastructure is provisioned, configure your Db2 Enterprise source in Airbyte:
+After your Db2 server has been configured for CDC, create your Db2 Enterprise source in Airbyte:
 
 1. In the connector configuration, select "Read Changes using Change Data Capture (CDC)" as the cursor method
 2. Set the "Initial Load Timeout in Hours" (default: 8 hours) - this controls how long the initial snapshot phase can run before switching to incremental CDC mode
