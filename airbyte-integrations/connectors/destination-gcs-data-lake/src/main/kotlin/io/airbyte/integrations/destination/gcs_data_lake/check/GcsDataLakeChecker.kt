@@ -1,18 +1,17 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.gcs_data_lake
+package io.airbyte.integrations.destination.gcs_data_lake.check
 
 import io.airbyte.cdk.load.check.DestinationChecker
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.command.iceberg.parquet.NessieCatalogConfiguration
-import io.airbyte.cdk.load.command.iceberg.parquet.PolarisCatalogConfiguration
-import io.airbyte.cdk.load.command.iceberg.parquet.RestCatalogConfiguration
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.TableIdGenerator
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableCleaner
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
-import io.airbyte.integrations.destination.gcs_data_lake.io.GcsDataLakeUtil
+import io.airbyte.integrations.destination.gcs_data_lake.catalog.GcsDataLakeCatalogUtil
+import io.airbyte.integrations.destination.gcs_data_lake.spec.GcsDataLakeConfiguration
+import io.airbyte.integrations.destination.gcs_data_lake.spec.TEST_TABLE
 import jakarta.inject.Singleton
 import java.util.UUID
 import org.apache.iceberg.Schema
@@ -22,7 +21,7 @@ import org.apache.iceberg.types.Types
  * Validates GCS Data Lake destination connectivity by creating and cleaning up a test Iceberg table.
  *
  * This checker validates:
- * - Catalog connectivity (Nessie, REST, or Polaris)
+ * - BigLake catalog connectivity
  * - GCS bucket access and permissions
  * - Ability to create namespaces and tables
  * - Proper cleanup of test resources
@@ -35,7 +34,7 @@ import org.apache.iceberg.types.Types
 @Singleton
 class GcsDataLakeChecker(
     private val icebergTableCleaner: IcebergTableCleaner,
-    private val gcsDataLakeUtil: GcsDataLakeUtil,
+    private val gcsDataLakeCatalogUtil: GcsDataLakeCatalogUtil,
     private val icebergUtil: IcebergUtil,
     private val tableIdGenerator: TableIdGenerator,
 ) : DestinationChecker<GcsDataLakeConfiguration> {
@@ -55,18 +54,11 @@ class GcsDataLakeChecker(
      * permissions)
      */
     private fun catalogValidation(config: GcsDataLakeConfiguration) {
-        val catalogProperties = gcsDataLakeUtil.toCatalogProperties(config)
-        val catalog = icebergUtil.createCatalog(DEFAULT_CATALOG_NAME, catalogProperties)
+        val catalogProperties = gcsDataLakeCatalogUtil.toCatalogProperties(config)
+        val catalog = icebergUtil.createCatalog(io.airbyte.integrations.destination.gcs_data_lake.spec.DEFAULT_CATALOG_NAME, catalogProperties)
 
-        val defaultNamespace =
-            config.icebergCatalogConfiguration.catalogConfiguration.let {
-                when (it) {
-                    is NessieCatalogConfiguration -> it.namespace
-                    is RestCatalogConfiguration -> it.namespace
-                    is PolarisCatalogConfiguration -> it.namespace
-                    else -> throw IllegalArgumentException("Unsupported catalog type: ${it::class.java.name}")
-                }
-            }
+        // Use the configured database name as the default namespace
+        val defaultNamespace = config.databaseName
 
         // Use a unique table name to avoid conflicts with existing tables or stale metadata
         val uniqueTestTableName = "${TEST_TABLE}_${UUID.randomUUID().toString().replace("-", "_")}"
@@ -78,7 +70,7 @@ class GcsDataLakeChecker(
                 Types.NestedField.required(1, "id", Types.IntegerType.get()),
                 Types.NestedField.optional(2, "data", Types.StringType.get()),
             )
-        gcsDataLakeUtil.createNamespace(testTableIdentifier, catalog)
+        gcsDataLakeCatalogUtil.createNamespace(testTableIdentifier, catalog)
 
         var table: org.apache.iceberg.Table? = null
         try {

@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2024 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2025 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.destination.gcs_data_lake
+package io.airbyte.integrations.destination.gcs_data_lake.write
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.command.DestinationStream
@@ -13,7 +13,8 @@ import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableCleaner
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.StreamStateStore
-import io.airbyte.integrations.destination.gcs_data_lake.io.GcsDataLakeUtil
+import io.airbyte.integrations.destination.gcs_data_lake.catalog.GcsDataLakeCatalogUtil
+import io.airbyte.integrations.destination.gcs_data_lake.spec.GcsDataLakeConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.apache.iceberg.Schema
 import org.apache.iceberg.Table
@@ -26,7 +27,7 @@ class GcsDataLakeStreamLoader(
     private val icebergConfiguration: GcsDataLakeConfiguration,
     override val stream: DestinationStream,
     private val icebergTableSynchronizer: IcebergTableSynchronizer,
-    private val gcsDataLakeUtil: GcsDataLakeUtil,
+    private val gcsDataLakeCatalogUtil: GcsDataLakeCatalogUtil,
     private val icebergUtil: IcebergUtil,
     private val stagingBranchName: String,
     private val mainBranchName: String,
@@ -49,9 +50,9 @@ class GcsDataLakeStreamLoader(
         "something about the `table` lateinit var is confusing spotbugs"
     )
     override suspend fun start() {
-        val properties = gcsDataLakeUtil.toCatalogProperties(config = icebergConfiguration)
-        val catalog = icebergUtil.createCatalog(DEFAULT_CATALOG_NAME, properties)
-        gcsDataLakeUtil.createNamespace(stream.mappedDescriptor, catalog)
+        val properties = gcsDataLakeCatalogUtil.toCatalogProperties(config = icebergConfiguration)
+        val catalog = icebergUtil.createCatalog(io.airbyte.integrations.destination.gcs_data_lake.spec.DEFAULT_CATALOG_NAME, properties)
+        gcsDataLakeCatalogUtil.createNamespace(stream.mappedDescriptor, catalog)
         table =
             icebergUtil.createTable(
                 streamDescriptor = stream.mappedDescriptor,
@@ -72,12 +73,12 @@ class GcsDataLakeStreamLoader(
         targetSchema = computeOrExecuteSchemaUpdate().schema
         try {
             logger.info {
-                "maybe creating branch $DEFAULT_STAGING_BRANCH for stream ${stream.mappedDescriptor}"
+                "maybe creating branch $stagingBranchName for stream ${stream.mappedDescriptor}"
             }
-            table.manageSnapshots().createBranch(DEFAULT_STAGING_BRANCH).commit()
+            table.manageSnapshots().createBranch(stagingBranchName).commit()
         } catch (e: IllegalArgumentException) {
             logger.info {
-                "branch $DEFAULT_STAGING_BRANCH already exists for stream ${stream.mappedDescriptor}"
+                "branch $stagingBranchName already exists for stream ${stream.mappedDescriptor}"
             }
         }
 
