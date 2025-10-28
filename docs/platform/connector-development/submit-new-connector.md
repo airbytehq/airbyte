@@ -19,15 +19,15 @@ The token must be a (classic) token with repo scope enabled. Follow these direct
 2. In the left sidebar, click `Developer settings`.
 3. In the left sidebar, under  Personal access tokens, click `Tokens (classic)`.
 
-![Select Tokens Classic](/community/contributing-to-airbyte/assets/token-classic.png)
+![Select Tokens Classic](../../community/contributing-to-airbyte/assets/token-classic.png)
 
 4. Select Generate new token, then click `Generate new token (classic)`.
 
-![Generate Tokens Classic](/community/contributing-to-airbyte/assets/token-classic-select.png)
+![Generate Tokens Classic](../../community/contributing-to-airbyte/assets/token-classic-select.png)
 
 5. Add the `workflow` scope. Click `Generate Token`.
 
-![Generate Tokens Classic](/community/contributing-to-airbyte/assets/token-classic-scope.png)
+![Generate Tokens Classic](../../community/contributing-to-airbyte/assets/token-classic-scope.png)
 
 6. Make sure to copy your personal access token. You won’t be able to see it again! Paste the personal access token to the Airbyte UI, and click "Contribute" to contribute the connector.
 

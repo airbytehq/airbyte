@@ -8,7 +8,7 @@ TypeScript using React.
 ## Submitting Code
 
 If you would like to submit code to Airbyte, please follow the [Pull Request Handbook](resources/pull-requests-handbook.md)
-guide when creating Github Pull Requests. When you are ready to submit code, use the [Submit a New Connector](../connector-development/submit-new-connector.md) document to make
+guide when creating Github Pull Requests. When you are ready to submit code, use the [Submit a New Connector](/platform/connector-development/submit-new-connector) document to make
 sure that the process can go as smoothly as possible.
 
 ## Prerequisites
