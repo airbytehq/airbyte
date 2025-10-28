@@ -15,7 +15,7 @@
     "metrics": []
   },
   {
-    "id": "channel_basic_a2",
+    "id": "channel_basic_a3",
     "name": "User activity",
     "dimensions": [
       "date",
@@ -75,7 +75,7 @@
     "metrics": []
   },
   {
-    "id": "channel_device_os_a2",
+    "id": "channel_device_os_a3",
     "name": "Device and OS",
     "dimensions": [
       "date",
@@ -120,7 +120,7 @@
     "metrics": []
   },
   {
-    "id": "channel_province_a2",
+    "id": "channel_province_a3",
     "name": "Province",
     "dimensions": [
       "date",
@@ -162,7 +162,7 @@
     "metrics": []
   },
   {
-    "id": "channel_traffic_source_a2",
+    "id": "channel_traffic_source_a3",
     "name": "Traffic sources",
     "dimensions": [
       "date",
