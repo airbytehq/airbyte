@@ -180,21 +180,21 @@ jobs:
         run: |
           # Find the most recent report.html file in /tmp/regression_tests_artifacts/
           REPORT_PATH=$(find /tmp/regression_tests_artifacts -name "report.html" -type f -printf '%T@ %p\n' | sort -n | tail -1 | cut -f2- -d" ")
-          
+
           if [ -z "$REPORT_PATH" ]; then
             echo "Error: No report.html found in /tmp/regression_tests_artifacts/"
             echo "## ⚠️ LLM Evaluation Skipped" >> $GITHUB_STEP_SUMMARY
             echo "No regression test report found. The tests may have failed to generate a report." >> $GITHUB_STEP_SUMMARY
             exit 0
           fi
-          
+
           echo "Found report at: $REPORT_PATH"
           echo "Running LLM evaluation..."
-          
+
           # Run the evaluation script
           poetry run python src/live_tests/regression_tests/llm_evaluation/evaluate_report.py \
             --report-path "$REPORT_PATH" \
             --output-json /tmp/llm_evaluation_result.json || true
-          
+
           # The script exits with code 1 if evaluation fails, but we don't want to fail the workflow
           # The evaluation result is already written to GITHUB_STEP_SUMMARY
