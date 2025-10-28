@@ -335,6 +335,8 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.1.0-rc.7 | 2025-10-09 | [67591](https://github.com/airbytehq/airbyte/pull/67591) | Fix StreamSlice mutation causing cursor validation errors |
+
 | 4.1.0-rc.6 | 2025-09-25 | [66701](https://github.com/airbytehq/airbyte/pull/66701) | Enables progressive rollouts |
 | 4.1.0-rc.5 | 2025-09-25 | [66569](https://github.com/airbytehq/airbyte/pull/66569) | Bumps to CDK v7, adds retry/backoff logic to custom schema loader |
 | 4.1.0-rc.4 | 2025-09-18 | [66522](https://github.com/airbytehq/airbyte/pull/66522) | Revert to CDK v6.60.12 |
