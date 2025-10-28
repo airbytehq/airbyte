@@ -115,7 +115,7 @@ export default function Home() {
     },
     {
       title: 'Community and Support',
-      link: '/platform/community/getting-support',
+      link: '/community/getting-support',
       description: 'Get help using, and contribute to, Airbyte.',
       icon: CommunityIcon,
     },
