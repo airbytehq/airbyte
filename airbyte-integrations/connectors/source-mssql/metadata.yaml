@@ -9,7 +9,7 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: b5ea17b1-f170-46dc-bc31-cc744ca984c1
-  dockerImageTag: 4.3.0
+  dockerImageTag: 4.3.0-rc.1
   dockerRepository: airbyte/source-mssql
   documentationUrl: https://docs.airbyte.com/integrations/sources/mssql
   githubIssueLabel: source-mssql
@@ -34,6 +34,8 @@ data:
   tags:
     - language:java
   releases:
+    rolloutConfiguration:
+      enableProgressiveRollout: true
     breakingChanges:
       4.0.0:
         message: "We have overhauled our MSSQL source connector and it is now supported by the Airbyte team! To benefit from new features, including terabyte-sized table support, reliability improvements, expanded datetime data types, and various bug fixes, please opt in to the 4.0.0 version."

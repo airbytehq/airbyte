@@ -5,12 +5,9 @@
 package io.airbyte.integrations.source.mssql
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.node.BinaryNode
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.data.LeafAirbyteSchemaType
-import io.airbyte.cdk.data.OffsetDateTimeCodec
 import io.airbyte.cdk.discover.Field
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.jdbc.JdbcFieldType
@@ -26,14 +23,9 @@ import io.airbyte.cdk.read.StreamFeedBootstrap
 import io.airbyte.cdk.util.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
-import java.time.LocalDateTime
-import java.time.OffsetDateTime
-import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeFormatterBuilder
-import java.time.format.DateTimeParseException
 import java.time.temporal.ChronoField
-import java.util.Base64
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Singleton
 
@@ -290,73 +282,6 @@ class MsSqlServerJdbcPartitionFactory(
                 cursorUpperBound = streamState.cursorUpperBound,
                 cursorCutoffTime = getCursorCutoffTime(cursor),
             )
-        }
-    }
-
-    private fun stateValueToJsonNode(field: Field, stateValue: String?): JsonNode {
-        when (field.type.airbyteSchemaType) {
-            is LeafAirbyteSchemaType ->
-                return when (field.type.airbyteSchemaType as LeafAirbyteSchemaType) {
-                    LeafAirbyteSchemaType.INTEGER -> {
-                        Jsons.valueToTree(stateValue?.toBigInteger())
-                    }
-                    LeafAirbyteSchemaType.NUMBER -> {
-                        Jsons.valueToTree(stateValue?.toDouble())
-                    }
-                    LeafAirbyteSchemaType.BINARY -> {
-                        val ba = Base64.getDecoder().decode(stateValue!!)
-                        Jsons.valueToTree<BinaryNode>(ba)
-                    }
-                    LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE -> {
-                        try {
-
-                            val parsedDate = LocalDateTime.parse(stateValue, inputDateFormatter)
-                            val dateAsString = parsedDate.format(outputDateFormatter)
-                            Jsons.textNode(dateAsString)
-                        } catch (e: DateTimeParseException) {
-                            // Resolve to use the new format.
-                            Jsons.valueToTree(stateValue)
-                        }
-                    }
-                    LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE -> {
-                        try {
-                            if (stateValue == null || stateValue.isEmpty()) {
-                                return Jsons.nullNode()
-                            }
-
-                            // Normalize: remove spaces before timezone indicators
-                            val normalizedValue =
-                                stateValue.trim().replace(Regex("\\s+(?=[+\\-]|Z)"), "")
-
-                            // Try parsing with timezone first, then fall back to assuming UTC
-                            val offsetDateTime =
-                                try {
-                                    OffsetDateTime.parse(
-                                        normalizedValue,
-                                        timestampWithTimezoneParser
-                                    )
-                                } catch (e: DateTimeParseException) {
-                                    // No timezone info - parse as LocalDateTime and assume UTC
-                                    LocalDateTime.parse(
-                                            normalizedValue,
-                                            timestampWithoutTimezoneParser
-                                        )
-                                        .atOffset(ZoneOffset.UTC)
-                                }
-
-                            // Format using standard codec formatter (6 decimal places, Z or offset)
-                            Jsons.valueToTree(offsetDateTime.format(OffsetDateTimeCodec.formatter))
-                        } catch (e: DateTimeParseException) {
-                            // If all parsing fails, return as-is (already in new format)
-                            Jsons.valueToTree(stateValue)
-                        }
-                    }
-                    else -> Jsons.valueToTree(stateValue)
-                }
-            else ->
-                throw IllegalStateException(
-                    "PK field must be leaf type but is ${field.type.airbyteSchemaType}."
-                )
         }
     }
 

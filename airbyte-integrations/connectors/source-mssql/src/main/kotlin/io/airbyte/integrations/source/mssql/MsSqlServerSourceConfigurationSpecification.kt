@@ -161,7 +161,6 @@ class MsSqlServerSourceConfigurationSpecification : ConfigurationSpecification()
     @JsonProperty("concurrency")
     @JsonSchemaTitle("Concurrency")
     @JsonSchemaInject(json = """{"order":12}""")
-    @JsonSchemaDefault("1")
     @JsonPropertyDescription("Maximum number of concurrent queries to the database.")
     var concurrency: Int? = 1
 
@@ -283,7 +282,7 @@ class UserDefinedCursor : IncrementalConfigurationSpecification {
     @JsonProperty("exclude_todays_data")
     @JsonSchemaTitle("Exclude Today's Data")
     @JsonPropertyDescription(
-        "When enabled incremental syncs using a cursor of a temporal types (date or datetime) will include cursor values only up until last midnight"
+        "When enabled incremental syncs using a cursor of a temporal type (date or datetime) will include cursor values only up until the previous midnight UTC"
     )
     @JsonSchemaDefault("false")
     @JsonSchemaInject(json = """{"order":1,"always_show":true}""")

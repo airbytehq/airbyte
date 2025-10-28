@@ -71,7 +71,10 @@ class MsSqlServerDebeziumOperations(
     CdcPartitionsCreatorDebeziumOperations<MsSqlServerCdcPosition>,
     CdcPartitionReaderDebeziumOperations<MsSqlServerCdcPosition> {
 
-    val recordCounter = AtomicLong(Instant.now().toEpochMilli() * 100_00_000 + 1)
+    // Generates globally unique cursor values for CDC records by combining
+    // current timestamp with an incrementing counter. This ensures monotonically
+    // increasing values across sync restarts and avoids collisions.
+    val cdcCursorGenerator = AtomicLong(Instant.now().toEpochMilli() * 10_000_000 + 1)
 
     private val log = KotlinLogging.logger {}
 
@@ -172,12 +175,12 @@ class MsSqlServerDebeziumOperations(
             )
         resultRow[MsSqlSourceOperations.MsSqlServerCdcMetaFields.CDC_CURSOR.id] =
             FieldValueEncoder(
-                recordCounter.getAndIncrement(),
+                cdcCursorGenerator.getAndIncrement(),
                 MsSqlSourceOperations.MsSqlServerCdcMetaFields.CDC_CURSOR.type.jsonEncoder
                     as JsonEncoder<Any>
             )
 
-        val eventSerialNo = source["event_serial_no"]?.asInt()?.toString() ?: "0"
+        val eventSerialNo = source["event_serial_no"]?.asInt()?.let { "$it" } ?: "0"
         resultRow[MsSqlSourceOperations.MsSqlServerCdcMetaFields.CDC_EVENT_SERIAL_NO.id] =
             FieldValueEncoder(
                 eventSerialNo,
@@ -305,7 +308,7 @@ class MsSqlServerDebeziumOperations(
 
         val offset = DebeziumOffset(finalOffsetMap)
 
-        // Validate the saved LSN is still available in SQL Server
+        // Check if the saved LSN is valid
         val savedLsn =
             try {
                 val offsetValue = offset.wrapped.values.first() as ObjectNode
@@ -316,7 +319,7 @@ class MsSqlServerDebeziumOperations(
                 return abortCdcSync("Invalid LSN format in saved offset")
             }
 
-        // Check if the saved LSN is still valid
+        // Validate the saved LSN is still available in SQL Server
         val isLsnValid =
             try {
                 validateLsnStillAvailable(savedLsn)

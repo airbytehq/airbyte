@@ -27,8 +27,6 @@ dependencies {
     testFixturesImplementation 'org.testcontainers:mssqlserver:1.19.0'
     testImplementation 'org.testcontainers:mssqlserver:1.19.0'
     testImplementation 'com.zaxxer:HikariCP:5.1.0'
-    testFixturesImplementation testFixtures(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-source-integration-tests"))
-    testImplementation testFixtures(project(":airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-source-integration-tests"))
     testImplementation("io.mockk:mockk:1.12.0")
     api 'com.google.guava:guava:33.4.0-jre'
 }

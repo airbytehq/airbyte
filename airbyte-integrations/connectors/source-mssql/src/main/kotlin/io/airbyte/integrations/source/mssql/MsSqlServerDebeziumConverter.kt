@@ -136,7 +136,7 @@ class MsSqlServerDebeziumConverter : CustomConverter<SchemaBuilder, RelationalCo
         if (value == null) return null
 
         return try {
-            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS")
+            val formatter = MsSqlServerJdbcPartitionFactory.outputDateFormatter
             when (value) {
                 is LocalDateTime -> value.format(formatter)
                 is String -> {

@@ -28,7 +28,7 @@ object MsSqlServerCursorCutoffTimeProvider {
     private val TIMESTAMPTZ_FORMATTER: DateTimeFormatter =
         DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS xxx")
     private val SQL_SERVER_DATETIME_FORMATTER: DateTimeFormatter =
-        DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS")
+        MsSqlServerJdbcPartitionFactory.outputDateFormatter
 
     /**
      * Calculates the cutoff time for a cursor field based on its type.

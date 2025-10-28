@@ -31,12 +31,15 @@ import io.airbyte.cdk.read.*
 import io.airbyte.cdk.read.SelectQueryGenerator
 import io.airbyte.cdk.read.Stream
 import io.airbyte.cdk.util.Jsons
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
 import jakarta.inject.Singleton
 import java.sql.JDBCType
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.time.OffsetDateTime
+
+private val log = KotlinLogging.logger {}
 
 @Singleton
 @Primary
@@ -371,7 +374,9 @@ class MsSqlSourceOperations :
                 }
             }
         } catch (e: Exception) {
-            // Log error but don't fail the sync
+            log.warn(e) {
+                "Failed to extract LSN from CDC state for stream ${stream.name}. Using empty LSN value."
+            }
         }
     }
 
@@ -408,7 +413,9 @@ class MsSqlSourceOperations :
                     }
                 }
             } catch (e: Exception) {
-                // Log error but don't fail the sync - keep the empty string value
+                log.warn(e) {
+                    "Failed to extract LSN from CDC state for stream ${stream.name}. Using empty LSN value."
+                }
             }
         }
 

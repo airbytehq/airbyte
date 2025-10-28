@@ -51,8 +51,10 @@ object MsSqlServerStateMigration {
                 // Version 3+ states should parse directly
                 Jsons.treeToValue(opaqueStateValue, MsSqlServerJdbcStreamStateValue::class.java)
             } catch (e: Exception) {
-                log.warn(e) { "Failed to parse version $version state, attempting migration" }
-                migrateLegacyState(opaqueStateValue)
+                throw IllegalStateException(
+                    "Failed to parse state with version $version as MsSqlServerJdbcStreamStateValue.",
+                    e
+                )
             }
         }
     }

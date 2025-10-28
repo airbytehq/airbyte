@@ -40,13 +40,89 @@ import io.airbyte.cdk.read.optimize
 import io.airbyte.cdk.util.Jsons
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 import java.util.Base64
 
 private val log = KotlinLogging.logger {}
-/** Base class for default implementations of [JdbcPartition] for non resumable partitions. */
+
+/**
+ * Converts a state value string to a JsonNode based on the field type. This function handles type
+ * conversions and date formatting for state checkpoints.
+ */
+fun stateValueToJsonNode(field: Field, stateValue: String?): JsonNode {
+    when (field.type.airbyteSchemaType) {
+        is LeafAirbyteSchemaType ->
+            return when (field.type.airbyteSchemaType as LeafAirbyteSchemaType) {
+                LeafAirbyteSchemaType.INTEGER -> {
+                    Jsons.valueToTree(stateValue?.toBigInteger())
+                }
+                LeafAirbyteSchemaType.NUMBER -> {
+                    Jsons.valueToTree(stateValue?.toDouble())
+                }
+                LeafAirbyteSchemaType.BINARY -> {
+                    val ba = Base64.getDecoder().decode(stateValue!!)
+                    Jsons.valueToTree<BinaryNode>(ba)
+                }
+                LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE -> {
+                    try {
+                        val parsedDate =
+                            LocalDateTime.parse(
+                                stateValue,
+                                MsSqlServerJdbcPartitionFactory.inputDateFormatter
+                            )
+                        val dateAsString =
+                            parsedDate.format(MsSqlServerJdbcPartitionFactory.outputDateFormatter)
+                        Jsons.textNode(dateAsString)
+                    } catch (e: DateTimeParseException) {
+                        // Resolve to use the new format.
+                        Jsons.valueToTree(stateValue)
+                    }
+                }
+                LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE -> {
+                    try {
+                        if (stateValue == null || stateValue.isEmpty()) {
+                            return Jsons.nullNode()
+                        }
+
+                        // Normalize: remove spaces before timezone indicators
+                        val normalizedValue =
+                            stateValue.trim().replace(Regex("\\s+(?=[+\\-]|Z)"), "")
+
+                        // Try parsing with timezone first, then fall back to assuming UTC
+                        val offsetDateTime =
+                            try {
+                                OffsetDateTime.parse(
+                                    normalizedValue,
+                                    MsSqlServerJdbcPartitionFactory.timestampWithTimezoneParser
+                                )
+                            } catch (e: DateTimeParseException) {
+                                // No timezone info - parse as LocalDateTime and assume UTC
+                                LocalDateTime.parse(
+                                        normalizedValue,
+                                        MsSqlServerJdbcPartitionFactory
+                                            .timestampWithoutTimezoneParser
+                                    )
+                                    .atOffset(ZoneOffset.UTC)
+                            }
+
+                        // Format using standard codec formatter (6 decimal places, Z or offset)
+                        Jsons.valueToTree(offsetDateTime.format(OffsetDateTimeCodec.formatter))
+                    } catch (e: DateTimeParseException) {
+                        // If all parsing fails, return as-is (already in new format)
+                        Jsons.valueToTree(stateValue)
+                    }
+                }
+                else -> Jsons.valueToTree(stateValue)
+            }
+        else ->
+            throw IllegalStateException(
+                "PK field must be leaf type but is ${field.type.airbyteSchemaType}."
+            )
+    }
+}
+
 sealed class MsSqlServerJdbcPartition(
     val selectQueryGenerator: SelectQueryGenerator,
     streamState: DefaultJdbcStreamState,
@@ -71,7 +147,6 @@ sealed class MsSqlServerJdbcPartition(
     }
 }
 
-/** Default implementation of a [JdbcPartition] for an unsplittable snapshot partition. */
 class MsSqlServerJdbcNonResumableSnapshotPartition(
     selectQueryGenerator: SelectQueryGenerator,
     override val streamState: DefaultJdbcStreamState,
@@ -80,10 +155,6 @@ class MsSqlServerJdbcNonResumableSnapshotPartition(
     override val completeState: OpaqueStateValue = MsSqlServerJdbcStreamStateValue.snapshotCompleted
 }
 
-/**
- * Default implementation of a [JdbcPartition] for an non resumable snapshot partition preceding a
- * cursor-based incremental sync.
- */
 class MsSqlServerJdbcNonResumableSnapshotWithCursorPartition(
     selectQueryGenerator: SelectQueryGenerator,
     override val streamState: DefaultJdbcStreamState,
@@ -131,7 +202,6 @@ class MsSqlServerJdbcNonResumableSnapshotWithCursorPartition(
         }
 }
 
-/** Base class for default implementations of [JdbcPartition] for partitions. */
 sealed class MsSqlServerJdbcResumablePartition(
     selectQueryGenerator: SelectQueryGenerator,
     streamState: DefaultJdbcStreamState,
@@ -298,9 +368,6 @@ class MsSqlServerJdbcCdcSnapshotPartition(
         )
 }
 
-/**
- * Default implementation of a [JdbcPartition] for a splittable partition involving cursor columns.
- */
 sealed class MsSqlServerJdbcCursorPartition(
     selectQueryGenerator: SelectQueryGenerator,
     streamState: DefaultJdbcStreamState,
@@ -341,10 +408,6 @@ sealed class MsSqlServerJdbcCursorPartition(
             }
 }
 
-/**
- * Default implementation of a [JdbcPartition] for a splittable snapshot partition preceding a
- * cursor-based incremental sync.
- */
 class MsSqlServerJdbcSnapshotWithCursorPartition(
     selectQueryGenerator: SelectQueryGenerator,
     override val streamState: DefaultJdbcStreamState,
@@ -396,10 +459,6 @@ class MsSqlServerJdbcSnapshotWithCursorPartition(
         )
 }
 
-/**
- * Default implementation of a [JdbcPartition] for a splittable snapshot partition preceding a
- * cursor-based incremental sync.
- */
 class MsSqlServerJdbcSplittableSnapshotWithCursorPartition(
     selectQueryGenerator: SelectQueryGenerator,
     override val streamState: DefaultJdbcStreamState,
@@ -626,59 +685,5 @@ fun MsSqlServerJdbcSnapshotWithCursorPartition.split(
             cursorUpperBound,
             cursorCutoffTime,
         )
-    }
-}
-
-private fun stateValueToJsonNode(field: Field, stateValue: String?): JsonNode {
-    when (field.type.airbyteSchemaType) {
-        is LeafAirbyteSchemaType ->
-            return when (field.type.airbyteSchemaType as LeafAirbyteSchemaType) {
-                LeafAirbyteSchemaType.INTEGER -> {
-                    Jsons.valueToTree(stateValue?.toBigInteger())
-                }
-                LeafAirbyteSchemaType.NUMBER -> {
-                    Jsons.valueToTree(stateValue?.toDouble())
-                }
-                LeafAirbyteSchemaType.BINARY -> {
-                    val ba = Base64.getDecoder().decode(stateValue!!)
-                    Jsons.valueToTree<BinaryNode>(ba)
-                }
-                LeafAirbyteSchemaType.TIMESTAMP_WITHOUT_TIMEZONE -> {
-                    try {
-                        val parsedDate =
-                            LocalDateTime.parse(
-                                stateValue,
-                                MsSqlServerJdbcPartitionFactory.inputDateFormatter
-                            )
-                        val dateAsString =
-                            parsedDate.format(MsSqlServerJdbcPartitionFactory.outputDateFormatter)
-                        Jsons.textNode(dateAsString)
-                    } catch (e: DateTimeParseException) {
-                        // Resolve to use the new format.
-                        Jsons.valueToTree(stateValue)
-                    }
-                }
-                LeafAirbyteSchemaType.TIMESTAMP_WITH_TIMEZONE -> {
-                    val timestampInStatePattern = "yyyy-MM-dd'T'HH:mm:ss"
-                    try {
-                        val formatter: DateTimeFormatter =
-                            DateTimeFormatter.ofPattern(timestampInStatePattern)
-                        Jsons.valueToTree(
-                            LocalDateTime.parse(stateValue, formatter)
-                                .minusDays(1)
-                                .atOffset(ZoneOffset.UTC)
-                                .format(OffsetDateTimeCodec.formatter)
-                        )
-                    } catch (e: DateTimeParseException) {
-                        // Resolve to use the new format.
-                        Jsons.valueToTree(stateValue)
-                    }
-                }
-                else -> Jsons.valueToTree(stateValue)
-            }
-        else ->
-            throw IllegalStateException(
-                "PK field must be leaf type but is ${field.type.airbyteSchemaType}."
-            )
     }
 }
