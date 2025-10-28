@@ -117,11 +117,13 @@ After running the setup script, configure your Db2 Enterprise source in Airbyte:
 **Subsequent syncs:** After the initial snapshot completes, the connector switches to incremental mode and reads only changes from the CDC tracking tables.
 
 **Change tracking:** The connector tracks three types of operations:
+
 - INSERT: New records added to source tables
 - UPDATE: Modifications to existing records
 - DELETE: Records removed from source tables
 
 **CDC metadata fields:** When using CDC, the connector adds the following metadata fields to each record:
+
 - `_ab_cdc_updated_at`: Timestamp when the change occurred
 - `_ab_cdc_deleted_at`: Timestamp when the record was deleted (null for non-deleted records)
 - `_ab_trigger_change_time`: Timestamp from the trigger table used as the cursor
