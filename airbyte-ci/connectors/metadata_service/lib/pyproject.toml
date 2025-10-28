@@ -28,7 +28,7 @@ jinja2 = "^3.1.2"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8"
-datamodel-code-generator = "^0.35.0"
+datamodel-code-generator = "^0.30.2"
 pytest-mock = "^3.10.0"
 poethepoet = "^0.20.0"
 

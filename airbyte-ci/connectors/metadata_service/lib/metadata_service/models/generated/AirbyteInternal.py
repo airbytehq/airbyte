@@ -3,10 +3,9 @@
 
 from __future__ import annotations
 
-from typing import Optional
+from typing import Literal, Optional
 
 from pydantic import BaseModel, Extra, Field
-from typing_extensions import Literal
 
 
 class AirbyteInternal(BaseModel):

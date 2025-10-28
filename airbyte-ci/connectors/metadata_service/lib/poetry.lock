@@ -375,15 +375,15 @@ test-randomorder = ["pytest-randomly"]
 
 [[package]]
 name = "datamodel-code-generator"
-version = "0.35.0"
+version = "0.30.2"
 description = "Datamodel Code Generator"
 optional = false
 python-versions = ">=3.9"
 groups = ["dev"]
 markers = "python_version == \"3.11\" or python_version >= \"3.12\""
 files = [
-    {file = "datamodel_code_generator-0.35.0-py3-none-any.whl", hash = "sha256:c356d1e4a555f86667a4262db03d4598a30caeda8f51786555fd269c8abb806b"},
-    {file = "datamodel_code_generator-0.35.0.tar.gz", hash = "sha256:46805fa2515d3871f6bfafce9aa63128e735a7a6a4cfcbf9c27b3794ee4ea846"},
+    {file = "datamodel_code_generator-0.30.2-py3-none-any.whl", hash = "sha256:1b0665b9ca58d5b5ded0f6527535ac47d91dd3f9710eb0e583395065ceba65a4"},
+    {file = "datamodel_code_generator-0.30.2.tar.gz", hash = "sha256:35738b004033ec238871b5653b50fa173eff657ca2757927d2020d5db265b21e"},
 ]
 
 [package.dependencies]
@@ -2013,4 +2013,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.11"
-content-hash = "59b1abfb015b6d3a9257f7459f2c02047bb69298d626ae81be5f381a6ce6edc4"
+content-hash = "1b91269931e4e96ba1bb7dc900cc40801e0c1e9fe3d2777d067992a5f3ca2a13"
