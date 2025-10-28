@@ -2641,6 +2641,218 @@ definitions:
         schema:
           $ref: "#/schemas/get_vendor_forecasting_retail_report"
 
+    # Brand Analytics Streams
+    get_brand_analytics_market_basket_report:
+      type: DeclarativeStream
+      name: GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT
+      primary_key: []
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_BRAND_ANALYTICS_MARKET_BASKET_REPORT
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+        download_decoder:
+          type: CustomDecoder
+          class_name: source_declarative_manifest.components.GzipJsonDecoder
+        download_extractor:
+          type: DpathExtractor
+          field_path: ["dataByAsin"]
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/get_brand_analytics_market_basket_report"
+
+    get_brand_analytics_search_terms_report:
+      type: DeclarativeStream
+      name: GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT
+      primary_key: []
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+        download_decoder:
+          type: CustomDecoder
+          class_name: source_declarative_manifest.components.GzipJsonDecoder
+        download_extractor:
+          type: DpathExtractor
+          field_path: ["dataByDepartmentAndSearchTerm"]
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/get_brand_analytics_search_terms_report"
+
+    get_brand_analytics_repeat_purchase_report:
+      type: DeclarativeStream
+      name: GET_BRAND_ANALYTICS_REPEAT_PURCHASE_REPORT
+      primary_key: []
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_BRAND_ANALYTICS_REPEAT_PURCHASE_REPORT
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+        download_decoder:
+          type: CustomDecoder
+          class_name: source_declarative_manifest.components.GzipJsonDecoder
+        download_extractor:
+          type: DpathExtractor
+          field_path: ["dataByAsin"]
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/get_brand_analytics_repeat_purchase_report"
+
+    get_brand_analytics_alternate_purchase_report:
+      type: DeclarativeStream
+      name: GET_BRAND_ANALYTICS_ALTERNATE_PURCHASE_REPORT
+      primary_key: []
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_BRAND_ANALYTICS_ALTERNATE_PURCHASE_REPORT
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+        download_decoder:
+          type: CustomDecoder
+          class_name: source_declarative_manifest.components.GzipJsonDecoder
+        download_extractor:
+          type: DpathExtractor
+          field_path: ["dataByAsin"]
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/get_brand_analytics_alternate_purchase_report"
+
+    get_brand_analytics_item_comparison_report:
+      type: DeclarativeStream
+      name: GET_BRAND_ANALYTICS_ITEM_COMPARISON_REPORT
+      primary_key: []
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_BRAND_ANALYTICS_ITEM_COMPARISON_REPORT
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+        download_decoder:
+          type: CustomDecoder
+          class_name: source_declarative_manifest.components.GzipJsonDecoder
+        download_extractor:
+          type: DpathExtractor
+          field_path: ["dataByAsin"]
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/get_brand_analytics_item_comparison_report"
+
+    get_sales_and_traffic_report:
+      type: DeclarativeStream
+      name: GET_SALES_AND_TRAFFIC_REPORT
+      primary_key: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: queryEndDate
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: "P1D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config['replication_end_date'] if config.get('replication_end_date') else now_utc(), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_SALES_AND_TRAFFIC_REPORT
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+        download_decoder:
+          type: CustomDecoder
+          class_name: source_declarative_manifest.components.GzipJsonDecoder
+        download_extractor:
+          type: DpathExtractor
+          field_path: ["salesAndTrafficByAsin"]
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/get_sales_and_traffic_report"
+
+    get_vendor_sales_report:
+      type: DeclarativeStream
+      name: GET_VENDOR_SALES_REPORT
+      primary_key: []
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: endDate
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: "P1D"
+        cursor_granularity: "PT1S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime( max(config.get('replication_start_date', (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') ), (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ')), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config['replication_end_date'] if config.get('replication_end_date') else now_utc(), '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_VENDOR_SALES_REPORT
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+        download_decoder:
+          type: CustomDecoder
+          class_name: source_declarative_manifest.components.GzipJsonDecoder
+        download_extractor:
+          type: DpathExtractor
+          field_path: ["salesByAsin"]
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/get_vendor_sales_report"
+
+    get_vendor_inventory_report:
+      type: DeclarativeStream
+      name: GET_VENDOR_INVENTORY_REPORT
+      primary_key: []
+      retriever:
+        $ref: "#/definitions/basic_async_retriever"
+        creation_requester:
+          $ref: "#/definitions/basic_async_retriever/creation_requester"
+          request_body_json:
+            reportType: GET_VENDOR_INVENTORY_REPORT
+            marketplaceIds: '{{ [config["marketplace_id"]] }}'
+        download_decoder:
+          type: CustomDecoder
+          class_name: source_declarative_manifest.components.GzipJsonDecoder
+        download_extractor:
+          type: DpathExtractor
+          field_path: ["inventoryByAsin"]
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/get_vendor_inventory_report"
+
+
   basic_async_retriever:
     type: AsyncRetriever
     status_mapping:
@@ -2849,6 +3061,14 @@ streams:
   # Analytics Streams
   - $ref: "#/definitions/streams/get_vendor_forecasting_fresh_report"
   - $ref: "#/definitions/streams/get_vendor_forecasting_retail_report"
+  - $ref: "#/definitions/streams/get_brand_analytics_market_basket_report"
+  - $ref: "#/definitions/streams/get_brand_analytics_search_terms_report"
+  - $ref: "#/definitions/streams/get_brand_analytics_repeat_purchase_report"
+  - $ref: "#/definitions/streams/get_brand_analytics_alternate_purchase_report"
+  - $ref: "#/definitions/streams/get_brand_analytics_item_comparison_report"
+  - $ref: "#/definitions/streams/get_sales_and_traffic_report"
+  - $ref: "#/definitions/streams/get_vendor_sales_report"
+  - $ref: "#/definitions/streams/get_vendor_inventory_report"
 
 concurrency_level:
   type: ConcurrencyLevel
@@ -8216,6 +8436,452 @@ schemas:
         - 'null'
         - string
         format: date
+
+  get_brand_analytics_market_basket_report:
+    title: Brand Analytics Market Basket Reports
+    description: Brand Analytics Market Basket Reports
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      startDate:
+        type:
+        - 'null'
+        - string
+        format: date
+      endDate:
+        type:
+        - 'null'
+        - string
+        format: date
+      asin:
+        type:
+        - 'null'
+        - string
+      purchasedWithAsin:
+        type:
+        - 'null'
+        - string
+      purchasedWithRank:
+        type:
+        - 'null'
+        - integer
+      combinationPct:
+        type:
+        - 'null'
+        - number
+
+  get_brand_analytics_search_terms_report:
+    title: Brand Analytics Search Terms Reports
+    description: Brand Analytics Search Terms Reports
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      departmentName:
+        type:
+        - 'null'
+        - string
+      searchTerm:
+        type:
+        - 'null'
+        - string
+      searchFrequencyRank:
+        type:
+        - 'null'
+        - number
+      clickedAsin:
+        type:
+        - 'null'
+        - string
+      clickShareRank:
+        type:
+        - 'null'
+        - number
+      clickShare:
+        type:
+        - 'null'
+        - number
+      conversionShare:
+        type:
+        - 'null'
+        - number
+
+  get_brand_analytics_repeat_purchase_report:
+    title: Brand Analytics Repeat Purchase Reports
+    description: Brand Analytics Repeat Purchase Reports
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      startDate:
+        type:
+        - 'null'
+        - string
+        format: date
+      endDate:
+        type:
+        - 'null'
+        - string
+        format: date
+      asin:
+        type:
+        - 'null'
+        - string
+      orders:
+        type:
+        - 'null'
+        - integer
+      uniqueCustomers:
+        type:
+        - 'null'
+        - integer
+      repeatCustomersPctTotal:
+        type:
+        - 'null'
+        - number
+      repeatPurchaseRevenue:
+        type: object
+        properties:
+          amount:
+            type:
+            - 'null'
+            - number
+          currencyCode:
+            type:
+            - 'null'
+            - string
+      repeatPurchaseRevenuePctTotal:
+        type:
+        - 'null'
+        - number
+
+  get_brand_analytics_alternate_purchase_report:
+    title: Brand Analytics Alternate Purchase Reports
+    description: Brand Analytics Alternate Purchase Reports
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      startDate:
+        type:
+        - 'null'
+        - string
+        format: date
+      endDate:
+        type:
+        - 'null'
+        - string
+        format: date
+      asin:
+        type:
+        - 'null'
+        - string
+      purchasedAsin:
+        type:
+        - 'null'
+        - string
+      purchasedRank:
+        type:
+        - 'null'
+        - integer
+      purchasedPct:
+        type:
+        - 'null'
+        - number
+
+  get_brand_analytics_item_comparison_report:
+    title: Brand Analytics Item Comparison Reports
+    description: Brand Analytics Item Comparison Reports
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      startDate:
+        type:
+        - 'null'
+        - string
+        format: date
+      endDate:
+        type:
+        - 'null'
+        - string
+        format: date
+      asin:
+        type:
+        - 'null'
+        - string
+      comparedAsin:
+        type:
+        - 'null'
+        - string
+      comparedRank:
+        type:
+        - 'null'
+        - integer
+      comparedPct:
+        type:
+        - 'null'
+        - number
+
+  get_sales_and_traffic_report:
+    title: Seller Sales and Traffic Business Report - By Asin
+    description: Seller retail analytics reports - Sales and Traffic Business Report
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      queryEndDate:
+        type:
+        - 'null'
+        - string
+      parentAsin:
+        type:
+        - 'null'
+        - string
+      childAsin:
+        type:
+        - 'null'
+        - string
+      salesByAsin:
+        type: object
+        properties:
+          unitsOrdered:
+            type:
+            - 'null'
+            - number
+          orderedProductSales:
+            type: object
+            properties:
+              amount:
+                type:
+                - 'null'
+                - number
+              currencyCode:
+                type:
+                - 'null'
+                - string
+          totalOrderItems:
+            type:
+            - 'null'
+            - number
+      trafficByAsin:
+        type: object
+        properties:
+          browserSessions:
+            type:
+            - 'null'
+            - number
+          mobileAppSessions:
+            type:
+            - 'null'
+            - number
+          sessions:
+            type:
+            - 'null'
+            - number
+          browserSessionPercentage:
+            type:
+            - 'null'
+            - number
+          mobileAppSessionPercentage:
+            type:
+            - 'null'
+            - number
+          sessionPercentage:
+            type:
+            - 'null'
+            - number
+          browserPageViews:
+            type:
+            - 'null'
+            - number
+          mobileAppPageViews:
+            type:
+            - 'null'
+            - number
+          pageViews:
+            type:
+            - 'null'
+            - number
+          browserPageViewsPercentage:
+            type:
+            - 'null'
+            - number
+          mobileAppPageViewsPercentage:
+            type:
+            - 'null'
+            - number
+          pageViewsPercentage:
+            type:
+            - 'null'
+            - number
+          buyBoxPercentage:
+            type:
+            - 'null'
+            - number
+          unitSessionPercentage:
+            type:
+            - 'null'
+            - number
+
+  get_vendor_sales_report:
+    title: Vendor Sales Reports
+    description: Vendor Sales Reports
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      startDate:
+        type:
+        - 'null'
+        - string
+      endDate:
+        type:
+        - 'null'
+        - string
+      asin:
+        type:
+        - 'null'
+        - string
+      customerReturns:
+        type:
+        - 'null'
+        - number
+      orderedRevenue:
+        type: object
+        properties:
+          amount:
+            type:
+            - 'null'
+            - number
+          currencyCode:
+            type:
+            - 'null'
+            - string
+      orderedUnits:
+        type:
+        - 'null'
+        - number
+      shippedCogs:
+        type: object
+        properties:
+          amount:
+            type:
+            - 'null'
+            - number
+          currencyCode:
+            type:
+            - 'null'
+            - string
+      shippedRevenue:
+        type: object
+        properties:
+          amount:
+            type:
+            - 'null'
+            - number
+          currencyCode:
+            type:
+            - 'null'
+            - string
+      shippedUnits:
+        type:
+        - 'null'
+        - number
+
+  get_vendor_inventory_report:
+    title: Vendor Inventory Data
+    description: Vendor Inventory Data Reports
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      startDate:
+        type:
+        - 'null'
+        - string
+      endDate:
+        type:
+        - 'null'
+        - string
+      asin:
+        type:
+        - 'null'
+        - string
+      vendorConfirmationRate:
+        type:
+        - 'null'
+        - number
+      netReceivedAmount:
+        type: object
+        properties:
+          amount:
+            type:
+            - 'null'
+            - number
+          currencyCode:
+            type:
+            - 'null'
+            - string
+      netReceivedUnits:
+        type:
+        - 'null'
+        - number
+      openPurchaseOrderQuantity:
+        type:
+        - 'null'
+        - number
+      overallVendorLeadTime:
+        type:
+        - 'null'
+        - number
+      sellThroughRate:
+        type:
+        - 'null'
+        - number
+      sellableOnHandInventory:
+        type: object
+        properties:
+          amount:
+            type:
+            - 'null'
+            - number
+          currencyCode:
+            type:
+            - 'null'
+            - string
+      sellableOnHandUnits:
+        type:
+        - 'null'
+        - number
+      unfilledCustomerOrderedUnits:
+        type:
+        - 'null'
+        - number
+      unsellableOnHandInventory:
+        type: object
+        properties:
+          amount:
+            type:
+            - 'null'
+            - number
+          currencyCode:
+            type:
+            - 'null'
+            - string
+      aged90PlusDaysSellableUnits:
+        type:
+        - 'null'
+        - number
+      unhealthyInventory:
+        type: object
+        properties:
+          amount:
+            type:
+            - 'null'
+            - number
+          currencyCode:
+            type:
+            - 'null'
+            - string
+      unhealthyUnits:
+        type:
+        - 'null'
+        - number
+
   orders:
     title: Orders
     description: All orders that were updated after a specified date

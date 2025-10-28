@@ -1,5 +1,6 @@
 # Amazon Seller Partner
 
+
 <HideInUI>
 
 This page contains the setup guide and reference information for the [Amazon Seller Partner](https://developer.amazonservices.com/) source connector.
@@ -154,18 +155,15 @@ The Amazon Seller Partner source connector supports the following [sync modes](h
 - [Vendor Forecasting Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(full-refresh\)
 - [Vendor Orders](https://developer-docs.amazon.com/sp-api/docs/vendor-orders-api-v1-reference#get-vendorordersv1purchaseorders) \(incremental\)
 - [Vendor Order Status](https://developer-docs.amazon.com/sp-api/docs/vendor-orders-api-v1-reference#get-vendorordersv1purchaseOrdersStatus) \(incremental\)
+- [Amazon Search Terms Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(incremental\)
+- [Market Basket Analysis Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(incremental\)
+- [Repeat Purchase](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(incremental\)
+- [Alternate Purchase Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(incremental\)
+- [Item Comparison Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(incremental\)
+- [Sales and Traffic Business Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#seller-retail-analytics-reports) \(incremental\)
+- [Vendor Sales Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(incremental\)
+- [Vendor Inventory Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(incremental\)
 - [XML Orders By Order Date Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-order#order-tracking-reports) \(incremental\)
-<!-- env:oss -->
-- [Amazon Search Terms Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(only available in OSS, incremental\)
-- [Market Basket Analysis Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(only available in OSS, incremental\)
-- [Net Pure Product Margin Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(only available in OSS, incremental\)
-- [Rapid Retail Analytics Inventory Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(only available in OSS, incremental\)
-- [Repeat Purchase](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#brand-analytics-reports) \(only available in OSS, incremental\)
-- [Sales and Traffic Business Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#seller-retail-analytics-reports) \(only available in OSS, incremental\)
-- [Vendor Inventory Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(only available in OSS, incremental\)
-- [Vendor Sales Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(only available in OSS, incremental\)
-- [Vendor Traffic Report](https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics#vendor-retail-analytics-reports) \(only available in OSS, incremental\)
-<!-- /env:oss -->
 
 <HideInUI>
 
@@ -249,6 +247,7 @@ Create a separate connection for streams which usually fail with error above "Fa
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.9.0 | 2025-10-21 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Re-add Brand Analytics reports |
 | 4.8.2 | 2025-09-17 | [66485](https://github.com/airbytehq/airbyte/pull/66485) | Upgrade to CDK v7 |
 | 4.8.1 | 2025-08-16 | [65047](https://github.com/airbytehq/airbyte/pull/65047) | Update dependencies |
 | 4.8.0 | 2025-07-29 | [53225](https://github.com/airbytehq/airbyte/pull/) | Add VendorOrdersStatus stream |
@@ -364,5 +363,4 @@ Create a separate connection for streams which usually fail with error above "Fa
 | 0.2.0      | 2021-08-06 | [#4863](https://github.com/airbytehq/airbyte/pull/4863)   | Rebuild source with `airbyte-cdk`                                                                                                                                                   |
 | 0.1.3      | 2021-06-23 | [#4288](https://github.com/airbytehq/airbyte/pull/4288)   | Bugfix failing `connection check`                                                                                                                                                   |
 | 0.1.2      | 2021-06-15 | [#4108](https://github.com/airbytehq/airbyte/pull/4108)   | Fixed: Sync fails with timeout when create report is CANCELLED`                                                                                                                     |
-
 </details>
