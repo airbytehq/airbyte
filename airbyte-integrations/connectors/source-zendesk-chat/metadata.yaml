@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 40d24d0f-b8f9-4fe0-9e6c-b06c0f3f45e4
-  dockerImageTag: 1.2.22
+  dockerImageTag: 1.2.25
   dockerRepository: airbyte/source-zendesk-chat
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-chat
   githubIssueLabel: source-zendesk-chat
@@ -33,6 +33,9 @@ data:
       1.0.0:
         message: "The subdomain configuration field is now required following a Live Chat API update."
         upgradeDeadline: "2024-11-12"
+  suggestedStreams:
+    streams:
+      - chats
   supportLevel: certified
   tags:
     - language:manifest-only
