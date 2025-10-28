@@ -25,6 +25,8 @@ Airbyte connector for [Encharge](https://encharge.io/) enables seamless data int
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.37 | 2025-10-21 | [68568](https://github.com/airbytehq/airbyte/pull/68568) | Update dependencies |
+| 0.0.36 | 2025-10-14 | [67799](https://github.com/airbytehq/airbyte/pull/67799) | Update dependencies |
 | 0.0.35 | 2025-10-07 | [67273](https://github.com/airbytehq/airbyte/pull/67273) | Update dependencies |
 | 0.0.34 | 2025-09-30 | [66289](https://github.com/airbytehq/airbyte/pull/66289) | Update dependencies |
 | 0.0.33 | 2025-09-09 | [65844](https://github.com/airbytehq/airbyte/pull/65844) | Update dependencies |
