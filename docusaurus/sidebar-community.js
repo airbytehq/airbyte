@@ -47,6 +47,10 @@ module.exports = {
       type: "category",
       collapsible: false,
       label: "Community & Support",
+      link: {
+        type: "doc",
+        id: "README",
+      },
       items: [
         "getting-support",
         contributeToAirbyte,
