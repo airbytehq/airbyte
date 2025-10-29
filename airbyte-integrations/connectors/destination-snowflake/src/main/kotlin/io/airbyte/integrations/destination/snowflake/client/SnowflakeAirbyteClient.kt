@@ -9,14 +9,9 @@ import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.TableOperationsClient
 import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
-import io.airbyte.cdk.load.data.AirbyteValue
-import io.airbyte.cdk.load.dataflow.state.PartitionKey
-import io.airbyte.cdk.load.dataflow.transform.RecordDTO
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TableName
-import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.util.deserializeToNode
-import io.airbyte.integrations.destination.snowflake.dataflow.SnowflakeAggregate
 import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
 import io.airbyte.integrations.destination.snowflake.db.escapeJsonIdentifier
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
@@ -25,14 +20,11 @@ import io.airbyte.integrations.destination.snowflake.sql.COUNT_TOTAL_ALIAS
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlGenerator
 import io.airbyte.integrations.destination.snowflake.sql.andLog
-import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeInsertBuffer
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.sql.ResultSet
-import java.time.format.DateTimeFormatter
 import javax.sql.DataSource
 import net.snowflake.client.jdbc.SnowflakeSQLException
-import net.snowflake.client.jdbc.SnowflakeTimestampWithTimezone
 
 internal const val DESCRIBE_TABLE_COLUMN_NAME_FIELD = "column_name"
 internal const val DESCRIBE_TABLE_COLUMN_TYPE_FIELD = "data_type"
@@ -121,10 +113,6 @@ class SnowflakeAirbyteClient(
         } catch (e: SnowflakeSQLException) {
             handleSnowflakePermissionError(e)
         }
-    }
-
-    override suspend fun dropNamespace(namespace: String) {
-        execute(sqlGenerator.dropNamespace(namespace))
     }
 
     override suspend fun createTable(
@@ -323,79 +311,6 @@ class SnowflakeAirbyteClient(
             0L
         }
 
-    override suspend fun insertRecords(table: TableName, records: List<Map<String, AirbyteValue>>) {
-        val a =
-            SnowflakeAggregate(
-                SnowflakeInsertBuffer(
-                    table,
-                    describeTable(table),
-                    this,
-                    snowflakeConfiguration,
-                    snowflakeColumnUtils,
-                )
-            )
-        records.forEach { a.accept(RecordDTO(it, PartitionKey(""), 0, 0)) }
-        a.flush()
-    }
-
-    override suspend fun readTable(table: TableName): List<Map<String, Any>> {
-        dataSource.connection.use { connection ->
-            connection.createStatement().use { statement ->
-                statement
-                    .executeQuery("""SELECT * FROM "${table.namespace}"."${table.name}";""")
-                    .use { resultSet ->
-                        val metaData = resultSet.metaData
-                        val columnCount = metaData.columnCount
-                        val result = mutableListOf<Map<String, Any>>()
-
-                        while (resultSet.next()) {
-                            val row = mutableMapOf<String, Any>()
-                            for (i in 1..columnCount) {
-                                val columnName = metaData.getColumnName(i)
-                                val columnType = metaData.getColumnTypeName(i)
-                                when (columnType) {
-                                    "TIMESTAMPTZ" -> {
-                                        val value =
-                                            resultSet.getTimestamp(i)
-                                                as SnowflakeTimestampWithTimezone?
-                                        value?.let {
-                                            val formattedTimestamp =
-                                                DateTimeFormatter.ISO_DATE_TIME.format(
-                                                    it.toZonedDateTime().toOffsetDateTime()
-                                                )
-                                            row[columnName] = formattedTimestamp
-                                        }
-                                    }
-                                    "VARIANT",
-                                    "OBJECT",
-                                    "ARRAY" -> {
-                                        resultSet.getString(i)?.let {
-                                            // Automatically convert values to their native type.
-                                            // (map, list, etc.)
-                                            val parsedValue = Jsons.readValue(it, Any::class.java)
-                                            // but handle some annoying edge cases
-                                            val actualValue =
-                                                when (parsedValue) {
-                                                    is Int -> parsedValue.toLong()
-                                                    else -> parsedValue
-                                                }
-                                            row[columnName] = actualValue
-                                        }
-                                    }
-                                    else -> {
-                                        resultSet.getObject(i)?.let { row[columnName] = it }
-                                    }
-                                }
-                            }
-                            result.add(row)
-                        }
-
-                        return result
-                    }
-            }
-        }
-    }
-
     fun createSnowflakeStage(tableName: TableName) {
         execute(sqlGenerator.createSnowflakeStage(tableName))
     }
@@ -438,11 +353,9 @@ class SnowflakeAirbyteClient(
             handleSnowflakePermissionError(e)
         }
 
-    internal fun execute(query: String) =
+    internal fun execute(query: String): ResultSet =
         try {
-            dataSource.connection.use { connection ->
-                connection.createStatement().use { it.executeQuery(query) }
-            }
+            dataSource.execute(query)
         } catch (e: SnowflakeSQLException) {
             handleSnowflakePermissionError(e)
         }
@@ -466,3 +379,8 @@ class SnowflakeAirbyteClient(
         }
     }
 }
+
+fun DataSource.execute(query: String): ResultSet =
+    this.connection.use { connection ->
+        connection.createStatement().use { it.executeQuery(query) }
+    }
