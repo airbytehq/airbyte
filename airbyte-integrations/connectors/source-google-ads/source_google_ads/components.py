@@ -538,6 +538,7 @@ class CriterionRetriever(SimpleRetriever):
                             self.primary_key[0]: _id,
                             "deleted_at": ts,
                         },
+                        associated_slice=stream_slice,
                         stream_name=self.name,
                     )
                 else:
