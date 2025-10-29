@@ -15,7 +15,11 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.component.ColumnType
+import io.airbyte.cdk.load.component.PrimaryKeyDiff
+import io.airbyte.cdk.load.component.PrimaryKeyList
 import io.airbyte.cdk.load.component.TableOperationsClient
+import io.airbyte.cdk.load.component.TableSchemaDiff
 import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAMES
 import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
@@ -26,7 +30,6 @@ import io.airbyte.integrations.destination.clickhouse.client.ClickhouseSqlGenera
 import io.airbyte.integrations.destination.clickhouse.config.ClickhouseFinalTableNameGenerator
 import io.airbyte.integrations.destination.clickhouse.config.toClickHouseCompatibleName
 import io.airbyte.integrations.destination.clickhouse.model.AlterationSummary
-import io.airbyte.integrations.destination.clickhouse.model.hasApplicableAlterations
 import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
@@ -45,7 +48,7 @@ class ClickhouseAirbyteClient(
     private val nameGenerator: ClickhouseFinalTableNameGenerator,
     private val tempTableNameGenerator: TempTableNameGenerator,
     private val clickhouseConfiguration: ClickhouseConfiguration,
-) : TableOperationsClient, TableSchemaEvolutionClient {
+) : TableOperationsClient, TableSchemaEvolutionClient<PrimaryKeyList, PrimaryKeyDiff> {
 
     override suspend fun createNamespace(namespace: String) {
         val statement = sqlGenerator.createNamespace(namespace)
@@ -101,11 +104,10 @@ class ClickhouseAirbyteClient(
         throw NotImplementedError("We rely on Clickhouse's table engine for deduping")
     }
 
-    override suspend fun ensureSchemaMatches(
-        stream: DestinationStream,
-        tableName: TableName,
-        columnNameMapping: ColumnNameMapping
-    ) {
+    override suspend fun discoverSchema(
+        tableName: TableName
+    ): Pair<io.airbyte.cdk.load.component.TableSchema, PrimaryKeyList> {
+        // TODO why are we doing this instead of just using the tablename?
         val properTableName = nameGenerator.getTableName(stream.mappedDescriptor)
         val tableSchema: TableSchema =
             client.getTableSchema(properTableName.name, properTableName.namespace)
@@ -127,55 +129,87 @@ class ClickhouseAirbyteClient(
 
         log.info { "Found Clickhouse columns: $tableSchemaWithoutAirbyteColumns" }
 
-        if (!stream.schema.isObject) {
-            val error =
-                "The root of the schema is not an Object which is not expected, the schema changes won't be propagated"
-            log.error { error }
-            throw IllegalStateException(error)
-        }
-
-        val currentPKs: List<String> =
-            when (stream.importType) {
-                is Dedupe ->
-                    sqlGenerator.extractPks(
-                        (stream.importType as Dedupe).primaryKey,
-                        columnNameMapping
-                    )
-                else -> listOf()
-            }
-
-        val airbyteSchemaWithClickhouseType: Map<String, String> =
-            getAirbyteSchemaWithClickhouseType(stream, currentPKs)
-
-        log.info { "Airbyte columns: $airbyteSchemaWithClickhouseType" }
-
         val clickhousePks: List<String> =
             tableSchemaWithoutAirbyteColumns.filterNot { it.isNullable }.map { it.columnName }
 
-        val columnChanges: AlterationSummary =
-            getChangedColumns(
-                tableSchemaWithoutAirbyteColumns,
-                airbyteSchemaWithClickhouseType,
-                clickhousePks,
-                currentPKs,
-                columnNameMapping,
-            )
+        return Pair(
+            io.airbyte.cdk.load.component.TableSchema(
+                tableSchemaWithoutAirbyteColumns.associate {
+                    it.columnName to ColumnType(it.dataType.getDataTypeAsString(), it.isNullable)
+                }
+            ),
+            PrimaryKeyList(clickhousePks),
+        )
+    }
 
-        if (columnChanges.hasApplicableAlterations() && !columnChanges.hasDedupChange) {
+    override fun computeSchema(
+        stream: DestinationStream,
+        columnNameMapping: ColumnNameMapping
+    ): Pair<io.airbyte.cdk.load.component.TableSchema, PrimaryKeyList> {
+        val importType = stream.importType
+        val primaryKey =
+            if (importType is Dedupe) {
+                // TODO this is supposed to use the column name mapping
+                importType.primaryKey.map { it[0].toClickHouseCompatibleName() }
+            } else {
+                emptyList()
+            }
+        return Pair(
+            io.airbyte.cdk.load.component.TableSchema(
+                stream.schema
+                    .asColumns()
+                    .map { (fieldName, fieldType) ->
+                        // TODO this is supposed to use the column name mapping
+                        val clickhouseCompatibleName = fieldName.toClickHouseCompatibleName()
+                        clickhouseCompatibleName to
+                            ColumnType(
+                                type =
+                                    fieldType.type.toDialectType(
+                                        clickhouseConfiguration.enableJson
+                                    ),
+                                nullable = primaryKey.contains(clickhouseCompatibleName),
+                            )
+                    }
+                    .toMap()
+            ),
+            PrimaryKeyList(primaryKey),
+        )
+    }
+
+    override fun diff(
+        actualSchemaInfo: PrimaryKeyList,
+        expectedSchemaInfo: PrimaryKeyList
+    ): PrimaryKeyDiff {
+        return actualSchemaInfo.diff(expectedSchemaInfo)
+    }
+
+    override suspend fun applySchemaDiff(
+        tableName: TableName,
+        expectedSchema: io.airbyte.cdk.load.component.TableSchema,
+        expectedAdditionalInfo: PrimaryKeyList,
+        diff: TableSchemaDiff,
+        additionalSchemaInfoDiff: PrimaryKeyDiff
+    ) {
+        if (!diff.isNoop() && additionalSchemaInfoDiff.isNoop()) {
             execute(
                 sqlGenerator.alterTable(
+                    // TODO convert diff -> alterationSummary
                     columnChanges,
+                    // TODO figure out why we need this tablename thing
                     properTableName,
                 ),
             )
         }
 
-        if (columnChanges.hasDedupChange) {
+        if (!additionalSchemaInfoDiff.isNoop()) {
             log.info {
                 "Detected deduplication change for table $properTableName, applying deduplication changes"
             }
+            // TODO I'm pretty sure we have enough info to do the same things,
+            // just need to shuffle around some data structures.
             applyDeduplicationChanges(
                 stream,
+                // TODO figure out this tablename thing
                 properTableName,
                 columnNameMapping,
                 tableSchemaWithoutAirbyteColumns

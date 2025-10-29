@@ -7,7 +7,10 @@ package io.airbyte.integrations.destination.snowflake.client
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.component.TableOperationsClient
+import io.airbyte.cdk.load.component.TableSchema
+import io.airbyte.cdk.load.component.TableSchemaDiff
 import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TableName
@@ -38,7 +41,11 @@ class SnowflakeAirbyteClient(
     private val sqlGenerator: SnowflakeDirectLoadSqlGenerator,
     private val snowflakeColumnUtils: SnowflakeColumnUtils,
     private val snowflakeConfiguration: SnowflakeConfiguration,
-) : TableOperationsClient, TableSchemaEvolutionClient {
+) :
+    // Unlike other destinations, when creating a table, we only need the column types.
+    // So just use Unit instead of providing any "additional information" about a table.
+    TableOperationsClient,
+    TableSchemaEvolutionClient<Unit, Unit> {
 
     private val airbyteColumnNames =
         snowflakeColumnUtils.getFormattedDefaultColumnNames(false).toSet()
@@ -190,20 +197,66 @@ class SnowflakeAirbyteClient(
         if (snowflakeConfiguration.legacyRawTablesOnly) {
             return
         }
-        val columnsInDb = getColumnsFromDb(tableName)
-        val columnsInStream = getColumnsFromStream(stream, columnNameMapping)
-        val (addedColumns, deletedColumns, modifiedColumns) =
-            generateSchemaChanges(columnsInDb, columnsInStream)
+        super.ensureSchemaMatches(stream, tableName, columnNameMapping)
+    }
 
+    override suspend fun discoverSchema(tableName: TableName): Pair<TableSchema, Unit> {
+        return Pair(
+            // TODO we should probably just make getColumnsFromDb return the Map<String, ColumnType>
+            // directly
+            TableSchema(
+                getColumnsFromDb(tableName).associate {
+                    it.name to ColumnType(it.type, nullable = TODO())
+                }
+            ),
+            Unit,
+        )
+    }
+
+    override fun computeSchema(
+        stream: DestinationStream,
+        columnNameMapping: ColumnNameMapping
+    ): Pair<TableSchema, Unit> {
+        return Pair(
+            // TODO we should probably just make getColumnsFromStream return the Map<String,
+            // ColumnType> directly
+            TableSchema(
+                getColumnsFromStream(stream, columnNameMapping).associate {
+                    it.name to ColumnType(it.type, nullable = TODO())
+                }
+            ),
+            Unit,
+        )
+    }
+
+    override fun diff(actualSchemaInfo: Unit, expectedSchemaInfo: Unit) {
+        return
+    }
+
+    override suspend fun applySchemaDiff(
+        tableName: TableName,
+        expectedSchema: TableSchema,
+        expectedAdditionalInfo: Unit,
+        diff: TableSchemaDiff,
+        additionalSchemaInfoDiff: Unit,
+    ) {
         if (
-            addedColumns.isNotEmpty() || deletedColumns.isNotEmpty() || modifiedColumns.isNotEmpty()
+            diff.columnsToAdd.isNotEmpty() ||
+                diff.columnsToDrop.isNotEmpty() ||
+                diff.columnsToChange.isNotEmpty()
         ) {
             log.info { "Summary of the table alterations:" }
-            log.info { "Added columns: $addedColumns" }
-            log.info { "Deleted columns: $deletedColumns" }
-            log.info { "Modified columns: $modifiedColumns" }
+            log.info { "Added columns: ${diff.columnsToAdd}" }
+            log.info { "Deleted columns: ${diff.columnsToDrop}" }
+            log.info { "Modified columns: ${diff.columnsToChange}" }
             sqlGenerator
-                .alterTable(tableName, addedColumns, deletedColumns, modifiedColumns)
+                .alterTable(
+                    tableName,
+                    // TODO these types don't work, but it's pretty clear how to do the translation
+                    diff.columnsToAdd,
+                    diff.columnsToDrop,
+                    diff.columnsToChange,
+                )
                 .forEach { execute(it) }
         }
     }
