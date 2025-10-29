@@ -147,6 +147,7 @@ The connector is restricted by [requests limitation](https://business-api.tiktok
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.8.8      | 2025-10-29 | [69082](https://github.com/airbytehq/airbyte/pull/69082) | Aggressively fail on rate limiting issues |
 | 4.8.7      | 2025-10-29 | [69081](https://github.com/airbytehq/airbyte/pull/69081) | Reduce concurrency |
 | 4.8.6      | 2025-10-29 | [69075](https://github.com/airbytehq/airbyte/pull/69075) | Add API Budget |
 | 4.8.5      | 2025-10-29 | [69074](https://github.com/airbytehq/airbyte/pull/69074) | Improving on rate limiting issue. |
