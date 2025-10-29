@@ -342,7 +342,7 @@ object TableOperationsFixtures {
         return map { record -> record.mapKeys { (k, _) -> totalMapping.originalName(k) ?: k } }
     }
 
-    suspend fun TableOperationsClient.insertRecords(
+    suspend fun TestTableOperationsClient.insertRecords(
         table: TableName,
         records: List<Map<String, AirbyteValue>>,
         columnNameMapping: ColumnNameMapping,
