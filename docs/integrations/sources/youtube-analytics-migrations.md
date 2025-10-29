@@ -1,5 +1,3 @@
-import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
-
 # YouTube Analytics Migration Guide
 
 ## Upgrading to 1.0.0
@@ -40,5 +38,3 @@ Clearing your data is required for the affected streams to continue syncing succ
 
 This will clear the data in your destination for the subset of streams with schema changes. After the clear succeeds,
 trigger a sync by clicking **Sync Now**. For more information on clearing your data in Airbyte, see [this page](/platform/operator-guides/clear).
-
-<MigrationGuide />
