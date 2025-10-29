@@ -16,7 +16,13 @@ import io.airbyte.cdk.discover.TableName
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants
 import io.airbyte.cdk.jdbc.DefaultJdbcConstants.NamespaceKind
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
+import io.airbyte.cdk.jdbc.NullFieldType
+import io.airbyte.cdk.read.From
+import io.airbyte.cdk.read.Limit
+import io.airbyte.cdk.read.SelectColumns
 import io.airbyte.cdk.read.SelectQueryGenerator
+import io.airbyte.cdk.read.SelectQuerySpec
+import io.airbyte.cdk.read.optimize
 import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Primary
@@ -44,9 +50,9 @@ class SnowflakeSourceMetadataQuerier(
 
     fun TableName.namespace(): String? =
         when (base.constants.namespaceKind) {
-            NamespaceKind.CATALOG_AND_SCHEMA -> schema
+            NamespaceKind.CATALOG_AND_SCHEMA -> this.schema
             NamespaceKind.CATALOG -> catalog
-            NamespaceKind.SCHEMA -> schema
+            NamespaceKind.SCHEMA -> this.schema
         }
 
     val memoizedColumnMetadata: Map<TableName, List<ColumnMetadata>> by lazy {
@@ -128,7 +134,7 @@ class SnowflakeSourceMetadataQuerier(
             return columnMetadata
         }
         val resultsFromSelectMany: List<ColumnMetadata>? =
-            queryColumnMetadata(base.conn, base.selectLimit0(table, columnMetadata.map { it.name }))
+            queryColumnMetadata(base.conn, selectLimit0(table, columnMetadata.map { it.name }))
         if (resultsFromSelectMany != null) {
             return resultsFromSelectMany
         }
@@ -136,8 +142,24 @@ class SnowflakeSourceMetadataQuerier(
             "Not all columns of $table might be accessible, trying each column individually."
         }
         return columnMetadata.flatMap {
-            queryColumnMetadata(base.conn, base.selectLimit0(table, listOf(it.name))) ?: listOf()
+            queryColumnMetadata(base.conn, selectLimit0(table, listOf(it.name))) ?: listOf()
         }
+    }
+
+    /**
+     * Generates SQL query used to discover [ColumnMetadata] and to verify table access permissions.
+     */
+    fun selectLimit0(
+        table: TableName,
+        columnIDs: List<String>,
+    ): String {
+        val querySpec =
+            SelectQuerySpec(
+                SelectColumns(columnIDs.map { Field(it, NullFieldType) }),
+                From(table.name, table.namespace()),
+                limit = Limit(0),
+            )
+        return base.selectQueryGenerator.generate(querySpec.optimize()).sql
     }
 
     private fun queryColumnMetadata(
@@ -261,6 +283,13 @@ class SnowflakeSourceMetadataQuerier(
                 }
             }
             log.info { "Discovered ${allTables.size} table(s) in namespaces ${base.config.namespaces}." }
+
+            // Debug: Log discovered schemas
+//            val discoveredSchemas = allTables.mapNotNull { it.schema }.distinct()
+//            log.info { "Discovered schemas: $discoveredSchemas" }
+//            allTables.take(3).forEach { table ->
+//                log.info { "Sample table: catalog=${table.catalog}, schema=${table.schema}, name=${table.name}" }
+//            }
 
             // Validate table filters when schema is null (dynamic discovery)
             if (this.schema == null && tableFilters.isNotEmpty()) {
