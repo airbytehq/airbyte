@@ -2,11 +2,11 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: 6f2ac653-8623-43c4-8950-19218c7caf3d
-  dockerImageTag: 2.0.39
+  dockerImageTag: 2.0.40
   dockerRepository: airbyte/source-firebolt
   githubIssueLabel: source-firebolt
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
+    baseImage: docker.io/airbyte/python-connector-base:4.1.0@sha256:1d1aa21d34e851df4e8a87b391c27724c06e2597608e7161f4d167be853bd7b6
   icon: firebolt.svg
   license: ELv2
   name: Firebolt
