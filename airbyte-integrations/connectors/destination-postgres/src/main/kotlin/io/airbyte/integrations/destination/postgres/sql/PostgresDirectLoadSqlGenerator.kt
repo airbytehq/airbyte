@@ -462,6 +462,7 @@ class PostgresDirectLoadSqlGenerator(
         columnsToAdd: Set<Column>,
         columnsToRemove: Set<Column>,
         columnsToModify: Set<Column>,
+        columnsInDb: Set<Column>
     ): Set<String> {
         val clauses = mutableSetOf<String>()
         val fullyQualifiedTableName = getFullyQualifiedName(tableName)
@@ -474,8 +475,21 @@ class PostgresDirectLoadSqlGenerator(
             clauses.add("ALTER TABLE $fullyQualifiedTableName DROP COLUMN ${getName(it)};".andLog())
         }
 
-        columnsToModify.forEach {
-            clauses.add("ALTER TABLE $fullyQualifiedTableName ALTER COLUMN ${getName(it)} SET DATA TYPE ${it.columnTypeName};".andLog())
+        columnsToModify.forEach { newColumn ->
+            val oldColumn = columnsInDb.find { it.columnName == newColumn.columnName }
+            val oldType = oldColumn?.columnTypeName
+            val newType = newColumn.columnTypeName
+
+            val usingClause = when {
+                // Converting to jsonb from any type
+                newType == "jsonb" -> "USING to_jsonb(${getName(newColumn)})"
+                // Converting from jsonb to varchar/text - extract text value without JSON quotes
+                oldType == "jsonb" && (newType == "varchar" || newType == "text" || newType == "character varying") ->
+                    "USING ${getName(newColumn)} #>> '{}'"
+                // Standard cast for other conversions
+                else -> "USING ${getName(newColumn)}::$newType"
+            }
+            clauses.add("ALTER TABLE $fullyQualifiedTableName ALTER COLUMN ${getName(newColumn)} TYPE $newType $usingClause;".andLog())
         }
         return clauses
     }
