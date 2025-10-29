@@ -25,7 +25,7 @@ import io.airbyte.cdk.load.table.TableName
  *
  * @see TableOperationsClient for standard SQL-based table operations
  */
-interface TableSchemaEvolutionClient {
+interface TableSchemaEvolutionClient<AdditionalSchemaInfo, AdditionalSchemaInfoDiff> {
     /**
      * Ensures the destination table schema matches the expected stream schema through introspection
      * and reconciliation.
@@ -57,5 +57,70 @@ interface TableSchemaEvolutionClient {
         stream: DestinationStream,
         tableName: TableName,
         columnNameMapping: ColumnNameMapping,
-    )
+    ) {
+        val (actualSchema, actualAdditionalInfo) = discoverSchema(tableName)
+        val (expectedSchema, expectedAdditionalInfo) = computeSchema(stream, columnNameMapping)
+        val schemaDiff = actualSchema.diff(expectedSchema)
+        val additionalInfoDiff = diff(actualAdditionalInfo, expectedAdditionalInfo)
+        applySchemaDiff(
+            tableName,
+            expectedSchema,
+            expectedAdditionalInfo,
+            schemaDiff,
+            additionalInfoDiff
+        )
+    }
+
+    suspend fun discoverSchema(tableName: TableName): Pair<TableSchema, AdditionalSchemaInfo> {
+        throw NotImplementedError()
+    }
+    fun computeSchema(
+        stream: DestinationStream,
+        columnNameMapping: ColumnNameMapping
+    ): Pair<TableSchema, AdditionalSchemaInfo> {
+        throw NotImplementedError()
+    }
+    fun diff(
+        actualSchemaInfo: AdditionalSchemaInfo,
+        expectedSchemaInfo: AdditionalSchemaInfo
+    ): AdditionalSchemaInfoDiff {
+        throw NotImplementedError()
+    }
+    suspend fun applySchemaDiff(
+        tableName: TableName,
+        expectedSchema: TableSchema,
+        expectedAdditionalInfo: AdditionalSchemaInfo,
+        diff: TableSchemaDiff,
+        additionalSchemaInfoDiff: AdditionalSchemaInfoDiff
+    ) {
+        throw NotImplementedError()
+    }
 }
+
+data class TableSchema(val columns: Map<String, ColumnType>) {
+    /** Generate a diff which, when applied to `this`, will result in [other]. */
+    fun diff(other: TableSchema): TableSchemaDiff {
+        TODO()
+    }
+}
+
+data class ColumnType(
+    val type: String,
+    val nullable: Boolean,
+)
+
+data class TableSchemaDiff(
+    val columnsToAdd: Map<String, ColumnType>,
+    val columnsToDrop: Set<String>,
+    val columnsToChange: Map<String, ColumnTypeChange>,
+    val columnsToRetain: Set<String>,
+) {
+    fun isNoop() = columnsToAdd.isEmpty() && columnsToDrop.isEmpty() && columnsToChange.isEmpty()
+}
+
+data class ColumnTypeChange(
+    val originalType: String,
+    val originalNullability: Boolean,
+    val newType: String,
+    val newNullability: Boolean,
+)
