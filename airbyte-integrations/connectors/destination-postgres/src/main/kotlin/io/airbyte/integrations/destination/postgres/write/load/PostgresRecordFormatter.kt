@@ -4,12 +4,16 @@
 
 package io.airbyte.integrations.destination.postgres.write.load
 
+import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.csv.toCsvValue
+import io.airbyte.cdk.load.data.json.toJson
 import io.airbyte.cdk.load.message.Meta
-import io.airbyte.cdk.load.util.Jsons
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_LOADED_AT
+import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_DATA
+import io.airbyte.cdk.load.util.serializeToString
 
 internal val RAW_META_COLUMNS =
     listOf(
@@ -41,33 +45,42 @@ class PostgresRawRecordFormatter(
 
     private fun toOutputRecord(record: MutableMap<String, AirbyteValue>): List<Any> {
         val outputRecord = mutableListOf<Any>()
-        // Copy the Airbyte metadata columns to the raw output, removing each
-        // one from the record to avoid duplicates in the "data" field
-        columns
-            .filter { RAW_META_COLUMNS.contains(it) }
-            .forEach { column ->
-                when (column) {
-                    Meta.COLUMN_NAME_AB_EXTRACTED_AT,
-                    Meta.COLUMN_NAME_AB_META,
-                    Meta.COLUMN_NAME_AB_RAW_ID,
-                    Meta.COLUMN_NAME_AB_GENERATION_ID ->
-                        safeAddToOutput(column, record, outputRecord)
+
+        // Do not output null values in the JSON raw output
+        val filteredRecord = record.filter { (k, v) -> v !is NullValue && !RAW_META_COLUMNS.contains(k) }
+        // Convert AirbyteValue to JsonNode to avoid double-encoding
+        val jsonObject = JsonNodeFactory.instance.objectNode()
+        filteredRecord.forEach { (key, value) ->
+            jsonObject.replace(key, value.toJson())
+        }
+        val jsonData = jsonObject.serializeToString()
+
+        // Iterate through columns in the exact order they appear in the table
+        columns.forEach { column ->
+            when (column) {
+                Meta.COLUMN_NAME_AB_RAW_ID,
+                Meta.COLUMN_NAME_AB_EXTRACTED_AT,
+                Meta.COLUMN_NAME_AB_META,
+                Meta.COLUMN_NAME_AB_GENERATION_ID -> {
+                    // Extract metadata columns from the record
+                    val extractedValue = record[column]
+                    outputRecord.add(extractedValue?.toCsvValue() ?: "")
+                }
+                Meta.COLUMN_NAME_AB_LOADED_AT -> {
+                    // _airbyte_loaded_at is nullable and not set during initial insert
+                    outputRecord.add("")
+                }
+                Meta.COLUMN_NAME_DATA -> {
+                    // _airbyte_data contains the JSON representation of the data
+                    outputRecord.add(jsonData)
+                }
+                else -> {
+                    // This shouldn't happen in raw mode, but handle it gracefully
+                    outputRecord.add("")
                 }
             }
-        // Do not output null values in the JSON raw output
-        val filteredRecord = record.filter { (_, v) -> v !is NullValue }
-        // Convert all the remaining columns in the record to a JSON document stored in the "data"
-        // column
-        outputRecord.add(StringValue(Jsons.writeValueAsString(filteredRecord)).toCsvValue())
-        return outputRecord
-    }
+        }
 
-    private fun safeAddToOutput(
-        key: String,
-        record: MutableMap<String, AirbyteValue>,
-        output: MutableList<Any>
-    ) {
-        val extractedValue = record.remove(key)
-        output.add(extractedValue?.toCsvValue() ?: "")
+        return outputRecord
     }
 }

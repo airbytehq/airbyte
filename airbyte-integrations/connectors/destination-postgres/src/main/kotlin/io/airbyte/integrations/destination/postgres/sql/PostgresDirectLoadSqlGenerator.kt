@@ -7,27 +7,8 @@ package io.airbyte.integrations.destination.postgres.sql
 import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.data.AirbyteType
-import io.airbyte.cdk.load.data.ArrayType
-import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
-import io.airbyte.cdk.load.data.BooleanType
-import io.airbyte.cdk.load.data.DateType
-import io.airbyte.cdk.load.data.IntegerType
-import io.airbyte.cdk.load.data.NumberType
-import io.airbyte.cdk.load.data.ObjectType
-import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
-import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
-import io.airbyte.cdk.load.data.StringType
-import io.airbyte.cdk.load.data.TimeTypeWithTimezone
-import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
-import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
-import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
-import io.airbyte.cdk.load.data.UnionType
-import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
-import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
-import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TableName
@@ -43,38 +24,14 @@ private val log = KotlinLogging.logger {}
 
 @Singleton
 class PostgresDirectLoadSqlGenerator(
-    private val postgresConfiguration: PostgresConfiguration
-) {
+    private val postgresColumnUtils: PostgresColumnUtils,
+    private val postgresConfiguration: PostgresConfiguration) {
     companion object {
         private const val CURSOR_INDEX_PREFIX = "idx_cursor_"
         private const val PRIMARY_KEY_INDEX_PREFIX = "idx_pk_"
         private const val DEDUPED_TABLE_ALIAS = "deduped_source"
-        private val EXTRACTED_AT_COLUMN_NAME = "\"$COLUMN_NAME_AB_EXTRACTED_AT\""
-        private val DELETED_AT_COLUMN_NAME = "\"$CDC_DELETED_AT_COLUMN\""
-        internal val DEFAULT_COLUMNS =
-            listOf(
-                Column(
-                    columnName = COLUMN_NAME_AB_RAW_ID,
-                    columnTypeName = PostgresDataType.VARCHAR.typeName,
-                    nullable = false
-
-                ),
-                Column(
-                    columnName = COLUMN_NAME_AB_EXTRACTED_AT,
-                    columnTypeName = PostgresDataType.TIMESTAMP_WITH_TIMEZONE.typeName,
-                    nullable = false
-                ),
-                Column(
-                    columnName = COLUMN_NAME_AB_META,
-                    columnTypeName = PostgresDataType.JSONB.typeName,
-                    nullable = false
-                ),
-                Column(
-                    columnName = COLUMN_NAME_AB_GENERATION_ID,
-                    columnTypeName = PostgresDataType.BIGINT.typeName,
-                    nullable = false
-                ),
-            )
+        private val EXTRACTED_AT_COLUMN_NAME = quoteIdentifier(COLUMN_NAME_AB_EXTRACTED_AT)
+        private val DELETED_AT_COLUMN_NAME = quoteIdentifier(CDC_DELETED_AT_COLUMN)
 
         /**
          * This extension is here to avoid writing `.also { log.info { it }}` for every returned string
@@ -84,6 +41,9 @@ class PostgresDirectLoadSqlGenerator(
             log.info { this.trim() }
             return this
         }
+
+        private fun quoteIdentifier(identifier: String) =
+            "\"${identifier}\""
     }
 
     fun createTable(
@@ -92,7 +52,7 @@ class PostgresDirectLoadSqlGenerator(
         columnNameMapping: ColumnNameMapping,
         replace: Boolean
     ): String {
-        val columnDeclarations = columnsAndTypes(stream, columnNameMapping).joinToString(",\n") {it.toSQLString() }
+        val columnDeclarations = postgresColumnUtils.getTargetColumns(stream, columnNameMapping).joinToString(",\n") {it.toSQLString() }
         val dropTableIfExistsStatement = if (replace) "DROP TABLE IF EXISTS ${getFullyQualifiedName(tableName)};" else ""
         val createIndexesStatement = createIndexes(stream, tableName, columnNameMapping)
         return """
@@ -153,8 +113,7 @@ class PostgresDirectLoadSqlGenerator(
     ): List<String> {
         return importType.primaryKey.map { fieldPath ->
             val primaryKeyColumnName = fieldPath.first() //only at the root level for Postgres
-            val targetColumnName = getTargetColumnName(primaryKeyColumnName, columnNameMapping)
-            "\"$targetColumnName\""
+            getTargetColumnName(primaryKeyColumnName, columnNameMapping )
         }.toList()
     }
 
@@ -164,7 +123,7 @@ class PostgresDirectLoadSqlGenerator(
     ): String? {
         return cursor
             .firstOrNull()
-            ?.let { columnName -> getQuotedTargetColumnName(columnName, columnNameMapping) }
+            ?.let { columnName -> getTargetColumnName(columnName, columnNameMapping) }
     }
 
     private fun getCursorColumnName(stream: DestinationStream, columnNameMapping: ColumnNameMapping): String? {
@@ -175,29 +134,10 @@ class PostgresDirectLoadSqlGenerator(
     }
 
     private fun getPrimaryKeyIndexName(tableName: TableName): String =
-        "\"${PRIMARY_KEY_INDEX_PREFIX + tableName.name}\""
+        quoteIdentifier(PRIMARY_KEY_INDEX_PREFIX + tableName.name)
 
     private fun getCursorIndexName(tableName: TableName): String =
-        "\"${CURSOR_INDEX_PREFIX + tableName.name}\""
-
-    fun columnsAndTypes(
-        stream: DestinationStream,
-        columnNameMapping: ColumnNameMapping
-    ): List<Column> {
-        val targetColumns = stream.schema
-            .asColumns()
-            .map { (columnName, columnType) ->
-                val targetColumnName = getTargetColumnName(columnName, columnNameMapping)
-                val typeName = columnType.type.toDialectType()
-                Column(
-                    columnName = targetColumnName,
-                    columnTypeName = typeName,
-                )
-            }
-            .toList()
-
-        return (DEFAULT_COLUMNS + targetColumns)
-    }
+        quoteIdentifier(CURSOR_INDEX_PREFIX + tableName.name)
 
     fun overwriteTable(
         sourceTableName: TableName,
@@ -229,21 +169,21 @@ class PostgresDirectLoadSqlGenerator(
     }
 
     private fun getTargetColumnNames(stream: DestinationStream, columnNameMapping: ColumnNameMapping): List<String> {
-        return columnsAndTypes(stream, columnNameMapping).map { getQuotedTargetColumnName(it.columnName, columnNameMapping) }
+        return postgresColumnUtils.getTargetColumns(stream, columnNameMapping).map { getTargetColumnName(it.columnName, columnNameMapping) }
     }
 
     private fun getTargetColumnNames(columnNameMapping: ColumnNameMapping): List<String> =
-        getDefaultColumnNames() + columnNameMapping.map { (_, targetName) -> "\"${targetName}\"" }
+        getDefaultColumnNames() + columnNameMapping.map { (_, targetName) -> quoteIdentifier(targetName) }
 
-    private fun getTargetColumnName(streamColumnName : String, columnNameMapping: ColumnNameMapping): String =
-        columnNameMapping[streamColumnName] ?: streamColumnName
 
-    private fun getQuotedTargetColumnName(streamColumnName: String, columnNameMapping: ColumnNameMapping): String {
-        return "\"${getTargetColumnName(streamColumnName, columnNameMapping)}\""
+    private fun getTargetColumnName(streamColumnName: String, columnNameMapping: ColumnNameMapping): String {
+        return quoteIdentifier(postgresColumnUtils.getTargetColumnName(streamColumnName, columnNameMapping))
     }
 
-    fun getDefaultColumnNames(): List<String> =
-        DEFAULT_COLUMNS.map { "\"${it.columnName}\"" }
+    private fun getDefaultColumnNames(): List<String> =
+        postgresColumnUtils.defaultColumns().map { quoteIdentifier(it.columnName)}
+
+
 
     /**
      * Generates an SQL statement that upserts (merge) data from a source staging table into a target table.
@@ -552,30 +492,9 @@ class PostgresDirectLoadSqlGenerator(
     private fun getName(column: Column): String =
         "\"${column.columnName}\""
 
-    fun AirbyteType.toDialectType(): String =
-        when (this) {
-            BooleanType -> PostgresDataType.BOOLEAN.typeName
-            DateType -> PostgresDataType.DATE.typeName
-            IntegerType -> PostgresDataType.BIGINT.typeName
-            NumberType -> PostgresDataType.DECIMAL.typeName
-            StringType -> PostgresDataType.VARCHAR.typeName
-            TimeTypeWithTimezone -> PostgresDataType.TIME_WITH_TIMEZONE.typeName
-            TimeTypeWithoutTimezone -> PostgresDataType.TIME.typeName
-            TimestampTypeWithTimezone -> PostgresDataType.TIMESTAMP_WITH_TIMEZONE.typeName
-            TimestampTypeWithoutTimezone -> PostgresDataType.TIMESTAMP.typeName
-            is ArrayType,
-            ArrayTypeWithoutSchema,
-            is ObjectType,
-            ObjectTypeWithEmptySchema,
-            ObjectTypeWithoutSchema,
-            is UnknownType,
-            is UnionType -> PostgresDataType.JSONB.typeName
-        }
-
     fun Column.toSQLString(): String {
         val isNullableSuffix = if (nullable) "" else "NOT NULL"
         return "\"$columnName\" $columnTypeName $isNullableSuffix".trim()
     }
 }
 
-data class Column(val columnName: String, val columnTypeName: String, val nullable: Boolean = true)

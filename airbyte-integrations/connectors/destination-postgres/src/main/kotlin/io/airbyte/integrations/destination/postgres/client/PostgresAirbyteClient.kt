@@ -12,6 +12,7 @@ import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TableName
 import io.airbyte.integrations.destination.postgres.sql.COUNT_TOTAL_ALIAS
 import io.airbyte.integrations.destination.postgres.sql.Column
+import io.airbyte.integrations.destination.postgres.sql.PostgresColumnUtils
 import io.airbyte.integrations.destination.postgres.sql.PostgresDirectLoadSqlGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
@@ -25,6 +26,7 @@ private val log = KotlinLogging.logger {}
 class PostgresAirbyteClient(
     private val dataSource: DataSource,
     private val sqlGenerator: PostgresDirectLoadSqlGenerator,
+    private val postgresColumnUtils: PostgresColumnUtils
 ) : TableSchemaEvolutionClient, TableOperationsClient {
 
     override suspend fun countTable(tableName: TableName): Long? =
@@ -47,7 +49,19 @@ class PostgresAirbyteClient(
         }
 
     override suspend fun createNamespace(namespace: String) {
-        execute(sqlGenerator.createNamespace(namespace))
+        try {
+            execute(sqlGenerator.createNamespace(namespace))
+        } catch (e: org.postgresql.util.PSQLException) {
+            // Handle race condition when multiple connections try to create the same schema
+            // PostgreSQL's CREATE SCHEMA IF NOT EXISTS can still fail with unique constraint violation
+            // if two sessions try to create it simultaneously
+            if (e.message?.contains("pg_namespace_nspname_index") == true ||
+                e.message?.contains("already exists") == true) {
+                log.debug(e) { "Schema $namespace already exists (race condition), ignoring error" }
+            } else {
+                throw e
+            }
+        }
     }
 
     override suspend fun createTable(
@@ -93,7 +107,10 @@ class PostgresAirbyteClient(
         columnNameMapping: ColumnNameMapping
     ) {
         val columnsInDb = getColumnsFromDb(tableName)
-        val columnsInStream = getColumnsFromStream(stream, columnNameMapping)
+        val defaultColumnNames = postgresColumnUtils.defaultColumns().map { it.columnName }
+        val columnsInStream = postgresColumnUtils.getTargetColumns(stream, columnNameMapping)
+            .filter { it.columnName !in defaultColumnNames }
+            .toSet()
         val (addedColumns, deletedColumns, modifiedColumns) =
             generateSchemaChanges(columnsInDb, columnsInStream)
 
@@ -118,7 +135,7 @@ class PostgresAirbyteClient(
             return statement.use {
                 val rs: ResultSet = it.executeQuery(sql)
                 val columnsInDb: MutableSet<Column> = mutableSetOf()
-                val defaultColumnNames = sqlGenerator.getDefaultColumnNames()
+                val defaultColumnNames = postgresColumnUtils.defaultColumns().map { it.columnName }
                 while (rs.next()) {
                     //TODO: extract column_name and data_type as constants
                     val columnName = rs.getString("column_name")
@@ -135,16 +152,6 @@ class PostgresAirbyteClient(
                 columnsInDb
             }
         }
-    }
-
-    internal fun getColumnsFromStream(
-        stream: DestinationStream,
-        columnNameMapping: ColumnNameMapping
-    ): Set<Column> {
-        val defaultColumnNames = sqlGenerator.getDefaultColumnNames()
-        return sqlGenerator.columnsAndTypes(stream, columnNameMapping)
-            .filter { columnAndType -> columnAndType.columnName !in defaultColumnNames }
-            .toSet()
     }
 
     internal fun generateSchemaChanges(
