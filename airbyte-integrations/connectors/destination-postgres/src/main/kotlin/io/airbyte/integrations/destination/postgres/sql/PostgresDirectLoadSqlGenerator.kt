@@ -4,30 +4,16 @@
 
 package io.airbyte.integrations.destination.postgres.sql
 
+import com.google.common.annotations.VisibleForTesting
+import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.data.AirbyteType
-import io.airbyte.cdk.load.data.ArrayType
-import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
-import io.airbyte.cdk.load.data.BooleanType
-import io.airbyte.cdk.load.data.DateType
-import io.airbyte.cdk.load.data.IntegerType
-import io.airbyte.cdk.load.data.NumberType
-import io.airbyte.cdk.load.data.ObjectType
-import io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema
-import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
-import io.airbyte.cdk.load.data.StringType
-import io.airbyte.cdk.load.data.TimeTypeWithTimezone
-import io.airbyte.cdk.load.data.TimeTypeWithoutTimezone
-import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
-import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
-import io.airbyte.cdk.load.data.UnionType
-import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
-import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
-import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
+import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TableName
+import io.airbyte.integrations.destination.postgres.spec.CdcDeletionMode
+import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import kotlin.collections.forEach
@@ -37,32 +23,15 @@ internal const val COUNT_TOTAL_ALIAS = "total"
 private val log = KotlinLogging.logger {}
 
 @Singleton
-class PostgresDirectLoadSqlGenerator(val postgresColumnUtils: PostgresColumnUtils) {
+class PostgresDirectLoadSqlGenerator(
+    private val postgresColumnUtils: PostgresColumnUtils,
+    private val postgresConfiguration: PostgresConfiguration) {
     companion object {
-        internal val DEFAULT_COLUMNS =
-            listOf(
-                Column(
-                    columnName = COLUMN_NAME_AB_RAW_ID,
-                    columnTypeName = PostgresDataType.VARCHAR.typeName,
-                    nullable = false
-
-                ),
-                Column(
-                    columnName = COLUMN_NAME_AB_EXTRACTED_AT,
-                    columnTypeName = PostgresDataType.TIMESTAMP_WITH_TIMEZONE.typeName,
-                    nullable = false
-                ),
-                Column(
-                    columnName = COLUMN_NAME_AB_META,
-                    columnTypeName = PostgresDataType.JSONB.typeName,
-                    nullable = false
-                ),
-                Column(
-                    columnName = COLUMN_NAME_AB_GENERATION_ID,
-                    columnTypeName = PostgresDataType.BIGINT.typeName,
-                    nullable = false
-                ),
-            )
+        private const val CURSOR_INDEX_PREFIX = "idx_cursor_"
+        private const val PRIMARY_KEY_INDEX_PREFIX = "idx_pk_"
+        private const val DEDUPED_TABLE_ALIAS = "deduped_source"
+        private val EXTRACTED_AT_COLUMN_NAME = quoteIdentifier(COLUMN_NAME_AB_EXTRACTED_AT)
+        private val DELETED_AT_COLUMN_NAME = quoteIdentifier(CDC_DELETED_AT_COLUMN)
 
         /**
          * This extension is here to avoid writing `.also { log.info { it }}` for every returned string
@@ -72,6 +41,9 @@ class PostgresDirectLoadSqlGenerator(val postgresColumnUtils: PostgresColumnUtil
             log.info { this.trim() }
             return this
         }
+
+        private fun quoteIdentifier(identifier: String) =
+            "\"${identifier}\""
     }
 
     fun createTable(
@@ -80,25 +52,92 @@ class PostgresDirectLoadSqlGenerator(val postgresColumnUtils: PostgresColumnUtil
         columnNameMapping: ColumnNameMapping,
         replace: Boolean
     ): String {
-        val properties = when (val schema = stream.schema) {
-            is ObjectType -> schema.properties
-            is ObjectTypeWithEmptySchema -> emptyMap()
-            else -> emptyMap()
-        }
-        val columnDeclarations = postgresColumnUtils.columnsAndTypes(properties, columnNameMapping).joinToString(",\n")
+        val columnDeclarations = postgresColumnUtils.getTargetColumns(stream, columnNameMapping).joinToString(",\n") {it.toSQLString() }
         val dropTableIfExistsStatement = if (replace) "DROP TABLE IF EXISTS ${getFullyQualifiedName(tableName)};" else ""
+        val createIndexesStatement = createIndexes(stream, tableName, columnNameMapping)
         return """
             BEGIN TRANSACTION;
             $dropTableIfExistsStatement
             CREATE TABLE ${getFullyQualifiedName(tableName)} (
                 $columnDeclarations
             );
+            $createIndexesStatement
             COMMIT;
             """
             .trimIndent()
             .andLog()
     }
 
+    /**
+     * Generates index creation statements for a table based on the stream's configuration.
+     *
+     * Creates up to three indexes:
+     * - Primary key index (if dedupe stream with primary keys)
+     * - Cursor index (if dedupe stream with cursor field)
+     * - Extracted_at index (always created for all streams)
+     */
+    private fun createIndexes(
+        stream: DestinationStream,
+        tableName: TableName,
+        columnNameMapping: ColumnNameMapping
+    ): String {
+        val primaryKeyIndexStatement = getPrimaryKeysColumnNames(stream, columnNameMapping)
+            .takeIf {  it.isNotEmpty() }
+            ?.let {
+                "CREATE INDEX ${getPrimaryKeyIndexName(tableName)} ON ${getFullyQualifiedName(tableName)} (${it.joinToString(", ")});"
+            } ?: ""
+
+        val cursorIndexStatement = getCursorColumnName(stream, columnNameMapping)?.let { cursorColumnName ->
+            "CREATE INDEX ${getCursorIndexName(tableName)} ON ${getFullyQualifiedName(tableName)} ($cursorColumnName);"
+        } ?: ""
+
+        val extractedAtIndexStatement = "CREATE INDEX ON ${getFullyQualifiedName(tableName)} ($EXTRACTED_AT_COLUMN_NAME);"
+
+        return """
+            $primaryKeyIndexStatement
+            $cursorIndexStatement
+            $extractedAtIndexStatement
+        """.trimIndent()
+    }
+
+    private fun getPrimaryKeysColumnNames(stream: DestinationStream, columnNameMapping: ColumnNameMapping): List<String> {
+        return when (stream.importType) {
+            is Dedupe -> getPrimaryKeysColumnNames(stream.importType as Dedupe, columnNameMapping)
+            else -> listOf()
+        }
+    }
+
+    private fun getPrimaryKeysColumnNames(
+        importType: Dedupe,
+        columnNameMapping: ColumnNameMapping
+    ): List<String> {
+        return importType.primaryKey.map { fieldPath ->
+            val primaryKeyColumnName = fieldPath.first() //only at the root level for Postgres
+            getTargetColumnName(primaryKeyColumnName, columnNameMapping )
+        }.toList()
+    }
+
+    private fun getCursorColumnName(
+        cursor: List<String>,
+        columnNameMapping: ColumnNameMapping
+    ): String? {
+        return cursor
+            .firstOrNull()
+            ?.let { columnName -> getTargetColumnName(columnName, columnNameMapping) }
+    }
+
+    private fun getCursorColumnName(stream: DestinationStream, columnNameMapping: ColumnNameMapping): String? {
+        when (stream.importType) {
+            is Dedupe -> return getCursorColumnName((stream.importType as Dedupe).cursor, columnNameMapping)
+            else -> return null
+        }
+    }
+
+    private fun getPrimaryKeyIndexName(tableName: TableName): String =
+        quoteIdentifier(PRIMARY_KEY_INDEX_PREFIX + tableName.name)
+
+    private fun getCursorIndexName(tableName: TableName): String =
+        quoteIdentifier(CURSOR_INDEX_PREFIX + tableName.name)
 
     fun overwriteTable(
         sourceTableName: TableName,
@@ -127,19 +166,266 @@ class PostgresDirectLoadSqlGenerator(val postgresColumnUtils: PostgresColumnUtil
             """
             .trimIndent()
             .andLog()
+    }
 
+    private fun getTargetColumnNames(stream: DestinationStream, columnNameMapping: ColumnNameMapping): List<String> {
+        return postgresColumnUtils.getTargetColumns(stream, columnNameMapping).map { getTargetColumnName(it.columnName, columnNameMapping) }
     }
 
     private fun getTargetColumnNames(columnNameMapping: ColumnNameMapping): List<String> =
-        postgresColumnUtils.defaultColumns().map { "\"${it.columnName}\"" } + columnNameMapping.map { (_, targetName) -> "\"${targetName}\"" }
+        getDefaultColumnNames() + columnNameMapping.map { (_, targetName) -> quoteIdentifier(targetName) }
 
-    @Suppress("UNUSED_PARAMETER")
+
+    private fun getTargetColumnName(streamColumnName: String, columnNameMapping: ColumnNameMapping): String {
+        return quoteIdentifier(postgresColumnUtils.getTargetColumnName(streamColumnName, columnNameMapping))
+    }
+
+    private fun getDefaultColumnNames(): List<String> =
+        postgresColumnUtils.defaultColumns().map { quoteIdentifier(it.columnName)}
+
+
+
+    /**
+     * Generates an SQL statement that upserts (merge) data from a source staging table into a target table.
+     *
+     * The generated SQL performs the following operations in a single statement:
+     * 1. **Deduplication CTE**: Deduplicates the source data based on primary keys
+     * 2. **CDC Delete CTE**: If CDC hard delete is enabled and the stream contains CDC deleted records,
+     *    this CTE deletes rows from the target table.
+     * 3. **Update CTE**: Updates existing rows in the target table with newer data from the source
+     * 4. **Insert Statement**: Inserts new rows from the source that don't exist in the target table.
+     *
+     * @throws IllegalArgumentException if the stream's import type does not contain a primary key.
+     */
     fun upsertTable(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping,
         sourceTableName: TableName,
         targetTableName: TableName
-    ): String = TODO("PostgresDirectLoadSqlGenerator.upsertTable not yet implemented")
+    ): String {
+        val importType = stream.importType as Dedupe
+
+        if (importType.primaryKey.isEmpty()) {
+            throw IllegalArgumentException("Cannot perform upsert without primary key")
+        }
+
+        val primaryKeyTargetColumns = getPrimaryKeysColumnNames(importType, columnNameMapping)
+        val cursorTargetColumn = getCursorColumnName(importType.cursor, columnNameMapping)
+        val allTargetColumns = getTargetColumnNames(stream, columnNameMapping)
+
+        val selectDedupedQuery = selectDeduped(primaryKeyTargetColumns, cursorTargetColumn, allTargetColumns, sourceTableName)
+
+        val cdcHardDeleteEnabled =  stream.schema.asColumns().containsKey(CDC_DELETED_AT_COLUMN) &&
+            postgresConfiguration.cdcDeletionMode == CdcDeletionMode.HARD_DELETE
+
+        val cdcDeleteQuery = cdcDelete(
+            DEDUPED_TABLE_ALIAS,
+            cursorTargetColumn,
+            targetTableName,
+            primaryKeyTargetColumns,
+            cdcHardDeleteEnabled
+        )
+
+        val updateExistingRowsQuery = updateExistingRows(
+            DEDUPED_TABLE_ALIAS,
+            targetTableName,
+            allTargetColumns,
+            primaryKeyTargetColumns,
+            cursorTargetColumn,
+            cdcHardDeleteEnabled
+        )
+
+        val insertNewRowsQuery = insertNewRows(
+            DEDUPED_TABLE_ALIAS,
+            targetTableName,
+            allTargetColumns,
+            primaryKeyTargetColumns,
+            cdcHardDeleteEnabled
+        )
+
+        return """
+            WITH $DEDUPED_TABLE_ALIAS AS (
+              $selectDedupedQuery
+            ),
+
+            $cdcDeleteQuery
+
+            updates AS (
+              $updateExistingRowsQuery
+            )
+
+            $insertNewRowsQuery
+            """.trimIndent().andLog()
+    }
+
+    /**
+     * Generates an INSERT statement that adds new rows from the deduplicated source that don't exist in the target.
+     *
+     * Uses NOT EXISTS to check for existing records by primary key. If CDC hard delete is enabled,
+     * filters out records marked as deleted.
+     */
+    @VisibleForTesting
+    internal fun insertNewRows(
+        dedupTableAlias: String,
+        targetTableName: TableName,
+        allTargetColumns: List<String>,
+        primaryKeyTargetColumns: List<String>,
+        cdcHardDeleteEnabled: Boolean
+    ): String {
+        val primaryKeysConditions = primaryKeyTargetColumns.joinToString(" AND ") { primaryKey ->
+            "${getFullyQualifiedName(targetTableName)}.$primaryKey = $dedupTableAlias.$primaryKey"
+        }
+
+        val skipCdcDeletedClause = if(cdcHardDeleteEnabled) "AND $dedupTableAlias.$DELETED_AT_COLUMN_NAME IS NULL" else ""
+
+        return """
+            INSERT INTO ${getFullyQualifiedName(targetTableName)} (
+              ${allTargetColumns.joinToString(",\n  ")}
+            )
+            SELECT
+              ${allTargetColumns.joinToString(",\n  ") }
+            FROM $dedupTableAlias
+            WHERE
+              NOT EXISTS (
+                SELECT 1
+                FROM ${getFullyQualifiedName(targetTableName)}
+                WHERE $primaryKeysConditions
+              )
+              $skipCdcDeletedClause
+        """.trimIndent()
+    }
+
+    /**
+     * Generates an UPDATE statement that updates existing rows in the target with newer data from the source.
+     *
+     * Rows are matched by primary key and only updated if the source data is newer (determined by cursor
+     * or extracted_at comparison). If CDC hard delete is enabled, skips records marked as deleted.
+     */
+    @VisibleForTesting
+    internal fun updateExistingRows(dedupTableAlias: String,
+                                   targetTableName: TableName,
+                                   allTargetColumns: List<String>,
+                                   primaryKeyTargetColumns: List<String>,
+                                   cursorTargetColumn: String?,
+                                   cdcHardDeleteEnabled: Boolean): String {
+        val primaryKeysMatches = primaryKeyTargetColumns.joinToString(" AND ") { primaryKey ->
+            "${getFullyQualifiedName(targetTableName)}.$primaryKey = $dedupTableAlias.$primaryKey"
+        }
+
+        val cursorComparison = buildCursorComparison(cursorTargetColumn, targetTableName, dedupTableAlias)
+
+        val updateAssignments =
+            allTargetColumns.joinToString(",\n") { columnName ->
+                "$columnName = $dedupTableAlias.$columnName"
+            }
+
+        val skipCdcDeletedClause = if(cdcHardDeleteEnabled) "AND $dedupTableAlias.$DELETED_AT_COLUMN_NAME IS NULL" else ""
+        return """
+             UPDATE ${getFullyQualifiedName(targetTableName)}
+             SET 
+                $updateAssignments
+             FROM $dedupTableAlias
+                WHERE $primaryKeysMatches
+                    $skipCdcDeletedClause
+                    AND ($cursorComparison)
+        """.trimIndent()
+    }
+
+    /**
+     * Generates a CDC hard delete statement wrapped in a CTE, or returns empty string if disabled.
+     *
+     * Deletes rows from the target table where the source has a CDC deletion marker and the deletion
+     * is newer than the target record (based on cursor or extracted_at).
+     */
+    @VisibleForTesting
+    internal fun cdcDelete(
+        dedupTableAlias: String,
+        cursorTargetColumn: String?,
+        targetTableName: TableName,
+        primaryKeyTargetColumns: List<String>,
+        cdcHardDeleteEnabled: Boolean
+    ): String {
+        if (!cdcHardDeleteEnabled) {
+            return ""
+        }
+
+        val primaryKeysMatchingCondition = primaryKeyTargetColumns.joinToString(" AND ") { primaryKey ->
+            "${getFullyQualifiedName(targetTableName)}.$primaryKey = $dedupTableAlias.$primaryKey"
+        }
+
+        // ensure we only delete if the deletion is newer
+        val cursorComparison = buildCursorComparison(cursorTargetColumn, targetTableName, dedupTableAlias)
+
+        val deleteStatement = """
+            DELETE FROM ${getFullyQualifiedName(targetTableName)}
+            USING $dedupTableAlias
+            WHERE $primaryKeysMatchingCondition
+                AND $dedupTableAlias.$DELETED_AT_COLUMN_NAME IS NOT NULL
+                AND ($cursorComparison)
+        """.trimIndent()
+
+        return """
+            deleted AS (
+            $deleteStatement
+            ),
+        """.trimIndent()
+    }
+
+    /**
+     * Builds a SQL comparison expression to determine if source data is newer than target data.
+     *
+     * If a cursor exists, compares cursor values with extracted_at as tiebreaker and NULL handling.
+     * If no cursor, compares only extracted_at timestamps.
+     */
+    private fun buildCursorComparison(
+        cursorTargetColumn: String?,
+        targetTableName: TableName,
+        dedupTableAlias: String
+    ): String {
+        return if (cursorTargetColumn != null) {
+            val extractedAtColumn = EXTRACTED_AT_COLUMN_NAME
+            """
+                  ${getFullyQualifiedName(targetTableName)}.$cursorTargetColumn < $dedupTableAlias.$cursorTargetColumn
+                  OR (${getFullyQualifiedName(targetTableName)}.$cursorTargetColumn = $dedupTableAlias.$cursorTargetColumn AND ${getFullyQualifiedName(targetTableName)}.$extractedAtColumn < $dedupTableAlias.$extractedAtColumn)
+                  OR (${getFullyQualifiedName(targetTableName)}.$cursorTargetColumn IS NULL AND $dedupTableAlias.$cursorTargetColumn IS NOT NULL)
+                  OR (${getFullyQualifiedName(targetTableName)}.$cursorTargetColumn IS NULL AND $dedupTableAlias.$cursorTargetColumn IS NULL AND ${getFullyQualifiedName(targetTableName)}.$extractedAtColumn < $dedupTableAlias.$extractedAtColumn)
+                """.trimIndent()
+        } else {
+            // No cursor - use extraction timestamp only
+            val extractedAtColumn = EXTRACTED_AT_COLUMN_NAME
+            "${getFullyQualifiedName(targetTableName)}.$extractedAtColumn < $dedupTableAlias.$extractedAtColumn"
+        }
+    }
+
+    /**
+     * Generates a SELECT query that deduplicates source data using ROW_NUMBER() window function.
+     *
+     * Partitions by primary key and orders by cursor (if present) then extracted_at, keeping only
+     * the most recent record for each unique primary key.
+     */
+    @VisibleForTesting
+    internal fun selectDeduped(
+        primaryKeyTargetColumns: List<String>,
+        cursorTargetColumn: String?,
+        allTargetColumns: List<String>,
+        sourceTableName: TableName
+        ): String {
+        val cursorOrderClause = cursorTargetColumn?.let { "$it DESC NULLS LAST," } ?: ""
+
+        return """
+            SELECT ${allTargetColumns.joinToString(", ")}
+            FROM (
+              SELECT *,
+                ROW_NUMBER() OVER (
+                  PARTITION BY ${primaryKeyTargetColumns.joinToString( ", " )}
+                  ORDER BY
+                    $cursorOrderClause $EXTRACTED_AT_COLUMN_NAME DESC
+                ) AS row_number
+              FROM ${getFullyQualifiedName(sourceTableName)}
+            ) AS deduplicated
+            WHERE row_number = 1
+        """.trimIndent()
+    }
 
     fun dropTable(tableName: TableName): String =
         "DROP TABLE IF EXISTS ${getFullyQualifiedName(tableName)};".andLog()
@@ -206,30 +492,9 @@ class PostgresDirectLoadSqlGenerator(val postgresColumnUtils: PostgresColumnUtil
     private fun getName(column: Column): String =
         "\"${column.columnName}\""
 
-    fun AirbyteType.toDialectType(): String =
-        when (this) {
-            BooleanType -> PostgresDataType.BOOLEAN.typeName
-            DateType -> PostgresDataType.DATE.typeName
-            IntegerType -> PostgresDataType.BIGINT.typeName
-            NumberType -> PostgresDataType.DECIMAL.typeName
-            StringType -> PostgresDataType.VARCHAR.typeName
-            TimeTypeWithTimezone -> PostgresDataType.TIME_WITH_TIMEZONE.typeName
-            TimeTypeWithoutTimezone -> PostgresDataType.TIME.typeName
-            TimestampTypeWithTimezone -> PostgresDataType.TIMESTAMP_WITH_TIMEZONE.typeName
-            TimestampTypeWithoutTimezone -> PostgresDataType.TIMESTAMP.typeName
-            is ArrayType,
-            ArrayTypeWithoutSchema,
-            is ObjectType,
-            ObjectTypeWithEmptySchema,
-            ObjectTypeWithoutSchema,
-            is UnknownType,
-            is UnionType -> PostgresDataType.JSONB.typeName
-        }
-}
-
-data class Column(val columnName: String, val columnTypeName: String, val nullable: Boolean = true) {
-    override fun toString(): String {
+    fun Column.toSQLString(): String {
         val isNullableSuffix = if (nullable) "" else "NOT NULL"
         return "\"$columnName\" $columnTypeName $isNullableSuffix".trim()
     }
 }
+

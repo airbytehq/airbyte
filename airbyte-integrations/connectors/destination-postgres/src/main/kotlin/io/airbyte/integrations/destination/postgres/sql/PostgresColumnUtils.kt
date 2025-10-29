@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.postgres.sql
 
+import com.google.common.annotations.VisibleForTesting
+import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.ArrayType
 import io.airbyte.cdk.load.data.ArrayTypeWithoutSchema
@@ -31,32 +33,29 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_DATA
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import jakarta.inject.Singleton
+import kotlin.collections.plus
 
 @Singleton
 class PostgresColumnUtils(
     private val postgresConfiguration: PostgresConfiguration
 ) {
     companion object {
-        internal const val NOT_NULL = "NOT NULL"
-
-        /**
-         * Default columns that are always present in both raw and typed tables.
-         */
-        internal val DEFAULT_COLUMNS =
+        //Default columns that are always present in both raw and typed tables.
+        private val DEFAULT_COLUMNS =
             listOf(
                 Column(
                     columnName = COLUMN_NAME_AB_RAW_ID,
-                    columnTypeName = "${PostgresDataType.VARCHAR.typeName} $NOT_NULL",
+                    columnTypeName = PostgresDataType.VARCHAR.typeName,
                     nullable = false
                 ),
                 Column(
                     columnName = COLUMN_NAME_AB_EXTRACTED_AT,
-                    columnTypeName = "${PostgresDataType.TIMESTAMP_WITH_TIMEZONE.typeName} $NOT_NULL",
+                    columnTypeName = PostgresDataType.TIMESTAMP_WITH_TIMEZONE.typeName,
                     nullable = false
                 ),
                 Column(
                     columnName = COLUMN_NAME_AB_META,
-                    columnTypeName = "${PostgresDataType.JSONB.typeName} $NOT_NULL",
+                    columnTypeName = PostgresDataType.JSONB.typeName,
                     nullable = false
                 ),
                 Column(
@@ -66,10 +65,8 @@ class PostgresColumnUtils(
                 ),
             )
 
-        /**
-         * Additional columns that are only present in raw (legacy) tables.
-         */
-        internal val RAW_COLUMNS =
+        // Columns that are only present in raw (legacy) tables.
+        private val RAW_COLUMNS =
             listOf(
                 Column(
                     columnName = COLUMN_NAME_AB_LOADED_AT,
@@ -78,7 +75,7 @@ class PostgresColumnUtils(
                 ),
                 Column(
                     columnName = COLUMN_NAME_DATA,
-                    columnTypeName = "${PostgresDataType.JSONB.typeName} $NOT_NULL",
+                    columnTypeName = "${PostgresDataType.JSONB.typeName}",
                     nullable = false
                 )
             )
@@ -97,48 +94,46 @@ class PostgresColumnUtils(
         }
 
     /**
-     * Returns formatted default columns for SQL generation.
-     */
-    fun formattedDefaultColumns(): List<Column> = defaultColumns()
-
-    /**
-     * Returns the list of columns and their types for table creation.
+     * Returns the list of columns and their types
      * - Raw table mode: Only returns system columns (including _airbyte_data), user columns are ignored
      * - Typed table mode: Returns system columns + mapped user columns
      */
-    fun columnsAndTypes(
-        columns: Map<String, FieldType>,
+    internal fun getTargetColumns(
+        stream: DestinationStream,
         columnNameMapping: ColumnNameMapping
     ): List<Column> =
         if (postgresConfiguration.legacyRawTablesOnly == true) {
             // RAW TABLE MODE: Only return default columns (no user columns)
-            formattedDefaultColumns()
+            defaultColumns()
         } else {
             // TYPED TABLE MODE: Return default columns + user columns
-            formattedDefaultColumns() +
-                columns.map { (fieldName, type) ->
-                    val columnName = columnNameMapping[fieldName] ?: fieldName
+            val columns = getColumns(stream)
+            defaultColumns() +
+                columns.map { (columnName, type) ->
+                    val targetColumnName = getTargetColumnName(columnName, columnNameMapping)
                     val typeName = toDialectType(type.type)
                     Column(
-                        columnName = columnName,
+                        columnName = targetColumnName,
                         columnTypeName = typeName,
                         nullable = type.nullable
                     )
                 }
         }
 
-    /**
-     * Formats a column name for SQL statements.
-     * Returns the column name with proper quoting.
-     */
-    fun formatColumnName(columnName: String, quote: Boolean = true): String {
-        return if (quote) "\"$columnName\"" else columnName
+    private fun getColumns(stream: DestinationStream): Map<String, FieldType> {
+        return when (val schema = stream.schema) {
+            is ObjectType -> schema.asColumns()
+            is ObjectTypeWithEmptySchema -> emptyMap()
+            else -> emptyMap()
+        }
     }
 
-    /**
-     * Converts Airbyte types to PostgreSQL dialect types.
-     */
-    private fun toDialectType(type: AirbyteType): String =
+    internal fun getTargetColumnName(streamColumnName : String, columnNameMapping: ColumnNameMapping): String =
+        columnNameMapping[streamColumnName] ?: streamColumnName
+
+    // Converts Airbyte types to PostgreSQL column types.
+    @VisibleForTesting
+    internal fun toDialectType(type: AirbyteType): String =
         when (type) {
             BooleanType -> PostgresDataType.BOOLEAN.typeName
             DateType -> PostgresDataType.DATE.typeName
@@ -158,3 +153,5 @@ class PostgresColumnUtils(
             is UnionType -> PostgresDataType.JSONB.typeName
         }
 }
+
+data class Column(val columnName: String, val columnTypeName: String, val nullable: Boolean = true)

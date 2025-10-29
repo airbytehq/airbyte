@@ -7,11 +7,10 @@ package io.airbyte.integrations.destination.postgres.client
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.TableOperationsClient
 import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
-import io.airbyte.cdk.load.data.ObjectType
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TableName
-import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
+import io.airbyte.integrations.destination.postgres.sql.COUNT_TOTAL_ALIAS
 import io.airbyte.integrations.destination.postgres.sql.Column
 import io.airbyte.integrations.destination.postgres.sql.PostgresColumnUtils
 import io.airbyte.integrations.destination.postgres.sql.PostgresDirectLoadSqlGenerator
@@ -22,14 +21,12 @@ import javax.sql.DataSource
 
 private val log = KotlinLogging.logger {}
 
-internal const val COUNT_TOTAL_ALIAS = "total"
 
 @Singleton
 class PostgresAirbyteClient(
     private val dataSource: DataSource,
     private val sqlGenerator: PostgresDirectLoadSqlGenerator,
-    private val postgresColumnUtils: PostgresColumnUtils,
-    private val postgresConfiguration: PostgresConfiguration,
+    private val postgresColumnUtils: PostgresColumnUtils
 ) : TableSchemaEvolutionClient, TableOperationsClient {
 
     override suspend fun countTable(tableName: TableName): Long? =
@@ -110,7 +107,10 @@ class PostgresAirbyteClient(
         columnNameMapping: ColumnNameMapping
     ) {
         val columnsInDb = getColumnsFromDb(tableName)
-        val columnsInStream = getColumnsFromStream(stream, columnNameMapping)
+        val defaultColumnNames = postgresColumnUtils.defaultColumns().map { it.columnName }.toSet()
+        val columnsInStream = postgresColumnUtils.getTargetColumns(stream, columnNameMapping)
+            .filter { it.columnName !in defaultColumnNames }
+            .toSet()
         val (addedColumns, deletedColumns, modifiedColumns) =
             generateSchemaChanges(columnsInDb, columnsInStream)
 
@@ -135,7 +135,7 @@ class PostgresAirbyteClient(
             return statement.use {
                 val rs: ResultSet = it.executeQuery(sql)
                 val columnsInDb: MutableSet<Column> = mutableSetOf()
-                val defaultColumnNames = postgresColumnUtils.defaultColumns().map { it.columnName }
+                val defaultColumnNames = postgresColumnUtils.defaultColumns().map { it.columnName }.toSet()
                 while (rs.next()) {
                     //TODO: extract column_name and data_type as constants
                     val columnName = rs.getString("column_name")
@@ -152,26 +152,6 @@ class PostgresAirbyteClient(
                 columnsInDb
             }
         }
-    }
-
-    internal fun getColumnsFromStream(
-        stream: DestinationStream,
-        columnNameMapping: ColumnNameMapping
-    ): Set<Column> {
-        if (postgresConfiguration.legacyRawTablesOnly ?: false) {
-            // In raw table mode, there are no user columns to track - only system columns
-            // System columns are filtered out in getColumnsFromDb, so return empty set here
-            return emptySet()
-        }
-        val properties = when (val schema = stream.schema) {
-            is ObjectType -> schema.properties
-            is io.airbyte.cdk.load.data.ObjectTypeWithEmptySchema -> emptyMap()
-            else -> emptyMap()
-        }
-        val defaultColumnNames = postgresColumnUtils.defaultColumns().map { it.columnName }
-        return postgresColumnUtils.columnsAndTypes(properties, columnNameMapping)
-            .filter { columnAndType -> columnAndType.columnName !in defaultColumnNames }
-            .toSet()
     }
 
     internal fun generateSchemaChanges(
