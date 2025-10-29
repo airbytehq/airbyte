@@ -1,10 +1,10 @@
 data:
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
+    baseImage: docker.io/airbyte/python-connector-base:4.1.0@sha256:1d1aa21d34e851df4e8a87b391c27724c06e2597608e7161f4d167be853bd7b6
   connectorSubtype: database
   connectorType: destination
   definitionId: 042ee9b5-eb98-4e99-a4e5-3f0d573bee66
-  dockerImageTag: 0.1.26
+  dockerImageTag: 0.1.27
   dockerRepository: airbyte/destination-motherduck
   githubIssueLabel: destination-motherduck
   icon: duckdb.svg
