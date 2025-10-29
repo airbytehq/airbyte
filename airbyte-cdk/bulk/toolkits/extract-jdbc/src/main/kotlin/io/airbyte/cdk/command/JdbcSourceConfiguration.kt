@@ -25,6 +25,7 @@ interface JdbcSourceConfiguration : SourceConfiguration {
 
     /** Optional table filtering configuration for fine-grained table selection. */
     val tableFilters: List<TableFilter>
+        get() = emptyList()
 
     /**
      * Micronaut factory which glues [ConfigurationSpecificationSupplier] and
@@ -53,6 +54,7 @@ interface JdbcSourceConfiguration : SourceConfiguration {
             tableFilters: List<TableFilter>
         ) {
             if (tableFilters.isEmpty()) return
+            if (configuredSchemas.isEmpty()) return
 
             val configuredSchemasUpper = configuredSchemas.map { it.uppercase() }.toSet()
             val filterSchemas = tableFilters.map { it.schemaName.uppercase() }.toSet()
