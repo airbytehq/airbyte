@@ -33,20 +33,28 @@ import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import io.mockk.every
 import io.mockk.mockk
+import org.junit.Before
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 internal class PostgresColumnUtilsTest {
 
+    private lateinit var config: PostgresConfiguration
+    private lateinit var columnUtils: PostgresColumnUtils
+
+
+    @BeforeEach
+    fun setUp() {
+        config = mockk()
+        columnUtils = PostgresColumnUtils(config)
+    }
+
     @Test
     fun testDefaultColumns() {
-        val config = mockk<PostgresConfiguration> {
-            every { legacyRawTablesOnly } returns false
-        }
-        val columnUtils = PostgresColumnUtils(config)
-
+        every { config.legacyRawTablesOnly } returns false
         val columns = columnUtils.defaultColumns()
 
         assertEquals(4, columns.size)
@@ -60,11 +68,7 @@ internal class PostgresColumnUtilsTest {
 
     @Test
     fun testDefaultColumnsForRawTables() {
-        val config = mockk<PostgresConfiguration> {
-            every { legacyRawTablesOnly } returns true
-        }
-        val columnUtils = PostgresColumnUtils(config)
-
+        every { config.legacyRawTablesOnly } returns true
         val columns = columnUtils.defaultColumns()
 
         assertEquals(6, columns.size)
@@ -78,11 +82,7 @@ internal class PostgresColumnUtilsTest {
 
     @Test
     fun testGetTargetColumns() {
-        // In typed mode, user columns should be included
-        val config = mockk<PostgresConfiguration> {
-            every { legacyRawTablesOnly } returns false
-        }
-        val columnUtils = PostgresColumnUtils(config)
+        every { config.legacyRawTablesOnly } returns false
 
         val stream = mockk<DestinationStream> {
             every { schema } returns ObjectType(
@@ -118,11 +118,7 @@ internal class PostgresColumnUtilsTest {
 
     @Test
     fun testGetTargetColumnsInRawMode() {
-        // In raw mode, user columns should be ignored
-        val config = mockk<PostgresConfiguration> {
-            every { legacyRawTablesOnly } returns true
-        }
-        val columnUtils = PostgresColumnUtils(config)
+        every { config.legacyRawTablesOnly } returns true
 
         val stream = mockk<DestinationStream> {
             every { schema } returns ObjectType(
@@ -149,10 +145,7 @@ internal class PostgresColumnUtilsTest {
 
     @Test
     fun testGetTargetColumnsWithEmptySchema() {
-        val config = mockk<PostgresConfiguration> {
-            every { legacyRawTablesOnly } returns false
-        }
-        val columnUtils = PostgresColumnUtils(config)
+        every { config.legacyRawTablesOnly } returns false
 
         val stream = mockk<DestinationStream> {
             every { schema } returns ObjectTypeWithEmptySchema
@@ -171,9 +164,6 @@ internal class PostgresColumnUtilsTest {
 
     @Test
     fun testGetTargetColumnName() {
-        val config = mockk<PostgresConfiguration> (relaxed = true)
-        val columnUtils = PostgresColumnUtils(config)
-
         val columnNameMapping = ColumnNameMapping(
             mapOf(
                 "sourceId" to "targetId"
@@ -186,9 +176,6 @@ internal class PostgresColumnUtilsTest {
 
     @Test
     fun testToDialectTypeMapping() {
-        val config = mockk<PostgresConfiguration> (relaxed = true)
-        val columnUtils = PostgresColumnUtils(config)
-
         assertEquals("boolean", columnUtils.toDialectType(BooleanType))
         assertEquals("date", columnUtils.toDialectType(DateType))
         assertEquals("bigint", columnUtils.toDialectType(IntegerType))
@@ -209,9 +196,6 @@ internal class PostgresColumnUtilsTest {
 
     @Test
     fun testToDialectTypeMappingUnions() {
-        val config = mockk<PostgresConfiguration> (relaxed = true)
-        val columnUtils = PostgresColumnUtils(config)
-
         val unionWithStruct = UnionType(
             options = setOf(
                 StringType,
