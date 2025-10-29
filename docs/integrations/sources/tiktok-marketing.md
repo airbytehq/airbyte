@@ -147,7 +147,8 @@ The connector is restricted by [requests limitation](https://business-api.tiktok
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.8.4      | 2025-10-08 | [67430](https://github.com/airbytehq/airbyte/pull/67430) | Promoting release candidate 4.8.4 to a main version. |
+| 4.8.5      | 2025-10-08 | [69074](https://github.com/airbytehq/airbyte/pull/69074) | Improving on rate limiting issue. |
+| 4.8.4      | 2025-10-08 | [67432](https://github.com/airbytehq/airbyte/pull/67432) | Promoting release candidate 4.8.4 to a main version. |
 | 4.8.4-rc.1      | 2025-09-30 | [66823](https://github.com/airbytehq/airbyte/pull/66823) | Up CDK version to 7. |
 | 4.8.3      | 2025-09-23 | [66584](https://github.com/airbytehq/airbyte/pull/66584) | Promoting release candidate 4.8.3-rc.1 to a main version. |
 | 4.8.3-rc.1 | 2025-09-16 | [62058] | Add new video metrics in `ads_reports` streams |
