@@ -68,7 +68,8 @@ class GcsDataLakeWriter(
             icebergTableSynchronizer,
             gcsDataLakeCatalogUtil,
             icebergUtil,
-            stagingBranchName = io.airbyte.integrations.destination.gcs_data_lake.spec.DEFAULT_STAGING_BRANCH,
+            stagingBranchName =
+                io.airbyte.integrations.destination.gcs_data_lake.spec.DEFAULT_STAGING_BRANCH,
             mainBranchName = icebergConfiguration.mainBranchName,
             streamStateStore = streamStateStore,
         )

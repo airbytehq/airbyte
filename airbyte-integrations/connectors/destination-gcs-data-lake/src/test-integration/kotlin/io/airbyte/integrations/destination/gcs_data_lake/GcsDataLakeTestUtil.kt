@@ -21,7 +21,10 @@ object GcsDataLakeTestUtil {
 
     fun parseConfig(path: Path) =
         getConfig(
-            ValidatedJsonUtils.parseOne(GcsDataLakeSpecification::class.java, Files.readString(path))
+            ValidatedJsonUtils.parseOne(
+                GcsDataLakeSpecification::class.java,
+                Files.readString(path)
+            )
         )
 
     fun getConfig(spec: ConfigurationSpecification) =
