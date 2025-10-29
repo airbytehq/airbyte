@@ -11,8 +11,9 @@ import io.micronaut.context.annotation.Factory
 import javax.inject.Singleton
 
 @Factory
-class GcsDataLakeTableIdGeneratorFactory(private val gcsDataLakeConfiguration: GcsDataLakeConfiguration) {
+class GcsDataLakeTableIdGeneratorFactory(
+    private val gcsDataLakeConfiguration: GcsDataLakeConfiguration
+) {
     @Singleton
-    fun create(): TableIdGenerator =
-        SimpleTableIdGenerator(gcsDataLakeConfiguration.databaseName)
+    fun create(): TableIdGenerator = SimpleTableIdGenerator(gcsDataLakeConfiguration.databaseName)
 }

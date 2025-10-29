@@ -38,25 +38,26 @@ data class GcsDataLakeConfiguration(
         // Create scoped credentials for GCS and BigQuery access
         baseCredentials.createScoped(
             listOf(
-                "https://www.googleapis.com/auth/cloud-platform",  // Full GCP access
-                "https://www.googleapis.com/auth/devstorage.read_write",  // GCS read/write
-                "https://www.googleapis.com/auth/bigquery"  // BigQuery/BigLake access
+                "https://www.googleapis.com/auth/cloud-platform", // Full GCP access
+                "https://www.googleapis.com/auth/devstorage.read_write", // GCS read/write
+                "https://www.googleapis.com/auth/bigquery" // BigQuery/BigLake access
             )
         )
     }
 
     // Extract project ID - use configured value or extract from service account
     val projectId: String by lazy {
-        gcpProjectId ?: run {
-            val credentials = googleCredentials
-            if (credentials is ServiceAccountCredentials) {
-                credentials.projectId
-            } else {
-                throw IllegalStateException(
-                    "Could not determine GCP project ID from credentials. Please provide gcp_project_id explicitly."
-                )
+        gcpProjectId
+            ?: run {
+                val credentials = googleCredentials
+                if (credentials is ServiceAccountCredentials) {
+                    credentials.projectId
+                } else {
+                    throw IllegalStateException(
+                        "Could not determine GCP project ID from credentials. Please provide gcp_project_id explicitly."
+                    )
+                }
             }
-        }
     }
 }
 

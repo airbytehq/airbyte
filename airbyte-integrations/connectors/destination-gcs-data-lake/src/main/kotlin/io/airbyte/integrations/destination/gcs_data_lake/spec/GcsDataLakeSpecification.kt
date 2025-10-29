@@ -16,7 +16,9 @@ import jakarta.inject.Singleton
 
 @Singleton
 @JsonSchemaTitle("GCS Data Lake Destination Specification")
-@JsonSchemaDescription("Configuration for GCS Data Lake destination using Apache Iceberg format with BigLake catalog")
+@JsonSchemaDescription(
+    "Configuration for GCS Data Lake destination using Apache Iceberg format with BigLake catalog"
+)
 class GcsDataLakeSpecification : ConfigurationSpecification() {
 
     @get:JsonSchemaTitle("GCS Bucket Name")
@@ -31,7 +33,8 @@ class GcsDataLakeSpecification : ConfigurationSpecification() {
     )
     @get:JsonProperty("service_account_json")
     @get:JsonSchemaInject(
-        json = """
+        json =
+            """
             {
                 "airbyte_secret": true,
                 "always_show": true,
@@ -56,7 +59,8 @@ class GcsDataLakeSpecification : ConfigurationSpecification() {
     )
     @get:JsonProperty("gcp_location")
     @get:JsonSchemaInject(
-        json = """
+        json =
+            """
             {
                 "examples": ["us", "us-central1", "eu"],
                 "always_show": true,
@@ -72,7 +76,8 @@ class GcsDataLakeSpecification : ConfigurationSpecification() {
     )
     @get:JsonProperty("warehouse_location")
     @get:JsonSchemaInject(
-        json = """
+        json =
+            """
             {
                 "examples": ["gs://your-bucket/path/to/warehouse"],
                 "always_show": true,
@@ -88,7 +93,8 @@ class GcsDataLakeSpecification : ConfigurationSpecification() {
     )
     @get:JsonProperty("catalog_name")
     @get:JsonSchemaInject(
-        json = """
+        json =
+            """
             {
                 "examples": ["integration-test-biglake", "default"],
                 "always_show": true,
@@ -104,7 +110,8 @@ class GcsDataLakeSpecification : ConfigurationSpecification() {
     )
     @get:JsonProperty("database_name")
     @get:JsonSchemaInject(
-        json = """
+        json =
+            """
             {
                 "examples": ["default", "airbyte_data"],
                 "always_show": true,
