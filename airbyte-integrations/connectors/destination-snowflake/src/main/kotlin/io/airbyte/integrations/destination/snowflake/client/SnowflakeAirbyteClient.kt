@@ -14,6 +14,7 @@ import io.airbyte.cdk.load.dataflow.state.PartitionKey
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TableName
+import io.airbyte.cdk.load.util.Jsons
 import io.airbyte.cdk.load.util.deserializeToNode
 import io.airbyte.integrations.destination.snowflake.dataflow.SnowflakeAggregate
 import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
@@ -28,8 +29,10 @@ import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeInsertB
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.sql.ResultSet
+import java.time.format.DateTimeFormatter
 import javax.sql.DataSource
 import net.snowflake.client.jdbc.SnowflakeSQLException
+import net.snowflake.client.jdbc.SnowflakeTimestampWithTimezone
 
 internal const val DESCRIBE_TABLE_COLUMN_NAME_FIELD = "column_name"
 internal const val DESCRIBE_TABLE_COLUMN_TYPE_FIELD = "data_type"
@@ -349,9 +352,39 @@ class SnowflakeAirbyteClient(
                             val row = mutableMapOf<String, Any>()
                             for (i in 1..columnCount) {
                                 val columnName = metaData.getColumnName(i)
-                                val value = resultSet.getObject(i)
-                                if (value != null) {
-                                    row[columnName] = value
+                                val columnType = metaData.getColumnTypeName(i)
+                                when (columnType) {
+                                    "TIMESTAMPTZ" -> {
+                                        val value =
+                                            resultSet.getTimestamp(i)
+                                                as SnowflakeTimestampWithTimezone?
+                                        value?.let {
+                                            val formattedTimestamp =
+                                                DateTimeFormatter.ISO_DATE_TIME.format(
+                                                    it.toZonedDateTime().toOffsetDateTime()
+                                                )
+                                            row[columnName] = formattedTimestamp
+                                        }
+                                    }
+                                    "VARIANT",
+                                    "OBJECT",
+                                    "ARRAY" -> {
+                                        resultSet.getString(i)?.let {
+                                            // Automatically convert values to their native type.
+                                            // (map, list, etc.)
+                                            val parsedValue = Jsons.readValue(it, Any::class.java)
+                                            // but handle some annoying edge cases
+                                            val actualValue =
+                                                when (parsedValue) {
+                                                    is Int -> parsedValue.toLong()
+                                                    else -> parsedValue
+                                                }
+                                            row[columnName] = actualValue
+                                        }
+                                    }
+                                    else -> {
+                                        resultSet.getObject(i)?.let { row[columnName] = it }
+                                    }
                                 }
                             }
                             result.add(row)

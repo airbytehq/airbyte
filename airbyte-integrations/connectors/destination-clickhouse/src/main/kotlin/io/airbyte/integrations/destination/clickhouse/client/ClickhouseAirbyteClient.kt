@@ -101,14 +101,7 @@ class ClickhouseAirbyteClient(
         sourceTableName: TableName,
         targetTableName: TableName
     ) {
-        execute(
-            sqlGenerator.upsertTable(
-                stream,
-                columnNameMapping,
-                sourceTableName,
-                targetTableName,
-            ),
-        )
+        throw NotImplementedError("We rely on Clickhouse's table engine for deduping")
     }
 
     override suspend fun ensureSchemaMatches(
