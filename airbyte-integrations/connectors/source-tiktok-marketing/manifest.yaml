@@ -5909,3 +5909,18 @@ concurrency_level:
 metadata:
   autoImportSchema:
     advertiser_ids: true
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 100
+          interval: PT10S
+      matchers:
+        - method: GET
+          url_path_pattern: .*
+  status_codes_for_ratelimit_hit:
+    - 40100
+  path_for_status_code:
+    - code
