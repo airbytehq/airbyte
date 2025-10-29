@@ -1685,7 +1685,7 @@ class ContributorActivity(GithubStream):
                         type=MessageType.LOG,
                         log=AirbyteLogMessage(
                             level=Level.INFO,
-                            message=f"Syncing `{self.__class__.__name__}` " f"stream isn't available for repository `{repository}`.",
+                            message=f"Syncing `{self.__class__.__name__}` stream isn't available for repository `{repository}`.",
                         ),
                     )
 
