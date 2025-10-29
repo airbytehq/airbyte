@@ -51,7 +51,11 @@ class GcsDataLakeStreamLoader(
     )
     override suspend fun start() {
         val properties = gcsDataLakeCatalogUtil.toCatalogProperties(config = icebergConfiguration)
-        val catalog = icebergUtil.createCatalog(io.airbyte.integrations.destination.gcs_data_lake.spec.DEFAULT_CATALOG_NAME, properties)
+        val catalog =
+            icebergUtil.createCatalog(
+                io.airbyte.integrations.destination.gcs_data_lake.spec.DEFAULT_CATALOG_NAME,
+                properties
+            )
         gcsDataLakeCatalogUtil.createNamespace(stream.mappedDescriptor, catalog)
         table =
             icebergUtil.createTable(
