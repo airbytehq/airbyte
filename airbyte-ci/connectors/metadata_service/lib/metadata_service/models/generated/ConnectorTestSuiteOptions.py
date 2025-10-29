@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-from typing import List, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional
 
 from pydantic import BaseModel, Extra, Field
 
@@ -29,6 +29,40 @@ class TestConnections(BaseModel):
     id: str = Field(..., description="The connection ID")
 
 
+class SmokeTestScenario(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    name: str = Field(
+        ...,
+        description="Name of the test scenario (e.g., 'default', 'invalid_config', 'oauth_config')",
+    )
+    config_file: Optional[str] = Field(
+        None, description="Relative path to the config file to use for this scenario"
+    )
+    config_settings: Optional[Dict[str, Any]] = Field(
+        None,
+        description="Optional dictionary of config settings to override or supplement config_file settings",
+    )
+    expect_failure: Optional[bool] = Field(
+        False, description="Whether the scenario is expected to fail"
+    )
+    only_streams: Optional[List[str]] = Field(
+        None,
+        description="List of stream names to include in the scenario (if specified, only these streams will be tested)",
+    )
+    exclude_streams: Optional[List[str]] = Field(
+        None, description="List of stream names to exclude from the scenario"
+    )
+    suggested_streams_only: Optional[bool] = Field(
+        False,
+        description="Whether to limit testing to the connector's suggested streams list (from data.suggestedStreams)",
+    )
+    configured_catalog_path: Optional[str] = Field(
+        None, description="Path to a pre-configured catalog file for the scenario"
+    )
+
+
 class Secret(BaseModel):
     class Config:
         extra = Extra.forbid
@@ -45,13 +79,17 @@ class ConnectorTestSuiteOptions(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    suite: Literal["unitTests", "integrationTests", "acceptanceTests", "liveTests"] = (
-        Field(..., description="Name of the configured test suite")
-    )
+    suite: Literal[
+        "unitTests", "integrationTests", "acceptanceTests", "liveTests", "smokeTests"
+    ] = Field(..., description="Name of the configured test suite")
     testSecrets: Optional[List[Secret]] = Field(
         None, description="List of secrets required to run the test suite"
     )
     testConnections: Optional[List[TestConnections]] = Field(
         None,
         description="List of sandbox cloud connections that tests can be run against",
+    )
+    scenarios: Optional[List[SmokeTestScenario]] = Field(
+        None,
+        description="List of smoke test scenarios (only applicable when suite is 'smokeTests')",
     )

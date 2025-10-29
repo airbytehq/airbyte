@@ -25,6 +25,7 @@ from .ResourceRequirements import *
 from .RolloutConfiguration import *
 from .Secret import *
 from .SecretStore import *
+from .SmokeTestScenario import *
 from .SourceFileInfo import *
 from .SuggestedStreams import *
 from .SupportLevel import *
