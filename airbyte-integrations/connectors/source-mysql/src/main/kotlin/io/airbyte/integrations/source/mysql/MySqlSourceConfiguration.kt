@@ -8,7 +8,6 @@ import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.command.SourceConfigurationFactory
-import io.airbyte.cdk.command.TableFilter
 import io.airbyte.cdk.jdbc.SSLCertificateUtils
 import io.airbyte.cdk.output.DataChannelMedium
 import io.airbyte.cdk.output.DataChannelMedium.SOCKET
@@ -49,7 +48,6 @@ data class MySqlSourceConfiguration(
     override val checkPrivileges: Boolean,
     override val debeziumHeartbeatInterval: Duration = Duration.ofSeconds(10),
     val debeziumKeepAliveInterval: Duration = Duration.ofMinutes(1),
-    override val tableFilters: List<TableFilter>,
 ) : JdbcSourceConfiguration, CdcSourceConfiguration {
     override val global = incrementalConfiguration is CdcIncrementalConfiguration
     override val maxSnapshotReadDuration: Duration?
@@ -182,10 +180,6 @@ constructor(
             }
         log.info { "Effective concurrency: $maxConcurrency" }
 
-        val tableFilters = pojo.tableFilters ?: emptyList()
-
-        JdbcSourceConfiguration.validateTableFilters(setOf(pojo.database), tableFilters)
-
         return MySqlSourceConfiguration(
             realHost = realHost,
             realPort = realPort,
@@ -198,7 +192,6 @@ constructor(
             checkpointTargetInterval = checkpointTargetInterval,
             maxConcurrency = maxConcurrency,
             checkPrivileges = pojo.checkPrivileges ?: true,
-            tableFilters = tableFilters,
         )
     }
 

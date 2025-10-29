@@ -19,7 +19,7 @@ import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaTitle
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.CONNECTOR_CONFIG_PREFIX
-import io.airbyte.cdk.command.JdbcSourceConfigurationSpecification
+import io.airbyte.cdk.command.ConfigurationSpecification
 import io.airbyte.cdk.ssh.MicronautPropertiesFriendlySshTunnelMethodConfigurationSpecification
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.micronaut.context.annotation.ConfigurationBuilder
@@ -40,16 +40,49 @@ import jakarta.inject.Singleton
 @Singleton
 @ConfigurationProperties(CONNECTOR_CONFIG_PREFIX)
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
-class MySqlSourceConfigurationSpecification : JdbcSourceConfigurationSpecification() {
+class MySqlSourceConfigurationSpecification : ConfigurationSpecification() {
+    @JsonProperty("host")
+    @JsonSchemaTitle("Host")
+    @JsonSchemaInject(json = """{"order":1}""")
+    @JsonPropertyDescription("Hostname of the database.")
+    lateinit var host: String
 
     @JsonProperty("port")
     @JsonSchemaTitle("Port")
-    @JsonSchemaInject(json = """{"order":1,"minimum": 0,"maximum": 65536}""")
+    @JsonSchemaInject(json = """{"order":2,"minimum": 0,"maximum": 65536}""")
     @JsonSchemaDefault("3306")
     @JsonPropertyDescription(
         "Port of the database.",
     )
     var port: Int = 3306
+
+    @JsonProperty("username")
+    @JsonSchemaTitle("User")
+    @JsonPropertyDescription("The username which is used to access the database.")
+    @JsonSchemaInject(json = """{"order":4}""")
+    lateinit var username: String
+
+    @JsonProperty("password")
+    @JsonSchemaTitle("Password")
+    @JsonPropertyDescription("The password associated with the username.")
+    @JsonSchemaInject(json = """{"order":5,"always_show":true,"airbyte_secret":true}""")
+    var password: String? = null
+
+    @JsonProperty("database")
+    @JsonSchemaTitle("Database")
+    @JsonPropertyDescription("The database name.")
+    @JsonSchemaInject(json = """{"order":6,"always_show":true}""")
+    lateinit var database: String
+
+    @JsonProperty("jdbc_url_params")
+    @JsonSchemaTitle("JDBC URL Params")
+    @JsonPropertyDescription(
+        "Additional properties to pass to the JDBC URL string when connecting to the database " +
+            "formatted as 'key=value' pairs separated by the symbol '&'. " +
+            "(example: key1=value1&key2=value2&key3=value3).",
+    )
+    @JsonSchemaInject(json = """{"order":7}""")
+    var jdbcUrlParams: String? = null
 
     @JsonIgnore
     @ConfigurationBuilder(configurationPrefix = "ssl_mode")
@@ -67,7 +100,7 @@ class MySqlSourceConfigurationSpecification : JdbcSourceConfigurationSpecificati
     @JsonPropertyDescription(
         "The encryption method which is used when communicating with the database.",
     )
-    @JsonSchemaInject(json = """{"order":5,"default":"required"}""")
+    @JsonSchemaInject(json = """{"order":8,"default":"required"}""")
     fun getEncryptionValue(): EncryptionSpecification? = encryptionJson ?: encryption.asEncryption()
 
     @JsonIgnore
@@ -87,7 +120,7 @@ class MySqlSourceConfigurationSpecification : JdbcSourceConfigurationSpecificati
         "Whether to initiate an SSH tunnel before connecting to the database, " +
             "and if so, which kind of authentication to use.",
     )
-    @JsonSchemaInject(json = """{"order":6}""")
+    @JsonSchemaInject(json = """{"order":9}""")
     fun getTunnelMethodValue(): SshTunnelMethodConfiguration? =
         tunnelMethodJson ?: tunnelMethod.asSshTunnelMethod()
 
@@ -105,32 +138,45 @@ class MySqlSourceConfigurationSpecification : JdbcSourceConfigurationSpecificati
     @JsonGetter("replication_method")
     @JsonSchemaTitle("Update Method")
     @JsonPropertyDescription("Configures how data is extracted from the database.")
-    @JsonSchemaInject(json = """{"order":7,"display_type":"radio"}""")
+    @JsonSchemaInject(json = """{"order":10,"display_type":"radio"}""")
     fun getIncrementalValue(): IncrementalConfigurationSpecification =
         replicationMethodJson ?: replicationMethod.asCursorMethodConfiguration()
 
     @JsonProperty("checkpoint_target_interval_seconds")
     @JsonSchemaTitle("Checkpoint Target Time Interval")
-    @JsonSchemaInject(json = """{"order":8}""")
+    @JsonSchemaInject(json = """{"order":11}""")
     @JsonSchemaDefault("300")
     @JsonPropertyDescription("How often (in seconds) a stream should checkpoint, when possible.")
     var checkpointTargetIntervalSeconds: Int? = 300
 
     @JsonProperty("concurrency")
     @JsonSchemaTitle("Concurrency")
-    // Hidden and maintained for backwards compatibility.
-    @JsonSchemaInject(json = """{"order":9,"airbyte_hidden":true}""")
+    // Hidden and maintened for backwards compatibility.
+    @JsonSchemaInject(json = """{"order":12,"airbyte_hidden":true}""")
     @JsonSchemaDefault("1")
     @JsonPropertyDescription("Maximum number of concurrent queries to the database.")
     var concurrency: Int? = 1
 
     @JsonProperty("max_db_connections")
     @JsonSchemaTitle("Max Concurrent Queries to Database")
-    @JsonSchemaInject(json = """{"order":10}""")
+    @JsonSchemaInject(json = """{"order":12}""")
     @JsonPropertyDescription(
         "Maximum number of concurrent queries to the database. Leave empty to let Airbyte optimize performance."
     )
     var max_db_connections: Int? = null
+
+    @JsonProperty("check_privileges")
+    @JsonSchemaTitle("Check Table and Column Access Privileges")
+    @JsonSchemaInject(json = """{"order":13}""")
+    @JsonSchemaDefault("true")
+    @JsonPropertyDescription(
+        "When this feature is enabled, during schema discovery the connector " +
+            "will query each table or view individually to check access privileges " +
+            "and inaccessible tables, views, or columns therein will be removed. " +
+            "In large schemas, this might cause schema discovery to take too long, " +
+            "in which case it might be advisable to disable this feature.",
+    )
+    var checkPrivileges: Boolean? = true
 
     @JsonIgnore var additionalPropertiesMap = mutableMapOf<String, Any>()
 
