@@ -23,8 +23,8 @@ private val logger = KotlinLogging.logger {}
  * 1. Direct BigLakeCatalog implementation (org.apache.iceberg.gcp.biglake.BigLakeCatalog)
  * 2. REST catalog API (https://biglake.googleapis.com/v1)
  *
- * This implementation uses the REST catalog approach as it's more standard and compatible
- * with the broader Iceberg ecosystem.
+ * This implementation uses the REST catalog approach as it's more standard and compatible with the
+ * broader Iceberg ecosystem.
  */
 @Singleton
 class GcsDataLakeCatalogUtil(
@@ -34,18 +34,15 @@ class GcsDataLakeCatalogUtil(
     fun <K, V : Any> mapOfNotNull(vararg pairs: Pair<K, V?>): Map<K, V> =
         pairs.mapNotNull { (k, v) -> v?.let { k to it } }.toMap()
 
-    fun createNamespace(
-        streamDescriptor: DestinationStream.Descriptor,
-        catalog: Catalog
-    ) {
+    fun createNamespace(streamDescriptor: DestinationStream.Descriptor, catalog: Catalog) {
         icebergUtil.createNamespace(streamDescriptor, catalog)
     }
 
     /**
      * Creates the Iceberg [Catalog] configuration properties for BigLake.
      *
-     * Configures both BigLake REST catalog and GCS FileIO for object storage.
-     * Obtains OAuth token from service account and sets it directly in the Authorization header.
+     * Configures both BigLake REST catalog and GCS FileIO for object storage. Obtains OAuth token
+     * from service account and sets it directly in the Authorization header.
      *
      * @param config The destination's configuration
      * @return The Iceberg [Catalog] configuration properties.
@@ -61,7 +58,8 @@ class GcsDataLakeCatalogUtil(
             put(CatalogUtil.ICEBERG_CATALOG_TYPE, CatalogUtil.ICEBERG_CATALOG_TYPE_REST)
 
             // BigLake REST catalog endpoint with prefix for the specific catalog
-            // Format: https://biglake.googleapis.com/iceberg/v1/restcatalog/projects/{project}/catalogs/{catalog}
+            // Format:
+            // https://biglake.googleapis.com/iceberg/v1/restcatalog/projects/{project}/catalogs/{catalog}
             val catalogPrefix = "projects/${config.projectId}/catalogs/${config.catalogName}"
             put(CatalogProperties.URI, "https://biglake.googleapis.com/iceberg/v1/restcatalog")
             put("prefix", catalogPrefix)
@@ -85,7 +83,7 @@ class GcsDataLakeCatalogUtil(
 
             config.gcsEndpoint?.let { endpoint ->
                 put(GCPProperties.GCS_SERVICE_HOST, endpoint)
-                put(GCPProperties.GCS_NO_AUTH, "true")  // For emulator testing
+                put(GCPProperties.GCS_NO_AUTH, "true") // For emulator testing
             }
 
             // BigLake-specific properties

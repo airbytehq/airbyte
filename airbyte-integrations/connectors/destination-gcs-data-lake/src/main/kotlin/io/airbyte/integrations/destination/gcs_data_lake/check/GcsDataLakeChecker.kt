@@ -18,7 +18,8 @@ import org.apache.iceberg.Schema
 import org.apache.iceberg.types.Types
 
 /**
- * Validates GCS Data Lake destination connectivity by creating and cleaning up a test Iceberg table.
+ * Validates GCS Data Lake destination connectivity by creating and cleaning up a test Iceberg
+ * table.
  *
  * This checker validates:
  * - BigLake catalog connectivity
@@ -55,7 +56,11 @@ class GcsDataLakeChecker(
      */
     private fun catalogValidation(config: GcsDataLakeConfiguration) {
         val catalogProperties = gcsDataLakeCatalogUtil.toCatalogProperties(config)
-        val catalog = icebergUtil.createCatalog(io.airbyte.integrations.destination.gcs_data_lake.spec.DEFAULT_CATALOG_NAME, catalogProperties)
+        val catalog =
+            icebergUtil.createCatalog(
+                io.airbyte.integrations.destination.gcs_data_lake.spec.DEFAULT_CATALOG_NAME,
+                catalogProperties
+            )
 
         // Use the configured database name as the default namespace
         val defaultNamespace = config.databaseName
