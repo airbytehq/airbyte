@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.postgres.sql
 
+import com.google.common.annotations.VisibleForTesting
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.AirbyteType
 import io.airbyte.cdk.load.data.ArrayType
@@ -40,11 +41,11 @@ class PostgresColumnUtils(
 ) {
     companion object {
         //Default columns that are always present in both raw and typed tables.
-        internal val DEFAULT_COLUMNS =
+        private val DEFAULT_COLUMNS =
             listOf(
                 Column(
                     columnName = COLUMN_NAME_AB_RAW_ID,
-                    columnTypeName = "${PostgresDataType.VARCHAR.typeName}",
+                    columnTypeName = PostgresDataType.VARCHAR.typeName,
                     nullable = false
                 ),
                 Column(
@@ -65,7 +66,7 @@ class PostgresColumnUtils(
             )
 
         // Columns that are only present in raw (legacy) tables.
-        internal val RAW_COLUMNS =
+        private val RAW_COLUMNS =
             listOf(
                 Column(
                     columnName = COLUMN_NAME_AB_LOADED_AT,
@@ -85,7 +86,7 @@ class PostgresColumnUtils(
      * - Raw table mode: includes _airbyte_data column for storing raw JSON
      * - Typed table mode: excludes _airbyte_data, schema columns stored separately
      */
-    fun defaultColumns(): List<Column> =
+    internal fun defaultColumns(): List<Column> =
         if (postgresConfiguration.legacyRawTablesOnly == true) {
             DEFAULT_COLUMNS + RAW_COLUMNS
         } else {
@@ -97,7 +98,7 @@ class PostgresColumnUtils(
      * - Raw table mode: Only returns system columns (including _airbyte_data), user columns are ignored
      * - Typed table mode: Returns system columns + mapped user columns
      */
-    fun getTargetColumns(
+    internal fun getTargetColumns(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping
     ): List<Column> =
@@ -131,7 +132,8 @@ class PostgresColumnUtils(
         columnNameMapping[streamColumnName] ?: streamColumnName
 
     // Converts Airbyte types to PostgreSQL column types.
-    private fun toDialectType(type: AirbyteType): String =
+    @VisibleForTesting
+    internal fun toDialectType(type: AirbyteType): String =
         when (type) {
             BooleanType -> PostgresDataType.BOOLEAN.typeName
             DateType -> PostgresDataType.DATE.typeName
