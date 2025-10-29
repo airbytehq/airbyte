@@ -107,7 +107,7 @@ class PostgresAirbyteClient(
         columnNameMapping: ColumnNameMapping
     ) {
         val columnsInDb = getColumnsFromDb(tableName)
-        val defaultColumnNames = postgresColumnUtils.defaultColumns().map { it.columnName }
+        val defaultColumnNames = postgresColumnUtils.defaultColumns().map { it.columnName }.toSet()
         val columnsInStream = postgresColumnUtils.getTargetColumns(stream, columnNameMapping)
             .filter { it.columnName !in defaultColumnNames }
             .toSet()
@@ -135,7 +135,7 @@ class PostgresAirbyteClient(
             return statement.use {
                 val rs: ResultSet = it.executeQuery(sql)
                 val columnsInDb: MutableSet<Column> = mutableSetOf()
-                val defaultColumnNames = postgresColumnUtils.defaultColumns().map { it.columnName }
+                val defaultColumnNames = postgresColumnUtils.defaultColumns().map { it.columnName }.toSet()
                 while (rs.next()) {
                     //TODO: extract column_name and data_type as constants
                     val columnName = rs.getString("column_name")
