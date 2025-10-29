@@ -1,26 +1,28 @@
+import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
+
 # YouTube Analytics Migration Guide
 
 ## Upgrading to 1.0.0
 
-The YouTube Analytics Bulk Reports API made changes one of which is  create new report versions for each report that includes views, which is the majority of the reports. Each affected report's version has incremented by one, such as version a2 to version a3. See [here](https://developers.google.com/youtube/reporting/revision_history#june-24,-2025) for more details.
+The YouTube Analytics Bulk Reports API made changes one of which is created new report versions for each report that includes views, which is the majority of the reports. Each affected report's version has incremented by one, such as version a2 to version a3. See [here](https://developers.google.com/youtube/reporting/revision_history#june-24,-2025) for more details.
 
 ## New stream names
 
-| Old Stream                                       | New Stream |
-| :------                                          | :--------- |
-| channel_basic_a2                                 | channel_basic_a3 |
-| channel_combined_a2                              | channel_combined_a3 |
-| channel_device_os_a2                             | channel_device_os_a3 |
-| channel_playback_location_a2                     | channel_playback_location_a3 |
-| channel_province_a2                              | channel_province_a3 |
-| channel_subtitles_a2                             | channel_subtitles_a3 |
-| channel_traffic_source_a2                        | channel_traffic_source_a3 |
-| playlist_basic_a1                                | playlist_basic_a2 |
-| playlist_combined_a1                             | playlist_combined_a2 |
-| playlist_device_os_a1                            | playlist_device_os_a2 |
-| playlist_playback_location_a1                    | playlist_playback_location_a2 |
-| playlist_province_a1                             | playlist_province_a2 |
-| playlist_traffic_source_a1                       | playlist_traffic_source_a2 |
+| Old Stream                    | New Stream                    |
+|:------------------------------|:------------------------------|
+| channel_basic_a2              | channel_basic_a3              |
+| channel_combined_a2           | channel_combined_a3           |
+| channel_device_os_a2          | channel_device_os_a3          |
+| channel_playback_location_a2  | channel_playback_location_a3  |
+| channel_province_a2           | channel_province_a3           |
+| channel_subtitles_a2          | channel_subtitles_a3          |
+| channel_traffic_source_a2     | channel_traffic_source_a3     |
+| playlist_basic_a1             | playlist_basic_a2             |
+| playlist_combined_a1          | playlist_combined_a2          |
+| playlist_device_os_a1         | playlist_device_os_a2         |
+| playlist_playback_location_a1 | playlist_playback_location_a2 |
+| playlist_province_a1          | playlist_province_a2          |
+| playlist_traffic_source_a1    | playlist_traffic_source_a2    |
 
 ## Migration Steps
 
