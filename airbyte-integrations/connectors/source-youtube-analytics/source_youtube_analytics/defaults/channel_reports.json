@@ -1,6 +1,6 @@
 [
   {
-    "id": "channel_annotations_a2",
+    "id": "channel_annotations_a1",
     "name": "Annotations",
     "dimensions": [
       "date",
@@ -28,7 +28,7 @@
     "metrics": []
   },
   {
-    "id": "channel_cards_a2",
+    "id": "channel_cards_a1",
     "name": "Cards",
     "dimensions": [
       "date",
@@ -90,7 +90,7 @@
     "metrics": []
   },
   {
-    "id": "channel_end_screens_a2",
+    "id": "channel_end_screens_a1",
     "name": "End screens",
     "dimensions": [
       "date",
@@ -134,7 +134,7 @@
     "metrics": []
   },
   {
-    "id": "channel_sharing_service_a2",
+    "id": "channel_sharing_service_a1",
     "name": "Sharing service",
     "dimensions": [
       "date",

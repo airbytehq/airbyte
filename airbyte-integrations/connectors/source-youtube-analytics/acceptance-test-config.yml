@@ -22,15 +22,15 @@ acceptance_tests:
         configured_catalog_path: "integration_tests/configured_catalog.json"
         timeout_seconds: 1200
         empty_streams:
-          - name: channel_annotations_a2
+          - name: channel_annotations_a1
             bypass_reason: no data in test account
-          - name: channel_cards_a2
+          - name: channel_cards_a1
             bypass_reason: no data in test account
           - name: channel_demographics_a1
             bypass_reason: no data in test account
-          - name: channel_end_screens_a2
+          - name: channel_end_screens_a1
             bypass_reason: no data in test account
-          - name: channel_sharing_service_a2
+          - name: channel_sharing_service_a1
             bypass_reason: no data in test account
           - name: channel_province_a3
             bypass_reason: no data in test account
