@@ -3,8 +3,8 @@
 Airbyte's certified MSSQL connector offers the following features:
 
 - Multiple methods of keeping your data fresh, including
-  [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc) using the
-  [binlog](https://dev.mysql.com/doc/refman/8.0/en/binary-log.html).
+  [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc) using
+  [SQL Server's CDC feature](https://docs.microsoft.com/en-us/sql/relational-databases/track-changes/about-change-data-capture-sql-server).
 - Incremental as well as Full Refresh
   [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes), providing
   flexibility in how data is delivered to your destination.
@@ -355,7 +355,7 @@ to the Airbyte connector configuration screen, so it may log in to the bastion.
 
 MSSQL data types are mapped to the following data types when synchronizing data. You can check the
 test values examples
-[here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mssql/src/test-integration/java/io/airbyte/integrations/source/mssql/MssqlSourceDatatypeTest.java).
+[here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mssql/src/test/kotlin/io/airbyte/integrations/source/mssql/MsSqlServerDatatypeIntegrationTest.kt).
 If you can't find the data type you are looking for or have any problems feel free to add a new
 test!
 
@@ -395,6 +395,15 @@ test!
 
 If you do not see a type in this list, assume that it is coerced into a string. We are happy to take
 feedback on preferred mappings.
+
+## Upgrading to version 4.3.0 and above
+
+Version 4.3.0 introduces a migration from the legacy CDK to the new CDK architecture. This migration includes:
+
+- **Automatic State Migration**: The connector automatically migrates legacy version 2 state formats to the new version 3 format. This includes:
+  - `OrderedColumnLoadStatus` (primary key-based initial sync) → version 3 `primary_key` state type
+  - `CursorBasedStatus` (cursor-based incremental) → version 3 `cursor_based` state type
+- **Backward Compatibility**: Existing connections will continue to work seamlessly without any manual intervention
 
 ## Upgrading from 0.4.17 and older versions to 0.4.18 and newer versions
 
@@ -445,6 +454,7 @@ WHERE actor_definition_id ='b5ea17b1-f170-46dc-bc31-cc744ca984c1' AND (configura
 
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                         |
 |:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.3.0-rc.1   | 2025-10-28 | [63731](https://github.com/airbytehq/airbyte/pull/63731) | Migrate source mssql from old CDK to new CDK |
 | 4.2.6 | 2025-10-15 | [68091](https://github.com/airbytehq/airbyte/pull/68091) | Fix CDC table filtering to prevent unintended tables from being synced when using schema-level CDC |
 | 4.2.5 | 2025-08-13 | [64905](https://github.com/airbytehq/airbyte/pull/64905) | bumping up java cdk version for mssql |
 | 4.2.4 | 2025-07-03 | [62491](https://github.com/airbytehq/airbyte/pull/62491) | Improve Debezium performance by configuring the poll interval parameter. |
