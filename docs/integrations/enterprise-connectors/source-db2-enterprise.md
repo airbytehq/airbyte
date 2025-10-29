@@ -48,10 +48,10 @@ Unlike log-based CDC systems (such as IBM InfoSphere Change Data Capture), this 
 
 Work with your DBA to provision the following in your Db2 instance before enabling CDC:
 
-- The CDC schema (default `_ab_cdc`) must already exist
-- Tracking tables in the `_ab_cdc` schema (or your chosen CDC schema)
+- The CDC schema `_ab_cdc`
+- Tracking tables in `_ab_cdc`
 - Three triggers (INSERT, UPDATE, DELETE) on each source table you plan to replicate
-- Ensure the connector's runtime user has the required runtime permissions (see Important considerations below)
+- The connector's user with the required runtime permissions (see "Runtime permissions" under "Important considerations" below)
 
 ### Provision CDC objects using the setup script
 
@@ -69,6 +69,7 @@ You can use the provided Python script to automate the creation of CDC tracking 
 **Important notes before running the script:**
 
 - Test in a non-production environment first
+- The connector requires the fixed CDC schema `_ab_cdc` and this is not configurable
 - The setup user needs setup-time permissions: `CREATE TABLE` privilege in the CDC schema and `CREATE TRIGGER` privilege on source tables
 - The connector's runtime user needs different permissions: `SELECT` on source tables and `SELECT`/`DELETE` on tracking tables (setup and runtime users can be different)
 - **Security warning:** The script prints the DB connection string to `stdout`, including credentials. Consider removing or commenting out the connection string print statement before running in environments where logs are retained
@@ -380,7 +381,6 @@ if __name__ == "__main__":
 - `--port`: Database port (required)
 - `--user`: Database user with setup-time permissions (required)
 - `--password`: Database password (required)
-- `--cdc-schema`: Custom schema for CDC tracking tables (default: `_ab_cdc`)
 - `--recreate-triggers`: Drop and recreate existing triggers
 
 #### Usage examples
@@ -447,7 +447,7 @@ To prevent tracking tables from growing indefinitely, the connector automaticall
 ### Important considerations
 
 - **Setup-time permissions (one-time):** To provision the CDC infrastructure, a privileged database user (typically a DBA) needs:
-  - `CREATE TABLE` privilege in the `_ab_cdc` schema (or your custom CDC schema)
+  - `CREATE TABLE` privilege in the `_ab_cdc` schema
   - `CREATE TRIGGER` privilege on each source table that participates in CDC
   - This setup user can be different from the runtime connector user
 - **Runtime permissions (ongoing):** The database user configured in the Airbyte connector needs:
