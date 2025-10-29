@@ -47,7 +47,7 @@ class PostgresRawRecordFormatter(
         val outputRecord = mutableListOf<Any>()
 
         // Do not output null values in the JSON raw output
-        val filteredRecord = record.filter { (k, v) -> v !is NullValue && !RAW_META_COLUMNS.contains(k) }
+        val filteredRecord = record.filter { (k, _) -> !RAW_META_COLUMNS.contains(k) }
         // Convert AirbyteValue to JsonNode to avoid double-encoding
         val jsonObject = JsonNodeFactory.instance.objectNode()
         filteredRecord.forEach { (key, value) ->
