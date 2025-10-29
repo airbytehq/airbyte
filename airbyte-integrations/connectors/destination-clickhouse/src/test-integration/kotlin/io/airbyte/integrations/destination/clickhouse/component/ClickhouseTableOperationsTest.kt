@@ -51,4 +51,8 @@ class ClickhouseTableOperationsTest : TableOperationsSuite {
     override fun `get generation id`() {
         super.`get generation id`()
     }
+
+    // clickhouse doesn't have an explicit upsert table - we're relying on clickhouse's table engine
+    // to do deduping automatically.
+    // so intentionally don't have the `upsert tables` test here.
 }

@@ -16,7 +16,7 @@ import org.junit.jupiter.api.parallel.ExecutionMode
 @Execution(ExecutionMode.CONCURRENT)
 class SnowflakeTableOperationsTest(override val client: SnowflakeAirbyteClient) :
     TableOperationsSuite {
-    override val airbyteMetaColumns = Meta.COLUMN_NAMES.map { it.uppercase() }.toSet()
+    override val airbyteMetaColumnMapping = Meta.COLUMN_NAMES.associateWith { it.uppercase() }
 
     private fun ColumnNameMapping.transformColumns() =
         ColumnNameMapping(mapValues { (_, v) -> v.uppercase() })
@@ -76,5 +76,15 @@ class SnowflakeTableOperationsTest(override val client: SnowflakeAirbyteClient) 
     @Test
     override fun `get generation id`() {
         super.`get generation id`(columnNameMapping = testMapping)
+    }
+
+    @Test
+    override fun `upsert tables`() {
+        super.`upsert tables`(
+            sourceInputRecords = TableOperationsFixtures.UPSERT_SOURCE_RECORDS,
+            targetInputRecords = TableOperationsFixtures.UPSERT_TARGET_RECORDS,
+            expectedRecords = TableOperationsFixtures.UPSERT_EXPECTED_RECORDS,
+            columnNameMapping = idTestWithCdcMapping,
+        )
     }
 }
