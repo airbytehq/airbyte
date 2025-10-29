@@ -22,6 +22,9 @@ definitions:
     error_handler:
       type: DefaultErrorHandler
       max_retries: 7
+      backoff_strategies:
+        - type: ExponentialBackoffStrategy
+          factor: 5
       response_filters:
         - predicate: "{{ response.get('code') == 40100 }}"
           action: RATE_LIMITED
