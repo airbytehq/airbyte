@@ -261,6 +261,18 @@ class SnowflakeSourceMetadataQuerier(
                 }
             }
             log.info { "Discovered ${allTables.size} table(s) in namespaces ${base.config.namespaces}." }
+
+            // Validate table filters when schema is null (dynamic discovery)
+            if (this.schema == null && tableFilters.isNotEmpty()) {
+                val discoveredSchemas = allTables.mapNotNull { it.schema?.uppercase() }.toSet()
+                val filterSchemas = tableFilters.map { it.schemaName.uppercase() }.toSet()
+                val missingSchemas = filterSchemas - discoveredSchemas - EXCLUDED_NAMESPACES
+
+                if (missingSchemas.isNotEmpty()) {
+                    log.warn { "Table filters reference schemas that were not discovered." }
+                }
+            }
+
             return@lazy allTables.toList().sortedBy { "${it.namespace()}.${it.name}.${it.type}" }
         } catch (e: Exception) {
             throw RuntimeException("Table name discovery query failed: ${e.message}", e)

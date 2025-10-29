@@ -63,7 +63,7 @@ abstract class JdbcSourceConfigurationSpecification : ConfigurationSpecification
     var tableFilters: List<TableFilter>? = emptyList()
 
     @JsonProperty("jdbc_url_params")
-    @JsonSchemaTitle("JDBC URL Parame")
+    @JsonSchemaTitle("JDBC URL Params")
     @JsonPropertyDescription(
         "Additional properties to pass to the JDBC URL string when connecting to the database " +
                 "formatted as 'key=value' pairs separated by the symbol '&'. " +
