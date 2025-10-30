@@ -17,6 +17,10 @@ enum class DatabaseDriver(val driverClassName: String, val urlFormatString: Stri
         "com.microsoft.sqlserver.jdbc.SQLServerDriver",
         "jdbc:sqlserver://%s:%d;databaseName=%s"
     ),
+    MSSQLSERVERLEGACY(
+        "net.sourceforge.jtds.jdbc.Driver",
+        "jdbc:jtds:sqlserver://%s:%d/%s"
+    ),
     MYSQL("com.mysql.cj.jdbc.Driver", "jdbc:mysql://%s:%d/%s"),
     ORACLE("oracle.jdbc.OracleDriver", "jdbc:oracle:thin:@%s:%d/%s"),
     VERTICA("com.vertica.jdbc.Driver", "jdbc:vertica://%s:%d/%s"),

@@ -161,6 +161,8 @@ object DataSourceFactory {
         private var connectionTimeout: Duration = Duration.ZERO
         private var port = 5432
         private var connectionInitSql: String? = null
+        private var connectionTestQuery: String? = null
+        private var validationTimeout: Long = 5000L
 
         constructor(
             username: String?,
@@ -190,6 +192,17 @@ object DataSourceFactory {
             if (connectionProperties != null) {
                 this.connectionProperties = connectionProperties
             }
+            return this
+        }
+
+
+        fun withValidationTimeout(validationTimeout: Long): DataSourceBuilder {
+            this.validationTimeout = validationTimeout
+            return this
+        }
+        
+        fun withConnectionTestQuery(connectionTestQuery: String?): DataSourceBuilder {
+            this.connectionTestQuery = connectionTestQuery
             return this
         }
 
@@ -281,6 +294,14 @@ object DataSourceFactory {
             config.initializationFailTimeout = Int.MIN_VALUE.toLong()
 
             config.connectionInitSql = connectionInitSql
+
+            if (connectionTestQuery != null) {
+                config.connectionTestQuery = connectionTestQuery
+            } else if (driverClassName == "net.sourceforge.jtds.jdbc.Driver") {
+                config.connectionTestQuery = "SELECT 1" // Auto-fix for jTDS
+            }
+            config.validationTimeout = validationTimeout
+
 
             connectionProperties.forEach { (propertyName: String?, value: String?) ->
                 config.addDataSourceProperty(propertyName, value)
