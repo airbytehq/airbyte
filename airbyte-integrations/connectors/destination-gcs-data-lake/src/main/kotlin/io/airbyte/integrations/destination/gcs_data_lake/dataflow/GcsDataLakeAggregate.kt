@@ -5,13 +5,17 @@
 package io.airbyte.integrations.destination.gcs_data_lake.dataflow
 
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.data.ArrayValue
 import io.airbyte.cdk.load.data.IntegerValue
+import io.airbyte.cdk.load.data.ObjectValue
+import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.dataflow.aggregate.Aggregate
 import io.airbyte.cdk.load.dataflow.transform.RecordDTO
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.Operation
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.RecordWrapper
+import io.airbyte.cdk.load.util.serializeToString
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.math.BigInteger
 import java.time.ZoneOffset
@@ -41,30 +45,32 @@ class GcsDataLakeAggregate(
         schema.asStruct().fields().forEach { field ->
             val airbyteValue = record.fields[field.name()]
             if (airbyteValue != null) {
-                // Coerce TimestampValue to IntegerValue for fields with LONG type
-                // This handles _airbyte_extracted_at which is timestamp-as-milliseconds
-                val coercedValue =
-                    if (
-                        field.type().typeId() == org.apache.iceberg.types.Type.TypeID.LONG &&
-                            (airbyteValue is TimestampWithTimezoneValue ||
-                                airbyteValue is TimestampWithoutTimezoneValue)
-                    ) {
-                        // Convert timestamp to milliseconds since epoch
-                        val millis =
-                            when (airbyteValue) {
-                                is TimestampWithTimezoneValue ->
-                                    airbyteValue.value.toInstant().toEpochMilli()
-                                is TimestampWithoutTimezoneValue ->
-                                    airbyteValue.value
-                                        .atOffset(ZoneOffset.UTC)
-                                        .toInstant()
-                                        .toEpochMilli()
-                                else -> 0L
-                            }
+                // Pre-process values before conversion:
+                val coercedValue = when {
+                    // 1. Coerce TimestampValue to IntegerValue for LONG fields
+                    //    (handles _airbyte_extracted_at which is timestamp-as-milliseconds)
+                    field.type().typeId() == org.apache.iceberg.types.Type.TypeID.LONG &&
+                        (airbyteValue is TimestampWithTimezoneValue ||
+                            airbyteValue is TimestampWithoutTimezoneValue) -> {
+                        val millis = when (airbyteValue) {
+                            is TimestampWithTimezoneValue ->
+                                airbyteValue.value.toInstant().toEpochMilli()
+                            is TimestampWithoutTimezoneValue ->
+                                airbyteValue.value.atOffset(ZoneOffset.UTC).toInstant().toEpochMilli()
+                            else -> 0L
+                        }
                         IntegerValue(BigInteger.valueOf(millis))
-                    } else {
-                        airbyteValue
                     }
+                    // 2. Stringify ObjectValue/ArrayValue ONLY if Iceberg field type is STRING
+                    //    Don't stringify if it's STRUCT (e.g., _airbyte_meta should remain as struct)
+                    //    Note: Out-of-range integers are handled by GcsDataLakeValueCoercer in parse stage
+                    field.type().typeId() == org.apache.iceberg.types.Type.TypeID.STRING &&
+                        airbyteValue is ObjectValue -> StringValue(airbyteValue.serializeToString())
+                    field.type().typeId() == org.apache.iceberg.types.Type.TypeID.STRING &&
+                        airbyteValue is ArrayValue -> StringValue(airbyteValue.serializeToString())
+                    // 3. Keep everything else as-is (including structs for _airbyte_meta)
+                    else -> airbyteValue
+                }
 
                 val convertedValue = converter.convert(coercedValue, field.type())
                 icebergRecord.setField(field.name(), convertedValue)

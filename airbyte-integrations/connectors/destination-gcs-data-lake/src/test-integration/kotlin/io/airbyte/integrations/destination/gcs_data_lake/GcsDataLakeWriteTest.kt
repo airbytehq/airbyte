@@ -23,6 +23,11 @@ class BigLakeWriteTest :
     ) {
 
     @Test
+    override fun testBasicTypes() {
+        super.testBasicTypes()
+    }
+
+    @Test
     override fun testBasicWrite() {
         super.testBasicWrite()
     }
