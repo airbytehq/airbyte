@@ -7,6 +7,7 @@ Version 1.0.0 updates the connector to use the latest versions of YouTube's Bulk
 ### What changed
 
 YouTube updated how views are counted for Shorts:
+
 - **For Shorts**: Views now count the number of times a Short starts to play or replay, with no minimum watch time requirement.
 - **For Videos**: There is no change to how views are counted.
 - **New metric**: A new `engaged_views` column has been added to reports, which reflects the previous view-counting methodology.
