@@ -92,9 +92,12 @@ class JsonSchemaToAirbyteType(
                     // options is supposed to be a list, but fallback to sane behavior if it's not.
                     convertInner(options)
                 }
-            } else {
-                // Default to object if no type and not a union type
+            } else if (schema.has("properties")) {
+                // Default to object if no type and not a union type, but has properties
                 convertInner((schema as ObjectNode).put("type", "object"))
+            } else {
+                // Otherwise, give up
+                UnknownType(schema)
             }
         } else if (schema.isTextual) {
             // "<typename>"
