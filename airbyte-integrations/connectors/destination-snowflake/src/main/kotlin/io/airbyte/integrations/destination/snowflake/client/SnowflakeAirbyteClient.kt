@@ -64,37 +64,47 @@ class SnowflakeAirbyteClient(
             null
         }
 
+    /**
+     * TEST ONLY. We have a much more performant implementation in
+     * [io.airbyte.integrations.destination.snowflake.db.SnowflakeDirectLoadDatabaseInitialStatusGatherer]
+     * .
+     */
+    override suspend fun tableExists(table: TableName) = countTable(table) != null
+
+    override suspend fun namespaceExists(namespace: String): Boolean {
+        return dataSource.connection.use { connection ->
+            val databaseName = snowflakeConfiguration.database.toSnowflakeCompatibleName()
+            val statement =
+                connection.prepareStatement(
+                    """
+                        SELECT COUNT(*) > 0 AS SCHEMA_EXISTS
+                        FROM "$databaseName".INFORMATION_SCHEMA.SCHEMATA
+                        WHERE SCHEMA_NAME = ?
+                    """.andLog()
+                )
+
+            // When querying information_schema, snowflake needs the "true" schema name,
+            // so we unescape it here.
+            val unescapedNamespace = namespace.replace("\"\"", "\"")
+            statement.setString(1, unescapedNamespace)
+
+            statement.use {
+                val resultSet = it.executeQuery()
+                resultSet.use { rs ->
+                    if (rs.next()) {
+                        rs.getBoolean("SCHEMA_EXISTS")
+                    } else {
+                        false
+                    }
+                }
+            }
+        }
+    }
+
     override suspend fun createNamespace(namespace: String) {
         try {
             // Check if the schema exists first
-            val schemaExistsResult =
-                dataSource.connection.use { connection ->
-                    val databaseName = snowflakeConfiguration.database.toSnowflakeCompatibleName()
-                    val statement =
-                        connection.prepareStatement(
-                            """
-                            SELECT COUNT(*) > 0 AS SCHEMA_EXISTS
-                            FROM "$databaseName".INFORMATION_SCHEMA.SCHEMATA
-                            WHERE SCHEMA_NAME = ?
-                        """.andLog()
-                        )
-
-                    // When querying information_schema, snowflake needs the "true" schema name,
-                    // so we unescape it here.
-                    val unescapedNamespace = namespace.replace("\"\"", "\"")
-                    statement.setString(1, unescapedNamespace)
-
-                    statement.use {
-                        val resultSet = it.executeQuery()
-                        resultSet.use { rs ->
-                            if (rs.next()) {
-                                rs.getBoolean("SCHEMA_EXISTS")
-                            } else {
-                                false
-                            }
-                        }
-                    }
-                }
+            val schemaExistsResult = namespaceExists(namespace)
 
             if (!schemaExistsResult) {
                 // Create the schema only if it doesn't exist
@@ -343,11 +353,9 @@ class SnowflakeAirbyteClient(
             handleSnowflakePermissionError(e)
         }
 
-    internal fun execute(query: String) =
+    internal fun execute(query: String): ResultSet =
         try {
-            dataSource.connection.use { connection ->
-                connection.createStatement().use { it.executeQuery(query) }
-            }
+            dataSource.execute(query)
         } catch (e: SnowflakeSQLException) {
             handleSnowflakePermissionError(e)
         }
@@ -371,3 +379,8 @@ class SnowflakeAirbyteClient(
         }
     }
 }
+
+fun DataSource.execute(query: String): ResultSet =
+    this.connection.use { connection ->
+        connection.createStatement().use { it.executeQuery(query) }
+    }

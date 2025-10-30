@@ -246,7 +246,8 @@ Google Search Console only retains data for websites from the last 16 months. An
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.10.16 | 2025-10-27 | [68666](https://github.com/airbytehq/airbyte/pull/68666) | Add optional config for API Requests Per Minute to avoid ratelimit errors. |
+| 1.10.16 | 2025-10-30 | [68666](https://github.com/airbytehq/airbyte/pull/68666) | Add optional config for API Requests Per Minute to avoid ratelimit errors. |
+| 1.10.15 | 2025-10-29 | [68771](https://github.com/airbytehq/airbyte/pull/68771) | Update dependencies |
 | 1.10.14 | 2025-10-21 | [68231](https://github.com/airbytehq/airbyte/pull/68231) | Update dependencies |
 | 1.10.13 | 2025-10-14 | [68004](https://github.com/airbytehq/airbyte/pull/68004) | Update dependencies |
 | 1.10.12 | 2025-10-07 | [67263](https://github.com/airbytehq/airbyte/pull/67263) | Update dependencies |
@@ -343,7 +344,7 @@ Google Search Console only retains data for websites from the last 16 months. An
 | 0.1.2       | 2021-09-17 | [6222](https://github.com/airbytehq/airbyte/pull/6222)   | Correct Spec File                                                                                                                                                      |
 | 0.1.1       | 2021-09-22 | [6315](https://github.com/airbytehq/airbyte/pull/6315)   | Verify access to all sites when performing connection check                                                                                                            |
 | 0.1.0       | 2021-09-03 | [5350](https://github.com/airbytehq/airbyte/pull/5350)   | Initial Release                                                                                                                                                        |
->>>>>>> master
+
 
 </details>
 
