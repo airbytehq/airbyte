@@ -60,27 +60,6 @@ class StateStoreTest {
     }
 
     @Test
-    fun `remove should return and remove the checkpoint message for given key`() {
-        // Given
-        val checkpointMessage = mockk<CheckpointMessage>()
-        val sourceStats = mockk<CheckpointMessage.Stats>()
-        val stateKey = StateKey(1L, listOf(PartitionKey("partition-1")))
-
-        every { checkpointMessage.sourceStats } returns sourceStats
-        every { sourceStats.recordCount } returns 100L
-        every { keyClient.getStateKey(checkpointMessage) } returns stateKey
-        every { histogramStore.acceptExpectedCounts(any(), any()) } returns mockk()
-
-        stateStore.accept(checkpointMessage)
-
-        // When
-        val removedMessage = stateStore.remove(stateKey)
-
-        // Then
-        assertEquals(checkpointMessage, removedMessage)
-    }
-
-    @Test
     fun `getNextComplete should return null when no states exist`() {
         // When
         val result = stateStore.getNextComplete()
@@ -203,7 +182,7 @@ class StateStoreTest {
         val sourceStats = CheckpointMessage.Stats(recordCount = 150L)
         val checkpointMessage =
             StreamCheckpoint(
-                checkpoint = mockk(),
+                checkpoint = CheckpointMessage.Checkpoint("namespace", "name", mockk()),
                 sourceStats = sourceStats,
                 serializedSizeBytes = 1L,
             )
