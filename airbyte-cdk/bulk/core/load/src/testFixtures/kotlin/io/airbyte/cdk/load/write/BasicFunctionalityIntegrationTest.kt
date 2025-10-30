@@ -645,6 +645,363 @@ abstract class BasicFunctionalityIntegrationTest(
     }
 
     @Test
+    open fun testStreamStateTypes() {
+        if (
+            dataChannelMedium != DataChannelMedium.SOCKET ||
+                dataChannelFormat != DataChannelFormat.PROTOBUF
+        ) {
+            return
+        }
+        val stream =
+            DestinationStream(
+                randomizedNamespace,
+                "test_stream",
+                Append,
+                ObjectType(linkedMapOf("id" to intType)),
+                generationId = 0,
+                minimumGenerationId = 0,
+                syncId = 42,
+                namespaceMapper = namespaceMapperForMedium(),
+            )
+        val stream2 =
+            DestinationStream(
+                randomizedNamespace,
+                "test_stream_2",
+                Append,
+                ObjectType(linkedMapOf("id" to intType)),
+                generationId = 0,
+                minimumGenerationId = 0,
+                syncId = 42,
+                namespaceMapper = namespaceMapperForMedium(),
+            )
+        val stream3 =
+            DestinationStream(
+                randomizedNamespace,
+                "test_stream_3",
+                Append,
+                ObjectType(linkedMapOf("id" to intType)),
+                generationId = 0,
+                minimumGenerationId = 0,
+                syncId = 42,
+                namespaceMapper = namespaceMapperForMedium(),
+            )
+        val messages =
+            runSync(
+                updatedConfig,
+                DestinationCatalog(listOf(stream, stream2, stream3)),
+                listOf(
+                    InputRecord(
+                        stream = stream,
+                        data = """{"id": 1}""",
+                        emittedAtMs = 1234,
+                        checkpointId =
+                            checkpointKeyForMedium(
+                                    1,
+                                    "stream_1_partition_1",
+                                )
+                                ?.checkpointId,
+                    ),
+                    InputStreamCheckpoint(
+                        unmappedNamespace = stream.unmappedNamespace,
+                        unmappedName = stream.unmappedName,
+                        blob =
+                            io.airbyte.protocol.models.Jsons.jsonNode(
+                                    mapOf("stream1" to "state"),
+                                )
+                                .toString(),
+                        sourceRecordCount = 1,
+                        checkpointKey = checkpointKeyForMedium(1, "stream_1_partition_1"),
+                    ),
+                    InputRecord(
+                        stream = stream2,
+                        data = """{"id": 2}""",
+                        emittedAtMs = 1234,
+                        checkpointId =
+                            checkpointKeyForMedium(
+                                    1,
+                                    "stream_2_partition_1",
+                                )
+                                ?.checkpointId,
+                    ),
+                    InputRecord(
+                        stream = stream2,
+                        data = """{"id": 3}""",
+                        emittedAtMs = 1234,
+                        checkpointId =
+                            checkpointKeyForMedium(
+                                    1,
+                                    "stream_2_partition_1",
+                                )
+                                ?.checkpointId,
+                    ),
+                    InputStreamCheckpoint(
+                        unmappedNamespace = stream2.unmappedNamespace,
+                        unmappedName = stream2.unmappedName,
+                        blob =
+                            io.airbyte.protocol.models.Jsons.jsonNode(
+                                    mapOf("stream2" to "state"),
+                                )
+                                .toString(),
+                        sourceRecordCount = 2,
+                        checkpointKey = checkpointKeyForMedium(1, "stream_2_partition_1"),
+                    ),
+                    InputRecord(
+                        stream = stream3,
+                        data = """{"id": 4}""",
+                        emittedAtMs = 1234,
+                        checkpointId =
+                            checkpointKeyForMedium(
+                                    1,
+                                    "stream_3_partition_1",
+                                )
+                                ?.checkpointId,
+                    ),
+                    InputStreamCheckpoint(
+                        unmappedNamespace = stream3.unmappedNamespace,
+                        unmappedName = stream3.unmappedName,
+                        blob =
+                            io.airbyte.protocol.models.Jsons.jsonNode(
+                                    mapOf("stream3" to "state"),
+                                )
+                                .toString(),
+                        sourceRecordCount = 1,
+                        checkpointKey = checkpointKeyForMedium(1, "stream_3_partition_1"),
+                    ),
+                    InputRecord(
+                        stream = stream,
+                        data = """{"id": 5}""",
+                        emittedAtMs = 5678,
+                        checkpointId =
+                            checkpointKeyForMedium(
+                                    2,
+                                    "stream_1_partition_2",
+                                )
+                                ?.checkpointId,
+                    ),
+                    InputRecord(
+                        stream = stream2,
+                        data = """{"id": 6}""",
+                        emittedAtMs = 5678,
+                        checkpointId =
+                            checkpointKeyForMedium(
+                                    2,
+                                    "stream_2_partition_2",
+                                )
+                                ?.checkpointId,
+                    ),
+                    InputRecord(
+                        stream = stream3,
+                        data = """{"id": 7}""",
+                        emittedAtMs = 5678,
+                        checkpointId =
+                            checkpointKeyForMedium(
+                                    2,
+                                    "stream_3_partition_2",
+                                )
+                                ?.checkpointId,
+                    ),
+                    InputStreamCheckpoint(
+                        unmappedNamespace = stream.unmappedNamespace,
+                        unmappedName = stream.unmappedName,
+                        blob =
+                            io.airbyte.protocol.models.Jsons.jsonNode(
+                                    mapOf("stream1" to "state2"),
+                                )
+                                .toString(),
+                        sourceRecordCount = 1,
+                        checkpointKey = checkpointKeyForMedium(2, "stream_1_partition_2"),
+                    ),
+                    InputStreamCheckpoint(
+                        unmappedNamespace = stream2.unmappedNamespace,
+                        unmappedName = stream2.unmappedName,
+                        blob =
+                            io.airbyte.protocol.models.Jsons.jsonNode(
+                                    mapOf("stream2" to "state2"),
+                                )
+                                .toString(),
+                        sourceRecordCount = 1,
+                        checkpointKey = checkpointKeyForMedium(2, "stream_2_partition_2"),
+                    ),
+                    InputStreamCheckpoint(
+                        unmappedNamespace = stream3.unmappedNamespace,
+                        unmappedName = stream3.unmappedName,
+                        blob =
+                            io.airbyte.protocol.models.Jsons.jsonNode(
+                                    mapOf("stream3" to "state2"),
+                                )
+                                .toString(),
+                        sourceRecordCount = 1,
+                        checkpointKey = checkpointKeyForMedium(2, "stream_3_partition_2"),
+                    ),
+                ),
+            )
+
+        val stateMessages =
+            messages.filter { m -> m.type == AirbyteMessage.Type.STATE }.map { it.state }
+
+        assertEquals(6, stateMessages.size)
+
+        val stateMessagesPerDescriptor =
+            stateMessages.groupBy({ it.stream.streamDescriptor }, { it })
+
+        val stateMessagesFromFirstStream =
+            stateMessagesPerDescriptor[
+                StreamDescriptor().withName("test_stream").withNamespace(randomizedNamespace),
+            ]
+        assertEquals(2, stateMessagesFromFirstStream!!.size)
+        assertEquals(
+            io.airbyte.protocol.models.Jsons.jsonNode(
+                mapOf("stream1" to "state"),
+            ),
+            stateMessagesFromFirstStream[0].stream.streamState,
+        )
+        assertEquals(
+            AirbyteStateStats().withRecordCount(1.0),
+            stateMessagesFromFirstStream[0].sourceStats,
+        )
+        assertEquals(
+            AirbyteStateStats().withRecordCount(1.0),
+            stateMessagesFromFirstStream[0].destinationStats,
+        )
+        assertEquals(
+            mapOf<String, Any>(
+                "partition_id" to "stream_1_partition_1",
+                "committedBytesCount" to 65,
+                "id" to 1,
+                "committedRecordsCount" to 1,
+            ),
+            stateMessagesFromFirstStream[0].additionalProperties,
+        )
+        assertEquals(
+            io.airbyte.protocol.models.Jsons.jsonNode(
+                mapOf("stream1" to "state2"),
+            ),
+            stateMessagesFromFirstStream[1].stream.streamState,
+        )
+        assertEquals(
+            AirbyteStateStats().withRecordCount(1.0),
+            stateMessagesFromFirstStream[1].sourceStats,
+        )
+        assertEquals(
+            AirbyteStateStats().withRecordCount(1.0),
+            stateMessagesFromFirstStream[1].destinationStats,
+        )
+        assertEquals(
+            mapOf<String, Any>(
+                "partition_id" to "stream_1_partition_2",
+                "committedBytesCount" to 130,
+                "id" to 2,
+                "committedRecordsCount" to 2,
+            ),
+            stateMessagesFromFirstStream[1].additionalProperties,
+        )
+
+        val stateMessagesFromSecondStream =
+            stateMessagesPerDescriptor[
+                StreamDescriptor().withName("test_stream_2").withNamespace(randomizedNamespace),
+            ]
+        assertEquals(2, stateMessagesFromSecondStream!!.size)
+        assertEquals(
+            io.airbyte.protocol.models.Jsons.jsonNode(
+                mapOf("stream2" to "state"),
+            ),
+            stateMessagesFromSecondStream[0].stream.streamState,
+        )
+        assertEquals(
+            AirbyteStateStats().withRecordCount(2.0),
+            stateMessagesFromSecondStream[0].sourceStats,
+        )
+        assertEquals(
+            AirbyteStateStats().withRecordCount(2.0),
+            stateMessagesFromSecondStream[0].destinationStats,
+        )
+        assertEquals(
+            mapOf<String, Any>(
+                "partition_id" to "stream_2_partition_1",
+                "committedBytesCount" to 134,
+                "id" to 1,
+                "committedRecordsCount" to 2,
+            ),
+            stateMessagesFromSecondStream[0].additionalProperties,
+        )
+        assertEquals(
+            io.airbyte.protocol.models.Jsons.jsonNode(
+                mapOf("stream2" to "state2"),
+            ),
+            stateMessagesFromSecondStream[1].stream.streamState,
+        )
+        assertEquals(
+            AirbyteStateStats().withRecordCount(1.0),
+            stateMessagesFromSecondStream[1].sourceStats,
+        )
+        assertEquals(
+            AirbyteStateStats().withRecordCount(1.0),
+            stateMessagesFromSecondStream[1].destinationStats,
+        )
+        assertEquals(
+            mapOf<String, Any>(
+                "partition_id" to "stream_2_partition_2",
+                "committedBytesCount" to 201,
+                "id" to 2,
+                "committedRecordsCount" to 3,
+            ),
+            stateMessagesFromSecondStream[1].additionalProperties,
+        )
+
+        val stateMessagesFromThirdStream =
+            stateMessagesPerDescriptor[
+                StreamDescriptor().withName("test_stream_3").withNamespace(randomizedNamespace),
+            ]
+        assertEquals(2, stateMessagesFromThirdStream!!.size)
+        assertEquals(
+            io.airbyte.protocol.models.Jsons.jsonNode(
+                mapOf("stream3" to "state"),
+            ),
+            stateMessagesFromThirdStream[0].stream.streamState,
+        )
+        assertEquals(
+            AirbyteStateStats().withRecordCount(2.0),
+            stateMessagesFromThirdStream[0].sourceStats,
+        )
+        assertEquals(
+            AirbyteStateStats().withRecordCount(2.0),
+            stateMessagesFromThirdStream[0].destinationStats,
+        )
+        assertEquals(
+            mapOf<String, Any>(
+                "partition_id" to "stream_3_partition_1",
+                "committedBytesCount" to 67,
+                "id" to 1,
+                "committedRecordsCount" to 1,
+            ),
+            stateMessagesFromThirdStream[0].additionalProperties,
+        )
+        assertEquals(
+            io.airbyte.protocol.models.Jsons.jsonNode(
+                mapOf("stream3" to "state2"),
+            ),
+            stateMessagesFromThirdStream[1].stream.streamState,
+        )
+        assertEquals(
+            AirbyteStateStats().withRecordCount(1.0),
+            stateMessagesFromSecondStream[1].sourceStats,
+        )
+        assertEquals(
+            AirbyteStateStats().withRecordCount(1.0),
+            stateMessagesFromSecondStream[1].destinationStats,
+        )
+        assertEquals(
+            mapOf<String, Any>(
+                "partition_id" to "stream_3_partition_2",
+                "committedBytesCount" to 134,
+                "id" to 2,
+                "committedRecordsCount" to 2,
+            ),
+            stateMessagesFromThirdStream[1].additionalProperties,
+        )
+    }
+
+    @Test
     open fun testCDCStateTypes() {
         if (
             dataChannelMedium != DataChannelMedium.SOCKET ||
