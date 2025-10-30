@@ -2,7 +2,7 @@
 
 ## Upgrading to 1.0.0
 
-The YouTube Analytics Bulk Reports API made changes one of which is created new report versions for each report that includes views, which is the majority of the reports. Each affected report's version has incremented by one, such as version a2 to version a3. See [here](https://developers.google.com/youtube/reporting/revision_history#june-24,-2025) for more details.
+The YouTube Analytics Bulk Reports API recently made changes to reports. Each affected report's version has incremented by one, such as version a2 to version a3. See [here](https://developers.google.com/youtube/reporting/revision_history#june-24,-2025) for more details.
 
 ## New stream names
 
