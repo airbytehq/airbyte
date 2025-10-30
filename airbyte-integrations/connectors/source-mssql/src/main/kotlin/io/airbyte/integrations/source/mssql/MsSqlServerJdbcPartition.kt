@@ -59,7 +59,7 @@ fun stateValueToJsonNode(field: Field, stateValue: String?): JsonNode {
                     Jsons.valueToTree(stateValue?.takeIf { it.isNotEmpty() }?.toBigInteger())
                 }
                 LeafAirbyteSchemaType.NUMBER -> {
-                    Jsons.valueToTree(stateValue?.takeIf { it.isNotEmpty() }?.toDouble())
+                    Jsons.valueToTree(stateValue?.takeIf { it.isNotEmpty() }?.toBigDecimal())
                 }
                 LeafAirbyteSchemaType.BINARY -> {
                     val ba = Base64.getDecoder().decode(stateValue!!)

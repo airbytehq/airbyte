@@ -269,7 +269,10 @@ class MsSqlServerJdbcPartitionFactory(
 
             // Compose a jsonnode of cursor label to cursor value to fit in
             // DefaultJdbcCursorIncrementalPartition
-            if (cursorCheckpoint.toString() == streamState.cursorUpperBound?.toString()) {
+            // Compare values using numeric comparison for NUMBER types to handle cases like 11.0 ==
+            // 11
+            val upperBound = streamState.cursorUpperBound
+            if (upperBound != null && areValuesEqual(cursorCheckpoint, upperBound)) {
                 // Incremental complete.
                 return null
             }
@@ -300,6 +303,27 @@ class MsSqlServerJdbcPartitionFactory(
         } else {
             null
         }
+    }
+
+    /**
+     * Compares two JsonNode values for equality, with special handling for numeric types. This is
+     * needed because NUMERIC columns may have values like "11" stored in state but retrieved as
+     * "11.0" from database, and they should be considered equal.
+     */
+    private fun areValuesEqual(a: JsonNode, b: JsonNode): Boolean {
+        // Handle numeric comparisons - compare as BigDecimal to handle 13.0 == 13
+        if (a.isNumber && b.isNumber) {
+            return try {
+                a.decimalValue().compareTo(b.decimalValue()) == 0
+            } catch (e: Exception) {
+                log.warn(e) {
+                    "Failed to compare numeric values, falling back to string comparison"
+                }
+                a.toString() == b.toString()
+            }
+        }
+        // For non-numeric values, use standard equality
+        return a == b
     }
 
     override fun split(
