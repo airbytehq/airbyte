@@ -1,0 +1,74 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/amazon-amp",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "title": "Amazon AMP Source Spec",
+    "required": ["workspace_id", "region", "access_key", "secret_key"],
+    "properties": {
+      "workspace_id": {
+        "type": "string",
+        "description": "ID of the AMP workspace",
+        "title": "AMP Workspace ID",
+        "order": 0
+      },
+      "region": {
+        "type": "string",
+        "enum": [
+          "af-south-1",
+          "ap-east-1",
+          "ap-northeast-1",
+          "ap-northeast-2",
+          "ap-northeast-3",
+          "ap-south-1",
+          "ap-south-2",
+          "ap-southeast-1",
+          "ap-southeast-2",
+          "ap-southeast-3",
+          "ap-southeast-4",
+          "ca-central-1",
+          "ca-west-1",
+          "cn-north-1",
+          "cn-northwest-1",
+          "eu-central-1",
+          "eu-central-2",
+          "eu-north-1",
+          "eu-south-1",
+          "eu-south-2",
+          "eu-west-1",
+          "eu-west-2",
+          "eu-west-3",
+          "il-central-1",
+          "me-central-1",
+          "me-south-1",
+          "sa-east-1",
+          "us-east-1",
+          "us-east-2",
+          "us-gov-east-1",
+          "us-gov-west-1",
+          "us-west-1",
+          "us-west-2"
+        ],
+        "default": "eu-central-1",
+        "description": "AWS region where AMP is deployed",
+        "title": "AWS Region",
+        "order": 1
+      },
+      "access_key": {
+        "type": "string",
+        "description": "The Access Key ID of the AWS IAM Role with AMP access",
+        "title": "AWS IAM Access Key ID",
+        "airbyte_secret": true,
+        "order": 2
+      },
+      "secret_key": {
+        "type": "string",
+        "description": "The Secret Key of the AWS IAM Role with AMP access",
+        "title": "AWS IAM Secret Key",
+        "airbyte_secret": true,
+        "order": 3
+      }
+    },
+    "additionalProperties": true
+  }
+}

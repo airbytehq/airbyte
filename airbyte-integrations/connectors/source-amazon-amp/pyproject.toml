@@ -1,0 +1,42 @@
+[build-system]
+requires = [ "poetry-core>=1.0.0",]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+version = "0.1.0"
+name = "source-amazon-amp"
+description = "Source implementation for amazon-amp."
+authors = [ "Airbyte <contact@airbyte.io>",]
+license = "MIT"
+readme = "README.md"
+documentation = "https://docs.airbyte.com/integrations/sources/amazon-amp"
+homepage = "https://airbyte.com"
+repository = "https://github.com/airbytehq/airbyte"
+packages = [ { include = "source_amazon_amp" }, {include = "main.py" } ]
+
+[tool.poetry.dependencies]
+python = "^3.10,<3.12"
+airbyte-cdk = "6.61.6"
+numpy = ">=1.26,<2.0"
+pydantic = ">=1,<3"
+grpcio = ">=1.49.1,<2.0.0"
+grpcio-status = ">=1.49.1,<2.0.0"
+google-auth = ">=2.14,<3.0"
+cachetools = ">=2.0.0,<6.0"
+pyasn1-modules = ">=0.2.1"
+rsa = ">=3.1.4,<5"
+
+[tool.poetry.scripts]
+source-amazon-amp = "source_amazon_amp.run:run"
+
+[tool.poetry.group.dev.dependencies]
+requests-mock = "*"
+pytest-mock = "*"
+pytest = "*"
+
+[tool.poe]
+include = [
+    # Shared tasks definition file(s) can be imported here.
+    # Run `poe` or `poe --help` to see the list of available tasks.
+    "${POE_GIT_DIR}/poe-tasks/poetry-connector-tasks.toml",
+]
