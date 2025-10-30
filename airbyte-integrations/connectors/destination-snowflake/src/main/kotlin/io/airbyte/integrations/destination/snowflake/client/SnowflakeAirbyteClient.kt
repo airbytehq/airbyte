@@ -252,7 +252,6 @@ class SnowflakeAirbyteClient(
             sqlGenerator
                 .alterTable(
                     tableName,
-                    // TODO these types don't work, but it's pretty clear how to do the translation
                     diff.columnsToAdd,
                     diff.columnsToDrop,
                     diff.columnsToChange,

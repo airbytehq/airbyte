@@ -6,12 +6,13 @@ package io.airbyte.integrations.destination.snowflake.sql
 
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.component.ColumnType
+import io.airbyte.cdk.load.component.ColumnTypeChange
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TableName
 import io.airbyte.cdk.load.util.UUIDGenerator
-import io.airbyte.integrations.destination.snowflake.db.ColumnDefinition
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.CdcDeletionMode
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
@@ -385,37 +386,37 @@ class SnowflakeDirectLoadSqlGenerator(
 
     fun alterTable(
         tableName: TableName,
-        addedColumns: Set<ColumnDefinition>,
-        deletedColumns: Set<ColumnDefinition>,
-        modifiedColumns: Set<ColumnDefinition>,
+        addedColumns: Map<String, ColumnType>,
+        deletedColumns: Set<String>,
+        modifiedColumns: Map<String, ColumnTypeChange>,
     ): Set<String> {
         val clauses = mutableSetOf<String>()
         val prettyTableName = snowflakeSqlNameUtils.fullyQualifiedName(tableName)
-        addedColumns.forEach {
+        addedColumns.forEach { (name, columnType) ->
             clauses.add(
-                "ALTER TABLE $prettyTableName ADD COLUMN ${it.name.quote()} ${it.type};".andLog()
+                "ALTER TABLE $prettyTableName ADD COLUMN ${name.quote()} ${columnType.typeDeclaration()};".andLog()
             )
         }
         deletedColumns.forEach {
-            clauses.add("ALTER TABLE $prettyTableName DROP COLUMN ${it.name.quote()};".andLog())
+            clauses.add("ALTER TABLE $prettyTableName DROP COLUMN ${it.quote()};".andLog())
         }
-        modifiedColumns.forEach {
-            val tempColumn = "${it.name}_${uuidGenerator.v4()}"
+        modifiedColumns.forEach { (name, typeChange) ->
+            val tempColumn = "${name}_${uuidGenerator.v4()}"
             clauses.add(
-                "ALTER TABLE $prettyTableName ADD COLUMN ${tempColumn.quote()} ${it.type};".andLog()
+                "ALTER TABLE $prettyTableName ADD COLUMN ${tempColumn.quote()} ${typeChange.newType.typeDeclaration()};".andLog()
             )
             clauses.add(
-                "UPDATE $prettyTableName SET ${tempColumn.quote()} = CAST(${it.name.quote()} AS ${it.type});".andLog()
+                "UPDATE $prettyTableName SET ${tempColumn.quote()} = CAST(${name.quote()} AS ${typeChange.newType.type});".andLog()
             )
             val backupColumn = "${tempColumn}_backup"
             clauses.add(
                 """ALTER TABLE $prettyTableName
-                RENAME COLUMN "${it.name}" TO "$backupColumn";
+                RENAME COLUMN "$name" TO "$backupColumn";
             """.trimIndent()
             )
             clauses.add(
                 """ALTER TABLE $prettyTableName
-                RENAME COLUMN "$tempColumn" TO "${it.name}";
+                RENAME COLUMN "$tempColumn" TO "$name";
             """.trimIndent()
             )
             clauses.add(
