@@ -1,6 +1,6 @@
 ## Version 0.1.61
 
-extract cdk: added table filtering support for jdbc sources
+Fix bug related to state messages indexing in the dataflow CDK
 
 ## Version 0.1.60
 
