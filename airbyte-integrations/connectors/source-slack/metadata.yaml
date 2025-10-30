@@ -6,11 +6,11 @@ data:
     hosts:
       - slack.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.2.3@sha256:33bb65d8317f1a0997e38acf1bd28f7c66b17bbbf0051ac47212e26e763143e9
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.4.1@sha256:71df19e2ee555ca5b14abbec01d50104c79c9b84cb9cc323284d24333361900a
   connectorSubtype: api
   connectorType: source
   definitionId: c2281cee-86f9-4a86-bb48-d23286b4c7bd
-  dockerImageTag: 3.1.2
+  dockerImageTag: 3.1.7
   dockerRepository: airbyte/source-slack
   documentationUrl: https://docs.airbyte.com/integrations/sources/slack
   githubIssueLabel: source-slack

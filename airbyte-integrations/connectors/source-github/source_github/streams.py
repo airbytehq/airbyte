@@ -4,11 +4,12 @@
 
 import re
 from abc import ABC, abstractmethod
-from datetime import timedelta
+from datetime import timedelta, timezone
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib import parse
 
 import requests
+from dateutil.parser import parse as date_parse
 
 from airbyte_cdk import BackoffStrategy, StreamSlice
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, FailureType, Level, SyncMode
@@ -220,6 +221,14 @@ class GithubStream(GithubStreamABC):
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
         record["repository"] = stream_slice["repository"]
+
+        if "reactions" in record and record["reactions"]:
+            reactions = record["reactions"]
+            if "+1" in reactions:
+                reactions["plus_one"] = reactions.pop("+1")
+            if "-1" in reactions:
+                reactions["minus_one"] = reactions.pop("-1")
+
         return record
 
     def parse_response(
@@ -1441,7 +1450,8 @@ class Workflows(SemiIncrementalMixin, GithubStream):
             yield self.transform(record=record, stream_slice=stream_slice)
 
     def convert_cursor_value(self, value):
-        return ab_datetime_format(value, "YYYY-MM-DDTHH:mm:ss[Z]")
+        parsed_value = date_parse(value).astimezone(timezone.utc)
+        return ab_datetime_format(parsed_value, "%Y-%m-%dT%H:%M:%SZ")
 
 
 class WorkflowRuns(SemiIncrementalMixin, GithubStream):
@@ -1675,7 +1685,7 @@ class ContributorActivity(GithubStream):
                         type=MessageType.LOG,
                         log=AirbyteLogMessage(
                             level=Level.INFO,
-                            message=f"Syncing `{self.__class__.__name__}` " f"stream isn't available for repository `{repository}`.",
+                            message=f"Syncing `{self.__class__.__name__}` stream isn't available for repository `{repository}`.",
                         ),
                     )
 

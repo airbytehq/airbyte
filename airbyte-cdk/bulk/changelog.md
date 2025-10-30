@@ -1,3 +1,72 @@
+## Version 0.1.60
+
+load cdk: extract test-only client
+
+## Version 0.1.59
+
+fix upsert test
+
+## Version 0.1.58
+
+load cdk: log unflushed state diagnostic info
+## Version 0.1.57
+
+**Extract CDK**
+
+* **Changed:** Remove unnecesarry metafield decoration from database views streams in CDC mode.
+
+## Version 0.1.56
+
+load cdk: improve component tests
+
+## Version 0.1.55
+
+**Extract CDK**
+
+* **Changed:** Timeout in case of no event comes back from dbz.
+
+## Version 0.1.54
+
+Update temporal type representation for proto format
+
+## Version 0.1.53
+
+**Extract CDK**
+
+* **Changed:** Handle debezium engine shutdown properly with socket.
+
+## Version 0.1.52
+
+**Load CDK**
+
+Refactor database operations interfaces and establish comprehensive TableOperationsSuite component test suite.
+
+## Version 0.1.51
+
+Polaris support in the iceberg configuration.
+
+## Version 0.1.50
+
+Better handle interleaved streams in aggregate publishing.
+
+## Version 0.1.49
+
+**Extract CDK**
+
+* **Changed:** Support nano sec to preserve precision in TimeAccessor.
+
+## Version 0.1.48
+
+**Extract CDK**
+
+* **Changed:** Enable heart beat timeout for CDC sync.
+
+## Version 0.1.47
+
+**Extract CDK**
+
+* **Changed:** Correct encoding of CDC_UPDATED_AT and CDC_DELETED_AT fields in protobuf records.
+
 ## Version 0.1.46
 
 Noop: Move stream lifecyle dispatchers to bean factory.

@@ -17,7 +17,7 @@ jobs:
           echo repo="$(echo $pr_info | jq -r '.head.repo.full_name')" >> $GITHUB_OUTPUT
 
       - name: Authenticate as GitHub App
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
         id: get-app-token
         with:
           owner: "airbytehq"
@@ -27,7 +27,7 @@ jobs:
 
       - name: Slash Command Dispatch (Workflow)
         id: scd
-        uses: peter-evans/slash-command-dispatch@v3
+        uses: peter-evans/slash-command-dispatch@f996d7b7aae9059759ac55e978cff76d91853301 # v3.0.2
         with:
           token: ${{ steps.get-app-token.outputs.token }}
           permission: write
@@ -36,9 +36,7 @@ jobs:
 
           commands: |
             approve-regression-tests
-            bump-bulk-cdk-and-release-connectors
             bump-bulk-cdk-version
-            bump-cdk-version-and-merge
             bump-version
             build-connector-images
             connector-performance
@@ -62,7 +60,7 @@ jobs:
 
       - name: Edit comment with error message
         if: steps.scd.outputs.error-message
-        uses: peter-evans/create-or-update-comment@v1
+        uses: peter-evans/create-or-update-comment@a35cf36e5301d70b76f316e867e7788a55a31dae # v1.4.5
         with:
           comment-id: ${{ github.event.comment.id }}
           body: |
