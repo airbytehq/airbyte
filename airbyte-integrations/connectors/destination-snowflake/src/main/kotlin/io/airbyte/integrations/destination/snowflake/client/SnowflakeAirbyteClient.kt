@@ -270,7 +270,8 @@ class SnowflakeAirbyteClient(
                             continue
                         }
                         val dataType = rs.getString("type").takeWhile { char -> char != '(' }
-                        val nullable = rs.getBoolean("null?")
+                        // yes, this is how we live. The value is, in fact "Y" or "N".
+                        val nullable = rs.getString("null?") == "Y"
 
                         columnsInDb[columnName] = ColumnType(dataType, nullable)
                     }

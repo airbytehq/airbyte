@@ -394,35 +394,43 @@ class SnowflakeDirectLoadSqlGenerator(
         val prettyTableName = snowflakeSqlNameUtils.fullyQualifiedName(tableName)
         addedColumns.forEach { (name, columnType) ->
             clauses.add(
-                "ALTER TABLE $prettyTableName ADD COLUMN ${name.quote()} ${columnType.typeDeclaration()};".andLog()
+                // Note that we intentionally don't set NOT NULL.
+                // We're adding a new column, and we don't know what constitutes a reasonable
+                // default value
+                // for preexisting records.
+                // So we add the column as nullable.
+                "ALTER TABLE $prettyTableName ADD COLUMN ${name.quote()} ${columnType.type};".andLog()
             )
         }
         deletedColumns.forEach {
             clauses.add("ALTER TABLE $prettyTableName DROP COLUMN ${it.key.quote()};".andLog())
         }
-        modifiedColumns.forEach { (name, typeChange) ->
-            val tempColumn = "${name}_${uuidGenerator.v4()}"
-            clauses.add(
-                "ALTER TABLE $prettyTableName ADD COLUMN ${tempColumn.quote()} ${typeChange.newType.typeDeclaration()};".andLog()
-            )
-            clauses.add(
-                "UPDATE $prettyTableName SET ${tempColumn.quote()} = CAST(${name.quote()} AS ${typeChange.newType.type});".andLog()
-            )
-            val backupColumn = "${tempColumn}_backup"
-            clauses.add(
-                """ALTER TABLE $prettyTableName
+        modifiedColumns
+            // Filter for actual type changes. We don't care about changes in nullability.
+            .filter { (_, typeChange) -> typeChange.originalType.type != typeChange.newType.type }
+            .forEach { (name, typeChange) ->
+                val tempColumn = "${name}_${uuidGenerator.v4()}"
+                clauses.add(
+                    "ALTER TABLE $prettyTableName ADD COLUMN ${tempColumn.quote()} ${typeChange.newType.type};".andLog()
+                )
+                clauses.add(
+                    "UPDATE $prettyTableName SET ${tempColumn.quote()} = CAST(${name.quote()} AS ${typeChange.newType.type});".andLog()
+                )
+                val backupColumn = "${tempColumn}_backup"
+                clauses.add(
+                    """ALTER TABLE $prettyTableName
                 RENAME COLUMN "$name" TO "$backupColumn";
             """.trimIndent()
-            )
-            clauses.add(
-                """ALTER TABLE $prettyTableName
+                )
+                clauses.add(
+                    """ALTER TABLE $prettyTableName
                 RENAME COLUMN "$tempColumn" TO "$name";
             """.trimIndent()
-            )
-            clauses.add(
-                "ALTER TABLE $prettyTableName DROP COLUMN ${backupColumn.quote()};".andLog()
-            )
-        }
+                )
+                clauses.add(
+                    "ALTER TABLE $prettyTableName DROP COLUMN ${backupColumn.quote()};".andLog()
+                )
+            }
         return clauses
     }
 }
