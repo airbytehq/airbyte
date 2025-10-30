@@ -628,8 +628,8 @@ class MySqlSourceJdbcPartitionFactory(
         val queryPlan: List<String> =
             unicodeInterpolatedStrings(effectiveLowerBound, upperBound, num)
         log.info { "boundaries: $queryPlan" }
-        val lbs: List<String> = listOf(effectiveLowerBound) + queryPlan
-        val ubs: List<String?> = queryPlan + null
+        val lbs: List<String> = queryPlan
+        val ubs: List<String?> = queryPlan.drop(1) + null
         return lbs.zip(ubs).toMap()
     }
 
