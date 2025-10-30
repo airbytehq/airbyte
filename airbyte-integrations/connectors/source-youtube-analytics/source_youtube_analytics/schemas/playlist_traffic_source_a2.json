@@ -23,10 +23,10 @@
     "country_code": {
       "type": ["null", "string"]
     },
-    "playback_location_type": {
+    "traffic_source_type": {
       "type": ["null", "integer"]
     },
-    "playback_location_detail": {
+    "traffic_source_detail": {
       "type": ["null", "string"]
     },
     "views": {
@@ -45,6 +45,9 @@
       "type": ["null", "integer"]
     },
     "playlist_saves_removed": {
+      "type": ["null", "integer"]
+    },
+    "engaged_views": {
       "type": ["null", "integer"]
     }
   }

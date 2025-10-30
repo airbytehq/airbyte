@@ -15,7 +15,7 @@
     "metrics": []
   },
   {
-    "id": "channel_basic_a2",
+    "id": "channel_basic_a3",
     "name": "User activity",
     "dimensions": [
       "date",
@@ -43,7 +43,7 @@
     "metrics": []
   },
   {
-    "id": "channel_combined_a2",
+    "id": "channel_combined_a3",
     "name": "Combined",
     "dimensions": [
       "date",
@@ -75,7 +75,7 @@
     "metrics": []
   },
   {
-    "id": "channel_device_os_a2",
+    "id": "channel_device_os_a3",
     "name": "Device and OS",
     "dimensions": [
       "date",
@@ -105,7 +105,7 @@
     "metrics": []
   },
   {
-    "id": "channel_playback_location_a2",
+    "id": "channel_playback_location_a3",
     "name": "Playback locations",
     "dimensions": [
       "date",
@@ -120,7 +120,7 @@
     "metrics": []
   },
   {
-    "id": "channel_province_a2",
+    "id": "channel_province_a3",
     "name": "Province",
     "dimensions": [
       "date",
@@ -148,7 +148,7 @@
     "metrics": []
   },
   {
-    "id": "channel_subtitles_a2",
+    "id": "channel_subtitles_a3",
     "name": "Subtitles",
     "dimensions": [
       "date",
@@ -162,7 +162,7 @@
     "metrics": []
   },
   {
-    "id": "channel_traffic_source_a2",
+    "id": "channel_traffic_source_a3",
     "name": "Traffic sources",
     "dimensions": [
       "date",
@@ -177,7 +177,7 @@
     "metrics": []
   },
   {
-    "id": "playlist_basic_a1",
+    "id": "playlist_basic_a2",
     "name": "Playlist user activity",
     "dimensions": [
       "date",
@@ -191,7 +191,7 @@
     "metrics": []
   },
   {
-    "id": "playlist_combined_a1",
+    "id": "playlist_combined_a2",
     "name": "Playlist combined",
     "dimensions": [
       "date",
@@ -209,7 +209,7 @@
     "metrics": []
   },
   {
-    "id": "playlist_device_os_a1",
+    "id": "playlist_device_os_a2",
     "name": "Playlist device and OS",
     "dimensions": [
       "date",
@@ -225,7 +225,7 @@
     "metrics": []
   },
   {
-    "id": "playlist_playback_location_a1",
+    "id": "playlist_playback_location_a2",
     "name": "Playlist playback locations",
     "dimensions": [
       "date",
@@ -241,7 +241,7 @@
     "metrics": []
   },
   {
-    "id": "playlist_province_a1",
+    "id": "playlist_province_a2",
     "name": "Playlist province",
     "dimensions": [
       "date",
@@ -256,7 +256,7 @@
     "metrics": []
   },
   {
-    "id": "playlist_traffic_source_a1",
+    "id": "playlist_traffic_source_a2",
     "name": "Playlist traffic sources",
     "dimensions": [
       "date",

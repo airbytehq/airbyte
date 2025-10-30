@@ -8,9 +8,6 @@
     "channel_id": {
       "type": ["null", "string"]
     },
-    "playlist_id": {
-      "type": ["null", "string"]
-    },
     "video_id": {
       "type": ["null", "string"]
     },
@@ -23,11 +20,17 @@
     "country_code": {
       "type": ["null", "string"]
     },
+    "playback_location_type": {
+      "type": ["null", "integer"]
+    },
     "traffic_source_type": {
       "type": ["null", "integer"]
     },
-    "traffic_source_detail": {
-      "type": ["null", "string"]
+    "device_type": {
+      "type": ["null", "integer"]
+    },
+    "operating_system": {
+      "type": ["null", "integer"]
     },
     "views": {
       "type": ["null", "integer"]
@@ -38,13 +41,16 @@
     "average_view_duration_seconds": {
       "type": ["null", "number"]
     },
-    "playlist_starts": {
+    "average_view_duration_percentage": {
+      "type": ["null", "number"]
+    },
+    "red_views": {
       "type": ["null", "integer"]
     },
-    "playlist_saves_added": {
-      "type": ["null", "integer"]
+    "red_watch_time_minutes": {
+      "type": ["null", "number"]
     },
-    "playlist_saves_removed": {
+    "engaged_views": {
       "type": ["null", "integer"]
     }
   }
