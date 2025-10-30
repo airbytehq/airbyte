@@ -21,11 +21,11 @@ The Enterprise SAP HANA source connector reads data from your SAP HANA database.
 
 ## Getting Started
 
-#### 1. Make sure your database is accessible from the machine running Airbyte
+### 1. Make sure your database is accessible from the machine running Airbyte
 
 This is dependent on your networking setup. The easiest way to verify if Airbyte is able to connect to your SAP HANA instance is by testing the connection in the UI.
 
-#### 2. Create a dedicated read-only user with access to the relevant tables
+### 2. Create a dedicated read-only user with access to the relevant tables
 
 This step is optional but highly recommended to allow for better permission control and auditing. Alternatively, you can use Airbyte with an existing user in your database.
 
@@ -60,7 +60,7 @@ You can use the provided Python script to automate the creation of CDC tracking 
 
 - Python 3.7 or later
 - pip (Python package installer)
-- Install dependencies from requirements.txt (installs hdbcli)
+- Install dependencies from requirements.txt (installs `hdbcli`)
 - Network access to your SAP HANA host and port
 
 #### Safety and permissions
@@ -502,7 +502,7 @@ SAP HANA data types are mapped to the following data types when synchronizing da
 
 | SAP HANA Type  | Airbyte Type               | Notes |
 | -------------- | -------------------------- | ----- |
-| `BOOLEAN`      | boolean                    |       |
+| `BOOLEAN`      | `boolean`                  |       |
 | `TINYINT`      | integer                    |       |
 | `SMALLINT`     | integer                    |       |
 | `INTEGER`      | integer                    |       |
@@ -524,9 +524,9 @@ SAP HANA data types are mapped to the following data types when synchronizing da
 | `TEXT`         | string                     |       |
 | `BINTEXT`      | string                     |       |
 | `DATE`         | date                       |       |
-| `TIME`         | time_without_timezone      |       |
-| `SECONDDATE`   | timestamp_without_timezone |       |
-| `TIMESTAMP`    | timestamp_without_timezone |       |
+| `TIME`         | `time_without_timezone`    |       |
+| `SECONDDATE`   | `timestamp_without_timezone` |       |
+| `TIMESTAMP`    | `timestamp_without_timezone` |       |
 | `BINARY`       | binary                     |       |
 | `VARBINARY`    | binary                     |       |
 | `BLOB`         | binary                     |       |
