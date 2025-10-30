@@ -220,7 +220,7 @@ To check your actual quota limits:
 
 1. Go to your [Google Cloud Console](https://console.cloud.google.com/)
 2. Navigate to APIs & Services > Quotas
-3. Search for "Search Console API" 
+3. Search for "Search Console API"
 4. Look for "Requests per minute per user" to see your current limit
 
 If you need higher limits, you can:
