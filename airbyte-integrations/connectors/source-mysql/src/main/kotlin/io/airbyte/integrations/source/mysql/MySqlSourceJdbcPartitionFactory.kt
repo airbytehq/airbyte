@@ -624,8 +624,10 @@ class MySqlSourceJdbcPartitionFactory(
         upperBound: String
     ): Map<String, String?> {
         val effectiveLowerBound = lowerBound ?: String()
+        log.info { "calculating boundaries: [$effectiveLowerBound], [$upperBound]" }
         val queryPlan: List<String> =
             unicodeInterpolatedStrings(effectiveLowerBound, upperBound, num)
+        log.info { "boundaries: $queryPlan" }
         val lbs: List<String> = listOf(effectiveLowerBound) + queryPlan
         val ubs: List<String?> = queryPlan + null
         return lbs.zip(ubs).toMap()
