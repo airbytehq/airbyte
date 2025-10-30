@@ -224,6 +224,7 @@ To check your actual quota limits:
 4. Look for "Requests per minute per user" to see your current limit
 
 If you need higher limits, you can:
+
 - Enable billing on your Google Cloud project
 - Submit a quota increase request through the Google Cloud Console
 - Configure the **Requests Per Minute** setting in the connector to match your actual quota
