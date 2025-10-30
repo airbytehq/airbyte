@@ -128,17 +128,7 @@ data class TableSchema(val columns: Map<String, ColumnType>) {
 data class ColumnType(
     val type: String,
     val nullable: Boolean,
-) {
-    fun nullClause() =
-        if (nullable) {
-            ""
-        } else {
-            "NOT NULL"
-        }
-
-    /** Generate a string like "INTEGER NOT NULL" or "VARCHAR". Useful for SQL-ish destinations. */
-    fun typeDeclaration() = "$type ${nullClause()}"
-}
+)
 
 data class TableSchemaDiff(
     val columnsToAdd: Map<String, ColumnType>,
