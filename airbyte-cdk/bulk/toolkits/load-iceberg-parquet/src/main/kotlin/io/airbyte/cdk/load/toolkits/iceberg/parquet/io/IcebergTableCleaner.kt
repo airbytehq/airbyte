@@ -36,7 +36,12 @@ class IcebergTableCleaner(private val icebergUtil: IcebergUtil) {
         io: FileIO,
         tableLocation: String
     ) {
-        catalog.dropTable(identifier, true)
+        try {
+            catalog.dropTable(identifier, true)
+        } catch (_: Exception) {
+            // S3 Table Bucket doesn't support purge
+            catalog.dropTable(identifier, false)
+        }
         if (io is SupportsPrefixOperations) {
             io.deletePrefix(tableLocation)
         }
