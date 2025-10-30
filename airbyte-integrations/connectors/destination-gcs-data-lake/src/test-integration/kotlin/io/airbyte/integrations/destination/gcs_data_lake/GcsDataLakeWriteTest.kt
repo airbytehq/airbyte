@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.gcs_data_lake
 
 import io.airbyte.cdk.load.data.icerberg.parquet.IcebergWriteTest
-import io.airbyte.cdk.load.test.util.DestinationCleaner
 import io.airbyte.cdk.load.test.util.NoopDestinationCleaner
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.SimpleTableIdGenerator
 import io.airbyte.integrations.destination.gcs_data_lake.spec.GcsDataLakeSpecification
@@ -17,11 +16,9 @@ class BigLakeWriteTest :
         configContents = Files.readString(GcsDataLakeTestUtil.BIGLAKE_CONFIG_PATH),
         configSpecClass = GcsDataLakeSpecification::class.java,
         getCatalog = { spec ->
-            GcsDataLakeTestUtil.getCatalog(
-                GcsDataLakeTestUtil.getConfig(spec)
-            )
+            GcsDataLakeTestUtil.getCatalog(GcsDataLakeTestUtil.getConfig(spec))
         },
-        destinationCleaner = NoopDestinationCleaner,  // TODO: Implement proper cleaner
+        destinationCleaner = NoopDestinationCleaner, // TODO: Implement proper cleaner
         tableIdGenerator = SimpleTableIdGenerator("test_database"),
     ) {
 
