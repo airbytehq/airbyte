@@ -960,11 +960,11 @@ abstract class BasicFunctionalityIntegrationTest(
             stateMessagesFromThirdStream[0].stream.streamState,
         )
         assertEquals(
-            AirbyteStateStats().withRecordCount(2.0),
+            AirbyteStateStats().withRecordCount(1.0),
             stateMessagesFromThirdStream[0].sourceStats,
         )
         assertEquals(
-            AirbyteStateStats().withRecordCount(2.0),
+            AirbyteStateStats().withRecordCount(1.0),
             stateMessagesFromThirdStream[0].destinationStats,
         )
         assertEquals(
