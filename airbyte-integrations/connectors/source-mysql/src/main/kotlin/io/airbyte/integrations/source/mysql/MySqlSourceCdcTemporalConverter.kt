@@ -51,20 +51,20 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
                 // Log detailed column metadata
                 log.info {
                     "$handlerName - column info: ${column.name()}, " +
-                            "isNullable=${column.isOptional}, " +
-                            "hasDefaultValue=${column.hasDefaultValue()}, " +
-                            "defaultValue=${column.defaultValue()}, " +
-                            "jdbcType=${column.jdbcType()}, " +
-                            "typeName=${column.typeName()}, " +
-                            "typeExpression=${column.typeExpression()}"
+                        "isNullable=${column.isOptional}, " +
+                        "hasDefaultValue=${column.hasDefaultValue()}, " +
+                        "defaultValue=${column.defaultValue()}, " +
+                        "jdbcType=${column.jdbcType()}, " +
+                        "typeName=${column.typeName()}, " +
+                        "typeExpression=${column.typeExpression()}"
                 }
             }
         }
     }
 
     /**
-     * Handles MySQL zero-dates (e.g., '0000-00-00 00:00:00'), which are not valid temporal types in Java.
-     * MySQL/JDBC behavior for zero-dates:
+     * Handles MySQL zero-dates (e.g., '0000-00-00 00:00:00'), which are not valid temporal types in
+     * Java. MySQL/JDBC behavior for zero-dates:
      * - DATETIME and DATE columns: Zero-dates are converted to NULL
      * - TIMESTAMP columns: Zero-dates are represented as 0 on the binlog.
      * - TIME columns: '00:00:00' is a valid value and NOT considered a zero-date
@@ -75,11 +75,13 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
      * https://github.com/debezium/debezium/blob/db880a1969b6dc90bbc6691051d06abdb8a73cb5/debezium-core/src/main/java/io/debezium/relational/TableSchemaBuilder.java#L344
      * Our conversion strategy:
      * - Nullable columns: NULL passes through unchanged
-     * - Non-nullable columns: NULL (from zero-dates) → epoch (1970-01-01) to prevent Debezium errors
+     * - Non-nullable columns: NULL (from zero-dates) → epoch (1970-01-01) to prevent Debezium
+     * errors
      *
-     * Note: This handler is only needed for DATETIME and DATE types. TIME values don't have a zero-date
-     * issue since '00:00:00' is a valid time (midnight).  TIMESTAMP zero-dates ('0000-00-00 00:00:00') are stored as
-     * 0 internally in the binlog, which gets interpreted as the Unix epoch (1970-01-01 00:00:00 UTC).
+     * Note: This handler is only needed for DATETIME and DATE types. TIME values don't have a
+     * zero-date issue since '00:00:00' is a valid time (midnight). TIMESTAMP zero-dates
+     * ('0000-00-00 00:00:00') are stored as 0 internally in the binlog, which gets interpreted as
+     * the Unix epoch (1970-01-01 00:00:00 UTC).
      */
     class DatetimeMillisHandler : RelationalColumnCustomConverter.Handler {
         private var currentColumn: RelationalColumn? = null
@@ -95,7 +97,7 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
         override fun outputSchemaBuilder(): SchemaBuilder = SchemaBuilder.string()
 
         override val partialConverters: List<PartialConverter>
-            get(){
+            get() {
                 val columnRefForConverters = currentColumn
                 logColumnNullHandling("DatetimeMillisHandler", columnRefForConverters)
                 return listOf(
@@ -147,7 +149,7 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
         override fun outputSchemaBuilder(): SchemaBuilder = SchemaBuilder.string()
 
         override val partialConverters: List<PartialConverter>
-            get(){
+            get() {
                 val columnRefForConverters = currentColumn
                 logColumnNullHandling("DatetimeMicrosHandler", columnRefForConverters)
                 return listOf(
@@ -184,7 +186,6 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
                     }
                 )
             }
-
     }
 
     class DateHandler : RelationalColumnCustomConverter.Handler {
@@ -271,9 +272,9 @@ class MySqlSourceCdcTemporalConverter : RelationalColumnCustomConverter {
     }
 
     /**
-     * TIMESTAMP zero dates '0000-00-00 00:00:00' are stored as a zero
-     * (integer) internally and is interpreted as epoch (1970-01-01 00:00:00 UTC).
-     * See https://dev.mysql.com/doc/refman/8.4/en/date-and-time-type-syntax.html#:~:text=A%20timestamp.%20The,%E2%80%9D%20TIMESTAMP%20value.
+     * TIMESTAMP zero dates '0000-00-00 00:00:00' are stored as a zero (integer) internally and is
+     * interpreted as epoch (1970-01-01 00:00:00 UTC). See
+     * https://dev.mysql.com/doc/refman/8.4/en/date-and-time-type-syntax.html#:~:text=A%20timestamp.%20The,%E2%80%9D%20TIMESTAMP%20value.
      */
     data object TimestampHandler : RelationalColumnCustomConverter.Handler {
         override fun matches(column: RelationalColumn): Boolean =
