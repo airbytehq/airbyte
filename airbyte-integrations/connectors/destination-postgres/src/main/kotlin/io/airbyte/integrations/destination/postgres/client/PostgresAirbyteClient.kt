@@ -122,7 +122,7 @@ class PostgresAirbyteClient(
             log.info { "Deleted columns: $deletedColumns" }
             log.info { "Modified columns: $modifiedColumns" }
             sqlGenerator
-                .matchSchemas(tableName, addedColumns, deletedColumns, modifiedColumns)
+                .matchSchemas(tableName, addedColumns, deletedColumns, modifiedColumns, columnsInDb)
                 .forEach { execute(it) }
         }
     }
