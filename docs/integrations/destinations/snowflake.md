@@ -251,6 +251,11 @@ desired namespace.
 
 | Version         | Date       | Pull Request                                                        | Subject                                                                                                                                                                                |
 |:----------------|:-----------|:--------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.20          | 2025-10-28 | [68186](https://github.com/airbytehq/airbyte/pull/68186)            | Upgrade to CDK 0.1.59 |
+| 4.0.19          | 2025-10-28 | [68683](https://github.com/airbytehq/airbyte/pull/68683)            | Upgrade to CDK 0.1.58 (improve logging of unflushed states at end of sync) |
+| 4.0.18          | 2025-10-28 | [68125](https://github.com/airbytehq/airbyte/pull/68125)            | Internal refactoring; upgrade to CDK 0.1.56 |
+| 4.0.17          | 2025-10-21 | [68585](https://github.com/airbytehq/airbyte/pull/68585)            | Wrap Snowflake permission errors as ConfigErrorException for better error handling |
+| 4.0.16          | 2025-10-21 | [68516](https://github.com/airbytehq/airbyte/pull/68516)            | Ensure columns are marked as non-nullable in destination schema.                                                                                                                       |
 | 4.0.15          | 2025-10-21 | [67153](https://github.com/airbytehq/airbyte/pull/67153)            | Implement new proto schema implementation |
 | 4.0.14          | 2025-10-16 | [68148](https://github.com/airbytehq/airbyte/pull/68148)            | No user-facing changes. Internal code reorganization.                                                                                                                                  |
 | 4.0.13          | 2025-10-15 | [68106](https://github.com/airbytehq/airbyte/pull/68106)            | Revert cache change to fix performance issue.                                                                                                                                          |

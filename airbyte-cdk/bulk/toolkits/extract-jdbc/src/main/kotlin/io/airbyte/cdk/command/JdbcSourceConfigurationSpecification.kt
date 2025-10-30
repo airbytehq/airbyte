@@ -39,7 +39,7 @@ abstract class JdbcSourceConfigurationSpecification : ConfigurationSpecification
 
     @JsonProperty("database")
     @JsonSchemaTitle("Database")
-    @JsonPropertyDescription("The database name.")
+    @JsonPropertyDescription("Name of the database.")
     @JsonSchemaInject(json = """{"order":4,"always_show":true}""")
     lateinit var database: String
 

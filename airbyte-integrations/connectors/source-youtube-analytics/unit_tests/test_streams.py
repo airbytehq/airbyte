@@ -15,13 +15,13 @@ def test_jobs_resource_list(requests_mock):
             {
                 "id": "038777e7-dc6e-43c8-b86f-ed954c7acd95",
                 "name": "Airbyte reporting job",
-                "reportTypeId": "channel_playback_location_a2",
+                "reportTypeId": "channel_playback_location_a3",
                 "createTime": "2021-10-30T20:32:58Z",
             },
             {
                 "id": "1c20da45-0604-4d60-85db-925989df1db6",
                 "name": "Airbyte reporting job",
-                "reportTypeId": "channel_basic_a2",
+                "reportTypeId": "channel_basic_a3",
                 "createTime": "2021-10-25T19:48:36Z",
             },
         ]
@@ -35,7 +35,7 @@ def test_jobs_resource_list(requests_mock):
 
 
 def test_jobs_resource_create(requests_mock):
-    name = "channel_basic_a2"
+    name = "channel_basic_a3"
     json_result = {
         "createTime": "2021-10-30T20:32:58Z",
         "id": "038777e7-dc6e-43c8-b86f-ed954c7acd95",

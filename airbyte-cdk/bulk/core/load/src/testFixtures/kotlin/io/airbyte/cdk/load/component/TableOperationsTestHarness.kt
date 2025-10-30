@@ -6,9 +6,9 @@ package io.airbyte.cdk.load.component
 
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.TableOperationsFixtures.createAppendStream
+import io.airbyte.cdk.load.component.TableOperationsFixtures.insertRecords
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.ObjectType
-import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TableName
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -20,7 +20,11 @@ private val log = KotlinLogging.logger {}
  * Helper class that encapsulates common test operations for CoreTableOperationsSuite. Provides
  * utility methods for creating, dropping, and verifying tables with proper cleanup.
  */
-class TableOperationsTestHarness(private val client: TableOperationsClient) {
+class TableOperationsTestHarness(
+    private val client: TableOperationsClient,
+    private val testClient: TestTableOperationsClient,
+    private val airbyteMetaColumnMapping: Map<String, String>,
+) {
 
     /** Creates a test table with the given configuration and verifies it was created. */
     suspend fun createTestTableAndVerifyExists(
@@ -67,7 +71,7 @@ class TableOperationsTestHarness(private val client: TableOperationsClient) {
     /** Safely drops a namespace, logging any errors. */
     suspend fun cleanupNamespace(namespace: String) {
         try {
-            client.dropNamespace(namespace)
+            testClient.dropNamespace(namespace)
         } catch (e: Exception) {
             log.warn(e) { "Failed cleaning up test resource: $namespace" }
         }
@@ -91,8 +95,9 @@ class TableOperationsTestHarness(private val client: TableOperationsClient) {
     suspend fun insertAndVerifyRecordCount(
         tableName: TableName,
         records: List<Map<String, AirbyteValue>>,
+        columnNameMapping: ColumnNameMapping,
     ) {
-        client.insertRecords(tableName, records)
+        testClient.insertRecords(tableName, records, columnNameMapping)
         val actualCount = client.countTable(tableName)?.toInt()
 
         assertEquals(records.size, actualCount) {
@@ -102,7 +107,9 @@ class TableOperationsTestHarness(private val client: TableOperationsClient) {
 
     /** Reads records from a table, filtering out Meta columns. */
     suspend fun readTableWithoutMetaColumns(tableName: TableName): List<Map<String, Any>> {
-        val tableRead = client.readTable(tableName)
-        return tableRead.map { rec -> rec.filter { !Meta.COLUMN_NAMES.contains(it.key) } }
+        val tableRead = testClient.readTable(tableName)
+        return tableRead.map { rec ->
+            rec.filter { !airbyteMetaColumnMapping.containsValue(it.key) }
+        }
     }
 }
