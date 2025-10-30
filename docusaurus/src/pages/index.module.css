@@ -5,13 +5,17 @@
 
 /* Section 1: Hero */
 .heroSection {
-  background: var(--ifm-color-primary);
+  filter: contrast(210%) brightness(100%);
+  background: 
+    linear-gradient(144deg, rgba(97,94,255,1), rgba(0,0,0,0)),
+    url(/noise.svg);
   padding: 4rem 0;
 }
 
 /* Dark mode hero background */
 :global(html[data-theme="dark"]) .heroSection {
   background: var(--color-blue-30);
+  filter: none;
 }
 
 .heroContainer {
