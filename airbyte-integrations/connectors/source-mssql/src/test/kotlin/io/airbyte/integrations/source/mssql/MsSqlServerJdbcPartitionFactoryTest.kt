@@ -436,4 +436,33 @@ class MsSqlServerJdbcPartitionFactoryTest {
             msSqlServerCdcJdbcPartitionFactory.create(streamFeedBootstrap(fullRefreshStream))
         assertTrue(jdbcPartition is MsSqlServerJdbcNonResumableSnapshotPartition)
     }
+
+    @Test
+    fun testResumeFromCompletedCursorBasedReadWithoutCursorValue() {
+        // Test for handling non-existing cursor values which should be treated as null
+        val incomingStateValue: OpaqueStateValue =
+            Jsons.readTree(
+                """
+              {
+              "version": 2,
+              "state_type": "cursor_based",
+              "stream_name": "test_table",
+              "cursor_field": [
+                "id"
+              ],
+              "stream_namespace": "dbo",
+              "cursor_record_count": 1
+              }
+        """.trimIndent()
+            )
+
+        val jdbcPartition =
+            msSqlServerJdbcPartitionFactory.create(streamFeedBootstrap(stream, incomingStateValue))
+        assertTrue(jdbcPartition is MsSqlServerJdbcCursorIncrementalPartition)
+
+        // Verify that empty string is converted to null node
+        val cursorLowerBound =
+            (jdbcPartition as MsSqlServerJdbcCursorIncrementalPartition).cursorLowerBound
+        assertTrue(cursorLowerBound.isNull)
+    }
 }
