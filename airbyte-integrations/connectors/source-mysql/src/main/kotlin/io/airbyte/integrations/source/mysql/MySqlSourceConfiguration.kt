@@ -8,6 +8,7 @@ import io.airbyte.cdk.command.FeatureFlag
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.command.SourceConfigurationFactory
+import io.airbyte.cdk.command.TableFilter
 import io.airbyte.cdk.jdbc.SSLCertificateUtils
 import io.airbyte.cdk.output.DataChannelMedium
 import io.airbyte.cdk.output.DataChannelMedium.SOCKET
@@ -41,6 +42,7 @@ data class MySqlSourceConfiguration(
     override val jdbcUrlFmt: String,
     override val jdbcProperties: Map<String, String>,
     override val namespaces: Set<String>,
+    override val tableFilters: List<TableFilter>,
     val incrementalConfiguration: IncrementalConfiguration,
     override val maxConcurrency: Int,
     override val resourceAcquisitionHeartbeat: Duration = Duration.ofMillis(100L),
@@ -146,6 +148,13 @@ constructor(
         jdbcProperties["useCursorFetch"] = "true"
         jdbcProperties["sessionVariables"] = "autocommit=0"
 
+        // Only validate table filters if schemas are explicitly configured
+        val tableFilters = pojo.tableFilters ?: emptyList()
+
+        pojo.database.let { schema ->
+            JdbcSourceConfiguration.validateTableFilters(setOf(schema), tableFilters)
+        }
+
         // Internal configuration settings.
         val checkpointTargetInterval: Duration =
             Duration.ofSeconds(pojo.checkpointTargetIntervalSeconds?.toLong() ?: 0)
@@ -188,6 +197,7 @@ constructor(
             jdbcUrlFmt = jdbcUrlFmt,
             jdbcProperties = jdbcProperties,
             namespaces = setOf(pojo.database),
+            tableFilters = tableFilters,
             incrementalConfiguration = incremental,
             checkpointTargetInterval = checkpointTargetInterval,
             maxConcurrency = maxConcurrency,

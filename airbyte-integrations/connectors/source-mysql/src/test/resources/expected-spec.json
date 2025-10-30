@@ -13,7 +13,7 @@
       "checkpoint_target_interval_seconds": {
         "default": 300,
         "description": "How often (in seconds) a stream should checkpoint, when possible.",
-        "order": 11,
+        "order": 12,
         "title": "Checkpoint Target Time Interval",
         "type": "integer"
       },
@@ -21,7 +21,7 @@
         "airbyte_hidden": true,
         "default": 1,
         "description": "Maximum number of concurrent queries to the database.",
-        "order": 12,
+        "order": 13,
         "title": "Concurrency",
         "type": "integer"
       },
@@ -40,13 +40,13 @@
       },
       "jdbc_url_params": {
         "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).",
-        "order": 7,
+        "order": 8,
         "title": "JDBC URL Params",
         "type": "string"
       },
       "max_db_connections": {
         "description": "Maximum number of concurrent queries to the database. Leave empty to let Airbyte optimize performance.",
-        "order": 12,
+        "order": 13,
         "title": "Max Concurrent Queries to Database",
         "type": "integer"
       },
@@ -126,7 +126,7 @@
             "type": "object"
           }
         ],
-        "order": 10,
+        "order": 11,
         "title": "Update Method",
         "type": "object"
       },
@@ -247,9 +247,42 @@
             "type": "object"
           }
         ],
-        "order": 8,
+        "order": 9,
         "title": "Encryption",
         "type": "object"
+      },
+      "table_filters": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": true,
+          "title": "Table Filter",
+          "description": "Inclusion filter configuration for table selection per schema.",
+          "properties": {
+            "schema_name": {
+              "type": "string",
+              "title": "Schema Name",
+              "description": "The name of the schema to apply this filter to. Should match a schema defined in \"Schemas\" field above.",
+              "order": 1,
+              "always_show": true
+            },
+            "table_name_patterns": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "title": "Table Filter Patterns",
+              "description": "List of table name patterns to include from this schema. Should be a SQL LIKE pattern.",
+              "order": 2,
+              "always_show": true,
+              "minItems": 1
+            }
+          },
+          "required": ["schema_name", "table_name_patterns"]
+        },
+        "description": "Optional filters to include only specific tables from specific schemas. Works in combination with the 'Schemas' config above.",
+        "title": "Table Filters",
+        "order": 7
       },
       "tunnel_method": {
         "description": "Whether to initiate an SSH tunnel before connecting to the database, and if so, which kind of authentication to use.",
@@ -366,7 +399,7 @@
             "type": "object"
           }
         ],
-        "order": 9,
+        "order": 10,
         "title": "SSH Tunnel Method",
         "type": "object"
       },
