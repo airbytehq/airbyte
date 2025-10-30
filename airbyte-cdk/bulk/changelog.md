@@ -1,3 +1,7 @@
+## Version 0.1.61
+
+extract cdk: added table filtering support for jdbc sources
+
 ## Version 0.1.60
 
 load cdk: extract test-only client
