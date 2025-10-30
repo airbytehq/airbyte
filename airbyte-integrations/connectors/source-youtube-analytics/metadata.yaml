@@ -28,7 +28,7 @@ data:
   releases:
     breakingChanges:
       1.0.0:
-        message: Version 1.0.0 introduces new streams that are added instead of old deprecated streams due to change on API side. Users will need to Refresh Source Schema and Clear affected streams. Please, follow Migration Steps in the [Migration Guide](https://docs.airbyte.com/integrations/sources/youtube-analytics-migrations). For more info about deprecation see API docs [changelog](https://developers.google.com/youtube/reporting/revision_history#bulk-data-reports-for-youtube-analytics).
+        message: Version 1.0.0 introduces changes to BULK API reports streams due to a deprecation on API side. Users will need to Refresh Source Schema and Clear affected streams. Please, follow the Migration Steps in the [Migration Guide](https://docs.airbyte.com/integrations/sources/youtube-analytics-migrations). For more info about this deprecation see the Youtube API docs [changelog](https://developers.google.com/youtube/reporting/revision_history#bulk-data-reports-for-youtube-analytics).
         upgradeDeadline: "2025-11-12"
   supportLevel: community
   tags:
