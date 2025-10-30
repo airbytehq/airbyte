@@ -556,6 +556,7 @@ SAP HANA data types are mapped to the following data types when synchronizing da
 ### Update Method Configuration
 
 **User Defined Cursor**:
+
 ```json
 {
   "cursor_method": "user_defined"
