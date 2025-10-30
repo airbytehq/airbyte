@@ -21,7 +21,6 @@ definitions:
     http_method: GET
     error_handler:
       type: DefaultErrorHandler
-      max_retries: 1
       response_filters:
         - predicate: "{{ response.get('code') == 40100 }}"
           action: RATE_LIMITED

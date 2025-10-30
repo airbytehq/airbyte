@@ -95,7 +95,7 @@ def test_source_check_connection_ok(config, requests_mock):
             (False, "Stream advertisers is not available: Access token is incorrect or has been revoked."),
             None,
         ),
-        ({"code": 40100, "message": "App reaches the QPS limit."}, None, 2),
+        ({"code": 40100, "message": "App reaches the QPS limit."}, None, 6),
     ],
 )
 @pytest.mark.usefixtures("mock_sleep")
