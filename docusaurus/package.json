@@ -3,7 +3,11 @@
   "version": "0.0.0",
   "private": true,
   "volta": {
-    "node": "18.15.0"
+    "node": "22.21.1",
+    "pnpm": "9.4.0"
+  },
+  "engines": {
+    "node": ">=20 <23"
   },
   "scripts": {
     "prepare-registry-cache": "node src/scripts/prepare-registry-cache.js",
