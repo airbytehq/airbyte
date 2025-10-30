@@ -15,7 +15,7 @@ import dateparser
 import requests
 import xmltodict
 
-from airbyte_cdk import HttpMethod, HttpRequester, InterpolatedString, LimiterSession, NoAuth
+from airbyte_cdk import AbstractAPIBudget, HttpMethod, HttpRequester, InterpolatedString, LimiterSession, NoAuth
 from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.wait_time_from_header_backoff_strategy import (
@@ -395,7 +395,15 @@ class ValidateReportOptionsListOptionNameUniqueness(ValidationStrategy):
                     option_names.append(option["option_name"])
 
 
-class CreationLimiterSession(LimiterSession):
+class CreationLimiterSession(requests.Session):
+    def __init__(
+        self,
+        api_budget: AbstractAPIBudget,
+        **kwargs: Any,
+    ):
+        self._api_budget = api_budget
+        super().__init__(**kwargs)
+
     def send(self, request: requests.PreparedRequest, **kwargs: Any) -> requests.Response:
         """Send a request with rate-limiting."""
         self._api_budget.acquire_call(request)
