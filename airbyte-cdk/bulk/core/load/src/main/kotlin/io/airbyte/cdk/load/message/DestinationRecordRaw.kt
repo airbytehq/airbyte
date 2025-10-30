@@ -97,6 +97,9 @@ data class DestinationRecordRaw(
             declaredFields[fieldName] = enrichedValue
         }
         // Then, get the undeclared fields
+        //this makes it so that fields that are not in the schema are dropped.
+        //this is a behavior change compared to the previous version of the connector
+        //based on what testIncrementalSyncDropOneColumn is doing
         rawJson.fields().forEach { (fieldName, fieldValue) ->
             if (!schemaFields.contains(fieldName)) {
                 undeclaredFields[fieldName] = fieldValue
