@@ -79,10 +79,14 @@ fun stateValueToJsonNode(field: Field, stateValue: String?): JsonNode {
         is LeafAirbyteSchemaType ->
             return when (field.type.airbyteSchemaType as LeafAirbyteSchemaType) {
                 LeafAirbyteSchemaType.INTEGER -> {
-                    Jsons.valueToTree(stateValue?.takeIf { it.isNotEmpty() }?.toBigInteger())
+                    Jsons.valueToTree(
+                        stateValue?.takeIf { it.isNotEmpty() && it != "null" }?.toBigInteger()
+                    )
                 }
                 LeafAirbyteSchemaType.NUMBER -> {
-                    Jsons.valueToTree(stateValue?.takeIf { it.isNotEmpty() }?.toBigDecimal())
+                    Jsons.valueToTree(
+                        stateValue?.takeIf { it.isNotEmpty() && it != "null" }?.toBigDecimal()
+                    )
                 }
                 LeafAirbyteSchemaType.BINARY -> {
                     val ba = Base64.getDecoder().decode(stateValue!!)
@@ -191,7 +195,7 @@ class MsSqlServerJdbcNonResumableSnapshotWithCursorPartition(
         get() =
             MsSqlServerJdbcStreamStateValue.cursorIncrementalCheckpoint(
                 cursor,
-                cursorCheckpoint = streamState.cursorUpperBound!!,
+                cursorCheckpoint = streamState.cursorUpperBound ?: Jsons.nullNode(),
             )
 
     override val cursorUpperBoundQuery: SelectQuery
@@ -560,9 +564,8 @@ fun MsSqlServerJdbcRfrSnapshotPartition.split(
 
     val inners: List<List<JsonNode>> =
         splitPointValues.mapNotNull { sv ->
-            val pkField = checkpointColumns.firstOrNull()
-            if (pkField != null && sv.pkValue != null) {
-                listOf(stateValueToJsonNode(pkField, sv.pkValue))
+            if (sv.pkValue != null) {
+                listOf(sv.pkValue)
             } else null
         }
 
@@ -648,9 +651,8 @@ fun MsSqlServerJdbcSnapshotWithCursorPartition.split(
 
     val inners: List<List<JsonNode>> =
         splitPointValues.mapNotNull { sv ->
-            val pkField = checkpointColumns.firstOrNull()
-            if (pkField != null && sv.pkValue != null) {
-                listOf(stateValueToJsonNode(pkField, sv.pkValue))
+            if (sv.pkValue != null) {
+                listOf(sv.pkValue)
             } else null
         }
 
