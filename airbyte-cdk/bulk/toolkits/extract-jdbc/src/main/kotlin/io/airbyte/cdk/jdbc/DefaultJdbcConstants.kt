@@ -42,7 +42,7 @@ data class DefaultJdbcConstants(
 
         // Sampling defaults.
         internal const val WITH_SAMPLING: Boolean = false
-        internal const val TABLE_SAMPLE_SIZE: Int = 2048
+        internal const val TABLE_SAMPLE_SIZE: Int = 3072
         internal const val THROUGHPUT_BYTES_PER_SECOND: Long = 10L shl 20
 
         // fetchSize defaults
