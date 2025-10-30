@@ -217,6 +217,7 @@ This connector attempts to back off gracefully when it hits Reports API's rate l
 **Important Note on Quota Limits**: While Google's public documentation states that the Search Console API allows up to 1,200 requests per minute, most Google Cloud projects start with a lower default quota of 60 requests per minute. This is especially common for new or unbilled projects. The connector defaults to this more conservative limit to prevent quota exceeded errors.
 
 To check your actual quota limits:
+
 1. Go to your [Google Cloud Console](https://console.cloud.google.com/)
 2. Navigate to APIs & Services > Quotas
 3. Search for "Search Console API" 
