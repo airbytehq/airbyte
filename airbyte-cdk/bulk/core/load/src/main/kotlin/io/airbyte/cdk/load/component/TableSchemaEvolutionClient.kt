@@ -98,9 +98,30 @@ interface TableSchemaEvolutionClient<AdditionalSchemaInfo, AdditionalSchemaInfoD
 }
 
 data class TableSchema(val columns: Map<String, ColumnType>) {
-    /** Generate a diff which, when applied to `this`, will result in [other]. */
-    fun diff(other: TableSchema): TableSchemaDiff {
-        TODO()
+    /** Generate a diff which, when applied to `this`, will result in [expectedSchema]. */
+    fun diff(expectedSchema: TableSchema): TableSchemaDiff {
+        val actualColumns = this.columns
+        val expectedColumns = expectedSchema.columns
+
+        return TableSchemaDiff(
+            columnsToAdd = expectedColumns.filter { !actualColumns.contains(it.key) },
+            columnsToDrop = actualColumns.filter { !expectedColumns.contains(it.key) },
+            columnsToChange =
+                actualColumns
+                    .filter { (name, actualType) ->
+                        expectedColumns.containsKey(name) && expectedColumns[name] != actualType
+                    }
+                    .mapValues { (name, actualType) ->
+                        ColumnTypeChange(
+                            originalType = actualType,
+                            newType = expectedColumns[name]!!,
+                        )
+                    },
+            columnsToRetain =
+                actualColumns.filter { (name, actualType) ->
+                    expectedColumns.containsKey(name) && expectedColumns[name] == actualType
+                },
+        )
     }
 }
 
@@ -121,9 +142,9 @@ data class ColumnType(
 
 data class TableSchemaDiff(
     val columnsToAdd: Map<String, ColumnType>,
-    val columnsToDrop: Set<String>,
+    val columnsToDrop: Map<String, ColumnType>,
     val columnsToChange: Map<String, ColumnTypeChange>,
-    val columnsToRetain: Set<String>,
+    val columnsToRetain: Map<String, ColumnType>,
 ) {
     fun isNoop() = columnsToAdd.isEmpty() && columnsToDrop.isEmpty() && columnsToChange.isEmpty()
 }
