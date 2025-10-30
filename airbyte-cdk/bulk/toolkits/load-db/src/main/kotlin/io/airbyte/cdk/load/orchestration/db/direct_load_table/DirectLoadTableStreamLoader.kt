@@ -211,6 +211,7 @@ class DirectLoadTableAppendTruncateStreamLoader(
                 schemaEvolutionClient.ensureSchemaMatches(stream, realTableName, columnNameMapping)
                 isWritingToTemporaryTable = false
             } else {
+                //I think this used to make the sync fail based on what interruptedTruncateWithPriorData test is doing
                 logger.info {
                     "Creating temp table ${tempTableName.toPrettyString()} (real table has old generation ID) for stream ${stream.mappedDescriptor.toPrettyString()}"
                 }
