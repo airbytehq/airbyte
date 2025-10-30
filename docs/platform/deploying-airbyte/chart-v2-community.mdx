@@ -131,13 +131,9 @@ If you're not using an external database, skip this step. At deployment time, yo
 
 ### Add V2 chart repo
 
-Helm chart V2 uses a different repo URL than V1 did. In your command line tool, add this repo and index it.
+Helm chart V2 uses a different repo URL (`/charts`) than V1 did (`/helm-charts`). In your command line tool, add this repo and index it.
 
 ```bash
-# Helm chart V1
-# helm repo add airbyte https://airbytehq.github.io/helm-charts
-
-# Helm chart V2
 helm repo add airbyte-v2 https://airbytehq.github.io/charts
 helm repo update
 ```
@@ -387,15 +383,46 @@ workloadLauncher:
 <Tabs groupId="external-db">
 <TabItem value='db-yes' label='External database' default>
 
-Deploy Airbyte. Here is an example of how to deploy version 1.7.0 of Airbyte using the latest Helm chart V2 values. Normally the Helm chart version is identical to the Airbyte version. Since using this chart version is optional, the Helm chart and Airbyte have different, but compatible, versions.
+1. Identify the Helm chart version that corresponds to the platform version you want to run. Most Helm chart versions are designed to work with one Airbyte version, and they don't necessarily have the same version number.
 
-```bash
-helm install airbyte airbyte-v2/airbyte \
-  --namespace airbyte-v2 \       # Target Kubernetes namespace
-  --values ./values.yaml \       # Custom configuration values
-  --version 2.0.3 \              # Helm chart version to use
-  --set global.image.tag=1.7.0   # Airbyte version to use
-```
+    ```bash
+    helm search repo airbyte-v2 --versions
+    ```
+
+    You should see something like this:
+
+    ```text
+    NAME                            CHART VERSION   APP VERSION     DESCRIPTION
+    airbyte-v2/airbyte              2.0.18          2.0.0           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.17          1.8.5           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.16          1.8.4           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.15          1.8.4           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.14          1.8.4           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.13          1.8.3           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.12          1.8.2           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.11          1.8.2           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.10          1.8.1           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.9           1.8.0           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.8           1.8.0           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.7           1.7.1           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.6           1.7.1           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.5           1.7.0           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.4           1.6.3           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.3           1.6.2           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.2           1.6.2           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.1           1.6.1           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.0           1.6.0           Helm chart to deploy airbyte
+    airbyte-v2/airbyte-data-plane   2.0.0           2.0.0           A Helm chart for installing an Airbyte Data Plane.
+    ```
+
+2. Install Airbyte into your Helm chart V2 namespace. In this example, you install Airbyte version 2.0.
+
+    ```bash
+    helm install airbyte airbyte-v2/airbyte \
+      --namespace airbyte-v2 \       # Target Kubernetes namespace
+      --values ./values.yaml \       # Custom configuration values
+      --version 2.0.18               # Helm chart version to use
+    ```
 
 </TabItem>
 <TabItem value='db-no' label='No external database' default>
@@ -410,21 +437,52 @@ Do not proceed if you have not backed up Airbyte's internal Postgres database.
     helm uninstall airbyte -n airbyte
     ```
 
-2. Reinstall Airbyte into the same namespace as before. Here is an example of how to deploy version 1.7.0 of Airbyte using the latest Helm chart V2 values. Normally the Helm chart version is identical to the Airbyte version. Since using this chart version is optional, the Helm chart and Airbyte have different, but compatible, versions.
+2. Identify the Helm chart version that corresponds to the platform version you want to run. Most Helm chart versions are designed to work with one Airbyte version, but they don't necessarily have the same version number as the Airbyte platform.
+
+    ```bash
+    helm search repo airbyte-v2 --versions
+    ```
+
+    You see something like this:
+
+    ```text
+    NAME                            CHART VERSION   APP VERSION     DESCRIPTION
+    airbyte-v2/airbyte              2.0.18          2.0.0           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.17          1.8.5           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.16          1.8.4           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.15          1.8.4           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.14          1.8.4           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.13          1.8.3           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.12          1.8.2           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.11          1.8.2           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.10          1.8.1           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.9           1.8.0           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.8           1.8.0           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.7           1.7.1           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.6           1.7.1           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.5           1.7.0           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.4           1.6.3           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.3           1.6.2           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.2           1.6.2           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.1           1.6.1           Helm chart to deploy airbyte
+    airbyte-v2/airbyte              2.0.0           1.6.0           Helm chart to deploy airbyte
+    airbyte-v2/airbyte-data-plane   2.0.0           2.0.0           A Helm chart for installing an Airbyte Data Plane.
+    ```
+
+3. Reinstall Airbyte into the same namespace as before. In this example, you install Airbyte version 2.0 using the Helm chart version 2.0.18.
 
     ```bash
     helm install airbyte airbyte-v2/airbyte \
     --namespace airbyte \          # Target Kubernetes namespace
     --values ./values.yaml \       # Custom configuration values
-    --version 2.0.3 \              # Helm chart version to use
-    --set global.image.tag=1.7.0   # Airbyte version to use
+    --version 2.0.18 \             # Helm chart version to use
     ```
 
 Airbyte continues in this namespace as before, now running on Helm Chart V2.
 
 #### Restore your database
 
-You do not need to restore your database except in exceptional circumstances. Only restore your database if there is an issue with your deployment that isn't related to your configurations. The restoration process is essentially the reverse of the backup process you went through above.
+You only need to restore your database in exceptional circumstances. Only restore your database if there is an issue with your deployment that isn't related to your configurations. The restoration process is essentially the reverse of the backup process you went through above.
 
 These examples assume your namespace is still `airbyte` and your database pod name is still `airbyte-db-0`.
 

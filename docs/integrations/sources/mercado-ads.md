@@ -45,6 +45,7 @@ Make sure to give the ["Publicidad de un producto"](https://developers.mercadoli
 | Version | Date       | Pull Request                                             | Subject                                                                               |
 | ------- | ---------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------- |
 | 1.0.0   | 2025-10-27 | [65108](https://github.com/airbytehq/airbyte/pull/65108) | Updated Product Ads and Brand Ads for new API changes                                 |
+| 0.0.16  | 2025-10-29 | [69068](https://github.com/airbytehq/airbyte/pull/69068) | Update dependencies                                                                   |
 | 0.0.15  | 2025-10-21 | [68437](https://github.com/airbytehq/airbyte/pull/68437) | Update dependencies                                                                   |
 | 0.0.14  | 2025-10-14 | [67833](https://github.com/airbytehq/airbyte/pull/67833) | Update dependencies                                                                   |
 | 0.0.13  | 2025-10-07 | [67378](https://github.com/airbytehq/airbyte/pull/67378) | Update dependencies                                                                   |
