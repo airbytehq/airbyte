@@ -96,6 +96,8 @@ The Intercom connector should not run into Intercom API limitations under normal
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                          |
 |:-----------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------|
+| 0.13.13 | 2025-10-29 | [68767](https://github.com/airbytehq/airbyte/pull/68767) | Update dependencies |
+| 0.13.12 | 2025-10-21 | [68477](https://github.com/airbytehq/airbyte/pull/68477) | Update dependencies |
 | 0.13.11 | 2025-10-14 | [67933](https://github.com/airbytehq/airbyte/pull/67933) | Update dependencies |
 | 0.13.10 | 2025-10-07 | [67364](https://github.com/airbytehq/airbyte/pull/67364) | Update dependencies |
 | 0.13.9 | 2025-10-06 | [67104](https://github.com/airbytehq/airbyte/pull/67104) | Increase Heartbeat Timeout to Account for cursor based streams with client side incremental and large record counts for a given day. |

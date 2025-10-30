@@ -263,6 +263,190 @@
         }
       }
     },
+    "/api/v1/agents/chat/schema/definitions/sources/{source_definition_id}": {
+      "post": {
+        "tags": ["Agents - Schema Definitions"],
+        "summary": "Create Definition Chat",
+        "operationId": "create_agents_chat_schema_definitions_sources_source_definition_id",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "source_definition_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Source Definition Id"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Select the working organization. Necessary since users can belong to multiple organizations.",
+              "title": "X-Organization-Id"
+            },
+            "description": "Select the working organization. Necessary since users can belong to multiple organizations."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatPostRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/agents/chat/schema/definitions/sources/{source_definition_id}/state": {
+      "get": {
+        "tags": ["Agents - Schema Definitions"],
+        "summary": "Get Schema Chat State",
+        "operationId": "get_agents_chat_schema_definitions_sources_source_definition_id_state",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "source_definition_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Source Definition Id"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Select the working organization. Necessary since users can belong to multiple organizations.",
+              "title": "X-Organization-Id"
+            },
+            "description": "Select the working organization. Necessary since users can belong to multiple organizations."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchemaChatAgentState"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/agents/chat/schema/{source_id}": {
       "post": {
         "tags": ["Chat - Schema"],
@@ -366,6 +550,94 @@
         }
       }
     },
+    "/api/v1/agents/chat/schema/{source_id}/state": {
+      "get": {
+        "tags": ["Chat - Schema"],
+        "summary": "Get Schema Chat State",
+        "operationId": "get_agents_chat_schema_source_id_state",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "source_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Source Id"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Select the working organization. Necessary since users can belong to multiple organizations.",
+              "title": "X-Organization-Id"
+            },
+            "description": "Select the working organization. Necessary since users can belong to multiple organizations."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SchemaChatAgentState"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/agents/discovery": {
       "post": {
         "tags": ["Agents - Discovery"],
@@ -378,6 +650,18 @@
           }
         ],
         "parameters": [
+          {
+            "name": "annotate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Whether to annotate the discovered catalogs using the catalog annotator agent",
+              "default": false,
+              "title": "Annotate"
+            },
+            "description": "Whether to annotate the discovered catalogs using the catalog annotator agent"
+          },
           {
             "name": "x-organization-id",
             "in": "header",
@@ -466,6 +750,18 @@
               "format": "uuid",
               "title": "Source Definition Id"
             }
+          },
+          {
+            "name": "annotate",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Whether to annotate the discovered catalog using the catalog annotator agent",
+              "default": false,
+              "title": "Annotate"
+            },
+            "description": "Whether to annotate the discovered catalog using the catalog annotator agent"
           },
           {
             "name": "x-organization-id",
@@ -2455,17 +2751,6 @@
             }
           },
           {
-            "name": "query",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "description": "JMESPath query to filter the catalog. Example: `streams[].name` (names only) or `streams[?name=='users']` (users stream only).",
-              "title": "Query"
-            },
-            "description": "JMESPath query to filter the catalog. Example: `streams[].name` (names only) or `streams[?name=='users']` (users stream only)."
-          },
-          {
             "name": "selected",
             "in": "query",
             "required": false,
@@ -2497,6 +2782,202 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SourceDefinitionCatalogGetResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Sources Definitions"],
+        "summary": "Patch Source Definition Catalog",
+        "description": "Patch the source definition's catalog. This allows updating global configurations such as selected streams.",
+        "operationId": "update_integrations_definitions_sources_source_definition_id_catalog",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "source_definition_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Source Definition Id"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Select the working organization. Necessary since users can belong to multiple organizations.",
+              "title": "X-Organization-Id"
+            },
+            "description": "Select the working organization. Necessary since users can belong to multiple organizations."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SourceDefinitionCatalogPatchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceDefinitionCatalogPatchResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/integrations/definitions/sources/{source_definition_id}/catalog/query": {
+      "post": {
+        "tags": ["Sources Definitions"],
+        "summary": "Query Source Definition Catalog",
+        "description": "Query the source definition's catalog using a JMESPath expression.",
+        "operationId": "create_integrations_definitions_sources_source_definition_id_catalog_query",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "source_definition_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Source Definition Id"
+            }
+          },
+          {
+            "name": "x-organization-id",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Select the working organization. Necessary since users can belong to multiple organizations.",
+              "title": "X-Organization-Id"
+            },
+            "description": "Select the working organization. Necessary since users can belong to multiple organizations."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SourceDefinitionCatalogQueryRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceDefinitionCatalogQueryResponse"
                 }
               }
             }
@@ -3730,7 +4211,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SourceDiscoverResponse"
+                  "$ref": "#/components/schemas/SourceCatalogPatchResponse"
                 }
               }
             }
@@ -6859,95 +7340,6 @@
         }
       }
     },
-    "/api/v1/internal/account/organizations/{organization_id}/signup": {
-      "post": {
-        "tags": ["Organizations"],
-        "summary": "Organization Signup",
-        "description": "Sign up an organization with synchronous provisioning.\nSets up Orb billing, Stigg subscription, and payment status in a single request.\nReturns immediately with subscription details.",
-        "operationId": "create_internal_account_organizations_organization_id_signup",
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "organization_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "title": "Organization Id"
-            }
-          },
-          {
-            "name": "x-organization-id",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "description": "Select the working organization. Necessary since users can belong to multiple organizations.",
-              "title": "X-Organization-Id"
-            },
-            "description": "Select the working organization. Necessary since users can belong to multiple organizations."
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OrganizationSignupResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Unprocessable entity",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/v1/internal/account/organizations/{organization_id}/subscription": {
       "get": {
         "tags": ["Organizations"],
@@ -9752,11 +10144,15 @@
           "get_source_definition",
           "list_source_templates",
           "get_source_template",
+          "get_source_definition_catalog",
           "run_source_template_creator",
           "create_source_template",
           "query_source_catalog",
           "patch_source_catalog",
-          "patch_source_catalog_stream"
+          "patch_source_catalog_stream",
+          "query_source_definition_catalog",
+          "patch_source_definition_catalog",
+          "patch_source_definition_catalog_stream"
         ],
         "title": "AgentToolName",
         "description": "Enum of tool names available to agents.\nThis enum is automatically synced to the frontend via OpenAPI generation,\nensuring type safety when handling tool calls and responses.\nWhen adding a new tool to an agent (e.g., in app/agents/chat_agent.py),\nadd the corresponding tool name here to expose it to the frontend."
@@ -11248,6 +11644,12 @@
             "format": "uri",
             "title": "Return Url",
             "description": "The URL to redirect to after the customer portal session"
+          },
+          "flow": {
+            "type": "string",
+            "enum": ["payment_method", "portal"],
+            "title": "Flow",
+            "default": "portal"
           }
         },
         "type": "object",
@@ -11267,6 +11669,11 @@
         "required": ["url"],
         "title": "CustomerPortalResponse",
         "description": "Response schema for customer portal link."
+      },
+      "DataCategory": {
+        "type": "string",
+        "enum": ["person", "transaction", "event", "object", "file"],
+        "title": "DataCategory"
       },
       "DestinationDefinitionListItem": {
         "properties": {
@@ -12372,56 +12779,6 @@
         "required": ["organizationId", "organizationName", "sso"],
         "title": "OrganizationInfoResponse"
       },
-      "OrganizationSignupResponse": {
-        "properties": {
-          "organization_id": {
-            "type": "string",
-            "format": "uuid",
-            "title": "Organization Id"
-          },
-          "provisioning_state": {
-            "type": "string",
-            "title": "Provisioning State"
-          },
-          "orb_subscription_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Orb Subscription Id"
-          },
-          "stigg_subscription_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Stigg Subscription Id"
-          },
-          "error_message": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Error Message"
-          }
-        },
-        "type": "object",
-        "required": ["organization_id", "provisioning_state"],
-        "title": "OrganizationSignupResponse",
-        "description": "Response schema for organization signup endpoint."
-      },
       "OrganizationSubscriptionCreditBlock": {
         "properties": {
           "amount": {
@@ -12755,6 +13112,78 @@
         "type": "object",
         "title": "RevokeSourceOauthResponse"
       },
+      "SchemaChatAgentState": {
+        "properties": {
+          "state": {
+            "$ref": "#/components/schemas/SchemaChatAgentStateType"
+          },
+          "source_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Id"
+          },
+          "source_definition_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Source Definition Id"
+          },
+          "source_definition_name": {
+            "type": "string",
+            "title": "Source Definition Name"
+          },
+          "schema_type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SonarCatalogSchemaType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "catalog": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SonarCatalogOutput"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "thread_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Thread Id"
+          }
+        },
+        "type": "object",
+        "required": ["state", "source_definition_id", "source_definition_name"],
+        "title": "SchemaChatAgentState"
+      },
+      "SchemaChatAgentStateType": {
+        "type": "string",
+        "enum": [
+          "unsupported_source",
+          "first_session",
+          "returning",
+          "admin_session"
+        ],
+        "title": "SchemaChatAgentStateType"
+      },
       "ScopedTokenCreateRequest": {
         "properties": {
           "workspace_name": {
@@ -12895,6 +13324,16 @@
             ],
             "title": "Description"
           },
+          "data_category": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DataCategory"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "suggested": {
             "type": "boolean",
             "title": "Suggested",
@@ -13016,6 +13455,16 @@
         },
         "type": "object",
         "title": "SonarStream"
+      },
+      "SourceCatalogPatchResponse": {
+        "properties": {
+          "catalog": {
+            "$ref": "#/components/schemas/SonarCatalogOutput"
+          }
+        },
+        "type": "object",
+        "required": ["catalog"],
+        "title": "SourceCatalogPatchResponse"
       },
       "SourceCatalogQueryRequest": {
         "properties": {
@@ -13302,21 +13751,67 @@
             ]
           },
           "catalog_type": {
-            "$ref": "#/components/schemas/SonarCatalogSchemaType"
-          },
-          "query_result": {
             "anyOf": [
-              {},
+              {
+                "$ref": "#/components/schemas/SonarCatalogSchemaType"
+              },
               {
                 "type": "null"
               }
-            ],
-            "title": "Query Result"
+            ]
           }
         },
         "type": "object",
-        "required": ["id", "name", "source_definition_id", "catalog_type"],
+        "required": ["id", "name", "source_definition_id"],
         "title": "SourceDefinitionCatalogGetResponse"
+      },
+      "SourceDefinitionCatalogPatchRequest": {
+        "properties": {
+          "patch_ops": {
+            "items": {
+              "$ref": "#/components/schemas/PatchOp"
+            },
+            "type": "array",
+            "title": "Patch Ops",
+            "description": "List of JSON Patch (RFC 6902) operations to apply to the catalog."
+          }
+        },
+        "type": "object",
+        "required": ["patch_ops"],
+        "title": "SourceDefinitionCatalogPatchRequest"
+      },
+      "SourceDefinitionCatalogPatchResponse": {
+        "properties": {
+          "catalog": {
+            "$ref": "#/components/schemas/SonarCatalogOutput"
+          }
+        },
+        "type": "object",
+        "required": ["catalog"],
+        "title": "SourceDefinitionCatalogPatchResponse"
+      },
+      "SourceDefinitionCatalogQueryRequest": {
+        "properties": {
+          "query": {
+            "type": "string",
+            "title": "Query",
+            "description": "JMESPath query to filter the catalog. Example: `streams[].name` (names only) or `streams[?name=='users']` (users stream only)."
+          }
+        },
+        "type": "object",
+        "required": ["query"],
+        "title": "SourceDefinitionCatalogQueryRequest"
+      },
+      "SourceDefinitionCatalogQueryResponse": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "description": "The result of the JMESPath query on the source definition's catalog"
+          }
+        },
+        "type": "object",
+        "required": ["result"],
+        "title": "SourceDefinitionCatalogQueryResponse"
       },
       "SourceDefinitionListResponse": {
         "properties": {

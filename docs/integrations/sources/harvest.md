@@ -91,6 +91,9 @@ The connector is restricted by the [Harvest rate limits](https://help.getharvest
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.2.22 | 2025-10-29 | [68814](https://github.com/airbytehq/airbyte/pull/68814) | Update dependencies |
+| 1.2.21 | 2025-10-22 | [68591](https://github.com/airbytehq/airbyte/pull/68591) | Add `suggestedStreams` |
+| 1.2.20 | 2025-10-21 | [61157](https://github.com/airbytehq/airbyte/pull/61157) | Update dependencies |
 | 1.2.19 | 2025-09-10 | [66013](https://github.com/airbytehq/airbyte/pull/66013) | Update to CDK v7 |
 | 1.2.18 | 2025-05-24 | [60670](https://github.com/airbytehq/airbyte/pull/60670) | Update dependencies |
 | 1.2.17 | 2025-05-10 | [59910](https://github.com/airbytehq/airbyte/pull/59910) | Update dependencies |
