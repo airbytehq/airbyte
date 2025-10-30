@@ -30,10 +30,6 @@ private val logger = KotlinLogging.logger {}
 class GcsDataLakeCatalogUtil(
     private val icebergUtil: IcebergUtil,
 ) {
-    /** Filters out any entry from the map that has a null value */
-    fun <K, V : Any> mapOfNotNull(vararg pairs: Pair<K, V?>): Map<K, V> =
-        pairs.mapNotNull { (k, v) -> v?.let { k to it } }.toMap()
-
     fun createNamespace(streamDescriptor: DestinationStream.Descriptor, catalog: Catalog) {
         icebergUtil.createNamespace(streamDescriptor, catalog)
     }
