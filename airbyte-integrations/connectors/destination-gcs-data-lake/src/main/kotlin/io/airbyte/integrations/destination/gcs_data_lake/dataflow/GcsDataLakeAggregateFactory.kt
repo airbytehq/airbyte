@@ -28,12 +28,13 @@ class GcsDataLakeAggregateFactory(
         val stream = catalog.getStream(key)
 
         // Create Iceberg table writer from toolkit
-        val writer = icebergTableWriterFactory.create(
-            table = state.table,
-            generationId = icebergUtil.constructGenerationIdSuffix(stream),
-            importType = stream.importType,
-            schema = state.schema
-        )
+        val writer =
+            icebergTableWriterFactory.create(
+                table = state.table,
+                generationId = icebergUtil.constructGenerationIdSuffix(stream),
+                importType = stream.importType,
+                schema = state.schema
+            )
 
         return GcsDataLakeAggregate(
             stream = stream,
