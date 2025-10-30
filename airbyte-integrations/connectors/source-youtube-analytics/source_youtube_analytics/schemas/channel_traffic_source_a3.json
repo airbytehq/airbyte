@@ -20,17 +20,11 @@
     "country_code": {
       "type": ["null", "string"]
     },
-    "playback_location_type": {
-      "type": ["null", "integer"]
-    },
     "traffic_source_type": {
       "type": ["null", "integer"]
     },
-    "device_type": {
-      "type": ["null", "integer"]
-    },
-    "operating_system": {
-      "type": ["null", "integer"]
+    "traffic_source_detail": {
+      "type": ["null", "string"]
     },
     "views": {
       "type": ["null", "integer"]
@@ -49,6 +43,9 @@
     },
     "red_watch_time_minutes": {
       "type": ["null", "number"]
+    },
+    "engaged_views": {
+      "type": ["null", "integer"]
     }
   }
 }

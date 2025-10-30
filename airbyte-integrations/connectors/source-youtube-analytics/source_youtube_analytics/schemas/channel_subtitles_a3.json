@@ -40,6 +40,12 @@
     },
     "red_watch_time_minutes": {
       "type": ["null", "number"]
+    },
+    "engaged_views": {
+      "type": ["null", "integer"]
+    },
+    "subtitle_language_autotranslated": {
+      "type": ["null", "string"]
     }
   }
 }
