@@ -1,3 +1,24 @@
+## Version 0.1.60
+
+load cdk: extract test-only client
+
+## Version 0.1.59
+
+fix upsert test
+
+## Version 0.1.58
+
+load cdk: log unflushed state diagnostic info
+## Version 0.1.57
+
+**Extract CDK**
+
+* **Changed:** Remove unnecesarry metafield decoration from database views streams in CDC mode.
+
+## Version 0.1.56
+
+load cdk: improve component tests
+
 ## Version 0.1.55
 
 **Extract CDK**

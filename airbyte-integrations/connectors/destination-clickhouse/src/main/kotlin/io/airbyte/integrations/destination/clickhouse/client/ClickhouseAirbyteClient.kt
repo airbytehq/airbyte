@@ -11,19 +11,16 @@ import com.clickhouse.client.api.metadata.TableSchema
 import com.clickhouse.client.api.query.QueryResponse
 import com.clickhouse.data.ClickHouseColumn
 import com.clickhouse.data.ClickHouseDataType
-import com.clickhouse.data.ClickHouseFormat
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.TableOperationsClient
 import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
-import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAMES
 import io.airbyte.cdk.load.orchestration.db.TempTableNameGenerator
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TableName
-import io.airbyte.cdk.load.util.serializeToString
 import io.airbyte.integrations.destination.clickhouse.client.ClickhouseSqlGenerator.Companion.DATETIME_WITH_PRECISION
 import io.airbyte.integrations.destination.clickhouse.client.ClickhouseSqlGenerator.Companion.DECIMAL_WITH_PRECISION_AND_SCALE
 import io.airbyte.integrations.destination.clickhouse.config.ClickhouseFinalTableNameGenerator
@@ -101,14 +98,7 @@ class ClickhouseAirbyteClient(
         sourceTableName: TableName,
         targetTableName: TableName
     ) {
-        execute(
-            sqlGenerator.upsertTable(
-                stream,
-                columnNameMapping,
-                sourceTableName,
-                targetTableName,
-            ),
-        )
+        throw NotImplementedError("We rely on Clickhouse's table engine for deduping")
     }
 
     override suspend fun ensureSchemaMatches(
@@ -352,10 +342,6 @@ class ClickhouseAirbyteClient(
         }
     }
 
-    override suspend fun ping() {
-        execute("SELECT 1")
-    }
-
     override suspend fun namespaceExists(namespace: String): Boolean {
         val resp = query("EXISTS DATABASE `$namespace`")
         val reader: ClickHouseBinaryFormatReader = client.newBinaryFormatReader(resp)
@@ -365,10 +351,6 @@ class ClickhouseAirbyteClient(
         return exists == 1
     }
 
-    override suspend fun dropNamespace(namespace: String) {
-        execute("DROP DATABASE IF EXISTS `$namespace`")
-    }
-
     override suspend fun tableExists(table: TableName): Boolean {
         val resp = query("EXISTS TABLE `${table.namespace}`.`${table.name}`")
         val reader: ClickHouseBinaryFormatReader = client.newBinaryFormatReader(resp)
@@ -376,34 +358,5 @@ class ClickhouseAirbyteClient(
         val exists = reader.getInteger("result")
 
         return exists == 1
-    }
-
-    override suspend fun insertRecords(table: TableName, records: List<Map<String, AirbyteValue>>) {
-        client
-            .insert(
-                "`${table.namespace}`.`${table.name}`",
-                records.serializeToString().byteInputStream(),
-                ClickHouseFormat.JSONEachRow,
-            )
-            .await()
-    }
-
-    override suspend fun readTable(table: TableName): List<Map<String, Any>> {
-        val qualifiedTableName = "`${table.namespace}`.`${table.name}`"
-        val resp = query("SELECT * FROM $qualifiedTableName")
-        val schema = client.getTableSchema(qualifiedTableName)
-
-        val reader: ClickHouseBinaryFormatReader = client.newBinaryFormatReader(resp, schema)
-
-        val records = mutableListOf<Map<String, Any>>()
-        while (reader.hasNext()) {
-            // get next record
-            val cursor = reader.next()
-            // create immutable copy
-            val record = cursor.toMap()
-
-            records.add(record)
-        }
-        return records
     }
 }

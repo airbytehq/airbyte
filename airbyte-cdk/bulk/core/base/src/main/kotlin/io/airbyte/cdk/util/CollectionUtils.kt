@@ -78,3 +78,13 @@ object CollectionUtils {
         return Optional.ofNullable(collection.firstOrNull { it.equals(search, ignoreCase = true) })
     }
 }
+
+fun <K, V> Map<K, V>.invert(): Map<V, K> {
+    val inverted = entries.associate { (k, v) -> v to k }
+    if (inverted.size != this.size) {
+        throw IllegalArgumentException(
+            "Map is not invertible (some keys map to the same value): $this"
+        )
+    }
+    return inverted
+}
