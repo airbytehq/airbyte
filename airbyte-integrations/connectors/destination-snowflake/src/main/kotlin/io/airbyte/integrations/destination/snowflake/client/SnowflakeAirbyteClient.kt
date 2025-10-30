@@ -20,6 +20,7 @@ import io.airbyte.integrations.destination.snowflake.db.escapeJsonIdentifier
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.COUNT_TOTAL_ALIAS
+import io.airbyte.integrations.destination.snowflake.sql.NOT_NULL
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlGenerator
 import io.airbyte.integrations.destination.snowflake.sql.andLog
@@ -202,13 +203,7 @@ class SnowflakeAirbyteClient(
 
     override suspend fun discoverSchema(tableName: TableName): Pair<TableSchema, Unit> {
         return Pair(
-            // TODO we should probably just make getColumnsFromDb return the Map<String, ColumnType>
-            // directly
-            TableSchema(
-                getColumnsFromDb(tableName).associate {
-                    it.name to ColumnType(it.type, nullable = TODO())
-                }
-            ),
+            TableSchema(getColumnsFromDb(tableName)),
             Unit,
         )
     }
@@ -218,13 +213,7 @@ class SnowflakeAirbyteClient(
         columnNameMapping: ColumnNameMapping
     ): Pair<TableSchema, Unit> {
         return Pair(
-            // TODO we should probably just make getColumnsFromStream return the Map<String,
-            // ColumnType> directly
-            TableSchema(
-                getColumnsFromStream(stream, columnNameMapping).associate {
-                    it.name to ColumnType(it.type, nullable = TODO())
-                }
-            ),
+            TableSchema(getColumnsFromStream(stream, columnNameMapping)),
             Unit,
         )
     }
@@ -260,7 +249,7 @@ class SnowflakeAirbyteClient(
         }
     }
 
-    internal fun getColumnsFromDb(tableName: TableName): Set<ColumnDefinition> {
+    internal fun getColumnsFromDb(tableName: TableName): Map<String, ColumnType> {
         try {
             val sql =
                 sqlGenerator.describeTable(
@@ -271,7 +260,7 @@ class SnowflakeAirbyteClient(
                 val statement = connection.createStatement()
                 return statement.use {
                     val rs: ResultSet = it.executeQuery(sql)
-                    val columnsInDb: MutableSet<ColumnDefinition> = mutableSetOf()
+                    val columnsInDb: MutableMap<String, ColumnType> = mutableMapOf()
 
                     while (rs.next()) {
                         val columnName = escapeJsonIdentifier(rs.getString("name"))
@@ -281,8 +270,9 @@ class SnowflakeAirbyteClient(
                             continue
                         }
                         val dataType = rs.getString("type").takeWhile { char -> char != '(' }
+                        val nullable = rs.getBoolean("null?")
 
-                        columnsInDb.add(ColumnDefinition(columnName, dataType, false))
+                        columnsInDb[columnName] = ColumnType(dataType, nullable)
                     }
 
                     columnsInDb
@@ -296,23 +286,25 @@ class SnowflakeAirbyteClient(
     internal fun getColumnsFromStream(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping
-    ) =
+    ): Map<String, ColumnType> =
         snowflakeColumnUtils
             .columnsAndTypes(stream.schema.asColumns(), columnNameMapping)
             .filter { column -> column.columnName !in airbyteColumnNames }
-            .map { column ->
-                ColumnDefinition(
-                    name = column.columnName,
-                    type =
-                        column.columnType.takeWhile { char ->
+            .associate { column ->
+                // columnsAndTypes returns types as either `FOO` or `FOO NOT NULL`.
+                // so check for that suffix.
+                val nullable = column.columnType.endsWith(NOT_NULL)
+                val type =
+                    column.columnType
+                        .takeWhile { char ->
                             // This is to remove any precision parts of the dialect type
                             char != '('
-                        },
-                    // Not used to ensure schema
-                    isPrimaryKey = false,
-                )
+                        }
+                        .removeSuffix(NOT_NULL)
+                        .trim()
+
+                column.columnName to ColumnType(type, nullable)
             }
-            .toSet()
 
     internal fun generateSchemaChanges(
         columnsInDb: Set<ColumnDefinition>,
