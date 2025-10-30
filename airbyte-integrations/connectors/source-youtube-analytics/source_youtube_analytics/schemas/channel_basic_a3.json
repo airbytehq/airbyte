@@ -20,10 +20,19 @@
     "country_code": {
       "type": ["null", "string"]
     },
-    "province_code": {
-      "type": ["null", "string"]
-    },
     "views": {
+      "type": ["null", "integer"]
+    },
+    "comments": {
+      "type": ["null", "integer"]
+    },
+    "likes": {
+      "type": ["null", "integer"]
+    },
+    "dislikes": {
+      "type": ["null", "integer"]
+    },
+    "shares": {
       "type": ["null", "integer"]
     },
     "watch_time_minutes": {
@@ -35,43 +44,55 @@
     "average_view_duration_percentage": {
       "type": ["null", "number"]
     },
-    "annotation_click_through_rate": {
-      "type": ["null", "integer"]
-    },
-    "annotation_close_rate": {
-      "type": ["null", "integer"]
-    },
     "annotation_impressions": {
       "type": ["null", "integer"]
     },
     "annotation_clickable_impressions": {
       "type": ["null", "integer"]
     },
-    "annotation_closable_impressions": {
+    "annotation_clicks": {
       "type": ["null", "integer"]
     },
-    "annotation_clicks": {
+    "annotation_click_through_rate": {
+      "type": ["null", "number"]
+    },
+    "annotation_closable_impressions": {
       "type": ["null", "integer"]
     },
     "annotation_closes": {
       "type": ["null", "integer"]
     },
-    "card_click_rate": {
+    "annotation_close_rate": {
+      "type": ["null", "number"]
+    },
+    "card_teaser_impressions": {
+      "type": ["null", "integer"]
+    },
+    "card_teaser_clicks": {
       "type": ["null", "integer"]
     },
     "card_teaser_click_rate": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     },
     "card_impressions": {
-      "type": ["null", "integer"]
-    },
-    "card_teaser_impressions": {
       "type": ["null", "integer"]
     },
     "card_clicks": {
       "type": ["null", "integer"]
     },
-    "card_teaser_clicks": {
+    "card_click_rate": {
+      "type": ["null", "number"]
+    },
+    "subscribers_gained": {
+      "type": ["null", "integer"]
+    },
+    "subscribers_lost": {
+      "type": ["null", "integer"]
+    },
+    "videos_added_to_playlists": {
+      "type": ["null", "integer"]
+    },
+    "videos_removed_from_playlists": {
       "type": ["null", "integer"]
     },
     "red_views": {
@@ -79,6 +100,9 @@
     },
     "red_watch_time_minutes": {
       "type": ["null", "number"]
+    },
+    "engaged_views": {
+      "type": ["null", "integer"]
     }
   }
 }

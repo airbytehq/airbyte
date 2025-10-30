@@ -20,11 +20,11 @@
     "country_code": {
       "type": ["null", "string"]
     },
-    "playback_location_type": {
+    "device_type": {
       "type": ["null", "integer"]
     },
-    "playback_location_detail": {
-      "type": ["null", "string"]
+    "operating_system": {
+      "type": ["null", "integer"]
     },
     "views": {
       "type": ["null", "integer"]
@@ -43,6 +43,9 @@
     },
     "red_watch_time_minutes": {
       "type": ["null", "number"]
+    },
+    "engaged_views": {
+      "type": ["null", "integer"]
     }
   }
 }
