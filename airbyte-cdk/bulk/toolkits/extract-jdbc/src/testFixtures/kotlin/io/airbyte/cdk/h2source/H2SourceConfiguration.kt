@@ -1,7 +1,6 @@
 /* Copyright (c) 2024 Airbyte, Inc., all rights reserved. */
 package io.airbyte.cdk.h2source
 
-import com.google.protobuf.empty
 import io.airbyte.cdk.command.JdbcSourceConfiguration
 import io.airbyte.cdk.command.SourceConfiguration
 import io.airbyte.cdk.command.SourceConfigurationFactory
@@ -49,7 +48,8 @@ class H2SourceConfigurationFactory :
         val sshConnectionOptions: SshConnectionOptions =
             SshConnectionOptions.fromAdditionalProperties(pojo.getAdditionalProperties())
 
-        val configuredSchemas = pojo.schemas?.takeUnless { it.isEmpty() }?.toSet() ?: setOf("PUBLIC")
+        val configuredSchemas =
+            pojo.schemas?.takeUnless { it.isEmpty() }?.toSet() ?: setOf("PUBLIC")
         val tableFilters = pojo.tableFilters ?: emptyList()
 
         JdbcSourceConfiguration.validateTableFilters(configuredSchemas, tableFilters)

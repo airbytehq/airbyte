@@ -28,7 +28,9 @@ class JdbcMetadataQuerierTableFilterTest {
 
             // Create tables in each schema
             tableNames.forEach { tableName ->
-                h2.execute("CREATE TABLE $schemaName.$tableName (ID INT PRIMARY KEY, NAME VARCHAR(255))")
+                h2.execute(
+                    "CREATE TABLE $schemaName.$tableName (ID INT PRIMARY KEY, NAME VARCHAR(255))"
+                )
             }
         }
     }

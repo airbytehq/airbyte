@@ -13,8 +13,8 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 /**
  * Base ConfigurationSpecification for JDBC sources with common properties.
  *
- * Connector-specific implementations should extend this class and add
- * their unique properties (like replication methods, SSL modes, etc.).
+ * Connector-specific implementations should extend this class and add their unique properties (like
+ * replication methods, SSL modes, etc.).
  */
 @SuppressFBWarnings(value = ["NP_NONNULL_RETURN_VIOLATION"], justification = "Micronaut DI")
 abstract class JdbcSourceConfigurationSpecification : ConfigurationSpecification() {
@@ -47,8 +47,8 @@ abstract class JdbcSourceConfigurationSpecification : ConfigurationSpecification
     @JsonSchemaTitle("Schemas")
     @JsonPropertyDescription(
         "The list of schemas to sync from. " +
-                "If not specified, all accessible schemas will be synced. " +
-                "The exact meaning depends on the database (schema names, database names, etc.)."
+            "If not specified, all accessible schemas will be synced. " +
+            "The exact meaning depends on the database (schema names, database names, etc.)."
     )
     @JsonSchemaInject(json = """{"order":1,"always_show":true,"group":"optional"}""")
     var schemas: List<String>? = null
@@ -57,7 +57,7 @@ abstract class JdbcSourceConfigurationSpecification : ConfigurationSpecification
     @JsonSchemaTitle("Table Filters")
     @JsonPropertyDescription(
         "Optional filters to include only specific tables from specific schemas. " +
-                "Works in combination with the 'Schemas' config above."
+            "Works in combination with the 'Schemas' config above."
     )
     @JsonSchemaInject(json = """{"order":2,"always_show":true,"group":"optional"}""")
     var tableFilters: List<TableFilter>? = emptyList()
@@ -66,8 +66,8 @@ abstract class JdbcSourceConfigurationSpecification : ConfigurationSpecification
     @JsonSchemaTitle("JDBC URL Params")
     @JsonPropertyDescription(
         "Additional properties to pass to the JDBC URL string when connecting to the database " +
-                "formatted as 'key=value' pairs separated by the symbol '&'. " +
-                "(example: key1=value1&key2=value2&key3=value3)."
+            "formatted as 'key=value' pairs separated by the symbol '&'. " +
+            "(example: key1=value1&key2=value2&key3=value3)."
     )
     @JsonSchemaInject(json = """{"order":3,"group":"optional"}""")
     var jdbcUrlParams: String? = null
