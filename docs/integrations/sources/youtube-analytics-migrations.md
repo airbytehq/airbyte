@@ -2,7 +2,19 @@
 
 ## Upgrading to 1.0.0
 
-The YouTube Analytics Bulk Reports API recently made changes to reports. Each affected report's version has incremented by one, such as version a2 to version a3. See [here](https://developers.google.com/youtube/reporting/revision_history#june-24,-2025) for more details.
+Version 1.0.0 updates the connector to use the latest versions of YouTube's Bulk Reports API in response to YouTube's Shorts view-counting change. YouTube announced the change on March 26, 2025, Shorts view counting changed on March 31, 2025, and the Bulk Reports API was updated on June 30, 2025. See the YouTube API revision history for details.
+
+### What changed
+
+YouTube updated how views are counted for Shorts:
+
+- **For Shorts**: Views now count the number of times a Short starts to play or replay, with no minimum watch time requirement.
+- **For videos**: No change to how views are counted.
+- **New metric**: A new `engaged_views` column has been added to reports, which reflects the previous view-counting methodology.
+
+As a result of this change, each affected report's version has incremented by one (for example, version a2 to version a3 for channel reports, and a1 to a2 for playlist reports). See the [YouTube API revision history](https://developers.google.com/youtube/reporting/revision_history) for complete details.
+
+**Important**: previous report versions were deprecated on October 31, 2025. You must upgrade to version 1.0.0 to continue syncing YouTube Analytics data.
 
 ## New stream names
 
