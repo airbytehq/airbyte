@@ -5,7 +5,6 @@
 package io.airbyte.integrations.destination.gcs_data_lake.dataflow
 
 import io.airbyte.cdk.load.command.DestinationStream
-import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
 import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
@@ -14,12 +13,12 @@ import io.airbyte.cdk.load.dataflow.transform.RecordDTO
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.Operation
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.RecordWrapper
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.math.BigInteger
+import java.time.ZoneOffset
 import org.apache.iceberg.Schema
 import org.apache.iceberg.Table
 import org.apache.iceberg.data.Record
 import org.apache.iceberg.io.BaseTaskWriter
-import java.math.BigInteger
-import java.time.ZoneOffset
 
 private val logger = KotlinLogging.logger {}
 
@@ -44,33 +43,42 @@ class GcsDataLakeAggregate(
             if (airbyteValue != null) {
                 // Coerce TimestampValue to IntegerValue for fields with LONG type
                 // This handles _airbyte_extracted_at which is timestamp-as-milliseconds
-                val coercedValue = if (field.type().typeId() == org.apache.iceberg.types.Type.TypeID.LONG &&
-                    (airbyteValue is TimestampWithTimezoneValue || airbyteValue is TimestampWithoutTimezoneValue)) {
-                    // Convert timestamp to milliseconds since epoch
-                    val millis = when (airbyteValue) {
-                        is TimestampWithTimezoneValue -> airbyteValue.value.toInstant().toEpochMilli()
-                        is TimestampWithoutTimezoneValue -> airbyteValue.value.atOffset(ZoneOffset.UTC).toInstant().toEpochMilli()
-                        else -> 0L
+                val coercedValue =
+                    if (
+                        field.type().typeId() == org.apache.iceberg.types.Type.TypeID.LONG &&
+                            (airbyteValue is TimestampWithTimezoneValue ||
+                                airbyteValue is TimestampWithoutTimezoneValue)
+                    ) {
+                        // Convert timestamp to milliseconds since epoch
+                        val millis =
+                            when (airbyteValue) {
+                                is TimestampWithTimezoneValue ->
+                                    airbyteValue.value.toInstant().toEpochMilli()
+                                is TimestampWithoutTimezoneValue ->
+                                    airbyteValue.value
+                                        .atOffset(ZoneOffset.UTC)
+                                        .toInstant()
+                                        .toEpochMilli()
+                                else -> 0L
+                            }
+                        IntegerValue(BigInteger.valueOf(millis))
+                    } else {
+                        airbyteValue
                     }
-                    IntegerValue(BigInteger.valueOf(millis))
-                } else {
-                    airbyteValue
-                }
 
                 val convertedValue = converter.convert(coercedValue, field.type())
                 icebergRecord.setField(field.name(), convertedValue)
             }
         }
 
-        val wrappedRecord = RecordWrapper(
-            delegate = icebergRecord,
-            operation = Operation.INSERT
-        )
+        val wrappedRecord = RecordWrapper(delegate = icebergRecord, operation = Operation.INSERT)
         writer.write(wrappedRecord)
     }
 
     override suspend fun flush() {
-        logger.info { "Flushing aggregate to staging branch $stagingBranchName for stream ${stream.mappedDescriptor}" }
+        logger.info {
+            "Flushing aggregate to staging branch $stagingBranchName for stream ${stream.mappedDescriptor}"
+        }
 
         val writeResult = writer.complete()
 
