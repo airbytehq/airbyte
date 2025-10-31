@@ -50,7 +50,6 @@ class ClickhouseAirbyteClientTest {
             ClickhouseAirbyteClient(
                 client,
                 clickhouseSqlGenerator,
-                clickhouseFinalTableNameGenerator,
                 tempTableNameGenerator,
                 clickhouseConfiguration
             )
