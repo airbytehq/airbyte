@@ -285,6 +285,8 @@ definitions:
       state_migrations:
         - type: CustomStateMigration
           class_name: source_google_ads.components.GoogleAdsCriterionParentStateMigration
+        - type: CustomStateMigration
+          class_name: source_google_ads.components.GoogleAdsGlobalStateMigration
 
   accessible_accounts:
     $ref: "#/definitions/stream_base"
