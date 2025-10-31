@@ -40,6 +40,7 @@ import io.airbyte.cdk.load.data.UnknownType
 import io.airbyte.cdk.load.data.json.toAirbyteValue
 import io.airbyte.cdk.load.dataflow.transform.ColumnNameMapper
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
+import io.airbyte.cdk.load.dataflow.transform.data.ValidationResultHandler
 import io.airbyte.cdk.load.dataflow.transform.defaults.NoOpColumnNameMapper
 import io.airbyte.cdk.load.message.DestinationRecordProtobufSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
@@ -67,6 +68,7 @@ import javax.inject.Singleton
 class ProtobufConverter(
     private val columnNameMapper: ColumnNameMapper,
     private val coercer: ValueCoercer,
+    private val validationResultHandler: ValidationResultHandler,
 ) {
 
     private val isNoOpMapper = columnNameMapper is NoOpColumnNameMapper
@@ -132,7 +134,11 @@ class ProtobufConverter(
             enrichedValue.abValue = airbyteValue
 
             val mappedValue = coercer.map(enrichedValue)
-            val validatedValue = coercer.validate(mappedValue)
+            val validatedValue =
+                validationResultHandler.handle(
+                    result = coercer.validate(mappedValue),
+                    value = mappedValue
+                )
 
             allParsingFailures.addAll(validatedValue.changes)
 

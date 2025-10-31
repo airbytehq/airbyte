@@ -15,6 +15,7 @@ import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.data.UnionType
+import io.airbyte.cdk.load.dataflow.transform.data.ValidationResultHandler
 import io.airbyte.cdk.load.dataflow.transform.medium.JsonConverter
 import io.airbyte.cdk.load.dataflow.transform.medium.ProtobufConverter
 import io.airbyte.cdk.load.message.DestinationRecordRaw
@@ -37,13 +38,15 @@ class JsonRecordMungerTest {
 
     @MockK lateinit var protobufConverter: ProtobufConverter
 
+    @MockK lateinit var validationResultHandler: ValidationResultHandler
+
     private lateinit var jsonConverter: JsonConverter
 
     private lateinit var munger: RecordMunger
 
     @BeforeEach
     fun setup() {
-        jsonConverter = JsonConverter(columnNameMapper, valueCoercer)
+        jsonConverter = JsonConverter(columnNameMapper, valueCoercer, validationResultHandler)
         munger = RecordMunger(jsonConverter, protobufConverter)
     }
 
@@ -55,7 +58,7 @@ class JsonRecordMungerTest {
                 secondArg<String>() + "_munged"
             }
 
-        every { valueCoercer.validate(any<EnrichedAirbyteValue>()) } answers { firstArg() }
+        every { valueCoercer.validate(any<EnrichedAirbyteValue>()) } returns ValidationResult.Valid
 
         val stringfiedValue =
             Fixtures.mockCoercedValue(StringValue("{ \"json\": \"stringified\" }"))

@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.dataflow.transform.medium
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.dataflow.transform.ColumnNameMapper
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
+import io.airbyte.cdk.load.dataflow.transform.data.ValidationResultHandler
 import io.airbyte.cdk.load.message.DestinationRecordRaw
 import jakarta.inject.Singleton
 
@@ -14,6 +15,7 @@ import jakarta.inject.Singleton
 class JsonConverter(
     private val columnNameMapper: ColumnNameMapper,
     private val coercer: ValueCoercer,
+    private val validationResultHandler: ValidationResultHandler,
 ) {
     fun convert(msg: DestinationRecordRaw): HashMap<String, AirbyteValue> {
         val enriched =
@@ -23,9 +25,17 @@ class JsonConverter(
         enriched.declaredFields.forEach { field ->
             val mappedKey =
                 columnNameMapper.getMappedColumnName(msg.stream, field.key)
-                    ?: field.key // fallback to original key
+                    ?: field.key // fallback to the original key
 
-            val mappedValue = field.value.let { coercer.map(it) }.let { coercer.validate(it) }
+            val mappedValue =
+                field.value
+                    .let { coercer.map(it) }
+                    .let { value ->
+                        validationResultHandler.handle(
+                            result = coercer.validate(value),
+                            value = value
+                        )
+                    }
 
             munged[mappedKey] = mappedValue.abValue
         }

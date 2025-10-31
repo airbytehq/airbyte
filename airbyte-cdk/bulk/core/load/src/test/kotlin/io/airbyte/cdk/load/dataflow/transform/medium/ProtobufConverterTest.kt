@@ -9,6 +9,7 @@ import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.data.*
 import io.airbyte.cdk.load.data.AirbyteValueProxy.FieldAccessor
 import io.airbyte.cdk.load.dataflow.transform.ColumnNameMapper
+import io.airbyte.cdk.load.dataflow.transform.ValidationResult
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
 import io.airbyte.cdk.load.message.DestinationRecordProtobufSource
 import io.airbyte.cdk.load.message.DestinationRecordRaw
@@ -43,7 +44,7 @@ class ProtobufConverterTest {
         mockk<ValueCoercer> {
             every { representAs(any()) } returns null
             every { map(any()) } answers { firstArg<EnrichedAirbyteValue>() }
-            every { validate(any()) } answers { firstArg<EnrichedAirbyteValue>() }
+            every { validate(any()) } answers { firstArg<ValidationResult>() }
         }
 
     private fun createMockMapperPassThrough(): ColumnNameMapper =
@@ -152,7 +153,7 @@ class ProtobufConverterTest {
     fun `convertWithMetadata processes basic types correctly`() {
         val valueCoercer = createMockCoercerPassThrough()
         val columnNameMapper = createMockMapperPassThrough()
-        val converter = ProtobufConverter(columnNameMapper, valueCoercer)
+        val converter = ProtobufConverter(columnNameMapper, valueCoercer, mockk(relaxed = true))
 
         val accessors =
             arrayOf(
@@ -265,7 +266,7 @@ class ProtobufConverterTest {
     fun `convertWithMetadata handles BigDecimal values correctly`() {
         val valueCoercer = createMockCoercerPassThrough()
         val columnNameMapper = createMockMapperPassThrough()
-        val converter = ProtobufConverter(columnNameMapper, valueCoercer)
+        val converter = ProtobufConverter(columnNameMapper, valueCoercer, mockk(relaxed = true))
 
         val accessors =
             arrayOf(
@@ -308,7 +309,7 @@ class ProtobufConverterTest {
     fun `convertWithMetadata handles null values`() {
         val valueCoercer = createMockCoercerPassThrough()
         val columnNameMapper = createMockMapperPassThrough()
-        val converter = ProtobufConverter(columnNameMapper, valueCoercer)
+        val converter = ProtobufConverter(columnNameMapper, valueCoercer, mockk(relaxed = true))
 
         val accessors = arrayOf(fa("null_field", StringType, 0))
 
@@ -331,10 +332,10 @@ class ProtobufConverterTest {
                     StringValue::class.java
                 every { representAs(not(ofType(TimeTypeWithoutTimezone::class))) } returns null
                 every { map(any()) } answers { firstArg<EnrichedAirbyteValue>() }
-                every { validate(any()) } answers { firstArg<EnrichedAirbyteValue>() }
+                every { validate(any()) } answers { firstArg<ValidationResult>() }
             }
         val columnNameMapper = createMockMapperPassThrough()
-        val converter = ProtobufConverter(columnNameMapper, valueCoercer)
+        val converter = ProtobufConverter(columnNameMapper, valueCoercer, mockk(relaxed = true))
 
         val accessors = arrayOf(fa("time_field", TimeTypeWithoutTimezone, 0))
         val protoValues = listOf(vTimeNoTz(LocalTime.parse("12:34:56")))
@@ -370,21 +371,17 @@ class ProtobufConverterTest {
                             enriched.abValue is StringValue &&
                                 (enriched.abValue as StringValue).value.length > 5
                         ) {
-                            enriched.abValue = NullValue
-                            enriched.changes.add(
-                                Meta.Change(
-                                    enriched.name,
-                                    AirbyteRecordMessageMetaChange.Change.NULLED,
-                                    AirbyteRecordMessageMetaChange.Reason
-                                        .DESTINATION_FIELD_SIZE_LIMITATION
-                                )
+                            ValidationResult.ShouldNullify(
+                                AirbyteRecordMessageMetaChange.Reason
+                                    .DESTINATION_FIELD_SIZE_LIMITATION
                             )
+                        } else {
+                            ValidationResult.Valid
                         }
-                        enriched
                     }
             }
         val columnNameMapper = createMockMapperPassThrough()
-        val converter = ProtobufConverter(columnNameMapper, valueCoercer)
+        val converter = ProtobufConverter(columnNameMapper, valueCoercer, mockk(relaxed = true))
 
         val accessors = arrayOf(fa("short_string", StringType, 0), fa("long_string", StringType, 1))
         val protoValues = listOf(vString("hello"), vString("this_is_too_long"))
@@ -411,7 +408,7 @@ class ProtobufConverterTest {
                     columnName: String
                 ): String = if (columnName == "original_name") "mapped_name" else columnName
             }
-        val converter = ProtobufConverter(columnNameMapper, valueCoercer)
+        val converter = ProtobufConverter(columnNameMapper, valueCoercer, mockk(relaxed = true))
 
         val accessors = arrayOf(fa("original_name", StringType, 0))
         val protoValues = listOf(vString("test"))
@@ -430,7 +427,7 @@ class ProtobufConverterTest {
     fun `convertWithMetadata handles parsing exceptions`() {
         val valueCoercer = createMockCoercerPassThrough()
         val columnNameMapper = createMockMapperPassThrough()
-        val converter = ProtobufConverter(columnNameMapper, valueCoercer)
+        val converter = ProtobufConverter(columnNameMapper, valueCoercer, mockk(relaxed = true))
 
         val accessors = arrayOf(fa("invalid_int", IntegerType, 0))
 
@@ -455,7 +452,7 @@ class ProtobufConverterTest {
     fun `convertWithMetadata merges meta changes from source + stream unknown changes + parsing failures`() {
         val valueCoercer = createMockCoercerPassThrough()
         val columnNameMapper = createMockMapperPassThrough()
-        val converter = ProtobufConverter(columnNameMapper, valueCoercer)
+        val converter = ProtobufConverter(columnNameMapper, valueCoercer, mockk(relaxed = true))
 
         val accessors = arrayOf(fa("ok_str", StringType, 0), fa("bad_int", IntegerType, 1))
 

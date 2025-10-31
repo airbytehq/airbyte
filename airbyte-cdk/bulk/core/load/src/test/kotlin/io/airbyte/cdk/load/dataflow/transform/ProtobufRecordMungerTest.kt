@@ -23,6 +23,7 @@ import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
+import io.airbyte.cdk.load.dataflow.transform.data.ValidationResultHandler
 import io.airbyte.cdk.load.dataflow.transform.medium.JsonConverter
 import io.airbyte.cdk.load.dataflow.transform.medium.ProtobufConverter
 import io.airbyte.cdk.load.message.DestinationRecordProtobufSource
@@ -65,6 +66,7 @@ class ProtobufRecordMungerTest {
     private lateinit var stream: DestinationStream
     private lateinit var columnNameMapper: ColumnNameMapper
     private lateinit var valueCoercer: ValueCoercer
+    private lateinit var validationResultHandler: ValidationResultHandler
     private var protoSource: DestinationRecordProtobufSource? = null
     private lateinit var record: DestinationRecordRaw
     private lateinit var fieldAccessors: Array<AirbyteValueProxy.FieldAccessor>
@@ -90,21 +92,24 @@ class ProtobufRecordMungerTest {
                     return value
                 }
 
-                override fun validate(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
+                override fun validate(value: EnrichedAirbyteValue): ValidationResult =
                     when (val abValue = value.abValue) {
                         is IntegerValue ->
-                            if (abValue.value < INT64_MIN || abValue.value > INT64_MAX) {
-                                value.nullify(
+                            if (abValue.value !in INT64_MIN..INT64_MAX) {
+                                ValidationResult.ShouldNullify(
                                     AirbyteRecordMessageMetaChange.Reason
                                         .DESTINATION_FIELD_SIZE_LIMITATION,
                                 )
+                            } else {
+                                ValidationResult.Valid
                             }
-                        else -> {}
+                        else -> {
+                            ValidationResult.Valid
+                        }
                     }
-
-                    return value
-                }
             }
+
+        validationResultHandler = ValidationResultHandler(mockk(relaxed = true))
 
         val fields =
             mutableListOf(
@@ -275,8 +280,8 @@ class ProtobufRecordMungerTest {
 
         munger =
             RecordMunger(
-                JsonConverter(columnNameMapper, valueCoercer),
-                ProtobufConverter(columnNameMapper, valueCoercer),
+                JsonConverter(columnNameMapper, valueCoercer, validationResultHandler),
+                ProtobufConverter(columnNameMapper, valueCoercer, validationResultHandler),
             )
     }
 
