@@ -1268,7 +1268,7 @@ definitions:
       datetime_format: "%ms"
       lookback_window: P{{ config.get('lookback_window', 0) }}D
       step: P30D
-      cursor_granularity: PT1S
+      cursor_granularity: PT0.001S
       cursor_datetime_formats:
         - "%ms"
         - "%Y-%m-%dT%H:%M:%S.%fZ"
@@ -1600,7 +1600,7 @@ definitions:
       datetime_format: "%ms"
       lookback_window: P{{ config.get('lookback_window', 0) }}D
       step: P30D
-      cursor_granularity: PT1S
+      cursor_granularity: PT0.001S
       cursor_datetime_formats:
         - "%ms"
       start_datetime:
