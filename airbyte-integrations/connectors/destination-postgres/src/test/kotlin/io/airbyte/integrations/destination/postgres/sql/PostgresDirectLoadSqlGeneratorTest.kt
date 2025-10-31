@@ -721,4 +721,190 @@ internal class PostgresDirectLoadSqlGeneratorTest {
 
         assertEqualsIgnoreWhitespace(expected, sql)
     }
+
+    @Test
+    fun testMatchSchemasAddColumns() {
+        val tableName = TableName(namespace = "test_schema", name = "test_table")
+        val columnsToAdd = setOf(
+            Column("new_column1", "varchar"),
+            Column("new_column2", "bigint")
+        )
+        val columnsToRemove = emptySet<Column>()
+        val columnsToModify = emptySet<Column>()
+        val columnsInDb = emptySet<Column>()
+
+        val sql = postgresDirectLoadSqlGenerator.matchSchemas(
+            tableName,
+            columnsToAdd,
+            columnsToRemove,
+            columnsToModify,
+            columnsInDb
+        )
+
+        assertEquals(2, sql.size)
+        assert(sql.any { it.contains("ADD COLUMN \"new_column1\" varchar") })
+        assert(sql.any { it.contains("ADD COLUMN \"new_column2\" bigint") })
+    }
+
+    @Test
+    fun testMatchSchemasRemoveColumns() {
+        val tableName = TableName(namespace = "test_schema", name = "test_table")
+        val columnsToAdd = emptySet<Column>()
+        val columnsToRemove = setOf(
+            Column("old_column1", "varchar"),
+            Column("old_column2", "bigint")
+        )
+        val columnsToModify = emptySet<Column>()
+        val columnsInDb = setOf(
+            Column("old_column1", "varchar"),
+            Column("old_column2", "bigint")
+        )
+
+        val sql = postgresDirectLoadSqlGenerator.matchSchemas(
+            tableName,
+            columnsToAdd,
+            columnsToRemove,
+            columnsToModify,
+            columnsInDb
+        )
+
+        assertEquals(2, sql.size)
+        assert(sql.any { it.contains("DROP COLUMN \"old_column1\"") })
+        assert(sql.any { it.contains("DROP COLUMN \"old_column2\"") })
+    }
+
+    @Test
+    fun testMatchSchemasModifyColumnToJsonb() {
+        val tableName = TableName(namespace = "test_schema", name = "test_table")
+        val columnsToAdd = emptySet<Column>()
+        val columnsToRemove = emptySet<Column>()
+        val columnsToModify = setOf(
+            Column("column_a", "jsonb")
+        )
+        val columnsInDb = setOf(
+            Column("column_a", "varchar")
+        )
+
+        val sql = postgresDirectLoadSqlGenerator.matchSchemas(
+            tableName,
+            columnsToAdd,
+            columnsToRemove,
+            columnsToModify,
+            columnsInDb
+        )
+
+        assertEquals(1, sql.size)
+        val alterStatement = sql.first()
+        assert(alterStatement.contains("ALTER COLUMN \"column_a\" TYPE jsonb"))
+        assert(alterStatement.contains("USING to_jsonb(\"column_a\")"))
+    }
+
+    @Test
+    fun testMatchSchemasModifyColumnFromJsonbToVarchar() {
+        val tableName = TableName(namespace = "test_schema", name = "test_table")
+        val columnsToAdd = emptySet<Column>()
+        val columnsToRemove = emptySet<Column>()
+        val columnsToModify = setOf(
+            Column("column_b", "varchar")
+        )
+        val columnsInDb = setOf(
+            Column("column_b", "jsonb")
+        )
+
+        val sql = postgresDirectLoadSqlGenerator.matchSchemas(
+            tableName,
+            columnsToAdd,
+            columnsToRemove,
+            columnsToModify,
+            columnsInDb
+        )
+
+        assertEquals(1, sql.size)
+        val alterStatement = sql.first()
+        assert(alterStatement.contains("ALTER COLUMN \"column_b\" TYPE varchar"))
+        assert(alterStatement.contains("USING \"column_b\" #>> '{}'"))
+    }
+
+    @Test
+    fun testMatchSchemasModifyColumnFromJsonbToCharacterVarying() {
+        val tableName = TableName(namespace = "test_schema", name = "test_table")
+        val columnsToAdd = emptySet<Column>()
+        val columnsToRemove = emptySet<Column>()
+        val columnsToModify = setOf(
+            Column("column_c", "character varying")
+        )
+        val columnsInDb = setOf(
+            Column("column_c", "jsonb")
+        )
+
+        val sql = postgresDirectLoadSqlGenerator.matchSchemas(
+            tableName,
+            columnsToAdd,
+            columnsToRemove,
+            columnsToModify,
+            columnsInDb
+        )
+
+        assertEquals(1, sql.size)
+        val alterStatement = sql.first()
+        assert(alterStatement.contains("ALTER COLUMN \"column_c\" TYPE character varying"))
+        assert(alterStatement.contains("USING \"column_c\" #>> '{}'"))
+    }
+
+    @Test
+    fun testMatchSchemasModifyColumnStandardCast() {
+        val tableName = TableName(namespace = "test_schema", name = "test_table")
+        val columnsToAdd = emptySet<Column>()
+        val columnsToRemove = emptySet<Column>()
+        val columnsToModify = setOf(
+            Column("column_d", "varchar")
+        )
+        val columnsInDb = setOf(
+            Column("column_d", "bigint")
+        )
+
+        val sql = postgresDirectLoadSqlGenerator.matchSchemas(
+            tableName,
+            columnsToAdd,
+            columnsToRemove,
+            columnsToModify,
+            columnsInDb
+        )
+
+        assertEquals(1, sql.size)
+        val alterStatement = sql.first()
+        assert(alterStatement.contains("ALTER COLUMN \"column_d\" TYPE varchar"))
+        assert(alterStatement.contains("USING \"column_d\"::varchar"))
+    }
+
+    @Test
+    fun testMatchSchemasCombinedOperations() {
+        val tableName = TableName(namespace = "test_schema", name = "test_table")
+        val columnsToAdd = setOf(
+            Column("new_col", "bigint")
+        )
+        val columnsToRemove = setOf(
+            Column("old_col", "varchar")
+        )
+        val columnsToModify = setOf(
+            Column("modified_col", "jsonb")
+        )
+        val columnsInDb = setOf(
+            Column("old_col", "varchar"),
+            Column("modified_col", "varchar")
+        )
+
+        val sql = postgresDirectLoadSqlGenerator.matchSchemas(
+            tableName,
+            columnsToAdd,
+            columnsToRemove,
+            columnsToModify,
+            columnsInDb
+        )
+
+        assertEquals(3, sql.size)
+        assert(sql.any { it.contains("ADD COLUMN \"new_col\" bigint") })
+        assert(sql.any { it.contains("DROP COLUMN \"old_col\"") })
+        assert(sql.any { it.contains("ALTER COLUMN \"modified_col\" TYPE jsonb") })
+    }
 }
