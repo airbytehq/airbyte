@@ -3,13 +3,7 @@
  */
 package io.airbyte.integrations.destination.postgres.typing_deduping
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
-import io.airbyte.protocol.models.v0.AirbyteStream
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream
-import io.airbyte.protocol.models.v0.DestinationSyncMode
-import io.airbyte.protocol.models.v0.SyncMode
-import kotlin.collections.forEach
 import kotlin.longArrayOf
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
@@ -34,7 +28,27 @@ class PostgresRawOverrideDisableTypingDedupingTest : PostgresTypingDedupingTest(
 
     @Disabled @Test override fun testVarcharLimitOver64K() {}
 
+    //syncs used to fail when doing this, not anymore
     @Disabled @Test override fun interruptedTruncateWithPriorData() {}
 
-//    @Disabled @ParameterizedTest @ValueSource(longs = [0L, 42L]) override fun testIncrementalSyncDropOneColumn(inputGenerationId: Long) {}
+    // fields that are not in the schema are now dropped.
+    @Disabled @ParameterizedTest @ValueSource(longs = [0L, 42L]) override fun testIncrementalSyncDropOneColumn(inputGenerationId: Long) {}
+
+    //migrations not supported on most recent version
+    @Disabled @Test override fun testMixedCaseRawTableV1V2Migration() {}
+    @Disabled @Test override fun testAirbyteMetaAndGenerationIdMigration() {}
+    @Disabled @Test override fun testRawTableMetaMigration_append() {}
+    @Disabled @Test override fun testRawTableMetaMigration_incrementalDedupe() {}
+    @Disabled @Test override fun testAirbyteMetaAndGenerationIdMigrationForOverwrite() {}
+
+    //dedup not supported when setting `disable_type_dedupe` to true.
+    @Disabled @ParameterizedTest @ValueSource(longs = [0L, 42L]) override fun incrementalDedup(inputGenerationId: Long) {}
+    @Disabled @ParameterizedTest @ValueSource(longs = [0L, 42L]) override fun largeDedupSync(inputGenerationId: Long) {}
+    @Disabled @ParameterizedTest @ValueSource(longs = [0L, 42L]) override fun incrementalDedupDefaultNamespace(inputGenerationId: Long) {}
+    @Disabled @ParameterizedTest @ValueSource(longs = [0L, 42L]) override fun incrementalDedupChangeCursor(inputGenerationId: Long) {}
+    @Disabled @ParameterizedTest @ValueSource(longs = [0L, 42L]) override fun incrementalDedupIdenticalName() {}
+
+
+
+
 }

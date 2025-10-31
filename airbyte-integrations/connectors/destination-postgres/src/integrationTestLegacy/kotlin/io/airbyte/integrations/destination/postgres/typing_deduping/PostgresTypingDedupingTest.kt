@@ -7,8 +7,13 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.integrations.destination.postgres.PostgresDestination
 import javax.sql.DataSource
+import kotlin.longArrayOf
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 
 open class PostgresTypingDedupingTest : AbstractPostgresTypingDedupingTest() {
     override fun getBaseConfig(): ObjectNode {
@@ -44,6 +49,19 @@ open class PostgresTypingDedupingTest : AbstractPostgresTypingDedupingTest() {
 
     override val imageName: String
         get() = "airbyte/destination-postgres:dev"
+
+    //syncs used to fail when doing this, not anymore
+    @Disabled @Test override fun interruptedTruncateWithPriorData() {}
+
+    // fields that are not in the schema are now dropped.
+    @Disabled @ParameterizedTest @ValueSource(longs = [0L, 42L]) override fun testIncrementalSyncDropOneColumn(inputGenerationId: Long) {}
+
+    //migrations not supported on most recent version
+    @Disabled @Test override fun testMixedCaseRawTableV1V2Migration() {}
+    @Disabled @Test override fun testAirbyteMetaAndGenerationIdMigration() {}
+    @Disabled @Test override fun testRawTableMetaMigration_append() {}
+    @Disabled @Test override fun testRawTableMetaMigration_incrementalDedupe() {}
+    @Disabled @Test override fun testAirbyteMetaAndGenerationIdMigrationForOverwrite() {}
 
     companion object {
         protected var testContainer: PostgresTestDatabase? = null
