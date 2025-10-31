@@ -55,7 +55,7 @@ You can use SQL to configure connector definitions, affecting all connectors of 
 1. Connect to the database and run the following query with the image name replaced to find the connector definition id.
 
    ```sql
-   select * from actor_definition where actor_definition.docker_repository like '%<image-name>';
+   select * from actor_definition_version where actor_definition_version.docker_repository like '%<image-name>';
    ```
 
 2. Run the following commend with the resource requirements and the connection definition id filled in.
