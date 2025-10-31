@@ -103,14 +103,14 @@ class AirbyteTypeToMsqlTypeTest {
     fun testConvertStringType() {
         val stringType = StringType
         val result = converter.convert(stringType)
-        assertEquals(MssqlType.VARCHAR, result)
+        assertEquals(MssqlType.NVARCHAR, result)
     }
 
     @Test
     fun testConvertIndexedStringType() {
         val stringType = StringType
         val result = converter.convert(stringType, isIndexed = true)
-        assertEquals(MssqlType.VARCHAR_INDEX, result)
+        assertEquals(MssqlType.NVARCHAR_INDEX, result)
     }
 
     @Test
