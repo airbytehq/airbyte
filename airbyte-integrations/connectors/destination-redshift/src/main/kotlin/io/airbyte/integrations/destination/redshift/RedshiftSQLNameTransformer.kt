@@ -14,13 +14,14 @@ class RedshiftSQLNameTransformer : StandardNameTransformer() {
 
     /**
      * Converts a string to a valid Redshift identifier following AWS Redshift naming conventions.
-     * 
+     *
      * Redshift standard identifiers support:
      * - Begin with an ASCII letter, underscore, or UTF-8 multibyte character (2-4 bytes)
-     * - Subsequent characters can be ASCII letters, digits, underscores, dollar signs, or UTF-8 multibyte characters (2-4 bytes)
+     * - Subsequent characters can be ASCII letters, digits, underscores, dollar signs, or UTF-8
+     * multibyte characters (2-4 bytes)
      * - Maximum 127 bytes in UTF-8 encoding
      * - No spaces or quotes
-     * 
+     *
      * See: https://docs.aws.amazon.com/redshift/latest/dg/r_names.html
      */
     private fun toRedshiftIdentifier(input: String): String {
@@ -40,12 +41,13 @@ class RedshiftSQLNameTransformer : StandardNameTransformer() {
             val charCount = Character.charCount(codePoint)
 
             // Calculate UTF-8 byte length for this code point
-            val charByteLength = when {
-                codePoint <= 0x7F -> 1
-                codePoint <= 0x7FF -> 2
-                codePoint <= 0xFFFF -> 3
-                else -> 4
-            }
+            val charByteLength =
+                when {
+                    codePoint <= 0x7F -> 1
+                    codePoint <= 0x7FF -> 2
+                    codePoint <= 0xFFFF -> 3
+                    else -> 4
+                }
 
             // Check if adding this character would exceed 127 bytes
             if (byteCount + charByteLength > 127) {
@@ -65,7 +67,11 @@ class RedshiftSQLNameTransformer : StandardNameTransformer() {
                         result.append('_')
                         byteCount += 1
                         // Try to add the original character if it's valid for subsequent positions
-                        if (Character.isLetterOrDigit(codePoint) || codePoint == '_'.code || codePoint == '$'.code) {
+                        if (
+                            Character.isLetterOrDigit(codePoint) ||
+                                codePoint == '_'.code ||
+                                codePoint == '$'.code
+                        ) {
                             if (byteCount + charByteLength <= 127) {
                                 result.appendCodePoint(codePoint)
                                 byteCount += charByteLength
@@ -76,7 +82,9 @@ class RedshiftSQLNameTransformer : StandardNameTransformer() {
             } else {
                 // Subsequent character rules: allow letters, digits, underscore, dollar sign
                 when {
-                    Character.isLetterOrDigit(codePoint) || codePoint == '_'.code || codePoint == '$'.code -> {
+                    Character.isLetterOrDigit(codePoint) ||
+                        codePoint == '_'.code ||
+                        codePoint == '$'.code -> {
                         result.appendCodePoint(codePoint)
                         byteCount += charByteLength
                     }

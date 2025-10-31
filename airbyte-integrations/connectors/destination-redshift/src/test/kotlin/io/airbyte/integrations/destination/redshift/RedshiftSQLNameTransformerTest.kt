@@ -136,16 +136,22 @@ class RedshiftSQLNameTransformerTest {
 
         // Verify these are NOT converted to underscores
         val result1 = transformer.convertStreamName("タイプ")
-        assertTrue(result1.contains("タ") || result1.contains("イ") || result1.contains("プ"),
-            "Japanese characters should be preserved, got: $result1")
+        assertTrue(
+            result1.contains("タ") || result1.contains("イ") || result1.contains("プ"),
+            "Japanese characters should be preserved, got: $result1"
+        )
 
         val result2 = transformer.convertStreamName("تاريخ الميلاد")
-        assertTrue(result2.contains("ت") || result2.contains("ا") || result2.contains("ر"),
-            "Arabic characters should be preserved, got: $result2")
+        assertTrue(
+            result2.contains("ت") || result2.contains("ا") || result2.contains("ر"),
+            "Arabic characters should be preserved, got: $result2"
+        )
 
         val result3 = transformer.convertStreamName("अनाप्लान")
-        assertTrue(result3.contains("अ") || result3.contains("न") || result3.contains("ा"),
-            "Hindi characters should be preserved, got: $result3")
+        assertTrue(
+            result3.contains("अ") || result3.contains("न") || result3.contains("ा"),
+            "Hindi characters should be preserved, got: $result3"
+        )
     }
 
     @Test
