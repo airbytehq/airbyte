@@ -13,15 +13,11 @@ The Google Sheets source connector pulls data from a single Google Sheets spread
 ### Prerequisites
 
 - **Spreadsheet Link** - The link to the Google spreadsheet you want to sync.
-<!-- env:cloud -->
 - **For Airbyte Cloud** A Google Workspace user with access to the spreadsheet
-<!-- /env:cloud -->
-  <!-- env:oss -->
-- **For Airbyte Open Source:**
+- **For Airbyte Open Source or when manually configuring the source:**
 - A GCP project
 - Enable the Google Sheets API in your GCP project
 - Service Account Key with access to the Spreadsheet you want to replicate
-<!-- /env:oss -->
 
 ## Setup guide
 
@@ -29,23 +25,7 @@ The Google Sheets source connector supports authentication via either OAuth or S
 
 ### Step 1: Set up Google Sheets
 
-<!-- env:cloud -->
-
-**For Airbyte Cloud:**
-
-We highly recommend using OAuth, as it significantly simplifies the setup process and allows you to authenticate [directly from the Airbyte UI](#set-up-the-google-sheets-source-connector-in-airbyte).
-
-<!-- /env:cloud -->
-
-<!-- env:oss -->
-
-**For Airbyte Open Source:**
-
-We recommend using Service Account Key Authentication. Follow the steps below to create a service account, generate a key, and enable the Google Sheets API.
-
-:::note
-If you prefer to use OAuth for authentication with **Airbyte Open Source**, you can follow [Google's OAuth instructions](https://developers.google.com/identity/protocols/oauth2) to create an authentication app. Be sure to set the scopes to `https://www.googleapis.com/auth/spreadsheets.readonly`. You will need to obtain your client ID, client secret, and refresh token for the connector setup.
-:::
+We recommend using Service Account Key Authentication for most use-cases as it ensures the authorization is decoupled from a specific user.
 
 ### Set up the service account key
 
@@ -70,9 +50,31 @@ If you prefer to use OAuth for authentication with **Airbyte Open Source**, you 
 3. Find and select the **Google Sheets API**.
 4. Click **ENABLE**.
 
-If your spreadsheet is viewable by anyone with its link, no further action is needed. If not, [give your Service account access to your spreadsheet](https://youtu.be/GyomEw5a2NQ%22).
+If your spreadsheet is viewable by anyone with its link, no further action is needed. If not, makse sure to give your Service account access to your spreadsheet.
 
-<!-- /env:oss -->
+### Using OAuth
+
+When using OAuth, you can either provide a Client ID and secret via the UI and use the interactive prompt, or by configuring manually via "Set up manually" and providing a Client ID, Client Secret, and a refresh token.
+
+:::info
+If using the interactive prompt, ensure that your have configured your application to have the following redirct URI configured.
+
+**If using Airbyte Cloud**, use `https://cloud.airbyte.com/auth_flow`
+
+**If using Airbyte Open Source**, use `<airbyte_url>/auth_flow`.
+:::
+
+#### Generating a refresh token
+
+1. Create a new [Google Cloud project](https://console.cloud.google.com/projectcreate).
+2. Enable the [Google Sheets API](https://console.cloud.google.com/apis/library/sheets.googleapis.com).
+3. Create a new [OAuth client ID](https://console.cloud.google.com/apis/credentials/oauthclient). Select `Web application` as the Application type, give it a `name` and add `https://developers.google.com/oauthplayground` as an Authorized redirect URI.
+4. Add a `Client Secret` (Add secret), and take note of both the `Client Secret` and `Client ID`.
+5. Go to [Google OAuth Playground](https://developers.google.com/oauthplayground/)
+6. Click the cog in the top-right corner, select `Use your own OAuth credentials` and enter the `OAuth Client ID` and `OAuth Client secret` from the previous step.
+7. In the left sidebar, find and select `Google Sheets API v4`, then choose the `https://www.googleapis.com/auth/spreadsheets` scope. Click `Authorize APIs`.
+8. In **step 2**, click `Exchange authorization code for tokens`. Take note of the `Refresh token`.
+9. Set up a new destination in Airbyte, select `Google Sheets` and enter the `Client ID`, `Client Secret`, `Refresh Token` and `Spreadsheet Link` from the previous steps.
 
 ### Set up the Google Sheets connector in Airbyte
 
@@ -93,11 +95,8 @@ If your spreadsheet is viewable by anyone with its link, no further action is ne
 4. Enter a name for the Google Sheets connector.
 <!-- /env:oss -->
 5. Select your authentication method:
-<!-- env:cloud -->
-- **For Airbyte Cloud: (Recommended)** Select **Authenticate via Google (OAuth)** from the Authentication dropdown, click **Sign in with Google** and complete the authentication workflow.
-  <!-- /env:cloud -->
-  <!-- env:oss -->
-- **For Airbyte Open Source: (Recommended)** Select **Service Account Key Authentication** from the dropdown and enter your Google Cloud service account key in JSON format:
+
+- **(Recommended)** Select **Service Account Key Authentication** from the dropdown and enter your Google Cloud service account key in JSON format:
 
 ```json
   {
@@ -108,7 +107,9 @@ If your spreadsheet is viewable by anyone with its link, no further action is ne
   }
 ```
 
-- To authenticate your Google account via OAuth, select **Authenticate via Google (OAuth)** from the dropdown and enter your Google application's client ID, client secret, and refresh token.
+- **To use OAuth** Select **Authenticate via Google (OAuth)** from the Authentication dropdown, click **Sign in with Google** and complete the authentication workflow.
+  - When using Airbyte Open Source, to authenticate your Google account via OAuth, select **Authenticate via Google (OAuth)** from the dropdown and enter your Google application's Client ID and Client Secret.
+  - Alternatively, you can configure OAuth with an existing refresh token by using the **Set up manually** option and entering your Client ID, Client Secret, and Refresh Token.
 <!-- /env:oss -->
 <FieldAnchor field="spreadsheet_id">
 6. For **Spreadsheet Link**, enter the link to the Google spreadsheet. To get the link, go to the Google spreadsheet you want to sync, click **Share** in the top right corner, and click **Copy Link**.
