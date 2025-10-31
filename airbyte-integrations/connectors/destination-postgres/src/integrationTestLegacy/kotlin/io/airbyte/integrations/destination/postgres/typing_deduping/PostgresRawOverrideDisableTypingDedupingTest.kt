@@ -34,6 +34,9 @@ class PostgresRawOverrideDisableTypingDedupingTest : PostgresTypingDedupingTest(
     // fields that are not in the schema are now dropped.
     @Disabled @ParameterizedTest @ValueSource(longs = [0L, 42L]) override fun testIncrementalSyncDropOneColumn(inputGenerationId: Long) {}
 
+    // this tests that the fully qualified raw table name is lowercased. This is actually not a restriction anymore, so disabling the test.
+    @Disabled @Test override fun testMixedCasedSchema() {}
+
     //migrations not supported on most recent version
     @Disabled @Test override fun testMixedCaseRawTableV1V2Migration() {}
     @Disabled @Test override fun testAirbyteMetaAndGenerationIdMigration() {}
@@ -47,8 +50,4 @@ class PostgresRawOverrideDisableTypingDedupingTest : PostgresTypingDedupingTest(
     @Disabled @ParameterizedTest @ValueSource(longs = [0L, 42L]) override fun incrementalDedupDefaultNamespace(inputGenerationId: Long) {}
     @Disabled @ParameterizedTest @ValueSource(longs = [0L, 42L]) override fun incrementalDedupChangeCursor(inputGenerationId: Long) {}
     @Disabled @ParameterizedTest @ValueSource(longs = [0L, 42L]) override fun incrementalDedupIdenticalName() {}
-
-
-
-
 }
