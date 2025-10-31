@@ -13,17 +13,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Utility class for coercing data to match JSON Schema expectations.
- * Specifically handles the case where MongoDB stores single objects as objects
- * but the schema expects an array of objects.
+ * Utility class for coercing data to match JSON Schema expectations. Specifically handles the case
+ * where MongoDB stores single objects as objects but the schema expects an array of objects.
  */
 public class SchemaCoercion {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SchemaCoercion.class);
 
   /**
-   * Coerces data to match the provided JSON Schema.
-   * Currently handles the case where a field is an object but the schema expects an array.
+   * Coerces data to match the provided JSON Schema. Currently handles the case where a field is an
+   * object but the schema expects an array.
    *
    * @param data The data to coerce
    * @param schema The JSON Schema to match
@@ -108,8 +107,8 @@ public class SchemaCoercion {
   }
 
   /**
-   * Checks if a schema type includes the specified type.
-   * Handles both string types and array of types.
+   * Checks if a schema type includes the specified type. Handles both string types and array of
+   * types.
    *
    * @param schemaType The type field from the schema (can be string or array)
    * @param type The type to check for

@@ -17,33 +17,33 @@ class SchemaCoercionTest {
   @Test
   void testCoerceObjectToArray() {
     final String schemaJson = """
-        {
-          "type": "object",
-          "properties": {
-            "assetItemCharacterstics": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "chID": {"type": "string"},
-                  "chName": {"type": "string"},
-                  "valueDetail": {"type": "string"}
-                }
-              }
-            }
-          }
-        }
-        """;
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "assetItemCharacterstics": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "properties": {
+                                        "chID": {"type": "string"},
+                                        "chName": {"type": "string"},
+                                        "valueDetail": {"type": "string"}
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                              """;
 
     final String dataJson = """
-        {
-          "assetItemCharacterstics": {
-            "chID": "123-456-789",
-            "chName": "name",
-            "valueDetail": "[9999]"
-          }
-        }
-        """;
+                            {
+                              "assetItemCharacterstics": {
+                                "chID": "123-456-789",
+                                "chName": "name",
+                                "valueDetail": "[9999]"
+                              }
+                            }
+                            """;
 
     final JsonNode schema = Jsons.deserialize(schemaJson);
     final JsonNode data = Jsons.deserialize(dataJson);
@@ -60,25 +60,25 @@ class SchemaCoercionTest {
   @Test
   void testCoerceArrayRemainsArray() {
     final String schemaJson = """
-        {
-          "type": "object",
-          "properties": {
-            "items": {
-              "type": "array",
-              "items": {"type": "object"}
-            }
-          }
-        }
-        """;
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "items": {
+                                    "type": "array",
+                                    "items": {"type": "object"}
+                                  }
+                                }
+                              }
+                              """;
 
     final String dataJson = """
-        {
-          "items": [
-            {"id": "1"},
-            {"id": "2"}
-          ]
-        }
-        """;
+                            {
+                              "items": [
+                                {"id": "1"},
+                                {"id": "2"}
+                              ]
+                            }
+                            """;
 
     final JsonNode schema = Jsons.deserialize(schemaJson);
     final JsonNode data = Jsons.deserialize(dataJson);
@@ -94,31 +94,31 @@ class SchemaCoercionTest {
   @Test
   void testCoerceNestedObjectToArray() {
     final String schemaJson = """
-        {
-          "type": "object",
-          "properties": {
-            "parent": {
-              "type": "object",
-              "properties": {
-                "children": {
-                  "type": "array",
-                  "items": {"type": "object"}
-                }
-              }
-            }
-          }
-        }
-        """;
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "parent": {
+                                    "type": "object",
+                                    "properties": {
+                                      "children": {
+                                        "type": "array",
+                                        "items": {"type": "object"}
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                              """;
 
     final String dataJson = """
-        {
-          "parent": {
-            "children": {
-              "name": "single-child"
-            }
-          }
-        }
-        """;
+                            {
+                              "parent": {
+                                "children": {
+                                  "name": "single-child"
+                                }
+                              }
+                            }
+                            """;
 
     final JsonNode schema = Jsons.deserialize(schemaJson);
     final JsonNode data = Jsons.deserialize(dataJson);
@@ -133,24 +133,24 @@ class SchemaCoercionTest {
   @Test
   void testCoerceWithUnionType() {
     final String schemaJson = """
-        {
-          "type": "object",
-          "properties": {
-            "field": {
-              "type": ["null", "array"],
-              "items": {"type": "object"}
-            }
-          }
-        }
-        """;
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "field": {
+                                    "type": ["null", "array"],
+                                    "items": {"type": "object"}
+                                  }
+                                }
+                              }
+                              """;
 
     final String dataJson = """
-        {
-          "field": {
-            "value": "test"
-          }
-        }
-        """;
+                            {
+                              "field": {
+                                "value": "test"
+                              }
+                            }
+                            """;
 
     final JsonNode schema = Jsons.deserialize(schemaJson);
     final JsonNode data = Jsons.deserialize(dataJson);
@@ -165,15 +165,15 @@ class SchemaCoercionTest {
   @Test
   void testCoerceWithNullData() {
     final String schemaJson = """
-        {
-          "type": "object",
-          "properties": {
-            "field": {
-              "type": "array"
-            }
-          }
-        }
-        """;
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "field": {
+                                    "type": "array"
+                                  }
+                                }
+                              }
+                              """;
 
     final JsonNode schema = Jsons.deserialize(schemaJson);
     final JsonNode data = null;
@@ -186,12 +186,12 @@ class SchemaCoercionTest {
   @Test
   void testCoerceWithNullSchema() {
     final String dataJson = """
-        {
-          "field": {
-            "value": "test"
-          }
-        }
-        """;
+                            {
+                              "field": {
+                                "value": "test"
+                              }
+                            }
+                            """;
 
     final JsonNode schema = null;
     final JsonNode data = Jsons.deserialize(dataJson);
@@ -204,23 +204,23 @@ class SchemaCoercionTest {
   @Test
   void testCoerceDoesNotModifyOriginal() {
     final String schemaJson = """
-        {
-          "type": "object",
-          "properties": {
-            "field": {
-              "type": "array"
-            }
-          }
-        }
-        """;
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "field": {
+                                    "type": "array"
+                                  }
+                                }
+                              }
+                              """;
 
     final String dataJson = """
-        {
-          "field": {
-            "value": "test"
-          }
-        }
-        """;
+                            {
+                              "field": {
+                                "value": "test"
+                              }
+                            }
+                            """;
 
     final JsonNode schema = Jsons.deserialize(schemaJson);
     final ObjectNode data = (ObjectNode) Jsons.deserialize(dataJson);
@@ -234,24 +234,24 @@ class SchemaCoercionTest {
   @Test
   void testCoerceWithMissingProperty() {
     final String schemaJson = """
-        {
-          "type": "object",
-          "properties": {
-            "field1": {
-              "type": "array"
-            },
-            "field2": {
-              "type": "string"
-            }
-          }
-        }
-        """;
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "field1": {
+                                    "type": "array"
+                                  },
+                                  "field2": {
+                                    "type": "string"
+                                  }
+                                }
+                              }
+                              """;
 
     final String dataJson = """
-        {
-          "field2": "value"
-        }
-        """;
+                            {
+                              "field2": "value"
+                            }
+                            """;
 
     final JsonNode schema = Jsons.deserialize(schemaJson);
     final JsonNode data = Jsons.deserialize(dataJson);
@@ -265,23 +265,23 @@ class SchemaCoercionTest {
   @Test
   void testCoerceArrayWithoutItemsSchema() {
     final String schemaJson = """
-        {
-          "type": "object",
-          "properties": {
-            "field": {
-              "type": "array"
-            }
-          }
-        }
-        """;
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "field": {
+                                    "type": "array"
+                                  }
+                                }
+                              }
+                              """;
 
     final String dataJson = """
-        {
-          "field": {
-            "value": "test"
-          }
-        }
-        """;
+                            {
+                              "field": {
+                                "value": "test"
+                              }
+                            }
+                            """;
 
     final JsonNode schema = Jsons.deserialize(schemaJson);
     final JsonNode data = Jsons.deserialize(dataJson);
