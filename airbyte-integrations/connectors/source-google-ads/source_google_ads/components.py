@@ -626,13 +626,26 @@ class GoogleAdsCriterionParentStateMigration(StateMigration):
     """
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
-        return stream_state and "parent_state" not in stream_state
+        return stream_state and not stream_state.get("parent_state")
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         if not self.should_migrate(stream_state):
             return stream_state
 
-        return {"parent_state": stream_state}
+        return {"parent_state": {"change_status": stream_state}}
+
+
+class GoogleAdsGlobalStateMigration(StateMigration):
+    """
+    Migrates global state to include use_global_cursor key. Previously legacy GlobalSubstreamCursor was used.
+    """
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        return stream_state and not stream_state.get("use_global_cursor")
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        stream_state["use_global_cursor"] = True
+        return stream_state
 
 
 @dataclass(repr=False, eq=False, frozen=True)
