@@ -5,7 +5,7 @@ package io.airbyte.integrations.destination.redshift
 
 import io.airbyte.cdk.integrations.destination.StandardNameTransformer
 import java.text.Normalizer
-import java.util.*
+import java.util.Locale
 
 class RedshiftSQLNameTransformer : StandardNameTransformer() {
     override fun convertStreamName(input: String): String {
