@@ -28,3 +28,7 @@ To connect with Claude Code, run the following in the Claude Code CLI
 ```
 
 TODO: CALLOUT: Your credentials must reference an organization that has been enabled for Airbyte Embedded. Contact michel@airbyte.io or teo@airbyte.io to enable Airbyte Embedded on your account.
+
+## Official Documentation
+
+For more information about Airbyte Embedded and the Operator MCP server, visit the [Sonar (Airbyte Embedded) GitHub Repository](https://github.com/airbytehq/sonar).
