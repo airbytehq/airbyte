@@ -604,7 +604,11 @@ abstract class BaseTypingDedupingTest {
         // But the final table should be fully deduped
         val expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_dedup_final.jsonl")
         fixGenerationId(expectedRawRecords1, expectedFinalRecords1, inputGenerationId)
-        verifySyncResult(expectedRawRecords1, expectedFinalRecords1, disableFinalTableComparison())
+        verifySyncResult(
+            expectedRawRecords1,
+            expectedFinalRecords1,
+            disableFinalTableComparison = disableFinalTableComparison(),
+            disableRawTableComparison = disableRawTableComparison())
     }
 
     /** Identical to [.incrementalDedup], except that the stream has no namespace. */
