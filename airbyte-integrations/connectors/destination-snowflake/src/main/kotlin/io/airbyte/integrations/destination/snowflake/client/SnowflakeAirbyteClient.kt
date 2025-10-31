@@ -7,7 +7,10 @@ package io.airbyte.integrations.destination.snowflake.client
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationStream
+import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.component.TableOperationsClient
+import io.airbyte.cdk.load.component.TableSchema
+import io.airbyte.cdk.load.component.TableSchemaDiff
 import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
 import io.airbyte.cdk.load.table.ColumnNameMapping
 import io.airbyte.cdk.load.table.TableName
@@ -17,6 +20,7 @@ import io.airbyte.integrations.destination.snowflake.db.escapeJsonIdentifier
 import io.airbyte.integrations.destination.snowflake.db.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.COUNT_TOTAL_ALIAS
+import io.airbyte.integrations.destination.snowflake.sql.NOT_NULL
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeColumnUtils
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlGenerator
 import io.airbyte.integrations.destination.snowflake.sql.andLog
@@ -38,7 +42,11 @@ class SnowflakeAirbyteClient(
     private val sqlGenerator: SnowflakeDirectLoadSqlGenerator,
     private val snowflakeColumnUtils: SnowflakeColumnUtils,
     private val snowflakeConfiguration: SnowflakeConfiguration,
-) : TableOperationsClient, TableSchemaEvolutionClient {
+) :
+    // Unlike other destinations, when creating a table, we only need the column types.
+    // So just use Unit instead of providing any "additional information" about a table.
+    TableOperationsClient,
+    TableSchemaEvolutionClient<Unit, Unit> {
 
     private val airbyteColumnNames =
         snowflakeColumnUtils.getFormattedDefaultColumnNames(false).toSet()
@@ -190,25 +198,60 @@ class SnowflakeAirbyteClient(
         if (snowflakeConfiguration.legacyRawTablesOnly) {
             return
         }
-        val columnsInDb = getColumnsFromDb(tableName)
-        val columnsInStream = getColumnsFromStream(stream, columnNameMapping)
-        val (addedColumns, deletedColumns, modifiedColumns) =
-            generateSchemaChanges(columnsInDb, columnsInStream)
+        super.ensureSchemaMatches(stream, tableName, columnNameMapping)
+    }
 
+    override suspend fun discoverSchema(tableName: TableName): Pair<TableSchema, Unit> {
+        return Pair(
+            TableSchema(getColumnsFromDb(tableName)),
+            Unit,
+        )
+    }
+
+    override fun computeSchema(
+        stream: DestinationStream,
+        columnNameMapping: ColumnNameMapping
+    ): Pair<TableSchema, Unit> {
+        return Pair(
+            TableSchema(getColumnsFromStream(stream, columnNameMapping)),
+            Unit,
+        )
+    }
+
+    override fun diff(actualSchemaInfo: Unit, expectedSchemaInfo: Unit) {
+        return
+    }
+
+    override suspend fun applySchemaDiff(
+        stream: DestinationStream,
+        columnNameMapping: ColumnNameMapping,
+        tableName: TableName,
+        expectedSchema: TableSchema,
+        expectedAdditionalInfo: Unit,
+        diff: TableSchemaDiff,
+        additionalSchemaInfoDiff: Unit,
+    ) {
         if (
-            addedColumns.isNotEmpty() || deletedColumns.isNotEmpty() || modifiedColumns.isNotEmpty()
+            diff.columnsToAdd.isNotEmpty() ||
+                diff.columnsToDrop.isNotEmpty() ||
+                diff.columnsToChange.isNotEmpty()
         ) {
             log.info { "Summary of the table alterations:" }
-            log.info { "Added columns: $addedColumns" }
-            log.info { "Deleted columns: $deletedColumns" }
-            log.info { "Modified columns: $modifiedColumns" }
+            log.info { "Added columns: ${diff.columnsToAdd}" }
+            log.info { "Deleted columns: ${diff.columnsToDrop}" }
+            log.info { "Modified columns: ${diff.columnsToChange}" }
             sqlGenerator
-                .alterTable(tableName, addedColumns, deletedColumns, modifiedColumns)
+                .alterTable(
+                    tableName,
+                    diff.columnsToAdd,
+                    diff.columnsToDrop,
+                    diff.columnsToChange,
+                )
                 .forEach { execute(it) }
         }
     }
 
-    internal fun getColumnsFromDb(tableName: TableName): Set<ColumnDefinition> {
+    internal fun getColumnsFromDb(tableName: TableName): Map<String, ColumnType> {
         try {
             val sql =
                 sqlGenerator.describeTable(
@@ -219,7 +262,7 @@ class SnowflakeAirbyteClient(
                 val statement = connection.createStatement()
                 return statement.use {
                     val rs: ResultSet = it.executeQuery(sql)
-                    val columnsInDb: MutableSet<ColumnDefinition> = mutableSetOf()
+                    val columnsInDb: MutableMap<String, ColumnType> = mutableMapOf()
 
                     while (rs.next()) {
                         val columnName = escapeJsonIdentifier(rs.getString("name"))
@@ -229,8 +272,10 @@ class SnowflakeAirbyteClient(
                             continue
                         }
                         val dataType = rs.getString("type").takeWhile { char -> char != '(' }
+                        // yes, this is how we live. The value is, in fact "Y" or "N".
+                        val nullable = rs.getString("null?") == "Y"
 
-                        columnsInDb.add(ColumnDefinition(columnName, dataType, false))
+                        columnsInDb[columnName] = ColumnType(dataType, nullable)
                     }
 
                     columnsInDb
@@ -244,23 +289,25 @@ class SnowflakeAirbyteClient(
     internal fun getColumnsFromStream(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping
-    ) =
+    ): Map<String, ColumnType> =
         snowflakeColumnUtils
             .columnsAndTypes(stream.schema.asColumns(), columnNameMapping)
             .filter { column -> column.columnName !in airbyteColumnNames }
-            .map { column ->
-                ColumnDefinition(
-                    name = column.columnName,
-                    type =
-                        column.columnType.takeWhile { char ->
+            .associate { column ->
+                // columnsAndTypes returns types as either `FOO` or `FOO NOT NULL`.
+                // so check for that suffix.
+                val nullable = column.columnType.endsWith(NOT_NULL)
+                val type =
+                    column.columnType
+                        .takeWhile { char ->
                             // This is to remove any precision parts of the dialect type
                             char != '('
-                        },
-                    // Not used to ensure schema
-                    isPrimaryKey = false,
-                )
+                        }
+                        .removeSuffix(NOT_NULL)
+                        .trim()
+
+                column.columnName to ColumnType(type, nullable)
             }
-            .toSet()
 
     internal fun generateSchemaChanges(
         columnsInDb: Set<ColumnDefinition>,

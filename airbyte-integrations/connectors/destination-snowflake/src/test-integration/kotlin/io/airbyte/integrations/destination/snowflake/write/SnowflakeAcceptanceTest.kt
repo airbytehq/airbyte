@@ -49,8 +49,8 @@ class SnowflakeInsertAcceptanceTest :
         unknownTypesBehavior = UnknownTypesBehavior.SERIALIZE,
     ) {
     @Test
-    override fun testFunkyCharactersDedup() {
-        super.testFunkyCharactersDedup()
+    override fun testAppendSchemaEvolution() {
+        super.testAppendSchemaEvolution()
     }
 }
 

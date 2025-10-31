@@ -573,10 +573,7 @@ internal class SnowflakeAirbyteClientTest {
         val result = client.getColumnsFromDb(tableName)
 
         val expectedColumns =
-            setOf(
-                ColumnDefinition("COL1", "VARCHAR", false),
-                ColumnDefinition("COL2", "NUMBER", false)
-            )
+            setOf(ColumnDefinition("COL1", "VARCHAR"), ColumnDefinition("COL2", "NUMBER"))
 
         assertEquals(expectedColumns, result)
     }
@@ -624,8 +621,8 @@ internal class SnowflakeAirbyteClientTest {
 
         val expectedColumns =
             setOf(
-                ColumnDefinition("COL1_MAPPED", "VARCHAR", false),
-                ColumnDefinition("COL2_MAPPED", "NUMBER", false)
+                ColumnDefinition("COL1_MAPPED", "VARCHAR"),
+                ColumnDefinition("COL2_MAPPED", "NUMBER")
             )
 
         assertEquals(expectedColumns, result)
@@ -635,15 +632,15 @@ internal class SnowflakeAirbyteClientTest {
     fun `generateSchemaChanges should correctly identify changes`() {
         val columnsInDb =
             setOf(
-                ColumnDefinition("COL1", "VARCHAR", false),
-                ColumnDefinition("COL2", "NUMBER", false),
-                ColumnDefinition("COL3", "BOOLEAN", false)
+                ColumnDefinition("COL1", "VARCHAR"),
+                ColumnDefinition("COL2", "NUMBER"),
+                ColumnDefinition("COL3", "BOOLEAN")
             )
         val columnsInStream =
             setOf(
-                ColumnDefinition("COL1", "VARCHAR", false), // Unchanged
-                ColumnDefinition("COL3", "TEXT", false), // Modified
-                ColumnDefinition("COL4", "DATE", false) // Added
+                ColumnDefinition("COL1", "VARCHAR"), // Unchanged
+                ColumnDefinition("COL3", "TEXT"), // Modified
+                ColumnDefinition("COL4", "DATE") // Added
             )
 
         val (added, deleted, modified) = client.generateSchemaChanges(columnsInDb, columnsInStream)
