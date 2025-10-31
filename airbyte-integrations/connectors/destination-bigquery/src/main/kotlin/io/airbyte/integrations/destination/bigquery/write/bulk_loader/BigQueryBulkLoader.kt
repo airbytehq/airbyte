@@ -82,9 +82,11 @@ class BigQueryBulkLoader(
             "Finished loading data into table ${tableId.toPrettyString()}. ${stats.outputRows} rows loaded; ${stats.badRecords} bad records."
         }
         if (stats.badRecords > 0) {
-            logger.warn {
+            // This should be impossible: the load job uses the default setting of maxBadRecords=0,
+            // so the job is supposed to fail if there were any bad records.
+            throw RuntimeException(
                 "${tableId.toPrettyString()}: Nonzero bad records detected: ${stats.badRecords}"
-            }
+            )
         }
 
         val loadingMethodPostProcessing =
