@@ -85,11 +85,11 @@ class RedshiftSQLNameTransformerTest {
         // Each Japanese character is 3 bytes in UTF-8
         val longJapaneseName = "あ".repeat(50) // 50 * 3 = 150 bytes
         val result = transformer.convertStreamName(longJapaneseName)
-        
+
         // Verify the result doesn't exceed 127 bytes
         val byteLength = result.toByteArray(Charsets.UTF_8).size
         assertTrue(byteLength <= 127, "Result byte length $byteLength exceeds 127 bytes")
-        
+
         // Should contain 42 characters (42 * 3 = 126 bytes)
         assertEquals(42, result.length)
     }
@@ -99,7 +99,7 @@ class RedshiftSQLNameTransformerTest {
         // Mix of 1-byte (ASCII) and 3-byte (Japanese) characters
         val mixedName = "a".repeat(100) + "あ".repeat(20) // 100 + 60 = 160 bytes
         val result = transformer.convertStreamName(mixedName)
-        
+
         val byteLength = result.toByteArray(Charsets.UTF_8).size
         assertTrue(byteLength <= 127, "Result byte length $byteLength exceeds 127 bytes")
     }
@@ -133,16 +133,16 @@ class RedshiftSQLNameTransformerTest {
         assertEquals("タイプ", transformer.convertStreamName("タイプ"))
         assertEquals("تاريخ_الميلاد", transformer.convertStreamName("تاريخ الميلاد"))
         assertEquals("अनाप्लान", transformer.convertStreamName("अनाप्लान"))
-        
+
         // Verify these are NOT converted to underscores
         val result1 = transformer.convertStreamName("タイプ")
         assertTrue(result1.contains("タ") || result1.contains("イ") || result1.contains("プ"),
             "Japanese characters should be preserved, got: $result1")
-        
+
         val result2 = transformer.convertStreamName("تاريخ الميلاد")
         assertTrue(result2.contains("ت") || result2.contains("ا") || result2.contains("ر"),
             "Arabic characters should be preserved, got: $result2")
-        
+
         val result3 = transformer.convertStreamName("अनाप्लान")
         assertTrue(result3.contains("अ") || result3.contains("न") || result3.contains("ा"),
             "Hindi characters should be preserved, got: $result3")

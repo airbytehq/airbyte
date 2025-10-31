@@ -26,17 +26,19 @@ class RedshiftSQLNameTransformer : StandardNameTransformer() {
     private fun toRedshiftIdentifier(input: String): String {
         // Normalize to NFC form to ensure consistent representation
         val normalized = Normalizer.normalize(input, Normalizer.Form.NFC)
-        
+
         // Replace spaces with underscores (spaces not allowed in standard identifiers)
         val spacesReplaced = normalized.replace("\\s+".toRegex(), "_")
-        
+
         val result = StringBuilder()
         var byteCount = 0
-        
-        for (i in spacesReplaced.indices) {
+
+        // Iterate over code points (not char indices) to properly handle surrogate pairs
+        var i = 0
+        while (i < spacesReplaced.length) {
             val codePoint = spacesReplaced.codePointAt(i)
-            val char = spacesReplaced[i]
-            
+            val charCount = Character.charCount(codePoint)
+
             // Calculate UTF-8 byte length for this code point
             val charByteLength = when {
                 codePoint <= 0x7F -> 1
@@ -44,17 +46,17 @@ class RedshiftSQLNameTransformer : StandardNameTransformer() {
                 codePoint <= 0xFFFF -> 3
                 else -> 4
             }
-            
+
             // Check if adding this character would exceed 127 bytes
             if (byteCount + charByteLength > 127) {
                 break
             }
-            
+
             // First character rules
             if (result.isEmpty()) {
                 when {
-                    // Allow ASCII letters, underscore, or Unicode letters
-                    char == '_' || Character.isLetter(codePoint) -> {
+                    // Allow underscore or Unicode letters
+                    codePoint == '_'.code || Character.isLetter(codePoint) -> {
                         result.appendCodePoint(codePoint)
                         byteCount += charByteLength
                     }
@@ -63,7 +65,7 @@ class RedshiftSQLNameTransformer : StandardNameTransformer() {
                         result.append('_')
                         byteCount += 1
                         // Try to add the original character if it's valid for subsequent positions
-                        if (Character.isLetterOrDigit(codePoint) || char == '_' || char == '$') {
+                        if (Character.isLetterOrDigit(codePoint) || codePoint == '_'.code || codePoint == '$'.code) {
                             if (byteCount + charByteLength <= 127) {
                                 result.appendCodePoint(codePoint)
                                 byteCount += charByteLength
@@ -74,7 +76,7 @@ class RedshiftSQLNameTransformer : StandardNameTransformer() {
             } else {
                 // Subsequent character rules: allow letters, digits, underscore, dollar sign
                 when {
-                    Character.isLetterOrDigit(codePoint) || char == '_' || char == '$' -> {
+                    Character.isLetterOrDigit(codePoint) || codePoint == '_'.code || codePoint == '$'.code -> {
                         result.appendCodePoint(codePoint)
                         byteCount += charByteLength
                     }
@@ -87,14 +89,11 @@ class RedshiftSQLNameTransformer : StandardNameTransformer() {
                     }
                 }
             }
-            
-            // Skip the low surrogate if this was a surrogate pair
-            if (Character.isHighSurrogate(char) && i + 1 < spacesReplaced.length) {
-                // The codePointAt already handled both surrogates, so skip the next char
-                continue
-            }
+
+            // Move to next code point (handles surrogate pairs correctly)
+            i += charCount
         }
-        
+
         // Apply lowercase using ROOT locale to avoid locale-specific issues (e.g., Turkish i)
         return result.toString().lowercase(Locale.ROOT)
     }
