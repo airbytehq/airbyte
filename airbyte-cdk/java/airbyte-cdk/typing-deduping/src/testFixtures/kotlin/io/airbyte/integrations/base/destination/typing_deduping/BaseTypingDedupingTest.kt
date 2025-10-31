@@ -12,11 +12,11 @@ import io.airbyte.commons.json.Jsons
 import io.airbyte.commons.lang.Exceptions
 import io.airbyte.commons.resources.MoreResources
 import io.airbyte.configoss.WorkerDestinationConfig
-import io.airbyte.protocol.models.AirbyteStreamStatusTraceMessage
-import io.airbyte.protocol.models.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
-import io.airbyte.protocol.models.AirbyteTraceMessage
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog
-import io.airbyte.protocol.models.StreamDescriptor
+import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage
+import io.airbyte.protocol.models.v0.AirbyteStreamStatusTraceMessage.AirbyteStreamStatus
+import io.airbyte.protocol.models.v0.AirbyteTraceMessage
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog
+import io.airbyte.protocol.models.v0.StreamDescriptor
 import io.airbyte.protocol.models.v0.*
 import io.airbyte.workers.exception.TestHarnessException
 import io.airbyte.workers.internal.AirbyteDestination
@@ -1443,22 +1443,25 @@ abstract class BaseTypingDedupingTest {
     ) {
         catalog.streams.forEach {
             destination.accept(
-                io.airbyte.protocol.models
-                    .AirbyteMessage()
-                    .withType(io.airbyte.protocol.models.AirbyteMessage.Type.TRACE)
-                    .withTrace(
-                        AirbyteTraceMessage()
-                            .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
-                            .withStreamStatus(
-                                AirbyteStreamStatusTraceMessage()
-                                    .withStreamDescriptor(
-                                        StreamDescriptor()
-                                            .withNamespace(it.stream.namespace)
-                                            .withName(it.stream.name),
-                                    )
-                                    .withStatus(streamStatus),
-                            ),
-                    ),
+                convertProtocolObject(
+                    io.airbyte.protocol.models.v0
+                        .AirbyteMessage()
+                        .withType(io.airbyte.protocol.models.v0.AirbyteMessage.Type.TRACE)
+                        .withTrace(
+                            AirbyteTraceMessage()
+                                .withType(AirbyteTraceMessage.Type.STREAM_STATUS)
+                                .withStreamStatus(
+                                    AirbyteStreamStatusTraceMessage()
+                                        .withStreamDescriptor(
+                                            StreamDescriptor()
+                                                .withNamespace(it.stream.namespace)
+                                                .withName(it.stream.name),
+                                        )
+                                        .withStatus(streamStatus),
+                                ),
+                        ),
+                    io.airbyte.protocol.models.AirbyteMessage::class.java
+                )!!
             )
         }
     }
@@ -1533,7 +1536,7 @@ abstract class BaseTypingDedupingTest {
         val destinationConfig =
             WorkerDestinationConfig()
                 .withConnectionId(UUID.randomUUID())
-                .withCatalog(convertProtocolObject(catalog, ConfiguredAirbyteCatalog::class.java))
+                .withCatalog(convertProtocolObject(catalog, io.airbyte.protocol.models.ConfiguredAirbyteCatalog::class.java))
                 .withDestinationConnectionConfiguration(transformedConfig)
         val destination: AirbyteDestination =
             DefaultAirbyteDestination(
