@@ -2,8 +2,30 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
-import pendulum
+import sys
+from pathlib import Path
+
 from pytest import fixture
+
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from airbyte_cdk.utils.datetime_helpers import ab_datetime_parse
+
+
+def _get_manifest_path() -> Path:
+    return Path(__file__).parent.parent
+
+
+_SOURCE_FOLDER_PATH = _get_manifest_path()
+_YAML_FILE_PATH = _SOURCE_FOLDER_PATH / "source_okta" / "manifest.yaml"
+
+sys.path.append(str(_SOURCE_FOLDER_PATH))
+
+
+def find_stream(stream_name, config):
+    for stream in YamlDeclarativeSource(config=config, catalog=None, state=None, path_to_yaml=str(_YAML_FILE_PATH)).streams(config=config):
+        if stream.name == stream_name:
+            return stream
+    raise ValueError(f"Stream {stream_name} not found")
 
 
 @fixture
@@ -125,6 +147,7 @@ def oauth_config():
     Credentials for oauth2.0 authorization
     """
     return {
+        "base_url": "https://test_domain.okta.com",
         "credentials": {
             "auth_type": "oauth2.0",
             "client_secret": "test_client_secret",
@@ -132,6 +155,7 @@ def oauth_config():
             "refresh_token": "test_refresh_token",
         },
         "domain": "test_domain",
+        "start_date": "2022-07-22T00:00:00Z",
     }
 
 
@@ -171,9 +195,14 @@ def wrong_oauth_config_bad_auth_type():
 @fixture
 def token_config():
     """
-    Just test 'token'
+    Just test 'token' - updated to include required credentials field
     """
-    return {"token": "test_token", "start_date": "2021-03-21T20:49:13Z"}
+    return {
+        "token": "test_token",
+        "start_date": "2021-03-21T20:49:13Z",
+        "credentials": {"auth_type": "api_token", "api_token": "test_token"},
+        "domain": "test_domain",
+    }
 
 
 @fixture
@@ -540,4 +569,4 @@ def error_failed_to_authorize_with_provided_credentials():
 
 @fixture
 def start_date():
-    return pendulum.parse("2021-03-21T20:49:13Z")
+    return ab_datetime_parse("2021-03-21T20:49:13Z")
