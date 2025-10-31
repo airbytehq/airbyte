@@ -80,7 +80,7 @@
                 "type": "array",
                 "items": {
                   "$schema": "http://json-schema.org/draft-07/schema#",
-                  "$id": "https://github.com/airbytehq/airbyte/airbyte-ci/connectors/metadata_service/lib/metadata_service/models/src/TestSecret.yaml",
+                  "$id": "https://github.com/airbytehq/airbyte/airbyte-ci/connectors/metadata_service/lib/metadata_service/models/src/Secret.yaml",
                   "title": "Secret",
                   "description": "An object describing a secret's metadata",
                   "type": "object",
@@ -100,14 +100,10 @@
                     },
                     "secretStore": {
                       "$schema": "http://json-schema.org/draft-07/schema#",
-                      "$id": "https://github.com/airbytehq/airbyte/airbyte-ci/connectors/metadata_service/lib/metadata_service/models/src/TestSecret.yaml",
+                      "$id": "https://github.com/airbytehq/airbyte/airbyte-ci/connectors/metadata_service/lib/metadata_service/models/src/SecretStore.yaml",
                       "title": "SecretStore",
                       "description": "An object describing a secret store metadata",
                       "type": "object",
-                      "required": [
-                        "name",
-                        "secretStore"
-                      ],
                       "additionalProperties": false,
                       "properties": {
                         "alias": {
@@ -456,7 +452,7 @@
                   ],
                   "properties": {
                     "scopeType": {
-                      "type": "const",
+                      "type": "string",
                       "const": "stream"
                     },
                     "impactedScopes": {

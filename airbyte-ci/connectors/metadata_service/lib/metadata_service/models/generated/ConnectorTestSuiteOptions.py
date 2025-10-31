@@ -3,10 +3,9 @@
 
 from __future__ import annotations
 
-from typing import List, Optional
+from typing import List, Literal, Optional
 
 from pydantic import BaseModel, Extra, Field
-from typing_extensions import Literal
 
 
 class SecretStore(BaseModel):

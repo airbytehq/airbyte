@@ -3,10 +3,9 @@
 
 from __future__ import annotations
 
-from typing import Any, Optional, Union
+from typing import Any, Literal, Optional, Union
 
 from pydantic import BaseModel, Extra
-from typing_extensions import Literal
 
 
 class ConnectorMetrics(BaseModel):

@@ -4,11 +4,10 @@
 from __future__ import annotations
 
 from datetime import date, datetime
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Union
 from uuid import UUID
 
 from pydantic import AnyUrl, BaseModel, Extra, Field, conint, constr
-from typing_extensions import Literal
 
 
 class ConnectorBuildOptions(BaseModel):
@@ -144,7 +143,7 @@ class StreamBreakingChangeScope(BaseModel):
     class Config:
         extra = Extra.forbid
 
-    scopeType: Any = Field("stream", const=True)
+    scopeType: str = Field("stream", const=True)
     impactedScopes: List[str] = Field(
         ...,
         description="List of streams that are impacted by the breaking change.",
@@ -163,16 +162,6 @@ class AirbyteInternal(BaseModel):
         True,
         description="When false, version increment checks will be skipped for this connector",
     )
-
-
-class ConnectorIPCDataChannel(BaseModel):
-    version: str = Field(..., description="Version of the data channel specification")
-    supportedSerialization: List[Literal["JSONL", "PROTOBUF", "FLATBUFFERS"]]
-    supportedTransport: List[Literal["STDIO", "SOCKET"]]
-
-
-class ConnectorIPCOptions(BaseModel):
-    dataChannel: ConnectorIPCDataChannel
 
 
 class PyPi(BaseModel):
@@ -226,6 +215,22 @@ class ConnectorMetric(BaseModel):
     usage: Optional[Union[str, Literal["low", "medium", "high"]]] = None
     sync_success_rate: Optional[Union[str, Literal["low", "medium", "high"]]] = None
     connector_version: Optional[str] = None
+
+
+class DataChannel(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    version: str
+    supportedSerialization: List[Literal["JSONL", "PROTOBUF", "FLATBUFFERS"]]
+    supportedTransport: List[Literal["STDIO", "SOCKET"]]
+
+
+class ConnectorIPCOptions(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    dataChannel: DataChannel
 
 
 class Secret(BaseModel):
@@ -351,7 +356,7 @@ class ConnectorBreakingChanges(BaseModel):
     )
 
 
-class RegistryOverride(BaseModel):
+class RegistryOverridesModel(BaseModel):
     class Config:
         extra = Extra.forbid
 
@@ -418,7 +423,7 @@ class Data(BaseModel):
         [],
         description="An array of tags that describe the connector. E.g: language:python, keyword:rds, etc.",
     )
-    registryOverrides: Optional[RegistryOverride] = None
+    registryOverrides: Optional[RegistryOverridesModel] = None
     allowedHosts: Optional[AllowedHosts] = None
     releases: Optional[ConnectorReleases] = None
     normalizationConfig: Optional[NormalizationDestinationDefinitionConfig] = None
@@ -430,10 +435,7 @@ class Data(BaseModel):
     generated: Optional[GeneratedFields] = None
     supportsFileTransfer: Optional[bool] = False
     supportsDataActivation: Optional[bool] = False
-    connectorIPCOptions: Optional[ConnectorIPCOptions] = Field(
-            None,
-            description="Advanced options related to connector's inter-process communication"
-        )
+    connectorIPCOptions: Optional[ConnectorIPCOptions] = None
 
 
 class ConnectorMetadataDefinitionV0(BaseModel):
