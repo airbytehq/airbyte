@@ -22,6 +22,9 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
+from airbyte_cdk.models import (
+    Type as MessageType,
+)
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.utils import AirbyteTracedException
 
@@ -227,8 +230,8 @@ def test_pandas_header_none(absolute_path, test_files):
     records = source.read(logger=logger, config=deepcopy(config), catalog=catalog)
     records = [r.record.data for r in records if r.type == MessageType.RECORD]
     assert records == [
-        {"0": "text11", "1": "text12"},
-        {"0": "text21", "1": "text22"},
+        {0: "text11", 1: "text12"},
+        {0: "text21", 1: "text22"},
     ]
 
 
