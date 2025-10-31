@@ -11,22 +11,20 @@ internal class MetricTrackerTest {
 
     @Test
     fun testAddingMetricValue() {
-        val metricName = "testMetric"
+        val metric = MetricRegistry.NULLED_VALUE_COUNT
         val metricTracker = MetricTracker()
 
-        assertEquals(0, metricTracker.get().size)
+        assertEquals(MetricRegistry.entries.size, metricTracker.get().size)
+        metricTracker.get().forEach { assertEquals(0.0, it.value) }
 
-        metricTracker.add(metricName, 1.0)
-        assertEquals(1, metricTracker.get().size)
-        assertEquals(1.0, metricTracker.get()[metricName])
+        metricTracker.add(metric, 1.0)
+        assertEquals(1.0, metricTracker.get()[metric.metricName])
 
-        metricTracker.add(metricName, 2.0)
-        assertEquals(1, metricTracker.get().size)
-        assertEquals(3.0, metricTracker.get()[metricName])
+        metricTracker.add(metric, 2.0)
+        assertEquals(3.0, metricTracker.get()[metric.metricName])
 
-        metricTracker.add("$metricName}2", 5.0)
-        assertEquals(2, metricTracker.get().size)
-        assertEquals(3.0, metricTracker.get()[metricName])
-        assertEquals(5.0, metricTracker.get()["$metricName}2"])
+        metricTracker.add(MetricRegistry.TRUNCATED_VALUE_COUNT, 5.0)
+        assertEquals(3.0, metricTracker.get()[metric.metricName])
+        assertEquals(5.0, metricTracker.get()[MetricRegistry.TRUNCATED_VALUE_COUNT.metricName])
     }
 }

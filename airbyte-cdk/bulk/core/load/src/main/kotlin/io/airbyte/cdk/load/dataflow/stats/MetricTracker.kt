@@ -12,9 +12,21 @@ class MetricTracker {
 
     private val metrics: MutableMap<String, Double> = ConcurrentHashMap()
 
-    fun add(name: String, value: Double) {
-        metrics[name] = metrics.getOrDefault(name, 0.0) + value
+    init {
+        MetricRegistry.entries.forEach {
+            // Initialize all metrics to 0.0
+            add(it, 0.0)
+        }
+    }
+
+    fun add(metric: MetricRegistry, value: Double) {
+        metrics[metric.metricName] = metrics.getOrDefault(metric.metricName, 0.0) + value
     }
 
     fun get(): Map<String, Double> = metrics.toMap()
+}
+
+enum class MetricRegistry(val metricName: String) {
+    NULLED_VALUE_COUNT("NulledValueCount"),
+    TRUNCATED_VALUE_COUNT("TruncatedValueCount")
 }

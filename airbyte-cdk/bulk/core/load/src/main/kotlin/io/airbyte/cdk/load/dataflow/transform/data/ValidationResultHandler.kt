@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.dataflow.transform.data
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.EnrichedAirbyteValue
 import io.airbyte.cdk.load.data.NullValue
+import io.airbyte.cdk.load.dataflow.stats.MetricRegistry
 import io.airbyte.cdk.load.dataflow.stats.MetricTracker
 import io.airbyte.cdk.load.dataflow.transform.ValidationResult
 import io.airbyte.cdk.load.message.Meta
@@ -40,7 +41,7 @@ class ValidationResultHandler(private val metricTracker: MetricTracker) {
         val nullChange = Meta.Change(field = value.name, change = Change.NULLED, reason = reason)
         value.abValue = NullValue
         value.changes.add(nullChange)
-        metricTracker.add("NulledValueCount", 1.0)
+        metricTracker.add(MetricRegistry.NULLED_VALUE_COUNT, 1.0)
         return value
     }
 
@@ -62,7 +63,7 @@ class ValidationResultHandler(private val metricTracker: MetricTracker) {
             Meta.Change(field = value.name, change = Change.TRUNCATED, reason = reason)
         value.abValue = truncatedValue
         value.changes.add(truncateChange)
-        metricTracker.add("TruncatedValueCount", 1.0)
+        metricTracker.add(MetricRegistry.TRUNCATED_VALUE_COUNT, 1.0)
         return value
     }
 }
