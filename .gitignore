@@ -122,3 +122,5 @@ airbyte-integrations/connectors/**/airbyte-cdk-load/
 # AI
 AGENT.md
 .claude/settings.local.json
+# Cursor workspace files
+**/*.code-workspace
