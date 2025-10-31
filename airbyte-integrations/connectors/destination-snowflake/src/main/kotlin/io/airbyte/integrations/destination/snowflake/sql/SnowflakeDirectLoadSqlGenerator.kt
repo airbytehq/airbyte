@@ -396,8 +396,7 @@ class SnowflakeDirectLoadSqlGenerator(
             clauses.add(
                 // Note that we intentionally don't set NOT NULL.
                 // We're adding a new column, and we don't know what constitutes a reasonable
-                // default value
-                // for preexisting records.
+                // default value for preexisting records.
                 // So we add the column as nullable.
                 "ALTER TABLE $prettyTableName ADD COLUMN ${name.quote()} ${columnType.type};".andLog()
             )
@@ -405,12 +404,14 @@ class SnowflakeDirectLoadSqlGenerator(
         deletedColumns.forEach {
             clauses.add("ALTER TABLE $prettyTableName DROP COLUMN ${it.key.quote()};".andLog())
         }
-        modifiedColumns
-            // Filter for actual type changes. We don't care about changes in nullability.
-            .filter { (_, typeChange) -> typeChange.originalType.type != typeChange.newType.type }
-            .forEach { (name, typeChange) ->
+        modifiedColumns.forEach { (name, typeChange) ->
+            if (typeChange.originalType.type != typeChange.newType.type) {
+                // If we're changing the actual column type, then we need to add a temp column,
+                // cast the original column to that column, drop the original column,
+                // and rename the temp column.
                 val tempColumn = "${name}_${uuidGenerator.v4()}"
                 clauses.add(
+                    // As above: we add the column as nullable.
                     "ALTER TABLE $prettyTableName ADD COLUMN ${tempColumn.quote()} ${typeChange.newType.type};".andLog()
                 )
                 clauses.add(
@@ -419,18 +420,32 @@ class SnowflakeDirectLoadSqlGenerator(
                 val backupColumn = "${tempColumn}_backup"
                 clauses.add(
                     """ALTER TABLE $prettyTableName
-                RENAME COLUMN "$name" TO "$backupColumn";
-            """.trimIndent()
+                            RENAME COLUMN "$name" TO "$backupColumn";
+                        """.trimIndent()
                 )
                 clauses.add(
                     """ALTER TABLE $prettyTableName
-                RENAME COLUMN "$tempColumn" TO "$name";
-            """.trimIndent()
+                            RENAME COLUMN "$tempColumn" TO "$name";
+                        """.trimIndent()
                 )
                 clauses.add(
                     "ALTER TABLE $prettyTableName DROP COLUMN ${backupColumn.quote()};".andLog()
                 )
+            } else if (!typeChange.originalType.nullable && typeChange.newType.nullable) {
+                // If the type is unchanged, we can change a column from NOT NULL to nullable.
+                // But we'll never do the reverse, because there's a decent chance that historical
+                // records
+                // had null values.
+                // Users can always manually ALTER COLUMN ... SET NOT NULL if they want.
+                clauses.add(
+                    """ALTER TABLE $prettyTableName ALTER COLUMN "$name" DROP NOT NULL;""".andLog()
+                )
+            } else {
+                log.info {
+                    "Table ${tableName.toPrettyString()} column $name wants to change from nullable to non-nullable; ignoring this change."
+                }
             }
+        }
         return clauses
     }
 }

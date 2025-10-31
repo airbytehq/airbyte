@@ -223,6 +223,8 @@ class SnowflakeAirbyteClient(
     }
 
     override suspend fun applySchemaDiff(
+        stream: DestinationStream,
+        columnNameMapping: ColumnNameMapping,
         tableName: TableName,
         expectedSchema: TableSchema,
         expectedAdditionalInfo: Unit,
