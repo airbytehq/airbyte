@@ -53,6 +53,9 @@ open class PostgresTypingDedupingTest : AbstractPostgresTypingDedupingTest() {
     //syncs used to fail when doing this, not anymore
     @Disabled @Test override fun interruptedTruncateWithPriorData() {}
 
+    // this tests that the fully qualified raw table name is lowercased. This is actually not a restriction anymore, so disabling the test.
+    @Disabled @Test override fun testMixedCasedSchema() {}
+
     // fields that are not in the schema are now dropped.
     @Disabled @ParameterizedTest @ValueSource(longs = [0L, 42L]) override fun testIncrementalSyncDropOneColumn(inputGenerationId: Long) {}
 
