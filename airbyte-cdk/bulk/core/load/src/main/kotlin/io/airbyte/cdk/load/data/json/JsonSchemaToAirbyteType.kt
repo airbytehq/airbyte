@@ -92,9 +92,11 @@ class JsonSchemaToAirbyteType(
                     // options is supposed to be a list, but fallback to sane behavior if it's not.
                     convertInner(options)
                 }
-            } else if (schema.has("properties")) {
+            } else if (schema.has("properties") && schema is ObjectNode) {
+                // (technically `schema is ObjectNode` is implied by `schema` having any keys at
+                // all, but the smart cast lets us avoid an explicit cast)
                 // Default to object if no type and not a union type, but has properties
-                convertInner((schema as ObjectNode).put("type", "object"))
+                convertInner(schema.put("type", "object"))
             } else {
                 // Otherwise, give up
                 UnknownType(schema)
