@@ -158,8 +158,17 @@ class MsSqlServerJdbcPartitionFactory(
     override fun create(streamFeedBootstrap: StreamFeedBootstrap): MsSqlServerJdbcPartition? {
         val stream: Stream = streamFeedBootstrap.feed
         val streamState: DefaultJdbcStreamState = streamState(streamFeedBootstrap)
-        val opaqueStateValue: OpaqueStateValue =
-            streamFeedBootstrap.currentState ?: return coldStart(streamState)
+        val opaqueStateValue: OpaqueStateValue? = streamFeedBootstrap.currentState
+
+        // An empty table or table with all NULL cursor values will be marked as a nullNode.
+        // This prevents repeated attempts to read it
+        if (opaqueStateValue?.isNull == true) {
+            return null
+        }
+
+        if (opaqueStateValue == null) {
+            return coldStart(streamState)
+        }
 
         val isCursorBased: Boolean = !sharedState.configuration.global
 
@@ -228,11 +237,18 @@ class MsSqlServerJdbcPartitionFactory(
 
             if (stream.configuredSyncMode == ConfiguredSyncMode.FULL_REFRESH) {
                 val upperBound = findPkUpperBound(stream, pkChosenFromCatalog)
-                if (sv.pkValue == upperBound.asText()) {
+                val pkLowerBound: JsonNode =
+                    if (sv.pkValue == null || sv.pkValue.isNull) {
+                        Jsons.nullNode()
+                    } else if (sv.pkValue.isTextual) {
+                        stateValueToJsonNode(pkChosenFromCatalog[0], sv.pkValue.asText())
+                    } else {
+                        sv.pkValue
+                    }
+
+                if (!pkLowerBound.isNull && areValuesEqual(pkLowerBound, upperBound)) {
                     return null
                 }
-                val pkLowerBound: JsonNode =
-                    stateValueToJsonNode(pkChosenFromCatalog[0], sv.pkValue)
 
                 return MsSqlServerJdbcRfrSnapshotPartition(
                     selectQueryGenerator,
@@ -246,8 +262,14 @@ class MsSqlServerJdbcPartitionFactory(
             if (sv.stateType != StateType.CURSOR_BASED.stateType) {
                 // Loading value from catalog. Note there could be unexpected behaviors if user
                 // updates their schema but did not reset their state.
-                val pkField = pkChosenFromCatalog.first()
-                val pkLowerBound: JsonNode = stateValueToJsonNode(pkField, sv.pkValue)
+                val pkLowerBound: JsonNode =
+                    if (sv.pkValue == null || sv.pkValue.isNull) {
+                        Jsons.nullNode()
+                    } else if (sv.pkValue.isTextual) {
+                        stateValueToJsonNode(pkChosenFromCatalog[0], sv.pkValue.asText())
+                    } else {
+                        sv.pkValue
+                    }
 
                 val cursorChosenFromCatalog: Field =
                     stream.configuredCursor as? Field ?: throw ConfigErrorException("no cursor")
@@ -263,15 +285,39 @@ class MsSqlServerJdbcPartitionFactory(
                     cursorCutoffTime = getCursorCutoffTime(cursorChosenFromCatalog),
                 )
             }
-            // resume back to cursor based increment.
-            val cursor: Field = stream.fields.find { it.id == sv.cursorField.first() } as Field
-            val cursorCheckpoint: JsonNode = stateValueToJsonNode(cursor, sv.cursor)
-
-            // Compose a jsonnode of cursor label to cursor value to fit in
-            // DefaultJdbcCursorIncrementalPartition
-            if (cursorCheckpoint.toString() == streamState.cursorUpperBound?.toString()) {
-                // Incremental complete.
+            if (sv.cursorField.isEmpty()) {
+                // Empty cursor_field means the state was Jsons.nullNode() (emitted when cursor is
+                // NULL).
+                // This indicates the sync already completed in the previous run.
+                log.info {
+                    "State has empty cursor_field for stream ${stream.name}, sync already complete"
+                }
                 return null
+            }
+
+            val cursor: Field? = stream.fields.find { it.id == sv.cursorField.first() }
+            if (cursor == null) {
+                log.warn {
+                    "Cursor field '${sv.cursorField.first()}' not found in stream ${stream.name}, resetting stream"
+                }
+                streamState.reset()
+                return coldStart(streamState)
+            }
+            // Convert cursor JsonNode to proper type (handles timestamp formatting, binary
+            // decoding, etc.)
+            val cursorCheckpoint: JsonNode =
+                if (sv.cursor == null || sv.cursor.isNull) {
+                    Jsons.nullNode()
+                } else {
+                    stateValueToJsonNode(cursor, sv.cursor.asText())
+                }
+
+            val upperBound = streamState.cursorUpperBound
+            if (upperBound != null) {
+                if (areValuesEqual(cursorCheckpoint, upperBound)) {
+                    // Values are equal - incremental complete
+                    return null
+                }
             }
             return MsSqlServerJdbcCursorIncrementalPartition(
                 selectQueryGenerator,
@@ -300,6 +346,27 @@ class MsSqlServerJdbcPartitionFactory(
         } else {
             null
         }
+    }
+
+    /**
+     * Compares two JsonNode values for equality, with special handling for numeric types. This is
+     * needed because NUMERIC columns may have values like "11" stored in state but retrieved as
+     * "11.0" from database, and they should be considered equal.
+     */
+    private fun areValuesEqual(a: JsonNode, b: JsonNode): Boolean {
+        // Handle numeric comparisons - compare as BigDecimal to handle 13.0 == 13
+        if (a.isNumber && b.isNumber) {
+            return try {
+                a.decimalValue().compareTo(b.decimalValue()) == 0
+            } catch (e: Exception) {
+                log.warn(e) {
+                    "Failed to compare numeric values, falling back to string comparison"
+                }
+                a.toString() == b.toString()
+            }
+        }
+        // For non-numeric values, use standard equality
+        return a == b
     }
 
     override fun split(

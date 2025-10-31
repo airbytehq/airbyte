@@ -14,13 +14,13 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 private val log = KotlinLogging.logger {}
 
 data class MsSqlServerJdbcStreamStateValue(
-    @JsonProperty("cursor") val cursor: String = "",
+    @JsonProperty("cursor") val cursor: JsonNode? = null,
     @JsonProperty("version") val version: Int = CURRENT_VERSION,
     @JsonProperty("state_type") val stateType: String = StateType.CURSOR_BASED.stateType,
     @JsonProperty("cursor_field") val cursorField: List<String> = listOf(),
     @JsonProperty("cursor_record_count") val cursorRecordCount: Int = 0,
     @JsonProperty("pk_name") val pkName: String? = null,
-    @JsonProperty("pk_val") val pkValue: String? = null,
+    @JsonProperty("pk_val") val pkValue: JsonNode? = null,
     @JsonProperty("incremental_state") val incrementalState: JsonNode? = null,
 ) {
     companion object {
@@ -46,12 +46,16 @@ data class MsSqlServerJdbcStreamStateValue(
             cursor: Field,
             cursorCheckpoint: JsonNode,
         ): OpaqueStateValue {
-            return Jsons.valueToTree(
-                MsSqlServerJdbcStreamStateValue(
-                    cursorField = listOf(cursor.id),
-                    cursor = cursorCheckpoint.asText(),
-                )
-            )
+            return when (cursorCheckpoint.isNull) {
+                true -> Jsons.nullNode()
+                false ->
+                    Jsons.valueToTree(
+                        MsSqlServerJdbcStreamStateValue(
+                            cursorField = listOf(cursor.id),
+                            cursor = cursorCheckpoint,
+                        )
+                    )
+            }
         }
 
         /** Value representing the progress of an ongoing snapshot not involving cursor columns. */
@@ -60,13 +64,18 @@ data class MsSqlServerJdbcStreamStateValue(
             primaryKeyCheckpoint: List<JsonNode>,
         ): OpaqueStateValue {
             val primaryKeyField = primaryKey.first()
-            return Jsons.valueToTree(
-                MsSqlServerJdbcStreamStateValue(
-                    pkName = primaryKeyField.id,
-                    pkValue = primaryKeyCheckpoint.first().asText(),
-                    stateType = StateType.PRIMARY_KEY.stateType,
-                )
-            )
+            val pkNode = primaryKeyCheckpoint.first()
+            return when (pkNode.isNull) {
+                true -> Jsons.nullNode()
+                false ->
+                    Jsons.valueToTree(
+                        MsSqlServerJdbcStreamStateValue(
+                            pkName = primaryKeyField.id,
+                            pkValue = pkNode,
+                            stateType = StateType.PRIMARY_KEY.stateType,
+                        )
+                    )
+            }
         }
 
         /** Value representing the progress of an ongoing snapshot involving cursor columns. */
@@ -76,19 +85,24 @@ data class MsSqlServerJdbcStreamStateValue(
             cursor: Field,
         ): OpaqueStateValue {
             val primaryKeyField = primaryKey.first()
-            return Jsons.valueToTree(
-                MsSqlServerJdbcStreamStateValue(
-                    pkName = primaryKeyField.id,
-                    pkValue = primaryKeyCheckpoint.first().asText(),
-                    stateType = StateType.PRIMARY_KEY.stateType,
-                    incrementalState =
-                        Jsons.valueToTree(
-                            MsSqlServerJdbcStreamStateValue(
-                                cursorField = listOf(cursor.id),
-                            )
-                        ),
-                )
-            )
+            val pkNode = primaryKeyCheckpoint.first()
+            return when (pkNode.isNull) {
+                true -> Jsons.nullNode()
+                false ->
+                    Jsons.valueToTree(
+                        MsSqlServerJdbcStreamStateValue(
+                            pkName = primaryKeyField.id,
+                            pkValue = pkNode,
+                            stateType = StateType.PRIMARY_KEY.stateType,
+                            incrementalState =
+                                Jsons.valueToTree(
+                                    MsSqlServerJdbcStreamStateValue(
+                                        cursorField = listOf(cursor.id),
+                                    )
+                                ),
+                        )
+                    )
+            }
         }
     }
 }

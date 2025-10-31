@@ -257,7 +257,7 @@ constructor(
             sshConnectionOptions = SshConnectionOptions.fromAdditionalProperties(emptyMap()),
             checkpointTargetInterval = checkpointTargetInterval,
             jdbcUrlFmt = "jdbc:sqlserver://%s:%d;databaseName=${pojo.database}",
-            namespaces = pojo.schemas?.toSet() ?: setOf("dbo"),
+            namespaces = pojo.schemas?.takeIf { it.isNotEmpty() }?.toSet() ?: setOf("dbo"),
             jdbcProperties = jdbcProperties,
             maxConcurrency = maxConcurrency,
             checkPrivileges = pojo.checkPrivileges ?: true,

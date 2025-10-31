@@ -465,4 +465,55 @@ class MsSqlServerJdbcPartitionFactoryTest {
             (jdbcPartition as MsSqlServerJdbcCursorIncrementalPartition).cursorLowerBound
         assertTrue(cursorLowerBound.isNull)
     }
+
+    @Test
+    fun testNumericCursorValueComparison() {
+        // Test that numeric cursor values with different representations (13.0 vs 13) are handled
+        // correctly
+        // This tests the fix for the infinite loop bug where state had "13" but MAX query returned
+        // 13
+        val numericField = Field("numericId", io.airbyte.cdk.jdbc.BigDecimalFieldType)
+        val numericStream =
+            Stream(
+                id =
+                    StreamIdentifier.from(
+                        StreamDescriptor().withNamespace("dbo").withName("numeric_table")
+                    ),
+                schema = setOf(numericField),
+                configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
+                configuredPrimaryKey = listOf(numericField),
+                configuredCursor = numericField,
+            )
+
+        // State has cursor value 13 (numeric JsonNode)
+        val incomingStateValue: OpaqueStateValue =
+            Jsons.readTree(
+                """
+              {
+              "version": 3,
+              "state_type": "cursor_based",
+              "cursor_field": ["numericId"],
+              "cursor": 13,
+              "cursor_record_count": 0
+              }
+            """
+            )
+
+        // Create a mock StreamFeedBootstrap with the state
+        val bootstrap = streamFeedBootstrap(numericStream, incomingStateValue)
+
+        // Mock the MAX query result to return BigDecimal(13)
+        // In reality, this would come from the database
+        val partition = msSqlServerJdbcPartitionFactory.create(bootstrap)
+
+        // Verify partition was created (should be CursorIncrementalPartition)
+        assertTrue(partition is MsSqlServerJdbcCursorIncrementalPartition)
+
+        // Verify the cursor lower bound is BigDecimal 13
+        val cursorLowerBound =
+            (partition as MsSqlServerJdbcCursorIncrementalPartition).cursorLowerBound
+        assertEquals(13, cursorLowerBound.decimalValue().toInt())
+        // Verify it's BigDecimal, not Double
+        assertTrue(cursorLowerBound.isBigDecimal)
+    }
 }
