@@ -30,7 +30,7 @@ class DirectLoadTableAppendStreamLoader(
     private val realTableName: TableName,
     private val tempTableName: TableName,
     private val columnNameMapping: ColumnNameMapping,
-    private val schemaEvolutionClient: TableSchemaEvolutionClient,
+    private val schemaEvolutionClient: TableSchemaEvolutionClient<*, *>,
     private val tableOperationsClient: TableOperationsClient,
     private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
 ) : StreamLoader {
@@ -83,7 +83,7 @@ class DirectLoadTableDedupStreamLoader(
     private val realTableName: TableName,
     private val tempTableName: TableName,
     private val columnNameMapping: ColumnNameMapping,
-    private val schemaEvolutionClient: TableSchemaEvolutionClient,
+    private val schemaEvolutionClient: TableSchemaEvolutionClient<*, *>,
     private val tableOperationsClient: TableOperationsClient,
     private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
 ) : StreamLoader {
@@ -145,7 +145,7 @@ class DirectLoadTableAppendTruncateStreamLoader(
     private val realTableName: TableName,
     private val tempTableName: TableName,
     private val columnNameMapping: ColumnNameMapping,
-    private val schemaEvolutionClient: TableSchemaEvolutionClient,
+    private val schemaEvolutionClient: TableSchemaEvolutionClient<*, *>,
     private val tableOperationsClient: TableOperationsClient,
     private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
 ) : StreamLoader {
@@ -268,7 +268,7 @@ class DirectLoadTableDedupTruncateStreamLoader(
     private val realTableName: TableName,
     private val tempTableName: TableName,
     private val columnNameMapping: ColumnNameMapping,
-    private val schemaEvolutionClient: TableSchemaEvolutionClient,
+    private val schemaEvolutionClient: TableSchemaEvolutionClient<*, *>,
     private val tableOperationsClient: TableOperationsClient,
     private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
     private val tempTableNameGenerator: TempTableNameGenerator,
