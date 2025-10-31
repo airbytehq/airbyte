@@ -4,8 +4,11 @@
 package io.airbyte.integrations.destination.postgres.typing_deduping
 
 import com.fasterxml.jackson.databind.node.ObjectNode
+import kotlin.longArrayOf
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 
 class PostgresRawOverrideDisableTypingDedupingTest : PostgresTypingDedupingTest() {
     override fun getBaseConfig(): ObjectNode {
@@ -24,4 +27,27 @@ class PostgresRawOverrideDisableTypingDedupingTest : PostgresTypingDedupingTest(
     @Disabled @Test override fun identicalNameSimultaneousSync() {}
 
     @Disabled @Test override fun testVarcharLimitOver64K() {}
+
+    //syncs used to fail when doing this, not anymore
+    @Disabled @Test override fun interruptedTruncateWithPriorData() {}
+
+    // fields that are not in the schema are now dropped.
+    @Disabled @ParameterizedTest @ValueSource(longs = [0L, 42L]) override fun testIncrementalSyncDropOneColumn(inputGenerationId: Long) {}
+
+    // this tests that the fully qualified raw table name is lowercased. This is actually not a restriction anymore, so disabling the test.
+    @Disabled @Test override fun testMixedCasedSchema() {}
+
+    //migrations not supported on most recent version
+    @Disabled @Test override fun testMixedCaseRawTableV1V2Migration() {}
+    @Disabled @Test override fun testAirbyteMetaAndGenerationIdMigration() {}
+    @Disabled @Test override fun testRawTableMetaMigration_append() {}
+    @Disabled @Test override fun testRawTableMetaMigration_incrementalDedupe() {}
+    @Disabled @Test override fun testAirbyteMetaAndGenerationIdMigrationForOverwrite() {}
+
+    //dedup not supported when setting `disable_type_dedupe` to true.
+    @Disabled @ParameterizedTest @ValueSource(longs = [0L, 42L]) override fun incrementalDedup(inputGenerationId: Long) {}
+    @Disabled @ParameterizedTest @ValueSource(longs = [0L, 42L]) override fun largeDedupSync(inputGenerationId: Long) {}
+    @Disabled @ParameterizedTest @ValueSource(longs = [0L, 42L]) override fun incrementalDedupDefaultNamespace(inputGenerationId: Long) {}
+    @Disabled @ParameterizedTest @ValueSource(longs = [0L, 42L]) override fun incrementalDedupChangeCursor(inputGenerationId: Long) {}
+    @Disabled @ParameterizedTest @ValueSource(longs = [0L, 42L]) override fun incrementalDedupIdenticalName() {}
 }
