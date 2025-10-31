@@ -156,7 +156,7 @@ global:
 ```yaml title="values.yaml"
 global:
   secretsManager:
-    type: GOOGLE_SECRET_MANAGE
+    type: GOOGLE_SECRET_MANAGER
     secretName: "airbyte-config-secrets" # Name of your Kubernetes secret.
     googleSecretManager:
       projectId: <project-id>
