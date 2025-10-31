@@ -43,6 +43,9 @@
     },
     "playlist_saves_removed": {
       "type": ["null", "string"]
+    },
+    "engaged_views": {
+      "type": ["null", "integer"]
     }
   }
 }

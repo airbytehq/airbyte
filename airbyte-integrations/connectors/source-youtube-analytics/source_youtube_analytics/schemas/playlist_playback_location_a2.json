@@ -23,11 +23,11 @@
     "country_code": {
       "type": ["null", "string"]
     },
-    "device_type": {
+    "playback_location_type": {
       "type": ["null", "integer"]
     },
-    "operating_system": {
-      "type": ["null", "integer"]
+    "playback_location_detail": {
+      "type": ["null", "string"]
     },
     "views": {
       "type": ["null", "integer"]
@@ -45,6 +45,9 @@
       "type": ["null", "integer"]
     },
     "playlist_saves_removed": {
+      "type": ["null", "integer"]
+    },
+    "engaged_views": {
       "type": ["null", "integer"]
     }
   }
