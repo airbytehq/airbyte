@@ -200,6 +200,7 @@ To see connector limitations, or troubleshoot your MongoDB connector, see more [
 | Size of the queue (Advanced)               | The size of the internal queue. This may interfere with memory consumption and efficiency of the connector, please be careful.                                                                                                                                                                                                                                                                                                             |
 | Discovery Sample Size (Advanced)           | The maximum number of documents to sample when attempting to discover the unique fields for a collection. Default is 10,000 with a valid range of 1,000 to 100,000. See the [MongoDB sampling method](https://www.mongodb.com/docs/compass/current/sampling/#sampling-method) for more details.                                                                                                                                            |
 | Update Capture Mode (Advanced)             | Determines how Airbyte looks up the value of an updated document. Default is "Lookup". **IMPORTANT** : "Post image" is only supported in MongoDB version 6.0+. In addition, the collections of interest must be setup to [return pre and post images](https://www.mongodb.com/docs/manual/changeStreams/#change-streams-with-document-pre-and-post-images). Failure to do so will lead to data loss.                                       |
+| Render UUIDs from Binary (Advanced)        | When enabled, binary fields with UUID subtypes will be rendered as UUID strings instead of base64-encoded binary data.                                                                                                                                                                                                         |
 
 For more information regarding configuration parameters, please see [MongoDb Documentation](https://docs.mongodb.com/drivers/java/sync/v4.10/fundamentals/connection/).
 
@@ -208,8 +209,9 @@ For more information regarding configuration parameters, please see [MongoDb Doc
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                                                  |
-|:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------|
+| Version | Date       | Pull Request                                             | Subject                                                                                                   |
+|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------------|
+| 2.1.0   | 2025-09-04 | [60889](https://github.com/airbytehq/airbyte/pull/60889) | Add option to render UUIDs from binary fields with UUID subtypes                                          |
 | 2.0.4   | 2025-08-28 | [65579](https://github.com/airbytehq/airbyte/pull/65579) | Add validation to ensure state format consistency.                              |
 | 2.0.3   | 2025-08-12 | [64900](https://github.com/airbytehq/airbyte/pull/64900) | Fix hardcoded read preferences to allow specification in connection string.                              |
 | 2.0.2   | 2025-07-14 | [62938](https://github.com/airbytehq/airbyte/pull/62938) | Only require a single database read permission when configured to sync a single database.                 |
